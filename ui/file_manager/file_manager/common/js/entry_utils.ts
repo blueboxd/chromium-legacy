@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import type {EntryLocation} from '../../externs/entry_location.js';
-import type {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {CurrentDirectory, EntryType, FileData} from '../../externs/ts/state.js';
-import type {VolumeInfo} from '../../externs/volume_info.js';
-import type {VolumeManager} from '../../externs/volume_manager.js';
-import {constants} from '../../foreground/js/constants.js';
+import type {EntryLocation} from '../../background/js/entry_location_impl.js';
+import type {VolumeInfo} from '../../background/js/volume_info.js';
+import type {VolumeManager} from '../../background/js/volume_manager.js';
+import type {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../common/js/files_app_entry_types.js';
+import {ODFS_EXTENSION_ID} from '../../foreground/js/constants.js';
 import type {DirectoryItem} from '../../foreground/js/ui/directory_tree.js';
 import type {TreeItem} from '../../foreground/js/ui/tree.js';
-import {driveRootEntryListKey, myFilesEntryListKey} from '../../state/ducks/volumes.js';
+import {driveRootEntryListKey, myFilesEntryListKey, recentRootKey, trashRootKey} from '../../state/ducks/volumes.js';
+import {type CurrentDirectory, EntryType, type FileData} from '../../state/state.js';
 import {getEntry, getStore} from '../../state/store.js';
 import type {XfTreeItem} from '../../widgets/xf_tree_item.js';
 
@@ -223,7 +223,7 @@ export function isTeamDriveRoot(entry: Entry|FilesAppEntry) {
     return false;
   }
   const tree = entry.fullPath.split('/');
-  return tree.length == 3 && isSharedDriveEntry(entry);
+  return tree.length === 3 && isSharedDriveEntry(entry);
 }
 
 /**
@@ -234,7 +234,7 @@ export function isTeamDrivesGrandRoot(entry: Entry|FilesAppEntry) {
     return false;
   }
   const tree = entry.fullPath.split('/');
-  return tree.length == 2 && isSharedDriveEntry(entry);
+  return tree.length === 2 && isSharedDriveEntry(entry);
 }
 
 /**
@@ -245,7 +245,7 @@ export function isSharedDriveEntry(entry: Entry|FilesAppEntry) {
     return false;
   }
   const tree = entry.fullPath.split('/');
-  return tree[0] == '' && tree[1] == SHARED_DRIVES_DIRECTORY_NAME;
+  return tree[0] === '' && tree[1] === SHARED_DRIVES_DIRECTORY_NAME;
 }
 
 /**
@@ -268,7 +268,7 @@ export function getTeamDriveName(entry: Entry|FakeEntry|FilesAppEntry): string {
  * Returns true if the given root type is for a container of recent files.
  */
 export function isRecentRootType(rootType: RootType|null) {
-  return rootType == RootType.RECENT;
+  return rootType === RootType.RECENT;
 }
 
 /**
@@ -289,7 +289,7 @@ export function isComputersRoot(entry: Entry|FilesAppEntry) {
     return false;
   }
   const tree = entry.fullPath.split('/');
-  return tree.length == 3 && isComputersEntry(entry);
+  return tree.length === 3 && isComputersEntry(entry);
 }
 
 /**
@@ -300,14 +300,14 @@ export function isComputersEntry(entry: Entry|FilesAppEntry) {
     return false;
   }
   const tree = entry.fullPath.split('/');
-  return tree[0] == '' && tree[1] == COMPUTERS_DIRECTORY_NAME;
+  return tree[0] === '' && tree[1] === COMPUTERS_DIRECTORY_NAME;
 }
 
 /**
  * Returns true if the given root type is Trash.
  */
 export function isTrashRootType(rootType: RootType|null) {
-  return rootType == RootType.TRASH;
+  return rootType === RootType.TRASH;
 }
 
 /**
@@ -391,11 +391,11 @@ export function isSiblingEntry(
     entry1: Entry|FilesAppEntry, entry2: Entry|FilesAppEntry): boolean {
   const path1 = entry1.fullPath.split('/');
   const path2 = entry2.fullPath.split('/');
-  if (path1.length != path2.length) {
+  if (path1.length !== path2.length) {
     return false;
   }
   for (let i = 0; i < path1.length - 1; i++) {
-    if (path1[i] != path2[i]) {
+    if (path1[i] !== path2[i]) {
       return false;
     }
   }
@@ -420,18 +420,17 @@ export function isDescendantEntry(
 
   // For EntryList and VolumeEntry they can contain entries from different
   // files systems, so we should check its getUiChildren.
-  if ('getUiChildren' in ancestorEntry) {
-    const volumeOrEntryList = ancestorEntry as VolumeEntry | EntryList;
+  if (isEntrySupportUiChildren(ancestorEntry)) {
     // VolumeEntry has to check to root entry descendant entry.
-    if ('getNativeEntry' in volumeOrEntryList) {
-      const nativeEntry = volumeOrEntryList.getNativeEntry();
+    if ('getNativeEntry' in ancestorEntry) {
+      const nativeEntry = ancestorEntry.getNativeEntry();
       if (nativeEntry &&
           isSameFileSystem(nativeEntry.filesystem, childEntry.filesystem)) {
         return isDescendantEntry(nativeEntry, childEntry);
       }
     }
 
-    return volumeOrEntryList.getUiChildren().some(
+    return ancestorEntry.getUiChildren().some(
         (ancestorChild: Entry|FilesAppEntry) => {
           if (isSameEntry(ancestorChild, childEntry)) {
             return true;
@@ -872,7 +871,7 @@ export function isInteractiveVolume(volumeInfo: VolumeInfo) {
 }
 
 export const isOneDriveId = (providerId: string|null|undefined) =>
-    providerId === constants.ODFS_EXTENSION_ID;
+    providerId === ODFS_EXTENSION_ID;
 
 export function isOneDrive(volumeInfo: VolumeInfo) {
   return isOneDriveId(volumeInfo?.providerId);
@@ -921,4 +920,70 @@ export function getTreeItemEntry(treeItem: DirectoryItem|XfTreeItem|TreeItem|
 
   const item = treeItem as DirectoryItem;
   return item.entry;
+}
+
+/**
+ * Check if the entry support `getUiChildren()` method.
+ */
+export function isEntrySupportUiChildren(entry: FilesAppEntry|Entry):
+    entry is EntryList|VolumeEntry {
+  return 'getUiChildren' in entry;
+}
+
+/**
+ * A generator version of `entry.readEntries`.
+ *
+ * Example usage:
+ * ```
+ * const childEntries = []
+ * for await (const partialEntries of readEntries(...)) {
+     childEntries.push(...partialEntries);
+  }
+ * ```
+ */
+export async function*
+    readEntries(entry: DirectoryEntry|FilesAppDirEntry):
+        AsyncGenerator<Entry[], void, void> {
+  const ls = (reader: DirectoryReader): Promise<Entry[]> => {
+    return new Promise((resolve, reject) => {
+      reader.readEntries(results => resolve(results), error => reject(error));
+    });
+  };
+
+  const reader = entry.createReader();
+  while (true) {
+    const entries = await ls(reader);
+    if (entries.length === 0) {
+      break;
+    }
+    yield entries;
+  }
+
+  // The final return here is void.
+}
+
+/**
+ * Check if the given entry is scannable or not, e.g. can we call `readEntries`
+ * on it. If the return value is true, its type is guaranteed to be a Directory
+ * like entry.
+ */
+export function isEntryScannable(entry: Entry|FilesAppEntry|null):
+    entry is DirectoryEntry|FilesAppDirEntry {
+  if (!entry) {
+    return false;
+  }
+  if (!entry.isDirectory) {
+    return false;
+  }
+  if ('disabled' in entry && entry.disabled) {
+    return false;
+  }
+  const entryKeysWithoutChildren = new Set([
+    recentRootKey,
+    trashRootKey,
+  ]);
+  if (entryKeysWithoutChildren.has(entry.toURL())) {
+    return false;
+  }
+  return true;
 }

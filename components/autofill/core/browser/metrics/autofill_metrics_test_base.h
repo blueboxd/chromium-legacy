@@ -24,6 +24,7 @@
 namespace autofill::autofill_metrics {
 
 constexpr char kTestProfileId[] = "00000000-0000-0000-0000-000000000001";
+constexpr char kTestProfile2Id[] = "00000000-0000-0000-0000-000000000002";
 constexpr char kTestLocalCardId[] = "10000000-0000-0000-0000-000000000001";
 constexpr char kTestMaskedCardId[] = "10000000-0000-0000-0000-000000000002";
 constexpr char kTestFullServerCardId[] = "10000000-0000-0000-0000-000000000003";
@@ -38,7 +39,6 @@ class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient();
   ~MockAutofillClient() override;
-  MOCK_METHOD(bool, IsTouchToFillCreditCardSupported, (), (override));
   MOCK_METHOD(bool,
               ShowTouchToFillCreditCard,
               (base::WeakPtr<TouchToFillDelegate>,
@@ -181,9 +181,14 @@ class AutofillMetricsBaseTest {
   }
 
   void FillTestProfile(const FormData& form) {
+    FillProfileByGUID(form, kTestProfileId);
+  }
+
+  void FillProfileByGUID(const FormData& form,
+                         const std::string& profile_guid) {
     autofill_manager().FillOrPreviewProfileForm(
         mojom::ActionPersistence::kFill, form, form.fields.front(),
-        *personal_data().GetProfileByGUID(kTestProfileId),
+        *personal_data().GetProfileByGUID(profile_guid),
         {.trigger_source = AutofillTriggerSource::kPopup});
   }
 
@@ -195,7 +200,7 @@ class AutofillMetricsBaseTest {
   [[nodiscard]] FormData CreateEmptyForm() {
     FormData form;
     form.host_frame = test::MakeLocalFrameToken();
-    form.unique_renderer_id = test::MakeFormRendererId();
+    form.renderer_id = test::MakeFormRendererId();
     form.name = u"TestForm";
     form.url = GURL("https://example.com/form.html");
     form.action = GURL("https://example.com/submit.html");
@@ -228,7 +233,8 @@ class AutofillMetricsBaseTest {
   }
 
   const bool is_in_any_main_frame_ = true;
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   std::unique_ptr<MockAutofillClient> autofill_client_;
   syncer::TestSyncService sync_service_;
@@ -237,7 +243,6 @@ class AutofillMetricsBaseTest {
  private:
   void CreateTestAutofillProfiles();
 
-  base::test::ScopedFeatureList scoped_feature_list_async_parse_form_;
   CreditCard credit_card_ = test::WithCvc(test::GetMaskedServerCard());
 };
 

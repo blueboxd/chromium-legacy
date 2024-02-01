@@ -4,6 +4,7 @@
 
 #include "base/check_deref.h"
 #include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
@@ -12,6 +13,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
+#include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_api.h"
@@ -44,16 +46,47 @@ auto FilledFieldHasAttributeWithValue(const std::string& attribute,
       Eq(expected_value));
 }
 
+// Returns the all the `autofill::FieldType`s used to build an UI representation
+// of an address. These values are the same as the ones used in the settings
+// page and edit dialog, furthermore, they depend on a profile's `country_code`.
+std::set<autofill::FieldType>
+GetExpectedFieldTypesToBuildAddressUiForCountryCode(
+    const std::string& country_code) {
+  std::set<autofill::FieldType> expected_address_ui_field_types;
+
+  // These types are not part of `AutofillAddressUIComponent`.
+  expected_address_ui_field_types.insert(
+      autofill::FieldType::ADDRESS_HOME_COUNTRY);
+  expected_address_ui_field_types.insert(
+      autofill::FieldType::PHONE_HOME_WHOLE_NUMBER);
+  expected_address_ui_field_types.insert(autofill::FieldType::EMAIL_ADDRESS);
+
+  std::vector<std::vector<autofill::AutofillAddressUIComponent>> components;
+  autofill::GetAddressComponents(country_code, "en-US",
+                                 /*include_literals=*/false, &components,
+                                 nullptr);
+  for (const std::vector<autofill::AutofillAddressUIComponent>& line :
+       components) {
+    for (const autofill::AutofillAddressUIComponent& component : line) {
+      expected_address_ui_field_types.insert(component.field);
+    }
+  }
+
+  return expected_address_ui_field_types;
+}
+
 auto FilledFieldHasAttributeWithValue16(const std::string& attribute,
                                         const std::u16string& expected_value) {
   return FilledFieldHasAttributeWithValue(attribute,
-                                          base::UTF16ToASCII(expected_value));
+                                          base::UTF16ToUTF8(expected_value));
 }
 
 std::string GetProfileInfoFromAddressField(const AutofillProfile profile,
                                            const base::Value& address_field) {
-  return base::UTF16ToASCII(profile.GetRawInfo(TypeNameToFieldType(
-      *address_field.GetDict().FindStringByDottedPath("name"))));
+  return base::UTF16ToUTF8(profile.GetInfo(
+      TypeNameToFieldType(
+          *address_field.GetDict().FindStringByDottedPath("name")),
+      "en-US"));
 }
 
 }  // namespace
@@ -274,12 +307,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, SetAddresses) {
                                                    .GetPersonalDataManager()
                                                    ->test_addresses();
   ASSERT_EQ(res.size(), 2u);
-  ASSERT_EQ(res[0].GetAddress().GetRawInfo(
-                autofill::ServerFieldType::ADDRESS_HOME_LINE1),
-            u"Erika-mann");
-  ASSERT_EQ(res[1].GetAddress().GetRawInfo(
-                autofill::ServerFieldType::ADDRESS_HOME_LINE2),
-            u"Faria lima");
+  ASSERT_EQ(
+      res[0].GetAddress().GetRawInfo(autofill::FieldType::ADDRESS_HOME_LINE1),
+      u"Erika-mann");
+  ASSERT_EQ(
+      res[1].GetAddress().GetRawInfo(autofill::FieldType::ADDRESS_HOME_LINE2),
+      u"Faria lima");
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, TriggerCreditCard) {
@@ -465,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, AddressFormFilled) {
   std::vector<const FormFieldData* const> filled_fields_by_autofill = {
       {&form.fields[0], &form.fields[1]}};
 
-  // Enabled events and emit event about forming being filled.
+  // Enabled events and emit event about form being filled.
   SendCommandSync("Autofill.enable");
   main_autofill_manager().NotifyObservers(
       &autofill::AutofillManager::Observer::OnFillOrPreviewDataModelForm,
@@ -474,6 +507,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, AddressFormFilled) {
 
   base::Value::Dict notification = WaitForNotification(
       "Autofill.addressFormFilled", /*allow_existing=*/true);
+
+  std::set<autofill::FieldType> field_types_added_to_address_ui;
   for (const base::Value& address_line :
        *notification.FindListByDottedPath("addressUi.addressFields")) {
     for (const base::Value& address_field :
@@ -482,9 +517,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, AddressFormFilled) {
       // have in `profile`.
       EXPECT_EQ(GetProfileInfoFromAddressField(profile, address_field),
                 *address_field.GetDict().FindStringByDottedPath("value"));
+      field_types_added_to_address_ui.insert(TypeNameToFieldType(
+          *address_field.GetDict().FindStringByDottedPath("name")));
     }
   }
 
+  // Assert the expected values used to build the address ui were sent to
+  // devtools.
+  ASSERT_EQ(field_types_added_to_address_ui,
+            GetExpectedFieldTypesToBuildAddressUiForCountryCode(
+                base::UTF16ToUTF8(profile.GetInfo(
+                    autofill::FieldType::ADDRESS_HOME_COUNTRY, "en-US"))));
   // Assert that the filled fields sent to devtools match exactly the ones
   // filled by autofill.
   const base::Value::List* filled_fields =
@@ -512,6 +555,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, AddressFormFilled) {
                                     af->form_control_type))));
     EXPECT_THAT(ff,
                 FilledFieldHasAttributeWithValue16("name", af->name_attribute));
+    EXPECT_EQ(*ff.GetDict().FindIntByDottedPath("fieldId"),
+              (int)(ffd->unique_renderer_id.value()));
   }
 
   // The first filled field uses autocomplete attribute as filling strategy.

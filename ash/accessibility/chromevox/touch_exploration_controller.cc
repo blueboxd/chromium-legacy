@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/chromevox/touch_accessibility_enabler.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -51,7 +51,7 @@ const base::TimeDelta kLongPressTimerDelay = base::Seconds(5);
 void SetTouchAccessibilityFlag(ui::Event* event) {
   // This flag is used to identify mouse move events that were generated from
   // touch exploration in Chrome code.
-  event->set_flags(event->flags() | ui::EF_TOUCH_ACCESSIBILITY);
+  event->SetFlags(event->flags() | ui::EF_TOUCH_ACCESSIBILITY);
 }
 
 std::unique_ptr<ui::GestureProviderAura> BuildGestureProviderAura(
@@ -190,7 +190,7 @@ ui::EventDispatchDetails TouchExplorationController::RewriteEvent(
                                  touch_event.pointer_details());
         new_event.set_location(location);
         new_event.set_root_location(root_location);
-        new_event.set_flags(touch_event.flags());
+        new_event.SetFlags(touch_event.flags());
         return SendEventFinally(continuation, &new_event);
       }
 

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -15,6 +16,8 @@
 #include "base/values.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/mojom/context_type.mojom.h"
+#include "extensions/common/mojom/host_id.mojom.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/static_v8_external_one_byte_string_resource.h"
@@ -110,11 +113,12 @@ std::unique_ptr<NativeHandler> V8SchemaRegistry::AsNativeHandler(
     v8::Isolate* isolate) {
   std::unique_ptr<ScriptContext> context(
       new ScriptContext(GetOrCreateContext(isolate),
-                        nullptr,  // no frame
-                        nullptr,  // no extension
-                        Feature::UNSPECIFIED_CONTEXT,
+                        nullptr,          // no frame
+                        mojom::HostID(),  // no host_id
+                        nullptr,          // no extension
+                        mojom::ContextType::kUnspecified,
                         nullptr,  // no effective extension
-                        Feature::UNSPECIFIED_CONTEXT));
+                        mojom::ContextType::kUnspecified));
   return std::unique_ptr<NativeHandler>(
       new SchemaRegistryNativeHandler(this, std::move(context)));
 }
@@ -157,7 +161,7 @@ v8::Local<v8::Object> V8SchemaRegistry::GetSchema(v8::Isolate* isolate,
   v8::MicrotasksScope microtasks_scope(
       context, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
-  base::StringPiece schema_string =
+  std::string_view schema_string =
       ExtensionAPI::GetSharedInstance()->GetSchemaStringPiece(api);
   CHECK(!schema_string.empty());
   v8::MaybeLocal<v8::String> v8_maybe_string = v8::String::NewExternalOneByte(

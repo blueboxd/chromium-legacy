@@ -19,15 +19,18 @@
 #include "content/browser/preloading/preloading_trigger_type_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/prefetch_metrics.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_client.h"
 #include "net/http/http_no_vary_search_data.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/no_vary_search.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -284,7 +287,13 @@ void PrefetchDocumentManager::PrefetchUrl(
     return;
   }
 
-  absl::optional<net::HttpNoVarySearchData> no_vary_search_expected;
+  // Log that a prefetch is occurring. Paths that reach this point go through
+  // speculation rules in some form or another.
+  GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+      &render_frame_host(),
+      blink::mojom::WebFeature::kSpeculationRulesPrefetch);
+
+  std::optional<net::HttpNoVarySearchData> no_vary_search_expected;
   if (mojo_no_vary_search_expected) {
     no_vary_search_expected =
         no_vary_search::ParseHttpNoVarySearchDataFromMojom(
@@ -338,6 +347,7 @@ bool PrefetchDocumentManager::IsPrefetchAttemptFailedOrDiscarded(
     case PrefetchStatus::kPrefetchIneligibleBatterySaverEnabled:
     case PrefetchStatus::kPrefetchIneligiblePreloadingDisabled:
     case PrefetchStatus::kPrefetchIneligibleExistingProxy:
+    case PrefetchStatus::kPrefetchIsStale:
     case PrefetchStatus::kPrefetchNotUsedProbeFailed:
     case PrefetchStatus::kPrefetchNotStarted:
     case PrefetchStatus::kPrefetchNotFinishedInTime:

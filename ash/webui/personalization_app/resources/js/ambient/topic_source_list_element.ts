@@ -7,9 +7,9 @@
  * behaviors similar to a radio button group, e.g. single selection.
  */
 
-import '../../css/common.css.js';
-import './topic_source_item_element.js';
+import 'chrome://resources/ash/common/personalization/common.css.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import './topic_source_item_element.js';
 
 import {AmbientTheme, TopicSource} from '../../personalization_app.mojom-webui.js';
 import {isTimeOfDayScreenSaverEnabled} from '../load_time_booleans.js';
@@ -57,8 +57,8 @@ export class TopicSourceListElement extends WithPersonalizationStore {
   hasGooglePhotosAlbums: boolean;
 
   override focus() {
-    const elem = this.shadowRoot!.querySelector('topic-source-item[checked]') as
-        HTMLElement;
+    const elem = this.shadowRoot!.querySelector<HTMLElement>(
+        'topic-source-item[checked]');
     if (elem) {
       elem.focus();
     }

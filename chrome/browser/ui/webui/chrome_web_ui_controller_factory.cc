@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <memory>
 #include <utility>
-
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
@@ -18,7 +17,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/about_flags.h"
-#include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
@@ -31,13 +29,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/webui/about/about_ui.h"
-#include "chrome/browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui.h"
-#include "chrome/browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui.h"
 #include "chrome/browser/ui/webui/browsing_topics/browsing_topics_internals_ui.h"
 #include "chrome/browser/ui/webui/components/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
-#include "chrome/browser/ui/webui/device_log_ui.h"
+#include "chrome/browser/ui/webui/device_log/device_log_ui.h"
 #include "chrome/browser/ui/webui/download_internals/download_internals_ui.h"
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 #include "chrome/browser/ui/webui/flags/flags_ui.h"
@@ -58,6 +54,7 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/policy/policy_ui.h"
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
+#include "chrome/browser/ui/webui/privacy_sandbox/privacy_sandbox_internals_ui.h"
 #include "chrome/browser/ui/webui/segmentation_internals/segmentation_internals_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/suggest_internals/suggest_internals_ui.h"
@@ -88,6 +85,7 @@
 #include "components/optimization_guide/optimization_guide_internals/webui/url_constants.h"
 #include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
@@ -96,7 +94,6 @@
 #include "components/security_interstitials/content/connection_help_ui.h"
 #include "components/security_interstitials/content/known_interception_disclosure_ui.h"
 #include "components/security_interstitials/content/urls.h"
-#include "components/signin/public/base/signin_buildflags.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/browser/web_contents.h"
@@ -157,6 +154,7 @@
 #include "chrome/browser/ui/webui/password_manager/password_manager_ui.h"
 #include "chrome/browser/ui/webui/privacy_sandbox/privacy_sandbox_dialog_ui.h"
 #include "chrome/browser/ui/webui/profile_internals/profile_internals_ui.h"
+#include "chrome/browser/ui/webui/search_engine_choice/search_engine_choice_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_utils.h"
 #include "chrome/browser/ui/webui/side_panel/bookmarks/bookmarks_side_panel_ui.h"
@@ -188,7 +186,6 @@
 #include "ash/webui/help_app_ui/url_constants.h"
 #include "ash/webui/multidevice_debug/url_constants.h"
 #include "ash/webui/vc_background_ui/url_constants.h"
-#include "build/config/chromebox_for_meetings/buildflags.h"
 #include "chrome/browser/ash/extensions/url_constants.h"
 #include "chrome/browser/extensions/extension_keeplist_chromeos.h"
 #include "chrome/browser/ui/webui/ash/cellular_setup/mobile_setup_ui.h"
@@ -200,10 +197,6 @@
 #include "chromeos/crosapi/cpp/gurl_os_handler_utils.h"
 #include "url/url_util.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
-
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"  // nogncheck
-#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/chrome_url_disabled/chrome_url_disabled_ui.h"
@@ -290,15 +283,12 @@
 #include "chrome/browser/ui/webui/media_router/cast_feedback_ui.h"
 #endif
 
-#if BUILDFLAG(PLATFORM_CFM)
-#include "chrome/browser/ui/webui/ash/chromebox_for_meetings/network_settings_dialog.h"
-#endif  // BUILDFLAG(PLATFORM_CFM)
-
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
-#include "chrome/browser/ui/webui/search_engine_choice/search_engine_choice_ui.h"
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
+#include "chrome/browser/ui/webui/lens/lens_ui.h"
 #endif
 
 #if BUILDFLAG(ENABLE_COMPOSE)
+#include "chrome/browser/compose/compose_enabling.h"
 #include "chrome/browser/ui/webui/compose/compose_ui.h"
 #include "components/compose/core/browser/compose_features.h"
 #endif
@@ -437,20 +427,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   //
   // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.
-  if (url.host_piece() == chrome::kChromeUIAccessibilityHost)
-    return &NewWebUI<AccessibilityUI>;
-  if (url.host_piece() == chrome::kChromeUIAutofillInternalsHost)
-    return &NewWebUI<AutofillInternalsUI>;
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (url.host_piece() == chrome::kChromeUIAppDisabledHost)
     return &NewWebUI<chromeos::ChromeURLDisabledUI>;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (url.host_piece() == chrome::kChromeUIBluetoothInternalsHost)
-    return &NewWebUI<BluetoothInternalsUI>;
-#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
   if (url.host_piece() == chrome::kChromeUIBrowsingTopicsInternalsHost)
     return &NewWebUI<BrowsingTopicsInternalsUI>;
@@ -510,8 +490,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       optimization_guide_internals::kChromeUIOptimizationGuideInternalsHost) {
     return &NewWebUI<OptimizationGuideInternalsUI>;
   }
-  if (url.host_piece() == chrome::kChromeUIPasswordManagerInternalsHost)
-    return &NewWebUI<PasswordManagerInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIPredictorsHost)
     return &NewWebUI<PredictorsUI>;
   if (url.host_piece() == safe_browsing::kChromeUISafeBrowsingHost)
@@ -548,7 +526,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif  // !BUILDFLAG(IS_CHROMEOS)
   if (profile->IsGuestSession() &&
       (url.host_piece() == chrome::kChromeUIAppLauncherPageHost ||
-       url.host_piece() == chrome::kChromeUIHistoryHost ||
        url.host_piece() == chrome::kChromeUINewTabPageHost ||
        url.host_piece() == chrome::kChromeUINewTabPageThirdPartyHost ||
        url.host_piece() == password_manager::kChromeUIPasswordManagerHost)) {
@@ -626,8 +603,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<settings::SettingsUI>;
   if (url.host_piece() == chrome::kChromeUITabSearchHost)
     return &NewWebUI<TabSearchUI>;
-  if (url.host_piece() == chrome::kChromeUIHistoryHost)
-    return &NewWebUI<HistoryUI>;
   if (url.host_piece() == chrome::kChromeUIProfileInternalsHost)
     return &NewWebUI<ProfileInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISyncFileSystemInternalsHost)
@@ -694,10 +669,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
-  // TODO(b/301931584): Rename url/host to naming pattern
-  // ManagedUserProfileNotice*.
-  if (url.host_piece() == chrome::kChromeUIEnterpriseProfileWelcomeHost)
+  if (url.host_piece() == chrome::kChromeUIManagedUserProfileNoticeHost) {
     return &NewWebUI<ManagedUserProfileNoticeUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIIntroHost &&
       base::FeatureList::IsEnabled(kForYouFre))
     return &NewWebUI<IntroUI>;
@@ -711,14 +685,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUISigninEmailConfirmationHost &&
       !profile->IsOffTheRecord())
     return &NewWebUI<SigninEmailConfirmationUI>;
-#endif
-
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
-  if (url.host_piece() == chrome::kChromeUISearchEngineChoiceHost &&
-      search_engines::IsChoiceScreenFlagEnabled(
-          search_engines::ChoicePromo::kAny)) {
-    return &NewWebUI<SearchEngineChoiceUI>;
-  }
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -765,7 +731,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #if BUILDFLAG(ENABLE_COMPOSE)
   if (url.host_piece() == chrome::kChromeUIComposeHost &&
-      base::FeatureList::IsEnabled(compose::features::kEnableCompose)) {
+      ComposeEnabling::IsEnabledForProfile(profile)) {
     return &NewWebUI<ComposeUI>;
   }
 #endif
@@ -865,15 +831,28 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif
 
-#if BUILDFLAG(PLATFORM_CFM)
-  if (url.host_piece() == chrome::kCfmNetworkSettingsHost)
-    return &NewWebUI<ash::cfm::NetworkSettingsDialogUi>;
-#endif  // BUILDFLAG(PLATFORM_CFM)
-
 #if !BUILDFLAG(IS_ANDROID)
   if (url.host_piece() == chrome::kChromeUIPrivacySandboxDialogHost)
     return &NewWebUI<PrivacySandboxDialogUI>;
+
+  if (url.host_piece() == chrome::kChromeUISearchEngineChoiceHost &&
+      search_engines::IsChoiceScreenFlagEnabled(
+          search_engines::ChoicePromo::kAny)) {
+    return &NewWebUI<SearchEngineChoiceUI>;
+  }
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
+  if (url.host_piece() == chrome::kChromeUILensHost) {
+    return &NewWebUI<LensUI>;
+  }
+#endif
+
+  if (base::FeatureList::IsEnabled(
+          privacy_sandbox::kPrivacySandboxInternalsDevUI) &&
+      url.host_piece() == chrome::kChromeUIPrivacySandboxInternalsHost) {
+    return &NewWebUI<privacy_sandbox_internals::PrivacySandboxInternalsUI>;
+  }
 
   return nullptr;
 }
@@ -1168,6 +1147,7 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUISetTimeURL),
     GURL(chrome::kChromeUISlowURL),
     GURL(chrome::kChromeUISmbShareURL),
+    GURL(chrome::kChromeUISupportToolURL),
     GURL(chrome::kChromeUISysInternalsUrl),
     GURL(chrome::kChromeUIUntrustedCroshURL),
     GURL(chrome::kChromeUIUntrustedTerminalURL),

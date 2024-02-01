@@ -4,6 +4,7 @@
 
 #include "content/browser/first_party_sets/first_party_sets_handler_impl_instance.h"
 
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -18,7 +19,6 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_expected_support.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/version.h"
@@ -37,7 +37,6 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 using ::testing::_;
@@ -177,7 +176,7 @@ class FirstPartySetsHandlerImplTest : public ::testing::Test {
   net::GlobalFirstPartySets GetSetsAndWait(
       FirstPartySetsHandlerImplInstance& handler) {
     base::test::TestFuture<net::GlobalFirstPartySets> future;
-    absl::optional<net::GlobalFirstPartySets> result =
+    std::optional<net::GlobalFirstPartySets> result =
         handler.GetSets(future.GetCallback());
     return result.has_value() ? std::move(result).value() : future.Take();
   }
@@ -204,11 +203,11 @@ class FirstPartySetsHandlerImplTest : public ::testing::Test {
     run_loop.Run();
   }
 
-  absl::optional<
+  std::optional<
       std::pair<net::GlobalFirstPartySets, net::FirstPartySetsContextConfig>>
   GetPersistedSetsAndWait(FirstPartySetsHandlerImplInstance& handler,
                           const std::string& browser_context_id) {
-    base::test::TestFuture<absl::optional<
+    base::test::TestFuture<std::optional<
         std::pair<net::GlobalFirstPartySets, net::FirstPartySetsContextConfig>>>
         future;
     handler.GetPersistedSetsForTesting(browser_context_id,
@@ -216,10 +215,10 @@ class FirstPartySetsHandlerImplTest : public ::testing::Test {
     return future.Take();
   }
 
-  absl::optional<bool> HasEntryInBrowserContextsClearedAndWait(
+  std::optional<bool> HasEntryInBrowserContextsClearedAndWait(
       FirstPartySetsHandlerImplInstance& handler,
       const std::string& browser_context_id) {
-    base::test::TestFuture<absl::optional<bool>> future;
+    base::test::TestFuture<std::optional<bool>> future;
     handler.HasBrowserContextClearedForTesting(browser_context_id,
                                                future.GetCallback());
     return future.Take();
@@ -237,7 +236,7 @@ class FirstPartySetsHandlerImplTest : public ::testing::Test {
         handler(), context, browser_context_id, std::move(context_config));
   }
 
-  absl::optional<
+  std::optional<
       std::pair<net::GlobalFirstPartySets, net::FirstPartySetsContextConfig>>
   GetPersistedSetsAndWait(const std::string& browser_context_id) {
     return GetPersistedSetsAndWait(handler(), browser_context_id);
@@ -343,62 +342,13 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest, EmptyDBPath) {
                                    net::FirstPartySetsContextConfig()),
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
-                            example, net::SiteType::kPrimary, absl::nullopt)),
+                            example, net::SiteType::kPrimary, std::nullopt)),
           Pair(associated, net::FirstPartySetEntry(
                                example, net::SiteType::kAssociated, 0))));
 }
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
-       ClearSiteDataOnChangedSetsForContext_FeatureNotEnabled) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      features::kFirstPartySets,
-      {{features::kFirstPartySetsClearSiteDataOnChangedSets.name, "false"}});
-  base::HistogramTester histogram;
-  net::SchemefulSite foo(GURL("https://foo.test"));
-  net::SchemefulSite associated(GURL("https://associatedsite.test"));
-
-  const std::string browser_context_id = "profile";
-  const std::string input =
-      R"({"primary": "https://foo.test", )"
-      R"("associatedSites": ["https://associatedsite.test"]})";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  handler().SetPublicFirstPartySets(base::Version("0.0.1"),
-                                    WritePublicSetsFile(input));
-
-  handler().Init(scoped_dir_.GetPath(), net::LocalSetDeclaration());
-  ASSERT_THAT(GetSetsAndWait().FindEntries({foo, associated},
-                                           net::FirstPartySetsContextConfig()),
-              UnorderedElementsAre(
-                  Pair(foo, net::FirstPartySetEntry(
-                                foo, net::SiteType::kPrimary, absl::nullopt)),
-                  Pair(associated, net::FirstPartySetEntry(
-                                       foo, net::SiteType::kAssociated, 0))));
-
-  histogram.ExpectTotalCount(kDelayedQueriesCountHistogram, 1);
-  histogram.ExpectTotalCount(kMostDelayedQueryDeltaHistogram, 1);
-
-  ClearSiteDataOnChangedSetsForContextAndWait(
-      context(), browser_context_id, net::FirstPartySetsContextConfig());
-
-  absl::optional<
-      std::pair<net::GlobalFirstPartySets, net::FirstPartySetsContextConfig>>
-      persisted = GetPersistedSetsAndWait(browser_context_id);
-  EXPECT_TRUE(persisted.has_value());
-  EXPECT_THAT(
-      persisted->first.FindEntries({foo, associated}, persisted->second),
-      IsEmpty());
-  // Should not be recorded.
-  histogram.ExpectTotalCount(kFirstPartySetsClearSiteDataOutcomeHistogram, 0);
-}
-
-TEST_F(FirstPartySetsHandlerImplEnabledTest,
        ClearSiteDataOnChangedSetsForContext_ManualSet_Successful) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      features::kFirstPartySets,
-      {{features::kFirstPartySetsClearSiteDataOnChangedSets.name, "true"}});
-
   net::SchemefulSite foo(GURL("https://foo.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
   net::SchemefulSite associated2(GURL("https://associatedsite2.test"));
@@ -422,7 +372,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       handler, context(), browser_context_id,
       net::FirstPartySetsContextConfig());
 
-  absl::optional<
+  std::optional<
       std::pair<net::GlobalFirstPartySets, net::FirstPartySetsContextConfig>>
       persisted = GetPersistedSetsAndWait(handler, browser_context_id);
   EXPECT_TRUE(persisted.has_value());
@@ -430,10 +380,10 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       persisted->first.FindEntries({foo, associated}, persisted->second),
       UnorderedElementsAre(
           Pair(foo, net::FirstPartySetEntry(foo, net::SiteType::kPrimary,
-                                            absl::nullopt)),
+                                            std::nullopt)),
           Pair(associated,
                net::FirstPartySetEntry(foo, net::SiteType::kAssociated,
-                                       absl::nullopt))));
+                                       std::nullopt))));
   histogram.ExpectUniqueSample(kFirstPartySetsClearSiteDataOutcomeHistogram,
                                /*sample=*/true, 1);
   histogram.ExpectTotalCount(kDelayedQueriesCountHistogram, 1);
@@ -442,11 +392,6 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
        ClearSiteDataOnChangedSetsForContext_PublicSetsWithDiff_Successful) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      features::kFirstPartySets,
-      {{features::kFirstPartySetsClearSiteDataOnChangedSets.name, "true"}});
-
   net::SchemefulSite foo(GURL("https://foo.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
   net::SchemefulSite associated2(GURL("https://associatedsite2.test"));
@@ -475,7 +420,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
     ClearSiteDataOnChangedSetsForContextAndWait(
         handler, context(), browser_context_id,
         net::FirstPartySetsContextConfig());
-    absl::optional<
+    std::optional<
         std::pair<net::GlobalFirstPartySets, net::FirstPartySetsContextConfig>>
         persisted = GetPersistedSetsAndWait(handler, browser_context_id);
     EXPECT_TRUE(persisted.has_value());
@@ -483,10 +428,10 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
         persisted->first.FindEntries({foo, associated}, persisted->second),
         UnorderedElementsAre(
             Pair(foo, net::FirstPartySetEntry(foo, net::SiteType::kPrimary,
-                                              absl::nullopt)),
+                                              std::nullopt)),
             Pair(associated,
                  net::FirstPartySetEntry(foo, net::SiteType::kAssociated,
-                                         absl::nullopt))));
+                                         std::nullopt))));
     EXPECT_THAT(
         HasEntryInBrowserContextsClearedAndWait(handler, browser_context_id),
         Optional(true));
@@ -519,7 +464,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
     ClearSiteDataOnChangedSetsForContextAndWait(
         handler, context(), browser_context_id,
         net::FirstPartySetsContextConfig());
-    absl::optional<
+    std::optional<
         std::pair<net::GlobalFirstPartySets, net::FirstPartySetsContextConfig>>
         persisted = GetPersistedSetsAndWait(handler, browser_context_id);
     EXPECT_TRUE(persisted.has_value());
@@ -527,10 +472,10 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
         persisted->first.FindEntries({foo, associated2}, persisted->second),
         UnorderedElementsAre(
             Pair(foo, net::FirstPartySetEntry(foo, net::SiteType::kPrimary,
-                                              absl::nullopt)),
+                                              std::nullopt)),
             Pair(associated2,
                  net::FirstPartySetEntry(foo, net::SiteType::kAssociated,
-                                         absl::nullopt))));
+                                         std::nullopt))));
     EXPECT_THAT(
         HasEntryInBrowserContextsClearedAndWait(handler, browser_context_id),
         Optional(true));
@@ -542,11 +487,6 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
        ClearSiteDataOnChangedSetsForContext_EmptyDBPath) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      features::kFirstPartySets,
-      {{features::kFirstPartySetsClearSiteDataOnChangedSets.name, "true"}});
-
   base::HistogramTester histogram;
   net::SchemefulSite foo(GURL("https://foo.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
@@ -565,14 +505,14 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
                                            net::FirstPartySetsContextConfig()),
               UnorderedElementsAre(
                   Pair(foo, net::FirstPartySetEntry(
-                                foo, net::SiteType::kPrimary, absl::nullopt)),
+                                foo, net::SiteType::kPrimary, std::nullopt)),
                   Pair(associated, net::FirstPartySetEntry(
                                        foo, net::SiteType::kAssociated, 0))));
 
   ClearSiteDataOnChangedSetsForContextAndWait(
       context(), browser_context_id, net::FirstPartySetsContextConfig());
 
-  EXPECT_EQ(GetPersistedSetsAndWait(browser_context_id), absl::nullopt);
+  EXPECT_EQ(GetPersistedSetsAndWait(browser_context_id), std::nullopt);
   // Should not be recorded.
   histogram.ExpectTotalCount(kFirstPartySetsClearSiteDataOutcomeHistogram, 0);
   histogram.ExpectTotalCount(kDelayedQueriesCountHistogram, 1);
@@ -581,11 +521,6 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
        ClearSiteDataOnChangedSetsForContext_BeforeSetsReady) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      features::kFirstPartySets,
-      {{features::kFirstPartySetsClearSiteDataOnChangedSets.name, "true"}});
-
   base::HistogramTester histogram;
 
   handler().Init(scoped_dir_.GetPath(), net::LocalSetDeclaration());
@@ -610,7 +545,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
   net::SchemefulSite foo(GURL("https://foo.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
 
-  absl::optional<
+  std::optional<
       std::pair<net::GlobalFirstPartySets, net::FirstPartySetsContextConfig>>
       persisted = GetPersistedSetsAndWait(browser_context_id);
   EXPECT_TRUE(persisted.has_value());
@@ -618,10 +553,10 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       persisted->first.FindEntries({foo, associated}, persisted->second),
       UnorderedElementsAre(
           Pair(foo, net::FirstPartySetEntry(foo, net::SiteType::kPrimary,
-                                            absl::nullopt)),
+                                            std::nullopt)),
           Pair(associated,
                net::FirstPartySetEntry(foo, net::SiteType::kAssociated,
-                                       absl::nullopt))));
+                                       std::nullopt))));
   histogram.ExpectUniqueSample(kFirstPartySetsClearSiteDataOutcomeHistogram,
                                /*sample=*/true, 1);
   histogram.ExpectTotalCount(kDelayedQueriesCountHistogram, 1);
@@ -653,7 +588,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
                        net::FirstPartySetsContextConfig()),
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
-                            example, net::SiteType::kPrimary, absl::nullopt)),
+                            example, net::SiteType::kPrimary, std::nullopt)),
           Pair(associated, net::FirstPartySetEntry(
                                example, net::SiteType::kAssociated, 0))));
 }
@@ -665,7 +600,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
 
   // Call GetSets before the sets are ready, and before Init has been called.
   base::test::TestFuture<net::GlobalFirstPartySets> future;
-  EXPECT_EQ(handler().GetSets(future.GetCallback()), absl::nullopt);
+  EXPECT_EQ(handler().GetSets(future.GetCallback()), std::nullopt);
 
   handler().Init(scoped_dir_.GetPath(), net::LocalSetDeclaration());
 
@@ -681,7 +616,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
                                net::FirstPartySetsContextConfig()),
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
-                            example, net::SiteType::kPrimary, absl::nullopt)),
+                            example, net::SiteType::kPrimary, std::nullopt)),
           Pair(associated, net::FirstPartySetEntry(
                                example, net::SiteType::kAssociated, 0))));
 
@@ -693,7 +628,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
                        net::FirstPartySetsContextConfig()),
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
-                            example, net::SiteType::kPrimary, absl::nullopt)),
+                            example, net::SiteType::kPrimary, std::nullopt)),
           Pair(associated, net::FirstPartySetEntry(
                                example, net::SiteType::kAssociated, 0))));
 }
@@ -783,7 +718,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       set_entries,
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
-                            example, net::SiteType::kPrimary, absl::nullopt)),
+                            example, net::SiteType::kPrimary, std::nullopt)),
           Pair(associated, net::FirstPartySetEntry(
                                example, net::SiteType::kAssociated, 0))));
 }
@@ -813,7 +748,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       net::FirstPartySetsContextConfig(
           {{associated2,
             net::FirstPartySetEntryOverride(net::FirstPartySetEntry(
-                example, net::SiteType::kAssociated, absl::nullopt))}}),
+                example, net::SiteType::kAssociated, std::nullopt))}}),
       [&](const net::SchemefulSite& site,
           const net::FirstPartySetEntry& entry) {
         set_entries.emplace_back(site, entry);
@@ -823,12 +758,12 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       set_entries,
       UnorderedElementsAre(
           Pair(example, net::FirstPartySetEntry(
-                            example, net::SiteType::kPrimary, absl::nullopt)),
+                            example, net::SiteType::kPrimary, std::nullopt)),
           Pair(associated1,
                net::FirstPartySetEntry(example, net::SiteType::kAssociated, 0)),
           Pair(associated2,
                net::FirstPartySetEntry(example, net::SiteType::kAssociated,
-                                       absl::nullopt))));
+                                       std::nullopt))));
 }
 
 class FirstPartySetsHandlerGetContextConfigForPolicyTest

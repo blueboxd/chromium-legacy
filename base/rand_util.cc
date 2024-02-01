@@ -19,7 +19,8 @@ namespace base {
 
 namespace {
 
-bool g_subsampling_enabled = true;
+bool g_subsampling_always_sample = false;
+bool g_subsampling_never_sample = false;
 
 }  // namespace
 
@@ -115,7 +116,7 @@ std::string RandBytesAsString(size_t length) {
 std::vector<uint8_t> RandBytesAsVector(size_t length) {
   std::vector<uint8_t> result(length);
   if (result.size()) {
-    RandBytes(result.data(), result.size());
+    RandBytes(result);
   }
   return result;
 }
@@ -163,17 +164,40 @@ double InsecureRandomGenerator::RandDouble() {
 
 MetricsSubSampler::MetricsSubSampler() = default;
 bool MetricsSubSampler::ShouldSample(double probability) {
-  return !g_subsampling_enabled || generator_.RandDouble() < probability;
+  if (g_subsampling_always_sample) {
+    return true;
+  }
+  if (g_subsampling_never_sample) {
+    return false;
+  }
+
+  return generator_.RandDouble() < probability;
 }
 
-MetricsSubSampler::ScopedDisableForTesting::ScopedDisableForTesting() {
-  DCHECK(g_subsampling_enabled);
-  g_subsampling_enabled = false;
+MetricsSubSampler::ScopedAlwaysSampleForTesting::
+    ScopedAlwaysSampleForTesting() {
+  DCHECK(!g_subsampling_always_sample);
+  DCHECK(!g_subsampling_never_sample);
+  g_subsampling_always_sample = true;
 }
 
-MetricsSubSampler::ScopedDisableForTesting::~ScopedDisableForTesting() {
-  DCHECK(!g_subsampling_enabled);
-  g_subsampling_enabled = true;
+MetricsSubSampler::ScopedAlwaysSampleForTesting::
+    ~ScopedAlwaysSampleForTesting() {
+  DCHECK(g_subsampling_always_sample);
+  DCHECK(!g_subsampling_never_sample);
+  g_subsampling_always_sample = false;
+}
+
+MetricsSubSampler::ScopedNeverSampleForTesting::ScopedNeverSampleForTesting() {
+  DCHECK(!g_subsampling_always_sample);
+  DCHECK(!g_subsampling_never_sample);
+  g_subsampling_never_sample = true;
+}
+
+MetricsSubSampler::ScopedNeverSampleForTesting::~ScopedNeverSampleForTesting() {
+  DCHECK(!g_subsampling_always_sample);
+  DCHECK(g_subsampling_never_sample);
+  g_subsampling_never_sample = false;
 }
 
 }  // namespace base

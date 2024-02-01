@@ -4,13 +4,18 @@
 
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/glanceables/post_login_glanceables_metrics_recorder.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/shell.h"
 #include "ash/webui/settings/public/constants/routes.mojom.h"
+#include "ash/webui/settings/public/constants/setting.mojom-shared.h"
 #include "ash/wm/desks/templates/saved_desk_controller.h"
+#include "ash/wm/window_restore/window_restore_controller.h"
+#include "ash/wm/window_restore/window_restore_util.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
@@ -147,7 +152,7 @@ FullRestoreService::FullRestoreService(Profile* profile)
 
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
-      kRestoreAppsAndPagesPrefName,
+      prefs::kRestoreAppsAndPagesPrefName,
       base::BindRepeating(&FullRestoreService::OnPreferenceChanged,
                           weak_ptr_factory_.GetWeakPtr()));
 
@@ -233,7 +238,7 @@ void FullRestoreService::Init(bool& show_notification) {
   }
 
   RestoreOption restore_pref = static_cast<RestoreOption>(
-      prefs->GetInteger(kRestoreAppsAndPagesPrefName));
+      prefs->GetInteger(prefs::kRestoreAppsAndPagesPrefName));
   base::UmaHistogramEnumeration(kRestoreInitSettingHistogramName, restore_pref);
   switch (restore_pref) {
     case RestoreOption::kAlways:
@@ -338,8 +343,14 @@ void FullRestoreService::Click(const std::optional<int>& button_index,
   if (notification_->id() == kRestoreNotificationId) {
     // Show the 'On Startup' OS setting page if the user clicks the settings
     // button of the restore notification.
-    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        profile_, chromeos::settings::mojom::kAppsSectionPath);
+    ash::features::IsOsSettingsRevampWayfindingEnabled()
+        ? chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+              profile_,
+              chromeos::settings::mojom::kSystemPreferencesSectionPath,
+              chromeos::settings::mojom::Setting::kRestoreAppsAndPages)
+        : chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+              profile_, chromeos::settings::mojom::kAppsSectionPath);
+
     return;
   }
 
@@ -449,6 +460,20 @@ void FullRestoreService::MaybeShowRestoreNotification(const std::string& id,
   if (id == kRestoreForCrashNotificationId && exit_type_service)
     crashed_lock_ = exit_type_service->CreateCrashedLock();
 
+  if (Shell::HasInstance()) {
+    Shell::Get()
+        ->post_login_glanceables_metrics_reporter()
+        ->RecordPostLoginFullRestoreShown();
+  }
+
+  if (features::IsForestFeatureEnabled()) {
+    CHECK(Shell::HasInstance());
+    Shell::Get()->window_restore_controller()->MaybeStartPineOverviewSession();
+    // Set to true as we might want to show the post reboot notification.
+    show_notification = true;
+    return;
+  }
+
   auto* accelerator_controller = AcceleratorController::Get();
   if (accelerator_controller) {
     DCHECK(!accelerator_controller_observer_.IsObserving());
@@ -509,12 +534,6 @@ void FullRestoreService::MaybeShowRestoreNotification(const std::string& id,
                                         *notification_,
                                         /*metadata=*/nullptr);
   show_notification = true;
-
-  if (Shell::HasInstance()) {
-    Shell::Get()
-        ->post_login_glanceables_metrics_reporter()
-        ->RecordPostLoginFullRestoreShown();
-  }
 }
 
 void FullRestoreService::RecordRestoreAction(const std::string& notification_id,
@@ -526,10 +545,10 @@ void FullRestoreService::RecordRestoreAction(const std::string& notification_id,
 }
 
 void FullRestoreService::OnPreferenceChanged(const std::string& pref_name) {
-  DCHECK_EQ(pref_name, kRestoreAppsAndPagesPrefName);
+  DCHECK_EQ(pref_name, prefs::kRestoreAppsAndPagesPrefName);
 
   RestoreOption restore_option = static_cast<RestoreOption>(
-      profile_->GetPrefs()->GetInteger(kRestoreAppsAndPagesPrefName));
+      profile_->GetPrefs()->GetInteger(prefs::kRestoreAppsAndPagesPrefName));
   base::UmaHistogramEnumeration(kRestoreSettingHistogramName, restore_option);
 
   const user_manager::User* user =

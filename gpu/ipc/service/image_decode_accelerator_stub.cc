@@ -37,6 +37,7 @@
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/command_buffer_id.h"
@@ -69,7 +70,7 @@ namespace {
 
 struct CleanUpContext {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
-  raw_ptr<SharedContextState, ExperimentalAsh> shared_context_state = nullptr;
+  raw_ptr<SharedContextState> shared_context_state = nullptr;
   std::unique_ptr<SkiaImageRepresentation> skia_representation;
   std::unique_ptr<SkiaImageRepresentation::ScopedReadAccess> skia_scoped_access;
 };
@@ -300,7 +301,8 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     if (!channel_->shared_image_stub()->CreateSharedImage(
             mailbox, std::move(plane_handle), plane_format, plane_size,
             gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType,
-            SHARED_IMAGE_USAGE_RASTER | SHARED_IMAGE_USAGE_OOP_RASTERIZATION,
+            SHARED_IMAGE_USAGE_RASTER_READ |
+                SHARED_IMAGE_USAGE_OOP_RASTERIZATION,
             "ImageDecodeAccelerator")) {
       DLOG(ERROR) << "Could not create SharedImage";
       return;

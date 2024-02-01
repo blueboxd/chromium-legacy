@@ -65,9 +65,8 @@ class AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver
   std::string GetOwnerName() const override;
 
  private:
-  raw_ptr<AffiliatedInvalidationServiceProviderImpl, ExperimentalAsh> parent_;
-  const raw_ptr<invalidation::InvalidationService, ExperimentalAsh>
-      invalidation_service_;
+  raw_ptr<AffiliatedInvalidationServiceProviderImpl> parent_;
+  const raw_ptr<invalidation::InvalidationService> invalidation_service_;
   bool is_service_connected_;
   bool is_observer_ready_;
 
@@ -366,6 +365,7 @@ AffiliatedInvalidationServiceProviderImpl::
           base::BindRepeating(&invalidation::FCMNetworkHandler::Create,
                               g_browser_process->gcm_driver(),
                               device_instance_id_driver_.get()),
+          base::BindRepeating(&invalidation::FCMInvalidationListener::Create),
           base::BindRepeating(
               &invalidation::PerUserTopicSubscriptionManager::Create,
               device_identity_provider_.get(), g_browser_process->local_state(),

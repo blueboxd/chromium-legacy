@@ -8,6 +8,7 @@
 
 #import "base/check.h"
 #import "base/feature_list.h"
+#import "base/memory/raw_ptr.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
@@ -136,6 +137,7 @@ NSString* GetPromoLabelString(
     case signin_metrics::AccessPoint::ACCESS_POINT_SEARCH_COMPANION:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_DRIVE_IOS:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
@@ -158,7 +160,7 @@ NSString* GetPromoLabelString(
   std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
       _accountManagerServiceObserver;
   signin_metrics::AccessPoint _accessPoint;
-  syncer::SyncService* _syncService;
+  raw_ptr<syncer::SyncService> _syncService;
 }
 
 @property(nonatomic, strong) UIImage* avatar;

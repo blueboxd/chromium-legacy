@@ -231,7 +231,7 @@ bool GPUCanvasContext::PushFrame() {
   auto canvas_resource = ExternalCanvasResource::Create(
       transferable_resource, std::move(release_callback),
       GetContextProviderWeakPtr(), /*resource_provider=*/nullptr,
-      cc::PaintFlags::FilterQuality::kLow,
+      filter_quality_,
       /*is_origin_top_left=*/kBottomLeft_GrSurfaceOrigin);
   if (!canvas_resource)
     return false;
@@ -505,7 +505,6 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
   // actually make the contents opaque.
   switch (alpha_mode_) {
     case V8GPUCanvasAlphaMode::Enum::kOpaque: {
-      CcLayer()->SetContentsOpaque(true);
       if (!alpha_clearer_ ||
           !alpha_clearer_->IsCompatible(device_->GetHandle(),
                                         swap_texture_descriptor_.format)) {
@@ -517,7 +516,6 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
     }
     case V8GPUCanvasAlphaMode::Enum::kPremultiplied:
       alpha_clearer_ = nullptr;
-      CcLayer()->SetContentsOpaque(false);
       break;
   }
 
@@ -667,6 +665,12 @@ void GPUCanvasContext::OnTextureTransferred() {
   }
   texture_ = nullptr;
   swap_texture_ = nullptr;
+}
+
+void GPUCanvasContext::SetNeedsCompositingUpdate() {
+  if (Host()) {
+    Host()->SetNeedsCompositingUpdate();
+  }
 }
 
 void GPUCanvasContext::CopyToSwapTexture() {

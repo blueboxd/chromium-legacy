@@ -31,8 +31,8 @@ class ChromiumDepGraph {
             licenseName: 'MIT License'),
         com_google_android_datatransport_transport_api: new PropertyOverride(
             description: 'Interfaces for data logging in GmsCore SDKs.'),
-        // Exclude androidx_window_window since it currently addes <uses-library>
-        // to our AndroidManfest.xml, which we don't allow. http://crbug.com/1302987
+        // Chrome uses the window APIs directly instead of going through the androidx middleware.
+        // See //third_party/android_sdk/window_extensions/README.md
         androidx_window_window: new PropertyOverride(exclude: true),
         com_google_android_datatransport_transport_backend_cct: new PropertyOverride(
             exclude: true),  // We're not using datatransport functionality.
@@ -60,11 +60,16 @@ class ChromiumDepGraph {
         com_google_errorprone_error_prone_annotation: new PropertyOverride(
             url: 'https://github.com/google/error-prone/tree/master/annotation',
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
-            licenseName: 'Apache 2.0'),
+            licenseName: 'Apache 2.0',
+            description: 'ErrorProne Annotations.',),
         com_google_errorprone_error_prone_annotations: new PropertyOverride(
-            url: 'https://github.com/google/error-prone/tree/master/type_annotations',
+            url: 'https://github.com/google/error-prone/tree/master/annotations',
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
-            licenseName: 'Apache 2.0'),
+            licenseName: 'Apache 2.0',
+            description: 'ErrorProne Annotations.',),
+        com_google_errorprone_error_prone_type_annotations: new PropertyOverride(
+            url: 'https://github.com/google/error-prone/tree/master/type_annotations',
+            description: 'ErrorProne Annotations.',),
         com_google_errorprone_error_prone_check_api: new PropertyOverride(
             url: 'https://github.com/google/error-prone/tree/master/check_api'),
         com_google_errorprone_error_prone_core: new PropertyOverride(
@@ -261,6 +266,8 @@ class ChromiumDepGraph {
             resolveVersion: '1.6.4'),
         org_jetbrains_kotlinx_kotlinx_coroutines_guava: new PropertyOverride(
             resolveVersion: '1.6.4'),
+        org_jetbrains_kotlinx_atomicfu_jvm: new PropertyOverride(
+            overrideLatest: true),
         org_jetbrains_kotlin_kotlin_stdlib_jdk8: new PropertyOverride(
             resolveVersion: '1.8.20'),
         org_jetbrains_kotlin_kotlin_stdlib_jdk7: new PropertyOverride(

@@ -5,7 +5,9 @@
 #include "chrome/browser/extensions/installed_loader.h"
 
 #include <stddef.h>
+
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -53,7 +55,6 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -65,6 +66,16 @@ using content::BrowserThread;
 namespace extensions {
 
 namespace {
+
+// DO NOT REORDER. This enum is used in histograms.
+enum class ManifestVersionPopulationSplit {
+  kNoExtensions = 0,
+  kMv2ExtensionsOnly,
+  kMv2AndMv3Extensions,
+  kMv3ExtensionsOnly,
+
+  kMaxValue = kMv3ExtensionsOnly,
+};
 
 // The following enumeration is used in histograms matching
 // Extensions.ManifestReload*.
@@ -346,7 +357,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
         // Non-policy extensions are repaired on startup. Add any corrupted
         // user-installed extensions to the reinstaller as well.
         corrupted_extension_reinstaller->ExpectReinstallForCorruption(
-            extension->id(), absl::nullopt, extension->location());
+            extension->id(), std::nullopt, extension->location());
       }
     }
   } else {
@@ -906,6 +917,49 @@ void InstalledLoader::RecordExtensionsMetrics(Profile* profile,
     base::UmaHistogramCounts100(
         "Extensions.ManifestVersion3Count.Unpacked",
         unpacked_manifest_version_counts.version_3_count);
+
+    auto get_manifest_version_population_split =
+        [](const ManifestVersion2And3Counts& counts) {
+          if (counts.version_2_count == 0 && counts.version_3_count == 0) {
+            return ManifestVersionPopulationSplit::kNoExtensions;
+          }
+          if (counts.version_2_count > 0 && counts.version_3_count == 0) {
+            return ManifestVersionPopulationSplit::kMv2ExtensionsOnly;
+          }
+          if (counts.version_3_count > 0 && counts.version_2_count == 0) {
+            return ManifestVersionPopulationSplit::kMv3ExtensionsOnly;
+          }
+          return ManifestVersionPopulationSplit::kMv2AndMv3Extensions;
+        };
+    base::UmaHistogramEnumeration(
+        "Extensions.ManifestVersionPopulationSplit.Internal",
+        get_manifest_version_population_split(
+            internal_manifest_version_counts));
+    base::UmaHistogramEnumeration(
+        "Extensions.ManifestVersionPopulationSplit.External",
+        get_manifest_version_population_split(
+            external_manifest_version_counts));
+    base::UmaHistogramEnumeration(
+        "Extensions.ManifestVersionPopulationSplit.Component",
+        get_manifest_version_population_split(
+            component_manifest_version_counts));
+    base::UmaHistogramEnumeration(
+        "Extensions.ManifestVersionPopulationSplit.Unpacked",
+        get_manifest_version_population_split(
+            unpacked_manifest_version_counts));
+    ManifestVersion2And3Counts internal_and_external_counts;
+    internal_and_external_counts.version_2_count =
+        internal_manifest_version_counts.version_2_count +
+        external_manifest_version_counts.version_2_count;
+    internal_and_external_counts.version_3_count =
+        internal_manifest_version_counts.version_3_count +
+        external_manifest_version_counts.version_3_count;
+    // We log an additional one for the combination of internal and external
+    // since these are both "user controlled" and not unpacked.
+    base::UmaHistogramEnumeration(
+        "Extensions.ManifestVersionPopulationSplit.InternalAndExternal",
+        get_manifest_version_population_split(
+            internal_manifest_version_counts));
   }
 
   base::UmaHistogramCounts100("Extensions.LoadApp",

@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
-#include "ash/public/cpp/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
@@ -23,7 +24,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
@@ -44,26 +44,24 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/common/color_parser.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "services/accessibility/public/mojom/assistive_technology_type.mojom.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom/dom_codes_array.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace {
 
@@ -316,6 +314,24 @@ AccessibilityPrivateHandleScrollableBoundsForPointFoundFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
+AccessibilityPrivateInstallFaceGazeAssetsFunction::Run() {
+  AccessibilityManager::Get()->InstallFaceGazeAssets(base::BindOnce(
+      &AccessibilityPrivateInstallFaceGazeAssetsFunction::OnInstallFinished,
+      this));
+  return RespondLater();
+}
+
+void AccessibilityPrivateInstallFaceGazeAssetsFunction::OnInstallFinished(
+    std::optional<accessibility_private::FaceGazeAssets> assets) {
+  if (!assets) {
+    Respond(Error("Couldn't retrieve FaceGaze assets."));
+    return;
+  }
+
+  Respond(WithArguments(assets->ToValue()));
+}
+
+ExtensionFunction::ResponseAction
 AccessibilityPrivateInstallPumpkinForDictationFunction::Run() {
   AccessibilityManager::Get()->InstallPumpkinForDictation(
       base::BindOnce(&AccessibilityPrivateInstallPumpkinForDictationFunction::
@@ -544,43 +560,8 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
 
   // Locations are assumed to be in screen coordinates.
   gfx::Point location_in_screen(mouse_data->x, mouse_data->y);
-  const display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestPoint(location_in_screen);
-  auto* host = ash::GetWindowTreeHostForDisplay(display.id());
-  if (!host) {
-    return RespondNow(NoArguments());
-  }
-
-  aura::Window* root_window = host->window();
-  if (!root_window) {
-    return RespondNow(NoArguments());
-  }
-
-  aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window);
-
-  bool is_mouse_events_enabled = cursor_client->IsMouseEventsEnabled();
-  if (!is_mouse_events_enabled) {
-    cursor_client->EnableMouseEvents();
-  }
-
-  ::wm::ConvertPointFromScreen(root_window, &location_in_screen);
-
-  ui::MouseEvent synthetic_mouse_event(
-      type, location_in_screen, location_in_screen, ui::EventTimeForNow(),
-      flags, changed_button_flags);
-
-  // Transforming the coordinate to the root will apply the screen scale factor
-  // to the event's location and also the screen rotation degree.
-  synthetic_mouse_event.UpdateForRootTransform(
-      host->GetRootTransform(),
-      host->GetRootTransformForLocalEventCoordinates());
-  // This skips rewriters.
-  host->DeliverEventToSink(&synthetic_mouse_event);
-
-  if (!is_mouse_events_enabled) {
-    cursor_client->DisableMouseEvents();
-  }
+  AccessibilityManager::Get()->SendSyntheticMouseEvent(
+      type, flags, changed_button_flags, location_in_screen);
 
   return RespondNow(NoArguments());
 }
@@ -722,6 +703,37 @@ AccessibilityPrivateSetHighlightsFunction::Run() {
 
   // Set the highlights to cover all of these rects.
   AccessibilityManager::Get()->SetHighlights(rects, color);
+
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateSetSelectToSpeakFocusFunction::Run() {
+  std::optional<accessibility_private::SetSelectToSpeakFocus::Params> params(
+      accessibility_private::SetSelectToSpeakFocus::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (features::IsAccessibilityMagnifierFollowsStsEnabled() &&
+      ash::AccessibilityController::Get()->fullscreen_magnifier().enabled()) {
+    // Ship this event to AccessibilityCommon for fullscreen magnifier.
+    auto bounds =
+        std::make_unique<extensions::api::accessibility_private::ScreenRect>();
+    bounds->left = params->bounds.left;
+    bounds->top = params->bounds.top;
+    bounds->width = params->bounds.width;
+    bounds->height = params->bounds.height;
+    auto event_args = extensions::api::accessibility_private::
+        OnSelectToSpeakFocusChanged::Create(params->bounds);
+    auto event = std::make_unique<extensions::Event>(
+        extensions::events::
+            ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_FOCUS_CHANGED,
+        extensions::api::accessibility_private::OnSelectToSpeakFocusChanged::
+            kEventName,
+        std::move(event_args));
+    extensions::EventRouter::Get(AccessibilityManager::Get()->profile())
+        ->DispatchEventWithLazyListener(
+            extension_misc::kAccessibilityCommonExtensionId, std::move(event));
+  }
 
   return RespondNow(NoArguments());
 }

@@ -10,13 +10,12 @@
 
 #import "base/functional/bind.h"
 #import "build/blink_buildflags.h"
-#import "ios/chrome/browser/snapshots/model/snapshot_generator_delegate.h"
+#import "ios/chrome/browser/snapshots/model/model_swift.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_scale.h"
+#import "ios/chrome/browser/snapshots/model/web_state_snapshot_info.h"
 #import "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
-#import "ui/gfx/geometry/rect_f.h"
-#import "ui/gfx/image/image.h"
 
 namespace {
 
@@ -62,55 +61,30 @@ BOOL ViewHierarchyContainsWebView(UIView* view) {
   return self;
 }
 
-- (void)generateWKWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
-  if (!_webState) {
+- (void)generateSnapshotWithCompletion:(void (^)(UIImage*))completion {
+  bool showing_native_content =
+      web::GetWebClient()->IsAppSpecificURL(_webState->GetLastCommittedURL());
+  if (!showing_native_content && _webState->CanTakeSnapshot()) {
+    // Take the snapshot using the optimized WKWebView snapshotting API for
+    // pages loaded in the web view when the WebState snapshot API is available.
+    [self generateWKWebViewSnapshotWithCompletion:completion];
     return;
   }
-  DCHECK(
-      !web::GetWebClient()->IsAppSpecificURL(_webState->GetLastCommittedURL()));
-
-  if (![self canTakeSnapshot]) {
-    if (completion) {
-      // Post a task to the current thread (UI thread).
-      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(completion, nil));
-    }
-    return;
+  // Use the UIKit-based snapshot API as a fallback when the WKWebView API is
+  // unavailable.
+  UIImage* snapshot = [self generateUIViewSnapshotWithOverlays];
+  if (completion) {
+    completion(snapshot);
   }
-  [_delegate snapshotGenerator:self
-      willUpdateSnapshotForWebState:_webState.get()];
-
-  SnapshotInfo snapshotInfo = [self snapshotInfo];
-  CGRect snapshotFrameInWebView =
-      [_webState->GetView() convertRect:snapshotInfo.snapshotFrameInBaseView
-                               fromView:snapshotInfo.baseView];
-  auto wrappedCompletion =
-      ^(__weak SnapshotGenerator* generator, const gfx::Image& image) {
-        if (!generator) {
-          completion(nil);
-        }
-        UIImage* snapshot = nil;
-        if (!image.IsEmpty()) {
-          snapshot = [generator addOverlays:[generator overlays]
-                                  baseImage:image.ToUIImage()
-                              frameInWindow:snapshotInfo.snapshotFrameInWindow];
-        }
-        if (completion) {
-          completion(snapshot);
-        }
-      };
-
-  __weak SnapshotGenerator* weakSelf = self;
-  _webState->TakeSnapshot(gfx::RectF(snapshotFrameInWebView),
-                          base::BindRepeating(wrappedCompletion, weakSelf));
 }
 
 - (UIImage*)generateUIViewSnapshot {
   if (![self canTakeSnapshot] || !_webState) {
     return nil;
   }
-  [_delegate snapshotGenerator:self
-      willUpdateSnapshotForWebState:_webState.get()];
+  [_delegate
+      willUpdateSnapshotWithWebStateInfo:[[WebStateSnapshotInfo alloc]
+                                             initWithWebState:_webState.get()]];
 
   SnapshotInfo snapshotInfo = [self snapshotInfo];
   // Ideally, generate an UIImage by one step with `UIGraphicsImageRenderer`,
@@ -135,6 +109,50 @@ BOOL ViewHierarchyContainsWebView(UIView* view) {
 
 #pragma mark - Private methods
 
+// Asynchronously generates a new snapshot with WebKit-based snapshot API and
+// runs a callback with the new snapshot image. It is an error to call this
+// method if the web state is showing anything other (e.g., native content) than
+// a web view.
+- (void)generateWKWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
+  if (!_webState) {
+    return;
+  }
+  DCHECK(
+      !web::GetWebClient()->IsAppSpecificURL(_webState->GetLastCommittedURL()));
+
+  if (![self canTakeSnapshot]) {
+    if (completion) {
+      // Post a task to the current thread (UI thread).
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(completion, nil));
+    }
+    return;
+  }
+  [_delegate
+      willUpdateSnapshotWithWebStateInfo:[[WebStateSnapshotInfo alloc]
+                                             initWithWebState:_webState.get()]];
+
+  SnapshotInfo snapshotInfo = [self snapshotInfo];
+  auto wrappedCompletion =
+      ^(__weak SnapshotGenerator* generator, UIImage* image) {
+        if (!generator) {
+          completion(nil);
+        }
+        UIImage* snapshot =
+            [generator addOverlays:[generator overlays]
+                         baseImage:image
+                     frameInWindow:snapshotInfo.snapshotFrameInWindow];
+        if (completion) {
+          completion(snapshot);
+        }
+      };
+
+  __weak SnapshotGenerator* weakSelf = self;
+  _webState->TakeSnapshot(snapshotInfo.snapshotFrameInBaseView,
+                          base::BindRepeating(wrappedCompletion, weakSelf));
+}
+
+
 // Returns NO if WebState or the view is not ready for snapshot.
 - (BOOL)canTakeSnapshot {
   // This allows for easier unit testing of classes that use SnapshotGenerator.
@@ -148,8 +166,9 @@ BOOL ViewHierarchyContainsWebView(UIView* view) {
     return NO;
   }
 
-  return [_delegate snapshotGenerator:self
-           canTakeSnapshotForWebState:_webState.get()];
+  return [_delegate
+      canTakeSnapshotWithWebStateInfo:[[WebStateSnapshotInfo alloc]
+                                          initWithWebState:_webState.get()]];
 }
 
 // Converts an UIView to an UIImage. The size of generated UIImage is the same
@@ -310,20 +329,23 @@ BOOL ViewHierarchyContainsWebView(UIView* view) {
   if (!_webState) {
     return nil;
   }
-  return [_delegate snapshotGenerator:self
-          snapshotOverlaysForWebState:_webState.get()];
+  return [_delegate
+      snapshotOverlaysWithWebStateInfo:[[WebStateSnapshotInfo alloc]
+                                           initWithWebState:_webState.get()]];
 }
 
 // Retrieves information needed for snapshotting.
 - (SnapshotInfo)snapshotInfo {
   CHECK(_webState);
   SnapshotInfo snapshotInfo;
-  snapshotInfo.baseView = [_delegate snapshotGenerator:self
-                                   baseViewForWebState:_webState.get()];
+  snapshotInfo.baseView = [_delegate
+      baseViewWithWebStateInfo:[[WebStateSnapshotInfo alloc]
+                                   initWithWebState:_webState.get()]];
   DCHECK(snapshotInfo.baseView);
 
-  UIEdgeInsets baseViewInsets = [_delegate snapshotGenerator:self
-                               snapshotEdgeInsetsForWebState:_webState.get()];
+  UIEdgeInsets baseViewInsets = [_delegate
+      snapshotEdgeInsetsWithWebStateInfo:[[WebStateSnapshotInfo alloc]
+                                             initWithWebState:_webState.get()]];
   snapshotInfo.snapshotFrameInBaseView =
       UIEdgeInsetsInsetRect(snapshotInfo.baseView.bounds, baseViewInsets);
   DCHECK(!CGRectIsEmpty(snapshotInfo.snapshotFrameInBaseView));

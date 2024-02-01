@@ -58,12 +58,15 @@ class WebStateID;
 // Tells the delegate to unpin a tab with the item identifier `identifier`.
 - (void)unpinTabWithIdentifier:(web::WebStateID)identifier;
 
+// Tells the delegate to create a new tab group with the given identifier
+// `identifier`. `incognito` YES if the given tab is incognito.
+- (void)createNewTabGroupWithIdentifier:(web::WebStateID)identifier
+                              incognito:(BOOL)incognito;
+
 // Tells the delegate to close the tab with the item identifier `identifier`.
 // `incognito`tracks the incognito state of the tab.
-// `pinned` tracks the pinned state of the tab.
 - (void)closeTabWithIdentifier:(web::WebStateID)identifier
-                     incognito:(BOOL)incognito
-                        pinned:(BOOL)pinned;
+                     incognito:(BOOL)incognito;
 
 @end
 

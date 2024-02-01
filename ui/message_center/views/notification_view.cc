@@ -238,8 +238,7 @@ class NotificationView::NotificationViewPathGenerator
   // This custom PathGenerator is used for the ink drop clipping bounds. By
   // setting |preferred_size_| we set the correct clip bounds in
   // GetRoundRect(). This is needed as the correct bounds for the ink drop are
-  // required before a Layout() on the view is run. See
-  // http://crbug.com/915222.
+  // required before the view does layout. See http://crbug.com/915222.
   gfx::Size preferred_size_;
 };
 
@@ -449,8 +448,9 @@ void NotificationView::CreateOrUpdateInlineSettingsViews(
   }
   DCHECK_NE(block_notifications_message_id, 0);
 
-  inline_settings_row()->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, kSettingsRowPadding, 0));
+  inline_settings_row()->SetOrientation(
+      views::BoxLayout::Orientation::kVertical);
+  inline_settings_row()->SetInsideBorderInsets(kSettingsRowPadding);
 
   auto block_all_button = std::make_unique<InlineSettingsRadioButton>(
       l10n_util::GetStringUTF16(block_notifications_message_id));
@@ -570,7 +570,7 @@ void NotificationView::ToggleInlineSettings(const ui::Event& event) {
     RemoveBackgroundAnimation();
 
   UpdateHeaderViewBackgroundColor();
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 
   // Call DisableNotification() at the end, because |this| can be deleted at any
@@ -628,7 +628,7 @@ void NotificationView::RemoveLayerFromRegions(ui::Layer* layer) {
 }
 
 void NotificationView::Layout() {
-  NotificationViewBase::Layout();
+  LayoutSuperclass<NotificationViewBase>(this);
 
   // The animation is needed to run inside of the border.
   ink_drop_container_->SetBoundsRect(GetLocalBounds());
@@ -706,7 +706,7 @@ void NotificationView::HeaderRowPressed() {
   // cause |this| to be deleted.
   if (!weak_ptr)
     return;
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 

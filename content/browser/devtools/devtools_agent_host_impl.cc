@@ -130,6 +130,7 @@ const char DevToolsAgentHost::kTypeFrame[] = "iframe";
 const char DevToolsAgentHost::kTypeDedicatedWorker[] = "worker";
 const char DevToolsAgentHost::kTypeSharedWorker[] = "shared_worker";
 const char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
+const char DevToolsAgentHost::kTypeWorklet[] = "worklet";
 const char DevToolsAgentHost::kTypeSharedStorageWorklet[] =
     "shared_storage_worklet";
 const char DevToolsAgentHost::kTypeBrowser[] = "browser";
@@ -616,19 +617,19 @@ RenderProcessHost* DevToolsAgentHostImpl::GetProcessHost() {
   return nullptr;
 }
 
-absl::optional<network::CrossOriginEmbedderPolicy>
+std::optional<network::CrossOriginEmbedderPolicy>
 DevToolsAgentHostImpl::cross_origin_embedder_policy(const std::string& id) {
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<network::CrossOriginOpenerPolicy>
+std::optional<network::CrossOriginOpenerPolicy>
 DevToolsAgentHostImpl::cross_origin_opener_policy(const std::string& id) {
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<std::vector<network::mojom::ContentSecurityPolicyHeader>>
+std::optional<std::vector<network::mojom::ContentSecurityPolicyHeader>>
 DevToolsAgentHostImpl::content_security_policy(const std::string& id) {
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 protocol::TargetAutoAttacher* DevToolsAgentHostImpl::auto_attacher() {

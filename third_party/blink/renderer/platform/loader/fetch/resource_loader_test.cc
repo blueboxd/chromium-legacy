@@ -87,12 +87,14 @@ class ResourceLoaderTest : public testing::Test {
 
   class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
     std::unique_ptr<URLLoader> CreateURLLoader(
-        const ResourceRequest& request,
+        const network::ResourceRequest& request,
         const ResourceLoaderOptions& options,
         scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
         scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
-        BackForwardCacheLoaderHelper* back_forward_cache_loader_helper)
-        override {
+        BackForwardCacheLoaderHelper* back_forward_cache_loader_helper,
+        const absl::optional<base::UnguessableToken>&
+            service_worker_race_network_request_token,
+        bool is_from_origin_dirty_style_sheet) override {
       return std::make_unique<NoopURLLoader>(std::move(freezable_task_runner));
     }
     CodeCacheHost* GetCodeCacheHost() override { return nullptr; }
@@ -164,7 +166,7 @@ TEST_F(ResourceLoaderTest, LoadResponseBody) {
   loader->DidReceiveResponse(WrappedResourceResponse(response),
                              std::move(consumer),
                              /*cached_metadata=*/absl::nullopt);
-  loader->DidFinishLoading(base::TimeTicks(), 0, 0, 0, false);
+  loader->DidFinishLoading(base::TimeTicks(), 0, 0, 0);
 
   uint32_t num_bytes = 2;
   result = producer->WriteData("he", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);

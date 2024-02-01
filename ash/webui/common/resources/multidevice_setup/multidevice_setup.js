@@ -28,7 +28,7 @@ export const PageName = {
   START: 'start-setup-page',
 };
 
-const MultiDeviceSetup = Polymer({
+export const MultiDeviceSetup = Polymer({
   _template: getTemplate(),
   is: 'multidevice-setup',
 
@@ -151,19 +151,6 @@ const MultiDeviceSetup = Polymer({
     isScrolledToBottom_: {
       type: Boolean,
       value: false,
-    },
-
-    /**
-     * Return true if the Jelly feature flag is enabled.
-     * @private
-     */
-    isJellyEnabled: {
-      type: Boolean,
-      readOnly: true,
-      value() {
-        return loadTimeData.valueExists('isJellyEnabled') &&
-            loadTimeData.getBoolean('isJellyEnabled');
-      },
     },
   },
 

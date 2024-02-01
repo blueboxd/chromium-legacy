@@ -10,10 +10,14 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/permissions/embedded_permission_prompt_view_delegate.h"
 #include "chrome/browser/ui/views/permissions/permission_prompt_base_view.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/permissions/permission_prompt.h"
 #include "ui/base/interaction/element_identifier.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/flex_layout_view.h"
 
 class Browser;
 
@@ -42,6 +46,8 @@ class Browser;
 // views::BubbleDialogDelegateView.
 
 class EmbeddedPermissionPromptBaseView : public PermissionPromptBaseView {
+  METADATA_HEADER(EmbeddedPermissionPromptBaseView, PermissionPromptBaseView)
+
  public:
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kMainViewId);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kLabelViewId1);
@@ -64,6 +70,7 @@ class EmbeddedPermissionPromptBaseView : public PermissionPromptBaseView {
   // views::BubbleDialogDelegateView:
   bool ShouldShowCloseButton() const override;
   void Init() override;
+  void AddedToWidget() override;
 
  protected:
   enum class ButtonType {
@@ -98,6 +105,8 @@ class EmbeddedPermissionPromptBaseView : public PermissionPromptBaseView {
   virtual std::vector<RequestLineConfiguration> GetRequestLinesConfiguration()
       const = 0;
   virtual std::vector<ButtonConfiguration> GetButtonsConfiguration() const = 0;
+  const virtual gfx::VectorIcon& GetIcon() const;
+  virtual bool ShowLoadingIcon() const;
 
   base::WeakPtr<EmbeddedPermissionPromptViewDelegate>& delegate() {
     return delegate_;
@@ -112,6 +121,7 @@ class EmbeddedPermissionPromptBaseView : public PermissionPromptBaseView {
   void AddRequestLine(const RequestLineConfiguration& line, std::size_t index);
   void AddButton(views::View& buttons_container,
                  const ButtonConfiguration& button);
+  std::unique_ptr<views::FlexLayoutView> CreateLoadingIcon();
 
   const raw_ptr<Browser> browser_;
   base::WeakPtr<EmbeddedPermissionPromptViewDelegate> delegate_;

@@ -21,6 +21,8 @@ import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 import {createFakePageContentData, HOST_DEVICE, TestMultideviceBrowserProxy} from './test_multidevice_browser_proxy.js';
 
 suite('<settings-multidevice-page>', () => {
+  const isRevampWayfindingEnabled =
+      loadTimeData.getBoolean('isRevampWayfindingEnabled');
   let multidevicePage: SettingsMultidevicePageElement;
   let browserProxy: TestMultideviceBrowserProxy;
   let ALL_MODES: MultiDeviceSettingsMode[];
@@ -116,6 +118,27 @@ suite('<settings-multidevice-page>', () => {
       ...multidevicePage.pageContentData,
       isPhoneHubPermissionsDialogSupported: enabled,
     });
+  }
+
+  function getNearbyShareDisabledDescription(): string {
+    // If the page is first with NS enabled, then there will be two
+    // elements with id nearbyShareSecondary: in this case, the second will have
+    // the off description. There should always be at least one element present
+    // with that id.
+    const nearbyShareSecondaryDisabledList =
+        multidevicePage.shadowRoot!.querySelectorAll('#nearbyShareSecondary');
+    const nearbyShareSecondaryDisabled =
+        nearbyShareSecondaryDisabledList[nearbyShareSecondaryDisabledList.length - 1];
+    assertTrue(!!nearbyShareSecondaryDisabled);
+
+    const disabledLocalizedLink =
+        nearbyShareSecondaryDisabled.querySelector('localized-link');
+    assertTrue(!!disabledLocalizedLink);
+
+    const disabledDescription =
+        disabledLocalizedLink.shadowRoot!.querySelector('#container');
+    assertTrue(!!disabledDescription);
+    return disabledDescription.textContent!.trim();
   }
 
   /**
@@ -230,7 +253,15 @@ suite('<settings-multidevice-page>', () => {
 
   function getLabel(): string {
     const element =
-        multidevicePage.shadowRoot!.querySelector('#multidevice-label');
+        multidevicePage.shadowRoot!.querySelector('#multideviceLabel');
+    assertTrue(!!element);
+    return element.textContent!.trim();
+  }
+
+  function getSublabel(): string {
+    const element =
+        multidevicePage.shadowRoot!.querySelector('#multideviceSubLabel')!
+            .shadowRoot!.querySelector('#container');
     assertTrue(!!element);
     return element.textContent!.trim();
   }
@@ -258,13 +289,10 @@ suite('<settings-multidevice-page>', () => {
           setNearbyShareEnabled(false);
           flush();
 
-          const nearbyShareSecondary =
-              multidevicePage.shadowRoot!.querySelector(
-                  '#nearbyShareSecondary');
-          assertTrue(!!nearbyShareSecondary);
+          const disabledDescription = getNearbyShareDisabledDescription();
           assertEquals(
-              'Share files and more with nearby devices',
-              nearbyShareSecondary.textContent!.trim());
+              'Share files and more with nearby devices. Learn more',
+              disabledDescription);
         });
 
     test(
@@ -336,35 +364,39 @@ suite('<settings-multidevice-page>', () => {
           fakeSettings.setVisibility(Visibility.kNoOne);
           await flushTasks();
 
-          const nearbyShareSecondary =
+          const nearbyShareSecondaryEnabled =
               multidevicePage.shadowRoot!.querySelector(
                   '#nearbyShareSecondary');
-          assertTrue(!!nearbyShareSecondary);
-          assertEquals('Hidden', nearbyShareSecondary.textContent!.trim());
+          assertTrue(!!nearbyShareSecondaryEnabled);
+          assertEquals(
+              'Hidden', nearbyShareSecondaryEnabled.textContent!.trim());
 
           fakeSettings.setVisibility(Visibility.kAllContacts);
           await flushTasks();
           assertEquals(
               'Visible to all contacts',
-              nearbyShareSecondary.textContent!.trim());
+              nearbyShareSecondaryEnabled.textContent!.trim());
 
           fakeSettings.setVisibility(Visibility.kYourDevices);
           await flushTasks();
           assertEquals(
               'Visible to your devices',
-              nearbyShareSecondary.textContent!.trim());
+              nearbyShareSecondaryEnabled.textContent!.trim());
 
           setNearbyShareEnabled(false);
           flush();
+          const disabledDescription = getNearbyShareDisabledDescription();
           assertEquals(
-              'Share files and more with nearby devices',
-              nearbyShareSecondary.textContent!.trim());
+              'Share files and more with nearby devices. Learn more',
+              disabledDescription);
 
           setNearbyShareEnabled(true);
+          flush();
           fakeSettings.setVisibility(Visibility.kSelectedContacts);
+          await flushTasks();
           assertEquals(
               'Visible to some contacts',
-              nearbyShareSecondary.textContent!.trim());
+              nearbyShareSecondaryEnabled.textContent!.trim());
         });
   });
 
@@ -454,20 +486,43 @@ suite('<settings-multidevice-page>', () => {
         'settings-multidevice-permissions-setup-dialog'));
   });
 
-  test('headings render based on mode and host', () => {
-    for (const mode of ALL_MODES) {
-      setHostData(mode);
-      assertEquals(multidevicePage.isHostSet(), getLabel() === HOST_DEVICE);
-    }
-  });
+  if (isRevampWayfindingEnabled) {
+    test('Label always shows "Android phone" for all modes', () => {
+      for (const mode of ALL_MODES) {
+        setHostData(mode);
+        assertEquals('Android phone', getLabel());
+      }
+    });
+  } else {
+    test('Label changes based on mode and host', () => {
+      for (const mode of ALL_MODES) {
+        setHostData(mode);
+        assertEquals(multidevicePage.isHostSet(), getLabel() === HOST_DEVICE);
+      }
+    });
+  }
 
-  test('changing host device changes header', () => {
-    setHostData(MultiDeviceSettingsMode.HOST_SET_VERIFIED);
-    assertEquals(HOST_DEVICE, getLabel());
-    const anotherHost = 'Super Duper ' + HOST_DEVICE;
-    setHostData(MultiDeviceSettingsMode.HOST_SET_VERIFIED, anotherHost);
-    assertEquals(anotherHost, getLabel());
-  });
+  if (isRevampWayfindingEnabled) {
+    test('Host device name displayed updates if the device is changed', () => {
+      setHostData(MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+      assertEquals('Android phone', getLabel());
+      assertEquals(HOST_DEVICE, getSublabel());
+
+      const anotherHost = `Super Duper ${HOST_DEVICE}`;
+      setHostData(MultiDeviceSettingsMode.HOST_SET_VERIFIED, anotherHost);
+      assertEquals('Android phone', getLabel());
+      assertEquals(anotherHost, getSublabel());
+    });
+  } else {
+    test('changing host device changes label', () => {
+      setHostData(MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+      assertEquals(HOST_DEVICE, getLabel());
+
+      const anotherHost = `Super Duper ${HOST_DEVICE}`;
+      setHostData(MultiDeviceSettingsMode.HOST_SET_VERIFIED, anotherHost);
+      assertEquals(anotherHost, getLabel());
+    });
+  }
 
   test('item is actionable if and only if a host is set', () => {
     for (const mode of ALL_MODES) {
@@ -699,31 +754,32 @@ suite('<settings-multidevice-page>', () => {
 
   test('Nearby description shown before onboarding is completed', () => {
     setNearbyShareDisallowedByPolicy(false);
-    assertTrue(isVisible(multidevicePage.shadowRoot!.querySelector(
-        '#nearbyShareSecondary > localized-link')));
+    assertTrue(isVisible(
+        multidevicePage.shadowRoot!.querySelector('#setupDescription')));
 
     setNearbyShareIsOnboardingComplete(true);
-    assertFalse(isVisible(multidevicePage.shadowRoot!.querySelector(
-        '#nearbyShareSecondary > localized-link')));
-    const nearbyShareSecondary =
-        multidevicePage.shadowRoot!.querySelector('#nearbyShareSecondary');
-    assertTrue(!!nearbyShareSecondary);
-    assertEquals('Off', nearbyShareSecondary.textContent!.trim());
+    assertFalse(isVisible(
+        multidevicePage.shadowRoot!.querySelector('#setupDescription')));
+
+    const disabledDescription = getNearbyShareDisabledDescription();
+    const expectedText = 'Share files and more with nearby devices. Learn more';
+    assertEquals(expectedText, disabledDescription);
   });
 
   test('Nearby description shown if disallowed by policy', () => {
     setNearbyShareDisallowedByPolicy(false);
     setNearbyShareIsOnboardingComplete(true);
-    assertFalse(isVisible(multidevicePage.shadowRoot!.querySelector(
-        '#nearbyShareSecondary > localized-link')));
-    const nearbyShareSecondary =
-        multidevicePage.shadowRoot!.querySelector('#nearbyShareSecondary');
-    assertTrue(!!nearbyShareSecondary);
-    assertEquals('Off', nearbyShareSecondary.textContent!.trim());
+    assertFalse(isVisible(
+        multidevicePage.shadowRoot!.querySelector('#setupDescription')));
+
+    const disabledDescription = getNearbyShareDisabledDescription();
+
+    const expectedText = 'Share files and more with nearby devices. Learn more';
+    assertEquals(expectedText, disabledDescription);
 
     setNearbyShareDisallowedByPolicy(true);
-    assertTrue(isVisible(multidevicePage.shadowRoot!.querySelector(
-        '#nearbyShareSecondary > localized-link')));
+    assertTrue(isVisible(
+        multidevicePage.shadowRoot!.querySelector('#setupDescription')));
   });
 
   test('Nearby policy indicator shown when disallowed by policy', () => {

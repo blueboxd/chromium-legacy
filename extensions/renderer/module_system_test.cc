@@ -20,10 +20,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_paths.h"
+#include "extensions/common/mojom/context_type.mojom.h"
+#include "extensions/common/utils/extension_utils.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
@@ -162,8 +163,9 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
     auto context = std::make_unique<ScriptContext>(
         context_holder_->context(),
         nullptr,  // WebFrame
-        extension_.get(), Feature::BLESSED_EXTENSION_CONTEXT, extension_.get(),
-        Feature::BLESSED_EXTENSION_CONTEXT);
+        GenerateHostIdFromExtensionId(extension_->id()), extension_.get(),
+        mojom::ContextType::kPrivilegedExtension, extension_.get(),
+        mojom::ContextType::kPrivilegedExtension);
     context_ = context.get();
     context_set_->AddForTesting(std::move(context));
   }
@@ -243,9 +245,9 @@ void ModuleSystemTestEnvironment::ShutdownModuleSystem() {
   CHECK(context_->is_valid());
   context_->v8_context()->Exit();
   context_set_->Remove(context_);
-  base::RunLoop().RunUntilIdle();
   context_ = nullptr;
   assert_natives_ = nullptr;
+  base::RunLoop().RunUntilIdle();
 }
 
 v8::Local<v8::Object> ModuleSystemTestEnvironment::CreateGlobal(

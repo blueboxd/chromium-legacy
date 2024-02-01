@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
 import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
+import org.chromium.chrome.browser.page_insights.proto.IntentParams.PageInsightsIntentParams;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.AutoPeekConditions;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.Page;
@@ -83,6 +84,7 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -132,6 +134,7 @@ public class PageInsightsCoordinatorTest {
     @Mock private BackPressManager mBackPressManager;
     @Mock private ObservableSupplierImpl<Boolean> mInMotionSupplier;
     @Mock private NavigationHandle mNavigationHandle;
+    @Mock private ApplicationViewportInsetSupplier mAppInsetSupplier;
 
     private PageInsightsCoordinator mPageInsightsCoordinator;
     private ManagedBottomSheetController mPageInsightsController;
@@ -240,6 +243,8 @@ public class PageInsightsCoordinatorTest {
                                         mBrowserControlsSizer,
                                         mBackPressManager,
                                         mInMotionSupplier,
+                                        mAppInsetSupplier,
+                                        PageInsightsIntentParams.getDefaultInstance(),
                                         mIsPageInsightsHubEnabled,
                                         (navigationHandle) ->
                                                 PageInsightsConfig.newBuilder()
@@ -538,7 +543,8 @@ public class PageInsightsCoordinatorTest {
                         eq(new GURL[] {JUnitTestGURLs.EXAMPLE_URL}),
                         eq(new int[] {HintsProto.OptimizationType.PAGE_INSIGHTS.getNumber()}),
                         eq(CommonTypesProto.RequestContext.CONTEXT_PAGE_INSIGHTS_HUB.getNumber()),
-                        any(OptimizationGuideBridge.OnDemandOptimizationGuideCallback.class));
+                        any(OptimizationGuideBridge.OnDemandOptimizationGuideCallback.class),
+                        any());
     }
 
     private static PageInsightsMetadata pageInsights() {

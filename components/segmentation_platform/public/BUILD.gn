@@ -26,6 +26,7 @@ source_set("public") {
     "local_state_helper.h",
     "model_provider.cc",
     "model_provider.h",
+    "prediction_options.cc",
     "prediction_options.h",
     "result.cc",
     "result.h",
@@ -87,7 +88,10 @@ source_set("unit_tests") {
 source_set("test_support") {
   testonly = true
 
-  sources = [ "testing/mock_segmentation_platform_service.h" ]
+  sources = [
+    "testing/mock_database_client.h",
+    "testing/mock_segmentation_platform_service.h",
+  ]
 
   deps = [
     ":public",

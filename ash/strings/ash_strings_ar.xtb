@@ -40,6 +40,7 @@
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
 <translation id="1155734730463845512">مستوى شحن البطارية الحالي: %<ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="1160215328209699296">قيد التفعيل والاستخدام</translation>
+<translation id="1163437384438183174">إزالة ميزة "مركز التحكّم بالهاتف" من الرف</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />، <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">‏قد لا يتم توصيل الكابل المزوَّد بمنفذ USB-C بالشاشات بشكل صحيح.</translation>
 <translation id="1175572348579024023">التمرير</translation>
@@ -70,6 +71,7 @@
 <translation id="1239161794459865856">ميزة <ph name="FEATURE_NAME" /> متصلة.</translation>
 <translation id="1240638468526743569">تطبيق</translation>
 <translation id="1242883863226959074">جهاز</translation>
+<translation id="1245644940275736236">‏الانتقال إلى "مساعد Google"</translation>
 <translation id="124678866338384709">إغلاق علامة التبويب الحالية</translation>
 <translation id="1246890715821376239">تطبيقات غير متوافقة</translation>
 <translation id="1247372569136754018">ميكروفون (داخلي)</translation>
@@ -227,7 +229,6 @@
 <translation id="1882814835921407042">شبكة الجوّال غير متاحة</translation>
 <translation id="1882897271359938046">نسخ إلى <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">فتح القفل باستخدام بصمة الإصبع</translation>
-<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> هرتز). وتم تغيير درجة الدقة إلى <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). يُرجى النقر على "تأكيد" لحفظ التغييرات. وستتم استعادة الإعدادات السابقة خلال <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1908992311423394684">مثبَّت حديثًا</translation>
 <translation id="1915307458270490472">قطع الاتصال</translation>
 <translation id="1918022425394817322">تم توجيه الكاميرا إلى الزاوية العلوية اليمنى.</translation>
@@ -266,7 +267,6 @@
 <translation id="2064048859448024834">يتم عرض معاينة الكاميرا</translation>
 <translation id="2067602449040652523">سطوع لوحة المفاتيح</translation>
 <translation id="2075520525463668108">انقر لتفعيل/إيقاف "<ph name="CAPTURE_MEDIUM" />". "<ph name="CAPTURE_MEDIUM" />" - <ph name="CAPTURE_STATE" /></translation>
-<translation id="2078034614700056995">يمكنك التمرير سريعًا لليسار بأربعة أصابع للتبديل إلى سطح المكتب التالي.</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2083190527011054446">ليلة سعيدة <ph name="GIVEN_NAME" />،</translation>
 <translation id="2086334242442703436">فتح "أداة اختيار الرموز التعبيرية"</translation>
@@ -282,7 +282,6 @@
 <translation id="2149229036084364364">الانتقال إلى المقطع الصوتي السابق</translation>
 <translation id="2152895518047545149">يبدو أنّ كل المهام مكتملة. أحسنت.</translation>
 <translation id="2161132820593978283">جرِّب استخدام ميزة "تكبير تلقائي" حتى تظهر صورة وجهك في وسط الشاشة أثناء مكالمات الفيديو. يمكنك تفعيل هذه الميزة من خلال قائمة "الإعدادات السريعة".</translation>
-<translation id="2170530631236737939">يمكنك التمرير سريعًا لأسفل الشاشة بثلاثة أصابع للخروج من وضع "النظرة العامة".</translation>
 <translation id="2185166372312820725">الانتقال إلى علامة التبويب السابقة</translation>
 <translation id="2185444992308415167">التنقّل بين علامات التبويب من الأولى حتى الثامنة</translation>
 <translation id="2198625180564913276">جارٍ إضافة الملف الشخصي. قد تستغرق هذه العملية بضع دقائق.</translation>
@@ -327,6 +326,7 @@
 <translation id="2361210043495191221">‏إيقاف/تفعيل شبكة Wi-Fi. <ph name="STATE" />.</translation>
 <translation id="2367186422933365202">‏يتعذّر تسجيل الدخول إلى جهاز Chromebook.</translation>
 <translation id="2367972762794486313">إظهار التطبيقات</translation>
+<translation id="2368828502825385061">البحث عن الهاتف</translation>
 <translation id="2369165858548251131">"مرحبًا" باللغة الصينية</translation>
 <translation id="2382875860893882175">تم إيقاف البث مؤقتًا. يمكنك استئناف البث أو إيقافه متى شئت.</translation>
 <translation id="2386292613071805067">اختيار كل محتوى الصفحة</translation>
@@ -390,7 +390,7 @@
 <translation id="2624588537172718173">صوت الجهاز والميكروفون</translation>
 <translation id="263399434338050016">"اختيار الكل"</translation>
 <translation id="2644422758626431000">تثبيت النافذة على اليمين</translation>
-<translation id="2645435784669275700">‏نظام التشغيل Chrome</translation>
+<translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2653019840645008922">لقطة نافذة</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2658778018866295321">انقر واسحب</translation>
@@ -410,10 +410,12 @@
 <translation id="2726420622004325180">يجب أن يتوفّر في هاتفك اتصال بيانات الجوّال لتتمكّن من تفعيل ميزة "نقطة الاتصال".</translation>
 <translation id="2727175239389218057">الرّد</translation>
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
+<translation id="2744221223678373668">مشتركة</translation>
 <translation id="2749082172777216925">التطبيق <ph name="APP_NAME_INFO" />، <ph name="PRICE" /></translation>
 <translation id="2750932254614666392">"حذف"</translation>
 <translation id="2750941250130734256">تم إلغاء إرساء النافذة النشطة.</translation>
 <translation id="2761723519669354964">فتح العنصر المميّز من الرف</translation>
+<translation id="2762000892062317888">الآن</translation>
 <translation id="2774348302533424868">‏‫‎<ph name="MODIFIER" /><ph name="DELIMITER" /> من <ph name="KEY_ONE" /> إلى <ph name="KEY_TWO" /></translation>
 <translation id="2778197796481941784">Ctrl+Search+s</translation>
 <translation id="2778650143428714839">تتم إدارة <ph name="DEVICE_TYPE" /> من خلال <ph name="MANAGER" /></translation>
@@ -622,10 +624,12 @@
 <translation id="3577473026931028326">حدث خطأ. يُرجى إعادة المحاولة.</translation>
 <translation id="3580650856351781466">جارٍ تنزيل ملفات التعرّف على الكلام</translation>
 <translation id="3585296979871889131">عرض الصور والوسائط والإشعارات والتطبيقات الحديثة في هاتفك</translation>
+<translation id="3590441166907930941">الزر الجانبي</translation>
 <translation id="3593039967545720377">‏يمكنك الوصول إلى سجلّ الحافظة عن طريق الضغط على المفتاح <ph name="SHORTCUT_KEY_NAME" /> + V لعرض الحافظة. ابدأ الآن بنسخ أحد العناصر للبدء.</translation>
 <translation id="3593646411856133110">يُرجى التمرير السريع إلى الأعلى للاطّلاع على التطبيقات المفتوحة.</translation>
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
 <translation id="3596012367874587041">إعدادات التطبيق</translation>
+<translation id="3598452309062311481">‏مفتاح البحث + h</translation>
 <translation id="3600061223661453002">غير مفعَّلة</translation>
 <translation id="3604801046548457007">تم إنشاء سطح المكتب <ph name="DESK_TITILE" />.</translation>
 <translation id="3606978283550408104">تم توصيل شاشة برايل.</translation>
@@ -693,6 +697,7 @@
 <translation id="383629559565718788">عرض إعدادات لوحة المفاتيح</translation>
 <translation id="384082539148746321">هل تريد حذف النموذج؟</translation>
 <translation id="3844627820291068572">‏‫‎<ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" />، ثم <ph name="KEY_ONE" /> أو <ph name="KEY_TWO" /> أو <ph name="KEY_THREE" /> أو <ph name="KEY_FOUR" /></translation>
+<translation id="3846559267983630264">‫50+94/5</translation>
 <translation id="3846575436967432996">لا توجد معلومات متاحة حول الشبكة</translation>
 <translation id="385051799172605136">رجوع</translation>
 <translation id="385300504083504382">البداية</translation>
@@ -729,6 +734,7 @@
 <translation id="3986082989454912832">ردّ</translation>
 <translation id="3990002060657467458">‏في قائمة "الإعدادات السريعة"، ستظهر لك عناصر التحكّم الشائعة على جهازك، مثل Wi-Fi والبلوتوث ومستوى الصوت. يمكنك من خلال القائمة أيضًا أخذ لقطات شاشة.</translation>
 <translation id="3995138139523574647">‏جهاز USB-C (المنفذ الخلفي الأيمن)</translation>
+<translation id="4002066346123236978">العنوان</translation>
 <translation id="40062176907008878">الكتابة بخط اليد</translation>
 <translation id="4011112806063830608">ميزة "عدم الإزعاج" مفعَّلة.</translation>
 <translation id="4017989525502048489">مؤشر الليزر</translation>
@@ -778,6 +784,7 @@
 <translation id="4190780880566297084">عدم إعداد ميزة عرض الصور والوسائط والتطبيقات الحديثة في هاتفك</translation>
 <translation id="4192112279662688596">أو</translation>
 <translation id="4193857202545160520">إظهار اختصارات لوحة المفاتيح والنقرات</translation>
+<translation id="4193969623755915875">افتح قسم "المساعدة" في تطبيق "استكشاف" من خلال الاختصار "<ph name="NEW_SHORTCUT" />".</translation>
 <translation id="4195579532193195633">‏الإصدار الحالي ‎<ph name="VERSION_NAME" /> ‏(حالته: <ph name="OFFICIAL_STATUS" />) اسم قناته <ph name="CHANNEL_NAME" /> بنيته <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">المتابعة من حيث توقفت</translation>
 <translation id="4195877955194704651">زر النقرات التلقائية</translation>
@@ -861,6 +868,7 @@
 <translation id="4479639480957787382">إيثرنت</translation>
 <translation id="4481530544597605423">الأجهزة التي تم إلغاء إقرانها</translation>
 <translation id="4485506555414638855">عدم إعداد ميزة عرض الصور والوسائط والإشعارات والتطبيقات الحديثة في هاتفك</translation>
+<translation id="4491109536499578614">صورة</translation>
 <translation id="450584155212756404">قناة مطوّري البرامج</translation>
 <translation id="4513946894732546136">ملاحظات</translation>
 <translation id="4516212064498225455">سطح المكتب الحالي: "<ph name="CURRENT_DESK_NAME" />"، يمكنك الضغط على مفتاح البحث + مفتاح المسافة لفتح قائمة بجميع أسطح المكتب.</translation>
@@ -925,6 +933,7 @@
 <translation id="4759238208242260848">عمليات التنزيل</translation>
 <translation id="4762160261012420470">‫<ph name="LAUNCHER_KEY_NAME" /> + السهم المتّجه للأعلى</translation>
 <translation id="4762573482154983647">إخفاء التطبيقات</translation>
+<translation id="4762802395013012237">تحويل 5 قدم إلى ما يعادلها بالمتر</translation>
 <translation id="4763885921995354846">يتيح هذا الإجراء إمكانية الوصول إلى الكاميرا لجميع التطبيقات والمواقع الإلكترونية التي لديها هذا الإذن. قد تحتاج إلى إعادة تحميل صفحة الويب أو إعادة تشغيل التطبيق.</translation>
 <translation id="4774338217796918551">يمكنك العودة غدًا في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776584068981882959">لا يمكن حتى الآن التأكد من كلمة المرور لحسابك. يُرجى إعادة المحاولة.</translation>
@@ -960,12 +969,14 @@
 <translation id="4889868803215848840">يُرجى تقديم ملاحظات اختيارية لتحسين الاقتراحات:</translation>
 <translation id="4890187583552566966">‏تم إيقاف مساعد Google من قِبل المشرف.</translation>
 <translation id="4890408602550914571">يُرجى التأكُّد من أنّ هاتفك قريب وأنّ البلوتوث مفعَّل عليه.</translation>
+<translation id="4892981359753171125">‏التحكّم في ميزة FaceGaze</translation>
 <translation id="4895488851634969361">البطارية مملوءة.</translation>
 <translation id="490375751687810070">عمودي</translation>
 <translation id="490788395437447240">مستوى شحن البطارية: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="491504982845934899">يمكنك تفعيل شبكة "<ph name="NETWORK_NAME" />" بعد ضبط إعدادات جهازك.</translation>
 <translation id="4917385247580444890">قوية</translation>
 <translation id="4918086044614829423">قبول</translation>
+<translation id="491907188205944472">يمكنك البحث عما تريده مباشرةً في "مشغّل التطبيقات".</translation>
 <translation id="4919841137949306064">يستخدم "<ph name="APP_NAME" />" الكاميرا حاليًا.</translation>
 <translation id="492453977506755176">مفتاح وضع تصوير الشاشة</translation>
 <translation id="4925542575807923399">يحتاج مشرف هذا الحساب أن يكون هذا الحساب الأول في تسجيل الدخول إلى جلسة دخول متعدد.</translation>
@@ -1027,6 +1038,7 @@
 <translation id="5163434717504750796">حالة البطارية: %<ph name="BATTERY_HEALTH_PERCENTAGE" /> | عدد الدورات: <ph name="CYCLE_COUNT" /></translation>
 <translation id="5166007464919321363">حفظ سطح المكتب كنموذج</translation>
 <translation id="5168181903108465623">أجهزة البث متاحة</translation>
+<translation id="5168753792967365150">‏التعديل في "مهام Google"</translation>
 <translation id="5170568018924773124">العرض في المجلد</translation>
 <translation id="5176318573511391780">تسجيل جزء من الشاشة</translation>
 <translation id="5187627942836026988">يمكنك عرض تفاصيل نقطة الاتصال. حظَر مشرفك ميزة نقطة الاتصال.</translation>
@@ -1116,6 +1128,7 @@
 <translation id="5518068085000130971">‏كانت هذه هي أهم أساسيات الاستخدام. يمكنك معرفة المزيد من خلال تطبيق "استكشاف"، وهو تطبيق مضمَّن لتزويدك بالنصائح حول بدء الاستخدام وإطلاعك على التطبيقات المقترَحة والعروض الخاصة وأحدث الميزات على Chromebook.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">‏أزال المشرف جميع الملفات الشخصية لشريحة eSIM. يمكنك التواصل مع المشرف للحصول على مزيد من المعلومات.</translation>
+<translation id="5520909879404821039">كلمة "مرحبًا" باللغة الفرنسية</translation>
 <translation id="5523434445161341166">جارٍ اتصال <ph name="FEATURE_NAME" />.</translation>
 <translation id="5529587891732734495">إيقاف البث مؤقتًا</translation>
 <translation id="5532994612895037630">انقر في أي مكان للتسجيل في وضع ملء الشاشة.</translation>
@@ -1124,6 +1137,7 @@
 <translation id="5537725057119320332">بث</translation>
 <translation id="5546397813406633847">استرداد حساب المستخدم</translation>
 <translation id="554893713779400387">تبديل الإملاء</translation>
+<translation id="5550417424894892620">أفلِت الملفات على سطح المكتب لإضافتها إلى "<ph name="HOLDING_SPACE_TITLE" />". لا يمكنك إضافة ملفات إلى سطح المكتب.</translation>
 <translation id="5551456515017410630">فتح/إغلاق التقويم</translation>
 <translation id="5551974246223970793">الانتقال إلى النتيجة المطابِقة التالية عند البحث في صفحة</translation>
 <translation id="5555639311269196631">إيقاف نقطة الاتصال</translation>
@@ -1136,6 +1150,7 @@
 <translation id="5577281275355252094">يُرجى التأكّد من تفعيل البلوتوث على هاتفك لاستخدام ميزة "مركز التحكّم بالهاتف".</translation>
 <translation id="5578188167649348993">ذاكرة</translation>
 <translation id="5580000943347215299">المكتبة</translation>
+<translation id="5587506661873751671">جارٍ التنزيل (%<ph name="DOWNLOAD_PERCENT" />)</translation>
 <translation id="558849140439112033">يُرجى السحب لتحديد منطقة لالتقاط صورة لها.</translation>
 <translation id="5590609058453685222">ميزة "التذكير بإعادة صوت الميكروفون" مفعَّلة. ستتلقّى إشعارًا إذا كنت تتحدث وصوت الميكروفون مكتوم.</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
@@ -1194,6 +1209,7 @@
 <translation id="5788127256798019331">‏ملفات Play</translation>
 <translation id="5788535737706478207">إعادة فتح آخر علامة تبويب أو نافذة تم إغلاقها</translation>
 <translation id="5790085346892983794">تم بنجاح</translation>
+<translation id="579415080077680903">صامت</translation>
 <translation id="5802516411616338943">فتح "الإعدادات السريعة"</translation>
 <translation id="5804651031882187592">‏إيقاف الإعداد "قفل شريحة SIM"</translation>
 <translation id="5805809050170488595">انقر لتفعيل <ph name="NETWORK_NAME" />.</translation>
@@ -1272,6 +1288,7 @@
 <translation id="6095425951508823973">إضافة اتصال باستخدام "<ph name="PROVIDER" />"</translation>
 <translation id="6099678161144790572">تم تعديله الشهر الماضي.</translation>
 <translation id="6103838137565245112">النظام</translation>
+<translation id="6108952804512516814">إنشاء باستخدام الذكاء الاصطناعي</translation>
 <translation id="6114505516289286752">تم تنزيل ملفات اللغة <ph name="LANGUAGE" /> في ميزة "التعرّف على الكلام"</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6119972796024789243">تصحيح الألوان</translation>
@@ -1291,6 +1308,8 @@
 <translation id="6168622430237609329">تطبيقاتك المثبَّتة</translation>
 <translation id="6173151025443907148">‏لا يمكن تسجيل الدخول باستخدام حساب مستخدِم آخر في حال تفعيل Lacros. يُرجى استخدام ملف شخصي آخر على متصفِّح Lacros بدلاً من ذلك أو إيقاف المتصفِّح ثم إعادة المحاولة.</translation>
 <translation id="6179832488876878285">يمكنك تثبيت الملفات المهمّة هنا. افتح تطبيق "الملفات" للبدء.</translation>
+<translation id="6180193585172850042">زر الرجوع</translation>
+<translation id="6180651297859206670">زر الانتقال للأمام</translation>
 <translation id="6182592640011875895">فتح سطح المكتب</translation>
 <translation id="6185696379715117369">صفحة لأعلى</translation>
 <translation id="619335566042889110">الشحن بالكامل الآن</translation>
@@ -1483,6 +1502,7 @@
 <translation id="6981291220124935078">منح إذن الوصول</translation>
 <translation id="6981982820502123353">تسهيل الاستخدام</translation>
 <translation id="698231206551913481">سيتم حذف جميع الملفات والبيانات المحلية المرتبطة بهذا المستخدم نهائيًا بمجرد إزالة هذا المستخدم.</translation>
+<translation id="6984028004251196682">لا يوفِّر <ph name="DISPLAY_NAME" /> درجة الدقة <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> هرتز). ولذلك تم تغييرها إلى <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" /> هرتز). يُرجى النقر على "تأكيد" لحفظ التغييرات. وستتم استعادة الإعدادات السابقة خلال <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="6989752354829085073">‏يمكنك إجراء جولة سريعة للتعرّف على طريقة استخدام جهاز Chromebook. ابدأ باستخدام جهازك باتّباع 6 خطوات.</translation>
 <translation id="7004910047186208204">الاتصال بشبكة بيانات الجوّال</translation>
 <translation id="7005239792648594238">للبدء، افتح تطبيقًا.</translation>
@@ -1493,6 +1513,7 @@
 <translation id="7025533177575372252">يمكنك ربط الجهاز <ph name="DEVICE_NAME" /> بهاتفك</translation>
 <translation id="7026338066939101231">تناقص</translation>
 <translation id="7029814467594812963">إنهاء الجلسة</translation>
+<translation id="7031303610220416229">‏الاطّلاع على جميع المهام في تطبيق "مهام Google"</translation>
 <translation id="7032161822340700104">يجب ألا يزيد عدد النماذج عن 6 نماذج. يُرجى إزالة أحدها لحفظ نموذج جديد.</translation>
 <translation id="7034025838182392395">‫"<ph name="APP_NAME" />" بحاجة إلى استخدام <ph name="DEVICE_NAME" />. عليك تشغيل <ph name="DEVICE_NAME" /> باستخدام الزر اليدوي على جهازك.</translation>
 <translation id="703425375924687388">‏<ph name="QUERY_NAME" />، "مساعد Google"</translation>
@@ -1680,7 +1701,6 @@
 <translation id="7850320739366109486">عدم الإزعاج</translation>
 <translation id="7851039877802112575">نقل التركيز إلى النوافذ المنبثقة ومربعات الحوار</translation>
 <translation id="7851768487828137624">الكاناري</translation>
-<translation id="7860671499921112077">يمكنك التمرير سريعًا لأعلى الشاشة بثلاثة أصابع للدخول إلى وضع "النظرة العامة".</translation>
 <translation id="7862292329216937261">لاستخدام الجهاز في "وضع الضيف"، عليك تسجيل الخروج واختيار "التصفُّح كضيف" في أسفل الشاشة.</translation>
 <translation id="7866482334467279021">مفعّل</translation>
 <translation id="7872786842639831132">غير مُفعَّل</translation>
@@ -1692,6 +1712,7 @@
 <translation id="7886277072580235377">سيتم محو جلسة الإنترنت عند تسجيل الخروج. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">إرسال رسالة إلكترونية</translation>
 <translation id="7893503627044934815">لا أريد رؤية هذا الملف.</translation>
+<translation id="7893547474469215105">‏تعريف كلمة zenith (سمْت الرأس)</translation>
 <translation id="7895348134893321514">Tote</translation>
 <translation id="7897375687985782769">لقد ضغطت على اختصار لوحة المفاتيح لتدوير الشاشة. هل ترغب في تدوير الشاشة؟</translation>
 <translation id="7897626842031123113">شريط الحالة، الوقت <ph name="TIME" />،
@@ -1707,6 +1728,7 @@
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7911118814695487383">‏نظام التشغيل Linux</translation>
 <translation id="7917760201509801422">هناك <ph name="DEVICECOUNT" /> جهاز متصل.</translation>
+<translation id="7923534281713082605">الطقس</translation>
 <translation id="7926080067315048321">‏الاطّلاع على جميع المهام في تطبيق "مهام Google" على الإنترنت</translation>
 <translation id="7930731167419639574">ميزة "التعرّف على الكلام" جاهزة للعمل الآن على جهازك، كما تعمل ميزة "الإملاء" بلا اتصال بالإنترنت.</translation>
 <translation id="7932451802722951285">‏فتح في "تقويم Google"</translation>
@@ -1789,13 +1811,13 @@
 <translation id="8262312463845990408">استئناف التشغيل أو إيقافه مؤقتًا</translation>
 <translation id="8270450402312105425">{0,plural, =1{إعادة الجهاز إلى الإصدار السابق في غضون ساعة واحدة}zero{إعادة الجهاز إلى الإصدار السابق في غضون # ساعة}two{إعادة الجهاز إلى الإصدار السابق في غضون ساعتين}few{إعادة الجهاز إلى الإصدار السابق في غضون # ساعات}many{إعادة الجهاز إلى الإصدار السابق في غضون # ساعة}other{إعادة الجهاز إلى الإصدار السابق في غضون # ساعة}}</translation>
 <translation id="8277261673056602147">تمييز النص على الشاشة</translation>
-<translation id="8284362522226889623">يمكنك التمرير سريعًا لليمين بأربعة أصابع للتبديل إلى سطح المكتب السابق.</translation>
 <translation id="828708037801473432">غير مُفعَّلة</translation>
 <translation id="8297006494302853456">ضعيفة</translation>
 <translation id="8308637677604853869">القائمة السابقة</translation>
 <translation id="830868413617744215">تجريبي</translation>
 <translation id="8314772463905284467">‏مفتاح Caps Lock قيد التفعيل</translation>
 <translation id="8315514906653279104">جارٍ تفعيل نقطة الاتصال…</translation>
+<translation id="8331351032546853669">بانتظار التنزيل</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8345019317483336363">تم اختيار النافذة <ph name="WINDOW_TITLE" />.</translation>
 <translation id="8349826889576450703">launcher</translation>
@@ -1803,6 +1825,7 @@
 <translation id="8351131234907093545">إنشاء ملاحظة</translation>
 <translation id="8367948981300340152">يتم حاليًا استخدام <ph name="CAPTURE_MEDIUM" />.</translation>
 <translation id="8369166482916924789">سطح المكتب المحفوظ <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
+<translation id="8370414029565771236">البحث عن "<ph name="TEXT" />"</translation>
 <translation id="8371779926711439835">نقل للأمام بمقدار حرف واحد</translation>
 <translation id="8371991222807690464">قد يكون أداء الجهاز الملحق محدودًا في وضع الضيف.</translation>
 <translation id="8374601332003098278">‏اضغط على المفتاح Enter لتسجيل فيديو لجزء من الشاشة</translation>
@@ -1852,11 +1875,13 @@
 <translation id="8555757996376137129">إزالة سطح المكتب الحالي</translation>
 <translation id="856298576161209842">يقترح <ph name="MANAGER" /> عليك تحديث جهاز <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8563862697512465947">إعدادات الاشعارات</translation>
+<translation id="8569751806372591456">إليك بعض الاقتراحات للتجربة:</translation>
 <translation id="857201607579416096">تم نقل القائمة إلى أسفل يسار الشاشة.</translation>
 <translation id="8581946341807941670">‏اضغط على ‎<ph name="MODIFIER_1" /><ph name="MODIFIER_2" /> ثم انقر على الرابط.</translation>
 <translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">ترتيب التطبيقات حسب الاسم أو اللون</translation>
 <translation id="8609384513243082612">فتح علامة تبويب جديدة</translation>
+<translation id="8612216344243590325">احتفِظ بالملفات المهمة في "<ph name="HOLDING_SPACE_TITLE" />" بدلاً من وضعها على سطح المكتب. ما عليك سوى سحب الملفات إلى "<ph name="HOLDING_SPACE_TITLE" />".</translation>
 <translation id="8614517853887502247">‏تم حجب إشعارات التطبيقين <ph name="APP_1_TITLE" /> و<ph name="APP_2_TITLE" /> بسبب تفعيل ميزة Viewing Protection.</translation>
 <translation id="8619138598101195078">خفض مستوى الصوت</translation>
 <translation id="8627191004499078455">تم الاتصال بجهاز <ph name="DEVICE_NAME" /></translation>
@@ -1895,6 +1920,7 @@
 <translation id="875593634123171288">‏عرض إعدادات الشبكة الظاهرية الخاصة (VPN)</translation>
 <translation id="8759408218731716181">يتعذر إعداد الدخول المتعدد</translation>
 <translation id="8763883995157866248">ضبط الجهاز على وضع السكون</translation>
+<translation id="877404052021108314">تحويل 90 درجة فهرنهايت إلى ما يعادلها بالدرجة المئوية</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />، تطبيق مثبّت محظور</translation>
 <translation id="8785070478575117577">الاتصال بالشبكة <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
@@ -1903,6 +1929,7 @@
 <translation id="8806053966018712535">مجلد <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"مساعدة"</translation>
 <translation id="8814190375133053267">‏لاسلكي، Wi-Fi</translation>
+<translation id="8815390544836110344">‏اضغط على اختصار أخذ لقطة الشاشة، أو Ctrl‏ + Shift + مفتاح وضع "نظرة عامة".</translation>
 <translation id="881757059229893486">إعدادات أساليب الإدخال</translation>
 <translation id="8819728065740986820">ميزة "الشحن الذكي" مفعّلة</translation>
 <translation id="8825863694328519386">التمرير السريع من اليسار للرجوع</translation>

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/ash/chrome_untrusted_web_ui_configs_chromeos.h"
+#include "chrome/browser/ui/webui/ash/chrome_web_ui_configs_chromeos.h"
 
 #include "base/functional/callback.h"
 #include "build/chromeos_buildflags.h"
@@ -17,13 +17,11 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"         // nogncheck
 #include "chrome/browser/feedback/feedback_dialog_utils.h"  // nogncheck
 
-#include "ash/constants/ash_features.h"
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/color_internals/color_internals_ui.h"
 #include "ash/webui/connectivity_diagnostics/connectivity_diagnostics_ui.h"
 #include "ash/webui/diagnostics_ui/diagnostics_ui.h"
 #include "ash/webui/eche_app_ui/eche_app_ui.h"
-#include "ash/webui/face_ml_app_ui/face_ml_app_ui.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
 #include "ash/webui/files_internals/files_internals_ui.h"
 #include "ash/webui/firmware_update_ui/firmware_update_app_ui.h"
@@ -36,7 +34,6 @@
 #include "ash/webui/shimless_rma/shimless_rma.h"
 #include "ash/webui/shortcut_customization_ui/shortcut_customization_app_ui.h"
 #include "ash/webui/status_area_internals/status_area_internals_ui.h"
-#include "ash/webui/system_extensions_internals_ui/system_extensions_internals_ui.h"
 #include "ash/webui/vc_background_ui/vc_background_ui.h"
 #include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/multidevice_debug/proximity_auth_ui_config.h"
@@ -47,11 +44,11 @@
 #include "chrome/browser/ash/shimless_rma/chrome_shimless_rma_delegate.h"
 #include "chrome/browser/ash/system_web_apps/apps/camera_app/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/ash/system_web_apps/apps/chrome_file_manager_ui_delegate.h"
-#include "chrome/browser/ash/system_web_apps/apps/face_ml/chrome_face_ml_user_provider.h"
 #include "chrome/browser/ash/system_web_apps/apps/files_internals_ui_delegate.h"
 #include "chrome/browser/ash/system_web_apps/apps/help_app/help_app_ui_delegate.h"
 #include "chrome/browser/ash/system_web_apps/apps/media_app/chrome_media_app_ui_delegate.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
+#include "chrome/browser/ash/system_web_apps/apps/vc_background_ui/vc_background_ui_utils.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -233,9 +230,6 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<SensorInfoUIConfig>());
   map.AddWebUIConfig(std::make_unique<EmojiUIConfig>());
   map.AddWebUIConfig(
-      MakeComponentConfigWithDelegate<FaceMLAppUIConfig, FaceMLAppUI,
-                                      ChromeFaceMLUserProvider>());
-  map.AddWebUIConfig(
       MakeComponentConfigWithDelegate<FilesInternalsUIConfig, FilesInternalsUI,
                                       ChromeFilesInternalsUIDelegate>());
   map.AddWebUIConfig(
@@ -303,13 +297,12 @@ void RegisterAshChromeWebUIConfigs() {
       std::make_unique<smb_dialog::SmbCredentialsDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<smb_dialog::SmbShareDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<SysInternalsUIConfig>());
-  map.AddWebUIConfig(std::make_unique<SystemExtensionsInternalsUIConfig>());
   map.AddWebUIConfig(
       std::make_unique<UrgentPasswordExpiryNotificationUIConfig>());
   map.AddWebUIConfig(std::make_unique<VcTrayTesterUIConfig>());
   map.AddWebUIConfig(std::make_unique<VmUIConfig>());
-  map.AddWebUIConfig(
-      std::make_unique<vc_background_ui::VcBackgroundUIConfig>());
+  map.AddWebUIConfig(std::make_unique<vc_background_ui::VcBackgroundUIConfig>(
+      base::BindRepeating(vc_background_ui::CreateVcBackgroundUI)));
 #if !defined(OFFICIAL_BUILD)
   map.AddWebUIConfig(std::make_unique<SampleSystemWebAppUIConfig>());
   map.AddWebUIConfig(std::make_unique<StatusAreaInternalsUIConfig>());

@@ -31,6 +31,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_constants.h"
 #include "ui/wm/core/window_util.h"
@@ -153,6 +154,17 @@ class ScreenOrientationControllerTest : public AshTestBase {
 
   SplitViewController* split_view_controller() {
     return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
+  display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
+                                                const gfx::Rect& bounds) {
+    display::ManagedDisplayInfo info = display::CreateDisplayInfo(id, bounds);
+    // Each display should have at least one native mode.
+    display::ManagedDisplayMode mode(bounds.size(), /*refresh_rate=*/60.f,
+                                     /*is_interlaced=*/true,
+                                     /*native=*/true);
+    info.SetManagedDisplayModes({mode});
+    return info;
   }
 };
 
@@ -568,9 +580,9 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   const display::Display::Rotation kNewRotation = display::Display::ROTATE_180;
 
   const display::ManagedDisplayInfo internal_display_info =
-      display::CreateDisplayInfo(kInternalDisplayId, gfx::Rect(0, 0, 600, 500));
+      CreateDisplayInfo(kInternalDisplayId, gfx::Rect(0, 0, 600, 500));
   const display::ManagedDisplayInfo external_display_info =
-      display::CreateDisplayInfo(kExternalDisplayId, gfx::Rect(1, 1, 600, 500));
+      CreateDisplayInfo(kExternalDisplayId, gfx::Rect(1, 1, 600, 500));
 
   std::vector<display::ManagedDisplayInfo> display_info_list_two_active;
   display_info_list_two_active.push_back(internal_display_info);
@@ -720,7 +732,7 @@ TEST_F(ScreenOrientationControllerTest, ClamshellPhysicalTabletState) {
   // Once the device goes into tablet mode, it becomes possible to auto-rotate.
   tablet_mode_controller_test_api.OpenLidToAngle(270);
   EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
-  EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_TRUE(display::Screen::GetScreen()->InTabletMode());
   TriggerLidUpdate(gfx::Vector3dF(kMeanGravityFloat, 0.0f, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
@@ -729,7 +741,7 @@ TEST_F(ScreenOrientationControllerTest, ClamshellPhysicalTabletState) {
   // still possible.
   tablet_mode_controller_test_api.AttachExternalMouse();
   EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
-  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_FALSE(display::Screen::GetScreen()->InTabletMode());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravityFloat, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
 }
@@ -747,7 +759,7 @@ TEST_F(ScreenOrientationControllerTest,
 
   tablet_mode_controller_test_api.OpenLidToAngle(270);
   EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
-  EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_TRUE(display::Screen::GetScreen()->InTabletMode());
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   ScreenOrientationController* orientation_controller =
@@ -765,7 +777,7 @@ TEST_F(ScreenOrientationControllerTest,
   // should restore the user rotation lock, and ignore the app-requested one.
   tablet_mode_controller_test_api.AttachExternalMouse();
   EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
-  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_FALSE(display::Screen::GetScreen()->InTabletMode());
   EXPECT_TRUE(orientation_controller->user_rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_EQ(chromeos::OrientationType::kLandscapePrimary,
@@ -781,14 +793,14 @@ TEST_F(ScreenOrientationControllerTest,
   // orientation lock for the active window will be applied.
   tablet_mode_controller_test_api.DetachAllMice();
   EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
-  EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_TRUE(display::Screen::GetScreen()->InTabletMode());
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
   // Orientation should be restored once the device exits the physical tablet
   // state.
   tablet_mode_controller_test_api.OpenLidToAngle(90);
   EXPECT_FALSE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
-  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_FALSE(display::Screen::GetScreen()->InTabletMode());
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
@@ -980,7 +992,7 @@ class SupportsClamshellAutoRotation : public ScreenOrientationControllerTest {
 // kSupportsClamshellAutoRotation is set.
 TEST_F(SupportsClamshellAutoRotation, ScreenRotation) {
   TabletModeControllerTestApi tablet_mode_controller_test_api;
-  ASSERT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  ASSERT_FALSE(display::Screen::GetScreen()->InTabletMode());
 
   // Test rotating in all directions are supported.
   TriggerLidUpdate(gfx::Vector3dF(kMeanGravityFloat, 0.0f, 0.0f));

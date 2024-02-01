@@ -134,7 +134,7 @@ def JavaTypeToCForDeclaration(java_type):
   c_type = java_type.to_cpp()
   if java_type.is_primitive():
     return c_type
-  return f'const base::android::JavaParamRef<{c_type}>&'
+  return f'const jni_zero::JavaParamRef<{c_type}>&'
 
 
 def JavaTypeToCForCalledByNativeParam(java_type):
@@ -144,14 +144,14 @@ def JavaTypeToCForCalledByNativeParam(java_type):
     if c_type == 'jint':
       return 'JniIntWrapper'
     return c_type
-  return f'const base::android::JavaRef<{c_type}>&'
+  return f'const jni_zero::JavaRef<{c_type}>&'
 
 
 def _GetJNIFirstParam(native, for_declaration):
   c_type = 'jclass' if native.static else 'jobject'
 
   if for_declaration:
-    c_type = f'const base::android::JavaParamRef<{c_type}>&'
+    c_type = f'const jni_zero::JavaParamRef<{c_type}>&'
   return [c_type + ' jcaller']
 
 
@@ -429,7 +429,7 @@ const char kClassPath_${JAVA_CLASS}[] = \
     for full_clazz in classes.values():
       values = {
           'JAVA_CLASS': common.escape_class_name(full_clazz),
-          'JNI_CLASS_PATH': full_clazz,
+          'JNI_CLASS_PATH': full_clazz.replace('/', '.'),
       }
       # Since all proxy methods use the same class, defining this in every
       # header file would result in duplicated extern initializations.
@@ -440,7 +440,7 @@ const char kClassPath_${JAVA_CLASS}[] = \
 #ifndef ${JAVA_CLASS}_clazz_defined
 #define ${JAVA_CLASS}_clazz_defined
 inline jclass ${JAVA_CLASS}_clazz(JNIEnv* env) {
-  return base::android::LazyGetClass(env, kClassPath_${JAVA_CLASS}, \
+  return jni_zero::LazyGetClass(env, kClassPath_${JAVA_CLASS}, \
 ${MAYBE_SPLIT_NAME_ARG}&g_${JAVA_CLASS}_clazz);
 }
 #endif
@@ -516,7 +516,7 @@ class InlHeaderFileGenerator(object):
 #include <jni.h>
 
 #include "third_party/jni_zero/jni_export.h"
-${INCLUDES}
+#include "third_party/jni_zero/jni_zero_helper.h"
 
 // Step 1: Forward declarations.
 $CLASS_PATH_DEFINITIONS
@@ -537,7 +537,6 @@ $METHOD_STUBS
         'CONSTANT_FIELDS': self.GetConstantFieldsString(),
         'METHOD_STUBS': self.GetMethodStubsString(),
         'HEADER_GUARD': self.header_guard,
-        'INCLUDES': self.GetIncludesString(),
     }
     open_namespace = self.GetOpenNamespaceString()
     if open_namespace:
@@ -580,12 +579,6 @@ $METHOD_STUBS
         for called_by_native in self.called_by_natives
     ]
 
-  def GetIncludesString(self):
-    if not self.options.extra_includes:
-      return ''
-    includes = self.options.extra_includes
-    return '\n'.join('#include "%s"' % x for x in includes) + '\n'
-
   def GetOpenNamespaceString(self):
     if self.namespace:
       all_namespaces = [
@@ -610,12 +603,10 @@ $METHOD_STUBS
     ])
 
   def GetJavaParamRefForCall(self, c_type, name):
-    return Template(
-        'base::android::JavaParamRef<${TYPE}>(env, ${NAME})').substitute({
-            'TYPE':
-            c_type,
-            'NAME':
-            name,
+    return Template('jni_zero::JavaParamRef<${TYPE}>(env, ${NAME})').substitute(
+        {
+            'TYPE': c_type,
+            'NAME': name,
         })
 
   def GetImplementationMethodName(self, native):
@@ -647,8 +638,7 @@ $METHOD_STUBS
     post_call = ''
     if not native.return_type.is_primitive():
       post_call = '.Release()'
-      return_declaration = ('base::android::ScopedJavaLocalRef<' + return_type +
-                            '>')
+      return_declaration = ('jni_zero::ScopedJavaLocalRef<' + return_type + '>')
 
     values = {
         'RETURN': return_type,
@@ -712,8 +702,7 @@ JNI_BOUNDARY_EXPORT ${RETURN} ${STUB_NAME}(
       first_param_in_declaration = ''
       first_param_in_call = 'clazz'
     else:
-      first_param_in_declaration = (
-          ', const base::android::JavaRef<jobject>& obj')
+      first_param_in_declaration = (', const jni_zero::JavaRef<jobject>& obj')
       first_param_in_call = 'obj.obj()'
     params_in_declaration = self.GetCalledByNativeParamsInDeclaration(
         called_by_native)
@@ -750,8 +739,7 @@ JNI_BOUNDARY_EXPORT ${RETURN} ${STUB_NAME}(
       if return_type.is_primitive():
         return_clause = 'return ret;'
       else:
-        return_type_str = (
-            f'base::android::ScopedJavaLocalRef<{return_type_str}>')
+        return_type_str = (f'jni_zero::ScopedJavaLocalRef<{return_type_str}>')
         return_clause = f'return {return_type_str}(env, ret);'
     sig = called_by_native.signature
     jni_descriptor = sig.to_descriptor()
@@ -796,9 +784,9 @@ ${FUNCTION_HEADER}
   CHECK_CLAZZ(env, ${FIRST_PARAM_IN_CALL},
       ${JAVA_CLASS}_clazz(env)${OPTIONAL_ERROR_RETURN});
 
-  jni_generator::JniJavaCallContext${CHECK_EXCEPTION} call_context;
+  jni_zero::JniJavaCallContext${CHECK_EXCEPTION} call_context;
   call_context.Init<
-      base::android::MethodID::TYPE_${METHOD_ID_TYPE}>(
+      jni_zero::MethodID::TYPE_${METHOD_ID_TYPE}>(
           env,
           clazz,
           "${JNI_NAME}",

@@ -15,6 +15,7 @@ export const SELECTOR_MAP = {
       `.menu-item>input[data-facing="environment"]`,
   barcodeChipText: '.barcode-chip-text',
   barcodeChipURL: '#barcode-chip-url',
+  barcodeChipWifi: '#barcode-chip-wifi',
   barcodeCopyTextButton: '#barcode-chip-text-container .barcode-copy-button',
   barcodeCopyURLButton: '#barcode-chip-url-container .barcode-copy-button',
   bitrateMultiplierRangeInput: '#bitrate-slider input[type=range]',
@@ -54,8 +55,7 @@ export const SELECTOR_MAP = {
       '#view-photo-resolution-settings .menu-item>input[data-facing="user"]',
   frontVideoResolutionOptions:
       '#view-video-resolution-settings .menu-item>input[data-facing="user"]',
-  galleryButton: '#gallery-enter',
-  galleryButtonCover: '#gallery-enter>img',
+  galleryButton: 'gallery-button',
   gifRecordingOption: 'input[type=radio][data-state=record-type-gif]',
   gifReviewRetakeButton: '#review-retake',
   gifReviewSaveButton: '#view-review button[i18n-text=label_save]',
@@ -92,6 +92,7 @@ export const SELECTOR_MAP = {
   settingsHeader: '#settings-header',
   shutter: '.shutter',
   switchDeviceButton: 'switch-device-button',
+  snackbar: '.snackbar',
   tiltDownButton: '#tilt-down',
   tiltUpButton: '#tilt-up',
   timeLapseRecordingOption:

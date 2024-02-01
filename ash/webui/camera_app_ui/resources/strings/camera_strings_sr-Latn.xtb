@@ -46,6 +46,7 @@
 <translation id="3067436040345934772">Pomeranje udesno</translation>
 <translation id="3081586908890909590">Pređi na režim za snimanje videa</translation>
 <translation id="313467653172006084">30 kadr/s</translation>
+<translation id="3158534262962737808">Pridruži me mreži „<ph name="WIFINAME" />“</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3240426699337459095">Link je kopiran</translation>
 <translation id="3354465018370944241">Podešavanja slika</translation>
@@ -78,12 +79,14 @@
 <translation id="4705093842003735294">Puna rezolucija</translation>
 <translation id="4864143361253542638">Lista skeniranih stranica</translation>
 <translation id="4890010094662541459">3×3</translation>
+<translation id="4892746741161549733">Kopiraj adresu linka <ph name="URL" /></translation>
 <translation id="491895758387112773">Snimanje videa sa više strimova</translation>
 <translation id="495170559598752135">Radnje</translation>
 <translation id="4984613436295737187">Quad HD (1440 piksela)</translation>
 <translation id="5034763830503483128">Razmera slika</translation>
 <translation id="5057360777601936059">Kamera trenutno nije dostupna.
         Proverite da li je kamera ispravno povezana.</translation>
+<translation id="5157591164390831335">Otkriven je URL.</translation>
 <translation id="5163387177077603948">Kreće se udesno</translation>
 <translation id="5235304959032763950">16 prema 9</translation>
 <translation id="5266635337630551423">Gornji levi ugao dokumenta</translation>
@@ -110,6 +113,7 @@
 <translation id="6353688143752491039">Hvala vam na slanju povratnih informacija o aplikaciji Kamera.
 
 Ako su povratne informacije u vezi sa kvalitetom slike ili videa, priložite uzorak slike ili videa i opišite šta nije u redu. (Na primer, slika je previše tamna ili subjekat nije u fokusu.)</translation>
+<translation id="6519884562954018934">Pridruži me mreži <ph name="WIFINAME" /></translation>
 <translation id="6527303717912515753">Deli</translation>
 <translation id="6617916774429601017">Pokaži sve rezolucije</translation>
 <translation id="6631515515009660915">Preslikavanje je isključeno</translation>
@@ -129,6 +133,7 @@ Ako su povratne informacije u vezi sa kvalitetom slike ili videa, priložite uzo
 <translation id="7450541714075000668">Tekst je kopiran</translation>
 <translation id="7488619942230388918">Snimite GIF video</translation>
 <translation id="7557677699350329807">Pređi na sledeću kameru</translation>
+<translation id="7562584071994185503">Kopiraj tekst <ph name="TEXT" /></translation>
 <translation id="7607002721634913082">Pauzirano</translation>
 <translation id="7608223098072244877">4 sa 4</translation>
 <translation id="761421184377987513">Kreće se ulevo nadole</translation>
@@ -141,6 +146,7 @@ Ako su povratne informacije u vezi sa kvalitetom slike ili videa, priložite uzo
 <translation id="7726641833034062494">Snimite normalan video</translation>
 <translation id="7748344063862150053">Gornji desni ugao dokumenta</translation>
 <translation id="7933675232020478311">Kreće se udesno nadole</translation>
+<translation id="7983668134180549431">Tekst je otkriven.</translation>
 <translation id="8079255378695216066">Snimanje ne može da počne</translation>
 <translation id="8120146556401698679">Pomeranje, naginjanje, zumiranje</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
@@ -150,16 +156,17 @@ Ako su povratne informacije u vezi sa kvalitetom slike ili videa, priložite uzo
 <translation id="8346544573713510785">Kamera HAL prilagođava okvire</translation>
 <translation id="8425673304802773841">Naginjanje nadole</translation>
 <translation id="8428213095426709021">Podešavanja</translation>
+<translation id="8609951387004618906">Otvori <ph name="URL" /></translation>
 <translation id="8629662593426079630">360p</translation>
 <translation id="8711011893539266636">Uključite zvuk mikrofona. Dugme za isključivanje zvuka je uključeno</translation>
 <translation id="8730621377337864115">Gotovo</translation>
 <translation id="8732462232047530626">Prikaži metapodatke</translation>
+<translation id="874854738381978209">Otkrivena je WiFi mreža.</translation>
 <translation id="8815966864175525708">Pređi na režim za slikanje portreta</translation>
 <translation id="8828441885228359828">Nastavi snimanje</translation>
 <translation id="8870695351537079478">Snimanje nije moglo da počne</translation>
 <translation id="8880167521484863515">4 prema 3</translation>
 <translation id="8903921497873541725">Uvećavanje</translation>
-<translation id="8926890870105777777">Pridruži me mreži <ph name="WIFINAME" /></translation>
 <translation id="9045010116236796332">Postavite sve ivice dokumenta u okvir</translation>
 <translation id="9045155556724273246">10 sekundi</translation>
 <translation id="906331135292332864">Slika se obrađuje…</translation>

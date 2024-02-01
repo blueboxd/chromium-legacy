@@ -54,6 +54,13 @@ bool ShouldSetBounds(PlatformWindowState state) {
          state == PlatformWindowState::kFloated;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+bool IsPinnedOrFullscreen(const WaylandWindow::WindowStates& states) {
+  return states.is_fullscreen || states.is_pinned_fullscreen ||
+         states.is_trusted_pinned_fullscreen;
+}
+#endif  // BUILDFLAG(IS_CHOMEOS_LACROS)
+
 }  // namespace
 
 constexpr int kVisibleOnAllWorkspaces = -1;
@@ -418,6 +425,12 @@ bool WaylandToplevelWindow::SupportsConfigureMinimizedState() const {
                                 ZAURA_TOPLEVEL_STATE_MINIMIZED_SINCE_VERSION);
 }
 
+bool WaylandToplevelWindow::SupportsConfigurePinnedState() const {
+  return shell_toplevel_ &&
+         shell_toplevel_->IsSupportedOnAuraToplevel(
+             ZAURA_TOPLEVEL_STATE_TRUSTED_PINNED_SINCE_VERSION);
+}
+
 void WaylandToplevelWindow::UpdateWindowScale(bool update_bounds) {
   auto old_scale = applied_state().window_scale;
   WaylandWindow::UpdateWindowScale(update_bounds);
@@ -468,23 +481,10 @@ void WaylandToplevelWindow::UnlockFrame() {
   OnFrameLockingChanged(false);
 }
 
-void WaylandToplevelWindow::OcclusionStateChanged(uint32_t mode) {
-  auto state = PlatformWindowOcclusionState::kUnknown;
-  switch (mode) {
-    case ZAURA_SURFACE_OCCLUSION_STATE_UNKNOWN:
-      state = PlatformWindowOcclusionState::kUnknown;
-      break;
-    case ZAURA_SURFACE_OCCLUSION_STATE_VISIBLE:
-      state = PlatformWindowOcclusionState::kVisible;
-      break;
-    case ZAURA_SURFACE_OCCLUSION_STATE_OCCLUDED:
-      state = PlatformWindowOcclusionState::kOccluded;
-      break;
-    case ZAURA_SURFACE_OCCLUSION_STATE_HIDDEN:
-      state = PlatformWindowOcclusionState::kHidden;
-      break;
-  }
-  OnOcclusionStateChanged(state);
+void WaylandToplevelWindow::OcclusionStateChanged(
+    PlatformWindowOcclusionState occlusion_state) {
+  WaylandWindow::OcclusionStateChanged(occlusion_state);
+  delegate()->OnOcclusionStateChanged(occlusion_state);
 }
 
 void WaylandToplevelWindow::DeskChanged(int state) {
@@ -541,6 +541,12 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
     state_ = PlatformWindowState::kMinimized;
   } else if (window_states.is_fullscreen) {
     state_ = PlatformWindowState::kFullScreen;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  } else if (window_states.is_pinned_fullscreen) {
+    state_ = PlatformWindowState::kPinnedFullscreen;
+  } else if (window_states.is_trusted_pinned_fullscreen) {
+    state_ = PlatformWindowState::kTrustedPinnedFullscreen;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   } else if (window_states.is_maximized) {
     state_ = PlatformWindowState::kMaximized;
   } else if (window_states.is_snapped_primary) {
@@ -558,17 +564,24 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
   fullscreen_display_id_ = display::kInvalidDisplayId;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (shell_toplevel_ && shell_toplevel()->SupportsTopLevelImmersiveStatus() &&
-      is_immersive_fullscreen_ != window_states.is_immersive_fullscreen) {
-    is_immersive_fullscreen_ = window_states.is_immersive_fullscreen;
-    delegate()->OnImmersiveModeChanged(is_immersive_fullscreen_);
-  }
+  CHECK(!window_states.is_immersive_fullscreen ||
+        IsPinnedOrFullscreen(window_states))
+      << "Immersive state should not be set when it's not fullscreen.";
 
-  if (is_fullscreen_ != window_states.is_fullscreen) {
-    is_fullscreen_ = window_states.is_fullscreen;
+  // TODO(crbug.com/1512518): Refer to window_states.is_pinned_fullscreen and
+  // is_trusted_window_fullscreen and set kPinned/kTrustedPinned as a fullscreen
+  // type when it's supported.
+  PlatformFullscreenType fullscreen_type =
+      window_states.is_immersive_fullscreen
+          ? PlatformFullscreenType::kImmersive
+          : (IsPinnedOrFullscreen(window_states)
+                 ? PlatformFullscreenType::kPlain
+                 : PlatformFullscreenType::kNone);
+  if (fullscreen_type_ != fullscreen_type) {
     // The fullscreen state change has finished and we we need to inform the
     // browser/app that the transition is done.
-    delegate()->OnFullscreenModeChanged();
+    delegate()->OnFullscreenTypeChanged(fullscreen_type_, fullscreen_type);
+    fullscreen_type_ = fullscreen_type;
   }
 #endif
 
@@ -585,7 +598,7 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
   const bool did_active_change = is_active_ != window_states.is_activated;
   is_active_ = window_states.is_activated;
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
   // The tiled state affects the window geometry, so apply it here.
   if (window_states.tiled_edges != tiled_state_) {
     // This configure changes the decoration insets.  We should adjust the
@@ -744,7 +757,14 @@ void WaylandToplevelWindow::SetWindowGeometry(gfx::Size size_dip) {
 }
 
 void WaylandToplevelWindow::AckConfigure(uint32_t serial) {
-  shell_toplevel()->AckConfigure(serial);
+  // We cannot assume the top level wrapper is non-NULL because of a corner case
+  // in drag n' drop. There could be times when the tab strip change is detected
+  // while processing a configure event received from the compositor and hence
+  // destroy the top level wrapper before an ACK is sent.
+  // See crbug.com/1512046 for details.
+  if (shell_toplevel()) {
+    shell_toplevel()->AckConfigure(serial);
+  }
 }
 
 void WaylandToplevelWindow::PropagateBufferScale(float new_scale) {
@@ -822,21 +842,13 @@ void WaylandToplevelWindow::StartWindowDraggingSessionIfNeeded(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 void WaylandToplevelWindow::SetImmersiveFullscreenStatus(bool status) {
-  auto* zaura_surface = GetZAuraSurface();
-  if (shell_toplevel_ && shell_toplevel_->SupportsTopLevelImmersiveStatus()) {
+  if (shell_toplevel_) {
     shell_toplevel_->SetUseImmersiveMode(status);
-  } else if (zaura_surface &&
-             zaura_surface->SetFullscreenMode(
-                 status ? ZAURA_SURFACE_FULLSCREEN_MODE_IMMERSIVE
-                        : ZAURA_SURFACE_FULLSCREEN_MODE_PLAIN)) {
-    // TODO(ffred): the deprecated immersive mode flow used to transition
-    // immediately after sending the request to exo. This is needed to
-    // maintain backwards compatibility. Remove once we have rolled past the
-    // supported skew.
-    delegate()->OnImmersiveModeChanged(status);
   } else {
-    // TODO(https://crbug.com/1113900): Implement AuraShell support for
-    // non-browser windows and replace this if-else clause by a DCHECK.
+    // TODO(elkurin): Investigate whether we can deprecate this clause. This
+    // pass is used by some tests which do not set shell properly and ideally we
+    // would like to fix those tests. After those fixes, remove this clause or
+    // replace it by CHECK.
     NOTIMPLEMENTED_LOG_ONCE();
     // TODO(https://crbug.com/1113900): With Lacros, the state change gets
     // completed asynchronously (see removal of notification call in
@@ -844,7 +856,10 @@ void WaylandToplevelWindow::SetImmersiveFullscreenStatus(bool status) {
     // application now. This needs also be properly addressed with the
     // immersive mode change inside the immersive mode handling by calling
     // this delegate - or `BrowserView::FullscreenStateChanged()` directly.
-    delegate()->OnFullscreenModeChanged();
+    auto new_type = status ? PlatformFullscreenType::kImmersive
+                           : PlatformFullscreenType::kPlain;
+    delegate()->OnFullscreenTypeChanged(fullscreen_type_, new_type);
+    fullscreen_type_ = new_type;
   }
 }
 
@@ -994,14 +1009,27 @@ void WaylandToplevelWindow::SendToDeskAtIndex(int index) {
 }
 
 void WaylandToplevelWindow::Pin(bool trusted) {
-  if (auto* zaura_surface = GetZAuraSurface()) {
-    zaura_surface->SetPin(trusted);
+  if (SupportsConfigurePinnedState()) {
+    auto new_state = trusted ? PlatformWindowState::kTrustedPinnedFullscreen
+                             : PlatformWindowState::kPinnedFullscreen;
+    SetWindowState(new_state, display::kInvalidDisplayId);
+  } else {
+    if (auto* zaura_surface = GetZAuraSurface()) {
+      zaura_surface->SetPin(trusted);
+    }
   }
 }
 
 void WaylandToplevelWindow::Unpin() {
-  if (auto* zaura_surface = GetZAuraSurface()) {
-    zaura_surface->UnsetPin();
+  if (SupportsConfigurePinnedState()) {
+    auto new_state = previous_state_ == PlatformWindowState::kMaximized
+                         ? previous_state_
+                         : PlatformWindowState::kNormal;
+    SetWindowState(new_state, display::kInvalidDisplayId);
+  } else {
+    if (auto* zaura_surface = GetZAuraSurface()) {
+      zaura_surface->UnsetPin();
+    }
   }
 }
 
@@ -1014,7 +1042,18 @@ void WaylandToplevelWindow::SetSystemModal(bool modal) {
 void WaylandToplevelWindow::DumpState(std::ostream& out) const {
   WaylandWindow::DumpState(out);
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  out << ", is_immersive_fullscreen=" << ToBoolString(is_immersive_fullscreen_);
+  out << ", fullscreen_type=";
+  switch (fullscreen_type_) {
+    case PlatformFullscreenType::kNone:
+      out << "not fullscreen";
+      break;
+    case PlatformFullscreenType::kPlain:
+      out << "plain fullscreen";
+      break;
+    case PlatformFullscreenType::kImmersive:
+      out << "immersive fullscreen";
+      break;
+  }
 #endif
   out << ", title=" << window_title_
       << ", is_active=" << ToBoolString(is_active_)
@@ -1063,8 +1102,19 @@ void WaylandToplevelWindow::TriggerStateChanges() {
   } else if (state_ == PlatformWindowState::kFullScreen) {
     shell_toplevel_->SetFullscreen(
         GetWaylandOutputForDisplayId(fullscreen_display_id_));
+  } else if (state_ == PlatformWindowState::kPinnedFullscreen ||
+             state_ == PlatformWindowState::kTrustedPinnedFullscreen) {
+    if (auto* zaura_surface = GetZAuraSurface()) {
+      zaura_surface->SetPin(state_ ==
+                            PlatformWindowState::kTrustedPinnedFullscreen);
+    }
   } else if (previous_state_ == PlatformWindowState::kFullScreen) {
     shell_toplevel_->UnSetFullscreen();
+  } else if (previous_state_ == PlatformWindowState::kPinnedFullscreen ||
+             previous_state_ == PlatformWindowState::kTrustedPinnedFullscreen) {
+    if (auto* zaura_surface = GetZAuraSurface()) {
+      zaura_surface->UnsetPin();
+    }
   } else if (state_ == PlatformWindowState::kMaximized) {
     shell_toplevel_->SetMaximized();
   } else if (state_ == PlatformWindowState::kNormal) {
@@ -1224,11 +1274,6 @@ void WaylandToplevelWindow::OnDecorationModeChanged() {
 void WaylandToplevelWindow::OnFrameLockingChanged(bool lock) {
   DCHECK(delegate());
   delegate()->OnSurfaceFrameLockingChanged(lock);
-}
-
-void WaylandToplevelWindow::OnOcclusionStateChanged(
-    PlatformWindowOcclusionState occlusion_state) {
-  delegate()->OnOcclusionStateChanged(occlusion_state);
 }
 
 void WaylandToplevelWindow::OnDeskChanged(int state) {

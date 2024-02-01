@@ -46,7 +46,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Input.UnrecognizedToolType.Android" units="tool type"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>alexmitra@chromium.org</owner>
   <owner>flackr@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
@@ -1083,9 +1083,31 @@ chromium-metrics-reviews@google.com.
     recorded at the time an insertion is performed.
   </summary>
   <token key="Mode">
+    <variant name="Elaborate"
+        summary="The user initiated Copyeditor by trying to elaborate their
+                 text"/>
+    <variant name="Emojify"
+        summary="The user initiated Copyeditor by trying to emojify their
+                 text"/>
+    <variant name="Formalize"
+        summary="The user initiated Copyeditor by trying to formalize their
+                 text"/>
+    <variant name="FreeformRewrite"
+        summary="The user initiated Copyeditor by trying to rewrite their
+                 text with a freeform prompt"/>
+    <variant name="Rephrase"
+        summary="The user initiated Copyeditor by trying to rephrase their
+                 text"/>
     <variant name="Rewrite"
         summary="There is selected text and the user is rewriting it with the
                  editor"/>
+    <variant name="Shorten"
+        summary="The user initiated Copyeditor by trying to shorten their
+                 text"/>
+    <variant name="Unknown"
+        summary="The user initiated Copyeditor with an unknown method
+                 (potentially a new prompt)"/>
+    <variant name="Unset" summary="The user hasn't yet chosen a tone"/>
     <variant name="Write" summary="The editor is in freeform write mode"/>
   </token>
 </histogram>
@@ -1100,9 +1122,31 @@ chromium-metrics-reviews@google.com.
     recorded at the time an insertion is performed.
   </summary>
   <token key="Mode">
+    <variant name="Elaborate"
+        summary="The user initiated Copyeditor by trying to elaborate their
+                 text"/>
+    <variant name="Emojify"
+        summary="The user initiated Copyeditor by trying to emojify their
+                 text"/>
+    <variant name="Formalize"
+        summary="The user initiated Copyeditor by trying to formalize their
+                 text"/>
+    <variant name="FreeformRewrite"
+        summary="The user initiated Copyeditor by trying to rewrite their
+                 text with a freeform prompt"/>
+    <variant name="Rephrase"
+        summary="The user initiated Copyeditor by trying to rephrase their
+                 text"/>
     <variant name="Rewrite"
         summary="There is selected text and the user is rewriting it with the
                  editor"/>
+    <variant name="Shorten"
+        summary="The user initiated Copyeditor by trying to shorten their
+                 text"/>
+    <variant name="Unknown"
+        summary="The user initiated Copyeditor with an unknown method
+                 (potentially a new prompt)"/>
+    <variant name="Unset" summary="The user hasn't yet chosen a tone"/>
     <variant name="Write" summary="The editor is in freeform write mode"/>
   </token>
 </histogram>
@@ -1124,6 +1168,83 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="InputMethod.Manta.Orca.LengthOfLongestResponse.{Mode}"
+    units="characters" expires_after="2024-11-01">
+  <owner>hdchuong@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    Records the number of characters found in the longest response returned from
+    the server. This metric is recorded at the time a response with multiple
+    text suggestion candidates is received from the server.
+  </summary>
+  <token key="Mode">
+    <variant name="Elaborate"
+        summary="The user initiated Copyeditor by trying to elaborate their
+                 text"/>
+    <variant name="Emojify"
+        summary="The user initiated Copyeditor by trying to emojify their
+                 text"/>
+    <variant name="Formalize"
+        summary="The user initiated Copyeditor by trying to formalize their
+                 text"/>
+    <variant name="FreeformRewrite"
+        summary="The user initiated Copyeditor by trying to rewrite their
+                 text with a freeform prompt"/>
+    <variant name="Rephrase"
+        summary="The user initiated Copyeditor by trying to rephrase their
+                 text"/>
+    <variant name="Rewrite"
+        summary="There is selected text and the user is rewriting it with the
+                 editor"/>
+    <variant name="Shorten"
+        summary="The user initiated Copyeditor by trying to shorten their
+                 text"/>
+    <variant name="Unknown"
+        summary="The user initiated Copyeditor with an unknown method
+                 (potentially a new prompt)"/>
+    <variant name="Unset" summary="The user hasn't yet chosen a tone"/>
+    <variant name="Write" summary="The editor is in freeform write mode"/>
+  </token>
+</histogram>
+
+<histogram name="InputMethod.Manta.Orca.NumResponses.{Mode}" units="units"
+    expires_after="2024-11-01">
+  <owner>hdchuong@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    Counts the number of responses for each request to the server. This metric
+    is recorded at the time a response is received from the server.
+  </summary>
+  <token key="Mode">
+    <variant name="Elaborate"
+        summary="The user initiated Copyeditor by trying to elaborate their
+                 text"/>
+    <variant name="Emojify"
+        summary="The user initiated Copyeditor by trying to emojify their
+                 text"/>
+    <variant name="Formalize"
+        summary="The user initiated Copyeditor by trying to formalize their
+                 text"/>
+    <variant name="FreeformRewrite"
+        summary="The user initiated Copyeditor by trying to rewrite their
+                 text with a freeform prompt"/>
+    <variant name="Rephrase"
+        summary="The user initiated Copyeditor by trying to rephrase their
+                 text"/>
+    <variant name="Rewrite"
+        summary="There is selected text and the user is rewriting it with the
+                 editor"/>
+    <variant name="Shorten"
+        summary="The user initiated Copyeditor by trying to shorten their
+                 text"/>
+    <variant name="Unknown"
+        summary="The user initiated Copyeditor with an unknown method
+                 (potentially a new prompt)"/>
+    <variant name="Unset" summary="The user hasn't yet chosen a tone"/>
+    <variant name="Write" summary="The editor is in freeform write mode"/>
+  </token>
+</histogram>
+
 <histogram name="InputMethod.Manta.Orca.States.{Mode}" enum="IMEEditorStates"
     expires_after="2024-11-01">
   <owner>zacpartridge@google.com</owner>
@@ -1137,9 +1258,31 @@ chromium-metrics-reviews@google.com.
     thumbs up and down buttons.
   </summary>
   <token key="Mode">
+    <variant name="Elaborate"
+        summary="The user initiated Copyeditor by trying to elaborate their
+                 text"/>
+    <variant name="Emojify"
+        summary="The user initiated Copyeditor by trying to emojify their
+                 text"/>
+    <variant name="Formalize"
+        summary="The user initiated Copyeditor by trying to formalize their
+                 text"/>
+    <variant name="FreeformRewrite"
+        summary="The user initiated Copyeditor by trying to rewrite their
+                 text with a freeform prompt"/>
+    <variant name="Rephrase"
+        summary="The user initiated Copyeditor by trying to rephrase their
+                 text"/>
     <variant name="Rewrite"
         summary="There is selected text and the user is rewriting it with the
                  editor"/>
+    <variant name="Shorten"
+        summary="The user initiated Copyeditor by trying to shorten their
+                 text"/>
+    <variant name="Unknown"
+        summary="The user initiated Copyeditor with an unknown method
+                 (potentially a new prompt)"/>
+    <variant name="Unset" summary="The user hasn't yet chosen a tone"/>
     <variant name="Write" summary="The editor is in freeform write mode"/>
   </token>
 </histogram>
@@ -1207,7 +1350,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.PhysicalKeyboard.KeyboardShortcut"
-    enum="PhysicalKeyboardShortcut" expires_after="2024-05-05">
+    enum="PhysicalKeyboardShortcut" expires_after="2024-07-07">
   <owner>wbjacksonjr@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1387,7 +1530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.StylusHandwriting.Gesture"
-    enum="StylusHandwritingGesture" expires_after="2024-05-05">
+    enum="StylusHandwritingGesture" expires_after="2024-07-07">
   <owner>peconn@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1398,7 +1541,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.StylusHandwriting.GestureResult"
-    enum="StylusHandwritingGestureResult" expires_after="2024-05-26">
+    enum="StylusHandwritingGestureResult" expires_after="2024-07-28">
   <owner>alexmitra@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1406,7 +1549,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="InputMethod.StylusHandwriting.GestureTime" units="ms"
+<histogram name="InputMethod.StylusHandwriting.GestureTime2" units="ms"
     expires_after="2024-05-26">
   <owner>alexmitra@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
@@ -1418,7 +1561,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.StylusHandwriting.Triggered"
-    enum="StylusHandwritingApi" expires_after="2024-05-05">
+    enum="StylusHandwritingApi" expires_after="2024-07-07">
   <owner>peconn@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1644,7 +1787,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="InputMethod.VirtualKeyboard.Handwriting.DWServiceCallbackFailed"
-    enum="Boolean" expires_after="2024-04-28">
+    enum="Boolean" expires_after="2024-06-30">
   <owner>alexmitra@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
   <summary>
@@ -1820,6 +1963,55 @@ chromium-metrics-reviews@google.com.
     missing. The count of user actions to switch keyboard mode (floating,
     docked). Recorded when the user clicks in the docked/floating keyboard menu
     option.
+  </summary>
+</histogram>
+
+<histogram name="TextInputClient.CharacterIndex" units="ms"
+    expires_after="2024-04-03">
+  <owner>kouhei@chromium.org</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Recorded per call from a browser process thread to query
+    GetCharacterIndexAtPoint on a renderer process. The call is effectively
+    synchronous, blocking all other tasks from running on the browser thread.
+
+    Only recorded on macOS.
+
+    Warning: this histogram was missing its entry until 2024-01; data may be
+    missing.
+  </summary>
+</histogram>
+
+<histogram name="TextInputClient.FirstRect" units="ms"
+    expires_after="2024-07-07">
+  <owner>kouhei@chromium.org</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Recorded per call from a browser process thread to query
+    GetFirstRectForRange on a renderer process. The call is effectively
+    synchronous, blocking all other tasks from running on the browser thread.
+
+    Only recorded on macOS.
+
+    Warning: this histogram was missing its entry until 2024-01; data may be
+    missing.
+  </summary>
+</histogram>
+
+<histogram name="TextInputClient.LockWait" units="ms"
+    expires_after="2024-04-03">
+  <owner>kouhei@chromium.org</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Time took to acquire TextInputClient mutex lock on the browser process
+    thread, recorded per attempt. The histogram is useful to understand how much
+    of the TextInputClient.FirstRect and TextInputClient.CharacterIndex latency
+    are due to acquring browser-side lock.
+
+    Only recorded on macOS.
+
+    Warning: this histogram was missing its entry until 2024-01; data may be
+    missing.
   </summary>
 </histogram>
 

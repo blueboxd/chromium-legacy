@@ -12,6 +12,7 @@
 #include "ash/controls/rounded_scroll_bar.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/style_util.h"
 #include "ash/style/typography.h"
@@ -25,7 +26,6 @@
 #include "chromeos/ash/components/phonehub/notification.h"
 #include "chromeos/ash/components/phonehub/phone_hub_manager.h"
 #include "chromeos/ash/components/phonehub/user_action_recorder.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -239,10 +239,8 @@ std::unique_ptr<views::View> AppStreamLauncherView::CreateHeaderView() {
       views::BoxLayout::Orientation::kHorizontal, kHeaderViewInsets,
       kHeaderChildrenSpacing));
 
-  header->SetBackground(views::CreateSolidBackground(
-      AshColorProvider::Get()->GetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::
-              kControlBackgroundColorInactive)));
+  header->SetBackground(views::CreateThemedSolidBackground(
+      kColorAshControlBackgroundColorInactive));
 
   // Add arrowback button
   arrow_back_button_ = header->AddChildView(CreateButton(
@@ -256,20 +254,14 @@ std::unique_ptr<views::View> AppStreamLauncherView::CreateHeaderView() {
       gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
   title->SetMultiLine(true);
   title->SetAllowCharacterBreak(true);
-  title->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kUnbounded,
-                               /*adjust_height_for_width =*/true)
-          .WithWeight(1));
+  title->SetProperty(views::kBoxLayoutFlexKey,
+                     views::BoxLayoutFlexSpecification());
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_APP_STREAM_LAUNCHER_TITLE));
 
-  if (chromeos::features::IsJellyrollEnabled()) {
-    TypographyProvider::Get()->StyleLabel(ash::TypographyToken::kCrosHeadline1,
-                                          *title);
-  }
+  TypographyProvider::Get()->StyleLabel(ash::TypographyToken::kCrosHeadline1,
+                                        *title);
 
   return header;
 }
@@ -287,13 +279,11 @@ std::unique_ptr<views::Button> AppStreamLauncherView::CreateButton(
   views::SetImageFromVectorIconWithColor(button.get(), icon, color,
                                          disabled_color);
 
-  if (chromeos::features::IsJellyrollEnabled()) {
-    ash::StyleUtil::SetUpInkDropForButton(button.get(), gfx::Insets(),
-                                          /*highlight_on_hover=*/false,
-                                          /*highlight_on_focus=*/true);
-    views::FocusRing::Get(button.get())
-        ->SetColorId(static_cast<ui::ColorId>(cros_tokens::kCrosSysFocusRing));
-  }
+  ash::StyleUtil::SetUpInkDropForButton(button.get(), gfx::Insets(),
+                                        /*highlight_on_hover=*/false,
+                                        /*highlight_on_focus=*/true);
+  views::FocusRing::Get(button.get())
+      ->SetColorId(static_cast<ui::ColorId>(cros_tokens::kCrosSysFocusRing));
 
   button->SetTooltipText(l10n_util::GetStringUTF16(message_id));
   button->SizeToPreferredSize();

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/regular/regular_grid_coordinator.h"
 
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/model/features.h"
@@ -15,6 +15,8 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/regular/regular_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/regular/regular_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_mediator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_helper.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_view_controller.h"
 
@@ -31,6 +33,8 @@
   RegularGridMediator* _mediator;
   // Mediator for pinned Tabs.
   PinnedTabsMediator* _pinnedTabsMediator;
+  // Context menu provider.
+  TabContextMenuHelper* _contextMenuProvider;
 }
 
 #pragma mark - Property Implementation.
@@ -53,13 +57,18 @@
   BOOL regularModeEnabled =
       !IsIncognitoModeForced(self.browser->GetBrowserState()->GetPrefs());
 
+  _contextMenuProvider = [[TabContextMenuHelper alloc]
+        initWithBrowserState:self.browser->GetBrowserState()
+      tabContextMenuDelegate:self.tabContextMenuDelegate];
+
   GridContainerViewController* container =
       [[GridContainerViewController alloc] init];
   self.gridContainerViewController = container;
 
+  RegularGridViewController* gridViewController;
   if (regularModeEnabled) {
-    self.gridViewController = [[RegularGridViewController alloc] init];
-    container.containedViewController = self.gridViewController;
+    gridViewController = [[RegularGridViewController alloc] init];
+    container.containedViewController = gridViewController;
   } else {
     DisabledGridViewController* disabledViewController =
         [[DisabledGridViewController alloc]
@@ -69,43 +78,50 @@
     container.containedViewController = self.disabledViewController;
   }
 
+  self.gridViewController = gridViewController;
+
   _mediator = [[RegularGridMediator alloc] init];
-  _mediator.consumer = self.gridViewController;
+  _mediator.consumer = gridViewController;
   _mediator.browser = self.browser;
   _mediator.delegate = self.gridMediatorDelegate;
   _mediator.toolbarsMutator = self.toolbarsMutator;
-  _mediator.actionWrangler = self.tabGridViewController;
+  _mediator.toolbarTabGridDelegate = self.tabGridViewController;
   _mediator.dispatcher = self;
 
   self.tabGridViewController.regularTabsDelegate = _mediator;
-  self.gridViewController.dragDropHandler = _mediator;
-  self.gridViewController.mutator = _mediator;
-  self.gridViewController.gridProvider = _mediator;
+  gridViewController.dragDropHandler = _mediator;
+  gridViewController.mutator = _mediator;
+  gridViewController.gridProvider = _mediator;
+  gridViewController.menuProvider = _contextMenuProvider;
 
   // If regular is enabled then the grid exists and it is not disabled.
   // TODO(crbug.com/1457146): Get disabled status from the mediator.
-  if (self.gridViewController) {
-    self.gridViewController.dragDropHandler = _mediator;
+  if (gridViewController) {
+    gridViewController.dragDropHandler = _mediator;
     // TODO(crbug.com/1457146): Move the following lines to the grid itself when
     // specific grid file will be created.
-    self.gridViewController.view.accessibilityIdentifier =
-        kRegularTabGridIdentifier;
-    self.gridViewController.emptyStateView =
+    gridViewController.view.accessibilityIdentifier = kRegularTabGridIdentifier;
+    gridViewController.emptyStateView =
         [[TabGridEmptyStateView alloc] initWithPage:TabGridPageRegularTabs];
-    self.gridViewController.emptyStateView.accessibilityIdentifier =
+    gridViewController.emptyStateView.accessibilityIdentifier =
         kTabGridRegularTabsEmptyStateIdentifier;
-    self.gridViewController.theme = GridThemeLight;
+    gridViewController.theme = GridThemeLight;
 
     self.gridContainerViewController.containedViewController =
-        self.gridViewController;
+        gridViewController;
   }
 
   if (IsPinnedTabsEnabled()) {
-    _pinnedTabsMediator = [[PinnedTabsMediator alloc]
-        initWithConsumer:self.tabGridViewController.pinnedTabsConsumer];
+    PinnedTabsViewController* pinnedTabsViewController =
+        [[PinnedTabsViewController alloc] init];
+    self.pinnedTabsViewController = pinnedTabsViewController;
+
+    _pinnedTabsMediator =
+        [[PinnedTabsMediator alloc] initWithConsumer:pinnedTabsViewController];
+
     _pinnedTabsMediator.browser = self.browser;
-    self.tabGridViewController.pinnedTabsDelegate = _pinnedTabsMediator;
-    self.tabGridViewController.pinnedTabsDragDropHandler = _pinnedTabsMediator;
+    pinnedTabsViewController.menuProvider = _contextMenuProvider;
+    pinnedTabsViewController.dragDropHandler = _pinnedTabsMediator;
   }
 
   [super start];
@@ -115,6 +131,9 @@
   [_mediator disconnect];
   _mediator = nil;
 
+  _pinnedTabsMediator = nil;
+  _contextMenuProvider = nil;
+
   [super stop];
 }
 
@@ -122,6 +141,7 @@
 
 - (void)stopChildCoordinators {
   [self.gridViewController dismissModals];
+  [self.pinnedTabsViewController dismissModals];
 }
 
 @end

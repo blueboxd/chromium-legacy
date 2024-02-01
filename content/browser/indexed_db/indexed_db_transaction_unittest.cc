@@ -97,7 +97,9 @@ class IndexedDBTransactionTest : public testing::Test {
 
   void TearDown() override { db_ = nullptr; }
 
-  void OnFatalError(leveldb::Status s) { error_called_ = true; }
+  void OnFatalError(leveldb::Status s, const std::string& /*error_message*/) {
+    error_called_ = true;
+  }
 
   void OnDbReadyForDestruction() { bucket_context_.reset(); }
 
@@ -115,14 +117,13 @@ class IndexedDBTransactionTest : public testing::Test {
   }
 
   std::unique_ptr<IndexedDBConnection> CreateConnection() {
-    mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker> remote;
+    mojo::Remote<storage::mojom::IndexedDBClientStateChecker> remote;
     auto connection = std::make_unique<IndexedDBConnection>(
         *bucket_context_, db_->AsWeakPtr(), base::DoNothing(),
         base::DoNothing(),
         std::make_unique<IndexedDBDatabaseCallbacks>(
             mojo::NullAssociatedRemote()),
-        base::MakeRefCounted<IndexedDBClientStateCheckerWrapper>(
-            std::move(remote)));
+        std::move(remote));
     db_->AddConnectionForTesting(connection.get());
     return connection;
   }
@@ -408,7 +409,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
   IndexedDBTransaction* transaction = connection->CreateTransaction(
       mojo::NullAssociatedReceiver(), id, scope,
-      blink::mojom::IDBTransactionMode::VersionChange,
+      blink::mojom::IDBTransactionMode::ReadWrite,
       new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
@@ -530,8 +531,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
 
 static const blink::mojom::IDBTransactionMode kTestModes[] = {
     blink::mojom::IDBTransactionMode::ReadOnly,
-    blink::mojom::IDBTransactionMode::ReadWrite,
-    blink::mojom::IDBTransactionMode::VersionChange};
+    blink::mojom::IDBTransactionMode::ReadWrite};
 
 INSTANTIATE_TEST_SUITE_P(IndexedDBTransactions,
                          IndexedDBTransactionTestMode,

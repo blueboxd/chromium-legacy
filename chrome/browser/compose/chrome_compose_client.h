@@ -42,7 +42,8 @@ class ChromeComposeClient
     : public compose::ComposeClient,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromeComposeClient>,
-      public compose::mojom::ComposeClientPageHandler {
+      public compose::mojom::ComposeClientPageHandler,
+      public InnerTextProvider {
  public:
   using EntryPoint = autofill::AutofillComposeDelegate::UiEntryPoint;
   ChromeComposeClient(const ChromeComposeClient&) = delete;
@@ -60,6 +61,7 @@ class ChromeComposeClient
   bool HasSession(const autofill::FieldGlobalId& trigger_field_id) override;
   bool ShouldTriggerPopup(
       const autofill::FormFieldData& trigger_field) override;
+  compose::PageUkmTracker* getPageUkmTracker() override;
 
   // ComposeClientPageHandler
   // Shows the compose dialog.
@@ -67,17 +69,20 @@ class ChromeComposeClient
   // Closes the compose dialog. `reason` describes the user action that
   // triggered the close.
   void CloseUI(compose::mojom::CloseReason reason) override;
-  // Update corresponding prefs and state when consent is given through Compose.
-  void ApproveConsent() override;
-  // Update corresponding prefs and state when consent is acknowledged.
-  void AcknowledgeConsentDisclaimer() override;
+  // Update corresponding prefs and state when FRE is completed.
+  void CompleteFirstRun() override;
+  // Opens the Compose-related Chrome settings page in a new tab when the
+  // "Go to Settings" link is clicked in the MSBB dialog.
+  void OpenComposeSettings() override;
 
-  // Update session state when the consent has been given/acknowledged. This
-  // will be used to differentiate sessions involving the consent flow.
-  // TODO(b/312295685): Add metrics for consent dialog related close reasons.
-  void UpdateAllSessionsWithConsentApproved();
+  // InnerTextProvider
+  void GetInnerText(content::RenderFrameHost& host,
+                    absl::optional<int> node_id,
+                    content_extraction::InnerTextCallback callback) override;
 
-  compose::mojom::ConsentState GetConsentStateFromPrefs();
+  bool GetMSBBStateFromPrefs();
+
+  void UpdateAllSessionsWithFirstRunComplete();
 
   virtual bool ShouldTriggerContextMenu(content::RenderFrameHost* rfh,
                                         content::ContextMenuParams& params);
@@ -94,12 +99,27 @@ class ChromeComposeClient
       optimization_guide::OptimizationGuideModelExecutor* model_executor);
   void SetSkipShowDialogForTest(bool should_skip);
   void SetSessionIdForTest(base::Token session_id);
+  void SetInnerTextProviderForTest(InnerTextProvider* inner_text);
 
   // content::WebContentsObserver implementation.
   // Called when the primary page location changes. This includes reloads.
   // TODO: Look into using DocumentUserData or keying sessions on render ID
   // to more accurately save and remove state.
   void PrimaryPageChanged(content::Page& page) override;
+
+  // Notification that the `render_widget_host` for this WebContents has gained
+  // focus. We will use this to relaunch a MSBB flow if applicable.
+  void OnWebContentsFocused(
+      content::RenderWidgetHost* render_widget_host) override;
+
+  // content::WebContentsObserver implementation.
+  // Called when there has been direct user interaction with the WebContents.
+  // Used to close the dialog when the user scrolls.
+  void DidGetUserInteraction(const blink::WebInputEvent& event) override;
+
+  // content::WebContentsObserver implementation.
+  // Invoked every time the WebContents changes visibility.
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
   void SetOptimizationGuideForTest(
       optimization_guide::OptimizationGuideDecider* opt_guide);
@@ -116,12 +136,16 @@ class ChromeComposeClient
   // Used only for testing.
   void OpenFeedbackPageForTest(std::string feedback_id);
 
+  // Returns true when the dialog is showing and false otherwise.
+  bool IsDialogShowing();
+
  protected:
   explicit ChromeComposeClient(content::WebContents* web_contents);
   optimization_guide::ModelQualityLogsUploader* GetModelQualityLogsUploader();
   optimization_guide::OptimizationGuideModelExecutor* GetModelExecutor();
   optimization_guide::OptimizationGuideDecider* GetOptimizationGuide();
   base::Token GetSessionId();
+  InnerTextProvider* GetInnerTextProvider();
   std::unique_ptr<TranslateLanguageProvider> translate_language_provider_;
   std::unique_ptr<ComposeEnabling> compose_enabling_;
 
@@ -138,19 +162,24 @@ class ChromeComposeClient
                              const autofill::FormFieldData& trigger_field,
                              ComposeCallback callback);
 
+  // Set the exit reason for a session that does not progress past the FRE.
+  void SetFirstRunSessionCloseReason(
+      compose::ComposeFirstRunSessionCloseReason close_reason);
+
   // Set the exit reason for a session that does not progress past the
-  // consent/disclaimer UI.
-  void SetConsentSessionCloseReason(
-      compose::ComposeConsentSessionCloseReason close_reason);
+  // MSBB UI.
+  void SetMSBBSessionCloseReason(
+      compose::ComposeMSBBSessionCloseReason close_reason);
 
   // Set the exit reason for a session.
   void SetSessionCloseReason(compose::ComposeSessionCloseReason close_reason);
 
   // Removes `active_compose_field_id_` from `sessions_` and resets
-  // `active_compose_field_id_`.
+  // `active_compose_field_id_` and `active_compose_form_id_`
   void RemoveActiveSession();
 
-  // Removes all sessions and resets `active_compose_field_id_`.
+  // Removes all sessions and resets `active_compose_field_id_` and
+  // `active_compose_form_id_`.
   void RemoveAllSessions();
 
   // Returns nullptr if no such session exists.
@@ -171,8 +200,12 @@ class ChromeComposeClient
 
   std::optional<base::Token> session_id_for_test_;
 
-  // The unique renderer ID of the last field the user selected compose on.
-  std::optional<autofill::FieldGlobalId> active_compose_field_id_;
+  // The unique renderer and form IDs of the last field the user selected
+  // compose on.
+  std::optional<std::pair<autofill::FieldGlobalId, autofill::FormGlobalId>>
+      active_compose_ids_;
+
+  std::optional<InnerTextProvider*> inner_text_provider_for_test_;
 
   // Saved states for each compose field.
   base::flat_map<autofill::FieldGlobalId, std::unique_ptr<ComposeSession>>
@@ -192,7 +225,16 @@ class ChromeComposeClient
   // Used to test Compose in a tab at |chrome://compose|.
   std::unique_ptr<ComposeSession> debug_session_;
 
+  // Collects per-pageload UKM metrics and reports them on destruction (if any
+  // were collected).
+  std::unique_ptr<compose::PageUkmTracker> page_ukm_tracker_;
+
   bool skip_show_dialog_for_test_ = false;
+
+  // This boolean gets set to true upon opening the Settings page via the
+  // OpenComposeSettings function, and gets set back to false when the current
+  // page is refocused using OnWebContentsFocused.
+  bool open_settings_requested_ = false;
 
   base::WeakPtrFactory<ChromeComposeClient> weak_ptr_factory_{this};
 

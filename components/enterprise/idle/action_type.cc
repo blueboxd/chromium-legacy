@@ -12,9 +12,6 @@
 
 #include "base/containers/span.h"
 #include "base/functional/bind.h"
-#include "base/ranges/algorithm.h"
-#include "base/strings/string_util.h"
-
 #include "base/json/values_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/enterprise/idle/idle_pref_names.h"
 
 namespace enterprise_idle {
 
@@ -48,7 +46,7 @@ const char kClearSiteSettingsActionName[] = "clear_site_settings";
 const char kReloadPagesActionName[] = "reload_pages";
 }  // namespace
 
-absl::optional<ActionType> NameToActionType(const std::string& name) {
+std::optional<ActionType> NameToActionType(const std::string& name) {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   if (name == kCloseBrowsersActionName) {
     return ActionType::kCloseBrowsers;
@@ -93,7 +91,7 @@ absl::optional<ActionType> NameToActionType(const std::string& name) {
   if (name == kReloadPagesActionName) {
     return ActionType::kReloadPages;
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 std::string GetActionBrowsingDataTypeName(const std::string& action) {
@@ -103,6 +101,16 @@ std::string GetActionBrowsingDataTypeName(const std::string& action) {
     return std::string();
   }
   return action.substr(std::strlen(kPrefix));
+}
+
+std::vector<ActionType> GetActionTypesFromPrefs(PrefService* prefs) {
+  std::vector<ActionType> actions;
+  base::ranges::transform(prefs->GetList(prefs::kIdleTimeoutActions),
+                          std::back_inserter(actions),
+                          [](const base::Value& action) {
+                            return static_cast<ActionType>(action.GetInt());
+                          });
+  return actions;
 }
 
 }  // namespace enterprise_idle

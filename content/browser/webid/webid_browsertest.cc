@@ -209,7 +209,7 @@ class TestFederatedIdentityModalDialogViewDelegate
 
   void SetClosure(base::OnceClosure closure) { closure_ = std::move(closure); }
 
-  void NotifyClose() override {
+  void OnClose() override {
     DCHECK(closure_);
     std::move(closure_).Run();
     closed_ = true;
@@ -314,7 +314,7 @@ class WebIdBrowserTest : public ContentBrowserTest {
   IdpTestServer* idp_server() { return idp_server_.get(); }
 
   void SetTestIdentityRequestDialogController(
-      absl::optional<std::string> dialog_selected_account) {
+      std::optional<std::string> dialog_selected_account) {
     auto controller = std::make_unique<FakeIdentityRequestDialogController>(
         dialog_selected_account);
     test_browser_client_->SetIdentityRequestDialogController(
@@ -331,7 +331,7 @@ class WebIdBrowserTest : public ContentBrowserTest {
         std::make_unique<TestFederatedIdentityModalDialogViewDelegate>();
     test_browser_client_->SetIdentityRegistry(
         shell()->web_contents(), test_modal_dialog_view_delegate_->GetWeakPtr(),
-        url::Origin::Create(GURL(BaseIdpUrl())));
+        GURL(BaseIdpUrl()));
   }
 
  protected:
@@ -578,8 +578,8 @@ IN_PROC_BROWSER_TEST_F(WebIdIdPRegistryBrowserTest, UseRegistry) {
             identity: {
               providers: [{
                 nonce: "1234",
+                configURL: "any",
                 clientId: "https://rp.example",
-                registered: true,
               }]
             }
           });
@@ -692,6 +692,104 @@ IN_PROC_BROWSER_TEST_F(WebIdIdpSigninStatusBrowserTest,
       request.open('GET', '/header/sign%s', false);
       request.send(null);
       return request.status;
+    }) ();
+  )";
+
+  GURL url_for_origin = https_server().GetURL(kRpHostName, "/header/");
+  url::Origin origin = url::Origin::Create(url_for_origin);
+  EXPECT_FALSE(sharing_context()->GetIdpSigninStatus(origin).has_value());
+  {
+    base::RunLoop run_loop;
+    sharing_context()->SetIdpStatusClosureForTesting(run_loop.QuitClosure());
+    EXPECT_EQ(200, EvalJs(shell(), base::StringPrintf(script, "in")));
+    run_loop.Run();
+  }
+  auto value = sharing_context()->GetIdpSigninStatus(origin);
+  ASSERT_TRUE(value.has_value());
+  EXPECT_TRUE(*value);
+
+  {
+    base::RunLoop run_loop;
+    sharing_context()->SetIdpStatusClosureForTesting(run_loop.QuitClosure());
+    EXPECT_EQ(200, EvalJs(shell(), base::StringPrintf(script, "out")));
+    run_loop.Run();
+  }
+  value = sharing_context()->GetIdpSigninStatus(origin);
+  ASSERT_TRUE(value.has_value());
+  EXPECT_FALSE(*value);
+}
+
+// Verify that IDP sign-in/out headers work in fetch from worker.
+IN_PROC_BROWSER_TEST_F(WebIdIdpSigninStatusBrowserTest,
+                       IdpSigninAndOutFetchFromWorker) {
+  static constexpr char script[] = R"(
+    (async () => {
+      const script =
+        '(async () => { return (await fetch("/header/sign%s")).status; })()'
+      return new Promise(resolve => {
+        const channel = new MessageChannel();
+        channel.port1.addEventListener('message', (e) => {
+          resolve(e.data);
+        });
+        channel.port1.start();
+        const worker = new Worker('/fedcm/eval_worker.js');
+        worker.postMessage(
+          {
+            nested: false,
+            script: script,
+          },
+          [channel.port2]
+        );
+      });
+    }) ();
+  )";
+
+  GURL url_for_origin = https_server().GetURL(kRpHostName, "/header/");
+  url::Origin origin = url::Origin::Create(url_for_origin);
+  EXPECT_FALSE(sharing_context()->GetIdpSigninStatus(origin).has_value());
+  {
+    base::RunLoop run_loop;
+    sharing_context()->SetIdpStatusClosureForTesting(run_loop.QuitClosure());
+    EXPECT_EQ(200, EvalJs(shell(), base::StringPrintf(script, "in")));
+    run_loop.Run();
+  }
+  auto value = sharing_context()->GetIdpSigninStatus(origin);
+  ASSERT_TRUE(value.has_value());
+  EXPECT_TRUE(*value);
+
+  {
+    base::RunLoop run_loop;
+    sharing_context()->SetIdpStatusClosureForTesting(run_loop.QuitClosure());
+    EXPECT_EQ(200, EvalJs(shell(), base::StringPrintf(script, "out")));
+    run_loop.Run();
+  }
+  value = sharing_context()->GetIdpSigninStatus(origin);
+  ASSERT_TRUE(value.has_value());
+  EXPECT_FALSE(*value);
+}
+
+// Verify that IDP sign-in/out headers work in fetch from nested worker.
+IN_PROC_BROWSER_TEST_F(WebIdIdpSigninStatusBrowserTest,
+                       IdpSigninAndOutFetchFromNestedWorker) {
+  static constexpr char script[] = R"(
+    (async () => {
+      const script =
+        '(async () => { return (await fetch("/header/sign%s")).status; })()'
+      return new Promise(resolve => {
+        const channel = new MessageChannel();
+        channel.port1.addEventListener('message', (e) => {
+          resolve(e.data);
+        });
+        channel.port1.start();
+        const worker = new Worker('/fedcm/eval_worker.js');
+        worker.postMessage(
+          {
+            nested: true,
+            script: script,
+          },
+          [channel.port2]
+        );
+      });
     }) ();
   )";
 
@@ -1076,8 +1174,8 @@ IN_PROC_BROWSER_TEST_F(WebIdAuthzBrowserTest, Authz_openPopUpWindow) {
           test_browser_client_->GetIdentityRequestDialogControllerForTests());
 
   // Expects the account chooser to be opened. Selects the first account.
-  EXPECT_CALL(*controller, ShowAccountsDialog(_, _, _, _, _, _, _, _))
-      .WillOnce(::testing::WithArg<5>([&config_url](auto on_selected) {
+  EXPECT_CALL(*controller, ShowAccountsDialog(_, _, _, _, _, _, _, _, _))
+      .WillOnce(::testing::WithArg<6>([&config_url](auto on_selected) {
         std::move(on_selected)
             .Run(config_url,
                  /* account_id=*/"not_real_account",
@@ -1179,7 +1277,7 @@ IN_PROC_BROWSER_TEST_F(WebIdExemptIdpBrowserTest,
   // Does not manually select any account. If auto re-authn is not triggered,
   // the test will time out.
   SetTestIdentityRequestDialogController(
-      /*dialog_selected_account=*/absl::nullopt);
+      /*dialog_selected_account=*/std::nullopt);
 
   // The client id `client_id_1` is on the `approved_clients` list defined in
   // content/test/data/fedcm/accounts_endpoint.json so by exempting the IdP from

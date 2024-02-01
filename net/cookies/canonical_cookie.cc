@@ -76,10 +76,12 @@ using base::Time;
 
 namespace net {
 
+namespace {
+
+static constexpr int kHoursInOneWeek = 24 * 7;
+static constexpr int kHoursInOneYear = 24 * 365;
 static constexpr int kMinutesInTwelveHours = 12 * 60;
 static constexpr int kMinutesInTwentyFourHours = 24 * 60;
-
-namespace {
 
 // Determine the cookie domain to use for setting the specified cookie.
 bool GetCookieDomain(const GURL& url,
@@ -337,6 +339,28 @@ bool HasValidHostPrefixAttributes(const GURL& url,
   return domain.empty() || (url.HostIsIPAddress() && url.host() == domain);
 }
 
+// Records the age in hours of a session cookie loaded from the store.
+void HistogramSessionCookieAge(const CanonicalCookie& cookie) {
+  // Ignore non-session cookies and those without creation dates.
+  if (cookie.IsPersistent() || cookie.CreationDate().is_null()) {
+    return;
+  }
+
+  // We are studying the age of session cookies being provided into browser
+  // contexts. The record is split into two histograms to improve resolution.
+  const int session_cookie_age_in_hours =
+      (Time::Now() - cookie.CreationDate()).InHours();
+  if (session_cookie_age_in_hours > kHoursInOneWeek) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.SessionAgeInHoursGTOneWeek",
+                                session_cookie_age_in_hours,
+                                kHoursInOneWeek + 1, kHoursInOneYear, 100);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Cookie.SessionAgeInHoursLTEOneWeek",
+                                session_cookie_age_in_hours, 1,
+                                kHoursInOneWeek + 1, 100);
+  }
+}
+
 }  // namespace
 
 CookieAccessParams::CookieAccessParams(CookieAccessSemantics access_semantics,
@@ -498,7 +522,8 @@ Time CanonicalCookie::ParseExpiration(const ParsedCookie& pc,
 // static
 base::Time CanonicalCookie::ValidateAndAdjustExpiryDate(
     const base::Time& expiry_date,
-    const base::Time& creation_date) {
+    const base::Time& creation_date,
+    net::CookieSourceScheme scheme) {
   if (expiry_date.is_null())
     return expiry_date;
   base::Time fixed_creation_date = creation_date;
@@ -513,7 +538,13 @@ base::Time CanonicalCookie::ValidateAndAdjustExpiryDate(
     // * network_handler.cc::MakeCookieFromProtocolValues
     fixed_creation_date = base::Time::Now();
   }
-  base::Time maximum_expiry_date = fixed_creation_date + base::Days(400);
+  base::Time maximum_expiry_date;
+  if (!cookie_util::IsTimeLimitedInsecureCookiesEnabled() ||
+      scheme == net::CookieSourceScheme::kSecure) {
+    maximum_expiry_date = fixed_creation_date + base::Days(400);
+  } else {
+    maximum_expiry_date = fixed_creation_date + base::Hours(3);
+  }
   if (expiry_date > maximum_expiry_date) {
     return maximum_expiry_date;
   }
@@ -582,9 +613,6 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     cookie_server_time = server_time.value();
 
   DCHECK(!creation_time.is_null());
-  Time cookie_expires = CanonicalCookie::ParseExpiration(
-      parsed_cookie, creation_time, cookie_server_time);
-  cookie_expires = ValidateAndAdjustExpiryDate(cookie_expires, creation_time);
 
   CookiePrefix prefix_case_sensitive =
       GetCookiePrefix(parsed_cookie.Name(), /*check_insensitively=*/false);
@@ -675,6 +703,11 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   // cookie was set by a secure scheme.
   int source_port = CanonicalCookie::GetAndAdjustPortForTrustworthyUrls(
       url, parsed_cookie.IsSecure());
+
+  Time cookie_expires = CanonicalCookie::ParseExpiration(
+      parsed_cookie, creation_time, cookie_server_time);
+  cookie_expires =
+      ValidateAndAdjustExpiryDate(cookie_expires, creation_time, source_scheme);
 
   auto cc = std::make_unique<CanonicalCookie>(
       base::PassKey<CanonicalCookie>(), parsed_cookie.Name(),
@@ -888,7 +921,8 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
     status->AddExclusionReason(
         net::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE);
   }
-  expiration_time = ValidateAndAdjustExpiryDate(expiration_time, creation_time);
+  expiration_time = ValidateAndAdjustExpiryDate(expiration_time, creation_time,
+                                                source_scheme);
 
   if (!status->IsInclude())
     return nullptr;
@@ -944,6 +978,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::FromStorage(
   } else {
     return nullptr;
   }
+  HistogramSessionCookieAge(*cc);
   return cc;
 }
 
@@ -1444,8 +1479,10 @@ bool CanonicalCookie::IsCanonical() const {
   // TODO(crbug.com/1264458): Eventually we should push this logic into
   // IsCanonicalForFromStorage, but for now we allow cookies already stored with
   // high expiration dates to be retrieved.
-  if (ValidateAndAdjustExpiryDate(expiry_date_, creation_date_) != expiry_date_)
+  if (ValidateAndAdjustExpiryDate(expiry_date_, creation_date_,
+                                  SourceScheme()) != expiry_date_) {
     return false;
+  }
 
   return IsCanonicalForFromStorage();
 }

@@ -6,12 +6,15 @@
 
 #include "base/check_deref.h"
 #include "base/check_version_internal.h"
+#include "base/dcheck_is_on.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/features.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/macros/concat.h"
+#include "base/notimplemented.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
@@ -107,7 +110,7 @@ MATCHER_P2(LogErrorMatches, line, expected_msg, "") {
                                      const std::string& str) {                 \
       EXPECT_FALSE(got_log_message);                                           \
       got_log_message = true;                                                  \
-      EXPECT_EQ(severity, logging::LOG_ERROR);                                 \
+      EXPECT_EQ(severity, logging::LOGGING_ERROR);                             \
       EXPECT_EQ(str.substr(message_start), (msg));                             \
       if (base::StringPiece(expected_file) != "") {                            \
         EXPECT_STREQ(expected_file, file);                                     \
@@ -290,15 +293,12 @@ TEST(CheckDeathTest, Dcheck) {
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   // Release build.
   EXPECT_FALSE(DCHECK_IS_ON());
-  EXPECT_FALSE(DLOG_IS_ON(DCHECK));
 #elif defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
   // Release build with real DCHECKS.
   EXPECT_TRUE(DCHECK_IS_ON());
-  EXPECT_TRUE(DLOG_IS_ON(DCHECK));
 #else
   // Debug build.
   EXPECT_TRUE(DCHECK_IS_ON());
-  EXPECT_TRUE(DLOG_IS_ON(DCHECK));
 #endif
 
   EXPECT_DCHECK("Check failed: false. ", DCHECK(false));
@@ -403,7 +403,7 @@ TEST(CheckDeathTest, ConfigurableDCheck) {
   DCHECK(false);
 
   // Verify that DCHECK* aren't hard-wired to crash on failure.
-  logging::LOGGING_DCHECK = logging::LOG_ERROR;
+  logging::LOGGING_DCHECK = logging::LOGGING_ERROR;
   DCHECK(false);
   DCHECK_EQ(1, 2);
 

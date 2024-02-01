@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/management/management_api.h"
+
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -24,7 +27,6 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/web_contents_tester.h"
-#include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/management/management_api_constants.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/disable_reason.h"
@@ -43,8 +45,8 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/permissions/permission_set.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // TODO(b/265970428): Fix and include extensions tests on LaCrOS.
 // TODO(b/266051970): Fix and include extensions tests on Windows/Mac/Linux.
@@ -145,8 +147,8 @@ bool ManagementApiUnitTest::RunSetEnabledFunction(
   ScopedTestDialogAutoConfirm auto_confirm(
       accept_dialog ? ScopedTestDialogAutoConfirm::ACCEPT
                     : ScopedTestDialogAutoConfirm::CANCEL);
-  absl::optional<ExtensionFunction::ScopedUserGestureForTests> gesture =
-      absl::nullopt;
+  std::optional<ExtensionFunction::ScopedUserGestureForTests> gesture =
+      std::nullopt;
   if (use_user_gesture)
     gesture.emplace();
   auto function = base::MakeRefCounted<ManagementSetEnabledFunction>();
@@ -356,7 +358,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
 
     // Uninstall requires a user gesture, so this should fail.
     auto function = base::MakeRefCounted<ManagementUninstallFunction>();
-    function->set_source_context_type(Feature::WEBUI_CONTEXT);
+    function->set_source_context_type(mojom::ContextType::kWebUi);
     EXPECT_FALSE(RunFunction(function, uninstall_args));
     EXPECT_EQ(std::string(constants::kGestureNeededForUninstallError),
               function->GetError());
@@ -364,7 +366,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
 
     function = base::MakeRefCounted<ManagementUninstallFunction>();
-    function->set_source_context_type(Feature::WEBUI_CONTEXT);
+    function->set_source_context_type(mojom::ContextType::kWebUi);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_TRUE(RunFunction(function, uninstall_args)) << function->GetError();
     // The extension should be uninstalled.
@@ -385,7 +387,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     service()->AddExtension(extension.get());
     scoped_refptr<ExtensionFunction> function =
         base::MakeRefCounted<ManagementUninstallFunction>();
-    function->set_source_context_type(Feature::WEBUI_CONTEXT);
+    function->set_source_context_type(mojom::ContextType::kWebUi);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_FALSE(RunFunction(function, uninstall_args));
     // The uninstall should have failed.
@@ -402,7 +404,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     options.Set("showConfirmDialog", false);
     uninstall_args.Append(std::move(options));
     function = base::MakeRefCounted<ManagementUninstallFunction>();
-    function->set_source_context_type(Feature::WEBUI_CONTEXT);
+    function->set_source_context_type(mojom::ContextType::kWebUi);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_FALSE(RunFunction(function, uninstall_args));
     // This should still fail, since extensions can only suppress the dialog for
@@ -588,7 +590,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstallBlocklisted) {
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
   ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
   auto function = base::MakeRefCounted<ManagementUninstallFunction>();
-  function->set_source_context_type(Feature::WEBUI_CONTEXT);
+  function->set_source_context_type(mojom::ContextType::kWebUi);
   base::Value::List uninstall_args;
   uninstall_args.Append(id);
   EXPECT_TRUE(RunFunction(function, uninstall_args)) << function->GetError();
@@ -641,11 +643,11 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
   {
     auto function = base::MakeRefCounted<ManagementGetFunction>();
-    absl::optional<base::Value> value =
+    std::optional<base::Value> value =
         api_test_utils::RunFunctionAndReturnSingleResult(function.get(), args,
                                                          profile());
     ASSERT_TRUE(value);
-    absl::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
     ASSERT_TRUE(info);
     EXPECT_TRUE(info->enabled);
     // |may_enable| is only returned for extensions which are not enabled.
@@ -664,11 +666,11 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
   EXPECT_TRUE(registry()->disabled_extensions().Contains(extension->id()));
   {
     auto function = base::MakeRefCounted<ManagementGetFunction>();
-    absl::optional<base::Value> value =
+    std::optional<base::Value> value =
         api_test_utils::RunFunctionAndReturnSingleResult(function.get(), args,
                                                          profile());
     ASSERT_TRUE(value);
-    absl::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
     ASSERT_TRUE(info);
     EXPECT_FALSE(info->enabled);
     ASSERT_TRUE(info->may_enable);
@@ -687,11 +689,11 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
   EXPECT_TRUE(registry()->disabled_extensions().Contains(extension->id()));
   {
     auto function = base::MakeRefCounted<ManagementGetFunction>();
-    absl::optional<base::Value> value =
+    std::optional<base::Value> value =
         api_test_utils::RunFunctionAndReturnSingleResult(function.get(), args,
                                                          profile());
     ASSERT_TRUE(value);
-    absl::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
     ASSERT_TRUE(info);
     EXPECT_FALSE(info->enabled);
     ASSERT_TRUE(info->may_enable);
@@ -713,11 +715,11 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayDisable) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
   {
     auto function = base::MakeRefCounted<ManagementGetFunction>();
-    absl::optional<base::Value> value =
+    std::optional<base::Value> value =
         api_test_utils::RunFunctionAndReturnSingleResult(function.get(), args,
                                                          profile());
     ASSERT_TRUE(value);
-    absl::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
     ASSERT_TRUE(info);
     EXPECT_TRUE(info->enabled);
     EXPECT_TRUE(info->may_disable);
@@ -735,11 +737,11 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayDisable) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
   {
     auto function = base::MakeRefCounted<ManagementGetFunction>();
-    absl::optional<base::Value> value =
+    std::optional<base::Value> value =
         api_test_utils::RunFunctionAndReturnSingleResult(function.get(), args,
                                                          profile());
     ASSERT_TRUE(value);
-    absl::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::optional<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
     ASSERT_TRUE(info);
     EXPECT_TRUE(info->enabled);
     EXPECT_FALSE(info->may_disable);
@@ -1075,9 +1077,9 @@ class ManagementApiSupervisedUserTest : public ManagementApiUnitTest {
   }
 
   std::unique_ptr<content::WebContents> web_contents_;
-  raw_ptr<ManagementAPI, ExperimentalAsh> management_api_ = nullptr;
-  raw_ptr<TestSupervisedUserExtensionsDelegate, ExperimentalAsh>
-      supervised_user_delegate_ = nullptr;
+  raw_ptr<ManagementAPI> management_api_ = nullptr;
+  raw_ptr<TestSupervisedUserExtensionsDelegate> supervised_user_delegate_ =
+      nullptr;
 };
 
 TEST_F(ManagementApiSupervisedUserTest, SetEnabled_BlockedByParent) {
@@ -1515,7 +1517,7 @@ class ManagementApiSupervisedUserTestWithSetup
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_->id()));
   }
 
-  raw_ptr<TestManagementAPIDelegate, ExperimentalAsh> delegate_ = nullptr;
+  raw_ptr<TestManagementAPIDelegate> delegate_ = nullptr;
   scoped_refptr<const Extension> extension_;
 };
 

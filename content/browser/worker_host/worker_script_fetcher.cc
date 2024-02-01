@@ -35,7 +35,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/isolation_info.h"
@@ -46,6 +45,7 @@
 #include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/url_loader_factory_builder.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -119,10 +119,10 @@ void DidCreateScriptLoader(
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     const network::mojom::ClientSecurityStatePtr& client_security_state,
-    absl::optional<GlobalRenderFrameHostId> ancestor_render_frame_host_id,
+    std::optional<GlobalRenderFrameHostId> ancestor_render_frame_host_id,
     const GURL& initial_request_url,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    absl::optional<SubresourceLoaderParams> subresource_loader_params,
+    std::optional<SubresourceLoaderParams> subresource_loader_params,
     const network::URLLoaderCompletionStatus* completion_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(main_script_load_params.is_null(), completion_status == nullptr);
@@ -425,29 +425,29 @@ void WorkerScriptFetcher::CreateScriptLoader(
     // safely.
     factory_params->is_trusted = true;
 
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
-        default_factory_receiver =
-            factory_bundle_for_browser_info->pending_default_factory()
-                .InitWithNewPipeAndPassReceiver();
+    network::URLLoaderFactoryBuilder factory_builder;
     bool bypass_redirect_checks = false;
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         browser_context, creator_render_frame_host, factory_process->GetID(),
         ContentBrowserClient::URLLoaderFactoryType::kWorkerMainResource,
         request_initiator,
-        /*navigation_id=*/absl::nullopt,
+        /*navigation_id=*/std::nullopt,
         /* TODO(https://crbug.com/1103288): The UKM ID could be computed */
-        ukm::kInvalidSourceIdObj, &default_factory_receiver,
+        ukm::kInvalidSourceIdObj, factory_builder,
         &factory_params->header_client, &bypass_redirect_checks,
         nullptr /* disable_secure_dns */, &factory_params->factory_override,
         /*navigation_response_task_runner=*/nullptr);
     factory_bundle_for_browser_info->set_bypass_redirect_checks(
         bypass_redirect_checks);
 
-    devtools_instrumentation::WillCreateURLLoaderFactoryForWorkerMainScript(
-        devtools_agent_host, devtools_worker_token,
-        &factory_params->factory_override);
-    factory_process->CreateURLLoaderFactory(std::move(default_factory_receiver),
-                                            std::move(factory_params));
+    devtools_instrumentation::WillCreateURLLoaderFactoryParams::
+        ForWorkerMainScript(devtools_agent_host, devtools_worker_token)
+            .Run(/*is_navigation=*/false, /*is_download=*/false,
+                 factory_builder, &factory_params->factory_override);
+    std::move(factory_builder)
+        .Finish(factory_bundle_for_browser_info->pending_default_factory()
+                    .InitWithNewPipeAndPassReceiver(),
+                factory_process, std::move(factory_params));
 
     url_loader_factory = base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
         std::move(factory_bundle_for_browser_info));
@@ -464,8 +464,8 @@ void WorkerScriptFetcher::CreateScriptLoader(
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
       CreateContentBrowserURLLoaderThrottles(
           *resource_request, browser_context, wc_getter,
-          nullptr /* navigation_ui_data */,
-          RenderFrameHost::kNoFrameTreeNodeId);
+          nullptr /* navigation_ui_data */, RenderFrameHost::kNoFrameTreeNodeId,
+          /*navigation_id=*/absl::nullopt);
 
   // Create a BrowserContext getter using |service_worker_context|.
   // This context is aware of shutdown and safely returns a nullptr
@@ -474,7 +474,7 @@ void WorkerScriptFetcher::CreateScriptLoader(
       base::BindRepeating(&ServiceWorkerContextWrapper::browser_context,
                           std::move(service_worker_context));
 
-  absl::optional<GlobalRenderFrameHostId> ancestor_render_frame_host_id;
+  std::optional<GlobalRenderFrameHostId> ancestor_render_frame_host_id;
   if (ancestor_render_frame_host) {
     ancestor_render_frame_host_id = ancestor_render_frame_host->GetGlobalId();
   }
@@ -632,7 +632,7 @@ void WorkerScriptFetcher::OnReceiveEarlyHints(
 void WorkerScriptFetcher::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle body,
-    absl::optional<mojo_base::BigBuffer> cached_metadata) {
+    std::optional<mojo_base::BigBuffer> cached_metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!cached_metadata);
   if (!body)
@@ -705,7 +705,7 @@ void WorkerScriptFetcher::OnComplete(
   }
 
   std::move(callback_).Run(nullptr /* main_script_load_params */,
-                           absl::nullopt /* subresource_loader_params */,
+                           std::nullopt /* subresource_loader_params */,
                            &status);
   delete this;
 }

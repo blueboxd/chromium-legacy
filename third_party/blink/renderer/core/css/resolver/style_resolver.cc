@@ -57,9 +57,9 @@
 #include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/element_rule_collector.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
+#include "third_party/blink/renderer/core/css/out_of_flow_data.h"
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
-#include "third_party/blink/renderer/core/css/position_fallback_data.h"
 #include "third_party/blink/renderer/core/css/post_style_update_scope.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -152,7 +152,7 @@ bool ShouldStoreOldStyle(const StyleRecalcContext& style_recalc_context,
   // explicitly inherits insets or other valid @try properties from the element
   // with position-fallback.
   return (style_recalc_context.container ||
-          style_recalc_context.is_position_fallback ||
+          style_recalc_context.is_interleaved_oof ||
           (RuntimeEnabledFeatures::
                CSSAnchorPositioningCascadeFallbackEnabled() &&
            state.StyleBuilder().PositionFallback())) &&
@@ -258,9 +258,6 @@ String ComputeBaseComputedStyleDiff(const ComputedStyle* base_computed_style,
   if (!base_computed_style->GetFont().IsFallbackValid()) {
     exclusions.insert(DebugField::font_);
   }
-
-  // See crbug.com/1469327. (This is a real bug, which we're hiding here.)
-  exclusions.insert(DebugField::filter_);
 
   // Images use instance equality rather than value equality (see
   // crbug.com/781461).
@@ -407,6 +404,9 @@ void ApplyLengthConversionFlags(StyleResolverState& state) {
   }
   if (flags & static_cast<Flags>(Flag::kAnchorRelative)) {
     state.SetHasTreeScopedReference();
+  }
+  if (flags & static_cast<Flags>(Flag::kLogicalDirectionRelative)) {
+    builder.SetHasLogicalDirectionRelativeUnits();
   }
 }
 
@@ -824,22 +824,23 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
 }
 
 // Declarations within @try rules match when ResolveStyle is invoked
-// with that rule explicitly specified to match
-// (see StyleRecalcContext.position_fallback/index).
+// with that rule explicitly specified to match.
+//
+// See OutOfFlowData::GetTryPropertyValueSet.
+// See StyleEngine::UpdateStyleForOutOfFlow.
 void StyleResolver::MatchTryRules(const Element& element,
                                   ElementRuleCollector& collector) {
-  // If StyleEngine::UpdateStyleForPositionFallback was called with
-  // a PseudoElement, the CSSPropertyValueSet we need is stored on the
-  // PositionFallbackData of that pseudo element. However, when resolving
-  // the style of that pseudo element, `element` is the _originating element_,
-  // not the pseudo element itself.
+  // If StyleEngine::UpdateStyleForOutOfFlow was called with a PseudoElement,
+  // the CSSPropertyValueSet we need is stored on the OutOfFlowData of that
+  // pseudo element. However, when resolving the style of that pseudo element,
+  // `element` is the _originating element_, not the pseudo element itself.
   PseudoId pseudo_id = collector.GetPseudoId();
   const Element* try_element =
       pseudo_id == kPseudoIdNone
           ? &element
           : element.GetPseudoElement(pseudo_id, collector.GetPseudoArgument());
   if (try_element) {
-    if (PositionFallbackData* data = try_element->GetPositionFallbackData()) {
+    if (OutOfFlowData* data = try_element->GetOutOfFlowData()) {
       collector.AddTryStyleProperties(data->GetTryPropertyValueSet());
     }
   }
@@ -1252,6 +1253,8 @@ void StyleResolver::InitStyle(Element& element,
         style_request.originating_element_style->GetFont());
     state.StyleBuilder().SetLineHeight(
         style_request.originating_element_style->LineHeight());
+    state.StyleBuilder().SetWritingMode(
+        style_request.originating_element_style->GetWritingMode());
   }
 
   if (!style_request.IsPseudoStyleRequest() && element.IsLink()) {
@@ -1386,7 +1389,7 @@ bool CanApplyInlineStyleIncrementally(Element* element,
 
       // Variables and reverts are resolved in StyleCascade, which we don't run
       // in this path; thus, we cannot support them.
-      if (property.Value().IsVariableReferenceValue() ||
+      if (property.Value().IsUnparsedDeclaration() ||
           property.Value().IsPendingSubstitutionValue() ||
           property.Value().IsRevertValue() ||
           property.Value().IsRevertLayerValue()) {
@@ -1538,6 +1541,8 @@ void StyleResolver::ApplyBaseStyleNoCache(
       match_result.HasNonUniversalHighlightPseudoStyles());
   state.StyleBuilder().SetHasNonUaHighlightPseudoStyles(
       match_result.HasNonUaHighlightPseudoStyles());
+  state.StyleBuilder().SetHighlightsDependOnSizeContainerQueries(
+      match_result.HighlightsDependOnSizeContainerQueries());
 
   if (match_result.HasFlag(MatchFlag::kAffectedByDrag)) {
     state.StyleBuilder().SetAffectedByDrag();
@@ -1851,6 +1856,10 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
   }
 
   return builder;
+}
+
+const ComputedStyle* StyleResolver::InitialStyleForElement() const {
+  return InitialStyleBuilderForElement().TakeStyle();
 }
 
 const ComputedStyle* StyleResolver::StyleForText(Text* text_node) {
@@ -2399,14 +2408,11 @@ const CSSValue* StyleResolver::ComputeValue(
 
 const CSSValue* StyleResolver::ResolveValue(
     Element& element,
+    const ComputedStyle& style,
     const CSSPropertyName& property_name,
     const CSSValue& value) {
-  const ComputedStyle* style = element.GetComputedStyle();
-  if (!style) {
-    return nullptr;
-  }
   StyleResolverState state(element.GetDocument(), element);
-  state.SetStyle(*style);
+  state.SetStyle(style);
   return StyleCascade::Resolve(state, property_name, value);
 }
 
@@ -2512,6 +2518,11 @@ void StyleResolver::ApplyPropertiesFromCascade(StyleResolverState& state,
     }
   };
 
+  const ComputedStyle* old_style = nullptr;
+  if (count_computed_style_bytes_) {
+    old_style = state.StyleBuilder().CloneStyle();
+  }
+
   // In order to use-count whether or not legacy overlapping properties
   // made a real difference to the ComputedStyle, we first apply the cascade
   // while filtering out such properties. If the filter did reject
@@ -2525,6 +2536,17 @@ void StyleResolver::ApplyPropertiesFromCascade(StyleResolverState& state,
     apply(CascadeFilter(CSSProperty::kOverlapping, false));
     UseCountLegacyOverlapping(GetDocument(), *non_legacy_style,
                               state.StyleBuilder());
+  }
+
+  if (count_computed_style_bytes_) {
+    constexpr size_t kOilpanOverheadBytes =
+        sizeof(void*);  // See cppgc::internal::HeapObjectHeader.
+    const ComputedStyle* new_style = state.StyleBuilder().CloneStyle();
+    for (const auto& [group_name, size] :
+         old_style->FindChangedGroups(*new_style)) {
+      computed_style_bytes_used_ += size + kOilpanOverheadBytes;
+    }
+    computed_style_bytes_used_ += sizeof(*new_style) + kOilpanOverheadBytes;
   }
 
   // NOTE: This flag (and the length conversion flags) need to be set before the
@@ -2652,6 +2674,13 @@ ComputedStyleBuilder StyleResolver::CreateAnonymousStyleBuilderWithDisplay(
   builder.SetUnicodeBidi(parent_style.GetUnicodeBidi());
   builder.SetDisplay(display);
   return builder;
+}
+
+const ComputedStyle* StyleResolver::CreateAnonymousStyleWithDisplay(
+    const ComputedStyle& parent_style,
+    EDisplay display) {
+  return CreateAnonymousStyleBuilderWithDisplay(parent_style, display)
+      .TakeStyle();
 }
 
 const ComputedStyle* StyleResolver::CreateInheritedDisplayContentsStyleIfNeeded(

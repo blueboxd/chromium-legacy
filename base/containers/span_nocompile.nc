@@ -172,4 +172,38 @@ void FromVolatileArrayDisallowed() {
   span<int> s(array);  // expected-error {{no matching constructor for initialization of 'span<int>'}}
 }
 
+void FixedSizeCopyTooSmall() {
+  const int src[] = {1, 2, 3};
+  int dst[2];
+  base::span(dst).copy_from(base::make_span(src));  // expected-error@*:* {{no viable conversion}}
+
+  base::span(dst).copy_from(src);  // expected-error@*:* {{no viable conversion}}
+}
+
+void FixedSizeSplitAtOutOfBounds() {
+  const int arr[] = {1, 2, 3};
+  base::span(arr).split_at<4u>();  // expected-error@*:* {{no matching member function for call to 'split_at'}}
+}
+
+void FromRefNoSuchFunctionForIntLiteral() {
+  // Expectations of this test just capture the current behavior which is not
+  // necessarily desirable or required. This test expects that when we ask the
+  // compiler to deduce the template arguments for `span_from_ref` (the only
+  // difference from `FromRefLifetimeBoundErrorForIntLiteral` below) then it
+  // will fail to find a suitable function to invoke.
+  auto wont_work = span_from_ref(123);  // expected-error@*:* {{no matching function for call to 'span_from_ref'}}
+}
+
+void FromRefLifetimeBoundErrorForIntLiteral() {
+  // Testing that `ABSL_ATTRIBUTE_LIFETIME_BOUND` works as intended.
+  [[maybe_unused]] auto wont_work =
+      span_from_ref<const int>(123);  // expected-error@*:* {{temporary whose address is used as value of local variable 'wont_work' will be destroyed at the end of the full-expression}}
+}
+
+void FromRefLifetimeBoundErrorForTemporaryStringObject() {
+  // Testing that `ABSL_ATTRIBUTE_LIFETIME_BOUND` works as intended.
+  [[maybe_unused]] auto wont_work =
+      span_from_ref<const std::string>("temporary string");  // expected-error@*:* {{temporary whose address is used as value of local variable 'wont_work' will be destroyed at the end of the full-expression}}
+}
+
 }  // namespace base

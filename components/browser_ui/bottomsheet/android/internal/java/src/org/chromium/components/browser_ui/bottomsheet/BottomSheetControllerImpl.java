@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
@@ -99,15 +100,19 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
      */
     private Callback<Boolean> mContentBackPressStateChangedObserver;
 
+    private Supplier<Integer> mEdgeToEdgeBottomInsetSupplier;
+
     /**
      * Build a new controller of the bottom sheet.
+     *
      * @param scrim A supplier of the scrim that shows when the bottom sheet is opened.
      * @param initializedCallback A callback for the sheet being created (as the sheet is not
-     *                            initialized until first use.
+     *     initialized until first use.
      * @param window A means of accessing the screen size.
      * @param keyboardDelegate A means of hiding the keyboard.
      * @param root The view that should contain the sheet.
      * @param alwaysFullWidth Whether bottom sheet is full-width.
+     * @param edgeToEdgeBottomInsetSupplier The supplier of bottom inset when e2e is on.
      */
     public BottomSheetControllerImpl(
             final Supplier<ScrimCoordinator> scrim,
@@ -115,11 +120,13 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
             Window window,
             KeyboardVisibilityDelegate keyboardDelegate,
             Supplier<ViewGroup> root,
-            boolean alwaysFullWidth) {
+            boolean alwaysFullWidth,
+            @NonNull Supplier<Integer> edgeToEdgeBottomInsetSupplier) {
         mScrimCoordinatorSupplier = scrim;
         mPendingSheetObservers = new ArrayList<>();
         mSuppressionTokens = new TokenHolder(() -> onSuppressionTokensChanged());
         mAlwaysFullWidth = alwaysFullWidth;
+        mEdgeToEdgeBottomInsetSupplier = edgeToEdgeBottomInsetSupplier;
         mSheetInitializer =
                 () -> {
                     initializeSheet(initializedCallback, window, keyboardDelegate, root);
@@ -177,7 +184,8 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
         mBottomSheet = (BottomSheet) root.get().findViewById(R.id.bottom_sheet);
         initializedCallback.onResult(mBottomSheet);
 
-        mBottomSheet.init(window, keyboardDelegate, mAlwaysFullWidth);
+        mBottomSheet.init(
+                window, keyboardDelegate, mAlwaysFullWidth, mEdgeToEdgeBottomInsetSupplier);
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue =
@@ -613,6 +621,12 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
         mSheetStateBeforeSuppress = SheetState.NONE;
     }
 
+    @Override
+    @VisibleForTesting
+    public boolean isSmallScreen() {
+        return mBottomSheet.isSmallScreen();
+    }
+
     /**
      * Remove all contents from {@code iterator} that don't have a custom lifecycle.
      * @param iterator The iterator whose items must be removed.
@@ -626,12 +640,24 @@ class BottomSheetControllerImpl implements ManagedBottomSheetController {
     }
 
     /**
-     * The bottom sheet cannot change content while it is open. If the user has the bottom sheet
-     * open, they are currently engaged in a task and shouldn't be interrupted.
+     * The bottom sheet cannot change content while it is open, unless the current content returns
+     * true from canSuppressInAnyState(). If the user has the bottom sheet open with content that is
+     * not suppressable, they are currently engaged in a task and shouldn't be interrupted.
+     *
      * @return Whether the sheet currently supports switching its content.
      */
     private boolean canBottomSheetSwitchContent() {
-        return !mBottomSheet.isSheetOpen();
+        BottomSheetContent currentContent = mBottomSheet.getCurrentSheetContent();
+        if (!mBottomSheet.isSheetOpen()) {
+            return true;
+        }
+
+        if (currentContent != null && currentContent.canSuppressInAnyState()) {
+            assert currentContent.getPriority() == BottomSheetContent.ContentPriority.LOW;
+            return true;
+        }
+
+        return false;
     }
 
     boolean hasSuppressionTokensForTesting() {

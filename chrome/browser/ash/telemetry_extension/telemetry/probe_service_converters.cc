@@ -5,6 +5,8 @@
 #include "chrome/browser/ash/telemetry_extension/telemetry/probe_service_converters.h"
 
 #include <unistd.h>
+
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -14,7 +16,6 @@
 #include "chromeos/crosapi/mojom/nullable_primitives.mojom.h"
 #include "chromeos/crosapi/mojom/probe_service.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health_types.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash::converters::telemetry {
 
@@ -57,6 +58,8 @@ cros_healthd::mojom::ProbeCategoryEnum Convert(
       return cros_healthd::mojom::ProbeCategoryEnum::kBus;
     case crosapi::mojom::ProbeCategoryEnum::kDisplay:
       return cros_healthd::mojom::ProbeCategoryEnum::kDisplay;
+    case crosapi::mojom::ProbeCategoryEnum::kThermal:
+      return cros_healthd::mojom::ProbeCategoryEnum::kThermal;
   }
   NOTREACHED_NORETURN();
 }
@@ -71,22 +74,22 @@ crosapi::mojom::ProbeErrorPtr UncheckedConvertPtr(
                                          std::move(input->msg));
 }
 
-absl::optional<double> UncheckedConvertPtr(
+std::optional<double> UncheckedConvertPtr(
     cros_healthd::mojom::NullableDoublePtr input) {
   return input->value;
 }
 
-absl::optional<uint8_t> UncheckedConvertPtr(
+std::optional<uint8_t> UncheckedConvertPtr(
     cros_healthd::mojom::NullableUint8Ptr input) {
   return input->value;
 }
 
-absl::optional<uint16_t> UncheckedConvertPtr(
+std::optional<uint16_t> UncheckedConvertPtr(
     cros_healthd::mojom::NullableUint16Ptr input) {
   return input->value;
 }
 
-absl::optional<uint32_t> UncheckedConvertPtr(
+std::optional<uint32_t> UncheckedConvertPtr(
     cros_healthd::mojom::NullableUint32Ptr input) {
   return input->value;
 }
@@ -98,9 +101,9 @@ crosapi::mojom::UInt64ValuePtr LegacyUncheckedConvertPtr(
 
 crosapi::mojom::ProbeAudioInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::AudioInfoPtr input) {
-  absl::optional<std::vector<crosapi::mojom::ProbeAudioOutputNodeInfoPtr>>
+  std::optional<std::vector<crosapi::mojom::ProbeAudioOutputNodeInfoPtr>>
       output_nodes;
-  absl::optional<std::vector<crosapi::mojom::ProbeAudioInputNodeInfoPtr>>
+  std::optional<std::vector<crosapi::mojom::ProbeAudioInputNodeInfoPtr>>
       input_nodes;
 
   if (input->output_nodes) {
@@ -591,6 +594,31 @@ crosapi::mojom::ProbeTpmResultPtr UncheckedConvertPtr(
   }
 }
 
+crosapi::mojom::ProbeThermalSensorInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::ThermalSensorInfoPtr input) {
+  return crosapi::mojom::ProbeThermalSensorInfo::New(
+      input->name, input->temperature_celsius, Convert(input->source));
+}
+
+crosapi::mojom::ProbeThermalInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::ThermalInfoPtr input) {
+  return crosapi::mojom::ProbeThermalInfo::New(
+      ConvertPtrVector<crosapi::mojom::ProbeThermalSensorInfoPtr>(
+          std::move(input->thermal_sensors)));
+}
+
+crosapi::mojom::ProbeThermalResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::ThermalResultPtr input) {
+  switch (input->which()) {
+    case cros_healthd::mojom::ThermalResult::Tag::kThermalInfo:
+      return crosapi::mojom::ProbeThermalResult::NewThermalInfo(
+          ConvertProbePtr(std::move(input->get_thermal_info())));
+    case cros_healthd::mojom::ThermalResult::Tag::kError:
+      return crosapi::mojom::ProbeThermalResult::NewError(
+          ConvertProbePtr(std::move(input->get_error())));
+  }
+}
+
 crosapi::mojom::ProbeTelemetryInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::TelemetryInfoPtr input) {
   auto system_result_output =
@@ -745,6 +773,20 @@ crosapi::mojom::ProbeDisplayInputType Convert(
       return crosapi::mojom::ProbeDisplayInputType::kDigital;
     case cros_healthd::mojom::DisplayInputType::kAnalog:
       return crosapi::mojom::ProbeDisplayInputType::kAnalog;
+  }
+  NOTREACHED_NORETURN();
+}
+
+crosapi::mojom::ProbeThermalSensorSource Convert(
+    cros_healthd::mojom::ThermalSensorInfo::ThermalSensorSource input) {
+  switch (input) {
+    case cros_healthd::mojom::ThermalSensorInfo::ThermalSensorSource::
+        kUnmappedEnumField:
+      return crosapi::mojom::ProbeThermalSensorSource::kUnmappedEnumField;
+    case cros_healthd::mojom::ThermalSensorInfo::ThermalSensorSource::kEc:
+      return crosapi::mojom::ProbeThermalSensorSource::kEc;
+    case cros_healthd::mojom::ThermalSensorInfo::ThermalSensorSource::kSysFs:
+      return crosapi::mojom::ProbeThermalSensorSource::kSysFs;
   }
   NOTREACHED_NORETURN();
 }

@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/observer_list.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/system_media_controls/system_media_controls_observer.h"
 #include "content/public/browser/media_keys_listener_manager.h"
@@ -25,7 +26,11 @@ namespace content {
 
 class ActiveMediaSessionController;
 class SystemMediaControlsNotifier;
+
+#if BUILDFLAG(IS_WIN)
 class WebAppSystemMediaControlsManager;
+enum class WebAppSystemMediaControlsEvent;
+#endif
 
 class MediaKeysListenerManagerImplTestObserver {
  public:
@@ -164,6 +169,16 @@ class MediaKeysListenerManagerImpl
   // Returns true if |delegate| is an ActiveMediaSessionController for a dPWA.
   bool IsDelegateForWebAppSession(ui::MediaKeysListener::Delegate* delegate);
 
+#if BUILDFLAG(IS_WIN)
+  // Given a SystemMediaControls |sender| and an |event|, if the |sender|
+  // is a web app, will fire WebApp.Media.SystemMediaControls histogram with
+  // the associated |event|. If the |sender| is the browser, this function
+  // does nothing.
+  void MaybeSendWebAppControlsEvent(
+      WebAppSystemMediaControlsEvent event,
+      system_media_controls::SystemMediaControls* sender);
+#endif
+
   // Gets the ActiveMediaSessionController associated with |smc_sender|
   ActiveMediaSessionController* GetControllerForSystemMediaControls(
       system_media_controls::SystemMediaControls* system_media_controls);
@@ -200,7 +215,8 @@ class MediaKeysListenerManagerImpl
   // Tests that friend this class will use this mechanism to be notified of
   // certain events that are otherwise difficult to wait for.
   raw_ptr<MediaKeysListenerManagerImplTestObserver> test_observer_ = nullptr;
-  void SetTestObserver(MediaKeysListenerManagerImplTestObserver* observer) {
+  void SetObserverForTesting(
+      MediaKeysListenerManagerImplTestObserver* observer) {
     test_observer_ = observer;
   }
 

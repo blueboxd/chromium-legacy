@@ -242,6 +242,11 @@ bool HasRecentValidURLPastesAndRecordsCurrentPaste();
 // user session (default 6 hours). If not, it records the timestamp.
 bool HasRecentTimestampForKey(NSString* eventKey);
 
+// Returns true if the last URL open is within the specified number of `days`
+// which would indicate Chrome is likely still the default browser. Returns
+// false otherwise.
+bool IsChromeLikelyDefaultBrowserXDays(int days);
+
 // Returns true if the last URL open is within the time threshold that would
 // indicate Chrome is likely still the default browser. Returns false otherwise.
 bool IsChromeLikelyDefaultBrowser();
@@ -249,6 +254,24 @@ bool IsChromeLikelyDefaultBrowser();
 // Do not use. Only for backward compatibility
 // Returns true if the last URL open is within 7 days. Returns false otherwise.
 bool IsChromeLikelyDefaultBrowser7Days();
+
+// Returns true if Chrome was likely the default browser in the last
+// `likelyDefaultInterval` days but not in the last `likelyNotDefaultInterval`
+// days.
+bool IsChromePotentiallyNoLongerDefaultBrowser(int likelyDefaultInterval,
+                                               int likelyNotDefaultInterval);
+
+// Returns true if Chrome was likely the default browser in the last 21 days but
+// not in the last 7 days.
+bool IsChromePotentiallyNoLongerDefaultBrowser21To7();
+
+// Returns true if Chrome was likely the default browser in the last 28 days but
+// not in the last 14 days.
+bool IsChromePotentiallyNoLongerDefaultBrowser28To14();
+
+// Returns true if Chrome was likely the default browser in the last 35 days but
+// not in the last 14 days.
+bool IsChromePotentiallyNoLongerDefaultBrowser35To14();
 
 // Returns true if the past behavior of the user indicates that the user fits
 // the categorization that would likely benefit from having Chrome set as their

@@ -25,6 +25,7 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/mojom/color_scheme.mojom-shared.h"
 #include "ash/style/style_viewer/system_ui_components_style_viewer_view.h"
+#include "ash/system/focus_mode/focus_mode_controller.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/toast/anchored_nudge_manager_impl.h"
@@ -251,7 +252,9 @@ void HandleToggleVirtualTrackpad() {
 }
 
 void HandleShowInformedRestore() {
-  Shell::Get()->window_restore_controller()->MaybeStartInformedRestore();
+  if (features::IsForestFeatureEnabled()) {
+    Shell::Get()->window_restore_controller()->MaybeStartPineOverviewSession();
+  }
 }
 
 // Toast debug shortcut constants.
@@ -324,6 +327,22 @@ void HandleShowSystemNudge() {
   Shell::Get()->anchored_nudge_manager()->Show(nudge_data);
 }
 
+// TODO(b/318897434): Remove this shortcut after testing is complete.
+void HandleToggleFocusModeState() {
+  auto* controller = FocusModeController::Get();
+  switch (controller->GetSnapshot(base::Time::Now()).state) {
+    case FocusModeSession::State::kOn:
+      controller->TriggerEndingMomentImmediately();
+      return;
+    case FocusModeSession::State::kEnding:
+      controller->ResetFocusSession();
+      return;
+    default:
+      controller->ToggleFocusMode();
+      return;
+  }
+}
+
 }  // namespace
 
 void PrintUIHierarchies() {
@@ -385,6 +404,9 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       break;
     case AcceleratorAction::kDebugClearUseKMeansPref:
       HandleClearKMeansPref();
+      break;
+    case AcceleratorAction::kDebugToggleFocusModeState:
+      HandleToggleFocusModeState();
       break;
     case AcceleratorAction::kDebugTogglePowerButtonMenu:
       HandleTogglePowerButtonMenu();

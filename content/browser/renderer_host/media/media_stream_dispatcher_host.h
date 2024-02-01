@@ -110,14 +110,14 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void CancelRequest(int32_t request_id) override;
   void StopStreamDevice(
       const std::string& device_id,
-      const absl::optional<base::UnguessableToken>& session_id) override;
+      const std::optional<base::UnguessableToken>& session_id) override;
   void OpenDevice(int32_t request_id,
                   const std::string& device_id,
                   blink::mojom::MediaStreamType type,
                   OpenDeviceCallback callback) override;
   void CloseDevice(const std::string& label) override;
   void SetCapturingLinkSecured(
-      const absl::optional<base::UnguessableToken>& session_id,
+      const std::optional<base::UnguessableToken>& session_id,
       blink::mojom::MediaStreamType type,
       bool is_secure) override;
   void OnStreamStarted(const std::string& label) override;
@@ -127,7 +127,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       const base::UnguessableToken& session_id,
       const base::UnguessableToken& transfer_id,
       KeepDeviceAliveForTransferCallback callback) override;
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   void FocusCapturedSurface(const std::string& label, bool focus) override;
   void ApplySubCaptureTarget(const base::UnguessableToken& device_id,
                              media::mojom::SubCaptureTargetType type,
@@ -139,6 +139,9 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                  SendWheelCallback callback) override;
   void GetZoomLevel(const base::UnguessableToken& device_id,
                     GetZoomLevelCallback callback) override;
+  void SetZoomLevel(const base::UnguessableToken& device_id,
+                    int32_t zoom_level,
+                    SetZoomLevelCallback callback) override;
   void OnSubCaptureTargetValidationComplete(
       const base::UnguessableToken& device_id,
       media::mojom::SubCaptureTargetType type,
@@ -183,14 +186,17 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       const blink::MediaStreamDevice& device);
   void OnDeviceCaptureHandleChange(const std::string& label,
                                    const blink::MediaStreamDevice& device);
+  void OnZoomLevelChange(const std::string& label,
+                         const blink::MediaStreamDevice& device,
+                         int zoom_level);
 
   void SetWebContentsObserver(
       std::unique_ptr<MediaStreamWebContentsObserver,
                       BrowserThread::DeleteOnUIThread> web_contents_observer);
 
-  // If valid, absl::nullopt is returned.
+  // If valid, std::nullopt is returned.
   // If invalid, the relevant BadMessageReason is returned.
-  absl::optional<bad_message::BadMessageReason>
+  std::optional<bad_message::BadMessageReason>
   ValidateControlsForGenerateStreams(const blink::StreamControls& controls);
 
   void ReceivedBadMessage(int render_process_id,

@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/glanceables/tasks/glanceables_tasks_view.h"
+
 #include <memory>
 
 #include "ash/api/tasks/fake_tasks_client.h"
 #include "ash/constants/ash_features.h"
 #include "ash/glanceables/common/glanceables_list_footer_view.h"
 #include "ash/glanceables/common/glanceables_view_id.h"
+#include "ash/glanceables/common/test/glanceables_test_new_window_delegate.h"
 #include "ash/glanceables/glanceables_controller.h"
-#include "ash/glanceables/tasks/glanceables_tasks_view.h"
 #include "ash/shell.h"
 #include "ash/style/combobox.h"
+#include "ash/style/icon_button.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/strcat.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "components/account_id/account_id.h"
@@ -35,8 +40,7 @@ class GlanceablesTasksViewTest : public AshTestBase {
  public:
   GlanceablesTasksViewTest() {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kGlanceablesV2,
-                              features::kGlanceablesTimeManagementStableLaunch},
+        /*enabled_features=*/{features::kGlanceablesTimeManagementTasksView},
         /*disabled_features=*/{});
   }
 
@@ -65,9 +69,32 @@ class GlanceablesTasksViewTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
+  // Populates `num` of tasks to the default task list.
+  void PopulateTasks(size_t num) {
+    for (size_t i = 0; i < num; ++i) {
+      auto num_string = base::NumberToString(i);
+      fake_glanceables_tasks_client_->AddTask(
+          "TaskListID1", base::StrCat({"title_", num_string}),
+          base::DoNothing());
+    }
+
+    // Recreate the tasks view to update the task views.
+    view_ = widget_->SetContentsView(std::make_unique<GlanceablesTasksView>(
+        fake_glanceables_tasks_client_->task_lists()));
+  }
+
   Combobox* GetComboBoxView() const {
     return views::AsViewClass<Combobox>(view_->GetViewByID(
         base::to_underlying(GlanceablesViewId::kTasksBubbleComboBox)));
+  }
+
+  const IconButton* GetHeaderIconView() const {
+    return views::AsViewClass<IconButton>(
+        view_
+            ->GetViewByID(
+                base::to_underlying(GlanceablesViewId::kTasksBubbleHeaderView))
+            ->GetViewByID(base::to_underlying(
+                GlanceablesViewId::kTasksBubbleHeaderIcon)));
   }
 
   const views::View* GetTaskItemsContainerView() const {
@@ -75,9 +102,19 @@ class GlanceablesTasksViewTest : public AshTestBase {
         base::to_underlying(GlanceablesViewId::kTasksBubbleListContainer)));
   }
 
+  const views::View* GetEditInBrowserButton() const {
+    return views::AsViewClass<views::View>(view_->GetViewByID(
+        base::to_underlying(GlanceablesViewId::kTaskItemEditInBrowserLabel)));
+  }
+
   const views::LabelButton* GetAddNewTaskButton() const {
     return views::AsViewClass<views::LabelButton>(view_->GetViewByID(
         base::to_underlying(GlanceablesViewId::kTasksBubbleAddNewButton)));
+  }
+
+  const GlanceablesListFooterView* GetListFooterView() const {
+    return views::AsViewClass<GlanceablesListFooterView>(view_->GetViewByID(
+        base::to_underlying(GlanceablesViewId::kTasksBubbleListFooter)));
   }
 
   const views::ProgressBar* GetProgressBar() const {
@@ -85,8 +122,17 @@ class GlanceablesTasksViewTest : public AshTestBase {
         base::to_underlying(GlanceablesViewId::kProgressBar)));
   }
 
+  const views::View* GetErrorMessage() const {
+    return views::AsViewClass<views::View>(view_->GetViewByID(
+        base::to_underlying(GlanceablesViewId::kGlanceablesErrorMessageView)));
+  }
+
   api::FakeTasksClient* tasks_client() const {
     return fake_glanceables_tasks_client_.get();
+  }
+
+  const GlanceablesTestNewWindowDelegate* new_window_delegate() const {
+    return &new_window_delegate_;
   }
 
   GlanceablesTasksView* view() const { return view_; }
@@ -101,6 +147,8 @@ class GlanceablesTasksViewTest : public AshTestBase {
   std::unique_ptr<api::FakeTasksClient> fake_glanceables_tasks_client_;
   raw_ptr<GlanceablesTasksView> view_;
   std::unique_ptr<views::Widget> widget_;
+
+  const GlanceablesTestNewWindowDelegate new_window_delegate_;
 };
 
 TEST_F(GlanceablesTasksViewTest, ShowsProgressBarWhileLoadingTasks) {
@@ -165,6 +213,27 @@ TEST_F(GlanceablesTasksViewTest, ShowsProgressBarWhileEditingTask) {
   EXPECT_FALSE(GetProgressBar()->GetVisible());
 }
 
+TEST_F(GlanceablesTasksViewTest, OnlyShowsFooterIfAtLeast100Tasks) {
+  ASSERT_TRUE(GetListFooterView());
+  EXPECT_FALSE(GetListFooterView()->GetVisible());
+
+  const auto initial_tasks_count =
+      GetTaskItemsContainerView()->children().size();
+  // Add tasks to make the list contain 99 tasks.
+  PopulateTasks(99u - initial_tasks_count);
+  view()->GetWidget()->LayoutRootViewIfNecessary();
+  EXPECT_FALSE(GetListFooterView()->GetVisible());
+
+  // Creates the 100th task.
+  GestureTapOn(GetAddNewTaskButton());
+  PressAndReleaseKey(ui::VKEY_N, ui::EF_SHIFT_DOWN);
+  PressAndReleaseKey(ui::VKEY_E);
+  PressAndReleaseKey(ui::VKEY_W);
+  PressAndReleaseKey(ui::VKEY_ESCAPE);
+  view()->GetWidget()->LayoutRootViewIfNecessary();
+  EXPECT_TRUE(GetListFooterView()->GetVisible());
+}
+
 TEST_F(GlanceablesTasksViewTest, SupportsEditingRightAfterAdding) {
   tasks_client()->set_paused(true);
 
@@ -196,7 +265,7 @@ TEST_F(GlanceablesTasksViewTest, SupportsEditingRightAfterAdding) {
   EXPECT_EQ(tasks_client()->RunPendingUpdateTaskCallbacks(), 1u);
 }
 
-TEST_F(GlanceablesTasksViewTest, AllowsAddingOnlyOneTaskAtATime) {
+TEST_F(GlanceablesTasksViewTest, AllowsPressingAddNewTaskButtonWhileAdding) {
   const auto initial_tasks_count =
       GetTaskItemsContainerView()->children().size();
 
@@ -205,26 +274,22 @@ TEST_F(GlanceablesTasksViewTest, AllowsAddingOnlyOneTaskAtATime) {
   EXPECT_EQ(GetTaskItemsContainerView()->children().size(),
             initial_tasks_count + 1);
 
-  // Pressing the "Add new task" button again does nothing.
+  // Enter text without explicitly committing it.
+  PressAndReleaseKey(ui::VKEY_N, ui::EF_SHIFT_DOWN);
+  PressAndReleaseKey(ui::VKEY_E);
+  PressAndReleaseKey(ui::VKEY_W);
+
+  // Pressing the "Add new task" button again adds another "pending" view.
   GestureTapOn(GetAddNewTaskButton());
   EXPECT_EQ(GetTaskItemsContainerView()->children().size(),
-            initial_tasks_count + 1);
-}
+            initial_tasks_count + 2);
 
-TEST_F(GlanceablesTasksViewTest, AddingNewTaskControlsButtonDisabledState) {
-  // Initially the button is enabled.
-  EXPECT_EQ(GetAddNewTaskButton()->GetState(),
-            views::Button::ButtonState::STATE_NORMAL);
-
-  // Pressing the "Add new task" button should disable the button.
-  GestureTapOn(GetAddNewTaskButton());
-  EXPECT_EQ(GetAddNewTaskButton()->GetState(),
-            views::Button::ButtonState::STATE_DISABLED);
-
-  // Exiting edit state should re-enable the button.
-  PressAndReleaseKey(ui::VKEY_ESCAPE);
-  EXPECT_EQ(GetAddNewTaskButton()->GetState(),
-            views::Button::ButtonState::STATE_NORMAL);
+  // But the previous task becomes automatically committed due to losing focus.
+  const auto* const previous_task_label = views::AsViewClass<views::Label>(
+      GetTaskItemsContainerView()->children()[1]->GetViewByID(
+          base::to_underlying(GlanceablesViewId::kTaskItemTitleLabel)));
+  ASSERT_TRUE(previous_task_label);
+  EXPECT_EQ(previous_task_label->GetText(), u"New");
 }
 
 TEST_F(GlanceablesTasksViewTest,
@@ -246,7 +311,8 @@ TEST_F(GlanceablesTasksViewTest,
 TEST_F(GlanceablesTasksViewTest, DoesNotAllowEditingToBlankTitle) {
   tasks_client()->set_paused(true);
 
-  const auto* const task_view = GetTaskItemsContainerView()->children()[0];
+  const auto* const task_view =
+      GetTaskItemsContainerView()->children()[0].get();
 
   {
     const auto* const title_label =
@@ -302,6 +368,112 @@ TEST_F(GlanceablesTasksViewTest, DoesNotAddTaskWithBlankTitle) {
   EXPECT_EQ(GetTaskItemsContainerView()->children().size(),
             initial_tasks_count);
   EXPECT_EQ(tasks_client()->RunPendingAddTaskCallbacks(), 0u);
+}
+
+TEST_F(GlanceablesTasksViewTest, OpenBrowserWithEmptyNewTaskDoesntCrash) {
+  base::UserActionTester user_actions;
+
+  // Add a task with blank title.
+  GestureTapOn(GetAddNewTaskButton());
+
+  GestureTapOn(GetHeaderIconView());
+  EXPECT_EQ(1, user_actions.GetActionCount(
+                   "Glanceables_Tasks_LaunchTasksApp_HeaderButton"));
+
+  // Simulate that the widget is hidden safely after opening a browser window.
+  view()->GetWidget()->Hide();
+  EXPECT_FALSE(view()->GetWidget()->GetNativeWindow()->IsVisible());
+}
+
+TEST_F(GlanceablesTasksViewTest, HandlesErrorAfterAdding) {
+  tasks_client()->set_paused(true);
+  tasks_client()->set_run_with_errors(true);
+
+  const auto* const task_items_container_view = GetTaskItemsContainerView();
+  ASSERT_TRUE(task_items_container_view);
+
+  EXPECT_EQ(task_items_container_view->children().size(), 2u);
+  EXPECT_FALSE(GetErrorMessage());
+
+  GestureTapOn(GetAddNewTaskButton());
+  PressAndReleaseKey(ui::VKEY_N, ui::EF_SHIFT_DOWN);
+  PressAndReleaseKey(ui::VKEY_E);
+  PressAndReleaseKey(ui::VKEY_W);
+  PressAndReleaseKey(ui::VKEY_ESCAPE);
+
+  EXPECT_EQ(task_items_container_view->children().size(), 3u);
+  EXPECT_FALSE(GetErrorMessage());
+
+  EXPECT_EQ(tasks_client()->RunPendingAddTaskCallbacks(), 1u);
+  EXPECT_EQ(task_items_container_view->children().size(), 2u);
+  EXPECT_TRUE(GetErrorMessage());
+}
+
+TEST_F(GlanceablesTasksViewTest, HandlesErrorAfterEditing) {
+  tasks_client()->set_paused(true);
+  tasks_client()->set_run_with_errors(true);
+
+  const auto* const task_items_container_view = GetTaskItemsContainerView();
+  ASSERT_TRUE(task_items_container_view);
+
+  EXPECT_EQ(task_items_container_view->children().size(), 2u);
+  EXPECT_FALSE(GetErrorMessage());
+
+  const auto* const title_label = views::AsViewClass<views::Label>(
+      task_items_container_view->children()[0]->GetViewByID(
+          base::to_underlying(GlanceablesViewId::kTaskItemTitleLabel)));
+  GestureTapOn(title_label);
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_SPACE);
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_U);
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_P);
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_D);
+  PressAndReleaseKey(ui::VKEY_ESCAPE);
+
+  EXPECT_EQ(task_items_container_view->children().size(), 2u);
+  EXPECT_FALSE(GetErrorMessage());
+
+  EXPECT_EQ(tasks_client()->RunPendingUpdateTaskCallbacks(), 1u);
+  EXPECT_EQ(task_items_container_view->children().size(), 2u);
+  EXPECT_TRUE(GetErrorMessage());
+
+  // TODO(b/308446582): Confirm if the title needs to be reverted back in case
+  // of error.
+}
+
+TEST_F(GlanceablesTasksViewTest, ShowTasksWebUIFromHeaderView) {
+  base::UserActionTester user_actions;
+  const auto* const header_icon_button = GetHeaderIconView();
+  GestureTapOn(header_icon_button);
+  EXPECT_EQ(new_window_delegate()->GetLastOpenedUrl(),
+            "https://calendar.google.com/calendar/u/0/r/week?opentasks=1");
+  EXPECT_EQ(1, user_actions.GetActionCount(
+                   "Glanceables_Tasks_LaunchTasksApp_HeaderButton"));
+  EXPECT_EQ(0, user_actions.GetActionCount(
+                   "Glanceables_Tasks_ActiveTaskListChanged"));
+}
+
+TEST_F(GlanceablesTasksViewTest, ShowTasksWebUIFromEditInBrowserView) {
+  base::UserActionTester user_actions;
+  const auto* const title_label = views::AsViewClass<views::Label>(
+      GetTaskItemsContainerView()->children()[0]->GetViewByID(
+          base::to_underlying(GlanceablesViewId::kTaskItemTitleLabel)));
+
+  // Tap the title label to enter the edit mode. The enter in browser button
+  // should be visible.
+  GestureTapOn(title_label);
+  view()->GetWidget()->LayoutRootViewIfNecessary();
+  const auto* const edit_in_browser_button = GetEditInBrowserButton();
+  ASSERT_TRUE(edit_in_browser_button);
+  EXPECT_TRUE(edit_in_browser_button->GetVisible());
+
+  // Verify that tapping on the button will record the action.
+  GestureTapOn(edit_in_browser_button);
+  EXPECT_EQ(1, user_actions.GetActionCount(
+                   "Glanceables_Tasks_LaunchTasksApp_EditInGoogleTasksButton"));
+
+  // Simulate that the widget is hidden safely after opening a browser window.
+  view()->GetWidget()->Hide();
+  EXPECT_FALSE(view()->GetWidget()->GetNativeWindow()->IsVisible());
 }
 
 }  // namespace ash

@@ -126,6 +126,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetMinimumFontSize(int) override;
   void SetMinimumLogicalFontSize(int) override;
   void SetHideScrollbars(bool) override;
+  void SetPrefersDefaultScrollbarStyles(bool) override;
   void SetPasswordEchoDurationInSeconds(double) override;
   void SetPasswordEchoEnabled(bool) override;
   void SetPluginsEnabled(bool) override;
@@ -185,7 +186,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetTouchDragDropEnabled(bool) override;
   void SetTouchDragEndContextMenu(bool) override;
   void SetBarrelButtonForDragEnabled(bool) override;
-  void SetUseLegacyBackgroundSizeShorthandBehavior(bool) override;
   void SetViewportStyle(mojom::blink::ViewportStyle) override;
   void SetUseWideViewport(bool) override;
   void SetV8CacheOptions(mojom::blink::V8CacheOptions) override;

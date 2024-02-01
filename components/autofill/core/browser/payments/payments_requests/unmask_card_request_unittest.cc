@@ -133,7 +133,7 @@ TEST_F(UnmaskCardRequestTest, DoesNotIncludeMerchantDomainWhenMissingField) {
       features::kAutofillEnableMerchantDomainInUnmaskCardRequest);
   PaymentsNetworkInterface::UnmaskRequestDetails request_details =
       GetDefaultUnmaskRequestDetails();
-  request_details.merchant_domain_for_footprints = absl::nullopt;
+  request_details.merchant_domain_for_footprints = std::nullopt;
   request_ = std::make_unique<UnmaskCardRequest>(
       request_details, /*full_sync_enabled=*/true,
       /*callback=*/base::DoNothing());
@@ -143,7 +143,7 @@ TEST_F(UnmaskCardRequestTest, DoesNotIncludeMerchantDomainWhenMissingField) {
 // Test to ensure response is correctly parsed when the FIDO challenge is
 // returned with context token.
 TEST_F(UnmaskCardRequestTest, FidoChallengeReturned_ParseResponse) {
-  absl::optional<base::Value> response = base::JSONReader::Read(
+  std::optional<base::Value> response = base::JSONReader::Read(
       "{\"fido_request_options\":{\"challenge\":\"fake_fido_challenge\"},"
       "\"context_token\":\"fake_context_token\"}");
   ASSERT_TRUE(response.has_value());
@@ -163,7 +163,7 @@ TEST_F(UnmaskCardRequestTest, FidoChallengeReturned_ParseResponse) {
 // Test to ensure the response is complete when context token is returned but
 // PAN is not.
 TEST_F(UnmaskCardRequestTest, ContextTokenReturned) {
-  absl::optional<base::Value> response =
+  std::optional<base::Value> response =
       base::JSONReader::Read("{\"context_token\":\"fake_context_token\"}");
   ASSERT_TRUE(response.has_value());
   GetRequest()->ParseResponse(response->GetDict());
@@ -175,7 +175,7 @@ TEST_F(UnmaskCardRequestTest, ContextTokenReturned) {
 // Test that the response is not complete when both context token and real PAN
 // are not returned.
 TEST_F(UnmaskCardRequestTest, ContextTokenAndPanNotReturned) {
-  absl::optional<base::Value> response = base::JSONReader::Read("{}");
+  std::optional<base::Value> response = base::JSONReader::Read("{}");
   ASSERT_TRUE(response.has_value());
   GetRequest()->ParseResponse(response->GetDict());
 
@@ -185,13 +185,12 @@ TEST_F(UnmaskCardRequestTest, ContextTokenAndPanNotReturned) {
 
 // Params of the VirtualCardUnmaskCardRequestTest:
 // -- autofill::CardUnmaskChallengeOptionType challenge_option_type
-// -- bool autofill_enable_email_otp_for_vcn_yellow_path
 // TODO(crbug.com/1430297): Extend this texting fixture to test the OTP cases as
 // well.
 class VirtualCardUnmaskCardRequestTest
     : public UnmaskCardRequestTest,
       public testing::WithParamInterface<
-          std::tuple<autofill::CardUnmaskChallengeOptionType, bool>> {
+          autofill::CardUnmaskChallengeOptionType> {
  public:
   VirtualCardUnmaskCardRequestTest() {
     if (IsCvcChallengeOption()) {
@@ -204,13 +203,8 @@ class VirtualCardUnmaskCardRequestTest
       const VirtualCardUnmaskCardRequestTest&) = delete;
   ~VirtualCardUnmaskCardRequestTest() override = default;
 
-  bool IsAutofillEnableEmailOtpForVcnYellowPathTurnedOn() {
-    return std::get<1>(GetParam());
-  }
-
   bool IsCvcChallengeOption() {
-    return std::get<0>(GetParam()) ==
-           autofill::CardUnmaskChallengeOptionType::kCvc;
+    return GetParam() == autofill::CardUnmaskChallengeOptionType::kCvc;
   }
 
  private:
@@ -279,11 +273,7 @@ TEST_P(VirtualCardUnmaskCardRequestTest,
 
 TEST_P(VirtualCardUnmaskCardRequestTest,
        ChallengeOptionsReturned_ParseResponse) {
-  base::test::ScopedFeatureList feature_list_email_otp;
-  feature_list_email_otp.InitWithFeatureState(
-      features::kAutofillEnableEmailOtpForVcnYellowPath,
-      /*enabled=*/IsAutofillEnableEmailOtpForVcnYellowPathTurnedOn());
-  absl::optional<base::Value> response = base::JSONReader::Read(
+  std::optional<base::Value> response = base::JSONReader::Read(
       "{\"fido_request_options\": {\"challenge\": \"fake_fido_challenge\"}, "
       "\"context_token\": \"fake_context_token\", \"idv_challenge_options\": "
       "[{\"sms_otp_challenge_option\": {\"challenge_id\": "
@@ -311,11 +301,7 @@ TEST_P(VirtualCardUnmaskCardRequestTest,
   // Verify the six challenge options are two SMS OTP challenge options, two
   // email OTP challenge options and two CVC challenge option, and fields can be
   // correctly parsed.
-  if (IsAutofillEnableEmailOtpForVcnYellowPathTurnedOn()) {
-    ASSERT_EQ(6u, response_details.card_unmask_challenge_options.size());
-  } else {
-    ASSERT_EQ(4u, response_details.card_unmask_challenge_options.size());
-  }
+  ASSERT_EQ(6u, response_details.card_unmask_challenge_options.size());
 
   const CardUnmaskChallengeOption& challenge_option_1 =
       response_details.card_unmask_challenge_options[0];
@@ -349,23 +335,19 @@ TEST_P(VirtualCardUnmaskCardRequestTest,
   EXPECT_EQ(4u, challenge_option_4.challenge_input_length);
   EXPECT_EQ(CvcPosition::kFrontOfCard, challenge_option_4.cvc_position);
 
-  if (IsAutofillEnableEmailOtpForVcnYellowPathTurnedOn()) {
-    const CardUnmaskChallengeOption& challenge_option_5 =
-        response_details.card_unmask_challenge_options[4];
-    EXPECT_EQ(CardUnmaskChallengeOptionType::kEmailOtp,
-              challenge_option_5.type);
-    EXPECT_EQ("fake_challenge_id_5", challenge_option_5.id.value());
-    EXPECT_EQ(u"a******b@google.com", challenge_option_5.challenge_info);
-    EXPECT_EQ(6u, challenge_option_5.challenge_input_length);
+  const CardUnmaskChallengeOption& challenge_option_5 =
+      response_details.card_unmask_challenge_options[4];
+  EXPECT_EQ(CardUnmaskChallengeOptionType::kEmailOtp, challenge_option_5.type);
+  EXPECT_EQ("fake_challenge_id_5", challenge_option_5.id.value());
+  EXPECT_EQ(u"a******b@google.com", challenge_option_5.challenge_info);
+  EXPECT_EQ(6u, challenge_option_5.challenge_input_length);
 
-    const CardUnmaskChallengeOption& challenge_option_6 =
-        response_details.card_unmask_challenge_options[5];
-    EXPECT_EQ(CardUnmaskChallengeOptionType::kEmailOtp,
-              challenge_option_6.type);
-    EXPECT_EQ("fake_challenge_id_6", challenge_option_6.id.value());
-    EXPECT_EQ(u"c******d@google.com", challenge_option_6.challenge_info);
-    EXPECT_EQ(4u, challenge_option_6.challenge_input_length);
-  }
+  const CardUnmaskChallengeOption& challenge_option_6 =
+      response_details.card_unmask_challenge_options[5];
+  EXPECT_EQ(CardUnmaskChallengeOptionType::kEmailOtp, challenge_option_6.type);
+  EXPECT_EQ("fake_challenge_id_6", challenge_option_6.id.value());
+  EXPECT_EQ(u"c******d@google.com", challenge_option_6.challenge_info);
+  EXPECT_EQ(4u, challenge_option_6.challenge_input_length);
 }
 
 TEST_P(VirtualCardUnmaskCardRequestTest, IsRetryableFailure) {
@@ -376,7 +358,7 @@ TEST_P(VirtualCardUnmaskCardRequestTest, IsRetryableFailure) {
 
     // Test that `IsRetryableFailure()` returns true if a flow status is
     // present.
-    absl::optional<base::Value> response = base::JSONReader::Read(
+    std::optional<base::Value> response = base::JSONReader::Read(
         "{\"flow_status\": \"FLOW_STATUS_INCORRECT_ACCOUNT_SECURITY_CODE\"}");
     ASSERT_TRUE(response);
     GetRequest()->ParseResponse(response->GetDict());
@@ -414,8 +396,6 @@ TEST_P(VirtualCardUnmaskCardRequestTest, IsRetryableFailure) {
 INSTANTIATE_TEST_SUITE_P(
     ,
     VirtualCardUnmaskCardRequestTest,
-    testing::Combine(
-        testing::Values(autofill::CardUnmaskChallengeOptionType::kCvc),
-        testing::Bool()));
+    testing::Values(autofill::CardUnmaskChallengeOptionType::kCvc));
 
 }  // namespace autofill::payments

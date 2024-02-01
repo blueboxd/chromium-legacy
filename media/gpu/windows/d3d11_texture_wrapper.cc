@@ -235,11 +235,11 @@ DefaultTexture2DWrapper::GpuResources::GpuResources(
   }
 
   // Usage flags to allow the display compositor to draw from it, video to
-  // decode, and allow webgl/canvas access.
+  // decode from it, and webgl/canvas to read from it.
   uint32_t usage =
-      gpu::SHARED_IMAGE_USAGE_VIDEO_DECODE | gpu::SHARED_IMAGE_USAGE_GLES2 |
-      gpu::SHARED_IMAGE_USAGE_RASTER | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-      gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      gpu::SHARED_IMAGE_USAGE_VIDEO_DECODE |
+      gpu::SHARED_IMAGE_USAGE_GLES2_READ | gpu::SHARED_IMAGE_USAGE_RASTER_READ |
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   scoped_refptr<gpu::DXGISharedHandleState> dxgi_shared_handle_state;
   D3D11_TEXTURE2D_DESC desc = {};
@@ -287,8 +287,8 @@ DefaultTexture2DWrapper::GpuResources::GpuResources(
         gpu::D3DImageBacking::Create(
             mailboxes[0], DXGIFormatToMultiPlanarSharedImageFormat(dxgi_format),
             size, color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-            usage, texture, std::move(dxgi_shared_handle_state), caps,
-            GL_TEXTURE_EXTERNAL_OES, array_slice, /*plane_index=*/0u);
+            usage, "VideoTexture", texture, std::move(dxgi_shared_handle_state),
+            caps, GL_TEXTURE_EXTERNAL_OES, array_slice, /*plane_index=*/0u);
     if (backing) {
       // Need to clear the backing since the D3D11 Video Decoder will initialize
       // the textures.

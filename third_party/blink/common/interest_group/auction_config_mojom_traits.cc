@@ -154,6 +154,17 @@ bool StructTraits<
   return true;
 }
 
+bool StructTraits<
+    blink::mojom::AuctionReportBuyerDebugModeConfigDataView,
+    blink::AuctionConfig::NonSharedParams::AuctionReportBuyerDebugModeConfig>::
+    Read(blink::mojom::AuctionReportBuyerDebugModeConfigDataView data,
+         blink::AuctionConfig::NonSharedParams::
+             AuctionReportBuyerDebugModeConfig* out) {
+  out->is_enabled = data.is_enabled();
+  out->debug_key = data.debug_key();
+  return true;
+}
+
 bool StructTraits<blink::mojom::AuctionAdServerResponseConfigDataView,
                   blink::AuctionConfig::ServerResponseConfig>::
     Read(blink::mojom::AuctionAdServerResponseConfigDataView data,
@@ -179,6 +190,8 @@ bool StructTraits<blink::mojom::AuctionAdConfigNonSharedParamsDataView,
       !data.ReadAllBuyersPrioritySignals(&out->all_buyers_priority_signals) ||
       !data.ReadAuctionReportBuyerKeys(&out->auction_report_buyer_keys) ||
       !data.ReadAuctionReportBuyers(&out->auction_report_buyers) ||
+      !data.ReadAuctionReportBuyerDebugModeConfig(
+          &out->auction_report_buyer_debug_mode_config) ||
       !data.ReadRequiredSellerCapabilities(
           &out->required_seller_capabilities) ||
       !data.ReadRequestedSize(&out->requested_size) ||
@@ -268,6 +281,13 @@ bool StructTraits<blink::mojom::AuctionAdConfigDataView, blink::AuctionConfig>::
     return false;
   }
 
+  // Negative length limit is invalid.
+  if (data.max_trusted_scoring_signals_url_length() < 0) {
+    return false;
+  }
+  out->max_trusted_scoring_signals_url_length =
+      data.max_trusted_scoring_signals_url_length();
+
   out->expects_additional_bids = data.expects_additional_bids();
   // An auction that expects additional bids must have an auction nonce provided
   // on the config.
@@ -291,13 +311,8 @@ bool StructTraits<blink::mojom::AuctionAdConfigDataView, blink::AuctionConfig>::
   out->expects_direct_from_seller_signals_header_ad_slot =
       data.expects_direct_from_seller_signals_header_ad_slot();
 
-  if (data.has_seller_experiment_group_id()) {
-    out->seller_experiment_group_id = data.seller_experiment_group_id();
-  }
-
-  if (data.has_all_buyer_experiment_group_id()) {
-    out->all_buyer_experiment_group_id = data.all_buyer_experiment_group_id();
-  }
+  out->seller_experiment_group_id = data.seller_experiment_group_id();
+  out->all_buyer_experiment_group_id = data.all_buyer_experiment_group_id();
 
   // Seller must be HTTPS. This also excludes opaque origins, for which scheme()
   // returns an empty string.

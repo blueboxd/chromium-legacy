@@ -81,6 +81,15 @@ class RealboxActionElement extends PolymerElement {
   private hintHtml_: TrustedHTML;
   private tooltip_: string;
 
+  override ready() {
+    super.ready();
+
+    this.addEventListener('click', (event) => this.onActionClick_(event));
+    this.addEventListener('keydown', (event) => this.onActionKeyDown_(event));
+    this.addEventListener(
+        'mousedown', (event) => this.onActionMouseDown_(event));
+  }
+
   private onActionClick_(e: MouseEvent|KeyboardEvent) {
     this.dispatchEvent(new CustomEvent('execute-action', {
       bubbles: true,
@@ -98,6 +107,12 @@ class RealboxActionElement extends PolymerElement {
   private onActionKeyDown_(e: KeyboardEvent) {
     if (e.key && (e.key === 'Enter' || e.key === ' ')) {
       this.onActionClick_(e);
+    }
+  }
+
+  private onActionMouseDown_(e: Event) {
+    if (loadTimeData.getBoolean('realboxCr23ExpandedStateLayout')) {
+      e.preventDefault();  // Prevents default browser action (focus).
     }
   }
 

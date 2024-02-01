@@ -838,8 +838,14 @@ class AXPosition {
           return true;
         }
 
+        // If the anchor is ignored, then by default it will not have a
+        // PreviousOnLineID set since we only set this on unignored nodes.
+        // However, it could still have something previous to it on the same
+        // line, like for example if we have some text on the same line, and a
+        // text node in the middle is set to aria-hidden.
         return text_position->GetPreviousOnLineID() == kInvalidAXNodeID &&
-               text_position->AtStartOfAnchor();
+               text_position->AtStartOfAnchor() &&
+               !text_position->GetAnchor()->IsIgnored();
     }
   }
 
@@ -4357,15 +4363,12 @@ class AXPosition {
   // text representation. Some platforms use an embedded object replacement
   // character that replaces the text coming from most child nodes and empty
   // objects.
-  const std::u16string GetText(
+  std::u16string GetText(
       const AXEmbeddedObjectBehavior embedded_object_behavior =
           g_ax_embedded_object_behavior) const {
-    // Note that the use of `base::EmptyString16()` is a special case here. For
-    // performance reasons `base::EmptyString16()` should only be used when
-    // returning a const reference to a string and there is an error condition,
-    // not in any other case when an empty string16 is required.
-    if (IsNullPosition())
-      return base::EmptyString16();
+    if (IsNullPosition()) {
+      return std::u16string();
+    }
 
     static const base::NoDestructor<std::u16string> embedded_character_str(
         AXNode::kEmbeddedObjectCharacterUTF16);
@@ -4928,6 +4931,36 @@ class AXPosition {
                                      &next_on_line_id)) {
       return static_cast<AXNodeID>(next_on_line_id);
     }
+    AXNode* parent = GetAnchor()->GetUnignoredParent();
+
+    if (!parent) {
+      return kInvalidAXNodeID;
+    }
+
+    // We should not need to bubble up to find the NextOnLine if we are not
+    // in an InlineTextBox, because the only cases where the relevant NextOnLine
+    // information is stored in the parent is in cases where we have text inside
+    // inline-block elements.
+    //
+    // We only want to bubble up to the parent to find the nextOnLine
+    // if we are in a leaf that is a last child.
+    // This is because if we have a structure where there are multiple
+    // InlineTextBox children that are in different lines, and the parent's
+    // NextOnLine only applies to the last child.
+    if (GetAnchor()->GetRole() != ax::mojom::Role::kInlineTextBox ||
+        parent->GetLastUnignoredChild() != GetAnchor()) {
+      return kInvalidAXNodeID;
+    }
+
+    while (parent &&
+           !parent->GetIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                                    &next_on_line_id)) {
+      parent = parent->GetUnignoredParent();
+    }
+
+    if (parent) {
+      return static_cast<AXNodeID>(next_on_line_id);
+    }
     return kInvalidAXNodeID;
   }
 
@@ -4939,6 +4972,42 @@ class AXPosition {
     int previous_on_line_id;
     if (GetAnchor()->GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
                                      &previous_on_line_id)) {
+      return static_cast<AXNodeID>(previous_on_line_id);
+    }
+    AXNode* parent = GetAnchor()->GetUnignoredParent();
+
+    if (!parent) {
+      return kInvalidAXNodeID;
+    }
+
+    // We should not need to bubble up to find the PreviousOnLine if we are not
+    // in an InlineTextBox, because the only cases where the relevant
+    // PreviousOnLine information is stored in the parent is in cases where we
+    // have text inside inline-block elements.
+    //
+    // We have some expectations that
+    // line break elements are not expected to have a previous on line element.
+    //
+    // We only want to bubble up to the parent to find the previousOnLine
+    // if we are in a leaf that is a first child.
+    // This is because if we have a structure where there are multiple
+    // InlineTextBox children that are in different lines, and the parent's
+    // PreviousOnLine only applies to the first child.
+    parent->GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                            &previous_on_line_id);
+    if (GetAnchor()->GetRole() != ax::mojom::Role::kInlineTextBox ||
+        parent->GetRole() == ax::mojom::Role::kLineBreak ||
+        parent->GetFirstUnignoredChild() != GetAnchor()) {
+      return kInvalidAXNodeID;
+    }
+
+    while (parent &&
+           !parent->GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                                    &previous_on_line_id)) {
+      parent = parent->GetUnignoredParent();
+    }
+
+    if (parent) {
       return static_cast<AXNodeID>(previous_on_line_id);
     }
     return kInvalidAXNodeID;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/update_client/persisted_data.h"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -10,7 +12,6 @@
 #include "base/test/task_environment.h"
 #include "base/version.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/update_client/persisted_data.h"
 #include "components/update_client/test_activity_data_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +67,17 @@ TEST(PersistedDataTest, Simple) {
   EXPECT_FALSE(metadata->GetProductVersion("someappid").IsValid());
   metadata->SetProductVersion("someappid", base::Version("1.0"));
   EXPECT_EQ(base::Version("1.0"), metadata->GetProductVersion("someappid"));
+
+  EXPECT_FALSE(metadata->GetMaxPreviousProductVersion("someappid").IsValid());
+  metadata->SetMaxPreviousProductVersion("someappid", base::Version("1.0"));
+  EXPECT_EQ(base::Version("1.0"),
+            metadata->GetMaxPreviousProductVersion("someappid"));
+  metadata->SetMaxPreviousProductVersion("someappid", base::Version("2.0"));
+  EXPECT_EQ(base::Version("2.0"),
+            metadata->GetMaxPreviousProductVersion("someappid"));
+  metadata->SetMaxPreviousProductVersion("someappid", base::Version("1.5"));
+  EXPECT_EQ(base::Version("2.0"),
+            metadata->GetMaxPreviousProductVersion("someappid"));
 
   EXPECT_TRUE(metadata->GetFingerprint("someappid").empty());
   metadata->SetFingerprint("someappid", "somefingerprint");

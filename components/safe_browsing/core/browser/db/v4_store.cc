@@ -5,6 +5,7 @@
 #include "components/safe_browsing/core/browser/db/v4_store.h"
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 
 #include "base/base64.h"
@@ -26,7 +27,6 @@
 #include "components/safe_browsing/core/common/proto/webui.pb.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 using base::TimeTicks;
@@ -390,8 +390,7 @@ V4Store::V4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
 V4Store::~V4Store() = default;
 
 std::string V4Store::DebugString() const {
-  std::string state_base64;
-  base::Base64Encode(state_, &state_base64);
+  std::string state_base64 = base::Base64Encode(state_);
 
   return base::StringPrintf("path: %" PRFilePath "; state: %s",
                             store_path_.value().c_str(), state_base64.c_str());
@@ -755,7 +754,7 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
   // index is on the raw_removals list.
   int total_picked_from_old = 0;
   auto removals_iter =
-      raw_removals ? absl::make_optional(raw_removals->begin()) : absl::nullopt;
+      raw_removals ? std::make_optional(raw_removals->begin()) : std::nullopt;
   while (old_has_unmerged || additions_has_unmerged) {
     // If the same hash prefix appears in the existing store and the additions
     // list, something is clearly wrong. Discard the update.

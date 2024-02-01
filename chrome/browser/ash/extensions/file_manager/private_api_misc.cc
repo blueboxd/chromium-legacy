@@ -15,7 +15,6 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/webui/settings/public/constants/routes_util.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
@@ -61,6 +60,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -81,6 +81,7 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/display/screen.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "url/gurl.h"
 
@@ -518,7 +519,9 @@ FileManagerPrivateAddProvidedFileSystemFunction::Run() {
   // Show Connect To OneDrive dialog only when mounting ODFS for the first time.
   // There will already a ODFS mount if the user is requesting a new mount to
   // replace the unauthenticated one.
-  if (chromeos::cloud_upload::IsMicrosoftOfficeCloudUploadAllowed(profile) &&
+  if (ash::cloud_upload::
+          IsMicrosoftOfficeOneDriveIntegrationAllowedAndOdfsInstalled(
+              profile) &&
       params->provider_id == extension_misc::kODFSExtensionId &&
       first_file_system) {
     // Get Files App window, if it exists.
@@ -1063,13 +1066,10 @@ void FileManagerPrivateInternalGetRecentFilesFunction::
   DCHECK(entry_definition_list);
 
   // Remove all directories entries.
-  entry_definition_list->erase(
-      std::remove_if(entry_definition_list->begin(),
-                     entry_definition_list->end(),
-                     [](const file_manager::util::EntryDefinition& e) {
-                       return e.is_directory == true;
-                     }),
-      entry_definition_list->end());
+  std::erase_if(*entry_definition_list,
+                [](const file_manager::util::EntryDefinition& e) {
+                  return e.is_directory;
+                });
 
   Respond(
       WithArguments(file_manager::util::ConvertEntryDefinitionListToListValue(
@@ -1078,9 +1078,8 @@ void FileManagerPrivateInternalGetRecentFilesFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsTabletModeEnabledFunction::Run() {
-  ash::TabletMode* tablet_mode = ash::TabletMode::Get();
   return RespondNow(
-      WithArguments(tablet_mode ? tablet_mode->InTabletMode() : false));
+      WithArguments(display::Screen::GetScreen()->InTabletMode()));
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateOpenURLFunction::Run() {

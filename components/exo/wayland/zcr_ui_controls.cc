@@ -10,6 +10,7 @@
 
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/shell.h"
+#include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
@@ -37,8 +38,8 @@ struct UiControls::UiControlsState {
   UiControlsState(const UiControlsState&) = delete;
   UiControlsState& operator=(const UiControlsState&) = delete;
 
-  raw_ptr<Server, ExperimentalAsh> server_;
-  const raw_ptr<const Seat, ExperimentalAsh> seat_;
+  raw_ptr<Server> server_;
+  const raw_ptr<const Seat> seat_;
 
   // Keeps track of the IDs of pending requests for that we still need to emit
   // request_processed events. This is per wl_resource so that we can drop
@@ -48,7 +49,7 @@ struct UiControls::UiControlsState {
   // Keeps track of the original display spec to be restored on destroy.
   std::vector<display::ManagedDisplayInfo> original_displays_;
   // Pending display info to be added with display_info_done.
-  absl::optional<display::ManagedDisplayInfo> pending_display_;
+  std::optional<display::ManagedDisplayInfo> pending_display_;
   // Pending display info lists to be committed with display_info_list_done.
   std::vector<display::ManagedDisplayInfo> pending_display_info_list_;
 };
@@ -233,10 +234,10 @@ void ui_controls_set_display_info_device_scale_factor(
   auto* state = GetUserDataAs<UiControlsState>(resource);
   static_assert(sizeof(uint32_t) == sizeof(float),
                 "Sizes much match for reinterpret cast to be meaningful");
-  // reinterpret_cast is needed here because wayland doesn't support
+  // bit_cast is needed here because wayland doesn't support
   // float as primitive type and we are using 32 bits as storage.
   // static_cast won't work because the original value is integer.
-  float device_scale_factor = *reinterpret_cast<float*>(&scale_factor);
+  float device_scale_factor = base::bit_cast<float>(scale_factor);
 
   if (!state->pending_display_) {
     state->pending_display_ = display::ManagedDisplayInfo::CreateFromSpec({});

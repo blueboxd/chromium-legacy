@@ -68,9 +68,6 @@ class AutofillSettingsProfileEditTableViewControllerTest
   void CreateProfileData() {
     autofill::AutofillProfile profile = autofill::test::GetFullProfile2();
     [autofill_profile_edit_table_view_controller_
-        setHonorificPrefix:base::SysUTF16ToNSString(profile.GetRawInfo(
-                               autofill::NAME_HONORIFIC_PREFIX))];
-    [autofill_profile_edit_table_view_controller_
         setFullName:base::SysUTF16ToNSString(
                         profile.GetRawInfo(autofill::NAME_FULL))];
     [autofill_profile_edit_table_view_controller_
@@ -117,11 +114,7 @@ class AutofillSettingsProfileEditTableViewControllerTest
 // Default test case of no addresses or credit cards.
 TEST_F(AutofillSettingsProfileEditTableViewControllerTest, TestInitialization) {
   TableViewModel* model = [controller() tableViewModel];
-  int rowCnt =
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableSupportForHonorificPrefixes)
-          ? 11
-          : 10;
+  int rowCnt = 10;
 
   EXPECT_EQ(1, [model numberOfSections]);
   EXPECT_EQ(rowCnt, [model numberOfItemsInSection:0]);
@@ -163,19 +156,12 @@ class AutofillSettingsProfileEditTableViewControllerTestWithUnionViewEnabled
 
     autofill::AutofillProfile profile = autofill::test::GetFullProfile2();
     NSString* countryCode = base::SysUTF16ToNSString(
-        profile.GetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_COUNTRY));
+        profile.GetRawInfo(autofill::FieldType::ADDRESS_HOME_COUNTRY));
 
-    std::vector<std::pair<autofill::ServerFieldType, std::u16string>>
-        expected_values;
+    std::vector<std::pair<autofill::FieldType, std::u16string>> expected_values;
     for (size_t i = 0; i < std::size(kProfileFieldsToDisplay); ++i) {
       const AutofillProfileFieldDisplayInfo& field = kProfileFieldsToDisplay[i];
       if (!FieldIsUsedInAddress(field.autofillType, countryCode)) {
-        continue;
-      }
-
-      if (field.autofillType == autofill::NAME_HONORIFIC_PREFIX &&
-          !base::FeatureList::IsEnabled(
-              autofill::features::kAutofillEnableSupportForHonorificPrefixes)) {
         continue;
       }
 
@@ -254,11 +240,7 @@ class AutofillSettingsProfileEditTableViewControllerWithMigrationButtonTest
 TEST_F(AutofillSettingsProfileEditTableViewControllerWithMigrationButtonTest,
        TestElementsInView) {
   TableViewModel* model = [controller() tableViewModel];
-  int rowCnt =
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableSupportForHonorificPrefixes)
-          ? 13
-          : 12;
+  int rowCnt = 12;
 
   EXPECT_EQ(1, [model numberOfSections]);
   EXPECT_EQ(rowCnt, [model numberOfItemsInSection:0]);

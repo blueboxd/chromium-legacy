@@ -624,8 +624,8 @@ Request* Request::CreateRequestWithRequestOrString(
 
     network::mojom::blink::TrustTokenParams params;
     if (!ConvertTrustTokenToMojomAndCheckPermissions(
-            *init->privateToken(), execution_context, &exception_state,
-            &params)) {
+            *init->privateToken(), GetPSTFeatures(*execution_context),
+            &exception_state, &params)) {
       // Whenever parsing the trustToken argument fails, we expect a suitable
       // exception to be thrown.
       DCHECK(exception_state.HadException());
@@ -656,24 +656,15 @@ Request* Request::CreateRequestWithRequestOrString(
             exception_state));
   }
 
-  AbortSignal* request_signal = nullptr;
-  if (RuntimeEnabledFeatures::AbortSignalAnyEnabled()) {
-    // "Let  signals  be [|signal|] if  signal  is non-null; otherwise []."
-    HeapVector<Member<AbortSignal>> signals;
-    if (signal) {
-      signals.push_back(signal);
-    }
-    // "Set |r|'s signal to the result of creating a new dependent abort signal
-    // from |signals|".
-    request_signal = MakeGarbageCollected<AbortSignal>(script_state, signals);
-  } else {
-    request_signal =
-        MakeGarbageCollected<AbortSignal>(ExecutionContext::From(script_state));
-    // "If |signal| is not null, then make |r|’s signal follow |signal|."
-    if (signal) {
-      request_signal->Follow(script_state, signal);
-    }
+  // "Let  signals  be [|signal|] if  signal  is non-null; otherwise []."
+  HeapVector<Member<AbortSignal>> signals;
+  if (signal) {
+    signals.push_back(signal);
   }
+  // "Set |r|'s signal to the result of creating a new dependent abort signal
+  // from |signals|".
+  auto* request_signal =
+      MakeGarbageCollected<AbortSignal>(script_state, signals);
 
   // "Let |r| be a new Request object associated with |request| and a new
   // Headers object whose guard is "request"."
@@ -1070,17 +1061,12 @@ Request* Request::clone(ScriptState* script_state,
     return nullptr;
   Headers* headers = Headers::Create(request->HeaderList());
   headers->SetGuard(headers_->GetGuard());
-  AbortSignal* signal = nullptr;
-  if (RuntimeEnabledFeatures::AbortSignalAnyEnabled()) {
-    HeapVector<Member<AbortSignal>> signals;
-    CHECK(signal_);
-    signals.push_back(signal_);
-    signal = MakeGarbageCollected<AbortSignal>(script_state, signals);
-  } else {
-    signal =
-        MakeGarbageCollected<AbortSignal>(ExecutionContext::From(script_state));
-    signal->Follow(script_state, signal_);
-  }
+
+  HeapVector<Member<AbortSignal>> signals;
+  CHECK(signal_);
+  signals.push_back(signal_);
+  auto* signal = MakeGarbageCollected<AbortSignal>(script_state, signals);
+
   return MakeGarbageCollected<Request>(script_state, request, headers, signal);
 }
 

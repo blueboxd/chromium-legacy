@@ -4,11 +4,17 @@
 
 #include "ash/picker/picker_controller.h"
 
+#include "ash/picker/model/picker_search_results.h"
 #include "ash/public/cpp/picker/picker_client.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_ash_web_view_factory.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
+#include "ui/base/ime/fake_text_input_client.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/models/image_model.h"
 #include "ui/views/test/widget_test.h"
 
 namespace ash {
@@ -35,6 +41,9 @@ class TestPickerClient : public PickerClient {
       const ash::AshWebView::InitParams& params) override {
     return web_view_factory_.Create(params);
   }
+
+  void DownloadGifToString(const GURL& url,
+                           DownloadGifToStringCallback callback) override {}
 
  private:
   TestAshWebViewFactory web_view_factory_;
@@ -77,14 +86,14 @@ TEST_F(PickerControllerTest, ToggleWidgetShowsWidgetIfOpenedThenClosed) {
   EXPECT_TRUE(controller.widget_for_testing());
 }
 
-TEST_F(PickerControllerTest, SetClientToNullDestroysWidgetImmediately) {
+TEST_F(PickerControllerTest, SetClientToNullKeepsWidget) {
   PickerController controller;
   TestPickerClient client(&controller);
   controller.ToggleWidget();
 
   controller.SetClient(nullptr);
 
-  EXPECT_FALSE(controller.widget_for_testing());
+  EXPECT_TRUE(controller.widget_for_testing());
 }
 
 TEST_F(PickerControllerTest, ShowWidgetRecordsInputReadyLatency) {
@@ -98,6 +107,109 @@ TEST_F(PickerControllerTest, ShowWidgetRecordsInputReadyLatency) {
   widget_visible_waiter.Wait();
 
   histogram.ExpectTotalCount("Ash.Picker.Session.InputReadyLatency", 1);
+}
+
+TEST_F(PickerControllerTest, InsertResultDoesNothingWhenWidgetIsClosed) {
+  PickerController controller;
+  TestPickerClient client(&controller);
+  auto* input_method =
+      Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod();
+
+  controller.InsertResultOnNextFocus(PickerSearchResult::Text(u"abc"));
+  ui::FakeTextInputClient input_field(ui::TEXT_INPUT_TYPE_TEXT);
+  input_method->SetFocusedTextInputClient(&input_field);
+  absl::Cleanup focused_input_field_reset = [input_method] {
+    // Reset the input field since it will be destroyed before `input_method`.
+    input_method->SetFocusedTextInputClient(nullptr);
+  };
+
+  EXPECT_EQ(input_field.text(), u"");
+}
+
+TEST_F(PickerControllerTest, InsertTextResultInsertsIntoInputFieldAfterFocus) {
+  PickerController controller;
+  TestPickerClient client(&controller);
+  controller.ToggleWidget();
+  auto* input_method =
+      Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod();
+
+  controller.InsertResultOnNextFocus(PickerSearchResult::Text(u"abc"));
+  controller.widget_for_testing()->CloseNow();
+  ui::FakeTextInputClient input_field(ui::TEXT_INPUT_TYPE_TEXT);
+  input_method->SetFocusedTextInputClient(&input_field);
+  absl::Cleanup focused_input_field_reset = [input_method] {
+    // Reset the input field since it will be destroyed before `input_method`.
+    input_method->SetFocusedTextInputClient(nullptr);
+  };
+
+  EXPECT_EQ(input_field.text(), u"abc");
+}
+
+TEST_F(PickerControllerTest, InsertImageResultInsertsIntoInputFieldAfterFocus) {
+  PickerController controller;
+  TestPickerClient client(&controller);
+  controller.ToggleWidget();
+  auto* input_method =
+      Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod();
+
+  controller.InsertResultOnNextFocus(
+      PickerSearchResult::Gif(GURL("http://foo.com/fake.gif"), gfx::Size()));
+  controller.widget_for_testing()->CloseNow();
+  ui::FakeTextInputClient input_field(input_method,
+                                      {.type = ui::TEXT_INPUT_TYPE_TEXT});
+  input_method->SetFocusedTextInputClient(&input_field);
+
+  EXPECT_EQ(input_field.last_inserted_image_url(),
+            GURL("http://foo.com/fake.gif"));
+}
+
+TEST_F(PickerControllerTest,
+       InsertBrowsingHistoryResultInsertsIntoInputFieldAfterFocus) {
+  PickerController controller;
+  TestPickerClient client(&controller);
+  controller.ToggleWidget();
+  auto* input_method =
+      Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod();
+
+  controller.InsertResultOnNextFocus(PickerSearchResult::BrowsingHistory(
+      GURL("http://foo.com"), ui::ImageModel{}));
+  controller.widget_for_testing()->CloseNow();
+  ui::FakeTextInputClient input_field(input_method,
+                                      {.type = ui::TEXT_INPUT_TYPE_TEXT});
+  input_method->SetFocusedTextInputClient(&input_field);
+
+  EXPECT_EQ(input_field.text(), u"http://foo.com/");
+}
+
+TEST_F(PickerControllerTest, ShowingAndClosingWidgetRecordsUsageMetrics) {
+  base::HistogramTester histogram_tester;
+  PickerController controller;
+  TestPickerClient client(&controller);
+
+  // Show the widget twice.
+  controller.ToggleWidget();
+  task_environment()->FastForwardBy(base::Seconds(1));
+  controller.widget_for_testing()->CloseNow();
+  task_environment()->FastForwardBy(base::Seconds(2));
+  controller.ToggleWidget();
+  task_environment()->FastForwardBy(base::Seconds(3));
+  controller.widget_for_testing()->CloseNow();
+  task_environment()->FastForwardBy(base::Seconds(4));
+
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.FeatureUsage.Picker",
+      static_cast<int>(
+          feature_usage::FeatureUsageMetrics::Event::kUsedWithSuccess),
+      2);
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.FeatureUsage.Picker",
+      static_cast<int>(
+          feature_usage::FeatureUsageMetrics::Event::kUsedWithFailure),
+      0);
+  histogram_tester.ExpectTimeBucketCount("ChromeOS.FeatureUsage.Picker.Usetime",
+                                         base::Seconds(1), 1);
+  histogram_tester.ExpectTimeBucketCount("ChromeOS.FeatureUsage.Picker.Usetime",
+                                         base::Seconds(3), 1);
 }
 
 }  // namespace

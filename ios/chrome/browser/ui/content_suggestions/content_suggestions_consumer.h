@@ -8,14 +8,15 @@
 #import "base/ios/block_types.h"
 
 enum class ContentSuggestionsModuleType;
-@class ContentSuggestionsMostVisitedActionItem;
-@class ContentSuggestionsMostVisitedItem;
+@class MostVisitedTilesConfig;
 @class ContentSuggestionsReturnToRecentTabItem;
 @class ContentSuggestionsWhatsNewItem;
 @class QuerySuggestionConfig;
 @class SafetyCheckState;
+@class SetUpListConfig;
 enum class SetUpListItemType;
 @class SetUpListItemViewData;
+@class ShortcutsConfig;
 @class TabResumptionItem;
 @class ParcelTrackingItem;
 
@@ -54,21 +55,11 @@ struct MagicStackOrderChange {
 - (void)hideReturnToRecentTabTile;
 
 // Indicates to the consumer the current Most Visited tiles to show with
-// `configs`.
-- (void)setMostVisitedTilesWithConfigs:
-    (NSArray<ContentSuggestionsMostVisitedItem*>*)configs;
-
-// Indicates to the consumer the current Shortcuts tiles to show with `configs`.
-- (void)setShortcutTilesWithConfigs:
-    (NSArray<ContentSuggestionsMostVisitedActionItem*>*)configs;
-
-// Indicates to the consumer that the given `config` has updated data.
-- (void)updateShortcutTileConfig:
-    (ContentSuggestionsMostVisitedActionItem*)config;
-
-// Indicates to the consumer update the Most Visited tile associated with
 // `config`.
-- (void)updateMostVisitedTileConfig:(ContentSuggestionsMostVisitedItem*)config;
+- (void)setMostVisitedTilesConfig:(MostVisitedTilesConfig*)config;
+
+// Indicates to the consumer the current Shortcuts tiles `config`.
+- (void)setShortcutTilesConfig:(ShortcutsConfig*)configs;
 
 // Indicates to the consumer to set the Magic Stack module order as listed in
 // `order`.
@@ -88,6 +79,7 @@ struct MagicStackOrderChange {
 // Indicates to the consumer to display the SetUpList - a list of
 // tasks that a new user may want to complete.
 - (void)showSetUpListWithItems:(NSArray<SetUpListItemViewData*>*)items;
+- (void)showSetUpListModuleWithConfigs:(NSArray<SetUpListConfig*>*)configs;
 
 // Marks a Set Up List item complete with an animation and updated appearance.
 // Calls the `completion` block when the animation is finished.

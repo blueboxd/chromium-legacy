@@ -33,8 +33,6 @@ import static org.mockito.ArgumentMatchers.refEq;
 
 import static org.chromium.components.browser_ui.site_settings.AutoDarkMetrics.AutoDarkSettingsChangeSource.SITE_SETTINGS_GLOBAL;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
-import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_DISPLAY_SETTING_ENABLED;
-import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED;
 import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_WINDOW_SETTING_ENABLED;
 import static org.chromium.ui.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.ui.test.util.ViewUtils.VIEW_INVISIBLE;
@@ -79,6 +77,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
@@ -104,8 +104,6 @@ import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.pagecontroller.utils.UiAutomatorUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
@@ -1782,23 +1780,7 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ContentFeatureList.REQUEST_DESKTOP_SITE_ADDITIONS)
-    @DisableFeatures(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING)
-    public void testOnlyExpectedPreferencesRequestDesktopSiteAdditionalSettings() {
-        String[] rdsDisabled = {
-            "binary_toggle", "desktop_site_peripheral", "desktop_site_display", "add_exception"
-        };
-        testExpectedPreferences(
-                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
-                rdsDisabled,
-                BINARY_TOGGLE_WITH_EXCEPTION);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
     @EnableFeatures(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING)
-    @DisableFeatures(ContentFeatureList.REQUEST_DESKTOP_SITE_ADDITIONS)
     public void testOnlyExpectedPreferencesRequestDesktopSiteWindowSettings() {
         String[] rdsEnabled = {"binary_toggle", "desktop_site_window", "add_exception"};
         testExpectedPreferences(
@@ -2598,74 +2580,6 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @EnableFeatures(ContentFeatureList.REQUEST_DESKTOP_SITE_ADDITIONS)
-    public void testDesktopSitePeripherals() {
-        final SettingsActivity settingsActivity =
-                SiteSettingsTestUtils.startSiteSettingsCategory(
-                        SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE);
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    SingleCategorySettings preferences =
-                            (SingleCategorySettings) settingsActivity.getMainFragment();
-                    ChromeBaseCheckBoxPreference peripheralPref =
-                            preferences.findPreference(
-                                    SingleCategorySettings.DESKTOP_SITE_PERIPHERAL_TOGGLE_KEY);
-                    PrefService prefService = UserPrefs.get(getBrowserContextHandle());
-                    Assert.assertFalse(
-                            "Peripherals setting should be OFF.",
-                            prefService.getBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED));
-
-                    preferences.onPreferenceChange(peripheralPref, true);
-                    Assert.assertTrue(
-                            "Peripherals setting should be ON.",
-                            prefService.getBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED));
-
-                    preferences.onPreferenceChange(peripheralPref, false);
-                    Assert.assertFalse(
-                            "Peripherals setting should be OFF.",
-                            prefService.getBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED));
-                });
-        settingsActivity.finish();
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @EnableFeatures(ContentFeatureList.REQUEST_DESKTOP_SITE_ADDITIONS)
-    public void testDesktopSiteExternalDisplay() {
-        final SettingsActivity settingsActivity =
-                SiteSettingsTestUtils.startSiteSettingsCategory(
-                        SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE);
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    SingleCategorySettings preferences =
-                            (SingleCategorySettings) settingsActivity.getMainFragment();
-                    ChromeBaseCheckBoxPreference externalDisplayPref =
-                            preferences.findPreference(
-                                    SingleCategorySettings.DESKTOP_SITE_DISPLAY_TOGGLE_KEY);
-                    PrefService prefService = UserPrefs.get(getBrowserContextHandle());
-                    Assert.assertFalse(
-                            "Display setting should be OFF.",
-                            prefService.getBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED));
-
-                    preferences.onPreferenceChange(externalDisplayPref, true);
-                    Assert.assertTrue(
-                            "Display setting should be ON.",
-                            prefService.getBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED));
-
-                    preferences.onPreferenceChange(externalDisplayPref, false);
-                    Assert.assertFalse(
-                            "Display setting should be OFF.",
-                            prefService.getBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED));
-                });
-        settingsActivity.finish();
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
     @EnableFeatures(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING)
     public void testDesktopSiteWindowSettings() {
         final SettingsActivity settingsActivity =
@@ -2688,10 +2602,6 @@ public class SiteSettingsTest {
                             preferences.findPreference(
                                     SingleCategorySettings.DESKTOP_SITE_WINDOW_TOGGLE_KEY);
                     PrefService prefService = UserPrefs.get(getBrowserContextHandle());
-                    Assert.assertFalse(
-                            "Window setting should be OFF.",
-                            prefService.getBoolean(DESKTOP_SITE_WINDOW_SETTING_ENABLED));
-
                     preferences.onPreferenceChange(windowSettingPref, true);
                     Assert.assertTrue(
                             "Window setting should be ON.",
@@ -2921,7 +2831,7 @@ public class SiteSettingsTest {
     static class PermissionTestCase {
         protected final String mTestName;
         protected final @SiteSettingsCategory.Type int mSiteSettingsType;
-        protected final @ContentSettingsType int mContentSettingsType;
+        protected final @ContentSettingsType.EnumType int mContentSettingsType;
         protected final boolean mIsCategoryEnabled;
         protected final List<String> mExpectedPreferenceKeys;
 
@@ -2930,7 +2840,7 @@ public class SiteSettingsTest {
         PermissionTestCase(
                 final String testName,
                 @SiteSettingsCategory.Type final int siteSettingsType,
-                @ContentSettingsType final int contentSettingsType,
+                @ContentSettingsType.EnumType final int contentSettingsType,
                 final boolean enabled) {
             mTestName = testName;
             mSiteSettingsType = siteSettingsType;

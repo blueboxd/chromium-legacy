@@ -4,7 +4,7 @@
 
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 
-#include "base/system/sys_info.h"
+#include "base/mac/mac_util.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/branded_strings.h"
@@ -27,23 +27,20 @@ Obsoleteness OsObsoleteness() {
 namespace ObsoleteSystem {
 
 bool IsObsoleteNowOrSoon() {
-  return OsObsoleteness() != Obsoleteness::NotObsolete;
+#if CHROME_VERSION_MAJOR >= 126
+  return base::mac::MacOSMajorVersion() < 11;
+#else
+  return false;
+#endif
 }
 
 std::u16string LocalizedObsoleteString() {
-  switch (OsObsoleteness()) {
-    case Obsoleteness::MacOS1013Obsolete:
-      return l10n_util::GetStringUTF16(IDS_MAC_10_13_OBSOLETE);
-    case Obsoleteness::MacOS1014Obsolete:
-      return l10n_util::GetStringUTF16(IDS_MAC_10_14_OBSOLETE);
-    default:
-      return std::u16string();
-  }
+  return l10n_util::GetStringUTF16(IDS_MACOS_OBSOLETE);
 }
 
 bool IsEndOfTheLine() {
-  // M116 is the last milestone supporting macOS 10.13 and macOS 10.14.
-  return CHROME_VERSION_MAJOR >= 116;
+  // M128 is the last milestone supporting macOS 10.15.
+  return CHROME_VERSION_MAJOR >= 128;
 }
 
 const char* GetLinkURL() {

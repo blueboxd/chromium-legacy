@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
+#include "chrome/browser/nearby_sharing/nearby_share_error.h"
 #include "chrome/browser/nearby_sharing/nearby_share_feature_status.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_connections_types.mojom.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_decoder_types.mojom.h"
@@ -25,7 +26,7 @@ const uint64_t k5MbInBytes = 5242880;
 // numeric values should never be reused. The numbers here correspond to the
 // ordering of the flow. This enum should be kept in sync with the
 // NearbyShareBackgroundScanningSetupNotificationFlowEvent enum in
-// src/tools/metrics/histograms/enums.xml.
+// //tools/metrics/histograms/metadata/nearby/enums.xml.
 enum class BackgroundScanningDevicesDetectedEvent {
   kNearbyDevicesDetected = 1,
   kMaxValue = kNearbyDevicesDetected
@@ -33,7 +34,9 @@ enum class BackgroundScanningDevicesDetectedEvent {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. If entries are added, kMaxValue should
-// be updated.
+// be updated. This enum should be kept in sync with the
+// NearbyShareTransferFinalStatus enum in
+// //tools/metrics/histograms/metadata/nearby/enums.xml.
 enum class TransferFinalStatus {
   kComplete = 0,
   kUnknown = 1,
@@ -62,7 +65,9 @@ enum class TransferFinalStatus {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. If entries are added, kMaxValue should
-// be updated.
+// be updated. This enum should be kept in sync with the
+// NearbyShareStartAdvertisingFailureReason enum in
+// //tools/metrics/histograms/metadata/nearby/enums.xml.
 enum class StartAdvertisingFailureReason {
   kUnknown = 0,
   kError = 1,
@@ -77,7 +82,8 @@ enum class StartAdvertisingFailureReason {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. If entries are added, kMaxValue should
-// be updated.
+// be updated. This enum should be kept in sync with the NearbyShareFinalStatus
+// enum in //tools/metrics/histograms/metadata/nearby/enums.xml.
 enum class FinalStatus {
   kSuccess = 0,
   kFailure = 1,
@@ -87,7 +93,9 @@ enum class FinalStatus {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. If entries are added, kMaxValue should
-// be updated.
+// be updated. This enum should be kept in sync with the
+// NearbyShareAttachmentType enum in
+// //tools/metrics/histograms/metadata/nearby/enums.xml.
 enum class AttachmentType {
   kUnknownFileType = 0,
   kUnknownTextType = 1,
@@ -105,7 +113,9 @@ enum class AttachmentType {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. If entries are added, kMaxValue should
-// be updated.
+// be updated. This enum should be kept in sync with the
+// NearbyShareUpgradedMedium enum in
+// //tools/metrics/histograms/metadata/nearby/enums.xml.
 enum class UpgradedMedium {
   kUnknown = 0,
   kMdns = 1,
@@ -304,7 +314,7 @@ std::string GetPayloadStatusSubcategoryName(
 }
 
 std::string GetUpgradedMediumSubcategoryName(
-    absl::optional<nearby::connections::mojom::Medium> last_upgraded_medium) {
+    std::optional<nearby::connections::mojom::Medium> last_upgraded_medium) {
   if (!last_upgraded_medium) {
     return ".NoMediumUpgrade";
   }
@@ -329,7 +339,7 @@ std::string GetUpgradedMediumSubcategoryName(
 }
 
 UpgradedMedium GetUpgradedMediumForMetrics(
-    absl::optional<nearby::connections::mojom::Medium> last_upgraded_medium) {
+    std::optional<nearby::connections::mojom::Medium> last_upgraded_medium) {
   if (!last_upgraded_medium) {
     return UpgradedMedium::kNoUpgrade;
   }
@@ -531,7 +541,7 @@ void RecordNearbySharePayloadFileOperationMetrics(
     return;
   }
 
-  const absl::optional<base::FilePath>& path =
+  const std::optional<base::FilePath>& path =
       share_target.file_attachments[0].file_path();
   if (path) {
     // To determine the file path type, only first attachment file is checked as
@@ -556,7 +566,7 @@ void RecordNearbySharePayloadFileOperationMetrics(
 
 void RecordNearbySharePayloadFinalStatusMetric(
     nearby::connections::mojom::PayloadStatus status,
-    absl::optional<nearby::connections::mojom::Medium> medium) {
+    std::optional<nearby::connections::mojom::Medium> medium) {
   DCHECK_NE(status, nearby::connections::mojom::PayloadStatus::kInProgress);
   base::UmaHistogramEnumeration("Nearby.Share.Payload.FinalStatus",
                                 PayloadStatusToFinalStatus(status));
@@ -566,7 +576,7 @@ void RecordNearbySharePayloadFinalStatusMetric(
 }
 
 void RecordNearbySharePayloadMediumMetric(
-    absl::optional<nearby::connections::mojom::Medium> medium,
+    std::optional<nearby::connections::mojom::Medium> medium,
     nearby_share::mojom::ShareTargetType type,
     uint64_t num_bytes_transferred) {
   base::UmaHistogramEnumeration("Nearby.Share.Payload.Medium",
@@ -601,7 +611,7 @@ void RecordNearbySharePayloadNumAttachmentsMetric(
 void RecordNearbySharePayloadSizeMetric(
     bool is_incoming,
     nearby_share::mojom::ShareTargetType type,
-    absl::optional<nearby::connections::mojom::Medium> last_upgraded_medium,
+    std::optional<nearby::connections::mojom::Medium> last_upgraded_medium,
     nearby::connections::mojom::PayloadStatus status,
     uint64_t payload_size_bytes) {
   DCHECK_NE(status, nearby::connections::mojom::PayloadStatus::kInProgress);
@@ -625,7 +635,7 @@ void RecordNearbySharePayloadSizeMetric(
 void RecordNearbySharePayloadTransferRateMetric(
     bool is_incoming,
     nearby_share::mojom::ShareTargetType type,
-    absl::optional<nearby::connections::mojom::Medium> last_upgraded_medium,
+    std::optional<nearby::connections::mojom::Medium> last_upgraded_medium,
     nearby::connections::mojom::PayloadStatus status,
     uint64_t transferred_payload_bytes,
     base::TimeDelta time_elapsed) {
@@ -721,7 +731,7 @@ void RecordNearbyShareTransferFinalStatusMetric(
   // Log the transfer success/failure for high-level success and Critical User
   // Journey (CUJ) metrics.
   {
-    absl::optional<bool> success;
+    std::optional<bool> success;
     switch (TransferMetadata::ToResult(status)) {
       case TransferMetadata::Result::kSuccess:
         success = true;
@@ -917,4 +927,14 @@ void RecordNearbyShareStartSendFilesToAllFilesSentDuration(
 void RecordNearbyShareInitiatedToAllFilesSentDuration(base::TimeDelta delta) {
   base::UmaHistogramLongTimes(
       "Nearby.Share.TransferDuration.Sender.InitiatedToAllFilesSent", delta);
+}
+
+void RecordNearbyShareError(NearbyShareError error_code) {
+  base::UmaHistogramEnumeration("Nearby.Share.Error", error_code);
+}
+
+void RecordNearbySharePairedKeyVerificationError(
+    NearbySharePairedKeyVerificationError error) {
+  base::UmaHistogramEnumeration("Nearby.Share.PairedKeyVerificationError",
+                                error);
 }

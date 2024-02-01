@@ -40,12 +40,10 @@ class PrivacySandboxService : public KeyedService {
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
   enum class PromptType {
     kNone = 0,
-    kNotice = 1,
-    kConsent = 2,
-    kM1Consent = 3,
-    kM1NoticeROW = 4,
-    kM1NoticeEEA = 5,
-    kM1NoticeRestricted = 6,
+    kM1Consent = 1,
+    kM1NoticeROW = 2,
+    kM1NoticeEEA = 3,
+    kM1NoticeRestricted = 4,
     kMaxValue = kM1NoticeRestricted,
   };
 
@@ -96,8 +94,11 @@ class PrivacySandboxService : public KeyedService {
     kMaxValue = kRestrictedNoticeMoreButtonClicked,
   };
 
-  // TODO(crbug.com/1378703): Integrate this when handling Notice and Consent
-  // logic for m1.
+  // If during the trials a previous consent decision was made, or the notice
+  // was already acknowledged, and the privacy sandbox is disabled,
+  // `prefs::kPrivacySandboxM1PromptSuppressed` was set to either
+  // `kTrialsConsentDeclined` or `kTrialsDisabledAfterNotice` accordingly and
+  // the prompt is suppressed. This logic is now deprecated after launching GA.
   enum class PromptSuppressedReason {
     // Prompt has never been suppressed
     kNone = 0,
@@ -166,29 +167,10 @@ class PrivacySandboxService : public KeyedService {
   // Chrome build.
   virtual void ForceChromeBuildForTests(bool force_chrome_build) = 0;
 
-  // Disables the Privacy Sandbox completely if |enabled| is false. If |enabled|
-  // is true, context specific as well as restriction checks will still be
-  // performed to determine if specific APIs are available in specific contexts.
-  virtual void SetPrivacySandboxEnabled(bool enabled) = 0;
-
-  // Used by the UI to check if the API is enabled. This is a UI function ONLY.
-  // Checks the primary pref directly, and _only_ the primary pref. There are
-  // many other reasons that API access may be denied that are not checked by
-  // this function. All decisions for allowing access to APIs should be routed
-  // through the PrivacySandboxSettings class.
-  // TODO(crbug.com/1310157): Rename this function to better reflect this.
-  virtual bool IsPrivacySandboxEnabled() = 0;
-
-  // Returns whether the state of the API is managed.
-  virtual bool IsPrivacySandboxManaged() = 0;
-
   // Returns whether the Privacy Sandbox is currently restricted for the
   // profile. UI code should consult this to ensure that when restricted,
   // Privacy Sandbox related UI is updated appropriately.
   virtual bool IsPrivacySandboxRestricted() = 0;
-
-  // Called when the V2 Privacy Sandbox preference is changed.
-  virtual void OnPrivacySandboxV2PrefChanged() = 0;
 
   // Returns whether the Privacy Sandbox is configured to show a restricted
   // notice.
@@ -210,15 +192,15 @@ class PrivacySandboxService : public KeyedService {
   GetSampleFirstPartySets() const = 0;
 
   // Returns the owner domain of the first party set that `site_url` is a member
-  // of, or absl::nullopt if `site_url` is not recognised as a member of an FPS.
+  // of, or std::nullopt if `site_url` is not recognised as a member of an FPS.
   // Encapsulates logic about whether FPS information should be shown, if it
-  // should not, absl::nullopt is always returned.
+  // should not, std::nullopt is always returned.
   // Virtual for mocking in tests.
-  virtual absl::optional<net::SchemefulSite> GetFirstPartySetOwner(
+  virtual std::optional<net::SchemefulSite> GetFirstPartySetOwner(
       const GURL& site_url) const = 0;
 
   // Same as GetFirstPartySetOwner but returns a formatted string.
-  virtual absl::optional<std::u16string> GetFirstPartySetOwnerForDisplay(
+  virtual std::optional<std::u16string> GetFirstPartySetOwnerForDisplay(
       const GURL& site_url) const = 0;
 
   // Returns true if `site`'s membership in an FPS is being managed by policy or
@@ -258,6 +240,17 @@ class PrivacySandboxService : public KeyedService {
   // Virtual for mocking in tests.
   virtual std::vector<privacy_sandbox::CanonicalTopic> GetBlockedTopics()
       const = 0;
+
+  // Returns the first level topic: they are the root topics, meaning that they
+  // have no parent.
+  virtual std::vector<privacy_sandbox::CanonicalTopic> GetFirstLevelTopics()
+      const = 0;
+
+  // Returns the list of assigned children topics (direct or indirect) of the
+  // passed-in topic.
+  virtual std::vector<privacy_sandbox::CanonicalTopic>
+  GetChildTopicsCurrentlyAssigned(
+      const privacy_sandbox::CanonicalTopic& topic) const = 0;
 
   // Sets a |topic_id|, as both a top topic and topic provided to the web, to be
   // allowed/blocked based on the value of |allowed|. This is stored to

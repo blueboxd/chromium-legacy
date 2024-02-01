@@ -13,9 +13,9 @@
 #import "ios/chrome/app/application_delegate/fake_startup_information.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/default_browser/model/utils_test_support.h"
-#import "ios/chrome/browser/promos_manager/constants.h"
-#import "ios/chrome/browser/promos_manager/features.h"
-#import "ios/chrome/browser/promos_manager/mock_promos_manager.h"
+#import "ios/chrome/browser/promos_manager/model/constants.h"
+#import "ios/chrome/browser/promos_manager/model/features.h"
+#import "ios/chrome/browser/promos_manager/model/mock_promos_manager.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/test/fake_scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -58,7 +58,6 @@ class DefaultBrowserPromoSceneAgentTest : public PlatformTest {
         [[FakeStartupInformation alloc] init];
     app_state_ =
         [[AppState alloc] initWithStartupInformation:startup_information];
-    app_state_.mainBrowserState = browser_state_.get();
     scene_state_ =
         [[FakeSceneState alloc] initWithAppState:app_state_
                                     browserState:browser_state_.get()];

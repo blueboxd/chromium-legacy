@@ -42,16 +42,18 @@ class PageInfoMainView : public views::View,
                          public PageInfoUI,
                          public PermissionToggleRowViewObserver,
                          public ChosenObjectViewObserver {
+  METADATA_HEADER(PageInfoMainView, views::View)
+
  public:
-  METADATA_HEADER(PageInfoMainView);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kCookieButtonElementId);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kMainLayoutElementId);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kPermissionsElementId);
   // Container view that fills the bubble width for button rows. Supports
   // updating the layout.
   class ContainerView : public views::View {
+    METADATA_HEADER(ContainerView, views::View)
+
    public:
-    METADATA_HEADER(ContainerView);
     ContainerView();
 
     // Notifies that preferred size changed and updates the layout.
@@ -84,6 +86,11 @@ class PageInfoMainView : public views::View,
 
   int GetVisiblePermissionsCountForTesting() const {
     return toggle_rows_.size();
+  }
+
+  const std::vector<raw_ptr<PermissionToggleRowView, VectorExperimental>>&
+  GetToggleRowsForTesting() const {
+    return toggle_rows_;
   }
 
  protected:
@@ -172,9 +179,11 @@ class PageInfoMainView : public views::View,
   // These rows bundle together all the |View|s involved in a single row of the
   // permissions section, and keep those views updated when the underlying
   // |Permission| changes.
-  std::vector<PermissionToggleRowView*> toggle_rows_;
+  std::vector<raw_ptr<PermissionToggleRowView, VectorExperimental>>
+      toggle_rows_;
 
-  std::vector<ChosenObjectView*> chosen_object_rows_;
+  std::vector<raw_ptr<ChosenObjectView, VectorExperimental>>
+      chosen_object_rows_;
 
   raw_ptr<views::Label> title_ = nullptr;
 

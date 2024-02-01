@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INTEREST_GROUP_AUCTION_CONFIG_MOJOM_TRAITS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_INTEREST_GROUP_AUCTION_CONFIG_MOJOM_TRAITS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -217,6 +219,27 @@ struct BLINK_COMMON_EXPORT StructTraits<
 };
 
 template <>
+struct BLINK_COMMON_EXPORT StructTraits<
+    blink::mojom::AuctionReportBuyerDebugModeConfigDataView,
+    blink::AuctionConfig::NonSharedParams::AuctionReportBuyerDebugModeConfig> {
+  static bool is_enabled(const blink::AuctionConfig::NonSharedParams::
+                             AuctionReportBuyerDebugModeConfig& params) {
+    return params.is_enabled;
+  }
+
+  static absl::optional<uint64_t> debug_key(
+      const blink::AuctionConfig::NonSharedParams::
+          AuctionReportBuyerDebugModeConfig& params) {
+    return params.debug_key;
+  }
+
+  static bool Read(
+      blink::mojom::AuctionReportBuyerDebugModeConfigDataView data,
+      blink::AuctionConfig::NonSharedParams::AuctionReportBuyerDebugModeConfig*
+          out);
+};
+
+template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::AuctionAdServerResponseConfigDataView,
                  blink::AuctionConfig::ServerResponseConfig> {
@@ -315,6 +338,13 @@ struct BLINK_COMMON_EXPORT
     return params.auction_report_buyers;
   }
 
+  static const absl::optional<
+      blink::AuctionConfig::NonSharedParams::AuctionReportBuyerDebugModeConfig>&
+  auction_report_buyer_debug_mode_config(
+      const blink::AuctionConfig::NonSharedParams& params) {
+    return params.auction_report_buyer_debug_mode_config;
+  }
+
   static const blink::SellerCapabilitiesType required_seller_capabilities(
       const blink::AuctionConfig::NonSharedParams& params) {
     return params.required_seller_capabilities;
@@ -367,6 +397,11 @@ struct BLINK_COMMON_EXPORT
     return config.trusted_scoring_signals_url;
   }
 
+  static int32_t max_trusted_scoring_signals_url_length(
+      const blink::AuctionConfig& config) {
+    return config.max_trusted_scoring_signals_url_length;
+  }
+
   static const blink::AuctionConfig::NonSharedParams&
   auction_ad_config_non_shared_params(const blink::AuctionConfig& config) {
     return config.non_shared_params;
@@ -382,24 +417,15 @@ struct BLINK_COMMON_EXPORT
     return params.expects_direct_from_seller_signals_header_ad_slot;
   }
 
-  static bool has_seller_experiment_group_id(
+  // TODO(https://crbug.com/1523625): These should be unit16!
+  static std::optional<std::int16_t> seller_experiment_group_id(
       const blink::AuctionConfig& config) {
-    return config.seller_experiment_group_id.has_value();
+    return config.seller_experiment_group_id;
   }
 
-  static std::int16_t seller_experiment_group_id(
+  static std::optional<std::int16_t> all_buyer_experiment_group_id(
       const blink::AuctionConfig& config) {
-    return config.seller_experiment_group_id.value_or(0);
-  }
-
-  static bool has_all_buyer_experiment_group_id(
-      const blink::AuctionConfig& config) {
-    return config.all_buyer_experiment_group_id.has_value();
-  }
-
-  static std::int16_t all_buyer_experiment_group_id(
-      const blink::AuctionConfig& config) {
-    return config.all_buyer_experiment_group_id.value_or(0);
+    return config.all_buyer_experiment_group_id;
   }
 
   static const base::flat_map<url::Origin, uint16_t>&

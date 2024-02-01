@@ -27,6 +27,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -179,7 +180,9 @@ TEST_F(OmniboxViewTest, SanitizeTextForPaste) {
 // query.
 TEST_F(OmniboxViewTest, GetIcon_Default) {
   ui::ImageModel expected_icon = ui::ImageModel::FromVectorIcon(
-      vector_icons::kSearchIcon, gfx::kPlaceholderColor, gfx::kFaviconSize);
+      features::IsChromeRefresh2023() ? vector_icons::kSearchChromeRefreshIcon
+                                      : vector_icons::kSearchIcon,
+      gfx::kPlaceholderColor, gfx::kFaviconSize);
 
   ui::ImageModel icon = view()->GetIcon(
       gfx::kFaviconSize, gfx::kPlaceholderColor, gfx::kPlaceholderColor,
@@ -200,7 +203,9 @@ TEST_F(OmniboxViewTest, GetIcon_BookmarkIcon) {
                            u"a bookmark", kUrl);
 
   ui::ImageModel expected_icon = ui::ImageModel::FromVectorIcon(
-      omnibox::kBookmarkIcon, gfx::kPlaceholderColor, gfx::kFaviconSize);
+      features::IsChromeRefresh2023() ? omnibox::kBookmarkChromeRefreshIcon
+                                      : omnibox::kBookmarkIcon,
+      gfx::kPlaceholderColor, gfx::kFaviconSize);
 
   ui::ImageModel icon = view()->GetIcon(
       gfx::kFaviconSize, gfx::kPlaceholderColor, gfx::kPlaceholderColor,

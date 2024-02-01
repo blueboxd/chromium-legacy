@@ -45,11 +45,6 @@ class BaseBookmarkBubbleViewBrowserTest : public DialogBrowserTest {
     mock_shopping_service_ = static_cast<commerce::MockShoppingService*>(
         commerce::ShoppingServiceFactory::GetForBrowserContext(
             browser()->profile()));
-
-    auto* helper = commerce::CommerceUiTabHelper::FromWebContents(
-        browser()->tab_strip_model()->GetActiveWebContents());
-
-    helper->SetShoppingServiceForTesting(mock_shopping_service_);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -90,18 +85,11 @@ class BaseBookmarkBubbleViewBrowserTest : public DialogBrowserTest {
     if (name == "bookmark_details_on_trackable_product") {
       commerce::ProductInfo info;
       info.product_cluster_id.emplace(12345L);
+      mock_shopping_service_->SetIsShoppingListEligible(true);
       mock_shopping_service_->SetResponseForGetProductInfoForUrl(info);
       mock_shopping_service_->SetIsSubscribedCallbackValue(false);
       MockCommerceUiTabHelper::CreateForWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
-      MockCommerceUiTabHelper* mock_tab_helper =
-          static_cast<MockCommerceUiTabHelper*>(
-              MockCommerceUiTabHelper::FromWebContents(
-                  browser()->tab_strip_model()->GetActiveWebContents()));
-      EXPECT_CALL(*mock_tab_helper, GetProductImage);
-      ON_CALL(*mock_tab_helper, GetProductImage)
-          .WillByDefault(
-              testing::ReturnRef(mock_tab_helper->GetValidProductImage()));
     }
 
     const GURL url = GURL("https://www.google.com");
@@ -133,8 +121,7 @@ class PowerBookmarkBubbleViewBrowserTest
     : public BaseBookmarkBubbleViewBrowserTest {
  public:
   PowerBookmarkBubbleViewBrowserTest() {
-    test_features_.InitWithFeatures({commerce::kShoppingList},
-                                    {commerce::kShoppingListTrackByDefault});
+    test_features_.InitWithFeatures({commerce::kShoppingList}, {});
   }
 
   PowerBookmarkBubbleViewBrowserTest(

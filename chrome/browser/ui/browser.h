@@ -106,6 +106,15 @@ namespace web_modal {
 class WebContentsModalDialogHost;
 }
 
+// This enum is not a member of `Browser` so that it can be forward
+// declared in `unload_controller.h` to avoid circular includes.
+enum class BrowserClosingStatus {
+  kPermitted,
+  kDeniedByUser,
+  kDeniedByPolicy,
+  kDeniedUnloadHandlersNeedTime
+};
+
 class Browser : public TabStripModelObserver,
                 public WebContentsCollection::Observer,
                 public content::WebContentsDelegate,
@@ -208,6 +217,13 @@ class Browser : public TabStripModelObserver,
     kStartupCreator,
     kLastAndUrlsStartupPref,
     kDeskTemplate,
+  };
+
+  // Represents the reasons for force showing bookmark bar.
+  enum ForceShowBookmarkBarFlag {
+    kNone = 0,
+    kTabGroupsTutorialActive = 1 << 0,
+    kTabGroupSaved = 1 << 1,
   };
 
   // Represents whether a value was known to be explicitly specified.
@@ -533,9 +549,9 @@ class Browser : public TabStripModelObserver,
   // close the browser (for example, warning if there are downloads in progress
   // that would be interrupted).
   //
-  // Distinct from ShouldCloseWindow() (which calls this method) because this
-  // method does not consider beforeunload handler, only things the user should
-  // be prompted about.
+  // Distinct from HandleBeforeClose() (which calls this method) because
+  // this method does not consider beforeunload handler, only things the user
+  // should be prompted about.
   //
   // If no warnings are needed, the method returns kOkToClose, indicating that
   // the close can proceed immediately, and the callback is not called. If the
@@ -544,15 +560,24 @@ class Browser : public TabStripModelObserver,
   WarnBeforeClosingResult MaybeWarnBeforeClosing(
       WarnBeforeClosingCallback warn_callback);
 
-  // Gives beforeunload handlers the chance to cancel the close. Returns whether
-  // to proceed with the close. If called while the process begun by
-  // TryToCloseWindow is in progress, returns false without taking action.
+  // Gives beforeunload handlers the chance to cancel the close. Returns the
+  // closing status. Closing can be denied due to different reasons.
+  // This function checks if unload handlers are still executing. It further
+  // may ask the user for permission to close the browser (e.g. if downloads
+  // are ongoing).
+  // If this function is called
+  // * but the user denied closure after being prompted, it returns
+  // `BrowserClosingStatus::kDeniedByUser`.
+  // * but the closure is not permitted by policy, it returns
+  // `BrowserClosingStatus::kDeniedByPolicy`.
+  // * while the process begun by TryToCloseWindow is in progress, it returns
+  // `BrowserClosingStatus::kDeniedUnloadHandlersNeedTime`.
   //
   // If you don't care about beforeunload handlers and just want to prompt the
   // user that they might lose an in-progress operation, call
-  // MaybeWarnBeforeClosing() instead (ShouldCloseWindow() also calls this
+  // MaybeWarnBeforeClosing() instead (HandleBeforeClose() also calls this
   // method).
-  bool ShouldCloseWindow();
+  BrowserClosingStatus HandleBeforeClose();
 
   // Begins the process of confirming whether the associated browser can be
   // closed. If there are no tabs with beforeunload handlers it will immediately
@@ -578,8 +603,7 @@ class Browser : public TabStripModelObserver,
   void ResetTryToCloseWindow();
 
   // Figure out if there are tabs that have beforeunload handlers.
-  // It starts beforeunload/unload processing as a side-effect.
-  bool TabsNeedBeforeUnloadFired();
+  bool TabsNeedBeforeUnloadFired() const;
 
   // Browser closing consists of the following phases:
   //
@@ -768,7 +792,7 @@ class Browser : public TabStripModelObserver,
   }
 
   // True when the mouse cursor is locked.
-  bool IsMouseLocked() const;
+  bool IsPointerLocked() const;
 
   // Called each time the browser window is shown.
   void OnWindowDidShow();
@@ -799,6 +823,10 @@ class Browser : public TabStripModelObserver,
   Browser* GetBrowserForOpeningWebUi();
 
   StatusBubble* GetStatusBubbleForTesting();
+
+  // Sets or clears the flags to force showing bookmark bar.
+  void SetForceShowBookmarkBarFlag(ForceShowBookmarkBarFlag flag);
+  void ClearForceShowBookmarkBarFlag(ForceShowBookmarkBarFlag flag);
 
  private:
   friend class BrowserTest;
@@ -851,6 +879,9 @@ class Browser : public TabStripModelObserver,
     // Change is the result of switching the option of showing toolbar in full
     // screen. Only used on Mac.
     BOOKMARK_BAR_STATE_CHANGE_TOOLBAR_OPTION_CHANGE,
+
+    // Change is the result of a force show reason
+    BOOKMARK_BAR_STATE_CHANGE_FORCE_SHOW,
   };
 
   explicit Browser(const CreateParams& params);
@@ -967,10 +998,10 @@ class Browser : public TabStripModelObserver,
                  const gfx::Rect& selection_rect,
                  int active_match_ordinal,
                  bool final_update) override;
-  void RequestToLockMouse(content::WebContents* web_contents,
+  void RequestPointerLock(content::WebContents* web_contents,
                           bool user_gesture,
                           bool last_unlocked_by_target) override;
-  void LostMouseLock() override;
+  void LostPointerLock() override;
   void RequestKeyboardLock(content::WebContents* web_contents,
                            bool esc_key_locked) override;
   void CancelKeyboardLockRequest(content::WebContents* web_contents) override;
@@ -1022,12 +1053,9 @@ class Browser : public TabStripModelObserver,
       const zoom::ZoomController::ZoomChangedEventData& data) override;
 
   // Overridden from SelectFileDialog::Listener:
-  void FileSelected(const base::FilePath& path,
+  void FileSelected(const ui::SelectedFileInfo& file_info,
                     int index,
                     void* params) override;
-  void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
-                                 int index,
-                                 void* params) override;
   void FileSelectionCanceled(void* params) override;
 
   // Overridden from ThemeServiceObserver:
@@ -1108,7 +1136,7 @@ class Browser : public TabStripModelObserver,
 
   // Called when all warnings have completed when attempting to close the
   // browser directly (e.g. via hotkey, close button, terminate signal, etc.)
-  // Used as a WarnBeforeClosingCallback by ShouldCloseWindow().
+  // Used as a WarnBeforeClosingCallback by HandleBeforeClose().
   void FinishWarnBeforeClosing(WarnBeforeClosingResult result);
 
   // Assorted utility functions ///////////////////////////////////////////////
@@ -1250,9 +1278,6 @@ class Browser : public TabStripModelObserver,
   // restore the session.
   const bool should_trigger_session_restore_;
 
-  // The model for the toolbar view.
-  std::unique_ptr<LocationBarModel> location_bar_model_;
-
   // UI update coalescing and handling ////////////////////////////////////////
 
   typedef std::map<const content::WebContents*, int> UpdateMap;
@@ -1306,6 +1331,9 @@ class Browser : public TabStripModelObserver,
 
   // Helper which implements the LocationBarModelDelegate interface.
   std::unique_ptr<BrowserLocationBarModelDelegate> location_bar_model_delegate_;
+
+  // The model for the toolbar view.
+  std::unique_ptr<LocationBarModel> location_bar_model_;
 
   // Helper which implements the LiveTabContext interface.
   std::unique_ptr<BrowserLiveTabContext> live_tab_context_;
@@ -1371,6 +1399,8 @@ class Browser : public TabStripModelObserver,
 #if defined(USE_AURA)
   std::unique_ptr<OverscrollPrefManager> overscroll_pref_manager_;
 #endif
+
+  int force_show_bookmark_bar_flags_ = ForceShowBookmarkBarFlag::kNone;
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_{this};

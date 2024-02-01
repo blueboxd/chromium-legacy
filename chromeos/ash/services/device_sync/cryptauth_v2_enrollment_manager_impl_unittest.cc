@@ -79,7 +79,8 @@ class FakeCryptAuthV2EnrollerFactory : public CryptAuthV2EnrollerImpl::Factory {
 
   ~FakeCryptAuthV2EnrollerFactory() override = default;
 
-  const std::vector<FakeCryptAuthV2Enroller*>& created_instances() {
+  const std::vector<raw_ptr<FakeCryptAuthV2Enroller, VectorExperimental>>&
+  created_instances() {
     return created_instances_;
   }
 
@@ -99,11 +100,11 @@ class FakeCryptAuthV2EnrollerFactory : public CryptAuthV2EnrollerImpl::Factory {
     return instance;
   }
 
-  raw_ptr<const CryptAuthKeyRegistry, ExperimentalAsh> expected_key_registry_;
-  raw_ptr<const CryptAuthClientFactory, ExperimentalAsh>
-      expected_client_factory_;
+  raw_ptr<const CryptAuthKeyRegistry> expected_key_registry_;
+  raw_ptr<const CryptAuthClientFactory> expected_client_factory_;
 
-  std::vector<FakeCryptAuthV2Enroller*> created_instances_;
+  std::vector<raw_ptr<FakeCryptAuthV2Enroller, VectorExperimental>>
+      created_instances_;
 };
 
 }  // namespace

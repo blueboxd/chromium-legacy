@@ -208,7 +208,6 @@ class WaylandWindow : public PlatformWindow,
   gfx::Rect GetRestoredBoundsInDIP() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
-  bool IsTranslucentWindowOpacitySupported() const override;
   void SetDecorationInsets(const gfx::Insets* insets_px) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
@@ -231,17 +230,23 @@ class WaylandWindow : public PlatformWindow,
   virtual void HandleSurfaceConfigure(uint32_t serial);
 
   struct WindowStates {
+   public:
+    WindowStates();
+    ~WindowStates();
+
     bool is_maximized = false;
     bool is_fullscreen = false;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     bool is_immersive_fullscreen = false;
-#endif
+    bool is_pinned_fullscreen = false;
+    bool is_trusted_pinned_fullscreen = false;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
     bool is_activated = false;
     bool is_minimized = false;
     bool is_snapped_primary = false;
     bool is_snapped_secondary = false;
     bool is_floated = false;
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
     WindowTiledEdges tiled_edges;
 #endif
 
@@ -298,9 +303,8 @@ class WaylandWindow : public PlatformWindow,
 
   // Notifies about drag/drop session events. |point| is in DIP as wayland
   // sends coordinates in "surface-local" coordinates.
-  virtual void OnDragEnter(const gfx::PointF& point,
-                           std::unique_ptr<OSExchangeData> data,
-                           int operation);
+  virtual void OnDragEnter(const gfx::PointF& point, int operation);
+  virtual void OnDragDataAvailable(std::unique_ptr<OSExchangeData> data);
   virtual int OnDragMotion(const gfx::PointF& point, int operation);
   virtual void OnDragDrop();
   virtual void OnDragLeave();
@@ -349,6 +353,10 @@ class WaylandWindow : public PlatformWindow,
 
   // Returns true if this window's configure state supports the minimized state.
   virtual bool SupportsConfigureMinimizedState() const;
+
+  // Returns true if this window's configure state supports the pinned
+  // fullscreen and trusted pinned states.
+  virtual bool SupportsConfigurePinnedState() const;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
     return ui_task_runner_;

@@ -65,7 +65,8 @@ class DnsResolutionRoutineTest : public ::testing::Test {
   }
 
   void SetUpDnsResolutionRoutine() {
-    dns_resolution_routine_ = std::make_unique<DnsResolutionRoutine>();
+    dns_resolution_routine_ = std::make_unique<DnsResolutionRoutine>(
+        mojom::RoutineCallSource::kDiagnosticsUI);
     dns_resolution_routine_->set_network_context_for_testing(
         fake_network_context_.get());
     dns_resolution_routine_->set_profile_for_testing(test_profile_);
@@ -93,7 +94,7 @@ class DnsResolutionRoutineTest : public ::testing::Test {
   session_manager::SessionManager session_manager_;
   std::unique_ptr<FakeNetworkContext> fake_network_context_;
   // Unowned
-  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> test_profile_;
+  raw_ptr<Profile, DanglingUntriaged> test_profile_;
   TestingProfileManager profile_manager_;
   std::unique_ptr<DnsResolutionRoutine> dns_resolution_routine_;
   base::WeakPtrFactory<DnsResolutionRoutineTest> weak_factory_{this};

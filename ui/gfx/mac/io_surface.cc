@@ -256,8 +256,6 @@ base::apple::ScopedCFTypeRef<IOSurfaceRef> CreateIOSurface(
     bool should_clear,
     bool override_rgba_to_bgra) {
   TRACE_EVENT0("ui", "CreateIOSurface");
-  base::TimeTicks start_time = base::TimeTicks::Now();
-
   base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> properties(
       CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                 &kCFTypeDictionaryKeyCallBacks,
@@ -360,8 +358,6 @@ base::apple::ScopedCFTypeRef<IOSurfaceRef> CreateIOSurface(
     IOSurfaceSetValue(surface.get(), CFSTR("IOSurfaceColorSpace"), color_space_icc.get());
   }
 
-  UMA_HISTOGRAM_TIMES("GPU.IOSurface.CreateTime",
-                      base::TimeTicks::Now() - start_time);
   return surface;
 }
 

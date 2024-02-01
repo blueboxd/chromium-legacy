@@ -152,52 +152,31 @@ base::File OpenV8File(const char* file_name,
   // Re-try logic here is motivated by http://crbug.com/479537
   // for A/V on Windows (https://support.microsoft.com/en-us/kb/316609).
 
-  // These match tools/metrics/histograms.xml
-  enum OpenV8FileResult {
-    OPENED = 0,
-    OPENED_RETRY,
-    FAILED_IN_USE,
-    FAILED_OTHER,
-    MAX_VALUE
-  };
   base::FilePath path;
   GetV8FilePath(file_name, &path);
 
 #if BUILDFLAG(IS_ANDROID)
   base::File file(base::android::OpenApkAsset(path.value(), region_out));
-  OpenV8FileResult result = file.IsValid() ? OpenV8FileResult::OPENED
-                                           : OpenV8FileResult::FAILED_OTHER;
 #else
   // Re-try logic here is motivated by http://crbug.com/479537
   // for A/V on Windows (https://support.microsoft.com/en-us/kb/316609).
   const int kMaxOpenAttempts = 5;
   const int kOpenRetryDelayMillis = 250;
 
-  OpenV8FileResult result = OpenV8FileResult::FAILED_IN_USE;
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::File file;
   for (int attempt = 0; attempt < kMaxOpenAttempts; attempt++) {
     file.Initialize(path, flags);
     if (file.IsValid()) {
       *region_out = base::MemoryMappedFile::Region::kWholeFile;
-      if (attempt == 0) {
-        result = OpenV8FileResult::OPENED;
-        break;
-      } else {
-        result = OpenV8FileResult::OPENED_RETRY;
-        break;
-      }
+      break;
     } else if (file.error_details() != base::File::FILE_ERROR_IN_USE) {
-      result = OpenV8FileResult::FAILED_OTHER;
       break;
     } else if (kMaxOpenAttempts - 1 != attempt) {
       base::PlatformThread::Sleep(base::Milliseconds(kOpenRetryDelayMillis));
     }
   }
 #endif  // BUILDFLAG(IS_ANDROID)
-
-  UMA_HISTOGRAM_ENUMERATION("V8.Initializer.OpenV8File.Result", result,
-                            OpenV8FileResult::MAX_VALUE);
   return file;
 }
 
@@ -273,6 +252,9 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kV8PerContextMarkingWorklist,
                          "--stress-per-context-marking-worklist",
                          "--no-stress-per-context-marking-worklist");
+  SetV8FlagsIfOverridden(
+      features::kV8ProfileGuidedOptimization, "--profile-guided-optimization",
+      "--profile-guided-optimization-for-empty-feedback-vector");
   SetV8FlagsIfOverridden(features::kV8FlushEmbeddedBlobICache,
                          "--experimental-flush-embedded-blob-icache",
                          "--no-experimental-flush-embedded-blob-icache");
@@ -341,6 +323,21 @@ void SetFlags(IsolateHolder::ScriptMode mode,
     }
   }
 
+  if (base::FeatureList::IsEnabled(features::kV8EfficiencyModeTiering)) {
+    int delay = features::kV8EfficiencyModeTieringDelayTurbofan.Get();
+    if (delay == 0) {
+      SetV8FlagsFormatted(
+          "--efficiency-mode-for-tiering-heuristics "
+          "--efficiency-mode-disable-turbofan");
+    } else {
+      SetV8FlagsFormatted(
+          "--efficiency-mode-for-tiering-heuristics "
+          "--noefficiency-mode-disable-turbofan "
+          "--efficiency-mode-delay-turbofan=%i",
+          delay);
+    }
+  }
+
   if (base::FeatureList::IsEnabled(
           features::kWebAssemblyMoreAggressiveCodeCaching)) {
     SetV8FlagsFormatted(
@@ -398,6 +395,16 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kJavaScriptArrayFromAsync,
                          "--harmony-array-from-async",
                          "--no-harmony-array-from-async");
+  SetV8FlagsIfOverridden(features::kJavaScriptRegExpModifiers,
+                         "--js-regexp-modifiers", "--no-js-regexp-modifiers");
+  SetV8FlagsIfOverridden(features::kJavaScriptImportAttributes,
+                         "--harmony-import-attributes",
+                         "--no-harmony-import-attributes");
+  SetV8FlagsIfOverridden(features::kJavaScriptSetMethods,
+                         "--harmony-set-methods", "--no-harmony-set-methods");
+  SetV8FlagsIfOverridden(features::kJavaScriptRegExpDuplicateNamedGroups,
+                         "--js-regexp-duplicate-named-groups",
+                         "--no-js-duplicate-named-groups");
 
   if (IsolateHolder::kStrictMode == mode) {
     SetV8Flags("--use_strict");
@@ -581,7 +588,6 @@ void V8Initializer::LoadV8SnapshotFromFile(
 
   if (!snapshot_file.IsValid()) {
     LOG(FATAL) << "Error loading V8 startup snapshot file";
-    return;
   }
 
   g_snapshot_file_type = snapshot_file_type;
@@ -593,7 +599,6 @@ void V8Initializer::LoadV8SnapshotFromFile(
 
   if (!MapV8File(std::move(snapshot_file), region, &g_mapped_snapshot)) {
     LOG(FATAL) << "Error mapping V8 startup snapshot file";
-    return;
   }
 }
 

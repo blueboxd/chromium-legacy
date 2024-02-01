@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import type {VolumeManager} from '../../background/js/volume_manager.js';
 import {recordEnum} from '../../common/js/metrics.js';
 import {RootTypesForUMA} from '../../common/js/volume_manager_types.js';
-import type {VolumeManager} from '../../externs/volume_manager.js';
 
 /**
  * Records a UMA when a new directory is navigated to.
@@ -17,7 +17,7 @@ export class NavigationUma {
    *
    * @param entry the new directory
    */
-  onDirectoryChanged(entry: FileEntry) {
+  onDirectoryChanged(entry: Entry) {
     const locationInfo = this.volumeManager_.getLocationInfo(entry);
     if (locationInfo) {
       recordEnum(

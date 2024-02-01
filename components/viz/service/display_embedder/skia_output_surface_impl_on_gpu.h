@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_ON_GPU_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -36,7 +37,6 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
@@ -119,7 +119,8 @@ class SkiaOutputSurfaceImplOnGpu
       ContextLostCallback context_lost_callback,
       ScheduleGpuTaskCallback schedule_gpu_task,
       GpuVSyncCallback gpu_vsync_callback,
-      AddChildWindowToBrowserCallback parent_child_Window_to_browser_callback);
+      AddChildWindowToBrowserCallback parent_child_Window_to_browser_callback,
+      SkiaOutputDevice::ReleaseOverlaysCallback release_overlays_callback);
 
   SkiaOutputSurfaceImplOnGpu(
       base::PassKey<SkiaOutputSurfaceImplOnGpu> pass_key,
@@ -133,7 +134,8 @@ class SkiaOutputSurfaceImplOnGpu
       ContextLostCallback context_lost_callback,
       ScheduleGpuTaskCallback schedule_gpu_task,
       GpuVSyncCallback gpu_vsync_callback,
-      AddChildWindowToBrowserCallback parent_child_window_to_browser_callback);
+      AddChildWindowToBrowserCallback parent_child_window_to_browser_callback,
+      SkiaOutputDevice::ReleaseOverlaysCallback release_overlays_callback);
 
   SkiaOutputSurfaceImplOnGpu(const SkiaOutputSurfaceImplOnGpu&) = delete;
   SkiaOutputSurfaceImplOnGpu& operator=(const SkiaOutputSurfaceImplOnGpu&) =
@@ -161,11 +163,11 @@ class SkiaOutputSurfaceImplOnGpu
       sk_sp<GrDeferredDisplayList> ddl,
       sk_sp<GrDeferredDisplayList> overdraw_ddl,
       std::unique_ptr<skgpu::graphite::Recording> graphite_recording,
-      std::vector<ImageContextImpl*> image_contexts,
+      std::vector<raw_ptr<ImageContextImpl, VectorExperimental>> image_contexts,
       std::vector<gpu::SyncToken> sync_tokens,
       base::OnceClosure on_finished,
       base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb,
-      absl::optional<gfx::Rect> draw_rectangle);
+      std::optional<gfx::Rect> draw_rectangle);
   void ScheduleOutputSurfaceAsOverlay(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane&
           output_surface_plane);
@@ -188,7 +190,7 @@ class SkiaOutputSurfaceImplOnGpu
       sk_sp<GrDeferredDisplayList> ddl,
       sk_sp<GrDeferredDisplayList> overdraw_ddl,
       std::unique_ptr<skgpu::graphite::Recording> graphite_recording,
-      std::vector<ImageContextImpl*> image_contexts,
+      std::vector<raw_ptr<ImageContextImpl, VectorExperimental>> image_contexts,
       std::vector<gpu::SyncToken> sync_tokens,
       base::OnceClosure on_finished,
       base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb,
@@ -204,9 +206,11 @@ class SkiaOutputSurfaceImplOnGpu
                   std::unique_ptr<CopyOutputRequest> request,
                   const gpu::Mailbox& mailbox);
 
-  void BeginAccessImages(const std::vector<ImageContextImpl*>& image_contexts,
-                         std::vector<GrBackendSemaphore>* begin_semaphores,
-                         std::vector<GrBackendSemaphore>* end_semaphores);
+  void BeginAccessImages(
+      const std::vector<raw_ptr<ImageContextImpl, VectorExperimental>>&
+          image_contexts,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores);
   void ResetStateOfImages();
   void EndAccessImages(const base::flat_set<ImageContextImpl*>& image_contexts);
 
@@ -281,6 +285,7 @@ class SkiaOutputSurfaceImplOnGpu
                                    const SkColor4f& color,
                                    const gfx::ColorSpace& color_space);
   void DestroySharedImage(gpu::Mailbox mailbox);
+  void SetSharedImagePurgeable(const gpu::Mailbox& mailbox, bool purgeable);
 
   // Called on the viz thread!
   base::ScopedClosureRunner GetCacheBackBufferCb();
@@ -288,6 +293,10 @@ class SkiaOutputSurfaceImplOnGpu
   // Checks the relevant context for completed tasks and, indirectly, causes
   // associated completion callbacks to run.
   void CheckAsyncWorkCompletion();
+
+  gpu::SharedContextState* context_state() const {
+    return context_state_.get();
+  }
 
  private:
   struct MailboxAccessData {
@@ -316,15 +325,17 @@ class SkiaOutputSurfaceImplOnGpu
   void DidSwapBuffersCompleteInternal(gpu::SwapBuffersCompleteParams params,
                                       const gfx::Size& pixel_size,
                                       gfx::GpuFenceHandle release_fence);
+  void ReleaseOverlays(const std::vector<gpu::Mailbox> overlays);
 
   DidSwapBufferCompleteCallback GetDidSwapBuffersCompleteCallback();
+  SkiaOutputDevice::ReleaseOverlaysCallback GetReleaseOverlaysCallback();
 
   void MarkContextLost(ContextLostReason reason);
 
   void DestroyCopyOutputResourcesOnGpuThread(const gpu::Mailbox& mailbox);
 
-  void SwapBuffersInternal(absl::optional<OutputSurfaceFrame> frame);
-  void PostSubmit(absl::optional<OutputSurfaceFrame> frame);
+  void SwapBuffersInternal(std::optional<OutputSurfaceFrame> frame);
+  void PostSubmit(std::optional<OutputSurfaceFrame> frame);
 
   GrDirectContext* gr_context() const { return context_state_->gr_context(); }
 
@@ -406,7 +417,7 @@ class SkiaOutputSurfaceImplOnGpu
   // rendered to the destination.
   void RenderSurface(SkSurface* surface,
                      const SkIRect& source_selection,
-                     absl::optional<SkVector> scaling,
+                     std::optional<SkVector> scaling,
                      bool is_downscale_or_identity_in_both_dimensions,
                      SkSurface* dest_surface);
 
@@ -491,7 +502,7 @@ class SkiaOutputSurfaceImplOnGpu
 
   // This must remain the first member variable to ensure that other member
   // dtors are called first.
-  absl::optional<ReleaseCurrent> release_current_last_;
+  std::optional<ReleaseCurrent> release_current_last_;
 
   const raw_ptr<SkiaOutputSurfaceDependency> dependency_;
   raw_ptr<gpu::DisplayCompositorMemoryAndTaskControllerOnGpu> shared_gpu_deps_;
@@ -511,6 +522,7 @@ class SkiaOutputSurfaceImplOnGpu
   ScheduleGpuTaskCallback schedule_gpu_task_;
   GpuVSyncCallback gpu_vsync_callback_;
   AddChildWindowToBrowserCallback add_child_window_to_browser_callback_;
+  SkiaOutputDevice::ReleaseOverlaysCallback release_overlays_callback_;
 
   // ImplOnGpu::CopyOutput can create SharedImages via ImplOnGpu's
   // SharedImageFactory. Clients can use these images via CopyOutputResult and
@@ -550,7 +562,8 @@ class SkiaOutputSurfaceImplOnGpu
 
     ~PromiseImageAccessHelper();
 
-    void BeginAccess(std::vector<ImageContextImpl*> image_contexts,
+    void BeginAccess(std::vector<raw_ptr<ImageContextImpl, VectorExperimental>>
+                         image_contexts,
                      std::vector<GrBackendSemaphore>* begin_semaphores,
                      std::vector<GrBackendSemaphore>* end_semaphores);
     void EndAccess();
@@ -581,7 +594,7 @@ class SkiaOutputSurfaceImplOnGpu
       std::unique_ptr<gpu::SkiaImageRepresentation::ScopedWriteAccess>>
       overlay_pass_accesses_;
 
-  absl::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
+  std::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
       output_surface_plane_;
   // Overlays are saved when ScheduleOverlays() is called, then passed to
   // |output_device_| in PostSubmit().

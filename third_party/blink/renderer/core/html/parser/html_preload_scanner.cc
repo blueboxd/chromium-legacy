@@ -326,12 +326,15 @@ class TokenPreloadScanner::StartTagScanner {
               : (is_async_ ? RenderBlockingBehavior::kPotentiallyBlocking
                            : RenderBlockingBehavior::kNonBlocking);
     } else if (is_script || type == ResourceType::kCSSStyleSheet) {
-      // CSS here is render blocking, as non blocking doesn't get preloaded.
-      // JS here is a blocking one, as others would've been caught by the
-      // previous condition.
+      // CSS here is render blocking unless it's disabled, as non blocking
+      // doesn't get preloaded. JS here is a blocking one, as others would've
+      // been caught by the previous condition.
       render_blocking_behavior =
-          treat_links_as_in_body ? RenderBlockingBehavior::kInBodyParserBlocking
-                                 : RenderBlockingBehavior::kBlocking;
+          type == ResourceType::kCSSStyleSheet && disabled_attr_set_
+              ? RenderBlockingBehavior::kNonBlocking
+          : treat_links_as_in_body
+              ? RenderBlockingBehavior::kInBodyParserBlocking
+              : RenderBlockingBehavior::kBlocking;
     }
     request->SetRenderBlockingBehavior(render_blocking_behavior);
 
@@ -520,6 +523,8 @@ class TokenPreloadScanner::StartTagScanner {
       SetFetchPriorityHint(attribute_value);
     } else if (Match(attribute_name, html_names::kBlockingAttr)) {
       blocking_attribute_value_ = attribute_value;
+    } else if (Match(attribute_name, html_names::kDisabledAttr)) {
+      disabled_attr_set_ = true;
     }
   }
 
@@ -598,8 +603,9 @@ class TokenPreloadScanner::StartTagScanner {
     // LCPP experiment in crbug.com/1498777. If the image is potentially a LCP
     // element, the scanner doesn't mark it as a deferable image regardless of
     // whether it has loading="lazy" attribute or not, in order to make the LCP
-    // image load completion faster.
-    if (is_potentially_lcp_element) {
+    // image load completion faster. An exception to this is "lazy load auto
+    // sizes" which must defer because sizes=auto requires layout information.
+    if (is_potentially_lcp_element && !source_size_is_auto_) {
       switch (document_parameters.preload_lazy_load_image_type) {
         case features::LcppPreloadLazyLoadImageType::kNativeLazyLoading:
         case features::LcppPreloadLazyLoadImageType::kCustomLazyLoading:
@@ -737,8 +743,9 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
   void ParseSourceSize(const String& attribute_value) {
-    source_size_ =
-        SizesAttributeParser(media_values_, attribute_value, nullptr).Size();
+    SizesAttributeParser sizes_parser(media_values_, attribute_value, nullptr);
+    source_size_ = sizes_parser.Size();
+    source_size_is_auto_ = sizes_parser.IsAuto();
     source_size_set_ = true;
   }
 
@@ -785,6 +792,7 @@ class TokenPreloadScanner::StartTagScanner {
   AtomicString resources_attribute_value_;
   bool nomodule_attribute_value_ = false;
   float source_size_ = 0;
+  bool source_size_is_auto_ = false;
   bool source_size_set_ = false;
   FetchParameters::DeferOption defer_ = FetchParameters::kNoDefer;
   CrossOriginAttributeValue cross_origin_ = kCrossOriginAttributeNotSet;
@@ -798,6 +806,7 @@ class TokenPreloadScanner::StartTagScanner {
       network::mojom::ReferrerPolicy::kDefault;
   bool integrity_attr_set_ = false;
   bool is_async_ = false;
+  bool disabled_attr_set_ = false;
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
   LoadingAttributeValue loading_attr_value_ = LoadingAttributeValue::kAuto;
@@ -1020,9 +1029,7 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
                                      "content-security-policy")) {
             *is_csp_meta_tag = true;
           } else if (EqualIgnoringASCIICase(equiv_attribute_value,
-                                            http_names::kAcceptCH) &&
-                     RuntimeEnabledFeatures::
-                         ClientHintsMetaHTTPEquivAcceptCHEnabled()) {
+                                            http_names::kAcceptCH)) {
             const HTMLToken::Attribute* content_attribute =
                 token.GetAttributeItem(html_names::kContentAttr);
             if (content_attribute) {
@@ -1033,9 +1040,7 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
                                   scanner_type_ == ScannerType::kMainDocument});
             }
           } else if (EqualIgnoringASCIICase(equiv_attribute_value,
-                                            http_names::kDelegateCH) &&
-                     RuntimeEnabledFeatures::
-                         ClientHintsMetaEquivDelegateCHEnabled()) {
+                                            http_names::kDelegateCH)) {
             const HTMLToken::Attribute* content_attribute =
                 token.GetAttributeItem(html_names::kContentAttr);
             if (content_attribute) {

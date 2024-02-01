@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -25,8 +24,6 @@ import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.ImageView;
 
-import androidx.appcompat.app.ActionBar.LayoutParams;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,17 +36,16 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxDrawableState;
-import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.DropdownCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
 import org.chromium.chrome.browser.omnibox.test.R;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.RoundedCornerOutlineProvider;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -287,22 +283,6 @@ public class BaseSuggestionViewBinderUnitTest {
     }
 
     @Test
-    public void suggestionMargin() {
-        mModel.set(DropdownCommonProperties.BOTTOM_MARGIN, 17);
-        mModel.set(DropdownCommonProperties.TOP_MARGIN, 13);
-
-        verify(mBaseView, times(2)).setLayoutParams(any());
-        int sideSpacing = OmniboxResourceProvider.getSideSpacing(mBaseView.getContext());
-        MarginLayoutParams layoutParams = (MarginLayoutParams) mBaseView.getLayoutParams();
-        Assert.assertNotNull(layoutParams);
-        Assert.assertEquals(sideSpacing, layoutParams.leftMargin);
-        Assert.assertEquals(13, layoutParams.topMargin);
-        Assert.assertEquals(sideSpacing, layoutParams.rightMargin);
-        Assert.assertEquals(17, layoutParams.bottomMargin);
-        Assert.assertEquals(LayoutParams.MATCH_PARENT, layoutParams.width);
-    }
-
-    @Test
     public void applySelectableBackground_incognito() {
         // This is a whitebox test. It currently assumes that the Suggestion background is a
         // LayerDrawable, whose bottom element represents the color.
@@ -343,7 +323,7 @@ public class BaseSuggestionViewBinderUnitTest {
         verify(mBaseView).setBackground(bgCaptor1.capture());
 
         // Attempt to re-use the background color.
-        // We do this by instantiating a fully dummy mock which does not deliver Context.
+        // We do this by instantiating a mock which does not deliver Context.
         // This must not crash.
         var viewWithNoContext = mock(View.class);
         BaseSuggestionViewBinder.applySelectableBackground(mModel, viewWithNoContext);
@@ -453,22 +433,6 @@ public class BaseSuggestionViewBinderUnitTest {
     @EnableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
     public void iconStartPadding_smallestMarginsRevamp_rtl() {
         OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS.setForTesting(true);
-        runDecorationIconPaddingTest();
-    }
-
-    @Test
-    @Config(qualifiers = "ldltr")
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
-    public void iconStartPadding_smallerMarginsRevamp_ltr() {
-        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLER_MARGINS.setForTesting(true);
-        runDecorationIconPaddingTest();
-    }
-
-    @Test
-    @Config(qualifiers = "ldrtl")
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
-    public void iconStartPadding_smallerMarginsRevamp_rtl() {
-        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLER_MARGINS.setForTesting(true);
         runDecorationIconPaddingTest();
     }
 

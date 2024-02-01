@@ -198,8 +198,7 @@ void FidoHidDevice::OnConnect(
   connection_ = base::MakeRefCounted<RefCountedHidConnection>(
       mojo::Remote<mojom::HidConnection>(std::move(connection)));
   // Send random nonce to device to verify received message.
-  std::vector<uint8_t> nonce(8);
-  crypto::RandBytes(nonce.data(), nonce.size());
+  std::vector<uint8_t> nonce = crypto::RandBytesAsVector(8);
 
   DCHECK_EQ(State::kConnecting, state_);
   ArmTimeout();
@@ -451,7 +450,7 @@ void FidoHidDevice::MessageReceived(FidoHidMessage message) {
       FidoHidDeviceCommand::kWink, FidoHidDeviceCommand::kError};
   if (!base::Contains(kValidCommands, cmd)) {
     FIDO_LOG(ERROR) << "Unknown CTAPHID command: " << static_cast<int>(cmd)
-                    << " " << base::HexEncode(response.data(), response.size());
+                    << " " << base::HexEncode(response);
     Transition(State::kDeviceError);
     return;
   }
@@ -459,7 +458,7 @@ void FidoHidDevice::MessageReceived(FidoHidMessage message) {
   if (cmd == FidoHidDeviceCommand::kError) {
     if (response.size() != 1) {
       FIDO_LOG(ERROR) << "Invalid CTAPHID_ERROR payload: "
-                      << base::HexEncode(response.data(), response.size());
+                      << base::HexEncode(response);
       Transition(State::kDeviceError);
       return;
     }

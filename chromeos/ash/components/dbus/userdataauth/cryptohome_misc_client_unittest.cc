@@ -133,7 +133,7 @@ class CryptohomeMiscClientTest : public testing::Test {
   scoped_refptr<dbus::MockObjectProxy> proxy_;
 
   // Convenience pointer to the global instance.
-  raw_ptr<CryptohomeMiscClient, DanglingUntriaged | ExperimentalAsh> client_;
+  raw_ptr<CryptohomeMiscClient, DanglingUntriaged> client_;
 
   // The expected replies to the respective D-Bus calls.
   ::user_data_auth::GetSystemSaltReply expected_get_system_salt_reply_;
@@ -165,7 +165,7 @@ class CryptohomeMiscClientTest : public testing::Test {
       // a very large value so the parsing will fail.
       constexpr uint8_t invalid_protobuf[] = {0x02, 0xFF, 0xFF, 0xFF,
                                               0xFF, 0xFF, 0xFF};
-      writer.AppendArrayOfBytes(invalid_protobuf, sizeof(invalid_protobuf));
+      writer.AppendArrayOfBytes(invalid_protobuf);
     } else if (method_call->GetMember() == ::user_data_auth::kGetSystemSalt) {
       writer.AppendProtoAsArrayOfBytes(expected_get_system_salt_reply_);
     } else if (method_call->GetMember() ==
@@ -198,7 +198,7 @@ class CryptohomeMiscClientTest : public testing::Test {
       // a very large value so the parsing will fail.
       constexpr uint8_t invalid_protobuf[] = {0x02, 0xFF, 0xFF, 0xFF,
                                               0xFF, 0xFF, 0xFF};
-      writer.AppendArrayOfBytes(invalid_protobuf, sizeof(invalid_protobuf));
+      writer.AppendArrayOfBytes(invalid_protobuf);
     } else if (method_call->GetMember() ==
                ::user_data_auth::kGetSanitizedUsername) {
       writer.AppendProtoAsArrayOfBytes(

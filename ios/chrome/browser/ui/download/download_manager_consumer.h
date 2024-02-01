@@ -9,6 +9,16 @@
 
 #import "ios/chrome/browser/ui/download/download_manager_state.h"
 
+// Possible destinations for the downloaded file.
+enum class DownloadFileDestination {
+  // The file is downloaded to a temporary location, and then moved to the
+  // Downloads folder on local storage.
+  kFiles,
+  // The file is downloaded to a temporary location, then uploaded to Drive. The
+  // local copy is removed.
+  kDrive,
+};
+
 // Consumer for the download manager mediator.
 @protocol DownloadManagerConsumer <NSObject>
 
@@ -28,9 +38,22 @@
 // kDownloadManagerStateNotStarted.
 - (void)setState:(DownloadManagerState)state;
 
-@optional
 // Sets visible state to Install Google Drive button.
 - (void)setInstallDriveButtonVisible:(BOOL)visible animated:(BOOL)animated;
+
+@optional
+
+// Sets whether multiple destinations are available. If so, the download button
+// should contain an ellipsis to indicate that a destination needs to be
+// selected before the download can actually start.
+- (void)setMultipleDestinationsAvailable:(BOOL)multipleDestinationsAvailable;
+
+// Sets the destination for the downloaded file e.g. Files or Drive.
+- (void)setDownloadFileDestination:(DownloadFileDestination)destination;
+
+// If the downloaded file is being saved to Drive, sets the associated user
+// email.
+- (void)setSaveToDriveUserEmail:(NSString*)userEmail;
 
 @end
 

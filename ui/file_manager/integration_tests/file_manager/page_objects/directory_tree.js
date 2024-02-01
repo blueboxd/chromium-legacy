@@ -109,6 +109,8 @@ export class DirectoryTreePageObject {
    */
   async waitForSelectedItemByLabel(label) {
     return this.remoteCall_.waitForElement(
+        // @ts-ignore: error TS2345: Argument of type '{ selected: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.appId_, this.selectors_.itemByLabel(label, {selected: true}));
   }
 
@@ -121,6 +123,8 @@ export class DirectoryTreePageObject {
    */
   async waitForSelectedItemLostByLabel(label) {
     await this.remoteCall_.waitForElementLost(
+        // @ts-ignore: error TS2345: Argument of type '{ selected: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.appId_, this.selectors_.itemByLabel(label, {selected: true}));
   }
 
@@ -133,6 +137,28 @@ export class DirectoryTreePageObject {
    */
   async waitForFocusedItemByLabel(label) {
     return this.remoteCall_.waitForElement(
+        // @ts-ignore: error TS2345: Argument of type '{ focused: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
+        this.appId_, this.selectors_.itemByLabel(label, {focused: true}));
+  }
+
+  /**
+   * Wait for the tree item with the label to be focusable (aka "selected" in
+   * the old tree implementation).
+   *
+   * @param {string} label Label of the tree item
+   * @return {!Promise<!ElementObject>}
+   */
+  async waitForFocusableItemByLabel(label) {
+    if (this.isNewTree) {
+      return this.remoteCall_.waitForElement(
+          // Go inside shadow DOM to check tabindex.
+          this.appId_,
+          [this.selectors_.itemByLabel(label), 'li[tabindex="0"]']);
+    }
+    return this.remoteCall_.waitForElement(
+        // @ts-ignore: error TS2345: Argument of type '{ focused: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.appId_, this.selectors_.itemByLabel(label, {focused: true}));
   }
 
@@ -147,6 +173,8 @@ export class DirectoryTreePageObject {
     return this.remoteCall_.waitForElement(
         this.appId_,
         this.selectors_.itemByType(
+            // @ts-ignore: error TS2345: Argument of type '{ focused: true; }'
+            // is not assignable to parameter of type 'ModifierOptions'.
             type, /* isPlaceholder= */ false, {focused: true}));
   }
 
@@ -160,6 +188,9 @@ export class DirectoryTreePageObject {
   async waitForFocusedShortcutItemByLabel(label) {
     return this.remoteCall_.waitForElement(
         this.appId_,
+        // @ts-ignore: error TS2345: Argument of type '{ focused: true;
+        // shortcut: true; }' is not assignable to parameter of type
+        // 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {focused: true, shortcut: true}));
   }
 
@@ -173,6 +204,8 @@ export class DirectoryTreePageObject {
   async waitForCurrentDirectoryItemByLabel(label) {
     return this.remoteCall_.waitForElement(
         this.appId_,
+        // @ts-ignore: error TS2345: Argument of type '{ currentDirectory: true;
+        // }' is not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {currentDirectory: true}));
   }
 
@@ -183,7 +216,7 @@ export class DirectoryTreePageObject {
    * @param {number} count Expected number of the child items.
    * @param {boolean=} excludeEmptyChild Set true to only return child items
    *     with nested children.
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async waitForChildItemsCountByLabel(parentLabel, count, excludeEmptyChild) {
     const itemSelector = this.selectors_.itemByLabel(parentLabel);
@@ -199,7 +232,7 @@ export class DirectoryTreePageObject {
    *
    * @param {string} type Type of the placeholder tree item.
    * @param {number} count Expected number of the child items.
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   async waitForPlaceholderItemsCountByType(type, count) {
     const itemSelector =
@@ -215,6 +248,8 @@ export class DirectoryTreePageObject {
    */
   async getFocusedItem() {
     const focusedItemSelector = this.selectors_.attachModifier(
+        // @ts-ignore: error TS2345: Argument of type '{ focused: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         `${this.selectors_.root} ${this.selectors_.item}`, {focused: true});
     const elements = await this.remoteCall_.callRemoteTestUtil(
         'deepQueryAllElements', this.appId_, [focusedItemSelector]);
@@ -234,6 +269,8 @@ export class DirectoryTreePageObject {
     if (!item) {
       chrome.test.fail('Item is not a valid tree item.');
     }
+    // @ts-ignore: error TS2322: Type 'string | undefined' is not assignable to
+    // type 'string'.
     return this.useNewTree_ ? item.attributes['label'] :
                               item.attributes['entry-label'];
   }
@@ -248,6 +285,8 @@ export class DirectoryTreePageObject {
     if (!item) {
       chrome.test.fail('Item is not a valid tree item.');
     }
+    // @ts-ignore: error TS2322: Type 'string | undefined' is not assignable to
+    // type 'string'.
     return item.attributes['volume-type-for-testing'];
   }
 
@@ -273,8 +312,14 @@ export class DirectoryTreePageObject {
    * @return {!Promise<!ElementObject>}
    */
   async waitForItemToHaveChildrenByLabel(label, hasChildren) {
+    // Expand the item first before checking its children.
+    if (hasChildren) {
+      await this.expandTreeItemByLabel(label);
+    }
     return this.remoteCall_.waitForElement(
         this.appId_,
+        // @ts-ignore: error TS2345: Argument of type '{ hasChildren: boolean;
+        // }' is not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {hasChildren: hasChildren}));
   }
 
@@ -287,9 +332,16 @@ export class DirectoryTreePageObject {
    * @return {!Promise<!ElementObject>}
    */
   async waitForItemToHaveChildrenByType(type, hasChildren) {
+    // Expand the item first before checking its children.
+    if (hasChildren) {
+      await this.expandTreeItemByType(type);
+    }
     return this.remoteCall_.waitForElement(
         this.appId_,
         this.selectors_.itemByType(
+            // @ts-ignore: error TS2345: Argument of type '{ hasChildren:
+            // boolean; }' is not assignable to parameter of type
+            // 'ModifierOptions'.
             type, /* isPlaceholder= */ false, {hasChildren: hasChildren}));
   }
 
@@ -302,6 +354,8 @@ export class DirectoryTreePageObject {
   async waitForItemToMayHaveChildrenByLabel(label) {
     return this.remoteCall_.waitForElement(
         this.appId_,
+        // @ts-ignore: error TS2345: Argument of type '{ mayHaveChildren: true;
+        // }' is not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {mayHaveChildren: true}));
   }
 
@@ -313,6 +367,8 @@ export class DirectoryTreePageObject {
    */
   async waitForItemToExpandByLabel(label) {
     const expandedItemSelector =
+        // @ts-ignore: error TS2345: Argument of type '{ expanded: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {expanded: true});
     await this.remoteCall_.waitForElement(this.appId_, expandedItemSelector);
   }
@@ -325,6 +381,8 @@ export class DirectoryTreePageObject {
    */
   async waitForItemToCollapseByLabel(label) {
     const collapsedItemSelector =
+        // @ts-ignore: error TS2345: Argument of type '{ expanded: false; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {expanded: false});
     await this.remoteCall_.waitForElement(this.appId_, collapsedItemSelector);
   }
@@ -339,6 +397,18 @@ export class DirectoryTreePageObject {
    */
   async expandTreeItemByLabel(label, allowEmpty) {
     await this.expandTreeItem_(this.selectors_.itemByLabel(label), allowEmpty);
+  }
+
+  /**
+   * Expands a single tree item with the specified type by clicking on its
+   * expand icon.
+   * @param {string} type Type of the tree item we want to expand on.
+   * @param {boolean=} allowEmpty Allow expanding tree item without
+   *     any children.
+   * @return {!Promise<void>}
+   */
+  async expandTreeItemByType(type, allowEmpty) {
+    await this.expandTreeItem_(this.selectors_.itemByType(type), allowEmpty);
   }
 
   /**
@@ -382,6 +452,8 @@ export class DirectoryTreePageObject {
       // Only expand if element isn't expanded yet.
       const elements = await this.remoteCall_.callRemoteTestUtil(
           'queryAllElements', this.appId_,
+          // @ts-ignore: error TS2345: Argument of type '{ expanded: true; }' is
+          // not assignable to parameter of type 'ModifierOptions'.
           [this.selectors_.attachModifier(query, {expanded: true})]);
       if (elements.length === 0) {
         await this.expandTreeItem_(query);
@@ -416,6 +488,8 @@ export class DirectoryTreePageObject {
     let query = await this.recursiveExpand(paths.join('/'));
 
     // Navigate to the final entry.
+    // @ts-ignore: error TS2345: Argument of type 'string | undefined' is not
+    // assignable to parameter of type 'string'.
     query += ` ${this.selectors_.itemItselfByLabel(leaf)}`;
     await this.remoteCall_.waitAndClickElement(this.appId_, query);
 
@@ -542,6 +616,7 @@ export class DirectoryTreePageObject {
                   ['visibility'],
                 ]));
     return allItems
+        // @ts-ignore: error TS18048: 'item.styles' is possibly 'undefined'.
         .filter(item => !item.hidden && item.styles['visibility'] !== 'hidden')
         .map(item => this.getItemLabel(item));
   }
@@ -602,6 +677,8 @@ export class DirectoryTreePageObject {
    */
   async waitForShortcutItemByLabel(label) {
     return this.remoteCall_.waitForElement(
+        // @ts-ignore: error TS2345: Argument of type '{ shortcut: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.appId_, this.selectors_.itemByLabel(label, {shortcut: true}));
   }
 
@@ -613,6 +690,8 @@ export class DirectoryTreePageObject {
    */
   async waitForShortcutItemLostByLabel(label) {
     await this.remoteCall_.waitForElementLost(
+        // @ts-ignore: error TS2345: Argument of type '{ shortcut: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.appId_, this.selectors_.itemByLabel(label, {shortcut: true}));
   }
 
@@ -720,6 +799,24 @@ export class DirectoryTreePageObject {
   }
 
   /**
+   * Wait for the expand icon under the tree item to show by its label.
+   *
+   * @param {string} label Label of the tree item.
+   * @return {!Promise<void>}
+   */
+  async waitForItemExpandIconToShowByLabel(label) {
+    const expandIcon =
+        this.selectors_.expandIcon(this.selectors_.itemByLabel(label));
+    const element = await this.remoteCall_.waitForElementStyles(
+        this.appId_,
+        expandIcon,
+        ['visibility'],
+    );
+    // @ts-ignore: error TS18048: 'element.styles' is possibly 'undefined'.
+    chrome.test.assertEq('visible', element.styles['visibility']);
+  }
+
+  /**
    * Wait for the expand icon under the tree item to hide by its label.
    *
    * @param {string} label Label of the tree item.
@@ -733,6 +830,7 @@ export class DirectoryTreePageObject {
         expandIcon,
         ['visibility'],
     );
+    // @ts-ignore: error TS18048: 'element.styles' is possibly 'undefined'.
     chrome.test.assertEq('hidden', element.styles['visibility']);
   }
 
@@ -744,8 +842,12 @@ export class DirectoryTreePageObject {
    */
   async waitForItemToAcceptDropByLabel(label) {
     const itemAcceptDrop =
+        // @ts-ignore: error TS2345: Argument of type '{ acceptDrop: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {acceptDrop: true});
     const itemDenyDrop =
+        // @ts-ignore: error TS2345: Argument of type '{ acceptDrop: false; }'
+        // is not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {acceptDrop: false});
     await this.remoteCall_.waitForElement(this.appId_, itemAcceptDrop);
     await this.remoteCall_.waitForElementLost(this.appId_, itemDenyDrop);
@@ -759,8 +861,12 @@ export class DirectoryTreePageObject {
    */
   async waitForItemToDenyDropByLabel(label) {
     const itemAcceptDrop =
+        // @ts-ignore: error TS2345: Argument of type '{ acceptDrop: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {acceptDrop: true});
     const itemDenyDrop =
+        // @ts-ignore: error TS2345: Argument of type '{ acceptDrop: false; }'
+        // is not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {acceptDrop: false});
     await this.remoteCall_.waitForElement(this.appId_, itemDenyDrop);
     await this.remoteCall_.waitForElementLost(this.appId_, itemAcceptDrop);
@@ -814,6 +920,8 @@ export class DirectoryTreePageObject {
    * @return {!Promise<void>}
    */
   async triggerRenameWithKeyboardByLabel(label) {
+    // @ts-ignore: error TS2345: Argument of type '{ focused: true; }' is not
+    // assignable to parameter of type 'ModifierOptions'.
     const itemSelector = this.selectors_.itemByLabel(label, {focused: true});
 
     // Press rename <Ctrl>-Enter keyboard shortcut on the tree item.
@@ -880,6 +988,8 @@ export class DirectoryTreePageObject {
 
     // Wait until renaming is complete.
     const renamingItemSelector = this.selectors_.attachModifier(
+        // @ts-ignore: error TS2345: Argument of type '{ renaming: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         `${this.selectors_.root} ${this.selectors_.item}`, {renaming: true});
     await this.remoteCall_.waitForElementLost(
         this.appId_, renamingItemSelector);
@@ -893,8 +1003,12 @@ export class DirectoryTreePageObject {
    */
   async waitForItemToFinishDropByLabel(label) {
     const itemAcceptDrop =
+        // @ts-ignore: error TS2345: Argument of type '{ acceptDrop: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {acceptDrop: true});
     const itemDenyDrop =
+        // @ts-ignore: error TS2345: Argument of type '{ acceptDrop: false; }'
+        // is not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {acceptDrop: false});
     await this.remoteCall_.waitForElementLost(this.appId_, itemDenyDrop);
     await this.remoteCall_.waitForElementLost(this.appId_, itemAcceptDrop);
@@ -963,6 +1077,8 @@ export class DirectoryTreePageObject {
    */
   async selectShortcutItemByLabel(label) {
     await this.selectItem_(
+        // @ts-ignore: error TS2345: Argument of type '{ shortcut: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {shortcut: true}));
   }
 
@@ -994,6 +1110,8 @@ export class DirectoryTreePageObject {
    */
   async showContextMenuForShortcutItemByLabel(label) {
     await this.showItemContextMenu_(
+        // @ts-ignore: error TS2345: Argument of type '{ shortcut: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.itemByLabel(label, {shortcut: true}));
   }
 
@@ -1093,6 +1211,8 @@ export class DirectoryTreePageObject {
     await this.remoteCall_.waitForElement(this.appId_, itemSelector);
     const elements = await this.remoteCall_.callRemoteTestUtil(
         'queryAllElements', this.appId_,
+        // @ts-ignore: error TS2345: Argument of type '{ expanded: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         [this.selectors_.attachModifier(itemSelector, {expanded: true})]);
     // If it's already expanded just set the focus on directory tree.
     if (elements.length > 0) {
@@ -1107,18 +1227,26 @@ export class DirectoryTreePageObject {
     if (this.useNewTree_) {
       // Use array here because they are inside shadow DOM.
       expandIcon = [
+        // @ts-ignore: error TS2345: Argument of type '{ expanded: false; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.attachModifier(itemSelector, {expanded: false}),
         '.tree-item > .tree-row-wrapper > .tree-row > .expand-icon',
       ];
       expandedSubtree = [
+        // @ts-ignore: error TS2345: Argument of type '{ expanded: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.attachModifier(itemSelector, {expanded: true}),
         '.tree-item[aria-expanded="true"]',
       ];
     } else {
+      // @ts-ignore: error TS2345: Argument of type '{ expanded: false; }' is
+      // not assignable to parameter of type 'ModifierOptions'.
       expandIcon = `${this.selectors_.attachModifier(itemSelector, {
         expanded: false,
       })} > .tree-row:is([has-children=true], [may-have-children]) .expand-icon`;
       expandedSubtree = this.selectors_.attachModifier(
+          // @ts-ignore: error TS2345: Argument of type '{ expanded: true; }' is
+          // not assignable to parameter of type 'ModifierOptions'.
           `${itemSelector} > .tree-children`, {expanded: true});
     }
 
@@ -1145,6 +1273,8 @@ export class DirectoryTreePageObject {
     await this.remoteCall_.waitForElement(this.appId_, itemSelector);
     const elements = await this.remoteCall_.callRemoteTestUtil(
         'queryAllElements', this.appId_,
+        // @ts-ignore: error TS2345: Argument of type '{ expanded: false; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         [this.selectors_.attachModifier(itemSelector, {expanded: false})]);
     // If it's already collapsed just set the focus on directory tree.
     if (elements.length > 0) {
@@ -1158,10 +1288,14 @@ export class DirectoryTreePageObject {
     if (this.useNewTree_) {
       // Use array here because they are inside shadow DOM.
       expandIcon = [
+        // @ts-ignore: error TS2345: Argument of type '{ expanded: true; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.attachModifier(itemSelector, {expanded: true}),
         '.tree-item > .tree-row-wrapper > .tree-row > .expand-icon',
       ];
     } else {
+      // @ts-ignore: error TS2345: Argument of type '{ expanded: true; }' is not
+      // assignable to parameter of type 'ModifierOptions'.
       expandIcon = `${this.selectors_.attachModifier(itemSelector, {
         expanded: true,
       })} > .tree-row:is([has-children=true], [may-have-children]) .expand-icon`;
@@ -1170,6 +1304,8 @@ export class DirectoryTreePageObject {
     await this.remoteCall_.waitAndClickElement(this.appId_, expandIcon);
     await this.remoteCall_.waitForElement(
         this.appId_,
+        // @ts-ignore: error TS2345: Argument of type '{ expanded: false; }' is
+        // not assignable to parameter of type 'ModifierOptions'.
         this.selectors_.attachModifier(itemSelector, {expanded: false}));
     if (!this.useNewTree_) {
       // Force the focus on directory tree.
@@ -1274,6 +1410,8 @@ class DirectoryTreeSelectors_ {
    * @return {string}
    */
   expandedItems() {
+    // @ts-ignore: error TS2345: Argument of type '{ expanded: true; }' is not
+    // assignable to parameter of type 'ModifierOptions'.
     return `${this.root} ${this.attachModifier(this.item, {expanded: true})}`;
   }
 
@@ -1310,11 +1448,20 @@ class DirectoryTreeSelectors_ {
    * @return {string}
    */
   nonEmptyChildItems(itemSelector) {
-    const nestedItemSelector = this.useNewTree ?
-        `${this.item}:has(${this.item})` :
-        `.tree-children > ${this.item} > .tree-row`;
-    return this.attachModifier(
-        `${itemSelector} > ${nestedItemSelector}`, {hasChildren: true});
+    // For new tree implementation, `hasChildren` will only be true when there's
+    // actual tree item rendered inside, hence the use of `mayHaveChildren`
+    // here instead of `hasChildren`.
+    return this.useNewTree ?
+        this.attachModifier(
+            // @ts-ignore: error TS2345: Argument of type '{ mayHaveChildren:
+            // true; }' is not assignable to parameter of type
+            // 'ModifierOptions'.
+            `${itemSelector} > ${this.item}`, {mayHaveChildren: true}) :
+        this.attachModifier(
+            `${itemSelector} > .tree-children > ${this.item} > .tree-row`,
+            // @ts-ignore: error TS2345: Argument of type '{ hasChildren: true;
+            // }' is not assignable to parameter of type 'ModifierOptions'.
+            {hasChildren: true});
   }
 
   /**
@@ -1393,6 +1540,9 @@ class DirectoryTreeSelectors_ {
       'removable': 'usb',
     };
     if (this.useNewTree && type in iconNameMap) {
+      // @ts-ignore: error TS7053: Element implicitly has an 'any' type because
+      // expression of type 'string' can't be used to index type '{ drive:
+      // string; removable: string; }'.
       type = iconNameMap[type];
     }
     return this.useNewTree ?
@@ -1429,8 +1579,9 @@ class DirectoryTreeSelectors_ {
    * @return {boolean}
    */
   isInsideDrive(type) {
-    return type == 'drive_recent' || type == 'drive_shared_with_me' ||
-        type == 'drive_offline' || type == 'shared_drive' || type == 'computer';
+    return type === 'drive_recent' || type === 'drive_shared_with_me' ||
+        type === 'drive_offline' || type === 'shared_drive' ||
+        type === 'computer';
   }
 
   /**
@@ -1446,6 +1597,9 @@ class DirectoryTreeSelectors_ {
    * @param {string} itemSelector
    * @param {ModifierOptions=} modifiers
    */
+  // @ts-ignore: error TS2740: Type '{}' is missing the following properties
+  // from type 'ModifierOptions': expanded, selected, focused, shortcut, and 5
+  // more.
   attachModifier(itemSelector, modifiers = {}) {
     const appendedSelectors = [];
     if (typeof modifiers.expanded !== 'undefined') {
@@ -1462,7 +1616,7 @@ class DirectoryTreeSelectors_ {
     if (typeof modifiers.acceptDrop !== 'undefined') {
       appendedSelectors.push(modifiers.acceptDrop ? '.accepts' : '.denies');
     }
-    if (typeof modifiers.hasChildren != 'undefined') {
+    if (typeof modifiers.hasChildren !== 'undefined') {
       appendedSelectors.push(
           `[has-children="${String(modifiers.hasChildren)}"]`);
     }

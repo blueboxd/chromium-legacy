@@ -21,6 +21,7 @@
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/input/touch_action.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -53,13 +54,13 @@
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/system_sounds_delegate_impl.h"
 #include "chrome/browser/ui/ash/user_education/chrome_user_education_delegate.h"
-#include "chrome/browser/ui/ash/window_pin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/chromeos/window_pin_util.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -444,7 +445,7 @@ version_info::Channel ChromeShellDelegate::GetChannel() {
 }
 
 void ChromeShellDelegate::ForceSkipWarningUserOnClose(
-    const std::vector<aura::Window*>& windows) {
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows) {
   for (aura::Window* window : windows) {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForNativeWindow(window);

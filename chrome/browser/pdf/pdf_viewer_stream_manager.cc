@@ -24,14 +24,10 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
-#include "url/gurl.h"
 
 namespace pdf {
 
 namespace {
-
-const char kPdfExtensionUrl[] =
-    "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html";
 
 // Creates a claimed `EmbedderHostInfo` from the `embedder_host`.
 PdfViewerStreamManager::EmbedderHostInfo GetEmbedderHostInfo(
@@ -106,6 +102,13 @@ PdfViewerStreamManager::PdfViewerStreamManager(content::WebContents* contents)
 
 PdfViewerStreamManager::~PdfViewerStreamManager() = default;
 
+// static
+PdfViewerStreamManager* PdfViewerStreamManager::FromRenderFrameHost(
+    content::RenderFrameHost* render_frame_host) {
+  return FromWebContents(
+      content::WebContents::FromRenderFrameHost(render_frame_host));
+}
+
 void PdfViewerStreamManager::AddStreamContainer(
     int frame_tree_node_id,
     const std::string& internal_id,
@@ -116,9 +119,9 @@ void PdfViewerStreamManager::AddStreamContainer(
   // `stream_infos_`, then a new PDF navigation has occurred. If the
   // existing `StreamInfo` hasn't been claimed, replace the entry. This is safe,
   // since `GetStreamContainer()` verifies the original PDF URL. If the existing
-  // `StreamInfo` has been claimed, and the embedder host is replaced, then the
-  // original `StreamInfo` will eventually be deleted, and the new `StreamInfo`
-  // will be used instead.
+  // `StreamInfo` has been claimed, then it will eventually be deleted, and the
+  // new `StreamInfo` will be used instead. This can occur if a full page PDF
+  // viewer refreshes or navigates to another PDF URL.
   auto embedder_host_info = GetUnclaimedEmbedderHostInfo(frame_tree_node_id);
   stream_infos_[embedder_host_info] =
       std::make_unique<StreamInfo>(internal_id, std::move(stream_container));
@@ -141,6 +144,27 @@ PdfViewerStreamManager::GetStreamContainer(
   }
 
   return stream_info->stream()->GetWeakPtr();
+}
+
+bool PdfViewerStreamManager::PluginCanSave(
+    content::RenderFrameHost* embedder_host) {
+  auto* stream_info = GetClaimedStreamInfo(embedder_host);
+  if (!stream_info) {
+    return false;
+  }
+
+  return stream_info->plugin_can_save();
+}
+
+void PdfViewerStreamManager::SetPluginCanSave(
+    content::RenderFrameHost* embedder_host,
+    bool plugin_can_save) {
+  auto* stream_info = GetClaimedStreamInfo(embedder_host);
+  if (!stream_info) {
+    return;
+  }
+
+  stream_info->set_plugin_can_save(plugin_can_save);
 }
 
 void PdfViewerStreamManager::RenderFrameDeleted(
@@ -217,12 +241,14 @@ void PdfViewerStreamManager::ReadyToCommitNavigation(
   }
 
   // The initial load notification for the URL being served in the embedder
-  // host. If there isn't already an existing claimed `StreamInfo`, then
-  // `embedder_host` should claim the unclaimed `StreamInfo`.
+  // host. The `embedder_host` should claim the unclaimed `StreamInfo`. This
+  // should replace any existing `StreamInfo` objects related to
+  // `embedder_host`. This is safe since `GetStreamContainer()` checks the
+  // original URL for URL spoofs, and any security-relevant changes in the
+  // response should result in a different `content::RenderFrameHost`.
   content::RenderFrameHost* embedder_host =
       navigation_handle->GetRenderFrameHost();
-  if (!GetClaimedStreamInfo(embedder_host) &&
-      !ContainsUnclaimedStreamInfo(embedder_host->GetFrameTreeNodeId())) {
+  if (!ContainsUnclaimedStreamInfo(embedder_host->GetFrameTreeNodeId())) {
     return;
   }
 
@@ -272,8 +298,8 @@ void PdfViewerStreamManager::DidFinishNavigation(
     return;
   }
 
-  const GURL url(kPdfExtensionUrl);
-  content::NavigationController::LoadURLParams params(url);
+  content::NavigationController::LoadURLParams params(
+      stream_info->stream()->handler_url());
   params.frame_tree_node_id = about_blank_host->GetFrameTreeNodeId();
   params.source_site_instance = embedder_host->GetSiteInstance();
   web_contents()->GetController().LoadURLWithParams(params);

@@ -50,6 +50,7 @@
 #include "third_party/blink/public/mojom/gpu/gpu.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlcanvaselement_offscreencanvas.h"
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -1227,8 +1228,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       task_runner_(task_runner),
       num_gl_errors_to_console_allowed_(kMaxGLErrorsAllowedToConsole),
       context_type_(context_type),
-      program_completion_queries_(
-          base::LRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT),
       number_of_user_allocated_multisampled_renderbuffers_(0) {
   DCHECK(context_provider);
 
@@ -1940,7 +1939,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   // ImageOrientation of the UnacceleratedStaticBitmapImage.
   ImageDrawOptions draw_options;
   draw_options.clamping_mode = Image::kDoNotClampImageToSourceRect;
-  image->Draw(resource_provider->Canvas(), flags, gfx::RectF(dest_rect),
+  image->Draw(&resource_provider->Canvas(), flags, gfx::RectF(dest_rect),
               gfx::RectF(src_rect), draw_options);
   return true;
 }
@@ -2289,6 +2288,12 @@ void WebGLRenderingContextBase::blendFuncSeparate(GLenum src_rgb,
   if (isContextLost() ||
       !ValidateBlendFuncFactors("blendFuncSeparate", src_rgb, dst_rgb))
     return;
+
+  if (!ValidateBlendFuncExtendedFactors("blendFuncSeparate", src_alpha,
+                                        dst_alpha)) {
+    return;
+  }
+
   ContextGL()->BlendFuncSeparate(src_rgb, dst_rgb, src_alpha, dst_alpha);
 }
 
@@ -3432,12 +3437,9 @@ ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* script_state,
   }
 
   WebGLExtension* extension = EnableExtensionIfSupported(name);
-
-  v8::Local<v8::Value> wrapped_extension =
-      ToV8(extension, script_state->GetContext()->Global(),
-           script_state->GetIsolate());
-
-  return ScriptValue(script_state->GetIsolate(), wrapped_extension);
+  return ScriptValue(
+      script_state->GetIsolate(),
+      ToV8Traits<IDLNullable<WebGLExtension>>::ToV8(script_state, extension));
 }
 
 ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(
@@ -3938,13 +3940,13 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
                         "invalid parameter name, EXT_clip_control not enabled");
       return ScriptValue::CreateNull(script_state->GetIsolate());
-    case GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT:  // EXT_blend_func_extended
-      if (ExtensionEnabled(kEXTBlendFuncExtendedName)) {
+    case GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT:  // WEBGL_blend_func_extended
+      if (ExtensionEnabled(kWebGLBlendFuncExtendedName)) {
         return GetUnsignedIntParameter(script_state, pname);
       }
       SynthesizeGLError(
           GL_INVALID_ENUM, "getParameter",
-          "invalid parameter name, EXT_blend_func_extended not enabled");
+          "invalid parameter name, WEBGL_blend_func_extended not enabled");
       return ScriptValue::CreateNull(script_state->GetIsolate());
     case GL_MAX_COLOR_ATTACHMENTS_EXT:  // EXT_draw_buffers BEGIN
       if (ExtensionEnabled(kWebGLDrawBuffersName) || IsWebGL2())
@@ -5581,7 +5583,7 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBufferForTexImage(
   }
 
   if (!image->CurrentFrameKnownToBeOpaque())
-    resource_provider->Canvas()->clear(SkColors::kTransparent);
+    resource_provider->Canvas().clear(SkColors::kTransparent);
 
   gfx::Rect src_rect(image->Size());
   gfx::Rect dest_rect(0, 0, width, height);
@@ -5590,7 +5592,7 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBufferForTexImage(
   // https://crbug.com/672299
   ImageDrawOptions draw_options;
   draw_options.clamping_mode = Image::kDoNotClampImageToSourceRect;
-  image->Draw(resource_provider->Canvas(), flags, gfx::RectF(dest_rect),
+  image->Draw(&resource_provider->Canvas(), flags, gfx::RectF(dest_rect),
               gfx::RectF(src_rect), draw_options);
   return resource_provider->Snapshot(FlushReason::kWebGLTexImage);
 }
@@ -8473,6 +8475,31 @@ bool WebGLRenderingContextBase::ValidateBlendFuncFactors(
                       "incompatible src and dst");
     return false;
   }
+
+  return ValidateBlendFuncExtendedFactors(function_name, src, dst);
+}
+
+bool WebGLRenderingContextBase::ValidateBlendFuncExtendedFactors(
+    const char* function_name,
+    GLenum src,
+    GLenum dst) {
+  // TODO(crbug.com/882580): this validation is done in the
+  // passthrough command decoder; this helper can be removed once the
+  // validating command decoder is completely unshipped.
+  if (src == GL_SRC1_COLOR_EXT || dst == GL_SRC1_COLOR_EXT ||
+      src == GL_SRC1_ALPHA_EXT || dst == GL_SRC1_ALPHA_EXT ||
+      src == GL_ONE_MINUS_SRC1_COLOR_EXT ||
+      dst == GL_ONE_MINUS_SRC1_COLOR_EXT ||
+      src == GL_ONE_MINUS_SRC1_ALPHA_EXT ||
+      dst == GL_ONE_MINUS_SRC1_ALPHA_EXT ||
+      (dst == GL_SRC_ALPHA_SATURATE && !IsWebGL2())) {
+    if (!ExtensionEnabled(kWebGLBlendFuncExtendedName)) {
+      SynthesizeGLError(GL_INVALID_ENUM, function_name,
+                        "invalid value, WEBGL_blend_func_extended not enabled");
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -9051,6 +9078,8 @@ void WebGLRenderingContextBase::Trace(Visitor* visitor) const {
   visitor->Trace(texture_units_);
   visitor->Trace(extensions_);
   visitor->Trace(make_xr_compatible_resolver_);
+  visitor->Trace(program_completion_query_list_);
+  visitor->Trace(program_completion_query_map_);
   CanvasRenderingContext::Trace(visitor);
 }
 
@@ -9105,33 +9134,52 @@ WebGLRenderingContextBase::getHTMLOrOffscreenCanvas() const {
 
 void WebGLRenderingContextBase::addProgramCompletionQuery(WebGLProgram* program,
                                                           GLuint query) {
-  auto old_query = program_completion_queries_.Get(program);
-  if (old_query != program_completion_queries_.end()) {
-    ContextGL()->DeleteQueriesEXT(1, &old_query->second);
+  auto old_query = program_completion_query_map_.find(program);
+  if (old_query != program_completion_query_map_.end()) {
+    ContextGL()->DeleteQueriesEXT(1, &old_query->value);
+    // If this program's been inserted into the map already, then it
+    // exists in the list, too. Clear it out from there so that its
+    // new addition doesn't introduce a duplicate.
+    wtf_size_t old_index = program_completion_query_list_.Find(program);
+    DCHECK_NE(old_index, WTF::kNotFound);
+    program_completion_query_list_.EraseAt(old_index);
   }
-  program_completion_queries_.Put(program, query);
-  if (program_completion_queries_.size() > kMaxProgramCompletionQueries) {
-    auto oldest = program_completion_queries_.rbegin();
-    ContextGL()->DeleteQueriesEXT(1, &oldest->second);
-    program_completion_queries_.Erase(oldest);
+  program_completion_query_map_.Set(program, query);
+  program_completion_query_list_.push_back(program);
+  if (program_completion_query_map_.size() > kMaxProgramCompletionQueries) {
+    DCHECK_GT(program_completion_query_list_.size(), 0u);
+    WebGLProgram* program_to_remove = program_completion_query_list_[0];
+    auto program_iter = program_completion_query_map_.find(program_to_remove);
+    DCHECK_NE(program_iter, program_completion_query_map_.end());
+    ContextGL()->DeleteQueriesEXT(1, &program_iter->value);
+    program_completion_query_map_.erase(program_iter);
+    program_completion_query_list_.EraseAt(0);
   }
 }
 
 void WebGLRenderingContextBase::clearProgramCompletionQueries() {
-  for (auto query : program_completion_queries_) {
-    ContextGL()->DeleteQueriesEXT(1, &query.second);
+  if (destruction_in_progress_) {
+    // GC has started so we can't touch program_completion_query_{map,list}_.
+    // That's OK; we don't need to clean up because the context and object are
+    // about to be destroyed anyway.
+    return;
   }
-  program_completion_queries_.Clear();
+
+  for (auto iter : program_completion_query_map_) {
+    ContextGL()->DeleteQueriesEXT(1, &iter.value);
+  }
+  program_completion_query_map_.clear();
+  program_completion_query_list_.clear();
 }
 
 bool WebGLRenderingContextBase::checkProgramCompletionQueryAvailable(
     WebGLProgram* program,
     bool* completed) {
   GLuint id = 0;
-  auto found = program_completion_queries_.Get(program);
-  if (found != program_completion_queries_.end()) {
-    id = found->second;
-    GLuint available;
+  auto found = program_completion_query_map_.find(program);
+  if (found != program_completion_query_map_.end()) {
+    id = found->value;
+    GLuint available = 0;
     ContextGL()->GetQueryObjectuivEXT(id, GL_QUERY_RESULT_AVAILABLE,
                                       &available);
     if (available) {

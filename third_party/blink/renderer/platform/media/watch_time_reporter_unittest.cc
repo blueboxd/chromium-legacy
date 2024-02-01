@@ -280,6 +280,7 @@ class WatchTimeReporterTest
     void Initialize(bool is_mse,
                     media::mojom::MediaURLScheme url_scheme,
                     media::mojom::MediaStreamType media_stream_type) override {}
+    void OnStarted(const media::PipelineStatus& status) override {}
     void OnError(const media::PipelineStatus& status) override {}
     void OnFallback(const media::PipelineStatus& status) override {}
     void SetIsEME() override {}
@@ -290,6 +291,7 @@ class WatchTimeReporterTest
         media::container_names::MediaContainerName container_name) override {}
     void SetRendererType(media::RendererType renderer_type) override {}
     void SetKeySystem(const std::string& key_system) override {}
+    void SetHasWaitingForKey() override {}
     void SetIsHardwareSecure() override {}
     void SetHasPlayed() override {}
     void SetHaveEnough() override {}

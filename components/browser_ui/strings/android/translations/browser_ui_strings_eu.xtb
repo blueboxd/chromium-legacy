@@ -21,7 +21,7 @@
 <translation id="1383876407941801731">Bilaketa</translation>
 <translation id="1384959399684842514">Pausatu da deskarga</translation>
 <translation id="1415402041810619267">URLa moztuta dago</translation>
-<translation id="1426410128494586442">Bai</translation>
+<translation id="1434873037477293673">prezio-jaitsieraren txartela</translation>
 <translation id="1448064542941920355">Gutxitu zooma</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> webgune}other{<ph name="SITE_COUNT" /> webgune}}</translation>
 <translation id="1510341833810331442">Webguneek ez dute zure gailuan datuak gordetzeko baimenik</translation>
@@ -108,6 +108,7 @@
 <translation id="2750481671343847896">Identitate-zerbitzuek saioa hasteko bidalitako onarpen-mezuak blokea ditzakete webguneek.</translation>
 <translation id="2790501146643349491">Aktibatuta dagoenean, berriki itxitako webguneek datuak bidaltzen eta jasotzen amai dezakete. Desaktibatuta dagoenean, berriki itxitako webguneek ezin dute amaitu datuak bidaltzen eta jasotzen.</translation>
 <translation id="2822354292072154809">Ziur <ph name="CHOSEN_OBJECT_NAME" /> objektuaren webgune-baimen guztiak berrezarri nahi dituzula?</translation>
+<translation id="2836978798613876756"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="2850913818900871965">Eskatu mugikorretarako ikuspegia</translation>
 <translation id="2870560284913253234">Webgunea</translation>
 <translation id="2874939134665556319">Aurreko pista</translation>
@@ -148,6 +149,7 @@
 <translation id="3448554387819310837">Aktibatuta dagoenean, webguneek kamera erabiltzeko baimena eska dezakete. Desaktibatuta dagoenean, webguneek ezin dute erabili kamera.</translation>
 <translation id="3465378418721443318">{DAYS,plural, =1{Bihar blokeatuko ditu cookieak berriro Chrome-k}other{# egun barru blokeatuko ditu cookieak berriro Chrome-k}}</translation>
 <translation id="3521663503435878242"><ph name="DOMAIN" /> domeinuko webguneak</translation>
+<translation id="3536227077203206203">Erabil daiteke une honetan</translation>
 <translation id="3538390592868664640">Ez utzi inongo webguneri inguruaren 3D-ko mapa bat sortzen edo kameraren posizioaren jarraipena egiten</translation>
 <translation id="3544058026430919413">Taldean egiten dituzun jarduerak partekatzeko cookieak erabil ditzaketen webguneen taldeak defini ditzakete enpresek. Ezkutuko moduan, aukera hori desaktibatuta dago.</translation>
 <translation id="3551268116566418498">Ezkutuko modutik irten nahi duzu?</translation>
@@ -161,7 +163,7 @@
 <translation id="3707034683772193706">Bisitatzen dituzun webguneek informazio pixka bat gorde dezakete Chrome-rekin, batez ere robot bat ez zarela egiaztatzeko.</translation>
 <translation id="3721953990244350188">Baztertu eta erakutsi erabilgarri dagoen hurrengo ekintza</translation>
 <translation id="3744111561329211289">Atzeko planoko sinkronizazioa</translation>
-<translation id="3763247130972274048">Sakatu birritan bideoaren ezkerreko edo eskuineko aldea 10 s saltatzeko</translation>
+<translation id="3763247130972274048">Sakatu birritan bideoaren ezkerreko edo eskuineko aldea 10 segundo saltatzeko</translation>
 <translation id="3797520601150691162">Ez aplikatu gai iluna webgune zehatz batean</translation>
 <translation id="3803367742635802571">Bisitatzen dituzun webguneek agian ez dute behar bezala funtzionatuko</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
@@ -189,6 +191,7 @@
 <translation id="4169549551965910670">USB bidezko gailu batera konektatuta</translation>
 <translation id="4194328954146351878">Webguneei NFC darabilten gailuetako informazioa ikusi eta aldatzeko baimena eman aurretik, eskatu onespena (gomendatua)</translation>
 <translation id="4200726100658658164">Ireki kokapen-ezarpenak</translation>
+<translation id="4212246570487010370">Jarraitu arakatzen</translation>
 <translation id="4226663524361240545">Gailua dardararaz dezakete jakinarazpenek</translation>
 <translation id="4259722352634471385"><ph name="URL" /> orrira joateko aukera blokeatuta dago</translation>
 <translation id="4278390842282768270">Baimenduta</translation>
@@ -238,6 +241,7 @@
 <translation id="5099358668261120049"><ph name="ORIGIN" /> webguneak edo hari dagokion hasierako pantailako aplikazioak gorde dituen datu eta cookie guztiak ezabatuko dira.</translation>
 <translation id="5100237604440890931">Tolestuta; egin klik zabaltzeko.</translation>
 <translation id="5123685120097942451">Ezkutuko moduko fitxa</translation>
+<translation id="5139253256813381453">{PRICE_DROP_COUNT,plural, =1{Prezio-jaitsiera irekitako fitxetan}other{Prezio-jaitsierak irekitako fitxetan}}</translation>
 <translation id="5186036860380548585">Aukera pantailaren goialdean dago</translation>
 <translation id="5197729504361054390">Hautatzen dituzun kontaktuak <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webgunearekin partekatuko dira.</translation>
 <translation id="5216942107514965959">Gaur bisitatu duzu azkenengoz</translation>
@@ -325,6 +329,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Ez utzi webguneei errealitate birtualeko gailuak eta datuak erabiltzen</translation>
 <translation id="6447842834002726250">Cookieak</translation>
+<translation id="6452138246455930388">Prezio-jaitsiera irekitako fitxan. Lehen <ph name="OLD_PRICE" />, orain <ph name="NEW_PRICE" />, <ph name="PRODUCT_NAME" />, <ph name="DOMAIN_NAME" />.</translation>
 <translation id="6500423977866688905">Leihoa estua denean, eskatu mugikorretarako ikuspegia</translation>
 <translation id="6527303717912515753">Partekatu</translation>
 <translation id="652937045869844725">Eman hirugarrenen cookieak erabiltzeko baimena. Babes txikiagoa izango duzu, baina webgunearen eginbideek funtzionatzeko probabilitate handiagoa izango dute.</translation>
@@ -344,10 +349,12 @@
 <translation id="6746124502594467657">Eraman behera</translation>
 <translation id="6749077623962119521">Baimenak berrezarri nahi dituzu?</translation>
 <translation id="6766622839693428701">Pasatu hatza behera ixteko.</translation>
+<translation id="6785959295338971061"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> Iturburua: <ph name="FROM_DEVICE" /></translation>
 <translation id="6787751205395685251">Hautatu aukera bat <ph name="SITE_NAME" /> webgunerako</translation>
 <translation id="6790428901817661496">Erreproduzitu</translation>
 <translation id="6818926723028410516">Hautatu elementuak</translation>
 <translation id="6864395892908308021">Gailu honek ezin du irakurri NFC</translation>
+<translation id="6867014948848323204">Iturburua: <ph name="FROM_DEVICE" /></translation>
 <translation id="6912998170423641340">Ez utzi webguneei arbeleko testua eta irudiak ikusten</translation>
 <translation id="6945221475159498467">Hautatu</translation>
 <translation id="6950072572526089586">Bisitatzen dituzun webguneek egiten ari zarenari buruzko informazioa gordetzen dute batzuetan, espero duzun moduan funtzionatu ahal izateko; adibidez, zure saioa hasita mantentzeko edo erosketa-saskian produktuak gordetzeko. Askotan, webguneek gailuan gordetzen dute informazio hori aldi baterako.</translation>
@@ -364,6 +371,7 @@
 <translation id="7141896414559753902">Ez utzi webguneei leiho gainerakorrak eta birbideratzeak erakusten (gomendatua)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7180611975245234373">Freskatu</translation>
+<translation id="7180865173735832675">Pertsonalizatu</translation>
 <translation id="7188508872042490670">Gailuan gordetako webguneetako datuak</translation>
 <translation id="7201549776650881587"><ph name="ORIGIN" /> webgunearen mendeko webgune guztiek edo hari dagokion hasierako pantailako aplikazioak gorde dituzten datu eta cookie guztiak ezabatuko dira</translation>
 <translation id="7203150201908454328">Zabalduta</translation>
@@ -395,6 +403,7 @@
 <translation id="7667547420449112975">Ozeko azti miragarria</translation>
 <translation id="7684642910516280563">Debekatu hirugarrenen cookieak erabiltzea webgune bati</translation>
 <translation id="7719367874908701697">Orriaren zooma</translation>
+<translation id="7770832849480336015">Ezkutatu "<ph name="TITLE_OF_MODULE" />"</translation>
 <translation id="7781829728241885113">Atzo</translation>
 <translation id="7791543448312431591">Gehitu</translation>
 <translation id="780301667611848630">Ez, eskerrik asko</translation>

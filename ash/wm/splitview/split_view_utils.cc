@@ -4,27 +4,33 @@
 
 #include "ash/wm/splitview/split_view_utils.h"
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_types.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_restore/window_restore_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
+#include "base/containers/adapters.h"
 #include "base/time/time.h"
+#include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "components/app_restore/window_properties.h"
+#include "components/prefs/pref_service.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -206,6 +212,38 @@ void AppendUIModeToHistogram(std::string& histogram_name) {
                             : ".ClamshellMode");
 }
 
+// Returns true if there is another window snapped to the opposite side of
+// `window` and we can't start partial overview.
+bool IsAnotherWindowSnappedOppositeOf(aura::Window* window) {
+  const auto windows =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
+  const auto snap_type = WindowState::Get(window)->GetStateType();
+  const auto opposite_snap_type = window_util::GetOppositeSnapType(window);
+  for (aura::Window* top_window : base::Reversed(windows)) {
+    if (top_window == window) {
+      // Skip `window` itself.
+      continue;
+    }
+    auto* top_window_state = WindowState::Get(top_window);
+    if (top_window_state->IsFloated()) {
+      // Skip any floated windows that are on top of the snapped windows.
+      continue;
+    }
+    if (!top_window_state->IsSnapped()) {
+      // Otherwise if `top_window` is not snapped, return false.
+      return false;
+    }
+    if (top_window_state->GetStateType() == snap_type) {
+      // Skip any windows that are snapped to the *same* side as `window`.
+      continue;
+    }
+    // Else `top_window` is snapped to the opposite side of `window`.
+    CHECK_EQ(top_window_state->GetStateType(), opposite_snap_type);
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 WindowTransformAnimationObserver::WindowTransformAnimationObserver(
@@ -228,7 +266,7 @@ void WindowTransformAnimationObserver::OnImplicitAnimationsCompleted() {
     return;
   }
 
-  for (auto* transient_window :
+  for (aura::Window* transient_window :
        wm::TransientWindowManager::GetOrCreate(window_)->transient_children()) {
     // For now we only care about bubble dialog type transient children.
     views::BubbleDialogDelegate* bubble_delegate_view =
@@ -370,6 +408,40 @@ void DoSplitviewClipRectAnimation(
   layer->SetClipRect(target_clip_rect);
 }
 
+int GetWindowLength(aura::Window* window, bool horizontal) {
+  const auto& bounds = window->bounds();
+  return horizontal ? bounds.width() : bounds.height();
+}
+
+bool IsPhysicalLeftOrTop(aura::Window* window) {
+  chromeos::WindowStateType state_type =
+      WindowState::Get(window)->GetStateType();
+  if (IsLayoutPrimary(window)) {
+    return state_type == chromeos::WindowStateType::kPrimarySnapped;
+  }
+  return state_type == chromeos::WindowStateType::kSecondarySnapped;
+}
+
+void SetWindowTransformDuringResizing(aura::Window* window,
+                                      int divider_position) {
+  const bool is_primary_window = IsPhysicalLeftOrTop(window);
+  aura::Window* root_window = window->GetRootWindow();
+  const int window_size = is_primary_window
+                              ? divider_position
+                              : GetDividerPositionUpperLimit(root_window) -
+                                    divider_position -
+                                    kSplitviewDividerShortSideLength;
+  const bool horizontal = IsLayoutHorizontal(root_window);
+  int distance = window_size - GetWindowLength(window, horizontal);
+  gfx::Transform transform;
+  if (distance < 0) {
+    // If this is the secondary window, translate the other direction.
+    distance = is_primary_window ? distance : -distance;
+    transform.Translate(horizontal ? distance : 0, horizontal ? 0 : distance);
+  }
+  window_util::SetTransform(window, transform);
+}
+
 // TODO(michelefan): Revisit the logics when split view refactor is ready to
 // make everything works with `kSnapGroup` enabled.
 void MaybeRestoreSplitView(bool refresh_snapped_windows) {
@@ -400,7 +472,8 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
         Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
             kActiveDesk);
     for (aura::Window* window : windows) {
-      if (!split_view_controller->CanSnapWindow(window)) {
+      if (!split_view_controller->CanSnapWindow(window,
+                                                chromeos::kDefaultSnapRatio)) {
         // Since we are in tablet mode, and this window is not snappable, we
         // should maximize it.
         WindowState::Get(window)->Maximize();
@@ -554,7 +627,8 @@ SnapPosition GetSnapPosition(aura::Window* root_window,
                              int minimum_drag_distance,
                              int horizontal_edge_inset,
                              int vertical_edge_inset) {
-  if (!SplitViewController::Get(root_window)->CanSnapWindow(window)) {
+  if (!SplitViewController::Get(root_window)
+           ->CanSnapWindow(window, chromeos::kDefaultSnapRatio)) {
     return SnapPosition::kNone;
   }
 
@@ -568,19 +642,13 @@ SnapPosition GetSnapPosition(aura::Window* root_window,
       vertical_edge_inset);
 }
 
-bool IsInTabletMode() {
-  TabletModeController* tablet_mode_controller =
-      Shell::Get()->tablet_mode_controller();
-  return tablet_mode_controller && tablet_mode_controller->InTabletMode();
-}
-
 bool IsLayoutHorizontal(aura::Window* window) {
   return IsLayoutHorizontal(
       display::Screen::GetScreen()->GetDisplayNearestWindow(window));
 }
 
 bool IsLayoutHorizontal(const display::Display& display) {
-  if (IsInTabletMode()) {
+  if (display::Screen::GetScreen()->InTabletMode()) {
     return IsCurrentScreenOrientationLandscape();
   }
 
@@ -595,7 +663,7 @@ bool IsLayoutPrimary(aura::Window* window) {
 }
 
 bool IsLayoutPrimary(const display::Display& display) {
-  if (IsInTabletMode()) {
+  if (display::Screen::GetScreen()->InTabletMode()) {
     return IsCurrentScreenOrientationPrimary();
   }
 
@@ -634,19 +702,54 @@ int GetMinimumWindowLength(aura::Window* window, bool horizontal) {
   return minimum_width;
 }
 
+int CalculateDividerPosition(SnapPosition snap_position,
+                             aura::Window* root_window,
+                             float snap_ratio,
+                             bool account_for_divider_width) {
+  const int divider_upper_limit = GetDividerPositionUpperLimit(root_window);
+  // `snap_width` needs to be a float so that the rounding is performed at the
+  // end of the computation of `next_divider_position`. It's important because a
+  // 1-DIP gap between snapped windows precludes multiresizing. See b/262011280.
+  const float snap_width = divider_upper_limit * snap_ratio;
+  int next_divider_position = snap_position == SnapPosition::kPrimary
+                                  ? snap_width
+                                  : divider_upper_limit - snap_width;
+  if (account_for_divider_width) {
+    next_divider_position -= kSplitviewDividerShortSideLength / 2;
+  }
+  return next_divider_position;
+}
+
+int GetEquivalentDividerPosition(aura::Window* window,
+                                 bool account_for_divider_width) {
+  aura::Window* root_window = window->GetRootWindow();
+  const bool horizontal = IsLayoutHorizontal(root_window);
+  const int window_length = GetWindowLength(window, horizontal);
+  const bool is_physical_left_or_top = IsPhysicalLeftOrTop(window);
+  int divider_position =
+      is_physical_left_or_top
+          ? window_length
+          : GetDividerPositionUpperLimit(root_window) - window_length;
+  if (account_for_divider_width) {
+    const int factor = is_physical_left_or_top ? -1 : 1;
+    divider_position += factor * kSplitviewDividerShortSideLength / 2;
+  }
+  return divider_position;
+}
+
 gfx::Rect CalculateSnappedWindowBoundsInScreen(
     SnapPosition snap_position,
+    aura::Window* root_window,
     aura::Window* window_for_minimum_size,
     int divider_position,
     int divider_width,
     bool is_resizing_with_divider) {
-  aura::Window* root_window = window_for_minimum_size->GetRootWindow();
   const gfx::Rect work_area_bounds_in_screen =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window);
   const bool horizontal = IsLayoutHorizontal(root_window);
   const bool snap_left_or_top = IsPhysicalLeftOrTop(snap_position, root_window);
-  const bool in_tablet_mode = IsInTabletMode();
+  const bool in_tablet_mode = display::Screen::GetScreen()->InTabletMode();
   const int work_area_size = GetDividerPositionUpperLimit(root_window);
 
   // Edit `divider_position` if window restore is currently restoring a snapped
@@ -736,6 +839,49 @@ gfx::Rect CalculateSnappedWindowBoundsInScreen(
   return snapped_window_bounds_in_screen;
 }
 
+bool CanStartSplitViewOverviewSessionInClamshell(
+    aura::Window* window,
+    WindowSnapActionSource snap_action_source) {
+  if (IsInOverviewSession() && WindowState::Get(window)->IsSnapped()) {
+    return !RootWindowController::ForWindow(window)
+                ->split_view_overview_session();
+  }
+
+  if (!OverviewController::Get()->CanEnterOverview()) {
+    return false;
+  }
+
+  if (!window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
+    return false;
+  }
+
+  if (PrefService* pref =
+          Shell::Get()->session_controller()->GetActivePrefService();
+      pref && !pref->GetBoolean(prefs::kSnapWindowSuggestions)) {
+    return false;
+  }
+
+  switch (snap_action_source) {
+    case WindowSnapActionSource::kDragWindowToEdgeToSnap:
+    case WindowSnapActionSource::kSnapByWindowLayoutMenu:
+    case WindowSnapActionSource::kLongPressCaptionButtonToSnap:
+    case WindowSnapActionSource::kTest:
+      // We only start partial overview for the above snap sources.
+      break;
+    default:
+      return false;
+  }
+
+  // If `SnapGroups` is not enabled and the topmost window (excluding
+  // `window` itself) is snapped on the opposite side, don't start partial
+  // overview.
+  if (!SnapGroupController::Get() && IsAnotherWindowSnappedOppositeOf(window)) {
+    return false;
+  }
+
+  return !IsInOverviewSession();
+}
+
 bool IsSnapGroupEnabledInClamshellMode() {
   auto* snap_group_controller = SnapGroupController::Get();
   return snap_group_controller && !display::Screen::GetScreen()->InTabletMode();
@@ -748,18 +894,6 @@ int GetWindowComponentForResize(aura::Window* window) {
   // TODO(b/288356322): Update the component for vertical splitview.
   return state_type == chromeos::WindowStateType::kPrimarySnapped ? HTRIGHT
                                                                   : HTLEFT;
-}
-
-views::Widget::InitParams CreateWidgetInitParams(
-    aura::Window* parent_window,
-    const std::string& widget_name) {
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
-  params.activatable = views::Widget::InitParams::Activatable::kNo;
-  params.parent = parent_window;
-  params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
-  params.name = widget_name;
-  return params;
 }
 
 ASH_EXPORT std::string BuildWindowLayoutCompleteOnSessionExitHistogram() {

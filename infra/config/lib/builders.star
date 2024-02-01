@@ -83,6 +83,7 @@ os = struct(
     MAC_14 = os_enum(os_category.MAC, "Mac-14"),
     MAC_DEFAULT = os_enum(os_category.MAC, "Mac-13"),
     MAC_ANY = os_enum(os_category.MAC, "Mac"),
+    MAC_BETA = os_enum(os_category.MAC, "Mac-14"),
     WINDOWS_10 = os_enum(os_category.WINDOWS, "Windows-10"),
     WINDOWS_11 = os_enum(os_category.WINDOWS, "Windows-11"),
     WINDOWS_DEFAULT = os_enum(os_category.WINDOWS, "Windows-10"),
@@ -139,7 +140,8 @@ def _rotation(name):
     )
 
 # Sheriff rotations that a builder can be added to (only takes effect on trunk)
-# Arbitrary elements can't be added, new rotations must be added in SoM code
+# New rotations can be added, but won't automatically show up in SoM without
+# changes to SoM code.
 sheriff_rotations = struct(
     ANDROID = _rotation("android"),
     ANGLE = _rotation("angle"),
@@ -150,6 +152,8 @@ sheriff_rotations = struct(
     CHROMIUM_CLANG = _rotation("chromium.clang"),
     CHROMIUM_GPU = _rotation("chromium.gpu"),
     IOS = _rotation("ios"),
+    # This group is not on SoM.
+    CHROMIUMOS = _rotation("chromiumos"),
 )
 
 def xcode_enum(version):
@@ -161,7 +165,10 @@ def xcode_enum(version):
 
 # Keep this in-sync with the versions of bots in //ios/build/bots/.
 xcode = struct(
-    # (current default for other projects) xc12.0 gm seed
+    # Default Xcode Version, stays in sync with x15main
+    xcode_default = xcode_enum("15c500b"),
+
+    # xc12.0 gm seed
     x12a7209 = xcode_enum("12a7209"),
     # xc12.4 gm seed
     x12d4e = xcode_enum("12d4e"),
@@ -176,9 +183,9 @@ xcode = struct(
     # A newer Xcode 14 RC  used on beta bots.
     x14betabots = xcode_enum("14e222b"),
     # Default Xcode 15 for chromium iOS
-    x15main = xcode_enum("15a507"),
+    x15main = xcode_enum("15c500b"),
     # A newer Xcode 15 version used on beta bots.
-    x15betabots = xcode_enum("15c65"),
+    x15betabots = xcode_enum("15e5178i"),
     # in use by ios-webkit-tot
     x14wk = xcode_enum("14c18wk"),
 )
@@ -494,6 +501,7 @@ def builder(
         shadow_service_account = args.DEFAULT,
         shadow_reclient_instance = args.DEFAULT,
         gn_args = None,
+        targets = None,
         contact_team_email = args.DEFAULT,
         **kwargs):
     """Define a builder.
@@ -525,13 +533,6 @@ def builder(
         triggered_by: an optional poller or builder that triggers the builder or
             a list of pollers and/or builders that trigger the builder. Supports
             a module-level default.
-        bootstrap: a boolean indicating whether the builder should have its
-            properties bootstrapped. If True, the builder's properties will be
-            written to a separate file and its definition will be updated with
-            new properties and executable that cause a bootstrapping binary to
-            be used. The build's default values for properties will be taken
-            from the properties file at the version that the build will check
-            out.
         os: a member of the `os` enum indicating the OS the builder requires for
             the machines that run it. Emits a dimension of the form 'os:os'. By
             default considered None.
@@ -542,6 +543,12 @@ def builder(
             in a machine for incoming build tasks. This value is used to create
             a "free_space" dimension, and this dimension is appended to only
             builderless builders.
+        builder_cache_name: The name of the cache to mount at cache path
+            "builder". By default, buildbucket will create a builder cache for
+            each builder with a name incorporating a hash of the builder's
+            project, bucket and name, so this only needs to be set for
+            exceptional circumstances such as sharing the builder cache between
+            multiple builders.
         override_builder_dimension: a string to assign to the "builder"
             dimension. Ignores any other "builder" and "builderless" dimensions
             that would have been assigned.
@@ -555,6 +562,19 @@ def builder(
             and `auto_builder_dimension` is considered True, a dimension will be
             emitted of the form 'builder:<project>/<bucket>/<name>'. By default,
             considered False.
+        cores: an int indicating the number of cores the builder requires for
+            the machines that run it. Emits a dimension of the form
+            'cores:<cores>' will be emitted. By default, considered None.
+        cpu: a member of the `cpu` enum indicating the cpu the builder requires
+            for the machines that run it. Emits a dimension of the form
+            'cpu:<cpu>'. By default, considered None.
+        bootstrap: a boolean indicating whether the builder should have its
+            properties bootstrapped. If True, the builder's properties will be
+            written to a separate file and its definition will be updated with
+            new properties and executable that cause a bootstrapping binary to
+            be used. The build's default values for properties will be taken
+            from the properties file at the version that the build will check
+            out.
         builder_group: a string with the group of the builder. Emits a property
             of the form 'builder_group:<builder_group>'. By default, considered
             None.
@@ -564,12 +584,6 @@ def builder(
             Cannot be set if `builder_spec` is set.
         try_settings: Try-builder-specific settings, can only be set if
             `mirrors` is set.
-        cores: an int indicating the number of cores the builder requires for
-            the machines that run it. Emits a dimension of the form
-            'cores:<cores>' will be emitted. By default, considered None.
-        cpu: a member of the `cpu` enum indicating the cpu the builder requires
-            for the machines that run it. Emits a dimension of the form
-            'cpu:<cpu>'. By default, considered None.
         pool: a string indicating the pool of the machines that run the builder.
             Emits a dimension of the form 'pool:<pool>'. By default, considered
             None. When running a builder that has no explicit pool dimension,
@@ -638,6 +652,8 @@ def builder(
             files whose coverage is known gets generated and exported to GCS.
             Will be copied to '$build/code_coverage' property if set.
             By default considered False.
+        resultdb_enable: a boolean indicating if resultdb should be enabled for
+            the builder.
         resultdb_bigquery_exports: a list of resultdb.export_test_results(...)
             specifying parameters for exporting test results to BigQuery. By
             default, do not export.
@@ -682,6 +698,8 @@ def builder(
         siso_enable_cloud_profiler: If True, enable cloud profiler in siso.
         siso_enable_cloud_trace: If True, enable cloud trace in siso.
         siso_experiments: a list of experiment flags for siso.
+        health_spec: a health spec instance describing the threshold for when
+            the builder should be considered unhealthy.
         shadow_builderless: If set to True, then led builds created for this
             builder will have the builderless dimension set and the builder
             dimension removed. If set to False, then led builds created for this
@@ -700,6 +718,18 @@ def builder(
             use this as the reclient instance instead of reclient_instance. The
             other reclient_* values will continue to be used for the shadow
             build.
+        gn_args: If set, the GN args config to use for the builder. It can be
+            set to the name of a predeclared config or an unnamed
+            gn_args.config declaration for an unphased config. A builder can use
+            phased configs by setting a dict with the phase names as keys and
+            the values being the config to use for the phase.
+        targets: The targets that should be built and/or run by the builder. Can
+            take the form of the name of a targets bundle (individual targets
+            define a bundle with the same name containing only that target), a
+            targets.bundle instance or a list where each element is the name of
+            a targets bundle or a targets.bundle instance.
+        contact_team_email: The e-mail of the team responsible for the health of
+            the builder.
         **kwargs: Additional keyword arguments to forward on to `luci.builder`.
 
     Returns:
@@ -886,7 +916,8 @@ def builder(
             shadow_properties["$build/reclient"] = shadow_reclient
 
     siso_project = defaults.get_value("siso_project", siso_project)
-    if defaults.get_value("siso_enabled", siso_enabled) and siso_project:
+    use_siso = defaults.get_value("siso_enabled", siso_enabled) and siso_project
+    if use_siso:
         properties["$build/siso"] = {
             "configs": defaults.get_value("siso_configs", siso_configs),
             "enable_cloud_profiler": defaults.get_value("siso_enable_cloud_profiler", siso_enable_cloud_profiler),
@@ -959,7 +990,7 @@ def builder(
 
     register_recipe_experiments_ref(bucket, name, executable)
 
-    additional_exclusions = register_gn_args(builder_group, bucket, name, gn_args)
+    additional_exclusions = register_gn_args(builder_group, bucket, name, gn_args, use_siso)
 
     register_builder_config(
         bucket,
@@ -968,6 +999,7 @@ def builder(
         builder_spec,
         mirrors,
         try_settings,
+        targets,
         additional_exclusions,
     )
 

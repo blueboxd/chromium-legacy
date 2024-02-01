@@ -33,7 +33,8 @@ class SoftNavigationTest : public MetricIntegrationTest,
     command_line->AppendSwitch(cc::switches::kEnableGpuBenchmarking);
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
     std::vector<base::test::FeatureRef> enabled_feature_list = {
-        blink::features::kNavigationId};
+        blink::features::kNavigationId,
+        blink::features::kSoftNavigationDetection};
     if (GetParam()) {
       enabled_feature_list.push_back(
           blink::features::kSoftNavigationHeuristics);
@@ -68,7 +69,7 @@ class SoftNavigationTest : public MetricIntegrationTest,
       const ukm::TestUkmRecorder& ukm_recorder,
       base::StringPiece metric_name) {
     std::map<int64_t, double> source_id_to_metric_name;
-    for (auto* entry : ukm_recorder.GetEntriesByName(
+    for (const ukm::mojom::UkmEntry* entry : ukm_recorder.GetEntriesByName(
              ukm::builders::SoftNavigation::kEntryName)) {
       if (auto* rs = ukm_recorder.GetEntryMetric(entry, metric_name)) {
         source_id_to_metric_name[entry->source_id] = *rs;
@@ -290,11 +291,11 @@ class SoftNavigationTest : public MetricIntegrationTest,
 
     size_t entry_records_list_size = entry_records_list.size();
     for (size_t i = 0; i < entry_records_list_size; i++) {
-      absl::optional<double> record_startTime =
+      std::optional<double> record_startTime =
           entry_records_list[i].GetDict().FindDouble("startTime");
-      absl::optional<double> record_score =
+      std::optional<double> record_score =
           entry_records_list[i].GetDict().FindDouble("score");
-      absl::optional<double> record_hadRecentInput =
+      std::optional<double> record_hadRecentInput =
           entry_records_list[i].GetDict().FindBool("hadRecentInput");
 
       // Verify that the optional<double> has value.

@@ -8,7 +8,6 @@
 #include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autocomplete_parsing_util.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill {
 
@@ -24,62 +23,62 @@ testing::Message DescribeFormData(const FormData& form_data) {
   return result;
 }
 
-FormFieldData CreateFieldByRole(ServerFieldType role) {
+FormFieldData CreateFieldByRole(FieldType role) {
   FormFieldData field;
   switch (role) {
-    case ServerFieldType::USERNAME:
+    case FieldType::USERNAME:
       field.label = u"Username";
       field.name = u"username";
       break;
-    case ServerFieldType::NAME_FULL:
+    case FieldType::NAME_FULL:
       field.label = u"Full name";
       field.name = u"fullname";
       break;
-    case ServerFieldType::NAME_FIRST:
+    case FieldType::NAME_FIRST:
       field.label = u"First Name";
       field.name = u"firstName";
       break;
-    case ServerFieldType::NAME_LAST:
+    case FieldType::NAME_LAST:
       field.label = u"Last Name";
       field.name = u"lastName";
       break;
-    case ServerFieldType::EMAIL_ADDRESS:
+    case FieldType::EMAIL_ADDRESS:
       field.label = u"E-mail address";
       field.name = u"email";
       break;
-    case ServerFieldType::ADDRESS_HOME_LINE1:
+    case FieldType::ADDRESS_HOME_LINE1:
       field.label = u"Address";
       field.name = u"home_line_one";
       break;
-    case ServerFieldType::ADDRESS_HOME_CITY:
+    case FieldType::ADDRESS_HOME_CITY:
       field.label = u"City";
       field.name = u"city";
       break;
-    case ServerFieldType::ADDRESS_HOME_STATE:
+    case FieldType::ADDRESS_HOME_STATE:
       field.label = u"State";
       field.name = u"state";
       break;
-    case ServerFieldType::ADDRESS_HOME_COUNTRY:
+    case FieldType::ADDRESS_HOME_COUNTRY:
       field.label = u"Country";
       field.name = u"country";
       break;
-    case ServerFieldType::ADDRESS_HOME_ZIP:
+    case FieldType::ADDRESS_HOME_ZIP:
       field.label = u"Zip Code";
       field.name = u"zipCode";
       break;
-    case ServerFieldType::PHONE_HOME_NUMBER:
+    case FieldType::PHONE_HOME_NUMBER:
       field.label = u"Phone";
       field.name = u"phone";
       break;
-    case ServerFieldType::COMPANY_NAME:
+    case FieldType::COMPANY_NAME:
       field.label = u"Company";
       field.name = u"company";
       break;
-    case ServerFieldType::CREDIT_CARD_NUMBER:
+    case FieldType::CREDIT_CARD_NUMBER:
       field.label = u"Card Number";
       field.name = u"cardNumber";
       break;
-    case ServerFieldType::EMPTY_TYPE:
+    case FieldType::EMPTY_TYPE:
     default:
       break;
   }
@@ -92,7 +91,7 @@ FormData GetFormData(const FormDescription& d) {
   f.action = GURL(d.action);
   f.name = d.name;
   f.host_frame = d.host_frame.value_or(MakeLocalFrameToken());
-  f.unique_renderer_id = d.unique_renderer_id.value_or(MakeFormRendererId());
+  f.renderer_id = d.renderer_id.value_or(MakeFormRendererId());
   if (d.main_frame_origin)
     f.main_frame_origin = *d.main_frame_origin;
   f.is_form_tag = d.is_form_tag;
@@ -104,9 +103,8 @@ FormData GetFormData(const FormDescription& d) {
       ff.options = dd.select_options;
     }
     ff.host_frame = dd.host_frame.value_or(f.host_frame);
-    ff.unique_renderer_id =
-        dd.unique_renderer_id.value_or(MakeFieldRendererId());
-    ff.host_form_id = f.unique_renderer_id;
+    ff.renderer_id = dd.renderer_id.value_or(MakeFieldRendererId());
+    ff.host_form_id = f.renderer_id;
     ff.is_focusable = dd.is_focusable;
     ff.is_visible = dd.is_visible;
     if (!dd.autocomplete_attribute.empty()) {
@@ -131,9 +129,9 @@ FormData GetFormData(const FormDescription& d) {
   return f;
 }
 
-std::vector<ServerFieldType> GetHeuristicTypes(
+std::vector<FieldType> GetHeuristicTypes(
     const FormDescription& form_description) {
-  std::vector<ServerFieldType> heuristic_types;
+  std::vector<FieldType> heuristic_types;
   heuristic_types.reserve(form_description.fields.size());
 
   for (const auto& field : form_description.fields) {
@@ -143,9 +141,8 @@ std::vector<ServerFieldType> GetHeuristicTypes(
   return heuristic_types;
 }
 
-std::vector<ServerFieldType> GetServerTypes(
-    const FormDescription& form_description) {
-  std::vector<ServerFieldType> server_types;
+std::vector<FieldType> GetServerTypes(const FormDescription& form_description) {
+  std::vector<FieldType> server_types;
   server_types.reserve(form_description.fields.size());
 
   for (const auto& field : form_description.fields) {

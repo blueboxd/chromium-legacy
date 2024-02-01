@@ -36,6 +36,7 @@ class AuctionAdInterestGroup;
 class AuctionAdInterestGroupKey;
 class AuctionAdConfig;
 class ScriptPromiseResolver;
+class ProtectedAudience;
 class V8UnionFencedFrameConfigOrUSVString;
 
 class MODULES_EXPORT NavigatorAuction final
@@ -97,7 +98,11 @@ class MODULES_EXPORT NavigatorAuction final
   void updateAdInterestGroups();
   static void updateAdInterestGroups(ScriptState*, Navigator&, ExceptionState&);
   // TODO(crbug.com/1441988): Make `const AuctionAdConfig*` after rename.
-  ScriptPromise runAdAuction(ScriptState*, AuctionAdConfig*, ExceptionState&);
+  ScriptPromise runAdAuction(
+      ScriptState*,
+      AuctionAdConfig*,
+      ExceptionState&,
+      base::TimeTicks start_time = base::TimeTicks::Now());
   static ScriptPromise runAdAuction(ScriptState*,
                                     Navigator&,
                                     AuctionAdConfig*,
@@ -151,9 +156,11 @@ class MODULES_EXPORT NavigatorAuction final
       const Vector<std::pair<String, String>>& replacement,
       ExceptionState& exception_state);
 
-  ScriptPromise getInterestGroupAdAuctionData(ScriptState* script_state,
-                                              const AdAuctionDataConfig* config,
-                                              ExceptionState& exception_state);
+  ScriptPromise getInterestGroupAdAuctionData(
+      ScriptState* script_state,
+      const AdAuctionDataConfig* config,
+      ExceptionState& exception_state,
+      base::TimeTicks start_time = base::TimeTicks::Now());
   static ScriptPromise getInterestGroupAdAuctionData(
       ScriptState* script_state,
       Navigator& navigator,
@@ -193,8 +200,12 @@ class MODULES_EXPORT NavigatorAuction final
   static bool deprecatedRunAdAuctionEnforcesKAnonymity(ScriptState*,
                                                        Navigator&);
 
+  static ProtectedAudience* protectedAudience(ScriptState*,
+                                              Navigator& navigator);
+
   void Trace(Visitor* visitor) const override {
     visitor->Trace(ad_auction_service_);
+    visitor->Trace(protected_audience_);
     Supplement<Navigator>::Trace(visitor);
   }
 
@@ -262,6 +273,7 @@ class MODULES_EXPORT NavigatorAuction final
   void ReplaceInURNComplete(ScriptPromiseResolver* resolver);
 
   void GetInterestGroupAdAuctionDataComplete(
+      base::TimeTicks start_time,
       ScriptPromiseResolver* resolver,
       mojo_base::BigBuffer request,
       const absl::optional<base::Uuid>& request_id,
@@ -274,6 +286,7 @@ class MODULES_EXPORT NavigatorAuction final
   JoinLeaveQueue<PendingClear> queued_cross_site_clears_;
 
   HeapMojoRemote<mojom::blink::AdAuctionService> ad_auction_service_;
+  Member<ProtectedAudience> protected_audience_;
 };
 
 }  // namespace blink

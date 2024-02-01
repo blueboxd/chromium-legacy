@@ -28,7 +28,6 @@
 #include "net/base/request_priority.h"
 #include "net/base/transport_info.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_setting_override.h"
@@ -109,7 +108,6 @@ class TestDelegate : public URLRequest::Delegate {
   // Sets the closure to be run on completion, for tests which need more fine-
   // grained control than RunUntilComplete().
   void set_on_complete(base::OnceClosure on_complete) {
-    use_legacy_on_complete_ = false;
     on_complete_ = std::move(on_complete);
   }
 
@@ -192,10 +190,6 @@ class TestDelegate : public URLRequest::Delegate {
   bool cancel_in_rd_pending_ = false;
   bool allow_certificate_errors_ = false;
   AuthCredentials credentials_;
-
-  // True if legacy on-complete behaviour, using QuitCurrent*Deprecated(), is
-  // enabled. This is cleared if any of the Until*() APIs are used.
-  bool use_legacy_on_complete_ = true;
 
   // Used to register RunLoop quit closures, to implement the Until*() closures.
   base::OnceClosure on_complete_;

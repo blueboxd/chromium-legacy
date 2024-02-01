@@ -35,10 +35,10 @@
 #include "chrome/browser/permissions/permission_update_message_controller_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/common/pdf_util.h"
 #include "chrome/grit/branded_strings.h"
 #include "components/download/content/public/context_menu_download.h"
-#include "components/download/public/common/auto_resumption_handler.h"
-#include "components/download/public/common/download_features.h"
+#include "components/download/public/common/android/auto_resumption_handler.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/messages/android/messages_feature.h"
 #include "components/strings/grit/components_strings.h"
@@ -222,25 +222,17 @@ void DownloadController::CloseTabIfEmpty(content::WebContents* web_contents,
   if (!tab_model || tab_model->GetTabCount() == 1)
     return;
 
-  int tab_index = -1;
-  for (int index = 0; index < tab_model->GetTabCount(); ++index) {
-    if (web_contents == tab_model->GetWebContentsAt(index)) {
-      tab_index = index;
-      break;
-    }
+  if (!download) {
+    web_contents->Close();
+    return;
   }
 
-  if (tab_index == -1)
+  if (download->GetMimeType() == kPDFMimeType &&
+      base::FeatureList::IsEnabled(chrome::android::kOpenPdfInline)) {
     return;
+  }
 
-  // Closing an empty page on external app download leaves a bad user experience
-  // as user don't know whether a download is kicked off, or if Chrome just
-  // ignores the URL. Show the download page instead.
-  if (base::FeatureList::IsEnabled(
-          chrome::android::kDownloadHomeForExternalApp) &&
-      !base::FeatureList::IsEnabled(chrome::android::kChromeNewDownloadTab) &&
-      tab_model->GetTabAt(tab_index)->GetLaunchType() ==
-          static_cast<int>(TabModel::TabLaunchType::FROM_EXTERNAL_APP)) {
+  if (download->IsFromExternalApp()) {
     DownloadManagerService::GetInstance()->OpenDownloadsPage(
         Profile::FromBrowserContext(web_contents->GetBrowserContext()),
         DownloadOpenSource::kExternalApp);
@@ -251,7 +243,7 @@ void DownloadController::CloseTabIfEmpty(content::WebContents* web_contents,
       return;
     }
   }
-  tab_model->CloseTabAt(tab_index);
+  web_contents->Close();
 }
 
 // static
@@ -351,9 +343,22 @@ void DownloadController::StartAndroidDownloadInternal(
 void DownloadController::OnDownloadStarted(DownloadItem* download_item) {
   // For dangerous downloads, we need to show the dangerous infobar before the
   // download can start.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (!download_item->IsDangerous())
-    Java_DownloadController_onDownloadStarted(env);
+  if (!download_item->IsDangerous() &&
+      download_item->GetMimeType() == kPDFMimeType &&
+      base::FeatureList::IsEnabled(chrome::android::kOpenPdfInline)) {
+    content::WebContents* web_contents =
+        content::DownloadItemUtils::GetWebContents(download_item);
+    if (web_contents) {
+      TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+      if (tab) {
+        JNIEnv* env = base::android::AttachCurrentThread();
+        ScopedJavaLocalRef<jobject> j_item =
+            DownloadManagerService::CreateJavaDownloadInfo(env, download_item);
+        Java_DownloadController_onPdfDownloadStarted(env, tab->GetJavaObject(),
+                                                     j_item);
+      }
+    }
+  }
 
   // Register for updates to the DownloadItem.
   download_item->RemoveObserver(this);

@@ -7,6 +7,7 @@
 #include <aura-shell-client-protocol.h>
 #include <xdg-decoration-unstable-v1-client-protocol.h>
 
+#include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
@@ -194,16 +195,9 @@ void XDGToplevelWrapperImpl::SetFullscreen(WaylandOutput* wayland_output) {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 void XDGToplevelWrapperImpl::SetUseImmersiveMode(bool immersive) {
-  if (SupportsTopLevelImmersiveStatus()) {
-    auto mode = immersive ? ZAURA_TOPLEVEL_FULLSCREEN_MODE_IMMERSIVE
-                          : ZAURA_TOPLEVEL_FULLSCREEN_MODE_PLAIN;
-    zaura_toplevel_set_fullscreen_mode(aura_toplevel_.get(), mode);
-  }
-}
-
-bool XDGToplevelWrapperImpl::SupportsTopLevelImmersiveStatus() const {
-  return aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
-                               ZAURA_TOPLEVEL_SET_FULLSCREEN_MODE_SINCE_VERSION;
+  auto mode = immersive ? ZAURA_TOPLEVEL_FULLSCREEN_MODE_IMMERSIVE
+                        : ZAURA_TOPLEVEL_FULLSCREEN_MODE_PLAIN;
+  zaura_toplevel_set_fullscreen_mode(aura_toplevel_.get(), mode);
 }
 
 void XDGToplevelWrapperImpl::SetTopInset(int height) {
@@ -313,16 +307,15 @@ void XDGToplevelWrapperImpl::OnToplevelConfigure(void* data,
   auto* self = static_cast<XDGToplevelWrapperImpl*>(data);
   DCHECK(self);
 
-  WaylandWindow::WindowStates window_states{
-      .is_maximized =
-          CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_MAXIMIZED),
-      .is_fullscreen =
-          CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_FULLSCREEN),
-      .is_activated =
-          CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_ACTIVATED),
-  };
+  WaylandWindow::WindowStates window_states;
+  window_states.is_maximized =
+      CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_MAXIMIZED);
+  window_states.is_fullscreen =
+      CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_FULLSCREEN);
+  window_states.is_activated =
+      CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_ACTIVATED);
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
   if (xdg_toplevel_get_version(toplevel) >=
       XDG_TOPLEVEL_STATE_TILED_LEFT_SINCE_VERSION) {
     // All four tiled states have the same since version, so it is enough to
@@ -384,25 +377,32 @@ void XDGToplevelWrapperImpl::OnAuraToplevelConfigure(
   auto* self = static_cast<XDGToplevelWrapperImpl*>(data);
   DCHECK(self);
 
-  self->wayland_window_->HandleAuraToplevelConfigure(x, y, width, height, {
-    .is_maximized =
-        CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_MAXIMIZED),
-    .is_fullscreen =
-        CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_FULLSCREEN),
+  WaylandWindow::WindowStates window_states;
+  window_states.is_maximized =
+      CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_MAXIMIZED);
+  window_states.is_fullscreen =
+      CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_FULLSCREEN);
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    .is_immersive_fullscreen =
-        CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_IMMERSIVE),
-#endif
-    .is_activated =
-        CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_ACTIVATED),
-    .is_minimized =
-        CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_MINIMIZED),
-    .is_snapped_primary =
-        CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_SNAPPED_PRIMARY),
-    .is_snapped_secondary =
-        CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_SNAPPED_SECONDARY),
-    .is_floated = CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_FLOATED)
-  });
+  window_states.is_immersive_fullscreen =
+      CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_IMMERSIVE);
+  window_states.is_pinned_fullscreen =
+      CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_PINNED);
+  window_states.is_trusted_pinned_fullscreen =
+      CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_TRUSTED_PINNED);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  window_states.is_activated =
+      CheckIfWlArrayHasValue(states, XDG_TOPLEVEL_STATE_ACTIVATED);
+  window_states.is_minimized =
+      CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_MINIMIZED);
+  window_states.is_snapped_primary =
+      CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_SNAPPED_PRIMARY);
+  window_states.is_snapped_secondary =
+      CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_SNAPPED_SECONDARY);
+  window_states.is_floated =
+      CheckIfWlArrayHasValue(states, ZAURA_TOPLEVEL_STATE_FLOATED);
+
+  self->wayland_window_->HandleAuraToplevelConfigure(x, y, width, height,
+                                                     window_states);
 }
 
 // static
@@ -425,7 +425,7 @@ void XDGToplevelWrapperImpl::OnConfigureRasterScale(
   auto* self = static_cast<XDGToplevelWrapperImpl*>(data);
   DCHECK(self);
   auto* wayland_window = static_cast<WaylandWindow*>(self->wayland_window_);
-  float scale = *reinterpret_cast<float*>(&scale_as_uint);
+  float scale = base::bit_cast<float>(scale_as_uint);
   wayland_window->SetPendingRasterScale(scale);
 }
 
@@ -626,7 +626,7 @@ void XDGToplevelWrapperImpl::Deactivate() {
 void XDGToplevelWrapperImpl::SetScaleFactor(float scale_factor) {
   if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
                             ZAURA_TOPLEVEL_SET_SCALE_FACTOR_SINCE_VERSION) {
-    uint32_t value = *reinterpret_cast<uint32_t*>(&scale_factor);
+    uint32_t value = base::bit_cast<uint32_t>(scale_factor);
     zaura_toplevel_set_scale_factor(aura_toplevel_.get(), value);
   }
 }
@@ -660,7 +660,7 @@ void XDGToplevelWrapperImpl::SetFloatToLocation(
 
   uint32_t version = zaura_toplevel_get_version(aura_toplevel_.get());
   if (version >= ZAURA_TOPLEVEL_SET_FLOAT_TO_LOCATION_SINCE_VERSION) {
-    uint32_t value = *reinterpret_cast<uint32_t*>(&float_start_location);
+    uint32_t value = base::bit_cast<uint32_t>(float_start_location);
     zaura_toplevel_set_float_to_location(aura_toplevel_.get(), value);
   } else if (version >= ZAURA_TOPLEVEL_SET_FLOAT_SINCE_VERSION) {
     zaura_toplevel_set_float(aura_toplevel_.get());
@@ -690,7 +690,7 @@ void XDGToplevelWrapperImpl::CommitSnap(
 
   if (zaura_toplevel_get_version(aura_toplevel_.get()) >=
       ZAURA_TOPLEVEL_SET_SNAP_PRIMARY_SINCE_VERSION) {
-    uint32_t value = *reinterpret_cast<uint32_t*>(&snap_ratio);
+    uint32_t value = base::bit_cast<uint32_t>(snap_ratio);
     switch (snap_direction) {
       case WaylandWindowSnapDirection::kPrimary:
         zaura_toplevel_set_snap_primary(aura_toplevel_.get(), value);

@@ -11,6 +11,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_op.h"
 #include "cc/test/paint_op_matchers.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/memory_managed_paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_canvas_resource_host.h"
 #include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
 #include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
@@ -82,6 +84,7 @@ using ::cc::DrawRectOp;
 using ::cc::PaintOpEq;
 using ::cc::PaintOpIs;
 using ::cc::RestoreOp;
+using ::cc::SaveLayerAlphaOp;
 using ::cc::SaveLayerOp;
 using ::cc::SaveOp;
 using ::cc::SetMatrixOp;
@@ -209,8 +212,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test,
     GetDocument().View()->UpdateAllLifecyclePhasesForTest();
   }
 
-  test::TaskEnvironment task_environment_{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment_;
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
   Persistent<HTMLCanvasElement> canvas_element_;
 
@@ -501,6 +503,70 @@ TEST_P(CanvasRenderingContext2DTest, ClearRect_PartialCoverage) {
           PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(3, 3, 1, 1), DrawRectFlags()),
           PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(0, 0, 9, 9),
                                 ClearRectFlags()))));
+  EXPECT_THAT(histogram_tester, OverdrawOpAre());
+}
+
+TEST_P(CanvasRenderingContext2DTest, ClearRect_InsideLayer) {
+  // Overdraw is not currently implemented when layers are opened.
+  ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
+  base::HistogramTester histogram_tester;
+  CreateContext(kNonOpaque);
+  CanvasElement().SetSize(gfx::Size(10, 10));
+
+  NonThrowableExceptionState no_exception;
+  Context2D()->fillRect(1, 1, 1, 1);
+  Context2D()->beginLayer(GetScriptState(), BeginLayerOptions::Create(),
+                          no_exception);
+  Context2D()->fillRect(2, 2, 2, 2);
+  Context2D()->clearRect(0, 0, 10, 10);
+  Context2D()->fillRect(3, 3, 3, 3);
+  Context2D()->endLayer(no_exception);
+
+  EXPECT_THAT(
+      Context2D()->FlushCanvas(FlushReason::kTesting),
+      Optional(RecordedOpsAre(
+          PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(1, 1, 1, 1), DrawRectFlags()),
+          PaintOpEq<SaveLayerAlphaOp>(1.0f),
+          PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(2, 2, 2, 2), DrawRectFlags()),
+          PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(0, 0, 10, 10),
+                                ClearRectFlags()),
+          PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(3, 3, 3, 3), DrawRectFlags()),
+          PaintOpEq<RestoreOp>())));
+  EXPECT_THAT(histogram_tester, OverdrawOpAre());
+}
+
+TEST_P(CanvasRenderingContext2DTest, ClearRect_InsideNestedLayer) {
+  // Overdraw is not currently implemented when layers are opened.
+  ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
+  base::HistogramTester histogram_tester;
+  CreateContext(kNonOpaque);
+  CanvasElement().SetSize(gfx::Size(10, 10));
+
+  NonThrowableExceptionState no_exception;
+  Context2D()->fillRect(1, 1, 1, 1);
+  Context2D()->beginLayer(GetScriptState(), BeginLayerOptions::Create(),
+                          no_exception);
+  Context2D()->fillRect(2, 2, 2, 2);
+  Context2D()->beginLayer(GetScriptState(), BeginLayerOptions::Create(),
+                          no_exception);
+  Context2D()->fillRect(3, 3, 3, 3);
+  Context2D()->clearRect(0, 0, 10, 10);
+  Context2D()->fillRect(4, 4, 4, 4);
+  Context2D()->endLayer(no_exception);
+  Context2D()->endLayer(no_exception);
+
+  EXPECT_THAT(
+      Context2D()->FlushCanvas(FlushReason::kTesting),
+      Optional(RecordedOpsAre(
+          PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(1, 1, 1, 1), DrawRectFlags()),
+          PaintOpEq<SaveLayerAlphaOp>(1.0f),
+          PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(2, 2, 2, 2), DrawRectFlags()),
+          PaintOpEq<SaveLayerAlphaOp>(1.0f),
+          PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(3, 3, 3, 3), DrawRectFlags()),
+          PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(0, 0, 10, 10),
+                                ClearRectFlags()),
+          PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(4, 4, 4, 4), DrawRectFlags()),
+          PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>())));
   EXPECT_THAT(histogram_tester, OverdrawOpAre());
 }
 
@@ -1470,20 +1536,16 @@ TEST_P(CanvasRenderingContext2DTest, AutoFlush) {
   CanvasElement().SetResourceProviderForTesting(
       /*provider=*/nullptr, std::make_unique<Canvas2DLayerBridge>(), size);
   Context2D()->fillRect(0, 0, 1, 1);  // Ensure resource provider is created.
-  const size_t initial_op_count =
-      CanvasElement().ResourceProvider()->TotalOpCount();
+  const size_t initial_op_count = Context2D()->Recorder()->TotalOpCount();
 
-  while (CanvasElement().ResourceProvider()->TotalOpBytesUsed() <=
-         kMaxRecordedOpKB * 1024) {
+  while (Context2D()->Recorder()->OpBytesUsed() <= kMaxRecordedOpKB * 1024) {
     Context2D()->fillRect(0, 0, 1, 1);
     // Verify that auto-flush did not happen
-    ASSERT_GT(CanvasElement().ResourceProvider()->TotalOpCount(),
-              initial_op_count);
+    ASSERT_GT(Context2D()->Recorder()->TotalOpCount(), initial_op_count);
   }
   Context2D()->fillRect(0, 0, 1, 1);
   // Verify that auto-flush happened
-  ASSERT_EQ(CanvasElement().ResourceProvider()->TotalOpCount(),
-            initial_op_count);
+  ASSERT_EQ(Context2D()->Recorder()->TotalOpCount(), initial_op_count);
 }
 
 TEST_P(CanvasRenderingContext2DTest, AutoFlushPinnedImages) {
@@ -1498,8 +1560,7 @@ TEST_P(CanvasRenderingContext2DTest, AutoFlushPinnedImages) {
   constexpr unsigned int kImageSize = 10;
   constexpr unsigned int kBytesPerImage = 400;
 
-  const size_t initial_op_count =
-      CanvasElement().ResourceProvider()->TotalOpCount();
+  const size_t initial_op_count = Context2D()->Recorder()->TotalOpCount();
 
   // We repeat the test twice to verify that the state was properly
   // reset by the Flush.
@@ -1514,12 +1575,10 @@ TEST_P(CanvasRenderingContext2DTest, AutoFlushPinnedImages) {
                              exception_state);
       EXPECT_FALSE(exception_state.HadException());
       ++expected_op_count;
-      ASSERT_EQ(CanvasElement().ResourceProvider()->TotalOpCount(),
-                expected_op_count);
+      ASSERT_EQ(Context2D()->Recorder()->TotalOpCount(), expected_op_count);
     }
     Context2D()->fillRect(0, 0, 1, 1);  // Trigger flush due to memory limit
-    ASSERT_EQ(CanvasElement().ResourceProvider()->TotalOpCount(),
-              initial_op_count);
+    ASSERT_EQ(Context2D()->Recorder()->TotalOpCount(), initial_op_count);
   }
 }
 
@@ -1538,14 +1597,12 @@ TEST_P(CanvasRenderingContext2DTest, OverdrawResetsPinnedImageBytes) {
   NonThrowableExceptionState exception_state;
   Context2D()->drawImage(&unique_image, 0, 0, 10, 10, 0, 0, 10, 10,
                          exception_state);
-  size_t initial_op_count = CanvasElement().ResourceProvider()->TotalOpCount();
-  ASSERT_EQ(CanvasElement().ResourceProvider()->TotalImageBytesUsed(),
-            kBytesPerImage);
+  size_t initial_op_count = Context2D()->Recorder()->TotalOpCount();
+  ASSERT_EQ(Context2D()->Recorder()->ImageBytesUsed(), kBytesPerImage);
 
   Context2D()->clearRect(0, 0, 10, 10);  // Overdraw
-  ASSERT_EQ(CanvasElement().ResourceProvider()->TotalOpCount(),
-            initial_op_count);
-  ASSERT_EQ(CanvasElement().ResourceProvider()->TotalImageBytesUsed(), 0u);
+  ASSERT_EQ(Context2D()->Recorder()->TotalOpCount(), initial_op_count);
+  ASSERT_EQ(Context2D()->Recorder()->ImageBytesUsed(), 0u);
 }
 
 TEST_P(CanvasRenderingContext2DTest, AutoFlushSameImage) {
@@ -1556,7 +1613,7 @@ TEST_P(CanvasRenderingContext2DTest, AutoFlushSameImage) {
       /*provider=*/nullptr, std::make_unique<Canvas2DLayerBridge>(), size);
 
   Context2D()->fillRect(0, 0, 1, 1);  // Ensure resource provider is created.
-  size_t expected_op_count = CanvasElement().ResourceProvider()->TotalOpCount();
+  size_t expected_op_count = Context2D()->Recorder()->TotalOpCount();
 
   constexpr unsigned int kImageSize = 10;
   constexpr unsigned int kBytesPerImage = 400;
@@ -1569,8 +1626,7 @@ TEST_P(CanvasRenderingContext2DTest, AutoFlushSameImage) {
     Context2D()->drawImage(&image, 0, 0, 1, 1, 0, 0, 1, 1, exception_state);
     EXPECT_FALSE(exception_state.HadException());
     ++expected_op_count;
-    ASSERT_EQ(CanvasElement().ResourceProvider()->TotalOpCount(),
-              expected_op_count);
+    ASSERT_EQ(Context2D()->Recorder()->TotalOpCount(), expected_op_count);
   }
 }
 
@@ -1584,19 +1640,16 @@ TEST_P(CanvasRenderingContext2DTest, AutoFlushDelayedByLayer) {
   NonThrowableExceptionState exception_state;
   Context2D()->beginLayer(ToScriptStateForMainWorld(GetDocument().GetFrame()),
                           BeginLayerOptions::Create(), exception_state);
-  const size_t initial_op_count =
-      CanvasElement().ResourceProvider()->TotalOpCount();
-  while (CanvasElement().ResourceProvider()->TotalOpBytesUsed() <=
+  const size_t initial_op_count = Context2D()->Recorder()->TotalOpCount();
+  while (Context2D()->Recorder()->OpBytesUsed() <=
          kMaxRecordedOpKB * 1024 * 2) {
     Context2D()->fillRect(0, 0, 1, 1);
-    ASSERT_GT(CanvasElement().ResourceProvider()->TotalOpCount(),
-              initial_op_count);
+    ASSERT_GT(Context2D()->Recorder()->TotalOpCount(), initial_op_count);
   }
   // Closing the layer means next op can trigger auto flush
   Context2D()->endLayer(exception_state);
   Context2D()->fillRect(0, 0, 1, 1);
-  ASSERT_EQ(CanvasElement().ResourceProvider()->TotalOpCount(),
-            initial_op_count);
+  ASSERT_EQ(Context2D()->Recorder()->TotalOpCount(), initial_op_count);
 }
 
 class CanvasRenderingContext2DTestAccelerated
@@ -1773,13 +1826,15 @@ TEST_P(CanvasRenderingContext2DTestAccelerated, DrawImage_Video_Flush) {
   NonThrowableExceptionState exception_state;
 
   Context2D()->fillRect(0, 0, 5, 5);
-  EXPECT_TRUE(CanvasElement().ResourceProvider()->HasRecordedDrawOps());
+  EXPECT_TRUE(
+      CanvasElement().ResourceProvider()->Recorder().HasRecordedDrawOps());
 
   Context2D()->drawImage(frame, 0, 0, 10, 10, 0, 0, 10, 10, exception_state);
   EXPECT_FALSE(exception_state.HadException());
   // The drawImage Operation is supposed to trigger a flush, which means that
   // There should not be any Recorded ops at this point.
-  EXPECT_FALSE(CanvasElement().ResourceProvider()->HasRecordedDrawOps());
+  EXPECT_FALSE(
+      CanvasElement().ResourceProvider()->Recorder().HasRecordedDrawOps());
 }
 
 TEST_P(CanvasRenderingContext2DTestAccelerated,

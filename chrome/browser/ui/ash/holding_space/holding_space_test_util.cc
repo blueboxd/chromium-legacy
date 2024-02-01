@@ -36,7 +36,7 @@ GetSuggestionsInModel(const HoldingSpaceModel& model) {
 void PressAndReleaseKey(ui::KeyboardCode key_code, int flags) {
   ui::test::EventGenerator(
       HoldingSpaceBrowserTestBase::GetRootWindowForNewWindows())
-      .PressAndReleaseKey(key_code, flags);
+      .PressAndReleaseKeyAndModifierKeys(key_code, flags);
 }
 
 void RightClick(const views::View* view, int flags) {
@@ -44,7 +44,9 @@ void RightClick(const views::View* view, int flags) {
       view->GetWidget()->GetNativeWindow()->GetRootWindow());
   event_generator.MoveMouseTo(view->GetBoundsInScreen().CenterPoint());
   event_generator.set_flags(flags);
+  event_generator.PressModifierKeys(flags);
   event_generator.ClickRightButton();
+  event_generator.ReleaseModifierKeys(flags);
 }
 
 views::MenuItemView* SelectMenuItemWithCommandId(
@@ -127,13 +129,15 @@ void WaitForSuggestionsInModel(
   base::RunLoop run_loop;
   ON_CALL(mock, OnHoldingSpaceItemsAdded)
       .WillByDefault([&](const std::vector<const HoldingSpaceItem*>& items) {
-        if (GetSuggestionsInModel(*model) == expected_suggestions)
+        if (GetSuggestionsInModel(*model) == expected_suggestions) {
           run_loop.Quit();
+        }
       });
   ON_CALL(mock, OnHoldingSpaceItemsRemoved)
       .WillByDefault([&](const std::vector<const HoldingSpaceItem*>& items) {
-        if (GetSuggestionsInModel(*model) == expected_suggestions)
+        if (GetSuggestionsInModel(*model) == expected_suggestions) {
           run_loop.Quit();
+        }
       });
 
   run_loop.Run();

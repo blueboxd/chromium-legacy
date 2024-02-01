@@ -19,6 +19,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
@@ -60,6 +61,7 @@ import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.page_insights.PageInsightsCoordinator;
 import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
+import org.chromium.chrome.browser.page_insights.proto.IntentParams.PageInsightsIntentParams;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxDialogController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
@@ -73,6 +75,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
+import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeController;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerFactory;
@@ -98,8 +101,6 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
 
     private CustomTabHeightStrategy mCustomTabHeightStrategy;
 
-    // Created only when ChromeFeatureList.CctBrandTransparency is enabled.
-    // TODO(https://crbug.com/1343056): Make it part of the ctor.
     private @Nullable BrandingController mBrandingController;
 
     private @Nullable DesktopSiteSettingsIPHController mDesktopSiteSettingsIPHController;
@@ -170,6 +171,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             @NonNull ObservableSupplier<CompositorViewHolder> compositorViewHolderSupplier,
             @NonNull Supplier<TabContentManager> tabContentManagerSupplier,
             @NonNull Supplier<SnackbarManager> snackbarManagerSupplier,
+            @NonNull ObservableSupplierImpl<EdgeToEdgeController> edgeToEdgeControllerSupplier,
             @ActivityType int activityType,
             @NonNull Supplier<Boolean> isInOverviewModeSupplier,
             @NonNull Supplier<Boolean> isWarmOnResumeSupplier,
@@ -197,6 +199,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 new OneshotSupplierImpl<>(),
                 new OneshotSupplierImpl<>(),
                 new OneshotSupplierImpl<>(),
+                new OneshotSupplierImpl<>(),
                 () -> null,
                 browserControlsManager,
                 windowAndroid,
@@ -213,6 +216,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 compositorViewHolderSupplier,
                 tabContentManagerSupplier,
                 snackbarManagerSupplier,
+                edgeToEdgeControllerSupplier,
                 activityType,
                 isInOverviewModeSupplier,
                 isWarmOnResumeSupplier,
@@ -241,6 +245,11 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         }
         mTabController = tabController;
         mMinimizeDelegateSupplier = minimizeDelegateSupplier;
+        // TODO(https://crbug.com/1509163): move this RootUiCoordinator once this flag is removed.
+        if (ChromeFeatureList.sCctTabModalDialog.isEnabled()) {
+            getAppBrowserControlsVisibilityDelegate()
+                    .addDelegate(browserControlsManager.getBrowserVisibilityDelegate());
+        }
     }
 
     @Override
@@ -348,6 +357,8 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                         mCompositorViewHolderSupplier.get() == null
                                 ? null
                                 : mCompositorViewHolderSupplier.get().getInMotionSupplier(),
+                        mWindowAndroid.getApplicationBottomInsetSupplier(),
+                        getPageInsightsIntentParams(),
                         this::isPageInsightsHubEnabled,
                         this::getPageInsightsConfig);
 
@@ -381,6 +392,11 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                         .shouldEnablePageInsightsForIntent(intentDataProvider);
     }
 
+    private PageInsightsIntentParams getPageInsightsIntentParams() {
+        return CustomTabsConnection.getInstance()
+                .getPageInsightsIntentParams(mIntentDataProvider.get());
+    }
+
     private PageInsightsConfig getPageInsightsConfig(NavigationHandle navigationHandle) {
         return CustomTabsConnection.getInstance()
                 .getPageInsightsConfig(
@@ -407,6 +423,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 new SettingsLauncherImpl(),
                 /* incognitoReauthTopToolbarDelegate= */ null,
                 /* layoutManager= */ null,
+                /* hubManagerSupplier= */ null,
                 /* showRegularOverviewIntent= */ showRegularOverviewIntent,
                 /* isTabbedActivity= */ false);
     }
@@ -545,23 +562,39 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                             boolean didShowPrompt = false;
                             boolean shouldShowPrivacySandboxDialog =
                                     PrivacySandboxDialogController.shouldShowPrivacySandboxDialog(
-                                            mTabModelSelectorSupplier.get().isIncognitoSelected());
+                                                    mTabModelSelectorSupplier
+                                                            .get()
+                                                            .isIncognitoSelected())
+                                            && !(mIntentDataProvider.get().isPartialCustomTab());
                             RecordHistogram.recordBooleanHistogram(
                                     "Startup.Android.PrivacySandbox.ShouldShowAdsNoticeCCT",
                                     shouldShowPrivacySandboxDialog);
-
                             if (ChromeFeatureList.isEnabled(
                                             ChromeFeatureList.PRIVACY_SANDBOX_ADS_NOTICE_CCT)
-                                    && !(mIntentDataProvider.get().isPartialCustomTab())
                                     && shouldShowPrivacySandboxDialog) {
-                                didShowPrompt =
-                                        PrivacySandboxDialogController
-                                                .maybeLaunchPrivacySandboxDialog(
-                                                        mActivity,
-                                                        new SettingsLauncherImpl(),
-                                                        mTabModelSelectorSupplier
-                                                                .get()
-                                                                .isIncognitoSelected());
+                                boolean shouldShowPrivacySandboxDialogAppIdCheck = true;
+                                String appId = mIntentDataProvider.get().getClientPackageName();
+                                String paramAdsNoticeAppId =
+                                        ChromeFeatureList.getFieldTrialParamByFeature(
+                                                ChromeFeatureList.PRIVACY_SANDBOX_ADS_NOTICE_CCT,
+                                                "app-id");
+                                if (!paramAdsNoticeAppId.isEmpty()
+                                        && !paramAdsNoticeAppId.equals(appId)) {
+                                    shouldShowPrivacySandboxDialogAppIdCheck = false;
+                                }
+                                RecordHistogram.recordBooleanHistogram(
+                                        "Startup.Android.PrivacySandbox.AdsNoticeCCTAppIDCheck",
+                                        shouldShowPrivacySandboxDialogAppIdCheck);
+                                if (shouldShowPrivacySandboxDialogAppIdCheck) {
+                                    didShowPrompt =
+                                            PrivacySandboxDialogController
+                                                    .maybeLaunchPrivacySandboxDialog(
+                                                            mActivity,
+                                                            new SettingsLauncherImpl(),
+                                                            mTabModelSelectorSupplier
+                                                                    .get()
+                                                                    .isIncognitoSelected());
+                                }
                             }
                             if (!didShowPrompt) {
                                 didShowPrompt =

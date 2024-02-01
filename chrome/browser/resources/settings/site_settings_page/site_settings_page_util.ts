@@ -76,6 +76,8 @@ export function getLocalizationStringForContentType(
       return 'siteSettingsStorageAccessMidSentence';
     case ContentSettingsTypes.USB_DEVICES:
       return 'siteSettingsUsbDevicesMidSentence';
+    case ContentSettingsTypes.WEB_PRINTING:
+      return 'siteSettingsWebPrintingMidSentence';
     case ContentSettingsTypes.VR:
       return 'siteSettingsVrMidSentence';
     case ContentSettingsTypes.WINDOW_MANAGEMENT:
@@ -84,7 +86,9 @@ export function getLocalizationStringForContentType(
       return 'siteSettingsZoomLevelsMidSentence';
     // The following members do not have a mid-sentence localization.
     case ContentSettingsTypes.ANTI_ABUSE:
+    case ContentSettingsTypes.JAVASCRIPT_JIT:
     case ContentSettingsTypes.PDF_DOCUMENTS:
+    case ContentSettingsTypes.PERFORMANCE:
     case ContentSettingsTypes.PRIVATE_NETWORK_DEVICES:
     case ContentSettingsTypes.SITE_DATA:
       return null;

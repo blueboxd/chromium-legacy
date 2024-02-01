@@ -136,7 +136,6 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
-#include "third_party/blink/renderer/core/paint/block_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/cull_rect_updater.h"
 #include "third_party/blink/renderer/core/paint/frame_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -248,6 +247,10 @@ constexpr int kCommitDelayDefaultInMs = 500;  // 30 frames @ 60hz
 // returning.
 static const unsigned kMaxUpdatePluginsIterations = 2;
 
+// The number of |InvalidationDisallowedScope| class instances. Used to ensure
+// that no more than one instance of this class exists at any given time.
+int LocalFrameView::InvalidationDisallowedScope::instance_count_ = 0;
+
 LocalFrameView::LocalFrameView(LocalFrame& frame)
     : LocalFrameView(frame, gfx::Rect()) {
   Show();
@@ -266,7 +269,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, gfx::Rect frame_rect)
       has_pending_layout_(false),
       layout_scheduling_enabled_(true),
       layout_count_for_testing_(0),
-      lifecycle_update_count_for_testing_(0),
       // We want plugin updates to happen in FIFO order with loading tasks.
       update_plugins_timer_(frame.GetTaskRunner(TaskType::kInternalLoading),
                             this,
@@ -279,7 +281,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, gfx::Rect frame_rect)
       layout_size_fixed_to_frame_size_(true),
       needs_update_geometries_(false),
       root_layer_did_scroll_(false),
-      frame_timing_requests_dirty_(true),
       // The compositor throttles the main frame using deferred begin main frame
       // updates. We can't throttle it here or it seems the root compositor
       // doesn't get setup properly.
@@ -287,7 +288,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, gfx::Rect frame_rect)
       target_state_(DocumentLifecycle::kUninitialized),
       suppress_adjust_view_size_(false),
       intersection_observation_state_(kNotNeeded),
-      needs_focus_on_fragment_(false),
       main_thread_scrolling_reasons_(0),
       forced_layout_stack_depth_(0),
       forced_layout_start_time_(base::TimeTicks()),
@@ -570,11 +570,6 @@ LayoutView* LocalFrameView::GetLayoutView() const {
   return GetFrame().ContentLayoutObject();
 }
 
-ScrollingCoordinator* LocalFrameView::GetScrollingCoordinator() const {
-  Page* p = GetPage();
-  return p ? p->GetScrollingCoordinator() : nullptr;
-}
-
 cc::AnimationHost* LocalFrameView::GetCompositorAnimationHost() const {
   if (!GetChromeClient())
     return nullptr;
@@ -670,12 +665,7 @@ void LocalFrameView::PerformLayout() {
 
   has_pending_layout_ = false;
 
-  // TODO(crbug.com/460956): The notion of a single root for layout is no
-  // longer applicable. Remove or update this code.
-  LayoutObject* root_for_this_layout = GetLayoutView();
-
   FontCachePurgePreventer font_cache_purge_preventer;
-  bool in_subtree_layout = false;
   base::AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_,
                                                   false);
   // If the layout view was marked as needing layout after we added items in
@@ -685,18 +675,7 @@ void LocalFrameView::PerformLayout() {
     ClearLayoutSubtreeRootsAndMarkContainingBlocks();
   GetLayoutView()->ClearHitTestCache();
 
-  in_subtree_layout = IsSubtreeLayout();
-
-  // TODO(crbug.com/460956): The notion of a single root for layout is no
-  // longer applicable. Remove or update this code.
-  if (in_subtree_layout)
-    root_for_this_layout = layout_subtree_root_list_.RandomRoot();
-
-  if (!root_for_this_layout) {
-    // FIXME: Do we need to set m_size here?
-    NOTREACHED();
-    return;
-  }
+  const bool in_subtree_layout = IsSubtreeLayout();
 
   Document* document = GetFrame().GetDocument();
   if (!in_subtree_layout) {
@@ -979,13 +958,12 @@ DocumentLifecycle& LocalFrameView::Lifecycle() const {
   return frame_->GetDocument()->Lifecycle();
 }
 
-bool LocalFrameView::InPostLifecycleSteps() const {
-  return GetFrame().LocalFrameRoot().View()->in_post_lifecycle_steps_;
+bool LocalFrameView::InvalidationDisallowed() const {
+  return GetFrame().LocalFrameRoot().View()->invalidation_disallowed_;
 }
 
 void LocalFrameView::RunPostLifecycleSteps() {
-  base::AutoReset<bool> in_post_lifecycle_steps(&in_post_lifecycle_steps_,
-                                                true);
+  InvalidationDisallowedScope invalidation_disallowed(*this);
   AllowThrottlingScope allow_throttling(*this);
   RunAccessibilitySteps();
   RunIntersectionObserverSteps();
@@ -1686,7 +1664,6 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
   DCHECK(!IsInPerformLayout());
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::performPostLayoutTasks");
 
-  frame_timing_requests_dirty_ = true;
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"), "LayoutTree", this,
       TracedLayoutObject::Create(*GetLayoutView(), true));
@@ -1747,8 +1724,11 @@ void LocalFrameView::NotifyPageThatContentAreaWillPaint() const {
 
 void LocalFrameView::UpdateDocumentAnnotatedRegions() const {
   Document* document = frame_->GetDocument();
-  if (!document->HasAnnotatedRegions())
+  if (!document->HasAnnotatedRegions() ||
+      !frame_->GetPage()->GetChromeClient().SupportsAppRegion()) {
     return;
+  }
+
   Vector<AnnotatedRegionValue> new_regions;
   CollectAnnotatedRegions(*(document->GetLayoutBox()), new_regions);
   if (new_regions == document->AnnotatedRegions())
@@ -1854,14 +1834,6 @@ Color LocalFrameView::DocumentBackgroundColor() {
 void LocalFrameView::WillBeRemovedFromFrame() {
   if (paint_artifact_compositor_)
     paint_artifact_compositor_->WillBeRemovedFromFrame();
-
-  if (Settings* settings = frame_->GetSettings()) {
-    DCHECK(frame_->GetPage());
-    if (settings->GetSpatialNavigationEnabled()) {
-      frame_->GetPage()->GetSpatialNavigationController().DidDetachFrameView(
-          *this);
-    }
-  }
 }
 
 bool LocalFrameView::IsUpdatingLifecycle() const {
@@ -1990,6 +1962,21 @@ bool LocalFrameView::UpdateLifecycleToLayoutClean(DocumentUpdateReason reason) {
       DocumentLifecycle::kLayoutClean, reason);
 }
 
+LocalFrameView::InvalidationDisallowedScope::InvalidationDisallowedScope(
+    const LocalFrameView& frame_view)
+    : resetter_(&frame_view.GetFrame()
+                     .LocalFrameRoot()
+                     .View()
+                     ->invalidation_disallowed_,
+                true) {
+  DCHECK_EQ(instance_count_, 0);
+  ++instance_count_;
+}
+
+LocalFrameView::InvalidationDisallowedScope::~InvalidationDisallowedScope() {
+  --instance_count_;
+}
+
 void LocalFrameView::ScheduleVisualUpdateForVisualOverflowIfNeeded() {
   LocalFrame& local_frame_root = GetFrame().LocalFrameRoot();
   // We need a full lifecycle update to recompute visual overflow if we are
@@ -2027,8 +2014,6 @@ bool LocalFrameView::NotifyResizeObservers() {
       ResizeObserverController::FromIfExists(*GetFrame().DomWindow());
   if (!resize_controller)
     return false;
-
-  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
 
   size_t min_depth = resize_controller->GatherObservations();
 
@@ -2116,7 +2101,6 @@ bool LocalFrameView::UpdateLifecyclePhases(
          target_state == DocumentLifecycle::kCompositingInputsClean ||
          target_state == DocumentLifecycle::kPrePaintClean ||
          target_state == DocumentLifecycle::kPaintClean);
-  lifecycle_update_count_for_testing_++;
 
   // If the document is not active then it is either not yet initialized, or it
   // is stopping. In either case, we can't reach one of the supported target
@@ -2185,7 +2169,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
         observer->DidFinishLifecycleUpdate(frame_view);
     });
     if (frame_->GetWidgetForLocalRoot() &&
-        base::FeatureList::IsEnabled(features::kReportVisibleLineBounds)) {
+        RuntimeEnabledFeatures::ReportVisibleLineBoundsEnabled()) {
       frame_->GetWidgetForLocalRoot()->UpdateLineBounds();
     }
   }
@@ -3100,9 +3084,8 @@ void LocalFrameView::UpdateStyleAndLayout() {
     return;
   }
 
-  VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
-  gfx::SizeF visual_viewport_size(visual_viewport.VisibleWidthCSSPx(),
-                                  visual_viewport.VisibleHeightCSSPx());
+  gfx::Size visual_viewport_size =
+      GetScrollableArea()->VisibleContentRect().size();
 
   bool did_layout = false;
   {
@@ -3143,16 +3126,10 @@ void LocalFrameView::UpdateStyleAndLayout() {
   frame_->GetDocument()->ClearFocusedElementIfNeeded();
 
   if (did_layout) {
-    bool visual_viewport_size_changed = false;
-    if (frame_->IsMainFrame()) {
-      // Scrollbars changing state can cause a visual viewport size change.
-      gfx::SizeF new_viewport_size(visual_viewport.VisibleWidthCSSPx(),
-                                   visual_viewport.VisibleHeightCSSPx());
-      visual_viewport_size_changed =
-          (new_viewport_size != visual_viewport_size);
-      DCHECK(!visual_viewport_size_changed ||
-             visual_viewport.IsActiveViewport());
-    }
+    gfx::Size new_visual_viewport_size =
+        GetScrollableArea()->VisibleContentRect().size();
+    bool visual_viewport_size_changed =
+        (new_visual_viewport_size != visual_viewport_size);
     SetNeedsUpdateGeometries();
     PerformPostLayoutTasks(visual_viewport_size_changed);
     GetFrame().GetDocument()->LayoutUpdated();
@@ -3485,12 +3462,6 @@ gfx::PointF LocalFrameView::ConvertFromContainingEmbeddedContentView(
   }
 
   return parent_point;
-}
-
-gfx::Point LocalFrameView::ConvertToContainingEmbeddedContentView(
-    const gfx::Point& local_point) const {
-  return ToRoundedPoint(
-      ConvertToContainingEmbeddedContentView(PhysicalOffset(local_point)));
 }
 
 void LocalFrameView::SetTracksRasterInvalidations(
@@ -4355,6 +4326,10 @@ void LocalFrameView::SetIntersectionObservationState(
   if (intersection_observation_state_ >= state)
     return;
   intersection_observation_state_ = state;
+  // Disable scroll delta optimization on any change other than pure scroll
+  // (see UpdateIntersectionObservationStateOnScroll).
+  accumulated_scroll_delta_since_last_intersection_update_ =
+      IntersectionGeometry::kInfiniteScrollDelta;
 
   // If an intersection observation is required, force all ancestors to update.
   // Otherwise, an update could stop at a throttled frame before reaching this.
@@ -4371,19 +4346,22 @@ void LocalFrameView::UpdateIntersectionObservationStateOnScroll(
     gfx::Vector2dF scroll_delta) {
   accumulated_scroll_delta_since_last_intersection_update_ +=
       gfx::Vector2dF(std::abs(scroll_delta.x()), std::abs(scroll_delta.y()));
-  SetIntersectionObservationState(kDesired);
+  intersection_observation_state_ =
+      std::max(intersection_observation_state_, kDesired);
 }
 
 void LocalFrameView::InvalidateIntersectionObservations() {
+  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+    return;
+  }
   DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kInPrePaint);
   DCHECK(GetFrame().IsLocalRoot() || !IsAttached());
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     if (auto* controller = frame_view.GetFrame()
                                .GetDocument()
                                ->GetIntersectionObserverController()) {
-      if (controller->InvalidateCachedRectsIfNeeded()) {
-        frame_view.SetIntersectionObservationState(LocalFrameView::kDesired);
-      }
+      controller->InvalidateCachedRectsIfPaintPropertiesChanged();
+      frame_view.SetIntersectionObservationState(LocalFrameView::kDesired);
     }
   });
 }
@@ -4617,6 +4595,13 @@ void LocalFrameView::MapLocalToRemoteMainFrame(
 LayoutUnit LocalFrameView::CaretWidth() const {
   return LayoutUnit(std::max<float>(
       1.0f, GetChromeClient()->WindowToViewportScalar(&GetFrame(), 1.0f)));
+}
+
+float LocalFrameView::CaretWidthInCssPixel() const {
+  // This returns a value greater than 1.0f in less-than-100% zoom level.
+  float scale_factor =
+      GetChromeClient()->WindowToViewportScalar(&GetFrame(), 1.0f);
+  return std::max<float>(1.0f, scale_factor) / scale_factor;
 }
 
 void LocalFrameView::RegisterTapEvent(Element* target) {

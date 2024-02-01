@@ -24,6 +24,7 @@
 #include "crypto/random.h"
 #include "device/fido/attestation_statement.h"
 #include "device/fido/authenticator_data.h"
+#include "device/fido/enclave/constants.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -50,14 +51,7 @@ const size_t kCredentialIdSize = 16;
 // JSON keys for front-end service HTTP request bodies.
 const char kCommandRequestCommandKey[] = "command";
 
-// JSON keys for command issuance.
-const char kCommandEncodedRequestsKey[] = "encoded_requests";
-const char kCommandDeviceIdKey[] = "device_id";
-const char kCommandSigKey[] = "sig";
-const char kCommandAuthLevelKey[] = "auth_level";
-
 // JSON keys for request fields used for both GetAssertion and MakeCredential.
-const char kRequestCommandKey[] = "cmd";
 const char kRequestDataKey[] = "request";
 const char kRequestClientDataJSONKey[] = "client_data_json";
 
@@ -68,14 +62,11 @@ const char kGetAssertionRequestProtobufKey[] = "protobuf";
 // JSON keys for GetAssertion response fields.
 const char kGetAssertionResponseKey[] = "response";
 
+const char kMakeCredentialRequestWrappedSecretKey[] = "wrapped_secret";
+
 // JSON keys for MakeCredential response fields.
 const char kMakeCredentialResponseEncryptedKey[] = "encrypted";
-const char kMakeCredentialResponsePubKeyKey[] = "pubKey";
-const char kMakeCredentialResponseVersionKey[] = "version";
-
-// JSON keys for successful responses and error codes.
-const char kCommandResponseElementSuccessKey[] = "ok";
-const char kCommandResponseElementErrorKey[] = "err";
+const char kMakeCredentialResponsePubKeyKey[] = "pub_key";
 
 // Specific command names recognizable by the enclave processor.
 const char kGetAssertionCommandName[] = "passkeys/assert";
@@ -203,6 +194,15 @@ bool ParseCommandListEntry(const cbor::Value& entry,
   return true;
 }
 
+const char* ToString(ClientKeyType key_type) {
+  switch (key_type) {
+    case ClientKeyType::kHardware:
+      return "hw";
+    case ClientKeyType::kUserVerified:
+      return "uv";
+  }
+}
+
 }  // namespace
 
 std::string AuthenticatorGetAssertionResponseToJson(
@@ -232,30 +232,27 @@ std::string AuthenticatorGetAssertionResponseToJson(
 }
 
 std::pair<absl::optional<AuthenticatorGetAssertionResponse>, std::string>
-ParseGetAssertionResponse(const std::vector<uint8_t>& response_cbor,
-                          base::span<uint8_t> credential_id) {
-  absl::optional<cbor::Value> response_value =
-      cbor::Reader::Read(response_cbor);
-  if (!response_value || !response_value->is_array() ||
-      response_value->GetArray().empty()) {
+ParseGetAssertionResponse(cbor::Value response_value,
+                          base::span<const uint8_t> credential_id) {
+  if (!response_value.is_array() || response_value.GetArray().empty()) {
     return {absl::nullopt, "Command response was not a valid CBOR array."};
   }
 
   base::Value response_element =
-      CborValueToBaseValue(response_value->GetArray()[0]);
+      CborValueToBaseValue(response_value.GetArray()[0]);
 
   if (!response_element.is_dict()) {
     return {absl::nullopt, "Command response element is not a map."};
   }
 
-  if (const std::string* error = response_element.GetDict().FindString(
-          kCommandResponseElementErrorKey)) {
+  if (const std::string* error =
+          response_element.GetDict().FindString(kResponseErrorKey)) {
     return {absl::nullopt,
             base::StrCat({"Error received from enclave: ", *error})};
   }
 
   base::Value::Dict* success_response =
-      response_element.GetDict().FindDict(kCommandResponseElementSuccessKey);
+      response_element.GetDict().FindDict(kResponseSuccessKey);
   if (!success_response) {
     return {
         absl::nullopt,
@@ -285,12 +282,10 @@ ParseGetAssertionResponse(const std::vector<uint8_t>& response_cbor,
 std::tuple<absl::optional<AuthenticatorMakeCredentialResponse>,
            absl::optional<sync_pb::WebauthnCredentialSpecifics>,
            std::string>
-ParseMakeCredentialResponse(const std::vector<uint8_t>& response_cbor,
-                            const CtapMakeCredentialRequest& request) {
-  absl::optional<cbor::Value> response_value =
-      cbor::Reader::Read(response_cbor);
-  if (!response_value || !response_value->is_array() ||
-      response_value->GetArray().empty()) {
+ParseMakeCredentialResponse(cbor::Value response_value,
+                            const CtapMakeCredentialRequest& request,
+                            int32_t wrapped_secret_version) {
+  if (!response_value.is_array() || response_value.GetArray().empty()) {
     return {absl::nullopt, absl::nullopt,
             "Command response was not a valid CBOR array."};
   }
@@ -300,32 +295,25 @@ ParseMakeCredentialResponse(const std::vector<uint8_t>& response_cbor,
   // substantive cleanup including making the response formats from the service
   // more consistent.
   base::Value response_element =
-      CborValueToBaseValue(response_value->GetArray()[0]);
+      CborValueToBaseValue(response_value.GetArray()[0]);
 
   if (!response_element.is_dict()) {
     return {absl::nullopt, absl::nullopt,
             "Command response element is not a map."};
   }
 
-  if (const std::string* error = response_element.GetDict().FindString(
-          kCommandResponseElementErrorKey)) {
+  if (const std::string* error =
+          response_element.GetDict().FindString(kResponseErrorKey)) {
     return {absl::nullopt, absl::nullopt,
             base::StrCat({"Error received from enclave: ", *error})};
   }
 
   base::Value::Dict* success_response =
-      response_element.GetDict().FindDict(kCommandResponseElementSuccessKey);
+      response_element.GetDict().FindDict(kResponseSuccessKey);
   if (!success_response) {
     return {
         absl::nullopt, absl::nullopt,
         "Command response did not contain a successful response or an error."};
-  }
-
-  absl::optional<int> version_field =
-      success_response->FindInt(kMakeCredentialResponseVersionKey);
-  if (!version_field) {
-    return {absl::nullopt, absl::nullopt,
-            "MakeCredential response did not contain a version."};
   }
 
   const std::vector<uint8_t>* pubkey_field =
@@ -361,7 +349,7 @@ ParseMakeCredentialResponse(const std::vector<uint8_t>& response_cbor,
   entity.set_user_name(request.user.name ? *request.user.name : std::string());
   entity.set_user_display_name(
       request.user.display_name ? *request.user.display_name : std::string());
-  entity.set_key_version(*version_field);
+  entity.set_key_version(wrapped_secret_version);
   entity.set_encrypted(
       std::string(encrypted_field->begin(), encrypted_field->end()));
 
@@ -401,12 +389,19 @@ ParseMakeCredentialResponse(const std::vector<uint8_t>& response_cbor,
 cbor::Value BuildGetAssertionCommand(
     const sync_pb::WebauthnCredentialSpecifics& passkey,
     scoped_refptr<JSONRequest> request,
-    std::string client_data_json) {
+    std::string client_data_json,
+    std::vector<std::vector<uint8_t>> wrapped_secrets) {
   cbor::Value::MapValue entry_map;
 
   entry_map.emplace(cbor::Value(kRequestCommandKey),
                     cbor::Value(kGetAssertionCommandName));
   entry_map.emplace(cbor::Value(kRequestDataKey), toCbor(*request->value));
+
+  cbor::Value::ArrayValue cbor_wrapped_secrets;
+  for (auto& wrapped_secret : wrapped_secrets) {
+    cbor_wrapped_secrets.emplace_back(std::move(wrapped_secret));
+  }
+  entry_map.emplace("wrapped_secrets", std::move(cbor_wrapped_secrets));
 
   int passkey_byte_size = passkey.ByteSize();
   std::vector<uint8_t> serialized_passkey;
@@ -423,56 +418,77 @@ cbor::Value BuildGetAssertionCommand(
   return cbor::Value(entry_map);
 }
 
-cbor::Value BuildMakeCredentialCommand(scoped_refptr<JSONRequest> request) {
+cbor::Value BuildMakeCredentialCommand(scoped_refptr<JSONRequest> request,
+                                       std::vector<uint8_t> wrapped_secret) {
   cbor::Value::MapValue entry_map;
 
   entry_map.emplace(cbor::Value(kRequestCommandKey),
                     cbor::Value(kMakeCredentialCommandName));
   entry_map.emplace(cbor::Value(kRequestDataKey), toCbor(*request->value));
+  entry_map.emplace(cbor::Value(kMakeCredentialRequestWrappedSecretKey),
+                    cbor::Value(std::move(wrapped_secret)));
 
   return cbor::Value(entry_map);
 }
 
 void BuildCommandRequestBody(
-    base::OnceCallback<cbor::Value()> command_callback,
-    EnclaveRequestSigningCallback signing_callback,
-    base::span<uint8_t> handshake_hash,
-    const std::vector<uint8_t>& device_id,
+    cbor::Value command,
+    SigningCallback signing_callback,
+    base::span<const uint8_t, crypto::kSHA256Length> handshake_hash,
     base::OnceCallback<void(std::vector<uint8_t>)> complete_callback) {
+  if (!command.is_array()) {
+    cbor::Value::ArrayValue requests;
+    requests.emplace_back(std::move(command));
+    command = cbor::Value(std::move(requests));
+  }
+
+  absl::optional<std::vector<uint8_t>> serialized_requests =
+      cbor::Writer::Write(command);
+  std::array<uint8_t, crypto::kSHA256Length> serialized_requests_hash;
+  if (!signing_callback.is_null()) {
+    serialized_requests_hash = crypto::SHA256Hash(*serialized_requests);
+  }
+
   cbor::Value::MapValue request_body_map;
-
-  request_body_map.emplace(cbor::Value(kCommandDeviceIdKey),
-                           cbor::Value(device_id));
-
-  cbor::Value::ArrayValue command_list;
-  command_list.emplace_back(std::move(command_callback).Run());
-  absl::optional<std::vector<uint8_t>> serialized_command_list =
-      cbor::Writer::Write(cbor::Value(command_list));
-
-  request_body_map.emplace(cbor::Value(kCommandAuthLevelKey),
-                           cbor::Value("hw"));
-
   request_body_map.emplace(cbor::Value(kCommandEncodedRequestsKey),
-                           cbor::Value(*serialized_command_list));
+                           cbor::Value(std::move(*serialized_requests)));
+
+  if (signing_callback.is_null()) {
+    std::move(complete_callback)
+        .Run(*cbor::Writer::Write(cbor::Value(std::move(request_body_map))));
+    return;
+  }
+
+  std::array<uint8_t, 2 * crypto::kSHA256Length> signed_message;
+  memcpy(signed_message.data(), handshake_hash.data(), crypto::kSHA256Length);
+  memcpy(signed_message.data() + crypto::kSHA256Length,
+         serialized_requests_hash.data(), crypto::kSHA256Length);
 
   auto append_signature_and_finish =
       [](cbor::Value::MapValue request_body_map,
          base::OnceCallback<void(std::vector<uint8_t>)> complete_callback,
-         std::vector<uint8_t> signature) {
-        request_body_map.emplace(cbor::Value(kCommandSigKey),
-                                 cbor::Value(signature));
+         ClientSignature client_signature) {
+        request_body_map.emplace(
+            cbor::Value(kCommandDeviceIdKey),
+            cbor::Value(std::move(client_signature.device_id)));
+        request_body_map.emplace(
+            cbor::Value(kCommandAuthLevelKey),
+            cbor::Value(ToString(client_signature.key_type)));
+        request_body_map.emplace(
+            cbor::Value(kCommandSigKey),
+            cbor::Value(std::move(client_signature.signature)));
         absl::optional<std::vector<uint8_t>> serialized_request =
-            cbor::Writer::Write(cbor::Value(request_body_map));
+            cbor::Writer::Write(cbor::Value(std::move(request_body_map)));
         std::move(complete_callback).Run(*serialized_request);
       };
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(
-          [](EnclaveRequestSigningCallback callback, std::vector<uint8_t> hash,
-             std::vector<uint8_t> data) { return callback.Run(hash, data); },
-          signing_callback, fido_parsing_utils::Materialize(handshake_hash),
-          std::move(*serialized_command_list)),
+          [](SigningCallback callback,
+             const std::array<uint8_t, 2 * crypto::kSHA256Length>
+                 signed_message) { return callback.Run(signed_message); },
+          std::move(signing_callback), signed_message),
       base::BindOnce(append_signature_and_finish, std::move(request_body_map),
                      std::move(complete_callback)));
 }

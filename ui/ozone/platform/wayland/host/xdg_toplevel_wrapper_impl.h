@@ -41,7 +41,6 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   void UnSetFullscreen() override;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void SetUseImmersiveMode(bool immersive) override;
-  bool SupportsTopLevelImmersiveStatus() const override;
   void SetTopInset(int height) override;
   void SetShadowCornersRadii(const gfx::RoundedCornersF& radii) override;
 #endif
@@ -137,9 +136,6 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
 
   // Initializes the xdg-decoration protocol extension, if available.
   void InitializeXdgDecoration();
-
-  // Called when raster scale is changed.
-  void OnConfigureRasterScale(double scale);
 
   // Creates a wl_region from `shape_rects`.
   wl::Object<wl_region> CreateAndAddRegion(const ShapeRects& shape_rects);

@@ -76,7 +76,7 @@ viz::SharedImageFormat GLTextureHolder::GetPlaneFormat(
                                : viz::SinglePlaneFormat::kR_16;
     case viz::SharedImageFormat::ChannelFormat::k16F:
       CHECK_EQ(num_channels, 1);
-      return viz::SinglePlaneFormat::kLUMINANCE_F16;
+      return viz::SinglePlaneFormat::kR_F16;
   }
   NOTREACHED_NORETURN();
 }
@@ -162,13 +162,8 @@ void GLTextureHolder::Initialize(
     texture_->SetImmutable(true, format_info.supports_storage);
   }
 
-  // NOTE: We pass `restore_prev_even_if_invalid=true` to maintain behavior
-  // from when this class was using a duplicate-but-not-identical utility.
-  // TODO(crbug.com/1367187): Eliminate this behavior with a Finch
-  // killswitch.
   gl::GLApi* api = gl::g_current_gl_context;
   gl::ScopedRestoreTexture scoped_restore(api, format_desc_.target,
-                                          /*restore_prev_even_if_invalid=*/true,
                                           GetServiceId());
 
   // Initialize the texture storage/image parameters and upload initial pixels

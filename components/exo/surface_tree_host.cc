@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/shell.h"
 #include "base/check.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
@@ -96,7 +97,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   }
 
  private:
-  const raw_ptr<SurfaceTreeHost, ExperimentalAsh> surface_tree_host_;
+  const raw_ptr<SurfaceTreeHost> surface_tree_host_;
 };
 
 }  // namespace
@@ -122,6 +123,7 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name,
                           ->SharedMainThreadRasterContextProvider();
   DCHECK(context_provider_);
   context_provider_->AddObserver(this);
+  display_manager_observation_.Observe(ash::Shell::Get()->display_manager());
 }
 
 SurfaceTreeHost::~SurfaceTreeHost() {
@@ -264,12 +266,20 @@ SecurityDelegate* SurfaceTreeHost::GetSecurityDelegate() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// display::DisplayObserver:
-void SurfaceTreeHost::OnDisplayMetricsChanged(const display::Display& display,
-                                              uint32_t changed_metrics) {
+// display::DisplayManagerObserver:
+
+void SurfaceTreeHost::OnDidProcessDisplayChanges(
+    const DisplayConfigurationChange& configuration_change) {
   // The output of the surface may change when the primary display changes.
-  if (changed_metrics & DisplayObserver::DISPLAY_METRIC_PRIMARY)
+  const bool primary_changed = base::ranges::any_of(
+      configuration_change.display_metrics_changes,
+      [](const DisplayManagerObserver::DisplayMetricsChange& change) {
+        return change.changed_metrics &
+               display::DisplayObserver::DISPLAY_METRIC_PRIMARY;
+      });
+  if (primary_changed) {
     UpdateDisplayOnTree();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -343,8 +353,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
       layer_tree_frame_sink_holder_->NeedsFullDamageForNextFrame(),
       layer_tree_frame_sink_holder_->resource_manager(),
       client_submits_surfaces_in_pixel_coordinates()
-          ? absl::nullopt
-          : absl::make_optional(GetScaleFactor()),
+          ? std::nullopt
+          : std::make_optional(GetScaleFactor()),
       &frame);
 
   // Update after resource is updated.
@@ -394,7 +404,7 @@ void SurfaceTreeHost::SubmitEmptyCompositorFrame() {
   quad_state->SetAll(gfx::Transform(), /*layer_rect=*/quad_rect,
                      /*visible_layer_rect=*/quad_rect,
                      /*filter_info=*/gfx::MaskFilterInfo(),
-                     /*clip=*/absl::nullopt,
+                     /*clip=*/std::nullopt,
                      /*contents_opaque=*/true, /*opacity_f=*/1.f,
                      /*blend=*/SkBlendMode::kSrcOver, /*sorting_context=*/0,
                      /*layer_id=*/0u, /*fast_rounded_corner=*/false);
@@ -711,7 +721,7 @@ SurfaceTreeHost::CreateLayerTreeFrameSinkHolder() {
 }
 
 float SurfaceTreeHost::CalculateScaleFactor(
-    const absl::optional<float>& scale_factor) const {
+    const std::optional<float>& scale_factor) const {
   if (scale_factor) {
     // TODO(crbug.com/1412420): Remove this once the scale factor precision
     // issue is fixed for ARC.

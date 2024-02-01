@@ -140,23 +140,15 @@ void LogRemovedSettingInaccessibleFields(bool did_remove);
 
 // Logs that `field` was removed from a profile on import, because it is
 // setting-inaccessible in the profile's country.
-void LogRemovedSettingInaccessibleField(ServerFieldType field);
+void LogRemovedSettingInaccessibleField(FieldType field);
 
 // Logs whether a phone number was parsed successfully on profile import.
 // Contrary to the profile import requirement metrics, the parsing result is
 // only emitted when a number is present.
 void LogPhoneNumberImportParsingResult(bool parsed_successfully);
 
-// Logs the number of fields with an unrecognized autocomplete attributed that
-// were considered for the import due to AutofillFillAndImportFromMoreFields.
-void LogNewProfileNumberOfAutocompleteUnrecognizedFields(int count);
-
-// Logs the number of fields with an unrecognized autocomplete attributed that
-// were considered for the update due to AutofillFillAndImportFromMoreFields.
-void LogProfileUpdateNumberOfAutocompleteUnrecognizedFields(int count);
-
 // Logs that a specific type was edited in a save prompt.
-void LogNewProfileEditedType(ServerFieldType edited_type);
+void LogNewProfileEditedType(FieldType edited_type);
 
 // Logs the number of edited fields for an accepted profile save.
 void LogNewProfileNumberOfEditedFields(int number_of_edited_fields);
@@ -165,11 +157,11 @@ void LogNewProfileNumberOfEditedFields(int number_of_edited_fields);
 // user |decision|. Note that additional manual edits in the update prompt are
 // not accounted for in this metric.
 void LogProfileUpdateAffectedType(
-    ServerFieldType affected_type,
+    FieldType affected_type,
     AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
 // Logs that a specific type was edited in an update prompt.
-void LogProfileUpdateEditedType(ServerFieldType edited_type);
+void LogProfileUpdateEditedType(FieldType edited_type);
 
 // Logs the number of edited fields for an accepted profile update.
 void LogUpdateProfileNumberOfEditedFields(int number_of_edited_fields);
@@ -187,7 +179,7 @@ void LogProfileMigrationImportDecision(
     AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
 // Logs that a specific type was edited in a migration prompt.
-void LogProfileMigrationEditedType(ServerFieldType edited_type);
+void LogProfileMigrationEditedType(FieldType edited_type);
 
 // Logs the number of edited fields for an accepted profile migration.
 void LogProfileMigrationNumberOfEditedFields(int number_of_edited_fields);

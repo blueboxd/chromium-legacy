@@ -144,7 +144,9 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
                 return PermissionsAndroidFeatureMap.isEnabled(
                         PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS);
             case SiteSettingsCategory.Type.ZOOM:
-                return ContentFeatureMap.isEnabled(ContentFeatureList.SMART_ZOOM);
+                return ContentFeatureMap.isEnabled(ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM)
+                        && ContentFeatureMap.isEnabled(
+                                ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM_ENHANCEMENTS);
             default:
                 return true;
         }
@@ -177,7 +179,7 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
 
     @Override
     public @Nullable String getDelegateAppNameForOrigin(
-            Origin origin, @ContentSettingsType int type) {
+            Origin origin, @ContentSettingsType.EnumType int type) {
         if (type == ContentSettingsType.NOTIFICATIONS) {
             return InstalledWebappPermissionManager.get().getDelegateAppName(origin);
         }
@@ -187,7 +189,7 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
 
     @Override
     public @Nullable String getDelegatePackageNameForOrigin(
-            Origin origin, @ContentSettingsType int type) {
+            Origin origin, @ContentSettingsType.EnumType int type) {
         if (type == ContentSettingsType.NOTIFICATIONS) {
             return InstalledWebappPermissionManager.get().getDelegatePackageName(origin);
         }
@@ -325,7 +327,7 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     // TODO(crbug.com/1393116): Look into a more scalable pattern like
     // notifyPageOpened(String className).
     public void notifyRequestDesktopSiteSettingsPageOpened() {
-        RequestDesktopUtils.notifyRequestDesktopSiteSettingsPageOpened();
+        RequestDesktopUtils.notifyRequestDesktopSiteSettingsPageOpened(mProfile);
     }
 
     @Override

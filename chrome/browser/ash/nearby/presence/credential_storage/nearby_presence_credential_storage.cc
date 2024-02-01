@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/nearby/presence/credential_storage/nearby_presence_credential_storage.h"
 
+#include <optional>
+
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/task/sequenced_task_runner.h"
@@ -11,7 +13,6 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/nearby/presence/credential_storage/metrics/credential_storage_metrics.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -41,9 +42,10 @@ NearbyPresenceCredentialStorage::NearbyPresenceCredentialStorage(
     mojo::PendingReceiver<mojom::NearbyPresenceCredentialStorage>
         pending_receiver,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
-    const base::FilePath& profile_filepath) {
+    const base::FilePath& profile_filepath)
+    : pending_receiver_(std::move(pending_receiver)) {
   CHECK(db_provider);
-  CHECK(pending_receiver);
+  CHECK(pending_receiver_);
 
   base::FilePath private_database_path =
       profile_filepath.Append(kPrivateCredentialDatabaseName);
@@ -56,24 +58,20 @@ NearbyPresenceCredentialStorage::NearbyPresenceCredentialStorage(
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
-  auto private_db = db_provider->GetDB<::nearby::internal::LocalCredential>(
+  private_db_ = db_provider->GetDB<::nearby::internal::LocalCredential>(
       leveldb_proto::ProtoDbType::NEARBY_PRESENCE_PRIVATE_CREDENTIAL_DATABASE,
       private_database_path, database_task_runner);
-  auto local_public_db =
-      db_provider->GetDB<::nearby::internal::SharedCredential>(
-          leveldb_proto::ProtoDbType::
-              NEARBY_PRESENCE_LOCAL_PUBLIC_CREDENTIAL_DATABASE,
-          local_public_database_path, database_task_runner);
-  auto remote_public_db =
-      db_provider->GetDB<::nearby::internal::SharedCredential>(
-          leveldb_proto::ProtoDbType::
-              NEARBY_PRESENCE_REMOTE_PUBLIC_CREDENTIAL_DATABASE,
-          remote_public_database_path, database_task_runner);
-  NearbyPresenceCredentialStorage(
-      std::move(pending_receiver), std::move(private_db),
-      std::move(local_public_db), std::move(remote_public_db));
+  local_public_db_ = db_provider->GetDB<::nearby::internal::SharedCredential>(
+      leveldb_proto::ProtoDbType::
+          NEARBY_PRESENCE_LOCAL_PUBLIC_CREDENTIAL_DATABASE,
+      local_public_database_path, database_task_runner);
+  remote_public_db_ = db_provider->GetDB<::nearby::internal::SharedCredential>(
+      leveldb_proto::ProtoDbType::
+          NEARBY_PRESENCE_REMOTE_PUBLIC_CREDENTIAL_DATABASE,
+      remote_public_database_path, database_task_runner);
 }
 
+// Test only constructor used to inject databases without using a profile.
 NearbyPresenceCredentialStorage::NearbyPresenceCredentialStorage(
     mojo::PendingReceiver<mojom::NearbyPresenceCredentialStorage>
         pending_receiver,
@@ -236,7 +234,7 @@ void NearbyPresenceCredentialStorage::OnPrivateCredentialsRetrieved(
     // TODO(b/287334363): Emit a failure metric.
     LOG(ERROR) << __func__ << ": failed to retrieve private credentials";
     std::move(callback).Run(mojo_base::mojom::AbslStatusCode::kAborted,
-                            absl::nullopt);
+                            std::nullopt);
     return;
   }
 
@@ -264,7 +262,7 @@ void NearbyPresenceCredentialStorage::OnPublicCredentialsRetrieved(
     // TODO(b/287334363): Emit a failure metric.
     LOG(ERROR) << __func__ << ": failed to retrieve public credentials";
     std::move(callback).Run(mojo_base::mojom::AbslStatusCode::kAborted,
-                            absl::nullopt);
+                            std::nullopt);
     return;
   }
 
@@ -365,7 +363,8 @@ void NearbyPresenceCredentialStorage::OnPrivateDatabaseInitialized(
   // public databases.
   if (private_db_initialization_status !=
       leveldb_proto::Enums::InitStatus::kOK) {
-    // TODO(b/287334363): Emit a failure metric.
+    metrics::RecordCredentialStoragePrivateInitializationResult(
+        /*success=*/false);
     LOG(ERROR) << __func__
                << ": failed to initialize private credential database with "
                   "initialization status: "
@@ -373,6 +372,9 @@ void NearbyPresenceCredentialStorage::OnPrivateDatabaseInitialized(
     std::move(on_fully_initialized).Run(/*success=*/false);
     return;
   }
+
+  metrics::RecordCredentialStoragePrivateInitializationResult(
+      /*success=*/true);
 
   // Attempt to initialize the local public credential database. Iff successful,
   // then attempt to initialize the remote public credential database.
@@ -388,7 +390,8 @@ void NearbyPresenceCredentialStorage::OnLocalPublicDatabaseInitialized(
   // remote public database.
   if (local_public_db_initialization_status !=
       leveldb_proto::Enums::InitStatus::kOK) {
-    // TODO(b/287334363): Emit a failure metric.
+    metrics::RecordCredentialStorageLocalPublicInitializationResult(
+        /*success=*/false);
     LOG(ERROR) << __func__
                << ": failed to initialize local public credential database "
                   "with initialization status: "
@@ -396,6 +399,9 @@ void NearbyPresenceCredentialStorage::OnLocalPublicDatabaseInitialized(
     std::move(on_fully_initialized).Run(/*success=*/false);
     return;
   }
+
+  metrics::RecordCredentialStorageLocalPublicInitializationResult(
+      /*success=*/true);
 
   remote_public_db_->Init(base::BindOnce(
       &NearbyPresenceCredentialStorage::OnRemotePublicDatabaseInitialized,
@@ -407,7 +413,8 @@ void NearbyPresenceCredentialStorage::OnRemotePublicDatabaseInitialized(
     leveldb_proto::Enums::InitStatus remote_public_db_initialization_status) {
   if (remote_public_db_initialization_status !=
       leveldb_proto::Enums::InitStatus::kOK) {
-    // TODO(b/287334363): Emit a failure metric.
+    metrics::RecordCredentialStorageRemotePublicInitializationResult(
+        /*success=*/false);
     LOG(ERROR) << __func__
                << ": failed to initialize remote public credential database "
                   "with initialization status: "
@@ -415,6 +422,9 @@ void NearbyPresenceCredentialStorage::OnRemotePublicDatabaseInitialized(
     std::move(on_fully_initialized).Run(/*success=*/false);
     return;
   }
+
+  metrics::RecordCredentialStorageRemotePublicInitializationResult(
+      /*success=*/true);
 
   CHECK(pending_receiver_);
   // All databases were successfully initialized, so it's safe to process

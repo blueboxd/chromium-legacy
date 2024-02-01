@@ -195,17 +195,6 @@ bool IsValidCharToInsert(const char16_t& ch) {
   return (ch >= 0x20 && ch < 0x7F) || ch > 0x9F;
 }
 
-bool CanUseTransparentBackgroundForDragImage() {
-#if BUILDFLAG(IS_OZONE)
-  const auto* const egl_utility =
-      ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
-  return egl_utility ? egl_utility->IsTransparentBackgroundSupported() : false;
-#else
-  // Other platforms allow this.
-  return true;
-#endif
-}
-
 #if BUILDFLAG(IS_MAC)
 const float kAlmostTransparent = 1.0 / 255.0;
 const float kOpaque = 1.0;
@@ -499,7 +488,7 @@ void Textfield::SetMinimumWidthInChars(int minimum_width) {
   minimum_width_in_chars_ = minimum_width;
 }
 
-std::u16string Textfield::GetPlaceholderText() const {
+const std::u16string& Textfield::GetPlaceholderText() const {
   return placeholder_text_;
 }
 
@@ -1245,7 +1234,7 @@ void Textfield::WriteDragDataForView(View* sender,
 
   SkBitmap bitmap;
   float raster_scale = ScaleFactorForDragFromWidget(GetWidget());
-  SkColor color = CanUseTransparentBackgroundForDragImage()
+  SkColor color = views::Widget::IsWindowCompositingSupported()
                       ? SK_ColorTRANSPARENT
                       : GetBackgroundColor();
   label.Paint(PaintInfo::CreateRootPaintInfo(
@@ -1998,42 +1987,25 @@ bool Textfield::SetCompositionFromExistingText(
 
 #if BUILDFLAG(IS_CHROMEOS)
 gfx::Range Textfield::GetAutocorrectRange() const {
-  return model_->autocorrect_range();
+  // TODO(b/316461955): Implement autocorrect UI for native fields.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Range();
 }
 
 gfx::Rect Textfield::GetAutocorrectCharacterBounds() const {
-  gfx::Range autocorrect_range = model_->autocorrect_range();
-  if (autocorrect_range.is_empty())
-    return gfx::Rect();
-
-  gfx::RenderText* render_text = GetRenderText();
-  const gfx::SelectionModel caret(autocorrect_range, gfx::CURSOR_BACKWARD);
-  gfx::Rect rect;
-  rect = render_text->GetCursorBounds(caret, false);
-
-  ConvertRectToScreen(this, &rect);
-  return rect;
+  // TODO(b/316461955): Implement autocorrect UI for native fields.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Rect();
 }
 
 bool Textfield::SetAutocorrectRange(const gfx::Range& range) {
   if (!range.is_empty()) {
     base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Count",
                                   TextInputClient::SubClass::kTextField);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    auto* input_method_manager = ash::input_method::InputMethodManager::Get();
-    if (input_method_manager &&
-        ash::extension_ime_util::IsExperimentalMultilingual(
-            input_method_manager->GetActiveIMEState()
-                ->GetCurrentInputMethod()
-                .id())) {
-      base::UmaHistogramEnumeration(
-          "InputMethod.MultilingualExperiment.Autocorrect.Count",
-          TextInputClient::SubClass::kTextField);
-    }
-#endif
   }
-  return model_->SetAutocorrectRange(range);
+  // TODO(b/316461955): Implement autocorrect UI for native fields.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
 }
 
 bool Textfield::AddGrammarFragments(
@@ -2695,9 +2667,15 @@ void Textfield::UpdateCursorVisibility() {
     StopBlinkingCursor();
 }
 
+bool Textfield::IsMenuShowing() const {
+  return context_menu_runner_ && context_menu_runner_->IsRunning();
+}
+
 gfx::Rect Textfield::CalculateCursorViewBounds() const {
   gfx::Rect location(GetRenderText()->GetUpdatedCursorBounds());
   location.set_x(GetMirroredXForRect(location));
+  // Shrink the cursor bounds to fit within the view.
+  location.Intersect(GetLocalBounds());
   return location;
 }
 
@@ -2883,11 +2861,9 @@ void Textfield::OnEditFailed() {
 bool Textfield::ShouldShowCursor() const {
   // Show the cursor when the primary selected range is empty; secondary
   // selections do not affect cursor visibility.
-  // TODO(crbug.com/1434319): The cursor will be entirely hidden if partially
-  // occluded. It would be better if only the occluded part is hidden.
   return HasFocus() && !HasSelection(true) && GetEnabled() && !GetReadOnly() &&
          !drop_cursor_visible_ && GetRenderText()->cursor_enabled() &&
-         GetLocalBounds().Contains(cursor_view_->bounds());
+         !cursor_view_->bounds().IsEmpty();
 }
 
 int Textfield::CharsToDips(int width_in_chars) const {

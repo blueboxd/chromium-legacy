@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/raw_ptr_exclusion.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -64,7 +64,6 @@
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-#include "base/android/android_image_reader_compat.h"
 #include "ui/gfx/android/android_surface_control_compat.h"
 #endif
 
@@ -155,9 +154,7 @@ class GpuWatchdogInit {
   void SetGpuWatchdogPtr(GpuWatchdogThread* ptr) { watchdog_ptr_ = ptr; }
 
  private:
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #constexpr-ctor-field-initializer
-  RAW_PTR_EXCLUSION GpuWatchdogThread* watchdog_ptr_ = nullptr;
+  raw_ptr<GpuWatchdogThread, DanglingUntriaged> watchdog_ptr_ = nullptr;
 };
 
 void PauseGpuWatchdog(GpuWatchdogThread* watchdog_thread) {
@@ -686,8 +683,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       // Fuchsia uses ANGLE for GL which requires Vulkan, so don't fall
       // back to GL if Vulkan init fails.
       LOG(FATAL) << "Vulkan initialization failed";
-#endif
+#else
       gpu_preferences_.gr_context_type = GrContextType::kGL;
+#endif
     }
   } else {
     // TODO(https://crbug.com/1095744): It would be better to cleanly tear
@@ -828,6 +826,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     gpu_info_.sandboxed = sandbox_helper_->EnsureSandboxInitialized(
         watchdog_thread_.get(), &gpu_info_, gpu_preferences_);
   }
+  UMA_HISTOGRAM_BOOLEAN("GPU.Sandboxed", gpu_info_.sandboxed);
 
   init_successful_ = true;
 #if BUILDFLAG(IS_OZONE)
@@ -1084,12 +1083,33 @@ bool GpuInit::InitializeVulkan() {
       gpu_preferences_.use_vulkan == VulkanImplementationName::kForcedNative;
   bool use_swiftshader = gl_use_swiftshader_ || vulkan_use_swiftshader;
 
+  const base::FeatureParam<std::string> force_enable_patterns(
+      &features::kVulkan, "force_enable_by_gl_renderer", "");
+  forced_native |=
+      MatchGLInfo(gpu_info_.gl_renderer, force_enable_patterns.Get());
+
+  const base::FeatureParam<std::string> disable_by_renderer(
+      &features::kVulkan, "disable_by_gl_renderer", "");
+  bool disabled = MatchGLInfo(gpu_info_.gl_renderer, disable_by_renderer.Get());
+  const base::FeatureParam<std::string> disable_by_driver(
+      &features::kVulkan, "disable_by_gl_driver", "");
+  disabled |=
+      MatchGLInfo(gpu_info_.gpu.driver_version, disable_by_driver.Get());
+#if !BUILDFLAG(IS_ANDROID)
+  // For non-Android, check disabling params before Vulkan initialization.
+  // Android disabling params are checked later, because they can be overridden
+  // by |enable_by_device_name| which requires Vulkan to already be initialized.
+  if (!use_swiftshader && !forced_native && disabled) {
+    return false;
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
   vulkan_implementation_ = CreateVulkanImplementation(
       vulkan_use_swiftshader, gpu_preferences_.enable_vulkan_protected_memory);
   if (!vulkan_implementation_ ||
       !vulkan_implementation_->InitializeVulkanInstance(
           !gpu_preferences_.disable_vulkan_surface)) {
-    DLOG(ERROR) << "Failed to create and initialize Vulkan implementation.";
+    LOG(ERROR) << "Failed to create and initialize Vulkan implementation.";
     vulkan_implementation_ = nullptr;
     CHECK(!gpu_preferences_.disable_vulkan_fallback_to_gl_for_testing);
   }
@@ -1102,17 +1122,12 @@ bool GpuInit::InitializeVulkan() {
   if (!vulkan_implementation_)
     return false;
 
-  const base::FeatureParam<std::string> force_enable_patterns(
-      &features::kVulkan, "force_enable_by_gl_renderer", "");
-  forced_native |=
-      MatchGLInfo(gpu_info_.gl_renderer, force_enable_patterns.Get());
-
   const base::FeatureParam<std::string> enable_by_device_name(
       &features::kVulkan, "enable_by_device_name", "");
   if (!use_swiftshader && !forced_native &&
-      !CheckVulkanCompabilities(
+      !CheckVulkanCompatibilities(
           vulkan_implementation_->GetVulkanInstance()->vulkan_info(), gpu_info_,
-          enable_by_device_name.Get())) {
+          enable_by_device_name.Get(), disabled)) {
     vulkan_implementation_.reset();
     return false;
   }

@@ -14,7 +14,6 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/common/accessibility/read_anything.mojom.h"
 #include "chrome/renderer/accessibility/read_anything_app_model.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "gin/wrappable.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -102,24 +101,13 @@ class ReadAnythingAppController
       read_anything::mojom::LetterSpacing letter_spacing,
       const std::string& font,
       double font_size,
+      bool links_enabled,
       read_anything::mojom::Colors color,
       double speech_rate,
       base::Value::Dict voices,
       read_anything::mojom::HighlightGranularity granularity) override;
   void SetDefaultLanguageCode(const std::string& code) override;
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   void ScreenAIServiceReady() override;
-#endif
-
-  // Read Aloud Helper methods.
-
-  // Returns the next valid AXNodePosition.
-  ui::AXNodePosition::AXPositionInstance
-  GetNextValidPositionFromCurrentPosition();
-
-  // Uses the current AXNodePosition to return the next node that should be
-  // spoken by Read Aloud.
-  ui::AXNode* GetNodeFromCurrentPosition();
 
   // gin templates:
   ui::AXNodeID RootId() const;
@@ -130,9 +118,11 @@ class ReadAnythingAppController
   SkColor BackgroundColor() const;
   std::string FontName() const;
   float FontSize() const;
+  bool LinksEnabled() const;
   float SpeechRate() const;
   void OnFontSizeChanged(bool increase);
   void OnFontSizeReset();
+  void OnLinksEnabledToggled();
   SkColor ForegroundColor() const;
   float LetterSpacing() const;
   float LineSpacing() const;
@@ -195,11 +185,6 @@ class ReadAnythingAppController
   double GetLetterSpacingValue(int letter_spacing) const;
   std::vector<std::string> GetSupportedFonts() const;
 
-  std::string GetHtmlTagForPDF(ui::AXNode* ax_node, std::string html_tag) const;
-  std::string GetHeadingHtmlTagForPDF(ui::AXNode* ax_node,
-                                      std::string html_tag) const;
-  std::string GetAriaLevel(ui::AXNode* ax_node) const;
-
   // The language code that should be used to determine which voices are
   // supported for speech.
   const std::string& GetLanguageCodeForSpeech() const;
@@ -219,29 +204,41 @@ class ReadAnythingAppController
 
   void PostProcessSelection();
 
+  // Signals that the side panel has finished loading and it's safe to show
+  // the UI to avoid loading artifacts.
+  void ShouldShowUI();
+
   // Inits the AXPosition with a starting node.
   // TODO(crbug.com/1474951): We should be able to use AXPosition in a way
   // where this isn't needed.
   void InitAXPositionWithNode(const ui::AXNodeID starting_node_id);
 
-  // Returns a list of triples representing the next nodes that should be
-  // spoken and highlighted with Read Aloud. Each triple contains three numbers:
-  // the AXNodeID, the starting text index, and the ending text index. This
-  // list of triples is represented as a double array.
-  std::vector<std::vector<int>> GetNextText(int max_text_length);
+  // Returns a list of AXNodeIds representing the next nodes that should be
+  // spoken and highlighted with Read Aloud. GetNextTextStartIndex and
+  // GetNextTextEndIndex called with an AXNodeID return by GetNextText will
+  // return the starting text and ending text indices for specific text that
+  // should be referenced within the node.
+  std::vector<ui::AXNodeID> GetNextText();
 
   // Returns a list of triples representing the previous nodes that should be
   // spoken and highlighted with Read Aloud. Each triple contains three numbers:
   // the AXNodeID, the starting text index, and the ending text index. This
   // list of triples is represented as a double array.
-  std::vector<std::vector<int>> GetPreviousText(int max_text_length);
+  std::vector<ui::AXNodeID> GetPreviousText();
 
-  // Returns the index of the next sentence of the given text, such that the
-  // next sentence is equivalent to text.substr(0, <returned_index>).
-  // If the sentence exceeds the maximum text length, the sentence will be
-  // cropped to the nearest word boundary that doesn't exceed the maximum
-  // text length.
-  int GetNextSentence(const std::u16string& text, int maxTextLength);
+  int GetAccessibleBoundary(const std::u16string& text, int max_text_length);
+
+  // Returns the Read Aloud starting text index for a node. For example,
+  // if the entire text of the node should be read by Read Aloud at a particular
+  // moment, this will return 0. Returns -1 if the node isn't in the current
+  // segment.
+  int GetNextTextStartIndex(ui::AXNodeID node_id);
+
+  // Returns the Read Aloud ending text index for a node. For example,
+  // if the entire text of the node should be read by Read Aloud at a particular
+  // moment, this will return the length of the node's text. Returns -1 if the
+  // node isn't in the current segment.
+  int GetNextTextEndIndex(ui::AXNodeID node_id);
 
   // SetContentForTesting, SetThemeForTesting, and SetLanguageForTesting are
   // used by ReadAnythingAppTest and thus need to be kept in
@@ -268,6 +265,7 @@ class ReadAnythingAppController
                             std::vector<ui::AXNodeID> content_node_ids);
   void SetThemeForTesting(const std::string& font_name,
                           float font_size,
+                          bool links_enabled,
                           SkColor foreground_color,
                           SkColor background_color,
                           int line_spacing,
@@ -282,15 +280,6 @@ class ReadAnythingAppController
       page_handler_factory_;
   mojo::Remote<read_anything::mojom::UntrustedPageHandler> page_handler_;
   mojo::Receiver<read_anything::mojom::UntrustedPage> receiver_{this};
-
-  // Read Aloud state
-  ui::AXNodePosition::AXPositionInstance ax_position_;
-  // The current text index within the given node.
-  int current_text_index_ = 0;
-
-  // TODO(b/1474951): There should be a way to navigate text without needing
-  //  to store spoken ids.
-  std::vector<ui::AXNodeID> previously_spoken_ids_;
 
   // Model that holds state for this controller.
   ReadAnythingAppModel model_;

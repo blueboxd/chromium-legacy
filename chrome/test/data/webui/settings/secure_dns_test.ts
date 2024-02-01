@@ -13,13 +13,16 @@ import 'chrome://settings/lazy_load.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {SecureDnsInputElement, SettingsSecureDnsElement, SecureDnsResolverType, SettingsToggleButtonElement} from 'chrome://settings/lazy_load.js';
-import {PrivacyPageBrowserProxyImpl, ResolverOption, SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
+import type {SecureDnsInputElement, SettingsSecureDnsElement, SettingsToggleButtonElement} from 'chrome://settings/lazy_load.js';
+import {SecureDnsResolverType} from 'chrome://settings/lazy_load.js';
+import type {ResolverOption} from 'chrome://settings/settings.js';
+import {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 // <if expr="chromeos_ash">
-import {SettingsSecureDnsDialogElement} from 'chrome://settings/lazy_load.js';
+import type {SettingsSecureDnsDialogElement} from 'chrome://settings/lazy_load.js';
+import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 // </if>
 
@@ -357,6 +360,8 @@ suite('OsSettingsRevampSecureDnsDialog', () => {
   });
 
   setup(async function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+
     testBrowserProxy = new TestPrivacyPageBrowserProxy();
     PrivacyPageBrowserProxyImpl.setInstance(testBrowserProxy);
     testElement = document.createElement('settings-secure-dns');
@@ -402,7 +407,9 @@ suite('OsSettingsRevampSecureDnsDialog', () => {
 
     // Wait for onDisableDnsDialogClosed_ to finish.
     await flushTasks();
+    await waitAfterNextRender(secureDnsToggle);
 
+    assertFalse(secureDnsToggleDialog.$.dialog.open);
     assertTrue(secureDnsToggle.checked);
     assertResolverSelectShown();
     assertEquals(

@@ -7,11 +7,12 @@
  * collection.
  */
 
+import 'chrome://resources/ash/common/personalization/common.css.js';
+import 'chrome://resources/ash/common/personalization/wallpaper.css.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import '../../css/wallpaper.css.js';
-import '../../css/common.css.js';
 import './google_photos_zero_state_element.js';
 
+import {isNonEmptyArray} from 'chrome://resources/ash/common/sea_pen/sea_pen_utils.js';
 import {assertNotReached} from 'chrome://resources/js/assert.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -19,7 +20,6 @@ import {GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, Wallp
 import {isGooglePhotosSharedAlbumsEnabled} from '../load_time_booleans.js';
 import {Paths, PersonalizationRouterElement} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
-import {isNonEmptyArray} from '../utils.js';
 
 import {getTemplate} from './google_photos_collection_element.html.js';
 import {fetchGooglePhotosAlbums, fetchGooglePhotosPhotos, fetchGooglePhotosSharedAlbums} from './wallpaper_controller.js';

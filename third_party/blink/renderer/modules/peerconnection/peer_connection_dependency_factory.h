@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_binding_context.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
-#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/async_dns_resolver.h"
@@ -151,6 +150,11 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
+  // Create a webrtc Metronome driven by the same source as the decode metronome
+  // passed to the WebRTC PeerConnection, allowing blink events to be coalesced
+  // around the same ticks.
+  virtual std::unique_ptr<webrtc::Metronome> CreateDecodeMetronome();
+
   void Trace(Visitor*) const override;
 
  protected:
@@ -198,6 +202,8 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   std::unique_ptr<IpcNetworkManager> network_manager_;
   std::unique_ptr<IpcPacketSocketFactory> socket_factory_;
 
+  Member<WebrtcVideoPerfReporter> webrtc_video_perf_reporter_;
+
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
 
   // Dispatches all P2P sockets.
@@ -207,9 +213,6 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   raw_ptr<media::GpuVideoAcceleratorFactories, ExperimentalRenderer>
       gpu_factories_;
-
-  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
-  WebrtcVideoPerfReporter webrtc_video_perf_reporter_;
 
   THREAD_CHECKER(thread_checker_);
 };

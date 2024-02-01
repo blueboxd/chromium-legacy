@@ -12,29 +12,31 @@ import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
-import '/shared/settings/controls/settings_toggle_button.js';
+import '../controls/settings_toggle_button.js';
 import '../icons.html.js';
 import '../settings_shared.css.js';
 import '../site_settings/site_list.js';
 import './collapse_radio_button.js';
 import './do_not_track_toggle.js';
-import '/shared/settings/controls/settings_radio_group.js';
+import '../controls/settings_radio_group.js';
 
-import {SettingsRadioGroupElement} from '/shared/settings/controls/settings_radio_group.js';
-import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
+import type {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {FocusConfig} from '../focus_config.js';
+import type {SettingsRadioGroupElement} from '../controls/settings_radio_group.js';
+import type {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
+import type {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
-import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
+import type {MetricsBrowserProxy} from '../metrics_browser_proxy.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
-import {Route, RouteObserverMixin, Router} from '../router.js';
+import type {Route} from '../router.js';
+import {RouteObserverMixin, Router} from '../router.js';
 import {ContentSetting, ContentSettingsTypes, CookieControlsMode} from '../site_settings/constants.js';
 import {CookiePrimarySetting} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
@@ -248,7 +250,7 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
     const areAnyPrivacySandboxApisEnabled =
         this.getPref('privacy_sandbox.m1.topics_enabled').value ||
         this.getPref('privacy_sandbox.m1.fledge_enabled').value ||
-        this.getPref('privacy_sandbox.m1.fledge_enabled').value;
+        this.getPref('privacy_sandbox.m1.ad_measurement_enabled').value;
     const areThirdPartyCookiesAllowed =
         currentCookieControlsMode === CookieControlsMode.OFF ||
         currentCookieControlsMode === CookieControlsMode.INCOGNITO_ONLY;
@@ -261,55 +263,6 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
       this.metricsBrowserProxy_.recordAction(
           'Settings.PrivacySandbox.Block3PCookies');
     } else {
-      this.$.toast.hide();
-    }
-
-    primarySettingGroup.sendPrefChange();
-  }
-
-  /**
-   * Record interaction metrics for the primary cookie radio setting.
-   */
-  private onCookiePrimarySettingChanged_() {
-    const primarySettingGroup: SettingsRadioGroupElement =
-        this.shadowRoot!.querySelector('#primarySettingGroup')!;
-    const selection = Number(primarySettingGroup.selected);
-    if (selection === CookiePrimarySetting.ALLOW_ALL) {
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          PrivacyElementInteractions.COOKIES_ALL);
-    } else if (selection === CookiePrimarySetting.BLOCK_THIRD_PARTY_INCOGNITO) {
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          PrivacyElementInteractions.COOKIES_INCOGNITO);
-    } else if (selection === CookiePrimarySetting.BLOCK_THIRD_PARTY) {
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          PrivacyElementInteractions.COOKIES_THIRD);
-    } else {  // CookiePrimarySetting.BLOCK_ALL
-      this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          PrivacyElementInteractions.COOKIES_BLOCK);
-    }
-
-    // If this change resulted in the user now blocking 3P cookies where they
-    // previously were not, and privacy sandbox APIs are enabled,
-    // the privacy sandbox toast should be shown.
-    const currentCookieSetting =
-        this.getPref('generated.cookie_primary_setting').value;
-    const privacySandboxEnabled =
-        this.getPref('privacy_sandbox.apis_enabled_v2').value;
-
-    if (privacySandboxEnabled &&
-        (currentCookieSetting === CookiePrimarySetting.ALLOW_ALL ||
-         currentCookieSetting ===
-             CookiePrimarySetting.BLOCK_THIRD_PARTY_INCOGNITO) &&
-        (selection === CookiePrimarySetting.BLOCK_THIRD_PARTY ||
-         selection === CookiePrimarySetting.BLOCK_ALL)) {
-      if (!loadTimeData.getBoolean('isPrivacySandboxRestricted')) {
-        this.$.toast.show();
-      }
-      this.metricsBrowserProxy_.recordAction(
-          'Settings.PrivacySandbox.Block3PCookies');
-    } else if (
-        selection === CookiePrimarySetting.ALLOW_ALL ||
-        selection === CookiePrimarySetting.BLOCK_THIRD_PARTY_INCOGNITO) {
       this.$.toast.hide();
     }
 

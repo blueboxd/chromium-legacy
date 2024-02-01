@@ -111,14 +111,14 @@ std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
 
   auto* title = view->AddChildView(std::make_unique<views::Label>(
-      item.title, views::style::CONTEXT_DIALOG_BODY_TEXT));
+      item.title(), views::style::CONTEXT_DIALOG_BODY_TEXT));
   title->SetCollapseWhenHidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   auto* message = view->AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringFUTF16(
           IDS_MESSAGE_CENTER_LIST_NOTIFICATION_MESSAGE_WITH_DIVIDER,
-          item.message),
+          item.message()),
       views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY));
   message->SetCollapseWhenHidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -221,18 +221,12 @@ void NotificationViewBase::CreateOrUpdateViews(
 
 NotificationViewBase::NotificationViewBase(const Notification& notification)
     : MessageView(notification), for_ash_notification_(IsForAshNotification()) {
-  SetNotifyEnterExitOnChild(true);
-
   click_activator_ = std::make_unique<ClickActivator>(this);
   // Reasons to use pretarget handler instead of OnMousePressed:
   // - NotificationViewBase::OnMousePresssed would not fire on the inline reply
   //   textfield click in native notification.
   // - To make it look similar to ArcNotificationContentView::EventForwarder.
   AddPreTargetHandler(click_activator_.get());
-
-  DCHECK(views::FocusRing::Get(this));
-  views::FocusRing::Get(this)->SetPathGenerator(
-      std::make_unique<MessageView::HighlightPathGenerator>());
 
   UpdateCornerRadius(kNotificationCornerRadius, kNotificationCornerRadius);
 }
@@ -242,16 +236,16 @@ NotificationViewBase::~NotificationViewBase() {
 }
 
 void NotificationViewBase::Layout() {
-  MessageView::Layout();
+  LayoutSuperclass<MessageView>(this);
 
-  // We need to call IsExpandable() at the end of Layout() call, since whether
+  // We need to call IsExpandable() after doing superclass layout, since whether
   // we should show expand button or not depends on the current view layout.
   // (e.g. Show expand button when |message_label_| exceeds one line.)
   SetExpandButtonVisibility(IsExpandable());
   header_row_->Layout();
 
-  // The notification background is rounded in MessageView::Layout(),
-  // but we also have to round the actions row background here.
+  // The notification background is rounded in MessageView layout, but we also
+  // have to round the actions row background here.
   if (actions_row_->GetVisible()) {
     constexpr SkScalar kCornerRadius = SkIntToScalar(kNotificationCornerRadius);
 
@@ -314,20 +308,6 @@ void NotificationViewBase::OnMouseReleased(const ui::MouseEvent& event) {
   MessageView::OnMouseReleased(event);
 }
 
-void NotificationViewBase::OnMouseEvent(ui::MouseEvent* event) {
-  switch (event->type()) {
-    case ui::ET_MOUSE_ENTERED:
-      UpdateControlButtonsVisibility();
-      break;
-    case ui::ET_MOUSE_EXITED:
-      UpdateControlButtonsVisibility();
-      break;
-    default:
-      break;
-  }
-  View::OnMouseEvent(event);
-}
-
 void NotificationViewBase::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_LONG_TAP) {
     ToggleInlineSettings(*event);
@@ -342,7 +322,7 @@ void NotificationViewBase::UpdateWithNotification(
   UpdateControlButtonsVisibilityWithNotification(notification);
 
   CreateOrUpdateViews(notification);
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 
@@ -606,8 +586,9 @@ void NotificationViewBase::CreateOrUpdateProgressViews(
 
 void NotificationViewBase::CreateOrUpdateListItemViews(
     const Notification& notification) {
-  for (auto* item_view : item_views_)
+  for (views::View* item_view : item_views_) {
     delete item_view;
+  }
   item_views_.clear();
 
   const std::vector<NotificationItem>& items = notification.items();
@@ -642,8 +623,8 @@ void NotificationViewBase::CreateOrUpdateIconView(
   }
 
   if (!icon_view_) {
-    icon_view_ = new ProportionalImageView(GetIconViewSize());
-    right_content_->AddChildView(icon_view_.get());
+    icon_view_ = right_content_->AddChildView(
+        std::make_unique<ProportionalImageView>(GetIconViewSize()));
   }
 
   bool apply_rounded_corners = false;
@@ -680,8 +661,9 @@ void NotificationViewBase::CreateOrUpdateActionButtonViews(
   bool new_buttons = action_buttons_.size() != buttons.size();
 
   if (new_buttons || buttons.empty()) {
-    for (auto* item : action_buttons_)
+    for (views::LabelButton* item : action_buttons_) {
       delete item;
+    }
     action_buttons_.clear();
 
     // The `actions_row_` also contains the snooze button in ash.
@@ -734,9 +716,10 @@ void NotificationViewBase::CreateOrUpdateActionButtonViews(
   if (new_buttons && expanded_) {
     views::Widget* widget = GetWidget();
     if (widget && !widget->IsClosed()) {
-      // This Layout() is needed because button should be in the right location
-      // in the view hierarchy when SynthesizeMouseMoveEvent() is called.
-      Layout();
+      // This DeprecatedLayoutImmediately() is needed because button should be
+      // in the right location in the view hierarchy when
+      // SynthesizeMouseMoveEvent() is called.
+      DeprecatedLayoutImmediately();
       widget->SetSize(widget->GetContentsView()->GetPreferredSize());
       widget->SynthesizeMouseMoveEvent();
     }
@@ -761,7 +744,7 @@ void NotificationViewBase::ActionButtonPressed(size_t index,
 
     // RequestFocus() should be called after SetVisible().
     inline_reply_->textfield()->RequestFocus();
-    Layout();
+    DeprecatedLayoutImmediately();
     SchedulePaint();
 
     OnInlineReplyUpdated();

@@ -56,10 +56,6 @@ class ASH_EXPORT TabletModeMultitaskCueController
   // observers related to its parent window.
   void DismissCue();
 
-  // Resets the position of the cue back to the top of `window_` if the cue is
-  // still visible.
-  void ResetPosition();
-
   // If the cue is visible, checks to see if it is on the same window as the
   // multitask menu, and shows it on the correct window if not.
   void OnMenuOpened(aura::Window* active_window);
@@ -103,7 +99,7 @@ class ASH_EXPORT TabletModeMultitaskCueController
   void OnTimerFinished();
 
   // The app window that the cue is associated with.
-  raw_ptr<aura::Window, ExperimentalAsh> window_ = nullptr;
+  raw_ptr<aura::Window> window_ = nullptr;
 
   // Handles showing the educational nudge for the tablet multitask menu.
   chromeos::MultitaskMenuNudgeController nudge_controller_;

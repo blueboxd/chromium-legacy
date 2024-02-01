@@ -105,6 +105,13 @@ void DownloadItemWarningData::AddWarningActionEvent(DownloadItem* download,
   }
   DownloadItemWarningData* data = GetOrCreate(download);
   if (action == WarningAction::SHOWN) {
+    if (!data->logged_downloads_page_shown_ &&
+        surface == WarningSurface::DOWNLOADS_PAGE) {
+      base::UmaHistogramEnumeration(
+          "Download.ShowedDownloadWarning.DownloadsPage",
+          download->GetDangerType(), download::DOWNLOAD_DANGER_TYPE_MAX);
+      data->logged_downloads_page_shown_ = true;
+    }
     if (data->warning_first_shown_time_.is_null()) {
       RecordAddWarningActionEventOutcome(
           AddWarningActionEventOutcome::ADDED_WARNING_FIRST_SHOWN);
@@ -197,6 +204,10 @@ DownloadItemWarningData::ConstructCsbrrDownloadWarningAction(
     case DownloadItemWarningData::WarningSurface::DOWNLOAD_PROMPT:
       action.set_surface(ClientSafeBrowsingReportRequest::
                              DownloadWarningAction::DOWNLOAD_PROMPT);
+      break;
+    case DownloadItemWarningData::WarningSurface::DOWNLOAD_NOTIFICATION:
+      action.set_surface(ClientSafeBrowsingReportRequest::
+                             DownloadWarningAction::DOWNLOAD_NOTIFICATION);
       break;
   }
   switch (event.action) {

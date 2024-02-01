@@ -18,7 +18,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/desks/desk_button/desk_button.h"
+#include "ash/wm/desks/desk_button/desk_button_container.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/i18n/rtl.h"
@@ -146,7 +146,7 @@ class ScrollableShelfView::ScrollableShelfArrowView
   void ScrollRectToVisible(const gfx::Rect& rect) override {}
 
  private:
-  const raw_ptr<Shelf, ExperimentalAsh> shelf_;
+  const raw_ptr<Shelf> shelf_;
 };
 
 BEGIN_METADATA(ScrollableShelfView, ScrollableShelfArrowView, ScrollArrowView)
@@ -209,8 +209,7 @@ class ScrollableShelfContainerView : public ShelfContainerView,
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
 
-  raw_ptr<ScrollableShelfView, ExperimentalAsh> scrollable_shelf_view_ =
-      nullptr;
+  raw_ptr<ScrollableShelfView> scrollable_shelf_view_ = nullptr;
 };
 
 void ScrollableShelfContainerView::TranslateShelfView(
@@ -317,8 +316,7 @@ class ScrollableShelfFocusSearch : public views::FocusSearch {
   }
 
  private:
-  raw_ptr<ScrollableShelfView, ExperimentalAsh> scrollable_shelf_view_ =
-      nullptr;
+  raw_ptr<ScrollableShelfView> scrollable_shelf_view_ = nullptr;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -674,7 +672,7 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
 
   ui::AnimationThroughputReporter reporter(
       animation_settings.GetAnimator(),
-      metrics_util::ForSmoothness(
+      metrics_util::ForSmoothnessV3(
           base::BindRepeating(&ReportSmoothness, Shell::Get()->IsInTabletMode(),
                               Shell::Get()->app_list_controller()->IsVisible(
                                   GetDisplayIdForView(this)))));
@@ -809,7 +807,7 @@ void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
   // Add/remove a shelf icon may change the layout strategy.
   UpdateAvailableSpaceAndScroll();
   shelf_container_view_->TranslateShelfView(scroll_offset_);
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void ScrollableShelfView::OnScrollEvent(ui::ScrollEvent* event) {
@@ -1076,7 +1074,7 @@ void ScrollableShelfView::OnShelfAlignmentChanged(
   right_arrow_->set_is_horizontal_alignment(is_horizontal_alignment);
   scroll_offset_ = gfx::Vector2dF();
   ScrollToMainOffset(CalculateMainAxisScrollDistance(), /*animating=*/false);
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void ScrollableShelfView::OnShelfConfigUpdated() {
@@ -1096,8 +1094,10 @@ bool ScrollableShelfView::ShouldShowTooltipForView(
   // outside of `ScrollableShelfView` now that it deals with views outside the
   // `ScrollableShelfView`.
   if (DeskButtonWidget* desk_button_widget = GetShelf()->desk_button_widget()) {
-    DeskButton* desk_button = desk_button_widget->GetDeskButton();
-    if (view == desk_button || view->parent() == desk_button) {
+    DeskButtonContainer* desk_button_container =
+        desk_button_widget->GetDeskButtonContainer();
+    if (view->parent() == desk_button_container && view->GetEnabled() &&
+        !desk_button_container->GetTitleForView(view).empty()) {
       return true;
     }
   }
@@ -1120,9 +1120,10 @@ bool ScrollableShelfView::ShouldShowTooltipForView(
 bool ScrollableShelfView::ShouldHideTooltip(const gfx::Point& cursor_location,
                                             views::View* delegate_view) const {
   if (DeskButtonWidget* desk_button_widget = GetShelf()->desk_button_widget()) {
-    DeskButton* desk_button = desk_button_widget->GetDeskButton();
-    if (delegate_view == desk_button) {
-      return !desk_button->GetLocalBounds().Contains(cursor_location);
+    DeskButtonContainer* desk_button_container =
+        desk_button_widget->GetDeskButtonContainer();
+    if (delegate_view == desk_button_container) {
+      return !desk_button_container->GetLocalBounds().Contains(cursor_location);
     }
   }
 
@@ -1159,9 +1160,10 @@ std::u16string ScrollableShelfView::GetTitleForView(
     return shelf_view_->GetTitleForView(view);
 
   if (DeskButtonWidget* desk_button_widget = GetShelf()->desk_button_widget()) {
-    DeskButton* desk_button = desk_button_widget->GetDeskButton();
-    if (view == desk_button || view->parent() == desk_button) {
-      return desk_button->GetTitleForView(view);
+    DeskButtonContainer* desk_button_container =
+        desk_button_widget->GetDeskButtonContainer();
+    if (view->parent() == desk_button_container) {
+      return desk_button_container->GetTitleForView(view);
     }
   }
 
@@ -1180,7 +1182,7 @@ views::View* ScrollableShelfView::GetViewForEvent(const ui::Event& event) {
 
   if (DeskButtonWidget* desk_button_widget = GetShelf()->desk_button_widget()) {
     if (event.target() == desk_button_widget->GetNativeWindow()) {
-      return desk_button_widget->GetDeskButton();
+      return desk_button_widget->GetDeskButtonContainer();
     }
   }
 
@@ -1211,7 +1213,7 @@ void ScrollableShelfView::CancelScrollForItemDrag() {
 
 void ScrollableShelfView::OnImplicitAnimationsCompleted() {
   during_scroll_animation_ = false;
-  Layout();
+  DeprecatedLayoutImmediately();
 
   EnableShelfRoundedCorners(/*enable=*/false);
 

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/commerce/commerce_ui_tab_helper.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/commerce/price_tracking_bubble_dialog_view.h"
@@ -56,12 +57,8 @@ void AddIfNotBookmarkedToTheDefaultFolder(bookmarks::BookmarkModel* model,
       return;
     }
 
-    const bookmarks::BookmarkNode* parent = model->other_node();
-
-    // Automatically add the bookmark to the shopping collection if enabled.
-    if (base::FeatureList::IsEnabled(commerce::kShoppingCollection)) {
-      parent = commerce::GetShoppingCollectionBookmarkFolder(model, true);
-    }
+    const bookmarks::BookmarkNode* parent =
+        commerce::GetShoppingCollectionBookmarkFolder(model, true);
 
     model->AddNewURL(parent, parent->children().size(), title, url);
   }
@@ -92,6 +89,11 @@ PriceTrackingIconView::PriceTrackingIconView(
 
   SetUseTonalColorsWhenExpanded(
       base::FeatureList::IsEnabled(commerce::kPriceTrackingIconColors));
+
+  if (base::FeatureList::IsEnabled(commerce::kShoppingIconColorVariant)) {
+    SetCustomForegroundColorId(kColorShoppingPageActionIconForegroundVariant);
+    SetCustomBackgroundColorId(kColorShoppingPageActionIconBackgroundVariant);
+  }
 }
 
 PriceTrackingIconView::~PriceTrackingIconView() = default;
@@ -234,7 +236,7 @@ void PriceTrackingIconView::EnablePriceTracking(bool enable) {
     base::RecordAction(
         base::UserMetricsAction("Commerce.PriceTracking.OmniboxChip.Tracked"));
     commerce::MaybeEnableEmailNotifications(profile_->GetPrefs());
-    if (!base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+    if (!features::IsSidePanelPinningEnabled()) {
       bool should_show_iph = browser_->window()->MaybeShowFeaturePromo(
           feature_engagement::kIPHPriceTrackingInSidePanelFeature);
       if (should_show_iph) {
@@ -335,5 +337,5 @@ base::OneShotTimer& PriceTrackingIconView::AnimateOutTimer() {
                                         : animate_out_timer_;
 }
 
-BEGIN_METADATA(PriceTrackingIconView, PageActionIconView)
+BEGIN_METADATA(PriceTrackingIconView)
 END_METADATA

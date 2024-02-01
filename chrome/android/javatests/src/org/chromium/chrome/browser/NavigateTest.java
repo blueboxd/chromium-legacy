@@ -34,6 +34,8 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -55,8 +57,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -594,13 +594,11 @@ public class NavigateTest {
         HistogramWatcher startSurfaceHistogram =
                 HistogramWatcher.newSingleRecordWatcher(
                         histogram,
-                        BackPressManager.getHistogramValueForTesting(
-                                BackPressHandler.Type.START_SURFACE));
+                        BackPressManager.getHistogramValue(BackPressHandler.Type.START_SURFACE));
         HistogramWatcher tabSwitcherHistogram =
                 HistogramWatcher.newSingleRecordWatcher(
                         histogram,
-                        BackPressManager.getHistogramValueForTesting(
-                                BackPressHandler.Type.TAB_SWITCHER));
+                        BackPressManager.getHistogramValue(BackPressHandler.Type.TAB_SWITCHER));
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabUiTestHelper.enterTabSwitcher(cta);
@@ -675,8 +673,8 @@ public class NavigateTest {
                     webServer.setResponseWithRunnableAction(
                             "/mockme.html",
                             "<html>  <head>    <meta name=\"viewport\"       "
-                                    + " content=\"initial-scale=0.75,maximum-scale=0.75,user-scalable=no\">"
-                                    + "  </head>  <body>Real</body></html>",
+                                + " content=\"initial-scale=0.75,maximum-scale=0.75,user-scalable=no\">"
+                                + "  </head>  <body>Real</body></html>",
                             null,
                             checkAction);
 
@@ -684,9 +682,9 @@ public class NavigateTest {
             mActivityTestRule.loadUrl(
                     UrlUtils.encodeHtmlDataUri(
                             "<head>  <meta name=\"viewport\"     "
-                                    + " content=\"initial-scale=0.5,maximum-scale=0.5,user-scalable=no\"></head><script>"
-                                    + "  function spoof() {    var w = open();    w.opener = null;   "
-                                    + " w.document.write('Spoofed');    w.location = '"
+                                + " content=\"initial-scale=0.5,maximum-scale=0.5,user-scalable=no\"></head><script>"
+                                + "  function spoof() {    var w = open();    w.opener = null;   "
+                                + " w.document.write('Spoofed');    w.location = '"
                                     + mockedUrl
                                     + "'"
                                     + "  }"

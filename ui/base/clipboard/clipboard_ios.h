@@ -84,9 +84,6 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardIOS : public Clipboard {
   void WriteText(base::StringPiece text) override;
   void WriteHTML(base::StringPiece markup,
                  absl::optional<base::StringPiece> source_url) override;
-  void WriteUnsanitizedHTML(
-      base::StringPiece markup,
-      absl::optional<base::StringPiece> source_url) override;
   void WriteSvg(base::StringPiece markup) override;
   void WriteRTF(base::StringPiece rtf) override;
   void WriteFilenames(std::vector<ui::FileInfo> filenames) override;

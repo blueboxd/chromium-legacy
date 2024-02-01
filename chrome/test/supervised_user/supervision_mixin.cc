@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -75,7 +76,7 @@ SupervisionMixin::SupervisionMixin(
     : InProcessBrowserTestMixin(&test_mixin_host),
       test_base_(test_base),
       fake_gaia_mixin_(&test_mixin_host),
-      embedded_test_server_setup_mixin_(absl::in_place,
+      embedded_test_server_setup_mixin_(std::in_place,
                                         test_mixin_host,
                                         test_base,
                                         embedded_test_server,
@@ -126,6 +127,7 @@ void SupervisionMixin::SetParentalControlsAccountCapability(
   auto* identity_manager = GetIdentityTestEnvironment()->identity_manager();
   CoreAccountInfo account_info =
       identity_manager->GetPrimaryAccountInfo(consent_level_);
+  CHECK_EQ(account_info.email, email_);
   AccountInfo account = identity_manager->FindExtendedAccountInfo(account_info);
 
   AccountCapabilitiesTestMutator mutator(&account.capabilities);
@@ -157,18 +159,26 @@ void SupervisionMixin::ConfigureIdentityTestEnvironment() {
     // test runs.
     AccountInfo account_info =
         GetIdentityTestEnvironment()->MakeAccountAvailable(email_);
-    GetIdentityTestEnvironment()->SetPrimaryAccount(email_, consent_level_);
     CHECK(!account_info.account_id.empty());
+
+    GetIdentityTestEnvironment()->SetPrimaryAccount(email_, consent_level_);
+    WaitForPrimaryAccount(GetIdentityTestEnvironment()->identity_manager(),
+                          consent_level_, account_info.account_id);
+  } else {
+    GetIdentityTestEnvironment()->SetRefreshTokenForPrimaryAccount();
   }
 
-  GetIdentityTestEnvironment()->SetRefreshTokenForPrimaryAccount();
   GetIdentityTestEnvironment()->SetAutomaticIssueOfAccessTokens(true);
   ConfigureParentalControls(
       /*is_supervised_profile=*/sign_in_mode_ == SignInMode::kSupervised);
 }
 
 Profile* SupervisionMixin::GetProfile() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return ProfileManager::GetActiveUserProfile();
+#else
   return test_base_->browser()->profile();
+#endif
 }
 
 signin::IdentityTestEnvironment* SupervisionMixin::GetIdentityTestEnvironment()
@@ -181,6 +191,13 @@ signin::IdentityTestEnvironment* SupervisionMixin::GetIdentityTestEnvironment()
 void SupervisionMixin::SetNextReAuthStatus(
     GaiaAuthConsumer::ReAuthProofTokenStatus status) {
   fake_gaia_mixin_.fake_gaia()->SetNextReAuthStatus(status);
+}
+
+void SupervisionMixin::SignIn(SignInMode mode) {
+  CHECK_NE(mode, SignInMode::kSignedOut);
+  CHECK_EQ(sign_in_mode_, SignInMode::kSignedOut);
+  sign_in_mode_ = mode;
+  ConfigureIdentityTestEnvironment();
 }
 
 std::ostream& operator<<(std::ostream& stream,

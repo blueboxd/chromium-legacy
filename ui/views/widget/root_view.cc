@@ -83,10 +83,9 @@ class DanglingMouseMoveHandlerOnViewDestroyingChecker
  private:
   base::ScopedObservation<views::View, views::ViewObserver> scoped_observation{
       this};
-  // Excluded from `raw_ref` rewriter which would otherwise turn this
-  // into a `raw_ref<raw_ptr<>>`. The current `raw_ptr&` setup is
-  // intentional and used to observe the pointer without counting as a
-  // live reference to the underlying memory.
+  // RAW_PTR_EXCLUSION: Avoid turning this into a `raw_ref<raw_ptr<>>`. The
+  // current `raw_ptr&` setup is intentional and used to observe the pointer
+  // without counting as a live reference to the underlying memory.
   RAW_PTR_EXCLUSION const raw_ptr<views::View, AcrossTasksDanglingUntriaged>&
       mouse_move_handler_;
 };
@@ -481,7 +480,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
     // Remove the double-click flag if the handler is different than the
     // one which got the first click part of the double-click.
     if (mouse_pressed_handler_ != last_click_handler_)
-      mouse_pressed_event.set_flags(event.flags() & ~ui::EF_IS_DOUBLE_CLICK);
+      mouse_pressed_event.SetFlags(event.flags() & ~ui::EF_IS_DOUBLE_CLICK);
 
     drag_info_.Reset();
     ui::EventDispatchDetails dispatch_details =
@@ -598,9 +597,8 @@ void RootView::OnMouseExited(const ui::MouseEvent& event) {
     if (dispatch_details.dispatcher_destroyed)
       return;
     // The mouse_move_handler_ could have been destroyed in the context of the
-    // mouse exit event.
-    if (!dispatch_details.target_destroyed) {
-      CHECK(mouse_move_handler_);
+    // mouse exit event. b/312400341
+    if (!dispatch_details.target_destroyed && mouse_move_handler_) {
       dispatch_details = NotifyEnterExitOfDescendant(
           event, ui::ET_MOUSE_EXITED, mouse_move_handler_, nullptr);
       if (dispatch_details.dispatcher_destroyed)

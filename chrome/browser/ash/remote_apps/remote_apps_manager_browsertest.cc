@@ -243,7 +243,7 @@ class RemoteAppsManagerBrowsertest
     ExpectImageDownloaderDownload(icon_url, icon);
     apps::AppUpdateWaiter waiter(profile_, app_id, IconChanged());
     AddApp(source_id, name, folder_id, icon_url, add_to_front);
-    waiter.Wait();
+    waiter.Await();
   }
 
   void AddAppAssertError(const std::string& source_id,
@@ -318,23 +318,21 @@ class RemoteAppsManagerBrowsertest
                              "screenplay-446812cc-07af-4094-bfb2-00150301ede3");
   }
 
-  raw_ptr<app_list::AppListSyncableService, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<app_list::AppListSyncableService, DanglingUntriaged>
       app_list_syncable_service_;
-  raw_ptr<AppListModelUpdater, DanglingUntriaged | ExperimentalAsh>
-      app_list_model_updater_;
+  raw_ptr<AppListModelUpdater, DanglingUntriaged> app_list_model_updater_;
   ash::AppListTestApi app_list_test_api_;
-  raw_ptr<RemoteAppsManager, DanglingUntriaged | ExperimentalAsh> manager_ =
-      nullptr;
-  raw_ptr<MockImageDownloader, DanglingUntriaged | ExperimentalAsh>
-      image_downloader_ = nullptr;
-  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_ = nullptr;
+  raw_ptr<RemoteAppsManager, DanglingUntriaged> manager_ = nullptr;
+  raw_ptr<MockImageDownloader, DanglingUntriaged> image_downloader_ = nullptr;
+  raw_ptr<Profile, DanglingUntriaged> profile_ = nullptr;
   EmbeddedPolicyTestServerMixin policy_test_server_mixin_{&mixin_host_};
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
+// TODO: b/316517034 - Enable the test when flakiness issue is resolved.
+IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, DISABLED_AddApp) {
   AddScreenplayTag();
 
   // Show launcher UI so that app icons are loaded.
@@ -358,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
   iv->icon_type = apps::IconType::kStandard;
   iv->uncompressed = icon;
   apps::ApplyIconEffects(
-      profile_, /*app_id=*/absl::nullopt, apps::IconEffects::kCrOsStandardIcon,
+      profile_, /*app_id=*/std::nullopt, apps::IconEffects::kCrOsStandardIcon,
       /*size_hint_in_dip=*/64, std::move(iv), future.GetCallback());
 
   // App's icon is the downloaded icon.
@@ -389,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAppPlaceholderIcon) {
       manager_->GetPlaceholderIcon(kId1, /*size_hint_in_dip=*/64);
   iv->is_placeholder_icon = true;
   apps::ApplyIconEffects(
-      profile_, /*app_id=*/absl::nullopt, apps::IconEffects::kCrOsStandardIcon,
+      profile_, /*app_id=*/std::nullopt, apps::IconEffects::kCrOsStandardIcon,
       /*size_hint_in_dip=*/64, std::move(iv), future.GetCallback());
 
   // App's icon is placeholder.

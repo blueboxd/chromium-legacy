@@ -6,7 +6,7 @@
 
 #include "ash/accelerators/accelerator_prefs.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/ambient/managed/screensaver_images_policy_handler.h"
@@ -52,10 +52,10 @@
 #include "ash/system/input_device_settings/keyboard_modifier_metrics_recorder.h"
 #include "ash/system/keyboard_brightness/keyboard_backlight_color_controller.h"
 #include "ash/system/media/media_tray.h"
-#include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/network/cellular_setup_notifier.h"
 #include "ash/system/network/vpn_detailed_view.h"
 #include "ash/system/night_light/night_light_controller_impl.h"
+#include "ash/system/notification_center/message_center_controller.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
@@ -79,6 +79,7 @@
 #include "ash/wm/float/tablet_mode_tuck_education.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
+#include "ash/wm/window_util.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_nudge_controller.h"
@@ -97,7 +98,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
                           std::string_view country,
                           bool for_test) {
   AcceleratorPrefs::RegisterProfilePrefs(registry);
-  AccessibilityControllerImpl::RegisterProfilePrefs(registry);
+  AccessibilityController::RegisterProfilePrefs(registry);
   AppListControllerImpl::RegisterProfilePrefs(registry);
   AppListNudgeController::RegisterProfilePrefs(registry);
   AshAcceleratorConfiguration::RegisterProfilePrefs(registry);
@@ -118,6 +119,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
   DarkLightModeControllerImpl::RegisterProfilePrefs(registry);
   desks_restore_util::RegisterProfilePrefs(registry);
   saved_desk_util::RegisterProfilePrefs(registry);
+  window_util::RegisterProfilePrefs(registry);
   DockedMagnifierController::RegisterProfilePrefs(registry);
   FeatureDiscoveryDurationReporterImpl::RegisterProfilePrefs(registry);
   FocusModeController::RegisterProfilePrefs(registry);

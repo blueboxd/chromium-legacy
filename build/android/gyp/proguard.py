@@ -76,6 +76,9 @@ def _ParseOptions():
   parser.add_argument('--r8-path',
                       required=True,
                       help='Path to the R8.jar to use.')
+  parser.add_argument('--custom-r8-path',
+                      required=True,
+                      help='Path to our custom R8 wrapepr to use.')
   parser.add_argument('--input-paths',
                       action='append',
                       required=True,
@@ -319,8 +322,8 @@ def _OptimizeWithR8(options, config_paths, libraries, dynamic_config_data):
       cmd += ['-Dcom.android.tools.r8.reportUnknownApiReferences=1']
     cmd += [
         '-cp',
-        options.r8_path,
-        'com.android.tools.r8.R8',
+        '{}:{}'.format(options.r8_path, options.custom_r8_path),
+        'org.chromium.build.CustomR8',
         '--no-data-resources',
         '--map-id-template',
         f'{options.source_file} ({options.package_name})',
@@ -331,6 +334,10 @@ def _OptimizeWithR8(options, config_paths, libraries, dynamic_config_data):
         '--pg-map-output',
         tmp_mapping_path,
     ]
+
+    if options.uses_split:
+      # Provided by our CustomR8.java wrapper.
+      cmd += ['--enable-isolated-splits-asserts']
 
     if options.disable_checks:
       cmd += ['--map-diagnostics:CheckDiscardDiagnostic', 'error', 'none']

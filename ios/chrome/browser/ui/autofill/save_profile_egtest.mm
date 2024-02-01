@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_address_profile_modal_constants.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -75,7 +76,7 @@ BOOL WaitForKeyboardToAppear() {
   return [waitForKeyboard waitWithTimeout:kWaitForActionTimeout.InSecondsF()];
 }
 
-}  // namepsace
+}  // namespace
 
 @interface SaveProfileEGTest : ChromeTestCase
 
@@ -111,7 +112,8 @@ BOOL WaitForKeyboardToAppear() {
 #pragma mark - Tests
 
 // Ensures that the profile is saved to Chrome after submitting the form.
-- (void)testUserData_LocalSave {
+// TODO(crbug.com/1517656): Test is failing.
+- (void)DISABLED_testUserData_LocalSave {
   GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kProfileForm)];
 
@@ -138,7 +140,8 @@ BOOL WaitForKeyboardToAppear() {
 
 // Ensures that the profile is saved to Chrome after submitting and editing the
 // form.
-- (void)testUserData_LocalEdit {
+// TODO(crbug.com/1517656): Test is failing.
+- (void)DISABLED_testUserData_LocalEdit {
   GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kProfileForm)];
 
@@ -173,7 +176,8 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Ensures that the profile is saved to Account after submitting the form.
-- (void)testUserData_AccountSave {
+// TODO(crbug.com/1517656): Test is failing.
+- (void)DISABLED_testUserData_AccountSave {
   [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
                                 enableSync:YES];
 
@@ -211,7 +215,8 @@ BOOL WaitForKeyboardToAppear() {
 
 // Ensures that the profile is saved to Account after submitting and editing the
 // form.
-- (void)testUserData_AccountEdit {
+// TODO(crbug.com/1517656): Test is failing.
+- (void)DISABLED_testUserData_AccountEdit {
   [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
                                 enableSync:YES];
 

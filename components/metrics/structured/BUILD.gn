@@ -14,10 +14,18 @@ static_library("structured") {
     "event_storage.h",
     "key_data.cc",
     "key_data.h",
+    "key_data_file_delegate.cc",
+    "key_data_file_delegate.h",
+    "key_data_prefs_delegate.cc",
+    "key_data_prefs_delegate.h",
     "key_data_provider.cc",
     "key_data_provider.h",
     "key_data_provider_file.cc",
     "key_data_provider_file.h",
+    "key_data_provider_prefs.cc",
+    "key_data_provider_prefs.h",
+    "key_util.cc",
+    "key_util.h",
     "persistent_proto.cc",
     "persistent_proto.h",
     "reporting/structured_metrics_log_metrics.cc",
@@ -40,6 +48,7 @@ static_library("structured") {
     ":common",
     ":events",
     ":proto",
+    "//components/metrics/structured/lib:proto",
     "//third_party/metrics_proto",
   ]
 
@@ -48,7 +57,6 @@ static_library("structured") {
     ":structured_metrics_validator",
     "//base",
     "//components/metrics",
-    "//components/metrics/structured/lib:proto",
     "//components/metrics/structured/mojom",
     "//components/prefs",
     "//crypto",
@@ -72,19 +80,13 @@ if (is_chromeos_ash) {
 
 static_library("events") {
   sources = [
-    "delegating_events_processor.cc",
-    "delegating_events_processor.h",
     "enums.h",
     "event.cc",
     "event.h",
-    "events_processor_interface.h",
     "structured_metrics_client.cc",
     "structured_metrics_client.h",
   ]
-  deps = [
-    "//base",
-    "//third_party/metrics_proto",
-  ]
+  deps = [ "//base" ]
 }
 
 proto_library("proto") {
@@ -106,6 +108,9 @@ proto_library("proto") {
 # Sources used by all static libraries in this BUILD file.
 source_set("common") {
   sources = [
+    "delegating_events_processor.cc",
+    "delegating_events_processor.h",
+    "events_processor_interface.h",
     "histogram_util.cc",
     "histogram_util.h",
     "recorder.cc",
@@ -142,8 +147,8 @@ action("gen_structured_events") {
   inputs = [
     "//tools/metrics/structured/codegen.py",
     "//tools/metrics/structured/gen_events.py",
-    "//tools/metrics/structured/model.py",
-    "//tools/metrics/structured/model_util.py",
+    "//tools/metrics/structured/sync/model.py",
+    "//tools/metrics/structured/sync/model_util.py",
     "//tools/metrics/structured/templates_events.py",
   ]
   sources = [ "//tools/metrics/structured/sync/structured.xml" ]
@@ -167,8 +172,9 @@ action("gen_structured_events") {
 static_library("structured_events") {
   sources = get_target_outputs(":gen_structured_events")
 
+  public_deps = [ ":events" ]
+
   deps = [
-    ":common",
     ":gen_structured_events",
     "//base",
   ]
@@ -181,8 +187,8 @@ action("gen_structured_metrics_validator") {
   inputs = [
     "//tools/metrics/structured/codegen.py",
     "//tools/metrics/structured/gen_validator.py",
-    "//tools/metrics/structured/model.py",
-    "//tools/metrics/structured/model_util.py",
+    "//tools/metrics/structured/sync/model.py",
+    "//tools/metrics/structured/sync/model_util.py",
     "//tools/metrics/structured/templates_validator.py",
   ]
   sources = [ "//tools/metrics/structured/sync/structured.xml" ]
@@ -214,6 +220,7 @@ static_library("structured_metrics_validator") {
     ":events",
     ":gen_structured_metrics_validator",
     "//base",
+    "//third_party/metrics_proto",
   ]
 }
 
@@ -239,7 +246,8 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "key_data_unittest.cc",
+    "key_data_file_delegate_unittest.cc",
+    "key_data_prefs_delegate_unittest.cc",
     "persistent_proto_unittest.cc",
     "structured_metrics_provider_unittest.cc",
     "structured_metrics_recorder_unittest.cc",

@@ -12,7 +12,6 @@
 #include "base/containers/flat_set.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/scoped_multi_source_observation.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/aura_export.h"
@@ -144,13 +143,6 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
   // Returns true if there are ignored animating windows.
   bool HasIgnoredAnimatingWindows() const { return !animated_windows_.empty(); }
-
-  // Set a callback to determine whether a window has content to draw in
-  // addition to layer type check (window layer type != ui::LAYER_NOT_DRAWN).
-  using WindowHasContentCallback = base::RepeatingCallback<bool(const Window*)>;
-  void set_window_has_content_callback(WindowHasContentCallback callback) {
-    window_has_content_callback_ = std::move(callback);
-  }
 
   // Set the factory to create WindowOcclusionChangeBuilder.
   using OcclusionChangeBuilderFactory =
@@ -403,9 +395,6 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   base::ScopedMultiSourceObservation<Window, WindowObserver>
       window_observations_{this};
 
-  // Callback to be invoked for additional window has content check.
-  WindowHasContentCallback window_has_content_callback_;
-
   // Optional factory to create occlusion change builder.
   OcclusionChangeBuilderFactory occlusion_change_builder_factory_;
 
@@ -413,9 +402,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // occlusion based on target bounds, opacity, transform, and visibility
   // values. If the occlusion tracker is not computing for a specific window
   // (most of the time it is not), this will be nullptr.
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION Window* target_occlusion_window_ = nullptr;
+  raw_ptr<Window> target_occlusion_window_ = nullptr;
 };
 
 }  // namespace aura

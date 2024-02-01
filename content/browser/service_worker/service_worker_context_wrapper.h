@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,7 +29,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace base {
@@ -215,10 +215,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& document_url,
       const blink::StorageKey& key,
       StartServiceWorkerForNavigationHintCallback callback) override;
-  void WarmUpServiceWorker(
-      const GURL& document_url,
-      const blink::StorageKey& key,
-      ServiceWorkerContextCore::WarmUpServiceWorkerCallback callback);
+  void WarmUpServiceWorker(const GURL& document_url,
+                           const blink::StorageKey& key,
+                           WarmUpServiceWorkerCallback callback) override;
   void StopAllServiceWorkersForStorageKey(
       const blink::StorageKey& key) override;
   void StopAllServiceWorkers(base::OnceClosure callback) override;
@@ -409,10 +408,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // Sets a callback to bind ServiceWorkerStorageControl for testing.
   void SetStorageControlBinderForTest(StorageControlBinder binder);
 
-  using URLLoaderFactoryInterceptor = base::RepeatingCallback<void(
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* receiver)>;
-  static void SetURLLoaderFactoryInterceptorForTesting(
-      const URLLoaderFactoryInterceptor& interceptor);
+  ServiceWorkerContextCore* GetContextCoreForTest() {
+    return context_core_.get();
+  }
 
  private:
   friend class BackgroundSyncManagerTest;
@@ -482,7 +480,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   void DidFindRegistrationForWarmUp(
-      ServiceWorkerContextCore::WarmUpServiceWorkerCallback callback,
+      WarmUpServiceWorkerCallback callback,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
@@ -491,10 +489,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       StartServiceWorkerForNavigationHintCallback callback,
       blink::ServiceWorkerStatusCode code);
 
-  void DidWarmUpServiceWorker(
-      const GURL& scope,
-      ServiceWorkerContextCore::WarmUpServiceWorkerCallback callback,
-      blink::ServiceWorkerStatusCode code);
+  void DidWarmUpServiceWorker(const GURL& scope,
+                              WarmUpServiceWorkerCallback callback,
+                              blink::ServiceWorkerStatusCode code);
 
   void DidFindRegistrationForMessageDispatch(
       blink::TransferableMessage message,
@@ -526,7 +523,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   scoped_refptr<network::SharedURLLoaderFactory>
   GetLoaderFactoryForBrowserInitiatedRequest(
       const GURL& scope,
-      absl::optional<int64_t> version_id,
+      std::optional<int64_t> version_id,
       network::mojom::ClientSecurityStatePtr client_security_state);
 
   // Observers of |context_core_| which live within content's implementation

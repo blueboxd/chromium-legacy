@@ -66,23 +66,6 @@ class TestClient : public GlanceablesClassroomClient {
               (GlanceablesClassroomClient::GetAssignmentsCallback),
               (override));
 
-  MOCK_METHOD(void,
-              GetTeacherAssignmentsWithApproachingDueDate,
-              (GlanceablesClassroomClient::GetAssignmentsCallback),
-              (override));
-  MOCK_METHOD(void,
-              GetTeacherAssignmentsRecentlyDue,
-              (GlanceablesClassroomClient::GetAssignmentsCallback),
-              (override));
-  MOCK_METHOD(void,
-              GetTeacherAssignmentsWithoutDueDate,
-              (GlanceablesClassroomClient::GetAssignmentsCallback),
-              (override));
-  MOCK_METHOD(void,
-              GetGradedTeacherAssignments,
-              (GlanceablesClassroomClient::GetAssignmentsCallback),
-              (override));
-
   MOCK_METHOD(void, OnGlanceablesBubbleClosed, (), (override));
 };
 
@@ -182,8 +165,7 @@ class ClassroomBubbleViewTest : public AshTestBase {
   // ClassroomBubbleStudentViewTest.ReadsInitialComboBoxViewValueFromPrefs
   // -
   // https://ci.chromium.org/ui/p/chromium/builders/try/linux-chromeos-rel/1690881/overview
-  raw_ptr<ClassroomBubbleBaseView, FlakyDanglingUntriaged | ExperimentalAsh>
-      view_;
+  raw_ptr<ClassroomBubbleBaseView, FlakyDanglingUntriaged> view_;
   const GlanceablesTestNewWindowDelegate new_window_delegate_;
 
  private:

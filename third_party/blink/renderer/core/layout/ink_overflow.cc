@@ -669,7 +669,7 @@ LogicalRect InkOverflow::ComputeMarkerOverflow(
     const InlinePaintContext* inline_context) {
   LogicalRect accumulated_bound;
   auto* pseudo_style =
-      fragment_item->Type() == FragmentItem::kSvgText
+      fragment_item->IsSvgText()
           ? nullptr
           : HighlightStyleUtils::HighlightPseudoStyle(
                 text_node, style, HighlightPainter::PseudoFor(type));
@@ -681,7 +681,7 @@ LogicalRect InkOverflow::ComputeMarkerOverflow(
     std::optional<TextOffsetRange> marker_offsets =
         mapping_context.GetTextContentOffsets(*marker);
     if (!marker_offsets) {
-      return LogicalRect();
+      continue;
     }
     LogicalRect decoration_bound;
     if (pseudo_style && pseudo_style->HasAppliedTextDecorations()) {
@@ -727,7 +727,7 @@ LogicalRect InkOverflow::ComputeCustomHighlightOverflow(
 
     const CustomHighlightMarker& highlight_marker =
         To<CustomHighlightMarker>(*marker);
-    const auto* pseudo_style = fragment_item->Type() == FragmentItem::kSvgText
+    const auto* pseudo_style = fragment_item->IsSvgText()
                                    ? nullptr
                                    : HighlightStyleUtils::HighlightPseudoStyle(
                                          text_node, style, kPseudoIdHighlight,

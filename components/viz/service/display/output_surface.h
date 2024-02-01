@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_H_
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/functional/callback_helpers.h"
@@ -21,7 +22,6 @@
 #include "gpu/command_buffer/service/gpu_task_scheduler_helper.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkM44.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -142,6 +142,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool supports_non_backed_solid_color_overlays = false;
     // Whether the platform supports single pixel buffer protocol.
     bool supports_single_pixel_buffer = false;
+    // Whether make current needs to be called for swap buffers.
+    bool present_requires_make_current = true;
 
     // SkColorType for all supported buffer formats.
     SkColorType sk_color_types[static_cast<int>(gfx::BufferFormat::LAST) + 1] =

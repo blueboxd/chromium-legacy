@@ -12,6 +12,7 @@
 #import "base/apple/foundation_util.h"
 #import "base/i18n/rtl.h"
 #import "base/ios/ios_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -60,7 +61,6 @@
 #import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/model/web_state_list_favicon_driver_observer.h"
-#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -180,8 +180,8 @@ const CGFloat kSymbolSize = 18;
                                   UIGestureRecognizerDelegate,
                                   UIScrollViewDelegate,
                                   URLDropDelegate> {
-  Browser* _browser;
-  WebStateList* _webStateList;
+  raw_ptr<Browser> _browser;
+  raw_ptr<WebStateList> _webStateList;
   TabStripContainerView* _view;
   TabStripView* _tabStripView;
   UIButton* _buttonNewTab;

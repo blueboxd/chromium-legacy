@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/web_contents_view_android.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/android/build_info.h"
@@ -21,6 +22,7 @@
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/select_popup.h"
 #include "content/browser/android/selection/selection_popup_controller.h"
+#include "content/browser/navigation_transitions/back_forward_transition_animation_manager_android.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -32,7 +34,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/drop_data.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/android/overscroll_refresh_handler.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -127,6 +128,12 @@ WebContentsViewAndroid::WebContentsViewAndroid(
   // `rwhva_parent_` is a child layer of `view_`.
   parent_for_web_page_widgets_ = cc::slim::Layer::Create();
   view_.GetLayer()->AddChild(parent_for_web_page_widgets_);
+
+  if (base::FeatureList::IsEnabled(features::kBackForwardTransitions)) {
+    back_forward_animation_manager_ =
+        std::make_unique<BackForwardTransitionAnimationManagerAndroid>(
+            this, &web_contents_->GetController());
+  }
 }
 
 WebContentsViewAndroid::~WebContentsViewAndroid() {
@@ -280,6 +287,13 @@ void WebContentsViewAndroid::RenderViewHostChanged(RenderViewHost* old_host,
       static_cast<RenderWidgetHostViewAndroid*>(rwhv)->UpdateNativeViewTree(
           /*parent_native_view=*/nullptr, /*parent_layer=*/nullptr);
     }
+
+    // Notify `manager` that it should listen to new frame submission
+    // notifications.
+    if (back_forward_animation_manager_) {
+      back_forward_animation_manager_->OnRenderWidgetHostViewSwapped(old_host->GetWidget(),
+                                             new_host->GetWidget());
+    }
   }
 
   auto* rwhv = new_host->GetWidget()->GetView();
@@ -312,6 +326,11 @@ void WebContentsViewAndroid::FullscreenStateChanged(bool is_fullscreen) {
 
 void WebContentsViewAndroid::UpdateWindowControlsOverlay(
     const gfx::Rect& bounding_rect) {}
+
+BackForwardTransitionAnimationManager*
+WebContentsViewAndroid::GetBackForwardTransitionAnimationManager() {
+  return back_forward_animation_manager_.get();
+}
 
 void WebContentsViewAndroid::ShowContextMenu(RenderFrameHost& render_frame_host,
                                              const ContextMenuParams& params) {
@@ -670,12 +689,12 @@ void WebContentsViewAndroid::OnSizeChanged() {
   if (rwhv) {
     web_contents_->SendScreenRects();
     rwhv->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                      absl::nullopt);
+                                      std::nullopt);
   }
 }
 
 void WebContentsViewAndroid::OnPhysicalBackingSizeChanged(
-    absl::optional<base::TimeDelta> deadline_override) {
+    std::optional<base::TimeDelta> deadline_override) {
   if (web_contents_->GetRenderWidgetHostView())
     web_contents_->SendScreenRects();
 }
@@ -684,14 +703,14 @@ void WebContentsViewAndroid::OnBrowserControlsHeightChanged() {
   auto* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
     rwhv->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                      absl::nullopt);
+                                      std::nullopt);
 }
 
 void WebContentsViewAndroid::OnControlsResizeViewChanged() {
   auto* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
     rwhv->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                      absl::nullopt);
+                                      std::nullopt);
 }
 
 void WebContentsViewAndroid::NotifyVirtualKeyboardOverlayRect(
@@ -699,6 +718,27 @@ void WebContentsViewAndroid::NotifyVirtualKeyboardOverlayRect(
   auto* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
     rwhv->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
+}
+
+void WebContentsViewAndroid::AddScreenshotLayerForNavigationTransitions(
+    scoped_refptr<cc::slim::Layer> screenshot_layer,
+    bool screenshot_layer_on_top) {
+  CHECK_EQ(view_.GetLayer(), parent_for_web_page_widgets_->parent());
+
+  const auto& children = view_.GetLayer()->children();
+  auto itor = base::ranges::find(children, parent_for_web_page_widgets_);
+  CHECK(itor != children.end());
+
+  int index = std::distance(children.begin(), itor);
+  if (screenshot_layer_on_top) {
+    ++index;
+  }
+
+  CHECK_GE(index, 0);
+  CHECK_LE(index, static_cast<int>(children.size()));
+
+  view_.GetLayer()->InsertChild(std::move(screenshot_layer),
+                                static_cast<size_t>(index));
 }
 
 } // namespace content

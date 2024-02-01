@@ -17,8 +17,9 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 
-import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
+import type {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import type {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 import {FocusRowMixin} from 'chrome://resources/cr_elements/focus_row_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -27,12 +28,13 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {htmlEscape} from 'chrome://resources/js/util.js';
-import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
+import type {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
-import {MojomData} from './data.js';
-import {DangerType, PageHandlerInterface, SafeBrowsingState, State} from './downloads.mojom-webui.js';
+import type {MojomData} from './data.js';
+import type {PageHandlerInterface} from './downloads.mojom-webui.js';
+import {DangerType, SafeBrowsingState, State} from './downloads.mojom-webui.js';
 import {IconLoaderImpl} from './icon_loader.js';
 import {getTemplate} from './item.html.js';
 
@@ -368,11 +370,8 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
       // Mimics logic in download_ui_model.cc for downloads with danger_type
       // DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE.
       case DangerType.kDangerousFile:
-        return this.data.safeBrowsingState ===
-                SafeBrowsingState.kNoSafeBrowsing ?
-            DisplayType.UNVERIFIED :
-            (this.data.hasSafeBrowsingVerdict ? DisplayType.SUSPICIOUS :
-                                                DisplayType.UNVERIFIED);
+        return this.data.hasSafeBrowsingVerdict ? DisplayType.SUSPICIOUS :
+                                                  DisplayType.UNVERIFIED;
 
       case DangerType.kDangerousUrl:
       case DangerType.kDangerousContent:
@@ -815,15 +814,20 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
 
   private onCancelClick_() {
     this.restoreFocusAfterCancel_ = true;
-    this.mojoHandler_!.cancel(this.data.id);
+    assert(!!this.mojoHandler_);
+    this.mojoHandler_.cancel(this.data.id);
     if (this.improvedDownloadWarningsUx_) {
+      getAnnouncerInstance().announce(
+          loadTimeData.getString('screenreaderCanceled'));
       this.getMoreActionsMenu().close();
     }
   }
 
-  private onDiscardDangerousClick_() {
-    this.mojoHandler_!.discardDangerous(this.data.id);
+  private onDiscardDangerousClick_(e: Event) {
+    assert(!!this.mojoHandler_);
+    this.mojoHandler_.discardDangerous(this.data.id);
     if (this.improvedDownloadWarningsUx_) {
+      this.displayRemovedToast_(/*canUndo=*/ false, e);
       this.getMoreActionsMenu().close();
     }
   }
@@ -881,34 +885,62 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
         'metricsHandler:recordAction', ['Downloads_OpenUrlOfDownloadedItem']);
   }
 
+  private doPause_() {
+    assert(!!this.mojoHandler_);
+    this.mojoHandler_.pause(this.data.id);
+    if (this.improvedDownloadWarningsUx_) {
+      getAnnouncerInstance().announce(
+          loadTimeData.getString('screenreaderPaused'));
+    }
+  }
+
+  private doResume_() {
+    assert(!!this.mojoHandler_);
+    this.mojoHandler_.resume(this.data.id);
+    if (this.improvedDownloadWarningsUx_) {
+      getAnnouncerInstance().announce(
+          loadTimeData.getString('screenreaderResumed'));
+    }
+  }
+
   private onPauseOrResumeClick_() {
     if (this.isInProgress_) {
-      this.mojoHandler_!.pause(this.data.id);
+      this.doPause_();
     } else {
-      this.mojoHandler_!.resume(this.data.id);
+      this.doResume_();
     }
     if (this.improvedDownloadWarningsUx_) {
       this.getMoreActionsMenu().close();
     }
   }
 
-  private onRemoveClick_(e: Event) {
-    this.mojoHandler_!.remove(this.data.id);
-    const pieces = loadTimeData.getSubstitutedStringPieces(
-                       loadTimeData.getString('toastRemovedFromList'),
-                       this.data.fileName) as unknown as
-        Array<{collapsible: boolean, value: string, arg?: string}>;
+  private displayRemovedToast_(canUndo: boolean, e: Event) {
+    const templateStringId = this.improvedDownloadWarningsUx_ ?
+        (this.displayType_ === DisplayType.NORMAL && this.completelyOnDisk_ ?
+             'toastDeletedFromHistoryStillOnDevice' :
+             'toastDeletedFromHistory') :
+        'toastRemovedFromList';
+    const pieces =
+        loadTimeData.getSubstitutedStringPieces(
+            loadTimeData.getString(templateStringId), this.data.fileName) as
+        unknown as Array<{collapsible: boolean, value: string, arg?: string}>;
 
     pieces.forEach(p => {
       // Make the file name collapsible.
       p.collapsible = !!p.arg;
     });
-    const canUndo = !this.data.isDangerous && !this.data.isInsecure;
-    getToastManager().showForStringPieces(pieces, /* hideSlotted= */ !canUndo);
+    getToastManager().showForStringPieces(pieces, /*hideSlotted=*/ !canUndo);
 
     // Stop propagating a click to the document to remove toast.
     e.stopPropagation();
     e.preventDefault();
+  }
+
+  private onRemoveClick_(e: Event) {
+    assert(!!this.mojoHandler_);
+    this.mojoHandler_.remove(this.data.id);
+    const canUndo = !this.data.isDangerous && !this.data.isInsecure;
+    this.displayRemovedToast_(canUndo, e);
 
     if (this.improvedDownloadWarningsUx_) {
       this.getMoreActionsMenu().close();
@@ -931,15 +963,34 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
   }
 
   private onSaveDangerousClick_() {
-    if (this.improvedDownloadWarningsUx_) {
-      this.getMoreActionsMenu().close();
-      // TODO(crbug.com/1465966): Suspicious downloads should validate directly.
-      if (this.displayType_ === DisplayType.DANGEROUS) {
-        this.notifySaveDangerousClick_();
-        return;
-      }
+    if (!this.improvedDownloadWarningsUx_) {
+      // TODO(chlily): Clean up old paths that show the DownloadDangerPrompt.
+      assert(!!this.mojoHandler_);
+      this.mojoHandler_.saveDangerousRequiringGesture(this.data.id);
+      return;
     }
-    this.mojoHandler_!.saveDangerousRequiringGesture(this.data.id);
+
+    this.getMoreActionsMenu().close();
+
+    if (this.displayType_ === DisplayType.DANGEROUS) {
+      this.notifySaveDangerousClick_();
+      return;
+    }
+
+    // "Suspicious" types which show up in grey can be validated directly.
+    // This maps each such display type to its applicable screenreader
+    // announcement string id.
+    const SAVED_FROM_PAGE_TYPES_ANNOUNCEMENTS = new Map([
+      [DisplayType.SUSPICIOUS, 'screenreaderSavedSuspicious'],
+      [DisplayType.UNVERIFIED, 'screenreaderSavedUnverified'],
+      [DisplayType.INSECURE, 'screenreaderSavedInsecure'],
+    ]);
+    assert(SAVED_FROM_PAGE_TYPES_ANNOUNCEMENTS.has(this.displayType_));
+    assert(!!this.mojoHandler_);
+    this.mojoHandler_.saveSuspiciousRequiringGesture(this.data.id);
+    const announcement = loadTimeData.getString(
+        SAVED_FROM_PAGE_TYPES_ANNOUNCEMENTS.get(this.displayType_) as string);
+    getAnnouncerInstance().announce(announcement);
   }
 
   private onShowClick_() {

@@ -325,12 +325,6 @@ void WebSettingsImpl::SetAllowScriptsToCloseWindows(bool allow) {
   settings_->SetAllowScriptsToCloseWindows(allow);
 }
 
-void WebSettingsImpl::SetUseLegacyBackgroundSizeShorthandBehavior(
-    bool use_legacy_background_size_shorthand_behavior) {
-  settings_->SetUseLegacyBackgroundSizeShorthandBehavior(
-      use_legacy_background_size_shorthand_behavior);
-}
-
 void WebSettingsImpl::SetWideViewportQuirkEnabled(
     bool wide_viewport_quirk_enabled) {
   settings_->SetWideViewportQuirkEnabled(wide_viewport_quirk_enabled);
@@ -480,6 +474,10 @@ void WebSettingsImpl::SetEditingBehavior(
 
 void WebSettingsImpl::SetHideScrollbars(bool enabled) {
   dev_tools_emulator_->SetHideScrollbars(enabled);
+}
+
+void WebSettingsImpl::SetPrefersDefaultScrollbarStyles(bool enabled) {
+  settings_->SetPrefersDefaultScrollbarStyles(enabled);
 }
 
 void WebSettingsImpl::SetMockGestureTapHighlightsEnabled(bool enabled) {

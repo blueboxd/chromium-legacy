@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -43,7 +44,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
@@ -406,11 +406,10 @@ class ScanServiceTest : public testing::Test {
   FakeLorgnetteScannerManager fake_lorgnette_scanner_manager_;
   FakeScanJobObserver fake_scan_job_observer_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  const raw_ptr<TestingProfile, ExperimentalAsh> profile_;
+  const raw_ptr<TestingProfile> profile_;
   std::unique_ptr<ScopedTestMountPoint> scanned_files_mount_;
   std::unique_ptr<TestSessionController> session_controller_;
-  const raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
-      user_manager_;
+  const raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged> user_manager_;
   user_manager::ScopedUserManager user_manager_owner_;
   std::unique_ptr<ScanService> scan_service_;
 
@@ -471,7 +470,7 @@ TEST_F(ScanServiceTest, NoCapabilities) {
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
   fake_lorgnette_scanner_manager_.SetGetScannerCapabilitiesResponse(
-      absl::nullopt);
+      std::nullopt);
   auto scanners = GetScanners();
   ASSERT_EQ(scanners.size(), 1u);
   auto caps = GetScannerCapabilities(scanners[0]->id);

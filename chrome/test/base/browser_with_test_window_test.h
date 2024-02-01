@@ -178,9 +178,20 @@ class BrowserWithTestWindowTest : public testing::Test {
                                            const GURL& url,
                                            const std::u16string& title);
 
+  // Returns the profile name used for the profile created in SetUp() by
+  // default.
+  // Subclasses can override to change the profile name.
+  virtual std::string GetDefaultProfileName();
+
   // Creates the profile used by this test. The caller doesn't own the return
   // value.
-  virtual TestingProfile* CreateProfile();
+  virtual TestingProfile* CreateProfile(const std::string& profile_name);
+
+  // Deletes the specified profile.
+  // If `profile_name` is the one returned from GetDefaultProfileName(),
+  // because this instance creates Browser for the profile in SetUp() and keeps
+  // it in a member, the Browser instance will also be destroyed to avoid leak.
+  virtual void DeleteProfile(const std::string& profile_name);
 
   // Returns a vector of testing factories to be used when creating the profile.
   // This is only used by CreateProfile(), and will be irrelevant if that
@@ -206,6 +217,11 @@ class BrowserWithTestWindowTest : public testing::Test {
     return views_test_helper_->test_views_delegate();
 #endif
   }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // Logs in an User as `email`.
+  virtual void LogIn(const std::string& email);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

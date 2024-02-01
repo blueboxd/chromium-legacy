@@ -6,13 +6,16 @@
 #define CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/buckets/bucket_context.h"
+#include "content/browser/compute_pressure/pressure_service_for_worker.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/dedicated_worker_creator.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,9 +26,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/base/isolation_info.h"
+#include "services/device/public/mojom/pressure_manager.mojom.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -71,7 +74,7 @@ class CrossOriginEmbedderPolicyReporter;
 // of the worker is destroyed. This lives on the UI thread.
 // TODO(crbug.com/1273717): Align this class's lifetime with the associated
 // frame.
-class DedicatedWorkerHost final
+class CONTENT_EXPORT DedicatedWorkerHost final
     : public blink::mojom::DedicatedWorkerHost,
       public blink::mojom::BackForwardCacheControllerHost,
       public RenderProcessHostObserver,
@@ -117,7 +120,7 @@ class DedicatedWorkerHost final
     return ancestor_render_frame_host_id_;
   }
   DedicatedWorkerCreator GetCreator() const { return creator_; }
-  const absl::optional<GURL>& GetFinalResponseURL() const {
+  const std::optional<GURL>& GetFinalResponseURL() const {
     return final_response_url_;
   }
 
@@ -154,6 +157,8 @@ class DedicatedWorkerHost final
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver);
   void GetFileSystemAccessManager(
       mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver);
+  void BindPressureService(
+      mojo::PendingReceiver<device::mojom::PressureManager> receiver);
 
 #if !BUILDFLAG(IS_ANDROID)
   void BindSerialService(
@@ -211,9 +216,20 @@ class DedicatedWorkerHost final
     return service_worker_handle_.get();
   }
 
+  PressureServiceForWorker<DedicatedWorkerHost>* pressure_service() {
+    return pressure_service_.get();
+  }
+
+  // Exposed so that tests can swap the implementation and intercept calls.
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker>&
+  browser_interface_broker_receiver_for_testing() {
+    return broker_receiver_;
+  }
+
   // blink::mojom::BackForwardCacheControllerHost:
   void EvictFromBackForwardCache(
-      blink::mojom::RendererEvictionReason reason) override;
+      blink::mojom::RendererEvictionReason reason,
+      blink::mojom::BlockingDetailsPtr details) override;
   using BackForwardCacheBlockingDetails =
       std::vector<blink::mojom::BlockingDetailsPtr>;
   void DidChangeBackForwardCacheDisablingFeatures(
@@ -377,6 +393,9 @@ class DedicatedWorkerHost final
 
   std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
 
+  std::unique_ptr<PressureServiceForWorker<DedicatedWorkerHost>>
+      pressure_service_;
+
   // BrowserInterfaceBroker implementation through which this
   // DedicatedWorkerHost exposes worker-scoped Mojo services to the
   // corresponding worker in the renderer.
@@ -416,7 +435,7 @@ class DedicatedWorkerHost final
   base::WeakPtr<CrossOriginEmbedderPolicyReporter> ancestor_coep_reporter_;
 
   // Will be set once the worker script started loading.
-  absl::optional<GURL> final_response_url_;
+  std::optional<GURL> final_response_url_;
 
   // CodeCacheHost processes requests to fetch / write generated code for
   // JavaScript / WebAssembly resources.

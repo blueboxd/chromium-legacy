@@ -10,13 +10,11 @@
 #import "ios/chrome/browser/metrics/model/new_tab_page_uma.h"
 
 class PrefService;
-namespace web {
-class WebState;
-}
 
 typedef NS_ENUM(NSInteger, NTPCollectionShortcutType);
 
 @class ContentSuggestionsMostVisitedItem;
+enum class ContentNotificationSnackbarEvent;
 enum class ContentSuggestionsModuleType;
 enum class SetUpListItemType;
 
@@ -62,8 +60,7 @@ enum class SetUpListItemType;
 
 // Logs a most visited tile `item` being opened at `index` in `webState`.
 - (void)recordMostVisitedTileOpened:(ContentSuggestionsMostVisitedItem*)item
-                            atIndex:(NSInteger)index
-                           webState:(web::WebState*)webState;
+                            atIndex:(NSInteger)index;
 
 // Logs a most visited tile being removed.
 - (void)recordMostVisitedTileRemoved;
@@ -76,6 +73,9 @@ enum class SetUpListItemType;
 
 // Logs a Set Up List item being selected.
 - (void)recordSetUpListItemSelected:(SetUpListItemType)type;
+
+- (void)recordContentNotificationSnackbarEvent:
+    (ContentNotificationSnackbarEvent)event;
 
 @end
 

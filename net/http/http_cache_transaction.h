@@ -92,8 +92,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
 
   const std::string& key() const { return cache_key_; }
 
-  HttpCache::ActiveEntry* entry() { return entry_; }
-
   // Returns the LoadState of the writer transaction of a given ActiveEntry. In
   // other words, returns the LoadState of this transaction without asking the
   // http cache, because this transaction should be the one currently writing
@@ -171,6 +169,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   int ResumeNetworkStart() override;
   ConnectionAttempts GetConnectionAttempts() const override;
   void CloseConnectionOnDestruction() override;
+  bool IsMdlMatchForMetrics() const override;
 
   // Invoked when parallel validation cannot proceed due to response failure
   // and this transaction needs to be restarted.
@@ -228,6 +227,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     int64_t total_sent_bytes = 0;
     ConnectionAttempts old_connection_attempts;
     IPEndPoint old_remote_endpoint;
+    // For metrics. Can be removed when associated histograms are removed.
+    // Records whether any destroyed network transactions' ProxyInfo determined
+    // the request was to a Masked Domain List-covered domain.
+    bool previous_mdl_match_for_metrics = false;
   };
 
   enum State {
@@ -629,11 +632,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // |external_validation_| contains the value of those headers.
   ValidationHeaders external_validation_;
   base::WeakPtr<HttpCache> cache_;
-  raw_ptr<HttpCache::ActiveEntry, AcrossTasksDanglingUntriaged> entry_ =
-      nullptr;
+  scoped_refptr<HttpCache::ActiveEntry> entry_;
   // This field is not a raw_ptr<> because it was filtered by the rewriter for:
   // #addr-of
-  RAW_PTR_EXCLUSION HttpCache::ActiveEntry* new_entry_ = nullptr;
+  scoped_refptr<HttpCache::ActiveEntry> new_entry_;
   std::unique_ptr<HttpTransaction> network_trans_;
   CompletionOnceCallback callback_;  // Consumer's callback.
   HttpResponseInfo response_;

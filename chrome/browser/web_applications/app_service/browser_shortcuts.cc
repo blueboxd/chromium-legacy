@@ -26,6 +26,7 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut_registry_cache.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 
 namespace {
 
@@ -62,8 +63,8 @@ void BrowserShortcuts::Initialize() {
 
   CHECK(provider_);
   provider_->on_registry_ready().Post(
-      FROM_HERE,
-      base::BindOnce(&BrowserShortcuts::InitBrowserShortcuts, AsWeakPtr()));
+      FROM_HERE, base::BindOnce(&BrowserShortcuts::InitBrowserShortcuts,
+                                weak_ptr_factor_.GetWeakPtr()));
 }
 
 void BrowserShortcuts::InitBrowserShortcuts() {
@@ -96,7 +97,8 @@ void BrowserShortcuts::MaybePublishBrowserShortcut(const webapps::AppId& app_id,
       app_constants::kChromeAppId, web_app->app_id());
   shortcut->name =
       provider_->registrar_unsafe().GetAppShortName(web_app->app_id());
-  shortcut->shortcut_source = apps::ShortcutSource::kUser;
+  shortcut->shortcut_source = ConvertWebAppManagementTypeToShortcutSource(
+      web_app->GetHighestPrioritySource());
 
   apps::IconEffects icon_effects = apps::IconEffects::kRoundCorners;
   icon_effects |= web_app->is_generated_icon()

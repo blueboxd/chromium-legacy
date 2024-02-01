@@ -74,13 +74,12 @@ class WebFrameTestProxy : public RenderFrameImpl,
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
   void UpdateContextMenuDataForTesting(
       const blink::ContextMenuData& context_menu_data,
-      const absl::optional<gfx::Point>&) override;
+      const std::optional<gfx::Point>&) override;
   void DidDispatchPingLoader(const blink::WebURL& url) override;
   void WillSendRequest(blink::WebURLRequest& request,
                        ForRedirect for_redirect) override;
   void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   void PostAccessibilityEvent(const ui::AXEvent& event) override;
-  void NotifyWebAXObjectMarkedDirty(const blink::WebAXObject& object) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCompleteCallback completion_callback) override;
@@ -106,6 +105,15 @@ class WebFrameTestProxy : public RenderFrameImpl,
   void OnReactivated() override;
   void BlockTestUntilStart() override;
   void StartTest() override;
+  void SetupRendererProcessForNonTestWindow() override;
+  void TestFinishedFromSecondaryRenderer() override;
+  void ProcessWorkItem(mojom::WorkItemPtr work_item) override;
+  void ReplicateWorkQueueStates(base::Value::Dict work_queue_states) override;
+  void ReplicateWebTestRuntimeFlagsChanges(
+      base::Value::Dict changed_layout_test_runtime_flags) override;
+  void ResetRendererAfterWebTest() override;
+
+  mojom::WebTestControlHost* GetWebTestControlHostRemote();
 
  private:
   void BindReceiver(
@@ -123,6 +131,9 @@ class WebFrameTestProxy : public RenderFrameImpl,
 
   mojo::AssociatedReceiver<mojom::WebTestRenderFrame>
       web_test_render_frame_receiver_{this};
+
+  mojo::AssociatedRemote<mojom::WebTestControlHost>
+      web_test_control_host_remote_;
 
   // Prevents parsing on the next committed document. This is used to stop a
   // test from running until StartTest() is called.

@@ -32,6 +32,7 @@ from .protocol import (BaseProtocolPart,
                        WindowProtocolPart,
                        DebugProtocolPart,
                        SPCTransactionsProtocolPart,
+                       RPHRegistrationsProtocolPart,
                        FedCMProtocolPart,
                        VirtualSensorProtocolPart,
                        merge_dicts)
@@ -51,9 +52,9 @@ class WebDriverBaseProtocolPart(BaseProtocolPart):
     def setup(self):
         self.webdriver = self.parent.webdriver
 
-    def execute_script(self, script, asynchronous=False):
+    def execute_script(self, script, asynchronous=False, args=None):
         method = self.webdriver.execute_async_script if asynchronous else self.webdriver.execute_script
-        return method(script)
+        return method(script, args=args)
 
     def set_timeout(self, timeout):
         try:
@@ -256,6 +257,9 @@ class WebDriverWindowProtocolPart(WindowProtocolPart):
         self.logger.info("Restoring")
         self.webdriver.window.rect = rect
 
+    def get_rect(self):
+        self.logger.info("Getting rect")
+        return self.webdriver.window.rect
 
 class WebDriverSendKeysProtocolPart(SendKeysProtocolPart):
     def setup(self):
@@ -363,6 +367,13 @@ class WebDriverSPCTransactionsProtocolPart(SPCTransactionsProtocolPart):
         body = {"mode": mode}
         return self.webdriver.send_session_command("POST", "secure-payment-confirmation/set-mode", body)
 
+class WebDriverRPHRegistrationsProtocolPart(RPHRegistrationsProtocolPart):
+    def setup(self):
+        self.webdriver = self.parent.webdriver
+
+    def set_rph_registration_mode(self, mode):
+        body = {"mode": mode}
+        return self.webdriver.send_session_command("POST", "custom-handlers/set-mode", body)
 
 class WebDriverFedCMProtocolPart(FedCMProtocolPart):
     def setup(self):
@@ -370,6 +381,10 @@ class WebDriverFedCMProtocolPart(FedCMProtocolPart):
 
     def cancel_fedcm_dialog(self):
         return self.webdriver.send_session_command("POST", "fedcm/canceldialog")
+
+    def click_fedcm_dialog_button(self, dialog_button):
+        body = {"dialogButton": dialog_button}
+        return self.webdriver.send_session_command("POST", "fedcm/clickdialogbutton", body)
 
     def select_fedcm_account(self, account_index):
         body = {"accountIndex": account_index}
@@ -432,6 +447,7 @@ class WebDriverProtocol(Protocol):
                   WebDriverSetPermissionProtocolPart,
                   WebDriverVirtualAuthenticatorProtocolPart,
                   WebDriverSPCTransactionsProtocolPart,
+                  WebDriverRPHRegistrationsProtocolPart,
                   WebDriverFedCMProtocolPart,
                   WebDriverDebugProtocolPart,
                   WebDriverVirtualSensorPart]
@@ -573,8 +589,6 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
         return (test.result_cls(*data), [])
 
     def do_testharness(self, protocol, url, timeout):
-        format_map = {"url": strip_server(url)}
-
         # The previous test may not have closed its old windows (if something
         # went wrong or if cleanup_after_test was False), so clean up here.
         parent_window = protocol.testharness.close_old_windows()
@@ -594,7 +608,7 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
 
         while True:
             result = protocol.base.execute_script(
-                self.script_resume % format_map, asynchronous=True)
+                self.script_resume, asynchronous=True, args=[strip_server(url)])
 
             # As of 2019-03-29, WebDriver does not define expected behavior for
             # cases where the browser crashes during script execution:

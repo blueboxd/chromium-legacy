@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/api/i18n_hooks_delegate.h"
 
+#include <string_view>
 #include <vector>
 
 #include "base/check.h"
@@ -248,7 +249,7 @@ RequestResult I18nHooksDelegate::HandleRequest(
       ScriptContext*, const APISignature::V8ParseResult&);
   static constexpr struct {
     Handler handler;
-    base::StringPiece method;
+    std::string_view method;
   } kHandlers[] = {
       {&I18nHooksDelegate::HandleGetMessage, kGetMessage},
       {&I18nHooksDelegate::HandleGetUILanguage, kGetUILanguage},
@@ -288,20 +289,12 @@ RequestResult I18nHooksDelegate::HandleGetMessage(
   DCHECK(arguments[0]->IsString());
 
   SharedL10nMap::IPCTarget* ipc_target = nullptr;
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  if (script_context->IsForServiceWorker()) {
-    ipc_target = WorkerThreadDispatcher::Get();
-  } else {
-    ipc_target = script_context->GetRenderFrame();
-  }
-#else
   if (script_context->IsForServiceWorker()) {
     ipc_target =
         WorkerThreadDispatcher::GetServiceWorkerData()->GetRendererHost();
   } else if (auto* frame = script_context->GetRenderFrame()) {
     ipc_target = ExtensionFrameHelper::Get(frame)->GetRendererHost();
   }
-#endif
 
   v8::Local<v8::Value> message =
       GetI18nMessage(gin::V8ToString(script_context->isolate(), arguments[0]),

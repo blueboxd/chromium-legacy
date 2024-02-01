@@ -4,6 +4,7 @@
 
 #include "content/browser/media/audio_input_stream_broker.h"
 
+#include <optional>
 #include <utility>
 
 #include "base/command_line.h"
@@ -24,7 +25,6 @@
 #include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
 #include "media/mojo/mojom/audio_processing.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -62,7 +62,8 @@ AudioInputStreamBroker::AudioInputStreamBroker(
   renderer_factory_client_.set_disconnect_handler(base::BindOnce(
       &AudioInputStreamBroker::ClientBindingLost, base::Unretained(this)));
 
-  NotifyFrameHostOfAudioStreamStarted(render_process_id, render_frame_id);
+  NotifyFrameHostOfAudioStreamStarted(render_process_id, render_frame_id,
+                                      /*is_capturing=*/true);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
@@ -78,7 +79,8 @@ AudioInputStreamBroker::~AudioInputStreamBroker() {
   if (user_input_monitor_)
     user_input_monitor_->DisableKeyPressMonitoring();
 
-  NotifyFrameHostOfAudioStreamStopped(render_process_id(), render_frame_id());
+  NotifyFrameHostOfAudioStreamStopped(render_process_id(), render_frame_id(),
+                                      /*is_capturing=*/true);
 
   // TODO(https://crbug.com/829317) update tab recording indicator.
 
@@ -144,7 +146,7 @@ void AudioInputStreamBroker::StreamCreated(
     mojo::PendingRemote<media::mojom::AudioInputStream> stream,
     media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
     bool initially_muted,
-    const absl::optional<base::UnguessableToken>& stream_id) {
+    const std::optional<base::UnguessableToken>& stream_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   awaiting_created_ = false;
   TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",

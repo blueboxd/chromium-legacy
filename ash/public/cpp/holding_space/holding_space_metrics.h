@@ -60,6 +60,23 @@ enum class FilesAppChipAction {
 // Records the specified `action` taken on the holding space Files app chip.
 ASH_PUBLIC_EXPORT void RecordFilesAppChipAction(FilesAppChipAction action);
 
+// Enumeration of binding contexts for the file picker used to create a file in
+// fulfillment of a `window.showSaveFilePicker()` request. These values are
+// persisted to logs. Entries should not be renumbered and numeric values should
+// never be reused.
+enum class FilePickerBindingContext {
+  kUnknown = 0,
+  kPhotoshopWeb = 1,
+  kMaxValue = kPhotoshopWeb,
+};
+
+// Records that a file picker with the specified `file_picker_binding_context`
+// was used to create the file at the specified `file_path` in fulfillment of a
+// `window.showSaveFilePicker()` request.
+ASH_PUBLIC_EXPORT void RecordFileCreatedFromShowSaveFilePicker(
+    const GURL& file_picker_binding_context,
+    const base::FilePath& file_path);
+
 // Enumeration of actions that can be taken on holding space items. These values
 // are persisted to logs. Entries should not be renumbered and numeric values
 // should never be reused.
@@ -77,19 +94,33 @@ enum class ItemAction {
   kMaxValue = kResume,
 };
 
+// Enumeration of sources for events that occur in (and to) holding space.
+enum class EventSource {
+  kHoldingSpaceBubble = 0,
+  kHoldingSpaceItem = 1,
+  kHoldingSpaceItemContextMenu = 2,
+  kHoldingSpaceTray = 3,
+  kFilesApp = 4,
+  kTest = 5,
+  kWallpaper = 6,
+  kMaxValue = kWallpaper,
+};
+
 // Records the specified `action` taken on a set of holding space `items`.
 ASH_PUBLIC_EXPORT void RecordItemAction(
     const std::vector<const HoldingSpaceItem*>& items,
-    ItemAction action);
+    ItemAction action,
+    EventSource event_source);
 
-// Records counts for the specified holding space `items`.
-ASH_PUBLIC_EXPORT void RecordItemCounts(
-    const std::vector<const HoldingSpaceItem*>& items);
+// Records an attempt to launch a holding space item of the specified `type`
+// backed by the empty file at the specified `file_path`.
+ASH_PUBLIC_EXPORT void RecordItemLaunchEmpty(HoldingSpaceItem::Type type,
+                                             const base::FilePath& file_path);
 
 // Enumeration of reasons that a holding space item might fail to launch. These
 // values are persisted to logs. Entries should not be renumbered and numeric
 // values should never be reused.
-enum class ItemFailureToLaunchReason {
+enum class ItemLaunchFailureReason {
   kUnknown = 0,
   kCrosApiNotFound = 1,
   kDownloadNotFound = 2,
@@ -107,10 +138,9 @@ enum class ItemFailureToLaunchReason {
 
 // Records a failure to launch a holding space item of the specified `type`
 // backed by the file at the specified `file_path` with the specified `reason`.
-ASH_PUBLIC_EXPORT void RecordItemFailureToLaunch(
-    HoldingSpaceItem::Type type,
-    const base::FilePath& file_path,
-    ItemFailureToLaunchReason reason);
+ASH_PUBLIC_EXPORT void RecordItemLaunchFailure(HoldingSpaceItem::Type type,
+                                               const base::FilePath& file_path,
+                                               ItemLaunchFailureReason reason);
 
 // Enumeration of actions that can be taken on the holding space suggestions
 // section button. These values are persisted to logs. Entries should not be
@@ -146,6 +176,10 @@ ASH_PUBLIC_EXPORT void RecordBubbleResizeAnimationSmoothness(int smoothness);
 // `smoothness` is expected to be between 0 and 100 (inclusively) with 100
 // representing ideal smoothness of >= 60 frames per second.
 ASH_PUBLIC_EXPORT void RecordPodResizeAnimationSmoothness(int smoothness);
+
+// Records total counts for the specified holding space `items`.
+ASH_PUBLIC_EXPORT void RecordTotalItemCounts(
+    const std::vector<const HoldingSpaceItem*>& items);
 
 // Representation of a user's preferences.
 struct ASH_PUBLIC_EXPORT UserPreferences {

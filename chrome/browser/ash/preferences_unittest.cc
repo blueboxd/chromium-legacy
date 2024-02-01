@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/preferences.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
@@ -41,7 +42,6 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/mock_component_extension_ime_manager_delegate.h"
 #include "ui/base/ime/ash/mock_input_method_manager_impl.h"
@@ -108,7 +108,7 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
       InputMethodDescriptor descriptor(
           id, std::string(), std::string(), std::string(),
           std::vector<std::string>(), false, GURL(), GURL(),
-          /*handwriting_language=*/absl::nullopt);
+          /*handwriting_language=*/std::nullopt);
       input_method_extensions_->push_back(descriptor);
     }
 
@@ -116,7 +116,7 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
     ~State() override {}
 
    private:
-    const raw_ptr<MyMockInputMethodManager, ExperimentalAsh> manager_;
+    const raw_ptr<MyMockInputMethodManager> manager_;
     std::unique_ptr<InputMethodDescriptors> input_method_extensions_;
   };
 
@@ -132,8 +132,8 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
   std::string last_input_method_id_;
 
  private:
-  raw_ptr<StringPrefMember, ExperimentalAsh> previous_;
-  raw_ptr<StringPrefMember, ExperimentalAsh> current_;
+  raw_ptr<StringPrefMember> previous_;
+  raw_ptr<StringPrefMember> current_;
 };
 
 }  // anonymous namespace
@@ -214,16 +214,13 @@ class PreferencesTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
 
   // Not owned.
-  raw_ptr<FakeChromeUserManager, ExperimentalAsh> user_manager_;
-  raw_ptr<const user_manager::User, ExperimentalAsh> test_user_;
-  raw_ptr<TestingProfile, ExperimentalAsh> test_profile_;
-  raw_ptr<sync_preferences::TestingPrefServiceSyncable, ExperimentalAsh>
-      pref_service_;
-  raw_ptr<input_method::MyMockInputMethodManager,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<FakeChromeUserManager> user_manager_;
+  raw_ptr<const user_manager::User> test_user_;
+  raw_ptr<TestingProfile> test_profile_;
+  raw_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
+  raw_ptr<input_method::MyMockInputMethodManager, DanglingUntriaged>
       mock_manager_;
-  raw_ptr<FakeUpdateEngineClient, DanglingUntriaged | ExperimentalAsh>
-      fake_update_engine_client_;
+  raw_ptr<FakeUpdateEngineClient, DanglingUntriaged> fake_update_engine_client_;
 };
 
 TEST_F(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {

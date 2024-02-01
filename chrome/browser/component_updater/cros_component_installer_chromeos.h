@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_CHROMEOS_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace component_updater {
 
@@ -87,7 +87,7 @@ class CrOSComponentInstallerPolicy : public ComponentInstallerPolicy {
   std::string GetName() const override;
 
  protected:
-  const raw_ptr<CrOSComponentInstaller, DanglingUntriaged | ExperimentalAsh>
+  const raw_ptr<CrOSComponentInstaller, DanglingUntriaged>
       cros_component_installer_;
 
  private:
@@ -221,7 +221,7 @@ class CrOSComponentInstaller : public CrOSComponentManager {
     LoadInfo();
     ~LoadInfo();
     // If null, then the request is pending.
-    absl::optional<bool> success;
+    std::optional<bool> success;
     // Only populated on success.
     base::FilePath path;
     // Only populated if request is pending. Includes all subsequent callbacks
@@ -281,13 +281,13 @@ class CrOSComponentInstaller : public CrOSComponentManager {
   // point).
   void FinishLoad(LoadCallback load_callback,
                   const std::string& name,
-                  absl::optional<base::FilePath> result);
+                  std::optional<base::FilePath> result);
 
   // Calls `version_callback` and pass in the parameter `result` (component
   // version).
   void FinishGetVersion(
       base::OnceCallback<void(const base::Version&)> version_callback,
-      absl::optional<std::string> result) const;
+      std::optional<std::string> result) const;
 
   // Registers component |configs| to be updated.
   void RegisterN(const std::vector<ComponentConfig>& configs);
@@ -307,7 +307,7 @@ class CrOSComponentInstaller : public CrOSComponentManager {
   base::flat_map<std::string, CompatibleComponentInfo> compatible_components_;
 
   // A weak pointer to a Delegate for emitting D-Bus signal.
-  raw_ptr<Delegate, ExperimentalAsh> delegate_ = nullptr;
+  raw_ptr<Delegate> delegate_ = nullptr;
 
   // Table storing metadata (installs, usage, etc.).
   std::unique_ptr<MetadataTable> metadata_table_;
@@ -316,7 +316,7 @@ class CrOSComponentInstaller : public CrOSComponentManager {
   // results.
   std::map<std::string, LoadInfo> load_cache_;
 
-  const raw_ptr<ComponentUpdateService, ExperimentalAsh> component_updater_;
+  const raw_ptr<ComponentUpdateService> component_updater_;
 
   base::WeakPtrFactory<CrOSComponentInstaller> weak_factory_{this};
 };

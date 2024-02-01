@@ -39,19 +39,19 @@ BaseQueue::~BaseQueue() {
   }
 }
 
-bool BaseQueue::AllocateBuffers(uint32_t num_planes) {
+bool BaseQueue::AllocateBuffers(uint32_t num_planes, size_t num_buffers) {
   DVLOGF(4);
   CHECK(device_);
   CHECK(num_planes);
 
   const auto count =
-      device_->RequestBuffers(buffer_type_, memory_type_, BufferMinimumCount());
+      device_->RequestBuffers(buffer_type_, memory_type_, num_buffers);
 
   if (!count) {
     return false;
   }
 
-  DVLOGF(2) << BufferMinimumCount() << " buffers request " << *count
+  DVLOGF(2) << num_buffers << " buffers request " << *count
             << " buffers allocated for " << Description() << " queue.";
   buffers_.reserve(*count);
 
@@ -97,13 +97,13 @@ bool BaseQueue::StopStreaming() {
   return device_->StreamOff(buffer_type_);
 }
 
-absl::optional<uint32_t> BaseQueue::GetFreeBufferIndex() {
+std::optional<uint32_t> BaseQueue::GetFreeBufferIndex() {
   // TODO(frkoenig): This is an expected error, there will be times that all of
   // the buffers will be in the queue. For now give it a high severity for
   // visibility.
   if (free_buffer_indices_.empty()) {
     DVLOGF(1) << "No buffers available for " << Description();
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   auto it = free_buffer_indices_.begin();
@@ -152,39 +152,25 @@ bool InputQueue::SetupFormat(const gfx::Size resolution) {
   return true;
 }
 
-bool InputQueue::PrepareBuffers() {
+bool InputQueue::PrepareBuffers(size_t num_buffers) {
   DVLOGF(4);
-  return AllocateBuffers(kNumberInputPlanes);
+  return AllocateBuffers(kNumberInputPlanes, num_buffers);
 }
 
-void InputQueue::Reclaim() {
-  DVLOGF(4) << Description();
-  CHECK(device_);
-
-  // There may be more than one buffer available. Keep trying to dequeue buffers
-  // until there aren't anymore.
-  while (true) {
-    auto buffer =
-        device_->DequeueBuffer(buffer_type_, memory_type_, kNumberInputPlanes);
-    if (!buffer) {
-      return;
-    }
-
-    const uint32_t index = buffer->GetIndex();
-    DVLOGF(3) << "#" << index << " returned, now "
-              << free_buffer_indices_.size() + 1 << " " << Description()
-              << " available.";
-    if (!free_buffer_indices_.insert(index).second) {
-      // There is no way that a reclaimed buffer is already present in the list.
-      NOTREACHED();
-    }
+void InputQueue::Reclaim(Buffer& buffer) {
+  DVLOGF(3) << "#" << buffer.GetIndex() << " returned, now "
+            << free_buffer_indices_.size() + 1 << " " << Description()
+            << " available.";
+  if (!free_buffer_indices_.insert(buffer.GetIndex()).second) {
+    // There is no way that a reclaimed buffer is already present in the list.
+    NOTREACHED();
   }
 }
 
 bool InputQueue::SubmitCompressedFrameData(void* ctrls,
                                            const void* data,
                                            size_t length,
-                                           uint32_t frame_id) {
+                                           uint64_t frame_id) {
   // Failing to acquire a buffer is a normal part of the process. All of the
   // input buffers can be full if the output buffers are not being cleared.
   auto buffer_index = GetFreeBufferIndex();
@@ -251,14 +237,6 @@ std::string InputQueue::Description() {
   return "input";
 }
 
-uint32_t InputQueue::BufferMinimumCount() {
-  // TODO: This number has been cargo culting around for a while. One buffer
-  // could be enough as there is buffering elsewhere in the system. This
-  // number should be revisited after end to end playback is completed and
-  // performance tuning is done.
-  return 8;
-}
-
 std::unique_ptr<OutputQueue> OutputQueue::Create(
     scoped_refptr<StatelessDevice> device) {
   std::unique_ptr<OutputQueue> queue = std::make_unique<OutputQueue>(device);
@@ -298,10 +276,10 @@ bool OutputQueue::NegotiateFormat() {
       if (device_->TryOutputFormat(try_format)) {
         auto chosen_format = device_->SetOutputFormat(try_format);
         if (chosen_format) {
-          DVLOGF(2) << "Preferred format " << chosen_format->fourcc.ToString()
-                    << " choosen for output queue through negotiation. "
-                    << "Initial format was "
-                    << initial_format->fourcc.ToString() << ".";
+          DVLOGF(2) << "Preferred format " << chosen_format->ToString()
+                    << " chosen for output queue through negotiation. "
+                    << "Initial format was " << initial_format->ToString()
+                    << ".";
           buffer_format_ = *chosen_format;
           return true;
         } else {
@@ -310,8 +288,8 @@ bool OutputQueue::NegotiateFormat() {
       }
     }
   } else {
-    DVLOGF(2) << "Initial format " << initial_format->fourcc.ToString()
-              << " choosen for output queue.";
+    DVLOGF(2) << "Initial format " << initial_format->ToString()
+              << " chosen for output queue.";
     auto chosen_format = device_->SetOutputFormat(*initial_format);
     if (chosen_format) {
       buffer_format_ = *chosen_format;
@@ -322,7 +300,7 @@ bool OutputQueue::NegotiateFormat() {
   return false;
 }
 
-scoped_refptr<VideoFrame> OutputQueue::CreateVideoFrame(uint32_t index) {
+scoped_refptr<VideoFrame> OutputQueue::CreateVideoFrame(const Buffer& buffer) {
   const VideoPixelFormat video_format =
       buffer_format_.fourcc.ToVideoPixelFormat();
   const size_t num_color_planes = VideoFrame::NumPlanes(video_format);
@@ -332,28 +310,32 @@ scoped_refptr<VideoFrame> OutputQueue::CreateVideoFrame(uint32_t index) {
     return nullptr;
   }
 
-  if (buffer_format_.NumPlanes() > num_color_planes) {
-    DVLOGF(1) << "Number of planes for the format ("
-              << buffer_format_.NumPlanes()
+  if (buffer.PlaneCount() > num_color_planes) {
+    DVLOGF(1) << "Number of planes for the format (" << buffer.PlaneCount()
               << ") should not be larger than number of color planes("
               << num_color_planes << ") for format "
               << VideoPixelFormatToString(video_format);
     return nullptr;
   }
 
+  // TODO(b/322521142): Stride is needed for the layout, but |buffer| does not
+  // contain that information. It only contains the length of a plane.
+  // |buffer_format_| does contain that information, but it currently doesn't
+  // have the correct |image_size|. |image_size| is being computed incorrectly
+  // for MT2T.
   std::vector<ColorPlaneLayout> color_planes;
-  for (const auto& plane : buffer_format_.planes) {
-    color_planes.emplace_back(plane.stride, 0u, plane.image_size);
+  for (uint32_t i = 0; i < num_color_planes; ++i) {
+    color_planes.emplace_back(buffer_format_.planes[i].stride, 0u,
+                              buffer.PlaneLength(i));
   }
 
-  // This code has been developed for exclusively for MM21. For other formats
-  // such as NV12 and YUV420 there would be color plane duplications, or
+  // This code has been developed for exclusively for MM21 and MT2T. For other
+  // formats such as NV12 and YUV420 there would be color plane duplications, or
   // a VideoFrameLayout::CreateWithPlanes.
-  CHECK_EQ(static_cast<size_t>(buffer_format_.NumPlanes()), num_color_planes);
-  CHECK_EQ(buffer_format_.NumPlanes(), 2u);
+  CHECK_EQ(buffer.PlaneCount(), buffer_format_.NumPlanes());
+  CHECK_EQ(buffer.PlaneCount(), 2u);
 
-  std::vector<base::ScopedFD> dmabuf_fds =
-      device_->ExportAsDMABUF(index, buffer_format_.NumPlanes());
+  std::vector<base::ScopedFD> dmabuf_fds = device_->ExportAsDMABUF(buffer);
   if (dmabuf_fds.empty()) {
     DVLOGF(1) << "Failed to get DMABUFs of V4L2 buffer";
     return nullptr;
@@ -382,10 +364,10 @@ scoped_refptr<VideoFrame> OutputQueue::CreateVideoFrame(uint32_t index) {
       std::move(dmabuf_fds), base::TimeDelta());
 }
 
-bool OutputQueue::PrepareBuffers() {
+bool OutputQueue::PrepareBuffers(size_t num_buffers) {
   DVLOGF(4);
 
-  if (!AllocateBuffers(buffer_format_.NumPlanes())) {
+  if (!AllocateBuffers(buffer_format_.NumPlanes(), num_buffers)) {
     return false;
   }
 
@@ -394,8 +376,8 @@ bool OutputQueue::PrepareBuffers() {
 
   // VideoFrames are used to display the decoded buffers. They wrap the
   // underlying DMABUF by referencing the index of the V4L2 buffers;
-  for (uint32_t index = 0; index < buffers_.size(); ++index) {
-    auto video_frame = CreateVideoFrame(index);
+  for (const auto& buffer : buffers_) {
+    auto video_frame = CreateVideoFrame(buffer);
     if (!video_frame) {
       return false;
     }
@@ -415,19 +397,7 @@ bool OutputQueue::PrepareBuffers() {
   return true;
 }
 
-bool OutputQueue::DequeueBuffer() {
-  CHECK(device_);
-  // The assumption is there is only one buffer in flight at a time.
-  const auto buffer = device_->DequeueBuffer(buffer_type_, memory_type_,
-                                             buffer_format_.NumPlanes());
-
-  // So there should never be more than one buffer ready to dequeue. If there
-  // is another buffer to be dequeued then this will fail.
-  // TODO: Should this be a return value? The function is a bool, so this could
-  // be returned but it would incur an extra dequeue attempt
-  DCHECK(absl::nullopt == device_->DequeueBuffer(buffer_type_, memory_type_,
-                                                 buffer_format_.NumPlanes()));
-
+void OutputQueue::RegisterDequeuedBuffer(Buffer& buffer) {
   // Once the buffer is dequeued it needs to be tracked. The index is all that
   // is needed to track the buffer. That index is what will be used when passing
   // the buffer off. The time is need to tell which buffer should be passed off.
@@ -442,15 +412,15 @@ bool OutputQueue::DequeueBuffer() {
   // know which output buffer index corresponds to the input buffer. Using
   // the timestamp this can be found.
   const auto result = decoded_and_dequeued_frames_.insert(
-      {buffer->GetTimeAsFrameID(), buffer->GetIndex()});
+      {buffer.GetTimeAsFrameID(), buffer.GetIndex()});
 
-  DVLOGF(3) << "Inserted buffer (" << buffer->GetIndex()
-            << ") with a frame id of " << buffer->GetTimeAsFrameID();
+  DVLOGF(3) << "Inserted buffer " << buffer.GetIndex() << " with a frame id of "
+            << buffer.GetTimeAsFrameID();
 
-  return result.second;
+  CHECK(result.second) << "Buffer already in map";
 }
 
-absl::optional<uint32_t> OutputQueue::UseDequeuedBuffer(uint64_t frame_id) {
+scoped_refptr<VideoFrame> OutputQueue::GetVideoFrame(uint64_t frame_id) {
   DVLOGF(3) << "Attempting to use frame with id : " << frame_id;
   // The frame_id is copied from the input buffer to the output buffer. This is
   // the only way to know which output buffer contains the decoded picture for
@@ -458,51 +428,43 @@ absl::optional<uint32_t> OutputQueue::UseDequeuedBuffer(uint64_t frame_id) {
   auto it = decoded_and_dequeued_frames_.find(frame_id);
   if (it != decoded_and_dequeued_frames_.end()) {
     const uint32_t index = it->second;
-    decoded_and_dequeued_frames_.erase(it);
     DVLOGF(3) << "Found match (" << index << ") for frame id of (" << frame_id
               << ").";
-    return index;
+    return video_frames_[index];
   }
 
   // The corresponding frame may not have been dequeued when this function has
   // been called. This is not an error, but expected. When this occurs the
   // caller should try again after waiting for another buffer to be dequeued.
-  return absl::nullopt;
+  return nullptr;
 }
 
-scoped_refptr<VideoFrame> OutputQueue::DecodedFrameByIndex(uint32_t index) {
-  DVLOGF(4) << Description() << " index : " << index;
-  CHECK(device_);
+bool OutputQueue::QueueBufferByFrameID(uint64_t frame_id) {
+  DVLOGF(4) << "frame id : " << frame_id;
 
-  // This frame can not be re-enqueued right away.
-  // 1. it hasn't been displayed yet. the underlying buffer is passed on
-  //    to the display/image processor. it can only be requeued after that
-  //    has occurred.
-  // 2. the frame can be used as a reference frame. it can only re-enqueued
-  //    after all of the frames that reference it are decoded (but not
-  //    necessarily displayed)
+  auto it = decoded_and_dequeued_frames_.find(frame_id);
+  if (it != decoded_and_dequeued_frames_.end()) {
+    const uint32_t buffer_index = it->second;
+    decoded_and_dequeued_frames_.erase(it);
 
-  return video_frames_[index];
-}
+    DVLOGF(3) << "buffer " << buffer_index << " returned";
 
-bool OutputQueue::QueueBufferByIndex(uint32_t index) {
-  DVLOGF(4) << Description() << " index : " << index;
-  if (!device_->QueueBuffer(buffers_[index], base::ScopedFD(-1))) {
-    NOTREACHED() << "Failed to queue buffer.";
-    return false;
+    Buffer& buffer = buffers_[buffer_index];
+
+    if (!device_->QueueBuffer(buffer, base::ScopedFD(-1))) {
+      NOTREACHED() << "Failed to queue buffer.";
+      return false;
+    }
+
+    return true;
   }
 
-  free_buffer_indices_.erase(index);
-
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 std::string OutputQueue::Description() {
   return "output";
-}
-
-uint32_t OutputQueue::BufferMinimumCount() {
-  return 4;
 }
 
 }  // namespace media

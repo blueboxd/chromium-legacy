@@ -17,6 +17,7 @@ source_set("grid") {
     ":grid_mediator_item_provider",
     ":grid_toolbars_mutator",
     ":grid_ui",
+    ":grid_utils",
     ":grid_view_controller_mutator",
     "//base",
     "//components/bookmarks/browser",
@@ -27,7 +28,7 @@ source_set("grid") {
     "//ios/chrome/browser/default_browser/model:utils",
     "//ios/chrome/browser/drag_and_drop/model",
     "//ios/chrome/browser/main/model",
-    "//ios/chrome/browser/policy:policy_util",
+    "//ios/chrome/browser/policy/model:policy_util",
     "//ios/chrome/browser/reading_list/model",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
@@ -73,6 +74,20 @@ source_set("grid_ui_constants") {
   ]
 }
 
+source_set("grid_utils") {
+  sources = [
+    "grid_utils.h",
+    "grid_utils.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/browser/shared/model/web_state_list",
+    "//ios/chrome/browser/tabs/model:features",
+    "//ios/chrome/browser/ui/tab_switcher",
+  ]
+}
+
 source_set("grid_ui") {
   sources = [
     "base_grid_view_controller+Testing.h",
@@ -97,6 +112,16 @@ source_set("grid_ui") {
     "grid_layout.mm",
     "grid_shareable_items_provider.h",
     "grid_theme.h",
+    "group_bottom_trailing_view.h",
+    "group_bottom_trailing_view.mm",
+    "group_grid_cell.h",
+    "group_grid_cell.mm",
+    "group_grid_configurable_view.h",
+    "group_grid_configurable_view.mm",
+    "group_tab_info.h",
+    "group_tab_info.mm",
+    "group_tab_view.h",
+    "group_tab_view.mm",
     "legacy_grid_layout.h",
     "legacy_grid_layout.mm",
   ]
@@ -121,7 +146,6 @@ source_set("grid_ui") {
     "//ios/chrome/browser/ui/menu",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/browser/ui/tab_switcher:tab_utils",
-    "//ios/chrome/browser/ui/tab_switcher/tab_grid:tab_collection_commands",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid:tab_grid_paging",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid:tab_grid_ui_constants",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions",
@@ -130,6 +154,7 @@ source_set("grid_ui") {
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/transitions",
     "//ios/chrome/common:string_util",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/elements:elements",
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser/modals:modals_api",
     "//ios/third_party/material_components_ios",
@@ -183,12 +208,14 @@ source_set("unit_tests") {
   sources = [
     "base_grid_mediator_unittest.mm",
     "grid_item_identifier_unittest.mm",
+    "grid_utils_unittest.mm",
     "grid_view_controller_unittest.mm",
   ]
 
   deps = [
     ":grid",
     ":grid_ui",
+    ":grid_utils",
     ":test_fixture",
     "//base",
     "//base/test:test_support",
@@ -197,7 +224,9 @@ source_set("unit_tests") {
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/web_state_list",
+    "//ios/chrome/browser/shared/model/web_state_list/test:test_support",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/tabs/model:features",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid/incognito",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid/regular",
@@ -206,6 +235,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/tab_switcher/test:fakes",
     "//ios/chrome/test:test_support",
     "//ios/web/public",
+    "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//third_party/ocmock",
   ]
@@ -228,6 +258,8 @@ source_set("test_fixture") {
     "//ios/chrome/browser/main/model",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:fake",
+    "//ios/chrome/browser/sessions:session_restoration_service_factory",
+    "//ios/chrome/browser/sessions:test_support",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser",

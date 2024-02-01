@@ -68,7 +68,7 @@ suite('<settings-system-preferences-page>', () => {
   setup(() => {
     loadTimeData.overrideValues({
       isGuest: false,
-      showGoogleDriveSettingsPage: false,
+      showOneDriveSettings: false,
       showOfficeSettings: false,
     });
 
@@ -133,27 +133,17 @@ suite('<settings-system-preferences-page>', () => {
       assertSubpageIsVisible('settings-smb-shares-page');
     });
 
-    suite('when Google Drive settings are available', () => {
-      setup(() => {
-        recreateRoutesFromLoadTimeOverrides({
-          showGoogleDriveSettingsPage: true,
-        });
-      });
-
-      test(
-          'Google Drive subpage is visible for GOOGLE_DRIVE route',
-          async () => {
-            assertTrue(
-                !!routes.GOOGLE_DRIVE, 'GOOGLE_DRIVE route should exist');
-            await createPage();
-            await navigateToSubpage(routes.GOOGLE_DRIVE);
-            assertSubpageIsVisible('settings-google-drive-subpage');
-          });
+    test('Google Drive subpage is visible for GOOGLE_DRIVE route', async () => {
+      assertTrue(!!routes.GOOGLE_DRIVE, 'GOOGLE_DRIVE route should exist');
+      await createPage();
+      await navigateToSubpage(routes.GOOGLE_DRIVE);
+      assertSubpageIsVisible('settings-google-drive-subpage');
     });
 
     suite('when office settings are available', () => {
       setup(() => {
         recreateRoutesFromLoadTimeOverrides({
+          showOneDriveSettings: true,
           showOfficeSettings: true,
         });
 
@@ -209,6 +199,34 @@ suite('<settings-system-preferences-page>', () => {
     });
   });
 
+  suite('Multitasking subsection', () => {
+    test(
+        'Multitasking settings card is visible if feature is allowed',
+        async () => {
+          loadTimeData.overrideValues({shouldShowMultitasking: true});
+          await createPage();
+
+          const multitaskingSettingsCard =
+              page.shadowRoot!.querySelector('multitasking-settings-card');
+          assertTrue(
+              isVisible(multitaskingSettingsCard),
+              'Multitasking settings card should be visible.');
+        });
+
+    test(
+        'Multitasking settings card is not visible if feature is disallowed',
+        async () => {
+          loadTimeData.overrideValues({shouldShowMultitasking: false});
+          await createPage();
+
+          const multitaskingSettingsCard =
+              page.shadowRoot!.querySelector('multitasking-settings-card');
+          assertFalse(
+              isVisible(multitaskingSettingsCard),
+              'Multitasking settings card should not be visible.');
+        });
+  });
+
   suite('Reset subsection', () => {
     test('Reset settings card is visible if powerwash is allowed', async () => {
       loadTimeData.overrideValues({allowPowerwash: true});
@@ -246,18 +264,19 @@ suite('<settings-system-preferences-page>', () => {
           'Search and Assistant settings card should be visible.');
     });
 
-    test('Search subpage is visible if quick answers is enabled', async () => {
-      loadTimeData.overrideValues({shouldShowQuickAnswersSettings: true});
-      await createPage();
+    test(
+        'Search subpage is visible if quick answers is supported', async () => {
+          loadTimeData.overrideValues({isQuickAnswersSupported: true});
+          await createPage();
 
-      await navigateToSubpage(routes.SEARCH_SUBPAGE);
-      assertSubpageIsVisible('settings-search-subpage');
-    });
+          await navigateToSubpage(routes.SEARCH_SUBPAGE);
+          assertSubpageIsVisible('settings-search-subpage');
+        });
 
     test(
-        'Search subpage is not stamped if quick answers is disabled',
+        'Search subpage is not stamped if quick answers is not supported',
         async () => {
-          loadTimeData.overrideValues({shouldShowQuickAnswersSettings: false});
+          loadTimeData.overrideValues({isQuickAnswersSupported: false});
           await createPage();
 
           await navigateToSubpage(routes.SEARCH_SUBPAGE);

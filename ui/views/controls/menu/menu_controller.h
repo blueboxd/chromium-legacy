@@ -43,6 +43,7 @@ class RoundedCornersF;
 }  // namespace gfx
 
 namespace ui {
+class MouseEvent;
 class OSExchangeData;
 struct OwnedWindowAnchor;
 }  // namespace ui
@@ -54,7 +55,6 @@ class MenuControllerTest;
 class MenuHostRootView;
 class MenuItemView;
 class MenuPreTargetHandler;
-class MouseEvent;
 class SubmenuView;
 class View;
 class ViewTracker;
@@ -722,7 +722,7 @@ class VIEWS_EXPORT MenuController
   base::OneShotTimer cancel_all_timer_;
 
   // Drop target.
-  raw_ptr<MenuItemView, DanglingUntriaged> drop_target_ = nullptr;
+  raw_ptr<MenuItemView> drop_target_ = nullptr;
   MenuDelegate::DropPosition drop_position_ =
       MenuDelegate::DropPosition::kUnknow;
 

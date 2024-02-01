@@ -408,7 +408,7 @@ bool DocumentProvider::IsDocumentProviderAllowed(
 
   // There should be no document suggestions fetched for on-focus suggestion
   // requests, or if the input is empty.
-  if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
+  if (input.IsZeroSuggest() ||
       input.type() == metrics::OmniboxInputType::EMPTY) {
     base::UmaHistogramEnumeration(
         "Omnibox.DocumentSuggest.ProviderAllowed",
@@ -591,7 +591,7 @@ void DocumentProvider::OnURLLoadComplete(
 }
 
 bool DocumentProvider::UpdateResults(const std::string& json_data) {
-  absl::optional<base::Value> response =
+  std::optional<base::Value> response =
       base::JSONReader::Read(json_data, base::JSON_ALLOW_TRAILING_COMMAS);
   if (!response)
     return false;

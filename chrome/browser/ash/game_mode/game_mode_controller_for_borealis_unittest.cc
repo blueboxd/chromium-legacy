@@ -37,7 +37,7 @@ class GameModeControllerForBorealisTest : public GameModeControllerTestBase {
 
   std::unique_ptr<BorealisWindowManager> borealis_window_manager_;
   std::unique_ptr<BorealisFeatures> features_;
-  raw_ptr<BorealisServiceFake, ExperimentalAsh> borealis_service_fake_;
+  raw_ptr<BorealisServiceFake> borealis_service_fake_;
 };
 
 TEST_F(GameModeControllerForBorealisTest,
@@ -110,8 +110,7 @@ TEST_F(GameModeControllerForBorealisTest, SwitchingWindowsMaintainsGameMode) {
 }
 
 TEST_F(GameModeControllerForBorealisTest, SetGameModeFailureDoesNotCrash) {
-  fake_resourced_client_->set_set_game_mode_with_timeout_response(
-      absl::nullopt);
+  fake_resourced_client_->set_set_game_mode_with_timeout_response(std::nullopt);
   std::unique_ptr<views::Widget> test_widget =
       CreateFakeWidget("org.chromium.guest_os.borealis.foo", true);
   aura::Window* window = test_widget->GetNativeWindow();

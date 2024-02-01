@@ -110,6 +110,10 @@ _RE_TEST_DCHECK_FATAL = re.compile(r'\[.*:FATAL:.*\] (.*)')
 _RE_DISABLED = re.compile(r'DISABLED_')
 _RE_FLAKY = re.compile(r'FLAKY_')
 
+# Regex that matches the printout when there are test failures.
+# matches "[  FAILED  ] 1 test, listed below:"
+_RE_ANY_TESTS_FAILED = re.compile(r'\[ +FAILED +\].*listed below')
+
 # Detect stack line in stdout.
 _STACK_LINE_RE = re.compile(r'\s*#\d+')
 
@@ -229,6 +233,9 @@ def ParseGTestOutput(output, symbolizer, device_abi):
       else:
         log.append(l)
 
+    if _RE_ANY_TESTS_FAILED.match(l):
+      break
+
     if result_type and test_name:
       # Don't bother symbolizing output if the test passed.
       if result_type == base_test_result.ResultType.PASS:
@@ -238,7 +245,10 @@ def ParseGTestOutput(output, symbolizer, device_abi):
           log=symbolize_stack_and_merge_with_log()))
       test_name = None
 
-  handle_possibly_unknown_test()
+  else:
+    # Executing this after tests have finished with a failure causes a
+    # duplicate test entry to be added to results. crbug/1380825
+    handle_possibly_unknown_test()
 
   return results
 
@@ -604,6 +614,7 @@ class GtestTestInstance(test_instance.TestInstance):
     disabled_filter_items = []
 
     if disabled_prefixes is None:
+      # TODO(crbug/1257820): Remove PRE_ once flag is ready.
       disabled_prefixes = ['FAILS_', 'PRE_']
       if '--run-manual' not in self._flags:
         disabled_prefixes += ['MANUAL_']

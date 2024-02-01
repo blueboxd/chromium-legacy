@@ -8,6 +8,7 @@
 
 #include "base/containers/adapters.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/uuid.h"
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/common/url_load_stats.h"
@@ -83,13 +84,15 @@ void UrlIndex::GetNodesWithIconUrl(const GURL& icon_url,
                                    std::set<const BookmarkNode*>* nodes) {
   base::AutoLock url_lock(url_lock_);
   for (const BookmarkNode* node : nodes_ordered_by_url_set_) {
-    if (node->icon_url() && icon_url == *node->icon_url())
+    if (node->icon_url() && icon_url == *node->icon_url()) {
       nodes->insert(node);
+    }
   }
 }
 
-void UrlIndex::GetNodesByUrl(const GURL& url,
-                             std::vector<const BookmarkNode*>* nodes) {
+void UrlIndex::GetNodesByUrl(
+    const GURL& url,
+    std::vector<raw_ptr<const BookmarkNode, VectorExperimental>>* nodes) {
   base::AutoLock url_lock(url_lock_);
   auto i = nodes_ordered_by_url_set_.find<GURL>(url);
   while (i != nodes_ordered_by_url_set_.end() && (*i)->url() == url) {
@@ -146,17 +149,18 @@ UrlIndex::~UrlIndex() = default;
 
 bool UrlIndex::IsBookmarkedNoLock(const GURL& url) {
   url_lock_.AssertAcquired();
-  BookmarkNode tmp_node(/*id=*/0, base::Uuid::GenerateRandomV4(), url);
-  return (nodes_ordered_by_url_set_.find(&tmp_node) !=
+  return (nodes_ordered_by_url_set_.find(url) !=
           nodes_ordered_by_url_set_.end());
 }
 
 void UrlIndex::AddImpl(BookmarkNode* node) {
   url_lock_.AssertAcquired();
-  if (node->is_url())
+  if (node->is_url()) {
     nodes_ordered_by_url_set_.insert(node);
-  for (const auto& child : node->children())
+  }
+  for (const auto& child : node->children()) {
     AddImpl(child.get());
+  }
 }
 
 void UrlIndex::RemoveImpl(BookmarkNode* node, std::set<GURL>* removed_urls) {
@@ -166,14 +170,17 @@ void UrlIndex::RemoveImpl(BookmarkNode* node, std::set<GURL>* removed_urls) {
     DCHECK(i != nodes_ordered_by_url_set_.end());
     // i points to the first node with the URL, advance until we find the
     // node we're removing.
-    while (*i != node)
+    while (*i != node) {
       ++i;
+    }
     nodes_ordered_by_url_set_.erase(i);
-    if (removed_urls && !IsBookmarkedNoLock(node->url()))
+    if (removed_urls && !IsBookmarkedNoLock(node->url())) {
       removed_urls->insert(node->url());
+    }
   }
-  for (const auto& child : base::Reversed(node->children()))
+  for (const auto& child : base::Reversed(node->children())) {
     RemoveImpl(child.get(), removed_urls);
+  }
 }
 
 }  // namespace bookmarks

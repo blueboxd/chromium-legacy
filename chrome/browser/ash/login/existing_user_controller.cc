@@ -69,7 +69,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
-#include "chrome/browser/auth_notification_types.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/application_lifetime_chromeos.h"
@@ -239,7 +238,7 @@ void SetLoginExtensionApiCanLockManagedGuestSessionPref(
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   DCHECK(profile);
   PrefService* prefs = profile->GetPrefs();
-  prefs->SetBoolean(::prefs::kLoginExtensionApiCanLockManagedGuestSession,
+  prefs->SetBoolean(ash::prefs::kLoginExtensionApiCanLockManagedGuestSession,
                     can_lock_managed_guest_session);
   prefs->CommitPendingWrite();
 }
@@ -252,7 +251,7 @@ std::optional<EncryptionMigrationMode> GetEncryptionMigrationMode(
     return EncryptionMigrationMode::RESUME_MIGRATION;
   }
 
-  if (user_context.GetUserType() == user_manager::USER_TYPE_CHILD) {
+  if (user_context.GetUserType() == user_manager::UserType::kChild) {
     // Force-migrate child users.
     return EncryptionMigrationMode::START_MIGRATION;
   }
@@ -289,7 +288,7 @@ AccountId GetPublicSessionAutoLoginAccountId(
 int CountRegularUsers(const user_manager::UserList& users) {
   // Counts regular device users that can log in.
   int regular_users_counter = 0;
-  for (auto* user : users) {
+  for (user_manager::User* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
     // KioskChromeAppManager, ArcKioskAppManager and WebKioskAppManager.
@@ -298,8 +297,8 @@ int CountRegularUsers(const user_manager::UserList& users) {
     }
     // Allow offline login from the error screen if user of one of these types
     // has already logged in.
-    if (user->GetType() == user_manager::USER_TYPE_REGULAR ||
-        user->GetType() == user_manager::USER_TYPE_CHILD) {
+    if (user->GetType() == user_manager::UserType::kRegular ||
+        user->GetType() == user_manager::UserType::kChild) {
       regular_users_counter++;
     }
   }
@@ -365,8 +364,9 @@ ExistingUserController::ExistingUserController()
     : cros_settings_(CrosSettings::Get()),
       network_state_helper_(new login::NetworkStateHelper),
       pin_salt_storage_(std::make_unique<quick_unlock::PinSaltStorage>()) {
-  registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
-                 content::NotificationService::AllSources());
+  HttpAuthDialog::AddObserver(this);
+
+  enable_ash_httpauth_ = HttpAuthDialog::Enable();
   show_user_names_subscription_ = cros_settings_->AddSettingsObserver(
       kAccountsPrefShowUserNamesOnSignIn,
       base::BindRepeating(&ExistingUserController::DeviceSettingsChanged,
@@ -446,17 +446,18 @@ void ExistingUserController::UpdateLoginDisplay(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ExistingUserController, content::NotificationObserver implementation:
+// ExistingUserController, HttpAuthHandler implementation:
 //
 
-void ExistingUserController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_AUTH_SUPPLIED);
+void ExistingUserController::HttpAuthDialogShown(
+    content::WebContents* web_contents) {}
 
-  // Don't transfer http auth cache on NOTIFICATION_AUTH_SUPPLIED after user
-  // session starts.
+void ExistingUserController::HttpAuthDialogCancelled(
+    content::WebContents* web_contents) {}
+
+void ExistingUserController::HttpAuthDialogSupplied(
+    content::WebContents* web_contents) {
+  // Don't transfer http auth cache after user session starts.
   if (session_manager::SessionManager::Get()->IsSessionStarted()) {
     return;
   }
@@ -466,7 +467,7 @@ void ExistingUserController::Observe(
   // main `g_browser_process` request context (see bug
   // http://crosbug.com/24861). So we transfer any credentials to the global
   // request context here.
-  // The issue we have here is that the NOTIFICATION_AUTH_SUPPLIED is sent
+  // The issue we have here is that the HttpAuthDialogSupplied is sent
   // just after the UI is closed but before the new credentials were stored
   // in the profile. Therefore we have to give it some time to make sure it
   // has been updated before we copy it.
@@ -481,6 +482,7 @@ void ExistingUserController::Observe(
 // ExistingUserController, private:
 
 ExistingUserController::~ExistingUserController() {
+  HttpAuthDialog::RemoveObserver(this);
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
   if (activity_detector) {
     activity_detector->RemoveObserver(this);
@@ -522,7 +524,7 @@ void ExistingUserController::Login(const UserContext& user_context,
 
   is_login_in_progress_ = true;
 
-  if (user_context.GetUserType() != user_manager::USER_TYPE_REGULAR &&
+  if (user_context.GetUserType() != user_manager::UserType::kRegular &&
       user_manager::UserManager::Get()->IsUserLoggedIn()) {
     // Multi-login is only allowed for regular users. If we are attempting to
     // do multi-login as another type of user somehow, bail out. Do not
@@ -681,7 +683,7 @@ void ExistingUserController::ShowTPMError() {
 //
 
 void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
-  guest_mode_url_ = GURL::EmptyGURL();
+  guest_mode_url_ = GURL();
   std::string error = failure.GetErrorString();
 
   PerformLoginFinishedActions(false /* don't start auto login timer */);
@@ -796,7 +798,7 @@ void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
   }
 
   if (user_context.CanLockManagedGuestSession()) {
-    CHECK(user_context.GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+    CHECK(user_context.GetUserType() == user_manager::UserType::kPublicAccount);
     user_manager::User* user =
         user_manager::UserManager::Get()->FindUserAndModify(
             user_context.GetAccountId());
@@ -901,7 +903,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   auto* profile_connector = profile->GetProfilePolicyConnector();
   bool is_enterprise_managed =
       profile_connector->IsManaged() &&
-      user_context.GetUserType() != user_manager::USER_TYPE_CHILD;
+      user_context.GetUserType() != user_manager::UserType::kChild;
 
   user_manager::KnownUser known_user(g_browser_process->local_state());
   known_user.SetIsEnterpriseManaged(user_context.GetAccountId(),
@@ -1103,7 +1105,7 @@ user_manager::UserList ExistingUserController::ExtractLoginUsers(
   CrosSettings::Get()->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
                                   &show_users_on_signin);
   user_manager::UserList filtered_users;
-  for (auto* user : users) {
+  for (user_manager::User* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
     // KioskChromeAppManager, ArcKioskAppManager and WebKioskAppManager.
@@ -1116,7 +1118,7 @@ user_manager::UserList ExistingUserController::ExtractLoginUsers(
     // Public session accounts are always shown on login screen.
     const bool meets_show_users_requirements =
         show_users_on_signin ||
-        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+        user->GetType() == user_manager::UserType::kPublicAccount;
     if (meets_allowlist_requirements && meets_show_users_requirements) {
       filtered_users.push_back(user);
     }
@@ -1131,7 +1133,7 @@ void ExistingUserController::LoginAuthenticated(
 }
 
 void ExistingUserController::LoginAsGuest() {
-  PerformPreLoginActions(UserContext(user_manager::USER_TYPE_GUEST,
+  PerformPreLoginActions(UserContext(user_manager::UserType::kGuest,
                                      user_manager::GuestAccountId()));
 
   bool allow_guest = user_manager::UserManager::Get()->IsGuestSessionAllowed();
@@ -1161,7 +1163,7 @@ void ExistingUserController::LoginAsPublicSession(
   // possible.
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
-  if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+  if (!user || user->GetType() != user_manager::UserType::kPublicAccount) {
     VLOG(2) << "Public session user not found";
     PerformLoginFinishedActions(true /* start auto login timer */);
     return;
@@ -1274,7 +1276,7 @@ void ExistingUserController::ConfigureAutoLogin() {
       user_manager::UserManager::Get()->FindUser(
           public_session_auto_login_account_id_);
   if (!public_session_user || public_session_user->GetType() !=
-                                  user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+                                  user_manager::UserType::kPublicAccount) {
     VLOG(2) << "PublicSession autologin user not found";
     public_session_auto_login_account_id_ = EmptyAccountId();
   }
@@ -1309,7 +1311,7 @@ void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
   VLOG(2) << "Public session autologin fired";
   SigninSpecifics signin_specifics;
   signin_specifics.is_auto_login = true;
-  Login(UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
+  Login(UserContext(user_manager::UserType::kPublicAccount,
                     public_session_auto_login_account_id_),
         signin_specifics);
 }
@@ -1578,7 +1580,7 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
   last_login_attempt_was_auto_login_ = specifics.is_auto_login;
   VLOG(2) << "DoLogin with a user type: " << user_context.GetUserType();
 
-  if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {
+  if (user_context.GetUserType() == user_manager::UserType::kGuest) {
     if (!specifics.guest_mode_url.empty()) {
       guest_mode_url_ = GURL(specifics.guest_mode_url);
       if (specifics.guest_mode_url_append_locale) {
@@ -1590,24 +1592,24 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
     return;
   }
 
-  if (user_context.GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+  if (user_context.GetUserType() == user_manager::UserType::kPublicAccount) {
     LoginAsPublicSession(user_context);
     return;
   }
 
-  if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
+  if (user_context.GetUserType() == user_manager::UserType::kKioskApp) {
     LoginAsKioskApp(
         KioskAppId::ForChromeApp(user_context.GetAccountId().GetUserEmail(),
                                  user_context.GetAccountId()));
     return;
   }
 
-  if (user_context.GetUserType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
+  if (user_context.GetUserType() == user_manager::UserType::kArcKioskApp) {
     LoginAsKioskApp(KioskAppId::ForArcApp(user_context.GetAccountId()));
     return;
   }
 
-  if (user_context.GetUserType() == user_manager::USER_TYPE_WEB_KIOSK_APP) {
+  if (user_context.GetUserType() == user_manager::UserType::kWebKioskApp) {
     LoginAsKioskApp(KioskAppId::ForWebApp(user_context.GetAccountId()));
     return;
   }

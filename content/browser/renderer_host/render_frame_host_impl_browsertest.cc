@@ -6,6 +6,7 @@
 
 #include <initializer_list>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <tuple>
@@ -32,12 +33,12 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
+#include "base/test/test_future.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/viz/common/features.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/origin_trial_state_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -47,6 +48,7 @@
 #include "content/common/content_navigation_policy.h"
 #include "content/common/features.h"
 #include "content/common/frame_messages.mojom.h"
+#include "content/common/input/timeout_monitor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/document_service.h"
@@ -109,7 +111,6 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/switches.h"
@@ -144,39 +145,6 @@
 
 namespace content {
 namespace {
-
-// Implementation of ContentBrowserClient that overrides
-// OverridePageVisibilityState() and allows consumers to set a value.
-class PrerenderTestContentBrowserClient
-    : public ContentBrowserTestContentBrowserClient {
- public:
-  PrerenderTestContentBrowserClient()
-      : override_enabled_(false),
-        visibility_override_(PageVisibilityState::kVisible) {}
-
-  PrerenderTestContentBrowserClient(const PrerenderTestContentBrowserClient&) =
-      delete;
-  PrerenderTestContentBrowserClient& operator=(
-      const PrerenderTestContentBrowserClient&) = delete;
-
-  ~PrerenderTestContentBrowserClient() override {}
-
-  void EnableVisibilityOverride(PageVisibilityState visibility_override) {
-    override_enabled_ = true;
-    visibility_override_ = visibility_override;
-  }
-
-  void OverridePageVisibilityState(
-      RenderFrameHost* render_frame_host,
-      PageVisibilityState* visibility_state) override {
-    if (override_enabled_)
-      *visibility_state = visibility_override_;
-  }
-
- private:
-  bool override_enabled_;
-  PageVisibilityState visibility_override_;
-};
 
 const char kTrustMeUrl[] = "trustme://host/path/";
 const char kTrustMeIfEmbeddingSecureUrl[] =
@@ -481,22 +449,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   web_contents()->WasHidden();
   EXPECT_EQ(PageVisibilityState::kHidden,
-            web_contents()->GetPrimaryMainFrame()->GetVisibilityState());
-}
-
-// Test that a frame visibility can be overridden by the ContentBrowserClient.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       GetVisibilityState_Override) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,foo")));
-
-  PrerenderTestContentBrowserClient new_client;
-
-  web_contents()->WasShown();
-  EXPECT_EQ(PageVisibilityState::kVisible,
-            web_contents()->GetPrimaryMainFrame()->GetVisibilityState());
-
-  new_client.EnableVisibilityOverride(PageVisibilityState::kHiddenButPainting);
-  EXPECT_EQ(PageVisibilityState::kHiddenButPainting,
             web_contents()->GetPrimaryMainFrame()->GetVisibilityState());
 }
 
@@ -3089,11 +3041,11 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Helper function to fetch the canonical link URL from the provided frame.
-absl::optional<GURL> GetCanonicalUrlFromFrame(RenderFrameHostImpl* frame) {
+std::optional<GURL> GetCanonicalUrlFromFrame(RenderFrameHostImpl* frame) {
   base::RunLoop loop;
-  absl::optional<GURL> canon_url;
+  std::optional<GURL> canon_url;
   frame->GetCanonicalUrl(
-      base::BindLambdaForTesting([&](const absl::optional<GURL>& url) {
+      base::BindLambdaForTesting([&](const std::optional<GURL>& url) {
         canon_url = url;
         loop.Quit();
       }));
@@ -3105,7 +3057,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, GetCanonicalUrl_None) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   base::HistogramTester histogram_tester;
-  absl::optional<GURL> canon_url =
+  std::optional<GURL> canon_url =
       GetCanonicalUrlFromFrame(web_contents()->GetPrimaryMainFrame());
   // No canonical link should be returned if the page has none.
   ASSERT_FALSE(canon_url.has_value());
@@ -3125,7 +3077,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, GetCanonicalUrl_InBody) {
       shell(), GetTestUrl("render_frame_host", "canonical_link_in_body.html")));
 
   base::HistogramTester histogram_tester;
-  absl::optional<GURL> canon_url =
+  std::optional<GURL> canon_url =
       GetCanonicalUrlFromFrame(web_contents()->GetPrimaryMainFrame());
   // A canonical link in the body should be ignored.
   ASSERT_FALSE(canon_url.has_value());
@@ -3150,7 +3102,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_with_fragment));
 
   base::HistogramTester histogram_tester;
-  absl::optional<GURL> canon_url =
+  std::optional<GURL> canon_url =
       GetCanonicalUrlFromFrame(web_contents()->GetPrimaryMainFrame());
   ASSERT_TRUE(canon_url.has_value());
   // The canonical link should be returned appended with the fragment from the
@@ -3178,7 +3130,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_with_fragment));
 
   base::HistogramTester histogram_tester;
-  absl::optional<GURL> canon_url =
+  std::optional<GURL> canon_url =
       GetCanonicalUrlFromFrame(web_contents()->GetPrimaryMainFrame());
   ASSERT_TRUE(canon_url.has_value());
   // The first canonical link should be returned, and its fragment should
@@ -3446,18 +3398,18 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   ASSERT_EQ(0, process->get_media_stream_count_for_testing());
 
   // Audible audio output should cause the media stream count to increment.
-  frame->OnAudibleStateChanged(true);
+  frame->OnMediaStreamAdded(RenderFrameHostImpl::GetAudibleMediaStreamType());
   RunPostedTasks();
   EXPECT_EQ(1, process->get_media_stream_count_for_testing());
 
   // Silence should cause the media stream count to decrement.
-  frame->OnAudibleStateChanged(false);
+  frame->OnMediaStreamRemoved(RenderFrameHostImpl::GetAudibleMediaStreamType());
   RunPostedTasks();
   EXPECT_EQ(0, process->get_media_stream_count_for_testing());
 
   // Start audible audio output again, and then crash the renderer. Expect the
   // media stream count to be zero after the crash.
-  frame->OnAudibleStateChanged(true);
+  frame->OnMediaStreamAdded(RenderFrameHostImpl::GetAudibleMediaStreamType());
   RunPostedTasks();
   EXPECT_EQ(1, process->get_media_stream_count_for_testing());
   RenderProcessHostWatcher crash_observer(
@@ -5042,7 +4994,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Spot-check that an example entry recorded from the renderer uses the
   // correct document source id set by the RFH.
   const auto& blink_entries = recorder.GetEntriesByName("Blink.PageLoad");
-  for (const auto* entry : blink_entries) {
+  for (const ukm::mojom::UkmEntry* entry : blink_entries) {
     EXPECT_EQ(main_frame_doc_ukm_source_id, entry->source_id);
   }
 }
@@ -6592,32 +6544,29 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplCredentiallessIframeBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   base::UnguessableToken first_nonce =
-      web_contents()->GetPrimaryMainFrame()->credentialless_iframes_nonce();
+      web_contents()->GetPrimaryPage().credentialless_iframes_nonce();
   EXPECT_TRUE(first_nonce);
 
   // Same-document navigation does not change the nonce.
   EXPECT_TRUE(NavigateToURL(shell(), main_url.Resolve("#here")));
-  EXPECT_EQ(
-      first_nonce,
-      web_contents()->GetPrimaryMainFrame()->credentialless_iframes_nonce());
+  EXPECT_EQ(first_nonce,
+            web_contents()->GetPrimaryPage().credentialless_iframes_nonce());
 
   // Cross-document same-site navigation creates a new nonce.
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
   base::UnguessableToken second_nonce =
-      web_contents()->GetPrimaryMainFrame()->credentialless_iframes_nonce();
+      web_contents()->GetPrimaryPage().credentialless_iframes_nonce();
   EXPECT_TRUE(second_nonce);
   EXPECT_NE(first_nonce, second_nonce);
 
   // Cross-document cross-site navigation creates a new nonce.
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
-  EXPECT_NE(
-      first_nonce,
-      web_contents()->GetPrimaryMainFrame()->credentialless_iframes_nonce());
-  EXPECT_NE(
-      second_nonce,
-      web_contents()->GetPrimaryMainFrame()->credentialless_iframes_nonce());
+  EXPECT_NE(first_nonce,
+            web_contents()->GetPrimaryPage().credentialless_iframes_nonce());
+  EXPECT_NE(second_nonce,
+            web_contents()->GetPrimaryPage().credentialless_iframes_nonce());
 }
 
 class RenderFrameHostImplCredentiallessIframeNikBrowserTest
@@ -7365,7 +7314,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        DevToolsNavigationToken_InitialNavigation) {
   RenderFrameHostImplWrapper rfh(web_contents()->GetPrimaryMainFrame());
-  EXPECT_EQ(rfh->GetDevToolsNavigationToken(), absl::nullopt);
+  EXPECT_EQ(rfh->GetDevToolsNavigationToken(), std::nullopt);
 
   GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   TestNavigationManager nav_manager(web_contents(), url);
@@ -7507,7 +7456,7 @@ IN_PROC_BROWSER_TEST_F(
   // "same-document" navigations; but the synchronously committed about:blank
   // document is still considered to be the initial empty document, and the
   // devtools_navigation_token remains null.
-  EXPECT_EQ(subframe->GetDevToolsNavigationToken(), absl::nullopt);
+  EXPECT_EQ(subframe->GetDevToolsNavigationToken(), std::nullopt);
 }
 
 // Tests that the devtools_navigation_token of an RFH is updated after a
@@ -7695,9 +7644,6 @@ class RenderFrameHostImplBrowserTestWithBFCache
     std::vector<base::test::FeatureRefAndParams> enabled_features =
         GetDefaultEnabledBackForwardCacheFeaturesForTesting(
             /*ignore_outstanding_network_request=*/false);
-    enabled_features.push_back(
-        {features::kNavigationUpdatesChildViewsVisibility, {{}}});
-    enabled_features.push_back({features::kEvictSubtree, {{}}});
     scoped_feature_list_.InitWithFeaturesAndParameters(
         enabled_features,
         GetDefaultDisabledBackForwardCacheFeaturesForTesting());
@@ -7855,6 +7801,29 @@ class RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition
   ~RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition() override =
       default;
 
+  SkBitmap GrabViewSnapshot() {
+    base::RunLoop run_loop;
+    gfx::Image snapshot;
+    auto callback = [&](gfx::Image captured) {
+      snapshot = std::move(captured);
+      run_loop.Quit();
+    };
+
+    auto* rwhv = web_contents()->GetRenderWidgetHostView();
+#if BUILDFLAG(IS_ANDROID)
+    // On Android, call sites should pass in the bounds with correct offset
+    // to capture the intended content area.
+    gfx::Rect snapshot_bounds(rwhv->GetViewBounds());
+    snapshot_bounds.Offset(0, rwhv->GetNativeView()->content_offset());
+#else
+    gfx::Rect snapshot_bounds(rwhv->GetViewBounds().size());
+#endif
+    ui::GrabViewSnapshotAsync(rwhv->GetNativeView(), snapshot_bounds,
+                              base::BindLambdaForTesting(callback));
+    run_loop.Run();
+    return snapshot.AsBitmap();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -7957,6 +7926,11 @@ IN_PROC_BROWSER_TEST_F(
       RenderWidgetHostImpl::From(rfh_red->GetView()->GetRenderWidgetHost());
   // The BFCached `RenderWidgetHostImpl` must have a stopped timer.
   ASSERT_FALSE(rwhi_red->IsContentRenderingTimeoutRunning());
+  // Set the timeout to a max value, such that we can guarantee to manually
+  // force the timer to fire via
+  // `RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout()`. Deflake
+  // the tests.
+  rwhi_red->SetNewContentRenderingTimeoutForTesting(base::TimeDelta::Max());
 
   // Navigate back to Red.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
@@ -7977,27 +7951,19 @@ IN_PROC_BROWSER_TEST_F(
       GetCurrentSurfaceIdOnDelegatedFrameHost(rfh_red->GetView())
           .IsSameOrNewerThan(first_surface_id_after_nav_after_bfcache_restore));
 
-  {
-    gfx::Image screenshot;
-    ui::GrabViewSnapshot(web_contents()->GetView()->GetNativeView(),
-                         gfx::Rect(web_contents()->GetSize()), &screenshot);
-    AssertBitmapOfColor(screenshot.AsBitmap(), SK_ColorGREEN);
-  }
+  AssertBitmapOfColor(GrabViewSnapshot(), SK_ColorGREEN);
 
+  // Manually force the timer to fire, since the timeout is infinity.
   ASSERT_TRUE(rwhi_red->IsContentRenderingTimeoutRunning());
   rwhi_red->ForceFirstFrameAfterNavigationTimeout();
+  ASSERT_FALSE(rwhi_red->IsContentRenderingTimeoutRunning());
 
+  // TODO(https://crbug.com/1472026): If the red page's renderer still hasn't
+  // submitted a new frame after the ContentRenderingTimeout is up, we should
+  // abort the transition. Expand this test to cover that behavior when we have
+  // a way to abort the transition.
   WaitForBrowserCompositorFramePresented(web_contents());
-
-  // `ForceFirstFrameAfterNavigationTimeout` resets the fallback surface id to
-  // `first_surface_id_after_nav_` of the `DelegatedFrameHost{Android}`. This
-  // should have no effects on the screen.
-  {
-    gfx::Image screenshot;
-    ui::GrabViewSnapshot(web_contents()->GetView()->GetNativeView(),
-                         gfx::Rect(web_contents()->GetSize()), &screenshot);
-    AssertBitmapOfColor(screenshot.AsBitmap(), SK_ColorGREEN);
-  }
+  AssertBitmapOfColor(GrabViewSnapshot(), SK_ColorRED);
 }
 
 // Tests that when a RenderFrameHost is stored in BFCache, that the visibility

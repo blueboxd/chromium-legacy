@@ -153,7 +153,6 @@ MediaItemUIDeviceSelectorView::MediaItemUIDeviceSelectorView(
         receiver,
     bool has_audio_output,
     global_media_controls::GlobalMediaControlsEntryPoint entry_point,
-    bool show_expand_button,
     bool show_devices,
     std::optional<media_message_center::MediaColorTheme> media_color_theme)
     : item_id_(item_id),
@@ -167,8 +166,8 @@ MediaItemUIDeviceSelectorView::MediaItemUIDeviceSelectorView(
 
   // Do not create the expand button strip if this device selector view is used
   // on Chrome OS ash with media::kGlobalMediaControlsCrOSUpdatedUI enabled.
-  CreateExpandButtonStrip(show_expand_button &&
-                          !media_color_theme_.has_value());
+  CreateExpandButtonStrip(
+      /*show_expand_button=*/!media_color_theme_.has_value());
 
   device_entry_views_container_ = AddChildView(std::make_unique<views::View>());
   device_entry_views_container_->SetLayoutManager(
@@ -180,7 +179,7 @@ MediaItemUIDeviceSelectorView::MediaItemUIDeviceSelectorView(
     ShowDevices();
   }
   SetBackground(views::CreateSolidBackground(background_color_));
-  Layout();
+  DeprecatedLayoutImmediately();
 
   // This view will become visible when devices are discovered.
   SetVisible(false);
@@ -213,7 +212,7 @@ void MediaItemUIDeviceSelectorView::UpdateCurrentAudioDevice(
   current_audio_device_entry_view_->SetHighlighted(true);
   device_entry_views_container_->ReorderChildView(
       current_audio_device_entry_view_, 0);
-  current_audio_device_entry_view_->Layout();
+  current_audio_device_entry_view_->DeprecatedLayoutImmediately();
 }
 
 MediaItemUIDeviceSelectorView::~MediaItemUIDeviceSelectorView() {
@@ -306,7 +305,7 @@ void MediaItemUIDeviceSelectorView::ShowDevices() {
 
   // When this device selector view is used on Chrome OS ash with
   // media::kGlobalMediaControlsCrOSUpdatedUI enabled, accessibility text will
-  // be handled by MediaNotificationViewAshImpl instead of here.
+  // be handled by MediaItemUIDetailedView instead of here.
   if (!media_color_theme_.has_value()) {
     GetViewAccessibility().AnnounceText(
         l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_SHOW_DEVICE_LIST));
@@ -340,7 +339,7 @@ void MediaItemUIDeviceSelectorView::HideDevices() {
 
   // When this device selector view is used on Chrome OS ash with
   // media::kGlobalMediaControlsCrOSUpdatedUI enabled, accessibility text will
-  // be handled by MediaNotificationViewAshImpl instead of here.
+  // be handled by MediaItemUIDetailedView instead of here.
   if (!media_color_theme_.has_value()) {
     GetViewAccessibility().AnnounceText(
         l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_HIDE_DEVICE_LIST));
@@ -451,7 +450,7 @@ void MediaItemUIDeviceSelectorView::UpdateIsAudioDeviceSwitchingEnabled(
 void MediaItemUIDeviceSelectorView::RemoveDevicesOfType(
     DeviceEntryUIType type) {
   std::vector<views::View*> views_to_remove;
-  for (auto* view : device_entry_views_container_->children()) {
+  for (views::View* view : device_entry_views_container_->children()) {
     if (GetDeviceEntryUI(view)->GetType() == type) {
       views_to_remove.push_back(view);
     }
@@ -501,7 +500,7 @@ void MediaItemUIDeviceSelectorView::OnDevicesUpdated(
       entry->OnColorsChanged(foreground_color_, background_color_);
     }
   }
-  device_entry_views_container_->Layout();
+  device_entry_views_container_->DeprecatedLayoutImmediately();
 
   UpdateVisibility();
   for (auto& observer : observers_) {
@@ -572,7 +571,7 @@ bool MediaItemUIDeviceSelectorView::GetDeviceEntryViewVisibilityForTesting() {
 std::vector<CastDeviceEntryView*>
 MediaItemUIDeviceSelectorView::GetCastDeviceEntryViewsForTesting() {
   std::vector<CastDeviceEntryView*> buttons;
-  for (auto* view : device_entry_views_container_->children()) {
+  for (views::View* view : device_entry_views_container_->children()) {
     if (GetDeviceEntryUI(view)->GetType() == DeviceEntryUIType::kCast) {
       buttons.push_back(static_cast<CastDeviceEntryView*>(view));
     }

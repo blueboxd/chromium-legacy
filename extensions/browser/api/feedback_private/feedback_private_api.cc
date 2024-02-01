@@ -118,7 +118,7 @@ void SendFeedback(content::BrowserContext* browser_context,
   FeedbackPrivateDelegate* delegate =
       ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
   base::WeakPtr<feedback::FeedbackUploader> uploader =
-      base::AsWeakPtr(delegate->GetFeedbackUploaderForContext(browser_context));
+      delegate->GetFeedbackUploaderForContext(browser_context)->AsWeakPtr();
   scoped_refptr<FeedbackData> feedback_data =
       base::MakeRefCounted<FeedbackData>(std::move(uploader),
                                          ContentTracingManager::Get());
@@ -279,9 +279,15 @@ std::unique_ptr<FeedbackInfo> FeedbackPrivateAPI::CreateFeedbackInfo(
   if (from_chrome_labs_or_kaleidoscope) {
     info->product_id = kChromeLabsAndKaleidoscopeProductId;
   } else if (info->flow == FeedbackFlow::kAi) {
-    // Use Chrome browser product id for all platforms including ChromeOS in
-    // this flow.
+    // Use Chrome browser product id for all platforms including ChromeOS by
+    // default.
     info->product_id = FeedbackCommon::GetChromeBrowserProductId();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Use ChromeOS product id for ChromeOS AI wallpaper and VC backgrounds.
+    if (ai_metadata.contains("from_chromeos")) {
+      info->product_id = FeedbackCommon::GetChromeOSProductId();
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   return info;

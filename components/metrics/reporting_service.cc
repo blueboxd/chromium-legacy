@@ -177,11 +177,10 @@ void ReportingService::SendStagedLog() {
 
   reporting_info_.set_attempt_count(reporting_info_.attempt_count() + 1);
 
-  const std::string hash =
-      base::HexEncode(log_store()->staged_log_hash().data(),
-                      log_store()->staged_log_hash().size());
-  std::string signature;
-  base::Base64Encode(log_store()->staged_log_signature(), &signature);
+  const std::string hash = base::HexEncode(log_store()->staged_log_hash());
+
+  std::string signature =
+      base::Base64Encode(log_store()->staged_log_signature());
 
   if (logs_event_manager_) {
     logs_event_manager_->NotifyLogEvent(

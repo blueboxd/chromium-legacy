@@ -54,6 +54,9 @@ using ::chromeos::settings::mojom::kAudioAndCaptionsSubpagePath;
 using ::chromeos::settings::mojom::kChromeVoxSubpagePath;
 using ::chromeos::settings::mojom::kCursorAndTouchpadSubpagePath;
 using ::chromeos::settings::mojom::kDisplayAndMagnificationSubpagePath;
+using ::chromeos::settings::mojom::kFaceGazeCursorSettingsSubpagePath;
+using ::chromeos::settings::mojom::
+    kFaceGazeFacialExpressionsSettingsSubpagePath;
 using ::chromeos::settings::mojom::kKeyboardAndTextInputSubpagePath;
 using ::chromeos::settings::mojom::kManageAccessibilitySubpagePath;
 using ::chromeos::settings::mojom::kSelectToSpeakSubpagePath;
@@ -482,7 +485,7 @@ bool AreTabletNavigationButtonsAllowed() {
 }
 
 int GetDisplayAndMangificationLinkDescriptionResourceId() {
-    return IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_NEW_DESCRIPTION;
+  return IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_NEW_DESCRIPTION;
 }
 
 bool IsAccessibilityFaceGazeEnabled() {
@@ -559,11 +562,17 @@ void AccessibilitySection::AddLoadTimeData(
       {"accessibleImageLabelsSubtitle",
        IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE},
       {"accessibilityFaceGazeLabel",
-       IDS_OS_SETTINGS_ACCESSIBILITY_FACE_TRACKING_LABEL},
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_LABEL},
       {"accessibilityFaceGazeDescription",
-       IDS_OS_SETTINGS_ACCESSIBILITY_FACE_TRACKING_DESCRIPTION},
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_DESCRIPTION},
+      {"accessibilityFaceGazeFacialExpressionsSettings",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_GESTURE_SETTINGS_LABEL},
+      {"accessibilityFaceGazeFacialExpressionsSettingsDescription",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_GESTURE_SETTINGS_DESCRIPTION},
       {"accessibilityFaceGazeSettings",
-       IDS_OS_SETTINGS_ACCESSIBILITY_FACE_TRACKING_SETTINGS},
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SETTINGS_LABEL},
+      {"accessibilityFaceGazeSettingsDescription",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SETTINGS_DESCRIPTION},
       {"accessibleImageLabelsTitle",
        IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_TITLE},
       {"additionalFeaturesTitle",
@@ -788,6 +797,10 @@ void AccessibilitySection::AddLoadTimeData(
       {"dockedMagnifierLabel", IDS_SETTINGS_DOCKED_MAGNIFIER_LABEL},
       {"dockedMagnifierZoomLabel", IDS_SETTINGS_DOCKED_MAGNIFIER_ZOOM_LABEL},
       {"durationInSeconds", IDS_SETTINGS_DURATION_IN_SECONDS},
+      {"facegazeCursorSettings",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SETTINGS_LABEL},
+      {"facegazeFacialExpressionSettings",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_GESTURE_SETTINGS_LABEL},
       {"focusHighlightLabel",
        IDS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION},
       {"focusHighlightLabelSubtext",
@@ -824,6 +837,18 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_COLOR_VISION_DEFICIENCY_TYPE_LABEL},
       {"colorVisionFilterIntensityLabel",
        IDS_SETTINGS_COLOR_VISION_FILTER_INTENSITY_LABEL},
+      {"faceGazeCursorAccelerationLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_ACCELERATION_LABEL},
+      {"faceGazeCursorSmoothingLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SMOOTHING_LABEL},
+      {"faceGazeCursorDownSpeedLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_DOWN_LABEL},
+      {"faceGazeCursorLeftSpeedLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_LEFT_LABEL},
+      {"faceGazeCursorRightSpeedLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_RIGHT_LABEL},
+      {"faceGazeCursorUpSpeedLabel",
+       IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SPEED_UP_LABEL},
       {"keyboardAndTextInputHeading",
        IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_AND_TEXT_INPUT_HEADING},
       {"keyboardAndTextInputLinkDescription",
@@ -962,6 +987,8 @@ void AccessibilitySection::AddLoadTimeData(
       {"selectToSpeakTitle", IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_TITLE},
       {"settingsSliderRoleDescription",
        IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
+      {"sliderLabel1", IDS_OS_SETTINGS_SLIDER_LABEL_1},
+      {"sliderLabel100", IDS_OS_SETTINGS_SLIDER_LABEL_100},
       {"startupSoundLabel", IDS_SETTINGS_STARTUP_SOUND_LABEL},
       {"stickyKeysDescription", IDS_SETTINGS_STICKY_KEYS_DESCRIPTION},
       {"stickyKeysLabel", IDS_SETTINGS_STICKY_KEYS_LABEL},
@@ -1349,6 +1376,20 @@ void AccessibilitySection::RegisterHierarchy(
   };
   RegisterNestedSettingBulk(mojom::Subpage::kSwitchAccessOptions,
                             kSwitchAccessSettings, generator);
+
+  // Face Gaze cursor settings.
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_CURSOR_SETTINGS_LABEL,
+      mojom::Subpage::kFaceGazeCursorSettings, mojom::SearchResultIcon::kA11y,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kFaceGazeCursorSettingsSubpagePath);
+
+  // Face Gaze facial expressions settings.
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_ACCESSIBILITY_FACEGAZE_GESTURE_SETTINGS_LABEL,
+      mojom::Subpage::kFaceGazeFacialExpressionsSettings,
+      mojom::SearchResultIcon::kA11y, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kFaceGazeFacialExpressionsSettingsSubpagePath);
 }
 
 void AccessibilitySection::OnVoicesChanged() {

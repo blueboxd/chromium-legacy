@@ -12,6 +12,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
@@ -45,8 +46,8 @@ class PrefServiceForAssociator {
 };
 
 // Contains all preference sync related logic.
-class PrefModelAssociator : public syncer::SyncableService,
-                            public PrefStore::Observer {
+class PrefModelAssociator final : public syncer::SyncableService,
+                                  public PrefStore::Observer {
  public:
   // The |client| is not owned and must outlive this object.
   // |user_prefs| is the PrefStore to be hooked up to Sync.
@@ -82,15 +83,16 @@ class PrefModelAssociator : public syncer::SyncableService,
 
   // syncer::SyncableService implementation.
   void WaitUntilReadyToSync(base::OnceClosure done) override;
-  absl::optional<syncer::ModelError> MergeDataAndStartSyncing(
+  std::optional<syncer::ModelError> MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) override;
   void StopSyncing(syncer::ModelType type) override;
   void OnBrowserShutdown(syncer::ModelType type) override;
-  absl::optional<syncer::ModelError> ProcessSyncChanges(
+  std::optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
+  base::WeakPtr<SyncableService> AsWeakPtr() override;
 
   // PrefStore::Observer implementation.
   void OnPrefValueChanged(const std::string& key) override;
@@ -206,6 +208,8 @@ class PrefModelAssociator : public syncer::SyncableService,
       synced_pref_observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<PrefModelAssociator> weak_ptr_factory_{this};
 };
 
 }  // namespace sync_preferences

@@ -25,14 +25,24 @@
 #include "url/origin.h"
 
 using blink::mojom::FederatedAuthRequestResult;
+using content::FedCmDisconnectStatus;
 
 namespace content::webid {
+
+namespace {
+constexpr net::registry_controlled_domains::PrivateRegistryFilter
+    kDefaultPrivateRegistryFilter =
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
+}  // namespace
 
 bool IsSameOriginWithAncestors(const url::Origin& origin,
                                RenderFrameHost* render_frame_host) {
   while (render_frame_host) {
     if (!origin.IsSameOriginWith(render_frame_host->GetLastCommittedOrigin())) {
-      return false;
+      if (!IsFedCmSameSiteLoginStatusEnabled() ||
+          !IsSameSite(origin, render_frame_host->GetLastCommittedOrigin())) {
+        return false;
+      }
     }
     render_frame_host = render_frame_host->GetParent();
   }
@@ -80,12 +90,12 @@ void SetIdpSigninStatus(content::BrowserContext* context,
       origin, status == blink::mojom::IdpSigninStatus::kSignedIn);
 }
 
-absl::optional<std::string> ComputeConsoleMessageForHttpResponseCode(
+std::optional<std::string> ComputeConsoleMessageForHttpResponseCode(
     const char* endpoint_name,
     int http_response_code) {
   // Do not add error message for OK response status.
   if (http_response_code >= 200 && http_response_code <= 299)
-    return absl::nullopt;
+    return std::nullopt;
 
   if (http_response_code < 0) {
     // In this case, the |response_code| represents a NET_ERROR, so we should
@@ -107,6 +117,37 @@ bool IsEndpointSameOrigin(const GURL& identity_provider_config_url,
       .IsSameOriginWith(endpoint_url);
 }
 
+bool IsSameSite(const url::Origin& origin1, const url::Origin& origin2) {
+  if (origin1.opaque() || origin2.opaque()) {
+    return false;
+  }
+  // We don't use FormatUrlWithDomain because that does not let us detect if
+  // the eTLD+1 is empty -- an empty eTLD+1 should be considered cross-site
+  // unless the host is equal (we want "localhost" to be same-site with
+  // "localhost", but cross-site with "foo"). Conversely, GetDomainAndRegistry
+  // only returns the domain itself without a scheme. Combining these
+  // constraints means we have to explicitly compare the scheme and the host
+  // here.
+  if (origin1.scheme() != origin2.scheme()) {
+    return false;
+  }
+  if (origin1.host() == origin2.host()) {
+    return true;
+  }
+  std::string origin1_etld_plus_one =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          origin1.GetURL(), kDefaultPrivateRegistryFilter);
+  if (origin1_etld_plus_one.empty()) {
+    // If the host is different but there is no eTLD, the origins are not
+    // same-site.
+    return false;
+  }
+  std::string origin2_etld_plus_one =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          origin2.GetURL(), kDefaultPrivateRegistryFilter);
+  return origin1_etld_plus_one == origin2_etld_plus_one;
+}
+
 bool ShouldFailAccountsEndpointRequestBecauseNotSignedInWithIdp(
     RenderFrameHost& host,
     const GURL& identity_provider_config_url,
@@ -118,7 +159,7 @@ bool ShouldFailAccountsEndpointRequestBecauseNotSignedInWithIdp(
     return false;
   }
 
-  const absl::optional<bool> idp_signin_status =
+  const std::optional<bool> idp_signin_status =
       permission_delegate->GetIdpSigninStatus(idp_origin);
   return !idp_signin_status.value_or(true);
 }
@@ -137,7 +178,7 @@ void UpdateIdpSigninStatusForAccountsEndpointResponse(
   }
 
   // Record metrics on effect of IDP sign-in status API.
-  const absl::optional<bool> idp_signin_status =
+  const std::optional<bool> idp_signin_status =
       permission_delegate->GetIdpSigninStatus(idp_origin);
   metrics->RecordIdpSigninMatchStatus(idp_signin_status,
                                       fetch_status.parse_status);
@@ -303,6 +344,75 @@ std::string GetConsoleErrorMessageFromResult(
   }
 }
 
+std::string GetDisconnectConsoleErrorMessage(
+    FedCmDisconnectStatus disconnect_status_for_metrics) {
+  switch (disconnect_status_for_metrics) {
+    case FedCmDisconnectStatus::kSuccess: {
+      NOTREACHED();
+      return "";
+    }
+    case FedCmDisconnectStatus::kTooManyRequests: {
+      return "There is a pending disconnect() call.";
+    }
+    case FedCmDisconnectStatus::kUnhandledRequest: {
+      return "The disconnect request did not finish by the time the page was "
+             "closed.";
+    }
+    case FedCmDisconnectStatus::kNoAccountToDisconnect: {
+      return "There is no account to disconnect.";
+    }
+    case FedCmDisconnectStatus::kDisconnectUrlIsCrossOrigin: {
+      return "The disconnect URL is cross origin";
+    }
+    case FedCmDisconnectStatus::kDisconnectFailedOnServer: {
+      return "The disconnect request failed on the server";
+    }
+    case FedCmDisconnectStatus::kConfigHttpNotFound: {
+      return "The config file cannot be found.";
+    }
+    case FedCmDisconnectStatus::kConfigNoResponse: {
+      return "The config file returned an error response code.";
+    }
+    case FedCmDisconnectStatus::kConfigInvalidResponse: {
+      return "The config file returned some invalid response.";
+    }
+    case FedCmDisconnectStatus::kDisabledInSettings: {
+      return "FedCM is disabled by user settings.";
+    }
+    case FedCmDisconnectStatus::kDisabledInFlags: {
+      return "The disconnect API is disabled by a flag.";
+    }
+    case FedCmDisconnectStatus::kWellKnownHttpNotFound: {
+      return "The well known file cannot be found.";
+    }
+    case FedCmDisconnectStatus::kWellKnownNoResponse: {
+      return "The well-known file returned an error response code.";
+    }
+    case FedCmDisconnectStatus::kWellKnownInvalidResponse: {
+      return "The well-known filed returned some invalid response.";
+    }
+    case FedCmDisconnectStatus::kWellKnownListEmpty: {
+      return "The well-known file returned an empty list.";
+    }
+    case FedCmDisconnectStatus::kConfigNotInWellKnown: {
+      return "The config file is not in the well-known file.";
+    }
+    case FedCmDisconnectStatus::kWellKnownTooBig: {
+      return "Provider's FedCM well-known file contains too many config URLs.";
+    }
+    case FedCmDisconnectStatus::kWellKnownInvalidContentType: {
+      return "Provider's well-known content type must be a JSON content type.";
+    }
+    case FedCmDisconnectStatus::kConfigInvalidContentType: {
+      return "Provider's FedCM config file content type must be a JSON content "
+             "type.";
+    }
+    case FedCmDisconnectStatus::kIdpNotPotentiallyTrustworthy: {
+      return "The provider's config file URL is not potentially trustworthy.";
+    }
+  }
+}
+
 FedCmIdpSigninStatusMode GetIdpSigninStatusMode(RenderFrameHost& host,
                                                 const url::Origin& idp_origin) {
   // TODO(crbug.com/1487668): Remove this function in favor of
@@ -320,8 +430,7 @@ std::string FormatUrlWithDomain(const GURL& url, bool for_display) {
       net::IsLocalhost(url)
           ? url.host()
           : net::registry_controlled_domains::GetDomainAndRegistry(
-                url,
-                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+                url, kDefaultPrivateRegistryFilter);
   if (for_display) {
     return base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
         GURL(url.scheme() + "://" + formatted_url_str),
@@ -332,9 +441,10 @@ std::string FormatUrlWithDomain(const GURL& url, bool for_display) {
       url_formatter::kFormatUrlOmitDefaults &
       ~(url_formatter::kFormatUrlOmitHTTP | url_formatter::kFormatUrlOmitHTTPS |
         url_formatter::kFormatUrlOmitFileScheme);
-  return base::UTF16ToUTF8(url_formatter::FormatUrl(
+  std::string out = base::UTF16ToUTF8(url_formatter::FormatUrl(
       GURL(url.scheme() + "://" + formatted_url_str), types,
       base::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+  return out;
 }
 
 bool HasSharingPermissionOrIdpHasThirdPartyCookiesAccess(
@@ -342,7 +452,7 @@ bool HasSharingPermissionOrIdpHasThirdPartyCookiesAccess(
     const GURL& provider_url,
     const url::Origin& embedder_origin,
     const url::Origin& requester_origin,
-    const absl::optional<std::string>& account_id,
+    const std::optional<std::string>& account_id,
     FederatedIdentityPermissionContextDelegate* sharing_permission_delegate,
     FederatedIdentityApiPermissionContextDelegate* api_permission_delegate) {
   bool has_access = IsFedCmExemptIdpWithThirdPartyCookiesEnabled() &&

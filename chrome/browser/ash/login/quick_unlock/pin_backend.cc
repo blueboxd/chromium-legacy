@@ -55,7 +55,7 @@ void PostResponse(AuthOperationCallback result,
                   bool success) {
   std::optional<AuthenticationError> error = std::nullopt;
   if (!success) {
-    error = AuthenticationError{AuthFailure::UNLOCK_FAILED};
+    error = std::make_optional<AuthenticationError>(AuthFailure::UNLOCK_FAILED);
   }
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(result), std::move(user_context),
@@ -85,7 +85,7 @@ std::string PinBackend::ComputeSalt() {
   // UTF8 string.
   std::string salt;
   crypto::RandBytes(base::WriteInto(&salt, kSaltByteSize + 1), kSaltByteSize);
-  base::Base64Encode(salt, &salt);
+  salt = base::Base64Encode(salt);
   DCHECK(!salt.empty());
   return salt;
 }

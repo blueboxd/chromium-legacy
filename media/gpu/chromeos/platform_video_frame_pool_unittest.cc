@@ -35,8 +35,9 @@ CroStatus::Or<scoped_refptr<VideoFrame>> CreateGpuMemoryBufferVideoFrame(
     const gfx::Size& natural_size,
     bool use_protected,
     bool use_linear_buffers,
+    bool needs_detiling,
     base::TimeDelta timestamp) {
-  absl::optional<gfx::BufferFormat> gfx_format =
+  std::optional<gfx::BufferFormat> gfx_format =
       VideoPixelFormatToGfxBufferFormat(format);
   DCHECK(gfx_format);
   const gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes] = {};
@@ -54,8 +55,9 @@ CreateChromeOSCompressedGpuMemoryBufferVideoFrame(uint64_t modifier,
                                                   const gfx::Size& natural_size,
                                                   bool use_protected,
                                                   bool use_linear_buffers,
+                                                  bool needs_detiling,
                                                   base::TimeDelta timestamp) {
-  absl::optional<gfx::BufferFormat> gfx_format =
+  std::optional<gfx::BufferFormat> gfx_format =
       VideoPixelFormatToGfxBufferFormat(format);
   DCHECK(gfx_format);
   return WrapChromeOSCompressedGpuMemoryBufferAsVideoFrame(
@@ -127,7 +129,7 @@ class PlatformVideoFramePoolTestBase : public ::testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PlatformVideoFramePool> pool_;
 
-  absl::optional<GpuBufferLayout> layout_;
+  std::optional<GpuBufferLayout> layout_;
   gfx::Rect visible_rect_;
   gfx::Size natural_size_;
 };
@@ -328,7 +330,7 @@ TEST_P(PlatformVideoFramePoolTest, InitializeFail) {
   SetCreateFrameCB(base::BindRepeating(
       [](VideoPixelFormat format, const gfx::Size& coded_size,
          const gfx::Rect& visible_rect, const gfx::Size& natural_size,
-         bool use_protected, bool use_linear_buffers,
+         bool use_protected, bool use_linear_buffers, bool needs_detiling,
          base::TimeDelta timestamp) {
         return CroStatus::Or<scoped_refptr<VideoFrame>>(
             CroStatus::Codes::kFailedToCreateVideoFrame);

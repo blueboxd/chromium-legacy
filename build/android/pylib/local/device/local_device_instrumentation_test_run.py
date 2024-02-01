@@ -5,7 +5,6 @@
 
 import collections
 import contextlib
-import copy
 import hashlib
 import json
 import logging
@@ -23,7 +22,6 @@ from devil.android import crash_handler
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import flag_changer
-from devil.android.sdk import shared_prefs
 from devil.android.sdk import version_codes
 from devil.android import logcat_monitor
 from devil.android.tools import system_app
@@ -44,7 +42,6 @@ from pylib.utils import chrome_proxy_utils
 from pylib.utils import code_coverage_utils
 from pylib.utils import gold_utils
 from pylib.utils import instrumentation_tracing
-from pylib.utils import shared_preference_utils
 from pylib.utils.device_dependencies import DevicePathComponentsFor
 from py_trace_event import trace_event
 from py_trace_event import trace_time
@@ -202,7 +199,6 @@ class LocalDeviceInstrumentationTestRun(
     self._flag_changers = {}
     self._webview_flag_changers = {}
     self._render_tests_device_output_dir = None
-    self._shared_prefs_to_restore = []
     self._skia_gold_session_manager = None
     self._skia_gold_work_dir = None
 
@@ -419,19 +415,6 @@ class LocalDeviceInstrumentationTestRun(
         dev.RunShellCommand(cmd, check_return=True)
 
       @trace_event.traced
-      def edit_shared_prefs(dev):
-        for setting in self._test_instance.edit_shared_prefs:
-          shared_pref = shared_prefs.SharedPrefs(
-              dev, setting['package'], setting['filename'],
-              use_encrypted_path=setting.get('supports_encrypted_path', False))
-          pref_to_restore = copy.copy(shared_pref)
-          pref_to_restore.Load()
-          self._shared_prefs_to_restore.append(pref_to_restore)
-
-          shared_preference_utils.ApplySharedPreferenceSetting(
-              shared_pref, setting)
-
-      @trace_event.traced
       def approve_app_links(dev):
         self._ToggleAppLinks(dev, 'STATE_APPROVED')
 
@@ -514,8 +497,8 @@ class LocalDeviceInstrumentationTestRun(
 
       install_steps += [push_test_data, create_flag_changer]
       post_install_steps += [
-          set_debug_app, edit_shared_prefs, approve_app_links,
-          set_vega_permissions, DismissCrashDialogs
+          set_debug_app, approve_app_links, set_vega_permissions,
+          DismissCrashDialogs
       ]
 
       def bind_crash_handler(step, dev):
@@ -601,13 +584,6 @@ class LocalDeviceInstrumentationTestRun(
         dev.RunShellCommand(cmd, shell=True, check_return=True)
 
       valgrind_tools.SetChromeTimeoutScale(dev, None)
-
-      # Restore any shared preference files that we stored during setup.
-      # This should be run sometime before the replace package contextmanager
-      # gets exited so we don't have to special case restoring files of
-      # replaced system apps.
-      for pref_to_restore in self._shared_prefs_to_restore:
-        pref_to_restore.Commit(force_commit=True)
 
       # If we've force approved app links for a package, undo that now.
       self._ToggleAppLinks(dev, 'STATE_NO_RESPONSE')
@@ -807,7 +783,8 @@ class LocalDeviceInstrumentationTestRun(
 
       if self._env.force_main_user:
         coverage_directory = device.ResolveSpecialPath(coverage_directory)
-      if not device.PathExists(coverage_directory):
+      if not device.PathExists(coverage_directory,
+                               as_root=self._env.force_main_user):
         # Root permission is needed when accessing a secondary user's path.
         device.RunShellCommand(['mkdir', '-p', coverage_directory],
                                check_return=True,
@@ -818,8 +795,11 @@ class LocalDeviceInstrumentationTestRun(
           device)
       # "%2m" is used to expand to 2 raw profiles at runtime. "%p" writes
       # process ID.
-      # See https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
-      clang_profile_filename = '%s_%s.profraw' % (coverage_basename, '%2m_%p')
+      # "%c" enables continuous mode. See crbug.com/1468343, crbug.com/1518474
+      # For more details, refer to:
+      #   https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
+      clang_profile_filename = ('%s_%s.profraw' %
+                                (coverage_basename, '%2m_%p%c'))
       extras[EXTRA_CLANG_COVERAGE_DEVICE_FILE] = posixpath.join(
           device_clang_profile_dir, clang_profile_filename)
 
@@ -1115,12 +1095,12 @@ class LocalDeviceInstrumentationTestRun(
         if r.GetName() == test_name:
           r.SetName(test_display_name)
 
-    # Add UNKNOWN results for any missing tests.
+    # Add NOTRUN results for any missing tests.
     iterable_test = test if isinstance(test, list) else [test]
     test_names = set(self._GetUniqueTestName(t) for t in iterable_test)
     results_names = set(r.GetName() for r in results)
     results.extend(
-        base_test_result.BaseTestResult(u, base_test_result.ResultType.UNKNOWN)
+        base_test_result.BaseTestResult(u, base_test_result.ResultType.NOTRUN)
         for u in test_names.difference(results_names))
 
     # Update the result type if we detect a crash.
@@ -1210,11 +1190,11 @@ class LocalDeviceInstrumentationTestRun(
           # associate with the first test.
           results[0].SetLink('tombstones', tombstone_file.Link())
 
-    unknown_tests = set(r.GetName() for r in results
-                        if r.GetType() == base_test_result.ResultType.UNKNOWN)
+    notrun_tests = set(r.GetName() for r in results
+                       if r.GetType() == base_test_result.ResultType.NOTRUN)
 
     # If a test that is batched crashes, the rest of the tests in that batch
-    # won't be ran and will have their status left as unknown in results,
+    # won't be ran and will have their status left as NOTRUN in results,
     # so rerun the tests. (see crbug/1127935)
     # Need to "unbatch" the tests, so that on subsequent tries, the tests can
     # get ran individually. This prevents an unrecognized crash from preventing
@@ -1223,7 +1203,7 @@ class LocalDeviceInstrumentationTestRun(
     # level.
     tests_to_rerun = []
     for t in iterable_test:
-      if self._GetUniqueTestName(t) in unknown_tests:
+      if self._GetUniqueTestName(t) in notrun_tests:
         prior_attempts = t.get('run_attempts', 0)
         t['run_attempts'] = prior_attempts + 1
         # It's possible every test in the batch could crash, so need to
@@ -1234,11 +1214,9 @@ class LocalDeviceInstrumentationTestRun(
           tests_to_rerun.append(t)
 
     # If we have a crash that isn't recognized as a crash in a batch, the tests
-    # will be marked as unknown. Sometimes a test failure causes a crash, but
+    # will be marked as NOTRUN. Sometimes a test failure causes a crash, but
     # the crash isn't recorded because the failure was detected first.
-    # When the UNKNOWN tests are reran while unbatched and pass,
-    # they'll have an UNKNOWN, PASS status, so will be improperly marked as
-    # flaky, so change status to NOTRUN and don't try rerunning. They will
+    # To avoid useless reruns, don't try rerunning. They will
     # get rerun individually at the local_device_test_run/environment level.
     # as the "Batch" annotation was removed.
     found_crash_or_fail = False
@@ -1251,9 +1229,6 @@ class LocalDeviceInstrumentationTestRun(
       # Don't bother rerunning since the unrecognized crashes in
       # the batch will keep failing.
       tests_to_rerun = None
-      for r in results:
-        if r.GetType() == base_test_result.ResultType.UNKNOWN:
-          r.SetType(base_test_result.ResultType.NOTRUN)
 
     return results, tests_to_rerun if tests_to_rerun else None
 
@@ -1271,11 +1246,12 @@ class LocalDeviceInstrumentationTestRun(
     else:
       test_mtime = os.path.getmtime(test_apk_path)
 
-    try:
-      return instrumentation_test_instance.GetTestsFromPickle(
-          pickle_path, test_mtime)
-    except instrumentation_test_instance.TestListPickleException as e:
-      logging.info('Could not get tests from pickle: %s', e)
+    if not self._test_instance.wait_for_java_debugger:
+      try:
+        return instrumentation_test_instance.GetTestsFromPickle(
+            pickle_path, test_mtime)
+      except instrumentation_test_instance.TestListPickleException as e:
+        logging.info('Could not get tests from pickle: %s', e)
     logging.info('Getting tests by having %s list them.',
                  self._test_instance.junit4_runner_class)
     def list_tests(d):
@@ -1370,7 +1346,7 @@ class LocalDeviceInstrumentationTestRun(
     device_file_path = trace_device_file.name
     if self._env.force_main_user:
       device_file_path = device.ResolveSpecialPath(device_file_path)
-    if device.FileExists(device_file_path, as_root=self._env.force_main_user):
+    if device.PathExists(device_file_path, as_root=self._env.force_main_user):
       try:
         java_trace_json = device.ReadFile(device_file_path,
                                           as_root=self._env.force_main_user)
@@ -1434,7 +1410,7 @@ class LocalDeviceInstrumentationTestRun(
     device_file_path = screenshot_device_file.name
     if self._env.force_main_user:
       device_file_path = device.ResolveSpecialPath(device_file_path)
-    if device.FileExists(device_file_path):
+    if device.PathExists(device_file_path, as_root=self._env.force_main_user):
       with self._env.output_manager.ArchivedTempfile(
           screenshot_filename, 'screenshot',
           output_manager.Datatype.PNG) as screenshot_host_file:
@@ -1464,7 +1440,7 @@ class LocalDeviceInstrumentationTestRun(
     logging.info('Starting Gold directory existence check')
     start_time = time.time()
     try:
-      if not device.FileExists(gold_dir):
+      if not device.PathExists(gold_dir):
         return
     finally:
       logging.info('Gold directory existence check took %fs',
@@ -1820,7 +1796,7 @@ def _SetLinkOnResults(results, full_test_name, link_name, link):
     full_test_name: A string containing the full name of the test, e.g.
         org.chromium.chrome.SomeTestClass#someTestMethod.
     link_name: A string containing the name of the link being set.
-    link: A string containing the lkink being set.
+    link: A string containing the link being set.
   """
   found_matching_test = _MatchingTestInResults(results, full_test_name)
   if not found_matching_test and _ShouldReportNoMatchingResult(full_test_name):

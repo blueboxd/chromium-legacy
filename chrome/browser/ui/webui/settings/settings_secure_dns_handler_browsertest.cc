@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListContents) {
   const base::Value::List resolver_list = handler_->GetSecureDnsResolverList();
 
   EXPECT_EQ(entries.size(), resolver_list.size());
-  for (const auto* entry : entries) {
+  for (const net::DohProviderEntry* entry : entries) {
     EXPECT_TRUE(FindDropdownItem(resolver_list, entry->ui_name,
                                  entry->doh_server_config.server_template(),
                                  entry->privacy_policy));
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest,
   auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
   const AccountId account_id0(AccountId::FromUserEmail("testuser@managed.com"));
   user_manager->AddUserWithAffiliationAndTypeAndProfile(
-      account_id0, /* is_affiliated=*/true, user_manager::USER_TYPE_REGULAR,
+      account_id0, /* is_affiliated=*/true, user_manager::UserType::kRegular,
       nullptr);
   user_manager::ScopedUserManager user_manager_enabler(std::move(user_manager));
 

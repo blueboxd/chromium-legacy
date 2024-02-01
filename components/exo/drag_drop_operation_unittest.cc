@@ -179,8 +179,8 @@ class DragDropOperationTestWithWebUITabStripTest
   MockShellDelegate* mock_shell_delegate() { return mock_shell_delegate_; }
 
  private:
-  raw_ptr<NiceMock<MockShellDelegate>, DanglingUntriaged | ExperimentalAsh>
-      mock_shell_delegate_ = nullptr;
+  raw_ptr<NiceMock<MockShellDelegate>, DanglingUntriaged> mock_shell_delegate_ =
+      nullptr;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -368,7 +368,7 @@ class MockDataTransferPolicyController
   MOCK_METHOD3(IsClipboardReadAllowed,
                bool(base::optional_ref<const ui::DataTransferEndpoint> data_src,
                     base::optional_ref<const ui::DataTransferEndpoint> data_dst,
-                    const absl::optional<size_t> size));
+                    const std::optional<size_t> size));
   MOCK_METHOD5(
       PasteIfAllowed,
       void(base::optional_ref<const ui::DataTransferEndpoint> data_src,

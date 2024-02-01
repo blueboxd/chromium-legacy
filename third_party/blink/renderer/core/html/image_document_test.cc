@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -123,6 +124,7 @@ class ImageDocumentTest : public testing::Test {
   void SetForceZeroLayoutHeight(bool);
 
  private:
+  test::TaskEnvironment task_environment_;
   Persistent<WindowToViewportScalingChromeClient> chrome_client_;
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   float page_zoom_factor_ = 0.0f;
@@ -155,7 +157,7 @@ void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
       is_animated ? AnimatedWebpImage() : JpegImage();
   WebNavigationParams::FillStaticResponse(
       params.get(), is_animated ? "image/webp" : "image/jpeg", "UTF-8",
-      base::make_span(reinterpret_cast<const char*>(data.data()), data.size()));
+      base::as_chars(base::span(data)));
   dummy_page_holder_->GetFrame().Loader().CommitNavigation(std::move(params),
                                                            nullptr);
 }

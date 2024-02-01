@@ -198,8 +198,8 @@ class WorkerTest : public ContentBrowserTest,
     GURL cookie_url = ssl_server_.GetURL(host, "/");
     std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
         cookie_url, std::string(kSameSiteCookie) + "; SameSite=Lax; Secure",
-        base::Time::Now(), absl::nullopt /* server_time */,
-        absl::nullopt /* cookie_partition_key */);
+        base::Time::Now(), std::nullopt /* server_time */,
+        std::nullopt /* cookie_partition_key */);
     base::RunLoop run_loop;
     cookie_manager->SetCanonicalCookie(
         *cookie, cookie_url, options,
@@ -247,7 +247,8 @@ class WorkerTest : public ContentBrowserTest,
     auto* service = static_cast<SharedWorkerServiceImpl*>(
         partition->GetSharedWorkerService());
     return service->FindMatchingSharedWorkerHost(
-        url, "", blink::StorageKey::CreateFirstParty(url::Origin::Create(url)));
+        url, "", blink::StorageKey::CreateFirstParty(url::Origin::Create(url)),
+        blink::mojom::SharedWorkerSameSiteCookies::kAll);
   }
 
   net::test_server::EmbeddedTestServer* ssl_server() { return &ssl_server_; }

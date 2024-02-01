@@ -4,13 +4,17 @@
 
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 
+#include <utility>
+
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/autofill/mock_autofill_agent.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/fast_checkout/fast_checkout_client_impl.h"
 #include "chrome/browser/plus_addresses/plus_address_service_factory.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/content/browser/test_autofill_client_injector.h"
 #include "components/autofill/content/browser/test_autofill_driver_injector.h"
@@ -24,22 +28,32 @@
 #include "components/plus_addresses/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/android/autofill/autofill_cvc_save_message_delegate.h"
 #include "chrome/browser/ui/android/autofill/autofill_save_card_bottom_sheet_bridge.h"
 #include "chrome/browser/ui/android/autofill/autofill_save_card_delegate_android.h"
 #include "components/autofill/core/browser/payments/autofill_save_card_ui_info.h"
+#else
+#include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
+#include "chrome/browser/ui/hats/mock_hats_service.h"
 #endif
 
 namespace autofill {
 namespace {
 
+using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::InSequence;
+using ::testing::Ref;
+using ::testing::Return;
 
 #if BUILDFLAG(IS_ANDROID)
 class MockAutofillSaveCardBottomSheetBridge
@@ -55,13 +69,20 @@ class MockAutofillSaveCardBottomSheetBridge
                std::unique_ptr<AutofillSaveCardDelegateAndroid>),
               (override));
 };
+#else
+class MockSaveCardBubbleController : public SaveCardBubbleControllerImpl {
+ public:
+  explicit MockSaveCardBubbleController(content::WebContents* web_contents)
+      : SaveCardBubbleControllerImpl(web_contents) {}
+  ~MockSaveCardBubbleController() override = default;
+
+  MOCK_METHOD(void, HideIconAndBubbleAfterUpload, (), (override));
+};
 #endif
 
-// Exposes the protected constructor.
 class TestChromeAutofillClient : public ChromeAutofillClient {
  public:
-  explicit TestChromeAutofillClient(content::WebContents* web_contents)
-      : ChromeAutofillClient(web_contents) {}
+  using ChromeAutofillClient::ChromeAutofillClient;
 
 #if BUILDFLAG(IS_ANDROID)
   MockFastCheckoutClient* GetFastCheckoutClient() override {
@@ -79,7 +100,6 @@ class TestChromeAutofillClient : public ChromeAutofillClient {
   }
 
   MockFastCheckoutClient fast_checkout_client_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 #endif
 };
 
@@ -90,6 +110,15 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
     PreparePersonalDataManager();
     // Creates the AutofillDriver and AutofillManager.
     NavigateAndCommit(GURL("about:blank"));
+
+#if !BUILDFLAG(IS_ANDROID)
+    SecurityStateTabHelper::CreateForWebContents(web_contents());
+
+    auto save_card_bubble_controller =
+        std::make_unique<MockSaveCardBubbleController>(web_contents());
+    web_contents()->SetUserData(save_card_bubble_controller->UserDataKey(),
+                                std::move(save_card_bubble_controller));
+#endif
   }
 
   void TearDown() override {
@@ -107,13 +136,12 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
     return personal_data_manager_;
   }
 
-  TestContentAutofillDriver* autofill_driver() {
-    return test_autofill_driver_injector_[web_contents()];
+#if !BUILDFLAG(IS_ANDROID)
+  MockSaveCardBubbleController& save_card_bubble_controller() {
+    return static_cast<MockSaveCardBubbleController&>(
+        *SaveCardBubbleControllerImpl::FromWebContents(web_contents()));
   }
-
-  TestBrowserAutofillManager* autofill_manager() {
-    return test_autofill_manager_injector_[web_contents()];
-  }
+#endif
 
  private:
   void PreparePersonalDataManager() {
@@ -135,13 +163,8 @@ class ChromeAutofillClientTest : public ChromeRenderViewHostTestHarness {
   }
 
   raw_ptr<TestPersonalDataManager> personal_data_manager_ = nullptr;
-  TestAutofillClientInjector<TestChromeAutofillClient>
+  TestAutofillClientInjector<testing::NiceMock<TestChromeAutofillClient>>
       test_autofill_client_injector_;
-  TestAutofillDriverInjector<TestContentAutofillDriver>
-      test_autofill_driver_injector_;
-  TestAutofillManagerInjector<TestBrowserAutofillManager>
-      test_autofill_manager_injector_;
-
   base::OnceCallback<void()> setup_flags_;
 };
 
@@ -204,10 +227,47 @@ TEST_F(ChromeAutofillClientTest, GetFormInteractionsFlowId_AdvancedTwice) {
 // tests; this test is intended to ensure the default state does not behave
 // unexpectedly.
 TEST_F(ChromeAutofillClientTest,
-       PlusAddressesDefaultFeatureStateMeansNullPlusAddressService) {
+       PlusAddressDefaultFeatureStateMeansNullPlusAddressService) {
   PlusAddressServiceFactory::GetForBrowserContext(
       web_contents()->GetBrowserContext());
-  EXPECT_EQ(client()->GetPlusAddressService(), nullptr);
+  EXPECT_EQ(client()->GetPlusAddressDelegate(), nullptr);
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+// Test that the hats service is called with the expected params.
+// Note that Surveys are only launched on Desktop.
+TEST_F(ChromeAutofillClientTest, TriggerUserPerceptionOfAutofillSurvey) {
+  MockHatsService* mock_hats_service = static_cast<MockHatsService*>(
+      HatsServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), base::BindRepeating(&BuildMockHatsService)));
+  EXPECT_CALL(*mock_hats_service, CanShowAnySurvey)
+      .WillRepeatedly(Return(true));
+
+  SurveyBitsData expected_bits = {{"granular filling available", false}};
+  const SurveyStringData field_filling_stats_data;
+  EXPECT_CALL(*mock_hats_service,
+              LaunchDelayedSurveyForWebContents(
+                  kHatsSurveyTriggerAutofillAddressUserPerception, _, _,
+                  expected_bits, Ref(field_filling_stats_data), _, _, _, _, _));
+
+  client()->TriggerUserPerceptionOfAutofillSurvey(field_filling_stats_data);
+}
+
+TEST_F(ChromeAutofillClientTest,
+       CreditCardUploadCompleted_HidesSaveCardBubbleAndIcon) {
+  EXPECT_CALL(save_card_bubble_controller(), HideIconAndBubbleAfterUpload);
+  client()->CreditCardUploadCompleted(true);
+}
+#endif
+
+// Test that there is always an PaymentsWindowManager present if attempted
+// to be retrieved.
+TEST_F(ChromeAutofillClientTest, GetPaymentsWindowManager) {
+  if constexpr (BUILDFLAG(IS_ANDROID)) {
+    EXPECT_EQ(client()->GetPaymentsWindowManager(), nullptr);
+  } else {
+    EXPECT_NE(client()->GetPaymentsWindowManager(), nullptr);
+  }
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -365,6 +425,5 @@ TEST_F(ChromeAutofillClientTestWithPaymentsAndroidBottomSheetFeature,
       base::DoNothing()));
 }
 #endif
-
 }  // namespace
 }  // namespace autofill

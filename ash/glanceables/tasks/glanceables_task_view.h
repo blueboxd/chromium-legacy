@@ -46,17 +46,14 @@ class ASH_EXPORT GlanceablesTaskView : public views::FlexLayoutView {
 
   using MarkAsCompletedCallback =
       base::RepeatingCallback<void(const std::string& task_id, bool completed)>;
-  using SaveCallback = base::RepeatingCallback<void(
-      const std::string& task_id,
-      const std::string& title,
-      api::TasksClient::OnTaskSavedCallback callback)>;
 
   // Modes of `tasks_title_view_` (simple label or text field).
+  // TODO(b/315188389): Remove this as editing functions is replaced by
+  // GlanceablesTaskViewV2 when the stable launch is enabled.
   enum class TaskTitleViewState { kView, kEdit };
 
   GlanceablesTaskView(const api::Task* task,
-                      MarkAsCompletedCallback mark_as_completed_callback,
-                      SaveCallback save_callback);
+                      MarkAsCompletedCallback mark_as_completed_callback);
   GlanceablesTaskView(const GlanceablesTaskView&) = delete;
   GlanceablesTaskView& operator=(const GlanceablesTaskView&) = delete;
   ~GlanceablesTaskView() override;
@@ -77,20 +74,12 @@ class ASH_EXPORT GlanceablesTaskView : public views::FlexLayoutView {
   // Handles press events on `task_title_button_`.
   void TaskTitleButtonPressed();
 
-  // Handles finished editing event from the text field, updates `task_title_`
-  // and propagates new `title` to the server.
-  void OnFinishedEditing(const std::u16string& title);
-
-  // Handles completion of running `save_callback_` callback.
-  // `task` - newly created or updated task.
-  void OnSaved(const api::Task* task);
-
   // Owned by views hierarchy.
   raw_ptr<CheckButton> button_ = nullptr;
-  raw_ptr<views::FlexLayoutView, ExperimentalAsh> contents_view_ = nullptr;
-  raw_ptr<views::FlexLayoutView, ExperimentalAsh> tasks_title_view_ = nullptr;
-  raw_ptr<TaskTitleButton, ExperimentalAsh> task_title_button_ = nullptr;
-  raw_ptr<views::FlexLayoutView, ExperimentalAsh> tasks_details_view_ = nullptr;
+  raw_ptr<views::FlexLayoutView> contents_view_ = nullptr;
+  raw_ptr<views::FlexLayoutView> tasks_title_view_ = nullptr;
+  raw_ptr<TaskTitleButton> task_title_button_ = nullptr;
+  raw_ptr<views::FlexLayoutView> tasks_details_view_ = nullptr;
 
   // ID for the task represented by this view.
   std::string task_id_;
@@ -100,9 +89,6 @@ class ASH_EXPORT GlanceablesTaskView : public views::FlexLayoutView {
 
   // Marks the task as completed.
   MarkAsCompletedCallback mark_as_completed_callback_;
-
-  // Saves the task (either creates or updates the existing one).
-  SaveCallback save_callback_;
 
   base::WeakPtrFactory<GlanceablesTaskView> weak_ptr_factory_{this};
 };

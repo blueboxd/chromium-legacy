@@ -1302,7 +1302,7 @@ void LineBreaker::SplitTextIntoSegments(const InlineItem& item,
       continue;
     InlineItemResult* result = AddItem(item, glyph_end, line_info);
     result->should_create_line_box = true;
-    auto shape_result_view =
+    auto* shape_result_view =
         ShapeResultView::Create(&shape, current_.text_offset, glyph_end);
     // For general CSS text, we apply SnappedWidth().ClampNegativeToZero().
     // However we need to remove ClampNegativeToZero() for SVG <text> in order
@@ -1372,17 +1372,17 @@ LineBreaker::BreakResult LineBreaker::BreakText(
    public:
     ShapingLineBreakerImpl(LineBreaker* line_breaker,
                            const InlineItem* item,
-                           scoped_refptr<const ShapeResult> result)
-        : ShapingLineBreaker(std::move(result),
+                           const ShapeResult* result)
+        : ShapingLineBreaker(result,
                              &line_breaker->break_iterator_,
                              line_breaker->hyphenation_),
           line_breaker_(line_breaker),
           item_(item) {}
 
    protected:
-    scoped_refptr<ShapeResult> Shape(unsigned start,
-                                     unsigned end,
-                                     ShapeOptions options) final {
+    const ShapeResult* Shape(unsigned start,
+                             unsigned end,
+                             ShapeOptions options) final {
       return line_breaker_->ShapeText(*item_, start, end, options);
     }
 
@@ -1395,6 +1395,7 @@ LineBreaker::BreakResult LineBreaker::BreakText(
   const ComputedStyle& style = *item.Style();
   breaker.SetTextSpacingTrim(style.GetFontDescription().GetTextSpacingTrim());
   breaker.SetLineStart(line_info->StartOffset());
+  breaker.SetIsAfterForcedBreak(previous_line_had_forced_break_);
 
   // Reshaping between the last character and trailing spaces is needed only
   // when we need accurate end position, because kerning between trailing spaces
@@ -1425,7 +1426,7 @@ LineBreaker::BreakResult LineBreaker::BreakText(
     ++try_count;
     DCHECK_LE(try_count, 2u);
 #endif
-    scoped_refptr<const ShapeResultView> shape_result =
+    const ShapeResultView* shape_result =
         breaker.ShapeLine(item_result->StartOffset(),
                           available_width.ClampNegativeToZero(), &result);
 
@@ -1465,7 +1466,7 @@ LineBreaker::BreakResult LineBreaker::BreakText(
     item_result->text_offset.end = result.break_offset;
     item_result->text_offset.AssertNotEmpty();
     item_result->has_only_trailing_spaces = result.has_trailing_spaces;
-    item_result->shape_result = std::move(shape_result);
+    item_result->shape_result = shape_result;
     break;
   }
 
@@ -1517,11 +1518,11 @@ bool LineBreaker::BreakTextAt(InlineItemResult* item_result,
     DCHECK_GE(break_at_.end.text_offset, item_result->text_offset.end);
   }
   if (item_result->Length()) {
-    scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLineAt(
+    const ShapeResultView* shape_result = breaker.ShapeLineAt(
         item_result->StartOffset(), item_result->EndOffset());
     item_result->inline_size =
         shape_result->SnappedWidth().ClampNegativeToZero();
-    item_result->shape_result = std::move(shape_result);
+    item_result->shape_result = shape_result;
     if (break_at_.is_hyphenated) {
       AddHyphen(line_info->MutableResults(), item_result);
     }
@@ -1732,11 +1733,11 @@ void LineBreaker::HandleEmptyText(const InlineItem& item, LineInfo* line_info) {
 }
 
 // Re-shape the specified range of |InlineItem|.
-scoped_refptr<ShapeResult> LineBreaker::ShapeText(const InlineItem& item,
-                                                  unsigned start,
-                                                  unsigned end,
-                                                  ShapeOptions options) {
-  scoped_refptr<ShapeResult> shape_result;
+const ShapeResult* LineBreaker::ShapeText(const InlineItem& item,
+                                          unsigned start,
+                                          unsigned end,
+                                          ShapeOptions options) {
+  ShapeResult* shape_result = nullptr;
   if (!items_data_.segments) {
     RunSegmenter::RunSegmenterRange segment_range =
         InlineItemSegment::UnpackSegmentData(start, end, item.SegmentData());
@@ -1775,6 +1776,9 @@ void LineBreaker::AppendCandidates(const InlineItemResult& item_result,
 
   DCHECK(item.TextShapeResult());
   struct ShapeResultWrapper {
+    STACK_ALLOCATED();
+
+   public:
     explicit ShapeResultWrapper(const ShapeResult* shape_result)
         : shape_result(shape_result),
           shape_result_start_index(shape_result->StartIndex()),
@@ -1976,7 +1980,7 @@ void LineBreaker::AppendCandidates(const InlineItemResult& item_result,
       } else {
         DCHECK_LT(end_safe_offset, end_offset);
         end_position = shape_result.PositionForOffset(end_safe_offset);
-        scoped_refptr<ShapeResult> end_shape_result =
+        const ShapeResult* end_shape_result =
             ShapeText(item, end_safe_offset, end_offset);
         end_position += end_shape_result->Width();
       }
@@ -2046,7 +2050,7 @@ bool LineBreaker::CanBreakInside(const InlineItemResult& item_result) {
 
 // Compute a new ShapeResult for the specified end offset.
 // The end is re-shaped if it is not safe-to-break.
-scoped_refptr<ShapeResultView> LineBreaker::TruncateLineEndResult(
+const ShapeResultView* LineBreaker::TruncateLineEndResult(
     const LineInfo& line_info,
     const InlineItemResult& item_result,
     unsigned end_offset) {
@@ -2055,7 +2059,7 @@ scoped_refptr<ShapeResultView> LineBreaker::TruncateLineEndResult(
 
   // Check given offsets require to truncate |item_result.shape_result|.
   const unsigned start_offset = item_result.StartOffset();
-  const ShapeResultView* source_result = item_result.shape_result.get();
+  const ShapeResultView* source_result = item_result.shape_result.Get();
   DCHECK(source_result);
   DCHECK_GE(start_offset, source_result->StartIndex());
   DCHECK_LE(end_offset, source_result->EndIndex());
@@ -2073,12 +2077,12 @@ scoped_refptr<ShapeResultView> LineBreaker::TruncateLineEndResult(
     return ShapeResultView::Create(source_result, start_offset, end_offset);
   }
 
-  scoped_refptr<ShapeResult> end_result =
+  const ShapeResult* end_result =
       ShapeText(item, std::max(last_safe, start_offset), end_offset);
   DCHECK_EQ(end_result->Direction(), source_result->Direction());
   ShapeResultView::Segment segments[2];
   segments[0] = {source_result, start_offset, last_safe};
-  segments[1] = {end_result.get(), 0, end_offset};
+  segments[1] = {end_result, 0, end_offset};
   return ShapeResultView::Create(segments);
 }
 
@@ -2247,7 +2251,7 @@ void LineBreaker::RemoveTrailingCollapsibleSpace(LineInfo* line_info) {
   // We have a trailing collapsible space. Remove it.
   InlineItemResult* item_result = trailing_collapsible_space_->item_result;
   position_ -= item_result->inline_size;
-  if (scoped_refptr<const ShapeResultView>& collapsed_shape_result =
+  if (const ShapeResultView* collapsed_shape_result =
           trailing_collapsible_space_->collapsed_shape_result) {
     --item_result->text_offset.end;
     item_result->text_offset.AssertNotEmpty();
@@ -2273,7 +2277,7 @@ LayoutUnit LineBreaker::TrailingCollapsibleSpaceWidth(LineInfo* line_info) {
   // Normally, the width of new_reuslt is smaller, but technically it can be
   // larger. In such case, it means the trailing spaces has negative width.
   InlineItemResult* item_result = trailing_collapsible_space_->item_result;
-  if (scoped_refptr<const ShapeResultView>& collapsed_shape_result =
+  if (const ShapeResultView* collapsed_shape_result =
           trailing_collapsible_space_->collapsed_shape_result) {
     return item_result->inline_size - collapsed_shape_result->SnappedWidth();
   }
@@ -2304,6 +2308,10 @@ void LineBreaker::ComputeTrailingCollapsibleSpace(LineInfo* line_info) {
     if (item.Type() == InlineItem::kText) {
       DCHECK_GT(item_result.EndOffset(), 0u);
       DCHECK(item.Style());
+      if (Character::IsOtherSpaceSeparator(text[item_result.EndOffset() - 1])) {
+        trailing_whitespace_ = WhitespaceState::kPreserved;
+        break;
+      }
       if (!IsBreakableSpace(text[item_result.EndOffset() - 1]))
         break;
       if (item.Style()->ShouldPreserveWhiteSpaces()) {
@@ -2449,7 +2457,7 @@ void LineBreaker::HandleControlItem(const InlineItem& item,
         HandleEmptyText(item, line_info);
         return;
       }
-      scoped_refptr<const ShapeResult> shape_result =
+      const ShapeResult* shape_result =
           ShapeResult::CreateForTabulationCharacters(
               &style.GetFont(), item.Direction(), style.GetTabSize(), position_,
               item.StartOffset(), item.Length());
@@ -2872,6 +2880,12 @@ void LineBreaker::HandleFloat(const InlineItem& item,
     item_result->positioned_float =
         leading_floats_.floats[leading_floats_index_++];
 
+    // Save a backup copy of `exclusion_space_` even if leading floats don't
+    // modify it. See `RewindFloat`.
+    DCHECK(exclusion_space_);
+    item_result->exclusion_space_before_position_float.CopyFrom(
+        *exclusion_space_);
+
     // Don't break after leading floats if indented.
     if (position_ != 0)
       item_result->can_break_after = false;
@@ -2948,6 +2962,21 @@ void LineBreaker::RewindFloats(unsigned new_end,
   for (const InlineItemResult& item_result :
        base::make_span(item_results).subspan(new_end)) {
     if (item_result.positioned_float) {
+      // Adjust `leading_floats_index_` if this is a leading float. See
+      // `HandleFloat` and `PositionLeadingFloats`.
+      if (item_result.item_index < leading_floats_.handled_index) {
+        for (unsigned i = 0; i < leading_floats_.floats.size(); ++i) {
+          if (leading_floats_.floats[i].layout_result ==
+              item_result.positioned_float->layout_result) {
+            leading_floats_index_ = i;
+            // Need to restore `exclusion_space_` even if leading floats don't
+            // modify `exclusion_space_`, because there may be following
+            // non-leading floats that modified it.
+            break;
+          }
+        }
+      }
+
       *exclusion_space_ = item_result.exclusion_space_before_position_float;
       UpdateLineOpportunity();
       break;

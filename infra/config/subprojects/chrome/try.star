@@ -97,6 +97,10 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "chromeos-brya-chrome-skylab",
+)
+
+chrome_internal_verifier(
     builder = "chromeos-eve-chrome",
 )
 
@@ -109,6 +113,10 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "chromeos-jacuzzi-chrome-skylab",
+)
+
+chrome_internal_verifier(
     builder = "chromeos-jacuzzi-compile-chrome",
 )
 
@@ -118,6 +126,10 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = "chromeos-octopus-compile-chrome",
+)
+
+chrome_internal_verifier(
+    builder = "chromeos-volteer-chrome-skylab",
 )
 
 chrome_internal_verifier(
@@ -137,7 +149,15 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "fuchsia-fyi-sherlock-qemu",
+)
+
+chrome_internal_verifier(
     builder = "fuchsia-internal-images-roller",
+)
+
+chrome_internal_verifier(
+    builder = "fuchsia-smoke-astro",
 )
 
 chrome_internal_verifier(

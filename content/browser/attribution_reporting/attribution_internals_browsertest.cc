@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/attribution_reporting/attribution_internals_ui.h"
-
 #include <stdint.h>
 
 #include <limits>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -16,18 +15,14 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
-#include "components/attribution_reporting/aggregatable_dedup_key.h"
-#include "components/attribution_reporting/aggregatable_trigger_config.h"
-#include "components/attribution_reporting/aggregatable_trigger_data.h"
-#include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
-#include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
+#include "content/browser/attribution_reporting/attribution_internals_ui.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_os_level_manager.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -59,7 +54,6 @@
 #include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/trigger_verification.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace content {
@@ -386,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           table.children[0].children[13]?.innerText === '{}' &&
           table.children[1].children[13]?.innerText === '{\n "a": "0x1"\n}' &&
           table.children[0].children[14]?.innerText === 'modulus' &&
-          table.children[0].children[15]?.innerText === '14' &&
+          table.children[0].children[15]?.innerText === '14.000' &&
           table.children[0].children[16]?.innerText === '0 / 65536' &&
           table.children[1].children[16]?.innerText === '1300 / 65536' &&
           table.children[0].children[17]?.innerText === '19' &&
@@ -678,7 +672,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
               .SetPriority(11)
               .Build(),
           /*new_event_level_report=*/IrreleventEventLevelReport(),
-          /*new_aggregatable_report=*/absl::nullopt,
+          /*new_aggregatable_report=*/std::nullopt,
           /*source=*/SourceBuilder().BuildStored()));
 
   {
@@ -1006,7 +1000,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   ASSERT_TRUE(ExecJsInWebUI(R"(
     document.querySelector('#reportTable')
      .shadowRoot.querySelector('input[type="checkbox"]').click();
-    document.getElementById('send-reports').click();
+    document.querySelector('#event-level-report-controls button').click();
   )"));
 
   // The real manager would do this itself, but the test manager requires manual
@@ -1158,56 +1152,15 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        TriggersDisplayed) {
   ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  const auto create_trigger = [](std::vector<network::TriggerVerification>
-                                     verifications) {
-    return AttributionTrigger(
-        /*reporting_origin=*/*SuitableOrigin::Deserialize("https://r.test"),
-        attribution_reporting::TriggerRegistration(
-            FilterPair(
-                /*positive=*/{*FilterConfig::Create({{"a", {"b"}}})},
-                /*negative=*/{*FilterConfig::Create(
-                    {{"g", {"h"}}}, /*lookback_window=*/base::Seconds(2))}),
-            /*debug_key=*/1,
-            {attribution_reporting::AggregatableDedupKey(
-                /*dedup_key=*/18, FilterPair())},
-            {
-                attribution_reporting::EventTriggerData(
-                    /*data=*/2,
-                    /*priority=*/3,
-                    /*dedup_key=*/absl::nullopt,
-                    FilterPair(
-                        /*positive=*/{*FilterConfig::Create({{"c", {"d"}}})},
-                        /*negative=*/{})),
-                attribution_reporting::EventTriggerData(
-                    /*data=*/4,
-                    /*priority=*/5,
-                    /*dedup_key=*/6,
-                    FilterPair(
-                        /*positive=*/{},
-                        /*negative=*/{*FilterConfig::Create({{"e", {"f"}}})})),
-            },
-            {*attribution_reporting::AggregatableTriggerData::Create(
-                 /*key_piece=*/345,
-                 /*source_keys=*/{"a"},
-                 FilterPair(
-                     /*positive=*/{},
-                     /*negative=*/{*FilterConfig::Create({{"c", {"d"}}})})),
-             *attribution_reporting::AggregatableTriggerData::Create(
-                 /*key_piece=*/678,
-                 /*source_keys=*/{"b"},
-                 FilterPair(
-                     /*positive=*/{},
-                     /*negative=*/{*FilterConfig::Create({{"e", {"f"}}})}))},
-            /*aggregatable_values=*/
-            *attribution_reporting::AggregatableValues::Create(
-                {{"a", 123}, {"b", 456}}),
-            /*debug_reporting=*/false,
-            /*aggregation_coordinator_origin=*/absl::nullopt,
-            attribution_reporting::AggregatableTriggerConfig()),
-        *SuitableOrigin::Deserialize("https://d.test"),
-        std::move(verifications),
-        /*is_within_fenced_frame=*/false);
-  };
+  const auto create_trigger =
+      [](std::vector<network::TriggerVerification> verifications) {
+        return AttributionTrigger(
+            /*reporting_origin=*/*SuitableOrigin::Deserialize("https://r.test"),
+            attribution_reporting::TriggerRegistration(),
+            *SuitableOrigin::Deserialize("https://d.test"),
+            std::move(verifications),
+            /*is_within_fenced_frame=*/false);
+      };
 
   static constexpr char kScript[] = R"(
     const expectedVerification =
@@ -1249,14 +1202,14 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       [&](const AttributionTrigger& trigger,
           AttributionTrigger::EventLevelResult event_status,
           AttributionTrigger::AggregatableResult aggregatable_status,
-          absl::optional<uint64_t> cleared_debug_key = absl::nullopt) {
+          std::optional<uint64_t> cleared_debug_key = std::nullopt) {
         static int offset_hours = 0;
         manager()->NotifyTriggerHandled(
             trigger,
             CreateReportResult(
                 /*trigger_time=*/now + base::Hours(++offset_hours),
                 event_status, aggregatable_status,
-                /*replaced_event_level_report=*/absl::nullopt,
+                /*replaced_event_level_report=*/std::nullopt,
                 /*new_event_level_report=*/IrreleventEventLevelReport(),
                 /*new_aggregatable_report=*/IrreleventAggregatableReport(),
                 /*source=*/SourceBuilder().BuildStored()),
@@ -1359,9 +1312,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   ASSERT_TRUE(ExecJsInWebUI(R"(
     document.querySelector('#aggregatableReportTable')
       .shadowRoot.querySelectorAll('input[type="checkbox"]')[1].click();
+    document.querySelector('#aggregatable-report-controls button').click();
   )"));
-  ASSERT_TRUE(ExecJsInWebUI(
-      "document.getElementById('send-aggregatable-reports').click();"));
 
   // The real manager would do this itself, but the test manager requires manual
   // triggering.
@@ -1399,7 +1351,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     static constexpr char kScript[] = R"(
       const table = document.querySelector('#reportTable')
           .shadowRoot.querySelector('tbody');
-      const label = document.querySelector('#show-debug-event-reports span');
+      const label = document.querySelector('#event-level-report-controls span');
       const setTitleIfDone = (_, obs) => {
         if (table.children.length === 2 &&
             table.children[0].children[5]?.innerText === '1' &&
@@ -1428,7 +1380,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // Toggle checkbox.
   ASSERT_TRUE(ExecJsInWebUI(R"(
-    document.querySelector('#show-debug-event-reports input').click();)"));
+    document.querySelector('#event-level-report-controls input').click();)"));
 
   manager()->NotifyReportSent(ReportBuilder(AttributionInfoBuilder().Build(),
                                             SourceBuilder(now).BuildStored())
@@ -1445,7 +1397,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     static constexpr char kScript[] = R"(
       const table = document.querySelector('#reportTable')
           .shadowRoot.querySelector('tbody');
-      const label = document.querySelector('#show-debug-event-reports span');
+      const label = document.querySelector('#event-level-report-controls span');
       const setTitleIfDone = (_, obs) => {
         if (table.children.length === 1 &&
             table.children[0].children[5]?.innerText === '2' &&
@@ -1473,7 +1425,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // Toggle checkbox.
   ASSERT_TRUE(ExecJsInWebUI(R"(
-    document.querySelector('#show-debug-event-reports input').click();)"));
+    document.querySelector('#event-level-report-controls input').click();)"));
 
   // The debug reports should be visible again and the hidden label should be
   // cleared.
@@ -1481,7 +1433,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     static constexpr char kScript[] = R"(
       const table = document.querySelector('#reportTable').shadowRoot
           .querySelector('tbody');
-      const label = document.querySelector('#show-debug-event-reports span');
+      const label = document.querySelector('#event-level-report-controls span');
       const setTitleIfDone = (_, obs) => {
         if (table.children.length === 3 &&
             table.children[0].children[5]?.innerText === '1' &&
@@ -1514,11 +1466,10 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        VerboseDebugReport) {
   ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  absl::optional<AttributionDebugReport> report =
-      AttributionDebugReport::Create(
-          SourceBuilder().SetDebugReporting(true).Build(),
-          /*is_debug_cookie_set=*/true,
-          StoreSourceResult(StoreSourceResult::InternalError()));
+  std::optional<AttributionDebugReport> report = AttributionDebugReport::Create(
+      SourceBuilder().SetDebugReporting(true).Build(),
+      /*is_debug_cookie_set=*/true,
+      StoreSourceResult(StoreSourceResult::InternalError()));
   ASSERT_TRUE(report);
 
   static constexpr char kScript[] = R"(

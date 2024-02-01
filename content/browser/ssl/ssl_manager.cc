@@ -396,7 +396,7 @@ bool SSLManager::UpdateEntry(NavigationEntryImpl* entry,
   // necessarily have site instances.  Without a process, the entry can't
   // possibly have insecure content.  See bug https://crbug.com/12423.
   if (site_instance && ssl_host_state_delegate_) {
-    const absl::optional<url::Origin>& entry_origin =
+    const std::optional<url::Origin>& entry_origin =
         entry->root_node()->frame_entry->committed_origin();
     // In some cases (e.g., unreachable URLs), navigation entries might not have
     // origins attached to them. We don't care about tracking mixed content for
@@ -461,8 +461,9 @@ void SSLManager::UpdateLastCommittedEntry(int add_content_status_flags,
 }
 
 void SSLManager::NotifyDidChangeVisibleSSLState() {
-  WebContentsImpl* contents =
-      static_cast<WebContentsImpl*>(controller_->DeprecatedGetWebContents());
+  RenderFrameHostImpl* main_frame = controller_->frame_tree().GetMainFrame();
+  WebContentsImpl* contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(main_frame));
   contents->DidChangeVisibleSecurityState();
 }
 

@@ -18,8 +18,9 @@ class CreditCard;
 struct FormFieldData;
 
 // Returns the appropriate `credit_card` value based on `field_type` to fill
-// into `field`, and nullopt if no value could be found for the given `field`.
-std::optional<std::u16string> GetValueForCreditCard(
+// into `field`, and an empty string if no value could be found for the given
+// `field`.
+std::u16string GetFillingValueForCreditCard(
     const CreditCard& credit_card,
     const std::u16string& cvc,
     const std::string& app_locale,
@@ -34,6 +35,7 @@ std::optional<std::u16string> GetValueForCreditCard(
 // `autofill_fields`. `form_fields` are used to check if the cached field
 // is still present in the form on the renderer side.
 // TODO(crbug.com/1331312): Remove FormFieldData parameter.
+// TODO(crbug.com/1517894): Move to FormFiller
 bool WillFillCreditCardNumber(
     base::span<const FormFieldData> form_fields,
     base::span<const std::unique_ptr<AutofillField>> autofill_fields,

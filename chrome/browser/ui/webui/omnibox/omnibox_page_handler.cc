@@ -435,9 +435,8 @@ void OmniboxPageHandler::OnBitmapFetched(mojom::AutocompleteControllerType type,
                                          const std::string& image_url,
                                          const SkBitmap& bitmap) {
   auto data = gfx::Image::CreateFrom1xBitmap(bitmap).As1xPNGBytes();
-  std::string base_64;
-  base::Base64Encode(base::StringPiece(data->front_as<char>(), data->size()),
-                     &base_64);
+  std::string base_64 = base::Base64Encode(
+      base::StringPiece(data->front_as<char>(), data->size()));
   const char kDataUrlPrefix[] = "data:image/png;base64,";
   std::string data_url = GURL(kDataUrlPrefix + base_64).spec();
   page_->HandleAnswerImageData(type, image_url, data_url);
@@ -520,9 +519,8 @@ void OmniboxPageHandler::StartMl(mojom::SignalsPtr mojom_signals,
     AutocompleteMatch::ScoringSignals signals =
         mojo::ConvertTo<AutocompleteMatch::ScoringSignals>(mojom_signals);
     std::vector<AutocompleteScoringModelService::Result> result =
-        service->BatchScoreAutocompleteUrlMatchesSync({&signals}, {""});
-    std::move(callback).Run(result.size() ? std::get<0>(result[0]).value_or(-1)
-                                          : -1);
+        service->BatchScoreAutocompleteUrlMatchesSync({&signals});
+    std::move(callback).Run(result.size() ? result[0].value_or(-1) : -1);
   } else {
     std::move(callback).Run(-1);
   }

@@ -171,7 +171,9 @@ class TestSharedWorkerService : public content::SharedWorkerService {
   void EnumerateSharedWorkers(Observer* observer) override;
   bool TerminateWorker(const GURL& url,
                        const std::string& name,
-                       const blink::StorageKey& storage_key) override;
+                       const blink::StorageKey& storage_key,
+                       const blink::mojom::SharedWorkerSameSiteCookies
+                           same_site_cookies) override;
   void Shutdown() override;
 
   // Creates a new shared worker and returns its token.
@@ -218,7 +220,8 @@ void TestSharedWorkerService::EnumerateSharedWorkers(Observer* observer) {
 bool TestSharedWorkerService::TerminateWorker(
     const GURL& url,
     const std::string& name,
-    const blink::StorageKey& storage_key) {
+    const blink::StorageKey& storage_key,
+    const blink::mojom::SharedWorkerSameSiteCookies same_site_cookies) {
   // Not implemented.
   ADD_FAILURE();
   return false;
@@ -542,7 +545,8 @@ int TestProcessNodeSource::CreateProcessNode() {
 
   // Create the process node and insert it into the map.
   auto process_node = PerformanceManagerImpl::CreateProcessNode(
-      RenderProcessHostProxy::CreateForTesting(render_process_id));
+      RenderProcessHostProxy::CreateForTesting(render_process_id),
+      base::TaskPriority::HIGHEST);
   bool inserted =
       process_node_map_
           .insert({render_process_id.value(), std::move(process_node)})
@@ -654,9 +658,9 @@ content::GlobalRenderFrameHostId TestFrameNodeSource::CreateFrameNode(
                                                         frame_id);
   auto frame_node = PerformanceManagerImpl::CreateFrameNode(
       process_node, page_node_.get(), /*parent_frame_node=*/nullptr,
-      /*fenced_frame_embedder_frame_node*/ nullptr, frame_id,
+      /*outer_document_for_fenced_frame*/ nullptr, frame_id,
       blink::LocalFrameToken(), content::BrowsingInstanceId(0),
-      content::SiteInstanceId(0));
+      content::SiteInstanceId(0), /*is_current=*/true);
 
   bool inserted =
       frame_node_map_.insert({render_frame_host_id, std::move(frame_node)})

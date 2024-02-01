@@ -41,8 +41,11 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_features.h"
+#include "base/task/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/null_task_runner.h"
@@ -51,6 +54,8 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -130,10 +135,6 @@ std::string GetTestNameSuffix(
     const testing::TestParamInfo<std::tuple<RunnerType, WakeUpType>>& info) {
   return StrCat({"With", ToString(std::get<0>(info.param)).substr(1),
                  ToString(std::get<1>(info.param))});
-}
-
-void PrintTo(const RunnerType type, std::ostream* os) {
-  *os << ToString(type);
 }
 
 TaskQueueImpl* GetTaskQueueImpl(TaskQueue* task_queue) {
@@ -4771,20 +4772,20 @@ class MockTimeDomain : public TimeDomain {
 
 }  // namespace
 
-TEST_P(SequenceManagerTest, OnSystemIdleTimeDomainNotification) {
+TEST_P(SequenceManagerTest, OnIdleTimeDomainNotification) {
   if (GetUnderlyingRunnerType() != RunnerType::kMessagePump)
     return;
 
   auto queue = CreateTaskQueue();
 
-  // If we call OnSystemIdle, we expect registered TimeDomains to receive a call
-  // to MaybeFastForwardToWakeUp.  If no run loop has requested quit on idle,
-  // the parameter passed in should be false.
+  // If we call OnIdle, we expect registered TimeDomains to receive a call to
+  // MaybeFastForwardToWakeUp.  If no run loop has requested quit on idle, the
+  // parameter passed in should be false.
   StrictMock<MockTimeDomain> mock_time_domain;
   sequence_manager()->SetTimeDomain(&mock_time_domain);
   EXPECT_CALL(mock_time_domain, MaybeFastForwardToWakeUp(false))
       .WillOnce(Return(false));
-  sequence_manager()->OnSystemIdle();
+  sequence_manager()->OnIdle();
   sequence_manager()->ResetTimeDomain();
   Mock::VerifyAndClearExpectations(&mock_time_domain);
 
@@ -4795,7 +4796,7 @@ TEST_P(SequenceManagerTest, OnSystemIdleTimeDomainNotification) {
         EXPECT_CALL(mock_time_domain, MaybeFastForwardToWakeUp(true))
             .WillOnce(Return(false));
         sequence_manager()->SetTimeDomain(&mock_time_domain);
-        sequence_manager()->OnSystemIdle();
+        sequence_manager()->OnIdle();
         sequence_manager()->ResetTimeDomain();
       }));
 
@@ -5391,6 +5392,531 @@ TEST_P(SequenceManagerTest, OnTaskPostedCallbacks) {
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(NullTask));
   EXPECT_EQ(2, counter1);
   EXPECT_EQ(2, counter2);
+}
+
+// `RunOrPostTask` is tightly integrated with `ThreadControllerWithMessagePump`
+// and `RunLoop` so its tests can't use `SequenceManagerTest`.
+class SequenceManagerRunOrPostTaskTest : public testing::Test {
+ public:
+  SequenceManagerRunOrPostTaskTest() {
+    auto settings = SequenceManager::Settings::Builder().Build();
+    auto thread_controller =
+        std::make_unique<ThreadControllerWithMessagePumpImpl>(
+            std::make_unique<MessagePumpDefault>(), settings);
+    sequence_manager_ = SequenceManagerForTest::Create(
+        std::move(thread_controller), std::move(settings));
+    queue_ =
+        sequence_manager_->CreateTaskQueue(TaskQueue::Spec(QueueName::TEST_TQ));
+    other_queue_ =
+        sequence_manager_->CreateTaskQueue(TaskQueue::Spec(QueueName::TEST_TQ));
+    sequence_manager_->SetDefaultTaskRunner(queue_->task_runner());
+
+    thread_.Start();
+  }
+
+  SequenceManagerImpl* sequence_manager() { return sequence_manager_.get(); }
+  TaskQueue* queue() { return queue_.get(); }
+  TaskQueue* other_queue() { return other_queue_.get(); }
+  SingleThreadTaskRunner* task_runner() { return queue_->task_runner().get(); }
+  SingleThreadTaskRunner* other_task_runner() {
+    return other_queue_->task_runner().get();
+  }
+  SingleThreadTaskRunner* other_thread_task_runner() {
+    return thread_.task_runner().get();
+  }
+
+  void FlushOtherThread() { thread_.FlushForTesting(); }
+
+  // Allow tasks to run synchronously. This imitates being inside a `RunLoop`,
+  // but allows the test's body to keep running.
+  void SimulateInsideRunLoop() {
+    sequence_manager_->SetRunTaskSynchronouslyAllowed(true);
+  }
+
+ private:
+  std::unique_ptr<SequenceManagerForTest> sequence_manager_;
+  TaskQueue::Handle queue_;
+  TaskQueue::Handle other_queue_;
+  Thread thread_{"OtherThread"};
+};
+
+// Verify that `RunOrPostTask` from the bound thread does not run the task
+// synchronously if there is no active `RunLoop`.
+TEST_F(SequenceManagerRunOrPostTaskTest, FromBoundThreadOutsideRunLoop) {
+  bool did_run = false;
+  EXPECT_TRUE(task_runner()->RunOrPostTask(
+      subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+      BindLambdaForTesting([&]() { did_run = true; })));
+  EXPECT_FALSE(did_run);
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from another thread does not run the task
+// synchronously if there is no active `RunLoop`.
+TEST_F(SequenceManagerRunOrPostTaskTest, FromOtherThreadOutsideRunLoop) {
+  bool did_run = false;
+  other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+      }));
+
+  FlushOtherThread();
+  EXPECT_FALSE(did_run);
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from a task running on the bound thread does not
+// run the task synchronously.
+TEST_F(SequenceManagerRunOrPostTaskTest, FromInsideTask) {
+  bool did_run = false;
+  EXPECT_TRUE(task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+        EXPECT_FALSE(did_run);
+      })));
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from another thread does not run the task
+// synchronously if there is a queued task.
+TEST_F(SequenceManagerRunOrPostTaskTest, FromOtherThreadWithQueuedTask) {
+  SimulateInsideRunLoop();
+  EXPECT_TRUE(task_runner()->PostTask(FROM_HERE, DoNothing()));
+
+  bool did_run = false;
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+        EXPECT_FALSE(did_run);
+      })));
+
+  FlushOtherThread();
+  EXPECT_FALSE(did_run);
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from another thread does not run the task
+// synchronously if there is a queued task in a different queue from the same
+// `SequenceManager`.
+TEST_F(SequenceManagerRunOrPostTaskTest,
+       FromOtherThreadWithQueuedTaskOtherQueue) {
+  SimulateInsideRunLoop();
+  EXPECT_TRUE(other_task_runner()->PostTask(FROM_HERE, DoNothing()));
+
+  bool did_run = false;
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+        EXPECT_FALSE(did_run);
+      })));
+
+  FlushOtherThread();
+  EXPECT_FALSE(did_run);
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from another thread runs the task synchronously
+// if there is no queued or running task.
+TEST_F(SequenceManagerRunOrPostTaskTest, FromOtherThreadNoQueuedOrRunningTask) {
+  SimulateInsideRunLoop();
+
+  bool did_run = false;
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+        EXPECT_TRUE(did_run);
+      })));
+
+  FlushOtherThread();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from another thread does not run the task
+// synchronously when "internal work" is simulated.
+TEST_F(SequenceManagerRunOrPostTaskTest, FromOtherThreadInternalWork) {
+  SimulateInsideRunLoop();
+
+  // Simulate internal work execution in the message pump.
+  sequence_manager()->OnBeginWork();
+
+  bool did_run = false;
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+        EXPECT_FALSE(did_run);
+      })));
+  FlushOtherThread();
+  EXPECT_FALSE(did_run);
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from another thread runs the task synchronously
+// if there is no running task and the only queued task is in a different queue
+// which is disabled.
+TEST_F(SequenceManagerRunOrPostTaskTest, FromOtherThreadDisabledQueue) {
+  auto voter = queue()->CreateQueueEnabledVoter();
+  voter->SetVoteToEnable(false);
+  // Reload empty work queues (tasks can't run synchronously when there are
+  // pending requests to reload empty work queues).
+  RunLoop().RunUntilIdle();
+  SimulateInsideRunLoop();
+
+  bool did_run = false;
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+        EXPECT_FALSE(did_run);
+      })));
+
+  FlushOtherThread();
+  EXPECT_FALSE(did_run);
+  RunLoop().RunUntilIdle();
+  EXPECT_FALSE(did_run);
+  voter.reset();
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from another thread runs the task synchronously
+// if there is no running task and the only queued task is in a different queue
+// which is disabled.
+TEST_F(SequenceManagerRunOrPostTaskTest,
+       FromOtherThreadQueuedTaskInDisabledOtherQueue) {
+  bool did_run_other_task = false;
+  EXPECT_TRUE(other_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() { did_run_other_task = true; })));
+  auto voter = other_queue()->CreateQueueEnabledVoter();
+  voter->SetVoteToEnable(false);
+  // Reload empty work queues (tasks can't run synchronously when there are
+  // pending requests to reload empty work queues).
+  RunLoop().RunUntilIdle();
+  EXPECT_FALSE(did_run_other_task);
+  SimulateInsideRunLoop();
+
+  bool did_run = false;
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+        EXPECT_TRUE(did_run);
+      })));
+
+  FlushOtherThread();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from another thread does not run the task
+// synchronously if there is a running task.
+TEST_F(SequenceManagerRunOrPostTaskTest, FromOtherThreadWithRunningTask) {
+  WaitableEvent main_thread_task_running;
+  WaitableEvent run_or_post_task_done;
+  task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                            main_thread_task_running.Signal();
+                            run_or_post_task_done.Wait();
+                          }));
+
+  bool did_run = false;
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        main_thread_task_running.Wait();
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+        EXPECT_FALSE(did_run);
+        run_or_post_task_done.Signal();
+      })));
+
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that `RunOrPostTask` from another thread does not run the task
+// synchronously if there is a running task blocked in a nested loop.
+TEST_F(SequenceManagerRunOrPostTaskTest,
+       FromOtherThreadWithRunningTaskInNestedLoop) {
+  WaitableEvent main_thread_task_running;
+  RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
+  auto nested_run_loop_quit_closure = nested_run_loop.QuitClosure();
+  task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                            main_thread_task_running.Signal();
+                            nested_run_loop.Run();
+                          }));
+
+  thread_local bool is_main_thread = false;
+  is_main_thread = true;
+
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_FALSE(is_main_thread);
+        main_thread_task_running.Wait();
+        // Wait to increase chances of posting while the main thread task is in
+        // a nested `RunLoop`.
+        PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() {
+              // Should not run synchronously on the other thread.
+              EXPECT_TRUE(is_main_thread);
+              std::move(nested_run_loop_quit_closure).Run();
+            })));
+      })));
+
+  RunLoop().RunUntilIdle();
+  FlushOtherThread();
+}
+
+// Verify that `RunOrPostTask` from another thread does not run the task
+// synchronously if there is a running task in a different queue from the same
+// `SequenceManager`.
+TEST_F(SequenceManagerRunOrPostTaskTest,
+       FromOtherThreadWithRunningTaskOtherQueue) {
+  WaitableEvent main_thread_task_running;
+  WaitableEvent run_or_post_task_done;
+  other_task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                  main_thread_task_running.Signal();
+                                  run_or_post_task_done.Wait();
+                                }));
+
+  bool did_run = false;
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        main_thread_task_running.Wait();
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_run = true; })));
+        EXPECT_FALSE(did_run);
+        run_or_post_task_done.Signal();
+      })));
+
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_run);
+}
+
+// Verify that a task run synchronously inside `RunOrPostTask` prevents another
+// task from starting on the bound thread.
+TEST_F(SequenceManagerRunOrPostTaskTest,
+       MainThreadCantStartTaskDuringRunOrPostTask) {
+  SimulateInsideRunLoop();
+  WaitableEvent sync_task_started;
+  bool sync_task_done = true;
+
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() {
+              sync_task_started.Signal();
+              // Wait to increase chances that the main thread will attempt to
+              // schedule its task.
+              PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+              sync_task_done = true;
+            })));
+        EXPECT_TRUE(sync_task_done);
+      })));
+
+  sync_task_started.Wait();
+  RunLoop run_loop;
+  task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                            // Must deterministically run after the sync task.
+                            EXPECT_TRUE(sync_task_done);
+                            run_loop.Quit();
+                          }));
+  run_loop.Run();
+  FlushOtherThread();
+}
+
+// Verify that when `RunOrPostTask` is called concurrently from multiple
+// threads, only one can execute its task synchronously.
+TEST_F(SequenceManagerRunOrPostTaskTest, ConcurrentCalls) {
+  SimulateInsideRunLoop();
+
+  WaitableEvent did_start_task_1;
+  WaitableEvent did_post_task_2;
+
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() {
+              did_start_task_1.Signal();
+              did_post_task_2.Wait();
+            })));
+      })));
+
+  Thread other_thread_2{"OtherThread2"};
+  other_thread_2.Start();
+
+  bool did_complete_task_2 = false;
+  EXPECT_TRUE(other_thread_2.task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        did_start_task_1.Wait();
+        EXPECT_TRUE(task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() { did_complete_task_2 = true; })));
+        EXPECT_FALSE(did_complete_task_2);
+        did_post_task_2.Signal();
+      })));
+
+  FlushOtherThread();
+  EXPECT_FALSE(did_complete_task_2);
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_complete_task_2);
+}
+
+// Verify the behavior of `SequenceCheckerImpl` and `ThreadCheckerImpl` in a
+// callback that runs synchronously in `RunOrPostTask` on another thread.
+TEST_F(SequenceManagerRunOrPostTaskTest, SequenceAndThreadChecker) {
+  SimulateInsideRunLoop();
+
+  SequenceCheckerImpl sequence_checker;
+  ThreadCheckerImpl thread_checker;
+  absl::optional<SequenceCheckerImpl> sequence_checker_bound_in_task;
+  absl::optional<ThreadCheckerImpl> thread_checker_bound_in_task;
+
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        bool did_run = false;
+
+        task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() {
+              EXPECT_TRUE(sequence_checker.CalledOnValidSequence());
+              EXPECT_FALSE(thread_checker.CalledOnValidThread());
+              sequence_checker_bound_in_task.emplace();
+              thread_checker_bound_in_task.emplace();
+              EXPECT_TRUE(
+                  sequence_checker_bound_in_task->CalledOnValidSequence());
+              EXPECT_TRUE(thread_checker_bound_in_task->CalledOnValidThread());
+              did_run = true;
+            }));
+        EXPECT_TRUE(did_run);
+        EXPECT_FALSE(sequence_checker_bound_in_task->CalledOnValidSequence());
+        EXPECT_FALSE(thread_checker_bound_in_task->CalledOnValidThread());
+      })));
+
+  FlushOtherThread();
+  EXPECT_TRUE(sequence_checker_bound_in_task->CalledOnValidSequence());
+  EXPECT_FALSE(thread_checker_bound_in_task->CalledOnValidThread());
+}
+
+// Same as SequenceManagerRunOrPostTaskTest.SequenceAndThreadChecker, but
+// `RunOrPostTask()` is invoked from a `ThreadPool` task (i.e. within a
+// `TaskScope`).
+TEST_F(SequenceManagerRunOrPostTaskTest,
+       SequenceAndThreadCheckerFromThreadPool) {
+  SimulateInsideRunLoop();
+
+  SequenceCheckerImpl sequence_checker;
+  ThreadCheckerImpl thread_checker;
+  absl::optional<SequenceCheckerImpl> sequence_checker_bound_in_task;
+  absl::optional<ThreadCheckerImpl> thread_checker_bound_in_task;
+
+  ThreadPoolInstance::Create("TestPool");
+  ThreadPoolInstance::Get()->Start({/* max_num_foreground_threads_in=*/1});
+
+  EXPECT_TRUE(ThreadPool::PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        bool did_run = false;
+        task_runner()->RunOrPostTask(
+            subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+            BindLambdaForTesting([&]() {
+              EXPECT_TRUE(sequence_checker.CalledOnValidSequence());
+              EXPECT_FALSE(thread_checker.CalledOnValidThread());
+              sequence_checker_bound_in_task.emplace();
+              thread_checker_bound_in_task.emplace();
+              EXPECT_TRUE(
+                  sequence_checker_bound_in_task->CalledOnValidSequence());
+              EXPECT_TRUE(thread_checker_bound_in_task->CalledOnValidThread());
+              did_run = true;
+            }));
+        EXPECT_TRUE(did_run);
+        EXPECT_FALSE(sequence_checker_bound_in_task->CalledOnValidSequence());
+        EXPECT_FALSE(thread_checker_bound_in_task->CalledOnValidThread());
+      })));
+
+  ThreadPoolInstance::Get()->FlushForTesting();
+  ThreadPoolInstance::Get()->JoinForTesting();
+  ThreadPoolInstance::Set(nullptr);
+
+  EXPECT_TRUE(sequence_checker_bound_in_task->CalledOnValidSequence());
+  EXPECT_FALSE(thread_checker_bound_in_task->CalledOnValidThread());
+}
+
+TEST_F(SequenceManagerRunOrPostTaskTest, CurrentDefaultTaskRunner) {
+  SimulateInsideRunLoop();
+
+  EXPECT_TRUE(task_runner()->RunsTasksInCurrentSequence());
+  EXPECT_TRUE(task_runner()->BelongsToCurrentThread());
+  EXPECT_TRUE(other_task_runner()->RunsTasksInCurrentSequence());
+  EXPECT_TRUE(other_task_runner()->BelongsToCurrentThread());
+
+  EXPECT_TRUE(other_thread_task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_TRUE(SingleThreadTaskRunner::HasCurrentDefault());
+        EXPECT_EQ(other_thread_task_runner(),
+                  SingleThreadTaskRunner::GetCurrentDefault());
+        EXPECT_TRUE(SequencedTaskRunner::HasCurrentDefault());
+        EXPECT_EQ(other_thread_task_runner(),
+                  SequencedTaskRunner::GetCurrentDefault());
+
+        EXPECT_FALSE(task_runner()->RunsTasksInCurrentSequence());
+        EXPECT_FALSE(task_runner()->BelongsToCurrentThread());
+        EXPECT_FALSE(other_task_runner()->RunsTasksInCurrentSequence());
+        EXPECT_FALSE(other_task_runner()->BelongsToCurrentThread());
+
+        for (auto* tested_task_runner : {task_runner(), other_task_runner()}) {
+          bool did_run = false;
+
+          // The "current default" `SequencedTaskRunner` is the
+          // `SequenceManager`'s default task runner, irrespective of the task
+          // runner on which `RunOrPostTask` is called.
+          tested_task_runner->RunOrPostTask(
+              subtle::RunOrPostTaskPassKeyForTesting(), FROM_HERE,
+              BindLambdaForTesting([&]() {
+                did_run = true;
+                EXPECT_FALSE(SingleThreadTaskRunner::HasCurrentDefault());
+                EXPECT_TRUE(SequencedTaskRunner::HasCurrentDefault());
+                EXPECT_EQ(task_runner(),
+                          SequencedTaskRunner::GetCurrentDefault());
+
+                EXPECT_TRUE(task_runner()->RunsTasksInCurrentSequence());
+                EXPECT_FALSE(task_runner()->BelongsToCurrentThread());
+                EXPECT_TRUE(other_task_runner()->RunsTasksInCurrentSequence());
+                EXPECT_FALSE(other_task_runner()->BelongsToCurrentThread());
+              }));
+          EXPECT_TRUE(did_run);
+        }
+
+        EXPECT_TRUE(SingleThreadTaskRunner::HasCurrentDefault());
+        EXPECT_EQ(other_thread_task_runner(),
+                  SingleThreadTaskRunner::GetCurrentDefault());
+        EXPECT_TRUE(SequencedTaskRunner::HasCurrentDefault());
+        EXPECT_EQ(other_thread_task_runner(),
+                  SequencedTaskRunner::GetCurrentDefault());
+      })));
+
+  FlushOtherThread();
 }
 
 TEST(

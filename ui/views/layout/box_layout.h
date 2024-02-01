@@ -5,8 +5,6 @@
 #ifndef UI_VIEWS_LAYOUT_BOX_LAYOUT_H_
 #define UI_VIEWS_LAYOUT_BOX_LAYOUT_H_
 
-#include <map>
-
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "ui/gfx/geometry/insets.h"
@@ -19,6 +17,25 @@ class Size;
 }  // namespace gfx
 
 namespace views {
+
+class VIEWS_EXPORT BoxLayoutFlexSpecification {
+ public:
+  BoxLayoutFlexSpecification();
+  ~BoxLayoutFlexSpecification();
+
+  // Makes a copy of this specification with a different weight.
+  BoxLayoutFlexSpecification WithWeight(int weight) const;
+
+  // Whether to use minimum values to make copies of this specification.
+  BoxLayoutFlexSpecification UseMinSize(bool use_min_size) const;
+
+  int weight() const { return weight_; }
+  bool use_min_size() const { return use_min_size_; }
+
+ private:
+  int weight_ = 1;
+  bool use_min_size_ = false;
+};
 
 // A Layout manager that arranges child views vertically or horizontally in a
 // side-by-side fashion with spacing around and between the child views. The
@@ -211,20 +228,12 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     bool VisibleToLayout() const;
 
    private:
-    // `view_` and `layout_` is not a raw_ptr<> for performance reasons: based
-    // on this sampling profiler result on ChromeOS.
-    // go/brp-cros-prof-diff-20230403
+    // RAW_PTR_EXCLUSION: Performance reasons: based on this sampling profiler
+    // result on ChromeOS. go/brp-cros-prof-diff-20230403
     RAW_PTR_EXCLUSION View* view_ = nullptr;
     RAW_PTR_EXCLUSION const BoxLayout* layout_ = nullptr;
     gfx::Insets margins_;
   };
-
-  struct Flex {
-    int flex_weight;
-    bool use_min_size;
-  };
-
-  using FlexMap = std::map<const View*, Flex>;
 
   // Returns the flex for the specified |view|.
   int GetFlexForView(const View* view) const;
@@ -342,9 +351,6 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   // The alignment of children in the cross axis. This is
   // kStretch by default.
   CrossAxisAlignment cross_axis_alignment_ = CrossAxisAlignment::kStretch;
-
-  // A map of views to their flex weights.
-  FlexMap flex_map_;
 
   // The flex weight for views if none is set. Defaults to 0.
   int default_flex_ = 0;

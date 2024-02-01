@@ -172,8 +172,8 @@ class RecordedWindowRootObserver : public aura::WindowObserver {
   }
 
  private:
-  const raw_ptr<aura::Window, ExperimentalAsh> root_;
-  const raw_ptr<VideoRecordingWatcher, ExperimentalAsh> owner_;
+  const raw_ptr<aura::Window> root_;
+  const raw_ptr<VideoRecordingWatcher> owner_;
 };
 
 // -----------------------------------------------------------------------------
@@ -413,8 +413,8 @@ void VideoRecordingWatcher::OnWindowStackingChanged(aura::Window* window) {
 void VideoRecordingWatcher::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(window, window_being_recorded_);
 
-  // EndVideoRecording() destroys |this|. No need to remove observer here, since
-  // it will be done in the destructor.
+  // `EndVideoRecording()` calls `ShutDown()` which stops observing `window`. No
+  // need to do it here.
   controller_->EndVideoRecording(EndRecordingReason::kDisplayOrWindowClosing);
 }
 
@@ -422,7 +422,8 @@ void VideoRecordingWatcher::OnWindowDestroyed(aura::Window* window) {
   DCHECK_EQ(window, window_being_recorded_);
 
   // We should never get here, since OnWindowDestroying() calls
-  // EndVideoRecording() which deletes us.
+  // `EndVideoRecording()` which calls `ShutDown()` which takes care of removing
+  // the window observation.
   NOTREACHED();
 }
 
@@ -764,7 +765,7 @@ void VideoRecordingWatcher::UpdateLayerStackingAndDimmers() {
           DesksMruType::kAllDesks);
   bool did_find_recorded_window = false;
   // Note that the order of |mru_windows| are from top-most first.
-  for (auto* window : mru_windows) {
+  for (aura::Window* window : mru_windows) {
     if (window == window_being_recorded_) {
       did_find_recorded_window = true;
       continue;

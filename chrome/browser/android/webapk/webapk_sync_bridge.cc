@@ -151,6 +151,9 @@ void WebApkSyncBridge::OnDatabaseOpened(
 
   registry_ = std::move(registry);
   std::move(callback).Run();
+  if (init_done_callback_) {
+    std::move(init_done_callback_).Run(/* initialized= */ true);
+  }
 }
 
 std::unique_ptr<syncer::MetadataChangeList>
@@ -163,131 +166,6 @@ bool WebApkSyncBridge::AppWasUsedRecently(
   base::Time app_last_used = base::Time::FromDeltaSinceWindowsEpoch(
       base::Microseconds(specifics->last_used_time_windows_epoch_micros()));
   return clock_->Now() - app_last_used < kRecentAppMaxAge;
-}
-
-void WebApkSyncBridge::PrepareSyncUpdateFromInstalledApps(
-    const std::vector<std::unique_ptr<sync_pb::WebApkSpecifics>>&
-        installed_apps,
-    const syncer::EntityChangeList& sync_changes,
-    std::vector<const sync_pb::WebApkSpecifics*>* sync_update_from_installed)
-    const {
-  std::map<webapps::AppId, const std::unique_ptr<syncer::EntityChange>&>
-      sync_changes_map;
-  for (const auto& sync_change : sync_changes) {
-    sync_changes_map.insert(
-        std::pair<webapps::AppId, const std::unique_ptr<syncer::EntityChange>&>(
-            sync_change->storage_key(), sync_change));
-  }
-
-  for (const auto& installed_app : installed_apps) {
-    if (!AppWasUsedRecently(installed_app.get())) {
-      continue;
-    }
-
-    webapps::AppId app_id = ManifestIdStrToAppId(installed_app->manifest_id());
-    auto it = sync_changes_map.find(app_id);
-    if (it == sync_changes_map.end()) {
-      sync_update_from_installed->push_back(installed_app.get());
-      continue;
-    }
-
-    const std::unique_ptr<syncer::EntityChange>& sync_change = it->second;
-    if (sync_change->type() == syncer::EntityChange::ACTION_DELETE) {
-      sync_update_from_installed->push_back(installed_app.get());
-      continue;
-    }
-
-    CHECK(sync_change->data().specifics.has_web_apk());
-    if (installed_app->last_used_time_windows_epoch_micros() >=
-        sync_change->data()
-            .specifics.web_apk()
-            .last_used_time_windows_epoch_micros()) {
-      sync_update_from_installed->push_back(installed_app.get());
-    }
-  }
-}
-
-bool WebApkSyncBridge::PrepareRegistryUpdateFromInstalledAndSyncApps(
-    const std::vector<const sync_pb::WebApkSpecifics*>&
-        sync_update_from_installed,
-    const syncer::EntityChangeList& sync_changes,
-    RegistryUpdateData* registry_update_from_installed_and_sync) const {
-  std::set<webapps::AppId> sync_update_from_installed_set;
-  for (const sync_pb::WebApkSpecifics* sync_update :
-       sync_update_from_installed) {
-    webapps::AppId app_id = ManifestIdStrToAppId(sync_update->manifest_id());
-    sync_update_from_installed_set.insert(app_id);
-
-    registry_update_from_installed_and_sync->apps_to_create.push_back(
-        WebApkProtoFromSpecifics(sync_update, true /* installed */));
-  }
-
-  bool not_installed_apps_in_sync = false;
-  for (const auto& sync_change : sync_changes) {
-    if (sync_update_from_installed_set.count(sync_change->storage_key()) != 0) {
-      continue;
-    }
-
-    if (sync_change->type() == syncer::EntityChange::ACTION_DELETE) {
-      // There's no need to queue up a deletion if the app doesn't exist in the
-      // registry in the first place.
-      if (GetAppByIdMutable(registry_, sync_change->storage_key()) != nullptr) {
-        registry_update_from_installed_and_sync->apps_to_delete.push_back(
-            sync_change->storage_key());
-      }
-      continue;
-    }
-
-    // There are changes from sync that aren't installed on the device.
-    not_installed_apps_in_sync = true;
-
-    CHECK(sync_change->data().specifics.has_web_apk());
-    registry_update_from_installed_and_sync->apps_to_create.push_back(
-        WebApkProtoFromSpecifics(&sync_change->data().specifics.web_apk(),
-                                 false /* installed */));
-  }
-
-  return not_installed_apps_in_sync;
-}
-
-void WebApkSyncBridge::SendInstalledAndRegistryAppsToSync(
-    const std::vector<const sync_pb::WebApkSpecifics*>&
-        sync_update_from_installed,
-    const std::unique_ptr<RegistryUpdateData>&
-        registry_update_from_installed_and_sync,
-    syncer::MetadataChangeList* metadata_change_list) {
-  for (const sync_pb::WebApkSpecifics* sync_update :
-       sync_update_from_installed) {
-    webapps::AppId app_id = ManifestIdStrToAppId(sync_update->manifest_id());
-    change_processor()->Put(app_id,
-                            CreateSyncEntityDataFromSpecifics(*sync_update),
-                            metadata_change_list);
-  }
-
-  std::set<webapps::AppId> registry_update_from_installed_and_sync_set;
-  for (const auto& registry_update :
-       registry_update_from_installed_and_sync->apps_to_create) {
-    webapps::AppId app_id =
-        ManifestIdStrToAppId(registry_update->sync_data().manifest_id());
-    registry_update_from_installed_and_sync_set.insert(app_id);
-  }
-  for (const webapps::AppId& registry_update :
-       registry_update_from_installed_and_sync->apps_to_delete) {
-    registry_update_from_installed_and_sync_set.insert(registry_update);
-  }
-
-  for (const auto& registry_entry : registry_) {
-    const webapps::AppId& app_id = registry_entry.first;
-    const std::unique_ptr<WebApkProto>& app = registry_entry.second;
-
-    if (registry_update_from_installed_and_sync_set.count(app_id) != 0) {
-      continue;
-    }
-
-    change_processor()->Put(app_id,
-                            CreateSyncEntityDataFromSpecifics(app->sync_data()),
-                            metadata_change_list);
-  }
 }
 
 void WebApkSyncBridge::OnDataWritten(CommitCallback callback, bool success) {
@@ -322,26 +200,41 @@ void WebApkSyncBridge::ApplyIncrementalSyncChangesToRegistry(
   }
 }
 
+bool WebApkSyncBridge::SyncDataContainsNewApps(
+    const std::vector<std::unique_ptr<sync_pb::WebApkSpecifics>>&
+        installed_apps,
+    const syncer::EntityChangeList& sync_changes) const {
+  std::set<webapps::AppId> sync_update_from_installed_set;
+  for (const std::unique_ptr<sync_pb::WebApkSpecifics>& sync_update :
+       installed_apps) {
+    webapps::AppId app_id = ManifestIdStrToAppId(sync_update->manifest_id());
+    sync_update_from_installed_set.insert(app_id);
+  }
+
+  for (const auto& sync_change : sync_changes) {
+    if (sync_update_from_installed_set.count(sync_change->storage_key()) != 0) {
+      continue;
+    }
+
+    if (sync_change->type() == syncer::EntityChange::ACTION_DELETE) {
+      continue;
+    }
+
+    // There are changes from sync that aren't installed on the device.
+    return true;
+  }
+
+  return false;
+}
+
 std::optional<syncer::ModelError> WebApkSyncBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   CHECK(change_processor()->IsTrackingMetadata());
 
-  std::vector<std::unique_ptr<sync_pb::WebApkSpecifics>> installed_apps =
+  const std::vector<std::unique_ptr<sync_pb::WebApkSpecifics>> installed_apps =
       webapk_specifics_fetcher_->GetWebApkSpecifics();
-
-  std::vector<const sync_pb::WebApkSpecifics*> sync_update_from_installed;
-  PrepareSyncUpdateFromInstalledApps(installed_apps, entity_changes,
-                                     &sync_update_from_installed);
-
-  std::unique_ptr<RegistryUpdateData> registry_update_from_installed_and_sync =
-      std::make_unique<RegistryUpdateData>();
-  bool not_installed_apps_in_sync =
-      PrepareRegistryUpdateFromInstalledAndSyncApps(
-          sync_update_from_installed, entity_changes,
-          registry_update_from_installed_and_sync.get());
-
-  if (not_installed_apps_in_sync) {
+  if (SyncDataContainsNewApps(installed_apps, entity_changes)) {
     // There are apps stored in Sync that aren't currently installed on the
     // device.
     WebappRegistry
@@ -350,27 +243,74 @@ std::optional<syncer::ModelError> WebApkSyncBridge::MergeFullSyncData(
     webapp_registry.SetNeedsPwaRestore();
   }
 
-  SendInstalledAndRegistryAppsToSync(sync_update_from_installed,
-                                     registry_update_from_installed_and_sync,
-                                     metadata_change_list.get());
+  // Since we're using "account-only" semantics for Transport Mode, we just call
+  // through to ApplyIncrementalSyncChanges().
+  return ApplyIncrementalSyncChanges(std::move(metadata_change_list),
+                                     std::move(entity_changes));
+}
+
+void WebApkSyncBridge::RegisterDoneInitializingCallback(
+    base::OnceCallback<void(bool)> init_done_callback) {
+  if (database_->is_opened()) {
+    std::move(init_done_callback).Run(/* initialized= */ true);
+    return;
+  }
+
+  init_done_callback_ = std::move(init_done_callback);
+}
+
+void WebApkSyncBridge::MergeSyncDataForTesting(
+    std::vector<std::vector<std::string>> app_vector,
+    std::vector<int> last_used_days_vector) {
+  CHECK(database_->is_opened());
+  CHECK(app_vector.size() == last_used_days_vector.size());
+
+  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
+      syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
+  std::unique_ptr<webapk::RegistryUpdateData> registry_update =
+      std::make_unique<webapk::RegistryUpdateData>();
+
+  int i = 0;
+  for (auto const& app : app_vector) {
+    std::unique_ptr<sync_pb::WebApkSpecifics> specifics =
+        std::make_unique<sync_pb::WebApkSpecifics>();
+    specifics->set_manifest_id(app[0]);
+    specifics->set_name(app[1]);
+    base::Time time = base::Time::Now() - base::Days(last_used_days_vector[i]);
+    specifics->set_last_used_time_windows_epoch_micros(
+        time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+    registry_update->apps_to_create.push_back(
+        WebApkProtoFromSpecifics(specifics.get(), false));
+    i++;
+  }
 
   database_->Write(
-      *registry_update_from_installed_and_sync, std::move(metadata_change_list),
+      *registry_update, std::move(metadata_change_list),
       base::BindOnce(&WebApkSyncBridge::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing()));
 
-  ApplyIncrementalSyncChangesToRegistry(
-      std::move(registry_update_from_installed_and_sync));
-
-  return std::nullopt;
+  ApplyIncrementalSyncChangesToRegistry(std::move(registry_update));
 }
 
 void WebApkSyncBridge::PrepareRegistryUpdateFromSyncApps(
     const syncer::EntityChangeList& sync_changes,
     RegistryUpdateData* registry_update_from_sync) const {
-  const std::vector<const sync_pb::WebApkSpecifics*> sync_update_from_installed;
-  PrepareRegistryUpdateFromInstalledAndSyncApps(
-      sync_update_from_installed, sync_changes, registry_update_from_sync);
+  for (const auto& sync_change : sync_changes) {
+    if (sync_change->type() == syncer::EntityChange::ACTION_DELETE) {
+      // There's no need to queue up a deletion if the app doesn't exist in the
+      // registry in the first place.
+      if (GetAppByIdMutable(registry_, sync_change->storage_key()) != nullptr) {
+        registry_update_from_sync->apps_to_delete.push_back(
+            sync_change->storage_key());
+      }
+      continue;
+    }
+
+    CHECK(sync_change->data().specifics.has_web_apk());
+    registry_update_from_sync->apps_to_create.push_back(
+        WebApkProtoFromSpecifics(&sync_change->data().specifics.web_apk(),
+                                 false /* installed */));
+  }
 }
 
 std::optional<syncer::ModelError> WebApkSyncBridge::ApplyIncrementalSyncChanges(
@@ -393,11 +333,19 @@ std::optional<syncer::ModelError> WebApkSyncBridge::ApplyIncrementalSyncChanges(
 
 void WebApkSyncBridge::OnWebApkUsed(
     std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics) {
+  if (!change_processor()->IsTrackingMetadata()) {
+    return;
+  }
+
   AddOrModifyAppInSync(
       WebApkProtoFromSpecifics(app_specifics.get(), true /* installed */));
 }
 
 void WebApkSyncBridge::OnWebApkUninstalled(const std::string& manifest_id) {
+  if (!change_processor()->IsTrackingMetadata()) {
+    return;
+  }
+
   webapps::AppId app_id = ManifestIdStrToAppId(manifest_id);
   WebApkProto* app = GetAppByIdMutable(registry_, app_id);
 
@@ -467,6 +415,13 @@ std::string WebApkSyncBridge::GetClientTag(
 std::string WebApkSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
   return GetClientTag(entity_data);
+}
+
+void WebApkSyncBridge::ApplyDisableSyncChanges(
+    std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
+  database_->DeleteAllDataAndMetadata(base::DoNothing());
+
+  registry_.clear();
 }
 
 void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app) {

@@ -16,6 +16,7 @@ import "services/network/public/mojom/cert_verifier_service.mojom";
 import "services/network/public/mojom/clear_data_filter.mojom";
 import "services/network/public/mojom/client_security_state.mojom";
 import "services/network/public/mojom/cookie_access_observer.mojom";
+import "services/network/public/mojom/cookie_encryption_provider.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/cookie_setting_overrides.mojom";
 import "services/network/public/mojom/cors_origin_pattern.mojom";
@@ -106,11 +107,6 @@ struct CustomProxyConfig {
   // case properly.
   bool allow_non_idempotent_methods = false;
 
-  // Whether the custom proxy config should override direct settings. When
-  // this is true origins using the direct setting will be merged to respect
-  // the custom config settings first with a fallback of the direct setting.
-  bool should_replace_direct = false;
-
   // For tunneled requests (https://, ws://, wss://), these headers are added
   // to the CONNECT request. Headers here will overwrite matching headers on
   // the CONNECT request if a custom proxy is used.
@@ -148,15 +144,6 @@ struct CertVerifierServiceRemoteParams {
 // Client to update the custom proxy config.
 interface CustomProxyConfigClient {
   OnCustomProxyConfigUpdated(CustomProxyConfig proxy_config) => ();
-
-  // Marks the custom proxies in |bad_proxies| as temporarily bad, so they are
-  // not layered onto the proxy resolution results for subsequent requests.
-  MarkProxiesAsBad(mojo_base.mojom.TimeDelta bypass_duration,
-                   ProxyList bad_proxies) => ();
-
-  // Clears the list of bad proxy servers that has been cached in the proxy
-  // resolution service.
-  ClearBadProxiesCache();
 };
 
 // Sent by TrustedURLLoaderHeaderClient to perform modifications for a request.
@@ -447,6 +434,10 @@ struct NetworkContextParams {
   // is not set, then no tokens are available.
   pending_remote<IpProtectionConfigGetter>? ip_protection_config_getter;
 
+  // A receiver for notifications from the browser to the IP Protection
+  // ProxyDelegate.
+  pending_receiver<IpProtectionProxyDelegate>? ip_protection_proxy_delegate;
+
   // When PAC quick checking is enabled, DNS lookups for PAC script's host are
   // timed out aggressively. This prevents hanging all network request on DNS
   // lookups that are slow or are blockholed, at the cost of making it more
@@ -581,6 +572,14 @@ struct NetworkContextParams {
   // will be sent to developers who opt-in to receiving it. This enables server
   // side opt-in to testing without cookies. See:
   // https://developer.chrome.com/en/docs/privacy-sandbox/chrome-testing/#mode-a
+  // A non defined value indicates that the 3PCD experimentation feature is
+  // disabled for this client or that the profile is guest or incognito.
+  // A defined and non-empty value indicates that the 3PCD experiment feature is
+  // enabled, the client is eligible to it and the profile is not guest or
+  // incognito.
+  // A defined but empty value indicates that the 3PCD experimentation feature
+  // is enabled for the client but the client is not eligible for it or the
+  // label value defined by the experiment is empty.
   string? cookie_deprecation_label;
 
   // Whether the experimental AFP block list is enabled for this NetworkContext.
@@ -590,6 +589,13 @@ struct NetworkContextParams {
   // experiment. This field should not be used for other use cases. This will
   // be removed when AFP block list logic is migrated to subresource filter.
   bool afp_block_list_experiment_enabled = false;
+
+  // Sets the cookie encryption provider to be used by this network context if
+  // `enable_encrypted_cookies` is also enabled.
+  // If both are set then the `GetEncryptor` method on the supplied
+  // `cookie_encryption_provider` is called to obtain a valid set of keys for
+  // cookie encryption.
+  pending_remote<CookieEncryptionProvider>? cookie_encryption_provider;
 };
 
 struct NetworkConditions {
@@ -907,7 +913,7 @@ struct BlindSignedAuthToken {
 // The proxy layer to fetch batches of tokens for.
 enum IpProtectionProxyLayer {kProxyA, kProxyB};
 
-// A source for new BlindSignedAuthTokens.
+// A source for IP protection information from the browser process.
 interface IpProtectionConfigGetter {
   // Try to get a batch of new tokens.
   //
@@ -930,6 +936,26 @@ interface IpProtectionConfigGetter {
   // This method will return an up-to-date list, possibly fetching that list
   // remotely before returning it.
   GetProxyList() => (array<array<string>>? proxy_list);
+};
+
+// Access to the IP Protection ProxyDelegate in the network service process.
+interface IpProtectionProxyDelegate {
+  // Used to facilitate cross-process testing of the IP Protection feature. This
+  // method will:
+  //  - Disable active cache management and reset the IP Protection cache to a
+  //    no-tokens and no-cooldown state, and,
+  //  - Return the current cooldown if one has been set, or,
+  //  - Initiate an IP Protection token request to the browser process and
+  //    return either a returned token or the returned cooldown time
+  VerifyIpProtectionConfigGetterForTesting()
+      => (BlindSignedAuthToken? bsa_token,
+          mojo_base.mojom.Time? try_again_after);
+
+  // Indicates that the IP Protection config cache in the Network Service should
+  // no longer wait before requesting tokens from the browser process (called in
+  // response to user account status changes that allow IP Protection to start
+  // working as expected).
+  InvalidateIpProtectionConfigCacheTryAgainAfterTime();
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -1495,35 +1521,12 @@ interface NetworkContext {
 
   // Checks the given certificate against the CertVerifier and CTVerifier. This
   // implementation is currently specific for use by Signed Exchange.
-  //
-  // |network_anonymization_key| must be the NetworkAnonymizationKey associated
-  // with the underlying resource load, and is used foy any reports generated as
-  // a result of verifying the cert.
   VerifyCertForSignedExchange(X509Certificate certificate,
                               url.mojom.Url url,
-                              NetworkAnonymizationKey network_anonymization_key,
                               string ocsp_response,
                               string sct_list) => (int32 error_code,
                                                    CertVerifyResult cv_result,
-                                                   bool pkp_bypassed,
-                                                   string pinning_failure_log);
-
-  // Used to facilitate cross-process testing of the IP Protection feature. This
-  // method will:
-  //  - Disable active cache management and reset the IP Protection cache to a
-  //    no-tokens and no-cooldown state, and,
-  //  - Return the current cooldown if one has been set, or,
-  //  - Initiate an IP Protection token request to the browser process and
-  //    return either a returned token or the returned cooldown time
-  VerifyIpProtectionConfigGetterForTesting()
-      => (BlindSignedAuthToken? bsa_token,
-          mojo_base.mojom.Time? try_again_after);
-
-  // Indicates that the IP Protection config cache in the Network Service should
-  // no longer wait before requesting tokens from the browser process (called in
-  // response to user account status changes that allow IP Protection to start
-  // working as expected).
-  InvalidateIpProtectionConfigCacheTryAgainAfterTime();
+                                                   bool pkp_bypassed);
 
   // Adds explicitly-specified data as if it was processed from an
   // HSTS header. Used by tests and implementation of chrome://net-internals.
@@ -1581,12 +1584,12 @@ interface NetworkContext {
   LoadHttpAuthCacheProxyEntries(mojo_base.mojom.UnguessableToken cache_key)
       => ();
 
-// Adds an entry to the HttpAuthCache. |network_anonymization_key| is the
-// NetworkAnonymizationKney to restrict the credentials to, and is only
-// respected for server (not proxy) HTTP auth and only when the NetworkService
-// was configured to split the auth cache by NetworkAnonymizationKey.
-// |challenge| may not necessarily contain a stateful challenge that requires a
-// persistent connection, allowing the cache to be pre-populated.
+  // Adds an entry to the HttpAuthCache. `network_anonymization_key` is the
+  // NetworkAnonymizationKey to restrict the credentials to, and is only
+  // respected for server (not proxy) HTTP auth and only when the NetworkService
+  // was configured to split the auth cache by NetworkAnonymizationKey.
+  // `challenge` may not necessarily contain a stateful challenge that requires
+  // a persistent connection, allowing the cache to be pre-populated.
   AddAuthCacheEntry(AuthChallengeInfo challenge,
                     NetworkAnonymizationKey network_anonymization_key,
                     AuthCredentials credentials) => ();
@@ -1634,10 +1637,6 @@ interface NetworkContext {
   // minimum delay has not yet passed.
   ForceDomainReliabilityUploadsForTesting() => ();
 
-  // If called, the CT log list will be considered always timely.
-  [EnableIf=is_ct_supported]
-  SetCTLogListAlwaysTimelyForTesting();
-
   // Set the SCT auditing mode for this NetworkContext.
   [EnableIf=is_ct_supported]
   SetSCTAuditingMode(SCTAuditingMode mode);
@@ -1673,6 +1672,6 @@ interface NetworkContext {
   // doesn't match the corresponding cached certificate.
   FlushCachedClientCertIfNeeded(HostPortPair host, X509Certificate certificate);
 
- // Sets cookie deprecation label.
+  // Sets cookie deprecation label.
   SetCookieDeprecationLabel(string? label);
 };

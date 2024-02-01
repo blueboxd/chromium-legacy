@@ -149,6 +149,7 @@
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/safe_search_api/safe_search_util.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/site_isolation/site_isolation_policy.h"
@@ -236,6 +237,11 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
+#include "ui/accessibility/accessibility_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -456,22 +462,9 @@ ProfileImpl::ProfileImpl(
         this, profile_metrics::BrowserProfileType::kRegular);
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  const bool is_user_profile = ash::ProfileHelper::IsUserProfile(this);
-
-  if (is_user_profile) {
-    const user_manager::User* user =
-        ash::ProfileHelper::Get()->GetUserByProfile(this);
-    // A |User| instance should always exist for a profile which is not the
-    // initial, the sign-in or the lock screen app profile.
-    CHECK(user);
-    LOG_IF(FATAL,
-           !session_manager::SessionManager::Get()->HasSessionForAccountId(
-               user->GetAccountId()))
-        << "Attempting to construct the profile before starting the user "
-           "session";
+  if (delegate_) {
+    delegate_->OnProfileCreationStarted(this, create_mode);
   }
-#endif
 
   // The ProfileImpl can be created both synchronously and asynchronously.
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
@@ -498,7 +491,9 @@ ProfileImpl::ProfileImpl(
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (is_user_profile) {
+  // TODO(crbug.com/1325210): Move this into
+  // ChromeUserManager::OnProfileCreationStarted().
+  if (ash::ProfileHelper::IsUserProfile(this)) {
     // |ash::InitializeAccountManager| is called during a User's session
     // initialization but some tests do not properly login to a User Session.
     // This invocation of |ash::InitializeAccountManager| is used only during
@@ -515,9 +510,6 @@ ProfileImpl::ProfileImpl(
     account_manager->SetPrefService(GetPrefs());
   }
 #endif
-
-  if (delegate_)
-    delegate_->OnProfileCreationStarted(this, create_mode);
 
   if (async_prefs) {
     // Wait for the notification that prefs has been loaded
@@ -864,6 +856,13 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   PasswordManagerSettingsServiceFactory::GetForProfile(this);
 #endif
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  if (features::IsPdfOcrEnabled()) {
+    // Create the PDF OCR controller so that it can self-activate as needed.
+    screen_ai::PdfOcrControllerFactory::GetForProfile(this);
+  }
+#endif
+
   // The announcement notification  service might not be available for some
   // irregular profiles, like the System Profile.
   if (AnnouncementNotificationService* announcement_notification =
@@ -878,9 +877,9 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   // as it depends on the default StoragePartition being initialized.
   GetOriginTrialsControllerDelegate();
 
-  // The TpcdSupportService must be created with the profile, but after the
+  // The TpcdTrialService must be created with the profile, but after the
   // initialization of the OriginTrialsControllerDelegate, as it depends on it.
-  tpcd::support::TpcdSupportServiceFactory::GetForProfile(this);
+  tpcd::trial::TpcdTrialServiceFactory::GetForProfile(this);
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {

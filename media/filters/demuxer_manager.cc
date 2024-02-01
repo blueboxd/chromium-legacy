@@ -300,12 +300,12 @@ PipelineStatus DemuxerManager::SelectHlsFallbackMechanism(
 
 #endif  // BUILDFLAG(ENABLE_HLS_DEMUXER) || BUILDFLAG(IS_ANDROID)
 
-absl::optional<double> DemuxerManager::GetDemuxerDuration() {
+std::optional<double> DemuxerManager::GetDemuxerDuration() {
   if (!demuxer_) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   if (demuxer_->GetDemuxerType() != DemuxerType::kChunkDemuxer) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Use duration from ChunkDemuxer when present. MSE allows users to specify
@@ -317,17 +317,17 @@ absl::optional<double> DemuxerManager::GetDemuxerDuration() {
   return static_cast<ChunkDemuxer*>(demuxer_.get())->GetDuration();
 }
 
-absl::optional<DemuxerType> DemuxerManager::GetDemuxerType() const {
+std::optional<DemuxerType> DemuxerManager::GetDemuxerType() const {
   if (!demuxer_) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return demuxer_->GetDemuxerType();
 }
 
-absl::optional<container_names::MediaContainerName>
+std::optional<container_names::MediaContainerName>
 DemuxerManager::GetContainerForMetrics() {
   if (!demuxer_) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return demuxer_->GetContainerForMetrics();
 }
@@ -369,7 +369,8 @@ PipelineStatus DemuxerManager::CreateDemuxer(
     bool load_media_source,
     DataSource::Preload preload,
     bool needs_first_frame,
-    DemuxerManager::DemuxerCreatedCB on_demuxer_created) {
+    DemuxerManager::DemuxerCreatedCB on_demuxer_created,
+    base::flat_map<std::string, std::string> headers) {
   // TODO(crbug/1377053) return a better error
   if (!client_) {
     return DEMUXER_ERROR_COULD_NOT_OPEN;
@@ -396,7 +397,7 @@ PipelineStatus DemuxerManager::CreateDemuxer(
   const bool media_player_hls =
       hls_fallback_ == HlsFallbackImplementation::kMediaPlayer;
   if (media_player_hls || client_->IsMediaPlayerRendererClient()) {
-    SetDemuxer(CreateMediaUrlDemuxer(media_player_hls));
+    SetDemuxer(CreateMediaUrlDemuxer(media_player_hls, headers));
     return std::move(on_demuxer_created)
         .Run(demuxer_.get(), Pipeline::StartType::kNormal,
              /*is_streaming = */ false,
@@ -448,7 +449,7 @@ void DemuxerManager::SetAllowMediaPlayerRendererCredentials(bool allow) {
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-const DataSource* DemuxerManager::GetDataSourceForTesting() const {
+DataSource* DemuxerManager::GetDataSourceForTesting() const {
   return data_source_.get();
 }
 
@@ -515,11 +516,11 @@ bool DemuxerManager::HasDemuxerOverride() const {
   return !!demuxer_override_;
 }
 
-absl::optional<GURL> DemuxerManager::GetDataSourceUrlAfterRedirects() const {
+std::optional<GURL> DemuxerManager::GetDataSourceUrlAfterRedirects() const {
   if (data_source_) {
     return data_source_->GetUrlAfterRedirects();
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool DemuxerManager::DataSourceFullyBuffered() const {
@@ -604,11 +605,15 @@ std::unique_ptr<Demuxer> DemuxerManager::CreateHlsDemuxer() {
 
 #if BUILDFLAG(IS_ANDROID)
 std::unique_ptr<Demuxer> DemuxerManager::CreateMediaUrlDemuxer(
-    bool expect_hls_content) {
-  return std::make_unique<MediaUrlDemuxer>(
-      media_task_runner_, loaded_url_, site_for_cookies_, top_frame_origin_,
-      has_storage_access_, allow_media_player_renderer_credentials_,
-      expect_hls_content);
+    bool expect_hls_content,
+    base::flat_map<std::string, std::string> headers) {
+  std::unique_ptr<MediaUrlDemuxer> media_url_demuxer =
+      std::make_unique<MediaUrlDemuxer>(
+          media_task_runner_, loaded_url_, site_for_cookies_, top_frame_origin_,
+          has_storage_access_, allow_media_player_renderer_credentials_,
+          expect_hls_content);
+  media_url_demuxer->SetHeaders(headers);
+  return media_url_demuxer;
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 

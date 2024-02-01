@@ -144,10 +144,10 @@ TEST(U2fParsingUtils, AppendSelfCrashes) {
   auto span = base::make_span(target);
 
   // Tests the case where |in_values| overlap with the beginning of |*target|.
-  EXPECT_DEATH_IF_SUPPORTED(Append(&target, span.first(1)), "");
+  EXPECT_DEATH_IF_SUPPORTED(Append(&target, span.first(1u)), "");
 
   // Tests the case where |in_values| overlap with the end of |*target|.
-  EXPECT_DEATH_IF_SUPPORTED(Append(&target, span.last(1)), "");
+  EXPECT_DEATH_IF_SUPPORTED(Append(&target, span.last(1u)), "");
 }
 
 // ExtractSpan and ExtractSuffixSpan are implicitly tested as they used by
@@ -277,7 +277,7 @@ TEST(U2fParsingUtils, CreateSHA256Hash) {
               ::testing::ElementsAreArray(test_data::kApplicationParameter));
 }
 
-TEST(U2fParsingUtils, ConvertSpanToStringPiece) {
+TEST(U2fParsingUtils, ConvertSpanToStringView) {
   constexpr uint8_t kTestAsciiAbcd[] = {'a', 'b', 'c', 'd'};
   EXPECT_EQ("abcd", ConvertToStringView(kTestAsciiAbcd));
 }

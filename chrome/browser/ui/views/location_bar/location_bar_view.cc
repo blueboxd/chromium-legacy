@@ -69,6 +69,8 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/permissions/chip/permission_chip_view.h"
+#include "chrome/browser/ui/views/permissions/chip/permission_dashboard_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/sharing_hub/sharing_hub_icon_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -223,7 +225,20 @@ void LocationBarView::Init() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  CreateChip();
+  if (base::FeatureList::IsEnabled(
+          content_settings::features::kLeftHandSideActivityIndicators)) {
+    permission_dashboard_view_ =
+        AddChildViewAt(std::make_unique<PermissionDashboardView>(), 0);
+
+    permission_dashboard_controller_ =
+        std::make_unique<PermissionDashboardController>(
+            browser_, this, permission_dashboard_view_);
+  } else {
+    chip_controller_ = std::make_unique<ChipController>(
+        browser_, AddChildViewAt(std::make_unique<PermissionChipView>(
+                                     PermissionChipView::PressedCallback()),
+                                 0));
+  }
 
   const auto& typography_provider = views::TypographyProvider::Get();
   const gfx::FontList& font_list = typography_provider.GetFont(
@@ -355,7 +370,7 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kCookieControls);
     params.types_enabled.push_back(
         PageActionIconType::kPaymentsOfferNotification);
-    params.types_enabled.push_back(PageActionIconType::kHighEfficiency);
+    params.types_enabled.push_back(PageActionIconType::kMemorySaver);
   }
   // Add icons only when feature is not enabled. Otherwise icons will
   // be added to the ToolbarPageActionIconContainerView.
@@ -616,8 +631,12 @@ void LocationBarView::Layout() {
                              !ShouldShowKeywordBubble();
 
   const bool show_overriding_permission_chip =
-      chip_controller_ && chip_controller_->chip()->GetVisible() &&
-      !ShouldShowKeywordBubble();
+      base::FeatureList::IsEnabled(
+          content_settings::features::kLeftHandSideActivityIndicators)
+          ? permission_dashboard_view_->GetVisible() &&
+                !ShouldShowKeywordBubble()
+          : chip_controller_->chip()->GetVisible() &&
+                !ShouldShowKeywordBubble();
 
   // There are 2 CR23 features that impact location bar layout. Make sure layout
   // is correct when neither, either, or both are enabled. Touch UI, whether the
@@ -713,9 +732,16 @@ void LocationBarView::Layout() {
   const double kLeadingDecorationMaxFraction = 0.5;
 
   if (show_overriding_permission_chip) {
-    leading_decorations.AddDecoration(vertical_padding, location_height, false,
-                                      0, /*intra_item_padding=*/0, icon_left,
-                                      chip_controller_->chip());
+    if (base::FeatureList::IsEnabled(
+            content_settings::features::kLeftHandSideActivityIndicators)) {
+      leading_decorations.AddDecoration(vertical_padding, location_height,
+                                        false, 0, /*intra_item_padding=*/0,
+                                        icon_left, permission_dashboard_view_);
+    } else {
+      leading_decorations.AddDecoration(vertical_padding, location_height,
+                                        false, 0, /*intra_item_padding=*/0,
+                                        icon_left, chip_controller_->chip());
+    }
   }
 
   if (ShouldShowKeywordBubble()) {
@@ -864,7 +890,7 @@ void LocationBarView::Layout() {
     position_view(omnibox_additional_text_view_, omnibox_additional_text_width);
   }
 
-  View::Layout();
+  LayoutSuperclass<View>(this);
 }
 
 void LocationBarView::OnThemeChanged() {
@@ -879,15 +905,16 @@ void LocationBarView::OnThemeChanged() {
           ? kColorPageActionIcon
           : kColorOmniboxResultsIcon);
   page_action_icon_controller_->SetIconColor(icon_color);
-  for (ContentSettingImageView* image_view : content_setting_views_)
+  for (ContentSettingImageView* image_view : content_setting_views_) {
     image_view->SetIconColor(icon_color);
+  }
 
   RefreshBackground();
   RefreshClearAllButtonIcon();
 }
 
 void LocationBarView::ChildPreferredSizeChanged(views::View* child) {
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 
@@ -921,7 +948,7 @@ void LocationBarView::Update(WebContents* contents) {
   if (qr_generator_icon)
     qr_generator_icon->SetVisible(false);
 
-  OnChanged();  // NOTE: Calls Layout().
+  OnChanged();  // NOTE: Triggers layout.
 
   // A permission prompt may be suspended due to an invalid state (empty or
   // editing location bar). Restore the suspended prompt if possible.
@@ -942,19 +969,13 @@ bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
       ->ActivateFirstInactiveBubbleForAccessibility();
 }
 
-void LocationBarView::CreateChip() {
-  DCHECK(!chip_controller_);
+ChipController* LocationBarView::GetChipController() {
+  if (base::FeatureList::IsEnabled(
+          content_settings::features::kLeftHandSideActivityIndicators)) {
+    return permission_dashboard_controller_->request_chip_controller();
+  }
 
-  if (!browser_)
-    return;
-
-  if (web_app::AppBrowserController::IsWebApp(browser_))
-    return;
-
-  chip_controller_ = std::make_unique<ChipController>(
-      browser_, AddChildViewAt(std::make_unique<OmniboxChipButton>(
-                                   OmniboxChipButton::PressedCallback()),
-                               0));
+  return chip_controller_.get();
 }
 
 void LocationBarView::UpdateWithoutTabRestore() {
@@ -1072,8 +1093,9 @@ int LocationBarView::GetMinimumLeadingWidth() const {
 int LocationBarView::GetMinimumTrailingWidth() const {
   int trailing_width = IncrementalMinimumWidth(page_action_icon_container_);
 
-  for (auto* content_setting_view : content_setting_views_)
+  for (ContentSettingImageView* content_setting_view : content_setting_views_) {
     trailing_width += IncrementalMinimumWidth(content_setting_view);
+  }
 
   return trailing_width;
 }
@@ -1155,11 +1177,24 @@ bool LocationBarView::RefreshContentSettingViews() {
   }
 
   bool visibility_changed = false;
-  for (auto* v : content_setting_views_) {
+  for (ContentSettingImageView* v : content_setting_views_) {
     const bool was_visible = v->GetVisible();
-    v->Update();
-    if (was_visible != v->GetVisible())
-      visibility_changed = true;
+    // The Left-Hand Side indicators currently supports only
+    // `ImageType::MEDIASTREAM`.
+    if (v->GetType() == ContentSettingImageModel::ImageType::MEDIASTREAM &&
+        // WebApps do not support the Left-Hand Side indicators.
+        !web_app::AppBrowserController::IsWebApp(browser_) &&
+        base::FeatureList::IsEnabled(
+            content_settings::features::kLeftHandSideActivityIndicators)) {
+      visibility_changed |= permission_dashboard_controller()->Update(
+          v->content_setting_image_model(),
+          v->delegate()->ShouldHideContentSettingImage());
+    } else {
+      v->Update();
+      if (was_visible != v->GetVisible()) {
+        visibility_changed = true;
+      }
+    }
   }
   return visibility_changed;
 }
@@ -1229,7 +1264,7 @@ void LocationBarView::FocusSearch() {
 
 void LocationBarView::UpdateContentSettingsIcons() {
   if (RefreshContentSettingViews()) {
-    Layout();
+    DeprecatedLayoutImmediately();
     SchedulePaint();
   }
 }
@@ -1404,7 +1439,7 @@ void LocationBarView::OnChanged() {
       omnibox_view_ && omnibox_view_->model()->user_input_in_progress() &&
       !omnibox_view_->GetText().empty() &&
       IsVirtualKeyboardVisible(GetWidget()));
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
   UpdateSendTabToSelfIcon();
   UpdateQRCodeGeneratorIcon();
@@ -1463,10 +1498,6 @@ void LocationBarView::OnOmniboxHovered(bool is_hovering) {
   }
 }
 
-void LocationBarView::FocusAndSelectAll() {
-  FocusLocation(true);
-}
-
 void LocationBarView::OnTouchUiChanged() {
   const gfx::FontList& font_list = views::TypographyProvider::Get().GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
@@ -1487,6 +1518,11 @@ void LocationBarView::OnTouchUiChanged() {
 }
 
 bool LocationBarView::ShouldChipOverrideLocationIcon() {
+  if (permission_dashboard_view_) {
+    return permission_dashboard_view_->GetIndicatorChip()->GetVisible() ||
+           permission_dashboard_view_->GetRequestChip()->GetVisible();
+  }
+
   return chip_controller_ && chip_controller_->chip()->GetVisible();
 }
 
@@ -1562,16 +1598,16 @@ bool LocationBarView::ShowPageInfoDialog() {
 }
 
 void LocationBarView::RecordPageInfoMetrics() {
-  if (chip_controller_) {
+  if (GetChipController()) {
     bool confirmation_chip_collapsed_recently =
         base::TimeTicks::Now() - confirmation_chip_collapsed_time_ <=
         permissions::kConfirmationConsiderationDurationForUma;
 
-    if (!chip_controller_->chip()->GetVisible() &&
+    if (!GetChipController()->chip()->GetVisible() &&
         !confirmation_chip_collapsed_recently) {
       permissions::PermissionUmaUtil::RecordPageInfoDialogAccessType(
           permissions::PageInfoDialogAccessType::LOCK_CLICK);
-    } else if (chip_controller_->chip()->GetVisible()) {
+    } else if (GetChipController()->chip()->GetVisible()) {
       permissions::PermissionUmaUtil::RecordPageInfoDialogAccessType(
           permissions::PageInfoDialogAccessType::
               LOCK_CLICK_DURING_CONFIRMATION_CHIP);
@@ -1610,14 +1646,14 @@ ui::ImageModel LocationBarView::GetLocationIcon(
 }
 
 void LocationBarView::UpdateChipVisibility() {
-  if (!chip_controller_ || !chip_controller_->chip()->GetVisible()) {
+  if (!GetChipController()->chip()->GetVisible()) {
     return;
   }
 
   if (IsEditingOrEmpty()) {
     // If a user starts typing, a permission request should be ignored and the
     // chip finalized.
-    chip_controller_->ResetPermissionPromptChip();
+    GetChipController()->ResetPermissionPromptChip();
   }
 }
 
@@ -1632,7 +1668,7 @@ bool LocationBarView::GetPopupMode() const {
   return is_popup_mode_;
 }
 
-BEGIN_METADATA(LocationBarView, views::View)
+BEGIN_METADATA(LocationBarView)
 ADD_READONLY_PROPERTY_METADATA(int, BorderRadius)
 ADD_READONLY_PROPERTY_METADATA(gfx::Point, OmniboxViewOrigin)
 ADD_PROPERTY_METADATA(std::u16string, ImePrefixAutocompletion)

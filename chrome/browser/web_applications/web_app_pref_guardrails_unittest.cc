@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -31,19 +30,19 @@ const webapps::AppId app_id = "app_id";
 class WebAppGuardrailsTest : public testing::Test {
  public:
   WebAppGuardrailsTest() {
-    WebAppPrefsUtilsRegisterProfilePrefs(prefs_.registry());
+    WebAppPrefGuardrails::RegisterProfilePrefs(prefs_.registry());
   }
 
   sync_preferences::TestingPrefServiceSyncable* prefs() { return &prefs_; }
 
  protected:
-  absl::optional<int> GetIntWebAppPref(const webapps::AppId& app,
-                                       base::StringPiece path) {
+  std::optional<int> GetIntWebAppPref(const webapps::AppId& app,
+                                      base::StringPiece path) {
     return ::web_app::GetIntWebAppPref(prefs(), app, path);
   }
 
-  absl::optional<base::Time> GetTimeWebAppPref(const webapps::AppId& app,
-                                               base::StringPiece path) {
+  std::optional<base::Time> GetTimeWebAppPref(const webapps::AppId& app,
+                                              base::StringPiece path) {
     return ::web_app::GetTimeWebAppPref(prefs(), app, path);
   }
 
@@ -423,7 +422,7 @@ class WebAppPrefsMLGuardrailsMaxStorageTest : public WebAppTest {
  public:
   WebAppPrefsMLGuardrailsMaxStorageTest()
       : WebAppTest(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-    WebAppPrefsUtilsRegisterProfilePrefs(prefs_.registry());
+    WebAppPrefGuardrails::RegisterProfilePrefs(prefs_.registry());
     base::FieldTrialParams params;
     params["max_days_to_store_guardrails"] = "2";
     feature_list_.InitAndEnableFeatureWithParameters(
@@ -438,7 +437,7 @@ class WebAppPrefsMLGuardrailsMaxStorageTest : public WebAppTest {
     return dict.contains(kMlPromoPrefNames.all_blocked_time_name);
   }
 
-  absl::optional<base::Time> GetMLPromoBlockedTime() {
+  std::optional<base::Time> GetMLPromoBlockedTime() {
     const auto& dict = prefs()->GetDict(prefs::kWebAppsAppAgnosticMlState);
     auto* value =
         dict.FindByDottedPath(kMlPromoPrefNames.all_blocked_time_name);
@@ -517,7 +516,7 @@ TEST_F(WebAppPrefsMLGuardrailsMaxStorageTest,
   guardrails().RecordDismiss("app", time_ml_install_dismissed_again);
   EXPECT_TRUE(IsMLPromoBlockedTimeSet());
 
-  absl::optional<base::Time> ml_promo_time_blocked_from_pref =
+  std::optional<base::Time> ml_promo_time_blocked_from_pref =
       GetMLPromoBlockedTime();
   EXPECT_TRUE(ml_promo_time_blocked_from_pref.has_value());
   EXPECT_NE(ml_promo_time_blocked_from_pref, time_ml_install_dismissed_again);
@@ -539,7 +538,7 @@ TEST_F(WebAppPrefsMLGuardrailsMaxStorageTest, ClearAndResetGuardrails) {
 
   const base::Value::Dict& dict =
       prefs()->GetDict(prefs::kWebAppsAppAgnosticMlState);
-  absl::optional<int> agnostic_not_installed_count =
+  std::optional<int> agnostic_not_installed_count =
       dict.FindInt(kMlPromoPrefNames.not_accepted_count_name);
   EXPECT_TRUE(agnostic_not_installed_count.has_value());
   EXPECT_EQ(agnostic_not_installed_count, 0);
@@ -550,7 +549,7 @@ class WebAppPrefsLinkCapturingIPHGuardrailsTest : public WebAppTest {
  public:
   WebAppPrefsLinkCapturingIPHGuardrailsTest()
       : WebAppTest(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-    WebAppPrefsUtilsRegisterProfilePrefs(prefs_.registry());
+    WebAppPrefGuardrails::RegisterProfilePrefs(prefs_.registry());
     base::FieldTrialParams params;
     params["link_capturing_guardrail_storage_duration"] = "2";
     feature_list_.InitAndEnableFeatureWithParameters(
@@ -565,7 +564,7 @@ class WebAppPrefsLinkCapturingIPHGuardrailsTest : public WebAppTest {
     return dict.contains(kIPHLinkCapturingPrefNames.all_blocked_time_name);
   }
 
-  absl::optional<base::Time> GetIphBlockedTime() {
+  std::optional<base::Time> GetIphBlockedTime() {
     const auto& dict =
         prefs()->GetDict(prefs::kWebAppsAppAgnosticIPHLinkCapturingState);
     auto* value =
@@ -659,7 +658,7 @@ TEST_F(WebAppPrefsLinkCapturingIPHGuardrailsTest, ClearAndResetGuardrails) {
 
   const base::Value::Dict& dict =
       prefs()->GetDict(prefs::kWebAppsAppAgnosticIPHLinkCapturingState);
-  absl::optional<int> agnostic_not_installed_count =
+  std::optional<int> agnostic_not_installed_count =
       dict.FindInt(kIPHLinkCapturingPrefNames.not_accepted_count_name);
   EXPECT_TRUE(agnostic_not_installed_count.has_value());
   EXPECT_EQ(*agnostic_not_installed_count, 0);

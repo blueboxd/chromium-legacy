@@ -13,7 +13,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/common/password_manager_constants.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/passwords/model/password_checkup_metrics.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
@@ -31,6 +30,7 @@
 #import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/cells/table_view_stacked_details_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
@@ -52,6 +52,7 @@
 using base::UmaHistogramEnumeration;
 using password_manager::GetWarningTypeForDetailsContext;
 using password_manager::constants::kMaxPasswordNoteLength;
+using password_manager::constants::kPasswordManagerAuthValidity;
 using password_manager::features::IsAuthOnEntryV2Enabled;
 using password_manager::metrics_util::LogPasswordNoteActionInSettings;
 using password_manager::metrics_util::PasswordNoteAction;
@@ -830,13 +831,15 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
   _userEmail = userEmail;
 }
 
-- (void)setupRightShareButton {
+- (void)setupRightShareButton:(BOOL)enabled {
+  SEL selector = enabled ? @selector(onShareButtonPressed)
+                         : @selector(onPolicyDisabledShareButtonPressed:);
   UIBarButtonItem* shareButton = [[UIBarButtonItem alloc]
       initWithImage:DefaultSymbolWithPointSize(kShareSymbol,
                                                kSymbolActionPointSize)
               style:UIBarButtonItemStylePlain
              target:self
-             action:@selector(onShareButtonPressed)];
+             action:selector];
   shareButton.accessibilityIdentifier = kPasswordShareButtonID;
   self.navigationItem.rightBarButtonItems =
       @[ self.navigationItem.rightBarButtonItem, shareButton ];
@@ -1258,17 +1261,37 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
 
   [self.authValidityTimer invalidate];
   self.authValidityTimer = [NSTimer
-      scheduledTimerWithTimeInterval:syncer::kPasswordNotesAuthValidity.Get()
-                                         .InSeconds()
+      scheduledTimerWithTimeInterval:kPasswordManagerAuthValidity.InSeconds()
                               target:self
                             selector:@selector(authValidityTimerFired:)
                             userInfo:nil
                              repeats:NO];
 }
 
+// Notifies the handler that the share button was pressed by the user.
 - (void)onShareButtonPressed {
   CHECK(self.handler);
   [self.handler onShareButtonPressed];
+}
+
+// Displays the popup informing that password sharing is disabled by the
+// administrator.
+- (void)onPolicyDisabledShareButtonPressed:(UIBarButtonItem*)button {
+  EnterpriseInfoPopoverViewController* popoverViewController =
+      [[EnterpriseInfoPopoverViewController alloc]
+                 initWithMessage:
+                     l10n_util::GetNSString(
+                         IDS_IOS_PASSWORD_SHARING_ENTERPRISE_POLICY_DISABLED_MESSAGE)
+                  enterpriseName:nil
+          isPresentingFromButton:YES
+                addLearnMoreLink:NO];
+  popoverViewController.popoverPresentationController.barButtonItem = button;
+  popoverViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+
+  [self presentViewController:popoverViewController
+                     animated:YES
+                   completion:nil];
 }
 
 #pragma mark - AutofillEditTableViewController
@@ -1489,6 +1512,7 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
   [self.handler dismissPasswordDetailsTableViewController];
 }
 
+#if !defined(__IPHONE_16_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_16_0
 #pragma mark - UIResponder
 
 - (BOOL)canBecomeFirstResponder {
@@ -1501,6 +1525,7 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
   }
   return NO;
 }
+#endif
 
 #pragma mark - Metrics
 

@@ -22,7 +22,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -235,7 +234,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // opposed to being ephemeral and owned by the WriteBlobToFile callbacks)
     // because the transaction needs to be able to cancel this operation in
     // Rollback().
-    absl::optional<BlobWriteState> write_state_
+    std::optional<BlobWriteState> write_state_
         GUARDED_BY_CONTEXT(sequence_checker_);
 
     // Set to true between CommitPhaseOne and CommitPhaseTwo/Rollback, to

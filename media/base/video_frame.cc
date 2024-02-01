@@ -240,7 +240,7 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
 }
 
 // Creates VideoFrameLayout for tightly packed frame.
-static absl::optional<VideoFrameLayout> GetDefaultLayout(
+static std::optional<VideoFrameLayout> GetDefaultLayout(
     VideoPixelFormat format,
     const gfx::Size& coded_size) {
   std::vector<ColorPlaneLayout> planes;
@@ -300,7 +300,7 @@ static absl::optional<VideoFrameLayout> GetDefaultLayout(
     default:
       DLOG(ERROR) << "Unsupported pixel format"
                   << VideoPixelFormatToString(format);
-      return absl::nullopt;
+      return std::nullopt;
   }
 
   return VideoFrameLayout::CreateWithPlanes(format, coded_size, planes);
@@ -616,7 +616,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalGpuMemoryBuffer(
     const gpu::MailboxHolder (&mailbox_holders)[kMaxPlanes],
     ReleaseMailboxAndGpuMemoryBufferCB mailbox_holder_and_gmb_release_cb,
     base::TimeDelta timestamp) {
-  const absl::optional<VideoPixelFormat> format =
+  const std::optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(gpu_memory_buffer->GetFormat());
   if (!format)
     return nullptr;
@@ -755,7 +755,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapUnacceleratedIOSurface(
   std::vector<int32_t> strides;
   for (size_t i = 0; i < num_planes; ++i)
     strides.push_back(IOSurfaceGetBytesPerRowOfPlane(io_surface.get(), i));
-  absl::optional<VideoFrameLayout> layout =
+  std::optional<VideoFrameLayout> layout =
       media::VideoFrameLayout::CreateWithStrides(pixel_format, size, strides);
   if (!layout) {
     DLOG(ERROR) << "Invalid layout.";
@@ -865,7 +865,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   }
 
   size_t new_plane_count = NumPlanes(format);
-  absl::optional<VideoFrameLayout> new_layout;
+  std::optional<VideoFrameLayout> new_layout;
   if (format == frame->format()) {
     new_layout = frame->layout();
   } else {
@@ -1313,20 +1313,24 @@ const gpu::MailboxHolder& VideoFrame::mailbox_holder(
 }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-const std::vector<base::ScopedFD>& VideoFrame::DmabufFds() const {
-  DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
-
-  return dmabuf_fds_->fds();
+size_t VideoFrame::NumDmabufFds() const {
+  return dmabuf_fds_->size();
 }
 
 bool VideoFrame::HasDmaBufs() const {
-  return dmabuf_fds_->size() > 0;
+  return NumDmabufFds() > 0;
+}
+
+int VideoFrame::GetDmabufFd(size_t i) const {
+  DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
+
+  return dmabuf_fds_->fds()[i].get();
 }
 
 bool VideoFrame::IsSameDmaBufsAs(const VideoFrame& frame) const {
   return storage_type_ == STORAGE_DMABUFS &&
          frame.storage_type_ == STORAGE_DMABUFS &&
-         &DmabufFds() == &frame.DmabufFds();
+         &dmabuf_fds_->fds() == &frame.dmabuf_fds_->fds();
 }
 #endif
 
@@ -1535,7 +1539,7 @@ bool VideoFrame::IsValidConfigInternal(VideoPixelFormat format,
 }
 
 // static
-absl::optional<VideoFrameLayout>
+std::optional<VideoFrameLayout>
 VideoFrame::CreateFullySpecifiedLayoutWithStrides(VideoPixelFormat format,
                                                   const gfx::Size& coded_size) {
   const gfx::Size new_coded_size = DetermineAlignedSize(format, coded_size);

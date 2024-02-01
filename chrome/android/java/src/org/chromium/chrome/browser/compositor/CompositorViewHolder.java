@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.compositor;
 
+import static androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
+
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -18,17 +21,19 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.DragEvent;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.accessibility.AccessibilityEventCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.customview.widget.ExploreByTouchHelper;
@@ -69,7 +74,6 @@ import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
-import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.browser_ui.widget.TouchEventObserver;
@@ -105,7 +109,6 @@ import java.util.Set;
 public class CompositorViewHolder extends FrameLayout
         implements LayoutManagerHost,
                 LayoutRenderHost,
-                Invalidator.Host,
                 TouchEventProvider,
                 BrowserControlsStateProvider.Observer,
                 ChromeAccessibilityUtil.Observer,
@@ -145,18 +148,12 @@ public class CompositorViewHolder extends FrameLayout
 
     private boolean mIsKeyboardShowing;
     private boolean mNativeInitialized;
-
-    private final Invalidator mInvalidator = new Invalidator();
     private LayoutManagerImpl mLayoutManager;
+    private Activity mActivity;
     private CompositorView mCompositorView;
 
     private boolean mContentOverlayVisiblity = true;
     private boolean mCanBeFocusable;
-
-    private int mPendingFrameCount;
-
-    private final ArrayList<Runnable> mPendingInvalidations = new ArrayList<>();
-    private boolean mSkipInvalidation;
 
     /** A task to be performed after a resize event. */
     private Runnable mPostHideKeyboardTask;
@@ -448,6 +445,13 @@ public class CompositorViewHolder extends FrameLayout
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         setOnSystemUiVisibilityChangeListener(visibility -> handleSystemUiVisibilityChange());
+        if (ChromeFeatureList.sFullscreenInsetsApiMigration.isEnabled()) {
+            setOnApplyWindowInsetsListener(
+                    (view, windowInsets) -> {
+                        handleSystemUiVisibilityChange();
+                        return windowInsets;
+                    });
+        }
         handleSystemUiVisibilityChange();
 
         mDelayTempStripRemoval = TabUiFeatureUtilities.isDelayTempStripRemovalEnabled(getContext());
@@ -488,7 +492,8 @@ public class CompositorViewHolder extends FrameLayout
         return mCachePoint;
     }
 
-    private void handleSystemUiVisibilityChange() {
+    @VisibleForTesting
+    void handleSystemUiVisibilityChange() {
         View view = getContentView();
         if (view == null || !ViewCompat.isAttachedToWindow(view)) view = this;
 
@@ -499,14 +504,8 @@ public class CompositorViewHolder extends FrameLayout
             view = (View) view.getParent();
         }
 
-        // SYSTEM_UI_FLAG_FULLSCREEN is cleared when showing the soft keyboard in older version of
-        // Android (prior to P).  The immersive mode flags are not cleared, so use those in
-        // combination to detect this state.
-        boolean isInFullscreen =
-                (uiVisibility & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0
-                        || (uiVisibility & View.SYSTEM_UI_FLAG_IMMERSIVE) != 0
-                        || (uiVisibility & View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) != 0;
-        boolean layoutFullscreen = (uiVisibility & View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) != 0;
+        boolean isInFullscreen = isInFullscreenMode(uiVisibility, view);
+        boolean layoutFullscreen = isLayoutFullscreen(uiVisibility);
 
         if (mShowingFullscreen == isInFullscreen) return;
         mShowingFullscreen = isInFullscreen;
@@ -525,6 +524,49 @@ public class CompositorViewHolder extends FrameLayout
         // not reliably jump from updating the viewport too early.
         long delay = layoutFullscreen ? SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS : 0;
         postDelayed(mSystemUiFullscreenResizeRunnable, delay);
+    }
+
+    private boolean isInFullscreenMode(int uiVisibility, View view) {
+        // If the fullscreen api migration is enabled, check the updated API instead.
+        if (ChromeFeatureList.sFullscreenInsetsApiMigration.isEnabled()) {
+            if (view != null
+                    && view.getRootWindowInsets() != null
+                    && mActivity != null
+                    && mActivity.getWindow() != null
+                    && mActivity.getWindow().getDecorView() != null) {
+                Window window = mActivity.getWindow();
+                return !WindowInsetsCompat.toWindowInsetsCompat(view.getRootWindowInsets(), view)
+                                .isVisible(WindowInsetsCompat.Type.statusBars())
+                        || WindowCompat.getInsetsController(window, window.getDecorView())
+                                        .getSystemBarsBehavior()
+                                == BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
+            } else {
+                return false;
+            }
+        } else {
+            // SYSTEM_UI_FLAG_FULLSCREEN is cleared when showing the soft keyboard in older version
+            // of
+            // Android (prior to P).  The immersive mode flags are not cleared, so use those in
+            // combination to detect this state.
+            return (uiVisibility & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0
+                    || (uiVisibility & View.SYSTEM_UI_FLAG_IMMERSIVE) != 0
+                    || (uiVisibility & View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) != 0;
+        }
+    }
+
+    private boolean isLayoutFullscreen(int uiVisibility) {
+        if (ChromeFeatureList.sFullscreenInsetsApiMigration.isEnabled()) {
+            if (mActivity != null
+                    && mActivity.getWindow() != null
+                    && mActivity.getWindow().getDecorView() != null) {
+                // TODO(crbug.com/1519669): Coordinate usage of #setDecorFitsSystemWindows
+                return !mActivity.getWindow().getDecorView().getFitsSystemWindows();
+            } else {
+                return false;
+            }
+        } else {
+            return (uiVisibility & View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) != 0;
+        }
     }
 
     /**
@@ -628,6 +670,7 @@ public class CompositorViewHolder extends FrameLayout
             WindowAndroid windowAndroid,
             TabContentManager tabContentManager,
             PrefService prefService) {
+        mActivity = windowAndroid.getActivity().get();
         mCompositorView.initNativeCompositor(
                 SysUtils.isLowEndDevice(), windowAndroid, tabContentManager);
 
@@ -661,13 +704,6 @@ public class CompositorViewHolder extends FrameLayout
      */
     public DynamicResourceLoader getDynamicResourceLoader() {
         return mCompositorView.getResourceManager().getDynamicResourceLoader();
-    }
-
-    /**
-     * @return The {@link Invalidator} instance that is driven by this {@link CompositorViewHolder}.
-     */
-    public Invalidator getInvalidator() {
-        return mInvalidator;
     }
 
     // TouchEventProvider implementation.
@@ -1115,7 +1151,6 @@ public class CompositorViewHolder extends FrameLayout
             float topViewsTranslation = mBrowserControlsManager.getTopVisibleContentOffset();
             float bottomMargin =
                     BrowserControlsUtils.getBottomContentOffset(mBrowserControlsManager);
-            applyTranslationToTopChildViews(view, topViewsTranslation);
             applyMarginToFullscreenChildViews(view, topViewsTranslation, bottomMargin);
             tryUpdateControlsAndWebContentsSizing();
         }
@@ -1138,20 +1173,6 @@ public class CompositorViewHolder extends FrameLayout
                 ViewUtils.requestLayout(
                         child, "CompositorViewHolder.applyMarginToFullscreenChildViews");
                 TraceEvent.instant("FullscreenManager:child.requestLayout()");
-            }
-        }
-    }
-
-    private static void applyTranslationToTopChildViews(ViewGroup contentView, float translation) {
-        for (int i = 0; i < contentView.getChildCount(); i++) {
-            View child = contentView.getChildAt(i);
-            if (!(child.getLayoutParams() instanceof FrameLayout.LayoutParams)) continue;
-
-            FrameLayout.LayoutParams layoutParams =
-                    (FrameLayout.LayoutParams) child.getLayoutParams();
-            if (Gravity.TOP == (layoutParams.gravity & Gravity.FILL_VERTICAL)) {
-                child.setTranslationY(translation);
-                TraceEvent.instant("FullscreenManager:child.setTranslationY()");
             }
         }
     }
@@ -1234,20 +1255,10 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onSurfaceCreated() {
-        mPendingFrameCount = 0;
-        flushInvalidation();
-    }
-
-    @Override
     public void didSwapFrame(int pendingFrameCount) {
         TraceEvent.instant("didSwapFrame");
 
         mHasDrawnOnce = true;
-        mPendingFrameCount = pendingFrameCount;
-
-        if (!mSkipInvalidation || pendingFrameCount == 0) flushInvalidation();
-        mSkipInvalidation = !mSkipInvalidation;
 
         mDidSwapBuffersCallbacks.addAll(mDidSwapFrameCallbacks);
         mDidSwapFrameCallbacks.clear();
@@ -1422,15 +1433,7 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onAttachedToWindow() {
-        mInvalidator.set(this);
-        super.onAttachedToWindow();
-    }
-
-    @Override
     public void onDetachedFromWindow() {
-        flushInvalidation();
-        mInvalidator.set(null);
         super.onDetachedFromWindow();
 
         // Removes the accessibility node provider from this view.
@@ -1452,15 +1455,11 @@ public class CompositorViewHolder extends FrameLayout
         if (mUrlBar != null && mUrlBar.isFocused()) mUrlBar.clearFocus();
         boolean wasVisible = false;
         if (hasFocus()) {
-            if (ToolbarFeatures.shouldDelayTransitionsForAnimation()) {
-                KeyboardVisibilityDelegate keyboardVisibilityDelegate =
-                        KeyboardVisibilityDelegate.getInstance();
-                wasVisible = keyboardVisibilityDelegate.isKeyboardShowing(getContext(), this);
-                if (wasVisible) {
-                    keyboardVisibilityDelegate.hideKeyboard(this);
-                }
-            } else {
-                wasVisible = KeyboardVisibilityDelegate.getInstance().hideKeyboard(this);
+            KeyboardVisibilityDelegate keyboardVisibilityDelegate =
+                    KeyboardVisibilityDelegate.getInstance();
+            wasVisible = keyboardVisibilityDelegate.isKeyboardShowing(getContext(), this);
+            if (wasVisible) {
+                keyboardVisibilityDelegate.hideKeyboard(this);
             }
         }
         if (wasVisible) {
@@ -1674,24 +1673,6 @@ public class CompositorViewHolder extends FrameLayout
         if (tab.getView() != tab.getContentView()) return;
 
         updateWebContentsSize(tab);
-    }
-
-    @Override
-    public void deferInvalidate(Runnable clientInvalidator) {
-        if (mPendingFrameCount <= 0) {
-            clientInvalidator.run();
-        } else if (!mPendingInvalidations.contains(clientInvalidator)) {
-            mPendingInvalidations.add(clientInvalidator);
-        }
-    }
-
-    private void flushInvalidation() {
-        if (mPendingInvalidations.isEmpty()) return;
-        TraceEvent.instant("CompositorViewHolder.flushInvalidation");
-        for (int i = 0; i < mPendingInvalidations.size(); i++) {
-            mPendingInvalidations.get(i).run();
-        }
-        mPendingInvalidations.clear();
     }
 
     /**

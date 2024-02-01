@@ -71,14 +71,6 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
       url, context->GetSecurityOrigin(), context->GetCurrentWorld(),
       cross_origin, encoding, defer));
 
-  constexpr WebFeature kCountOrbBlockAs[2][2] = {
-      {WebFeature::kORBBlockWithoutAnyEventHandler,
-       WebFeature::kORBBlockWithOnErrorButWithoutOnLoadEventHandler},
-      {WebFeature::kORBBlockWithOnLoadButWithoutOnErrorEventHandler,
-       WebFeature::kORBBlockWithOnLoadAndOnErrorEventHandler}};
-  params.SetCountORBBlockAs(kCountOrbBlockAs[element->HasLoadEventHandler()]
-                                            [element->HasErrorEventHandler()]);
-
   ClassicPendingScript* pending_script =
       MakeGarbageCollected<ClassicPendingScript>(
           element, TextPosition::MinimumPosition(), KURL(), KURL(), String(),
@@ -112,8 +104,8 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
   }
 
   ScriptResource::Fetch(params, element_document.Fetcher(), pending_script,
-                        ScriptResource::kAllowStreaming, compile_hints_producer,
-                        compile_hints_consumer);
+                        context->GetIsolate(), ScriptResource::kAllowStreaming,
+                        compile_hints_producer, compile_hints_consumer);
   pending_script->CheckState();
   return pending_script;
 }
@@ -322,6 +314,25 @@ bool ClassicPendingScript::IsEligibleForLowPriorityAsyncScriptExecution()
   // rather than later.
   if (GetResource() && GetResource()->IsLinkPreload())
     return false;
+
+  bool is_ad_resource =
+      GetResource() && GetResource()->GetResourceRequest().IsAdResource();
+  static const features::AsyncScriptExperimentalSchedulingTarget target =
+      features::kLowPriorityAsyncScriptExecutionTargetParam.Get();
+  switch (target) {
+    case features::AsyncScriptExperimentalSchedulingTarget::kAds:
+      if (!is_ad_resource) {
+        return false;
+      }
+      break;
+    case features::AsyncScriptExperimentalSchedulingTarget::kNonAds:
+      if (is_ad_resource) {
+        return false;
+      }
+      break;
+    case features::AsyncScriptExperimentalSchedulingTarget::kBoth:
+      break;
+  }
 
   return true;
 }

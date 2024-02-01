@@ -28,10 +28,6 @@
 
 namespace sync_preferences {
 
-const char kSyncablePrefForTesting[] = "syncable-test-preference";
-const char kSyncableMergeableDictPrefForTesting[] =
-    "syncable-mergeable-dict-test-preference";
-
 namespace {
 // Not an enum class to ease cast to int.
 namespace syncable_prefs_ids {
@@ -85,7 +81,7 @@ enum {
   kCredentialsEnableService = 40,
   kPasswordDismissCompromisedAlertEnabled = 41,
   kPasswordLeakDetectionEnabled = 42,
-  kSyncedLastTimePasswordCheckCompleted = 43,
+  // kSyncedLastTimePasswordCheckCompleted = 43, (deprecated)
   kWasAutoSignInFirstRunExperienceShown = 44,
   kCanMakePaymentEnabled = 45,
   kAccountTailoredSecurityUpdateTimestamp = 46,
@@ -118,13 +114,12 @@ enum {
 };
 }  // namespace syncable_prefs_ids
 
-const auto& SyncablePreferences() {
-  // List of syncable preferences common across platforms.
-  static const auto kCommonSyncablePrefsAllowlist = base::MakeFixedFlatMap<
-      base::StringPiece, SyncablePrefMetadata>({
-    {autofill::prefs::kAutofillCreditCardEnabled,
-     {syncable_prefs_ids::kAutofillCreditCardEnabled, syncer::PREFERENCES,
-      PrefSensitivity::kNone, MergeBehavior::kNone}},
+// List of syncable preferences common across platforms.
+constexpr auto kCommonSyncablePrefsAllowlist =
+    base::MakeFixedFlatMap<base::StringPiece, SyncablePrefMetadata>({
+        {autofill::prefs::kAutofillCreditCardEnabled,
+         {syncable_prefs_ids::kAutofillCreditCardEnabled, syncer::PREFERENCES,
+          PrefSensitivity::kNone, MergeBehavior::kNone}},
         {autofill::prefs::kAutofillHasSeenIban,
          {syncable_prefs_ids::kAutofillHasSeenIban, syncer::PREFERENCES,
           PrefSensitivity::kNone, MergeBehavior::kNone}},
@@ -245,10 +240,6 @@ const auto& SyncablePreferences() {
         {password_manager::prefs::kPasswordLeakDetectionEnabled,
          {syncable_prefs_ids::kPasswordLeakDetectionEnabled,
           syncer::PREFERENCES, PrefSensitivity::kNone, MergeBehavior::kNone}},
-        {password_manager::prefs::kSyncedLastTimePasswordCheckCompleted,
-         {syncable_prefs_ids::kSyncedLastTimePasswordCheckCompleted,
-          syncer::PRIORITY_PREFERENCES, PrefSensitivity::kNone,
-          MergeBehavior::kNone}},
         {password_manager::prefs::kWasAutoSignInFirstRunExperienceShown,
          {syncable_prefs_ids::kWasAutoSignInFirstRunExperienceShown,
           syncer::PRIORITY_PREFERENCES, PrefSensitivity::kNone,
@@ -324,25 +315,24 @@ const auto& SyncablePreferences() {
         {autofill::prefs::kAutofillPaymentCvcStorage,
          {syncable_prefs_ids::kAutofillPaymentCvcStorage, syncer::PREFERENCES,
           PrefSensitivity::kNone, MergeBehavior::kNone}},
-  });
-  return kCommonSyncablePrefsAllowlist;
-}
+    });
+
 }  // namespace
 
-absl::optional<SyncablePrefMetadata>
+std::optional<SyncablePrefMetadata>
 CommonSyncablePrefsDatabase::GetSyncablePrefMetadata(
     const std::string& pref_name) const {
-  const auto* it = SyncablePreferences().find(pref_name);
-  if (it == SyncablePreferences().end()) {
-    return absl::nullopt;
+  const auto* it = kCommonSyncablePrefsAllowlist.find(pref_name);
+  if (it == kCommonSyncablePrefsAllowlist.end()) {
+    return std::nullopt;
   }
   return it->second;
 }
 
 std::map<base::StringPiece, SyncablePrefMetadata>
 CommonSyncablePrefsDatabase::GetAllSyncablePrefsForTest() const {
-  const auto& syncable_prefs = SyncablePreferences();
-  return {syncable_prefs.begin(), syncable_prefs.end()};
+  return {kCommonSyncablePrefsAllowlist.begin(),
+          kCommonSyncablePrefsAllowlist.end()};
 }
 
 }  // namespace sync_preferences

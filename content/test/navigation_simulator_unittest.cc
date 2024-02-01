@@ -36,7 +36,7 @@ class CancellingNavigationSimulatorTest
     : public RenderViewHostImplTestHarness,
       public WebContentsObserver,
       public testing::WithParamInterface<
-          std::tuple<absl::optional<TestNavigationThrottle::ThrottleMethod>,
+          std::tuple<std::optional<TestNavigationThrottle::ThrottleMethod>,
                      TestNavigationThrottle::ResultSynchrony>> {
  public:
   CancellingNavigationSimulatorTest() {}
@@ -83,7 +83,7 @@ class CancellingNavigationSimulatorTest
 
   void OnWillFailRequestCalled() { will_fail_request_called_ = true; }
 
-  absl::optional<TestNavigationThrottle::ThrottleMethod> cancel_time_;
+  std::optional<TestNavigationThrottle::ThrottleMethod> cancel_time_;
   TestNavigationThrottle::ResultSynchrony sync_;
   std::unique_ptr<NavigationSimulator> simulator_;
   bool did_finish_navigation_ = false;
@@ -146,6 +146,15 @@ class ResponseHeadersCheckingNavigationSimulatorTest
 
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 };
+
+// Test that NavigationSimulator accurately commits about:blank if the browser
+// requests a navigation to an empty URL.
+TEST_F(NavigationSimulatorTest, EmptyURL) {
+  std::unique_ptr<NavigationSimulator> simulator =
+      NavigationSimulator::CreateBrowserInitiated(GURL(), contents());
+  simulator->Commit();
+  EXPECT_EQ(GURL(url::kAboutBlankURL), main_rfh()->GetLastCommittedURL());
+}
 
 TEST_F(NavigationSimulatorTest, AutoAdvanceOff) {
   std::unique_ptr<NavigationSimulator> simulator =
@@ -270,7 +279,7 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::Values(TestNavigationThrottle::WILL_START_REQUEST,
                           TestNavigationThrottle::WILL_REDIRECT_REQUEST,
                           TestNavigationThrottle::WILL_PROCESS_RESPONSE,
-                          absl::nullopt),
+                          std::nullopt),
         ::testing::Values(TestNavigationThrottle::SYNCHRONOUS,
                           TestNavigationThrottle::ASYNCHRONOUS)));
 

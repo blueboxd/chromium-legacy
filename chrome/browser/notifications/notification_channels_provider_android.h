@@ -94,36 +94,40 @@ class NotificationChannelsProviderAndroid
   std::unique_ptr<content_settings::RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       bool incognito,
-      const content_settings::PartitionKey& partition_key =
-          content_settings::PartitionKey::WipGetDefault()) const override;
+      const content_settings::PartitionKey& partition_key) const override;
   bool SetWebsiteSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       base::Value&& value,
-      const content_settings::ContentSettingConstraints& constraints = {},
-      const content_settings::PartitionKey& partition_key =
-          content_settings::PartitionKey::WipGetDefault()) override;
+      const content_settings::ContentSettingConstraints& constraints,
+      const content_settings::PartitionKey& partition_key) override;
   void ClearAllContentSettingsRules(
       ContentSettingsType content_type,
-      const content_settings::PartitionKey& partition_key =
-          content_settings::PartitionKey::WipGetDefault()) override;
+      const content_settings::PartitionKey& partition_key) override;
   void ShutdownOnUIThread() override;
-  bool UpdateLastUsedTime(const GURL& primary_url,
-                          const GURL& secondary_url,
-                          ContentSettingsType content_type,
-                          const base::Time time) override;
-  bool ResetLastVisitTime(const ContentSettingsPattern& primary_pattern,
-                          const ContentSettingsPattern& secondary_pattern,
-                          ContentSettingsType content_type) override;
-  bool UpdateLastVisitTime(const ContentSettingsPattern& primary_pattern,
-                           const ContentSettingsPattern& secondary_pattern,
-                           ContentSettingsType content_type) override;
-  absl::optional<base::TimeDelta> RenewContentSetting(
+  bool UpdateLastUsedTime(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
-      absl::optional<ContentSetting> setting_to_match) override;
+      const base::Time time,
+      const content_settings::PartitionKey& partition_key) override;
+  bool ResetLastVisitTime(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const content_settings::PartitionKey& partition_key) override;
+  bool UpdateLastVisitTime(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const content_settings::PartitionKey& partition_key) override;
+  std::optional<base::TimeDelta> RenewContentSetting(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      std::optional<ContentSetting> setting_to_match,
+      const content_settings::PartitionKey& partition_key) override;
   void SetClockForTesting(base::Clock* clock) override;
 
  private:

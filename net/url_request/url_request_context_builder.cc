@@ -23,7 +23,6 @@
 #include "net/base/network_delegate_impl.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/sct_auditing_delegate.h"
@@ -44,7 +43,7 @@
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
-#include "net/quic/quic_stream_factory.h"
+#include "net/quic/quic_session_pool.h"
 #include "net/socket/network_binding_client_socket_factory.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -86,7 +85,6 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
   session_context->cert_verifier = request_context->cert_verifier();
   session_context->transport_security_state =
       request_context->transport_security_state();
-  session_context->ct_policy_enforcer = request_context->ct_policy_enforcer();
   session_context->sct_auditing_delegate =
       request_context->sct_auditing_delegate();
   session_context->proxy_resolution_service =
@@ -145,11 +143,6 @@ void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
                                                      bool quic_enabled) {
   http_network_session_params_.enable_http2 = spdy_enabled;
   http_network_session_params_.enable_quic = quic_enabled;
-}
-
-void URLRequestContextBuilder::set_ct_policy_enforcer(
-    std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer) {
-  ct_policy_enforcer_ = std::move(ct_policy_enforcer);
 }
 
 void URLRequestContextBuilder::set_sct_auditing_delegate(
@@ -289,8 +282,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
                                                       user_agent_));
   }
 
-  if (!network_delegate_)
+  if (!network_delegate_) {
     network_delegate_ = std::make_unique<NetworkDelegateImpl>();
+  }
   context->set_network_delegate(std::move(network_delegate_));
 
   if (net_log_) {
@@ -319,8 +313,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     host_resolver_ = HostResolver::CreateStandaloneNetworkBoundResolver(
         context->net_log(), bound_network_, manager_options_);
 
-    if (!quic_context_)
+    if (!quic_context_) {
       set_quic_context(std::make_unique<QuicContext>());
+    }
     auto* quic_params = quic_context_->params();
     // QUIC sessions for this context should not be closed (or go away) after a
     // network change.
@@ -423,13 +418,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));
   }
 
-  if (ct_policy_enforcer_) {
-    context->set_ct_policy_enforcer(std::move(ct_policy_enforcer_));
-  } else {
-    context->set_ct_policy_enforcer(
-        std::make_unique<DefaultCTPolicyEnforcer>());
-  }
-
   if (sct_auditing_delegate_) {
     context->set_sct_auditing_delegate(std::move(sct_auditing_delegate_));
   }
@@ -466,6 +454,14 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       proxy_resolution_service_.get();
   context->set_proxy_resolution_service(std::move(proxy_resolution_service_));
 
+  if (proxy_delegate_) {
+    ProxyDelegate* proxy_delegate = proxy_delegate_.get();
+    context->set_proxy_delegate(std::move(proxy_delegate_));
+
+    proxy_resolution_service->SetProxyDelegate(proxy_delegate);
+    proxy_delegate->SetProxyResolutionService(proxy_resolution_service);
+  }
+
 #if BUILDFLAG(ENABLE_REPORTING)
   // Note: ReportingService::Create and NetworkErrorLoggingService::Create can
   // both return nullptr if the corresponding base::Feature is disabled.
@@ -501,11 +497,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         context->reporting_service());
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
-
-  if (proxy_delegate_) {
-    proxy_resolution_service->SetProxyDelegate(proxy_delegate_.get());
-    context->set_proxy_delegate(std::move(proxy_delegate_));
-  }
 
   HttpNetworkSessionContext network_session_context;
   // Unlike the other fields of HttpNetworkSession::Context,

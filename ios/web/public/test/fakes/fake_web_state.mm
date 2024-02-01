@@ -13,6 +13,7 @@
 #import "components/sessions/core/session_id.h"
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
+#import "ios/web/public/download/crw_web_view_download.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
@@ -21,7 +22,6 @@
 #import "ios/web/public/test/fakes/crw_fake_find_interaction.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/policy_decision_state_tracker.h"
-#import "ui/gfx/image/image.h"
 
 namespace web {
 
@@ -389,6 +389,14 @@ void FakeWebState::OnVisibleSecurityStateChanged() {
   }
 }
 
+void FakeWebState::OnDownloadFinished(NSError* error) {
+  if (error) {
+    [download_delegate_ downloadDidFailWithError:error];
+  } else {
+    [download_delegate_ downloadDidFinish];
+  }
+}
+
 void FakeWebState::ShouldAllowRequest(
     NSURLRequest* request,
     WebStatePolicyDecider::RequestInfo request_info,
@@ -466,6 +474,11 @@ void FakeWebState::SetFindInteraction(id<CRWFindInteraction> find_interaction)
   find_interaction_ = find_interaction;
 }
 
+void FakeWebState::SetWebViewDownload(
+    id<CRWWebViewDownload> web_view_download) {
+  web_view_download_ = web_view_download;
+}
+
 CRWWebViewProxyType FakeWebState::GetWebViewProxy() const {
   return web_view_proxy_;
 }
@@ -494,9 +507,8 @@ bool FakeWebState::CanTakeSnapshot() const {
   return can_take_snapshot_;
 }
 
-void FakeWebState::TakeSnapshot(const gfx::RectF& rect,
-                                SnapshotCallback callback) {
-  std::move(callback).Run(gfx::Image([[UIImage alloc] init]));
+void FakeWebState::TakeSnapshot(const CGRect rect, SnapshotCallback callback) {
+  std::move(callback).Run([[UIImage alloc] init]);
 }
 
 void FakeWebState::CreateFullPagePdf(
@@ -560,7 +572,10 @@ NSDictionary<NSNumber*, NSNumber*>* FakeWebState::GetStatesForAllPermissions()
 void FakeWebState::DownloadCurrentPage(
     NSString* destination_file,
     id<CRWWebViewDownloadDelegate> delegate,
-    void (^handler)(id<CRWWebViewDownload>)) {}
+    void (^handler)(id<CRWWebViewDownload>)) {
+  download_delegate_ = delegate;
+  handler(web_view_download_);
+}
 
 bool FakeWebState::IsFindInteractionSupported() {
   return true;

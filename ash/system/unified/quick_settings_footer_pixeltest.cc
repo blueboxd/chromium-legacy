@@ -62,8 +62,7 @@ class QuickSettingsFooterPixelTest : public AshTestBase {
   base::test::ScopedFeatureList feature_list_;
 
   // Owned by view hierarchy.
-  raw_ptr<QuickSettingsFooter, DanglingUntriaged | ExperimentalAsh> footer_ =
-      nullptr;
+  raw_ptr<QuickSettingsFooter, DanglingUntriaged> footer_ = nullptr;
 };
 
 TEST_F(QuickSettingsFooterPixelTest, FooterShouldBeRenderedCorrectly) {
@@ -75,7 +74,7 @@ TEST_F(QuickSettingsFooterPixelTest, FooterShouldBeRenderedCorrectly) {
 
   // Regression test for b/293484037: The settings button is missing when
   // there's no enough space for the battery label.
-  SimulateUserLogin("test@gmail.com", user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  SimulateUserLogin("test@gmail.com", user_manager::UserType::kPublicAccount);
   InitPowerStatusAndOpenBubble();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "with_exit_button",

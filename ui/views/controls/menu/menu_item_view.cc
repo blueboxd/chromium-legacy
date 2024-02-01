@@ -110,7 +110,7 @@ MenuItemView::~MenuItemView() {
   if (GetMenuController()) {
     GetMenuController()->OnMenuItemDestroying(this);
   }
-  for (auto* item : removed_items_) {
+  for (views::View* item : removed_items_) {
     delete item;
   }
 }
@@ -218,19 +218,35 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 bool MenuItemView::HandleAccessibleAction(const ui::AXActionData& action_data) {
-  if (action_data.action != ax::mojom::Action::kDoDefault)
-    return View::HandleAccessibleAction(action_data);
+  switch (action_data.action) {
+    case ax::mojom::Action::kExpand: {
+      DCHECK(HasSubmenu());
+      [[fallthrough]];
+    }
+    case ax::mojom::Action::kDoDefault: {
+      // kDoDefault in View would simulate a mouse click in the center of this
+      // MenuItemView. However, mouse events for menus are dispatched via
+      // Widget::SetCapture() to the MenuController rather than to
+      // MenuItemView, so there is no effect. VKEY_RETURN provides a better UX
+      // anyway, since it will move focus to a submenu.
+      ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
+                         ui::DomCode::ENTER, ui::EF_NONE, ui::DomKey::ENTER,
+                         ui::EventTimeForNow());
+      GetMenuController()->SetSelection(this,
+                                        MenuController::SELECTION_DEFAULT);
+      GetMenuController()->OnWillDispatchKeyEvent(&event);
+      return true;
+    }
 
-  // kDoDefault in View would simulate a mouse click in the center of this
-  // MenuItemView. However, mouse events for menus are dispatched via
-  // Widget::SetCapture() to the MenuController rather than to MenuItemView, so
-  // there is no effect. VKEY_RETURN provides a better UX anyway, since it will
-  // move focus to a submenu.
-  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::DomCode::ENTER,
-                     ui::EF_NONE, ui::DomKey::ENTER, ui::EventTimeForNow());
-  GetMenuController()->SetSelection(this, MenuController::SELECTION_DEFAULT);
-  GetMenuController()->OnWillDispatchKeyEvent(&event);
-  return true;
+    case ax::mojom::Action::kCollapse: {
+      DCHECK(HasSubmenu());
+      GetMenuController()->CloseSubmenu();
+      return true;
+    }
+
+    default:
+      return View::HandleAccessibleAction(action_data);
+  }
 }
 
 View::FocusBehavior MenuItemView::GetFocusBehavior() const {
@@ -692,15 +708,16 @@ void MenuItemView::ChildrenChanged() {
       // as UpdateSubmenuSelection() looks at bounds. This handles the case of
       // the top level window's size remaining the same, resulting in no change
       // to the submenu's size and no layout.
-      submenu_->Layout();
+      submenu_->DeprecatedLayoutImmediately();
       submenu_->SchedulePaint();
       // Update the menu selection after layout.
       controller->UpdateSubmenuSelection(submenu_.get());
     }
   }
 
-  for (auto* item : removed_items_)
+  for (views::View* item : removed_items_) {
     delete item;
+  }
   removed_items_.clear();
 }
 

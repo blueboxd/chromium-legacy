@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import {iconSetToCSSBackgroundImageValue} from '../../common/js/util.js';
-import {AndroidApp, State} from '../../externs/ts/state.js';
-import {constants} from '../../foreground/js/constants.js';
+import {ICON_TYPES} from '../../foreground/js/constants.js';
 import {Slice} from '../../lib/base_store.js';
+import type {AndroidApp, State} from '../../state/state.js';
 
 /**
  * @fileoverview Android apps slice of the store.
@@ -28,8 +28,7 @@ function addAndroidAppsReducer(currentState: State, payload: {
   for (const app of payload.apps) {
     // For android app item, if no icon is derived from IconSet, set the icon to
     // the generic one.
-    let icon: string|chrome.fileManagerPrivate.IconSet =
-        constants.ICON_TYPES.GENERIC;
+    let icon: string|chrome.fileManagerPrivate.IconSet = ICON_TYPES.GENERIC;
     if (app.iconSet) {
       const backgroundImage = iconSetToCSSBackgroundImageValue(app.iconSet);
       if (backgroundImage !== 'none') {

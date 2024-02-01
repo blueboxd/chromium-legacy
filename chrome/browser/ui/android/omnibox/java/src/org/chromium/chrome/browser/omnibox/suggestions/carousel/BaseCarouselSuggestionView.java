@@ -41,10 +41,6 @@ public class BaseCarouselSuggestionView extends RecyclerView {
         setItemAnimator(null);
         setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
 
-        int topPadding = OmniboxResourceProvider.getCarouselTopPadding(context);
-        int bottomPadding = OmniboxResourceProvider.getCarouselBottomPadding(context);
-        setPaddingRelative(0, topPadding, getPaddingEnd(), bottomPadding);
-
         mSelectionController = new RecyclerViewSelectionController(getLayoutManager());
         addOnChildAttachStateChangeListener(mSelectionController);
 
@@ -108,7 +104,6 @@ public class BaseCarouselSuggestionView extends RecyclerView {
         mDecoration.notifyViewMeasuredSizeChanged();
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     /* package */ void setSelectionControllerForTesting(
             RecyclerViewSelectionController controller) {
         removeOnChildAttachStateChangeListener(mSelectionController);
@@ -120,7 +115,6 @@ public class BaseCarouselSuggestionView extends RecyclerView {
         return mDecoration;
     }
 
-    @VisibleForTesting
     /* package */ void setItemDecorationForTesting(
             DynamicSpacingRecyclerViewItemDecoration decoration) {
         removeItemDecoration(mDecoration);

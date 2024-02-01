@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_types.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -44,7 +44,8 @@ class ExpiringVisitsReader {
                     VisitVector* visits, int max_visits) const = 0;
 };
 
-typedef std::vector<const ExpiringVisitsReader*> ExpiringVisitsReaders;
+typedef std::vector<raw_ptr<const ExpiringVisitsReader, VectorExperimental>>
+    ExpiringVisitsReaders;
 
 namespace internal {
 // The minimum number of days since last use for an icon to be considered old.
@@ -238,7 +239,7 @@ class ExpireHistoryBackend {
   void BroadcastNotifications(DeleteEffects* effects,
                               DeletionType type,
                               const DeletionTimeRange& time_range,
-                              absl::optional<std::set<GURL>> restrict_urls,
+                              std::optional<std::set<GURL>> restrict_urls,
                               DeletionInfo::Reason deletion_reason);
 
   // Schedules a call to DoExpireIteration.
@@ -280,9 +281,8 @@ class ExpireHistoryBackend {
   raw_ptr<HistoryBackendNotifier> notifier_;
 
   // Non-owning pointers to the databases we deal with (MAY BE NULL).
-  raw_ptr<HistoryDatabase, AcrossTasksDanglingUntriaged>
-      main_db_;  // Main history database.
-  raw_ptr<favicon::FaviconDatabase, AcrossTasksDanglingUntriaged> favicon_db_;
+  raw_ptr<HistoryDatabase> main_db_;  // Main history database.
+  raw_ptr<favicon::FaviconDatabase> favicon_db_;
 
   // The threshold for "old" history where we will automatically delete it.
   base::TimeDelta expiration_threshold_;
@@ -309,7 +309,7 @@ class ExpireHistoryBackend {
   std::unique_ptr<ExpiringVisitsReader> auto_subframe_visits_reader_;
 
   // The HistoryBackendClient; may be null.
-  raw_ptr<HistoryBackendClient, AcrossTasksDanglingUntriaged> backend_client_;
+  raw_ptr<HistoryBackendClient> backend_client_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

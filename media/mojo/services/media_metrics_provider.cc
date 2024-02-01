@@ -82,6 +82,7 @@ MediaMetricsProvider::~MediaMetricsProvider() {
   builder.SetIsMSE(media_info_->is_mse);
   builder.SetRendererType(static_cast<int>(renderer_type_));
   builder.SetKeySystem(GetKeySystemIntForUKM(key_system_));
+  builder.SetHasWaitingForKey(has_waiting_for_key_);
   builder.SetIsHardwareSecure(is_hardware_secure_);
   builder.SetAudioEncryptionType(
       static_cast<int>(uma_info_.audio_pipeline_info.encryption_type));
@@ -119,7 +120,13 @@ std::string MediaMetricsProvider::GetUMANameForAVStream(
   }
 
   // Using default RendererImpl. Put more detailed info into the UMA name.
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
+  if (player_info.is_eme && player_info.video_pipeline_info.decoder_type ==
+                                VideoDecoderType::kMediaCodec) {
+    return uma_name + "MediaDrm." +
+           (is_hardware_secure_ ? "HardwareSecure" : "SoftwareSecure");
+  }
+#else
   if (player_info.video_pipeline_info.decoder_type ==
       VideoDecoderType::kDecrypting) {
     return uma_name + "DVD";
@@ -138,6 +145,12 @@ std::string MediaMetricsProvider::GetUMANameForAVStream(
 }
 
 void MediaMetricsProvider::ReportPipelineUMA() {
+  if (uma_info_.start_status_.has_value()) {
+    base::UmaHistogramExactLinear("Media.PipelineStatus.Start",
+                                  uma_info_.start_status_.value(),
+                                  PIPELINE_STATUS_MAX + 1);
+  }
+
   if (uma_info_.has_video && uma_info_.has_audio) {
     base::UmaHistogramExactLinear(GetUMANameForAVStream(uma_info_),
                                   uma_info_.last_pipeline_status,
@@ -244,6 +257,17 @@ void MediaMetricsProvider::Initialize(
   DCHECK(IsInitialized());
 }
 
+void MediaMetricsProvider::OnStarted(const PipelineStatus& status) {
+  DCHECK(IsInitialized());
+  if (is_shutting_down_cb_.Run()) {
+    DVLOG(1) << __func__ << ": Start status " << PipelineStatusToString(status)
+             << " ignored since it is reported during shutdown.";
+    return;
+  }
+
+  uma_info_.start_status_ = status.code();
+}
+
 void MediaMetricsProvider::OnError(const PipelineStatus& status) {
   DCHECK(IsInitialized());
   if (is_shutting_down_cb_.Run()) {
@@ -301,6 +325,10 @@ void MediaMetricsProvider::SetRendererType(RendererType renderer_type) {
 
 void MediaMetricsProvider::SetKeySystem(const std::string& key_system) {
   key_system_ = key_system;
+}
+
+void MediaMetricsProvider::SetHasWaitingForKey() {
+  has_waiting_for_key_ = true;
 }
 
 void MediaMetricsProvider::SetIsHardwareSecure() {

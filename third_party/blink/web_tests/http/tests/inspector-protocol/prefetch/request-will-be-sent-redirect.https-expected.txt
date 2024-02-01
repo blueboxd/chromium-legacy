@@ -58,6 +58,7 @@ Network.responseReceived{
     requestId : <string>
     response : {
         alternateProtocolUsage : unspecifiedReason
+        charset : 
         connectionId : <number>
         connectionReused : true
         encodedDataLength : 261
@@ -95,6 +96,8 @@ Network.responseReceivedExtraInfo{
     ]
     cookiePartitionKey : https://127.0.0.1
     cookiePartitionKeyOpaque : false
+    exemptedCookies : [
+    ]
     headers : {
         Accept-Ranges : bytes
         Connection : Keep-Alive
@@ -178,6 +181,7 @@ Network.requestWillBeSent{
     redirectHasExtraInfo : true
     redirectResponse : {
         alternateProtocolUsage : unspecifiedReason
+        charset : 
         connectionId : <number>
         connectionReused : true
         encodedDataLength : 226
@@ -229,6 +233,8 @@ Network.responseReceivedExtraInfo{
     ]
     cookiePartitionKey : https://127.0.0.1
     cookiePartitionKeyOpaque : false
+    exemptedCookies : [
+    ]
     headers : {
         Connection : Keep-Alive
         Content-Length : 0
@@ -273,6 +279,7 @@ Network.responseReceived{
     requestId : <string>
     response : {
         alternateProtocolUsage : unspecifiedReason
+        charset : 
         connectionId : <number>
         connectionReused : true
         encodedDataLength : 257
@@ -310,6 +317,8 @@ Network.responseReceivedExtraInfo{
     ]
     cookiePartitionKey : https://127.0.0.1
     cookiePartitionKeyOpaque : false
+    exemptedCookies : [
+    ]
     headers : {
         Accept-Ranges : bytes
         Connection : Keep-Alive

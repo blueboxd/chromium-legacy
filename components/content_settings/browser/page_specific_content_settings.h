@@ -260,12 +260,14 @@ class PageSpecificContentSettings
       ContentSettingsType type);
 
   // Called when a specific Shared Worker was accessed.
-  static void SharedWorkerAccessed(int render_process_id,
-                                   int render_frame_id,
-                                   const GURL& worker_url,
-                                   const std::string& name,
-                                   const blink::StorageKey& storage_key,
-                                   bool blocked_by_policy);
+  static void SharedWorkerAccessed(
+      int render_process_id,
+      int render_frame_id,
+      const GURL& worker_url,
+      const std::string& name,
+      const blink::StorageKey& storage_key,
+      const blink::mojom::SharedWorkerSameSiteCookies same_site_cookies,
+      bool blocked_by_policy);
 
   // Called when |api_origin| attempts to join an interest group via the
   // Interest Group API.
@@ -378,10 +380,12 @@ class PageSpecificContentSettings
       const blink::StorageKey& storage_key,
       bool blocked_by_policy,
       content::Page* originating_page = nullptr);
-  void OnSharedWorkerAccessed(const GURL& worker_url,
-                              const std::string& name,
-                              const blink::StorageKey& storage_key,
-                              bool blocked_by_policy);
+  void OnSharedWorkerAccessed(
+      const GURL& worker_url,
+      const std::string& name,
+      const blink::StorageKey& storage_key,
+      const blink::mojom::SharedWorkerSameSiteCookies same_site_cookies,
+      bool blocked_by_policy);
   void OnInterestGroupJoined(const url::Origin& api_origin,
                              bool blocked_by_policy);
   void OnTopicAccessed(const url::Origin& api_origin,
@@ -453,6 +457,16 @@ class PageSpecificContentSettings
   // This method is called when audio or video activity indicator is closed.
   void OnActivityIndicatorBubbleClosed(ContentSettingsType type);
 
+  // Returns `true` if an activity indicator is displaying for
+  // `ContentSettingsType`. Returns `false` otherwise.
+  bool IsIndicatorVisible(ContentSettingsType type) const;
+  // Save `ContentSettingsType` to a set of currently displaying activity
+  // indicators.
+  void OnPermissionIndicatorShown(ContentSettingsType type);
+  // Remove `ContentSettingsType` from a set of currently displaying activity
+  // indicators.
+  void OnPermissionIndicatorHidden(ContentSettingsType type);
+
   void set_media_stream_access_origin_for_testing(const GURL& url) {
     media_stream_access_origin_ = url;
   }
@@ -487,9 +501,9 @@ class PageSpecificContentSettings
 
   // This methods is called when a camera and/or mic blocked indicator is
   // displayed.
-  void OnMediaBlockedIndicatorsShown(ContentSettingsType type);
+  void StartBlockedIndicatorTimer(ContentSettingsType type);
 
-  void OnMediaBlockedIndicatorsDismiss(ContentSettingsType type);
+  void HideMediaBlockedIndicator(ContentSettingsType type);
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -620,6 +634,10 @@ class PageSpecificContentSettings
   // A timer to removed a blocked media indicator.
   std::map<ContentSettingsType, base::OneShotTimer>
       media_blocked_indicator_timer_;
+
+  // Stores `ContentSettingsType` that is currently displaying. It is used only
+  // for the Left-Hand Side indicators.
+  std::set<ContentSettingsType> visible_indicators_;
 
   // Observer to watch for content settings changed.
   base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>

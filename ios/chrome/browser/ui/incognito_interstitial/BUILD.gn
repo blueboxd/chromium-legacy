@@ -23,7 +23,6 @@ source_set("incognito_interstitial_ui") {
     "//ios/chrome/browser/shared/ui/elements:elements",
     "//ios/chrome/browser/shared/ui/util:util",
     "//ios/chrome/browser/ui/ntp/incognito",
-    "//ios/chrome/common:button_config",
     "//ios/chrome/common/ui/colors:colors",
     "//ios/chrome/common/ui/promo_style:promo_style",
     "//ios/chrome/common/ui/util:util",
@@ -61,8 +60,8 @@ source_set("eg2_tests") {
   sources = [ "incognito_interstitial_egtest.mm" ]
   deps = [
     "//components/policy:generated",
-    "//ios/chrome/browser/policy:eg_test_support+eg2",
-    "//ios/chrome/browser/policy:policy_util",
+    "//ios/chrome/browser/policy/model:eg_test_support+eg2",
+    "//ios/chrome/browser/policy/model:policy_util",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/test:eg_test_support+eg2",

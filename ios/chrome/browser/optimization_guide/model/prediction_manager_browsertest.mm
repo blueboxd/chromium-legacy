@@ -103,9 +103,7 @@ class PredictionManagerTestBase : public PlatformTest {
     PlatformTest::SetUp();
 
     InitializeFeatureList();
-    if (optimization_guide::features::IsInstallWideModelStoreEnabled()) {
-      OptimizationGuideServiceFactory::InitializePredictionModelStore();
-    }
+    OptimizationGuideServiceFactory::InitializePredictionModelStore();
 
     download::BackgroundDownloadTaskHelper::SetIgnoreLocalSSLErrorForTesting(
         true);
@@ -163,12 +161,9 @@ class PredictionManagerTestBase : public PlatformTest {
   void TearDown() override {
     download::BackgroundDownloadTaskHelper::SetIgnoreLocalSSLErrorForTesting(
         false);
-    if (optimization_guide::features::IsInstallWideModelStoreEnabled()) {
-      // Reinitialize the store, so that tests do not use state from the
-      // previous test.
-      optimization_guide::PredictionModelStore::GetInstance()
-          ->ResetForTesting();
-    }
+    // Reinitialize the store, so that tests do not use state from the
+    // previous test.
+    optimization_guide::PredictionModelStore::GetInstance()->ResetForTesting();
     PlatformTest::TearDown();
   }
 
@@ -284,8 +279,7 @@ class PredictionManagerTestBase : public PlatformTest {
       PredictionModelsFetcherRemoteResponseType::kSuccessfulWithValidModelFile;
 };
 
-class PredictionManagerTest : public testing::WithParamInterface<bool>,
-                              public PredictionManagerTestBase {
+class PredictionManagerTest : public PredictionManagerTestBase {
  protected:
   void InitializeFeatureList() override {
     std::vector<base::test::FeatureRefAndParams> enabled_features = {
@@ -295,28 +289,11 @@ class PredictionManagerTest : public testing::WithParamInterface<bool>,
          {{"fetch_startup_delay_ms", "2000"}}},
         {optimization_guide::features::kOptimizationGuideModelDownloading, {}},
     };
-    std::vector<base::test::FeatureRef> disabled_features;
-    if (ShouldEnableInstallWideModelStore()) {
-      enabled_features.emplace_back(
-          optimization_guide::features::kOptimizationGuideInstallWideModelStore,
-          base::FieldTrialParams());
-    } else {
-      disabled_features.emplace_back(
-          optimization_guide::features::
-              kOptimizationGuideInstallWideModelStore);
-    }
-    scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features,
-                                                       disabled_features);
+    scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features, {});
   }
-
-  bool ShouldEnableInstallWideModelStore() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         PredictionManagerTest,
-                         /*use_install_wide_model_store=*/testing::Bool());
-
-TEST_P(PredictionManagerTest, ComponentUpdatesEnabledPrefDisabled) {
+TEST_F(PredictionManagerTest, ComponentUpdatesEnabledPrefDisabled) {
   ModelFileObserver model_file_observer;
   SetResponseType(PredictionModelsFetcherRemoteResponseType::kUnsuccessful);
   SetComponentUpdatesEnabled(false);
@@ -329,7 +306,7 @@ TEST_P(PredictionManagerTest, ComponentUpdatesEnabledPrefDisabled) {
       "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status", 0);
 }
 
-TEST_P(PredictionManagerTest, ModelsAndFeaturesStoreInitialized) {
+TEST_F(PredictionManagerTest, ModelsAndFeaturesStoreInitialized) {
   ModelFileObserver model_file_observer;
   SetResponseType(
       PredictionModelsFetcherRemoteResponseType::kSuccessfulWithValidModelFile);
@@ -352,7 +329,7 @@ TEST_P(PredictionManagerTest, ModelsAndFeaturesStoreInitialized) {
       kSuccessfulModelVersion, 1);
 }
 
-TEST_P(PredictionManagerTest, PredictionModelFetchFailed) {
+TEST_F(PredictionManagerTest, PredictionModelFetchFailed) {
   ModelFileObserver model_file_observer;
   SetResponseType(PredictionModelsFetcherRemoteResponseType::kUnsuccessful);
   base::HistogramTester histogram_tester;
@@ -455,29 +432,14 @@ class PredictionManagerModelDownloadingBrowserTest
         {optimization_guide::features::kOptimizationGuideModelDownloading,
          {{"unrestricted_model_downloading", "true"}}},
     };
-    std::vector<base::test::FeatureRef> disabled_features;
-    if (ShouldEnableInstallWideModelStore()) {
-      enabled_features.emplace_back(
-          optimization_guide::features::kOptimizationGuideInstallWideModelStore,
-          base::FieldTrialParams());
-    } else {
-      disabled_features.emplace_back(
-          optimization_guide::features::
-              kOptimizationGuideInstallWideModelStore);
-    }
-    scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features,
-                                                       disabled_features);
+    scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features, {});
   }
 
  protected:
   std::unique_ptr<ModelFileObserver> model_file_observer_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         PredictionManagerModelDownloadingBrowserTest,
-                         /*ShouldEnableInstallWideModelStore=*/testing::Bool());
-
-TEST_P(PredictionManagerModelDownloadingBrowserTest,
+TEST_F(PredictionManagerModelDownloadingBrowserTest,
        TestIncognitoUsesModelFromRegularProfile) {
   SetResponseType(
       PredictionModelsFetcherRemoteResponseType::kSuccessfulWithValidModelFile);
@@ -528,7 +490,7 @@ TEST_P(PredictionManagerModelDownloadingBrowserTest,
   }
 }
 
-TEST_P(PredictionManagerModelDownloadingBrowserTest,
+TEST_F(PredictionManagerModelDownloadingBrowserTest,
        TestIncognitoDoesntFetchModels) {
   base::HistogramTester histogram_tester;
   CreateOffTheRecordBrowserState();
@@ -552,7 +514,7 @@ TEST_P(PredictionManagerModelDownloadingBrowserTest,
       "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
 }
 
-TEST_P(PredictionManagerModelDownloadingBrowserTest,
+TEST_F(PredictionManagerModelDownloadingBrowserTest,
        TestDownloadUrlAcceptedByDownloadServiceButInvalid) {
   base::HistogramTester histogram_tester;
 
@@ -576,7 +538,7 @@ TEST_P(PredictionManagerModelDownloadingBrowserTest,
       "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
 }
 
-TEST_P(PredictionManagerModelDownloadingBrowserTest,
+TEST_F(PredictionManagerModelDownloadingBrowserTest,
        TestSuccessfulModelFileFlow) {
   base::HistogramTester histogram_tester;
 
@@ -613,7 +575,7 @@ TEST_P(PredictionManagerModelDownloadingBrowserTest,
       kSuccessfulModelVersion, 1);
 }
 
-TEST_P(PredictionManagerModelDownloadingBrowserTest,
+TEST_F(PredictionManagerModelDownloadingBrowserTest,
        TestSuccessfulModelFileFlowWithAdditionalFile) {
   base::HistogramTester histogram_tester;
 
@@ -651,7 +613,7 @@ TEST_P(PredictionManagerModelDownloadingBrowserTest,
       kSuccessfulModelVersion, 1);
 }
 
-TEST_P(PredictionManagerModelDownloadingBrowserTest,
+TEST_F(PredictionManagerModelDownloadingBrowserTest,
        TestSuccessfulModelFileFlowWithInvalidAdditionalFile) {
   base::HistogramTester histogram_tester;
 

@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
 #import "base/apple/foundation_util.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/chrome_icon.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_multi_detail_text_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_multi_line_text_edit_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_tabs_search_suggested_history_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_button_item.h"
@@ -66,6 +67,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSearchHistorySuggestedItem,
   ItemTypeTextAccessoryNoImage,
   ItemTypeTextEditItem,
+  ItemTypeTextMultiLineEditItem,
   ItemTypeURLWithActivityIndicator,
   ItemTypeURLWithActivityIndicatorStopped,
   ItemTypeURLWithTimestamp,
@@ -381,6 +383,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   tableViewMultiDetailTextItem.accessoryType =
       UITableViewCellAccessoryDisclosureIndicator;
   [model addItem:tableViewMultiDetailTextItem
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewMultiLineTextEditItem* tableViewMultiLineTextEditItem =
+      [[TableViewMultiLineTextEditItem alloc]
+          initWithType:ItemTypeTextMultiLineEditItem];
+  tableViewMultiLineTextEditItem.label = @"Multi Line Edit Text Item";
+  tableViewMultiLineTextEditItem.text =
+      @"This is possibly a very very very very very very long multi line text";
+  [model addItem:tableViewMultiLineTextEditItem
       toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewSwitchItem* tableViewSwitchItem =

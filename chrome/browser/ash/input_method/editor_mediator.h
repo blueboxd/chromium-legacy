@@ -5,14 +5,12 @@
 #ifndef CHROME_BROWSER_ASH_INPUT_METHOD_EDITOR_MEDIATOR_H_
 #define CHROME_BROWSER_ASH_INPUT_METHOD_EDITOR_MEDIATOR_H_
 
-#include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
-#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/input_method/editor_client_connector.h"
 #include "chrome/browser/ash/input_method/editor_consent_store.h"
 #include "chrome/browser/ash/input_method/editor_event_proxy.h"
 #include "chrome/browser/ash/input_method/editor_event_sink.h"
+#include "chrome/browser/ash/input_method/editor_metrics_recorder.h"
 #include "chrome/browser/ash/input_method/editor_panel_manager.h"
 #include "chrome/browser/ash/input_method/editor_service_connector.h"
 #include "chrome/browser/ash/input_method/editor_switch.h"
@@ -22,6 +20,11 @@
 #include "chrome/browser/ui/webui/ash/mako/mako_bubble_coordinator.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "ui/display/display_observer.h"
+
+namespace display {
+enum class TabletState;
+}  // namespace display
 
 namespace ash {
 namespace input_method {
@@ -33,7 +36,7 @@ namespace input_method {
 class EditorMediator : public EditorEventSink,
                        public EditorPanelManager::Delegate,
                        public EditorTextActuator::Delegate,
-                       public TabletModeObserver,
+                       public display::DisplayObserver,
                        public KeyedService {
  public:
   // country_code that determines the country/territory in which the device is
@@ -62,22 +65,22 @@ class EditorMediator : public EditorEventSink,
   // TODO(b/301869966): Consider removing default parameters once the context
   // menu Orca entry is removed.
   void HandleTrigger(
-      absl::optional<std::string_view> preset_query_id = absl::nullopt,
-      absl::optional<std::string_view> freeform_text = absl::nullopt) override;
+      std::optional<std::string_view> preset_query_id = std::nullopt,
+      std::optional<std::string_view> freeform_text = std::nullopt) override;
   EditorMode GetEditorMode() const override;
   // This method is currently used for metric purposes to understand the ratio
   // of requests being blocked vs. the potential requests that can be
   // accommodated.
   EditorOpportunityMode GetEditorOpportunityMode() const override;
+  std::vector<EditorBlockedReason> GetBlockedReasons() const override;
   void CacheContext() override;
+  EditorMetricsRecorder* GetMetricsRecorder() override;
 
-  // TabletModeObserver overrides
-  void OnTabletModeStarting() override;
-  void OnTabletModeEnded() override;
-  void OnTabletControllerDestroyed() override;
+  // display::DisplayObserver overrides
+  void OnDisplayTabletStateChanged(display::TabletState state) override;
 
   // EditorTextActuator::Delegate overrides
-  void OnTextInserted() override;
+  void OnTextInsertionRequested() override;
   void ProcessConsentAction(ConsentAction consent_action) override;
   void ShowUI() override;
   void CloseUI() override;
@@ -116,6 +119,7 @@ class EditorMediator : public EditorEventSink,
   MakoBubbleCoordinator mako_bubble_coordinator_;
 
   std::unique_ptr<EditorSwitch> editor_switch_;
+  std::unique_ptr<EditorMetricsRecorder> metrics_recorder_;
   std::unique_ptr<EditorConsentStore> consent_store_;
   EditorServiceConnector editor_service_connector_;
 
@@ -127,8 +131,7 @@ class EditorMediator : public EditorEventSink,
 
   SurroundingText surrounding_text_;
 
-  base::ScopedObservation<TabletMode, TabletModeObserver>
-      tablet_mode_observation_{this};
+  display::ScopedDisplayObserver display_observer_{this};
 
   base::WeakPtrFactory<EditorMediator> weak_ptr_factory_{this};
 };

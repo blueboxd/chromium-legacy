@@ -9,6 +9,7 @@
 
 #include "base/functional/bind.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/base/math_util.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -358,7 +359,7 @@ void AudioRendererAlgorithm::EnqueueBuffer(
 }
 
 void AudioRendererAlgorithm::SetLatencyHint(
-    absl::optional<base::TimeDelta> latency_hint) {
+    std::optional<base::TimeDelta> latency_hint) {
   DCHECK_GE(playback_threshold_, min_playback_threshold_);
   DCHECK_LE(playback_threshold_, capacity_);
   DCHECK_LE(capacity_, max_capacity_);

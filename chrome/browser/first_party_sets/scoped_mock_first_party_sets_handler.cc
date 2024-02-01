@@ -4,18 +4,16 @@
 
 #include "chrome/browser/first_party_sets/scoped_mock_first_party_sets_handler.h"
 
+#include <optional>
 #include <string>
 
-#include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/task/sequenced_task_runner.h"
 #include "content/public/browser/first_party_sets_handler.h"
-#include "content/public/common/content_features.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/first_party_sets_cache_filter.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
 #include "net/first_party_sets/global_first_party_sets.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace first_party_sets {
 
@@ -36,13 +34,10 @@ void ScopedMockFirstPartySetsHandler::SetPublicFirstPartySets(
     const base::Version& version,
     base::File sets_file) {}
 
-absl::optional<net::FirstPartySetEntry>
+std::optional<net::FirstPartySetEntry>
 ScopedMockFirstPartySetsHandler::FindEntry(
     const net::SchemefulSite& site,
     const net::FirstPartySetsContextConfig& config) const {
-  if (!base::FeatureList::IsEnabled(features::kFirstPartySets)) {
-    return absl::nullopt;
-  }
   return global_sets_.FindEntry(site, config);
 }
 

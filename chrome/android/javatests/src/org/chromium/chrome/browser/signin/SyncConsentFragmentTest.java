@@ -25,6 +25,8 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
@@ -41,6 +43,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.BuildInfo;
+import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -48,12 +53,15 @@ import org.chromium.base.test.util.CommandLineFlags.Add;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.firstrun.FirstRunPageDelegate;
 import org.chromium.chrome.browser.firstrun.SyncConsentFirstRunFragment;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils.State;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
@@ -63,8 +71,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.components.externalauth.ExternalAuthUtils;
@@ -85,7 +91,7 @@ import java.util.Set;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SyncConsentFragmentTest {
-    private static final int RENDER_REVISION = 1;
+    private static final int RENDER_REVISION = 2;
     private static final String RENDER_DESCRIPTION = "Change button style";
     private static final String NEW_ACCOUNT_NAME = "new.account@gmail.com";
     // TODO(https://crbug.com/1414078): Use ALL_SELECTABLE_TYPES defined in {@link SyncServiceImpl}
@@ -158,6 +164,36 @@ public class SyncConsentFragmentTest {
     @Before
     public void setUp() {
         when(mExternalAuthUtilsMock.canUseGooglePlayServices(any())).thenReturn(true);
+
+        OneshotSupplier<ProfileProvider> profileProviderSupplier =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> {
+                            OneshotSupplierImpl<ProfileProvider> supplierImpl =
+                                    new OneshotSupplierImpl<>();
+                            supplierImpl.set(
+                                    new ProfileProvider() {
+                                        @NonNull
+                                        @Override
+                                        public Profile getOriginalProfile() {
+                                            return Profile.getLastUsedRegularProfile();
+                                        }
+
+                                        @Nullable
+                                        @Override
+                                        public Profile getOffTheRecordProfile(
+                                                boolean createIfNeeded) {
+                                            return null;
+                                        }
+
+                                        @Override
+                                        public boolean hasOffTheRecordProfile() {
+                                            return false;
+                                        }
+                                    });
+                            return supplierImpl;
+                        });
+        when(mFirstRunPageDelegateMock.getProfileProviderSupplier())
+                .thenReturn(profileProviderSupplier);
         ExternalAuthUtils.setInstanceForTesting(mExternalAuthUtilsMock);
         mActivityTestRule.setFinishActivity(true);
     }
@@ -771,6 +807,7 @@ public class SyncConsentFragmentTest {
                                             accountInfo.getEmail());
                         });
         onView(withId(R.id.signin_details_description)).perform(ViewUtils.clickOnClickableSpan(0));
+        simulateDeviceLockReadyOnAutomotive();
         // Wait for the sync consent to be set.
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -987,6 +1024,7 @@ public class SyncConsentFragmentTest {
                                             accountInfo.getEmail());
                         });
         onView(withId(R.id.positive_button)).perform(click());
+        simulateDeviceLockReadyOnAutomotive();
         // Wait for sync opt-in process to finish.
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -1023,6 +1061,7 @@ public class SyncConsentFragmentTest {
                                             accountInfo.getEmail());
                         });
         onView(withId(R.id.positive_button)).perform(click());
+        simulateDeviceLockReadyOnAutomotive();
         // Wait for sync opt-in process to finish.
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -1250,7 +1289,7 @@ public class SyncConsentFragmentTest {
         onView(withId(R.id.device_lock_title)).check(matches(isDisplayed()));
         onView(withText(R.string.signin_accept_button)).check(doesNotExist());
 
-        simulateDeviceLockReady();
+        simulateDeviceLockReadyOnAutomotive();
 
         // Wait for the sync consent to be set and the activity has finished.
         CriteriaHelper.pollUiThread(
@@ -1338,7 +1377,7 @@ public class SyncConsentFragmentTest {
         }
         onView(withId(R.id.signin_details_description)).perform(ViewUtils.clickOnClickableSpan(0));
 
-        simulateDeviceLockReady();
+        simulateDeviceLockReadyOnAutomotive();
 
         // Wait for sync opt-in process to finish.
         CriteriaHelper.pollUiThread(
@@ -1412,7 +1451,9 @@ public class SyncConsentFragmentTest {
         ApplicationTestUtils.waitForActivityState(mSyncConsentActivity, Stage.DESTROYED);
     }
 
-    private void simulateDeviceLockReady() {
+    private void simulateDeviceLockReadyOnAutomotive() {
+        if (!BuildInfo.getInstance().isAutomotive) return;
+
         SyncConsentFragment syncConsentFragment =
                 (SyncConsentFragment)
                         mSyncConsentActivity

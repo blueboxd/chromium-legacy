@@ -233,7 +233,7 @@ class MediaItemUIDeviceSelectorViewTest : public ChromeViewsTestBase {
     auto device_selector_view = std::make_unique<MediaItemUIDeviceSelectorView>(
         kItemId, delegate, device_list_host_->PassRemote(),
         client_remote_.BindNewPipeAndPassReceiver(), has_audio_output,
-        entry_point, /*show_expand_button=*/false, show_devices);
+        entry_point, show_devices);
     device_selector_view->UpdateCurrentAudioDevice(current_device);
     return device_selector_view;
   }
@@ -374,7 +374,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, CurrentAudioDeviceHighlighted) {
   AddAudioDevices(delegate);
   view_ = CreateDeviceSelectorView(&delegate, "3");
 
-  auto* first_entry = GetDeviceEntryViewsContainer()->children().front();
+  auto* first_entry = GetDeviceEntryViewsContainer()->children().front().get();
   EXPECT_EQ(EntryLabelText(first_entry), "Earbuds");
   EXPECT_TRUE(IsHighlighted(first_entry));
 }
@@ -441,7 +441,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, AudioDeviceButtonsChange) {
 
     // When the device highlighted in the UI is removed, and there is no default
     // device, the UI should not highlight any of the devices.
-    for (auto* device_view : container_children) {
+    for (views::View* device_view : container_children) {
       EXPECT_FALSE(IsHighlighted(device_view));
     }
   }

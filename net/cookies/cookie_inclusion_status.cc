@@ -76,6 +76,11 @@ void CookieInclusionStatus::AddExclusionReason(ExclusionReason reason) {
   // If the cookie would be excluded for reasons other than the new SameSite
   // rules, don't bother warning about it.
   MaybeClearSameSiteWarning();
+  // If the cookie would be excluded for reasons unrelated to 3pcd, don't bother
+  // warning about 3pcd.
+  MaybeClearThirdPartyPhaseoutReason();
+  // If the cookie would have been excluded, clear the exemption reason.
+  exemption_reason_ = ExemptionReason::kNone;
 }
 
 void CookieInclusionStatus::RemoveExclusionReason(ExclusionReason reason) {
@@ -85,6 +90,12 @@ void CookieInclusionStatus::RemoveExclusionReason(ExclusionReason reason) {
 void CookieInclusionStatus::RemoveExclusionReasons(
     const std::vector<ExclusionReason>& reasons) {
   exclusion_reasons_ = ExclusionReasonsWithout(reasons);
+}
+
+void CookieInclusionStatus::MaybeSetExemptionReason(ExemptionReason reason) {
+  if (IsInclude() && exemption_reason_ == ExemptionReason::kNone) {
+    exemption_reason_ = reason;
+  }
 }
 
 CookieInclusionStatus::ExclusionReasonBitset
@@ -115,6 +126,18 @@ void CookieInclusionStatus::MaybeClearSameSiteWarning() {
     RemoveWarningReason(WARN_LAX_CROSS_DOWNGRADE_LAX_SAMESITE);
 
     RemoveWarningReason(WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION);
+  }
+}
+
+void CookieInclusionStatus::MaybeClearThirdPartyPhaseoutReason() {
+  if (!IsInclude()) {
+    RemoveWarningReason(WARN_THIRD_PARTY_PHASEOUT);
+  }
+  if (ExclusionReasonsWithout(
+          {EXCLUDE_THIRD_PARTY_PHASEOUT,
+           EXCLUDE_THIRD_PARTY_BLOCKED_WITHIN_FIRST_PARTY_SET}) != 0u) {
+    RemoveExclusionReason(EXCLUDE_THIRD_PARTY_PHASEOUT);
+    RemoveExclusionReason(EXCLUDE_THIRD_PARTY_BLOCKED_WITHIN_FIRST_PARTY_SET);
   }
 }
 

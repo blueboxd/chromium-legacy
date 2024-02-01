@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/cxx20_erase_vector.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
@@ -34,6 +35,7 @@
 #include "ui/gtk/gtk_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_linux.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #include "url/gurl.h"
@@ -381,7 +383,8 @@ void SelectFileDialogLinuxGtk::FileSelected(GtkWidget* dialog,
   }
 
   if (listener_) {
-    listener_->FileSelected(path, GtkDialogSelectedFilterIndex(dialog) + 1,
+    listener_->FileSelected(ui::SelectedFileInfo(path),
+                            GtkDialogSelectedFilterIndex(dialog) + 1,
                             PopParamsForDialog(dialog));
   }
   GtkWindowDestroy(dialog);
@@ -392,15 +395,18 @@ void SelectFileDialogLinuxGtk::MultiFilesSelected(
     const std::vector<base::FilePath>& files) {
   set_last_opened_path(files[0].DirName());
 
-  if (listener_)
-    listener_->MultiFilesSelected(files, PopParamsForDialog(dialog));
+  if (listener_) {
+    listener_->MultiFilesSelected(ui::FilePathListToSelectedFileInfoList(files),
+                                  PopParamsForDialog(dialog));
+  }
   GtkWindowDestroy(dialog);
 }
 
 void SelectFileDialogLinuxGtk::FileNotSelected(GtkWidget* dialog) {
   void* params = PopParamsForDialog(dialog);
-  if (listener_)
+  if (listener_) {
     listener_->FileSelectionCanceled(params);
+  }
   GtkWindowDestroy(dialog);
 }
 
@@ -604,11 +610,9 @@ void SelectFileDialogLinuxGtk::OnSelectMultiFileDialogResponse(
   }
 
   auto filenames = GtkFileChooserGetFilenames(dialog);
-  filenames.erase(std::remove_if(filenames.begin(), filenames.end(),
-                                 [this](const base::FilePath& path) {
-                                   return CallDirectoryExistsOnUIThread(path);
-                                 }),
-                  filenames.end());
+  base::EraseIf(filenames, [this](const base::FilePath& path) {
+    return CallDirectoryExistsOnUIThread(path);
+  });
   if (filenames.empty()) {
     FileNotSelected(dialog);
     return;

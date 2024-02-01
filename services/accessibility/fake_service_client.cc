@@ -7,22 +7,38 @@
 #include "base/functional/callback_forward.h"
 #include "base/notreached.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "ui/accessibility/ax_tree_id.h"
 
 namespace ax {
 FakeServiceClient::FakeServiceClient(mojom::AccessibilityService* service)
-    : service_(service) {}
+    : service_(service) {
+  desktop_tree_id_ = ui::AXTreeID::CreateNewAXTreeID();
+}
 
 FakeServiceClient::~FakeServiceClient() = default;
 
 void FakeServiceClient::BindAutomation(
-    mojo::PendingAssociatedRemote<ax::mojom::Automation> automation,
-    mojo::PendingReceiver<ax::mojom::AutomationClient> automation_client) {
-  automation_client_receivers_.Add(this, std::move(automation_client));
+    mojo::PendingAssociatedRemote<ax::mojom::Automation> automation) {
   automation_remotes_.Add(std::move(automation));
   if (automation_bound_closure_) {
     std::move(automation_bound_closure_).Run();
   }
 }
+
+void FakeServiceClient::BindAutomationClient(
+    mojo::PendingReceiver<ax::mojom::AutomationClient> automation_client) {
+  automation_client_receivers_.Add(this, std::move(automation_client));
+}
+
+void FakeServiceClient::Enable(EnableCallback callback) {
+  std::move(callback).Run(desktop_tree_id_);
+}
+
+void FakeServiceClient::Disable() {}
+
+void FakeServiceClient::EnableTree(const ui::AXTreeID& tree_id) {}
+
+void FakeServiceClient::PerformAction(const ui::AXActionData& data) {}
 
 #if BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)
 void FakeServiceClient::BindAutoclickClient(
@@ -177,6 +193,14 @@ void FakeServiceClient::SendSyntheticKeyEventForShortcutOrNavigation(
   }
 }
 
+void FakeServiceClient::SendSyntheticMouseEvent(
+    mojom::SyntheticMouseEventPtr mouse_event) {
+  mouse_events_.emplace_back(mouse_event.Clone());
+  if (synthetic_mouse_event_callback_) {
+    synthetic_mouse_event_callback_.Run();
+  }
+}
+
 void FakeServiceClient::DarkenScreen(bool darken) {
   if (darken_screen_callback_) {
     darken_screen_callback_.Run(darken);
@@ -192,7 +216,7 @@ void FakeServiceClient::OpenSettingsSubpage(const std::string& subpage) {
 void FakeServiceClient::ShowConfirmationDialog(
     const std::string& title,
     const std::string& description,
-    const absl::optional<std::string>& cancel_name,
+    const std::optional<std::string>& cancel_name,
     ShowConfirmationDialogCallback callback) {
   std::move(callback).Run(true);
 }
@@ -294,9 +318,19 @@ void FakeServiceClient::SetSyntheticKeyEventCallback(
   synthetic_key_event_callback_ = std::move(callback);
 }
 
+void FakeServiceClient::SetSyntheticMouseEventCallback(
+    base::RepeatingCallback<void()> callback) {
+  synthetic_mouse_event_callback_ = std::move(callback);
+}
+
 const std::vector<mojom::SyntheticKeyEventPtr>&
 FakeServiceClient::GetKeyEvents() const {
   return key_events_;
+}
+
+const std::vector<mojom::SyntheticMouseEventPtr>&
+FakeServiceClient::GetMouseEvents() const {
+  return mouse_events_;
 }
 
 void FakeServiceClient::SetDarkenScreenCallback(
@@ -333,6 +367,17 @@ const std::vector<mojom::FocusRingInfoPtr>&
 FakeServiceClient::GetFocusRingsForType(
     mojom::AssistiveTechnologyType type) const {
   return focus_rings_for_type_.at(type);
+}
+
+void FakeServiceClient::SendAccessibilityEvents(
+    const ui::AXTreeID& tree_id,
+    const std::vector<ui::AXTreeUpdate>& updates,
+    const gfx::Point& mouse_location,
+    const std::vector<ui::AXEvent>& events) {
+  for (auto& remote : automation_remotes_) {
+    remote->DispatchAccessibilityEvents(tree_id, updates, mouse_location,
+                                        events);
+  }
 }
 
 #endif  // BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)

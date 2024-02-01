@@ -25,6 +25,7 @@ import './screens/common/gaia_signin.js';
 import './screens/common/gesture_navigation.js';
 import './screens/common/guest_tos.js';
 import './screens/common/hw_data_collection.js';
+import './screens/common/install_attributes_error.js';
 import './screens/common/local_state_error.js';
 import './screens/common/managed_terms_of_service.js';
 import './screens/common/marketing_opt_in.js';
@@ -35,6 +36,7 @@ import './screens/common/oobe_reset.js';
 import './screens/common/os_install.js';
 import './screens/common/os_trial.js';
 import './screens/common/parental_handoff.js';
+import './screens/common/quick_start.js';
 import './screens/common/recommend_apps.js';
 import './screens/common/remote_activity_notification.js';
 import './screens/common/saml_confirm_password.js';
@@ -78,7 +80,6 @@ import './screens/oobe/enterprise_enrollment.js';
 import './screens/oobe/hid_detection.js';
 import './screens/oobe/oobe_network.js';
 import './screens/oobe/packaged_license.js';
-import './screens/oobe/quick_start.js';
 import './screens/oobe/update.js';
 
 /**
@@ -170,6 +171,7 @@ export const commonScreensList = [
     condition: 'isOobeConsumersLocalPasswordsEnabled',
   },
   {tag: 'pin-setup-element', id: 'pin-setup'},
+  {tag: 'quick-start-element', id: 'quick-start'},
   {tag: 'recommend-apps-element', id: 'recommend-apps'},
   {
     tag: 'remote-activity-notification-element',
@@ -187,6 +189,10 @@ export const commonScreensList = [
     condition: 'isTouchpadScrollEnabled',
   },
   {tag: 'tpm-error-message-element', id: 'tpm-error-message'},
+  {
+    tag: 'install-attributes-error-message-element',
+    id: 'install-attributes-error-message',
+  },
   {
     tag: 'user-allowlist-check-screen-element',
     id: 'user-allowlist-check-screen',
@@ -242,6 +248,5 @@ export const oobeScreensList = [
   {tag: 'hid-detection-element', id: 'hid-detection'},
   {tag: 'oobe-network-element', id: 'network-selection'},
   {tag: 'packaged-license-element', id: 'packaged-license'},
-  {tag: 'quick-start-element', id: 'quick-start'},
   {tag: 'update-element', id: 'oobe-update'},
 ];

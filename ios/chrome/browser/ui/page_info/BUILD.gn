@@ -4,12 +4,18 @@
 
 source_set("page_info") {
   sources = [
+    "page_info_helper.h",
+    "page_info_helper.mm",
+    "page_info_presentation_commands.h",
+    "page_info_security_view_controller.h",
+    "page_info_security_view_controller.mm",
     "page_info_site_security_description.h",
     "page_info_site_security_description.mm",
     "page_info_view_controller.h",
     "page_info_view_controller.mm",
   ]
   deps = [
+    ":features",
     "//base",
     "//base:i18n",
     "//components/keyed_service/core",
@@ -18,7 +24,7 @@ source_set("page_info") {
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
-    "//ios/chrome/browser/net:crurl",
+    "//ios/chrome/browser/net/model:crurl",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/shared/public/commands",
@@ -62,10 +68,13 @@ source_set("coordinator") {
     "page_info_coordinator.mm",
     "page_info_permissions_mediator.h",
     "page_info_permissions_mediator.mm",
+    "page_info_security_coordinator.h",
+    "page_info_security_coordinator.mm",
     "page_info_site_security_mediator.h",
     "page_info_site_security_mediator.mm",
   ]
   deps = [
+    ":features",
     ":page_info",
     "//base",
     "//components/content_settings/core/browser",
@@ -121,12 +130,17 @@ source_set("unit_tests") {
 source_set("eg2_tests") {
   configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
-  sources = [ "page_info_egtest.mm" ]
+  sources = [
+    "page_info_egtest.mm",
+    "page_info_security_egtest.mm",
+  ]
   deps = [
     ":constants",
+    ":features",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/overlays/model/public/web_content_area:constants",
+    "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/ui/permissions:constants",
     "//ios/chrome/browser/ui/permissions:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
@@ -135,4 +149,12 @@ source_set("eg2_tests") {
     "//net:test_support",
     "//ui/base",
   ]
+}
+
+source_set("features") {
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
+  public_deps = [ "//base" ]
 }

@@ -49,6 +49,7 @@ WebSocketSBHandshakeThrottle::~WebSocketSBHandshakeThrottle() = default;
 void WebSocketSBHandshakeThrottle::ThrottleHandshake(
     const blink::WebURL& url,
     const blink::WebSecurityOrigin& creator_origin,
+    const blink::WebSecurityOrigin& isolated_world_origin,
     blink::WebSocketHandshakeThrottle::OnCompletion completion_callback) {
   DCHECK(!url_checker_);
   DCHECK(!completion_callback_);
@@ -57,24 +58,7 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
   int load_flags = 0;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Send web request data to the browser if destination is WS/WSS scheme.
-  if (creator_origin.Protocol().Ascii() == extensions::kExtensionScheme &&
-      url_.SchemeIsWSOrWSS()) {
-    const std::string& origin_extension_id =
-        creator_origin.Host().Utf8().data();
-    // Logging "false" represents the data being *sent*.
-    base::UmaHistogramBoolean(
-        "SafeBrowsing.ExtensionTelemetry.WebSocketRequestDataSentOrReceived",
-        false);
-    // TODO(crbug.com/1494413): Refactor |isolated_world_origin| info in
-    // websockets to track extension requests from content scripts. Even though
-    // |kExtension| is passed down for |ContactInitiatorType| now, the browser
-    // side will declare unspecified for websocket connections. The correct
-    // |ContactInitiatorType| will be passed down once the refactoring is done.
-    extension_web_request_reporter_->SendWebRequestData(
-        origin_extension_id, url, mojom::WebRequestProtocolType::kWebSocket,
-        mojom::WebRequestContactInitiatorType::kExtension);
-  }
+  MaybeSendExtensionWebRequestData(url, creator_origin, isolated_world_origin);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   DCHECK_EQ(state_, State::kInitial);
@@ -109,7 +93,7 @@ void WebSocketSBHandshakeThrottle::OnCompleteCheck(bool proceed,
   DCHECK_EQ(state_, State::kStarted);
   if (proceed) {
     state_ = State::kSafe;
-    std::move(completion_callback_).Run(absl::nullopt);
+    std::move(completion_callback_).Run(std::nullopt);
   } else {
     // When the insterstitial is dismissed the page is navigated and this object
     // is destroyed before reaching here.
@@ -147,8 +131,41 @@ void WebSocketSBHandshakeThrottle::OnMojoDisconnect() {
   notifier_receiver_.reset();
 
   state_ = State::kNotSupported;
-  std::move(completion_callback_).Run(absl::nullopt);
+  std::move(completion_callback_).Run(std::nullopt);
   // |this| is destroyed here.
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void WebSocketSBHandshakeThrottle::MaybeSendExtensionWebRequestData(
+    const blink::WebURL& url,
+    const blink::WebSecurityOrigin& creator_origin,
+    const blink::WebSecurityOrigin& isolated_world_origin) {
+  // Skip if request destination isn't WS/WSS (ex. extension scheme).
+  if (!url_.SchemeIsWSOrWSS()) {
+    return;
+  }
+
+  if (!isolated_world_origin.IsNull() &&
+      isolated_world_origin.Protocol() == extensions::kExtensionScheme) {
+    // Logging "false" represents the data being *sent*.
+    base::UmaHistogramBoolean(
+        "SafeBrowsing.ExtensionTelemetry.WebSocketRequestDataSentOrReceived",
+        false);
+    extension_web_request_reporter_->SendWebRequestData(
+        isolated_world_origin.Host().Utf8().data(), url,
+        mojom::WebRequestProtocolType::kWebSocket,
+        mojom::WebRequestContactInitiatorType::kContentScript);
+  } else if (creator_origin.Protocol() == extensions::kExtensionScheme) {
+    // Logging "false" represents the data being *sent*.
+    base::UmaHistogramBoolean(
+        "SafeBrowsing.ExtensionTelemetry.WebSocketRequestDataSentOrReceived",
+        false);
+    extension_web_request_reporter_->SendWebRequestData(
+        creator_origin.Host().Utf8().data(), url,
+        mojom::WebRequestProtocolType::kWebSocket,
+        mojom::WebRequestContactInitiatorType::kExtension);
+  }
+}
+#endif
 
 }  // namespace safe_browsing

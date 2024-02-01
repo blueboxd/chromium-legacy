@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import type {VolumeInfo} from '../../background/js/volume_info.js';
 import {isOneDriveId, isSameEntry, sortEntries} from '../../common/js/entry_utils.js';
-import {EntryList, VolumeEntry} from '../../common/js/files_app_entry_types.js';
+import {EntryList, FilesAppEntry, VolumeEntry} from '../../common/js/files_app_entry_types.js';
 import {isGuestOsEnabled, isSinglePartitionFormatEnabled} from '../../common/js/flags.js';
 import {str} from '../../common/js/translations.js';
+import type {GetActionFactoryPayload} from '../../common/js/util.js';
 import {RootType, Source, VolumeType} from '../../common/js/volume_manager_types.js';
-import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {FileKey, PropStatus, State, Volume, VolumeId} from '../../externs/ts/state.js';
-import type {VolumeInfo} from '../../externs/volume_info.js';
-import {constants} from '../../foreground/js/constants.js';
+import {ICON_TYPES} from '../../foreground/js/constants.js';
 import {Slice} from '../../lib/base_store.js';
+import {type FileKey, PropStatus, type State, type Volume, type VolumeId} from '../../state/state.js';
 import {getEntry, getFileData} from '../store.js';
 
 import {cacheEntries, getMyFiles, updateFileDataInPlace} from './all_entries.js';
@@ -129,15 +129,12 @@ function addVolumeReducer(currentState: State, payload: {
   cacheEntries(currentState, [newVolumeEntry]);
   const volumeRootKey = newVolumeEntry.toURL();
 
-  // Update isEjectable/shouldDelayLoadingChildren fields in the FileData.
+  // Update isEjectable fields in the FileData.
   currentState.allEntries[volumeRootKey] = {
     ...currentState.allEntries[volumeRootKey]!,
     isEjectable: (volumeInfo.source === Source.DEVICE &&
                   volumeInfo.volumeType !== VolumeType.MTP) ||
         volumeInfo.source === Source.FILE,
-    shouldDelayLoadingChildren: volumeInfo.source === Source.NETWORK &&
-        (volumeInfo.volumeType === VolumeType.PROVIDED ||
-         volumeInfo.volumeType === VolumeType.SMB),
   };
 
   const volume =
@@ -244,6 +241,12 @@ function addVolumeReducer(currentState: State, payload: {
       driveFakeRoot =
           new EntryList(str('DRIVE_DIRECTORY_LABEL'), RootType.DRIVE_FAKE_ROOT);
       cacheEntries(currentState, [driveFakeRoot]);
+    }
+    // When Drive is disabled via pref change, the root key in `uiEntries` will
+    // be removed immediately but the corresponding entry in `allEntries` is
+    // removed asynchronously. When Drive is enabled again, it's possible the
+    // entry is still in `allEntries` but we don't have root key in `uiEntries`.
+    if (!currentState.uiEntries.includes(driveFakeRoot.toURL())) {
       currentState.uiEntries =
           [...currentState.uiEntries, driveFakeRoot.toURL()];
     }
@@ -319,7 +322,7 @@ function addVolumeReducer(currentState: State, payload: {
           return (
               v.volumeType === VolumeType.REMOVABLE &&
               removableGroupKey(v) === groupingKey &&
-              v.volumeId != volumeInfo.volumeId);
+              v.volumeId !== volumeInfo.volumeId);
         });
 
     if (shouldGroup) {
@@ -359,7 +362,7 @@ function addVolumeReducer(currentState: State, payload: {
               // should be UNKNOWN_REMOVABLE, and it shouldn't be ejectable.
               currentState.allEntries[v.rootKey!] = {
                 ...fileData,
-                icon: constants.ICON_TYPES.UNKNOWN_REMOVABLE,
+                icon: ICON_TYPES.UNKNOWN_REMOVABLE,
                 isEjectable: false,
               };
             }
@@ -374,7 +377,7 @@ function addVolumeReducer(currentState: State, payload: {
       const fileData = getFileData(currentState, volumeRootKey)!;
       currentState.allEntries[volumeRootKey] = {
         ...fileData,
-        icon: constants.ICON_TYPES.UNKNOWN_REMOVABLE,
+        icon: ICON_TYPES.UNKNOWN_REMOVABLE,
         isEjectable: false,
       };
       currentState.allEntries[parentKey] = {
@@ -486,14 +489,14 @@ function updateIsInteractiveVolumeReducer(currentState: State, payload: {
   volumeId: VolumeId,
   isInteractive: boolean,
 }): State {
-  const volumes: typeof State['volumes'] = {
+  const volumes = {
     ...currentState.volumes,
   };
 
   const updatedVolume = {
     ...volumes[payload.volumeId],
     isInteractive: payload.isInteractive,
-  };
+  } as Volume;
 
   return {
     ...currentState,
@@ -509,7 +512,8 @@ slice.addReducer(
 
 function updateDeviceConnectionStateReducer(
     currentState: State,
-    payload: typeof updateDeviceConnectionState.PAYLOAD): State {
+    payload: GetActionFactoryPayload<typeof updateDeviceConnectionState>):
+    State {
   let volumes: State['volumes']|undefined;
 
   // Find ODFS volume(s) and disable it (or them) if offline.

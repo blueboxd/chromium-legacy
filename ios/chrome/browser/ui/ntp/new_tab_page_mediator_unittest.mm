@@ -6,6 +6,7 @@
 
 #import <memory>
 
+#import "base/memory/raw_ptr.h"
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/feed/core/v2/public/common_enums.h"
@@ -172,10 +173,10 @@ class NewTabPageMediatorTest : public PlatformTest {
   id logo_vendor_;
   FeedMetricsRecorder* feed_metrics_recorder_;
   NewTabPageMediator* mediator_;
-  ToolbarTestNavigationManager* navigation_manager_;
-  FakeUrlLoadingBrowserAgent* url_loader_;
-  AuthenticationService* auth_service_;
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<ToolbarTestNavigationManager> navigation_manager_;
+  raw_ptr<FakeUrlLoadingBrowserAgent> url_loader_;
+  raw_ptr<AuthenticationService> auth_service_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -236,7 +237,12 @@ TEST_F(NewTabPageMediatorTest, TestHandleFeedLearnMoreTapped) {
 // Tests that the feed will be hidden when IOSHideFeedWithSearchChoice is
 // enabled and a non-Google search engine is chosen.
 TEST_F(NewTabPageMediatorTest, TestHideFeedWithSearchChoice) {
-  scoped_feature_list_.InitWithFeatures({kIOSHideFeedWithSearchChoice}, {});
+  scoped_feature_list_.InitWithFeaturesAndParameters(
+      {
+          {kIOSHideFeedWithSearchChoice,
+           {{kIOSHideFeedWithSearchChoiceTargeted, "false"}}},
+      },
+      {});
 
   // Test it with the default search engine.
   [mediator_ setUp];

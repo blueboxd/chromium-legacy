@@ -21,7 +21,7 @@
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1384959399684842514">Download onderbroken</translation>
 <translation id="1415402041810619267">URL afgekapt</translation>
-<translation id="1426410128494586442">Ja</translation>
+<translation id="1434873037477293673">kaart met prijsdaling</translation>
 <translation id="1448064542941920355">Zoomniveau verkleinen</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> site}other{<ph name="SITE_COUNT" /> sites}}</translation>
 <translation id="1510341833810331442">Sites mogen geen gegevens opslaan op je apparaat</translation>
@@ -108,6 +108,7 @@
 <translation id="2750481671343847896">Sites kunnen inlogprompts van identiteitsservices tonen.</translation>
 <translation id="2790501146643349491">Als deze optie aanstaat, kunnen recent gesloten sites het sturen en ontvangen van gegevens afronden. Staat de optie uit, dan kunnen recent gesloten sites het sturen of ontvangen van gegevens niet afronden.</translation>
 <translation id="2822354292072154809">Weet je zeker dat je alle siterechten voor <ph name="CHOSEN_OBJECT_NAME" /> wilt resetten?</translation>
+<translation id="2836978798613876756"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="2850913818900871965">Mobiele weergave opvragen</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Vorig nummer</translation>
@@ -148,6 +149,7 @@
 <translation id="3448554387819310837">Als deze optie aanstaat, kunnen sites vragen of ze je camera mogen gebruiken. Staat de optie uit, dan kunnen sites je camera niet gebruiken.</translation>
 <translation id="3465378418721443318">{DAYS,plural, =1{Chrome blokkeert morgen weer cookies}other{Nog # dagen totdat Chrome weer cookies blokkeert}}</translation>
 <translation id="3521663503435878242">Sites onder <ph name="DOMAIN" /></translation>
+<translation id="3536227077203206203">Deze keer toegestaan</translation>
 <translation id="3538390592868664640">Voorkomen dat sites een 3D-kaart van je omgeving maken of de camerapositie volgen</translation>
 <translation id="3544058026430919413">Een bedrijf kan een groep sites definiëren die cookies kunnen gebruiken om je activiteit in de groep te delen. Dit staat uit in de incognitomodus.</translation>
 <translation id="3551268116566418498">Incognitomodus verlaten?</translation>
@@ -189,6 +191,7 @@
 <translation id="4169549551965910670">Verbonden met een USB-apparaat</translation>
 <translation id="4194328954146351878">Vragen voordat sites informatie op NFC-apparaten mogen zien en wijzigen (aanbevolen)</translation>
 <translation id="4200726100658658164">Locatie-instellingen openen</translation>
+<translation id="4212246570487010370">Verder browsen</translation>
 <translation id="4226663524361240545">Het apparaat kan trillen bij meldingen</translation>
 <translation id="4259722352634471385">Navigatie is geblokkeerd: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Toegestaan</translation>
@@ -238,6 +241,7 @@
 <translation id="5099358668261120049">Hiermee verwijder je alle gegevens en cookies die zijn opgeslagen door <ph name="ORIGIN" /> of de bijbehorende app op je startscherm.</translation>
 <translation id="5100237604440890931">Samengevouwen; klik om uit te vouwen.</translation>
 <translation id="5123685120097942451">Incognitotabblad</translation>
+<translation id="5139253256813381453">{PRICE_DROP_COUNT,plural, =1{Prijsdaling op je geopende tabbladen}other{Prijsdalingen op je geopende tabbladen}}</translation>
 <translation id="5186036860380548585">Optie beschikbaar boven aan het scherm</translation>
 <translation id="5197729504361054390">De contacten die je selecteert, worden gedeeld met <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Laatst bezocht: vandaag</translation>
@@ -325,6 +329,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Voorkomen dat sites je virtualreality-apparaat en -gegevens gebruiken</translation>
 <translation id="6447842834002726250">Cookies</translation>
+<translation id="6452138246455930388">Prijsdaling op je geopende tabblad, van <ph name="OLD_PRICE" /> naar <ph name="NEW_PRICE" />, <ph name="PRODUCT_NAME" />, <ph name="DOMAIN_NAME" /></translation>
 <translation id="6500423977866688905">Mobiele weergave aanvragen als het venster smal is</translation>
 <translation id="6527303717912515753">Delen</translation>
 <translation id="652937045869844725">Sta cookies van derden toe. Dit betekent dat je minder bescherming hebt, maar dat sitefuncties waarschijnlijk wel werken.</translation>
@@ -344,10 +349,12 @@
 <translation id="6746124502594467657">Omlaag</translation>
 <translation id="6749077623962119521">Rechten resetten?</translation>
 <translation id="6766622839693428701">Swipe omlaag om te sluiten.</translation>
+<translation id="6785959295338971061"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> Vanaf <ph name="FROM_DEVICE" /></translation>
 <translation id="6787751205395685251">Selecteer een optie voor <ph name="SITE_NAME" /></translation>
 <translation id="6790428901817661496">Spelen</translation>
 <translation id="6818926723028410516">Items selecteren</translation>
 <translation id="6864395892908308021">Dit apparaat kan NFC niet lezen</translation>
+<translation id="6867014948848323204">Vanaf <ph name="FROM_DEVICE" /></translation>
 <translation id="6912998170423641340">Voorkomen dat sites tekst en afbeeldingen vanaf het klembord kunnen lezen</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6950072572526089586">Een site die je bezoekt, kan informatie over je activiteiten opslaan zodat deze werkt zoals verwacht, bijvoorbeeld om je ingelogd te houden op een site of artikelen in je winkelwagen op te slaan. Sites slaan deze informatie vaak tijdelijk op je apparaat op.</translation>
@@ -364,6 +371,7 @@
 <translation id="7141896414559753902">Sites niet toestaan pop-ups te bekijken en omleidingen uit te voeren (aanbevolen)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
+<translation id="7180865173735832675">Aanpassen</translation>
 <translation id="7188508872042490670">Sitegegevens op het apparaat</translation>
 <translation id="7201549776650881587">Met deze actie verwijder je alle gegevens en cookies die zijn opgeslagen door alle sites onder <ph name="ORIGIN" /> of door de bijbehorende app op je startscherm</translation>
 <translation id="7203150201908454328">Uitgevouwen</translation>
@@ -395,6 +403,7 @@
 <translation id="7667547420449112975">De tovenaar van Oz</translation>
 <translation id="7684642910516280563">Niet toestaan dat een site cookies van derden gebruikt</translation>
 <translation id="7719367874908701697">Zoomen op pagina</translation>
+<translation id="7770832849480336015"><ph name="TITLE_OF_MODULE" /> verbergen</translation>
 <translation id="7781829728241885113">Gisteren</translation>
 <translation id="7791543448312431591">Toevoegen</translation>
 <translation id="780301667611848630">Nee, bedankt</translation>

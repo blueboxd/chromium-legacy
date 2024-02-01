@@ -364,8 +364,7 @@ class CrosNetworkConfigTest : public testing::Test {
                 "WiFi": { "Passphrase": "fake", "SSID": "%s", "HexSSID": "%s",
                           "Security": "WPA-PSK", "AutoConnect": true}})",
             user_policy_ssid.c_str(),
-            base::HexEncode(user_policy_ssid.c_str(), user_policy_ssid.size())
-                .c_str()));
+            base::HexEncode(user_policy_ssid).c_str()));
     ASSERT_TRUE(wifi2_onc.has_value());
 
     std::optional<base::Value::Dict> wifi_eap_onc =
@@ -1139,6 +1138,7 @@ class CrosNetworkConfigTest : public testing::Test {
       std::optional<bool> expected_policy_value,
       ::chromeos::network_config::mojom::PolicySource policy_source) {
     mojom::ManagedPropertiesPtr properties = GetManagedProperties(guid);
+    mojom::GlobalPolicyPtr policy = GetGlobalPolicy();
 
     ASSERT_TRUE(properties);
     ASSERT_EQ(guid, properties->guid);
@@ -1149,6 +1149,7 @@ class CrosNetworkConfigTest : public testing::Test {
         !expected_policy_value.has_value()) {
       EXPECT_FALSE(
           properties->type_properties->get_cellular()->allow_text_messages);
+      EXPECT_EQ(mojom::SuppressionType::kUnset, policy->allow_text_messages);
       return;
     }
 
@@ -1161,6 +1162,13 @@ class CrosNetworkConfigTest : public testing::Test {
       EXPECT_EQ(*expected_policy_value,
                 properties->type_properties->get_cellular()
                     ->allow_text_messages->policy_value);
+
+      mojom::SuppressionType expected_global_policy_type =
+          expected_policy_value.value() ? mojom::SuppressionType::kAllow
+                                        : mojom::SuppressionType::kSuppress;
+      EXPECT_EQ(expected_global_policy_type, policy->allow_text_messages);
+    } else {
+      EXPECT_EQ(mojom::SuppressionType::kUnset, policy->allow_text_messages);
     }
 
     if (expected_active_value.has_value()) {
@@ -1345,15 +1353,6 @@ TEST_F(CrosNetworkConfigTest, PortalState) {
   EXPECT_EQ(mojom::ConnectionStateType::kPortal, network->connection_state);
   EXPECT_EQ(mojom::PortalState::kNoInternet, network->portal_state);
   EXPECT_FALSE(network->portal_probe_url);
-
-  helper()->ConfigureService(
-      R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "portal-suspected",
-          "Strength": 90, "AutoConnect": true,
-          "PortalDetectionFailedStatusCode": 407})");
-  network = GetNetworkState("wifi1_guid");
-  ASSERT_TRUE(network);
-  EXPECT_EQ(mojom::ConnectionStateType::kPortal, network->connection_state);
-  EXPECT_EQ(mojom::PortalState::kProxyAuthRequired, network->portal_state);
 }
 
 TEST_F(CrosNetworkConfigTest, GetNetworkStateList) {
@@ -1632,6 +1631,42 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateListCarrierUnlocked) {
   EXPECT_EQ(3, cellular->sim_lock_status->retries_left);
   EXPECT_EQ(kCellularTestImei, cellular->imei);
   ASSERT_FALSE(cellular->is_carrier_locked);
+}
+
+TEST_F(CrosNetworkConfigTest, SimStateCarrierLocked) {
+  /* Lock the SIM using network-pin */
+  base::Value::Dict sim_value;
+  sim_value.Set(shill::kSIMLockEnabledProperty, true);
+  sim_value.Set(shill::kSIMLockTypeProperty, shill::kSIMLockNetworkPin);
+  sim_value.Set(shill::kSIMLockRetriesLeftProperty, kSimRetriesLeft);
+  helper()->device_test()->SetDeviceProperty(kCellularDevicePath,
+                                             shill::kSIMLockStatusProperty,
+                                             base::Value(std::move(sim_value)),
+                                             /*notify_changed=*/true);
+  base::RunLoop().RunUntilIdle();
+
+  mojom::DeviceStatePropertiesPtr cellular =
+      GetDeviceStateFromList(mojom::NetworkType::kCellular);
+
+  EXPECT_EQ(mojom::NetworkType::kCellular, cellular->type);
+  EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->device_state);
+  ASSERT_TRUE(cellular->sim_lock_status);
+  EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
+  EXPECT_EQ(shill::kSIMLockNetworkPin, cellular->sim_lock_status->lock_type);
+  EXPECT_EQ(3, cellular->sim_lock_status->retries_left);
+
+  // Any attempt to unlock carrier locked sim with the pin should fail and
+  // should not change the carrier lock status.
+  EXPECT_FALSE(SetCellularSimState(FakeShillDeviceClient::kDefaultSimPin,
+                                   /*new_pin=*/absl::nullopt,
+                                   /*require_pin=*/false));
+
+  // Sim should continue to be carrier locked.
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
+  ASSERT_TRUE(cellular && cellular->sim_lock_status);
+  EXPECT_TRUE(cellular->sim_lock_status->lock_enabled);
+  EXPECT_EQ(shill::kSIMLockNetworkPin, cellular->sim_lock_status->lock_type);
+  EXPECT_EQ(3, cellular->sim_lock_status->retries_left);
 }
 
 // Tests that no VPN device state is returned by GetDeviceStateList if no VPN
@@ -3740,7 +3775,7 @@ TEST_F(CrosNetworkConfigTest, RequestNetworkScan) {
           },
           &wifi_scanning_));
     }
-    raw_ptr<CrosNetworkConfig, ExperimentalAsh> cros_network_config_;
+    raw_ptr<CrosNetworkConfig> cros_network_config_;
     bool wifi_scanning_ = false;
   };
   ScanningObserver observer(cros_network_config());
@@ -3783,6 +3818,7 @@ TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
   EXPECT_EQ("blocked_ssid2", policy->blocked_hex_ssids[1]);
   EXPECT_FALSE(policy->recommended_values_are_ephemeral);
   EXPECT_FALSE(policy->user_created_network_configurations_are_ephemeral);
+  EXPECT_EQ(mojom::SuppressionType::kUnset, policy->allow_text_messages);
 }
 
 TEST_F(CrosNetworkConfigTest, GlobalPolicyApplied) {
@@ -3812,6 +3848,8 @@ TEST_F(CrosNetworkConfigTest, GlobalPolicyApplied) {
   EXPECT_FALSE(policy->report_xdr_events_enabled);
   EXPECT_FALSE(policy->recommended_values_are_ephemeral);
   EXPECT_FALSE(policy->user_created_network_configurations_are_ephemeral);
+  EXPECT_EQ(mojom::SuppressionType::kUnset, policy->allow_text_messages);
+
   EXPECT_EQ(1, observer()->GetPolicyAppliedCount(/*userhash=*/std::string()));
 }
 

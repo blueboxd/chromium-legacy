@@ -32,7 +32,6 @@ public class AndroidStylusWritingHandler implements StylusWritingHandler, Stylus
     private static final String TAG = "AndroidStylus";
 
     private final InputMethodManager mInputMethodManager;
-    private View mTargetView;
 
     public static boolean isEnabled(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false;
@@ -95,8 +94,6 @@ public class AndroidStylusWritingHandler implements StylusWritingHandler, Stylus
 
         View view = webContents.getViewAndroidDelegate().getContainerView();
         view.setAutoHandwritingEnabled(false);
-
-        mTargetView = view;
     }
 
     @Override
@@ -110,16 +107,22 @@ public class AndroidStylusWritingHandler implements StylusWritingHandler, Stylus
     }
 
     @Override
-    public boolean requestStartStylusWriting() {
-        Log.d(TAG, "Requesting Stylus Writing");
-        StylusApiOption.recordStylusHandwritingTriggered(Api.ANDROID);
-        mInputMethodManager.startStylusHandwriting(mTargetView);
+    public boolean shouldInitiateStylusWriting() {
         return true;
     }
 
     @Override
     public EditorBoundsInfo onEditElementFocusedForStylusWriting(
-            Rect focusedEditBounds, Point cursorPosition, float scaleFactor, int contentOffsetY) {
+            Rect focusedEditBounds,
+            Point cursorPosition,
+            float scaleFactor,
+            int contentOffsetY,
+            View view) {
+        Log.d(TAG, "Start Stylus Writing");
+        StylusApiOption.recordStylusHandwritingTriggered(Api.ANDROID);
+        // Start stylus writing after edit element is focused so that InputConnection is current
+        // focused element.
+        mInputMethodManager.startStylusHandwriting(view);
         RectF bounds =
                 new RectF(
                         focusedEditBounds.left / scaleFactor,

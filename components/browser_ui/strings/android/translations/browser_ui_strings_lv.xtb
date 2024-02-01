@@ -21,7 +21,7 @@
 <translation id="1383876407941801731">Meklēt</translation>
 <translation id="1384959399684842514">Lejupielāde pārtraukta</translation>
 <translation id="1415402041810619267">URL ir saīsināts</translation>
-<translation id="1426410128494586442">Jā</translation>
+<translation id="1434873037477293673">cenas krituma kartīte</translation>
 <translation id="1448064542941920355">Tuvināt</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> vietne}zero{<ph name="SITE_COUNT" /> vietņu}one{<ph name="SITE_COUNT" /> vietne}other{<ph name="SITE_COUNT" /> vietnes}}</translation>
 <translation id="1510341833810331442">Vietnēm nav atļauts saglabāt datus jūsu ierīcē</translation>
@@ -108,6 +108,7 @@
 <translation id="2750481671343847896">Vietnēs drīkst rādīt pierakstīšanās uzvednes, ko nodrošina identitātes pakalpojumi.</translation>
 <translation id="2790501146643349491">Kad šis slēdzis ir ieslēgts, nesen aizvērtās vietnes var pabeigt datu sūtīšanu un saņemšanu. Kad šis slēdzis ir izslēgts, nesen aizvērtās vietnes nevar pabeigt datu sūtīšanu vai saņemšanu.</translation>
 <translation id="2822354292072154809">Vai tiešām vēlaties atiestatīt visas vietņu atļaujas, kas piešķirtas šim objektam: <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2836978798613876756"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="2850913818900871965">Pieprasiet skatu mobilajā ierīcē</translation>
 <translation id="2870560284913253234">Vietne</translation>
 <translation id="2874939134665556319">Iepriekšējais ieraksts</translation>
@@ -148,6 +149,7 @@
 <translation id="3448554387819310837">Kad šis slēdzis ir ieslēgts, vietnes var pieprasīt atļauju izmantot jūsu kameru. Kad šis slēdzis ir izslēgts, vietnes nevar izmantot kameru.</translation>
 <translation id="3465378418721443318">{DAYS,plural, =1{Rīt pārlūkā Chrome sīkfaili atkal tiks bloķēti}zero{Pēc # dienām pārlūkā Chrome sīkfaili atkal tiks bloķēti}one{Pēc # dienas pārlūkā Chrome sīkfaili atkal tiks bloķēti}other{Pēc # dienām pārlūkā Chrome sīkfaili atkal tiks bloķēti}}</translation>
 <translation id="3521663503435878242">Vietnes domēnā <ph name="DOMAIN" /></translation>
+<translation id="3536227077203206203">Šoreiz atļauts</translation>
 <translation id="3538390592868664640">Neļaut vietnēm izveidot jūsu apkārtnes 3D karti vai izsekot kameras pozīciju</translation>
 <translation id="3544058026430919413">Uzņēmums var definēt vietņu grupu, kurā drīkst izmantot sīkfailus, lai grupā kopīgotu jūsu darbības. Inkognito režīmā šis iestatījums ir izslēgts.</translation>
 <translation id="3551268116566418498">Vai iziet no inkognito režīma?</translation>
@@ -189,6 +191,7 @@
 <translation id="4169549551965910670">Izveidots savienojums ar USB ierīci.</translation>
 <translation id="4194328954146351878">Vaicāt, pirms ļaut vietnēm NFC ierīcēs piekļūt informācijai un to mainīt (ieteicams)</translation>
 <translation id="4200726100658658164">Atvērt atrašanās vietu iestatījumus</translation>
+<translation id="4212246570487010370">Turpiniet pārlūkošanu</translation>
 <translation id="4226663524361240545">Saņemot paziņojumu, ierīce var vibrēt.</translation>
 <translation id="4259722352634471385">Navigācija ir bloķēta: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Atļauts</translation>
@@ -238,6 +241,7 @@
 <translation id="5099358668261120049">Tiks izdzēsti visi dati un sīkfaili, ko jūsu sākuma ekrānā glabā vietne <ph name="ORIGIN" /> vai tās lietotne.</translation>
 <translation id="5100237604440890931">Sakļauts — noklikšķiniet, lai izvērstu.</translation>
 <translation id="5123685120097942451">Inkognito cilne</translation>
+<translation id="5139253256813381453">{PRICE_DROP_COUNT,plural, =1{Cenas kritums atvērtajās cilnēs}zero{Cenu kritumi atvērtajās cilnēs}one{Cenu kritumi atvērtajās cilnēs}other{Cenu kritumi atvērtajās cilnēs}}</translation>
 <translation id="5186036860380548585">Opcija pieejama ekrāna augšdaļā</translation>
 <translation id="5197729504361054390">Atlasīto kontaktpersonu dati tiks kopīgoti ar vietni <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Pēdējoreiz apmeklēta šodien</translation>
@@ -325,6 +329,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Neļaut vietnēm izmantot jūsu virtuālās realitātes ierīci un datus</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
+<translation id="6452138246455930388">Cenas kritums atvērtajā cilnē no <ph name="OLD_PRICE" /> uz <ph name="NEW_PRICE" />, <ph name="PRODUCT_NAME" />, <ph name="DOMAIN_NAME" /></translation>
 <translation id="6500423977866688905">Ja logs ir šaurs, pieprasīt skatu mobilajā ierīcē</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
 <translation id="652937045869844725">Varat atļaut trešo pušu sīkfailus. Tas nozīmē, ka aizsardzības līmenis būs zemāks, taču pastāv lielāka iespēja, ka darbosies vietnes funkcijas.</translation>
@@ -344,10 +349,12 @@
 <translation id="6746124502594467657">Pārvietot uz leju</translation>
 <translation id="6749077623962119521">Vai atiestatīt atļaujas?</translation>
 <translation id="6766622839693428701">Velciet uz leju, lai aizvērtu.</translation>
+<translation id="6785959295338971061"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> No ierīces “<ph name="FROM_DEVICE" />”</translation>
 <translation id="6787751205395685251">Atlasiet opciju vietnei <ph name="SITE_NAME" />.</translation>
 <translation id="6790428901817661496">Atskaņot</translation>
 <translation id="6818926723028410516">Vienumu atlase</translation>
 <translation id="6864395892908308021">Šī ierīce nevar lasīt NFC</translation>
+<translation id="6867014948848323204">No ierīces “<ph name="FROM_DEVICE" />”</translation>
 <translation id="6912998170423641340">Bloķēt vietņu piekļuvi teksta un attēlu lasīšanai no starpliktuves</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6950072572526089586">Apmeklētā vietne var saglabāt informāciju par jūsu veiktajām darbībām, lai nodrošinātu pienācīgu tās darbību, piemēram, pierakstīšanos vietnē vai iepirkumu grozā ievietoto preču saglabāšanu. Bieži vien vietnes šo informāciju jūsu ierīcē saglabā īslaicīgi.</translation>
@@ -364,6 +371,7 @@
 <translation id="7141896414559753902">Neļaut vietnēm novirzīt un rādīt uznirstošos elementus (ieteicams)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
+<translation id="7180865173735832675">Pielāgot</translation>
 <translation id="7188508872042490670">Vietnes dati ierīcē</translation>
 <translation id="7201549776650881587">Veicot šo darbību, tiks izdzēsti visi dati un sīkfaili, ko jūsu sākuma ekrānā glabā vietņu grupa <ph name="ORIGIN" /> vai tās lietotne.</translation>
 <translation id="7203150201908454328">Izvērsts</translation>
@@ -395,6 +403,7 @@
 <translation id="7667547420449112975">Brīnumainais burvis no Oza zemes</translation>
 <translation id="7684642910516280563">Neatļaujiet vietnei izmantot trešo pušu sīkfailus.</translation>
 <translation id="7719367874908701697">Lapas tālummaiņa</translation>
+<translation id="7770832849480336015">Paslēpt moduli “<ph name="TITLE_OF_MODULE" />”</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7791543448312431591">Pievienot</translation>
 <translation id="780301667611848630">Nē, paldies</translation>

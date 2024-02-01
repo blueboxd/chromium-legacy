@@ -13,11 +13,12 @@ import {WebUiListenerMixin} from '//resources/cr_elements/web_ui_listener_mixin.
 import {assert} from '//resources/js/assert.js';
 import {rgbToSkColor, skColorToRgba} from '//resources/js/color_utils.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
-import {SkColor} from '//resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
+import {listenOnce} from '//resources/js/util.js';
+import type {SkColor} from '//resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
-import {ReadAnythingToolbarElement} from './read_anything_toolbar.js';
+import type {ReadAnythingToolbarElement} from './read_anything_toolbar.js';
 
 const ReadAnythingElementBase = WebUiListenerMixin(PolymerElement);
 
@@ -143,6 +144,7 @@ if (chrome.readingMode) {
 export interface ReadAnythingElement {
   $: {
     toolbar: ReadAnythingToolbarElement,
+    flexParent: HTMLElement,
   };
 }
 
@@ -195,16 +197,20 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   synth = window.speechSynthesis;
 
-  // State for speech synthesis needs to be tracked separately because there
-  // are bugs with window.speechSynthesis.paused and
+  private selectedVoice: SpeechSynthesisVoice|undefined;
+
+  private availableVoices: SpeechSynthesisVoice[];
+  // If a preview is playing, this is set to the voice the preview is playing.
+  // Otherwise, this is undefined.
+  private previewVoicePlaying: SpeechSynthesisVoice|null;
+
+  // State for speech synthesis paused/play state needs to be tracked explicitly
+  // because there are bugs with window.speechSynthesis.paused and
   // window.speechSynthesis.speaking on some platforms.
-  private voice: SpeechSynthesisVoice|undefined;
   paused = true;
   speechStarted = false;
   maxSpeechLength = 175;
 
-  // TODO(crbug.com/1474951): Make this the screen reader default speed if a
-  // TTS speed has been set
   rate: number = 1;
 
   constructor() {
@@ -216,6 +222,15 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   override connectedCallback() {
     super.connectedCallback();
+
+    // Wait until the side panel is fully rendered before showing the side
+    // panel. This follows Side Panel best practices and prevents loading
+    // artifacts from showing if the side panel is shown before content is
+    // ready.
+    listenOnce(this.$.flexParent, 'dom-change', () => {
+      setTimeout(() => chrome.readingMode.shouldShowUI(), 0);
+    });
+
     this.isReadAloudEnabled_ = chrome.readingMode.isReadAloudEnabled;
     if (chrome.readingMode) {
       chrome.readingMode.onConnected();
@@ -280,6 +295,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       htmlTag = 'div';
     }
 
+    if (!this.shouldShowLinks() && htmlTag === 'a') {
+      htmlTag = 'span';
+    }
+
     const element = document.createElement(htmlTag);
     this.domNodeToAxNodeIdMap_.set(element, nodeId);
     const direction = chrome.readingMode.getTextDirection(nodeId);
@@ -300,6 +319,12 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     this.appendChildSubtrees_(element, nodeId);
     return element;
+  }
+
+  // TODO(crbug.com/1442693): Potentially hide links during distillation.
+  private shouldShowLinks(): boolean {
+    // Links should only show when Read Aloud is paused.
+    return chrome.readingMode.linksEnabled && this.paused;
   }
 
   private appendChildSubtrees_(node: Node, nodeId: number) {
@@ -366,7 +391,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     this.hasContent_ = false;
     if (this.isReadAloudEnabled_) {
       this.synth.cancel();
-      this.onSpeechStopped();
+      this.clearReadAloudState();
     }
   }
 
@@ -442,10 +467,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   getSpeechSynthesisVoice(): SpeechSynthesisVoice|undefined {
-    if (!this.voice) {
-      this.voice = this.defaultVoice();
+    if (!this.selectedVoice) {
+      this.selectedVoice = this.defaultVoice();
     }
-    return this.voice;
+    return this.selectedVoice;
   }
 
   defaultVoice(): SpeechSynthesisVoice|undefined {
@@ -458,11 +483,12 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // TODO(crbug.com/1474951): Ensure various locales are handled such as
     // "en-US" vs. "en-UK." This should be fixed by using page language instead
     // of browser language.
-    const voices = this.synth.getVoices().filter(
-        voice => voice.lang.startsWith(languageCode));
+    const voices =
+        this.getVoices().filter(voice => voice.lang.startsWith(languageCode));
+
     if (!voices || (voices.length === 0)) {
       // If no voices in the given language are found, use the default voice.
-      return this.synth.getVoices().find(
+      return this.getVoices().find(
           ({default: isDefaultVoice}) => isDefaultVoice);
     }
 
@@ -476,10 +502,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     return voice;
   }
 
-  getVoices(): VoicesByLanguage {
+  private getVoicesByLanguage(): VoicesByLanguage {
     // TODO(crbug.com/1474951): Filter by localService. Doing this now prevents
     // voices from loading on Linux, which slows down development.
-    return this.synth.getVoices().reduce(
+    return this.getVoices().reduce(
         (voicesByLang: VoicesByLanguage, voice: SpeechSynthesisVoice) => {
           (voicesByLang[voice.lang] = voicesByLang[voice.lang] || [])
               .push(voice);
@@ -488,11 +514,19 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         {});
   }
 
-  setSpeechSynthesisVoice(voice: SpeechSynthesisVoice|undefined) {
-    this.voice = voice;
+  private getVoices(): SpeechSynthesisVoice[] {
+    if (!this.availableVoices) {
+      this.availableVoices = this.synth.getVoices();
+    }
+    return this.availableVoices;
   }
 
-  previewSpeechSynthesisVoice(voice: SpeechSynthesisVoice) {
+  private onPreviewVoice_(
+      event: CustomEvent<{previewVoice: SpeechSynthesisVoice}>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+
     const defaultUtteranceSettings = this.defaultUtteranceSettings();
 
     // TODO(crbug.com/1474951): Finalize the default voice preview text.
@@ -500,6 +534,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // and reset the play icon.
     const utterance = new SpeechSynthesisUtterance(
         loadTimeData.getString('readingModeVoicePreviewText'));
+    const voice = event.detail.previewVoice;
     utterance.voice = voice;
     utterance.lang = defaultUtteranceSettings.lang;
     utterance.volume = defaultUtteranceSettings.volume;
@@ -508,11 +543,11 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     // TODO(crbug.com/1474951): Add tests for pause button
     utterance.onstart = event => {
-      this.$.toolbar.showVoicePreviewPlaying(event.utterance.voice);
+      this.previewVoicePlaying = event.utterance.voice;
     };
 
     utterance.onend = () => {
-      this.$.toolbar.showVoicePreviewDone();
+      this.previewVoicePlaying = null;
     };
 
     this.synth.speak(utterance);
@@ -523,12 +558,18 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // word so that speech doesn't resume in the middle of the word?
     this.synth.pause();
     this.paused = true;
+
+    // Restore links if they're enabled when speech pauses.
+    if (chrome.readingMode.linksEnabled) {
+      this.updateContent();
+    }
   }
 
   playNextGranularity() {
     this.synth.cancel();
-    if (!this.playNextMessage()) {
-      this.onSpeechStopped();
+    this.resetPreviousHighlight();
+    if (!this.highlightAndPlayNextMessage()) {
+      this.onSpeechFinished();
     }
   }
 
@@ -536,13 +577,18 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   //  previous granularity.
   playPreviousGranularity() {
     this.synth.cancel();
-    this.playPreviousMessage();
+    this.resetPreviousHighlight();
+    this.highlightAndPlayPreviousMessage();
   }
 
   playSpeech() {
     if (this.speechStarted && this.paused) {
       this.synth.resume();
       this.paused = false;
+      // Hide links when speech resumes.
+      if (chrome.readingMode.linksEnabled) {
+        this.updateContent();
+      }
       return;
     }
     const shadowRoot = this.shadowRoot;
@@ -551,6 +597,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     assert(container);
     if (container.textContent) {
       this.paused = false;
+      // Hide links when speech begins playing.
+      if (chrome.readingMode.linksEnabled) {
+        this.updateContent();
+      }
 
       // Gather all the messages that can be played. We need nodes, rather
       // than just text because we need to add a span to the current sentence
@@ -570,58 +620,62 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       // that this step can be skipped.
       if (axNode) {
         chrome.readingMode.initAXPositionWithNode(axNode);
-        this.playNextMessage();
+        this.highlightAndPlayNextMessage();
       }
     }
   }
 
-  playNextMessage(): boolean {
-    const maxTextLength = this.maxSpeechLength;
-
+  highlightAndPlayNextMessage(): boolean {
     // getNextText returns a list of triples of AXNodeIds and start / end text
     // indices, represented as a double array.
-    const nextTextIds: number[][] =
-        chrome.readingMode.getNextText(maxTextLength);
-    return this.playCurrentMessage(nextTextIds);
+    const nextTextIds: number[] = chrome.readingMode.getNextText();
+    return this.highlightAndPlayTextOf(nextTextIds);
   }
 
-  playPreviousMessage(): boolean {
-    const maxTextLength = this.maxSpeechLength;
-    const previousTextIds: number[][] =
-        chrome.readingMode.getPreviousText(maxTextLength);
-    return this.playCurrentMessage(previousTextIds);
+  highlightAndPlayPreviousMessage(): boolean {
+    const previousTextIds: number[] = chrome.readingMode.getPreviousText();
+    return this.highlightAndPlayTextOf(previousTextIds);
   }
 
+  // Play text of these axNodeIds. When finished, call
+  // highlightAndPlayNextMessage() to read the following text.
   // TODO (crbug.com/1474951): Investigate using AXRange.GetText to get text
   // between start node / end nodes and their offsets.
-  playCurrentMessage(nextTextIds: number[][]): boolean {
-    if (nextTextIds.length === 0) {
-      return false;
-    }
-    let utterance: string = '';
-    for (let i = 0; i < nextTextIds.length; i++) {
-      assert(nextTextIds[i].length === 3);
-      const node = nextTextIds[i][0];
-      const startIndex = nextTextIds[i][1];
-      const index = nextTextIds[i][2];
-      const element = this.domNodeToAxNodeIdMap_.keyFrom(node);
-      if (!element) {
-        continue;
-      }
-      const content =
-          chrome.readingMode.getTextContent(node).substring(startIndex, index);
-      if (content) {
-        // Add all of the text from the current nodes into a single utterance.
-        utterance += ' ' + content;
-      }
-    }
-
+  private highlightAndPlayTextOf(axNodeIds: number[]): boolean {
+    const utteranceText = this.extractTextOf(axNodeIds);
     // Return if the utterance is empty or null.
-    if (!utterance) {
+    if (!utteranceText) {
       return false;
     }
 
-    const message = new SpeechSynthesisUtterance(utterance);
+    this.playText(utteranceText);
+    this.highlightNodes(axNodeIds);
+    return true;
+  }
+
+  // Gets the accessible text boundary for the given string.
+  getAccessibleTextLength(utteranceText: string): number {
+    // TODO(crbug.com/1474951): getAccessibleBoundary breaks on the nearest
+    // word boundary, but if there's some type of punctuation (such as a comma),
+    // it would be preferable to break on the punctuation so the pause in
+    // speech sounds more natural.
+    return chrome.readingMode.getAccessibleBoundary(
+        utteranceText, this.maxSpeechLength);
+  }
+
+  private playText(utteranceText: string) {
+    // This check is needed due limits of TTS audio for remote voices. See
+    // crbug.com/1176078 for more details.
+    // TODO(crbug.com/1474951): Since the TTS bug only impacts remote voices,
+    // we should be able to ignore this check when the current voice is set
+    // to a local voice. This would mean that we won't end up calling
+    // #getAccessibleTextLength in the majority of cases.
+    const isTextTooLong = utteranceText.length > this.maxSpeechLength;
+    const endBoundary = isTextTooLong ?
+        this.getAccessibleTextLength(utteranceText) :
+        utteranceText.length;
+    const message =
+        new SpeechSynthesisUtterance(utteranceText.substring(0, endBoundary));
 
     message.onerror = (error) => {
       // TODO(crbug.com/1474951): Add more sophisticated error handling.
@@ -633,46 +687,27 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     };
 
     message.onend = () => {
-      // TODO(crbug.com/1474951): Add toggle to turn off highlight.
+      if (isTextTooLong) {
+        // Since our previous utterance was too long, continue speaking pieces
+        // of the current utterance until the utterance is complete. The entire
+        // utterance is highlighted, so there's no need to update highlighting
+        // until the utterance substring is an acceptable size.
+        this.playText(utteranceText.substring(endBoundary));
+        return;
+      }
       // TODO(crbug.com/1474951): Handle already selected text.
       // TODO(crbug.com/1474951): Return text to its original style once
       // the document has finished.
       this.resetPreviousHighlight();
 
       // Continue speaking with the next block of text.
-      if (!this.playNextMessage()) {
-        this.onSpeechStopped();
+      if (!this.highlightAndPlayNextMessage()) {
+        this.onSpeechFinished();
       }
     };
 
     // TODO(crbug.com/1474951): Add word callbacks for word highlighting.
 
-    this.highlightNodes(nextTextIds);
-    this.speakMessage(message);
-    return true;
-  }
-
-  // TODO(crbug.com/1474951): Handle previous highlighting.
-  highlightNodes(nextTextIds: number[][]) {
-    // implementation based off of #highlightCurrentText below
-    assert(nextTextIds.length > 0);
-    for (let i = 0; i < nextTextIds.length; i++) {
-      const element = this.domNodeToAxNodeIdMap_.keyFrom(nextTextIds[i][0]);
-      if (!element) {
-        continue;
-      }
-      const start = nextTextIds[i][1];
-      const end = nextTextIds[i][2];
-      let text = element.textContent;
-      if (text) {
-        text = text.substring(start, end);
-      }
-      const newElement: Node = this.highlightCurrentText_(start, end, element);
-      this.domNodeToAxNodeIdMap_.set(newElement, nextTextIds[i][0]);
-    }
-  }
-
-  speakMessage(message: SpeechSynthesisUtterance) {
     const voice = this.getSpeechSynthesisVoice();
     if (!voice) {
       // TODO(crbug.com/1474951): Handle when no voices are available.
@@ -689,6 +724,52 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     this.speechStarted = true;
     this.synth.speak(message);
+  }
+
+  private extractTextOf(axNodeIds: number[]): string {
+    let utteranceText: string = '';
+    for (let i = 0; i < axNodeIds.length; i++) {
+      assert(axNodeIds[i]);
+      const nodeId = axNodeIds[i];
+      const startIndex = chrome.readingMode.getNextTextStartIndex(nodeId);
+      const endIndex = chrome.readingMode.getNextTextEndIndex(nodeId);
+      const element = this.domNodeToAxNodeIdMap_.keyFrom(nodeId);
+      if (!element || startIndex < 0 || endIndex < 0) {
+        continue;
+      }
+      const content = chrome.readingMode.getTextContent(nodeId).substring(
+          startIndex, endIndex);
+      if (content) {
+        // Add all of the text from the current nodes into a single utterance.
+        utteranceText += ' ' + content;
+      }
+    }
+    return utteranceText;
+  }
+
+  // TODO(crbug.com/1474951): Handle previous highlighting.
+  highlightNodes(nextTextIds: number[]) {
+    // implementation based off of #highlightCurrentText below
+    assert(nextTextIds.length > 0);
+    for (let i = 0; i < nextTextIds.length; i++) {
+      const nodeId = nextTextIds[i];
+      const element = this.domNodeToAxNodeIdMap_.keyFrom(nodeId);
+      if (!element) {
+        continue;
+      }
+      const start = chrome.readingMode.getNextTextStartIndex(nodeId);
+      const end = chrome.readingMode.getNextTextEndIndex(nodeId);
+      if ((start < 0) || (end < 0)) {
+        // If the start or end index is invalid, don't use this node.
+        continue;
+      }
+      let text = element.textContent;
+      if (text) {
+        text = text.substring(start, end);
+      }
+      const newElement: Node = this.highlightCurrentText_(start, end, element);
+      this.domNodeToAxNodeIdMap_.set(newElement, nodeId);
+    }
   }
 
   private defaultUtteranceSettings(): UtteranceSettings {
@@ -759,10 +840,29 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     return parentOfHighlight;
   }
 
-  private onSpeechStopped() {
+  private onSpeechFinished() {
+    this.clearReadAloudState();
+
+    // Hide links when speech finishes playing.
+    if (chrome.readingMode.linksEnabled) {
+      this.updateContent();
+    }
+  }
+
+  private clearReadAloudState() {
     this.speechStarted = false;
+    this.paused = true;
     this.previousHighlight_ = [];
-    this.$.toolbar.updateUiForPausing();
+  }
+
+  private onSelectVoice_(
+      event: CustomEvent<{selectedVoice: SpeechSynthesisVoice}>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.selectedVoice = event.detail.selectedVoice;
+    chrome.readingMode.onVoiceChange(
+        this.selectedVoice.name, this.selectedVoice.lang.split('-')[0]);
   }
 
   // TODO(b/1465029): Once the IsReadAnythingWebUIEnabled flag is removed
@@ -864,15 +964,16 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   private restoreVoiceFromPrefs_() {
     const storedLang = chrome.readingMode.speechSynthesisLanguageCode;
     const storedVoice = chrome.readingMode.getStoredVoice(storedLang);
+
     if (!storedVoice) {
-      this.setSpeechSynthesisVoice(this.defaultVoice());
+      this.selectedVoice = this.defaultVoice();
       return;
     }
 
     // TODO(crbug.com/1474951): Ensure various locales are handled such as
     // "en-US" vs. "en-UK." This should be fixed by using page language instead
     // of browser language.
-    const voices: VoicesByLanguage = this.getVoices();
+    const voices: VoicesByLanguage = this.getVoicesByLanguage();
     const entry =
         Object.entries(voices).find(([key, _]) => key.startsWith(storedLang));
     let voice;
@@ -882,8 +983,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         voice = voicesForLang.find(voice => voice.name === storedVoice);
       }
     }
-    this.setSpeechSynthesisVoice(
-        (voice === null) ? this.defaultVoice() : voice);
+    this.selectedVoice = (voice === null) ? this.defaultVoice() : voice;
   }
 
   updateLineSpacing(newLineHeight: number) {

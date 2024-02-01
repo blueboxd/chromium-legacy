@@ -486,6 +486,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void ClickEnableLiveCaptionOnDialog() {
+    base::RunLoop().RunUntilIdle();
     base::RunLoop run_loop;
     PrefChangeRegistrar change_observer;
     change_observer.Init(browser()->profile()->GetPrefs());
@@ -499,6 +500,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void ClickEnableLiveTranslateOnDialog() {
+    base::RunLoop().RunUntilIdle();
     base::RunLoop run_loop;
     PrefChangeRegistrar change_observer;
     change_observer.Init(browser()->profile()->GetPrefs());
@@ -920,7 +922,13 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   EXPECT_TRUE(IsPlayingSessionDisplayedFirst());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, LiveCaption) {
+// TODO(crbug.com/1425041): Live captioning not supported on Arm64 Windows.
+#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64) || BUILDFLAG(IS_MAC)
+#define MAYBE_LiveCaption DISABLED_LiveCaption
+#else
+#define MAYBE_LiveCaption LiveCaption
+#endif
+IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, MAYBE_LiveCaption) {
   // Open a tab and play media.
   OpenTestURL();
   StartPlayback();
@@ -990,7 +998,7 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, LiveCaption) {
             GetLiveCaptionTitleLabel()->GetText());
 }
 
-#if (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64))
+#if (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)) || BUILDFLAG(IS_MAC)
 // https://crbug.com/1222873
 // Flaky on all Mac bots: https://crbug.com/1274967
 // TODO(https://crbug.com/1425041): Renable on WinArm64 when live captioning is
@@ -1063,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
 // TODO(crbug.com/1225531, crbug.com/1222873): Flaky.
 // TODO(https://crbug.com/1425041): Renable on WinArm64 when live captioning is
 // enabled.
-#if (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64))
+#if (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)) || BUILDFLAG(IS_MAC)
 #define MAYBE_LiveCaptionShowLanguage DISABLED_LiveCaptionShowLanguage
 #else
 #define MAYBE_LiveCaptionShowLanguage LiveCaptionShowLanguage

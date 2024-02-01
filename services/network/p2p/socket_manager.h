@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -35,7 +36,6 @@
 #include "services/network/public/cpp/p2p_socket_type.h"
 #include "services/network/public/mojom/p2p.mojom.h"
 #include "services/network/public/mojom/p2p_trusted.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 class URLRequestContext;
@@ -51,8 +51,8 @@ struct DefaultLocalAddresses {
   DefaultLocalAddresses();
   ~DefaultLocalAddresses();
 
-  absl::optional<net::IPAddress> default_ipv4_local_address;
-  absl::optional<net::IPAddress> default_ipv6_local_address;
+  std::optional<net::IPAddress> default_ipv4_local_address;
+  std::optional<net::IPAddress> default_ipv6_local_address;
 };
 
 // Owns all the P2P socket instances and dispatches Mojo calls from the
@@ -150,7 +150,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketManager
 
   void DoGetHostAddress(
       const std::string& host_name,
-      absl::optional<int> address_family,
+      std::optional<int> address_family,
       bool enable_mdns,
       mojom::P2PSocketManager::GetHostAddressCallback callback);
 
@@ -162,7 +162,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketManager
   void OnConnectionError();
 
   DeleteCallback delete_callback_;
-  raw_ptr<net::URLRequestContext, DanglingUntriaged> url_request_context_;
+  raw_ptr<net::URLRequestContext> url_request_context_;
   const net::NetworkAnonymizationKey network_anonymization_key_;
 
   std::unique_ptr<ProxyResolvingClientSocketFactory>

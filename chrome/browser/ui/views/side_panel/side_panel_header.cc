@@ -15,17 +15,14 @@ SidePanelHeader::SidePanelHeader() {
 }
 
 void SidePanelHeader::Layout() {
-  views::View::Layout();
+  LayoutSuperclass<views::View>(this);
 
   if (features::IsChromeRefresh2023()) {
     // The side panel header should draw on top of its parent's border.
     gfx::Rect contents_bounds = parent()->GetContentsBounds();
 
     const int header_padding_bottom =
-        base::FeatureList::IsEnabled(features::kSidePanelPinning) &&
-                features::IsChromeRefresh2023()
-            ? 0
-            : 6;
+        features::IsSidePanelPinningEnabled() ? 0 : 6;
     gfx::Rect header_bounds =
         gfx::Rect(contents_bounds.x(),
                   contents_bounds.y() - GetPreferredSize().height() -

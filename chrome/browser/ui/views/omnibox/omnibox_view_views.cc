@@ -477,20 +477,7 @@ bool OmniboxViewViews::IsImeComposing() const {
 }
 
 gfx::Size OmniboxViewViews::GetMinimumSize() const {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(crbug.com/1338087): The minimum size of Lacros toolbar is set too wide
-  // to use split view in tablet mode. Temporally making the minimum size of
-  // omnibox smaller for Lacros to align the behavior with Ash. Responsive
-  // Toolbar is supposed to fix this. Remove the temporal solution when
-  // Responsive Toolbar is launched.
-  const int kMinCharacters =
-      display::Screen::GetScreen()->InTabletMode() &&
-              !base::FeatureList::IsEnabled(features::kResponsiveToolbar)
-          ? 8
-          : 20;
-#else
   const int kMinCharacters = 20;
-#endif
   return gfx::Size(
       GetFontList().GetExpectedTextWidth(kMinCharacters) + GetInsets().width(),
       GetPreferredSize().height());
@@ -852,8 +839,8 @@ void OmniboxViewViews::SetAccessibilityLabel(const std::u16string& display_text,
     // bypass OmniboxPopupModel and get the label from our synthetic |match|.
     friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
         match, display_text, OmniboxPopupSelection::kNoMatch,
-        controller()->result().size(), std::u16string(),
-        &friendly_suggestion_text_prefix_length_);
+        controller()->autocomplete_controller()->result().size(),
+        std::u16string(), &friendly_suggestion_text_prefix_length_);
   } else {
     friendly_suggestion_text_ =
         model()->GetPopupAccessibilityLabelForCurrentSelection(
@@ -1372,7 +1359,7 @@ void OmniboxViewViews::OnFocus() {
 
   // Focus changes can affect the visibility of any keyword hint.
   if (location_bar_view_ && model()->is_keyword_hint())
-    location_bar_view_->Layout();
+    location_bar_view_->DeprecatedLayoutImmediately();
 
   if (location_bar_view_)
     location_bar_view_->OnOmniboxFocused();
@@ -1447,7 +1434,7 @@ void OmniboxViewViews::OnBlur() {
   // |location_bar_view_| can be null in tests.
   if (location_bar_view_) {
     if (model()->is_keyword_hint())
-      location_bar_view_->Layout();
+      location_bar_view_->DeprecatedLayoutImmediately();
 
     location_bar_view_->OnOmniboxBlurred();
 
@@ -1954,7 +1941,7 @@ void OmniboxViewViews::MaybeAddSendTabToSelfItem(
   menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
 }
 
-BEGIN_METADATA(OmniboxViewViews, views::Textfield)
+BEGIN_METADATA(OmniboxViewViews)
 ADD_READONLY_PROPERTY_METADATA(bool, SelectionAtEnd)
 ADD_READONLY_PROPERTY_METADATA(int, TextWidth)
 ADD_READONLY_PROPERTY_METADATA(int, UnelidedTextWidth)

@@ -23,6 +23,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/shared_storage_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -80,10 +81,12 @@ class MockContentBrowserClient : public ContentBrowserClient {
   MockContentBrowserClient() = default;
   ~MockContentBrowserClient() override = default;
 
-  bool IsSharedStorageAllowed(content::BrowserContext* browser_context,
-                              content::RenderFrameHost* rfh,
-                              const url::Origin& top_frame_origin,
-                              const url::Origin& accessing_origin) override {
+  bool IsSharedStorageAllowed(
+      content::BrowserContext* browser_context,
+      content::RenderFrameHost* rfh,
+      const url::Origin& top_frame_origin,
+      const url::Origin& accessing_origin,
+      std::string* out_debug_message = nullptr) override {
     return true;
   }
 };
@@ -182,6 +185,23 @@ TEST_F(SharedStorageWorkletDevToolsAgentHostTest, WorkletDestroyed) {
             "{\"method\":\"Inspector.targetCrashed\",\"params\":{}}");
 
   host_client.Close();
+}
+
+// Regression test for crbug.com/1515243.
+TEST_F(SharedStorageWorkletDevToolsAgentHostTest,
+       CheckIsRelevantToFrame_WorkletHostDetachedFromDocument) {
+  // The test assumes that the page gets deleted after navigation. Disable
+  // back/forward cache to ensure that pages don't get preserved in the cache.
+  DisableBackForwardCacheForTesting(web_contents(),
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
+  // Navigate to a new page. The worklet will no longer be associated with a
+  // document.
+  contents()->NavigateAndCommit(GURL("http://www.youtube.com"));
+
+  EXPECT_FALSE(
+      devtools_agent_host_->IsRelevantTo(static_cast<RenderFrameHostImpl*>(
+          web_contents()->GetPrimaryMainFrame())));
 }
 
 }  // namespace content

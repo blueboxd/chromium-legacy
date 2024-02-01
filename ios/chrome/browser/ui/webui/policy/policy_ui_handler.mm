@@ -38,9 +38,9 @@
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/version_info/version_info.h"
-#import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
-#import "ios/chrome/browser/policy/browser_state_policy_connector.h"
-#import "ios/chrome/browser/policy/policy_conversions_client_ios.h"
+#import "ios/chrome/browser/policy/model/browser_policy_connector_ios.h"
+#import "ios/chrome/browser/policy/model/browser_state_policy_connector.h"
+#import "ios/chrome/browser/policy/model/policy_conversions_client_ios.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
@@ -94,10 +94,12 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       {"unset", IDS_POLICY_UNSET},
       {"value", IDS_POLICY_LABEL_VALUE},
       {"sourceDefault", IDS_POLICY_SOURCE_DEFAULT},
-      {"loadPoliciesDone", IDS_POLICY_LOAD_POLICIES_DONE},
-      {"loadingPolicies", IDS_POLICY_LOADING_POLICIES},
+      {"reloadingPolicies", IDS_POLICY_RELOADING_POLICIES},
+      {"reloadPoliciesDone", IDS_POLICY_RELOAD_POLICIES_DONE},
       {"reportUploading", IDS_REPORT_UPLOADING},
       {"reportUploaded", IDS_REPORT_UPLOADED},
+      {"copyPoliciesDone", IDS_COPY_POLICIES_DONE},
+      {"exportPoliciesDone", IDS_EXPORT_POLICIES_JSON_DONE},
   };
   source->AddLocalizedStrings(kStrings);
   source->AddLocalizedStrings(policy::kPolicySources);

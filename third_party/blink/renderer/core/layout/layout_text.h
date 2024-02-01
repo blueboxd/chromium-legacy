@@ -94,22 +94,49 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   }
   virtual bool IsWordBreak() const;
 
+  // Returns a string in the corresponding Text node.
+  // Returns a null string for an element-based LayoutText such as LayoutBR
+  // and LayoutWordBreak.
   virtual String OriginalText() const;
+  // This should not be called for LayoutBR.
+  unsigned OriginalTextLength() const;
 
   bool HasInlineFragments() const final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;
   void ClearFirstInlineFragmentItemIndex() final;
   void SetFirstInlineFragmentItemIndex(wtf_size_t) final;
 
-  const String& GetText() const {
+  // This function returns a string that is the result of applying
+  // text-transform and -webkit-text-security to the original text.
+  // Whitespace collapsing is not applied.  The length of the string might
+  // be different from the original text length.
+  const String& TransformedText() const {
     NOT_DESTROYED();
     return text_;
   }
+  // Returns the length of transformed text.  Do not use this.  This function
+  // is rarely useful, and we can use TransformedText().length().
+  unsigned TransformedTextLength() const {
+    NOT_DESTROYED();
+    return text_.length();
+  }
+
   virtual unsigned TextStartOffset() const {
     NOT_DESTROYED();
     return 0;
   }
   virtual String PlainText() const;
+
+  // Returns true if text-transform or -webkit-text-security changes the text
+  // length.
+  bool HasVariableLengthTransform() const {
+    NOT_DESTROYED();
+    return has_variable_length_transform_;
+  }
+  void SetHasVariableLengthTransform(bool flag) {
+    NOT_DESTROYED();
+    has_variable_length_transform_ = flag;
+  }
 
   // Returns first letter part of |LayoutTextFragment|.
   virtual LayoutText* GetFirstLetterPart() const {
@@ -130,32 +157,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
-  bool Is8Bit() const {
-    NOT_DESTROYED();
-    return text_.Is8Bit();
-  }
-  const LChar* Characters8() const {
-    NOT_DESTROYED();
-    return text_.Characters8();
-  }
-  const UChar* Characters16() const {
-    NOT_DESTROYED();
-    return text_.Characters16();
-  }
   bool HasEmptyText() const {
     NOT_DESTROYED();
     return text_.empty();
-  }
-  UChar CharacterAt(unsigned) const;
-  UChar UncheckedCharacterAt(unsigned) const;
-  UChar operator[](unsigned i) const {
-    NOT_DESTROYED();
-    return UncheckedCharacterAt(i);
-  }
-  UChar32 CodepointAt(unsigned) const;
-  unsigned TextLength() const {
-    NOT_DESTROYED();
-    return text_.length();
   }
 
   // Get characters after whitespace collapsing was applied. Returns 0 if there
@@ -179,7 +183,12 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void SetTextWithOffset(String, unsigned offset, unsigned len);
   void SetTextInternal(String);
 
-  virtual void TransformText();
+  // Apply text-transform and -webkit-text-security to OriginalText(), and
+  // store its result to text_.
+  virtual void TransformAndSecureOriginalText();
+  // Apply text-transform and -webkit-text-security to the specified string.
+  String TransformAndSecureText(const String& original,
+                                TextOffsetMap& offset_map) const;
 
   PhysicalRect LocalSelectionVisualRect() const final;
   PhysicalRect LocalCaretRect(
@@ -195,24 +204,22 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   Vector<TextBoxInfo> GetTextBoxInfo() const;
 
   // Returns the Position in DOM that corresponds to the given offset in the
-  // |text_| string.
-  // TODO(layout-dev): Fix it when text-transform changes text length.
+  // original text.
   virtual Position PositionForCaretOffset(unsigned) const;
 
-  // Returns the offset in the |text_| string that corresponds to the given
+  // Returns the offset in the original text that corresponds to the given
   // position in DOM; Returns nullopt is the position is not in this LayoutText.
-  // TODO(layout-dev): Fix it when text-transform changes text length.
   virtual absl::optional<unsigned> CaretOffsetForPosition(
       const Position&) const;
 
-  // Returns true if the offset (0-based in the |text_| string) is next to a
+  // Returns true if the offset (0-based in the original text) is next to a
   // non-collapsed non-linebreak character, or before a forced linebreak (<br>,
   // or segment break in node with style white-space: pre/pre-line/pre-wrap).
   // TODO(editing-dev): The behavior is introduced by crrev.com/e3eb4e in
   // InlineTextBox::ContainsCaretOffset(). Try to understand it.
   bool ContainsCaretOffset(int) const;
 
-  // Return true if the offset (0-based in the |text_| string) is before/after a
+  // Return true if the offset (0-based in the original text) is before/after a
   // non-collapsed character in this LayoutText, respectively.
   bool IsBeforeNonCollapsedCharacter(unsigned) const;
   bool IsAfterNonCollapsedCharacter(unsigned) const;
@@ -394,11 +401,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void DeleteTextBoxes();
 
-  void ApplyTextTransform();
-  void SecureText(UChar mask);
+  std::pair<String, TextOffsetMap> SecureText(const String& plain,
+                                              UChar mask) const;
 
-  // This will catch anyone doing an unnecessary check.
-  bool IsText() const = delete;
+  bool IsText() const final {
+    NOT_DESTROYED();
+    return true;
+  }
 
   PhysicalRect LocalVisualRectIgnoringVisibility() const final;
 
@@ -420,9 +429,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   ContentCaptureManager* GetOrResetContentCaptureManager();
   void DetachAbstractInlineTextBoxes();
 
+  virtual unsigned NonCollapsedCaretMaxOffset() const;
+
   // Used for LayoutNG with accessibility. True if inline fragments are
   // associated to |AbstractInlineTextBox|.
   unsigned has_abstract_inline_text_box_ : 1;
+
+  unsigned has_variable_length_transform_ : 1;
 
   DOMNodeId node_id_ = kInvalidDOMNodeId;
 
@@ -444,28 +457,6 @@ inline wtf_size_t LayoutText::FirstInlineFragmentItemIndex() const {
   if (!IsInLayoutNGInlineFormattingContext())
     return 0u;
   return first_fragment_item_index_;
-}
-
-inline UChar LayoutText::UncheckedCharacterAt(unsigned i) const {
-  SECURITY_DCHECK(i < TextLength());
-  return Is8Bit() ? Characters8()[i] : Characters16()[i];
-}
-
-inline UChar LayoutText::CharacterAt(unsigned i) const {
-  if (i >= TextLength())
-    return 0;
-
-  return UncheckedCharacterAt(i);
-}
-
-inline UChar32 LayoutText::CodepointAt(unsigned i) const {
-  if (i >= TextLength())
-    return 0;
-  if (Is8Bit())
-    return Characters8()[i];
-  UChar32 c;
-  U16_GET(Characters16(), 0, i, TextLength(), c);
-  return c;
 }
 
 inline void LayoutText::DetachAbstractInlineTextBoxesIfNeeded() {

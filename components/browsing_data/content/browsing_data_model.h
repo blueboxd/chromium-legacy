@@ -11,8 +11,10 @@
 #include "base/containers/enum_set.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ref.h"
+#include "base/memory/weak_ptr.h"
 #include "components/browsing_data/content/browsing_data_quota_helper.h"
 #include "components/browsing_data/content/shared_worker_info.h"
+#include "components/webid/federated_identity_data_model.h"
 #include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/interest_group_manager.h"
 #include "content/public/browser/private_aggregation_data_model.h"
@@ -77,7 +79,8 @@ class BrowsingDataModel {
                         content::SessionStorageUsageInfo,
                         net::SharedDictionaryIsolationKey,
                         browsing_data::SharedWorkerInfo,
-                        net::CanonicalCookie
+                        net::CanonicalCookie,
+                        webid::FederatedIdentityDataModel::DataKey
                         // TODO(crbug.com/1271155): Additional backend keys.
                         >
       DataKey;
@@ -110,7 +113,7 @@ class BrowsingDataModel {
 
     // Returns the non-1P SchemefulSite this data is partitioned on. Returns
     // base::nullopt if the data is not partitioned, or is the 1P partition.
-    absl::optional<net::SchemefulSite> GetThirdPartyPartitioningSite() const;
+    std::optional<net::SchemefulSite> GetThirdPartyPartitioningSite() const;
 
     // The logical owner of this browsing data. This is the entity which this
     // information will be most strongly associated with in UX surfaces.
@@ -156,7 +159,7 @@ class BrowsingDataModel {
     // Returns the owner of the data identified by the given DataKey and
     // StorageType, or nullopt if the delegate does not manage the entity that
     // owns the given data.
-    virtual absl::optional<DataOwner> GetDataOwner(
+    virtual std::optional<DataOwner> GetDataOwner(
         const DataKey& data_key,
         StorageType storage_type) const = 0;
 
@@ -166,12 +169,15 @@ class BrowsingDataModel {
     // This method isn't aware of the context in which the data key is being
     // accessed and may return false positive in case it was called for a first
     // party key in a first party context.
-    virtual absl::optional<bool> IsBlockedByThirdPartyCookieBlocking(
+    virtual std::optional<bool> IsBlockedByThirdPartyCookieBlocking(
         const DataKey& data_key,
         StorageType storage_type) const = 0;
 
     // Returns whether cookie deletion for a given `url` is disabled.
     virtual bool IsCookieDeletionDisabled(const GURL& url) = 0;
+
+    // Get a WeakPtr to the instance.
+    virtual base::WeakPtr<Delegate> AsWeakPtr() = 0;
 
     virtual ~Delegate() = default;
   };

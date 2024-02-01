@@ -69,6 +69,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/actions/actions.h"
+#include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"
@@ -535,10 +536,18 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     return eval_js_result.ExtractString();
   }
 
-  absl::optional<std::string> GetLastPageTitleFromPostMessage() {
+  std::optional<std::string> GetLastPageTitleFromPostMessage() {
     content::EvalJsResult eval_js_result = EvalJs("getLastReceivedPageTitle()");
     if (!eval_js_result.error.empty() || !eval_js_result.value.is_string()) {
-      return absl::nullopt;
+      return std::nullopt;
+    }
+    return eval_js_result.ExtractString();
+  }
+
+  std::optional<std::string> GetLastInnerHtmlFromPostMessage() {
+    content::EvalJsResult eval_js_result = EvalJs("getLastReceivedInnerHtml()");
+    if (!eval_js_result.error.empty() || !eval_js_result.value.is_string()) {
+      return std::nullopt;
     }
     return eval_js_result.ExtractString();
   }
@@ -681,7 +690,7 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     const char* entry_name = ukm::builders::Companion_PageView::kEntryName;
     EXPECT_LE(index, static_cast<int>(
                          ukm_recorder->GetEntriesByName(entry_name).size()));
-    auto* entry = ukm_recorder->GetEntriesByName(entry_name)[index];
+    auto* entry = ukm_recorder->GetEntriesByName(entry_name)[index].get();
 
     // Verify the metric.
     ukm_recorder->EntryHasMetric(entry, metric_name);
@@ -694,7 +703,7 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     const char* entry_name = ukm::builders::Companion_PageView::kEntryName;
     EXPECT_LE(index, static_cast<int>(
                          ukm_recorder->GetEntriesByName(entry_name).size()));
-    auto* entry = ukm_recorder->GetEntriesByName(entry_name)[index];
+    auto* entry = ukm_recorder->GetEntriesByName(entry_name)[index].get();
 
     EXPECT_FALSE(ukm_recorder->EntryHasMetric(entry, metric_name));
   }
@@ -1153,11 +1162,12 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
-                       PageTitleNotifiesViaPostMessage) {
+                       PageContentNotifiesViaPostMessage) {
   EnablePco(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html;charset=utf-8,"
-                      "<head><title>Title of the page</title></head>")));
+                      "<head><title>Title of the page</title></head>"
+                      "<body>Content of the page</body>")));
   side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
 
   WaitForCompanionToBeLoaded();
@@ -1171,6 +1181,8 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
 
   // Ensure browser sent post message
   EXPECT_EQ("Title of the page", GetLastPageTitleFromPostMessage());
+  EXPECT_EQ("<body>Content of the page</body>",
+            GetLastInnerHtmlFromPostMessage());
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
@@ -1971,6 +1983,28 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   EXPECT_EQ(proto->page_url(), CreateUrl(kHost, kRelativeUrl1));
 }
 
+IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
+                       ServerSideUrlFilterEventIsRecorded) {
+  EnableSignInMsbbExps(/*signed_in=*/true, /*msbb=*/true, /*exps=*/true);
+
+  // Load a page on the active tab and open companion side panel
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+  WaitForCompanionToBeLoaded();
+  auto proto = GetLastCompanionProtoFromUrlLoad();
+  ASSERT_TRUE(proto.has_value());
+  EXPECT_EQ(proto->page_url(), CreateUrl(kHost, kRelativeUrl1));
+
+  // Simulate a message that a sensitive URL was filtered out.
+  CompanionScriptBuilder builder(MethodType::kServerSideUrlFilterEvent);
+  EXPECT_TRUE(ExecJs(builder.Build()));
+
+  WaitForHistogram("Companion.ServerSideUrlFilterEvent");
+  histogram_tester_->ExpectBucketCount("Companion.ServerSideUrlFilterEvent",
+                                       true, 1);
+}
+
 // This test verifies that a new tab that was opened from a page with Search
 // Companion open, also opens Search Companion in the new tab.
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, NewTabFromMainPageOpensCsc) {
@@ -2354,7 +2388,8 @@ class CompanionSidePanelPinningBrowserTest : public CompanionPageBrowserTest {
 
   void SetUpFeatureList() override {
     CompanionPageBrowserTest::SetUpFeatureList();
-    pinning_feature_list_.InitAndEnableFeature(features::kSidePanelPinning);
+    pinning_feature_list_.InitWithFeatures(
+        {features::kSidePanelPinning, features::kChromeRefresh2023}, {});
   }
 
   ~CompanionSidePanelPinningBrowserTest() override = default;

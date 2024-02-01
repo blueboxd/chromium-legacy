@@ -3,36 +3,35 @@
 // found in the LICENSE file.
 
 import {type ActionsProducerGen, ConcurrentActionInvalidatedError, isActionsProducer} from './actions_producer.js';
-import {Selector, SelectorEmitter, SelectorNode} from './selector.js';
+import {type Selector, SelectorEmitter, SelectorNode} from './selector.js';
+
+/** The Payload type for Action. */
+type PayloadType = Object|void;
 
 /**
  * Actions are handled by the store according to their name and payload,
  * triggering reducers.
  */
-export interface Action {
+export interface Action<Payload extends PayloadType = any> {
   type: string;
-  payload?: any;
+  payload?: Payload;
 }
 
 /**
  * A callable object that generates actions of a given type while enforcing the
  * payload typing for that type of action.
  *
- * For convenience and debugging purposes, it also includes the action type and
- * the payload typing.
+ * For convenience and debugging purposes, it also includes the action type.
  *
- * Note: PAYLOAD does not hold any useful value. It's exclusively used to
- * conveniently carry the payload type along with the factory callable.
  */
-export interface ActionFactory<Payload = void> {
-  (payload: Payload): (Action&{type: string, payload: Payload});
-  type: Action['type'];
-  PAYLOAD: Payload;
+export interface ActionFactory<Payload extends PayloadType> {
+  (payload: Payload): (Action<Payload>);
+  type: Action<Payload>['type'];
 }
 
 /** Reducers generate a new state from the current state and a payload. */
-export type Reducer<State, Payload = void> = (state: State, payload: Payload) =>
-    State;
+export type Reducer<State, Payload extends PayloadType> =
+    (state: State, payload: Payload) => State;
 
 type ReducerMap<State> = Map<Action['type'], Reducer<State, any>>;
 type ReducersMap<State> = Map<Action['type'], Array<Reducer<State, any>>>;
@@ -89,7 +88,7 @@ export class Slice<State, LocalState> {
    *     typing of the actions it produces. Those can be used to register
    *     reducers in other slices with the same action type.
    */
-  addReducer<Payload = void>(
+  addReducer<Payload extends PayloadType>(
       localType: Action['type'],
       reducer: Reducer<State, Payload>): ActionFactory<Payload> {
     const type = this.prependSliceName_(localType);
@@ -101,10 +100,9 @@ export class Slice<State, LocalState> {
     this.reducers.set(type, reducer);
 
     const actionFactory = (payload: Payload) => ({type, payload});
-    // Include action type and payload typing so different slices can register
-    // reducers for the same action type.
+    // Include action type so different slices can register reducers for the
+    // same action type.
     actionFactory.type = type;
-    actionFactory.PAYLOAD = null as Payload;
 
     return actionFactory;
   }
@@ -141,7 +139,7 @@ export class BaseStore<State> {
   private initialized_: boolean = false;
 
   /** Queues actions while the Store un-initialized. */
-  private queuedActions_: Action[];
+  private queuedActions_: Array<Action|ActionsProducerGen>;
 
   /**
    * Observers that are notified when the State is updated by Action/Reducer.
@@ -184,7 +182,8 @@ export class BaseStore<State> {
     }
 
     // Connect the default root selector to the Selector Emitter.
-    const rootSelector = SelectorNode.createSourceNode(() => this.state_);
+    const rootSelector =
+        SelectorNode.createSourceNode(() => this.state_, 'root');
     this.selectorEmitter_.addSource(rootSelector);
     this.selector = rootSelector;
 
@@ -216,7 +215,11 @@ export class BaseStore<State> {
     this.state_ = initialState;
 
     this.queuedActions_.forEach((action) => {
-      this.dispatchInternal_(action);
+      if (isActionsProducer(action)) {
+        this.consumeProducedActions_(action);
+      } else {
+        this.dispatchInternal_(action);
+      }
     });
 
     this.initialized_ = true;
@@ -280,15 +283,27 @@ export class BaseStore<State> {
    * reducers during the initialization.
    */
   dispatch(action: Action|ActionsProducerGen) {
-    if (isActionsProducer(action)) {
-      this.consumeProducedActions_(action);
-      return;
-    }
     if (!this.initialized_) {
       this.queuedActions_.push(action);
       return;
     }
-    this.dispatchInternal_(action);
+    if (isActionsProducer(action)) {
+      this.consumeProducedActions_(action);
+    } else {
+      this.dispatchInternal_(action);
+    }
+  }
+
+  /**
+   * Enable/Disable the debug mode for the store. More logs will be displayed in
+   * the console with debug mode on.
+   */
+  setDebug(isDebug: boolean): void {
+    if (isDebug) {
+      localStorage.setItem('DEBUG_STORE', '1');
+    } else {
+      localStorage.removeItem('DEBUG_STORE');
+    }
   }
 
   /** Synchronously call apply the `action` by calling the reducer.  */
@@ -327,7 +342,8 @@ export class BaseStore<State> {
 
   /** Apply the `action` to the Store by calling the reducer.  */
   protected reduce(action: Action) {
-    if (window.DEBUG_STORE) {
+    const isDebugStore = isDebugStoreEnabled();
+    if (isDebugStore) {
       console.groupCollapsed(`Action: ${action.type}`);
       console.dir(action.payload);
     }
@@ -350,7 +366,7 @@ export class BaseStore<State> {
       this.selectorEmitter_.processChange();
     }
 
-    if (window.DEBUG_STORE) {
+    if (isDebugStore) {
       console.groupEnd();
     }
   }
@@ -386,4 +402,14 @@ function isInvalidationError(error: unknown): boolean {
   }
 
   return false;
+}
+
+/**
+ * Check if the store is in debug mode or not. When it's set, action data will
+ * be logged in the console for debugging purpose.
+ *
+ * Run `fileManager.store_.setDebug(true)` in the console to enable it.
+ */
+export function isDebugStoreEnabled() {
+  return localStorage.getItem('DEBUG_STORE') === '1';
 }

@@ -427,14 +427,14 @@ struct MenuController::MenuPart {
   //       but is over a menu (for example, the mouse is over a separator or
   //       empty menu), this is null and parent is the menu the mouse was
   //       clicked on.
-  raw_ptr<MenuItemView, DanglingUntriaged> menu = nullptr;
+  raw_ptr<MenuItemView> menu = nullptr;
 
   // If type is kMenuItem but the mouse is not over a menu item this is the
   // parent of the menu item the user clicked on. Otherwise this is null.
-  raw_ptr<MenuItemView, DanglingUntriaged> parent = nullptr;
+  raw_ptr<MenuItemView> parent = nullptr;
 
   // This is the submenu the mouse is over.
-  raw_ptr<SubmenuView, DanglingUntriaged> submenu = nullptr;
+  raw_ptr<SubmenuView> submenu = nullptr;
 
   // Whether the controller should apply SELECTION_OPEN_SUBMENU to this item.
   bool should_submenu_show = false;
@@ -2239,7 +2239,6 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
       // (crbug.com/1414232) The item to be open is a submenu. Make sure
       // params.context is set.
       DCHECK(params.context);
-      params.menu_type = ui::MenuType::kChildMenu;
     } else if (state_.context_menu) {
       if (!menu_stack_.empty()) {
         auto* last_menu_item = menu_stack_.back().first.item.get();
@@ -2250,10 +2249,8 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
       } else {
         params.context = owner_;
       }
-      params.menu_type = ui::MenuType::kRootContextMenu;
     } else {
       params.context = owner_;
-      params.menu_type = ui::MenuType::kRootMenu;
     }
     item->GetSubmenu()->ShowAt(params);
 
@@ -2818,7 +2815,6 @@ void MenuController::IncrementSelection(
     Button* button = GetFirstHotTrackedView(item);
     if (button) {
       DCHECK_EQ(hot_button_, button);
-      SetHotTrackedButton(nullptr);
     }
     bool direction_is_down = direction == INCREMENT_SELECTION_DOWN;
     View* to_make_hot =

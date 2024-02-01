@@ -241,6 +241,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   int32_t HistoryListLength() const { return history_list_length_; }
   const SessionStorageNamespaceId& GetSessionStorageNamespaceId() override;
   bool IsFencedFrameRoot() const override;
+  void SetSupportsAppRegion(bool supports_app_region) override;
 
   // Functions to add and remove observers for this object.
   void AddObserver(WebViewObserver* observer);
@@ -601,6 +602,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // empty document of a main frame.
   void DidAccessInitialMainDocument();
 
+  // Sends window.minimize() requests to the browser window.
+  void Minimize();
+  // Sends window.maximize() requests to the browser window.
+  void Maximize();
+  // Sends window.restore() requests to the browser window.
+  void Restore();
   // Sends window.setResizable() requests to the browser window.
   void SetResizable(bool resizable);
 
@@ -627,6 +634,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidFirstVisuallyNonEmptyPaint();
 
   scheduler::WebAgentGroupScheduler& GetWebAgentGroupScheduler();
+
+  // Returns true if the page supports app-region: drag/no-drag.
+  bool SupportsAppRegion();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
@@ -987,6 +997,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   absl::optional<base::debug::StackTrace> close_task_posted_stack_trace_;
   absl::optional<base::debug::StackTrace> close_called_stack_trace_;
   absl::optional<base::debug::StackTrace> close_window_called_stack_trace_;
+
+  // Indicates whether the page supports draggable regions via the app-region
+  // CSS property.
+  bool supports_app_region_ = false;
 
   // All the registered observers.
   base::ObserverList<WebViewObserver> observers_;

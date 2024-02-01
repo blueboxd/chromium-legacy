@@ -91,7 +91,6 @@ class BorderEdge;
 class ContentData;
 class CounterDirectives;
 class CSSAnimationData;
-class FloodColor;
 class CSSTransitionData;
 class CSSVariableData;
 class Font;
@@ -811,6 +810,10 @@ class ComputedStyle final : public ComputedStyleBase {
     return HasEmUnits() || HasRootFontRelativeUnits() ||
            HasGlyphRelativeUnits();
   }
+  bool HasAnyRelativeUnits() const {
+    return HasFontRelativeUnits() || HasContainerRelativeUnits() ||
+           HasLogicalDirectionRelativeUnits() || HasViewportUnits();
+  }
 
   // If true, the ComputedStyle must be recalculated when fonts are updated.
   bool DependsOnFontMetrics() const {
@@ -818,7 +821,9 @@ class ComputedStyle final : public ComputedStyleBase {
            CustomStyleCallbackDependsOnFont();
   }
   bool CachedPseudoElementStylesDependOnFontMetrics() const;
-  bool HighlightPseudoElementStylesDependOnFontMetrics() const;
+  bool HighlightPseudoElementStylesDependOnRelativeUnits() const;
+  bool HighlightPseudoElementStylesDependOnContainerUnits() const;
+  bool HighlightPseudoElementStylesDependOnViewportUnits() const;
 
   // font-size
   int FontSize() const { return GetFontDescription().ComputedPixelSize(); }
@@ -1144,7 +1149,10 @@ class ComputedStyle final : public ComputedStyleBase {
   bool ShouldUseTextIndent(bool is_first_line) const;
 
   // text-transform utility functions.
-  void ApplyTextTransform(String*, UChar previous_character = ' ') const;
+  [[nodiscard]] String ApplyTextTransform(
+      const String&,
+      UChar previous_character = ' ',
+      TextOffsetMap* offset_map = nullptr) const;
 
   // Line-height utility functions.
   const Length& SpecifiedLineHeight() const { return LineHeightInternal(); }
@@ -1758,12 +1766,12 @@ class ComputedStyle final : public ComputedStyleBase {
   }
 
   bool IsFocusable() const {
-    // TODO: Maybe `display: contents` shouldn't prevent focusability, see
-    // discussion in https://github.com/whatwg/html/issues/1837
     // TODO: `visibility: hidden` shouldn't prevent focusability, see
     // https://html.spec.whatwg.org/multipage/interaction.html#focusable-area
-    return !IsEnsuredInDisplayNone() && Display() != EDisplay::kContents &&
-           !IsInert() && Visibility() == EVisibility::kVisible;
+    return !IsEnsuredInDisplayNone() && !IsInert() &&
+           Visibility() == EVisibility::kVisible &&
+           (Display() != EDisplay::kContents ||
+            RuntimeEnabledFeatures::DisplayContentsFocusableEnabled());
   }
 
   // Text decoration utility functions.
@@ -2429,6 +2437,7 @@ class ComputedStyle final : public ComputedStyleBase {
     return display == EDisplay::kBlock || display == EDisplay::kListItem ||
            display == EDisplay::kInlineBlock ||
            display == EDisplay::kFlowRoot ||
+           display == EDisplay::kFlowRootListItem ||
            display == EDisplay::kInlineFlowRootListItem ||
            display == EDisplay::kTableCell ||
            display == EDisplay::kTableCaption;
@@ -3308,9 +3317,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   // PaintImage
   void AddPaintImage(StyleImage* image) {
     if (!PaintImagesInternal()) {
-      SetPaintImagesInternal(std::make_unique<PaintImages>());
+      MutablePaintImagesInternal() = MakeGarbageCollected<PaintImages>();
     }
-    MutablePaintImagesInternal()->push_back(image);
+    MutablePaintImagesInternal()->Images().push_back(image);
   }
 
   // TextAutosizingMultiplier

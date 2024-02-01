@@ -57,6 +57,13 @@ BASE_DECLARE_FEATURE(kFallbackToAudioTabMirroring);
 // `kCastMirroringPlayoutDelayMs`.
 BASE_DECLARE_FEATURE(kCastMirroringPlayoutDelay);
 
+// When enabled, Cast virtual connections are removed without explicitly sending
+// a close connection request to the receiver when the sender webpage navigates
+// away.
+// TODO(crbug.com/1508704): Remove the flag when confident that the default-
+// enabled feature is not causing a regression.
+BASE_DECLARE_FEATURE(kCastSilentlyRemoveVcOnNavigation);
+
 extern const base::FeatureParam<int> kCastMirroringPlayoutDelayMs;
 
 // Registers |kMediaRouterCastAllowAllIPs| with local state pref |registry|.
@@ -84,7 +91,7 @@ bool GlobalMediaControlsCastStartStopEnabled(content::BrowserContext* context);
 
 // Returns the optional value to use for mirroring playout delay from the
 // relevant command line flag or feature, if any are set.
-absl::optional<base::TimeDelta> GetCastMirroringPlayoutDelay();
+std::optional<base::TimeDelta> GetCastMirroringPlayoutDelay();
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace media_router

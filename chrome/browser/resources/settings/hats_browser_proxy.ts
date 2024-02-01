@@ -12,7 +12,7 @@
 export enum TrustSafetyInteraction {
   RAN_SAFETY_CHECK = 0,
   USED_PRIVACY_CARD = 1,
-  OPENED_PRIVACY_SANDBOX = 2,
+  // OPENED_PRIVACY_SANDBOX = 2, // DEPRECATED
   OPENED_PASSWORD_MANAGER = 3,
   COMPLETED_PRIVACY_GUIDE = 4,
   RAN_PASSWORD_CHECK = 5,
@@ -20,6 +20,9 @@ export enum TrustSafetyInteraction {
   OPENED_TOPICS_SUBPAGE = 7,
   OPENED_FLEDGE_SUBPAGE = 8,
   OPENED_AD_MEASUREMENT_SUBPAGE = 9,
+  // <if expr="_google_chrome">
+  OPENED_GET_MOST_CHROME = 10,
+  // </if>
 }
 
 /**
@@ -64,12 +67,19 @@ export interface HatsBrowserProxy {
    * Inform HaTS that the user performed an interaction on security page.
    * @param securityPageInteraction The type of interaction performed on the
    *     security page.
-   * @param safeBrowsingSetting The type of safe browsing settings the user is
+   * @param safeBrowsingSetting The type of safe browsing settings the user was
    *     on prior to the interaction.
+   * @param totalTimeOnPage The amount of time the user spent on the security
+   *     page.
    */
-  securityPageInteractionOccurred(
+  securityPageHatsRequest(
       securityPageInteraction: SecurityPageInteraction,
-      safeBrowsingSetting: SafeBrowsingSetting): void;
+      safeBrowsingSetting: SafeBrowsingSetting, totalTimeOnPage: number): void;
+
+  /**
+   * Returns the current date value.
+   */
+  now(): number;
 }
 
 export class HatsBrowserProxyImpl implements HatsBrowserProxy {
@@ -77,12 +87,16 @@ export class HatsBrowserProxyImpl implements HatsBrowserProxy {
     chrome.send('trustSafetyInteractionOccurred', [interaction]);
   }
 
-  securityPageInteractionOccurred(
+  securityPageHatsRequest(
       securityPageInteraction: SecurityPageInteraction,
-      safeBrowsingSetting: SafeBrowsingSetting) {
+      safeBrowsingSetting: SafeBrowsingSetting, totalTimeOnPage: number) {
     chrome.send(
-        'securityPageInteractionOccurred',
-        [securityPageInteraction, safeBrowsingSetting]);
+        'securityPageHatsRequest',
+        [securityPageInteraction, safeBrowsingSetting, totalTimeOnPage]);
+  }
+
+  now() {
+    return window.performance.now();
   }
 
   static getInstance(): HatsBrowserProxy {

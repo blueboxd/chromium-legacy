@@ -29,6 +29,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chromeos/components/kiosk/kiosk_utils.h"
 #include "chromeos/components/mgs/managed_guest_session_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -54,7 +55,6 @@ constexpr auto kAppTypeNameMap =
         {apps::kCrostiniHistogramName, apps::AppTypeName::kCrostini},
         {apps::kChromeAppHistogramName, apps::AppTypeName::kChromeApp},
         {apps::kWebAppHistogramName, apps::AppTypeName::kWeb},
-        {apps::kMacOsHistogramName, apps::AppTypeName::kMacOs},
         {apps::kPluginVmHistogramName, apps::AppTypeName::kPluginVm},
         {apps::kStandaloneBrowserHistogramName,
          apps::AppTypeName::kStandaloneBrowser},
@@ -166,6 +166,14 @@ AppTypeName GetAppTypeNameForWebApp(Profile* profile,
 
   if (type_name != AppTypeName::kWeb) {
     return type_name;
+  }
+  // TODO(b/321143888): When Shortstand is enabled, the window mode will
+  // always be kWindow. update.WindowMode is now used to check previous
+  // window mode for use by migration nudge. The WindowMode value for web
+  // apps will be updated to accurately represent the change after
+  // migration has been completed.
+  if (chromeos::features::IsCrosShortstandEnabled()) {
+    return GetWebAppTypeName();
   }
 
   switch (container) {
@@ -316,8 +324,6 @@ AppTypeName GetAppTypeNameForWindow(Profile* profile,
                                         : apps::AppTypeName::kChromeApp;
     case AppType::kWeb:
       return GetAppTypeNameForWebAppWindow(profile, app_id, window);
-    case AppType::kMacOs:
-      return apps::AppTypeName::kMacOs;
     case AppType::kPluginVm:
       return apps::AppTypeName::kPluginVm;
     case AppType::kStandaloneBrowser:
@@ -355,8 +361,6 @@ std::string GetAppTypeHistogramName(apps::AppTypeName app_type_name) {
       return kChromeAppHistogramName;
     case apps::AppTypeName::kWeb:
       return kWebAppHistogramName;
-    case apps::AppTypeName::kMacOs:
-      return kMacOsHistogramName;
     case apps::AppTypeName::kPluginVm:
       return kPluginVmHistogramName;
     case apps::AppTypeName::kStandaloneBrowser:
@@ -435,7 +439,6 @@ bool ShouldRecordUkmForAppTypeName(AppType app_type) {
       return true;
     case AppType::kBruschetta:
     case AppType::kUnknown:
-    case AppType::kMacOs:
     case AppType::kPluginVm:
     case AppType::kRemote:
       return false;
@@ -484,8 +487,6 @@ AppTypeName GetAppTypeName(Profile* profile,
       return GetAppTypeNameForChromeApp(profile, app_id, container);
     case AppType::kWeb:
       return GetAppTypeNameForWebApp(profile, app_id, container);
-    case AppType::kMacOs:
-      return apps::AppTypeName::kMacOs;
     case AppType::kPluginVm:
       return apps::AppTypeName::kPluginVm;
     case AppType::kStandaloneBrowser:

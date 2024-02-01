@@ -72,9 +72,8 @@ TEST_P(HighlightPainterTest, FastSpellingGrammarPaintCase) {
         LineRelativeRect::CreateFromLineBox(physical_rect, true);
     TextPainter text_painter(
         graphics_context, text_item.ScaledFont(), rect,
-        LineRelativeOffset::CreateFromBoxOrigin(physical_offset),
-        &inline_context, true);
-    TextDecorationPainter decoration_painter(text_painter, text_item,
+        LineRelativeOffset::CreateFromBoxOrigin(physical_offset), true);
+    TextDecorationPainter decoration_painter(text_painter, &inline_context,
                                              paint_info, style, text_style,
                                              rotated_rect, selection);
     HighlightPainter highlight_painter(

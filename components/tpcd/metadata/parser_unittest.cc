@@ -13,8 +13,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/tpcd/metadata/metadata.pb.h"
 #include "components/tpcd/metadata/parser_test_helper.h"
 #include "net/base/features.h"
@@ -53,6 +55,12 @@ class ParserTest : public ::testing::Test {
         net::features::kTpcdMetadataGrants, params);
   }
 
+  void EnableFeatureWithLargeMetadata() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        content_settings::features::kHostIndexedMetadataGrants,
+        {{content_settings::features::kUseTestMetadataName, "10000"}});
+  }
+
   void EnableFeature() {
     scoped_feature_list_.InitAndEnableFeature(
         net::features::kTpcdMetadataGrants);
@@ -81,16 +89,12 @@ class ParserTest : public ::testing::Test {
   // https://crbug.com/815537 &
   // https://source.chromium.org/chromium/chromium/src/+/main:base/test/test_suite.cc;l=633;drc=b24613adfd8336234c263d1cc8315752368ce7b5.
   bool ShouldSkipTest() {
-    // TODO(https://crbug.com/1478111): Investigate the failure of death test
-    // but in the meantime disabling them on all platforms as they are not
-    // paramount nor crucial.
-    return true;
-    // #if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86)
-    //     return base::android::BuildInfo::GetInstance()->sdk_int() <=
-    //            base::android::SDK_VERSION_NOUGAT;
-    // #else
-    //     return false;
-    // #endif
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86)
+    return base::android::BuildInfo::GetInstance()->sdk_int() <=
+           base::android::SDK_VERSION_NOUGAT;
+#else
+    return false;
+#endif
   }
 
  private:
@@ -103,37 +107,31 @@ using ParserDeathTest = ParserTest;
 
 TEST_F(ParserDeathTest, ParseMetadata_NonSerializedProto) {
   if (ShouldSkipTest()) {
-    GTEST_SKIP_(
-        "Reason: The death test is not reliable on some platforms, like on old "
-        "x86 Android: "
-        "https://crbug.com/815537. ");
+    GTEST_SKIP() << "Reason: The death test is not reliable on some platforms, "
+                    "like on old x86 Android: https://crbug.com/815537.";
   }
 
-  ASSERT_DEATH_IF_SUPPORTED(
+  EXPECT_CHECK_DEATH_WITH(
       parser()->ParseMetadata("clearly not a proto"),
       "Check failed: metadata.ParseFromString.raw_metadata.");
 }
 
 TEST_F(ParserDeathTest, ParseMetadata_InvalidComponent) {
   if (ShouldSkipTest()) {
-    GTEST_SKIP_(
-        "Reason: The death test is not reliable on some platforms, like on old "
-        "x86 Android: "
-        "https://crbug.com/815537. ");
+    GTEST_SKIP() << "Reason: The death test is not reliable on some platforms, "
+                    "like on old x86 Android: https://crbug.com/815537.";
   }
 
   ExecFakeComponentInstallation("clearly not a proto");
-  ASSERT_DEATH_IF_SUPPORTED(
-      parser()->ParseMetadata(GetFakeComponent()),
+  EXPECT_CHECK_DEATH_WITH(
+      parser()->ParseMetadata("clearly not a proto"),
       "Check failed: metadata.ParseFromString.raw_metadata.");
 }
 
 TEST_F(ParserDeathTest, ParseMetadataFromFeatureParam_FailedToDecode) {
   if (ShouldSkipTest()) {
-    GTEST_SKIP_(
-        "Reason: The death test is not reliable on some platforms, like on old "
-        "x86 Android: "
-        "https://crbug.com/815537. ");
+    GTEST_SKIP() << "Reason: The death test is not reliable on some platforms, "
+                    "like on old x86 Android: https://crbug.com/815537.";
   }
 
   const base::FieldTrialParams params = {
@@ -141,7 +139,7 @@ TEST_F(ParserDeathTest, ParseMetadataFromFeatureParam_FailedToDecode) {
   // No-op: for consistency.
   EnableFeatureWithParams(params);
 
-  ASSERT_DEATH_IF_SUPPORTED(
+  EXPECT_CHECK_DEATH_WITH(
       parser()->ParseMetadataFromFeatureParamForTesting(params),
       "Check failed: base::Base64Decode. "
       "params.find.Parser::kMetadataFeatureParamName.->second, &raw_metadata.");
@@ -149,42 +147,36 @@ TEST_F(ParserDeathTest, ParseMetadataFromFeatureParam_FailedToDecode) {
 
 TEST_F(ParserDeathTest, ParseMetadataFromFeatureParam_FailedToUnzip) {
   if (ShouldSkipTest()) {
-    GTEST_SKIP_(
-        "Reason: The death test is not reliable on some platforms, like on old "
-        "x86 Android: "
-        "https://crbug.com/815537. ");
+    GTEST_SKIP() << "Reason: The death test is not reliable on some platforms, "
+                    "like on old x86 Android: https://crbug.com/815537.";
   }
 
-  std::string encoded;
-  base::Base64Encode("clearly not a proto", &encoded);
+  std::string encoded = base::Base64Encode("clearly not a proto");
   const base::FieldTrialParams params = {
       {Parser::kMetadataFeatureParamName, encoded}};
   // No-op: for consistency.
   EnableFeatureWithParams(params);
 
-  ASSERT_DEATH_IF_SUPPORTED(
+  EXPECT_CHECK_DEATH_WITH(
       parser()->ParseMetadataFromFeatureParamForTesting(params),
       "Check failed: compression::GzipUncompress.raw_metadata, &uncompressed.");
 }
 
 TEST_F(ParserDeathTest, ParseMetadataFromFeatureParam_InvalidProto) {
   if (ShouldSkipTest()) {
-    GTEST_SKIP_(
-        "Reason: The death test is not reliable on some platforms, like on old "
-        "x86 Android: "
-        "https://crbug.com/815537. ");
+    GTEST_SKIP() << "Reason: The death test is not reliable on some platforms, "
+                    "like on old x86 Android: https://crbug.com/815537.";
   }
 
   std::string compressed;
   compression::GzipCompress("clearly not a proto", &compressed);
-  std::string encoded;
-  base::Base64Encode(compressed, &encoded);
+  std::string encoded = base::Base64Encode(compressed);
   const base::FieldTrialParams params = {
       {Parser::kMetadataFeatureParamName, encoded}};
   // No-op: for consistency.
   EnableFeatureWithParams(params);
 
-  ASSERT_DEATH_IF_SUPPORTED(
+  EXPECT_CHECK_DEATH_WITH(
       parser()->ParseMetadataFromFeatureParamForTesting(params),
       "Check failed: metadata.ParseFromString.uncompressed.");
 }
@@ -381,6 +373,18 @@ TEST_F(ParserTest, GetMetadata_FeatureParamsThenComponentUpdater_2) {
     ASSERT_EQ(me.front().primary_pattern_spec(), wildcard_spec);
     ASSERT_EQ(me.front().secondary_pattern_spec(), wildcard_spec);
   }
+}
+
+TEST_F(ParserTest, GetMetadata_TestMetadataOnly) {
+  const std::string primary_pattern_spec = "http://b.test";
+  const std::string secondary_pattern_spec = "*";
+
+  EnableFeatureWithLargeMetadata();
+
+  MetadataEntries me = parser()->GetMetadata();
+  ASSERT_EQ(me.size(), 10000u);
+  ASSERT_EQ(me.front().primary_pattern_spec(), primary_pattern_spec);
+  ASSERT_EQ(me.front().secondary_pattern_spec(), secondary_pattern_spec);
 }
 
 }  // namespace tpcd::metadata

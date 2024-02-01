@@ -11,6 +11,7 @@
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #import "base/apple/foundation_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "components/google/core/common/google_util.h"
@@ -18,7 +19,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/translate/core/browser/translate_pref_names.h"
 #import "components/translate/core/browser/translate_prefs.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
@@ -57,7 +58,7 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
 
 @interface TranslateTableViewController ()<BooleanObserver> {
   // Profile preferences.
-  PrefService* _prefs;  // weak
+  raw_ptr<PrefService> _prefs;  // weak
   PrefBackedBoolean* _translationEnabled;
   // The item related to the switch for the translation setting.
   TableViewSwitchItem* _translationItem;

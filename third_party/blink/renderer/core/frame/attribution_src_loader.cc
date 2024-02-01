@@ -71,7 +71,6 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -246,7 +245,6 @@ class AttributionSrcLoader::ResourceClient
     DCHECK(loader_);
     DCHECK(loader_->local_frame_);
     DCHECK(loader_->local_frame_->IsAttached());
-    CHECK(!KeepaliveResponsesHandledInBrowser());
     CHECK(data_host_.is_bound());
   }
 
@@ -305,7 +303,9 @@ class AttributionSrcLoader::ResourceClient
   const SourceType source_type_;
 
   // Remote used for registering responses with the browser-process.
-  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
+  // Note that there's no check applied for `SharedRemote`, and it should be
+  // memory safe as long as `SharedRemote::set_disconnect_handler` is not
+  // installed. See https://crbug.com/1512895 for details.
   mojo::SharedRemote<mojom::blink::AttributionDataHost> data_host_;
 
   wtf_size_t num_registrations_ = 0;
@@ -561,6 +561,19 @@ AttributionSrcLoader::ReportingOriginForUrlIfValid(
   // Only record the ads APIs counter if enabled in that manner.
   if (RuntimeEnabledFeatures::PrivacySandboxAdsAPIsEnabled(window)) {
     UseCounter::Count(window, mojom::blink::WebFeature::kPrivacySandboxAdsAPIs);
+  }
+
+  // The Attribution-Reporting-Support header is set on the request in the
+  // network service and the context is unavailable. This is an approximate
+  // proxy to when the header is set, and aligned with the counter for regular
+  // Attribution Reporting API that sets the Attribution-Reporting-Eligible
+  // header on the request.
+  if (RuntimeEnabledFeatures::AttributionReportingCrossAppWebEnabled(window) &&
+      base::FeatureList::IsEnabled(
+          network::features::kAttributionReportingCrossAppWeb)) {
+    UseCounter::Count(window,
+                      mojom::blink::WebFeature::
+                          kAttributionReportingCrossAppWebSupportHeader);
   }
 
   return reporting_origin;

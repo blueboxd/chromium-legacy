@@ -4,6 +4,7 @@
 
 #include <map>
 #include <memory>
+#include <string_view>
 
 #include "ash/constants/ash_switches.h"
 #include "ash/shell.h"
@@ -33,7 +34,7 @@ class SoundsManagerTestImpl : public audio::SoundsManager {
   ~SoundsManagerTestImpl() override {}
 
   bool Initialize(SoundKey key,
-                  const base::StringPiece& /* data */,
+                  std::string_view /* data */,
                   media::AudioCodec codec) override {
     is_sound_initialized_[key] = true;
     return true;
@@ -88,7 +89,7 @@ class VolumeControllerTest : public InProcessBrowserTest {
   }
 
  protected:
-  raw_ptr<ash::CrasAudioHandler, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<ash::CrasAudioHandler, DanglingUntriaged>
       audio_handler_;  // Not owned.
 };
 
@@ -199,8 +200,7 @@ class VolumeControllerSoundsTest : public VolumeControllerTest {
   }
 
  private:
-  raw_ptr<SoundsManagerTestImpl, DanglingUntriaged | ExperimentalAsh>
-      sounds_manager_;
+  raw_ptr<SoundsManagerTestImpl, DanglingUntriaged> sounds_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, Simple) {

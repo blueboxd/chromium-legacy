@@ -69,8 +69,7 @@ void ScopedClipboardWriter::WriteText(const std::u16string& text) {
 }
 
 void ScopedClipboardWriter::WriteHTML(const std::u16string& markup,
-                                      const std::string& source_url,
-                                      ClipboardContentType content_type) {
+                                      const std::string& source_url) {
   RecordWrite(ClipboardFormatMetric::kHtml);
   std::string utf8_markup = base::UTF16ToUTF8(markup);
 
@@ -135,8 +134,7 @@ void ScopedClipboardWriter::WriteHyperlink(const std::u16string& anchor_text,
   html += "\">";
   html += base::EscapeForHTML(base::UTF16ToUTF8(anchor_text));
   html += "</a>";
-  WriteHTML(base::UTF8ToUTF16(html), std::string(),
-            ClipboardContentType::kSanitized);
+  WriteHTML(base::UTF8ToUTF16(html), std::string());
 }
 
 void ScopedClipboardWriter::WriteWebSmartPaste() {

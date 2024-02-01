@@ -21,7 +21,7 @@
 <translation id="1383876407941801731">Որոնում</translation>
 <translation id="1384959399684842514">Ներբեռնումը դադարեցվել է</translation>
 <translation id="1415402041810619267">URL-ը կրճատվել է</translation>
-<translation id="1426410128494586442">Այո</translation>
+<translation id="1434873037477293673">«Գնիջեցում» քարտ</translation>
 <translation id="1448064542941920355">Փոքրացնել մասշտաբը</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> կայք}one{<ph name="SITE_COUNT" /> կայք}other{<ph name="SITE_COUNT" /> կայք}}</translation>
 <translation id="1510341833810331442">Կայքերին չի թույլատրվում տվյալներ պահել ձեր սարքում</translation>
@@ -108,6 +108,7 @@
 <translation id="2750481671343847896">Կայքերը կարող են ցույց տալ նույնականացման ծառայությունների մուտքի հարցումներ։</translation>
 <translation id="2790501146643349491">Երբ այս պարամետրը միացված է, վերջերս փակված կայքերը կարող են ավարտել տվյալների ուղարկումն ու ստացումը։ Երբ այն անջատված է, վերջերս փակված կայքերը չեն կարող ավարտել տվյալների ուղարկումն ու ստացումը։</translation>
 <translation id="2822354292072154809">Վերակայե՞լ բոլոր կայքերի թույլտվությունները <ph name="CHOSEN_OBJECT_NAME" />-ի համար:</translation>
+<translation id="2836978798613876756"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="2850913818900871965">Հայցել բջջային տարբերակը</translation>
 <translation id="2870560284913253234">Կայք</translation>
 <translation id="2874939134665556319">Նախորդը</translation>
@@ -148,6 +149,7 @@
 <translation id="3448554387819310837">Երբ այս պարամետրը միացված է, կայքերը կարող են տեսախցիկն օգտագործելու թույլտվություն խնդրել։ Երբ այն անջատված է, կայքերը չեն կարող օգտագործել ձեր տեսախցիկը։</translation>
 <translation id="3465378418721443318">{DAYS,plural, =1{Վաղը Chrome-ը կրկին կարգելափակի քուքիները}one{# օրից Chrome-ը կրկին կարգելափակի քուքիները}other{# օրից Chrome-ը կրկին կարգելափակի քուքիները}}</translation>
 <translation id="3521663503435878242">Կայքեր <ph name="DOMAIN" /> տիրույթում</translation>
+<translation id="3536227077203206203">Տրվել է մեկանգամյա թույլտվություն</translation>
 <translation id="3538390592868664640">Արգելել կայքերին ստեղծել շրջակայքի եռաչափ քարտեզը և հետագծել տեսախցիկի դիրքը</translation>
 <translation id="3544058026430919413">Ընկերությունը կարող է որոշել կայքերի խումբը, որոնք ունեն քուքիներն օգտագործելու թույլտվություն՝ ձեր գործողությունների մասին տեղեկությունները խմբում հասանելի դարձնելու համար։ Այս գործառույթն անջատված է ինկոգնիտո ռեժիմում։</translation>
 <translation id="3551268116566418498">Դուրս գա՞լ ինկոգնիտո ռեժիմից</translation>
@@ -189,6 +191,7 @@
 <translation id="4169549551965910670">Կայքը միացած է USB սարքի</translation>
 <translation id="4194328954146351878">Կայքերի համար թույլտվություն խնդրել՝ տեսնելու և փոփոխելու տեղեկությունները NFC սարքերում (խորհուրդ է տրվում)</translation>
 <translation id="4200726100658658164">Բացել տեղադրության կարգավորումները</translation>
+<translation id="4212246570487010370">Շարունակել դիտարկումը</translation>
 <translation id="4226663524361240545">Ծանուցումների ժամանակ սարքը կթրթռա</translation>
 <translation id="4259722352634471385">Նավիգացիան արգելափակված է՝ <ph name="URL" /></translation>
 <translation id="4278390842282768270">Թույլատրված է</translation>
@@ -238,6 +241,7 @@
 <translation id="5099358668261120049">Կջնջվեն բոլոր տվյալներն ու քուքիները, որոնք հիմնական էկրանին են պահվել <ph name="ORIGIN" /> կայքի և դրա հավելվածի կողմից։</translation>
 <translation id="5100237604440890931">Կոծկված - ընդլայնելու համար սեղմեք</translation>
 <translation id="5123685120097942451">Ինկոգնիտո ներդիր</translation>
+<translation id="5139253256813381453">{PRICE_DROP_COUNT,plural, =1{Գնի իջեցում ձեր բացված ներդիրներում}one{Գնի իջեցում ձեր բացված ներդիրներում}other{Գների իջեցում ձեր բացված ներդիրներում}}</translation>
 <translation id="5186036860380548585">Գործողությունը հասանելի է էկրանի վերին մասում</translation>
 <translation id="5197729504361054390">Ձեր ընտրած կոնտակտները հասանելի կդառնան <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> կայքին:</translation>
 <translation id="5216942107514965959">Վերջին այցելությունը՝ այսօր</translation>
@@ -325,6 +329,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Արգելել կայքերին օգտագործել վիրտուալ իրականության ձեր սարքերն ու տվյալները</translation>
 <translation id="6447842834002726250">Cookie ֆայլեր</translation>
+<translation id="6452138246455930388">Գնի իջեցում բացված ներդիրում, գինը <ph name="OLD_PRICE" />-ից դարձել է <ph name="NEW_PRICE" />, <ph name="PRODUCT_NAME" />, <ph name="DOMAIN_NAME" /></translation>
 <translation id="6500423977866688905">Երբ պատուհանը նեղլիկ է, պահանջեք բջջային տարբերակը</translation>
 <translation id="6527303717912515753">Կիսվել</translation>
 <translation id="652937045869844725">Փորձեք թույլատրել երրորդ կողմի քուքիները։ Սա կթուլացնի ձեր պաշտպանությունը, սակայն կայքի գործառույթները, ամենայն հավանականությամբ, կաշխատեն</translation>
@@ -344,10 +349,12 @@
 <translation id="6746124502594467657">Տեղափոխել վար</translation>
 <translation id="6749077623962119521">Զրոյացնե՞լ թույլտվությունները</translation>
 <translation id="6766622839693428701">Փակելու համար մատը սահեցրեք ներքև։</translation>
+<translation id="6785959295338971061"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="FROM_DEVICE" />-ից</translation>
 <translation id="6787751205395685251">Ընտրեք որևէ տարբերակ <ph name="SITE_NAME" /> կայքի համար</translation>
 <translation id="6790428901817661496">Նվագարկել</translation>
 <translation id="6818926723028410516">Ընտրեք տարրեր</translation>
 <translation id="6864395892908308021">Այս սարքում NFC-ն չի աջակցվում</translation>
+<translation id="6867014948848323204"><ph name="FROM_DEVICE" />-ից</translation>
 <translation id="6912998170423641340">Արգելափակել սեղմատախտակի տեքստերի ու պատկերների հասանելիությունը կայքերին</translation>
 <translation id="6945221475159498467">Ընտրել</translation>
 <translation id="6950072572526089586">Կայքը, որը դուք այցելում եք, կարող է պահել տեղեկություններ ձեր գործողությունների մասին, որպեսզի կարողանա անհատականացնել իր աշխատանքը ձեզ համար։ Օրինակ՝ այն կարող է դուրս չգրել ձեզ կայքից կամ պահպանել գնումների զամբյուղում ավելացված ապրանքները։ Սովորաբար կայքերն այդ տեղեկությունները ժամանակավորապես պահում են ձեր սարքում։</translation>
@@ -364,6 +371,7 @@
 <translation id="7141896414559753902">Արգելափակել ելնող պատուհանները և վերահասցեավորումը կայքերում (խորհուրդ է տրվում)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> ԿԲ</translation>
 <translation id="7180611975245234373">Թարմացնել</translation>
+<translation id="7180865173735832675">Հարմարեցնել</translation>
 <translation id="7188508872042490670">Կայքերի տվյալները սարքում</translation>
 <translation id="7201549776650881587">Կջնջվեն բոլոր տվյալներն ու քուքիները, որոնք հիմնական էկրանին են պահվել <ph name="ORIGIN" /> կայքերի խմբի կամ դրա հավելվածի կողմից</translation>
 <translation id="7203150201908454328">Ընդլայնված</translation>
@@ -395,6 +403,7 @@
 <translation id="7667547420449112975">Օզի կախարդը</translation>
 <translation id="7684642910516280563">Արգելեք կայքին օգտագործել երրորդ կողմի քուքիներ</translation>
 <translation id="7719367874908701697">Էջի մասշտաբավորում</translation>
+<translation id="7770832849480336015">Թաքցնել «<ph name="TITLE_OF_MODULE" />» մոդուլը</translation>
 <translation id="7781829728241885113">Երեկ</translation>
 <translation id="7791543448312431591">Ավելացնել</translation>
 <translation id="780301667611848630">Ոչ</translation>

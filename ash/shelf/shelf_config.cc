@@ -6,7 +6,7 @@
 
 #include <optional>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/ash_features.h"
@@ -73,7 +73,7 @@ class ShelfConfig::ShelfAccessibilityObserver : public AccessibilityObserver {
  private:
   base::RepeatingClosure accessibility_state_changed_callback_;
 
-  base::ScopedObservation<AccessibilityControllerImpl, AccessibilityObserver>
+  base::ScopedObservation<AccessibilityController, AccessibilityObserver>
       observation_{this};
 };
 
@@ -116,6 +116,7 @@ ShelfConfig::ShelfConfig()
       shelf_shortcut_icon_border_size_(3),
       shelf_shortcut_host_badge_icon_size_(14),
       shelf_shortcut_host_badge_border_size_(2),
+      shelf_shortcut_teardrop_corner_radius_(8),
       shelf_button_size_(56),
       shelf_button_size_median_(52),
       shelf_button_size_dense_(48),
@@ -314,6 +315,10 @@ int ShelfConfig::GetShelfShortcutHostBadgeIconSize() const {
 
 int ShelfConfig::GetShelfShortcutHostBadgeBorderSize() const {
   return shelf_shortcut_host_badge_border_size_;
+}
+
+int ShelfConfig::GetShelfShortcutTeardropCornerRadiusSize() const {
+  return shelf_shortcut_teardrop_corner_radius_;
 }
 
 int ShelfConfig::GetHotseatSize(HotseatDensity density) const {

@@ -285,9 +285,8 @@ void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
   // referrer sanitizing and origin referrers. Note that this could potentially
   // be inaccurate if the opener has since navigated.
   content::RenderFrameHost* opener = web_contents()->GetOpener();
-  const GURL& opener_url = !has_navigated_ && opener
-                               ? opener->GetLastCommittedURL()
-                               : GURL::EmptyGURL();
+  const GURL& opener_url =
+      !has_navigated_ && opener ? opener->GetLastCommittedURL() : GURL();
   const GURL& currently_committed_url =
       primary_page_ ? primary_page_->url() : opener_url;
 
@@ -423,8 +422,11 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
     const content::GlobalRequestID& request_id,
     const blink::mojom::ResourceLoadInfo& resource_load_info) {
-  if (!resource_load_info.final_url.SchemeIsHTTPOrHTTPS())
+  // Ignore non-HTTP schemes (e.g. chrome://) for non-webUI surfaces.
+  if (!resource_load_info.final_url.SchemeIsHTTPOrHTTPS() &&
+      !embedder_interface_->IsNonTabWebUI()) {
     return;
+  }
 
   PageLoadTracker* tracker = GetTrackerOrNullForRequest(
       request_id, render_frame_host, resource_load_info.request_destination,
@@ -1064,7 +1066,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
     mojom::InputTimingPtr input_timing_delta,
-    const absl::optional<blink::SubresourceLoadMetrics>&
+    const std::optional<blink::SubresourceLoadMetrics>&
         subresource_load_metrics,
     mojom::SoftNavigationMetricsPtr soft_navigation_metrics) {
   // Replacing this call by GetPageLoadTracker breaks some tests.
@@ -1109,7 +1111,8 @@ bool MetricsWebContentsObserver::DoesTimingUpdateHaveError(
     return true;
   }
 
-  if (!tracker->GetUrl().SchemeIsHTTPOrHTTPS()) {
+  if (!tracker->GetUrl().SchemeIsHTTPOrHTTPS() &&
+      !embedder_interface_->IsNonTabWebUI()) {
     RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
     return true;
   }
@@ -1125,7 +1128,7 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
     mojom::InputTimingPtr input_timing_delta,
-    const absl::optional<blink::SubresourceLoadMetrics>&
+    const std::optional<blink::SubresourceLoadMetrics>&
         subresource_load_metrics,
     mojom::SoftNavigationMetricsPtr soft_navigation_metrics) {
   content::RenderFrameHost* render_frame_host =
@@ -1162,9 +1165,11 @@ bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(
   CHECK(navigation_handle->IsInMainFrame());
   CHECK(!navigation_handle->HasCommitted() ||
         !navigation_handle->IsSameDocument());
-  // Ignore non-HTTP schemes (e.g. chrome://).
-  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
+  // Ignore non-HTTP schemes (e.g. chrome://) for non-webUI surfaces.
+  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS() &&
+      !embedder_interface_->IsNonTabWebUI()) {
     return false;
+  }
 
   // Ignore NTP loads.
   if (embedder_interface_->IsNewTabPageUrl(navigation_handle->GetURL()))

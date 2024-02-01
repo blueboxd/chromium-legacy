@@ -70,9 +70,12 @@ class GPU_EXPORT ClientSharedImage
     raw_ptr<gfx::GpuMemoryBuffer> buffer_;
   };
 
-  explicit ClientSharedImage(const Mailbox& mailbox);
+  explicit ClientSharedImage(
+      const Mailbox& mailbox,
+      scoped_refptr<SharedImageInterfaceHolder> sii_holder);
   ClientSharedImage(const Mailbox& mailbox,
-                    GpuMemoryBufferHandleInfo handle_info);
+                    GpuMemoryBufferHandleInfo handle_info,
+                    scoped_refptr<SharedImageInterfaceHolder> sii_holder);
 
   const Mailbox& mailbox() { return mailbox_; }
 
@@ -83,6 +86,14 @@ class GPU_EXPORT ClientSharedImage
     CHECK(gpu_memory_buffer_);
     return gpu_memory_buffer_->CloneHandle();
   }
+
+#if BUILDFLAG(IS_APPLE)
+  // Sets the color space in which the native buffer backing this SharedImage
+  // should be interpreted when used as an overlay. Note that this will not
+  // impact texturing from the buffer. Used only for SharedImages backed by a
+  // client-accessible IOSurface.
+  void SetColorSpaceOnNativeBuffer(const gfx::ColorSpace& color_space);
+#endif
 
   base::trace_event::MemoryAllocatorDumpGuid GetGUIDForTracing() {
     return gpu::GetSharedImageGUIDForTracing(mailbox_);
@@ -95,7 +106,17 @@ class GPU_EXPORT ClientSharedImage
 
   static scoped_refptr<ClientSharedImage> CreateForTesting() {
     return base::MakeRefCounted<ClientSharedImage>(
-        Mailbox::GenerateForSharedImage());
+        Mailbox::GenerateForSharedImage(), nullptr);
+  }
+
+  static scoped_refptr<ClientSharedImage> CreateForTesting(
+      const Mailbox& mailbox,
+      std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
+      scoped_refptr<SharedImageInterfaceHolder> sii_holder) {
+    auto client_si =
+        base::MakeRefCounted<ClientSharedImage>(mailbox, sii_holder);
+    client_si->gpu_memory_buffer_ = std::move(gpu_memory_buffer);
+    return client_si;
   }
 
  private:
@@ -104,6 +125,7 @@ class GPU_EXPORT ClientSharedImage
 
   const Mailbox mailbox_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
+  scoped_refptr<SharedImageInterfaceHolder> sii_holder_;
 };
 
 }  // namespace gpu

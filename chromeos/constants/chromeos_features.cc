@@ -29,6 +29,11 @@ BASE_FEATURE(kBluetoothPhoneFilter,
              "BluetoothPhoneFilter",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables show captive portal signin in a specially flagged popup window.
+BASE_FEATURE(kCaptivePortalPopupWindow,
+             "CaptivePortalPopupWindow",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables updated UI for the clipboard history menu and new system behavior
 // related to clipboard history.
 BASE_FEATURE(kClipboardHistoryRefresh,
@@ -52,6 +57,11 @@ BASE_FEATURE(kBlinkExtensionDiagnostics,
              "BlinkExtensionDiagnostics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables ChromeOS Kiosk APIs.
+BASE_FEATURE(kBlinkExtensionKiosk,
+             "BlinkExtensionKiosk",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables handling of key press event in background.
 BASE_FEATURE(kCrosAppsBackgroundEventHandling,
              "CrosAppsBackgroundEventHandling",
@@ -67,6 +77,12 @@ BASE_FEATURE(kCrosComponents,
 // shortcut backed by the web app system on Chrome OS.
 BASE_FEATURE(kCrosShortstand,
              "CrosShortstand",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the more detailed, OS-level dialog for web app installs from the
+// omnibox.
+BASE_FEATURE(kCrosOmniboxInstallDialog,
+             "CrosOmniboxInstallDialog",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the more detailed, OS-level dialog for web app installs.
@@ -88,6 +104,11 @@ BASE_FEATURE(kCrosWebAppShortcutUiUpdate,
 // Enables denying file access to dlp protected files in MyFiles.
 BASE_FEATURE(kDataControlsFileAccessDefaultDeny,
              "DataControlsFileAccessDefaultDeny",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables data migration.
+BASE_FEATURE(kDataMigration,
+             "DataMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the desk profiles feature.
@@ -136,6 +157,11 @@ BASE_FEATURE(kJelly, "Jelly", base::FEATURE_ENABLED_BY_DEFAULT);
 // controls all system UI updates and new system components. go/jelly-flags
 BASE_FEATURE(kJellyroll, "Jellyroll", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Makes Kiosk close all tabs instead of closing the window.
+BASE_FEATURE(kKioskCloseAllTabs,
+             "KioskCloseAllTabs",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables Kiosk Heartbeats to be sent via Encrypted Reporting Pipeline
 BASE_FEATURE(kKioskHeartbeatsViaERP,
@@ -143,11 +169,25 @@ BASE_FEATURE(kKioskHeartbeatsViaERP,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Controls enabling / disabling the mahi feature.
+BASE_FEATURE(kMahi, "Mahi", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls enabling / disabling the orca feature.
 BASE_FEATURE(kOrca, "Orca", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls enabling / disabling the orca feature for dogfood population.
 BASE_FEATURE(kOrcaDogfood, "OrcaDogfood", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls enabling / disabling the orca feature from the feature management
+// module.
+BASE_FEATURE(kFeatureManagementOrca,
+             "FeatureManagementOrca",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Whether to disable chrome compose.
+BASE_FEATURE(kFeatureManagementDisableChromeCompose,
+             "FeatureManagementDisableChromeCompose",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether to enable quick answers V2 settings sub-toggles.
 BASE_FEATURE(kQuickAnswersV2SettingsSubToggle,
@@ -168,16 +208,21 @@ BASE_FEATURE(kUploadOfficeToCloud,
 // Office files support.
 BASE_FEATURE(kUploadOfficeToCloudForEnterprise,
              "UploadOfficeToCloudForEnterprise",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Microsoft OneDrive integration workflow for enterprise users to
 // cloud integration support.
 BASE_FEATURE(kMicrosoftOneDriveIntegrationForEnterprise,
              "MicrosoftOneDriveIntegrationForEnterprise",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRoundedWindows,
              "RoundedWindows",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables a content cache for FileSystemProvider extensions.
+BASE_FEATURE(kFileSystemProviderContentCache,
+             "FileSystemProviderContentCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 const char kRoundedWindowsRadius[] = "window_radius";
@@ -191,6 +236,10 @@ bool IsAppInstallServiceUriEnabled() {
 #else
   return base::FeatureList::IsEnabled(kAppInstallServiceUri);
 #endif
+}
+
+bool IsCaptivePortalPopupWindowEnabled() {
+  return base::FeatureList::IsEnabled(kCaptivePortalPopupWindow);
 }
 
 bool IsClipboardHistoryRefreshEnabled() {
@@ -232,6 +281,9 @@ bool IsCrosShortstandEnabled() {
 }
 
 bool IsCrosWebAppShortcutUiUpdateEnabled() {
+  if (IsCrosShortstandEnabled()) {
+    return true;
+  }
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return chromeos::BrowserParamsProxy::Get()
       ->IsCrosWebAppShortcutUiUpdateEnabled();
@@ -244,6 +296,10 @@ bool IsDataControlsFileAccessDefaultDenyEnabled() {
   return base::FeatureList::IsEnabled(kDataControlsFileAccessDefaultDeny);
 }
 
+bool IsDataMigrationEnabled() {
+  return base::FeatureList::IsEnabled(kDataMigration);
+}
+
 bool IsDeskProfilesEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return chromeos::BrowserParamsProxy::Get()->IsDeskProfilesEnabled();
@@ -254,6 +310,10 @@ bool IsDeskProfilesEnabled() {
 
 bool IsEssentialSearchEnabled() {
   return base::FeatureList::IsEnabled(kEssentialSearch);
+}
+
+bool IsFileSystemProviderContentCacheEnabled() {
+  return base::FeatureList::IsEnabled(kFileSystemProviderContentCache);
 }
 
 bool IsIWAForTelemetryExtensionAPIEnabled() {
@@ -270,11 +330,24 @@ bool IsJellyrollEnabled() {
   return IsJellyEnabled() && base::FeatureList::IsEnabled(kJellyroll);
 }
 
-// TODO:b/312592767 - Remove this function in favor of the equivalent ash
-// function.
+bool IsMahiEnabled() {
+  return base::FeatureList::IsEnabled(kMahi);
+}
+
 bool IsOrcaEnabled() {
-  return base::FeatureList::IsEnabled(kOrca) ||
-         base::FeatureList::IsEnabled(kOrcaDogfood);
+  return base::FeatureList::IsEnabled(chromeos::features::kOrcaDogfood) ||
+         (base::FeatureList::IsEnabled(chromeos::features::kOrca) &&
+          base::FeatureList::IsEnabled(kFeatureManagementOrca));
+}
+
+bool ShouldDisableChromeComposeOnChromeOS() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()
+      ->ShouldDisableChromeComposeOnChromeOS();
+#else
+  return base::FeatureList::IsEnabled(kFeatureManagementDisableChromeCompose) ||
+         IsOrcaEnabled();
+#endif
 }
 
 bool IsQuickAnswersV2TranslationDisabled() {
@@ -308,8 +381,9 @@ bool IsUploadOfficeToCloudForEnterpriseEnabled() {
 }
 
 bool IsMicrosoftOneDriveIntegrationForEnterpriseEnabled() {
-  return base::FeatureList::IsEnabled(
-      kMicrosoftOneDriveIntegrationForEnterprise);
+  return IsUploadOfficeToCloudEnabled() &&
+         base::FeatureList::IsEnabled(
+             kMicrosoftOneDriveIntegrationForEnterprise);
 }
 
 bool IsRoundedWindowsEnabled() {

@@ -37,24 +37,18 @@ std::unique_ptr<KeyedService> BuildOptimizationGuideService(
   base::FilePath profile_path = original_browser_state->GetStatePath();
 
   base::WeakPtr<optimization_guide::OptimizationGuideStore> hint_store;
-  base::WeakPtr<optimization_guide::OptimizationGuideStore>
-      prediction_model_and_features_store;
   if (chrome_browser_state->IsOffTheRecord()) {
     OptimizationGuideService* original_ogs =
         OptimizationGuideServiceFactory::GetForBrowserState(
             original_browser_state);
     DCHECK(original_ogs);
     hint_store = original_ogs->GetHintsManager()->hint_store();
-    if (optimization_guide::features::IsOptimizationTargetPredictionEnabled()) {
-      prediction_model_and_features_store =
-          original_ogs->GetPredictionManager()->model_and_features_store();
-    }
   }
 
   return std::make_unique<OptimizationGuideService>(
       proto_db_provider, profile_path, chrome_browser_state->IsOffTheRecord(),
       GetApplicationContext()->GetApplicationLocale(), hint_store,
-      prediction_model_and_features_store, chrome_browser_state->GetPrefs(),
+      chrome_browser_state->GetPrefs(),
       BrowserListFactory::GetForBrowserState(chrome_browser_state),
       chrome_browser_state->GetSharedURLLoaderFactory(),
       base::BindOnce(
@@ -89,14 +83,12 @@ OptimizationGuideServiceFactory::GetInstance() {
 
 // static
 void OptimizationGuideServiceFactory::InitializePredictionModelStore() {
-  if (optimization_guide::features::IsInstallWideModelStoreEnabled()) {
-    base::FilePath model_downloads_dir;
-    base::PathService::Get(ios::DIR_USER_DATA, &model_downloads_dir);
-    model_downloads_dir = model_downloads_dir.Append(
-        optimization_guide::kOptimizationGuideModelStoreDirPrefix);
-    optimization_guide::PredictionModelStore::GetInstance()->Initialize(
-        GetApplicationContext()->GetLocalState(), model_downloads_dir);
-  }
+  base::FilePath model_downloads_dir;
+  base::PathService::Get(ios::DIR_USER_DATA, &model_downloads_dir);
+  model_downloads_dir = model_downloads_dir.Append(
+      optimization_guide::kOptimizationGuideModelStoreDirPrefix);
+  optimization_guide::PredictionModelStore::GetInstance()->Initialize(
+      GetApplicationContext()->GetLocalState(), model_downloads_dir);
 }
 
 OptimizationGuideServiceFactory::OptimizationGuideServiceFactory()

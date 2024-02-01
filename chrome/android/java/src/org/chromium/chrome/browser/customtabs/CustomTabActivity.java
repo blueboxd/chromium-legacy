@@ -31,9 +31,11 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.IntentUtils;
+import org.chromium.base.cached_flags.AllCachedFieldTrialParameters;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BackupSigninProcessor;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
@@ -43,9 +45,10 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTab
 import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.flags.AllCachedFieldTrialParameters;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fonts.FontPreloader;
+import org.chromium.chrome.browser.history.HistoryManagerUtils;
+import org.chromium.chrome.browser.history.HistoryTabHelper;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
@@ -56,6 +59,7 @@ import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.components.page_info.PageInfoController.OpenedFromSource;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.util.ColorUtils;
 
 /** The activity for custom tabs. It will be launched on top of a client's task. */
@@ -66,9 +70,12 @@ public class CustomTabActivity extends BaseCustomTabActivity {
 
     /** Contains all the parameters of the EXPERIMENTS_FOR_AGSA feature. */
     public static final AllCachedFieldTrialParameters EXPERIMENTS_FOR_AGSA_PARAMS =
-            new AllCachedFieldTrialParameters(ChromeFeatureList.EXPERIMENTS_FOR_AGSA);
+            ChromeFeatureList.newAllCachedFieldTrialParameters(
+                    ChromeFeatureList.EXPERIMENTS_FOR_AGSA);
 
-    private boolean mPreventTouchFeatureEnabled;
+    /** Prevents Tapjacking on T-. See crbug.com/1430867 */
+    private static final boolean sPreventTouches =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU;
 
     private CustomTabsOpenTimeRecorder mOpenTimeRecorder;
 
@@ -86,11 +93,13 @@ public class CustomTabActivity extends BaseCustomTabActivity {
                 @Override
                 public void onInitialTabCreated(@NonNull Tab tab, int mode) {
                     resetPostMessageHandlersForCurrentSession();
+                    maybeCreateHistoryTabHelper(tab);
                 }
 
                 @Override
                 public void onTabSwapped(@NonNull Tab tab) {
                     resetPostMessageHandlersForCurrentSession();
+                    maybeCreateHistoryTabHelper(tab);
                 }
 
                 @Override
@@ -98,6 +107,11 @@ public class CustomTabActivity extends BaseCustomTabActivity {
                     resetPostMessageHandlersForCurrentSession();
                 }
             };
+
+    private void maybeCreateHistoryTabHelper(Tab tab) {
+        String appId = mIntentDataProvider.getClientPackageName();
+        if (appId != null) HistoryTabHelper.from(tab).setAppId(appId, tab.getWebContents());
+    }
 
     @Override
     protected BaseCustomTabActivityComponent createComponent(
@@ -191,15 +205,7 @@ public class CustomTabActivity extends BaseCustomTabActivity {
                             && urlPackage.equals(
                                     mConnection.getClientPackageNameForSession(mSession));
                 });
-        initPreventTouchFeatureFlag();
         super.finishNativeInitialization();
-    }
-
-    @VisibleForTesting(otherwise = PRIVATE)
-    void initPreventTouchFeatureFlag() {
-        mPreventTouchFeatureEnabled =
-                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
-                        && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PREVENT_TOUCHES);
     }
 
     @Override
@@ -287,13 +293,21 @@ public class CustomTabActivity extends BaseCustomTabActivity {
             assert pageInsights != null;
             pageInsights.launch();
             return true;
+        } else if (id == R.id.open_history_menu_id) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.APP_SPECIFIC_HISTORY)) {
+                HistoryManagerUtils.showHistoryManagerForResult(
+                        this,
+                        getTabModelSelector().isIncognitoSelected(),
+                        getIntentDataProvider().getClientPackageName());
+            }
+            return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (mPreventTouchFeatureEnabled && shouldPreventTouch(ev)) {
+        if (sPreventTouches && shouldPreventTouch(ev)) {
             // Discard the events which may be trickling down from an overlay activity above.
             return true;
         }
@@ -383,6 +397,11 @@ public class CustomTabActivity extends BaseCustomTabActivity {
         return new CustomTabLaunchCauseMetrics(this);
     }
 
+    @Override
+    protected boolean supportsTabModalDialogs() {
+        return ChromeFeatureList.sCctTabModalDialog.isEnabled();
+    }
+
     public NightModeStateProvider getNightModeStateProviderForTesting() {
         return super.getNightModeStateProvider();
     }
@@ -391,5 +410,19 @@ public class CustomTabActivity extends BaseCustomTabActivity {
     protected void setDefaultTaskDescription() {
         // mIntentDataProvider is not ready when the super calls this method. So, we skip setting
         // the task description here, and do it in #performPostInflationStartup();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.APP_SPECIFIC_HISTORY)
+                && requestCode == HistoryManagerUtils.HISTORY_REQUEST_CODE
+                && resultCode == RESULT_OK) {
+            LoadUrlParams params =
+                    new LoadUrlParams(
+                            data.getData().toString(),
+                            IntentHandler.getTransitionTypeFromIntent(data, PageTransition.LINK));
+            mTabProvider.getTab().loadUrl(params);
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 }

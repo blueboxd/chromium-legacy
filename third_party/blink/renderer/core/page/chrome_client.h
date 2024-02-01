@@ -140,6 +140,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void SetWindowRect(const gfx::Rect&, LocalFrame&) = 0;
 
+  virtual void Minimize(LocalFrame&) = 0;
+  virtual void Maximize(LocalFrame&) = 0;
+  virtual void Restore(LocalFrame&) = 0;
   virtual void SetResizable(bool resizable, LocalFrame&) = 0;
 
   // For non-composited WebViews that exist to contribute to a "parent" WebView
@@ -173,6 +176,10 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void TakeFocus(mojom::blink::FocusType) = 0;
 
   virtual void SetKeyboardFocusURL(Element*) {}
+
+  // Returns true if the page should support drag regions via the app-region
+  // CSS property.
+  virtual bool SupportsAppRegion() = 0;
 
   // Allow document lifecycle updates to be run in order to produce composited
   // outputs. Updates are blocked from occurring during loading navigation in
@@ -498,6 +505,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
       HTMLElement*,
       WebFormRelatedChangeType) {}
   virtual void DidChangeValueInTextField(HTMLFormControlElement&) {}
+  virtual void DidUserChangeContentEditableContent(Element&) {}
   virtual void DidEndEditingOnTextField(HTMLInputElement&) {}
   virtual void HandleKeyboardEventOnTextField(HTMLInputElement&,
                                               KeyboardEvent&) {}

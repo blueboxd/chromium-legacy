@@ -296,12 +296,12 @@ class VIEWS_EXPORT TreeView : public View,
   };
 
   // Used by GetInternalNodeForModelNode.
-  enum GetInternalNodeCreateType {
+  enum class CreateType {
     // If an InternalNode hasn't been created yet, create it.
-    CREATE_IF_NOT_LOADED,
+    kCreateIfNotLoaded,
 
     // Don't create an InternalNode if one hasn't been created yet.
-    DONT_CREATE_IF_NOT_LOADED,
+    kDontCreateIfNotLoaded,
   };
 
   // Used by IncrementSelection.
@@ -383,9 +383,8 @@ class VIEWS_EXPORT TreeView : public View,
 
   // Returns the InternalNode for a model node. |create_type| indicates whether
   // this should load InternalNode or not.
-  InternalNode* GetInternalNodeForModelNode(
-      ui::TreeModelNode* model_node,
-      GetInternalNodeCreateType create_type);
+  InternalNode* GetInternalNodeForModelNode(ui::TreeModelNode* model_node,
+                                            CreateType create_type);
 
   // Returns the InternalNode for a virtual view.
   InternalNode* GetInternalNodeForVirtualView(AXVirtualView* ax_view);
@@ -495,7 +494,7 @@ class VIEWS_EXPORT TreeView : public View,
   bool editable_ = true;
 
   // The controller.
-  raw_ptr<TreeViewController, DanglingUntriaged> controller_ = nullptr;
+  raw_ptr<TreeViewController> controller_ = nullptr;
 
   // Whether or not the root is shown in the tree.
   bool root_shown_ = true;

@@ -41,6 +41,7 @@
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/scheduler/task_attribution_id.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_spell_check_panel_host_client.h"
@@ -96,6 +97,9 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   WebViewImpl* GetWebView() const override { return nullptr; }
   void ChromeDestroyed() override {}
   void SetWindowRect(const gfx::Rect&, LocalFrame&) override {}
+  void Minimize(LocalFrame&) override {}
+  void Maximize(LocalFrame&) override {}
+  void Restore(LocalFrame&) override {}
   void SetResizable(bool resizable, LocalFrame&) override {}
   gfx::Rect RootWindowRect(LocalFrame&) override { return gfx::Rect(); }
   void DidAccessInitialMainDocument() override {}
@@ -103,6 +107,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void DidFocusPage() override {}
   bool CanTakeFocus(mojom::blink::FocusType) override { return false; }
   void TakeFocus(mojom::blink::FocusType) override {}
+  bool SupportsAppRegion() override { return false; }
   void Show(LocalFrame& frame,
             LocalFrame& opener_frame,
             NavigationPolicy navigation_policy,
@@ -271,7 +276,7 @@ class EmptyWebWorkerFetchContext : public WebWorkerFetchContext {
   }
   void WillSendRequest(WebURLRequest&) override {}
   WebVector<std::unique_ptr<URLLoaderThrottle>> CreateThrottles(
-      const WebURLRequest&) override {
+      const network::ResourceRequest&) override {
     return {};
   }
   blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()

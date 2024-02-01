@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -224,7 +225,7 @@ void SyncTest::SetUp() {
     if (cl->HasSwitch(switches::kSyncUserForTest)) {
       username_ = cl->GetSwitchValueASCII(switches::kSyncUserForTest);
     } else if (server_type_ != EXTERNAL_LIVE_SERVER) {
-      username_ = "user@gmail.com";
+      username_ = kDefaultUserEmail;
     }
     // Decide on password to use.
     password_ = cl->HasSwitch(switches::kSyncPasswordForTest)
@@ -398,8 +399,8 @@ Profile* SyncTest::GetProfile(int index) const {
   return profile;
 }
 
-std::vector<Profile*> SyncTest::GetAllProfiles() {
-  std::vector<Profile*> profiles;
+std::vector<raw_ptr<Profile, VectorExperimental>> SyncTest::GetAllProfiles() {
+  std::vector<raw_ptr<Profile, VectorExperimental>> profiles;
   if (UseVerifier()) {
     profiles.push_back(verifier());
   }
@@ -472,8 +473,9 @@ syncer::UserSelectableTypeSet SyncTest::GetRegisteredSelectableTypes(
       ->GetRegisteredSelectableTypes();
 }
 
-std::vector<SyncServiceImpl*> SyncTest::GetSyncServices() {
-  std::vector<SyncServiceImpl*> services;
+std::vector<raw_ptr<SyncServiceImpl, VectorExperimental>>
+SyncTest::GetSyncServices() {
+  std::vector<raw_ptr<SyncServiceImpl, VectorExperimental>> services;
   for (int i = 0; i < num_clients(); ++i) {
     services.push_back(GetSyncService(i));
   }
@@ -731,7 +733,6 @@ bool SyncTest::SetupSync(SetupSyncMode setup_mode) {
   if (setup_mode != NO_WAITING && TestUsesSelfNotifications()) {
     if (!AwaitQuiescence()) {
       LOG(FATAL) << "AwaitQuiescence() failed.";
-      return false;
     }
   }
 
@@ -1120,7 +1121,7 @@ void SyncTest::ExcludeDataTypesFromCheckForDataTypeFailures(
 }
 
 syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
-  static_assert(47 == syncer::GetNumModelTypes(),
+  static_assert(49 == syncer::GetNumModelTypes(),
                 "Add new types below if they can run in transport mode");
   // Only some types will run by default in transport mode (i.e. without their
   // own separate opt-in).
@@ -1157,6 +1158,11 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
           syncer::kReadingListEnableSyncTransportModeUponSignIn)) {
     allowed_types.Put(syncer::READING_LIST);
   }
+  if (base::FeatureList::IsEnabled(
+          syncer::kSyncSharedTabGroupDataInTransportMode)) {
+    allowed_types.Put(syncer::SHARED_TAB_GROUP_DATA);
+  }
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Lacros, Apps-related types may run in transport mode.
   allowed_types.PutAll({syncer::APPS, syncer::APP_SETTINGS, syncer::WEB_APPS});

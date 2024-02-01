@@ -11,6 +11,8 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_shares_localized_strings_provider.h"
@@ -60,14 +62,27 @@ const std::vector<SearchConcept>& GetDefaultSearchConcepts(
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetFilesOfficeSearchConcepts() {
+const std::vector<SearchConcept>& GetFilesMicrosoft365SearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags(
-      {{IDS_OS_SETTINGS_TAG_FILES_OFFICE,
+      {{IDS_OS_SETTINGS_TAG_FILES_MICROSOFT_365,
         mojom::kOfficeFilesSubpagePath,
         mojom::SearchResultIcon::kFolder,
         mojom::SearchResultDefaultRank::kMedium,
         mojom::SearchResultType::kSubpage,
-        {.subpage = mojom::Subpage::kOfficeFiles}}});
+        {.subpage = mojom::Subpage::kOfficeFiles},
+        {IDS_OS_SETTINGS_TAG_FILES_MICROSOFT_365_ALT1,
+         SearchConcept::kAltTagEnd}}});
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetFilesOneDriveSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags(
+      {{IDS_OS_SETTINGS_TAG_FILES_ONEDRIVE,
+        mojom::kOneDriveSubpagePath,
+        mojom::SearchResultIcon::kOneDrive,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSubpage,
+        {.subpage = mojom::Subpage::kOneDrive}}});
   return *tags;
 }
 
@@ -104,20 +119,6 @@ const std::vector<SearchConcept>& GetFilesGoogleDriveSubpageSearchConcepts() {
   return *tags;
 }
 
-// If the Google Drive subpage is not enabled, returns search terms to navigate
-// to the existing Disconnect Google Drive setting.
-const std::vector<SearchConcept>&
-GetFilesGoogleDriveDisconnectSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags(
-      {{IDS_OS_SETTINGS_TAG_FILES_DISCONNECT_GOOGLE_DRIVE,
-        mojom::kFilesSectionPath,
-        mojom::SearchResultIcon::kGoogleDrive,
-        mojom::SearchResultDefaultRank::kMedium,
-        mojom::SearchResultType::kSetting,
-        {.setting = mojom::Setting::kGoogleDriveConnection}}});
-  return *tags;
-}
-
 }  // namespace
 
 FilesSection::FilesSection(Profile* profile,
@@ -127,20 +128,15 @@ FilesSection::FilesSection(Profile* profile,
   updater.AddSearchTags(
       GetDefaultSearchConcepts(GetSection(), GetSectionPath()));
   if (chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
-    updater.AddSearchTags(GetFilesOfficeSearchConcepts());
+    updater.AddSearchTags(GetFilesMicrosoft365SearchConcepts());
+    updater.AddSearchTags(GetFilesOneDriveSearchConcepts());
   }
 
   if (drive::util::IsDriveFsBulkPinningAvailable(profile)) {
     updater.AddSearchTags(GetFilesGoogleDriveFileSyncSearchConcepts());
   }
 
-  if (base::FeatureList::IsEnabled(
-          ash::features::kFilesGoogleDriveSettingsPage) ||
-      drive::util::IsDriveFsBulkPinningAvailable(profile)) {
-    updater.AddSearchTags(GetFilesGoogleDriveSubpageSearchConcepts());
-  } else {
-    updater.AddSearchTags(GetFilesGoogleDriveDisconnectSearchConcepts());
-  }
+  updater.AddSearchTags(GetFilesGoogleDriveSubpageSearchConcepts());
 }
 
 FilesSection::~FilesSection() = default;
@@ -269,6 +265,12 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       GetHelpUrlWithBoard(chrome::kGoogleDriveOfflineLearnMoreURL));
 
   html_source->AddBoolean(
+      "showOneDriveSettings",
+      ash::cloud_upload::
+          IsMicrosoftOfficeOneDriveIntegrationAllowedAndOdfsInstalled(
+              profile()));
+
+  html_source->AddBoolean(
       "showOfficeSettings",
       chromeos::cloud_upload::IsMicrosoftOfficeCloudUploadAllowed(profile()));
 
@@ -293,10 +295,6 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "enableDriveFsBulkPinning",
       drive::util::IsDriveFsBulkPinningAvailable(profile()));
-
-  html_source->AddBoolean("showGoogleDriveSettingsPage",
-                          base::FeatureList::IsEnabled(
-                              ash::features::kFilesGoogleDriveSettingsPage));
 }
 
 void FilesSection::AddHandlers(content::WebUI* web_ui) {
@@ -356,8 +354,8 @@ void FilesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // One Drive
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_ONE_DRIVE_LABEL, mojom::Subpage::kOneDrive,
-      mojom::SearchResultIcon::kFolder, mojom::SearchResultDefaultRank::kMedium,
-      mojom::kOneDriveSubpagePath);
+      mojom::SearchResultIcon::kOneDrive,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kOneDriveSubpagePath);
 }
 
 }  // namespace ash::settings

@@ -284,13 +284,21 @@ void DataTransfer::setEffectAllowed(const AtomicString& effect) {
 }
 
 void DataTransfer::clearData(const String& type) {
-  if (!CanWriteData())
+  if (!CanWriteData()) {
     return;
-
-  if (type.IsNull())
-    data_object_->ClearAll();
-  else
+  }
+  if (type.IsNull()) {
+    if (RuntimeEnabledFeatures::DataTransferClearStringItemsEnabled()) {
+      // As per spec
+      // https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransfer-cleardata,
+      // `clearData()` doesn't remove `kFileKind` objects from `item_list_`.
+      data_object_->ClearStringItems();
+    } else {
+      data_object_->ClearAll();
+    }
+  } else {
     data_object_->ClearData(NormalizeType(type));
+  }
 }
 
 String DataTransfer::getData(const String& type) const {
@@ -413,7 +421,7 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
 
   // Rasterize upfront, since DragImage::create() is going to do it anyway
   // (SkImage::asLegacyBitmap).
-  SkSurfaceProps surface_props(0, kUnknown_SkPixelGeometry);
+  SkSurfaceProps surface_props;
   sk_sp<SkSurface> surface = SkSurfaces::Raster(
       SkImageInfo::MakeN32Premul(device_size.width(), device_size.height()),
       &surface_props);

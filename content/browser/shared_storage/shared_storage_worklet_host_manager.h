@@ -19,7 +19,7 @@
 
 namespace content {
 
-struct FencedFrameConfig;
+class FencedFrameConfig;
 class SharedStorageDocumentServiceImpl;
 class SharedStorageWorkletHost;
 
@@ -64,7 +64,7 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
     virtual void OnUrnUuidGenerated(const GURL& urn_uuid) = 0;
 
     virtual void OnConfigPopulated(
-        const absl::optional<FencedFrameConfig>& config) = 0;
+        const std::optional<FencedFrameConfig>& config) = 0;
   };
 
   void OnDocumentServiceDestroyed(
@@ -108,7 +108,7 @@ class CONTENT_EXPORT SharedStorageWorkletHostManager {
 
   void NotifyUrnUuidGenerated(const GURL& urn_uuid);
 
-  void NotifyConfigPopulated(const absl::optional<FencedFrameConfig>& config);
+  void NotifyConfigPopulated(const std::optional<FencedFrameConfig>& config);
 
  protected:
   void OnWorkletKeepAliveFinished(SharedStorageWorkletHost*);

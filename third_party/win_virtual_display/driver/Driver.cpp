@@ -272,6 +272,7 @@ void IndirectDeviceContext::SyncRequestedConfig() {
     bool success = edid.GetTimingEntry(0)->SetMode(
         config.width(), config.height(), config.v_sync());
     edid.SetProductCode(config.product_code());
+    edid.SetSerialNumber(config.product_code());
     if (!success) {
       TraceEvents(TRACE_LEVEL_ERROR, TRACE_DRIVER, "SetMode() unsuccessful");
     }
@@ -309,7 +310,10 @@ void IndirectDeviceContext::SyncRequestedConfig() {
                        return m.id == monitor->monitor_config().id;
                      }) == requested_monitors.end()) {
       TraceEvents(TRACE_LEVEL_ERROR, TRACE_DRIVER,
-                  "Monitor removed from config. Detaching.");
+                  "Monitor removed from config. Detaching. %u. %ix%i",
+                  monitor->monitor_config().id,
+                  monitor->monitor_config().pConfigList[0].width(),
+                  monitor->monitor_config().pConfigList[0].height());
       Status = monitor->Detach();
       if (!NT_SUCCESS(Status)) {
         TraceEvents(TRACE_LEVEL_ERROR, TRACE_DRIVER,
@@ -568,16 +572,13 @@ EvtIddCxMonitorQueryModes(IDDCX_MONITOR MonitorObject,
 
   TraceEvents(TRACE_LEVEL_ERROR, TRACE_DRIVER, "MonitorQueryModes");
 
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(3840, 2160, 60));
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(2560, 1440, 144));
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(2560, 1440, 90));
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(2560, 1440, 60));
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(1920, 1080, 144));
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(1920, 1080, 90));
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(1920, 1080, 60));
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(1600, 900, 60));
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(1024, 768, 75));
-  TargetModes.push_back(display::test::CreateIddCxTargetMode(1024, 768, 60));
+  auto* pMonitorContextWrapper =
+      WdfObjectGet_IndirectMonitorContextWrapper(MonitorObject);
+  for (auto mode :
+       pMonitorContextWrapper->pContext->monitor_config().pConfigList) {
+    TargetModes.push_back(display::test::CreateIddCxTargetMode(
+        mode.width(), mode.height(), mode.v_sync()));
+  }
 
   pOutArgs->TargetModeBufferOutputCount = static_cast<UINT>(TargetModes.size());
 

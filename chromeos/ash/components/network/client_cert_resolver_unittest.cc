@@ -7,6 +7,7 @@
 #include <pk11pub.h>
 
 #include <memory>
+#include <string_view>
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
@@ -76,13 +77,12 @@ void OnListCertsDone(base::OnceClosure loop_quit_closure,
 std::unique_ptr<chromeos::onc::OncParsedCertificates>
 OncParsedCertificatesForPkcs12File(
     const base::FilePath& client_cert_pkcs12_file,
-    base::StringPiece guid) {
+    std::string_view guid) {
   std::string pkcs12_raw;
   if (!base::ReadFileToString(client_cert_pkcs12_file, &pkcs12_raw))
     return nullptr;
 
-  std::string pkcs12_base64_encoded;
-  base::Base64Encode(pkcs12_raw, &pkcs12_base64_encoded);
+  std::string pkcs12_base64_encoded = base::Base64Encode(pkcs12_raw);
 
   auto onc_certificates =
       base::Value::List().Append(base::Value::Dict()
@@ -376,7 +376,7 @@ class ClientCertResolverTest : public testing::Test,
   }
 
   void SetManagedNetworkPolicy(::onc::ONCSource onc_source,
-                               base::StringPiece policy_json) {
+                               std::string_view policy_json) {
     auto parsed_json = base::JSONReader::ReadAndReturnValueWithError(
         policy_json,
         base::JSON_ALLOW_TRAILING_COMMAS | base::JSON_ALLOW_CONTROL_CHARS);
@@ -487,8 +487,7 @@ class ClientCertResolverTest : public testing::Test,
   std::string test_cert_id_;
   std::unique_ptr<base::SimpleTestClock> test_clock_;
   std::unique_ptr<ClientCertResolver> client_cert_resolver_;
-  raw_ptr<NetworkCertLoader, DanglingUntriaged | ExperimentalAsh>
-      network_cert_loader_ = nullptr;
+  raw_ptr<NetworkCertLoader, DanglingUntriaged> network_cert_loader_ = nullptr;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_system_nsscertdb_;
 
@@ -500,12 +499,10 @@ class ClientCertResolverTest : public testing::Test,
   }
 
  protected:
-  raw_ptr<ShillServiceClient::TestInterface,
-          DanglingUntriaged | ExperimentalAsh>
-      service_test_ = nullptr;
-  raw_ptr<ShillProfileClient::TestInterface,
-          DanglingUntriaged | ExperimentalAsh>
-      profile_test_ = nullptr;
+  raw_ptr<ShillServiceClient::TestInterface, DanglingUntriaged> service_test_ =
+      nullptr;
+  raw_ptr<ShillProfileClient::TestInterface, DanglingUntriaged> profile_test_ =
+      nullptr;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;

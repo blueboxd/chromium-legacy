@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/android/password_manager_android_util.h"
+#include "chrome/browser/password_manager/android/password_store_proxy_backend.h"
 #include "chrome/browser/password_manager/password_manager_buildflags.h"
 #include "components/password_manager/core/browser/password_store/login_database.h"
 #include "components/password_manager/core/browser/password_store/password_store.h"
@@ -21,7 +22,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/password_manager/android/password_manager_eviction_util.h"
-#include "chrome/browser/password_manager/android/password_store_android_backend.h"
+#include "chrome/browser/password_manager/android/password_store_android_account_backend.h"
 #include "chrome/browser/password_manager/android/password_store_backend_migration_decorator.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -66,7 +67,11 @@ CreateProfilePasswordStoreBackend(
         std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
             std::move(profile_login_db),
             syncer::WipeModelUponSyncDisabledBehavior::kNever),
-        std::make_unique<password_manager::PasswordStoreAndroidBackend>(
+        // Even though this is a backend for a ProfilePasswordStore it has to
+        // talk to the account. Before the store split, the ProfileStore only
+        // supports talking to the account storage in GMS Core. All local
+        // storage requests go to the built-in backend instead.
+        std::make_unique<password_manager::PasswordStoreAndroidAccountBackend>(
             prefs, affiliations_prefetcher),
         prefs, password_manager::IsAccountStore(false));
   }
@@ -87,24 +92,23 @@ CreateAccountPasswordStoreBackend(
       password_manager::CreateLoginDatabaseForAccountStorage(
           login_db_directory));
 #if BUILDFLAG(IS_ANDROID)
-  // The min GMS Core version required by the account backend is larger than
-  // the one checked by `CanCreateBackend`. If an account backend is being
-  // created, it means that the version check already passed before, so no
-  // need to check `CanCreateBackend` here.
-  CHECK(password_manager::PasswordStoreAndroidBackendBridgeHelper::
-            CanCreateBackend());
-  CHECK(password_manager_android_util::UsesSplitStoresAndUPMForLocal(prefs));
+  if (!password_manager::PasswordStoreAndroidBackendBridgeHelper::
+          CanCreateBackend()) {
+    // Can happen if the downstream code is not available.
+    return std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
+        std::move(login_db),
+        syncer::WipeModelUponSyncDisabledBehavior::kAlways);
+  }
 
   // Note: The built-in backend is backed by the login database and Chrome
   // syncs it. As such, it expects local data to be cleared every time when
   // sync is permanently disabled and thus uses
   // WipeModelUponSyncDisabledBehavior::kAlways.
-  return std::make_unique<
-      password_manager::PasswordStoreBackendMigrationDecorator>(
+  return std::make_unique<password_manager::PasswordStoreProxyBackend>(
       std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
           std::move(login_db),
           syncer::WipeModelUponSyncDisabledBehavior::kAlways),
-      std::make_unique<password_manager::PasswordStoreAndroidBackend>(
+      std::make_unique<password_manager::PasswordStoreAndroidAccountBackend>(
           prefs, affiliations_prefetcher),
       prefs, password_manager::IsAccountStore(true));
 #else

@@ -47,9 +47,16 @@ class OctreeColorQuantizer {
   // closest colors for each pixel in the given `rgb_video_frame` from the
   // quantized color palette extracted by calling `ExtractColorPalette()` above.
   // This means `ExtractColorPalette()` must be called once before calling this
-  // for every received video frame (provided that the same color palette is
+  // for every received video frame (provided that the same `color_palette` is
   // still desired to be reused).
-  void ExtractPixelColorIndices(const RgbVideoFrame& rgb_video_frame,
+  // This also implements the Floyd-Steinberg dithering, meaning that the
+  // resulting color indices in `out_pixel_color_indices` will be of a
+  // quantized and dithered image of the given `rgb_video_frame` using the given
+  // `color_palette`. The given `rgb_video_frame` will be modified in the
+  // process of dithering to diffuse the color errors in each pixel over the
+  // colors of neighboring pixels (See implementation for details).
+  void ExtractPixelColorIndices(RgbVideoFrame& rgb_video_frame,
+                                const ColorTable& color_palette,
                                 ColorIndices& out_pixel_color_indices) const;
 
  private:
@@ -92,8 +99,11 @@ class OctreeColorQuantizer {
 
     // Pointers to the next and previous nodes in a linked list tracking all the
     // leaf nodes. The linked list starts at `leaf_nodes_head_` below.
-    raw_ptr<Node> next_ = nullptr;
-    raw_ptr<Node> prev_ = nullptr;
+    // These pointers are safe to dangle as we never access them during the
+    // destruction of the tree. The only time we explicitly remove a node in
+    // `Reduce()` we call `RemoveLeafNode()` beforehand.
+    raw_ptr<Node, DisableDanglingPtrDetection> next_ = nullptr;
+    raw_ptr<Node, DisableDanglingPtrDetection> prev_ = nullptr;
 
     // The sub nodes of this node. A maximum of 8 child nodes can be populated.
     // A child node is added at index that is calculated from the RGB color
@@ -171,7 +181,9 @@ class OctreeColorQuantizer {
   // Note that leaf nodes are the ones that contain the color information.
   // This list will be used to build a color palette after it has been reduced
   // to `kMaxNumberOfColorsInPalette` in `Reduce()`.
-  raw_ptr<Node> leaf_nodes_head_;
+  // This is also safe to dangle as we never access it during the destruction of
+  // the tree.
+  raw_ptr<Node, DisableDanglingPtrDetection> leaf_nodes_head_;
 
   // The total number of leaf nodes (i.e. the total number of colors in the this
   // tree).

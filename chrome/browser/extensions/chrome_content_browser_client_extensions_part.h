@@ -39,6 +39,8 @@ using BinderRegistry = BinderRegistryWithArgs<>;
 
 namespace extensions {
 
+BASE_DECLARE_FEATURE(kStopUsingRenderProcessHostPrivilege);
+
 // Implements the extensions portion of ChromeContentBrowserClient.
 class ChromeContentBrowserClientExtensionsPart
     : public ChromeContentBrowserClientParts {
@@ -127,8 +129,8 @@ class ChromeContentBrowserClientExtensionsPart
                            IsolatedOriginsAndHostedAppWebExtents);
 
   // ChromeContentBrowserClientParts:
-  void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
-  void SiteInstanceGotProcess(content::SiteInstance* site_instance) override;
+  void SiteInstanceGotProcessAndSite(
+      content::SiteInstance* site_instance) override;
   void OverrideWebkitPrefs(content::WebContents* web_contents,
                            blink::web_pref::WebPreferences* web_prefs) override;
   bool OverrideWebPreferencesAfterNavigation(

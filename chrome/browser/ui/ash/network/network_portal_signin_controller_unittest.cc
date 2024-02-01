@@ -63,7 +63,7 @@ class TestSigninController : public NetworkPortalSigninController {
   const std::string& tab_url() const { return tab_url_; }
 
  private:
-  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_ = nullptr;
+  raw_ptr<Profile, DanglingUntriaged> profile_ = nullptr;
   std::string dialog_url_;
   std::string tab_url_;
 };
@@ -108,6 +108,7 @@ class NetworkPortalSigninControllerTest : public testing::Test {
     user_manager_->Destroy();
     user_manager_.reset();
     test_profile_manager_.DeleteAllTestingProfiles();
+    controller_.reset();
     network_helper_.reset();
   }
 
@@ -177,6 +178,17 @@ class NetworkPortalSigninControllerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetNetworkProxyAuthRequired() {
+    GetPrefs()->SetBoolean(::proxy_config::prefs::kUseSharedProxies, true);
+    proxy_config::SetProxyConfigForNetwork(
+        ProxyConfigDictionary(ProxyConfigDictionary::CreateAutoDetect()),
+        GetDefaultNetwork());
+    base::RunLoop().RunUntilIdle();
+    NetworkHandler::Get()->network_state_handler()->SetNetworkChromePortalState(
+        GetDefaultNetwork().path(),
+        NetworkState::PortalState::kProxyAuthRequired);
+  }
+
   void ShowSignin(
       NetworkPortalSigninController::SigninSource source =
           NetworkPortalSigninController::SigninSource::kNotification) {
@@ -208,6 +220,16 @@ TEST_F(NetworkPortalSigninControllerTest, KioskMode) {
   EXPECT_EQ(controller_->tab_url(), expected_url);
   ASSERT_TRUE(controller_->profile());
   EXPECT_TRUE(controller_->profile()->IsOffTheRecord());
+}
+
+TEST_F(NetworkPortalSigninControllerTest, ProxyAuthRequired) {
+  SimulateLogin();
+  std::string expected_url = SetProbeUrl(kTestPortalUrl);
+  SetNetworkProxyAuthRequired();
+  ShowSignin();
+  EXPECT_EQ(controller_->tab_url(), expected_url);
+  ASSERT_TRUE(controller_->profile());
+  EXPECT_FALSE(controller_->profile()->IsOffTheRecord());
 }
 
 TEST_F(NetworkPortalSigninControllerTest, AuthenticationIgnoresProxyTrue) {
@@ -354,6 +376,32 @@ TEST_F(NetworkPortalSigninControllerTest, Metrics) {
   histogram_tester.ExpectUniqueSample(
       "Network.NetworkPortalSigninSource",
       NetworkPortalSigninController::SigninSource::kSettings, 1);
+  histogram_tester.ExpectTotalCount("Network.NetworkPortalSigninTime", 0);
+
+  // Set WiFi to online
+  std::string wifi_path = GetDefaultNetwork().path();
+  network_helper_->SetServiceProperty(wifi_path, shill::kStateProperty,
+                                      base::Value(shill::kStateOnline));
+  histogram_tester.ExpectTotalCount("Network.NetworkPortalSigninTime", 1);
+  // Entry should not be in the 0 bucket.
+  histogram_tester.ExpectTimeBucketCount("Network.NetworkPortalSigninTime",
+                                         base::TimeDelta(), 0);
+
+  // Set WiFi to idle, no additional SigninTime metric should occur.
+  network_helper_->SetServiceProperty(wifi_path, shill::kStateProperty,
+                                      base::Value(shill::kStateIdle));
+  histogram_tester.ExpectTotalCount("Network.NetworkPortalSigninTime", 1);
+
+  // Set WiFi to portal, show the signin page, than set it to idle.
+  // An entry in the 0 bucket should occur.
+  network_helper_->SetServiceProperty(wifi_path, shill::kStateProperty,
+                                      base::Value(shill::kStateRedirectFound));
+  ShowSignin(NetworkPortalSigninController::SigninSource::kSettings);
+  network_helper_->SetServiceProperty(wifi_path, shill::kStateProperty,
+                                      base::Value(shill::kStateIdle));
+  histogram_tester.ExpectTotalCount("Network.NetworkPortalSigninTime", 2);
+  histogram_tester.ExpectTimeBucketCount("Network.NetworkPortalSigninTime",
+                                         base::TimeDelta(), 1);
 }
 
 }  // namespace ash

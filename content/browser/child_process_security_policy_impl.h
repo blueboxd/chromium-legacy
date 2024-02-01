@@ -50,7 +50,6 @@ class BrowserContext;
 class IsolationContext;
 class ProcessLock;
 class ResourceContext;
-class SiteInstance;
 struct UrlInfo;
 
 class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
@@ -187,7 +186,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       BrowserContext* browser_context = nullptr) override;
   bool IsGloballyIsolatedOriginForTesting(const url::Origin& origin) override;
   std::vector<url::Origin> GetIsolatedOrigins(
-      absl::optional<IsolatedOriginSource> source = absl::nullopt,
+      std::optional<IsolatedOriginSource> source = std::nullopt,
       BrowserContext* browser_context = nullptr) override;
   bool IsIsolatedSiteFromSource(const url::Origin& origin,
                                 IsolatedOriginSource source) override;
@@ -679,8 +678,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     // applies.  |browser_context_| may be used on the UI thread, and
     // |resource_context_| may be used on the IO thread.  If these are null,
     // then the isolated origin applies globally to all profiles.
-    raw_ptr<BrowserContext, DanglingUntriaged> browser_context_;
-    raw_ptr<ResourceContext, AcrossTasksDanglingUntriaged> resource_context_;
+    raw_ptr<BrowserContext> browser_context_;
+    raw_ptr<ResourceContext> resource_context_;
 
     // True if origins at this or lower level should be treated as distinct
     // isolated origins, effectively isolating all domains below a given domain,

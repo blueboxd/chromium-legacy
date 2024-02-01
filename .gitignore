@@ -123,11 +123,12 @@ vs-chromium-project.txt
 /chrome/browser/performance_monitor/performance_monitor.xml
 /chrome/browser/protector/internal
 /chrome/browser/resources/chromeos/mako/resources/
+/chrome/browser/resources/chromeos/seal/resources/
 /chrome/browser/resources/pdf/html_office
 /chrome/browser/resources/media_router/extension/src/
 /chrome/browser/resources/preinstalled_web_apps/internal/
 /chrome/browser/resources/media_router_internal/
-/chrome/browser/resources/settings_internal/
+/chrome/browser/resources/settings/internal/
 /chrome/browser/resources/software_rendering_list
 # Asset files downloaded by gclient runhooks.
 /chrome/browser/resources/vr/assets/google_chrome/*.png
@@ -135,7 +136,6 @@ vs-chromium-project.txt
 /chrome/browser/sharing/internal
 /chrome/browser/ui/media_router/internal
 /chrome/browser_tests_run.xml
-/chrome/chrome_cleaner/internal
 /chrome/chrome_run.xml
 /chrome/chrome_user32_delay_imports.xml
 /chrome/chrome_version_resources.xml

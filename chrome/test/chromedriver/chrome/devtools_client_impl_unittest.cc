@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <list>
 #include <memory>
+#include <optional>
 #include <queue>
 #include <string>
 #include <utility>
@@ -17,6 +18,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -27,7 +29,6 @@
 #include "chrome/test/chromedriver/net/timeout.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace {
@@ -36,6 +37,7 @@ using testing::Eq;
 using testing::Pointee;
 
 const char kTestMapperScript[] = "Lorem ipsum dolor sit amet";
+const base::Value::Dict empty_mapper_options;
 
 testing::AssertionResult StatusOk(const Status& status) {
   if (status.IsOk()) {
@@ -50,7 +52,7 @@ bool ParseCommand(const base::Value::Dict& command,
                   std::string* method,
                   base::Value::Dict* params,
                   std::string* session_id) {
-  absl::optional<int> maybe_id = command.FindInt("id");
+  std::optional<int> maybe_id = command.FindInt("id");
   EXPECT_TRUE(maybe_id);
   if (!maybe_id)
     return false;
@@ -85,7 +87,7 @@ bool ParseMessage(const std::string& message,
                   std::string* method,
                   base::Value::Dict* params,
                   std::string* session_id) {
-  absl::optional<base::Value> value = base::JSONReader::Read(message);
+  std::optional<base::Value> value = base::JSONReader::Read(message);
   EXPECT_TRUE(value);
   EXPECT_TRUE(value && value->is_dict());
   if (!value || !value->is_dict()) {
@@ -308,7 +310,7 @@ class MultiSessionMockSyncWebSocket : public SyncWebSocket {
                                   std::string session_id,
                                   base::Value::Dict* response) {
     base::Value::Dict result;
-    absl::optional<int> ping = params.FindInt("ping");
+    std::optional<int> ping = params.FindInt("ping");
     if (ping) {
       result.Set("pong", *ping);
     } else {
@@ -1009,7 +1011,7 @@ TEST_F(DevToolsClientImplTest, SendCommandEventBeforeResponse) {
   base::Value::Dict params;
   base::Value::Dict result;
   ASSERT_TRUE(client.SendCommandAndGetResult("method", params, &result).IsOk());
-  absl::optional<int> key = result.FindInt("key");
+  std::optional<int> key = result.FindInt("key");
   ASSERT_TRUE(key);
   ASSERT_EQ(2, key.value());
 }
@@ -1538,7 +1540,7 @@ TEST_F(DevToolsClientImplTest, NestedCommandsWithOutOfOrderResults) {
   params.Set("param", 1);
   base::Value::Dict result;
   ASSERT_TRUE(client.SendCommandAndGetResult("method", params, &result).IsOk());
-  absl::optional<int> key = result.FindInt("key");
+  std::optional<int> key = result.FindInt("key");
   ASSERT_TRUE(key);
   ASSERT_EQ(2, key.value());
 }
@@ -2006,7 +2008,7 @@ class PingingListener : public DevToolsEventListener {
     if (!status.IsOk()) {
       return status;
     }
-    absl::optional<int> pong = result.FindInt("pong");
+    std::optional<int> pong = result.FindInt("pong");
     EXPECT_TRUE(pong);
     if (pong) {
       pong_ = *pong;
@@ -2170,7 +2172,7 @@ class BidiMockSyncWebSocket : public MultiSessionMockSyncWebSocket {
                                    const std::string* channel,
                                    base::Value::Dict* response) {
     base::Value::Dict result;
-    absl::optional<int> ping = params.FindInt("ping");
+    std::optional<int> ping = params.FindInt("ping");
     if (ping) {
       result.Set("pong", *ping);
     } else {
@@ -2204,7 +2206,7 @@ class BidiMockSyncWebSocket : public MultiSessionMockSyncWebSocket {
                                            const std::string* channel,
                                            base::Value::Dict* response) {
     base::Value::Dict result;
-    absl::optional<int> ping = cdp_params.FindInt("ping");
+    std::optional<int> ping = cdp_params.FindInt("ping");
     if (ping) {
       result.Set("pong", *ping);
     } else {
@@ -2356,13 +2358,13 @@ class BidiMockSyncWebSocket : public MultiSessionMockSyncWebSocket {
     size_t count = expression->size() - expected_exression_start.size() - 1;
     std::string bidi_arg_str =
         expression->substr(expected_exression_start.size(), count);
-    absl::optional<base::Value> bidi_arg = base::JSONReader::Read(bidi_arg_str);
+    std::optional<base::Value> bidi_arg = base::JSONReader::Read(bidi_arg_str);
     EXPECT_TRUE(bidi_arg->is_string()) << bidi_arg_str;
     if (!bidi_arg->is_string()) {
       return false;
     }
     const std::string& bidi_expr_msg = bidi_arg->GetString();
-    absl::optional<base::Value> bidi_expr =
+    std::optional<base::Value> bidi_expr =
         base::JSONReader::Read(bidi_expr_msg);
 
     EXPECT_TRUE(bidi_expr) << bidi_expr_msg;
@@ -2373,7 +2375,7 @@ class BidiMockSyncWebSocket : public MultiSessionMockSyncWebSocket {
 
     const base::Value::Dict& bidi_dict = bidi_expr->GetDict();
 
-    absl::optional<int> bidi_cmd_id = bidi_dict.FindInt("id");
+    std::optional<int> bidi_cmd_id = bidi_dict.FindInt("id");
     const std::string* bidi_method = bidi_dict.FindString("method");
     const base::Value::Dict* bidi_params = bidi_dict.FindDict("params");
     const std::string* bidi_channel = bidi_dict.FindString("channel");
@@ -2425,7 +2427,7 @@ class MultiSessionMockSyncWebSocket3 : public BidiMockSyncWebSocket {
                                    const std::string* channel,
                                    base::Value::Dict* response) override {
     base::Value::Dict result;
-    absl::optional<int> ping = cdp_params.FindInt("wrapped-ping");
+    std::optional<int> ping = cdp_params.FindInt("wrapped-ping");
     EXPECT_TRUE(ping);
     if (!ping) {
       return Status{kUnknownError, "wrapped-ping is missing"};
@@ -2853,6 +2855,7 @@ struct BidiMapperState {
   bool mapper_is_initiated = false;
   bool mapper_instance_is_running = false;
   bool subscribed_to_cdp = false;
+  bool mapper_is_started_with_options = false;
 };
 class BidiServerMockSyncWebSocket : public BidiMockSyncWebSocket {
  public:
@@ -2890,8 +2893,17 @@ class BidiServerMockSyncWebSocket : public BidiMockSyncWebSocket {
         if (mapper_state_->fail_on_mapper_init) {
           return false;
         }
-      } else if (*expression == "window.runMapperInstance(\"mapper_client\")") {
+      } else if (*expression ==
+                 "window.runMapperInstance(\"mapper_client\", {})") {
         mapper_state_->mapper_instance_is_running = true;
+        if (mapper_state_->fail_on_mapper_run_instnace) {
+          return false;
+        }
+      } else if (base::MatchPattern(
+                     *expression,
+                     "window\\.runMapperInstance(\"mapper_client\", {?*})")) {
+        mapper_state_->mapper_instance_is_running = true;
+        mapper_state_->mapper_is_started_with_options = true;
         if (mapper_state_->fail_on_mapper_run_instnace) {
           return false;
         }
@@ -2938,12 +2950,14 @@ TEST_F(DevToolsClientImplTest, StartBidiServer) {
   mapper_client.SetMainPage(true);
   ASSERT_TRUE(StatusOk(mapper_client.AttachTo(&root_client)));
 
-  EXPECT_TRUE(StatusOk(mapper_client.StartBidiServer(kTestMapperScript)));
+  EXPECT_TRUE(StatusOk(
+      mapper_client.StartBidiServer(kTestMapperScript, empty_mapper_options)));
   EXPECT_TRUE(mapper_state.devtools_exposed);
   EXPECT_TRUE(mapper_state.mapper_is_initiated);
   EXPECT_TRUE(mapper_state.mapper_instance_is_running);
   EXPECT_TRUE(mapper_state.send_bidi_response_binding_added);
   EXPECT_TRUE(mapper_state.subscribed_to_cdp);
+  EXPECT_FALSE(mapper_state.mapper_is_started_with_options);
 }
 
 TEST_F(DevToolsClientImplTest, StartBidiServerNotConnected) {
@@ -2955,7 +2969,9 @@ TEST_F(DevToolsClientImplTest, StartBidiServerNotConnected) {
   mapper_client.SetMainPage(true);
   ASSERT_TRUE(mapper_client.AttachTo(&root_client).IsError());
 
-  EXPECT_TRUE(mapper_client.StartBidiServer(kTestMapperScript).IsError());
+  EXPECT_TRUE(
+      mapper_client.StartBidiServer(kTestMapperScript, empty_mapper_options)
+          .IsError());
 }
 
 TEST_F(DevToolsClientImplTest, StartBidiServerNotAPageClient) {
@@ -2968,7 +2984,9 @@ TEST_F(DevToolsClientImplTest, StartBidiServerNotAPageClient) {
   mapper_client.EnableEventTunnelingForTesting();
   ASSERT_TRUE(StatusOk(mapper_client.AttachTo(&root_client)));
 
-  EXPECT_TRUE(mapper_client.StartBidiServer(kTestMapperScript).IsError());
+  EXPECT_TRUE(
+      mapper_client.StartBidiServer(kTestMapperScript, empty_mapper_options)
+          .IsError());
 }
 
 TEST_F(DevToolsClientImplTest, StartBidiServerTunnelIsAlreadySet) {
@@ -2985,7 +3003,9 @@ TEST_F(DevToolsClientImplTest, StartBidiServerTunnelIsAlreadySet) {
   ASSERT_TRUE(StatusOk(mapper_client.AttachTo(&root_client)));
   mapper_client.SetTunnelSessionId(pink_client.SessionId());
 
-  EXPECT_TRUE(mapper_client.StartBidiServer(kTestMapperScript).IsError());
+  EXPECT_TRUE(
+      mapper_client.StartBidiServer(kTestMapperScript, empty_mapper_options)
+          .IsError());
 }
 
 TEST_F(DevToolsClientImplTest, StartBidiServerFailOnAddBidiResponseBinding) {
@@ -3000,7 +3020,9 @@ TEST_F(DevToolsClientImplTest, StartBidiServerFailOnAddBidiResponseBinding) {
   mapper_client.SetMainPage(true);
   ASSERT_TRUE(StatusOk(mapper_client.AttachTo(&root_client)));
 
-  EXPECT_TRUE(mapper_client.StartBidiServer(kTestMapperScript).IsError());
+  EXPECT_TRUE(
+      mapper_client.StartBidiServer(kTestMapperScript, empty_mapper_options)
+          .IsError());
 }
 
 TEST_F(DevToolsClientImplTest, StartBidiServerFailOnRunMapperInstnace) {
@@ -3015,7 +3037,9 @@ TEST_F(DevToolsClientImplTest, StartBidiServerFailOnRunMapperInstnace) {
   mapper_client.SetMainPage(true);
   ASSERT_TRUE(StatusOk(mapper_client.AttachTo(&root_client)));
 
-  EXPECT_TRUE(mapper_client.StartBidiServer(kTestMapperScript).IsError());
+  EXPECT_TRUE(
+      mapper_client.StartBidiServer(kTestMapperScript, empty_mapper_options)
+          .IsError());
 }
 
 TEST_F(DevToolsClientImplTest, StartBidiServerFailOnExposeDevTools) {
@@ -3030,7 +3054,9 @@ TEST_F(DevToolsClientImplTest, StartBidiServerFailOnExposeDevTools) {
   mapper_client.SetMainPage(true);
   ASSERT_TRUE(StatusOk(mapper_client.AttachTo(&root_client)));
 
-  EXPECT_TRUE(mapper_client.StartBidiServer(kTestMapperScript).IsError());
+  EXPECT_TRUE(
+      mapper_client.StartBidiServer(kTestMapperScript, empty_mapper_options)
+          .IsError());
 }
 
 TEST_F(DevToolsClientImplTest, StartBidiServerFailOnMapperInit) {
@@ -3045,7 +3071,9 @@ TEST_F(DevToolsClientImplTest, StartBidiServerFailOnMapperInit) {
   mapper_client.SetMainPage(true);
   ASSERT_TRUE(StatusOk(mapper_client.AttachTo(&root_client)));
 
-  EXPECT_TRUE(mapper_client.StartBidiServer(kTestMapperScript).IsError());
+  EXPECT_TRUE(
+      mapper_client.StartBidiServer(kTestMapperScript, empty_mapper_options)
+          .IsError());
 }
 
 TEST_F(DevToolsClientImplTest, StartBidiServerFailOnSubscribeToCdp) {
@@ -3060,5 +3088,30 @@ TEST_F(DevToolsClientImplTest, StartBidiServerFailOnSubscribeToCdp) {
   mapper_client.SetMainPage(true);
   ASSERT_TRUE(StatusOk(mapper_client.AttachTo(&root_client)));
 
-  EXPECT_TRUE(mapper_client.StartBidiServer(kTestMapperScript).IsError());
+  EXPECT_TRUE(
+      mapper_client.StartBidiServer(kTestMapperScript, empty_mapper_options)
+          .IsError());
+}
+
+TEST_F(DevToolsClientImplTest, StartBidiServerWithOptions) {
+  BidiMapperState mapper_state;
+  SocketHolder<BidiServerMockSyncWebSocket> socket_holder{&mapper_state};
+  DevToolsClientImpl root_client("root", "root_session");
+  ASSERT_TRUE(socket_holder.ConnectSocket());
+  ASSERT_TRUE(StatusOk(root_client.SetSocket(socket_holder.Wrapper())));
+  DevToolsClientImpl mapper_client("mapper_client", "mapper_session");
+  mapper_client.EnableEventTunnelingForTesting();
+  mapper_client.SetMainPage(true);
+  ASSERT_TRUE(StatusOk(mapper_client.AttachTo(&root_client)));
+
+  base::Value::Dict mapper_options;
+  mapper_options.Set("divide_by_zero", true);
+  EXPECT_TRUE(StatusOk(
+      mapper_client.StartBidiServer(kTestMapperScript, mapper_options)));
+  EXPECT_TRUE(mapper_state.devtools_exposed);
+  EXPECT_TRUE(mapper_state.mapper_is_initiated);
+  EXPECT_TRUE(mapper_state.mapper_instance_is_running);
+  EXPECT_TRUE(mapper_state.send_bidi_response_binding_added);
+  EXPECT_TRUE(mapper_state.subscribed_to_cdp);
+  EXPECT_TRUE(mapper_state.mapper_is_started_with_options);
 }

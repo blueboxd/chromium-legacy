@@ -393,10 +393,8 @@ TEST_F(ConnectionTest, RequestWifiCredentials) {
 
   std::string shared_secret_str(kSecondarySharedSecret.begin(),
                                 kSecondarySharedSecret.end());
-  std::string shared_secret_base64;
-  base::Base64Encode(shared_secret_str, &shared_secret_base64);
   EXPECT_EQ(*wifi_request_payload.FindString("shared_secret"),
-            shared_secret_base64);
+            base::Base64Encode(shared_secret_str));
 
   const std::optional<mojom::WifiCredentials>& credentials = future.Get();
   ASSERT_TRUE(credentials.has_value());
@@ -618,9 +616,8 @@ TEST_F(ConnectionTest, NotifySourceOfUpdate_Success) {
 
   std::string shared_secret_str(kSecondarySharedSecret.begin(),
                                 kSecondarySharedSecret.end());
-  std::string shared_secret_base64;
-  base::Base64Encode(shared_secret_str, &shared_secret_base64);
-  EXPECT_EQ(*parsed_payload.FindString("shared_secret"), shared_secret_base64);
+  EXPECT_EQ(*parsed_payload.FindString("shared_secret"),
+            base::Base64Encode(shared_secret_str));
 
   EXPECT_TRUE(future.Get());
   TestMessageMetrics(
@@ -1001,10 +998,9 @@ TEST_F(ConnectionTest,
   EXPECT_FALSE(read_result.has_value());
 }
 
-TEST_F(ConnectionTest, CloseFromCompleteNotifiesPhoneWhenAuthenticated) {
+TEST_F(ConnectionTest, NotifyPhoneSetupComplete) {
   MarkConnectionAuthenticated();
-  connection_->Close(
-      TargetDeviceConnectionBroker::ConnectionClosedReason::kComplete);
+  authenticated_connection_->NotifyPhoneSetupComplete();
 
   std::vector<uint8_t> notify_source_data =
       fake_nearby_connection_->GetWrittenData();
@@ -1022,16 +1018,20 @@ TEST_F(ConnectionTest, CloseFromCompleteNotifiesPhoneWhenAuthenticated) {
       /*error_code=*/std::nullopt, /*response_expected=*/false);
 }
 
-TEST_F(ConnectionTest, CloseFromCompleteDoesNotNotifyPhoneWhenUnauthenticated) {
+TEST_F(ConnectionTest, NoResponseAfterClose) {
+  // Close the connection while waiting for a response and ensure the response
+  // callback is not invoked.
+
+  base::test::TestFuture<std::optional<std::vector<uint8_t>>> future;
+  SendBytesAndReadResponse(std::vector<uint8_t>(kTestBytes),
+                           future.GetCallback(), kResponseTimeout);
+  EXPECT_EQ(connection_->GetState(), Connection::State::kOpen);
+  EXPECT_FALSE(future.IsReady());
+
   connection_->Close(
       TargetDeviceConnectionBroker::ConnectionClosedReason::kComplete);
-
-  std::vector<uint8_t> notify_source_data =
-      fake_nearby_connection_->GetWrittenData();
-  QuickStartMessage::ReadResult read_result =
-      ash::quick_start::QuickStartMessage::ReadMessage(
-          notify_source_data, QuickStartMessageType::kBootstrapState);
-  EXPECT_FALSE(read_result.has_value());
+  EXPECT_EQ(connection_->GetState(), Connection::State::kClosed);
+  EXPECT_FALSE(future.IsReady());
 }
 
 }  // namespace ash::quick_start

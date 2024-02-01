@@ -15,11 +15,11 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
@@ -75,6 +75,7 @@ enum class Site {
   kHasSubApps,
   kSubApp1,
   kSubApp2,
+  kChromeUrl,
 };
 
 enum class InstallableSite {
@@ -93,6 +94,7 @@ enum class InstallableSite {
   kHasSubApps,
   kSubApp1,
   kSubApp2,
+  kChromeUrl,
 };
 
 enum class Title { kStandaloneOriginal, kStandaloneUpdated };
@@ -170,13 +172,9 @@ struct BrowserState {
   BrowserState(const BrowserState&);
   bool operator==(const BrowserState& other) const;
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #union
-  RAW_PTR_EXCLUSION Browser* browser;
+  raw_ptr<Browser, DanglingUntriaged> browser;
   base::flat_map<content::WebContents*, TabState> tabs;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #union
-  RAW_PTR_EXCLUSION content::WebContents* active_tab;
+  raw_ptr<content::WebContents, DanglingUntriaged> active_tab;
   // If this isn't an app browser, `app_id` is empty.
   webapps::AppId app_id;
   bool launch_icon_shown;
@@ -423,7 +421,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void AwaitManifestSystemIdle();
 
   webapps::AppId GetAppIdBySiteMode(Site site);
-  GURL GetUrlForSite(Site site);
+  GURL GetUrlForSite(Site site, const std::string& suffix = "");
   std::optional<AppState> GetAppBySiteMode(StateSnapshot* state_snapshot,
                                            Profile* profile,
                                            Site site);
@@ -494,7 +492,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   Browser* app_browser() { return app_browser_; }
   WebAppProvider* provider() { return WebAppProvider::GetForTest(profile()); }
   PageActionIconView* pwa_install_view();
-  PageActionIconView* intent_picker_view();
+  IntentChipButton* intent_chip_view();
 
   const net::EmbeddedTestServer& GetTestServerForSiteMode(Site site_mode) const;
 
@@ -551,6 +549,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   base::flat_set<Site> site_remember_deny_open_file_;
   base::AutoReset<std::optional<web_app::AppIdentityUpdate>>
       update_dialog_scope_;
+
+  base::ScopedClosureRunner valid_chrome_url_for_webapps_registration_;
 
   base::TimeTicks start_time_ = base::TimeTicks::Now();
 };

@@ -14,6 +14,12 @@
 
 namespace ui {
 
+bool IsPlatformWindowStateFullscreen(PlatformWindowState state) {
+  return state == PlatformWindowState::kFullScreen ||
+         state == PlatformWindowState::kPinnedFullscreen ||
+         state == PlatformWindowState::kTrustedPinnedFullscreen;
+}
+
 bool PlatformWindowDelegate::State::ProducesFrameOnUpdateFrom(
     const State& old) const {
   // Changing the bounds origin won't produce a new frame. Anything else will.
@@ -36,13 +42,15 @@ PlatformWindowDelegate::PlatformWindowDelegate() = default;
 
 PlatformWindowDelegate::~PlatformWindowDelegate() = default;
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
 void PlatformWindowDelegate::OnWindowTiledStateChanged(
     WindowTiledEdges new_tiled_edges) {}
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-void PlatformWindowDelegate::OnFullscreenModeChanged() {}
+void PlatformWindowDelegate::OnFullscreenTypeChanged(
+    PlatformFullscreenType old_type,
+    PlatformFullscreenType new_type) {}
 #endif
 
 absl::optional<gfx::Size> PlatformWindowDelegate::GetMinimumSizeForWindow() {
@@ -66,10 +74,6 @@ SkPath PlatformWindowDelegate::GetWindowMaskForWindowShapeInPixels() {
 }
 
 void PlatformWindowDelegate::OnSurfaceFrameLockingChanged(bool lock) {}
-
-absl::optional<MenuType> PlatformWindowDelegate::GetMenuType() {
-  return absl::nullopt;
-}
 
 void PlatformWindowDelegate::OnOcclusionStateChanged(
     PlatformWindowOcclusionState occlusion_state) {}

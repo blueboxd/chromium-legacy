@@ -12,6 +12,8 @@
 #include "chromeos/ash/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/ash/services/secure_channel/pending_connection_request_delegate.h"
 #include "chromeos/ash/services/secure_channel/public/cpp/shared/connection_priority.h"
+#include "chromeos/ash/services/secure_channel/public/mojom/secure_channel.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash::secure_channel {
 
@@ -46,6 +48,10 @@ class PendingConnectionRequest {
   // trying to connect after some number of failures.
   virtual void HandleConnectionFailure(FailureDetailType failure_detail) = 0;
 
+  virtual void HandleBleDiscoveryStateChange(
+      mojom::DiscoveryResult discovery_result,
+      absl::optional<mojom::DiscoveryErrorCode> potential_error_code) {}
+
   virtual const base::UnguessableToken& GetRequestId() const = 0;
 
  protected:
@@ -65,7 +71,7 @@ class PendingConnectionRequest {
   }
 
  private:
-  raw_ptr<PendingConnectionRequestDelegate, ExperimentalAsh> delegate_;
+  raw_ptr<PendingConnectionRequestDelegate> delegate_;
   ConnectionPriority connection_priority_;
 };
 

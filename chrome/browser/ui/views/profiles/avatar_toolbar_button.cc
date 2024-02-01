@@ -125,9 +125,9 @@ void AvatarToolbarButton::UpdateIcon() {
 }
 
 void AvatarToolbarButton::Layout() {
-  ToolbarButton::Layout();
+  LayoutSuperclass<ToolbarButton>(this);
 
-  // TODO(crbug.com/1094566): this is a hack to avoid mismatch between avatar
+  // TODO(crbug.com/1108671): this is a hack to avoid mismatch between avatar
   // bitmap scaling and DIP->canvas pixel scaling in fractional DIP scaling
   // modes (125%, 133%, etc.) that can cause the right-hand or bottom pixel row
   // of the avatar image to be sliced off at certain specific browser sizes and
@@ -137,11 +137,13 @@ void AvatarToolbarButton::Layout() {
   // after layout, so the rest of the layout is before. Since the profile image
   // uses transparency, visually this does not cause any change in cases where
   // the bug doesn't manifest.
-  image()->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
-  image()->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
-  gfx::Size image_size = image()->GetImage().size();
+  auto* image = views::AsViewClass<views::ImageView>(image_container_view());
+  CHECK(image);
+  image->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
+  image->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
+  gfx::Size image_size = image->GetImage().size();
   image_size.Enlarge(1, 1);
-  image()->SetSize(image_size);
+  image->SetSize(image_size);
 }
 
 void AvatarToolbarButton::UpdateText() {
@@ -352,51 +354,15 @@ void AvatarToolbarButton::ShowSignInText() {
 void AvatarToolbarButton::HideSignInText() {
   delegate_->HideSignInText();
 }
-
-void AvatarToolbarButton::DisabledStateHelper::Init(
-    bool previous_enable_state,
-    SkColor previous_disabled_text_color) {
-  CHECK(!init_);
-
-  previous_enable_state_ = previous_enable_state;
-  previous_disabled_text_color_ = previous_disabled_text_color;
-
-  init_ = true;
-}
-
-bool AvatarToolbarButton::DisabledStateHelper::GetPreviousEnableState() const {
-  CHECK(init_);
-  return previous_enable_state_;
-}
-
-SkColor AvatarToolbarButton::DisabledStateHelper::GetPreviousDisabledTextColor()
-    const {
-  CHECK(init_);
-  return previous_disabled_text_color_;
-}
-
-void AvatarToolbarButton::DisableActionButton() {
-  SkColor active_text_color = GetCurrentTextColor();
-
-  // Disable the button and remember the disabled text color/state.
-  bool previous_enable_state = GetEnabled();
-  SetEnabled(false);
-  disabled_state_helper_.Init(previous_enable_state, GetCurrentTextColor());
-
-  // Override the disable state color with the active text color.
-  SetTextColor(ButtonState::STATE_DISABLED, active_text_color);
-}
-
-void AvatarToolbarButton::ResetActionButton() {
-  SetEnabled(disabled_state_helper_.GetPreviousEnableState());
-  SetTextColor(ButtonState::STATE_DISABLED,
-               disabled_state_helper_.GetPreviousDisabledTextColor());
-
-  // Reset the helper instance.
-  disabled_state_helper_ = {};
-}
-
 #endif
+
+void AvatarToolbarButton::SetButtonActionDisabled(bool disabled) {
+  button_action_disabled_ = disabled;
+}
+
+bool AvatarToolbarButton::IsButtonActionDisabled() const {
+  return button_action_disabled_;
+}
 
 void AvatarToolbarButton::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
@@ -451,6 +417,7 @@ void AvatarToolbarButton::OnBlur() {
 
 void AvatarToolbarButton::OnThemeChanged() {
   ToolbarButton::OnThemeChanged();
+  delegate_->OnThemeChanged(GetColorProvider());
   UpdateText();
   if (features::IsChromeRefresh2023()) {
     UpdateInkdrop();
@@ -464,6 +431,10 @@ void AvatarToolbarButton::SetIPHMinDelayAfterCreationForTesting(
 }
 
 void AvatarToolbarButton::ButtonPressed() {
+  if (button_action_disabled_) {
+    return;
+  }
+
   browser_->window()->ShowAvatarBubbleFromAvatarButton(
       /*is_source_accelerator=*/false);
 }
@@ -592,5 +563,5 @@ int AvatarToolbarButton::GetIconSize() const {
                                          : kIconSizeForNonTouchUi;
 }
 
-BEGIN_METADATA(AvatarToolbarButton, ToolbarButton)
+BEGIN_METADATA(AvatarToolbarButton)
 END_METADATA

@@ -37,7 +37,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
     virtual void CryptoRequiredUserActionChanged() = 0;
     virtual void ReconfigureDataTypesDueToCrypto() = 0;
     virtual void PassphraseTypeChanged(PassphraseType passphrase_type) = 0;
-    virtual absl::optional<PassphraseType> GetPassphraseType() const = 0;
+    virtual std::optional<PassphraseType> GetPassphraseType() const = 0;
     virtual void SetEncryptionBootstrapToken(
         const std::string& bootstrap_token) = 0;
     virtual std::string GetEncryptionBootstrapToken() const = 0;
@@ -64,8 +64,8 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   bool IsEncryptEverythingEnabled() const;
   void SetEncryptionPassphrase(const std::string& passphrase);
   bool SetDecryptionPassphrase(const std::string& passphrase);
-  void SetDecryptionNigoriKey(std::unique_ptr<Nigori> nigori);
-  std::unique_ptr<Nigori> GetDecryptionNigoriKey() const;
+  void SetExplicitPassphraseDecryptionNigoriKey(std::unique_ptr<Nigori> nigori);
+  std::unique_ptr<Nigori> GetExplicitPassphraseDecryptionNigoriKey() const;
 
   // Returns whether it's already possible to determine whether trusted vault
   // key required (e.g. engine didn't start yet or silent fetch attempt is in
@@ -73,7 +73,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   bool IsTrustedVaultKeyRequiredStateKnown() const;
 
   // Returns the actual passphrase type being used for encryption.
-  absl::optional<PassphraseType> GetPassphraseType() const;
+  std::optional<PassphraseType> GetPassphraseType() const;
 
   // Used to provide the engine when it is initialized.
   void SetSyncEngine(const CoreAccountInfo& account_info, SyncEngine* engine);

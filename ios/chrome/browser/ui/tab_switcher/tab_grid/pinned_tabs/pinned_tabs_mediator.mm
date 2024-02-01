@@ -29,7 +29,7 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 
 using PinnedState = WebStateSearchCriteria::PinnedState;
 
@@ -162,8 +162,7 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
       const WebStateListChangeStatusOnly& selectionOnlyChange =
           change.As<WebStateListChangeStatusOnly>();
       if (status.pinned_state_change) {
-        [self changePinnedStateForWebState:selectionOnlyChange
-                                               .selected_web_state()
+        [self changePinnedStateForWebState:selectionOnlyChange.web_state()
                                    atIndex:status.index];
         break;
       }
@@ -286,86 +285,20 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
   [self.consumer replaceItemID:webState->GetUniqueIdentifier() withItem:item];
 }
 
-#pragma mark - TabCollectionCommands
-
-- (void)selectItemWithID:(web::WebStateID)itemID {
-  base::RecordAction(base::UserMetricsAction("MobileTabGridPinnedTabSelected"));
-
-  int index = GetWebStateIndex(self.webStateList,
-                               WebStateSearchCriteria{
-                                   .identifier = itemID,
-                                   .pinned_state = PinnedState::kPinned,
-                               });
-  WebStateList* itemWebStateList = self.webStateList;
-
-  if (index == WebStateList::kInvalidIndex) {
-    return;
-  }
-
-  web::WebState* selectedWebState = itemWebStateList->GetWebStateAt(index);
-
-  base::TimeDelta timeSinceLastActivation =
-      base::Time::Now() - selectedWebState->GetLastActiveTime();
-  base::UmaHistogramCustomTimes(
-      "IOS.TabGrid.TabSelected.TimeSinceLastActivation",
-      timeSinceLastActivation, base::Minutes(1), base::Days(24), 50);
-
-  if (index != itemWebStateList->active_index()) {
-    base::RecordAction(
-        base::UserMetricsAction("MobileTabGridMoveToExistingTab"));
-  }
-
-  itemWebStateList->ActivateWebStateAt(index);
-
-  LogPinnedTabsUsedForDefaultBrowserPromo();
-}
-
-- (void)closeItemWithID:(web::WebStateID)itemID {
-  int index = GetWebStateIndex(self.webStateList,
-                               WebStateSearchCriteria{
-                                   .identifier = itemID,
-                                   .pinned_state = PinnedState::kPinned,
-                               });
-  if (index == WebStateList::kInvalidIndex) {
-    return;
-  }
-
-  self.webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
-}
-
-- (void)setPinState:(BOOL)pinState forItemWithID:(web::WebStateID)itemID {
-  SetWebStatePinnedState(self.webStateList, itemID, pinState);
-}
-
-- (void)moveItemWithID:(web::WebStateID)itemID
-               toIndex:(NSUInteger)destinationIndex {
-  int sourceIndex = GetWebStateIndex(self.webStateList,
-                                     WebStateSearchCriteria{
-                                         .identifier = itemID,
-                                         .pinned_state = PinnedState::kPinned,
-                                     });
-  if (sourceIndex != WebStateList::kInvalidIndex) {
-    int destinationWebStateListIndex =
-        [self webStateListIndexFromItemIndex:destinationIndex];
-    self.webStateList->MoveWebStateAt(sourceIndex,
-                                      destinationWebStateListIndex);
-  }
-}
-
 #pragma mark - TabCollectionDragDropHandler
 
-- (UIDragItem*)dragItemForItemWithID:(web::WebStateID)itemID {
+- (UIDragItem*)dragItemForItem:(TabSwitcherItem*)item {
   web::WebState* webState =
       GetWebState(self.webStateList, WebStateSearchCriteria{
-                                         .identifier = itemID,
+                                         .identifier = item.identifier,
                                          .pinned_state = PinnedState::kPinned,
                                      });
 
   return CreateTabDragItem(webState);
 }
 
-- (void)dragWillBeginForItemWithID:(web::WebStateID)itemID {
-  _dragItemID = itemID;
+- (void)dragWillBeginForItem:(TabSwitcherItem*)item {
+  _dragItemID = item.identifier;
 }
 
 - (void)dragSessionDidEnd {
@@ -438,7 +371,17 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
     }
 
     // Reorder tabs.
-    [self moveItemWithID:tabInfo.tabID toIndex:destinationIndex];
+    int sourceIndex = GetWebStateIndex(self.webStateList,
+                                       WebStateSearchCriteria{
+                                           .identifier = tabInfo.tabID,
+                                           .pinned_state = PinnedState::kPinned,
+                                       });
+    if (sourceIndex != WebStateList::kInvalidIndex &&
+        destinationIndex != NSNotFound &&
+        static_cast<int>(destinationIndex) <
+            self.webStateList->pinned_tabs_count()) {
+      self.webStateList->MoveWebStateAt(sourceIndex, destinationIndex);
+    }
     return;
   }
   base::UmaHistogramEnumeration(kUmaPinnedViewDragOrigin,
@@ -545,23 +488,6 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
       base::checked_cast<int>(index), std::move(webState),
       (WebStateList::INSERT_PINNED | WebStateList::INSERT_ACTIVATE),
       WebStateOpener());
-}
-
-// Converts the collection view's item index to WebStateList index.
-// Returns `kInvalidIndex` if `index` is out of range.
-- (int)webStateListIndexFromItemIndex:(NSUInteger)index {
-  if (index == NSNotFound) {
-    return WebStateList::kInvalidIndex;
-  }
-
-  int webStateListIndex = index;
-  int webStateListLastIndex = self.webStateList->pinned_tabs_count() - 1;
-
-  if (webStateListIndex > webStateListLastIndex) {
-    return WebStateList::kInvalidIndex;
-  }
-
-  return webStateListIndex;
 }
 
 // Inserts/removes a pinned item to/from the collection.

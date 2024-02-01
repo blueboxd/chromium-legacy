@@ -17,6 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/chromeos/styles/cros_styles.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -86,13 +87,13 @@ TEST_F(AssistantZeroStateViewUnittest, OnboardingViewIsVisible_TabletMode) {
   SetTabletMode(true);
   ShowAssistantUi();
 
-  // The onboarding and greeting views are shown in a mutually exclusive way.
-  // An onboarding view should be shown instead of a greeting label.
+  // When Launcher Search IPH is enabled, both onboarding and greeting views are
+  // not visible in tablet mode.
   const views::View* onboarding_view =
       page_view()->GetViewByID(AssistantViewID::kOnboardingView);
   ASSERT_TRUE(onboarding_view);
-  EXPECT_TRUE(onboarding_view->GetVisible());
-  EXPECT_TRUE(onboarding_view->IsDrawn());
+  EXPECT_FALSE(onboarding_view->GetVisible());
+  EXPECT_FALSE(onboarding_view->IsDrawn());
 
   const views::View* greeting_label =
       page_view()->GetViewByID(AssistantViewID::kGreetingLabel);
@@ -109,8 +110,8 @@ TEST_F(AssistantZeroStateViewUnittest, OnboardingViewIsNotVisible_TabletMode) {
   SetTabletMode(true);
   ShowAssistantUi();
 
-  // The onboarding and greeting views are shown in a mutually exclusive way.
-  // A greeting label should be shown instead of an onboarding view.
+  // When Launcher Search IPH is enabled, both onboarding and greeting views are
+  // not visible in tablet mode.
   views::View* onboarding_view =
       page_view()->GetViewByID(AssistantViewID::kOnboardingView);
   ASSERT_TRUE(onboarding_view);
@@ -120,8 +121,8 @@ TEST_F(AssistantZeroStateViewUnittest, OnboardingViewIsNotVisible_TabletMode) {
   const views::View* greeting_label =
       page_view()->GetViewByID(AssistantViewID::kGreetingLabel);
   ASSERT_TRUE(greeting_label);
-  EXPECT_TRUE(greeting_label->GetVisible());
-  EXPECT_TRUE(greeting_label->IsDrawn());
+  EXPECT_FALSE(greeting_label->GetVisible());
+  EXPECT_FALSE(greeting_label->IsDrawn());
 }
 
 TEST_F(AssistantZeroStateViewUnittest, OnboardingViewIsVisible) {
@@ -168,9 +169,9 @@ TEST_F(AssistantZeroStateViewUnittest, OnboardingViewIsNotVisible) {
 }
 
 TEST_F(AssistantZeroStateViewUnittest, IphViewIsNotVisible) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndDisableFeature(
-      assistant::features::kEnableAssistantLearnMore);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      feature_engagement::kIPHLauncherSearchHelpUiFeature);
 
   ShowAssistantUi();
 
@@ -183,8 +184,8 @@ TEST_F(AssistantZeroStateViewUnittest, IphViewIsNotVisible) {
 }
 
 TEST_F(AssistantZeroStateViewUnittest, IphViewIsVisible) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      assistant::features::kEnableAssistantLearnMore);
+  base::test::ScopedFeatureList feature_list(
+      feature_engagement::kIPHLauncherSearchHelpUiFeature);
 
   ShowAssistantUi();
 
@@ -197,8 +198,8 @@ TEST_F(AssistantZeroStateViewUnittest, IphViewIsVisible) {
 }
 
 TEST_F(AssistantZeroStateViewUnittest, IphViewIsNotVisibleAfterResponse) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      assistant::features::kEnableAssistantLearnMore);
+  base::test::ScopedFeatureList feature_list(
+      feature_engagement::kIPHLauncherSearchHelpUiFeature);
 
   ShowAssistantUi();
 
@@ -217,7 +218,7 @@ TEST_F(AssistantZeroStateViewUnittest, IphViewIsNotVisibleAfterResponse) {
 TEST_F(AssistantZeroStateViewUnittest, IphViewIsNotVisible_TabletMode) {
   base::test::ScopedFeatureList feature_list_;
   feature_list_.InitAndDisableFeature(
-      assistant::features::kEnableAssistantLearnMore);
+      feature_engagement::kIPHLauncherSearchHelpUiFeature);
 
   SetNumberOfSessionsWhereOnboardingShown(
       assistant::ui::kOnboardingMaxSessionsShown);
@@ -239,8 +240,8 @@ TEST_F(AssistantZeroStateViewUnittest, IphViewIsNotVisible_TabletMode) {
 }
 
 TEST_F(AssistantZeroStateViewUnittest, IphViewIsVisible_TabletMode) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      assistant::features::kEnableAssistantLearnMore);
+  base::test::ScopedFeatureList feature_list(
+      feature_engagement::kIPHLauncherSearchHelpUiFeature);
 
   SetNumberOfSessionsWhereOnboardingShown(
       assistant::ui::kOnboardingMaxSessionsShown);
@@ -263,8 +264,8 @@ TEST_F(AssistantZeroStateViewUnittest, IphViewIsVisible_TabletMode) {
 
 TEST_F(AssistantZeroStateViewUnittest,
        IphViewIsNotVisibleAfterResponse_TabletMode) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      assistant::features::kEnableAssistantLearnMore);
+  base::test::ScopedFeatureList feature_list(
+      feature_engagement::kIPHLauncherSearchHelpUiFeature);
 
   SetNumberOfSessionsWhereOnboardingShown(
       assistant::ui::kOnboardingMaxSessionsShown);

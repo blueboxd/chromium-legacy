@@ -76,6 +76,11 @@ class PersistedDataImpl : public PersistedData {
   base::Version GetProductVersion(const std::string& id) const override;
   void SetProductVersion(const std::string& id,
                          const base::Version& pv) override;
+  base::Version GetMaxPreviousProductVersion(
+      const std::string& id) const override;
+  void SetMaxPreviousProductVersion(const std::string& id,
+                                    const base::Version& max_version) override;
+
   std::string GetFingerprint(const std::string& id) const override;
   void SetFingerprint(const std::string& id,
                       const std::string& fingerprint) override;
@@ -217,8 +222,9 @@ void PersistedDataImpl::SetDateLastDataHelper(
     base::Value::Dict* app_key = GetOrCreateAppKey(id, update.Get());
     app_key->Set("dlrc", datenum);
     app_key->Set("pf", base::Uuid::GenerateRandomV4().AsLowercaseString());
-    if (GetInstallDate(id) == kDateFirstTime)
+    if (GetInstallDate(id) == kDateFirstTime) {
       app_key->Set("installdate", datenum);
+    }
     if (active_ids.find(id) != active_ids.end()) {
       app_key->Set("dla", datenum);
     }
@@ -263,8 +269,9 @@ void PersistedDataImpl::SetString(const std::string& id,
                                   const std::string& key,
                                   const std::string& value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!pref_service_)
+  if (!pref_service_) {
     return;
+  }
   ScopedDictPrefUpdate update(pref_service_, kPersistedDataPreference);
   GetOrCreateAppKey(id, update.Get())->Set(key, value);
 }
@@ -320,6 +327,21 @@ void PersistedDataImpl::SetProductVersion(const std::string& id,
                                           const base::Version& pv) {
   CHECK(pv.IsValid());
   SetString(id, "pv", pv.GetString());
+}
+
+base::Version PersistedDataImpl::GetMaxPreviousProductVersion(
+    const std::string& id) const {
+  return base::Version(GetString(id, "max_pv"));
+}
+
+void PersistedDataImpl::SetMaxPreviousProductVersion(
+    const std::string& id,
+    const base::Version& max_version) {
+  CHECK(max_version.IsValid());
+  auto existing_max = GetMaxPreviousProductVersion(id);
+  if (!existing_max.IsValid() || max_version > existing_max) {
+    SetString(id, "max_pv", max_version.GetString());
+  }
 }
 
 std::string PersistedDataImpl::GetFingerprint(const std::string& id) const {

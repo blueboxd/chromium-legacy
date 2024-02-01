@@ -47,6 +47,18 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler {
 
   ~SafetyHubHandler() override;
 
+  struct PermissionsData {
+    PermissionsData();
+    ~PermissionsData();
+    PermissionsData(PermissionsData&&);
+    PermissionsData& operator=(PermissionsData&&);
+
+    url::Origin origin;
+    std::set<ContentSettingsType> permissions;
+    base::Value::Dict chooser_permissions_data;
+    content_settings::ContentSettingConstraints constraints;
+  };
+
   static std::unique_ptr<SafetyHubHandler> GetForProfile(Profile* profile);
 
  private:
@@ -153,6 +165,9 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler {
 
   // Handles dismissing the menu notifications for the password module.
   void HandleDismissPasswordMenuNotification(const base::Value::List& args);
+
+  // Handles dismissing the menu notifications for the extensions module.
+  void HandleDismissExtensionsMenuNotification(const base::Value::List& args);
 
   // Returns the data for Safe Browsing card.
   void HandleGetSafeBrowsingCardData(const base::Value::List& args);

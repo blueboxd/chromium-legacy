@@ -5,10 +5,11 @@
 import 'chrome://resources/cr_components/omnibox/realbox_dropdown.js';
 import 'chrome://resources/cr_components/omnibox/realbox_icon.js';
 
-import {AutocompleteMatch, AutocompleteResult, NavigationPredictor, PageCallbackRouter, PageHandlerInterface, SideType} from 'chrome://resources/cr_components/omnibox/omnibox.mojom-webui.js';
+import type {AutocompleteMatch, AutocompleteResult, PageCallbackRouter, PageHandlerInterface} from 'chrome://resources/cr_components/omnibox/omnibox.mojom-webui.js';
+import {NavigationPredictor, SideType} from 'chrome://resources/cr_components/omnibox/omnibox.mojom-webui.js';
 import {RealboxBrowserProxy} from 'chrome://resources/cr_components/omnibox/realbox_browser_proxy.js';
-import {RealboxDropdownElement} from 'chrome://resources/cr_components/omnibox/realbox_dropdown.js';
-import {RealboxIconElement} from 'chrome://resources/cr_components/omnibox/realbox_icon.js';
+import type {RealboxDropdownElement} from 'chrome://resources/cr_components/omnibox/realbox_dropdown.js';
+import type {RealboxIconElement} from 'chrome://resources/cr_components/omnibox/realbox_icon.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {MetricsReporterImpl} from 'chrome://resources/js/metrics_reporter/metrics_reporter.js';
 import {hasKeyModifiers} from 'chrome://resources/js/util.js';
@@ -70,6 +71,11 @@ export class RealboxElement extends PolymerElement {
         reflectToAttribute: true,
       },
 
+      colorSourceIsBaseline: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
+
       /** Whether the cr-realbox-dropdown should be visible. */
       dropdownIsVisible: {
         type: Boolean,
@@ -113,10 +119,15 @@ export class RealboxElement extends PolymerElement {
         reflectToAttribute: true,
       },
 
-      /** Whether to display single-colored icons or not. */
-      singleColoredIcons: {
+      realboxChromeRefreshTheming: {
         type: Boolean,
-        value: false,
+        value: () => loadTimeData.getBoolean('realboxCr23Theming'),
+        reflectToAttribute: true,
+      },
+
+      realboxSteadyStateShadow: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('realboxCr23SteadyStateShadow'),
         reflectToAttribute: true,
       },
 
@@ -221,13 +232,15 @@ export class RealboxElement extends PolymerElement {
   }
 
   canShowSecondarySide: boolean;
+  colorSourceIsBaseline: boolean;
   dropdownIsVisible: boolean;
   hadSecondarySide: boolean;
   hasSecondarySide: boolean;
   isDark: boolean;
   matchSearchbox: boolean;
   realboxLensSearchEnabled: boolean;
-  singleColoredIcons: boolean;
+  realboxChromeRefreshTheming: boolean;
+  realboxSteadyStateShadow: boolean;
   private inputAriaLive_: string;
   private isDeletingInput_: boolean;
   private lastIgnoredEnterEvent_: KeyboardEvent|null;

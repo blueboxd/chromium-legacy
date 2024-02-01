@@ -19,7 +19,7 @@ static constexpr size_t kMaxProvidersInWellKnownFile = 1ul;
 void SetError(FederatedProviderFetcher::FetchResult& fetch_result,
               blink::mojom::FederatedAuthRequestResult result,
               content::FedCmRequestIdTokenStatus token_status,
-              absl::optional<std::string> additional_console_error_message) {
+              std::optional<std::string> additional_console_error_message) {
   fetch_result.error = FederatedProviderFetcher::FetchError(
       result, token_status, additional_console_error_message);
 }
@@ -34,7 +34,7 @@ FederatedProviderFetcher::FetchError::FetchError(const FetchError&) = default;
 FederatedProviderFetcher::FetchError::FetchError(
     blink::mojom::FederatedAuthRequestResult result,
     FedCmRequestIdTokenStatus token_status,
-    absl::optional<std::string> additional_console_error_message)
+    std::optional<std::string> additional_console_error_message)
     : result(result),
       token_status(token_status),
       additional_console_error_message(
@@ -57,6 +57,7 @@ FederatedProviderFetcher::~FederatedProviderFetcher() = default;
 
 void FederatedProviderFetcher::Start(
     const std::set<GURL>& identity_provider_config_urls,
+    blink::mojom::RpMode rp_mode,
     int icon_ideal_size,
     int icon_minimum_size,
     RequesterCallback callback) {
@@ -80,7 +81,7 @@ void FederatedProviderFetcher::Start(
         base::BindOnce(&FederatedProviderFetcher::OnWellKnownFetched,
                        weak_ptr_factory_.GetWeakPtr(), std::ref(fetch_result)));
     network_manager_->FetchConfig(
-        fetch_result.identity_provider_config_url, icon_ideal_size,
+        fetch_result.identity_provider_config_url, rp_mode, icon_ideal_size,
         icon_minimum_size,
         base::BindOnce(&FederatedProviderFetcher::OnConfigFetched,
                        weak_ptr_factory_.GetWeakPtr(), std::ref(fetch_result)));
@@ -96,8 +97,9 @@ void FederatedProviderFetcher::OnWellKnownFetched(
   constexpr char kWellKnownFileStr[] = "well-known file";
 
   if (status.parse_status != IdpNetworkRequestManager::ParseStatus::kSuccess &&
-      !IsFedCmWithoutWellKnownEnforcementEnabled()) {
-    absl::optional<std::string> additional_console_error_message =
+      !ShouldSkipWellKnownEnforcementForIdp(
+          fetch_result.identity_provider_config_url)) {
+    std::optional<std::string> additional_console_error_message =
         webid::ComputeConsoleMessageForHttpResponseCode(kWellKnownFileStr,
                                                         status.response_code);
 
@@ -160,7 +162,7 @@ void FederatedProviderFetcher::OnConfigFetched(
   constexpr char kConfigFileStr[] = "config file";
 
   if (status.parse_status != IdpNetworkRequestManager::ParseStatus::kSuccess) {
-    absl::optional<std::string> additional_console_error_message =
+    std::optional<std::string> additional_console_error_message =
         webid::ComputeConsoleMessageForHttpResponseCode(kConfigFileStr,
                                                         status.response_code);
 
@@ -214,7 +216,7 @@ void FederatedProviderFetcher::OnError(
     FetchResult& fetch_result,
     blink::mojom::FederatedAuthRequestResult result,
     content::FedCmRequestIdTokenStatus token_status,
-    absl::optional<std::string> additional_console_error_message) {
+    std::optional<std::string> additional_console_error_message) {
   SetError(fetch_result, result, token_status,
            additional_console_error_message);
   RunCallbackIfDone();
@@ -284,7 +286,8 @@ void FederatedProviderFetcher::ValidateAndMaybeSetError(FetchResult& result) {
   //     contains the config url passed in the JS call
 
   // (a)
-  if (IsFedCmWithoutWellKnownEnforcementEnabled()) {
+  if (ShouldSkipWellKnownEnforcementForIdp(
+          result.identity_provider_config_url)) {
     return;
   }
 
@@ -332,7 +335,7 @@ void FederatedProviderFetcher::ValidateAndMaybeSetError(FetchResult& result) {
   if (result.wellknown.provider_urls.size() > kMaxProvidersInWellKnownFile) {
     SetError(result, FederatedAuthRequestResult::kErrorWellKnownTooBig,
              TokenStatus::kWellKnownTooBig,
-             /*additional_console_error_message=*/absl::nullopt);
+             /*additional_console_error_message=*/std::nullopt);
     return;
   }
 
@@ -342,7 +345,7 @@ void FederatedProviderFetcher::ValidateAndMaybeSetError(FetchResult& result) {
   if (!provider_url_is_valid) {
     SetError(result, FederatedAuthRequestResult::kErrorConfigNotInWellKnown,
              TokenStatus::kConfigNotInWellKnown,
-             /*additional_console_error_message=*/absl::nullopt);
+             /*additional_console_error_message=*/std::nullopt);
     return;
   }
 }
@@ -358,6 +361,21 @@ void FederatedProviderFetcher::RunCallbackIfDone() {
   }
 
   std::move(callback_).Run(std::move(fetch_results_));
+}
+
+bool FederatedProviderFetcher::ShouldSkipWellKnownEnforcementForIdp(
+    const GURL& idp_url) {
+  if (IsFedCmWithoutWellKnownEnforcementEnabled()) {
+    return true;
+  }
+
+  if (!IsFedCmSkipWellKnownForSameSiteEnabled()) {
+    return false;
+  }
+
+  // Skip if RP and IDP are same-site.
+  return webid::IsSameSite(render_frame_host_->GetLastCommittedOrigin(),
+                           url::Origin::Create(idp_url));
 }
 
 }  // namespace content

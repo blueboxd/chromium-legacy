@@ -134,12 +134,12 @@ std::wstring GetAppContainerProfileName() {
   // multiple tests are running concurrently they don't mess with each other's
   // app containers.
   std::string appcontainer_id(
-      testing::UnitTest::GetInstance()->current_test_info()->test_case_name());
+      testing::UnitTest::GetInstance()->current_test_info()->test_suite_name());
   appcontainer_id +=
       testing::UnitTest::GetInstance()->current_test_info()->name();
   auto sha1 = base::SHA1HashString(appcontainer_id);
-  std::string profile_name = base::StrCat(
-      {sandbox_base_name, base::HexEncode(sha1.data(), sha1.size())});
+  std::string profile_name =
+      base::StrCat({sandbox_base_name, base::HexEncode(sha1)});
   // CreateAppContainerProfile requires that the profile name is at most 64
   // characters but 50 on WCOS systems.  The size of sha1 is a constant 40, so
   // validate that the base names are sufficiently short that the total length
@@ -237,8 +237,9 @@ SBOX_TESTS_COMMAND int AppContainerEvent_Open(int argc, wchar_t** argv) {
       ::OpenEvent(EVENT_ALL_ACCESS, false, argv[0]));
   DWORD error_open = ::GetLastError();
 
-  if (event_open.IsValid())
+  if (event_open.is_valid()) {
     return SBOX_TEST_SUCCEEDED;
+  }
 
   if (ERROR_ACCESS_DENIED == error_open)
     return SBOX_TEST_DENIED;
@@ -252,7 +253,7 @@ TEST_F(AppContainerTest, DenyOpenEventForLowBox) {
 
   base::win::ScopedHandle event(
       ::CreateEvent(nullptr, false, false, kAppContainerSid));
-  ASSERT_TRUE(event.IsValid());
+  ASSERT_TRUE(event.is_valid());
 
   TestRunner runner(JobLevel::kUnprotected, USER_UNPROTECTED, USER_UNPROTECTED);
   EXPECT_EQ(SBOX_ALL_OK,

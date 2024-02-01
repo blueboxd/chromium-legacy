@@ -13,6 +13,7 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
+#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -212,7 +213,11 @@ void FrameSinkManagerImpl::CreateFrameSinkBundle(
     mojo::PendingRemote<mojom::FrameSinkBundleClient> client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (base::Contains(bundle_map_, bundle_id)) {
+    uint32_t client_id = bundle_id.client_id();
+    uint32_t bundle_id_value = bundle_id.bundle_id();
     receiver_.ReportBadMessage("Duplicate FrameSinkBundle ID");
+    base::debug::Alias(&client_id);
+    base::debug::Alias(&bundle_id_value);
     return;
   }
 
@@ -222,7 +227,7 @@ void FrameSinkManagerImpl::CreateFrameSinkBundle(
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
-    const absl::optional<FrameSinkBundleId>& bundle_id,
+    const std::optional<FrameSinkBundleId>& bundle_id,
     mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
     mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -629,7 +634,7 @@ bool FrameSinkManagerImpl::ChildContains(
 void FrameSinkManagerImpl::SubmitHitTestRegionList(
     const SurfaceId& surface_id,
     uint64_t frame_index,
-    absl::optional<HitTestRegionList> hit_test_region_list) {
+    std::optional<HitTestRegionList> hit_test_region_list) {
   hit_test_manager_.SubmitHitTestRegionList(surface_id, frame_index,
                                             std::move(hit_test_region_list));
 }
@@ -831,7 +836,7 @@ void FrameSinkManagerImpl::StartThrottlingAllFrameSinks(
 }
 
 void FrameSinkManagerImpl::StopThrottlingAllFrameSinks() {
-  global_throttle_interval_ = absl::nullopt;
+  global_throttle_interval_ = std::nullopt;
   UpdateThrottling();
 }
 

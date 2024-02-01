@@ -197,7 +197,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       const headerElement = $$(moduleElement, 'ntp-module-header');
       assertTrue(!!headerElement);
       const showAllButton =
-          headerElement.querySelector('#showAllButton') as HTMLElement;
+          headerElement.querySelector<HTMLElement>('#showAllButton');
       assertTrue(!!showAllButton);
 
       const waitForUsageEvent = eventToPromise('usage', moduleElement);
@@ -451,7 +451,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
           assertLayoutSet(moduleElement, expectedLayout);
 
           const visitElements = moduleElement.shadowRoot!.querySelectorAll(
-              'ntp-history-clusters-tile')!;
+              'ntp-history-clusters-tile');
           assertEquals(LAYOUT_1_MIN_VISITS, visitElements.length);
           visitElements.forEach(visitElement => {
             const title = $$(visitElement, '#title')!.textContent!.trim();
@@ -664,36 +664,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
   });
 
   suite('DiscountChipRendering', () => {
-    test('Discount is not initialized when feature is disabled', async () => {
-      loadTimeData.overrideValues({
-        historyClustersModuleDiscountsEnabled: false,
-      });
-
-      const moduleElement = await initializeModule(
-          [createLayoutSuitableSampleCluster(LayoutType.kLayout1)]);
-
-      assertEquals(0, handler.getCallCount('getDiscountsForCluster'));
-      assertTrue(!!moduleElement);
-      await waitAfterNextRender(moduleElement);
-      assertEquals(moduleElement.discounts.length, LAYOUT_1_MIN_VISITS);
-      for (const discount of moduleElement.discounts) {
-        assertEquals('', discount);
-      }
-      const contentElement =
-          moduleElement.shadowRoot!.querySelector('ntp-history-clusters-tile')!
-              .shadowRoot!.querySelector('#content')! as HTMLElement;
-      assertEquals(
-          contentElement.getAttribute('aria-label'),
-          'Test Title 1, foo.com, 1 min ago');
-      checkInfoDialogContent(moduleElement, 'modulesJourneysInfo');
-      assertEquals(0, metrics.count(`NewTabPage.HistoryClusters.HasDiscount`));
-    });
-
     test('Discount initialization', async () => {
-      loadTimeData.overrideValues({
-        historyClustersModuleDiscountsEnabled: true,
-      });
-
       const cluster = createLayoutSuitableSampleCluster(LayoutType.kLayout3);
       // Ignore SRP visit when compare length.
       assertEquals(LAYOUT_3_MIN_VISITS, cluster.visits.length - 1);
@@ -756,10 +727,6 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
     });
 
     test('Metrics for Discount click', async () => {
-      loadTimeData.overrideValues({
-        historyClustersModuleDiscountsEnabled: true,
-      });
-
       const cluster = createLayoutSuitableSampleCluster(LayoutType.kLayout3);
       // Ignore SRP visit when compare length.
       assertEquals(LAYOUT_3_MIN_VISITS, cluster.visits.length - 1);

@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(QuickOfficeForceFileDownloadEnabledBrowserTest,
   EXPECT_EQ(1u,
             download_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
-  std::vector<DownloadItem*> downloads;
+  std::vector<raw_ptr<DownloadItem, VectorExperimental>> downloads;
   download_manager->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
 
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(QuickOfficeForceFileDownloadDisabledBrowserTest,
   EXPECT_EQ(0u,
             download_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
-  std::vector<DownloadItem*> downloads;
+  std::vector<raw_ptr<DownloadItem, VectorExperimental>> downloads;
   download_manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
 }
@@ -351,6 +351,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .DontMountVolumes()
             .NewDirectoryTree(),
         TestCase("fileDisplayWithoutDrive")
+            .DontMountVolumes()
+            .NewDirectoryTree(),
+        TestCase("fileDisplayWithoutDriveThenDisable")
             .DontMountVolumes()
             .NewDirectoryTree(),
         TestCase("fileDisplayWithHiddenVolume").NewDirectoryTree(),
@@ -407,8 +410,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .DontMountVolumes(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive").DontMountVolumes(),
         TestCase("fileDisplayWithoutDrive").DontMountVolumes(),
-        // Test is failing (crbug.com/1097013)
-        // TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
+        TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
         TestCase("fileDisplayWithHiddenVolume"),
         TestCase("fileDisplayMountWithFakeItemSelected"),
         TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
@@ -1723,7 +1725,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("copyBetweenWindowsLocalToUsb").NewDirectoryTree(),
-        TestCase("copyBetweenWindowsUsbToLocal").NewDirectoryTree(),
+        // TODO(crbug.com/1523263): Re-enable this flaky test.
+        // TestCase("copyBetweenWindowsUsbToLocal").NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("copyBetweenWindowsLocalToDrive"),
         TestCase("copyBetweenWindowsLocalToUsb"),
@@ -1866,12 +1869,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("mountCrostini").NewDirectoryTree(),
+        TestCase("mountCrostiniWithSubFolder").NewDirectoryTree(),
         TestCase("enableDisableCrostini").NewDirectoryTree(),
         TestCase("sharePathWithCrostini")
             .NewDirectoryTree()
             .FeatureIds({"screenplay-122c00f8-9842-4666-8ca0-b6bf47454551"}),
         // Section end - browser tests for new directory tree
         TestCase("mountCrostini"),
+        TestCase("mountCrostiniWithSubFolder"),
         TestCase("enableDisableCrostini"),
         TestCase("sharePathWithCrostini")
             .FeatureIds({"screenplay-122c00f8-9842-4666-8ca0-b6bf47454551"}),
@@ -1925,9 +1930,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Recents, /* recents.js */
     FilesAppBrowserTest,
     ::testing::Values(
-#if !defined(ADDRESS_SANITIZER) && !defined(LEAK_SANITIZER)
         TestCase("recentsNested").NewDirectoryTree(),
-#endif
         TestCase("recentsFilterResetToAll").NewDirectoryTree(),
         TestCase("recentsA11yMessages")
             .NewDirectoryTree()

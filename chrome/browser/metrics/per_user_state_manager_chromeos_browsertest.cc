@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOSPerUserGuestUserWithNoOwnerTest,
   EXPECT_TRUE(log_store->has_alternate_ongoing_log_store());
 
   // Guests do not have a user id.
-  EXPECT_THAT(metrics_service->GetCurrentUserId(), Eq(absl::nullopt));
+  EXPECT_THAT(metrics_service->GetCurrentUserId(), Eq(std::nullopt));
 
   // Device settings consent should remain disabled since this is a guest
   // session.
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOSPerUserGuestTestWithDeviceOwner,
   bool owner_consent = GetParam();
 
   EXPECT_THAT(user_manager::UserManager::Get()->GetActiveUser()->GetType(),
-              Eq(user_manager::USER_TYPE_GUEST));
+              Eq(user_manager::UserType::kGuest));
   EXPECT_THAT(ash::DeviceSettingsService::Get()->GetOwnershipStatus(),
               Eq(ash::DeviceSettingsService::OwnershipStatus::kOwnershipTaken));
 
@@ -293,7 +293,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOSPerUserGuestTestWithDeviceOwner,
   EXPECT_THAT(log_store->has_alternate_ongoing_log_store(), Ne(owner_consent));
 
   // Guests do not have a user id.
-  EXPECT_THAT(metrics_service->GetCurrentUserId(), Eq(absl::nullopt));
+  EXPECT_THAT(metrics_service->GetCurrentUserId(), Eq(std::nullopt));
 }
 
 INSTANTIATE_TEST_SUITE_P(MetricsConsentForGuestWithOwner,
@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOSPerUserManagedDeviceTest,
 
   // Post-login state.
   EXPECT_THAT(user_manager::UserManager::Get()->GetActiveUser()->GetType(),
-              Eq(user_manager::USER_TYPE_REGULAR));
+              Eq(user_manager::UserType::kRegular));
   EXPECT_TRUE(log_store->has_alternate_ongoing_log_store());
 
   // Should still follow policy_consent.
@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOSPerUserManagedDeviceTest,
 
   // Users should not have a user id since they do not have control over the
   // metrics consent.
-  EXPECT_THAT(metrics_service->GetCurrentUserId(), Eq(absl::nullopt));
+  EXPECT_THAT(metrics_service->GetCurrentUserId(), Eq(std::nullopt));
 
   // Try to change the user consent.
   metrics_service->UpdateCurrentUserMetricsConsent(!policy_consent);

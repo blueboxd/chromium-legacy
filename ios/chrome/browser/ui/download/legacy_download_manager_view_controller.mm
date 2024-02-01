@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
-#import "ios/chrome/browser/ui/download/download_manager_animation_constants.h"
+#import "ios/chrome/browser/ui/download/download_manager_constants.h"
 #import "ios/chrome/browser/ui/download/download_manager_state_view.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/download/features.h"
@@ -404,6 +404,11 @@ NSString* GetSizeString(long long size_in_bytes) {
                      [strongSelf updateBottomMarginGuideTopConstraint];
                      [strongSelf.view.superview layoutIfNeeded];
                    }];
+}
+
+- (void)setFullscreenController:(FullscreenController*)fullscreenController {
+  // Unsupported by this version of the DownloadManagerViewController.
+  // This method will still be called, but do nothing.
 }
 
 #pragma mark - UI elements
@@ -797,23 +802,28 @@ NSString* GetSizeString(long long size_in_bytes) {
 // Updates title and hidden state for action button depending on `state`.
 - (void)updateActionButton {
   NSString* title = nil;
+  NSString* accessibilityIdentifier = nil;
   switch (_state) {
     case kDownloadManagerStateNotStarted:
       title = l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_DOWNLOAD);
+      accessibilityIdentifier = kDownloadManagerDownloadAccessibilityIdentifier;
       break;
     case kDownloadManagerStateInProgress:
       break;
     case kDownloadManagerStateSucceeded:
       title = l10n_util::GetNSString(IDS_IOS_OPEN_IN);
+      accessibilityIdentifier = kDownloadManagerOpenInAccessibilityIdentifier;
       break;
     case kDownloadManagerStateFailed:
       title = l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_TRY_AGAIN);
+      accessibilityIdentifier = kDownloadManagerTryAgainAccessibilityIdentifier;
       break;
     case kDownloadManagerStateFailedNotResumable:
       break;
   }
 
   [self.actionButton setTitle:title forState:UIControlStateNormal];
+  [self.actionButton setAccessibilityIdentifier:accessibilityIdentifier];
   self.actionButton.hidden =
       (_state == kDownloadManagerStateInProgress ||
        _state == kDownloadManagerStateFailedNotResumable);

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/containers/span.h"
@@ -51,7 +52,7 @@ RawDataPresenter::RawDataPresenter() = default;
 
 RawDataPresenter::~RawDataPresenter() = default;
 
-void RawDataPresenter::FeedBytes(base::StringPiece bytes) {
+void RawDataPresenter::FeedBytes(std::string_view bytes) {
   FeedNextBytes(bytes.data(), bytes.size());
 }
 
@@ -89,7 +90,7 @@ ParsedDataPresenter::ParsedDataPresenter(
 
 ParsedDataPresenter::~ParsedDataPresenter() = default;
 
-void ParsedDataPresenter::FeedBytes(base::StringPiece bytes) {
+void ParsedDataPresenter::FeedBytes(std::string_view bytes) {
   if (!success_)
     return;
 

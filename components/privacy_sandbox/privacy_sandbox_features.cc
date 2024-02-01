@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
+
 #include "base/feature_list.h"
 
 namespace privacy_sandbox {
@@ -11,6 +12,11 @@ namespace privacy_sandbox {
 BASE_FEATURE(kPrivacySandboxAdsNoticeCCT,
              "PrivacySandboxAdsNoticeCCT",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kPrivacySandboxAdsNoticeCCTAppIdName[] = "app-id";
+
+const base::FeatureParam<std::string> kPrivacySandboxAdsNoticeCCTAppId{
+    &kPrivacySandboxAdsNoticeCCT, kPrivacySandboxAdsNoticeCCTAppIdName, ""};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Show the Tracking Protection onboarding flow if not already onboarded.
@@ -100,13 +106,21 @@ BASE_FEATURE(kEnforcePrivacySandboxAttestations,
 
 BASE_FEATURE(kDefaultAllowPrivacySandboxAttestations,
              "DefaultAllowPrivacySandboxAttestations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrivacySandboxAttestationSentinel,
+             "PrivacySandboxAttestationsSentinel",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kPrivacySandboxEnrollmentOverrides[] =
     "privacy-sandbox-enrollment-overrides";
 
 BASE_FEATURE(kPrivacySandboxAttestationsHigherComponentRegistrationPriority,
              "PrivacySandboxAttestationsHigherComponentRegistrationPriority",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrivacySandboxAttestationsUserBlockingPriority,
+             "PrivacySandboxAttestationsUserBlockingPriority",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPrivacySandboxProactiveTopicsBlocking,
@@ -131,5 +145,27 @@ BASE_FEATURE(kTrackingProtectionOnboardingRollback,
 BASE_FEATURE(kAttributionDebugReportingCookieDeprecationTesting,
              "AttributionDebugReportingCookieDeprecationTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrivateAggregationDebugReportingCookieDeprecationTesting,
+             "PrivateAggregationDebugReportingCookieDeprecationTesting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrivacySandboxInternalsDevUI,
+             "PrivacySandboxInternalsDevUI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIpProtectionV1,
+             "IpProtectionV1",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCookieSettingsUiAlignment,
+             "CookieSettingsUiAlignment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kTrackingProtectionNoticeRequestTracking,
+             "TrackingProtectionNoticeRequestTracking",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace privacy_sandbox

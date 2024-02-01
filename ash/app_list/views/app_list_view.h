@@ -16,7 +16,6 @@
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/aura/window_observer.h"
@@ -68,7 +67,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
     PagedAppsGridView* GetRootAppsGridView();
 
    private:
-    const raw_ptr<AppListView, ExperimentalAsh> view_;
+    const raw_ptr<AppListView> view_;
   };
 
   class ASH_EXPORT ScopedAccessibilityAnnouncementLock {
@@ -83,7 +82,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
     }
 
    private:
-    const raw_ptr<AppListView, ExperimentalAsh> view_;
+    const raw_ptr<AppListView> view_;
   };
 
   // Used to prevent the app list contents from being reset when the app list
@@ -99,9 +98,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
     ~ScopedContentsResetDisabler();
 
    private:
-    // This field is not a raw_ptr<> because it was filtered by the rewriter
-    // for: #union
-    RAW_PTR_EXCLUSION AppListView* const view_;
+    const raw_ptr<AppListView> view_;
   };
 
   // Does not take ownership of |delegate|.
@@ -309,16 +306,15 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // is snapped.
   void ResetSubpixelPositionOffset(ui::Layer* layer);
 
-  const raw_ptr<AppListViewDelegate, ExperimentalAsh> delegate_;
+  const raw_ptr<AppListViewDelegate> delegate_;
 
   // Keeps track of the number of locks that prevent the app list view
   // from creating app list transition accessibility events. This is used to
   // prevent A11Y announcements when showing the assistant UI.
   int accessibility_event_disablers_ = 0;
-  raw_ptr<AppListMainView, DanglingUntriaged | ExperimentalAsh>
-      app_list_main_view_ = nullptr;
+  raw_ptr<AppListMainView, DanglingUntriaged> app_list_main_view_ = nullptr;
 
-  raw_ptr<SearchBoxView, DanglingUntriaged | ExperimentalAsh> search_box_view_ =
+  raw_ptr<SearchBoxView, DanglingUntriaged> search_box_view_ =
       nullptr;  // Owned by views hierarchy.
 
   // The time the AppListView was requested to be shown. Used for metrics.

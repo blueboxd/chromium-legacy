@@ -93,7 +93,9 @@ enum class OfficeDriveOpenErrors {
   kNoDriveService = 9,
   kDriveAuthenticationNotReady = 10,
   kMeteredConnection = 11,
-  kMaxValue = kMeteredConnection,
+  kEmptyAlternateUrl = 12,
+  kWaitingForUpload = 13,
+  kMaxValue = kWaitingForUpload,
 };
 
 // List of UMA enum values for opening Office files from OneDrive, with the
@@ -157,7 +159,8 @@ enum class OfficeTaskResult {
   kCancelledAtSetup = 9,
   kLocalFileTask = 10,
   kFileAlreadyBeingUploaded = 11,
-  kMaxValue = kFileAlreadyBeingUploaded,
+  kCannotGetFallbackChoice = 12,
+  kMaxValue = kCannotGetFallbackChoice,
 };
 
 // The result of the "Upload to cloud" workflow for Office files.
@@ -328,6 +331,11 @@ bool IsODFSMounted(Profile* profile);
 bool IsODFSInstalled(Profile* profile);
 bool IsOfficeWebAppInstalled(Profile* profile);
 
+// Returns true if the IsMicrosoftOfficeOneDriveIntegrationAllowed() returns
+// true and if the ODFS extension is installed. It returns false otherwise.
+bool IsMicrosoftOfficeOneDriveIntegrationAllowedAndOdfsInstalled(
+    Profile* profile);
+
 // Returns true if url refers to an entry on any current mount provided by the
 // ODFS file system provider.
 bool UrlIsOnODFS(Profile* profile, const storage::FileSystemURL& url);
@@ -345,6 +353,8 @@ void GetODFSEntryMetadata(
     file_system_provider::ProvidedFileSystemInterface* file_system,
     const base::FilePath& path,
     GetODFSEntryMetadataCallback callback);
+
+bool PathIsOnDriveFS(Profile* profile, const base::FilePath& file_path);
 
 // Get the first task error that is not `base::File::Error::FILE_OK`.
 std::optional<base::File::Error> GetFirstTaskError(

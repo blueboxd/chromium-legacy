@@ -15,13 +15,13 @@
 #include "content/browser/renderer_host/browser_compositor_ios.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_ios.h"
-#include "content/browser/renderer_host/input/web_input_event_builders_ios.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/input/web_input_event_builders_ios.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_switches.h"
 #include "ui/accelerated_widget_mac/ca_layer_frame_sink_provider.h"
@@ -78,7 +78,7 @@ gfx::Rect GetDefaultSizeForTesting() {
 
 @interface RenderWidgetUIView : CALayerFrameSinkProvider {
   base::WeakPtr<content::RenderWidgetHostViewIOS> _view;
-  absl::optional<gfx::Vector2dF> _viewOffsetDuringTouchSequence;
+  std::optional<gfx::Vector2dF> _viewOffsetDuringTouchSequence;
 }
 
 // TextInput state.
@@ -444,13 +444,14 @@ bool RenderWidgetHostViewIOS::HasFocus() {
 gfx::Rect RenderWidgetHostViewIOS::GetViewBounds() {
   return view_bounds_;
 }
-blink::mojom::PointerLockResult RenderWidgetHostViewIOS::LockMouse(bool) {
+blink::mojom::PointerLockResult RenderWidgetHostViewIOS::LockPointer(bool) {
   return {};
 }
-blink::mojom::PointerLockResult RenderWidgetHostViewIOS::ChangeMouseLock(bool) {
+blink::mojom::PointerLockResult RenderWidgetHostViewIOS::ChangePointerLock(
+    bool) {
   return {};
 }
-void RenderWidgetHostViewIOS::UnlockMouse() {}
+void RenderWidgetHostViewIOS::UnlockPointer() {}
 
 uint32_t RenderWidgetHostViewIOS::GetCaptureSequenceNumber() const {
   return latest_capture_sequence_number_;
@@ -584,8 +585,8 @@ gfx::Size RenderWidgetHostViewIOS::GetRequestedRendererSize() {
   return GetViewBounds().size();
 }
 
-absl::optional<DisplayFeature> RenderWidgetHostViewIOS::GetDisplayFeature() {
-  return absl::nullopt;
+std::optional<DisplayFeature> RenderWidgetHostViewIOS::GetDisplayFeature() {
+  return std::nullopt;
 }
 void RenderWidgetHostViewIOS::SetDisplayFeatureForTesting(
     const DisplayFeature* display_feature) {}
@@ -780,7 +781,7 @@ void RenderWidgetHostViewIOS::SetActive(bool active) {
   // if (HasFocus())
   //  SetTextInputActive(active);
   if (!active) {
-    UnlockMouse();
+    UnlockPointer();
   }
 }
 
@@ -992,8 +993,7 @@ ui::Compositor* RenderWidgetHostViewIOS::GetCompositor() {
 
 void RenderWidgetHostViewIOS::GestureEventAck(
     const blink::WebGestureEvent& event,
-    blink::mojom::InputEventResultState ack_result,
-    blink::mojom::ScrollResultDataPtr scroll_result_data) {
+    blink::mojom::InputEventResultState ack_result) {
   // Stop flinging if a GSU event with momentum phase is sent to the renderer
   // but not consumed.
   StopFlingingIfNecessary(event, ack_result);
@@ -1008,10 +1008,11 @@ void RenderWidgetHostViewIOS::GestureEventAck(
       [[scrollView delegate] scrollViewWillBeginDragging:scrollView];
       break;
     case blink::WebInputEvent::Type::kGestureScrollUpdate:
-      if (scroll_result_data && scroll_result_data->root_scroll_offset) {
-        ApplyRootScrollOffsetChanged(*scroll_result_data->root_scroll_offset,
-                                     /*force=*/false);
-      }
+      // TODO(crbug.com/1458640): Since ScrollResultData has been removed from
+      // GestureEventAck, the invocation of ApplyRootScrollOffsetChanged here
+      // has also been eliminated for now. We should address the
+      // GestureScrollUpdate event after examining how the bug implements
+      // GestureEventAck.
       break;
     case blink::WebInputEvent::Type::kGestureScrollEnd: {
       // Make sure our cached view bounds gets updated.
@@ -1038,12 +1039,11 @@ void RenderWidgetHostViewIOS::GestureEventAck(
 
 void RenderWidgetHostViewIOS::ChildDidAckGestureEvent(
     const blink::WebGestureEvent& event,
-    blink::mojom::InputEventResultState ack_result,
-    blink::mojom::ScrollResultDataPtr scroll_result_data) {
-  if (scroll_result_data && scroll_result_data->root_scroll_offset) {
-    ApplyRootScrollOffsetChanged(*scroll_result_data->root_scroll_offset,
-                                 /*force=*/false);
-  }
+    blink::mojom::InputEventResultState ack_result) {
+  // TODO(crbug.com/1458640): Since ScrollResultData has been removed from
+  // GestureEventAck, the invocation of ApplyRootScrollOffsetChanged here has
+  // also been eliminated for now. We should address the GestureScrollUpdate
+  // event after examining how the bug implements GestureEventAck.
 }
 
 void RenderWidgetHostViewIOS::UpdateFrameBounds() {

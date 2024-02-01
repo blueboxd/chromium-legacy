@@ -13,6 +13,8 @@ import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
+import org.chromium.components.signin.SigninFeatureMap;
+import org.chromium.components.signin.SigninFeatures;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -158,13 +160,17 @@ public class IdentityManager {
     }
 
     /**
-     * Refreshes extended {@link AccountInfo} with image for the given
-     * list of {@link CoreAccountInfo} if the existing ones are stale.
+     * Refreshes extended {@link AccountInfo} with image for all accounts with a refresh token or
+     * the given list of {@link CoreAccountInfo} if the existing ones are stale.
      */
     public void refreshAccountInfoIfStale(List<CoreAccountInfo> accountInfos) {
-        for (CoreAccountInfo accountInfo : accountInfos) {
-            IdentityManagerJni.get()
-                    .refreshAccountInfoIfStale(mNativeIdentityManager, accountInfo.getId());
+        if (SigninFeatureMap.isEnabled(SigninFeatures.SEED_ACCOUNTS_REVAMP)) {
+            IdentityManagerJni.get().refreshAccountInfoIfStale(mNativeIdentityManager, null);
+        } else {
+            for (CoreAccountInfo accountInfo : accountInfos) {
+                IdentityManagerJni.get()
+                        .refreshAccountInfoIfStale(mNativeIdentityManager, accountInfo.getId());
+            }
         }
     }
 
@@ -199,7 +205,8 @@ public class IdentityManager {
 
         CoreAccountInfo[] getAccountsWithRefreshTokens(long nativeIdentityManager);
 
-        void refreshAccountInfoIfStale(long nativeIdentityManager, CoreAccountId coreAccountId);
+        // TODO(crbug.com/1491005): Remove the accountId parameter.
+        void refreshAccountInfoIfStale(long nativeIdentityManager, CoreAccountId accountId);
 
         boolean isClearPrimaryAccountAllowed(long nativeIdentityManager);
     }

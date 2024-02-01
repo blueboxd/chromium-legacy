@@ -64,8 +64,11 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
+import org.chromium.base.cached_flags.BooleanCachedFieldTrialParameter;
+import org.chromium.base.cached_flags.StringCachedFieldTrialParameter;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.version_info.VersionInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
@@ -73,14 +76,11 @@ import org.chromium.chrome.browser.browserservices.intents.ColorProvider;
 import org.chromium.chrome.browser.browserservices.intents.CustomButtonParams;
 import org.chromium.chrome.browser.customtabs.CustomTabsFeatureUsage.CustomTabsFeature;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.page_insights.PageInsightsCoordinator;
 import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.version_info.VersionInfo;
 import org.chromium.device.mojom.ScreenOrientationLockType;
 
 import java.lang.annotation.Retention;
@@ -197,7 +197,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
      * automatically allowed from any first party package name.
      */
     public static final BooleanCachedFieldTrialParameter AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES =
-            new BooleanCachedFieldTrialParameter(
+            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
                     ChromeFeatureList.CCT_AUTO_TRANSLATE, "allow_all_first_parties", false);
 
     /**
@@ -206,7 +206,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
      * consisting of the package name of the Android Google Search App.
      */
     public static final StringCachedFieldTrialParameter AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST =
-            new StringCachedFieldTrialParameter(
+            ChromeFeatureList.newStringCachedFieldTrialParameter(
                     ChromeFeatureList.CCT_AUTO_TRANSLATE,
                     "package_names_allowlist",
                     "com.google.android.googlequicksearchbox");
@@ -269,17 +269,17 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private static final String DENYLIST_ENTRIES_PARAM_NAME = "denylist_entries";
 
     public static final StringCachedFieldTrialParameter THIRD_PARTIES_DEFAULT_POLICY =
-            new StringCachedFieldTrialParameter(
+            ChromeFeatureList.newStringCachedFieldTrialParameter(
                     ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
                     DEFAULT_POLICY_PARAM_NAME,
                     DEFAULT_POLICY_USE_DENYLIST);
     public static final StringCachedFieldTrialParameter DENYLIST_ENTRIES =
-            new StringCachedFieldTrialParameter(
+            ChromeFeatureList.newStringCachedFieldTrialParameter(
                     ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
                     DENYLIST_ENTRIES_PARAM_NAME,
                     "");
     public static final StringCachedFieldTrialParameter ALLOWLIST_ENTRIES =
-            new StringCachedFieldTrialParameter(
+            ChromeFeatureList.newStringCachedFieldTrialParameter(
                     ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
                     ALLOWLIST_ENTRIES_PARAM_NAME,
                     "");
@@ -593,9 +593,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         mRemoteViewsPendingIntent =
                 IntentUtils.safeGetParcelableExtra(
                         intent, CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
-        if (ChromeFeatureList.sCctBottomBarSwipeUpGesture.isEnabled()) {
-            mSecondaryToolbarSwipeUpPendingIntent = getSecondaryToolbarSwipeUpGesture(intent);
-        }
+        mSecondaryToolbarSwipeUpPendingIntent = getSecondaryToolbarSwipeUpGesture(intent);
         mMediaViewerUrl =
                 isMediaViewer()
                         ? IntentUtils.safeGetStringExtra(intent, EXTRA_MEDIA_VIEWER_URL)
@@ -665,16 +663,15 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         int defaultRadius =
                 context.getResources()
                         .getDimensionPixelSize(R.dimen.custom_tabs_default_corner_radius);
-        if (ChromeFeatureList.sCctToolbarCustomizations.isEnabled()) {
-            int radiusPx =
-                    IntentUtils.safeGetIntExtra(
-                            intent, EXTRA_TOOLBAR_CORNER_RADIUS_IN_PIXEL_LEGACY, 0);
-            if (radiusPx > 0) return radiusPx;
-            int radiusDp = IntentUtils.safeGetIntExtra(intent, EXTRA_TOOLBAR_CORNER_RADIUS_DP, 0);
-            if (radiusDp > 0) {
-                return Math.round(radiusDp * context.getResources().getDisplayMetrics().density);
-            }
+        int radiusPx =
+                IntentUtils.safeGetIntExtra(intent, EXTRA_TOOLBAR_CORNER_RADIUS_IN_PIXEL_LEGACY, 0);
+        if (radiusPx > 0) return radiusPx;
+
+        int radiusDp = IntentUtils.safeGetIntExtra(intent, EXTRA_TOOLBAR_CORNER_RADIUS_DP, 0);
+        if (radiusDp > 0) {
+            return Math.round(radiusDp * context.getResources().getDisplayMetrics().density);
         }
+
         return defaultRadius;
     }
 
@@ -1424,9 +1421,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     @Override
     public @CloseButtonPosition int getCloseButtonPosition() {
-        if (!ChromeFeatureList.sCctToolbarCustomizations.isEnabled()) {
-            return CLOSE_BUTTON_POSITION_DEFAULT;
-        }
         return IntentUtils.safeGetIntExtra(
                 mIntent, EXTRA_CLOSE_BUTTON_POSITION, CLOSE_BUTTON_POSITION_DEFAULT);
     }

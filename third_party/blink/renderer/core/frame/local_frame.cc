@@ -58,9 +58,9 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
-#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_local_compile_hints_producer.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -159,6 +160,7 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_reporter.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
@@ -173,7 +175,6 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/prerender_handle.h"
-#include "third_party/blink/renderer/core/loader/resource_cache_impl.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
@@ -472,7 +473,6 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(background_color_paint_image_generator_);
   visitor->Trace(box_shadow_paint_image_generator_);
   visitor->Trace(clip_path_paint_image_generator_);
-  visitor->Trace(resource_cache_);
   visitor->Trace(lcpp_);
   visitor->Trace(v8_local_compile_hints_producer_);
 #if !BUILDFLAG(IS_ANDROID)
@@ -820,7 +820,8 @@ static String FrameDescription(const Frame& frame) {
   // origin instead.
   const LocalFrame* local_frame = DynamicTo<LocalFrame>(&frame);
   return local_frame
-             ? "with URL '" + local_frame->GetDocument()->Url().GetString() +
+             ? "with URL '" +
+                   local_frame->GetDocument()->Url().GetString().GetString() +
                    "'"
              : "with origin '" +
                    frame.GetSecurityContext()->GetSecurityOrigin()->ToString() +
@@ -1053,8 +1054,16 @@ void LocalFrame::HookBackForwardCacheEviction() {
             DCHECK(window);
             LocalFrame* frame = window->GetFrame();
             if (frame) {
+              std::unique_ptr<SourceLocation> source_location = nullptr;
+              if (base::FeatureList::IsEnabled(
+                      features::kCaptureJSExecutionLocation)) {
+                // Capture the source location of the JS execution if the flag
+                // is enabled.
+                source_location = CaptureSourceLocation();
+              }
               frame->EvictFromBackForwardCache(
-                  mojom::blink::RendererEvictionReason::kJavaScriptExecution);
+                  mojom::blink::RendererEvictionReason::kJavaScriptExecution,
+                  std::move(source_location));
               if (base::FeatureList::IsEnabled(
                       features::kBackForwardCacheDWCOnJavaScriptExecution)) {
                 // Adding |DumpWithoutCrashing()| here to make sure this is not
@@ -1216,6 +1225,24 @@ void LocalFrame::UpdateSuddenTerminationStatus(
     bool added_listener,
     mojom::blink::SuddenTerminationDisablerType disabler_type) {
   Platform::Current()->SuddenTerminationChanged(!added_listener);
+  if (features::IsUnloadBlocklisted()) {
+    // Block BFCache for using the unload handler. Originally unload handler was
+    // not a blocklisted feature, but we make them blocklisted so the source
+    // location will be captured. See https://crbug.com/1513120 for details.
+    if (disabler_type ==
+        mojom::blink::SuddenTerminationDisablerType::kUnloadHandler) {
+      if (added_listener) {
+        if (feature_handle_for_scheduler_) {
+          return;
+        }
+        feature_handle_for_scheduler_ = GetFrameScheduler()->RegisterFeature(
+            SchedulingPolicy::Feature::kUnloadHandler,
+            {SchedulingPolicy::DisableBackForwardCache()});
+      } else {
+        feature_handle_for_scheduler_.reset();
+      }
+    }
+  }
   GetLocalFrameHostRemote().SuddenTerminationDisablerChanged(added_listener,
                                                              disabler_type);
 }
@@ -1588,7 +1615,7 @@ void LocalFrame::UpdateViewportSegmentCSSEnvironmentVariables(
 }
 
 void LocalFrame::OverrideDevicePostureForEmulation(
-    device::mojom::blink::DevicePostureType device_posture_param) {
+    mojom::blink::DevicePostureType device_posture_param) {
   mojo_handler_->OverrideDevicePostureForEmulation(device_posture_param);
 }
 
@@ -1596,7 +1623,7 @@ void LocalFrame::DisableDevicePostureOverrideForEmulation() {
   mojo_handler_->DisableDevicePostureOverrideForEmulation();
 }
 
-device::mojom::blink::DevicePostureType LocalFrame::GetDevicePosture() {
+mojom::blink::DevicePostureType LocalFrame::GetDevicePosture() {
   return mojo_handler_->GetDevicePosture();
 }
 
@@ -2591,8 +2618,7 @@ mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {
   return mojo_handler_->ReportingService();
 }
 
-device::mojom::blink::DevicePostureProvider*
-LocalFrame::GetDevicePostureProvider() {
+mojom::blink::DevicePostureProvider* LocalFrame::GetDevicePostureProvider() {
   return mojo_handler_->DevicePostureProvider();
 }
 
@@ -2994,11 +3020,6 @@ void LocalFrame::DidFreeze() {
     DomWindow()->SetIsInBackForwardCache(true);
   }
 
-  if (resource_cache_) {
-    resource_cache_->ClearReceivers();
-    resource_cache_.Clear();
-  }
-
   LoaderFreezeMode freeze_mode = GetLoaderFreezeMode();
   GetDocument()->Fetcher()->SetDefersLoading(freeze_mode);
   Loader().SetDefersLoading(freeze_mode);
@@ -3120,11 +3141,21 @@ void LocalFrame::WasAttachedAsLocalMainFrame() {
 }
 
 void LocalFrame::EvictFromBackForwardCache(
-    mojom::blink::RendererEvictionReason reason) {
+    mojom::blink::RendererEvictionReason reason,
+    std::unique_ptr<SourceLocation> source_location) {
   if (!GetPage()->GetPageScheduler()->IsInBackForwardCache())
     return;
   UMA_HISTOGRAM_ENUMERATION("BackForwardCache.Eviction.Renderer", reason);
-  GetBackForwardCacheControllerHostRemote().EvictFromBackForwardCache(reason);
+  mojom::blink::BlockingDetailsPtr details =
+      mojom::blink::BlockingDetails::New();
+  if (source_location) {
+    details->url = source_location->Url();
+    details->function_name = source_location->Function();
+    details->line_number = source_location->LineNumber();
+    details->column_number = source_location->ColumnNumber();
+  }
+  GetBackForwardCacheControllerHostRemote().EvictFromBackForwardCache(
+      std::move(reason), std::move(details));
 }
 
 void LocalFrame::DidBufferLoadWhileInBackForwardCache(
@@ -3171,11 +3202,6 @@ void LocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {
 #if !BUILDFLAG(IS_ANDROID)
 void LocalFrame::UpdateWindowControlsOverlay(
     const gfx::Rect& bounding_rect_in_dips) {
-  if (!RuntimeEnabledFeatures::WebAppWindowControlsOverlayEnabled(
-          GetDocument()->GetExecutionContext())) {
-    return;
-  }
-
   // The rect passed to us from content is in DIP screen space, relative to the
   // main frame, and needs to move to CSS space. This doesn't take the page's
   // zoom factor into account so we must scale by the inverse of the page zoom
@@ -3298,7 +3324,7 @@ void LocalFrame::NotifyVirtualKeyboardOverlayRectObservers(
     observer->VirtualKeyboardOverlayChanged(rect);
 }
 
-void LocalFrame::AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr info) {
+void LocalFrame::AddInspectorIssue(AuditsIssue info) {
   if (GetPage()) {
     GetPage()->GetInspectorIssueStorage().AddInspectorIssue(DomWindow(),
                                                             std::move(info));
@@ -3795,22 +3821,6 @@ void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {
       return;
     }
   }
-}
-
-void LocalFrame::BindResourceCache(
-    mojo::PendingReceiver<mojom::blink::ResourceCache> receiver) {
-  if (resource_cache_) {
-    resource_cache_->AddReceiver(std::move(receiver));
-  } else {
-    resource_cache_ =
-        MakeGarbageCollected<ResourceCacheImpl>(this, std::move(receiver));
-  }
-}
-
-void LocalFrame::SetResourceCacheRemote(
-    mojo::PendingRemote<mojom::blink::ResourceCache> remote) {
-  CHECK(GetDocument());
-  GetDocument()->Fetcher()->SetResourceCache(std::move(remote));
 }
 
 bool LocalFrame::IsSameOrigin() {

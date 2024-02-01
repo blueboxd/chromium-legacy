@@ -12,6 +12,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/json/values_util.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
@@ -112,6 +113,16 @@ base::TimeDelta kUploadIntervalSeconds = base::Seconds(3600);
 
 // Delay before the Telemetry Service checks its last upload time.
 base::TimeDelta kStartupUploadCheckDelaySeconds = base::Seconds(15);
+
+// Interval for extension telemetry to start another off-store extension
+// file data collection process.
+base::TimeDelta kOffstoreFileDataCollectionIntervalSeconds =
+    base::Seconds(7200);
+
+// Initial delay for extension telemetry to start collecting
+// off-store extension file data.
+base::TimeDelta kOffstoreFileDataCollectionStartupDelaySeconds =
+    base::Seconds(300);
 
 // Limit the off-store file data collection duration.
 base::TimeDelta kOffstoreFileDataCollectionDurationLimitSeconds =
@@ -357,25 +368,31 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
 
     // Create subscriber lists for each telemetry signal type.
     // Map the signal processors to the signals that they consume.
-    std::vector<ExtensionSignalProcessor*> subscribers_for_cookies_get = {
-        signal_processors_[ExtensionSignalType::kCookiesGet].get()};
-    std::vector<ExtensionSignalProcessor*> subscribers_for_cookies_get_all = {
-        signal_processors_[ExtensionSignalType::kCookiesGetAll].get()};
-    std::vector<ExtensionSignalProcessor*>
+    std::vector<raw_ptr<ExtensionSignalProcessor, VectorExperimental>>
+        subscribers_for_cookies_get = {
+            signal_processors_[ExtensionSignalType::kCookiesGet].get()};
+    std::vector<raw_ptr<ExtensionSignalProcessor, VectorExperimental>>
+        subscribers_for_cookies_get_all = {
+            signal_processors_[ExtensionSignalType::kCookiesGetAll].get()};
+    std::vector<raw_ptr<ExtensionSignalProcessor, VectorExperimental>>
         subscribers_for_declarative_net_request = {
             signal_processors_[ExtensionSignalType::kDeclarativeNetRequest]
                 .get()};
-    std::vector<ExtensionSignalProcessor*> subscribers_for_tabs_api = {
-        signal_processors_[ExtensionSignalType::kTabsApi].get()};
-    std::vector<ExtensionSignalProcessor*> subscribers_for_tabs_execute_script =
-        {signal_processors_[ExtensionSignalType::kTabsExecuteScript].get()};
-    std::vector<ExtensionSignalProcessor*>
+    std::vector<raw_ptr<ExtensionSignalProcessor, VectorExperimental>>
+        subscribers_for_tabs_api = {
+            signal_processors_[ExtensionSignalType::kTabsApi].get()};
+    std::vector<raw_ptr<ExtensionSignalProcessor, VectorExperimental>>
+        subscribers_for_tabs_execute_script = {
+            signal_processors_[ExtensionSignalType::kTabsExecuteScript].get()};
+    std::vector<raw_ptr<ExtensionSignalProcessor, VectorExperimental>>
         subscribers_for_remote_host_contacted = {
             signal_processors_[ExtensionSignalType::kRemoteHostContacted].get(),
             signal_processors_[ExtensionSignalType::kPotentialPasswordTheft]
                 .get()};
-    std::vector<ExtensionSignalProcessor*> subscribers_for_password_reuse = {
-        signal_processors_[ExtensionSignalType::kPotentialPasswordTheft].get()};
+    std::vector<raw_ptr<ExtensionSignalProcessor, VectorExperimental>>
+        subscribers_for_password_reuse = {
+            signal_processors_[ExtensionSignalType::kPotentialPasswordTheft]
+                .get()};
 
     signal_subscribers_.emplace(ExtensionSignalType::kCookiesGet,
                                 std::move(subscribers_for_cookies_get));
@@ -399,15 +416,13 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
       config_manager_->LoadConfig();
     }
 
-    if (base::FeatureList::IsEnabled(kExtensionTelemetryFileData)) {
       file_processor_ = base::SequenceBound<ExtensionTelemetryFileProcessor>(
           base::ThreadPool::CreateSequencedTaskRunner(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
       offstore_file_data_collection_timer_.Start(
-          FROM_HERE,
-          base::Seconds(kExtensionTelemetryFileDataStartupDelaySeconds.Get()),
-          this, &ExtensionTelemetryService::StartOffstoreFileDataCollection);
+          FROM_HERE, kOffstoreFileDataCollectionStartupDelaySeconds, this,
+          &ExtensionTelemetryService::StartOffstoreFileDataCollection);
       if (base::FeatureList::IsEnabled(
               kExtensionTelemetryFileDataForCommandLineExtensions)) {
         base::ThreadPool::PostTaskAndReplyWithResult(
@@ -417,7 +432,6 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
                                OnCommandLineExtensionsInfoCollected,
                            weak_factory_.GetWeakPtr()));
       }
-    }
 
     if (current_reporting_interval_.is_positive()) {
       int max_files_supported =
@@ -522,7 +536,8 @@ void ExtensionTelemetryService::AddSignal(
                              GetExtensionInfoForReport(*extension));
   }
 
-  for (auto* processor : signal_subscribers_[signal_type]) {
+  for (safe_browsing::ExtensionSignalProcessor* processor :
+       signal_subscribers_[signal_type]) {
     // Pass the signal as reference instead of relinquishing ownership to the
     // signal processor.
     processor->ProcessSignal(*signal);
@@ -817,9 +832,7 @@ void ExtensionTelemetryService::DumpReportForTest(
         if (!scripts.empty()) {
           ss << "  Signal: TabsExecuteScript\n";
           for (const auto& script_pb : scripts) {
-            ss << "    Script hash: "
-               << base::HexEncode(script_pb.hash().c_str(),
-                                  script_pb.hash().size())
+            ss << "    Script hash: " << base::HexEncode(script_pb.hash())
                << " count: " << script_pb.execution_count() << "\n";
           }
         }
@@ -971,24 +984,24 @@ ExtensionTelemetryService::OffstoreExtensionFileData::
     OffstoreExtensionFileData::OffstoreExtensionFileData(
         const OffstoreExtensionFileData& src) = default;
 
-absl::optional<ExtensionTelemetryService::OffstoreExtensionFileData>
+std::optional<ExtensionTelemetryService::OffstoreExtensionFileData>
 ExtensionTelemetryService::RetrieveOffstoreFileDataForReport(
     const extensions::ExtensionId& extension_id) {
   const auto& pref_dict = GetExtensionTelemetryFileData(*pref_service_);
   const base::Value::Dict* extension_dict = pref_dict.FindDict(extension_id);
   if (!extension_dict) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   const base::Value::Dict* file_data_dict =
       extension_dict->FindDict(kFileDataDictPref);
   if (!file_data_dict || file_data_dict->empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   OffstoreExtensionFileData offstore_extension_file_data;
   base::Value::Dict dict = file_data_dict->Clone();
-  absl::optional<base::Value> manifest_value = dict.Extract(kManifestFile);
+  std::optional<base::Value> manifest_value = dict.Extract(kManifestFile);
   if (manifest_value.has_value()) {
     offstore_extension_file_data.manifest =
         std::move(manifest_value.value().GetString());
@@ -1000,7 +1013,7 @@ ExtensionTelemetryService::RetrieveOffstoreFileDataForReport(
     file_info.set_hash(std::move(file_hash.GetString()));
     offstore_extension_file_data.file_infos.emplace_back(std::move(file_info));
   }
-  return absl::make_optional(offstore_extension_file_data);
+  return std::make_optional(offstore_extension_file_data);
 }
 
 std::unique_ptr<ExtensionInfo>
@@ -1010,9 +1023,17 @@ ExtensionTelemetryService::GetExtensionInfoForReport(
   extension_info->set_id(extension.id());
   extension_info->set_name(extension.name());
   extension_info->set_version(extension.version().GetString());
-  extension_info->set_install_timestamp_msec(
-      extension_prefs_->GetLastUpdateTime(extension.id())
-          .InMillisecondsSinceUnixEpoch());
+  if (extension.location() == ManifestLocation::kCommandLine) {
+    // Set the install timestamp to 0 explicitly for a command-line extension
+    // to indicate that it is not actually installed. This is required
+    // because the extension may still have associated extension prefs
+    // from the last time it was installed (eg. when ESB was disabled).
+    extension_info->set_install_timestamp_msec(0);
+  } else {
+    extension_info->set_install_timestamp_msec(
+        extension_prefs_->GetLastUpdateTime(extension.id())
+            .InMillisecondsSinceUnixEpoch());
+  }
   extension_info->set_is_default_installed(
       extension.was_installed_by_default());
   extension_info->set_is_oem_installed(extension.was_installed_by_oem());
@@ -1030,16 +1051,14 @@ ExtensionTelemetryService::GetExtensionInfoForReport(
   extension_info->set_disable_reasons(
       extension_prefs_->GetDisableReasons(extension.id()));
 
-  if (base::FeatureList::IsEnabled(kExtensionTelemetryFileData)) {
-    absl::optional<OffstoreExtensionFileData> offstore_file_data =
-        RetrieveOffstoreFileDataForReport(extension.id());
+  std::optional<OffstoreExtensionFileData> offstore_file_data =
+      RetrieveOffstoreFileDataForReport(extension.id());
 
-    if (offstore_file_data.has_value()) {
-      extension_info->set_manifest_json(
-          std::move(offstore_file_data.value().manifest));
-      for (auto& file_info : offstore_file_data.value().file_infos) {
-        extension_info->mutable_file_infos()->Add(std::move(file_info));
-      }
+  if (offstore_file_data.has_value()) {
+    extension_info->set_manifest_json(
+        std::move(offstore_file_data.value().manifest));
+    for (auto& file_info : offstore_file_data.value().file_infos) {
+      extension_info->mutable_file_infos()->Add(std::move(file_info));
     }
   }
 
@@ -1095,7 +1114,7 @@ void ExtensionTelemetryService::StartOffstoreFileDataCollection() {
       continue;
     }
 
-    absl::optional<base::Time> timestamp = base::ValueToTime(timestamp_value);
+    std::optional<base::Time> timestamp = base::ValueToTime(timestamp_value);
     if (!timestamp.has_value()) {
       offstore_extension_file_data_contexts_.emplace(extension_id, root_dir);
     } else if (base::Time::Now() - timestamp.value() > base::Days(1)) {
@@ -1168,10 +1187,8 @@ void ExtensionTelemetryService::CollectOffstoreFileData() {
       (base::TimeTicks::Now() - offstore_file_data_collection_start_time_) >=
           offstore_file_data_collection_duration_limit_) {
     offstore_file_data_collection_timer_.Start(
-        FROM_HERE,
-        base::Seconds(
-            kExtensionTelemetryFileDataCollectionIntervalSeconds.Get()),
-        this, &ExtensionTelemetryService::StartOffstoreFileDataCollection);
+        FROM_HERE, kOffstoreFileDataCollectionIntervalSeconds, this,
+        &ExtensionTelemetryService::StartOffstoreFileDataCollection);
 
     // Record only if there are off-store extensions installed.
     if (!offstore_extension_dirs_.empty()) {
@@ -1250,6 +1267,16 @@ void ExtensionTelemetryService::ProcessOffstoreExtensionVerdicts(
   }
   extension_service->PerformActionBasedOnExtensionTelemetryServiceVerdicts(
       blocklist_states);
+}
+
+base::TimeDelta
+ExtensionTelemetryService::GetOffstoreFileDataCollectionStartupDelaySeconds() {
+  return kOffstoreFileDataCollectionStartupDelaySeconds;
+}
+
+base::TimeDelta
+ExtensionTelemetryService::GetOffstoreFileDataCollectionIntervalSeconds() {
+  return kOffstoreFileDataCollectionIntervalSeconds;
 }
 
 }  // namespace safe_browsing

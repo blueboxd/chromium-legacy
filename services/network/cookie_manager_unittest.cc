@@ -37,6 +37,7 @@
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/test_cookie_access_delegate.h"
+#include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_test_util.h"
@@ -764,7 +765,7 @@ TEST_F(CookieManagerTest, GetCookieListCookiePartitionKeyCollection) {
           base::Time(), base::Time(),
           /*secure=*/true, /*httponly=*/false, net::CookieSameSite::LAX_MODE,
           net::COOKIE_PRIORITY_MEDIUM,
-          /*partition_key=*/absl::nullopt),
+          /*partition_key=*/std::nullopt),
       "https", true));
   // Add partitioned cookies.
   ASSERT_TRUE(SetCanonicalCookie(
@@ -1004,7 +1005,7 @@ TEST_F(CookieManagerTest, SecureCookieNonCryptographicPotentiallyTrustworthy) {
   GURL http_localhost_url("http://localhost/path");
   auto http_localhost_cookie = net::CanonicalCookie::Create(
       http_localhost_url, "http_localhost=1; Secure", base::Time::Now(),
-      absl::nullopt, absl::nullopt /* cookie_partition_key */);
+      std::nullopt, std::nullopt /* cookie_partition_key */);
 
   // Secure cookie can be set from non-cryptographic localhost URL.
   EXPECT_TRUE(service_wrapper()
@@ -1025,8 +1026,8 @@ TEST_F(CookieManagerTest, SecureCookieNonCryptographicPotentiallyTrustworthy) {
 
   GURL http_other_url("http://other.test/path");
   auto http_other_cookie = net::CanonicalCookie::Create(
-      http_other_url, "http_other=1; Secure", base::Time::Now(), absl::nullopt,
-      absl::nullopt /* cookie_partition_key */);
+      http_other_url, "http_other=1; Secure", base::Time::Now(), std::nullopt,
+      std::nullopt /* cookie_partition_key */);
 
   // Secure cookie cannot be set from another non-cryptographic URL if there is
   // no CookieAccessDelegate.

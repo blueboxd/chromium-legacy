@@ -10,6 +10,7 @@
 
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
@@ -105,7 +106,7 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
   // Create the page node.
   std::unique_ptr<PageData> page = std::make_unique<PageData>();
   page->page_node = PerformanceManagerImpl::CreatePageNode(
-      WebContentsProxy(weak_factory_.GetWeakPtr()),
+      WebContentsProxy(web_contents->GetWeakPtr()),
       web_contents->GetBrowserContext()->UniqueId(),
       web_contents->GetVisibleURL(), initial_property_flags,
       web_contents->GetLastActiveTime(),
@@ -225,15 +226,14 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
           outer_document_for_fenced_frame, render_frame_host->GetRoutingID(),
           blink::LocalFrameToken(render_frame_host->GetFrameToken()),
           site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
+          render_frame_host->IsActive(),
           base::BindOnce(
-              [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
+              [](const GURL& url, FrameNodeImpl* frame_node) {
                 if (!url.is_empty())
                   frame_node->OnNavigationCommitted(url,
                                                     /* same_document */ false);
-                frame_node->SetIsCurrent(is_current);
               },
-              render_frame_host->GetLastCommittedURL(),
-              render_frame_host->IsActive()));
+              render_frame_host->GetLastCommittedURL()));
 
   frames_[render_frame_host] = std::move(frame);
 }
@@ -420,8 +420,7 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
 
   // Make sure the hierarchical structure is constructed before sending signal
   // to the performance manager.
-  OnMainFrameNavigation(navigation_handle->GetNavigationId(),
-                        navigation_handle->IsSameDocument());
+  OnMainFrameNavigation(navigation_handle->GetNavigationId());
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
@@ -565,20 +564,6 @@ void PerformanceManagerTabHelper::BindDocumentCoordinationUnit(
                      std::move(receiver)));
 }
 
-content::WebContents* PerformanceManagerTabHelper::GetWebContents() const {
-  return web_contents();
-}
-
-int64_t PerformanceManagerTabHelper::LastNavigationId() const {
-  DCHECK(primary_page_);
-  return primary_page_->last_navigation_id;
-}
-
-int64_t PerformanceManagerTabHelper::LastNewDocNavigationId() const {
-  DCHECK(primary_page_);
-  return primary_page_->last_new_doc_navigation_id;
-}
-
 FrameNodeImpl* PerformanceManagerTabHelper::GetFrameNode(
     content::RenderFrameHost* render_frame_host) {
   auto it = frames_.find(render_frame_host);
@@ -593,13 +578,9 @@ void PerformanceManagerTabHelper::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id,
-                                                        bool same_doc) {
+void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
   DCHECK(primary_page_);
 
-  primary_page_->last_navigation_id = navigation_id;
-  if (!same_doc)
-    primary_page_->last_new_doc_navigation_id = navigation_id;
   primary_page_->ukm_source_id =
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
   PerformanceManagerImpl::CallOnGraphImpl(

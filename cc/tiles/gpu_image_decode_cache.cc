@@ -2303,7 +2303,7 @@ void GpuImageDecodeCache::InsertTransferCacheEntry(
   void* data = context_->ContextSupport()->MapTransferCacheEntry(size);
   if (data) {
     bool succeeded = image_entry.Serialize(
-        base::make_span(reinterpret_cast<uint8_t*>(data), size));
+        base::make_span(static_cast<uint8_t*>(data), size));
     DCHECK(succeeded);
     context_->ContextSupport()->UnmapAndCreateTransferCacheEntry(
         image_entry.UnsafeType(), image_entry.Id());
@@ -3135,14 +3135,14 @@ void GpuImageDecodeCache::FlushYUVImages(
 void GpuImageDecodeCache::RunPendingContextThreadOperations() {
   CheckContextLockAcquiredIfNecessary();
 
-  for (auto* image : images_pending_complete_lock_) {
+  for (SkImage* image : images_pending_complete_lock_) {
     context_->ContextSupport()->CompleteLockDiscardableTexureOnContextThread(
         GlIdFromSkImage(image));
   }
   images_pending_complete_lock_.clear();
 
   FlushYUVImages(&yuv_images_pending_unlock_);
-  for (auto* image : images_pending_unlock_) {
+  for (SkImage* image : images_pending_unlock_) {
     context_->RasterInterface()->UnlockDiscardableTextureCHROMIUM(
         GlIdFromSkImage(image));
   }

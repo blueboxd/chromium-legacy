@@ -319,8 +319,7 @@ void SmbService::Mount(const std::string& display_name,
     // Only generate a salt if there's a password and we've been asked to save
     // credentials. If there is no password, there's nothing for smbfs to store
     // and the salt is unused.
-    salt.resize(kSaltLength);
-    crypto::RandBytes(salt);
+    salt = crypto::RandBytesAsVector(kSaltLength);
   }
   SmbShareInfo info(parsed_url, display_name, username, workgroup, use_kerberos,
                     salt);
@@ -388,12 +387,12 @@ void SmbService::MountInternal(
   if (info.use_kerberos()) {
     if (user->IsActiveDirectoryUser()) {
       smbfs_options.kerberos_options =
-          absl::make_optional<SmbFsShare::KerberosOptions>(
+          std::make_optional<SmbFsShare::KerberosOptions>(
               SmbFsShare::KerberosOptions::Source::kActiveDirectory,
               user->GetAccountId().GetObjGuid());
     } else if (kerberos_credentials_updater_) {
       smbfs_options.kerberos_options =
-          absl::make_optional<SmbFsShare::KerberosOptions>(
+          std::make_optional<SmbFsShare::KerberosOptions>(
               SmbFsShare::KerberosOptions::Source::kKerberos,
               kerberos_credentials_updater_->active_account_name());
     } else {

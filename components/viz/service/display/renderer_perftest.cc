@@ -132,17 +132,11 @@ SharedQuadState* CreateTestSharedQuadState(
   const int sorting_context_id = 0;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
-                       mask_filter_info, /*clip_rect=*/absl::nullopt,
+                       mask_filter_info, /*clip_rect=*/std::nullopt,
                        are_contents_opaque, opacity, blend_mode,
                        sorting_context_id, /*layer_id=*/0u,
                        /*fast_rounded_corner=*/false);
   return shared_state;
-}
-
-template <typename T>
-base::span<const uint8_t> MakePixelSpan(const std::vector<T>& vec) {
-  return base::make_span(reinterpret_cast<const uint8_t*>(vec.data()),
-                         vec.size() * sizeof(T));
 }
 
 void DeleteSharedImage(
@@ -177,7 +171,8 @@ TransferableResource CreateTestTexture(
   auto client_shared_image = sii->CreateSharedImage(
       SinglePlaneFormat::kRGBA_8888, size, gfx::ColorSpace(),
       kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ, "TestLabel", MakePixelSpan(pixels));
+      gpu::SHARED_IMAGE_USAGE_DISPLAY_READ, "TestLabel",
+      base::as_byte_span(pixels));
   gpu::SyncToken sync_token = sii->GenVerifiedSyncToken();
 
   TransferableResource gl_resource = TransferableResource::MakeGpu(
@@ -203,12 +198,11 @@ void CreateTestTextureDrawQuad(ResourceId resource_id,
   const gfx::PointF uv_bottom_right(1.0f, 1.0f);
   const bool flipped = false;
   const bool nearest_neighbor = false;
-  const float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   auto* quad = render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
 
   quad->SetNew(shared_state, rect, rect, needs_blending, resource_id,
                premultiplied_alpha, uv_top_left, uv_bottom_right,
-               background_color, vertex_opacity, flipped, nearest_neighbor,
+               background_color, flipped, nearest_neighbor,
                /*secure_output=*/false, gfx::ProtectedVideoType::kClear);
 }
 
@@ -314,7 +308,7 @@ class RendererPerfTest : public VizPerfTest {
     // histogram that can be graphed.
     auto* info = testing::UnitTest::GetInstance()->current_test_info();
     std::string temp_name = base::StringPrintf(
-        "%s.%s.DrawToSwapUs", info->test_case_name(), info->name());
+        "%s.%s.DrawToSwapUs", info->test_suite_name(), info->name());
     auto samples = histogram->SnapshotDelta();
     base::HistogramBase* temp_histogram =
         base::Histogram::FactoryMicrosecondsTimeGet(

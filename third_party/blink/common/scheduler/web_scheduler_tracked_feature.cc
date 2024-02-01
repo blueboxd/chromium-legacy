@@ -134,6 +134,10 @@ FeatureNames FeatureToNames(WebSchedulerTrackedFeature feature) {
       return {"WebSerial", "Serial port open"};
     case WebSchedulerTrackedFeature::kSmartCard:
       return {"SmartCard", "SmartCardContext used"};
+    case WebSchedulerTrackedFeature::kLiveMediaStreamTrack:
+      return {"LiveMediaStreamTrack", "page has live MediaStreamTrack"};
+    case WebSchedulerTrackedFeature::kUnloadHandler:
+      return {"UnloadHandler", "page contains unload handler"};
   }
   return {};
 }

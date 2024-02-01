@@ -8,6 +8,7 @@
 #import "base/containers/contains.h"
 #import "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -31,16 +32,17 @@
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/model/table_view_url_drag_drop_handler.h"
-#import "ios/chrome/browser/favicon/favicon_loader.h"
-#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/favicon/model/favicon_loader.h"
+#import "ios/chrome/browser/favicon/model/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/metrics/model/new_tab_page_uma.h"
-#import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/net/model/crurl.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -61,13 +63,13 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_edit_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/table_view_bookmarks_folder_item.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/bookmarks/home/bookmarks_coordinator.h"
+#import "ios/chrome/browser/ui/bookmarks/home/bookmarks_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
@@ -87,6 +89,7 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/referrer.h"
+#import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/strings/grit/ui_strings.h"
@@ -225,7 +228,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   std::unique_ptr<BookmarkModelBridge> _accountBookmarkModelBridge;
   // The bookmark node that was choosen by an entity outside of the Bookmarks UI
   // and is selected when the view is loaded.
-  const bookmarks::BookmarkNode* _externalBookmark;
+  raw_ptr<const bookmarks::BookmarkNode> _externalBookmark;
   // Whether the view controller was requested to shutdown.
   BOOL _isShutDown;
 }
@@ -283,6 +286,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   _accountBookmarkModelBridge.reset();
   [self.sharingCoordinator stop];
   self.sharingCoordinator = nil;
+}
+
+- (void)updateReviewSettingsPromo {
+  [self.mediator updateReviewSettingsPromo];
 }
 
 - (void)setExternalBookmark:(const bookmarks::BookmarkNode*)node {
@@ -583,6 +590,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
   [self handleRefreshContextBar];
   [self.editingFolderCell stopEdit];
+  [self.tableView.contextMenuInteraction dismissMenu];
   [self.tableView reloadData];
   if (self.mediator.currentlyInEditMode &&
       !self.mediator.selectedNodesForEditMode.empty()) {
@@ -1328,7 +1336,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {
-  [self dismissWithURL:GURL()];
+  if ([self isDisplayingBookmarkRoot]) {
+    [self navigationBarCancel:self];
+  } else {
+    [self back];
+  }
   return YES;
 }
 
@@ -1462,9 +1474,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return;
   }
 
-  new_tab_page_uma::RecordAction(self.browserState->IsOffTheRecord(),
-                                 self.webStateList->GetActiveWebState(),
-                                 new_tab_page_uma::ACTION_OPENED_BOOKMARK);
+  bool is_ntp = self.webStateList->GetActiveWebState()->GetVisibleURL() ==
+                kChromeUINewTabURL;
+  new_tab_page_uma::RecordNTPAction(self.browserState->IsOffTheRecord(), is_ntp,
+                                    new_tab_page_uma::ACTION_OPENED_BOOKMARK);
   base::RecordAction(
       base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
   LogBookmarkUseForDefaultBrowserPromo();
@@ -2450,7 +2463,13 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                      cellForRowAtIndexPath:indexPath];
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
 
-  cell.userInteractionEnabled = (item.type != BookmarksHomeItemTypeMessage);
+  cell.userInteractionEnabled =
+      (item.type != BookmarksHomeItemTypeMessage &&
+       item.type != BookmarksHomeItemTypeBatchUploadRecommendation);
+  if (item.type == BookmarksHomeItemTypeBatchUploadRecommendation) {
+    cell.separatorInset =
+        UIEdgeInsetsMake(0.f, kTableViewSeparatorInset, 0.f, 0.f);
+  }
 
   if (item.type == BookmarksHomeItemTypeBookmark) {
     BookmarksHomeNodeItem* nodeItem =

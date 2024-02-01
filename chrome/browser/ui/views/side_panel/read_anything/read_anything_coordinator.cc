@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/functional/bind.h"
@@ -22,13 +21,14 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_container_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_controller.h"
+#include "chrome/browser/ui/views/side_panel/read_anything/read_anything_side_panel_controller.h"
+#include "chrome/browser/ui/views/side_panel/read_anything/read_anything_side_panel_web_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_toolbar_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
-#include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_prefs.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_untrusted_ui.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/language/core/browser/language_model.h"
@@ -36,29 +36,39 @@
 #include "components/language/core/common/locale_util.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/base/models/combobox_model.h"
 
 namespace {
 
-// Get the list of distillable URLs defined by the Finch experiment parameter.
+// Get the list of distillable URLs defined by the experiment parameter.
+// When ReadAnythingCoordinator observes a tab change, page load complete, or
+// primary page change, it compares the active url against this list of urls
+// to see whether the active page is considered "distillable". This information
+// is then passed on to observers which are gated behind the experiments listed
+// below: omnibox icon and IPH. The list of URLs will be associated as a param
+// of the experiment to ensure that the variation groups that have the
+// experiment enabled also have the list of urls as a param.
 std::vector<std::string> GetDistillableURLs() {
-  return base::SplitString(base::GetFieldTrialParamValueByFeature(
-                               features::kReadAnything, "distillable_urls"),
-                           ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  const base::Feature* feature = nullptr;
+  if (features::IsReadAnythingOmniboxIconEnabled()) {
+    feature = &features::kReadAnythingOmniboxIcon;
+  } else if (base::FeatureList::IsEnabled(
+                 feature_engagement::kIPHReadingModeSidePanelFeature)) {
+    feature = &feature_engagement::kIPHReadingModeSidePanelFeature;
+  }
+  if (feature) {
+    return base::SplitString(
+        base::GetFieldTrialParamValueByFeature(*feature, "distillable_urls"),
+        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
+  return std::vector<std::string>();
 }
 
 base::TimeDelta GetDelaySeconds() {
-  // TODO(francisjp): Pull this value from Finch.
+  // TODO(francisjp): Pull this value from variation.
   return base::Seconds(2);
 }
 
 }  // namespace
-
-using SidePanelWebUIViewT_ReadAnythingUntrustedUI =
-    SidePanelWebUIViewT<ReadAnythingUntrustedUI>;
-DECLARE_TEMPLATE_METADATA(SidePanelWebUIViewT_ReadAnythingUntrustedUI,
-                          SidePanelWebUIViewT);
 
 ReadAnythingCoordinator::ReadAnythingCoordinator(Browser* browser)
     : BrowserUserData<ReadAnythingCoordinator>(*browser),
@@ -99,33 +109,35 @@ void ReadAnythingCoordinator::InitModelWithUserPrefs() {
   std::string prefs_lang = language_model->GetLanguages().front().lang_code;
   prefs_lang = language::ExtractBaseLanguage(prefs_lang);
 
-  std::string prefs_font_name;
-  prefs_font_name = browser->profile()->GetPrefs()->GetString(
+  std::string prefs_font_name = browser->profile()->GetPrefs()->GetString(
       prefs::kAccessibilityReadAnythingFontName);
 
-  double prefs_font_scale;
-  prefs_font_scale = browser->profile()->GetPrefs()->GetDouble(
+  double prefs_font_scale = browser->profile()->GetPrefs()->GetDouble(
       prefs::kAccessibilityReadAnythingFontScale);
 
-  read_anything::mojom::Colors prefs_colors;
-  prefs_colors = static_cast<read_anything::mojom::Colors>(
-      browser->profile()->GetPrefs()->GetInteger(
-          prefs::kAccessibilityReadAnythingColorInfo));
+  bool prefs_links_enabled = browser->profile()->GetPrefs()->GetBoolean(
+      prefs::kAccessibilityReadAnythingLinksEnabled);
 
-  read_anything::mojom::LineSpacing prefs_line_spacing;
-  prefs_line_spacing = static_cast<read_anything::mojom::LineSpacing>(
-      browser->profile()->GetPrefs()->GetInteger(
-          prefs::kAccessibilityReadAnythingLineSpacing));
+  read_anything::mojom::Colors prefs_colors =
+      static_cast<read_anything::mojom::Colors>(
+          browser->profile()->GetPrefs()->GetInteger(
+              prefs::kAccessibilityReadAnythingColorInfo));
 
-  read_anything::mojom::LetterSpacing prefs_letter_spacing;
-  prefs_letter_spacing = static_cast<read_anything::mojom::LetterSpacing>(
-      browser->profile()->GetPrefs()->GetInteger(
-          prefs::kAccessibilityReadAnythingLetterSpacing));
+  read_anything::mojom::LineSpacing prefs_line_spacing =
+      static_cast<read_anything::mojom::LineSpacing>(
+          browser->profile()->GetPrefs()->GetInteger(
+              prefs::kAccessibilityReadAnythingLineSpacing));
+
+  read_anything::mojom::LetterSpacing prefs_letter_spacing =
+      static_cast<read_anything::mojom::LetterSpacing>(
+          browser->profile()->GetPrefs()->GetInteger(
+              prefs::kAccessibilityReadAnythingLetterSpacing));
 
   model_->Init(
       /* lang code = */ prefs_lang,
-      /* font = */ prefs_font_name,
+      /* font name= */ prefs_font_name,
       /* font scale = */ prefs_font_scale,
+      /* links enabled = */ prefs_links_enabled,
       /* colors = */ prefs_colors,
       /* line spacing = */ prefs_line_spacing,
       /* letter spacing = */ prefs_letter_spacing);
@@ -249,17 +261,7 @@ void ReadAnythingCoordinator::OnReadAnythingSidePanelEntryHidden() {
 std::unique_ptr<views::View> ReadAnythingCoordinator::CreateContainerView() {
   Browser* browser = &GetBrowser();
   auto web_view =
-      std::make_unique<SidePanelWebUIViewT<ReadAnythingUntrustedUI>>(
-          /* on_show_cb= */ base::RepeatingClosure(),
-          /* close_cb= */ base::RepeatingClosure(),
-          /* contents_wrapper= */
-          std::make_unique<BubbleContentsWrapperT<ReadAnythingUntrustedUI>>(
-              /* webui_url= */ GURL(
-                  chrome::kChromeUIUntrustedReadAnythingSidePanelURL),
-              /* browser_context= */ browser->profile(),
-              /* task_manager_string_id= */ IDS_READING_MODE_TITLE,
-              /* webui_resizes_host= */ false,
-              /* esc_closes_ui= */ false));
+      std::make_unique<ReadAnythingSidePanelWebView>(browser->profile());
 
   if (features::IsReadAnythingWebUIToolbarEnabled()) {
     return std::move(web_view);

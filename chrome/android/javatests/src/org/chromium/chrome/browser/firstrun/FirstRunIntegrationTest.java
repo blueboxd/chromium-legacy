@@ -57,6 +57,7 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
+import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.ScalableTimeout;
@@ -82,7 +83,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.SigninFirstRunFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.policy.AbstractAppRestrictionsProvider;
@@ -771,7 +771,11 @@ public class FirstRunIntegrationTest {
                 0,
                 secondFreData.abortFirstRunExperienceCallback.getCallCount());
 
-        secondFreActivity.onBackPressed();
+        Assert.assertTrue(
+                "FirstRunActivity should intercept back press",
+                secondFreActivity.getOnBackPressedDispatcher().hasEnabledCallbacks());
+        TestThreadUtils.runOnUiThreadBlocking(
+                secondFreActivity.getOnBackPressedDispatcher()::onBackPressed);
         secondFreData.abortFirstRunExperienceCallback.waitForCallback(
                 "Second FirstRunActivity didn't abort", 0);
         CriteriaHelper.pollInstrumentationThread(
@@ -1285,7 +1289,8 @@ public class FirstRunIntegrationTest {
 
         protected FirstRunNavigationHelper goBackToPreviousPage() throws Exception {
             int jumpCallCount = mScopedObserverData.jumpToPageCallback.getCallCount();
-            TestThreadUtils.runOnUiThreadBlocking(() -> mFirstRunActivity.onBackPressed());
+            TestThreadUtils.runOnUiThreadBlocking(
+                    mFirstRunActivity.getOnBackPressedDispatcher()::onBackPressed);
             mScopedObserverData.jumpToPageCallback.waitForCallback(
                     "Failed go back to previous page", jumpCallCount);
 

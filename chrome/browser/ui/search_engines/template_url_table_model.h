@@ -17,6 +17,10 @@
 class TemplateURL;
 class TemplateURLService;
 
+namespace search_engines {
+enum class ChoiceMadeLocation;
+}
+
 // TemplateURLTableModel is the TableModel implementation used by
 // KeywordEditorView to show the keywords in a TableView.
 //
@@ -74,7 +78,9 @@ class TemplateURLTableModel : public ui::TableModel,
 
   // Make the TemplateURL at |index| the default.  Returns the new index, or -1
   // if the index is invalid or it is already the default.
-  void MakeDefaultTemplateURL(size_t index);
+  void MakeDefaultTemplateURL(
+      size_t index,
+      search_engines::ChoiceMadeLocation choice_location);
 
   // Activates the TemplateURL at the specified index if `is_active` is true and
   // deactivates if false. When the TemplateURL is active, it can be invoked by
@@ -99,7 +105,7 @@ class TemplateURLTableModel : public ui::TableModel,
   raw_ptr<ui::TableModelObserver> observer_;
 
   // The entries.
-  std::vector<TemplateURL*> entries_;
+  std::vector<raw_ptr<TemplateURL, VectorExperimental>> entries_;
 
   // The model we're displaying entries from.
   raw_ptr<TemplateURLService> template_url_service_;

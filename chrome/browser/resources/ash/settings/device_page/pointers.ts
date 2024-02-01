@@ -9,9 +9,9 @@
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
-import '/shared/settings/controls/settings_radio_group.js';
-import '/shared/settings/controls/settings_slider.js';
-import '/shared/settings/controls/settings_toggle_button.js';
+import '../controls/settings_radio_group.js';
+import '../controls/settings_slider.js';
+import '../controls/settings_toggle_button.js';
 import '../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 
@@ -31,7 +31,7 @@ import {getTemplate} from './pointers.html.js';
 const SettingsPointersElementBase =
     DeepLinkingMixin(RouteObserverMixin(PrefsMixin(I18nMixin(PolymerElement))));
 
-class SettingsPointersElement extends SettingsPointersElementBase {
+export class SettingsPointersElement extends SettingsPointersElementBase {
   static get is() {
     return 'settings-pointers';
   }
@@ -143,6 +143,10 @@ class SettingsPointersElement extends SettingsPointersElementBase {
     };
   }
 
+  hasMouse: boolean;
+  hasPointingStick: boolean;
+  hasTouchpad: boolean;
+  hasHapticTouchpad: boolean;
   private isDeviceSettingsSplitEnabled_: boolean;
 
   /**

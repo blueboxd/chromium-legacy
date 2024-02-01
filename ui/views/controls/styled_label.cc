@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -74,7 +75,7 @@ bool StyledLabel::StyleRange::operator<(
 
 struct StyledLabel::LayoutViews {
   // All views to be added as children, line by line.
-  std::vector<std::vector<View*>> views_per_line;
+  std::vector<std::vector<raw_ptr<View, VectorExperimental>>> views_per_line;
 
   // The subset of |views| that are created by StyledLabel itself.  Basically,
   // this is all non-custom views;  These appear in the same order as |views|.
@@ -242,16 +243,31 @@ const StyledLabel::LayoutSizeInfo& StyledLabel::GetLayoutSizeInfoForWidth(
 }
 
 void StyledLabel::SizeToFit(int fixed_width) {
-  CalculateLayout(fixed_width == 0 ? std::numeric_limits<int>::max()
-                                   : fixed_width);
-  gfx::Size size = layout_size_info_.total_size;
+  DCHECK_LE(0, fixed_width);
+  fixed_width_ = fixed_width;
+  gfx::Size size = CalculatePreferredSize(
+      SizeBounds(fixed_width_ == 0 ? SizeBound() : SizeBound(width()), {}));
   size.set_width(std::max(size.width(), fixed_width));
   SetSize(size);
 }
 
 gfx::Size StyledLabel::CalculatePreferredSize() const {
   // Respect any existing size.  If there is none, default to a single line.
-  CalculateLayout((width() == 0) ? std::numeric_limits<int>::max() : width());
+  return CalculatePreferredSize(
+      SizeBounds(width() == 0 ? SizeBound() : SizeBound(width()), {}));
+}
+
+gfx::Size StyledLabel::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
+  int width = 0;
+  if (fixed_width_) {
+    width = fixed_width_;
+  } else if (available_size.width().is_bounded()) {
+    width = available_size.width().value();
+  }
+
+  // Respect any existing size.  If there is none, default to a single line.
+  CalculateLayout(width == 0 ? std::numeric_limits<int>::max() : width);
   return layout_size_info_.total_size;
 }
 
@@ -275,7 +291,7 @@ void StyledLabel::Layout() {
     for (size_t line = 0; line < layout_views_->views_per_line.size(); ++line) {
       const auto& line_size = layout_size_info_.line_sizes[line];
       int x = StartX(width() - line_size.width());
-      for (auto* view : layout_views_->views_per_line[line]) {
+      for (views::View* view : layout_views_->views_per_line[line]) {
         gfx::Size size = view->GetPreferredSize();
         size.set_width(std::min(size.width(), width() - x));
         // Compute the view y such that the view center y and the line center y

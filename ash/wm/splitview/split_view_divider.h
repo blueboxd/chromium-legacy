@@ -68,6 +68,10 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
     is_resizing_with_divider_ = is_resizing_with_divider;
   }
 
+  // Updates `divider_position_` according to the current event location on the
+  // divider widget during resizing.
+  void UpdateDividerPosition(const gfx::Point& location_in_screen);
+
   // Resizing functions used when resizing with `split_view_divider_` in the
   // tablet split view mode or clamshell mode if `kSnapGroup` is enabled.
   void StartResizeWithDivider(const gfx::Point& location_in_screen);
@@ -118,8 +122,6 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void OnTransientChildRemoved(aura::Window* window,
                                aura::Window* transient) override;
 
-  SplitViewDividerView* divider_view_for_testing() { return divider_view_; }
-
  private:
   friend class SplitViewController;
 
@@ -141,19 +143,30 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
 
   const raw_ptr<LayoutDividerController> controller_;
 
+  // The distance between the origin of `divider_widget_` and the origin
+  // of the current display's work area in screen coordinates.
+  //     |<---     divider_position_    --->|
+  //     ---------------------------------------------------------------
+  //     |                                  | |                        |
+  //     |        primary_window_           | |   secondary_window_    |
+  //     |                                  | |                        |
+  //     ---------------------------------------------------------------
+  // Initialized as -1 before `divider_widget_` is created and shown.
+  int divider_position_ = -1;
+
   // Split view divider widget. It's a black bar stretching from one edge of the
   // screen to the other, containing a small white drag bar in the middle. As
   // the user presses on it and drag it to left or right, the left and right
   // window will be resized accordingly.
-  raw_ptr<views::Widget, ExperimentalAsh> divider_widget_ = nullptr;
+  raw_ptr<views::Widget> divider_widget_ = nullptr;
 
   // The contents view of the `divider_widget_`.
-  raw_ptr<SplitViewDividerView, ExperimentalAsh> divider_view_ = nullptr;
+  raw_ptr<SplitViewDividerView> divider_view_ = nullptr;
 
   // This variable indicates the dragging state and records the window being
   // dragged which will be used to refresh the stacking order of the
   // `divider_widget_` to be stacked below the `dragged_window_`.
-  raw_ptr<aura::Window, ExperimentalAsh> dragged_window_ = nullptr;
+  raw_ptr<aura::Window> dragged_window_ = nullptr;
 
   // The window(s) observed by the divider which will be updated upon adding or
   // removing window.

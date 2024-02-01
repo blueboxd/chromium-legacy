@@ -4,6 +4,8 @@
 
 #include "services/network/public/cpp/url_request_mojom_traits.h"
 
+#include <optional>
+
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
@@ -26,7 +28,6 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_request.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
@@ -98,12 +99,12 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.throttling_profile_id = base::UnguessableToken::Create();
   original.fetch_window_id = base::UnguessableToken::Create();
   original.web_bundle_token_params =
-      absl::make_optional(ResourceRequest::WebBundleTokenParams(
+      std::make_optional(ResourceRequest::WebBundleTokenParams(
           GURL("https://bundle.test/"), base::UnguessableToken::Create(),
           mojo::PendingRemote<network::mojom::WebBundleHandle>()));
-  original.net_log_create_info = absl::make_optional(net::NetLogSource(
+  original.net_log_create_info = std::make_optional(net::NetLogSource(
       net::NetLogSourceType::URL_REQUEST, net::NetLog::Get()->NextID()));
-  original.net_log_reference_info = absl::make_optional(net::NetLogSource(
+  original.net_log_reference_info = std::make_optional(net::NetLogSource(
       net::NetLogSourceType::URL_REQUEST, net::NetLog::Get()->NextID()));
   original.devtools_accepted_stream_types =
       std::vector<net::SourceStream::SourceType>(
@@ -124,8 +125,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.trust_token_params = network::mojom::TrustTokenParams();
   original.trust_token_params->issuers.push_back(
       url::Origin::Create(GURL("https://issuer.com")));
-  original.trust_token_params->version =
-      mojom::TrustTokenMajorVersion::kPrivateStateTokenV1;
   original.trust_token_params->operation =
       mojom::TrustTokenOperationType::kRedemption;
   original.trust_token_params->include_timestamp_header = true;

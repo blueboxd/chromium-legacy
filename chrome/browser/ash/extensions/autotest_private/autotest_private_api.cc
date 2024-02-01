@@ -12,6 +12,7 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_public_test_util.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
@@ -25,7 +26,6 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
-#include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -406,8 +406,6 @@ api::autotest_private::AppType GetAppType(apps::AppType type) {
       return api::autotest_private::AppType::kWeb;
     case apps::AppType::kUnknown:
       return api::autotest_private::AppType::kNone;
-    case apps::AppType::kMacOs:
-      return api::autotest_private::AppType::kMacOs;
     case apps::AppType::kStandaloneBrowser:
       return api::autotest_private::AppType::kStandaloneBrowser;
     case apps::AppType::kRemote:
@@ -717,6 +715,10 @@ api::autotest_private::WindowStateType ToWindowStateType(
       return api::autotest_private::WindowStateType::kPrimarySnapped;
     case chromeos::WindowStateType::kSecondarySnapped:
       return api::autotest_private::WindowStateType::kSecondarySnapped;
+    case chromeos::WindowStateType::kPinned:
+      return api::autotest_private::WindowStateType::kPinned;
+    case chromeos::WindowStateType::kTrustedPinned:
+      return api::autotest_private::WindowStateType::kTrustedPinned;
     case chromeos::WindowStateType::kPip:
       return api::autotest_private::WindowStateType::kPip;
     case chromeos::WindowStateType::kFloated:
@@ -729,10 +731,9 @@ api::autotest_private::WindowStateType ToWindowStateType(
 
 std::string GetPngDataAsString(scoped_refptr<base::RefCountedMemory> png_data) {
   // Base64 encode the result so we can return it as a string.
-  std::string base64Png(png_data->front(),
+  std::string base64_png(png_data->front(),
                         png_data->front() + png_data->size());
-  base::Base64Encode(base64Png, &base64Png);
-  return base64Png;
+  return base::Base64Encode(base64_png);
 }
 
 display::Display::Rotation ToRotation(
@@ -884,7 +885,8 @@ ui::KeyboardCode StringToKeyCode(const std::string& str) {
 }
 
 aura::Window* GetActiveWindow() {
-  std::vector<aura::Window*> list = ash::GetAppWindowList();
+  std::vector<raw_ptr<aura::Window, VectorExperimental>> list =
+      ash::GetAppWindowList();
   if (!list.size()) {
     return nullptr;
   }
@@ -995,7 +997,7 @@ class DisplaySmoothnessTracker {
     }
 
     DCHECK_EQ(windows.size(), 1u);
-    auto* root_window = windows[0];
+    auto* root_window = windows[0].get();
     throughput_.push_back(
         100 - root_window->GetHost()->compositor()->GetPercentDroppedFrames());
   }
@@ -1337,7 +1339,7 @@ class EventGenerator {
   }
 
   std::unique_ptr<ui::SystemInputInjector> input_injector_;
-  raw_ptr<aura::WindowTreeHost, ExperimentalAsh> host_;
+  raw_ptr<aura::WindowTreeHost> host_;
   base::TimeTicks next_event_timestamp_;
   const base::TimeDelta interval_;
   base::OnceClosure closure_;
@@ -2976,7 +2978,7 @@ AutotestPrivateTakeScreenshotForDisplayFunction::Run() {
   base::StringToInt64(params->display_id, &target_display_id);
   auto grabber = std::make_unique<ui::ScreenshotGrabber>();
 
-  for (auto* const window : ash::Shell::GetAllRootWindows()) {
+  for (aura::Window* const window : ash::Shell::GetAllRootWindows()) {
     const int64_t display_id =
         display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
     if (display_id == target_display_id) {
@@ -3730,7 +3732,7 @@ AutotestPrivateClearAllowedPrefFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateClearAllowedPrefFunction::Run() {
-  absl::optional<api::autotest_private::ClearAllowedPref::Params> params =
+  std::optional<api::autotest_private::ClearAllowedPref::Params> params =
       api::autotest_private::ClearAllowedPref::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   if (!ClearAllowedPref(Profile::FromBrowserContext(browser_context()),
@@ -3828,7 +3830,8 @@ ExtensionFunction::ResponseAction
 AutotestPrivateIsTabletModeEnabledFunction::Run() {
   DVLOG(1) << "AutotestPrivateIsTabletModeEnabledFunction";
 
-  return RespondNow(WithArguments(ash::TabletMode::Get()->InTabletMode()));
+  return RespondNow(
+      WithArguments(display::Screen::GetScreen()->InTabletMode()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3845,17 +3848,18 @@ AutotestPrivateSetTabletModeEnabledFunction::Run() {
   std::optional<api::autotest_private::SetTabletModeEnabled::Params> params =
       api::autotest_private::SetTabletModeEnabled::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
-  auto* tablet_mode = ash::TabletMode::Get();
-  if (tablet_mode->InTabletMode() == params->enabled) {
-    return RespondNow(WithArguments(ash::TabletMode::Get()->InTabletMode()));
+  if (display::Screen::GetScreen()->InTabletMode() == params->enabled) {
+    return RespondNow(
+        WithArguments(display::Screen::GetScreen()->InTabletMode()));
   }
 
   ash::TabletMode::Waiter waiter(params->enabled);
-  if (!tablet_mode->ForceUiTabletModeState(params->enabled)) {
+  if (!ash::TabletMode::Get()->ForceUiTabletModeState(params->enabled)) {
     return RespondNow(Error("failed to switch the tablet mode state"));
   }
   waiter.Wait();
-  return RespondNow(WithArguments(ash::TabletMode::Get()->InTabletMode()));
+  return RespondNow(
+      WithArguments(display::Screen::GetScreen()->InTabletMode()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4519,7 +4523,7 @@ AutotestPrivateGetAppWindowListFunction::Run() {
   auto window_list = ash::GetAppWindowList();
   std::vector<api::autotest_private::AppWindowInfo> result_list;
 
-  for (auto* window : window_list) {
+  for (aura::Window* window : window_list) {
     if (window->GetId() == aura::Window::kInitialId) {
       window->SetId(id_count--);
     }
@@ -4845,7 +4849,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
                           webapps::AppBannerManager::Observer>
       observation_{this};
   base::OnceCallback<void()> callback_;
-  raw_ptr<webapps::AppBannerManager, ExperimentalAsh> app_banner_manager_;
+  raw_ptr<webapps::AppBannerManager> app_banner_manager_;
 };
 
 // Used to notify when a PWA is installed.
@@ -4888,7 +4892,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
   base::ScopedObservation<web_app::WebAppInstallManager,
                           web_app::WebAppInstallManagerObserver>
       observation_{this};
-  raw_ptr<web_app::WebAppProvider, ExperimentalAsh> provider_;
+  raw_ptr<web_app::WebAppProvider> provider_;
   base::OnceCallback<void(const webapps::AppId&)> callback_;
   base::WeakPtrFactory<
       AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver>
@@ -4989,6 +4993,7 @@ AutotestPrivateActivateAcceleratorFunction::Run() {
   auto* accelerator_controller = ash::AcceleratorController::Get();
   accelerator_controller->GetAcceleratorHistory()->StoreCurrentAccelerator(
       accelerator);
+  accelerator_controller->ApplyAcceleratorForTesting(accelerator);  // IN-TEST
 
   if (!accelerator_controller->IsRegistered(accelerator)) {
     // If it's not ash accelerator, try aplication's accelerator.
@@ -5030,7 +5035,7 @@ AutotestPrivateWaitForLauncherStateFunction::Run() {
   // Exceptionally, allow waiting for kClosed state in clamshell mode, so tests
   // can wait for fullscreen launcher state change to finish when exiting tablet
   // mode.
-  if (!ash::TabletMode::Get()->InTabletMode() &&
+  if (!display::Screen::GetScreen()->InTabletMode() &&
       target_state != ash::AppListViewState::kClosed) {
     return RespondNow(Error("Not supported for bubble launcher"));
   }
@@ -5869,9 +5874,10 @@ void AutotestPrivateStopSmoothnessTrackingFunction::OnReportData(
   timeout_timer_.AbandonAndStop();
 
   api::autotest_private::DisplaySmoothnessData result_data;
-  result_data.frames_expected = frame_data.frames_expected;
-  result_data.frames_produced = frame_data.frames_produced;
-  result_data.jank_count = frame_data.jank_count;
+  result_data.frames_expected = frame_data.frames_expected_v3;
+  result_data.frames_produced =
+      frame_data.frames_expected_v3 - frame_data.frames_dropped_v3;
+  result_data.jank_count = frame_data.jank_count_v3;
   result_data.throughput = std::move(throughput);
 
   Respond(ArgumentList(
@@ -6073,9 +6079,10 @@ AutotestPrivateStopThroughputTrackerDataCollectionFunction::Run() {
     animation_data.stop_offset_ms =
         (data.stop_tick - g_last_start_throughput_data_collection_tick)
             .InMilliseconds();
-    animation_data.frames_expected = data.smoothness_data.frames_expected;
-    animation_data.frames_produced = data.smoothness_data.frames_produced;
-    animation_data.jank_count = data.smoothness_data.jank_count;
+    animation_data.frames_expected = data.smoothness_data.frames_expected_v3;
+    animation_data.frames_produced = data.smoothness_data.frames_expected_v3 -
+                                     data.smoothness_data.frames_dropped_v3;
+    animation_data.jank_count = data.smoothness_data.jank_count_v3;
     result_data.emplace_back(std::move(animation_data));
   }
   return RespondNow(
@@ -6106,9 +6113,10 @@ AutotestPrivateGetThroughputTrackerDataFunction::Run() {
     animation_data.stop_offset_ms =
         (data.stop_tick - g_last_start_throughput_data_collection_tick)
             .InMilliseconds();
-    animation_data.frames_expected = data.smoothness_data.frames_expected;
-    animation_data.frames_produced = data.smoothness_data.frames_produced;
-    animation_data.jank_count = data.smoothness_data.jank_count;
+    animation_data.frames_expected = data.smoothness_data.frames_expected_v3;
+    animation_data.frames_produced = data.smoothness_data.frames_expected_v3 -
+                                     data.smoothness_data.frames_dropped_v3;
+    animation_data.jank_count = data.smoothness_data.jank_count_v3;
     result_data.emplace_back(std::move(animation_data));
   }
   return RespondNow(ArgumentList(
@@ -6882,6 +6890,31 @@ void AutotestPrivateGetArcWakefulnessModeFunction::OnGetWakefulnessStateRespond(
     arc::mojom::WakefulnessMode mode) {
   return Respond(
       WithArguments(api::autotest_private::ToString(GetWakefulnessMode(mode))));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetDeviceLanguageFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetDeviceLanguageFunction::
+    AutotestPrivateSetDeviceLanguageFunction() = default;
+
+AutotestPrivateSetDeviceLanguageFunction::
+    ~AutotestPrivateSetDeviceLanguageFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetDeviceLanguageFunction::Run() {
+  std::optional<api::autotest_private::SetDeviceLanguage::Params> params =
+      api::autotest_private::SetDeviceLanguage::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateSetDeviceLanguageFunction " << params->locale;
+
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  // Note that this only change the prefs, a restart would be required for the
+  // change to take effect.
+  profile->ChangeAppLocale(params->locale,
+                           Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

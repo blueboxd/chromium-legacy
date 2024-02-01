@@ -18,6 +18,7 @@ import os
 import os.path
 import sys
 
+from mojom.generate import compatibility_checker
 from mojom.generate import module
 from mojom.generate import translate
 from mojom.parse import parser
@@ -155,13 +156,22 @@ def _ValidateDelta(root, delta):
           'renamed, please add a [RenamedFrom] attribute to the new type. This '
           'can be deleted by a subsequent change.' % qualified_name)
 
-    checker = module.BackwardCompatibilityChecker()
-    if not checker.IsBackwardCompatible(new_types[new_name], kind):
-      raise Exception('Stable type %s appears to have changed in a way which '
-                      'breaks backward-compatibility. Please fix!\n\nIf you '
-                      'believe this assessment to be incorrect, please file a '
-                      'Chromium bug against the "Internals>Mojo>Bindings" '
-                      'component.' % qualified_name)
+    checker = compatibility_checker.BackwardCompatibilityChecker()
+    try:
+      if not checker.IsBackwardCompatible(new_types[new_name], kind):
+        raise Exception(
+            'Stable type %s appears to have changed in a way which '
+            'breaks backward-compatibility. Please fix!\n\nIf you '
+            'believe this assessment to be incorrect, please file a '
+            'Chromium bug against the "Internals>Mojo>Bindings" '
+            'component.' % qualified_name)
+    except Exception as e:
+      raise Exception(
+          'Stable type %s appears to have changed in a way which '
+          'breaks backward-compatibility: \n\n%s.\nPlease fix!\n\nIf you '
+          'believe this assessment to be incorrect, please file a '
+          'Chromium bug against the "Internals>Mojo>Bindings" '
+          'component.' % (qualified_name, e))
 
 
 def Run(command_line, delta=None):

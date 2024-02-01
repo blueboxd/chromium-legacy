@@ -186,7 +186,7 @@ enum class NotificationCatalogName {
   kMultiCaptureOnLogin = 171,
   kFloatingWorkspace = 172,
   kScalableIphNotification = 173,
-  kUpdateNotification = 174,
+  // [Deprecated] kUpdateNotification = 174,
   kSubAppsUninstall = 175,
   kNetworkCarrierUnlock = 176,
   kCoralFeature = 177,
@@ -228,7 +228,9 @@ enum class NudgeCatalogName {
   kCaptureModeEducationShortcutTutorial = 23,
   kCaptureModeEducationQuickSettingsNudge = 24,
   kGameDashboardControlsNudge = 25,
-  kMaxValue = kGameDashboardControlsNudge
+  // [Deprecated] kWebsiteTelemetryReportingNudge = 26,
+  kStandaloneWindowMigrationUx = 27,
+  kMaxValue = kStandaloneWindowMigrationUx
 };
 
 // A living catalog that registers toasts.
@@ -253,10 +255,10 @@ enum class ToastCatalogName {
   kAssistantLoading = 14,
   kTestCatalogName = 15,
   kMaximumDeskLaunchTemplate = 16,
-  kEnterOverviewGesture = 17,
-  kExitOverviewGesture = 18,
-  kNextDeskGesture = 19,
-  kPreviousDeskGesture = 20,
+  // [Deprecated] kEnterOverviewGesture = 17,
+  // [Deprecated] kExitOverviewGesture = 18,
+  // [Deprecated] kNextDeskGesture = 19,
+  // [Deprecated] kPreviousDeskGesture = 20,
   kMoveVisibleOnAllDesksWindow = 21,
   kAppCannotSnap = 22,
   kCrostiniUnsupportedVirtualKeyboard = 23,
@@ -285,7 +287,8 @@ enum class ToastCatalogName {
   kBatterySaverEnabled = 46,
   kDictationMicMuted = 47,
   kVideoConferenceTraySpeakOnMuteOptInConfirmation = 48,
-  kMaxValue = kVideoConferenceTraySpeakOnMuteOptInConfirmation
+  kAppNotClosable = 49,
+  kMaxValue = kAppNotClosable
 };
 
 }  // namespace ash

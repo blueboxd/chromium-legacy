@@ -32,7 +32,6 @@
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
-#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 #include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom-forward.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -98,7 +97,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SetInsets(const gfx::Insets& insets) override;
   gfx::NativeView GetNativeView() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  bool IsMouseLocked() override;
+  bool IsPointerLocked() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
   // RenderWidgetHostViewBase implementation.
@@ -119,10 +118,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
                                  const gfx::Rect& bounds) override;
   void ClearKeyboardTriggeredTooltip() override;
-  void GestureEventAck(
-      const blink::WebGestureEvent& event,
-      blink::mojom::InputEventResultState ack_result,
-      blink::mojom::ScrollResultDataPtr scroll_result_data) override;
+  void GestureEventAck(const blink::WebGestureEvent& event,
+                       blink::mojom::InputEventResultState ack_result) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
   void ResetFallbackToFirstNavigationSurface() override {}
@@ -130,11 +127,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void DidStopFlinging() override;
-  blink::mojom::PointerLockResult LockMouse(
+  blink::mojom::PointerLockResult LockPointer(
       bool request_unadjusted_movement) override;
-  blink::mojom::PointerLockResult ChangeMouseLock(
+  blink::mojom::PointerLockResult ChangePointerLock(
       bool request_unadjusted_movement) override;
-  void UnlockMouse() override;
+  void UnlockPointer() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
   void NotifyHitTestRegionUpdated(const viz::AggregatedHitTestRegion&) override;
@@ -213,7 +210,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void UpdateViewportIntersection(
       const blink::mojom::ViewportIntersectionState& intersection_state,
-      const absl::optional<blink::VisualProperties>& visual_properties);
+      const std::optional<blink::VisualProperties>& visual_properties);
 
   // TODO(sunxd): Rename SetIsInert to UpdateIsInert.
   void SetIsInert();
@@ -252,7 +249,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // RenderWidgetHostViewBase:
   void UpdateFrameSinkIdRegistration() override;
   void UpdateBackgroundColor() override;
-  absl::optional<DisplayFeature> GetDisplayFeature() override;
+  std::optional<DisplayFeature> GetDisplayFeature() override;
   void SetDisplayFeatureForTesting(
       const DisplayFeature* display_feature) override;
   void NotifyHostAndDelegateOnWasShown(
@@ -308,8 +305,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void ProcessTouchpadZoomEventAckInRoot(
       const blink::WebGestureEvent& event,
-      blink::mojom::InputEventResultState ack_result,
-      blink::mojom::ScrollResultDataPtr scroll_result_data);
+      blink::mojom::InputEventResultState ack_result);
   void ForwardTouchpadZoomEventIfNecessary(
       const blink::WebGestureEvent& event,
       blink::mojom::InputEventResultState ack_result) override;

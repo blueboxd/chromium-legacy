@@ -7,14 +7,13 @@ package org.chromium.chrome.browser.bookmarks;
 import org.chromium.base.FeatureList;
 import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.components.sync.SyncFeatureMap;
 
 /** Self-documenting feature class for bookmarks. */
 public class BookmarkFeatures {
     /** Returns whether an additional "add bookmark" item should be in the overflow menu. */
     public static boolean isBookmarkMenuItemAsDedicatedRowEnabled() {
-        // TODO(wylieb): Remove the BOOKMARKS_REFRESH flag.
         return FeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.BOOKMARKS_REFRESH)
                 && ShoppingFeatures.isShoppingListEligible();
     }
 
@@ -32,6 +31,6 @@ public class BookmarkFeatures {
     }
 
     public static boolean isBookmarksAccountStorageEnabled() {
-        return ChromeFeatureList.sEnableBookmarkFoldersForAccountStorage.isEnabled();
+        return SyncFeatureMap.isEnabled(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE);
     }
 }

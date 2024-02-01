@@ -19,12 +19,10 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
-import org.chromium.chrome.browser.endpoint_fetcher.EndpointFetcher;
-import org.chromium.chrome.browser.endpoint_fetcher.EndpointFetcherJni;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.commerce.core.ShoppingService;
 
 /** Unit tests for {@link CommerceSubscriptionsServiceFactory}. */
@@ -36,10 +34,9 @@ public class CommerceSubscriptionsServiceFactoryUnitTest {
     @Rule public JniMocker mMocker = new JniMocker();
 
     @Mock private Profile mProfileOne;
+    @Mock private Profile mIncognitoProfileOne;
 
     @Mock private Profile mProfileTwo;
-
-    @Mock EndpointFetcher.Natives mEndpointFetcherJniMock;
 
     @Mock ShoppingService mShoppingService;
 
@@ -47,29 +44,32 @@ public class CommerceSubscriptionsServiceFactoryUnitTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         doReturn(false).when(mProfileOne).isOffTheRecord();
+        doReturn(mProfileOne).when(mProfileOne).getOriginalProfile();
+
+        doReturn(true).when(mIncognitoProfileOne).isOffTheRecord();
+        doReturn(mProfileOne).when(mIncognitoProfileOne).getOriginalProfile();
+
         doReturn(false).when(mProfileTwo).isOffTheRecord();
-        mMocker.mock(EndpointFetcherJni.TEST_HOOKS, mEndpointFetcherJniMock);
+        doReturn(mProfileTwo).when(mProfileTwo).getOriginalProfile();
         ShoppingServiceFactory.setShoppingServiceForTesting(mShoppingService);
     }
 
     @Test
     @SmallTest
     public void testFactoryMethod() {
-        CommerceSubscriptionsServiceFactory factory = new CommerceSubscriptionsServiceFactory();
+        CommerceSubscriptionsServiceFactory factory =
+                CommerceSubscriptionsServiceFactory.getInstance();
 
-        Profile.setLastUsedProfileForTesting(mProfileOne);
-        CommerceSubscriptionsService regularProfileOneService = factory.getForLastUsedProfile();
-        Assert.assertEquals(regularProfileOneService, factory.getForLastUsedProfile());
+        CommerceSubscriptionsService regularProfileOneService = factory.getForProfile(mProfileOne);
+        Assert.assertEquals(regularProfileOneService, factory.getForProfile(mProfileOne));
 
-        Profile.setLastUsedProfileForTesting(mProfileTwo);
-        CommerceSubscriptionsService regularProfileTwoService = factory.getForLastUsedProfile();
+        CommerceSubscriptionsService regularProfileTwoService = factory.getForProfile(mProfileTwo);
         Assert.assertNotEquals(regularProfileOneService, regularProfileTwoService);
-        Assert.assertEquals(regularProfileTwoService, factory.getForLastUsedProfile());
+        Assert.assertEquals(regularProfileTwoService, factory.getForProfile(mProfileTwo));
 
-        Profile.setLastUsedProfileForTesting(mProfileOne);
-        Assert.assertEquals(regularProfileOneService, factory.getForLastUsedProfile());
+        Assert.assertEquals(regularProfileOneService, factory.getForProfile(mProfileOne));
+        Assert.assertEquals(regularProfileTwoService, factory.getForProfile(mProfileTwo));
 
-        Profile.setLastUsedProfileForTesting(mProfileTwo);
-        Assert.assertEquals(regularProfileTwoService, factory.getForLastUsedProfile());
+        Assert.assertEquals(regularProfileOneService, factory.getForProfile(mIncognitoProfileOne));
     }
 }

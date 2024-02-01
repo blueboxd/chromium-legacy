@@ -7,9 +7,11 @@
 #include <optional>
 #include <string_view>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
@@ -17,6 +19,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_split.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
@@ -455,18 +458,32 @@ void LanguagePackManager::UpdatePacksForOobe(
 }
 
 void LanguagePackManager::CheckAndUpdateDlcsForInputMethods(
-    PrefService* prefs) {
+    PrefService* pref_service) {
   // The list of input methods have changed. We need to get the list of current
   // DLCs installed on device, which is an asynchronous method.
   DlcserviceClient::Get()->GetExistingDlcs(
-      base::BindOnce(&OnGetExistingDlcs, prefs));
+      base::BindOnce(&OnGetExistingDlcs, pref_service));
+}
+
+void LanguagePackManager::ObservePrefs(PrefService* pref_service) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // This is the main gate for the functionality of observing Prefs.
+  // If this flag is false, all of the cascading logic is disabled.
+  if (base::FeatureList::IsEnabled(features::kLanguagePacksInSettings)) {
+    pref_change_registrar_.Init(pref_service);
+    base::RepeatingClosure callback = base::BindRepeating(
+        &LanguagePackManager::CheckAndUpdateDlcsForInputMethods, pref_service);
+    pref_change_registrar_.Add(ash::prefs::kLanguagePreloadEngines, callback);
+  }
 }
 
 void LanguagePackManager::AddObserver(Observer* const observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.AddObserver(observer);
 }
 
 void LanguagePackManager::RemoveObserver(Observer* const observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
 }
 
@@ -484,6 +501,7 @@ void LanguagePackManager::NotifyPackStateChanged(
 
 void LanguagePackManager::OnDlcStateChanged(
     const dlcservice::DlcState& dlc_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // As of now, we only have Handwriting as a client.
   // We will check the full list once we have more than one DLC.
   const std::optional<std::string> handwriting_locale =
@@ -496,13 +514,16 @@ void LanguagePackManager::OnDlcStateChanged(
 }
 
 LanguagePackManager::LanguagePackManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!g_instance);
   g_instance = this;
   obs_.Observe(DlcserviceClient::Get());
 }
 
 LanguagePackManager::~LanguagePackManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK_EQ(g_instance, this);
+  pref_change_registrar_.RemoveAll();
   g_instance = nullptr;
 }
 

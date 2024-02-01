@@ -8,6 +8,7 @@
 
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/uuid.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/strike_databases/autofill_profile_migration_strike_database.h"
 
@@ -42,6 +43,21 @@ void TestPersonalDataManager::RecordUseOf(
 
     if (profile)
       profile->RecordAndLogUse();
+  }
+}
+
+void TestPersonalDataManager::RecordUseOfIban(Iban& iban) {
+  std::unique_ptr<Iban> updated_iban = std::make_unique<Iban>(iban);
+  std::vector<std::unique_ptr<Iban>>& container =
+      iban.record_type() == Iban::kLocalIban ? local_ibans_ : server_ibans_;
+  auto it =
+      base::ranges::find(container,
+                         iban.record_type() == Iban::kLocalIban
+                             ? GetIbanByGUID(iban.guid())
+                             : GetIbanByInstrumentId(iban.instrument_id()),
+                         &std::unique_ptr<Iban>::get);
+  if (it != container.end()) {
+    it->get()->RecordAndLogUse();
   }
 }
 
@@ -257,7 +273,7 @@ bool TestPersonalDataManager::IsAutofillWalletImportEnabled() const {
   return PersonalDataManager::IsAutofillWalletImportEnabled();
 }
 
-bool TestPersonalDataManager::ShouldSuggestServerCards() const {
+bool TestPersonalDataManager::ShouldSuggestServerPaymentMethods() const {
   return IsAutofillPaymentMethodsEnabled() && IsAutofillWalletImportEnabled();
 }
 
@@ -310,6 +326,13 @@ void TestPersonalDataManager::SetPaymentMethodsMandatoryReauthEnabled(
     bool enabled) {
   payment_methods_mandatory_reauth_enabled_ = enabled;
   PersonalDataManager::SetPaymentMethodsMandatoryReauthEnabled(enabled);
+}
+
+bool TestPersonalDataManager::IsPaymentCvcStorageEnabled() {
+  if (payments_cvc_storage_enabled_.has_value()) {
+    return payments_cvc_storage_enabled_.value();
+  }
+  return PersonalDataManager::IsPaymentCvcStorageEnabled();
 }
 
 void TestPersonalDataManager::AddServerCvc(int64_t instrument_id,

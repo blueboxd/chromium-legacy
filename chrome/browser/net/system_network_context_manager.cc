@@ -29,6 +29,7 @@
 #include "chrome/browser/component_updater/pki_metadata_component_installer.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "chrome/browser/net/convert_explicitly_allowed_network_ports_pref.h"
+#include "chrome/browser/net/network_annotation_monitor.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/sct_reporting_service.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
@@ -79,6 +80,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/cert_verifier_service.mojom.h"
+#include "services/network/public/mojom/network_annotation_monitor.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -103,6 +105,7 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(IS_WIN)
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -290,6 +293,41 @@ NetworkSandboxState IsNetworkSandboxEnabledInternal() {
   return sandbox::policy::features::IsNetworkSandboxEnabled()
              ? NetworkSandboxState::kEnabledByPlatform
              : NetworkSandboxState::kDisabledByPlatform;
+}
+
+std::vector<network::mojom::CTLogInfoPtr> GetStaticCtLogListMojo() {
+  std::vector<std::pair<std::string, base::Time>> disqualified_logs =
+      certificate_transparency::GetDisqualifiedLogs();
+  std::vector<network::mojom::CTLogInfoPtr> log_list_mojo;
+  for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
+    network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
+    log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
+    log_info->id = crypto::SHA256HashString(log_info->public_key);
+    log_info->name = ct_log.log_name;
+    log_info->current_operator = ct_log.current_operator;
+
+    auto it = std::lower_bound(
+        std::begin(disqualified_logs), std::end(disqualified_logs),
+        log_info->id,
+        [](const auto& disqualified_log, const std::string& log_id) {
+          return disqualified_log.first < log_id;
+        });
+    if (it != std::end(disqualified_logs) && it->first == log_info->id) {
+      log_info->disqualified_at = it->second;
+    }
+
+    for (size_t i = 0; i < ct_log.previous_operators_length; i++) {
+      const auto& op = ct_log.previous_operators[i];
+      network::mojom::PreviousOperatorEntryPtr previous_operator =
+          network::mojom::PreviousOperatorEntry::New();
+      previous_operator->name = op.name;
+      previous_operator->end_time = op.end_time;
+      log_info->previous_operators.push_back(std::move(previous_operator));
+    }
+
+    log_list_mojo.push_back(std::move(log_info));
+  }
+  return log_list_mojo;
 }
 
 }  // namespace
@@ -719,53 +757,22 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   gssapi_library_loader_observer_.Install(network_service);
 #endif  // BUILDFLAG(IS_LINUX)
 
-  // Configure the Certificate Transparency logs.
+  // Configure the static Certificate Transparency logs. This must be done
+  // before the PKIMetadataComponentInstallerService
+  // ReconfigureAfterNetworkRestart call below.
   if (IsCertificateTransparencyEnabled()) {
-    std::vector<std::string> operated_by_google_logs =
-        certificate_transparency::GetLogsOperatedByGoogle();
-    std::vector<std::pair<std::string, base::Time>> disqualified_logs =
-        certificate_transparency::GetDisqualifiedLogs();
-    std::vector<network::mojom::CTLogInfoPtr> log_list_mojo;
-    for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
-      network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
-      log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
-      log_info->id = crypto::SHA256HashString(log_info->public_key);
-      log_info->name = ct_log.log_name;
-      log_info->current_operator = ct_log.current_operator;
-
-      log_info->operated_by_google =
-          std::binary_search(std::begin(operated_by_google_logs),
-                             std::end(operated_by_google_logs), log_info->id);
-      auto it = std::lower_bound(
-          std::begin(disqualified_logs), std::end(disqualified_logs),
-          log_info->id,
-          [](const auto& disqualified_log, const std::string& log_id) {
-            return disqualified_log.first < log_id;
-          });
-      if (it != std::end(disqualified_logs) && it->first == log_info->id) {
-        log_info->disqualified_at = it->second;
-      }
-
-      for (size_t i = 0; i < ct_log.previous_operators_length; i++) {
-        const auto& op = ct_log.previous_operators[i];
-        network::mojom::PreviousOperatorEntryPtr previous_operator =
-            network::mojom::PreviousOperatorEntry::New();
-        previous_operator->name = op.name;
-        previous_operator->end_time = op.end_time;
-        log_info->previous_operators.push_back(std::move(previous_operator));
-      }
-
-      log_list_mojo.push_back(std::move(log_info));
-    }
-    network_service->UpdateCtLogList(
-        std::move(log_list_mojo),
+    content::GetCertVerifierServiceFactory()->UpdateCtLogList(
+        GetStaticCtLogListMojo(),
         certificate_transparency::GetLogListTimestamp(), base::DoNothing());
+    network_service->UpdateCtLogList(GetStaticCtLogListMojo(),
+                                     base::DoNothing());
   }
 
   int max_connections_per_proxy =
       local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
-  if (max_connections_per_proxy != -1)
-    network_service->SetMaxConnectionsPerProxy(max_connections_per_proxy);
+  if (max_connections_per_proxy != -1) {
+    network_service->SetMaxConnectionsPerProxyChain(max_connections_per_proxy);
+  }
 
   network_service_network_context_.reset();
   content::CreateNetworkContextInNetworkService(
@@ -785,7 +792,19 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   // The OSCrypt keys are process bound, so if network service is out of
   // process, send it the required key.
   if (content::IsOutOfProcessNetworkService()) {
+#if BUILDFLAG(IS_WIN)
+    // On Windows, if OSCrypt async is enabled, and DPAPI key provider is also
+    // enabled, then OSCrypt manages the encryption key, and there is no need to
+    // send the key separately to OSCrypt sync.
+    if (!base::FeatureList::IsEnabled(
+            features::kUseOsCryptAsyncForCookieEncryption) ||
+        !base::FeatureList::IsEnabled(
+            features::kEnableDPAPIEncryptionProvider)) {
+      network_service->SetEncryptionKey(OSCrypt::GetRawEncryptionKey());
+    }
+#else
     network_service->SetEncryptionKey(OSCrypt::GetRawEncryptionKey());
+#endif  // BUILDFLAG(IS_WIN)
   }
 
   // Configure SCT Auditing in the NetworkService.
@@ -797,6 +816,19 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   UpdateExplicitlyAllowedNetworkPorts();
 
   UpdateIPv6ReachabilityOverrideEnabled();
+
+  if (base::FeatureList::IsEnabled(features::kNetworkAnnotationMonitoring)) {
+    // Create NetworkAnnotationMonitor.
+    if (!network_annotation_monitor_) {
+      network_annotation_monitor_ =
+          std::make_unique<NetworkAnnotationMonitor>();
+    }
+
+    // Pass NetworkAnnotationMonitor remote to NetworkService so that network
+    // calls can be reported.
+    network_service->SetNetworkAnnotationMonitor(
+        network_annotation_monitor_->GetClient());
+  }
 }
 
 void SystemNetworkContextManager::DisableQuic() {
@@ -807,6 +839,15 @@ void SystemNetworkContextManager::DisableQuic() {
   // disable QUIC.
   content::GetNetworkService()->DisableQuic();
 }
+
+#if BUILDFLAG(IS_WIN)
+void SystemNetworkContextManager::
+    AddCookieEncryptionManagerToNetworkContextParams(
+        network::mojom::NetworkContextParams* network_context_params) {
+  network_context_params->cookie_encryption_provider =
+      cookie_encryption_provider_.BindNewRemote();
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(
     network::mojom::NetworkContextParams* network_context_params) {
@@ -953,6 +994,12 @@ void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
     url_loader_factory_.FlushForTesting();
 }
 
+void SystemNetworkContextManager::FlushNetworkAnnotationMonitorForTesting() {
+  if (network_annotation_monitor_) {
+    network_annotation_monitor_->FlushForTesting();  // IN-TEST
+  }
+}
+
 network::mojom::HttpAuthStaticParamsPtr
 SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting() {
   return CreateHttpAuthStaticParams(g_browser_process->local_state());
@@ -964,8 +1011,13 @@ SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting() {
 }
 
 void SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
-    absl::optional<bool> enabled) {
+    std::optional<bool> enabled) {
   certificate_transparency_enabled_for_testing_ = enabled;
+}
+
+void SystemNetworkContextManager::SetCTLogListTimelyForTesting() {
+  content::GetCertVerifierServiceFactory()->UpdateCtLogList(
+      GetStaticCtLogListMojo(), base::Time::Now(), base::DoNothing());
 }
 
 bool SystemNetworkContextManager::IsCertificateTransparencyEnabled() {
@@ -1048,6 +1100,6 @@ StubResolverConfigReader*
     SystemNetworkContextManager::stub_resolver_config_reader_for_testing_ =
         nullptr;
 
-absl::optional<bool>
+std::optional<bool>
     SystemNetworkContextManager::certificate_transparency_enabled_for_testing_ =
-        absl::nullopt;
+        std::nullopt;

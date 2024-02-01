@@ -40,10 +40,10 @@ struct SetSizeParams {
   SetSizeParams();
   ~SetSizeParams();
 
-  absl::optional<bool> enable_auto_size;
-  absl::optional<gfx::Size> min_size;
-  absl::optional<gfx::Size> max_size;
-  absl::optional<gfx::Size> normal_size;
+  std::optional<bool> enable_auto_size;
+  std::optional<gfx::Size> min_size;
+  std::optional<gfx::Size> max_size;
+  std::optional<gfx::Size> normal_size;
 };
 
 // A GuestViewBase is the base class browser-side API implementation for a
@@ -208,8 +208,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Returns the URL of the owner RenderFrameHost's SiteInstance.
   const GURL& GetOwnerSiteURL() const;
 
-  // Returns the host of the owner WebContents. For extensions, this is the
-  // extension ID.
+  // Returns the host of the owner WebContents. If the owner RenderFrameHost is
+  // for an extension, returns the host of its URL, which is an extension ID. If
+  // the owner RenderFrameHost is a non-extension embedder of a Controlled
+  // Frame, returns its serialized origin.
+  // TODO(crbug.com/1517391): Expose this information as a url::Origin.
   std::string owner_host() const { return owner_host_; }
 
   // Whether the guest view is inside a plugin document.
@@ -255,7 +258,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   void SetOpener(GuestViewBase* opener);
 
-  const absl::optional<
+  const std::optional<
       std::pair<base::Value::Dict, content::WebContents::CreateParams>>&
   GetCreateParams() const;
 
@@ -489,7 +492,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // The params used when creating the guest contents. These are saved here in
   // case we need to recreate the guest contents. Not all guest types need to
   // store these.
-  absl::optional<
+  std::optional<
       std::pair<base::Value::Dict, content::WebContents::CreateParams>>
       create_params_;
 

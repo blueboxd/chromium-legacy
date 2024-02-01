@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 
 #import <AuthenticationServices/AuthenticationServices.h>
-#import <MaterialComponents/MaterialSnackbar.h>
 
 #import <optional>
 #import <vector>
@@ -13,19 +12,19 @@
 #import "base/apple/foundation_util.h"
 #import "base/functional/bind.h"
 #import "base/functional/callback.h"
+#import "base/ios/ios_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
-#import "components/commerce/core/shopping_service.h"
 #import "components/favicon/ios/web_favicon_driver.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/feed/core/v2/public/ios/pref_names.h"
 #import "components/history/core/browser/features.h"
-#import "components/ntp_tiles/features.h"
-#import "components/ntp_tiles/metrics.h"
 #import "components/ntp_tiles/most_visited_sites.h"
-#import "components/ntp_tiles/ntp_tile.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
@@ -45,21 +44,14 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/ntp/model/set_up_list.h"
-#import "ios/chrome/browser/ntp/model/set_up_list_delegate.h"
-#import "ios/chrome/browser/ntp/model/set_up_list_item.h"
-#import "ios/chrome/browser/ntp/model/set_up_list_item_type.h"
-#import "ios/chrome/browser/ntp/model/set_up_list_prefs.h"
-#import "ios/chrome/browser/ntp_tiles/model/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
-#import "ios/chrome/browser/parcel_tracking/metrics.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
-#import "ios/chrome/browser/parcel_tracking/tracking_source.h"
 #import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
-#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_constants.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_factory.h"
@@ -79,34 +71,34 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/model/authentication_service_observer_bridge.h"
-#import "ios/chrome/browser/sync/model/enterprise_utils.h"
 #import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/synced_sessions/model/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_tile_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/parcel_tracking_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_shortcut_tile_view.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/most_visited_tiles_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/query_suggestion_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_delegate.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_tile_saver.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/shortcuts_config.h"
+#import "ios/chrome/browser/ui/content_suggestions/parcel_tracking/parcel_tracking_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_prefs.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_state.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view_data.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/start_suggest_service_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_helper.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_item.h"
-#import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_metrics.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/ntp/metrics/home_metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
@@ -115,46 +107,27 @@
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_params.h"
-#import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 
-using credential_provider_promo::IOSCredentialProviderPromoAction;
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 using RequestSource = SearchTermsData::RequestSource;
 
 // The Safety Check (Magic Stack) module runs (at minimum) once every 24 hours.
 constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 
-// Maximum number of most visited tiles fetched.
-const NSInteger kMaxNumMostVisitedTiles = 4;
-
-// Checks the last action the user took on the Credential Provider Promo to
-// determine if it was dismissed.
-bool CredentialProviderPromoDismissed(PrefService* local_state) {
-  IOSCredentialProviderPromoAction last_action =
-      static_cast<IOSCredentialProviderPromoAction>(local_state->GetInteger(
-          prefs::kIosCredentialProviderPromoLastActionTaken));
-  return last_action == IOSCredentialProviderPromoAction::kNo;
-}
-
 }  // namespace
 
 @interface ContentSuggestionsMediator () <AppStateObserver,
-                                          AuthenticationServiceObserving,
-                                          SyncObserverModelBridge,
                                           IdentityManagerObserverBridgeDelegate,
-                                          MostVisitedSitesObserving,
+                                          MostVisitedTilesMediatorDelegate,
+                                          SyncObserverModelBridge,
                                           ReadingListModelBridgeObserver,
                                           PrefObserverDelegate,
                                           SafetyCheckManagerObserver,
-                                          SceneStateObserver,
-                                          SetUpListDelegate,
                                           SyncedSessionsObserver> {
-  std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
-  std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
   std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
       _syncedSessionsObserver;
@@ -173,32 +146,12 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 // Whether the suggestions have been disabled by a policy.
 @property(nonatomic, assign)
     const PrefService::Preference* contentSuggestionsPolicyEnabled;
-
-// Most visited items from the MostVisitedSites service currently displayed.
-@property(nonatomic, strong)
-    NSMutableArray<ContentSuggestionsMostVisitedItem*>* mostVisitedItems;
-@property(nonatomic, strong)
-    NSArray<ContentSuggestionsMostVisitedActionItem*>* actionButtonItems;
-// Most visited items from the MostVisitedSites service (copied upon receiving
-// the callback). Those items are up to date with the model.
-@property(nonatomic, strong)
-    NSMutableArray<ContentSuggestionsMostVisitedItem*>* freshMostVisitedItems;
-// Section Info for the logo and omnibox section.
-@property(nonatomic, strong)
-    ContentSuggestionsSectionInformation* logoSectionInfo;
 // Section Info for the "Return to Recent Tab" section.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* returnToRecentTabSectionInfo;
 // Item for the "Return to Recent Tab" tile.
 @property(nonatomic, strong)
     ContentSuggestionsReturnToRecentTabItem* returnToRecentTabItem;
-// Section Info for the Most Visited section.
-@property(nonatomic, strong)
-    ContentSuggestionsSectionInformation* mostVisitedSectionInfo;
-// Whether the page impression has been recorded.
-@property(nonatomic, assign) BOOL recordedPageImpression;
-// Mediator fetching the favicons for the items.
-@property(nonatomic, strong) ContentSuggestionsFaviconMediator* faviconMediator;
 // Item for the reading list action item.  Reference is used to update the
 // reading list count.
 @property(nonatomic, strong)
@@ -211,12 +164,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 // YES if the Return to Recent Tab tile is being shown.
 @property(nonatomic, assign, getter=mostRecentTabStartSurfaceTileIsShowing)
     BOOL showMostRecentTabStartSurfaceTile;
-// Whether the incognito mode is available.
-@property(nonatomic, assign) BOOL incognitoAvailable;
 // Browser reference.
 @property(nonatomic, assign) Browser* browser;
-// The SetUpList, a list of tasks a new user might want to complete.
-@property(nonatomic, strong) SetUpList* setUpList;
 
 // For testing-only
 @property(nonatomic, assign) BOOL hasReceivedMagicStackResponse;
@@ -229,11 +178,9 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   // Registrar for pref changes notifications.
   PrefChangeRegistrar _prefChangeRegistrar;
   // Local State prefs.
-  PrefService* _localState;
+  raw_ptr<PrefService> _localState;
   // Used by SetUpList to get the sync status.
-  syncer::SyncService* _syncService;
-  // Used by SetUpList to get signed-in status.
-  AuthenticationService* _authenticationService;
+  raw_ptr<syncer::SyncService> _syncService;
   // Used by the Safety Check (Magic Stack) module for the current Safety Check
   // state.
   SafetyCheckState* _safetyCheckState;
@@ -242,9 +189,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
       _identityObserverBridge;
   // Observer for sync service status changes.
   std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
-  // Observer for auth service status changes.
-  std::unique_ptr<AuthenticationServiceObserverBridge>
-      _authServiceObserverBridge;
   // Observer for Safety Check changes.
   std::unique_ptr<SafetyCheckObserverBridge> _safetyCheckManagerObserver;
   // Helper class for the tab resumption tile.
@@ -260,8 +204,9 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   // `magicStackOrder:` if kSegmentationPlatformIosModuleRanker is disabled) and
   // any additions beyond `_magicStackOrderFromSegmentation` (e.g. Set Up List).
   NSArray<NSNumber*>* _latestMagicStackOrder;
-  commerce::ShoppingService* _shoppingService;
-  NSArray<ParcelTrackingItem*>* _parcelTrackingItems;
+  MostVisitedTilesMediator* _mostVisitedTilesMediator;
+  ShortcutsConfig* _shortcutsConfig;
+  SetUpListMediator* _setUpListMediator;
 }
 
 #pragma mark - Public
@@ -277,36 +222,31 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
                       syncService:(syncer::SyncService*)syncService
             authenticationService:(AuthenticationService*)authenticationService
                   identityManager:(signin::IdentityManager*)identityManager
-                  shoppingService:(commerce::ShoppingService*)shoppingService
+                    actionFactory:(BrowserActionFactory*)actionFactory
                           browser:(Browser*)browser {
   self = [super init];
   if (self) {
     _localState = GetApplicationContext()->GetLocalState();
-    _incognitoAvailable = !IsIncognitoModeDisabled(prefService);
     _articleForYouEnabled =
         prefService->FindPreference(prefs::kArticlesForYouEnabled);
     _contentSuggestionsPolicyEnabled =
         prefService->FindPreference(prefs::kNTPContentSuggestionsEnabled);
 
-    _faviconMediator = [[ContentSuggestionsFaviconMediator alloc]
-        initWithLargeIconService:largeIconService
-                  largeIconCache:largeIconCache];
-
-    _logoSectionInfo = LogoSectionInformation();
-    _mostVisitedSectionInfo = MostVisitedSectionInformation();
-
-    _mostVisitedSites = std::move(mostVisitedSites);
-    _mostVisitedBridge =
-        std::make_unique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
-    _mostVisitedSites->AddMostVisitedURLsObserver(_mostVisitedBridge.get(),
-                                                  kMaxNumMostVisitedTiles);
+    _mostVisitedTilesMediator = [[MostVisitedTilesMediator alloc]
+        initWithMostVisitedSite:std::move(mostVisitedSites)
+                    prefService:prefService
+               largeIconService:largeIconService
+                 largeIconCache:largeIconCache
+         URLLoadingBrowserAgent:UrlLoadingBrowserAgent::FromBrowser(browser)];
+    _mostVisitedTilesMediator.delegate = self;
+    _mostVisitedTilesMediator.contentSuggestionsDelegate = self.delegate;
+    _mostVisitedTilesMediator.NTPMetricsDelegate = self.NTPMetricsDelegate;
+    _mostVisitedTilesMediator.actionFactory = actionFactory;
 
     _readingListModelBridge =
         std::make_unique<ReadingListModelBridge>(self, readingListModel);
 
-    _authenticationService = authenticationService;
     _syncService = syncService;
-    _shoppingService = shoppingService;
 
     BOOL isSetupListEnabled = set_up_list_utils::IsSetUpListActive(_localState);
     if (IsTabResumptionEnabled() || isSetupListEnabled) {
@@ -318,26 +258,12 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     }
 
     if (isSetupListEnabled) {
-      _authServiceObserverBridge =
-          std::make_unique<AuthenticationServiceObserverBridge>(
-              _authenticationService, self);
-      _prefObserverBridge = std::make_unique<PrefObserverBridge>(self);
-      _prefChangeRegistrar.Init(_localState);
-      _prefObserverBridge->ObserveChangesForPreference(
-          prefs::kIosCredentialProviderPromoLastActionTaken,
-          &_prefChangeRegistrar);
-      _prefObserverBridge->ObserveChangesForPreference(
-          set_up_list_prefs::kDisabled, &_prefChangeRegistrar);
-      if (CredentialProviderPromoDismissed(_localState)) {
-        set_up_list_prefs::MarkItemComplete(_localState,
-                                            SetUpListItemType::kAutofill);
-      } else {
-        [self checkIfCPEEnabled];
-      }
-      _setUpList = [SetUpList buildFromPrefs:prefService
-                                  localState:_localState
-                                 syncService:syncService
-                       authenticationService:authenticationService];
+      _setUpListMediator = [[SetUpListMediator alloc]
+            initWithPrefService:prefService
+                    syncService:syncService
+                identityManager:identityManager
+          authenticationService:authenticationService
+                     sceneState:browser->GetSceneState()];
     }
 
     if (IsTabResumptionEnabled() &&
@@ -355,8 +281,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     }
 
     SceneState* sceneState = browser->GetSceneState();
-
-    [sceneState addObserver:self];
 
     [sceneState.appState addObserver:self];
 
@@ -381,6 +305,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
           &_prefChangeRegistrar);
 
       _safetyCheckState = [self initialSafetyCheckState];
+      _safetyCheckState.commandhandler = _presentationDelegate;
 
       _safetyCheckManagerObserver = std::make_unique<SafetyCheckObserverBridge>(
           self, IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
@@ -407,11 +332,11 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 }
 
 - (void)disconnect {
-  _mostVisitedBridge.reset();
-  _mostVisitedSites.reset();
+  [_setUpListMediator disconnect];
+  _setUpListMediator = nil;
+  [_mostVisitedTilesMediator disconnect];
+  _mostVisitedTilesMediator = nil;
   _readingListModelBridge.reset();
-  _authenticationService = nullptr;
-  _authServiceObserverBridge.reset();
   _syncObserverBridge.reset();
   _identityObserverBridge.reset();
   _safetyCheckManagerObserver.reset();
@@ -420,37 +345,20 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     _prefChangeRegistrar.RemoveAll();
     _prefObserverBridge.reset();
   }
-  [_setUpList disconnect];
-  _setUpList = nil;
   SceneState* sceneState = self.browser->GetSceneState();
   [sceneState.appState removeObserver:self];
-  [sceneState removeObserver:self];
   _localState = nullptr;
 }
 
 - (void)refreshMostVisitedTiles {
   // Refresh in case there are new MVT to show.
-  _mostVisitedSites->Refresh();
-}
-
-- (void)blockMostVisitedURL:(GURL)URL {
-  _mostVisitedSites->AddOrRemoveBlockedUrl(URL, true);
-  [self useFreshMostVisited];
-}
-
-- (void)allowMostVisitedURL:(GURL)URL {
-  _mostVisitedSites->AddOrRemoveBlockedUrl(URL, false);
-  [self useFreshMostVisited];
+  [_mostVisitedTilesMediator refreshMostVisitedTiles];
 }
 
 - (void)setConsumer:(id<ContentSuggestionsConsumer>)consumer {
   _consumer = consumer;
-  self.faviconMediator.consumer = consumer;
+  _mostVisitedTilesMediator.consumer = consumer;
   [self configureConsumer];
-}
-
-+ (NSUInteger)maxSitesShown {
-  return kMaxNumMostVisitedTiles;
 }
 
 - (void)configureMostRecentTabItemWithWebState:(web::WebState*)webState
@@ -501,7 +409,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 }
 
 - (void)disableSetUpList {
-  set_up_list_prefs::DisableSetUpList(_localState);
+  [_setUpListMediator disableSetUpList];
 }
 
 - (void)disableTabResumption {
@@ -517,49 +425,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   change.index = [self indexForMagicStackModule:type];
   CHECK(change.index != NSNotFound);
   [self.consumer updateMagicStackOrder:change];
-}
-
-- (NSArray<ParcelTrackingItem*>*)parcelTrackingItems {
-  return _parcelTrackingItems;
-}
-
-- (void)disableParcelTracking {
-  DisableParcelTracking(_localState);
-  _shoppingService->StopTrackingAllParcels(base::BindOnce(^(bool){
-  }));
-
-  // Find all parcel tracking modules and remove them.
-  for (NSUInteger i = 0; i < [_latestMagicStackOrder count]; i++) {
-    ContentSuggestionsModuleType type =
-        (ContentSuggestionsModuleType)[_latestMagicStackOrder[i] intValue];
-    if (type == ContentSuggestionsModuleType::kParcelTracking ||
-        type == ContentSuggestionsModuleType::kParcelTrackingSeeMore) {
-      MagicStackOrderChange change{MagicStackOrderChange::Type::kRemove};
-      change.old_module = type;
-      change.index = [self indexForMagicStackModule:type];
-      CHECK(change.index != NSNotFound);
-      [self.consumer updateMagicStackOrder:change];
-    }
-  }
-}
-
-- (void)untrackParcel:(NSString*)parcelID {
-  _shoppingService->StopTrackingParcel(
-      base::SysNSStringToUTF8(parcelID), base::BindOnce(^(bool) {
-        parcel_tracking::RecordParcelsUntracked(
-            TrackingSource::kMagicStackModule, 1);
-      }));
-}
-
-- (void)trackParcel:(NSString*)parcelID carrier:(ParcelType)carrier {
-  commerce::ParcelIdentifier::Carrier carrierValue =
-      [self carrierValueForParcelType:carrier];
-  _shoppingService->StartTrackingParcels(
-      {std::make_pair(carrierValue, base::SysNSStringToUTF8(parcelID))},
-      std::string(),
-      base::BindOnce(
-          ^(bool, std::unique_ptr<std::vector<commerce::ParcelTrackingStatus>>){
-          }));
 }
 
 - (void)logMagicStackEngagementForType:(ContentSuggestionsModuleType)type {
@@ -596,18 +461,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 - (void)onPrimaryAccountChanged:
     (const signin::PrimaryAccountChangeEvent&)event {
   switch (event.GetEventTypeFor(signin::ConsentLevel::kSignin)) {
-    case signin::PrimaryAccountChangeEvent::Type::kSet: {
-      // User has signed in, mark SetUpList item complete. Delayed to allow
-      // Signin UI flow to be fully dismissed before starting SetUpList
-      // completion animation.
-      __weak __typeof(self) weakSelf = self;
-      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-          FROM_HERE, base::BindOnce(^{
-            [weakSelf
-                markSetUpListItemPrefComplete:SetUpListItemType::kSignInSync];
-          }),
-          base::Seconds(0.5));
-    } break;
     case signin::PrimaryAccountChangeEvent::Type::kCleared: {
       if (IsTabResumptionEnabled()) {
         // If the user is signed out, remove the tab resumption tile.
@@ -615,28 +468,10 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
       }
       break;
     }
+    case signin::PrimaryAccountChangeEvent::Type::kSet:
     case signin::PrimaryAccountChangeEvent::Type::kNone:
       break;
   }
-}
-
-#pragma mark - SetUpListDelegate
-
-- (void)setUpListItemDidComplete:(SetUpListItem*)item {
-  __weak __typeof(self) weakSelf = self;
-  ProceduralBlock completion = ^{
-    if ([weakSelf.setUpList allItemsComplete]) {
-      [weakSelf.consumer showSetUpListDoneWithAnimations:^{
-        if (!IsMagicStackEnabled()) {
-          [weakSelf.delegate contentSuggestionsWasUpdated];
-        }
-      }];
-    } else if (IsMagicStackEnabled()) {
-      [weakSelf.consumer scrollToNextMagicStackModuleForCompletedModule:
-                             SetUpListModuleTypeForSetUpListType(item.type)];
-    }
-  };
-  [self.consumer markSetUpListItemComplete:item.type completion:completion];
 }
 
 #pragma mark - ContentSuggestionsCommands
@@ -674,7 +509,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         [self.dispatcher showHistory];
         break;
       case NTPCollectionShortcutTypeWhatsNew:
-        SetWhatsNewUsed(self.promosManager);
         [self.dispatcher showWhatsNew];
         break;
       case NTPCollectionShortcutTypeCount:
@@ -683,15 +517,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     }
     return;
   }
-
-  ContentSuggestionsMostVisitedItem* mostVisitedItem =
-      base::apple::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
-
-  [self logMostVisitedOpening:mostVisitedItem atIndex:mostVisitedIndex];
-
-  UrlLoadParams params = UrlLoadParams::InCurrentTab(mostVisitedItem.URL);
-  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 }
 
 - (void)openMostRecentTab {
@@ -713,7 +538,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 - (void)openTabResumptionItem {
   [self.contentSuggestionsMetricsRecorder recordTabResumptionTabOpened];
   tab_resumption_prefs::SetTabResumptionLastOpenedTabURL(
-      _tabResumptionItem.tabURL, _localState);
+      _tabResumptionItem.tabURL, self.browser->GetBrowserState()->GetPrefs());
   [self logMagicStackEngagementForType:ContentSuggestionsModuleType::
                                            kTabResumption];
 
@@ -735,57 +560,43 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   [self hideTabResumption];
 }
 
-- (void)loadParcelTrackingPage:(GURL)parcelTrackingURL {
-  [self.NTPMetricsDelegate parcelTrackingOpened];
-  ContentSuggestionsModuleType type =
-      [_parcelTrackingItems count] > 2
-          ? ContentSuggestionsModuleType::kParcelTrackingSeeMore
-          : ContentSuggestionsModuleType::kParcelTracking;
-  [self logMagicStackEngagementForType:type];
-  UrlLoadingBrowserAgent::FromBrowser(self.browser)
-      ->Load(UrlLoadParams::InCurrentTab(parcelTrackingURL));
-}
+#pragma mark - ParcelTrackingMediatorDelegate
 
-#pragma mark - ContentSuggestionsGestureCommands
-
-- (void)openNewTabWithMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
-                            incognito:(BOOL)incognito
-                              atIndex:(NSInteger)index
-                            fromPoint:(CGPoint)point {
-  if (incognito &&
-      IsIncognitoModeDisabled(self.browser->GetBrowserState()->GetPrefs())) {
-    // This should only happen when the policy changes while the option is
-    // presented.
-    return;
+- (void)newParcelsAvailable {
+  _latestMagicStackOrder =
+      base::FeatureList::IsEnabled(
+          segmentation_platform::features::kSegmentationPlatformIosModuleRanker)
+          ? [self segmentationMagicStackOrder]
+          : [self magicStackOrder];
+  for (NSUInteger index = 0; index < [_latestMagicStackOrder count]; index++) {
+    ContentSuggestionsModuleType type =
+        (ContentSuggestionsModuleType)[_latestMagicStackOrder[index] intValue];
+    if (type == ContentSuggestionsModuleType::kParcelTracking ||
+        type == ContentSuggestionsModuleType::kParcelTrackingSeeMore) {
+      MagicStackOrderChange change{MagicStackOrderChange::Type::kInsert};
+      change.new_module = type;
+      change.index = index;
+      [self.consumer updateMagicStackOrder:change];
+    }
   }
-  [self logMostVisitedOpening:item atIndex:index];
-  [self openNewTabWithURL:item.URL incognito:incognito originPoint:point];
+
+  [self.consumer showParcelTrackingItems:[self parcelTrackingItems]];
 }
 
-- (void)openNewTabWithMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
-                            incognito:(BOOL)incognito
-                              atIndex:(NSInteger)index {
-  if (incognito &&
-      IsIncognitoModeDisabled(self.browser->GetBrowserState()->GetPrefs())) {
-    // This should only happen when the policy changes while the option is
-    // presented.
-    return;
+- (void)parcelTrackingDisabled {
+  // Find all parcel tracking modules and remove them.
+  for (NSUInteger i = 0; i < [_latestMagicStackOrder count]; i++) {
+    ContentSuggestionsModuleType type =
+        (ContentSuggestionsModuleType)[_latestMagicStackOrder[i] intValue];
+    if (type == ContentSuggestionsModuleType::kParcelTracking ||
+        type == ContentSuggestionsModuleType::kParcelTrackingSeeMore) {
+      MagicStackOrderChange change{MagicStackOrderChange::Type::kRemove};
+      change.old_module = type;
+      change.index = [self indexForMagicStackModule:type];
+      CHECK(change.index != NSNotFound);
+      [self.consumer updateMagicStackOrder:change];
+    }
   }
-  [self logMostVisitedOpening:item atIndex:index];
-  [self openNewTabWithURL:item.URL incognito:incognito originPoint:CGPointZero];
-}
-
-- (void)openNewTabWithMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
-                            incognito:(BOOL)incognito {
-  [self openNewTabWithMostVisitedItem:item
-                            incognito:incognito
-                              atIndex:item.index];
-}
-
-- (void)removeMostVisited:(ContentSuggestionsMostVisitedItem*)item {
-  [self.contentSuggestionsMetricsRecorder recordMostVisitedTileRemoved];
-  [self blockMostVisitedURL:item.URL];
-  [self showMostVisitedUndoForURL:item.URL];
 }
 
 #pragma mark - StartSurfaceRecentTabObserving
@@ -823,64 +634,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   }
 }
 
-#pragma mark - MostVisitedSitesObserving
-
-- (void)onMostVisitedURLsAvailable:
-    (const ntp_tiles::NTPTilesVector&)mostVisited {
-  // This is used by the content widget.
-  content_suggestions_tile_saver::SaveMostVisitedToDisk(
-      mostVisited, self.faviconMediator.mostVisitedAttributesProvider,
-      app_group::ContentWidgetFaviconsFolder());
-
-  self.freshMostVisitedItems = [NSMutableArray array];
-  int index = 0;
-  for (const ntp_tiles::NTPTile& tile : mostVisited) {
-    ContentSuggestionsMostVisitedItem* item =
-        ConvertNTPTile(tile, self.mostVisitedSectionInfo);
-    item.commandHandler = self;
-    item.incognitoAvailable = self.incognitoAvailable;
-    item.index = index;
-    DCHECK(index < kShortcutMinimumIndex);
-    index++;
-    [self.faviconMediator fetchFaviconForMostVisited:item];
-    [self.freshMostVisitedItems addObject:item];
-  }
-
-  [self useFreshMostVisited];
-
-  if (mostVisited.size() && !self.recordedPageImpression) {
-    self.recordedPageImpression = YES;
-    [self recordMostVisitedTilesDisplayed];
-    [self.faviconMediator setMostVisitedDataForLogging:mostVisited];
-    ntp_tiles::metrics::RecordPageImpression(mostVisited.size());
-  }
-}
-
-- (void)onIconMadeAvailable:(const GURL&)siteURL {
-  // This is used by the content widget.
-  content_suggestions_tile_saver::UpdateSingleFavicon(
-      siteURL, self.faviconMediator.mostVisitedAttributesProvider,
-      app_group::ContentWidgetFaviconsFolder());
-
-  for (ContentSuggestionsMostVisitedItem* item in self.mostVisitedItems) {
-    if (item.URL == siteURL) {
-      [self.faviconMediator fetchFaviconForMostVisited:item];
-      return;
-    }
-  }
-}
-
-#pragma mark - SceneStateObserver
-
-- (void)sceneState:(SceneState*)sceneState
-    transitionedToActivationLevel:(SceneActivationLevel)level {
-  if (level == SceneActivationLevelForegroundActive) {
-    if (_setUpList) {
-      [self checkIfCPEEnabled];
-    }
-  }
-}
-
 #pragma mark - SyncedSessionsObserver
 
 - (void)onForeignSessionsChanged {
@@ -889,6 +642,10 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 }
 
 #pragma mark - Private
+
+- (NSArray<ParcelTrackingItem*>*)parcelTrackingItems {
+  return [self.parcelTrackingMediator parcelTrackingItemsToShow];
+}
 
 // Creates the initial `SafetyCheckState` based on the previous check states
 // stored in Prefs, or (for development builds) the overridden check states via
@@ -1017,164 +774,33 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     [self.consumer
         showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
   }
-  if ([self.mostVisitedItems count]) {
-    [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
+  if (_mostVisitedTilesMediator.mostVisitedConfig) {
+    [self.consumer
+        setMostVisitedTilesConfig:_mostVisitedTilesMediator.mostVisitedConfig];
   }
   if ([self shouldShowSetUpList]) {
-    self.setUpList.delegate = self;
-    NSArray<SetUpListItemViewData*>* items = [self setUpListItems];
-    if (IsMagicStackEnabled() && [self.setUpList allItemsComplete]) {
-      SetUpListItemViewData* allSetItem =
-          [[SetUpListItemViewData alloc] initWithType:SetUpListItemType::kAllSet
-                                             complete:NO];
-      [self.consumer showSetUpListWithItems:@[ allSetItem ]];
-    } else {
-      [self.consumer showSetUpListWithItems:items];
-    }
-    [self.contentSuggestionsMetricsRecorder recordSetUpListShown];
-    for (SetUpListItemViewData* item in items) {
-      [self.contentSuggestionsMetricsRecorder
-          recordSetUpListItemShown:item.type];
-    }
+    [self showSetUpList];
   }
   // Show shorcuts if:
   // 1) Magic Stack is enabled (always show shortcuts in Magic Stack).
   // 2) The Set Up List and Magic Stack are not enabled (Set Up List replaced
   // Shortcuts).
   if ((IsMagicStackEnabled() || ![self shouldShowSetUpList])) {
-    [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
+    _shortcutsConfig = [[ShortcutsConfig alloc] init];
+    _shortcutsConfig.shortcutItems = [self shortcutItems];
+    _shortcutsConfig.commandHandler = self;
+    [self.consumer setShortcutTilesConfig:_shortcutsConfig];
   }
 
   if (IsSafetyCheckMagicStackEnabled() &&
       !safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState) &&
       _safetyCheckState.runningState == RunningSafetyCheckState::kDefault) {
+    _safetyCheckState.commandhandler = self.presentationDelegate;
     [self.consumer showSafetyCheck:_safetyCheckState];
   }
   if (IsIOSParcelTrackingEnabled() &&
       !IsParcelTrackingDisabled(GetApplicationContext()->GetLocalState())) {
-    __weak ContentSuggestionsMediator* weakSelf = self;
-    _shoppingService->GetAllParcelStatuses(base::BindOnce(^(
-        bool success,
-        std::unique_ptr<std::vector<commerce::ParcelTrackingStatus>> parcels) {
-      ContentSuggestionsMediator* strongSelf = weakSelf;
-      if (!strongSelf || !success) {
-        return;
-      }
-      [strongSelf parcelStatusesSuccessfullyReceived:std::move(parcels)];
-    }));
   }
-}
-
-// Updates `prefs::kIosSyncSegmentsNewTabPageDisplayCount` with the number of
-// remaining New Tab Page displays that include synced history in the Most
-// Visited Tiles.
-- (void)recordMostVisitedTilesDisplayed {
-  const int displayCount =
-      _localState->GetInteger(prefs::kIosSyncSegmentsNewTabPageDisplayCount) +
-      1;
-
-  _localState->SetInteger(prefs::kIosSyncSegmentsNewTabPageDisplayCount,
-                          displayCount);
-}
-
-// Replaces the Most Visited items currently displayed by the most recent ones.
-- (void)useFreshMostVisited {
-  if (IsMagicStackEnabled()) {
-    const base::Value::List& oldMostVisitedSites =
-        _localState->GetList(prefs::kIosLatestMostVisitedSites);
-    base::Value::List freshMostVisitedSites;
-    for (ContentSuggestionsMostVisitedItem* item in self
-             .freshMostVisitedItems) {
-      freshMostVisitedSites.Append(item.URL.spec());
-    }
-    // Don't check for a change in the Most Visited Sites if the device doesn't
-    // have any saved sites to begin with. This will not log for users with no
-    // top sites that have a new top site, but the benefit of not logging for
-    // new installs outweighs it.
-    if (!oldMostVisitedSites.empty()) {
-      [self lookForNewMostVisitedSite:freshMostVisitedSites
-                  oldMostVisitedSites:oldMostVisitedSites];
-    }
-    _localState->SetList(prefs::kIosLatestMostVisitedSites,
-                         std::move(freshMostVisitedSites));
-  }
-
-  self.mostVisitedItems = self.freshMostVisitedItems;
-  [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
-  [self.delegate contentSuggestionsWasUpdated];
-}
-
-// Logs a User Action if `freshMostVisitedSites` has at least one site that
-// isn't in `oldMostVisitedSites`.
-- (void)
-    lookForNewMostVisitedSite:(const base::Value::List&)freshMostVisitedSites
-          oldMostVisitedSites:(const base::Value::List&)oldMostVisitedSites {
-  for (auto const& freshSiteURLValue : freshMostVisitedSites) {
-    BOOL freshSiteInOldList = NO;
-    for (auto const& oldSiteURLValue : oldMostVisitedSites) {
-      if (freshSiteURLValue.GetString() == oldSiteURLValue.GetString()) {
-        freshSiteInOldList = YES;
-        break;
-      }
-    }
-    if (!freshSiteInOldList) {
-      // Reset impressions since freshness.
-      _localState->SetInteger(
-          prefs::kIosMagicStackSegmentationMVTImpressionsSinceFreshness, 0);
-      base::RecordAction(
-          base::UserMetricsAction("IOSMostVisitedTopSitesChanged"));
-      return;
-    }
-  }
-}
-
-// Opens the `URL` in a new tab `incognito` or not. `originPoint` is the origin
-// of the new tab animation if the tab is opened in background, in window
-// coordinates.
-- (void)openNewTabWithURL:(const GURL&)URL
-                incognito:(BOOL)incognito
-              originPoint:(CGPoint)originPoint {
-  // Open the tab in background if it is non-incognito only.
-  UrlLoadParams params = UrlLoadParams::InNewTab(URL);
-  params.SetInBackground(!incognito);
-  params.in_incognito = incognito;
-  params.append_to = OpenPosition::kCurrentTab;
-  params.origin_point = originPoint;
-  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
-}
-
-// Logs a histogram due to a Most Visited item being opened.
-- (void)logMostVisitedOpening:(ContentSuggestionsMostVisitedItem*)item
-                      atIndex:(NSInteger)mostVisitedIndex {
-  [self.NTPMetricsDelegate mostVisitedTileOpened];
-  if (ShouldPutMostVisitedSitesInMagicStack()) {
-    [self logMagicStackEngagementForType:ContentSuggestionsModuleType::
-                                             kMostVisited];
-  }
-  [self.contentSuggestionsMetricsRecorder
-      recordMostVisitedTileOpened:item
-                          atIndex:mostVisitedIndex
-                         webState:self.webState];
-}
-
-// Shows a snackbar with an action to undo the removal of the most visited item
-// with a `URL`.
-- (void)showMostVisitedUndoForURL:(GURL)URL {
-  MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
-  __weak ContentSuggestionsMediator* weakSelf = self;
-  action.handler = ^{
-    [weakSelf allowMostVisitedURL:URL];
-  };
-  action.title = l10n_util::GetNSString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE);
-  action.accessibilityIdentifier = @"Undo";
-
-  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-  MDCSnackbarMessage* message = [MDCSnackbarMessage
-      messageWithText:l10n_util::GetNSString(
-                          IDS_IOS_NEW_TAB_MOST_VISITED_ITEM_REMOVED)];
-  message.action = action;
-  message.category = @"MostVisitedUndo";
-  [self.dispatcher showSnackbarMessage:message];
 }
 
 // Creates a string containing the title and the time string.
@@ -1200,6 +826,18 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 - (BOOL)shouldShowWhatsNewActionItem {
   if (WasWhatsNewUsed()) {
+    return NO;
+  }
+
+  // TODO(crbug.com/1510484): The FET is not ready upon app launch in the NTP.
+  // Consequently, we must load a URL first and then load the NTP where the FET
+  // becomes ready.
+  feature_engagement::Tracker* tracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  DCHECK(tracker);
+  if (!tracker->WouldTriggerHelpUI(
+          feature_engagement::kIPHWhatsNewUpdatedFeature)) {
     return NO;
   }
 
@@ -1237,12 +875,12 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
   if (IsIOSParcelTrackingEnabled() &&
       !IsParcelTrackingDisabled(GetApplicationContext()->GetLocalState())) {
-    if ([_parcelTrackingItems count] > 2) {
+    if ([[self parcelTrackingItems] firstObject].shouldShowSeeMore) {
       [magicStackModules
           addObject:@(int(
                         ContentSuggestionsModuleType::kParcelTrackingSeeMore))];
     } else {
-      for (NSUInteger i = 0; i < [_parcelTrackingItems count]; i++) {
+      for (NSUInteger i = 0; i < [[self parcelTrackingItems] count]; i++) {
         // Magic Stack will show up to two modules to match the number of
         // parcels tracked.
         [magicStackModules
@@ -1307,11 +945,12 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         if (IsIOSParcelTrackingEnabled() &&
             !IsParcelTrackingDisabled(
                 GetApplicationContext()->GetLocalState())) {
-          if ([_parcelTrackingItems count] > 2) {
+          if ([[self parcelTrackingItems] firstObject].shouldShowSeeMore) {
             [magicStackOrder addObject:@(int(ContentSuggestionsModuleType::
                                                  kParcelTrackingSeeMore))];
           } else {
-            for (NSUInteger i = 0; i < [_parcelTrackingItems count]; i++) {
+            for (NSUInteger i = 0; i < [[self parcelTrackingItems] count];
+                 i++) {
               // Magic Stack will show up to two modules to match the number of
               // parcels tracked.
               [magicStackOrder addObject:moduleNumber];
@@ -1407,18 +1046,17 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 }
 
 - (void)addSetUpListToMagicStackOrder:(NSMutableArray*)order {
-  if (set_up_list_utils::ShouldShowCompactedSetUpListModule()) {
-    [order addObject:@(int(ContentSuggestionsModuleType::kCompactedSetUpList))];
-  } else {
-    if ([self.setUpList allItemsComplete]) {
+    if ([_setUpListMediator allItemsComplete]) {
       [order addObject:@(int(ContentSuggestionsModuleType::kSetUpListAllSet))];
+    } else if (set_up_list_utils::ShouldShowCompactedSetUpListModule()) {
+      [order
+          addObject:@(int(ContentSuggestionsModuleType::kCompactedSetUpList))];
     } else {
-      for (SetUpListItem* model in self.setUpList.items) {
+      for (SetUpListItemViewData* model in _setUpListMediator.setUpListItems) {
         [order
             addObject:@(int(SetUpListModuleTypeForSetUpListType(model.type)))];
       }
     }
-  }
 }
 
 // Adds the Safety Check module to `order` based on the current Safety Check
@@ -1445,8 +1083,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     return NO;
   }
 
-  SetUpList* setUpList = self.setUpList;
-  if (!setUpList || setUpList.items.count == 0) {
+  if (!_setUpListMediator || _setUpListMediator.setUpListItems.count == 0) {
     return NO;
   }
 
@@ -1455,72 +1092,17 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 // Returns an array of all possible items in the Set Up List.
 - (NSArray<SetUpListItemViewData*>*)allSetUpListItems {
-  NSArray<SetUpListItem*>* items = [self.setUpList allItems];
-
-  NSMutableArray<SetUpListItemViewData*>* allItems =
-      [[NSMutableArray alloc] init];
-  for (SetUpListItem* model in items) {
-    SetUpListItemViewData* item =
-        [[SetUpListItemViewData alloc] initWithType:model.type
-                                           complete:model.complete];
-    [allItems addObject:item];
-  }
-  return allItems;
+  return [_setUpListMediator allItems];
 }
 
-// Returns an array of items to display in the Set Up List.
-- (NSArray<SetUpListItemViewData*>*)setUpListItems {
-  // Map the model objects to view objects.
-  NSMutableArray<SetUpListItemViewData*>* items = [[NSMutableArray alloc] init];
-  for (SetUpListItem* model in self.setUpList.items) {
-    SetUpListItemViewData* item =
-        [[SetUpListItemViewData alloc] initWithType:model.type
-                                           complete:model.complete];
-    [items addObject:item];
-  }
-  // For the compacted Set Up List Module in the Magic Stack, there will only be
-  // two items shown.
-  if (IsMagicStackEnabled() &&
-      set_up_list_utils::ShouldShowCompactedSetUpListModule() &&
-      [items count] > 2) {
-    return [items subarrayWithRange:NSMakeRange(0, 2)];
-  }
-  return items;
-}
-
-// Checks if the CPE is enabled and marks the SetUpList Autofill item complete
-// if it is.
-- (void)checkIfCPEEnabled {
-  __weak __typeof(self) weakSelf = self;
-  scoped_refptr<base::SequencedTaskRunner> runner =
-      base::SequencedTaskRunner::GetCurrentDefault();
-  [ASCredentialIdentityStore.sharedStore
-      getCredentialIdentityStoreStateWithCompletion:^(
-          ASCredentialIdentityStoreState* state) {
-        if (state.isEnabled) {
-          // The completion handler sent to ASCredentialIdentityStore is
-          // executed on a background thread. Putting it back onto the main
-          // thread to update local state prefs.
-          runner->PostTask(
-              FROM_HERE, base::BindOnce(^{
-                [weakSelf
-                    markSetUpListItemPrefComplete:SetUpListItemType::kAutofill];
-              }));
-        }
-      }];
-}
-
-// Sets the pref for a SetUpList item to indicate it is complete.
-- (void)markSetUpListItemPrefComplete:(SetUpListItemType)type {
-  set_up_list_prefs::MarkItemComplete(_localState, type);
-}
-
-// Hides the Set Up List with an animation.
-- (void)hideSetUpList {
-  __weak __typeof(self) weakSelf = self;
-  [self.consumer hideSetUpListWithAnimations:^{
-    [weakSelf.delegate contentSuggestionsWasUpdated];
-  }];
+// Sends the SetUpList items up to the consumer.
+- (void)showSetUpList {
+  _setUpListMediator.consumer = self.consumer;
+  _setUpListMediator.commandHandler = self.presentationDelegate;
+  _setUpListMediator.delegate = self.delegate;
+  _setUpListMediator.contentSuggestionsMetricsRecorder =
+      self.contentSuggestionsMetricsRecorder;
+  [_setUpListMediator showSetUpList];
 }
 
 // Shows the tab resumption tile if there is a `_tabResumptionItem` to present.
@@ -1552,11 +1134,13 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 // Shows the tab resumption tile with the given `item` configuration.
 - (void)showTabResumptionWithItem:(TabResumptionItem*)item {
-  if (tab_resumption_prefs::IsLastOpenedURL(item.tabURL, _localState)) {
+  if (tab_resumption_prefs::IsLastOpenedURL(
+          item.tabURL, self.browser->GetBrowserState()->GetPrefs())) {
     return;
   }
 
   _tabResumptionItem = item;
+  _tabResumptionItem.commandHandler = self;
   _latestMagicStackOrder =
       base::FeatureList::IsEnabled(
           segmentation_platform::features::kSegmentationPlatformIosModuleRanker)
@@ -1587,96 +1171,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   _tabResumptionItem = nil;
 }
 
-// Handles a parcel tracking status fetch result from the
-// commerce::ShoppingService.
-- (void)parcelStatusesSuccessfullyReceived:
-    (std::unique_ptr<std::vector<commerce::ParcelTrackingStatus>>)
-        parcelStatuses {
-  NSMutableArray* parcelItems = [NSMutableArray array];
-
-  for (auto iter = parcelStatuses->begin(); iter != parcelStatuses->end();
-       ++iter) {
-    ParcelTrackingItem* item = [[ParcelTrackingItem alloc] init];
-    item.parcelType = [self parcelTypeforCarrierValue:iter->carrier];
-    item.estimatedDeliveryTime = iter->estimated_delivery_time;
-    item.parcelID = base::SysUTF8ToNSString(iter->tracking_id);
-    item.trackingURL = iter->tracking_url;
-    item.status = (ParcelState)iter->state;
-    [parcelItems addObject:item];
-
-    if (iter->estimated_delivery_time < base::Time::Now() - base::Days(2)) {
-      // Parcel was delivered more than two days ago, make this the last time it
-      // is shown by stopping tracking.
-      _shoppingService->StopTrackingParcel(iter->tracking_id,
-                                           base::BindOnce(^(bool){
-                                           }));
-    }
-  }
-
-  if ([parcelItems count] > 0) {
-    _parcelTrackingItems = parcelItems;
-    [self logParcelTrackingFreshnessSignalIfApplicable];
-    _latestMagicStackOrder =
-        base::FeatureList::IsEnabled(segmentation_platform::features::
-                                         kSegmentationPlatformIosModuleRanker)
-            ? [self segmentationMagicStackOrder]
-            : [self magicStackOrder];
-    for (NSUInteger index = 0; index < [_latestMagicStackOrder count];
-         index++) {
-      ContentSuggestionsModuleType type = (ContentSuggestionsModuleType)
-          [_latestMagicStackOrder[index] intValue];
-      if (type == ContentSuggestionsModuleType::kParcelTracking ||
-          type == ContentSuggestionsModuleType::kParcelTrackingSeeMore) {
-        MagicStackOrderChange change{MagicStackOrderChange::Type::kInsert};
-        change.new_module = type;
-        change.index = index;
-        [self.consumer updateMagicStackOrder:change];
-      }
-    }
-    [self.consumer showParcelTrackingItems:parcelItems];
-  }
-}
-
-// Logs a freshness signal for the Parcel Tracking module if there is at least
-// one parcel with an estimated delivery date within the next two days.
-- (void)logParcelTrackingFreshnessSignalIfApplicable {
-  for (ParcelTrackingItem* item in _parcelTrackingItems) {
-    base::Time now = base::Time::Now();
-    if (item.estimatedDeliveryTime > now &&
-        item.estimatedDeliveryTime < now + base::Days(2)) {
-      RecordModuleFreshnessSignal(
-          ContentSuggestionsModuleType::kParcelTracking);
-      return;
-    }
-  }
-}
-
-// Maps the carrier int value into a ParcelType.
-- (ParcelType)parcelTypeforCarrierValue:(int)carrier {
-  if (carrier == 1) {
-    return ParcelType::kFedex;
-  } else if (carrier == 2) {
-    return ParcelType::kUPS;
-  } else if (carrier == 4) {
-    return ParcelType::kUSPS;
-  }
-  return ParcelType::kUnkown;
-}
-
-- (commerce::ParcelIdentifier::Carrier)carrierValueForParcelType:
-    (ParcelType)parcelType {
-  switch (parcelType) {
-    case ParcelType::kUSPS:
-      return commerce::ParcelIdentifier::Carrier(4);
-    case ParcelType::kUPS:
-      return commerce::ParcelIdentifier::Carrier(2);
-    case ParcelType::kFedex:
-      return commerce::ParcelIdentifier::Carrier(1);
-    default:
-      return commerce::ParcelIdentifier::Carrier(0);
-  }
-}
-
 // Returns the index rank of `moduleType`.
 // Callers of this need to handle a NSNotFound return case and do nothing in
 // that case.
@@ -1705,44 +1199,44 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   return YES;
 }
 
-#pragma mark - Properties
-
-- (NSArray<ContentSuggestionsMostVisitedActionItem*>*)actionButtonItems {
-  if (!_actionButtonItems) {
-    self.readingListItem = ReadingListActionItem();
-    self.readingListItem.count = self.readingListUnreadCount;
-    self.readingListItem.disabled = !self.readingListModelIsLoaded;
-    _actionButtonItems = @[
-      [self shouldShowWhatsNewActionItem] ? WhatsNewActionItem()
-                                          : BookmarkActionItem(),
-      self.readingListItem, RecentTabsActionItem(), HistoryActionItem()
-    ];
-    for (ContentSuggestionsMostVisitedActionItem* item in _actionButtonItems) {
-      item.accessibilityTraits = UIAccessibilityTraitButton;
-    }
-  }
-  return _actionButtonItems;
+- (void)shortcutsTapped:(UIGestureRecognizer*)sender {
+  ContentSuggestionsShortcutTileView* shortcutView =
+      static_cast<ContentSuggestionsShortcutTileView*>(sender.view);
+  int index = static_cast<int>(shortcutView.config.index);
+  [self openMostVisitedItem:shortcutView.config atIndex:index];
 }
 
-- (void)setCommandHandler:
-    (id<ContentSuggestionsCommands, ContentSuggestionsGestureCommands>)
-        commandHandler {
+#pragma mark - Properties
+
+- (NSArray<ContentSuggestionsMostVisitedActionItem*>*)shortcutItems {
+  self.readingListItem = ReadingListActionItem();
+  self.readingListItem.count = self.readingListUnreadCount;
+  self.readingListItem.disabled = !self.readingListModelIsLoaded;
+  NSArray<ContentSuggestionsMostVisitedActionItem*>* shortcuts = @[
+    [self shouldShowWhatsNewActionItem] ? WhatsNewActionItem()
+                                        : BookmarkActionItem(),
+    self.readingListItem, RecentTabsActionItem(), HistoryActionItem()
+  ];
+  return shortcuts;
+}
+
+- (void)setCommandHandler:(id<ContentSuggestionsCommands>)commandHandler {
   if (_commandHandler == commandHandler)
     return;
 
   _commandHandler = commandHandler;
+}
 
-  for (ContentSuggestionsMostVisitedItem* item in self.freshMostVisitedItems) {
-    item.commandHandler = commandHandler;
-  }
+- (void)setDispatcher:
+    (id<ApplicationCommands, BrowserCoordinatorCommands, SnackbarCommands>)
+        dispatcher {
+  _dispatcher = dispatcher;
+  _mostVisitedTilesMediator.snackbarHandler = _dispatcher;
 }
 
 - (void)setContentSuggestionsMetricsRecorder:
     (ContentSuggestionsMetricsRecorder*)contentSuggestionsMetricsRecorder {
-  CHECK(self.faviconMediator);
   _contentSuggestionsMetricsRecorder = contentSuggestionsMetricsRecorder;
-  self.faviconMediator.contentSuggestionsMetricsRecorder =
-      self.contentSuggestionsMetricsRecorder;
 }
 
 - (BOOL)contentSuggestionsEnabled {
@@ -1753,13 +1247,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 #pragma mark - PrefObserverDelegate
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
-  if (preferenceName == prefs::kIosCredentialProviderPromoLastActionTaken &&
-      CredentialProviderPromoDismissed(_localState)) {
-    [self markSetUpListItemPrefComplete:SetUpListItemType::kAutofill];
-  } else if (preferenceName == set_up_list_prefs::kDisabled &&
-             set_up_list_prefs::IsSetUpListDisabled(_localState)) {
-    [self hideSetUpList];
-  }
   if (IsTabResumptionEnabled()) {
     if (_tabResumptionItem &&
         tab_resumption_prefs::IsTabResumptionDisabled(_localState)) {
@@ -1816,6 +1303,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 - (void)runningStateChanged:(RunningSafetyCheckState)state {
   _safetyCheckState.runningState = state;
+  _safetyCheckState.shouldShowSeeMore = CheckIssuesCount(_safetyCheckState) > 2;
 
   if (safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState)) {
     // Safety Check can be disabled by long-pressing the module, so
@@ -1827,6 +1315,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   // Ensures the consumer gets the latest Safety Check state only when the
   // running state changes; this avoids calling the consumer every time an
   // individual check state changes.
+  _safetyCheckState.commandhandler = self.presentationDelegate;
   [self.consumer showSafetyCheck:_safetyCheckState];
 }
 
@@ -1844,47 +1333,19 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   self.readingListUnreadCount = model->unread_size();
   self.readingListModelIsLoaded = model->loaded();
   if (self.readingListItem) {
-    self.readingListItem.count = self.readingListUnreadCount;
-    self.readingListItem.disabled = !self.readingListModelIsLoaded;
-    [self.consumer updateShortcutTileConfig:self.readingListItem];
+    _shortcutsConfig.shortcutItems = [self shortcutItems];
+    [self.consumer setShortcutTilesConfig:_shortcutsConfig];
   }
 }
 
 #pragma mark - SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
-  if (_setUpList) {
-    if (_syncService->HasDisableReason(
-            syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
-        HasManagedSyncDataType(_syncService)) {
-      // Sync is now disabled, so mark the SetUpList item complete so that it
-      // cannot be used again.
-      [self markSetUpListItemPrefComplete:SetUpListItemType::kSignInSync];
-    }
-  }
   if (IsTabResumptionEnabled()) {
     // If tabs are not synced, hide the tab resumption tile.
     if (!_syncService->GetUserSettings()->GetSelectedTypes().Has(
             syncer::UserSelectableType::kTabs)) {
       [self hideTabResumption];
-    }
-  }
-}
-
-#pragma mark - AuthenticationServiceObserving
-
-- (void)onServiceStatusChanged {
-  if (_setUpList) {
-    switch (_authenticationService->GetServiceStatus()) {
-      case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
-      case AuthenticationService::ServiceStatus::SigninAllowed:
-        break;
-      case AuthenticationService::ServiceStatus::SigninDisabledByUser:
-      case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
-      case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
-        // Signin is now disabled, so mark the SetUpList item complete so that
-        // it cannot be used again.
-        [self markSetUpListItemPrefComplete:SetUpListItemType::kSignInSync];
     }
   }
 }

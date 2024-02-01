@@ -9,14 +9,18 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/logging.h"
 #include "base/notreached.h"
 #include "base/process/launch.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions_win.h"
+#include "base/strings/string_util.h"
 #include "base/strings/string_util_win.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/win/scoped_localalloc.h"
 #include "chrome/updater/app/app_install_progress.h"
+#include "chrome/updater/app/app_install_util_win.h"
 #include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/ui/l10n_util.h"
 #include "chrome/updater/win/ui/resources/updater_installer_strings.h"
@@ -634,40 +638,6 @@ void ProgressWnd::OnComplete(const ObserverCompletionInfo& observer_info) {
   }
 
   ChangeControlState();
-}
-
-HRESULT ProgressWnd::LaunchCmdLine(const AppCompletionInfo& app_info) {
-  if (app_info.post_install_launch_command_line.empty()) {
-    return S_OK;
-  }
-
-  if (app_info.completion_code !=
-          CompletionCodes::COMPLETION_CODE_LAUNCH_COMMAND &&
-      app_info.completion_code !=
-          CompletionCodes::COMPLETION_CODE_EXIT_SILENTLY_ON_LAUNCH_COMMAND) {
-    return S_OK;
-  }
-
-  CHECK(SUCCEEDED(app_info.error_code));
-  CHECK(!app_info.is_noupdate);
-
-  auto process = base::LaunchProcess(
-      base::UTF8ToWide(app_info.post_install_launch_command_line), {});
-  return process.IsValid() ? S_OK : HRESULTFromLastError();
-}
-
-bool ProgressWnd::LaunchCmdLines(const ObserverCompletionInfo& info) {
-  bool result = true;
-
-  for (size_t i = 0; i < info.apps_info.size(); ++i) {
-    const AppCompletionInfo& app_info = info.apps_info[i];
-    if (FAILED(app_info.error_code)) {
-      continue;
-    }
-    result &= SUCCEEDED(LaunchCmdLine(app_info));
-  }
-
-  return result;
 }
 
 HRESULT ProgressWnd::ChangeControlState() {

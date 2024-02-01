@@ -70,7 +70,7 @@ bool SkiaOutputDeviceOffscreen::Reshape(const SkImageInfo& image_info,
 }
 
 void SkiaOutputDeviceOffscreen::Present(
-    const absl::optional<gfx::Rect>& update_rect,
+    const std::optional<gfx::Rect>& update_rect,
     BufferPresentedCallback feedback,
     OutputSurfaceFrame frame) {
   // Reshape should have been called first.
@@ -161,7 +161,7 @@ SkSurface* SkiaOutputDeviceOffscreen::BeginPaint(
     std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK(backend_texture_.isValid() || graphite_texture_.isValid());
   if (!sk_surface_) {
-    SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
+    SkSurfaceProps surface_props;
     if (gr_context_) {
       sk_surface_ = SkSurfaces::WrapBackendTexture(
           context_state_->gr_context(), backend_texture_,

@@ -11,6 +11,8 @@ import 'chrome://resources/polymer/v3_0/iron-location/iron-location.js';
 import 'chrome://resources/polymer/v3_0/iron-location/iron-query-params.js';
 
 import {assert} from 'chrome://resources/ash/common/assert.js';
+import {isSeaPenEnabled} from 'chrome://resources/ash/common/sea_pen/load_time_booleans.js';
+import {SeaPenQueryParams} from 'chrome://resources/ash/common/sea_pen/sea_pen_router_element.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -19,6 +21,7 @@ import {GooglePhotosAlbum, TopicSource, WallpaperCollection} from '../personaliz
 import {isAmbientModeAllowed} from './load_time_booleans.js';
 import {logPersonalizationPathUMA} from './personalization_metrics_logger.js';
 import {getTemplate} from './personalization_router_element.html.js';
+import {WallpaperObserver} from './wallpaper/wallpaper_observer.js';
 
 export enum Paths {
   AMBIENT = '/ambient',
@@ -37,14 +40,13 @@ export enum ScrollableTarget {
   TOPIC_SOURCE_LIST = 'topic-source-list'
 }
 
-export interface QueryParams {
+export interface QueryParams extends SeaPenQueryParams {
   id?: string;
   googlePhotosAlbumId?: string;
   // If present, expected to always be 'true'.
   googlePhotosAlbumIsShared?: 'true';
   topicSource?: string;
   scrollTo?: ScrollableTarget;
-  seaPenTemplateId?: string;
 }
 
 export function isPathValid(path: string|null): boolean {
@@ -63,9 +65,17 @@ export function isAmbientPathNotAllowed(path: string|null): boolean {
   return isAmbientPath(path) && !isAmbientModeAllowed();
 }
 
+export function isSeaPenPath(path: string|null): boolean {
+  return !!path && path.startsWith(Paths.SEA_PEN_COLLECTION);
+}
+
+export function isSeaPenPathNotAllowed(path: string|null): boolean {
+  return isSeaPenPath(path) && !isSeaPenEnabled();
+}
+
 export class PersonalizationRouterElement extends PolymerElement {
   static get is() {
-    return 'personalization-router';
+    return 'personalization-router' as const;
   }
 
   static get template() {
@@ -86,15 +96,22 @@ export class PersonalizationRouterElement extends PolymerElement {
       queryParams_: {
         type: Object,
       },
+
+      seaPenBasePath_: {
+        type: String,
+        value() {
+          return Paths.SEA_PEN_COLLECTION;
+        },
+      },
     };
   }
   private path_: string;
   private query_: string;
   private queryParams_: QueryParams;
+  private seaPenBasePath_: string;
 
   static instance(): PersonalizationRouterElement {
-    return document.querySelector(PersonalizationRouterElement.is) as
-        PersonalizationRouterElement;
+    return document.querySelector(PersonalizationRouterElement.is)!;
   }
 
   static reloadAtRoot() {
@@ -117,6 +134,7 @@ export class PersonalizationRouterElement extends PolymerElement {
 
   override connectedCallback() {
     super.connectedCallback();
+    WallpaperObserver.initWallpaperObserverIfNeeded();
   }
 
   get collectionId() {
@@ -152,10 +170,6 @@ export class PersonalizationRouterElement extends PolymerElement {
     this.goToRoute(Paths.AMBIENT_ALBUMS, {topicSource: topicSource.toString()});
   }
 
-  selectSeaPenTemplate(templateId: string) {
-    this.goToRoute(Paths.SEA_PEN_COLLECTION, {seaPenTemplateId: templateId});
-  }
-
   goToRoute(path: Paths, queryParams: QueryParams = {}) {
     this.setProperties({path_: path, queryParams_: queryParams});
   }
@@ -175,7 +189,12 @@ export class PersonalizationRouterElement extends PolymerElement {
   }
 
   private shouldShowWallpaperSubpage_(path: string|null): boolean {
-    return !!path && path.startsWith(Paths.COLLECTIONS);
+    return !!path && path.startsWith(Paths.COLLECTIONS) &&
+        !path.startsWith(Paths.SEA_PEN_COLLECTION);
+  }
+
+  private shouldShowSeaPen_(path: string|null): boolean {
+    return isSeaPenEnabled() && isSeaPenPath(path);
   }
 
   private shouldShowBreadcrumb_(path: string|null): boolean {
@@ -190,7 +209,8 @@ export class PersonalizationRouterElement extends PolymerElement {
     // Navigates to the top of the subpage.
     window.scrollTo(0, 0);
 
-    if (!isPathValid(path) || isAmbientPathNotAllowed(path)) {
+    if (!isPathValid(path) || isAmbientPathNotAllowed(path) ||
+        isSeaPenPathNotAllowed(path)) {
       // Reset the path to root.
       this.setProperties({path_: Paths.ROOT, queryParams_: {}});
     }
@@ -233,6 +253,16 @@ export class PersonalizationRouterElement extends PolymerElement {
         document.title = loadTimeData.getString('avatarLabel');
         break;
     }
+  }
+
+  private onRefuseSeaPenTermsOfService_() {
+    this.goToRoute(Paths.COLLECTIONS);
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    [PersonalizationRouterElement.is]: PersonalizationRouterElement;
   }
 }
 

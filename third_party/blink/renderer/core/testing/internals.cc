@@ -118,12 +118,16 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/keyboard_event_manager.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_conversion.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/lcp_critical_path_predictor/element_locator.h"
+#include "third_party/blink/renderer/core/lcp_critical_path_predictor/lcp_critical_path_predictor.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
@@ -332,7 +336,8 @@ class TestReadableStreamSource : public UnderlyingSourceBase {
       Controller()->Close();
       return ScriptPromise::CastUndefined(script_state);
     }
-    Controller()->Enqueue(*result);
+    Controller()->Enqueue(
+        v8::Integer::New(script_state->GetIsolate(), *result));
     return ScriptPromise::CastUndefined(script_state);
   }
 
@@ -620,8 +625,9 @@ TestWritableStreamSink::Optimizer::PerformInProcessOptimization(
 }
 
 void OnLCPPredicted(ScriptPromiseResolver* resolver,
-                    const Element& lcp_element) {
-  const ElementLocator locator = element_locator::OfElement(lcp_element);
+                    const Element* lcp_element) {
+  const ElementLocator locator =
+      lcp_element ? element_locator::OfElement(*lcp_element) : ElementLocator();
   resolver->Resolve(element_locator::ToStringForTesting(locator));
 }
 
@@ -2381,7 +2387,9 @@ void Internals::triggerTestInspectorIssue(Document* document) {
   auto info = mojom::blink::InspectorIssueInfo::New(
       mojom::InspectorIssueCode::kCookieIssue,
       mojom::blink::InspectorIssueDetails::New());
-  document->GetFrame()->AddInspectorIssue(std::move(info));
+  document->GetFrame()->AddInspectorIssue(
+      AuditsIssue(ConvertInspectorIssueToProtocolFormat(
+          InspectorIssue::Create(std::move(info)))));
 }
 
 AtomicString Internals::htmlNamespace() {
@@ -3002,6 +3010,11 @@ DOMRectList* Internals::nonDraggableRegions(Document* document,
   return AnnotatedRegions(document, false, exception_state);
 }
 
+void Internals::SetSupportsAppRegion(bool supports_app_region) {
+  document_->GetPage()->GetChromeClient().GetWebView()->SetSupportsAppRegion(
+      supports_app_region);
+}
+
 DOMRectList* Internals::AnnotatedRegions(Document* document,
                                          bool draggable,
                                          ExceptionState& exception_state) {
@@ -3537,23 +3550,6 @@ void Internals::setInitialFocus(bool reverse) {
               : mojom::blink::FocusType::kForward);
 }
 
-Element* Internals::interestedElement() {
-  if (!GetFrame() || !GetFrame()->GetPage())
-    return nullptr;
-
-  if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-    return To<LocalFrame>(
-               GetFrame()->GetPage()->GetFocusController().FocusedOrMainFrame())
-        ->GetDocument()
-        ->ActiveElement();
-  }
-
-  return GetFrame()
-      ->GetPage()
-      ->GetSpatialNavigationController()
-      .GetInterestedElement();
-}
-
 bool Internals::isActivated() {
   if (!GetFrame())
     return false;
@@ -3994,14 +3990,12 @@ ScriptValue Internals::createWritableStreamAndSink(
   object
       ->Set(script_state->GetContext(),
             V8String(script_state->GetIsolate(), "stream"),
-            ToV8Traits<WritableStream>::ToV8(script_state, stream)
-                .ToLocalChecked())
+            ToV8Traits<WritableStream>::ToV8(script_state, stream))
       .Check();
   object
       ->Set(script_state->GetContext(),
             V8String(script_state->GetIsolate(), "sink"),
-            ToV8Traits<IDLPromise>::ToV8(script_state, resolver->Promise())
-                .ToLocalChecked())
+            ToV8Traits<IDLPromise>::ToV8(script_state, resolver->Promise()))
       .Check();
   return ScriptValue(script_state->GetIsolate(), object);
 }
@@ -4031,7 +4025,9 @@ ScriptPromise Internals::LCPPrediction(ScriptState* script_state,
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  document->AddLCPPredictedCallback(
+  LCPCriticalPathPredictor* lcpp = document->GetFrame()->GetLCPP();
+  CHECK(lcpp);
+  lcpp->AddLCPPredictedCallback(
       WTF::BindOnce(&OnLCPPredicted, WrapPersistent(resolver)));
   return promise;
 }

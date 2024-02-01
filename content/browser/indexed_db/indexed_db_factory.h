@@ -21,7 +21,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/privileged/mojom/indexed_db_client_state_checker.mojom.h"
 #include "components/services/storage/public/cpp/buckets/bucket_id.h"
 #include "components/services/storage/public/cpp/buckets/bucket_info.h"
@@ -47,16 +46,12 @@ class SequencedTaskRunner;
 
 namespace content {
 class IndexedDBBucketContextHandle;
-class IndexedDBClientStateCheckerWrapper;
 class IndexedDBContextImpl;
-class IndexedDBDatabase;
 class TransactionalLevelDBDatabase;
 
 // This class has a 1:1 relationship with `IndexedDBContextImpl`.
 // TODO(crbug.com/1474996): merge with `IndexedDBContextImpl`.
-class CONTENT_EXPORT IndexedDBFactory
-    : public blink::mojom::IDBFactory,
-      public base::trace_event::MemoryDumpProvider {
+class CONTENT_EXPORT IndexedDBFactory : public blink::mojom::IDBFactory {
  public:
   explicit IndexedDBFactory(IndexedDBContextImpl* context);
 
@@ -66,7 +61,7 @@ class CONTENT_EXPORT IndexedDBFactory
   ~IndexedDBFactory() override;
 
   void AddReceiver(
-      absl::optional<storage::BucketInfo> bucket,
+      std::optional<storage::BucketInfo> bucket,
       mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver);
@@ -87,13 +82,6 @@ class CONTENT_EXPORT IndexedDBFactory
                       const std::u16string& name,
                       bool force_close) override;
 
-  // base::trace_event::MemoryDumpProvider:
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
-
-  std::vector<IndexedDBDatabase*> GetOpenDatabasesForBucket(
-      const storage::BucketLocator& bucket_locator) const;
-
   // Close all connections to all databases within the bucket. If
   // `will_be_deleted` is true, references to in-memory databases will be
   // dropped thereby allowing their deletion (otherwise they are retained for
@@ -109,9 +97,6 @@ class CONTENT_EXPORT IndexedDBFactory
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   void ContextDestroyed();
-
-  // Used for chrome://indexeddb-internals.
-  size_t GetConnectionCount(storage::BucketId bucket_id) const;
 
   // For usage reporting.
   int64_t GetInMemoryDBSize(const storage::BucketLocator& bucket_locator) const;
@@ -130,6 +115,16 @@ class CONTENT_EXPORT IndexedDBFactory
                            const base::FilePath& data_directory,
                            bool create_if_missing);
 
+  // Finishes filling in `info` with data relevant to idb-internals and passes
+  // the result back via `result`. The bucket is described by
+  // `info->bucket_locator`.
+  void FillInBucketMetadata(
+      storage::mojom::IdbBucketMetadataPtr info,
+      base::OnceCallback<void(storage::mojom::IdbBucketMetadataPtr)> result);
+
+  void CompactBackingStoreForTesting(
+      const storage::BucketLocator& bucket_locator);
+
  protected:
   // Used by unittests to allow subclassing of IndexedDBBackingStore.
   virtual std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
@@ -147,7 +142,7 @@ class CONTENT_EXPORT IndexedDBFactory
   // be stored together with the receiver in the `mojo::ReceiverSet`.
   struct ReceiverContext {
     ReceiverContext(
-        absl::optional<storage::BucketInfo> bucket,
+        std::optional<storage::BucketInfo> bucket,
         mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
             client_state_checker_remote);
 
@@ -160,10 +155,10 @@ class CONTENT_EXPORT IndexedDBFactory
 
     // The `bucket` might be null if `QuotaDatabase::GetDatabase()` fails
     // during the IndexedDB binding.
-    absl::optional<storage::BucketInfo> bucket;
-    // This is needed when the checker needs to be copied to another holder,
-    // e.g. `IndexedDBConnection`s that are opened through this dispatcher.
-    scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker;
+    std::optional<storage::BucketInfo> bucket;
+
+    mojo::Remote<storage::mojom::IndexedDBClientStateChecker>
+        client_state_checker_remote;
   };
 
   // `path_base` is the directory that will contain the database directory, the
@@ -196,7 +191,7 @@ class CONTENT_EXPORT IndexedDBFactory
   // Used to report fatal database errors.
   void OnDatabaseError(const storage::BucketLocator& bucket_locator,
                        leveldb::Status s,
-                       const char* message);
+                       const std::string& message);
 
   void OnDatabaseDeleted(const storage::BucketLocator& bucket_locator);
 

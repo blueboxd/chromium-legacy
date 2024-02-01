@@ -164,11 +164,6 @@ void DriveFileSuggestionProvider::MaybeUpdateItemSuggestCache(
   item_suggest_cache_->MaybeUpdateCache();
 }
 
-bool DriveFileSuggestionProvider::HasPendingDriveSuggestionFetchForTest()
-    const {
-  return !on_drive_results_ready_callback_list_.empty();
-}
-
 void DriveFileSuggestionProvider::EndDriveFilePathValidation(
     DriveSuggestValidationStatus validation_status,
     const std::optional<std::vector<FileSuggestData>>& suggest_results) {
@@ -222,6 +217,8 @@ void DriveFileSuggestionProvider::OnDriveFilePathsLocated(
     suggest_results.emplace_back(
         FileSuggestionType::kDriveFile,
         ReparentToDriveMount(path_or_error->get_path(), drive_service_), reason,
+        /*timestamp=*/std::nullopt,
+        /*secondary_timestamp=*/std::nullopt,
         /*score=*/std::nullopt);
   }
 

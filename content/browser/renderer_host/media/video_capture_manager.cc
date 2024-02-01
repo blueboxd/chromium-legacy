@@ -133,9 +133,9 @@ void VideoCaptureManager::RegisterListener(
   listeners_.AddObserver(listener);
 #if BUILDFLAG(IS_ANDROID)
   application_state_has_running_activities_ = true;
-  app_status_listener_ = base::android::ApplicationStatusListener::New(
-      base::BindRepeating(&VideoCaptureManager::OnApplicationStateChange,
-                          base::Unretained(this)));
+  app_status_listener_ =
+      base::android::ApplicationStatusListener::New(base::BindRepeating(
+          &VideoCaptureManager::OnApplicationStateChange, this));
 #endif
 }
 
@@ -608,7 +608,7 @@ bool VideoCaptureManager::GetDeviceFormatsInUse(
   string_stream << "GetDeviceFormatsInUse for device: " << it->second.name;
   EmitLogMessage(string_stream.str(), 1);
 
-  absl::optional<media::VideoCaptureFormat> format =
+  std::optional<media::VideoCaptureFormat> format =
       GetDeviceFormatInUse(it->second.type, it->second.id);
   if (format.has_value())
     formats_in_use->push_back(format.value());
@@ -616,7 +616,7 @@ bool VideoCaptureManager::GetDeviceFormatsInUse(
   return true;
 }
 
-absl::optional<media::VideoCaptureFormat>
+std::optional<media::VideoCaptureFormat>
 VideoCaptureManager::GetDeviceFormatInUse(
     blink::mojom::MediaStreamType stream_type,
     const std::string& device_id) {
@@ -624,7 +624,7 @@ VideoCaptureManager::GetDeviceFormatInUse(
   // Return the currently in-use format of the device, if it's started.
   VideoCaptureController* device_in_use =
       LookupControllerByMediaTypeAndDeviceId(stream_type, device_id);
-  return device_in_use ? device_in_use->GetVideoCaptureFormat() : absl::nullopt;
+  return device_in_use ? device_in_use->GetVideoCaptureFormat() : std::nullopt;
 }
 
 GlobalRenderFrameHostId VideoCaptureManager::GetGlobalRenderFrameHostId(
@@ -789,9 +789,6 @@ void VideoCaptureManager::OnDeviceInfosReceived(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                "VideoCaptureManager::OnDeviceInfosReceived");
 
-  base::UmaHistogramTimes(
-      "Media.VideoCaptureManager.GetAvailableDevicesInfoOnDeviceThreadTime",
-      timer.Elapsed());
 
   if (error_code != media::mojom::DeviceEnumerationResult::kSuccess) {
     EmitLogMessage(

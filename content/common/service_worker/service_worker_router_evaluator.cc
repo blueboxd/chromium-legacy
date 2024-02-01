@@ -4,11 +4,13 @@
 
 #include "content/common/service_worker/service_worker_router_evaluator.h"
 
+#include <limits>
 #include <memory>
 #include <tuple>
 
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "services/network/public/cpp/request_destination.h"
@@ -322,14 +324,14 @@ class BaseCondition {
   // Returns true on success. Otherwise, false.
   bool Set(const blink::ServiceWorkerRouterCondition& condition);
   bool Match(const network::ResourceRequest& request,
-             absl::optional<blink::EmbeddedWorkerStatus> running_status) const;
+             std::optional<blink::EmbeddedWorkerStatus> running_status) const;
   bool need_running_status() const { return need_running_status_; }
 
  private:
   bool MatchUrlPatternConditions(const network::ResourceRequest& request) const;
   bool MatchNonUrlPatternConditions(
       const network::ResourceRequest& request,
-      absl::optional<blink::EmbeddedWorkerStatus> running_status) const;
+      std::optional<blink::EmbeddedWorkerStatus> running_status) const;
 
   std::unique_ptr<RE2> protocol_pattern_;
   std::unique_ptr<RE2> username_pattern_;
@@ -356,16 +358,19 @@ bool BaseCondition::Set(const blink::ServiceWorkerRouterCondition& condition) {
 
   CHECK(!or_condition);
 
-  non_url_pattern_condition_ = {absl::nullopt, request, running_status,
-                                absl::nullopt};
+  non_url_pattern_condition_ = {std::nullopt, request, running_status,
+                                std::nullopt};
   if (running_status) {
     need_running_status_ = true;
   }
   if (url_pattern) {
+    RE2::Options options;
+    options.set_case_sensitive(!url_pattern->options.ignore_case);
+
 #define SET_PATTERN(type_name, type)                                         \
   do {                                                                       \
     auto regex = ConvertToRegex(*url_pattern, type);                         \
-    type_name##_pattern_ = std::make_unique<RE2>(regex, RE2::Options());     \
+    type_name##_pattern_ = std::make_unique<RE2>(regex, options);            \
     if (!type_name##_pattern_->ok()) {                                       \
       RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kParseError); \
       return false;                                                          \
@@ -392,7 +397,7 @@ bool BaseCondition::Set(const blink::ServiceWorkerRouterCondition& condition) {
 
 bool BaseCondition::Match(
     const network::ResourceRequest& request,
-    absl::optional<blink::EmbeddedWorkerStatus> running_status) const {
+    std::optional<blink::EmbeddedWorkerStatus> running_status) const {
   return MatchUrlPatternConditions(request) &&
          MatchNonUrlPatternConditions(request, running_status);
 }
@@ -423,7 +428,7 @@ bool BaseCondition::MatchUrlPatternConditions(
 
 bool BaseCondition::MatchNonUrlPatternConditions(
     const network::ResourceRequest& request,
-    absl::optional<blink::EmbeddedWorkerStatus> running_status) const {
+    std::optional<blink::EmbeddedWorkerStatus> running_status) const {
   const auto& [url_pattern, request_pattern, running_status_pattern,
                or_condition] = non_url_pattern_condition_.get();
   CHECK(!url_pattern);
@@ -449,14 +454,14 @@ class OrCondition {
   // Returns true on success. Otherwise, false.
   bool Set(const std::vector<blink::ServiceWorkerRouterCondition>& conditions);
   bool Match(const network::ResourceRequest& request,
-             absl::optional<blink::EmbeddedWorkerStatus> running_status) const;
+             std::optional<blink::EmbeddedWorkerStatus> running_status) const;
   bool need_running_status() const { return need_running_status_; }
 
  private:
   bool MatchUrlPatternConditions(const network::ResourceRequest& request) const;
   bool MatchNonUrlPatternConditions(
       const network::ResourceRequest& request,
-      absl::optional<blink::EmbeddedWorkerStatus> running_status) const;
+      std::optional<blink::EmbeddedWorkerStatus> running_status) const;
 
   std::vector<ConditionObject> conditions_;
   bool need_running_status_ = false;
@@ -472,7 +477,7 @@ class ConditionObject {
       return false;
     }
     const auto& or_condition =
-        std::get<const absl::optional<blink::ServiceWorkerRouterOrCondition>&>(
+        std::get<const std::optional<blink::ServiceWorkerRouterOrCondition>&>(
             condition.get());
     if (or_condition) {
       OrCondition v;
@@ -487,7 +492,7 @@ class ConditionObject {
     }
   }
   bool Match(const network::ResourceRequest& request,
-             absl::optional<blink::EmbeddedWorkerStatus> running_status) const {
+             std::optional<blink::EmbeddedWorkerStatus> running_status) const {
     return absl::visit(
         [&request, running_status](const auto& condition) {
           return condition.Match(request, running_status);
@@ -522,7 +527,7 @@ bool OrCondition::Set(
 
 bool OrCondition::Match(
     const network::ResourceRequest& request,
-    absl::optional<blink::EmbeddedWorkerStatus> running_status) const {
+    std::optional<blink::EmbeddedWorkerStatus> running_status) const {
   for (const auto& c : conditions_) {
     if (c.Match(request, running_status)) {
       return true;
@@ -548,7 +553,7 @@ class ServiceWorkerRouterEvaluator::RouterRule {
     return condition_.Set(rule.condition) && SetSources(rule.sources);
   }
   bool Match(const network::ResourceRequest& request,
-             absl::optional<blink::EmbeddedWorkerStatus> running_status) const {
+             std::optional<blink::EmbeddedWorkerStatus> running_status) const {
     return condition_.Match(request, running_status);
   }
   const std::vector<blink::ServiceWorkerRouterSource>& sources() const {
@@ -602,16 +607,22 @@ void ServiceWorkerRouterEvaluator::Compile() {
       return;
     }
     need_running_status_ |= rule->need_running_status();
+    for (const auto& s : r.sources) {
+      bool has_fetch_event =
+          (s.type == blink::ServiceWorkerRouterSource::Type::kFetchEvent);
+      has_fetch_event_source_ |= has_fetch_event;
+      has_non_fetch_event_source_ |= !has_fetch_event;
+    }
     compiled_rules_.emplace_back(std::move(rule));
   }
   RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kNoError);
   is_valid_ = true;
 }
 
-absl::optional<ServiceWorkerRouterEvaluator::Result>
+std::optional<ServiceWorkerRouterEvaluator::Result>
 ServiceWorkerRouterEvaluator::EvaluateInternal(
     const network::ResourceRequest& request,
-    absl::optional<blink::EmbeddedWorkerStatus> running_status) const {
+    std::optional<blink::EmbeddedWorkerStatus> running_status) const {
   CHECK(is_valid_);
   for (const auto& rule : compiled_rules_) {
     if (rule->Match(request, running_status)) {
@@ -624,26 +635,28 @@ ServiceWorkerRouterEvaluator::EvaluateInternal(
     }
   }
   VLOG(3) << "not matched request url=" << request.url;
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<ServiceWorkerRouterEvaluator::Result>
+std::optional<ServiceWorkerRouterEvaluator::Result>
 ServiceWorkerRouterEvaluator::Evaluate(
     const network::ResourceRequest& request,
     blink::EmbeddedWorkerStatus running_status) const {
   return EvaluateInternal(request, running_status);
 }
 
-absl::optional<ServiceWorkerRouterEvaluator::Result>
+std::optional<ServiceWorkerRouterEvaluator::Result>
 ServiceWorkerRouterEvaluator::EvaluateWithoutRunningStatus(
     const network::ResourceRequest& request) const {
   CHECK(!need_running_status_);
-  return EvaluateInternal(request, absl::nullopt);
+  return EvaluateInternal(request, std::nullopt);
 }
 
 base::Value ServiceWorkerRouterEvaluator::ToValue() const {
   base::Value::List out;
-  for (const auto& r : rules_.rules) {
+  CHECK_EQ(rules_.rules.size(), compiled_rules_.size());
+  for (size_t idx = 0; idx < rules_.rules.size(); ++idx) {
+    const auto& r = rules_.rules[idx];
     base::Value::Dict rule;
     base::Value condition = ConditionToValue(r.condition);
     base::Value::List source;
@@ -672,6 +685,7 @@ base::Value ServiceWorkerRouterEvaluator::ToValue() const {
     }
     rule.Set("condition", std::move(condition));
     rule.Set("source", std::move(source));
+    rule.Set("id", base::checked_cast<int>(compiled_rules_[idx]->id()));
     out.Append(std::move(rule));
   }
   return base::Value(std::move(out));

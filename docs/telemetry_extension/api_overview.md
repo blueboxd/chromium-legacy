@@ -1,8 +1,7 @@
 # Telemetry Extension API overview
 
 This document gives a function-level documentation of the Telemetry Extension
-API. It is separated in the three namespaces **telemetry**, **diagnostics**
-and **events**.
+API. It is separated in the three namespaces **telemetry**, **diagnostics**, **events** and **management**.
 
 [TOC]
 
@@ -926,6 +925,25 @@ extension-event based interface in M119. The interface is described in
 | availableSpace | number | The currently available space in the user partition (Bytes) |
 | totalSpace | number | The total space of the user partition (Bytes) |
 
+### Enum ThermalSensorSource
+| Property Name |
+------------ |
+| unknown |
+| ec |
+| sysFs |
+
+### ThermalSensorInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| name | string | Name of the thermal sensor  |
+| temperatureCelsius | number | Temperature detected by the thermal sensor in celsius |
+| source | ThermalSensorSource | Where the thermal sensor is detected from  |
+
+### ThermalInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| thermalSensors | Array<ThermalSensorInfo\> | An array containing all the information retrieved for thermal sensors |
+
 ### Enum TpmGSCVersion
 | Property Name |
 ------------ |
@@ -1059,3 +1077,28 @@ Source:
 | getAudioInfo | () => Promise<AudioInfo\> | `os.telemetry` | M111 |
 | getMarketingInfo | () => Promise<MarketingInfo\> | `os.telemetry` | M111 |
 | getUsbBusInfo | () => Promise<UsbDevicesInfo\> | `os.telemetry`, `os.attached_device_info` | M114 |
+| getThermalInfo | () => Promise<ThermalInfo\> | `os.telemetry` | M122 |
+
+# Management
+
+## Types
+
+### SetAudioGainArguments
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| nodeId | number | Node id of the audio device to be configured |
+| gain | number | Target gain percent in [0, 100]. Sets to 0 or 100 if outside |
+
+### SetAudioVolumeArguments
+| Property Name | Type    | Description                                                    |
+| ------------- | ------- | -------------------------------------------------------------- |
+| nodeId        | number  | Node id of the audio device to be configured                   |
+| volume        | number  | Target volume percent in [0, 100]. Sets to 0 or 100 if outside |
+| isMuted       | boolean | Whether to mute the device                                     |
+
+## Functions
+
+| Function Name | Definition | Permission needed to access | Released in Chrome version | Description |
+------------ | ------------- | ------------- | ------------- | ------------- |
+| setAudioGain | (args: SetAudioGainArguments) => Promise<boolean\> | `os.management.audio` | M122 | Sets the specified input audio device's gain to value. Returns false if `args.nodeId` is invalid |
+| setAudioVolume | (args: SetAudioVolumeArguments) => Promise<boolean\> | `os.management.audio` | M122 | Sets the specified output audio device's volume and mute state to the given value. Returns false if `args.nodeId` is invalid |

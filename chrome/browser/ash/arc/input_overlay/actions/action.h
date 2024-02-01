@@ -166,12 +166,9 @@ class Action {
   bool support_modifier_key() const { return support_modifier_key_; }
   ActionView* action_view() const { return action_view_; }
   void set_action_view(ActionView* action_view) { action_view_ = action_view; }
-  void set_name_label_index(int name_label_index) {
-    name_label_index_ = name_label_index;
-  }
   int name_label_index() { return name_label_index_; }
 
-  bool is_new() { return is_new_; }
+  bool is_new() const { return is_new_; }
   void set_is_new(bool is_new) { is_new_ = is_new; }
 
  protected:

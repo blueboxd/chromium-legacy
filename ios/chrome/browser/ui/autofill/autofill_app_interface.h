@@ -27,11 +27,11 @@ enum CreditCardSaveManagerObserverEvent : int {
 // the app binary and can be called from either app or test code.
 @interface AutofillAppInterface : NSObject
 
-// Removes all credentials stored.
-+ (void)clearPasswordStore;
+// Removes all credentials stored in the profile store.
++ (void)clearProfilePasswordStore;
 
-// Saves an example form in the store.
-+ (void)saveExamplePasswordForm;
+// Saves an example form in the profile store.
++ (void)saveExamplePasswordFormToProfileStore;
 
 // Saves an example form in the store for the passed URL spec.
 + (void)savePasswordFormForURLSpec:(NSString*)URLSpec;
@@ -67,6 +67,11 @@ enum CreditCardSaveManagerObserverEvent : int {
 // Saves a masked credit card that requires CVC to be used.
 // Returns the `card.NetworkAndLastFourDigits` of the card used in the UIs.
 + (NSString*)saveMaskedCreditCard;
+
+// Saves a masked credit which is enrolled to create a Virtual Card.
+// No current CVC auth required.
+// Returns the `card.NetworkAndLastFourDigits` of the card used in the UIs.
++ (NSString*)saveMaskedCreditCardEnrolledInVirtualCard;
 
 // The functions below are helpers for the SaveCardInfobarEGTest that requires
 // observing autofill events in the app process.

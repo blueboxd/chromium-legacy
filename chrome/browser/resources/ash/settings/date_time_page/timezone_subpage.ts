@@ -7,16 +7,16 @@
  * time zone settings.
  */
 import 'chrome://resources/cr_components/settings_prefs/prefs.js';
-import '/shared/settings/controls/controlled_radio_button.js';
-import '/shared/settings/controls/settings_dropdown_menu.js';
-import '/shared/settings/controls/settings_radio_group.js';
+import '../controls/controlled_radio_button.js';
+import '../controls/settings_dropdown_menu.js';
+import '../controls/settings_radio_group.js';
 import '../settings_shared.css.js';
 import './timezone_selector.js';
 import '../os_privacy_page/privacy_hub_geolocation_dialog.js';
 import '../os_privacy_page/privacy_hub_geolocation_warning_text.js';
 
-import {SettingsDropdownMenuElement} from '/shared/settings/controls/settings_dropdown_menu.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -24,6 +24,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
 import {isChild} from '../common/load_time_booleans.js';
 import {RouteObserverMixin} from '../common/route_observer_mixin.js';
+import {SettingsDropdownMenuElement} from '../controls/settings_dropdown_menu.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {GeolocationAccessLevel} from '../os_privacy_page/privacy_hub_geolocation_subpage.js';
 import {Route, routes} from '../router.js';
@@ -40,8 +41,8 @@ export interface TimezoneSubpageElement {
   };
 }
 
-const TimezoneSubpageElementBase = DeepLinkingMixin(
-    RouteObserverMixin(PrefsMixin(WebUiListenerMixin(PolymerElement))));
+const TimezoneSubpageElementBase = DeepLinkingMixin(RouteObserverMixin(
+    I18nMixin(PrefsMixin(WebUiListenerMixin(PolymerElement)))));
 
 export class TimezoneSubpageElement extends TimezoneSubpageElementBase {
   static get is() {
@@ -68,6 +69,11 @@ export class TimezoneSubpageElement extends TimezoneSubpageElementBase {
       supportedSettingIds: {
         type: Object,
         value: () => new Set<Setting>([Setting.kChangeTimeZone]),
+      },
+
+      geolocationWarningText_: {
+        type: String,
+        computed: 'computedGeolocationWarningText(activeTimeZoneDisplayName)',
       },
 
       shouldShowGeolocationWarningText_: {
@@ -118,6 +124,11 @@ export class TimezoneSubpageElement extends TimezoneSubpageElementBase {
     }
 
     this.attemptDeepLink();
+  }
+
+  private computedGeolocationWarningText(): string {
+    return this.i18n(
+        'timeZoneGeolocationWarningText', this.activeTimeZoneDisplayName);
   }
 
   private computeShouldShowGeolocationWarningText_(): boolean {

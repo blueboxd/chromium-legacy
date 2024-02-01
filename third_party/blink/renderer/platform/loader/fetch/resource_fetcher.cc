@@ -42,9 +42,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
@@ -633,7 +631,6 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
               ? init.frame_or_worker_scheduler->GetWeakPtr()
               : nullptr),
       blob_registry_remote_(init.context_lifecycle_notifier),
-      resource_cache_remote_(init.context_lifecycle_notifier),
       context_lifecycle_notifier_(init.context_lifecycle_notifier),
       auto_load_images_(true),
       images_enabled_(true),
@@ -925,8 +922,10 @@ void ResourceFetcher::UpdateMemoryCacheStats(
     const ResourceFactory& factory,
     bool is_static_data,
     bool same_top_frame_site_resource_cached) const {
-  if (is_static_data)
+  // Do not count static data or data not associated with the MemoryCache.
+  if (is_static_data || !IsMainThread()) {
     return;
+  }
 
   if (params.IsSpeculativePreload() || params.IsLinkPreload()) {
     RecordResourceHistogram("Preload.", factory.GetType(), policy);
@@ -1075,7 +1074,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)), "url",
       resource_request.Url());
   base::ScopedClosureRunner timer(base::BindOnce(
-      [](base::TimeTicks start, bool is_data) {
+      [](base::TimeTicks start, bool is_data, bool is_preload_request) {
         base::TimeDelta elapsed = base::TimeTicks::Now() - start;
         base::UmaHistogramMicrosecondsTimes("Blink.Fetch.RequestResourceTime2",
                                             elapsed);
@@ -1083,8 +1082,13 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
           base::UmaHistogramMicrosecondsTimes(
               "Blink.Fetch.RequestResourceTime2.Data", elapsed);
         }
+        if (is_preload_request) {
+          base::UmaHistogramMicrosecondsTimes(
+              "Blink.Fetch.RequestResourceTime2.Preload", elapsed);
+        }
       },
-      base::TimeTicks::Now(), params.Url().ProtocolIsData()));
+      base::TimeTicks::Now(), params.Url().ProtocolIsData(),
+      params.IsSpeculativePreload() || params.IsLinkPreload()));
   TRACE_EVENT1("blink,blink.resource", "ResourceFetcher::requestResource",
                "url", params.Url().ElidedString().Utf8());
 
@@ -1248,7 +1252,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   ImageLoadBlockingPolicy load_blocking_policy =
       ImageLoadBlockingPolicy::kDefault;
   if (resource->GetType() == ResourceType::kImage) {
-    image_resources_.insert(resource);
     not_loaded_image_resources_.insert(resource);
     if (params.GetImageRequestBehavior() ==
         FetchParameters::ImageRequestBehavior::kNonBlockingImage) {
@@ -1261,17 +1264,9 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   // the resource was already initialized for the revalidation here, but won't
   // start loading.
   if (ResourceNeedsLoad(resource, policy, should_defer)) {
-    if (resource_cache_remote_.is_bound()) {
-      resource_cache_remote_->Contains(
-          params.Url(),
-          WTF::BindOnce(&ResourceFetcher::OnResourceCacheContainsFinished,
-                        WrapWeakPersistent(this), base::TimeTicks::Now(),
-                        resource_request.GetRequestDestination()));
-    }
     if (!StartLoad(resource,
                    std::move(params.MutableResourceRequest().MutableBody()),
-                   load_blocking_policy, params.GetRenderBlockingBehavior(),
-                   params.CountORBBlockAs())) {
+                   load_blocking_policy, params.GetRenderBlockingBehavior())) {
       resource->FinishAsError(ResourceError::CancelledError(params.Url()),
                               freezable_task_runner_.get());
     }
@@ -1287,7 +1282,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
         TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)),
         "outcome", "Fail");
   }
-
   return resource;
 }
 
@@ -1353,19 +1347,56 @@ void ResourceFetcher::InitializeRevalidation(
   resource->SetRevalidatingRequest(revalidating_request);
 }
 
+namespace {
+
+bool UseRenderBlockingTaskPriority(
+    const mojom::blink::RequestContextType request_context,
+    const RenderBlockingBehavior render_blocking_behavior) {
+  switch (request_context) {
+    case mojom::blink::RequestContextType::IMAGE:
+      // Always boost the priority of images (see: https://crbug.com/1416030).
+      return true;
+    case mojom::blink::RequestContextType::IMAGE_SET:
+      return base::FeatureList::IsEnabled(
+          features::kBoostImageSetLoadingTaskPriority);
+    case mojom::blink::RequestContextType::FONT:
+      return base::FeatureList::IsEnabled(
+          features::kBoostFontLoadingTaskPriority);
+    case mojom::blink::RequestContextType::VIDEO:
+      return base::FeatureList::IsEnabled(
+          features::kBoostVideoLoadingTaskPriority);
+    case mojom::blink::RequestContextType::STYLE:
+      if (render_blocking_behavior == RenderBlockingBehavior::kBlocking) {
+        return base::FeatureList::IsEnabled(
+            features::kBoostRenderBlockingStyleLoadingTaskPriority);
+      }
+      return base::FeatureList::IsEnabled(
+          features::kBoostNonRenderBlockingStyleLoadingTaskPriority);
+    default:
+      return false;
+  }
+}
+
+}  // namespace
+
 std::unique_ptr<URLLoader> ResourceFetcher::CreateURLLoader(
-    const ResourceRequestHead& request,
-    const ResourceLoaderOptions& options) {
+    const network::ResourceRequest& network_request,
+    const ResourceLoaderOptions& options,
+    const mojom::blink::RequestContextType request_context,
+    const RenderBlockingBehavior render_blocking_behavior,
+    const absl::optional<base::UnguessableToken>&
+        service_worker_race_network_request_token,
+    bool is_from_origin_dirty_style_sheet) {
   DCHECK(!GetProperties().IsDetached());
   // TODO(http://crbug.com/1252983): Revert this to DCHECK.
   CHECK(loader_factory_);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       unfreezable_task_runner_;
-  if (request.GetKeepalive() &&
+  if (network_request.keepalive &&
       (!base::FeatureList::IsEnabled(
            blink::features::kKeepAliveInBrowserMigration) ||
-       (request.GetAttributionReportingEligibility() !=
+       (network_request.attribution_reporting_eligibility !=
             network::mojom::AttributionReportingEligibility::kUnset &&
         !base::FeatureList::IsEnabled(
             features::kAttributionReportingInBrowserMigration)))) {
@@ -1382,21 +1413,21 @@ std::unique_ptr<URLLoader> ResourceFetcher::CreateURLLoader(
             frame_scheduler->GetAgentGroupScheduler()->DefaultTaskRunner();
       }
     }
-  } else if (request.GetRequestContext() ==
-                 mojom::blink::RequestContextType::IMAGE &&
-             base::FeatureList::IsEnabled(
-                 features::kMainThreadHighPriorityImageLoading)) {
+  } else if (UseRenderBlockingTaskPriority(request_context,
+                                           render_blocking_behavior)) {
     if (auto* frame_or_worker_scheduler = GetFrameOrWorkerScheduler()) {
       if (auto* frame_scheduler =
               frame_or_worker_scheduler->ToFrameScheduler()) {
         task_runner = frame_scheduler->GetTaskRunner(
-            TaskType::kNetworkingUnfreezableImageLoading);
+            TaskType::kNetworkingUnfreezableRenderBlockingLoading);
       }
     }
   }
-  return loader_factory_->CreateURLLoader(ResourceRequest(request), options,
-                                          freezable_task_runner_, task_runner,
-                                          back_forward_cache_loader_helper_);
+  return loader_factory_->CreateURLLoader(
+      network_request, options, freezable_task_runner_, task_runner,
+      back_forward_cache_loader_helper_,
+      service_worker_race_network_request_token,
+      is_from_origin_dirty_style_sheet);
 }
 
 CodeCacheHost* ResourceFetcher::GetCodeCacheHost() {
@@ -1999,26 +2030,42 @@ void ResourceFetcher::ScheduleWarnUnusedPreloads() {
 }
 
 void ResourceFetcher::WarnUnusedPreloads() {
+  int unused_resource_count = 0;
   for (const auto& pair : preloads_) {
     Resource* resource = pair.value;
-    if (!resource || !resource->IsLinkPreload() || !resource->IsUnusedPreload())
+    if (!resource || !resource->IsUnusedPreload()) {
       continue;
-    String message =
-        "The resource " + resource->Url().GetString() + " was preloaded " +
-        "using link preload but not used within a few seconds from the " +
-        "window's load event. Please make sure it has an appropriate `as` " +
-        "value and it is preloaded intentionally.";
-    console_logger_->AddConsoleMessage(
-        mojom::blink::ConsoleMessageSource::kJavaScript,
-        mojom::blink::ConsoleMessageLevel::kWarning, message);
-    TRACE_EVENT1("blink,blink.resource", "ResourceFetcher::WarnUnusedPreloads",
-                 "data",
-                 CreateTracedValueForUnusedPreload(
-                     resource->Url(), Resource::MatchStatus::kOk,
-                     resource->GetResourceRequest().GetDevToolsId()));
-    UMA_HISTOGRAM_COUNTS_100("Renderer.Preload.UnusedResource",
-                             static_cast<int>(resource->GetType()));
+    }
+
+    ++unused_resource_count;
+    if (resource->IsLinkPreload()) {
+      String message =
+          "The resource " + resource->Url().GetString() + " was preloaded " +
+          "using link preload but not used within a few seconds from the " +
+          "window's load event. Please make sure it has an appropriate `as` " +
+          "value and it is preloaded intentionally.";
+      console_logger_->AddConsoleMessage(
+          mojom::blink::ConsoleMessageSource::kJavaScript,
+          mojom::blink::ConsoleMessageLevel::kWarning, message);
+      TRACE_EVENT1("blink,blink.resource",
+                   "ResourceFetcher::WarnUnusedPreloads", "data",
+                   CreateTracedValueForUnusedPreload(
+                       resource->Url(), Resource::MatchStatus::kOk,
+                       resource->GetResourceRequest().GetDevToolsId()));
+
+      base::UmaHistogramCounts100("Renderer.Preload.UnusedResource",
+                                  static_cast<int>(resource->GetType()));
+    }
+    base::UmaHistogramEnumeration("Renderer.Preload.UnusedResource2",
+                                  resource->GetType());
+    base::UmaHistogramEnumeration(
+        base::StrCat(
+            {"Renderer.Preload.UnusedResource2.",
+             resource->IsLinkPreload() ? "LinkPreload" : "NoLinkPreload"}),
+        resource->GetType());
   }
+  base::UmaHistogramCounts100("Renderer.Preload.UnusedResourceCount",
+                              unused_resource_count);
 
   for (auto& pair : early_hints_preloaded_resources_) {
     if (pair.value.state == EarlyHintsPreloadEntry::State::kWarnedUnused)
@@ -2220,15 +2267,14 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
   }
   return StartLoad(resource, ResourceRequestBody(),
                    ImageLoadBlockingPolicy::kDefault,
-                   RenderBlockingBehavior::kNonBlocking, absl::nullopt);
+                   RenderBlockingBehavior::kNonBlocking);
 }
 
 bool ResourceFetcher::StartLoad(
     Resource* resource,
     ResourceRequestBody request_body,
     ImageLoadBlockingPolicy policy,
-    RenderBlockingBehavior render_blocking_behavior,
-    absl::optional<mojom::blink::WebFeature> count_orb_block_as_) {
+    RenderBlockingBehavior render_blocking_behavior) {
   DCHECK(resource);
   DCHECK(resource->StillNeedsLoad());
 
@@ -2274,7 +2320,7 @@ bool ResourceFetcher::StartLoad(
 
     loader = MakeGarbageCollected<ResourceLoader>(
         this, scheduler_, resource, context_lifecycle_notifier_,
-        std::move(request_body), size, count_orb_block_as_);
+        std::move(request_body), size);
     // Preload requests should not block the load event. IsLinkPreload()
     // actually continues to return true for Resources matched from the preload
     // cache that must block the load event, but that is OK because this method
@@ -2698,9 +2744,7 @@ void ResourceFetcher::MaybeSaveResourceToStrongReference(Resource* resource) {
   const size_t resource_size =
       static_cast<size_t>(resource->GetResponse().DecodedBodyLength());
   const bool size_is_small_enough = resource_size <= resource_size_threshold &&
-                                    resource_size <= total_size_threshold &&
-                                    document_resource_strong_refs_total_size_ <=
-                                        total_size_threshold - resource_size;
+                                    resource_size <= total_size_threshold;
 
   if (!size_is_small_enough) {
     return;
@@ -2712,66 +2756,29 @@ void ResourceFetcher::MaybeSaveResourceToStrongReference(Resource* resource) {
     return;
   }
 
-  document_resource_strong_refs_.insert(resource);
-  document_resource_strong_refs_total_size_ += resource_size;
-  freezable_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      WTF::BindOnce(&ResourceFetcher::RemoveResourceStrongReference,
-                    WrapWeakPersistent(this), WrapWeakPersistent(resource)),
-      GetResourceStrongReferenceTimeout(resource));
+  if (base::FeatureList::IsEnabled(
+          features::kResourceFetcherStoresStrongReferences)) {
+    // If the size would take us over, don't store it.
+    if (document_resource_strong_refs_total_size_ + resource_size >
+        total_size_threshold) {
+      return;
+    }
+    document_resource_strong_refs_.insert(resource);
+    document_resource_strong_refs_total_size_ += resource_size;
+    freezable_task_runner_->PostDelayedTask(
+        FROM_HERE,
+        WTF::BindOnce(&ResourceFetcher::RemoveResourceStrongReference,
+                      WrapWeakPersistent(this), WrapWeakPersistent(resource)),
+        GetResourceStrongReferenceTimeout(resource));
+  } else {
+    MemoryCache::Get()->SaveStrongReference(resource);
+  }
 }
 
 void ResourceFetcher::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   document_resource_strong_refs_.clear();
   document_resource_strong_refs_total_size_ = 0;
-}
-
-void ResourceFetcher::SetResourceCache(
-    mojo::PendingRemote<mojom::blink::ResourceCache> remote) {
-  DCHECK(remote.is_valid());
-  resource_cache_remote_.reset();
-  resource_cache_remote_.Bind(std::move(remote), unfreezable_task_runner_);
-}
-
-void ResourceFetcher::OnResourceCacheContainsFinished(
-    base::TimeTicks ipc_send_time,
-    network::mojom::RequestDestination destination,
-    mojom::blink::ResourceCacheContainsResultPtr result) {
-  DCHECK(result);
-
-  base::UmaHistogramBoolean(
-      base::StrCat(
-          {"Blink.MemoryCache.Remote.IsInCache.",
-           network::RequestDestinationToStringForHistogram(destination)}),
-      result->is_in_cache);
-  const char* visibility = result->is_visible ? "Visible" : "Hidden";
-  const char* lifecycle = nullptr;
-  switch (result->lifecycle_state) {
-    case mojom::blink::ResourceCacheContainsResult::LifecycleState::kUnknown:
-      lifecycle = ".Unknown";
-      break;
-    case mojom::blink::ResourceCacheContainsResult::LifecycleState::kRunning:
-      lifecycle = ".Running";
-      break;
-    case mojom::blink::ResourceCacheContainsResult::LifecycleState::kPaused:
-      lifecycle = ".Paused";
-      break;
-    case mojom::blink::ResourceCacheContainsResult::LifecycleState::kFrozen:
-      lifecycle = ".Frozen";
-      break;
-  }
-  base::TimeDelta send_delay = result->ipc_response_time - ipc_send_time;
-  base::UmaHistogramMicrosecondsTimes(
-      base::StrCat({"Blink.MemoryCache.Remote.", visibility, lifecycle,
-                    ".IPCSendDelay"}),
-      send_delay);
-  base::TimeDelta recv_delay =
-      base::TimeTicks::Now() - result->ipc_response_time;
-  base::UmaHistogramMicrosecondsTimes(
-      base::StrCat({"Blink.MemoryCache.Remote.", visibility, lifecycle,
-                    ".IPCRecvDelay"}),
-      recv_delay);
 }
 
 void ResourceFetcher::RecordLCPPSubresourceMetrics() {
@@ -2798,7 +2805,6 @@ void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(non_blocking_loaders_);
   visitor->Trace(cached_resources_map_);
   visitor->Trace(emulated_load_started_for_inspector_resources_map_);
-  visitor->Trace(image_resources_);
   visitor->Trace(not_loaded_image_resources_);
   visitor->Trace(preloads_);
   visitor->Trace(matched_preloads_);
@@ -2806,7 +2812,6 @@ void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(blob_registry_remote_);
   visitor->Trace(subresource_web_bundles_);
   visitor->Trace(document_resource_strong_refs_);
-  visitor->Trace(resource_cache_remote_);
   visitor->Trace(context_lifecycle_notifier_);
   MemoryPressureListener::Trace(visitor);
 }

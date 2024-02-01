@@ -45,7 +45,6 @@ export class CrExpandButtonElement extends PolymerElement {
         type: Boolean,
         value: false,
         notify: true,
-        observer: 'onExpandedChange_',
       },
 
       /**
@@ -71,14 +70,14 @@ export class CrExpandButtonElement extends PolymerElement {
       expandIcon: {
         type: String,
         value: 'cr:expand-more',
-        observer: 'onIconChange_',
       },
 
       collapseIcon: {
         type: String,
         value: 'cr:expand-less',
-        observer: 'onIconChange_',
       },
+
+      icon_: String,
 
       expandTitle: String,
       collapseTitle: String,
@@ -97,10 +96,13 @@ export class CrExpandButtonElement extends PolymerElement {
   collapseIcon: string;
   expandTitle: string;
   collapseTitle: string;
+  private icon_: string;
   private tooltipText_: string;
 
   static get observers() {
-    return ['updateAriaExpanded_(disabled, expanded)'];
+    return [
+      'updateIcon_(collapseIcon, expandIcon, expanded)',
+    ];
   }
 
   override ready() {
@@ -130,16 +132,8 @@ export class CrExpandButtonElement extends PolymerElement {
     }
   }
 
-  private onExpandedChange_() {
-    this.updateIcon_();
-  }
-
-  private onIconChange_() {
-    this.updateIcon_();
-  }
-
   private updateIcon_() {
-    this.$.icon.ironIcon = this.expanded ? this.collapseIcon : this.expandIcon;
+    this.icon_ = this.expanded ? this.collapseIcon : this.expandIcon;
   }
 
   private toggleExpand_(event: Event) {
@@ -153,13 +147,8 @@ export class CrExpandButtonElement extends PolymerElement {
     focusWithoutInk(this.$.icon);
   }
 
-  private updateAriaExpanded_() {
-    if (this.disabled) {
-      this.$.icon.removeAttribute('aria-expanded');
-    } else {
-      this.$.icon.setAttribute(
-          'aria-expanded', this.expanded ? 'true' : 'false');
-    }
+  private getAriaExpanded_(): string {
+    return this.expanded ? 'true' : 'false';
   }
 }
 

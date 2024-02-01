@@ -104,10 +104,6 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
     endFlowAndVerifyResult(ESimSetupFlowResult.ERROR_FETCHING_PROFILES);
   });
 
-  function setSmdsSupportEnabled(value) {
-    eSimPage.smdsSupportEnabled_ = value;
-  }
-
   setup(async function() {
     networkConfigRemote = new FakeNetworkConfig();
 
@@ -124,15 +120,18 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
     eSimPage = document.createElement('esim-flow-ui');
     eSimPage.delegate = new FakeCellularSetupDelegate();
     document.body.appendChild(eSimPage);
-    setSmdsSupportEnabled(false);
     flush();
 
-    ironPages = eSimPage.$$('iron-pages');
-    profileLoadingPage = eSimPage.$$('#profileLoadingPage');
-    profileDiscoveryPageLegacy = eSimPage.$$('#profileDiscoveryPageLegacy');
-    activationCodePage = eSimPage.$$('#activationCodePage');
-    confirmationCodePageLegacy = eSimPage.$$('#confirmationCodePageLegacy');
-    finalPage = eSimPage.$$('#finalPage');
+    ironPages = eSimPage.shadowRoot.querySelector('iron-pages');
+    profileLoadingPage =
+        eSimPage.shadowRoot.querySelector('#profileLoadingPage');
+    profileDiscoveryPageLegacy =
+        eSimPage.shadowRoot.querySelector('#profileDiscoveryPageLegacy');
+    activationCodePage =
+        eSimPage.shadowRoot.querySelector('#activationCodePage');
+    confirmationCodePageLegacy =
+        eSimPage.shadowRoot.querySelector('#confirmationCodePageLegacy');
+    finalPage = eSimPage.shadowRoot.querySelector('#finalPage');
 
     // Captures the function that is called every time the interval timer
     // timeouts.
@@ -155,6 +154,10 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
     assertTrue(!!activationCodePage);
     assertTrue(!!confirmationCodePageLegacy);
     assertTrue(!!finalPage);
+  });
+
+  suiteSetup(() => {
+    loadTimeData.overrideValues({isSmdsSupportEnabled: false});
   });
 
   function assertSelectedPage(pageName, page) {
@@ -200,7 +203,8 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
 
   async function enterConfirmationCode(backButtonState) {
     const confirmationCodeInput =
-        confirmationCodePageLegacy.$$('#confirmationCode');
+        confirmationCodePageLegacy.shadowRoot.querySelector(
+            '#confirmationCode');
     confirmationCodeInput.value = 'CONFIRMATION_CODE';
     assertFalse(confirmationCodeInput.invalid);
 
@@ -216,7 +220,8 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
 
   async function assertFinalPageAndPressDoneButton(shouldBeShowingError) {
     assertSelectedPage(ESimPageName.FINAL, finalPage);
-    assertEquals(!!finalPage.$$('.error'), shouldBeShowingError);
+    assertEquals(
+        !!finalPage.shadowRoot.querySelector('.error'), shouldBeShowingError);
     assertEquals(ButtonState.ENABLED, eSimPage.buttonState.forward);
     assertEquals(ButtonState.HIDDEN, eSimPage.buttonState.backward);
     assertEquals(ButtonState.HIDDEN, eSimPage.buttonState.cancel);
@@ -270,7 +275,9 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
       forwardButtonShouldBeEnabled, backButtonState) {
     if (!forwardButtonShouldBeEnabled) {
       // In the initial state, input should be cleared.
-      assertEquals(activationCodePage.$$('#activationCode').value, '');
+      assertEquals(
+          activationCodePage.shadowRoot.querySelector('#activationCode').value,
+          '');
     }
     assertSelectedPage(ESimPageName.ACTIVATION_CODE, activationCodePage);
     assertButtonState(forwardButtonShouldBeEnabled, backButtonState);
@@ -281,7 +288,10 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
     if (!forwardButtonShouldBeEnabled) {
       // In the initial state, input should be cleared.
       assertEquals(
-          confirmationCodePageLegacy.$$('#confirmationCode').value, '');
+          confirmationCodePageLegacy.shadowRoot
+              .querySelector('#confirmationCode')
+              .value,
+          '');
     }
     assertSelectedPage(
         ESimPageName.CONFIRMATION_CODE_LEGACY, confirmationCodePageLegacy);
@@ -306,7 +316,8 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
           /*forwardButtonShouldBeEnabled*/ false,
           /*backButtonState*/ ButtonState.HIDDEN);
       // Insert an activation code.
-      activationCodePage.$$('#activationCode').value = ACTIVATION_CODE_VALID;
+      activationCodePage.shadowRoot.querySelector('#activationCode').value =
+          ACTIVATION_CODE_VALID;
 
       // Forward button should now be enabled.
       assertActivationCodePage(
@@ -404,8 +415,8 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
       assertConfirmationCodePageLegacy(
           /*forwardButtonShouldBeEnabled*/ false,
           /*backButtonState*/ ButtonState.ENABLED);
-      confirmationCodePageLegacy.$$('#confirmationCode').value =
-          'CONFIRMATION_CODE';
+      confirmationCodePageLegacy.shadowRoot.querySelector('#confirmationCode')
+          .value = 'CONFIRMATION_CODE';
 
       eSimPage.navigateBackward();
       await flushAsync();
@@ -415,7 +426,7 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
           /*forwardButtonShouldBeEnabled*/ true,
           /*backButtonState*/ ButtonState.HIDDEN);
       assertEquals(
-          activationCodePage.$$('#activationCode').value,
+          activationCodePage.shadowRoot.querySelector('#activationCode').value,
           ACTIVATION_CODE_VALID);
 
       endFlowAndVerifyResult(
@@ -467,7 +478,8 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
       assertFocusDefaultButtonEventFired();
 
       // Insert an activation code.
-      activationCodePage.$$('#activationCode').value = ACTIVATION_CODE_VALID;
+      activationCodePage.shadowRoot.querySelector('#activationCode').value =
+          ACTIVATION_CODE_VALID;
       assertFalse(focusDefaultButtonEventFired);
 
       assertActivationCodePage(
@@ -512,8 +524,9 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
                 /*forwardButtonShouldBeEnabled*/ false,
                 /*backButtonState*/ ButtonState.ENABLED);
             assertFocusDefaultButtonEventFired();
-            confirmationCodePageLegacy.$$('#confirmationCode').value =
-                'CONFIRMATION_CODE';
+            confirmationCodePageLegacy.shadowRoot
+                .querySelector('#confirmationCode')
+                .value = 'CONFIRMATION_CODE';
             assertFalse(focusDefaultButtonEventFired);
 
             // Simulate pressing 'Backward'.
@@ -525,7 +538,8 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
                 /*backButtonState*/ ButtonState.ENABLED);
             assertFocusDefaultButtonEventFired();
             assertEquals(
-                activationCodePage.$$('#activationCode').value,
+                activationCodePage.shadowRoot.querySelector('#activationCode')
+                    .value,
                 ACTIVATION_CODE_VALID);
 
             eSimPage.navigateBackward();
@@ -543,7 +557,8 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
 
     async function selectProfile() {
       // Select the first profile on the list.
-      const profileList = profileDiscoveryPageLegacy.$$('#profileList');
+      const profileList =
+          profileDiscoveryPageLegacy.shadowRoot.querySelector('#profileList');
       profileList.selectItem(profileList.items[0]);
       flush();
 
@@ -623,8 +638,9 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
             assertConfirmationCodePageLegacy(
                 /*forwardButtonShouldBeEnabled*/ false,
                 /*backButtonState*/ ButtonState.ENABLED);
-            confirmationCodePageLegacy.$$('#confirmationCode').value =
-                'CONFIRMATION_CODE';
+            confirmationCodePageLegacy.shadowRoot
+                .querySelector('#confirmationCode')
+                .value = 'CONFIRMATION_CODE';
 
             eSimPage.navigateBackward();
             await flushAsync();

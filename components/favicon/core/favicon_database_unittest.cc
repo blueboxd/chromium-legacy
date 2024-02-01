@@ -866,7 +866,7 @@ TEST_F(FaviconDatabaseTest, FindFirstPageURLForHost) {
                                           {favicon_base::IconType::kFavicon}));
 
   // Expect a match when we search for a TouchIcon.
-  absl::optional<GURL> result = db.FindFirstPageURLForHost(
+  std::optional<GURL> result = db.FindFirstPageURLForHost(
       kPageUrlHttps,
       {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon});
 
@@ -1096,7 +1096,7 @@ TEST_F(FaviconDatabaseTest, Recovery) {
     {
       sql::test::ScopedErrorExpecter expecter;
       expecter.ExpectError(SQLITE_CORRUPT);
-      EXPECT_TRUE(raw_db.Open(file_name_));
+      EXPECT_FALSE(raw_db.Open(file_name_));
       EXPECT_TRUE(expecter.SawExpectedErrors());
     }
     EXPECT_EQ("ok", sql::test::IntegrityCheck(raw_db));
@@ -1191,7 +1191,7 @@ TEST_F(FaviconDatabaseTest, Recovery7) {
     {
       sql::test::ScopedErrorExpecter expecter;
       expecter.ExpectError(SQLITE_CORRUPT);
-      ASSERT_TRUE(raw_db.Open(file_name_));
+      ASSERT_FALSE(raw_db.Open(file_name_));
       EXPECT_TRUE(expecter.SawExpectedErrors());
     }
     EXPECT_EQ("ok", sql::test::IntegrityCheck(raw_db));
@@ -1232,7 +1232,7 @@ TEST_F(FaviconDatabaseTest, Recovery6) {
     {
       sql::test::ScopedErrorExpecter expecter;
       expecter.ExpectError(SQLITE_CORRUPT);
-      EXPECT_TRUE(raw_db.Open(file_name_));
+      EXPECT_FALSE(raw_db.Open(file_name_));
       EXPECT_TRUE(expecter.SawExpectedErrors());
     }
     EXPECT_EQ("ok", sql::test::IntegrityCheck(raw_db));
@@ -1278,7 +1278,7 @@ TEST_F(FaviconDatabaseTest, Recovery5) {
     {
       sql::test::ScopedErrorExpecter expecter;
       expecter.ExpectError(SQLITE_CORRUPT);
-      EXPECT_TRUE(raw_db.Open(file_name_));
+      EXPECT_FALSE(raw_db.Open(file_name_));
       EXPECT_TRUE(expecter.SawExpectedErrors());
     }
     EXPECT_EQ("ok", sql::test::IntegrityCheck(raw_db));

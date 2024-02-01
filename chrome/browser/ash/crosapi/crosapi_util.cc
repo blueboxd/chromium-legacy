@@ -58,12 +58,14 @@
 #include "chromeos/crosapi/mojom/browser_app_instance_registry.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "chromeos/crosapi/mojom/cert_provisioning.mojom.h"
+#include "chromeos/crosapi/mojom/chaps_service.mojom.h"
 #include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "chromeos/crosapi/mojom/content_protection.mojom.h"
 #include "chromeos/crosapi/mojom/cros_display_config.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/debug_interface.mojom.h"
 #include "chromeos/crosapi/mojom/desk.mojom.h"
 #include "chromeos/crosapi/mojom/desk_profiles.mojom.h"
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
@@ -85,6 +87,7 @@
 #include "chromeos/crosapi/mojom/extension_info_private.mojom.h"
 #include "chromeos/crosapi/mojom/eye_dropper.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
+#include "chromeos/crosapi/mojom/file_change_service_bridge.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_access_cloud_identifier.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
@@ -99,6 +102,7 @@
 #include "chromeos/crosapi/mojom/kerberos_in_browser.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/kiosk_session_service.mojom.h"
+#include "chromeos/crosapi/mojom/lacros_shelf_item_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/launcher_search.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/login.mojom.h"
@@ -113,6 +117,8 @@
 #include "chromeos/crosapi/mojom/network_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
+#include "chromeos/crosapi/mojom/nonclosable_app_toast_service.mojom.h"
+#include "chromeos/crosapi/mojom/one_drive_notification_service.mojom.h"
 #include "chromeos/crosapi/mojom/parent_access.mojom.h"
 #include "chromeos/crosapi/mojom/passkeys.mojom.h"
 #include "chromeos/crosapi/mojom/policy_service.mojom.h"
@@ -133,6 +139,7 @@
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
+#include "chromeos/crosapi/mojom/telemetry_management_service.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/crosapi/mojom/timezone.mojom.h"
 #include "chromeos/crosapi/mojom/trusted_vault.mojom.h"
@@ -200,6 +207,10 @@ constexpr char kAshAppInstallServicePackageIdFix[] = "b/304680258";
 // Bug fix to launch tabbed web app windows in new windows when requested.
 // We can remove this capability once Ash and Lacros are both past M122.
 constexpr char kAshShelfNewWindowFix[] = "crbug/1490336";
+// Support feedback dialog ai flow.
+// TODO(crbug/1501057): Remove this capability once Ash and Lacros are both past
+// M123.
+constexpr char kAshFeedbackFlowAi[] = "crbug/1501057";
 
 // Returns the vector containing policy data of the device account. In case of
 // an error, returns nullopt.
@@ -303,7 +314,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 124,
+static_assert(crosapi::mojom::Crosapi::Version_ == 131,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -328,12 +339,14 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserVersionService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CertDatabase>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CertProvisioning>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::ChapsService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ChromeAppKioskService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Clipboard>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ClipboardHistory>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ContentProtection>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CrosDisplayConfigController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Crosapi>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::DebugInterfaceRegisterer>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Desk>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeskProfileObserver>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeskTemplate>(),
@@ -356,6 +369,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::EyeDropper>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FieldTrialService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::FileChangeServiceBridge>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
     MakeInterfaceVersionEntry<
         crosapi::mojom::FileSystemAccessCloudIdentifierProvider>(),
@@ -373,6 +387,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::KerberosInBrowser>(),
     MakeInterfaceVersionEntry<crosapi::mojom::KeystoreService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::KioskSessionService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::LacrosShelfItemTracker>(),
     MakeInterfaceVersionEntry<crosapi::mojom::LocalPrinter>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Login>(),
     MakeInterfaceVersionEntry<crosapi::mojom::LoginScreenStorage>(),
@@ -389,15 +404,18 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkingAttributes>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkingPrivate>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkSettingsService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::OneDriveNotificationService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::PasskeyAuthenticator>(),
     MakeInterfaceVersionEntry<crosapi::mojom::PolicyService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Power>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Prefs>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::NonclosableAppToastService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::PrintingMetrics>(),
     MakeInterfaceVersionEntry<crosapi::mojom::PrintingMetricsForProfile>(),
     MakeInterfaceVersionEntry<
         crosapi::mojom::TelemetryDiagnosticRoutinesService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TelemetryEventService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::TelemetryManagementService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TelemetryProbeService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Remoting>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ResourceManager>(),
@@ -620,6 +638,7 @@ void InjectBrowserInitParams(
       kAshExtensionKeeplistCmdlineSwitchCapability,
       kAshAppInstallServicePackageIdFix,
       kAshShelfNewWindowFix,
+      kAshFeedbackFlowAi,
   };
   params->ash_capabilities = {std::move(ash_capabilities)};
 
@@ -694,6 +713,9 @@ void InjectBrowserInitParams(
 
   params->is_cros_shortstand_enabled =
       chromeos::features::IsCrosShortstandEnabled();
+
+  params->should_disable_chrome_compose_on_chromeos =
+      chromeos::features::ShouldDisableChromeComposeOnChromeOS();
 }
 
 template <typename BrowserParams>

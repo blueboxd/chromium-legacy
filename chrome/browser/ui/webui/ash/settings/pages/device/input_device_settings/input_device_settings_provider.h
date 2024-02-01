@@ -117,6 +117,7 @@ class InputDeviceSettingsProvider
   void OnWidgetDestroyed(views::Widget* widget) override;
 
   void SetWidgetForTesting(views::Widget* widget);
+  void HasLauncherButton(HasLauncherButtonCallback callback) override;
 
  private:
   void NotifyKeyboardsUpdated();
@@ -144,7 +145,7 @@ class InputDeviceSettingsProvider
       graphics_tablet_settings_observers_;
   mojo::RemoteSet<mojom::ButtonPressObserver> button_press_observers_;
 
-  raw_ptr<views::Widget, ExperimentalAsh> widget_ = nullptr;
+  raw_ptr<views::Widget> widget_ = nullptr;
 
   mojo::Receiver<mojom::InputDeviceSettingsProvider> receiver_{this};
 };

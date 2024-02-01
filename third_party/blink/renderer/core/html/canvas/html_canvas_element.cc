@@ -490,6 +490,9 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   if (!context_)
     return nullptr;
 
+  if (IsWebGL() || IsWebGPU()) {
+    context_->SetFilterQuality(FilterQuality());
+  }
   context_->RecordUKMCanvasRenderingAPI();
   context_->RecordUMACanvasRenderingAPI();
   // Since the |context_| is created, free the transparent image,
@@ -1207,6 +1210,13 @@ String HTMLCanvasElement::ToDataURLInternal(
 String HTMLCanvasElement::toDataURL(const String& mime_type,
                                     const ScriptValue& quality_argument,
                                     ExceptionState& exception_state) const {
+  if (ContextHasOpenLayers(context_)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "`toDataURL()` cannot be called with open layers.");
+    return String();
+  }
+
   if (!OriginClean()) {
     exception_state.ThrowSecurityError("Tainted canvases may not be exported.");
     return String();
@@ -1236,6 +1246,13 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
 
   if (!GetExecutionContext())
     return;
+
+  if (ContextHasOpenLayers(context_)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "`toBlob()` cannot be called with open layers.");
+    return;
+  }
 
   if (!IsPaintable()) {
     // If the canvas element's bitmap has no pixels
@@ -1600,6 +1617,11 @@ HTMLCanvasElement::GetSourceImageForCanvasInternal(
     FlushReason reason,
     SourceImageStatus* status,
     const AlphaDisposition alpha_disposition) {
+  if (ContextHasOpenLayers(context_)) {
+    *status = kLayersOpenInCanvasSource;
+    return nullptr;
+  }
+
   if (!width() || !height()) {
     *status = kZeroSizeCanvasSourceImageStatus;
     return nullptr;
@@ -1683,6 +1705,12 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
     absl::optional<gfx::Rect> crop_rect,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
+  if (ContextHasOpenLayers(context_)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "`createImageBitmap()` cannot be called with open layers.");
+    return ScriptPromise();
+  }
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, MakeGarbageCollected<ImageBitmap>(this, crop_rect, options),
       options, exception_state);
@@ -1924,7 +1952,7 @@ RespectImageOrientationEnum HTMLCanvasElement::RespectImageOrientation() const {
   // TODO(junov): Computing style here will be problematic for applying the
   // NoAllocDirectCall IDL attribute to drawImage.
   if (!GetComputedStyle()) {
-    GetDocument().UpdateStyleAndLayoutTreeForNode(
+    GetDocument().UpdateStyleAndLayoutTreeForElement(
         this, DocumentUpdateReason::kCanvas);
     const_cast<HTMLCanvasElement*>(this)->EnsureComputedStyle();
   }

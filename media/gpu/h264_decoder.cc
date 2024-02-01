@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <memory>
+#include <optional>
 
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -15,7 +16,6 @@
 #include "base/ranges/algorithm.h"
 #include "media/base/media_switches.h"
 #include "media/video/h264_level_limits.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 namespace {
@@ -101,6 +101,7 @@ H264Decoder::H264Accelerator::Status
 H264Decoder::H264Accelerator::ParseEncryptedSliceHeader(
     const std::vector<base::span<const uint8_t>>& data,
     const std::vector<SubsampleEntry>& subsamples,
+    uint64_t secure_handle,
     H264SliceHeader* slice_header_out) {
   return H264Decoder::H264Accelerator::Status::kNotSupported;
 }
@@ -1051,7 +1052,7 @@ bool H264Decoder::FinishPicture(scoped_refptr<H264Picture> pic) {
         // outputting all pictures before it, to avoid outputting corrupted
         // frames.
         (*output_candidate)->frame_num == *recovery_frame_num_) {
-      recovery_frame_num_ = absl::nullopt;
+      recovery_frame_num_ = std::nullopt;
       if (!OutputPic(*output_candidate))
         return false;
     }
@@ -1323,8 +1324,8 @@ H264Decoder::H264Accelerator::Status H264Decoder::ProcessEncryptedSliceHeader(
                                              prior_cencv1_subsamples_.end());
   all_subsamples.insert(all_subsamples.end(), subsamples.begin(),
                         subsamples.end());
-  auto rv = accelerator_->ParseEncryptedSliceHeader(spans, all_subsamples,
-                                                    curr_slice_hdr_.get());
+  auto rv = accelerator_->ParseEncryptedSliceHeader(
+      spans, all_subsamples, secure_handle_, curr_slice_hdr_.get());
   // Return now if this isn't fully processed and don't store the NALU info
   // since we will get called again in the kTryAgain case, and on an error we
   // want to exist.
@@ -1758,7 +1759,7 @@ VideoColorSpace H264Decoder::GetVideoColorSpace() const {
   return picture_color_space_;
 }
 
-absl::optional<gfx::HDRMetadata> H264Decoder::GetHDRMetadata() const {
+std::optional<gfx::HDRMetadata> H264Decoder::GetHDRMetadata() const {
   return hdr_metadata_;
 }
 

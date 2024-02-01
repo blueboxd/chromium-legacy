@@ -336,7 +336,12 @@ class COMPONENT_EXPORT(SQL) Database {
   bool has_error_callback() const { return !error_callback_.is_null(); }
 
   // Developer-friendly database ID used in logging output and memory dumps.
-  void set_histogram_tag(const std::string& tag);
+  void set_histogram_tag(const std::string& histogram_tag) {
+    DCHECK(!is_open());
+    histogram_tag_ = histogram_tag;
+  }
+
+  const std::string& histogram_tag() const { return histogram_tag_; }
 
   // Asks SQLite to perform a full integrity check on the database.
   //
@@ -371,7 +376,10 @@ class COMPONENT_EXPORT(SQL) Database {
   // associated with the database (rollback journal, write-ahead log,
   // shared-memory file) may be created.
   //
-  // Returns true in case of success, false in case of failure.
+  // Returns true in case of success, false in case of failure. If an error
+  // occurs, this function will invoke the error callback if it is present and
+  // then may attempt to open the database a second time. If the second attempt
+  // succeeds, it will return true.
   [[nodiscard]] bool Open(const base::FilePath& db_file_path);
 
   // Alternative to Open() that creates an in-memory database.
@@ -661,7 +669,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // Returns |true| if there is an error expecter (see SetErrorExpecter), and
   // that expecter returns |true| when passed |error|.  Clients which provide an
   // |error_callback| should use IsExpectedSqliteError() to check for unexpected
-  // errors; if one is detected, DLOG(DCHECK) is generally appropriate (see
+  // errors; if one is detected, DLOG(FATAL) is generally appropriate (see
   // OnSqliteError implementation).
   static bool IsExpectedSqliteError(int sqlite_error_code);
 
@@ -727,17 +735,13 @@ class COMPONENT_EXPORT(SQL) Database {
   // Enables a special behavior for OpenInternal().
   enum class OpenMode {
     // No special behavior.
-    kNone = 0,
-
-    // Retry if the database error handler is invoked and closes the database.
-    // Database error handlers that call RazeAndPoison() take advantage of this.
-    kRetryOnPoision = 1,
+    kNone,
 
     // Open an in-memory database. Used by OpenInMemory().
-    kInMemory = 2,
+    kInMemory,
 
     // Open a temporary database. Used by OpenTemporary().
-    kTemporary = 3,
+    kTemporary,
   };
 
   // Implements Open(), OpenInMemory(), and OpenTemporary().

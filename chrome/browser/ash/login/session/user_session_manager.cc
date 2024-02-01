@@ -17,6 +17,8 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/metrics/login_unlock_throughput_recorder.h"
+#include "ash/shell.h"
 #include "base/base_paths.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -86,8 +88,8 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/ash/notifications/update_notification.h"
-#include "chrome/browser/ash/notifications/update_notification_showing_controller.h"
+#include "chrome/browser/ash/net/alwayson_vpn_pre_connect_url_allowlist_service.h"
+#include "chrome/browser/ash/net/alwayson_vpn_pre_connect_url_allowlist_service_factory.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/handlers/adb_sideloading_allowance_mode_policy_handler.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
@@ -573,9 +575,7 @@ void MaybeSaveSessionStartedTimeBeforeRestart(Profile* profile) {
 
 // Returns a Base16 encoded SHA1 digest of `data`.
 std::string Sha1Digest(const std::string& data) {
-  const base::SHA1Digest hash =
-      base::SHA1HashSpan(base::as_bytes(base::make_span(data)));
-  return base::HexEncode(hash);
+  return base::HexEncode(base::SHA1HashSpan(base::as_byte_span(data)));
 }
 
 }  // namespace
@@ -995,7 +995,7 @@ bool UserSessionManager::RespectLocalePreference(
           << " Selected '" << pref_locale << "'";
 
   Profile::AppLocaleChangedVia app_locale_changed_via =
-      user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT
+      user->GetType() == user_manager::UserType::kPublicAccount
           ? Profile::APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN
           : Profile::APP_LOCALE_CHANGED_VIA_LOGIN;
 
@@ -1226,10 +1226,10 @@ void UserSessionManager::OnUsersSignInConstraintsChanged() {
       user_manager::UserManager::Get();
   const user_manager::UserList& logged_in_users =
       user_manager->GetLoggedInUsers();
-  for (auto* user : logged_in_users) {
-    if (user->GetType() != user_manager::USER_TYPE_REGULAR &&
-        user->GetType() != user_manager::USER_TYPE_GUEST &&
-        user->GetType() != user_manager::USER_TYPE_CHILD) {
+  for (user_manager::User* user : logged_in_users) {
+    if (user->GetType() != user_manager::UserType::kRegular &&
+        user->GetType() != user_manager::UserType::kGuest &&
+        user->GetType() != user_manager::UserType::kChild) {
       continue;
     }
     if (!user_manager->IsUserAllowed(*user)) {
@@ -1260,7 +1260,7 @@ void UserSessionManager::CreateUserSession(const UserContext& user_context,
   StoreUserContextDataBeforeProfileIsCreated();
   session_manager::SessionManager::Get()->CreateSession(
       user_context_.GetAccountId(), user_context_.GetUserIDHash(),
-      user_context.GetUserType() == user_manager::USER_TYPE_CHILD);
+      user_context.GetUserType() == user_manager::UserType::kChild);
 }
 
 void UserSessionManager::PreStartSession(StartSessionType start_session_type) {
@@ -1432,7 +1432,7 @@ void UserSessionManager::InitProfilePreferences(
   DVLOG(1) << "Initializing profile preferences";
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
-  if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP &&
+  if (user->GetType() == user_manager::UserType::kKioskApp &&
       profile->IsNewProfile()) {
     ChromeUserManager::Get()->SetIsCurrentUserNew(true);
   }
@@ -1608,9 +1608,9 @@ void UserSessionManager::InitProfilePreferences(
     }
 
     user = user_manager->FindUser(user_context.GetAccountId());
-    bool is_child = user->GetType() == user_manager::USER_TYPE_CHILD;
+    bool is_child = user->GetType() == user_manager::UserType::kChild;
     DCHECK(is_child ==
-           (user_context.GetUserType() == user_manager::USER_TYPE_CHILD));
+           (user_context.GetUserType() == user_manager::UserType::kChild));
 
     signin::Tribool is_under_advanced_protection = signin::Tribool::kUnknown;
     if (IsOnlineSignin(user_context)) {
@@ -1825,9 +1825,22 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     if (user_manager->GetPrimaryUser() == user) {
       StartTetherServiceIfPossible(profile);
 
+      ash::AlwaysOnVpnPreConnectUrlAllowlistService* service =
+          ash::AlwaysOnVpnPreConnectUrlAllowlistServiceFactory::GetInstance()
+              ->GetForProfile(profile);
+
       // PrefService is ready, check whether we need to force a VPN connection.
-      always_on_vpn_manager_ =
-          std::make_unique<arc::AlwaysOnVpnManager>(profile->GetPrefs());
+      always_on_vpn_manager_ = std::make_unique<arc::AlwaysOnVpnManager>(
+          profile->GetPrefs(),
+          /*delay_lockdown_until_vpn_connected=*/service &&
+              service->enforce_alwayson_pre_connect_url_allowlist());
+
+      if (service) {
+        // Configure the `AlwaysOnVpnPreConnectUrlAllowlistService` service to
+        // store a weak ptr reference to `always_on_vpn_manager_` because it
+        // outlives the `always_on_vpn_manager_` instance.
+        service->SetAlwaysOnVpnManager(always_on_vpn_manager_->GetWeakPtr());
+      }
 
       secure_dns_manager_ =
           std::make_unique<SecureDnsManager>(g_browser_process->local_state());
@@ -1860,7 +1873,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
     VLOG(1) << "Clearing all secrets";
     user_context_.ClearSecrets();
-    if (user->GetType() == user_manager::USER_TYPE_CHILD) {
+    if (user->GetType() == user_manager::UserType::kChild) {
       if (base::FeatureList::IsEnabled(
               ::features::kDMServerOAuthForChildUser)) {
         VLOG(1) << "Waiting for child policy refresh before showing session UI";
@@ -2169,9 +2182,6 @@ void UserSessionManager::StartTetherServiceIfPossible(Profile* profile) {
 }
 
 void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
-  // Checks whether to show the update notification.
-  MaybeShowUpdateNotification(profile);
-
   // Check to see if this profile should show TPM Firmware Update Notification
   // and show the message accordingly.
   tpm_firmware_update::ShowNotificationIfNeeded(profile);
@@ -2277,8 +2287,7 @@ void UserSessionManager::RestorePendingUserSessions() {
         user_manager::UserManager::Get()->FindUser(account_id);
     UserContext user_context =
         user ? UserContext(*user)
-             : UserContext(user_manager::UserType::USER_TYPE_REGULAR,
-                           account_id);
+             : UserContext(user_manager::UserType::kRegular, account_id);
     user_context.SetUserIDHash(user_id_hash);
     user_context.SetIsUsingOAuth(false);
 
@@ -2430,6 +2439,13 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
       full_restore::FullRestoreService::GetForProfile(profile)
           ->LaunchBrowserWhenReady();
     }
+  }
+  if (ProfileHelper::IsPrimaryProfile(profile)) {
+    // chrome::SessionRestore is using synchronous mode on Chrome OS,
+    // which means that data is definitely loaded by this moment.
+    Shell::Get()
+        ->login_unlock_throughput_recorder()
+        ->BrowserSessionRestoreDataLoaded();
   }
 
   if (HatsNotificationController::ShouldShowSurveyToProfile(
@@ -2613,17 +2629,6 @@ void UserSessionManager::MaybeShowU2FNotification() {
   }
 }
 
-void UserSessionManager::MaybeShowUpdateNotification(Profile* profile) {
-  if (!ProfileHelper::IsPrimaryProfile(profile)) {
-    return;
-  }
-
-  if (features::IsUpdateNotificationEnabled() && !update_notification_) {
-    GetUpdateNotificationShowingController(profile)
-        ->MaybeShowUpdateNotification();
-  }
-}
-
 void UserSessionManager::MaybeShowHelpAppReleaseNotesNotification(
     Profile* profile) {
   if (!ProfileHelper::IsPrimaryProfile(profile))
@@ -2715,15 +2720,6 @@ UserSessionManager::GetHelpAppNotificationController(Profile* profile) {
         std::make_unique<HelpAppNotificationController>(profile);
   }
   return help_app_notification_controller_.get();
-}
-
-UpdateNotificationShowingController*
-UserSessionManager::GetUpdateNotificationShowingController(Profile* profile) {
-  if (!update_notification_showing_controller_) {
-    update_notification_showing_controller_ =
-        std::make_unique<UpdateNotificationShowingController>(profile);
-  }
-  return update_notification_showing_controller_.get();
 }
 
 }  // namespace ash

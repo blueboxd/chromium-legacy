@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_helper.h"
 
+#import "base/check.h"
 #import "base/metrics/histogram_functions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/tabs/model/features.h"
 #import "ios/chrome/browser/tabs/model/tab_title_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -112,6 +114,37 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
     }
   }
 
+  if (base::FeatureList::IsEnabled(kTabGroupsInGrid)) {
+    // The `groupTitleAndIdentifiers`is for demo purposes only, it will be
+    // replaced when the group tab model is available.
+    GroupTitleAndIdentifier* firstGroupTitleAndIdentifier =
+        [[GroupTitleAndIdentifier alloc] init];
+    GroupTitleAndIdentifier* secondGroupTitleAndIdentifier =
+        [[GroupTitleAndIdentifier alloc] init];
+
+    firstGroupTitleAndIdentifier.groupTitle = @"Group 1";
+    firstGroupTitleAndIdentifier.groupID = @"Group 1";
+
+    secondGroupTitleAndIdentifier.groupTitle = @"Group 2";
+    secondGroupTitleAndIdentifier.groupID = @"Group 2";
+
+    NSArray<GroupTitleAndIdentifier*>* groupTitleAndIdentifiers =
+        @[ firstGroupTitleAndIdentifier, secondGroupTitleAndIdentifier ];
+    UIMenu* addTabToGroupMenu = [actionFactory
+        menuToAddTabToGroupWithGroupTitleAndIdentifiers:groupTitleAndIdentifiers
+                                                  block:^(NSString* title) {
+                                                    if (!title) {
+                                                      [self.contextMenuDelegate
+                                                          createNewTabGroupWithIdentifier:
+                                                              cell.itemIdentifier
+                                                                                incognito:
+                                                                                    self.incognito];
+                                                    }
+                                                  }];
+
+    [menuElements addObject:addTabToGroupMenu];
+  }
+
   if (!IsURLNewTabPage(item.URL)) {
     [menuElements addObject:[actionFactory actionToShareWithBlock:^{
                     [self.contextMenuDelegate
@@ -169,8 +202,7 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
   UIAction* closeTabAction;
   ProceduralBlock closeTabActionBlock = ^{
     [self.contextMenuDelegate closeTabWithIdentifier:cell.itemIdentifier
-                                           incognito:self.incognito
-                                              pinned:pinned];
+                                           incognito:self.incognito];
   };
 
   if (IsPinnedTabsEnabled() && !self.incognito && pinned) {

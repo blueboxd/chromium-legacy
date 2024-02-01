@@ -26,8 +26,9 @@ class View;
 // automatically close. It also has a header and close button, as well as a
 // footer with a link to chrome://downloads.
 class DownloadDialogView : public DownloadBubblePrimaryView {
+  METADATA_HEADER(DownloadDialogView, DownloadBubblePrimaryView)
+
  public:
-  METADATA_HEADER(DownloadDialogView);
   DownloadDialogView(const DownloadDialogView&) = delete;
   DownloadDialogView& operator=(const DownloadDialogView&) = delete;
 
@@ -42,6 +43,7 @@ class DownloadDialogView : public DownloadBubblePrimaryView {
   // Returns the close button. The close button should be the initially focused
   // view to make it easier for the user to close the dialog.
   views::View* GetInitiallyFocusedView() override;
+  bool IsPartialView() const override;
 
  private:
   // DownloadBubblePrimaryView

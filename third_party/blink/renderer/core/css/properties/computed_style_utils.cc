@@ -1531,8 +1531,7 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
       optical_sizing != kAutoOpticalSizing ||
       (RuntimeEnabledFeatures::CSSFontSizeAdjustEnabled() &&
        style.GetFontDescription().HasSizeAdjust()) ||
-      (RuntimeEnabledFeatures::FontVariantPositionEnabled() &&
-       variant_position != FontDescription::kNormalVariantPosition)) {
+      variant_position != FontDescription::kNormalVariantPosition) {
     return nullptr;
   }
 
@@ -3000,17 +2999,12 @@ CSSValue* ComputedStyleUtils::ValueForTransformFunction(
 }
 
 gfx::RectF ComputedStyleUtils::ReferenceBoxForTransform(
-    const LayoutObject& layout_object,
-    UsePixelSnappedBox pixel_snap_box) {
+    const LayoutObject& layout_object) {
   if (layout_object.IsSVGChild()) {
     return TransformHelper::ComputeReferenceBox(layout_object);
   }
   if (const auto* layout_box = DynamicTo<LayoutBox>(layout_object)) {
-    if (pixel_snap_box == kDontUsePixelSnappedBox ||
-        RuntimeEnabledFeatures::ReferenceBoxNoPixelSnappingEnabled()) {
-      return gfx::RectF(layout_box->PhysicalBorderBoxRect());
-    }
-    return gfx::RectF(layout_box->DeprecatedPixelSnappedBorderBoxRect());
+    return gfx::RectF(layout_box->PhysicalBorderBoxRect());
   }
   return gfx::RectF();
 }
@@ -4163,7 +4157,7 @@ ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
           To<CSSUnsupportedColor>(style_value)->Value());
     case CSSStyleValue::StyleValueType::kUnparsedType:
       return std::make_unique<CrossThreadUnparsedValue>(
-          To<CSSUnparsedValue>(style_value)->ToString());
+          To<CSSUnparsedValue>(style_value)->ToUnparsedString());
     default:
       return std::make_unique<CrossThreadUnsupportedValue>(
           style_value->toString());

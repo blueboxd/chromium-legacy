@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/chromeos/cros_color_overrides.css.js';
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://resources/ash/common/cr_elements/cros_color_overrides.css.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './help_resources_icons.html.js';
 import './os_feedback_shared.css.js';
 
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
+import {assert} from 'chrome://resources/js/assert.js';
+import {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './confirmation_page.html.js';
@@ -119,10 +121,9 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
         break;
       case 'chromebookCommunity':
         // If app locale is not available, default to en.
-        window.open(
+        OpenWindowProxyImpl.getInstance().openUrl(
             `https://support.google.com/chromebook/?hl=${
-                this.i18n('language') || 'en'}#topic=3399709`,
-            '_blank');
+                this.i18n('language') || 'en'}#topic=3399709`);
         this.handleEmitMetrics(
             FeedbackAppPostSubmitAction.kOpenChromebookCommunity);
         break;
@@ -139,7 +140,8 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
   }
 
   focusPageTitle(): void {
-    const element = this.shadowRoot!.querySelector('#pageTitle') as HTMLElement;
+    const element = this.shadowRoot!.querySelector<HTMLElement>('#pageTitle');
+    assert(element);
     element.focus();
   }
 

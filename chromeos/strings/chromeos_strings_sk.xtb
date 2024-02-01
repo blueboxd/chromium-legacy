@@ -16,10 +16,12 @@
 <translation id="1075811647922107217">Veľkosť stránky</translation>
 <translation id="1082009148392559545">Sťahuje sa šetrič obrazovky</translation>
 <translation id="1094693127011229778">Adresa IP nie je k dispozícii</translation>
+<translation id="1116694919640316211">Informácie</translation>
 <translation id="1118572504348554005">Spätnú väzbu odoslanú prostredníctvom tohto formulára môžeme zdieľať s našimi partnermi na účely opravy chýb a riešenia ďalších problémov, ktoré nám hlásite. Neuvádzajte citlivé údaje, ako sú heslá.</translation>
 <translation id="1119447706177454957">Interná chyba</translation>
 <translation id="1124772482545689468">Používateľ</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
+<translation id="1134416403025830762">vynásobíte</translation>
 <translation id="1145018782460575098">Okno aktualizácie firmvéru externých zariadení je otvorené. K dispozícii je tento počet aktualizácií: <ph name="NUM_UPDATES" />.</translation>
 <translation id="1145516343487477149">Vyhľadajte články pomocníka a odpovede na bežné otázky o Chromebooku</translation>
 <translation id="1154390310959620237">Môžete prispôsobiť iba päť skratiek. Ak chcete pridať novú, odstráňte niektorú existujúcu.</translation>
@@ -42,6 +44,7 @@
 <translation id="1264369926465113395">Pozrite si nový digitálny časopis Chromebooku pre autorov</translation>
 <translation id="1270369111467284986">Predpokladá sa prihlasovací portál</translation>
 <translation id="1290331692326790741">slabý signál</translation>
+<translation id="1300115153046603471">Názov prístupového bodu (APN) je predvolený typ a <ph name="ATTACH" />.</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Aktualizuje sa (dokončené na <ph name="PERCENTAGE_VALUE" /> %)</translation>
 <translation id="1309341072016605398"><ph name="MINUTES" /> min</translation>
@@ -54,6 +57,7 @@
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Prispôsobiť naskenovanej ploche</translation>
 <translation id="1367951781824006909">Vybrať súbor</translation>
+<translation id="1371650399987522809">Spätná väzba k tapete používajúcej umelú inteligenciu od Googlu</translation>
 <translation id="1387854245479784695">Toto je agregácia všetkých jadier</translation>
 <translation id="1394661041439318933">Úroveň batérie puzdra zariadenia je <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="1397738625398125236">Je možné testovať dostupnosť (ping) brány</translation>
@@ -81,18 +85,20 @@
 <translation id="1515129336378114413">domovská stránka prehliadača</translation>
 <translation id="1526389707933164996">Animácia šetriča obrazovky</translation>
 <translation id="152892567002884378">Zvýšenie hlasitosti</translation>
-<translation id="1539242642795599947">Názov prístupového bodu (APN) je typ Predvolený aj Príloha.</translation>
 <translation id="1555130319947370107">Modrá</translation>
 <translation id="155865706765934889">Touchpad</translation>
 <translation id="1561927818299383735">farba podsvietenia</translation>
 <translation id="1565038567006703504"><ph name="DEVICE_NAME" /> sa nedá aktualizovať</translation>
+<translation id="1566493343215789965">vydelíte</translation>
 <translation id="1567064801249837505">Albumy</translation>
 <translation id="1572585716423026576">Nastaviť ako tapetu</translation>
 <translation id="1578784163189013834">Vybrať pozadie šetriča obrazovky</translation>
 <translation id="160633243685262989">Zobraziť ukážku obrázka</translation>
 <translation id="1611649489706141841">dopredu</translation>
 <translation id="1615335640928990664">Spotreba dát od <ph name="FRIENDLY_DATE" /></translation>
+<translation id="1615576200479539465">Generujú sa obrázky…</translation>
 <translation id="1621067168122174824">Spustiť test nabitia</translation>
+<translation id="1626590945318984973">Skratka nie je k dispozícii. Stlačte novú skratku bez použitia funkčných klávesov a klávesov <ph name="META_KEY" />.</translation>
 <translation id="1639239467298939599">Načítava sa</translation>
 <translation id="1641857168437328880">Podávač dokumentov (jednostranný)</translation>
 <translation id="1643449475550628585">Denne meniť obrázok tapety</translation>
@@ -143,7 +149,6 @@
 <translation id="188114911237521550">Vypnúť tmavý režim</translation>
 <translation id="1885577615937958993">pretočenie médií dopredu</translation>
 <translation id="1887850431809612466">Revízia hardvéru</translation>
-<translation id="1897672602657312171">Skratka bez klávesa vyhľadávania môže byť v konflikte so skratkou niektorej aplikácie. Ak chcete túto skratku naďalej používať, znova ju stlačte, prípadne stlačte novú skratku a využite pritom kláves vyhľadávania.</translation>
 <translation id="1904932688895783618">Tu je niekoľko ďalších užitočných zdrojov:</translation>
 <translation id="1905710495812624430">Maximálny počet povolených pokusov bol prekročený.</translation>
 <translation id="1908234395526491708">Neúspešné žiadosti UDP</translation>
@@ -175,7 +180,6 @@
 <translation id="2152882202543497059">Počet fotiek: <ph name="NUMBER" /></translation>
 <translation id="2157660087437850958">výber emodži</translation>
 <translation id="2157959690810728433">V PORADÍ</translation>
-<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{Váš správca nastavil aplikáciu <ph name="APP_NAME_1" /> tak, aby sa automaticky spúšťala vždy, keď sa prihlásite.}=2{Váš správca nastavil aplikácie <ph name="APP_NAME_1" /> a <ph name="APP_NAME_2" /> tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}=3{Váš správca nastavil aplikácie <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> a <ph name="APP_NAME_3" /> tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}few{Váš správca nastavil <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> a # ďalšie aplikácie tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}many{Your administrator has set <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> and # other apps to start automatically every time you log in.}other{Váš správca nastavil <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> a # ďalších aplikácií tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Skúsiť znova</translation>
 <translation id="215916044711630446">Tlačidlo Pridať názov prístupového bodu (APN) je teraz zakázané</translation>
 <translation id="2161394479394250669">Zrušiť tlačovú úlohu</translation>
@@ -185,6 +189,7 @@
 <translation id="2189104374785738357">Úprava podrobností názvu prístupového bodu (APN)</translation>
 <translation id="2209788852729124853">Resetovať počítadlá návštevnosti</translation>
 <translation id="2212733584906323460">Preklad názvu</translation>
+<translation id="2215920961700443347">Žiadny internet. Pripojte sa k internetu a skúste to znova.</translation>
 <translation id="2217935453350629363">Aktuálna rýchlosť</translation>
 <translation id="2224337661447660594">Bez internetu</translation>
 <translation id="222447520299472966">Je potrebné vybrať aspoň jeden album z umeleckej galérie</translation>
@@ -218,6 +223,7 @@
 <translation id="2421798028054665193"><ph name="CURRENT_PAGE" />. z <ph name="TOTAL_PAGES" /> obrázkov</translation>
 <translation id="2446553403094072641">Presnosť pohyblivej rádovej čiarky</translation>
 <translation id="2448312741937722512">Typ</translation>
+<translation id="2465272316171730950">Táto služba je vyťažená. Skúste to znova o chvíľu.</translation>
 <translation id="248546197012830854">Zariadenie je offline. Ak chcete zobraziť pomocný obsah, pripojte ho k sieti Wi‐Fi.</translation>
 <translation id="2491955442992294626">Klávesy nie sú testované, keď používate iné okno</translation>
 <translation id="2493126929778606526">Vaše najlepšie fotky, vybrané automaticky</translation>
@@ -225,7 +231,6 @@
 <translation id="2505327257735685095">Obnoviť aktuálny obrázok tapety</translation>
 <translation id="2512979179176933762">zobrazenie okien</translation>
 <translation id="2513396635448525189">Obrázok na prihlasovacej obrazovke</translation>
-<translation id="2515109918609218604">Skratka nie je k dispozícii. Stlačte novú bez použitia funkčných klávesov a klávesov vyhľadávania.</translation>
 <translation id="2517472476991765520">Skenovať</translation>
 <translation id="2521835766824839541">predchádzajúca stopa</translation>
 <translation id="2526590354069164005">Pracovná plocha</translation>
@@ -241,6 +246,7 @@
 <translation id="2638662041295312666">Obrázok na prihlasovacej obrazovke</translation>
 <translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> bol vybraný</translation>
 <translation id="2652403576514495859">zapnúť alebo prepnúť diktovanie</translation>
+<translation id="2656001153562991489">Exkluzívne pre Chromebook Plus</translation>
 <translation id="267442004702508783">obnovenie</translation>
 <translation id="268270014981824665">stmavenie klávesnice</translation>
 <translation id="2712812801627182647">Overovací kľúč TLS</translation>
@@ -263,6 +269,7 @@
 <translation id="2878387241690264070">Za <ph name="NUM_SECONDS" /> s sa batéria vybila o <ph name="RATE" /></translation>
 <translation id="2880569433548999039">Šetrič obrazovky s plynúcimi oblakmi</translation>
 <translation id="2926057806159140518">Zadajte používateľské meno a heslo alebo naskenujte QR kód</translation>
+<translation id="2938573842839598578">Približný výsledok získate, keď hodnotu <ph name="CATEGORY_TEXT" /> <ph name="OPERATOR_TEXT" /> číslom <ph name="CONVERSION_RATE" /></translation>
 <translation id="2940811910881150316">Zariadenie sa nedá testovať. Ak chcete testovať, znova otvorte kryt.</translation>
 <translation id="2941112035454246133">Nízka</translation>
 <translation id="3008341117444806826">OBNOVIŤ</translation>
@@ -335,6 +342,7 @@
 <translation id="3517001332549868749">Aktualiz. ChromeOS</translation>
 <translation id="3527036260304016759">Nepodarilo sa – neznáma chyba</translation>
 <translation id="3532980081107202182">Zostávajúci čas je približne <ph name="MIN_REMAINING" /> min.</translation>
+<translation id="3547264467365135390">Vzorec</translation>
 <translation id="3557205324756024651">Miestna identita (nepovinné)</translation>
 <translation id="3565064564551103223">Povolené adresy IP</translation>
 <translation id="3569407787324516067">Šetrič obrazovky</translation>
@@ -373,11 +381,13 @@
 <translation id="385051799172605136">Späť</translation>
 <translation id="3858860766373142691">Názov</translation>
 <translation id="3862598938296403232">Vyžaduje sa opis</translation>
+<translation id="386280020966669610">Inšpiruj ma</translation>
 <translation id="3865289341173661845">Obsah pomocníka nie je k dispozícii.</translation>
 <translation id="3865414814144988605">Rozlíšenie</translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="387301095347517405">Koľkokrát prešla vaša batéria úplným cyklom nabíjania</translation>
 <translation id="3885327323343477505">Zmeniť šetrič obrazovky</translation>
+<translation id="3892148308691398805">Kopírovať text</translation>
 <translation id="391412459402535266">Zariadenie sa nedá testovať. Ak chcete testovať, prepnite na režim laptopu.</translation>
 <translation id="3916998944874125962">vytvorenie snímky obrazovky</translation>
 <translation id="3923184630988645767">Spotreba dát</translation>
@@ -403,14 +413,15 @@
 <translation id="4060260348856573701">Nový názov prístupového bodu (APN)</translation>
 <translation id="4093865285251893588">Profilový obrázok</translation>
 <translation id="409427325554347132">Uložiť podrobnosti o teste</translation>
+<translation id="409469431304488632">Experiment</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">Vyberte album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Touchpad USB</translation>
 <translation id="4113067922640381334">Teraz máte prístup k novým <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />tapetám<ph name="END_LINK_WALLPAPER_SUBPAGE" /></translation>
 <translation id="4117637339509843559">Tmavý režim</translation>
 <translation id="4130035430755296270">Ďalšie možnosti rozloženia zobrazíte umiestnením kurzora na príslušné miesto</translation>
+<translation id="4130750466177569591">Súhlasím</translation>
 <translation id="4131410914670010031">Čiernobielo</translation>
-<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{Aplikácia <ph name="APP_NAME_1" /> bola spustená automaticky}few{# aplikácie boli spustené automaticky}many{# apps were started automatically}other{# aplikácií bolo spustených automaticky}}</translation>
 <translation id="4145784616224233563">Firewall HTTP</translation>
 <translation id="4147897805161313378">Fotky Google</translation>
 <translation id="4150201353443180367">Displej</translation>
@@ -422,7 +433,6 @@
 <translation id="4171077696775491955">zníženie jasu</translation>
 <translation id="4176463684765177261">Deaktivované</translation>
 <translation id="4176659219503619100">Ovládací panel</translation>
-<translation id="4185315616950253617">Skratka s klávesmi horného radu musí zahŕňať kláves vyhľadávania.</translation>
 <translation id="420283545744377356">Vypnúť šetrič obrazovky</translation>
 <translation id="4213104098953699324">Klávesnica USB</translation>
 <translation id="4227825898293920515">Platnosť hesla vyprší o <ph name="TIME" /></translation>
@@ -438,17 +448,21 @@
 <translation id="4289849978083912975">Prezentácia</translation>
 <translation id="4297501883039923494">Zastavené – neznáma chyba</translation>
 <translation id="4300073214558989">Počet obrázkov: <ph name="IMAGE_COUNT" /></translation>
+<translation id="4310735698903592804">Nedávne tapety používajú umelú inteligenciu od Googlu</translation>
 <translation id="4333390807948134856">Bol stlačený kláves <ph name="KEY_NAME" /></translation>
 <translation id="4354430579665871434">kláves</translation>
 <translation id="4361257691546579041">Názov prístupového bodu (APN) je typ Predvolený.</translation>
 <translation id="437294888293595148">Resetovať všetky skratky</translation>
+<translation id="4376423484621194274">Váš správca zavretie aplikácie <ph name="APP_NAME" /> nepovoľuje</translation>
 <translation id="4378373042927530923">Nebolo spustené</translation>
 <translation id="4378551569595875038">Pripája sa...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4394049700291259645">Zakázať</translation>
 <translation id="439429847087949098"><ph name="DEVICE_NAME" /> sa reštartuje</translation>
 <translation id="4395835743215824109">prispôsobenie klávesnice</translation>
+<translation id="4403262788869804671">Skratka bez klávesa <ph name="META_KEY" /> môže byť v konflikte so skratkou niektorej aplikácie. Ak chcete túto skratku naďalej používať, znova ju stlačte, prípadne stlačte novú skratku a použite pritom kláves <ph name="KEY" />.</translation>
 <translation id="4415951057168511744">Aktuálna avatar</translation>
+<translation id="4417830657741848074">Váš správca nastavil niektoré aplikácie tak, aby sa spúšťali automaticky. Niektoré tieto aplikácie nemusia byť zavreté.</translation>
 <translation id="4422041425070339732">šípka nadol</translation>
 <translation id="4425149324548788773">Môj disk</translation>
 <translation id="4428374560396076622">Sieť <ph name="NETWORK_NAME" /> je vypnutá</translation>
@@ -461,6 +475,7 @@
 <translation id="4469288414739283461">Šetrič obrazovky s otáčaním Zeme</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Nepredvolenú bránu siete sa nepodarilo otestovať</translation>
+<translation id="4500722292849917410">Skratka nie je k dispozícii. Stlačte novú skratku použitím klávesa modifikátora (ctrl, alt, shift alebo <ph name="META_KEY" />).</translation>
 <translation id="4500966230243561393">Farba rozhrania</translation>
 <translation id="4503223151711056411">Šípka doľava</translation>
 <translation id="4507392511610824664">zvýšenie jasu</translation>
@@ -508,6 +523,7 @@
 <translation id="4832079907277790330">Vybrať priečinok v aplikácii Súbory…</translation>
 <translation id="4835901797422965222">Žiadne aktívne siete</translation>
 <translation id="4839698083503556542">Vytvorte si vlastný film</translation>
+<translation id="48409034532829769">Váš správca nastavil aplikáciu <ph name="APP_NAME" /> tak, aby sa spúšťala automaticky. Táto aplikácia nemusí byť zavretá.</translation>
 <translation id="484462545196658690">Automaticky</translation>
 <translation id="4847902821209177679">Zdroj <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> je vybraný, stlačením klávesa Enter vyberte albumy zo zdroja <ph name="TOPIC_SOURCE" /></translation>
 <translation id="484790837831576105">(Android) Preklad DNS</translation>
@@ -534,6 +550,7 @@
 <translation id="4969079779290789265">Rozdeliť</translation>
 <translation id="4972592110715526173">zmena režimu</translation>
 <translation id="498186245079027698">Skontrolujte skener a skúste to znova. Uistite sa, že na uloženie naskenovaných súborov je v zariadení dostatok priestoru.</translation>
+<translation id="4982627662315910959">Skratka nie je k dispozícii. Stlačte novú skratku použitím klávesa Shift a jedného ďalšieho klávesa modifikátora (ctrl, alt alebo <ph name="META_KEY" />).</translation>
 <translation id="4985509611418653372">Spustiť</translation>
 <translation id="4987769320337599931">Firewall</translation>
 <translation id="4988526792673242964">Stránky</translation>
@@ -550,6 +567,7 @@
 <translation id="5088172560898466307">Názov hostiteľského servera</translation>
 <translation id="5089810972385038852">Štát</translation>
 <translation id="5090362543162270857">IPsec (IKEv2)</translation>
+<translation id="5108781503443873320">Podobné:</translation>
 <translation id="5137451382116112100">Na celú obrazovku</translation>
 <translation id="5142961317498132443">Overenie totožnosti</translation>
 <translation id="5145081769226915336">Chcete, aby sa tmavý režim zapínal automaticky?</translation>
@@ -566,6 +584,7 @@
 <translation id="5227902338748591677">Plán tmavého motívu</translation>
 <translation id="5229344016299762883">Ukončiť režim celej obrazovky</translation>
 <translation id="5234764350956374838">Ignorovať</translation>
+<translation id="5244638145904800454">{NUM_ROOL_APPS,plural,offset:1 =1{Váš správca nastavil aplikáciu <ph name="APP_NAME" /> tak, aby sa automaticky spúšťala vždy, keď sa prihlásite.}=2{Váš správca nastavil <ph name="APP_NAME" /> a jednu ďalšiu aplikáciu tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}few{Váš správca nastavil <ph name="APP_NAME" /> a # ďalšie aplikácie tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}many{Your administrator has set up "<ph name="APP_NAME" />" and # other apps to start automatically every time you log in.}other{Váš správca nastavil <ph name="APP_NAME" /> a # ďalších aplikácií tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}}</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="5257811368506016604">Povoliť svetlý farebný režim</translation>
 <translation id="5264277876637023664">Spustiť test procesora</translation>
@@ -611,7 +630,6 @@
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Skenovať znova</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5584044598279886848">Tento názov prístupového bodu (APN) sa nedá deaktivovať ani odstrániť. Uistite sa, že aktivované pripojené názvy prístupových bodov (APN) sú deaktivované alebo odstránené.</translation>
 <translation id="5600027863942488546">Bol otestovaný kláves <ph name="KEY_NAME" /></translation>
 <translation id="5620281292257375798">Iba interné</translation>
 <translation id="5649768706273821470">Počúvať</translation>
@@ -642,6 +660,7 @@
 <translation id="5843706793424741864">Fahrenheit</translation>
 <translation id="584953448295717128">Názov prístupového bodu sa rozpoznáva automaticky.</translation>
 <translation id="5849570051105887917">Kód poskytovateľa domácej siete</translation>
+<translation id="5856267793478861942"><ph name="ATTACH" /> (<ph name="IA" />)</translation>
 <translation id="5859603669299126575">Album umeleckej galérie</translation>
 <translation id="5859969039821714932">Skratka nie je k dispozícii. Stlačte novú bez klávesa <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
@@ -657,12 +676,12 @@
 <translation id="5916664084637901428">Zapnuté</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Súbor bol úspešne naskenovaný a uložený do priečinka <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}few{Súbory boli úspešne naskenované a uložené do priečinka <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}many{Súbory boli úspešne naskenované a uložené do priečinka <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Súbory boli úspešne naskenované a uložené do priečinka <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Súbor nebol nájdený</translation>
+<translation id="593880865674747800">Vytvoriť ďalšie v tomto štýle</translation>
 <translation id="5939518447894949180">Resetovať</translation>
 <translation id="594552776027197022">Generovanie náhodného páru kľúčov</translation>
 <translation id="5946538341867151940">Nemáte pripojenie. Ak váš mobilný operátor odporúča vlastný názov prístupového bodu (APN), vyberte + Nový názov prístupového bodu (APN) a zadajte informácie o ňom.</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Predvolená tapeta</translation>
-<translation id="6001235009374883388">Názov prístupového bodu (APN) je typ Príloha.</translation>
 <translation id="6017514345406065928">Zelená</translation>
 <translation id="6019566113895157499">Klávesové skratky</translation>
 <translation id="6034694447310538551">Povoliť automatický mesačný reset</translation>
@@ -680,6 +699,7 @@
 <translation id="6104112872696127344">Skenovanie bolo zrušené</translation>
 <translation id="6106186594183574873">Ak chcete zmenu dokončiť, zadajte staré heslo</translation>
 <translation id="6108689792487843350">Brána je nedostupná</translation>
+<translation id="6108952804512516814">Vytvorenie pomocou umelej inteligencie</translation>
 <translation id="6112878310391905610">Toto nastavenie spravujú vaši správcovia</translation>
 <translation id="6113701710518389813">Šípka nahor</translation>
 <translation id="6117895505466548728"><ph name="TITLE" /> a ďalšie albumy (<ph name="NUMBER" />)</translation>
@@ -693,6 +713,7 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Kapacita batérie používaním klesá</translation>
 <translation id="6191293864534840972">Nesprávny formát serverov DNS</translation>
+<translation id="6196607555925437199">Znova vytvoriť</translation>
 <translation id="6205145102504628069">Tok oblakov</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">Nie sú k dispozícii žiadne skenery</translation>
@@ -747,6 +768,7 @@
 <translation id="6526200165918397681">Prispôsobiť tapetu</translation>
 <translation id="6527081081771465939">Neznámy protokol zabezpečenia siete Wi‑Fi</translation>
 <translation id="6535178685492749208">Ste offline. Spätná väzba bude odoslaná neskôr.</translation>
+<translation id="6557784757915238407">Názov prístupového bodu (APN) je typ <ph name="ATTACH" />.</translation>
 <translation id="65587193855025101">Reflektívny skener</translation>
 <translation id="6560196641871357166">Jasná</translation>
 <translation id="6564646048574748301">Nepodarilo sa – nedostupné</translation>
@@ -806,6 +828,7 @@
 <translation id="7059230779847288458">Nabíja sa (úplné nabitie o <ph name="TIME_VALUE" />)</translation>
 <translation id="7066538517128343186">kľúč <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Príprava zariadenia</translation>
+<translation id="7076851914315147928">Vyberte tapetu</translation>
 <translation id="708426984172631313">ZASTAVENÉ</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Nepodarilo sa – nepodarilo sa autorizovať</translation>
@@ -829,12 +852,13 @@
 <translation id="7180611975245234373">Obnoviť</translation>
 <translation id="7180865173735832675">Prispôsobiť</translation>
 <translation id="7184043045742675738">Ak chcete tlačidlo prispôsobiť, kliknite na ľubovoľný kláves. Presuňte kláves myšou alebo klávesmi so šípkami.</translation>
+<translation id="7206979415662233817">Zmluvné podmienky</translation>
 <translation id="7212547870105584639">Spravujte nastavenia názvov prístupových bodov (APN) siete. Názvy prístupových bodov umožňujú nadviazať pripojenie medzi mobilnou sieťou a internetom. <ph name="BEGIN_LINK_LEARN_MORE" />Ďalšie informácie<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7212734716605298123">Aktualizácie firmvéru pre externé zariadenia</translation>
 <translation id="7216409898977639127">Poskytovateľ mobilného pripojenia</translation>
 <translation id="725133483556299729">Vybrať e‑mail</translation>
 <translation id="7271040990581020067">Skener sa momentálne používa. Skúste to neskôr.</translation>
-<translation id="7273347807225967898">Skratka nie je k dispozícii. Stlačte novú skratku pomocou klávesa modifikátora (ctrl, shift či kláves vyhľadávania alebo spúšťača).</translation>
+<translation id="7271932918253517778">Skratka s klávesmi horného radu musí zahŕňať kláves <ph name="META_KEY" />.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">Pocíťte vánok</translation>
 <translation id="7287310195820267359">Zbierky tapiet</translation>
@@ -847,6 +871,10 @@
 <translation id="7311368985037279727">farba klávesnice</translation>
 <translation id="7317831949569936035">Zápis do školy</translation>
 <translation id="7319430975418800333">A3</translation>
+<translation id="7331297744262591636">Musíte mať minimálne 18 rokov a vyjadriť súhlas s tým, že na vaše používanie tapiet od umelej inteligencie sa vzťahujú <ph name="GOOGLE_TERMS_OF_SERVICE_LINK" />zmluvné podmienky spoločnosti Google<ph name="END_LINK_GOOGLE_TERMS_OF_SERVICE" /> a <ph name="BEGIN_LINK_GEN_AI_TERMS_OF_SERVICE" />dodatočné zmluvné podmienky generatívnej umelej inteligencie<ph name="END_LINK_GEN_AI_TERMS_OF_SERVICE" />.
+          <ph name="LINE_BREAK" />
+          <ph name="LINE_BREAK" />
+          Tapety môžete pomocou umelej inteligencie vytvárať iba na osobné a nekomerčné použitie. Keď získate pomoc s tapetou, text sa odošle na servery umelej inteligencie od Googlu, ktoré vygenerujú návrhy tapety, a to v súlade s <ph name="BEGIN_LINK_GOOGLE_PRIVACY_POLICY" />pravidlami ochrany súkromia spoločnosti Google<ph name="END_LINK_GOOGLE_PRIVACY_POLICY" />. <ph name="BEGIN_LINK_LEARN_MORE" />Ďalšie informácie<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; stlačením klávesa vyhľadávania a medzerníka zobrazíte výsledok vo Vyhľadávaní Google.</translation>
 <translation id="7343649194310845056">Sieťové zariadenia</translation>
 <translation id="7353413232959255829"><ph name="LIST_POSITION" />. výsledok vyhľadávania z <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Na skratku prejdete stlačením klávesa Enter.</translation>
@@ -859,6 +887,7 @@
 <translation id="741244894080940828">prevod</translation>
 <translation id="7415801143053185905">Veľmi vysoká latencia protokolu HTTPS</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
+<translation id="7438298994385592770">Tento názov prístupového bodu (APN) sa nedá deaktivovať ani odstrániť. Uistite sa, že aktivované názvy prístupových bodov (APN) <ph name="ATTACH" /> sú deaktivované alebo odstránené.</translation>
 <translation id="7458970041932198923">Ak chcete zobraziť a nastaviť avatary, pripojte sa k sieti a znova načítajte stránku.</translation>
 <translation id="7469648432129124067">Bol rozpoznaný portál</translation>
 <translation id="7481312909269577407">Dopredu</translation>
@@ -869,7 +898,9 @@
 <translation id="7502658306369382406">Adresa IPv6</translation>
 <translation id="7513770521371759388">dole</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7525067979554623046">Vytvoriť</translation>
 <translation id="7528507600602050979">Obsah pomocníka nie je k dispozícii</translation>
+<translation id="753556296624075801">Používa technológiu Google</translation>
 <translation id="7535791657097741517">Zapnúť svetlý motív</translation>
 <translation id="7550715992156305117">Diagnostické postupy</translation>
 <translation id="7551123448725492271">Zariadenie je audio zariadenie.</translation>
@@ -908,9 +939,11 @@
 <translation id="7799817062559422778">Svetlý režim</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7805768142964895445">Stav</translation>
+<translation id="7819831665603418705">Použite šablónu</translation>
 <translation id="7819857487979277519">PSK (WPA alebo RSN)</translation>
 <translation id="7841134249932030522">Zapnúť tmavý režim</translation>
 <translation id="7846634333498149051">Klávesnica</translation>
+<translation id="7850847810298646851">Tapeta používa umelú inteligenciu od Googlu</translation>
 <translation id="7856267634822906833">Dotyková obrazovka s rozhraním Bluetooth</translation>
 <translation id="7869143217755017858">Vypnúť tmavý režim</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -928,6 +961,7 @@
 <translation id="7971535376154084247">Všeobecné ovládanie</translation>
 <translation id="7977800524392185497">Ak sa chcete pripojiť k sieti <ph name="NETWORK_NAME" />, prejdite do Nastavení</translation>
 <translation id="7978412674231730200">Súkromný kľúč</translation>
+<translation id="7983597390787556680">{NUM_ROOL_APPS,plural, =1{Aplikácia <ph name="APP_NAME_1" /> bola spustená automaticky}few{# aplikácie boli spustené automaticky}many{# apps were started automatically}other{# aplikácií bolo spustených automaticky}}</translation>
 <translation id="7994702968232966508">Metóda EAP</translation>
 <translation id="8004582292198964060">Prehliadač</translation>
 <translation id="8017679124341497925">Skratka bola upravená</translation>
@@ -944,7 +978,6 @@
 <translation id="808894953321890993">Zmeniť heslo</translation>
 <translation id="8094062939584182041">Povoliť Googlu posielať e‐maily týkajúce sa tohto problému</translation>
 <translation id="8104083085214006426">Používate otvorenú a nezabezpečenú sieť</translation>
-<translation id="8111706652656628199">Skratka nie je k dispozícii. Stlačte novú skratku pomocou klávesa Shift a jedného ďalšieho klávesa modifikátora (ctrl, alt či kláves vyhľadávania alebo spúšťača).</translation>
 <translation id="811820734797650957">(Android) Je možné testovať dostupnosť (ping) brány</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8132480444149501833">Požiadať o údaje počítadiel návštevnosti</translation>
@@ -953,13 +986,13 @@
 <translation id="8151185429379586178">Nástroje pre vývojárov</translation>
 <translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183974620058026102">Priložiť</translation>
 <translation id="8206859287963243715">Mobilné</translation>
 <translation id="8208861521865154048">Výhody</translation>
 <translation id="8226628635270268143">Vyberte svoje obľúbené fotky a albumy</translation>
 <translation id="8227119283605456246">Pripojiť súbor</translation>
 <translation id="8230672074305416752">Predvolenú bránu siete sa nepodarilo otestovať</translation>
 <translation id="8246209727385807362">Neznámy operátor</translation>
+<translation id="8261506727792406068">Odstrániť</translation>
 <translation id="8262870577632766028">1 hodina</translation>
 <translation id="827422111966801947">Indigová</translation>
 <translation id="8286154143153872371">Pripojte sa k sieti a opätovným načítaním stránky zobrazte tapetu.</translation>
@@ -970,6 +1003,7 @@
 <translation id="8318753676953949627">Žiadne obrázky</translation>
 <translation id="8329018942023753850">aplikácia Kalkulačka</translation>
 <translation id="8336739000755212683">Zmeniť obrázok účtu zariadenia</translation>
+<translation id="8339024191194156249">Ďalšie informácie o automatickom spúšťaní</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> alebo <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Tlačové úlohy</translation>
 <translation id="8349826889576450703">spúšťač</translation>

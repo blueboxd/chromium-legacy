@@ -4,8 +4,13 @@
 
 #include "components/autofill/core/browser/metrics/payments/iban_metrics.h"
 
+#include <string>
+#include <vector>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
+#include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/common/autofill_clock.h"
 
 namespace autofill::autofill_metrics {
@@ -37,9 +42,23 @@ void LogStoredIbanMetrics(const std::vector<std::unique_ptr<Iban>>& local_ibans,
                               num_disused_local_ibans);
 }
 
-void LogStrikesPresentWhenIbanSaved(const int num_strikes) {
+void LogDaysSinceLastIbanUse(const Iban& iban) {
+  CHECK(iban.record_type() == Iban::RecordType::kLocalIban ||
+        iban.record_type() == Iban::RecordType::kServerIban);
+  base::UmaHistogramCounts1000(
+      base::StrCat({"Autofill.DaysSinceLastUse.StoredIban.",
+                    (iban.record_type() == Iban::RecordType::kServerIban)
+                        ? "Server"
+                        : "Local"}),
+      (AutofillClock::Now() - iban.use_date()).InDays());
+}
+
+void LogStrikesPresentWhenIbanSaved(const int num_strikes,
+                                    bool is_upload_save) {
   base::UmaHistogramCounts100(
-      "Autofill.StrikeDatabase.StrikesPresentWhenIbanSaved.Local", num_strikes);
+      base::StrCat({"Autofill.StrikeDatabase.StrikesPresentWhenIbanSaved.",
+                    is_upload_save ? "Upload" : "Local"}),
+      num_strikes);
 }
 
 void LogIbanSaveNotOfferedDueToMaxStrikesMetric(
@@ -48,22 +67,49 @@ void LogIbanSaveNotOfferedDueToMaxStrikesMetric(
       "Autofill.StrikeDatabase.IbanSaveNotOfferedDueToMaxStrikes", metric);
 }
 
-void LogSaveIbanBubbleOfferMetric(SaveIbanPromptOffer metric, bool is_reshow) {
-  std::string base_histogram_name = "Autofill.SaveIbanPromptOffer.Local";
-  std::string show = is_reshow ? ".Reshows" : ".FirstShow";
-  base::UmaHistogramEnumeration(base_histogram_name + show, metric);
+void LogUploadIbanMetric(UploadIbanOriginMetric origin_metric,
+                         UploadIbanActionMetric action_metric) {
+  std::string histogram_name = "Autofill.UploadIban.";
+  switch (action_metric) {
+    case UploadIbanActionMetric::kOffered:
+      histogram_name += "Offered";
+      break;
+    case UploadIbanActionMetric::kAccepted:
+      histogram_name += "Accepted";
+      break;
+    case UploadIbanActionMetric::kDeclined:
+      histogram_name += "Declined";
+      break;
+    case UploadIbanActionMetric::kIgnored:
+      histogram_name += "Ignored";
+      break;
+  }
+  base::UmaHistogramEnumeration(histogram_name, origin_metric);
+}
+
+void LogSaveIbanBubbleOfferMetric(SaveIbanPromptOffer metric,
+                                  bool is_reshow,
+                                  bool is_upload_save) {
+  std::string base_histogram_name = base::StrCat(
+      {"Autofill.SaveIbanPromptOffer.", is_upload_save ? "Upload" : "Local",
+       is_reshow ? ".Reshows" : ".FirstShow"});
+  base::UmaHistogramEnumeration(base_histogram_name, metric);
 }
 
 void LogSaveIbanBubbleResultMetric(SaveIbanBubbleResult metric,
-                                   bool is_reshow) {
-  std::string base_histogram_name = "Autofill.SaveIbanPromptResult.Local";
-  std::string show = is_reshow ? ".Reshows" : ".FirstShow";
-  base::UmaHistogramEnumeration(base_histogram_name + show, metric);
+                                   bool is_reshow,
+                                   bool is_upload_save) {
+  std::string base_histogram_name = base::StrCat(
+      {"Autofill.SaveIbanPromptResult.", is_upload_save ? "Upload" : "Local",
+       is_reshow ? ".Reshows" : ".FirstShow"});
+  base::UmaHistogramEnumeration(base_histogram_name, metric);
 }
 
-void LogSaveIbanBubbleResultSavedWithNicknameMetric(bool save_with_nickname) {
+void LogSaveIbanBubbleResultSavedWithNicknameMetric(bool save_with_nickname,
+                                                    bool is_upload_save) {
   base::UmaHistogramBoolean(
-      "Autofill.SaveIbanPromptResult.Local.SavedWithNickname",
+      base::StrCat({"Autofill.SaveIbanPromptResult.",
+                    is_upload_save ? "Upload" : "Local", ".SavedWithNickname"}),
       save_with_nickname);
 }
 
@@ -90,6 +136,17 @@ void LogIbanUploadEnabledMetric(
   const std::string sync_subhistogram_metric =
       base_metric + AutofillMetrics::GetMetricsSyncStateSuffix(sync_state);
   base::UmaHistogramEnumeration(sync_subhistogram_metric, metric);
+}
+
+void LogServerIbanUnmaskLatency(base::TimeDelta latency, bool is_successful) {
+  base::UmaHistogramTimes(base::StrCat({"Autofill.Iban.UnmaskIbanDuration.",
+                                        is_successful ? "Success" : "Failure"}),
+                          latency);
+  base::UmaHistogramTimes("Autofill.Iban.UnmaskIbanDuration", latency);
+}
+
+void LogServerIbanUnmaskStatus(bool is_successful) {
+  base::UmaHistogramBoolean("Autofill.Iban.UnmaskIbanResult", is_successful);
 }
 
 }  // namespace autofill::autofill_metrics

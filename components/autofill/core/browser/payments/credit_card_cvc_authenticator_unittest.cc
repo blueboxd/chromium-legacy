@@ -73,7 +73,7 @@ const char16_t kTestNumber16[] = u"4234567890123456";
 
 class CreditCardCvcAuthenticatorTest : public testing::Test {
  public:
-  CreditCardCvcAuthenticatorTest() {}
+  CreditCardCvcAuthenticatorTest() = default;
 
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
@@ -183,6 +183,27 @@ TEST_F(CreditCardCvcAuthenticatorTest, AuthenticateServerCardSuccess) {
       /*expected_bucket_count=*/1);
 }
 
+TEST_F(CreditCardCvcAuthenticatorTest,
+       AuthenticateServerCardWithContextTokenSuccess) {
+  base::HistogramTester histogram_tester;
+  CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
+
+  cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
+                                   &personal_data_manager_,
+                                   "test_context_token");
+
+  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess, kTestNumber);
+  EXPECT_TRUE((*requester_->did_succeed()));
+  EXPECT_EQ(kTestNumber16, requester_->number());
+  histogram_tester.ExpectUniqueSample("Autofill.CvcAuth.ServerCard.Attempt",
+                                      /*sample=*/true,
+                                      /*expected_bucket_count=*/1);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.CvcAuth.ServerCard.Result",
+      /*sample=*/autofill_metrics::CvcAuthEvent::kSuccess,
+      /*expected_bucket_count=*/1);
+}
+
 TEST_F(CreditCardCvcAuthenticatorTest, AuthenticateVirtualCardSuccess) {
   base::HistogramTester histogram_tester;
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
@@ -199,7 +220,7 @@ TEST_F(CreditCardCvcAuthenticatorTest, AuthenticateVirtualCardSuccess) {
 
   payments::FullCardRequest* full_card_request = GetFullCardRequest();
   ASSERT_TRUE(full_card_request->GetShouldUnmaskCardForTesting());
-  absl::optional<CardUnmaskChallengeOption> challenge_option =
+  std::optional<CardUnmaskChallengeOption> challenge_option =
       full_card_request->GetUnmaskRequestDetailsForTesting()
           ->selected_challenge_option;
   ASSERT_TRUE(challenge_option);

@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -71,11 +72,6 @@
 #endif
 
 namespace {
-// Whether we are warning about a dangerous/malicious download.
-bool is_download_warning(download::DownloadItemMode mode) {
-  return (mode == download::DownloadItemMode::kDangerous) ||
-         (mode == download::DownloadItemMode::kMalicious);
-}
 
 ui::ImageModel GetDefaultIcon() {
   return ui::ImageModel::FromVectorIcon(
@@ -100,9 +96,9 @@ constexpr int kNumColumns = 5;
 
 // A stub subclass of Button that has no visuals.
 class DownloadBubbleTransparentButton : public views::Button {
- public:
-  METADATA_HEADER(DownloadBubbleTransparentButton);
+  METADATA_HEADER(DownloadBubbleTransparentButton, views::Button)
 
+ public:
   explicit DownloadBubbleTransparentButton(PressedCallback callback,
                                            DownloadBubbleRowView* row_view)
       : Button(std::move(callback)), row_view_(row_view) {
@@ -138,7 +134,7 @@ class DownloadBubbleTransparentButton : public views::Button {
   raw_ptr<DownloadBubbleRowView> row_view_;
 };
 
-BEGIN_METADATA(DownloadBubbleTransparentButton, Button)
+BEGIN_METADATA(DownloadBubbleTransparentButton)
 END_METADATA
 }  // namespace
 
@@ -327,7 +323,8 @@ DownloadBubbleRowView::DownloadBubbleRowView(
     base::WeakPtr<DownloadBubbleUIController> bubble_controller,
     base::WeakPtr<DownloadBubbleNavigationHandler> navigation_handler,
     base::WeakPtr<Browser> browser,
-    int fixed_width)
+    int fixed_width,
+    bool is_in_partial_view)
     : info_(info),
       context_menu_(std::make_unique<DownloadShelfContextMenuView>(
           info_->model()->GetWeakPtr(),
@@ -349,6 +346,8 @@ DownloadBubbleRowView::DownloadBubbleRowView(
                               base::Unretained(this))),
       input_protector_(
           std::make_unique<views::InputEventActivationProtector>()),
+      shown_time_(base::Time::Now()),
+      is_in_partial_view_(is_in_partial_view),
       fixed_width_(fixed_width) {
   CHECK(info_->model());
   info_->AddObserver(this);
@@ -649,7 +648,7 @@ void DownloadBubbleRowView::UpdateRowForFocus(
 }
 
 void DownloadBubbleRowView::Layout() {
-  views::View::Layout();
+  LayoutSuperclass<views::View>(this);
   transparent_button_->SetBoundsRect(GetLocalBounds());
   gfx::Size quick_actions_size = quick_action_holder_->GetPreferredSize();
   gfx::Insets insets = GetLayoutInsets(DOWNLOAD_ROW);
@@ -663,11 +662,23 @@ void DownloadBubbleRowView::Layout() {
 
 void DownloadBubbleRowView::OnMainButtonPressed(const ui::Event& event) {
   if (!bubble_controller_ || !navigation_handler_ ||
-      !info_->main_button_enabled() || !info_->model() ||
-      input_protector_->IsPossiblyUnintendedInteraction(event)) {
+      !info_->main_button_enabled() || !info_->model()) {
     return;
   }
-  bubble_controller_->RecordDownloadBubbleInteraction();
+  // Log histograms for how long users take to open a download by clicking the
+  // main button, if the download has no warning. This is logged before the
+  // input_protector_ check to capture attempted clicks sooner than 500 ms.
+  if (!info_->has_subpage() && is_in_partial_view_) {
+    base::Time now = base::Time::Now();
+    base::UmaHistogramTimes("Download.PartialView.StartTimeToOpenDownloadClick",
+                            now - model()->GetStartTime());
+    base::UmaHistogramTimes(
+        "Download.PartialView.RowShownTimeToOpenDownloadClick",
+        now - shown_time_);
+  }
+  if (input_protector_->IsPossiblyUnintendedInteraction(event)) {
+    return;
+  }
   if (info_->has_subpage()) {
     DownloadItemWarningData::AddWarningActionEvent(
         info_->model()->GetDownloadItem(),
@@ -772,15 +783,7 @@ void DownloadBubbleRowView::UpdateLabels() {
 
 void DownloadBubbleRowView::RecordMetricsOnUpdate() {
   // This should only be logged once per download.
-  if (is_download_warning(
-          download::GetDesiredDownloadItemMode(info_->model())) &&
-      !info_->model()->WasUIWarningShown()) {
-    info_->model()->SetWasUIWarningShown(true);
-    RecordDangerousDownloadWarningShown(
-        info_->model()->GetDangerType(), info_->model()->GetTargetFilePath(),
-        info_->model()->GetURL().SchemeIs(url::kHttpsScheme),
-        info_->model()->HasUserGesture());
-  }
+  MaybeRecordDangerousDownloadWarningShown(*info_->model());
   if (!has_download_completion_been_logged_ &&
       info_->model()->GetState() == download::DownloadItem::COMPLETE) {
     has_download_completion_been_logged_ = true;
@@ -1099,5 +1102,5 @@ void DownloadBubbleRowView::SetInputProtectorForTesting(
   input_protector_ = std::move(input_protector);
 }
 
-BEGIN_METADATA(DownloadBubbleRowView, views::View)
+BEGIN_METADATA(DownloadBubbleRowView)
 END_METADATA

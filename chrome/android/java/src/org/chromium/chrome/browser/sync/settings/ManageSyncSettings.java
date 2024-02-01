@@ -35,7 +35,6 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
-import org.chromium.chrome.browser.back_press.BackPressHelper;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeBaseSettingsFragment;
@@ -81,7 +80,6 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
                 PassphraseTypeDialogFragment.Listener,
                 Preference.OnPreferenceChangeListener,
                 SyncService.SyncStateChangedListener,
-                BackPressHelper.ObsoleteBackPressedHandler,
                 Listener,
                 SyncErrorCardPreference.SyncErrorCardPreferenceListener {
     private static final String IS_FROM_SIGNIN_SCREEN = "ManageSyncSettings.isFromSigninScreen";
@@ -283,7 +281,7 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
             return true;
         }
         if (item.getItemId() == android.R.id.home) {
-            return onBackPressed();
+            return onBackToHome();
         }
         return false;
     }
@@ -350,6 +348,14 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
         // This is invoked synchronously from SyncService.setSelectedTypes, postpone the
         // update to let updateSyncStateFromSelectedTypes finish saving the state.
         PostTask.postTask(TaskTraits.UI_DEFAULT, this::updateSyncPreferences);
+    }
+
+    /** Handles when user clicks home button in menu to get back to home screen. */
+    private boolean onBackToHome() {
+        if (mIsFromSigninScreen) {
+            RecordUserAction.record("Signin_Signin_BackOnAdvancedSyncSettings");
+        }
+        return false;
     }
 
     /**
@@ -554,6 +560,7 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
         }
         SignOutDialogCoordinator.show(
                 requireContext(),
+                getProfile(),
                 ((ModalDialogManagerHolder) getActivity()).getModalDialogManager(),
                 this,
                 SignOutDialogCoordinator.ActionType.CLEAR_PRIMARY_ACCOUNT,
@@ -568,6 +575,7 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
         }
         SignOutDialogCoordinator.show(
                 requireContext(),
+                getProfile(),
                 ((ModalDialogManagerHolder) getActivity()).getModalDialogManager(),
                 this,
                 SignOutDialogCoordinator.ActionType.REVOKE_SYNC_CONSENT,
@@ -611,8 +619,6 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
             if (type == UserSelectableType.PAYMENTS
                     && !ChromeFeatureList.isEnabled(
                             ChromeFeatureList.SYNC_DECOUPLE_ADDRESS_PAYMENT_SETTINGS)) {
-                // TODO(crbug.com/1459963): Consider overriding the delegate's
-                // isPreferenceControlledByCustodian() instead.
                 pref.setEnabled(
                         !syncEverything
                                 && !mSyncService.isTypeManagedByCustodian(type)
@@ -656,16 +662,6 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
         }
     }
 
-    @Override
-    public boolean onBackPressed() {
-        // TODO(crbug.com/1406012): Remove these metrics or introduce new metrics in other lifecycle
-        //                          hooks because this method never consumes back event.
-        if (mIsFromSigninScreen) {
-            RecordUserAction.record("Signin_Signin_BackOnAdvancedSyncSettings");
-        }
-        return false;
-    }
-
     // SyncErrorCardPreferenceListener implementation:
     @Override
     public boolean shouldSuppressSyncSetupIncomplete() {
@@ -702,6 +698,7 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
             case SyncError.OTHER_ERRORS:
                 SignOutDialogCoordinator.show(
                         requireContext(),
+                        profile,
                         ((ModalDialogManagerHolder) getActivity()).getModalDialogManager(),
                         this,
                         profile.isChild()

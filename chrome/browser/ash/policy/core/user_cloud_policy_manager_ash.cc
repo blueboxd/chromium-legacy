@@ -94,7 +94,7 @@ void RegistrationResultUMA(RegistrationResult registration_result) {
 bool IsChildUser(const AccountId& account_id) {
   const user_manager::User* const user =
       user_manager::UserManager::Get()->FindUser(account_id);
-  return user && user->GetType() == user_manager::USER_TYPE_CHILD;
+  return user && user->GetType() == user_manager::UserType::kChild;
 }
 
 // This class is used to subscribe for notifications that the current profile is
@@ -140,11 +140,10 @@ UserCloudPolicyManagerAsh::UserCloudPolicyManagerAsh(
     : CloudPolicyManager(
           dm_protocol::kChromeUserPolicyType,
           std::string(),
-          store.get(),
+          std::move(store),
           task_runner,
           base::BindRepeating(content::GetNetworkConnectionTracker)),
       profile_(profile),
-      store_(std::move(store)),
       external_data_manager_(std::move(external_data_manager)),
       component_policy_cache_path_(component_policy_cache_path),
       waiting_for_policy_fetch_(enforcement_type ==

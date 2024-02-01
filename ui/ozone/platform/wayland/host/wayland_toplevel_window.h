@@ -60,7 +60,8 @@ class WaylandToplevelWindow : public WaylandWindow,
   void UpdateWindowScale(bool update_bounds) override;
   void LockFrame() override;
   void UnlockFrame() override;
-  void OcclusionStateChanged(uint32_t mode) override;
+  void OcclusionStateChanged(
+      PlatformWindowOcclusionState occlusion_state) override;
   void DeskChanged(int state) override;
   void StartThrottle() override;
   void EndThrottle() override;
@@ -92,6 +93,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   void SetWindowGeometry(gfx::Size size_dip) override;
   bool IsScreenCoordinatesEnabled() const override;
   bool SupportsConfigureMinimizedState() const override;
+  bool SupportsConfigurePinnedState() const override;
   void ShowTooltip(const std::u16string& text,
                    const gfx::Point& position,
                    const PlatformWindowTooltipTrigger trigger,
@@ -238,9 +240,6 @@ class WaylandToplevelWindow : public WaylandWindow,
   // previously locked state.
   void OnFrameLockingChanged(bool lock);
 
-  // Called when the occlusion state is updated.
-  void OnOcclusionStateChanged(PlatformWindowOcclusionState occlusion_state);
-
   // Called when a window is moved to another desk or assigned to
   // all desks state.
   void OnDeskChanged(int state);
@@ -259,7 +258,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   // The display ID to switch to in case the state is `kFullscreen`.
   int64_t fullscreen_display_id_ = display::kInvalidDisplayId;
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
   // Contains the current state of the tiled edges.
   WindowTiledEdges tiled_state_;
 #endif
@@ -267,11 +266,9 @@ class WaylandToplevelWindow : public WaylandWindow,
   bool is_active_ = false;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  bool is_immersive_fullscreen_ = false;
-
-  // This is used to detect fullscreen state changes from the Aura side
+  // This is used to detect fullscreen type changes from the Aura side
   // to inform Lacros clients from the asynchronous task completion.
-  bool is_fullscreen_ = false;
+  PlatformFullscreenType fullscreen_type_ = PlatformFullscreenType::kNone;
 
   // Unique ID for this window. May be shared over non-Wayland IPC transports
   // (e.g. mojo) to identify the window.

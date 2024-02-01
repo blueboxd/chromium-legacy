@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -38,12 +39,12 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/common/stop_find_action.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/remote_frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "third_party/blink/public/mojom/media/capture_handle_config.mojom-forward.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-forward.h"
 #include "third_party/blink/public/mojom/picture_in_picture_window_options/picture_in_picture_window_options.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -95,6 +96,7 @@ class ColorProviderSource;
 
 namespace content {
 
+class BackForwardTransitionAnimationManager;
 class BrowserContext;
 class BrowserPluginGuestDelegate;
 class RenderFrameHost;
@@ -278,16 +280,12 @@ class WebContents : public PageNavigator,
     bool enable_wake_locks = true;
 
     // Options specific to WebContents created for picture-in-picture windows.
-    absl::optional<blink::mojom::PictureInPictureWindowOptions>
+    std::optional<blink::mojom::PictureInPictureWindowOptions>
         picture_in_picture_options;
 
-    // WebContentsDelegate given for the case early initialization code depends
-    // on the delegate callbacks.
-    // For instance, WebContentsDelegate::IsInPreviewMode() will be called in
-    // RenderFrameHostImpl::ctor for the initial instance that is constructed
-    // in WebContents::Create() call, and callers have no chance to set their
-    // delegates.
-    raw_ptr<WebContentsDelegate> delegate = nullptr;
+    // Enable preview mode that shows a page with a capability restriction
+    // for previewing the page.
+    bool preview_mode = false;
   };
 
   // Token that causes input to be blocked on this WebContents for at least as
@@ -372,6 +370,8 @@ class WebContents : public PageNavigator,
   // nullptr will be returned instead.
   // The callback should only run on the UI thread and it should always be
   // non-null.
+  // Most uses of Getter and OnceGetter can likely be safety replaced with
+  // base::WeakPtr<WebContents>.
   using Getter = base::RepeatingCallback<WebContents*(void)>;
   // Use this variant for instances that will only run the callback a single
   // time.
@@ -527,11 +527,11 @@ class WebContents : public PageNavigator,
 
   // Returns the theme color for the underlying content as set by the
   // theme-color meta tag if any.
-  virtual absl::optional<SkColor> GetThemeColor() = 0;
+  virtual std::optional<SkColor> GetThemeColor() = 0;
 
   // Returns the background color for the underlying content as set by CSS if
   // any.
-  virtual absl::optional<SkColor> GetBackgroundColor() = 0;
+  virtual std::optional<SkColor> GetBackgroundColor() = 0;
 
   // Sets the renderer-side default background color of the page. This is used
   // when the page has not loaded enough to know a background color or if the
@@ -544,7 +544,7 @@ class WebContents : public PageNavigator,
   // refactor to remove `RenderWidgetHostView::SetBackgroundColor` and merge its
   // functionality here, which will be more consistent and simpler to
   // understand.
-  virtual void SetPageBaseBackgroundColor(absl::optional<SkColor> color) = 0;
+  virtual void SetPageBaseBackgroundColor(std::optional<SkColor> color) = 0;
 
   // Sets the ColorProviderSource for the WebContents. The WebContents will
   // maintain an observation of `source` until a new source is set or the
@@ -590,10 +590,6 @@ class WebContents : public PageNavigator,
   virtual void SetAlwaysSendSubresourceNotifications() = 0;
   virtual bool GetSendSubresourceNotification() = 0;
 
-  // Adds accessibility mode. If accessibility is already enabled, it will be
-  // reset, i.e., the full accessibility tree will be sent to the observers.
-  virtual void EnableAccessibilityMode(ui::AXMode mode) = 0;
-
   // Returns true only if the WebContentsObserver accessibility mode is
   // enabled.
   virtual bool IsWebContentsOnlyAccessibilityModeForTesting() = 0;
@@ -604,7 +600,9 @@ class WebContents : public PageNavigator,
 
   virtual ui::AXMode GetAccessibilityMode() = 0;
 
-  virtual void SetAccessibilityMode(ui::AXMode mode) = 0;
+  // Forces a reset of accessibility state in the instance's renderers.
+  // Observers will receive a new accessibility tree.
+  virtual void ResetAccessibility() = 0;
 
   virtual std::string DumpAccessibilityTree(
       bool internal,
@@ -623,7 +621,7 @@ class WebContents : public PageNavigator,
   // |start_recording| is false, it is expected that |callback| does not.
   virtual void RecordAccessibilityEvents(
       bool start_recording,
-      absl::optional<AccessibilityEventCallback> callback) = 0;
+      std::optional<AccessibilityEventCallback> callback) = 0;
 
   // Tab navigation state ------------------------------------------------------
 
@@ -637,6 +635,12 @@ class WebContents : public PageNavigator,
   // titles for file URLs that have none. Thus |entry| must have a URL set.
   virtual void UpdateTitleForEntry(NavigationEntry* entry,
                                    const std::u16string& title) = 0;
+
+  // Returns app title of the current navigation entry. The apptitle is
+  // an alternative title text that can be used by app windows.
+  // See
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/DocumentSubtitle/explainer.md
+  virtual const std::u16string& GetAppTitle() = 0;
 
   // Returns the SiteInstance associated with the current page.
   virtual SiteInstance* GetSiteInstance() = 0;
@@ -1040,12 +1044,15 @@ class WebContents : public PageNavigator,
   // Format of |headers| is a new line separated list of key value pairs:
   // "<key1>: <value1>\r\n<key2>: <value2>". The saving is performed in the
   // context of `rfh`. For example, the associated navigation isolation info
-  // will be used for making the network request.
+  // will be used for making the network request. If `is_subresource` is true,
+  // the URL is assumed to correspond to a subresource loaded in the frame,
+  // as opposed to the main (generally, document) resource.
   virtual void SaveFrameWithHeaders(const GURL& url,
                                     const Referrer& referrer,
                                     const std::string& headers,
                                     const std::u16string& suggested_filename,
-                                    RenderFrameHost* rfh) = 0;
+                                    RenderFrameHost* rfh,
+                                    bool is_subresource) = 0;
 
   // Generate an MHTML representation of the current page conforming to the
   // settings provided by |params| and returning final status information via
@@ -1093,19 +1100,19 @@ class WebContents : public PageNavigator,
   // Gets the preferred size of the contents.
   virtual gfx::Size GetPreferredSize() = 0;
 
-  // Called when the response to a pending mouse lock request has arrived.
+  // Called when the response to a pending pointer lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
-  virtual bool GotResponseToLockMouseRequest(
+  virtual bool GotResponseToPointerLockRequest(
       blink::mojom::PointerLockResult result) = 0;
 
-  // Wrapper around GotResponseToLockMouseRequest to fit into
+  // Wrapper around GotResponseToPointerLockRequest to fit into
   // ChromeWebViewPermissionHelperDelegate's structure.
-  virtual void GotLockMousePermissionResponse(bool allowed) = 0;
+  virtual void GotPointerLockPermissionResponse(bool allowed) = 0;
 
   // Drop the mouse lock if it is currently locked, or reject an
   // outstanding request if it is pending.
-  virtual void DropMouseLockForTesting() = 0;
+  virtual void DropPointerLockForTesting() = 0;
 
   // Called when the response to a keyboard mouse lock request has arrived.
   // Returns false if the request is no longer valid, otherwise true.
@@ -1306,7 +1313,7 @@ class WebContents : public PageNavigator,
 
   virtual int GetCurrentlyPlayingVideoCount() = 0;
 
-  virtual absl::optional<gfx::Size> GetFullscreenVideoSize() = 0;
+  virtual std::optional<gfx::Size> GetFullscreenVideoSize() = 0;
 
   // Tells the renderer to clear the focused element (if any).
   virtual void ClearFocusedElement() = 0;
@@ -1397,7 +1404,7 @@ class WebContents : public PageNavigator,
   virtual const base::Location& GetCreatorLocation() = 0;
 
   // Returns the parameters associated with PictureInPicture WebContents
-  virtual const absl::optional<blink::mojom::PictureInPictureWindowOptions>&
+  virtual const std::optional<blink::mojom::PictureInPictureWindowOptions>&
   GetPictureInPictureOptions() const = 0;
 
   // Hide or show the browser controls for the given WebContents, based on
@@ -1421,13 +1428,22 @@ class WebContents : public PageNavigator,
   virtual void SetTabSwitchStartTime(base::TimeTicks start_time,
                                      bool destination_is_loaded) = 0;
 
+  // Checks if the WebContents host pages in preview mode.
+  virtual bool IsInPreviewMode() const = 0;
+
+  // Called before ActivatePreviewPage() to prepare the activation. This will
+  // end the preview mode and IsInPreviewMode() will start returning false after
+  // the call. This allows embedders to run preparation steps on the activating
+  // WebContents (e.g. attach TabHelpers) before activating the page shown by
+  // the WebContents through ActivatePreviewPage().
+  virtual void WillActivatePreviewPage() = 0;
+
   // Activates the primary page that is shown in preview mode. This will relax
   // capability restriction in the browser process, and notify the renderer to
   // process the prerendering activation algorithm.
   // This all processes happens asynchronously, and
   // `WebContentsDelegate::DidActivatePreviewedPage` will be called once it's
   // done.
-  // Should be called while WebContentsDelegate::IsInPreviewMode returns true.
   virtual void ActivatePreviewPage() = 0;
 
   // Starts an embedder triggered (browser-initiated) prerendering page and
@@ -1452,10 +1468,10 @@ class WebContents : public PageNavigator,
       ui::PageTransition page_transition,
       PreloadingHoldbackStatus holdback_status_override,
       PreloadingAttempt* preloading_attempt,
-      absl::optional<base::RepeatingCallback<bool(const GURL&)>>
-          url_match_predicate = absl::nullopt,
-      absl::optional<base::RepeatingCallback<void(NavigationHandle&)>>
-          prerender_navigation_handle_callback = absl::nullopt) = 0;
+      std::optional<base::RepeatingCallback<bool(const GURL&)>>
+          url_match_predicate = std::nullopt,
+      std::optional<base::RepeatingCallback<void(NavigationHandle&)>>
+          prerender_navigation_handle_callback = std::nullopt) = 0;
 
   // May be called when the embedder believes that it is likely that the user
   // will perform a back navigation due to the trigger indicated by `predictor`
@@ -1479,11 +1495,22 @@ class WebContents : public PageNavigator,
   // does not need to be exhaustive or perfectly correct.
   // TODO(crbug.com/1407197): Remove after bug is fixed.
   virtual void SetOwnerLocationForDebug(
-      absl::optional<base::Location> owner_location) = 0;
+      std::optional<base::Location> owner_location) = 0;
 
   // Sends the attribution support state to all renderer processes for the
   // current page.
   virtual void UpdateAttributionSupportRenderer() = 0;
+
+  // Return all currently streaming devices of `type` via `callback`.
+  virtual void GetMediaCaptureRawDeviceIdsOpened(
+      blink::mojom::MediaStreamType type,
+      base::OnceCallback<void(std::vector<std::string>)> callback) = 0;
+
+  // Returns an animation manager that displays a preview of the history page
+  // during a session history navigation gesture. Only non-null if
+  // `features::kBackForwardTransitions` is enabled for the supported platform.
+  virtual BackForwardTransitionAnimationManager*
+  GetBackForwardTransitionAnimationManager() = 0;
 
  private:
   // This interface should only be implemented inside content.

@@ -34,6 +34,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/field_trial_internals_utils.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/seed_response.h"
@@ -321,7 +322,7 @@ class DeviceVariationsRestrictionByPolicyApplicator {
     }
   }
 
-  const raw_ptr<PrefService, ExperimentalAsh> policy_pref_service_;
+  const raw_ptr<PrefService> policy_pref_service_;
 
   // Watch the changes of the variations prefs.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
@@ -351,7 +352,8 @@ VariationsService::VariationsService(
               MaybeImportFirstRunSeed(client_.get(), local_state),
               /*signature_verification_enabled=*/true,
               std::make_unique<VariationsSafeSeedStoreLocalState>(local_state)),
-          ui_string_overrider) {
+          ui_string_overrider,
+          &limited_entropy_synthetic_trial_) {
   DCHECK(client_);
   DCHECK(resource_request_allowed_notifier_);
 
@@ -527,6 +529,7 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   SafeSeedManager::RegisterPrefs(registry);
   VariationsSeedStore::RegisterPrefs(registry);
   LimitedEntropySyntheticTrial::RegisterPrefs(registry);
+  RegisterFieldTrialInternalsPrefs(*registry);
 
   registry->RegisterIntegerPref(
       prefs::kDeviceVariationsRestrictionsByPolicy,
@@ -910,7 +913,11 @@ void VariationsService::PerformSimulationWithVersion(
   if (!version.IsValid())
     return;
 
-  auto entropy_providers = state_manager_->CreateEntropyProviders();
+  auto entropy_providers = state_manager_->CreateEntropyProviders(
+      VariationsFieldTrialCreatorBase::
+          IsLimitedEntropyRandomizationSourceEnabled(
+              client()->GetChannelForVariations(),
+              &limited_entropy_synthetic_trial_));
 
   std::unique_ptr<ClientFilterableState> client_state =
       field_trial_creator_.GetClientFilterableStateForVersion(version);
@@ -946,10 +953,31 @@ bool VariationsService::SetUpFieldTrials(
     const std::vector<base::FeatureList::FeatureOverrideInfo>& extra_overrides,
     std::unique_ptr<base::FeatureList> feature_list,
     PlatformFieldTrials* platform_field_trials) {
+  ForceTrialsAtStartup(*local_state_);
+
   return field_trial_creator_.SetUpFieldTrials(
       variation_ids, command_line_variation_ids, extra_overrides,
       std::move(feature_list), state_manager_, platform_field_trials,
       &safe_seed_manager_, /*add_entropy_source_to_variations_ids=*/true);
+}
+
+std::vector<StudyGroupNames> VariationsService::GetStudiesAvailableToForce() {
+  VariationsSeed seed;
+  std::string seed_data;
+  std::string base64_seed_signature;
+  if (!field_trial_creator_.seed_store()->LoadSeed(&seed, &seed_data,
+                                                   &base64_seed_signature)) {
+    return {};
+  }
+
+  // TODO(crbug.com/1519232): chrome://field-trial-internals will not support
+  // studies that are constrained to a layer with LIMITED entropy mode before
+  // limited entropy randomization fully lands.
+  auto entropy_providers = state_manager_->CreateEntropyProviders(
+      /*enable_limited_entropy_mode=*/false);
+  return variations::GetStudiesAvailableToForce(
+      std::move(seed), *entropy_providers,
+      *GetClientFilterableStateForVersion());
 }
 
 SeedType VariationsService::GetSeedType() const {

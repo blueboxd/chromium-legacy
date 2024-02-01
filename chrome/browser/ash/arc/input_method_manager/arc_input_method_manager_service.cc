@@ -13,8 +13,6 @@
 #include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/keyboard/arc/arc_input_method_bounds_tracker.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
-#include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/containers/cxx20_erase.h"
@@ -39,6 +37,9 @@
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/ime/input_method_observer.h"
+#include "ui/display/display_observer.h"
+#include "ui/display/screen.h"
+#include "ui/display/tablet_state.h"
 
 // Enable VLOG level 1.
 #undef ENABLED_VLOG_LEVEL
@@ -132,7 +133,7 @@ class ArcInputMethodStateDelegateImpl : public ArcInputMethodState::Delegate {
     const bool is_normal_vk_enabled =
         !profile_->GetPrefs()->GetBoolean(
             ash::prefs::kAccessibilityVirtualKeyboardEnabled) &&
-        ash::TabletMode::Get()->InTabletMode();
+        display::Screen::GetScreen()->InTabletMode();
     return is_command_line_flag_enabled || is_normal_vk_enabled;
   }
 
@@ -162,7 +163,7 @@ class ArcInputMethodStateDelegateImpl : public ArcInputMethodState::Delegate {
   }
 
  private:
-  const raw_ptr<Profile, ExperimentalAsh> profile_;
+  const raw_ptr<Profile> profile_;
 };
 
 // The default implmentation of WindowDelegate.
@@ -208,7 +209,7 @@ class ArcInputMethodManagerService::ArcInputMethodBoundsObserver
   }
 
  private:
-  raw_ptr<ArcInputMethodManagerService, ExperimentalAsh> owner_;
+  raw_ptr<ArcInputMethodManagerService> owner_;
 };
 
 class ArcInputMethodManagerService::InputMethodEngineObserver
@@ -226,9 +227,13 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
   // ash::input_method::InputMethodEngineObserver overrides:
   void OnActivate(const std::string& engine_id) override {
     owner_->is_arc_ime_active_ = true;
-    // TODO(yhanada): Remove this line after we migrate to SPM completely.
     owner_->OnInputContextHandlerChanged();
   }
+  void OnDeactivated(const std::string& engine_id) override {
+    owner_->is_arc_ime_active_ = false;
+    owner_->OnInputContextHandlerChanged();
+  }
+
   void OnFocus(const std::string& engine_id,
                int context_id,
                const ash::TextInputMethod::InputContext& context) override {
@@ -237,6 +242,7 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
   void OnBlur(const std::string& engine_id, int context_id) override {
     owner_->Blur();
   }
+
   void OnKeyEvent(
       const std::string& engine_id,
       const ui::KeyEvent& event,
@@ -254,11 +260,6 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
     std::move(key_data).Run(ui::ime::KeyEventHandledState::kNotHandled);
   }
   void OnReset(const std::string& engine_id) override {}
-  void OnDeactivated(const std::string& engine_id) override {
-    owner_->is_arc_ime_active_ = false;
-    // TODO(yhanada): Remove this line after we migrate to SPM completely.
-    owner_->OnInputContextHandlerChanged();
-  }
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {}
   void OnSurroundingTextChanged(const std::string& engine_id,
                                 const std::u16string& text,
@@ -280,7 +281,7 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
   void OnInputMethodOptionsChanged(const std::string& engine_id) override {}
 
  private:
-  const raw_ptr<ArcInputMethodManagerService, ExperimentalAsh> owner_;
+  const raw_ptr<ArcInputMethodManagerService> owner_;
 };
 
 class ArcInputMethodManagerService::InputMethodObserver
@@ -310,11 +311,11 @@ class ArcInputMethodManagerService::InputMethodObserver
   }
 
  private:
-  const raw_ptr<ArcInputMethodManagerService, ExperimentalAsh> owner_;
+  const raw_ptr<ArcInputMethodManagerService> owner_;
 };
 
 class ArcInputMethodManagerService::TabletModeObserver
-    : public ash::TabletModeObserver {
+    : public display::DisplayObserver {
  public:
   explicit TabletModeObserver(ArcInputMethodManagerService* owner)
       : owner_(owner) {}
@@ -324,9 +325,20 @@ class ArcInputMethodManagerService::TabletModeObserver
 
   ~TabletModeObserver() override = default;
 
-  // ash::TabletModeObserver overrides:
-  void OnTabletModeStarted() override { OnTabletModeToggled(true); }
-  void OnTabletModeEnded() override { OnTabletModeToggled(false); }
+  // display::DisplayObserver:
+  void OnDisplayTabletStateChanged(display::TabletState state) override {
+    switch (state) {
+      case display::TabletState::kEnteringTabletMode:
+      case display::TabletState::kExitingTabletMode:
+        break;
+      case display::TabletState::kInClamshellMode:
+        OnTabletModeToggled(false);
+        break;
+      case display::TabletState::kInTabletMode:
+        OnTabletModeToggled(true);
+        break;
+    }
+  }
 
  private:
   void OnTabletModeToggled(bool enabled) {
@@ -334,7 +346,9 @@ class ArcInputMethodManagerService::TabletModeObserver
     owner_->NotifyInputMethodManagerObservers(enabled);
   }
 
-  raw_ptr<ArcInputMethodManagerService, ExperimentalAsh> owner_;
+  raw_ptr<ArcInputMethodManagerService> owner_;
+
+  display::ScopedDisplayObserver display_observer_{this};
 };
 
 // static
@@ -387,8 +401,6 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
       std::make_unique<InputMethodEngineObserver>(this),
       proxy_ime_extension_id_.c_str(), profile_);
 
-  ash::TabletMode::Get()->AddObserver(tablet_mode_observer_.get());
-
   auto* accessibility_manager = ash::AccessibilityManager::Get();
   if (accessibility_manager) {
     // accessibility_status_subscription_ ensures the callback is removed when
@@ -440,8 +452,7 @@ void ArcInputMethodManagerService::Shutdown() {
     ash::IMEBridge::Get()->RemoveObserver(this);
   }
 
-  if (ash::TabletMode::Get())
-    ash::TabletMode::Get()->RemoveObserver(tablet_mode_observer_.get());
+  tablet_mode_observer_.reset();
 
   auto* imm = ash::input_method::InputMethodManager::Get();
   imm->RemoveImeMenuObserver(this);

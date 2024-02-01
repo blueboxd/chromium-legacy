@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
@@ -98,9 +99,10 @@ void SetIcon(aura::Window* window,
     window->SetProperty(key, value);
 }
 
-bool FindLayersInOrder(const std::vector<ui::Layer*>& children,
-                       const ui::Layer** first,
-                       const ui::Layer** second) {
+bool FindLayersInOrder(
+    const std::vector<raw_ptr<ui::Layer, VectorExperimental>>& children,
+    const ui::Layer** first,
+    const ui::Layer** second) {
   for (const ui::Layer* child : children) {
     if (child == *second) {
       *second = nullptr;
@@ -975,10 +977,6 @@ void NativeWidgetAura::SetVisibilityAnimationTransition(
   wm::SetWindowVisibilityAnimationTransition(window_, wm_transition);
 }
 
-bool NativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
-  return true;
-}
-
 ui::GestureRecognizer* NativeWidgetAura::GetGestureRecognizer() {
   return aura::Env::GetInstance()->gesture_recognizer();
 }
@@ -1377,8 +1375,9 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
       children->insert(native_widget->GetWidget());
   }
 
-  for (auto* child_window : native_view->children())
+  for (aura::Window* child_window : native_view->children()) {
     GetAllChildWidgets(child_window, children);
+  }
 }
 
 // static

@@ -10,6 +10,7 @@
 
 #include "base/check_op.h"
 #include "base/lazy_instance.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/ranges/algorithm.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task/common/checked_lock.h"
@@ -128,7 +129,9 @@ class SafeAcquisitionTracker {
 
   // A thread-local slot holding a vector of locks currently acquired on the
   // current thread.
-  ThreadLocalOwnedPointer<LockVector> tls_acquired_locks_;
+  // LockVector is not a vector<raw_ptr> due to performance regressions detected
+  // in blink_perf.accessibility tests.
+  RAW_PTR_EXCLUSION ThreadLocalOwnedPointer<LockVector> tls_acquired_locks_;
 };
 
 LazyInstance<SafeAcquisitionTracker>::Leaky g_safe_acquisition_tracker =

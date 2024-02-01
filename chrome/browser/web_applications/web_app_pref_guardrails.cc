@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app_pref_guardrails.h"
 
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -12,32 +13,73 @@
 #include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/webapps/browser/features.h"
 #include "components/webapps/common/web_app_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace web_app {
 
 namespace {
 
 // Returns whether the time occurred within X days.
-bool TimeOccurredWithinDays(absl::optional<base::Time> time, int days) {
+bool TimeOccurredWithinDays(std::optional<base::Time> time, int days) {
   return time && (base::Time::Now() - time.value()).InDays() < days;
 }
 
+const base::Value::Dict* GetWebAppDictionary(const PrefService* pref_service,
+                                             const webapps::AppId& app_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const base::Value::Dict& web_apps_prefs =
+      pref_service->GetDict(prefs::kWebAppsPreferences);
+
+  return web_apps_prefs.FindDict(app_id);
+}
+
+base::Value::Dict& UpdateWebAppDictionary(
+    ScopedDictPrefUpdate& web_apps_prefs_update,
+    const webapps::AppId& app_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return *web_apps_prefs_update->EnsureDict(app_id);
+}
+
 }  // namespace
+
+std::optional<int> GetIntWebAppPref(const PrefService* pref_service,
+                                    const webapps::AppId& app_id,
+                                    base::StringPiece path) {
+  const base::Value::Dict* web_app_prefs =
+      GetWebAppDictionary(pref_service, app_id);
+  if (!web_app_prefs) {
+    return std::nullopt;
+  }
+  return web_app_prefs->FindIntByDottedPath(path);
+}
+
+std::optional<base::Time> GetTimeWebAppPref(const PrefService* pref_service,
+                                            const webapps::AppId& app_id,
+                                            base::StringPiece path) {
+  const auto* web_app_prefs = GetWebAppDictionary(pref_service, app_id);
+  if (!web_app_prefs) {
+    return std::nullopt;
+  }
+  const base::Value* time_value = web_app_prefs->FindByDottedPath(path);
+  if (!time_value) {
+    return std::nullopt;
+  }
+  return base::ValueToTime(time_value);
+}
 
 // static
 WebAppPrefGuardrails WebAppPrefGuardrails::GetForDesktopInstallIph(
     PrefService* pref_service) {
   return WebAppPrefGuardrails(pref_service, web_app::kIphGuardrails,
                               web_app::kIphPrefNames,
-                              /*max_days_to_store_guardrails=*/absl::nullopt);
+                              /*max_days_to_store_guardrails=*/std::nullopt);
 }
 
 // static
@@ -55,6 +97,16 @@ WebAppPrefGuardrails WebAppPrefGuardrails::GetForLinkCapturingIph(
       pref_service, web_app::kIPHLinkCapturingGuardrails,
       web_app::kIPHLinkCapturingPrefNames,
       features::kLinkCapturingIPHGuardrailStorageDuration.Get());
+}
+
+// static
+void WebAppPrefGuardrails::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kWebAppsPreferences);
+  registry->RegisterDictionaryPref(prefs::kWebAppsAppAgnosticIphState);
+  registry->RegisterDictionaryPref(prefs::kWebAppsAppAgnosticMlState);
+  registry->RegisterDictionaryPref(
+      prefs::kWebAppsAppAgnosticIPHLinkCapturingState);
 }
 
 WebAppPrefGuardrails::~WebAppPrefGuardrails() = default;
@@ -98,8 +150,7 @@ void WebAppPrefGuardrails::RecordDismiss(const webapps::AppId& app_id,
 }
 
 void WebAppPrefGuardrails::RecordAccept(const webapps::AppId& app_id) {
-  UpdateIntWebAppPref(pref_service_, app_id,
-                      pref_names_->not_accepted_count_name, 0);
+  UpdateIntWebAppPref(app_id, pref_names_->not_accepted_count_name, 0);
 
   ScopedDictPrefUpdate update(pref_service_,
                               std::string(pref_names_->global_pref_name));
@@ -117,7 +168,7 @@ bool WebAppPrefGuardrails::IsBlockedByGuardrails(const webapps::AppId& app_id) {
     ResetGlobalGuardrails(app_id);
   }
 
-  absl::optional<std::string> app_block_reason = IsAppBlocked(app_id);
+  std::optional<std::string> app_block_reason = IsAppBlocked(app_id);
   if (app_block_reason.has_value()) {
     ScopedDictPrefUpdate global_update(
         pref_service_, std::string(pref_names_->global_pref_name));
@@ -125,7 +176,7 @@ bool WebAppPrefGuardrails::IsBlockedByGuardrails(const webapps::AppId& app_id) {
     return true;
   }
 
-  absl::optional<std::string> global_block_reason = IsGloballyBlocked();
+  std::optional<std::string> global_block_reason = IsGloballyBlocked();
   if (global_block_reason.has_value()) {
     ScopedDictPrefUpdate global_update(
         pref_service_, std::string(pref_names_->global_pref_name));
@@ -145,13 +196,13 @@ WebAppPrefGuardrails::WebAppPrefGuardrails(
     PrefService* pref_service,
     const GuardrailData& guardrail_data,
     const GuardrailPrefNames& guardrail_pref_names,
-    absl::optional<int> max_days_to_store_guardrails)
+    std::optional<int> max_days_to_store_guardrails)
     : pref_service_(pref_service),
       guardrail_data_(guardrail_data),
       pref_names_(guardrail_pref_names),
       max_days_to_store_guardrails_(max_days_to_store_guardrails) {}
 
-absl::optional<std::string> WebAppPrefGuardrails::IsAppBlocked(
+std::optional<std::string> WebAppPrefGuardrails::IsAppBlocked(
     const webapps::AppId& app_id) {
   // Block if user ignored the action for the app N+ times.
   if (guardrail_data_->app_specific_not_accept_count.has_value()) {
@@ -188,10 +239,10 @@ absl::optional<std::string> WebAppPrefGuardrails::IsAppBlocked(
     }
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<std::string> WebAppPrefGuardrails::IsGloballyBlocked() {
+std::optional<std::string> WebAppPrefGuardrails::IsGloballyBlocked() {
   const base::Value::Dict& dict =
       pref_service_->GetDict(pref_names_->global_pref_name);
 
@@ -225,7 +276,7 @@ absl::optional<std::string> WebAppPrefGuardrails::IsGloballyBlocked() {
       return "global_dismiss_days_hit";
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void WebAppPrefGuardrails::UpdateAppSpecificNotAcceptedPrefs(
@@ -236,13 +287,12 @@ void WebAppPrefGuardrails::UpdateAppSpecificNotAcceptedPrefs(
   // place instead of 2. Break this up into seaparate functions that increment
   // the integer pref and sset the time pref, and tkaes in a reference to
   // ScopedDictPrefUpdate.
-  absl::optional<int> ignored_count = GetIntWebAppPref(
+  std::optional<int> ignored_count = GetIntWebAppPref(
       pref_service_, app_id, pref_names_->not_accepted_count_name);
   int new_count = base::saturated_cast<int>(1 + ignored_count.value_or(0));
 
-  UpdateIntWebAppPref(pref_service_, app_id,
-                      pref_names_->not_accepted_count_name, new_count);
-  UpdateTimeWebAppPref(pref_service_, app_id, time_path, time);
+  UpdateIntWebAppPref(app_id, pref_names_->not_accepted_count_name, new_count);
+  UpdateTimeWebAppPref(app_id, time_path, time);
 }
 
 void WebAppPrefGuardrails::UpdateGlobalNotAcceptedPrefs(
@@ -281,7 +331,7 @@ bool WebAppPrefGuardrails::ShouldResetGlobalGuardrails() {
     return false;
   }
 
-  absl::optional<base::Time> last_blocked_time = base::ValueToTime(value);
+  std::optional<base::Time> last_blocked_time = base::ValueToTime(value);
 
   // We only want to clear the guardrails if max_days_to_store_guardrails_ is
   // crossed.
@@ -322,6 +372,24 @@ void WebAppPrefGuardrails::LogGlobalBlockReason(
   }
 
   global_update->Set(pref_names_->block_reason_name, reason);
+}
+
+void WebAppPrefGuardrails::UpdateTimeWebAppPref(const webapps::AppId& app_id,
+                                                base::StringPiece path,
+                                                base::Time value) {
+  ScopedDictPrefUpdate update(pref_service_, prefs::kWebAppsPreferences);
+
+  auto& web_app_prefs = UpdateWebAppDictionary(update, app_id);
+  web_app_prefs.SetByDottedPath(path, base::TimeToValue(value));
+}
+
+void WebAppPrefGuardrails::UpdateIntWebAppPref(const webapps::AppId& app_id,
+                                               base::StringPiece path,
+                                               int value) {
+  ScopedDictPrefUpdate update(pref_service_, prefs::kWebAppsPreferences);
+
+  base::Value::Dict& web_app_prefs = UpdateWebAppDictionary(update, app_id);
+  web_app_prefs.SetByDottedPath(path, value);
 }
 
 }  // namespace web_app

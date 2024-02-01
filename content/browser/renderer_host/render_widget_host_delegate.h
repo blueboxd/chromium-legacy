@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/drop_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
@@ -29,19 +29,20 @@ namespace blink {
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebGestureEvent;
-}
+}  // namespace blink
 
 namespace gfx {
 class Point;
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace content {
 
 class BrowserAccessibilityManager;
 class RenderFrameProxyHost;
 class RenderWidgetHostImpl;
+class DevicePostureProviderImpl;
 class RenderWidgetHostInputEventRouter;
 class RenderViewHostDelegateView;
 class TextInputManager;
@@ -129,12 +130,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Get the root BrowserAccessibilityManager for this frame tree,
   // or create it if it doesn't exist.
   virtual BrowserAccessibilityManager*
-      GetOrCreateRootBrowserAccessibilityManager();
+  GetOrCreateRootBrowserAccessibilityManager();
 
   // Send OS Cut/Copy/Paste actions to the focused frame.
   virtual void ExecuteEditCommand(
       const std::string& command,
-      const absl::optional<std::u16string>& value) = 0;
+      const std::optional<std::u16string>& value) = 0;
   virtual void Undo() = 0;
   virtual void Redo() = 0;
   virtual void Cut() = 0;
@@ -186,15 +187,15 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void RendererResponsive(RenderWidgetHostImpl* render_widget_host) {}
 
   // Requests to lock the mouse. Once the request is approved or rejected,
-  // GotResponseToLockMouseRequest() will be called on the requesting render
+  // GotResponseToLockPointerRequest() will be called on the requesting render
   // widget host. |privileged| means that the request is always granted, used
   // for Pepper Flash.
-  virtual void RequestToLockMouse(RenderWidgetHostImpl* render_widget_host,
-                                  bool user_gesture,
-                                  bool last_unlocked_by_target,
-                                  bool privileged) {}
+  virtual void RequestToLockPointer(RenderWidgetHostImpl* render_widget_host,
+                                    bool user_gesture,
+                                    bool last_unlocked_by_target,
+                                    bool privileged) {}
 
-  virtual void UnlockMouse(RenderWidgetHostImpl* render_widget_host) {}
+  virtual void UnlockPointer(RenderWidgetHostImpl* render_widget_host) {}
 
   // Returns whether the associated tab is in fullscreen mode.
   virtual bool IsFullscreen();
@@ -211,6 +212,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns the window show state.
   virtual ui::WindowShowState GetWindowShowState();
 
+  // Returns the device posture provider tracking the device posture.
+  virtual DevicePostureProviderImpl* GetDevicePostureProvider();
+
   // Returns whether the window can be resized or not. Defaults to true for
   // desktopOSs and false for mobileOSs.
   virtual bool GetResizable();
@@ -219,15 +223,15 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // outermost main frame's widget. Other widgets always returns an empty rect.
   virtual gfx::Rect GetWindowsControlsOverlayRect() const;
 
-  // Notification that the widget has lost the mouse lock.
-  virtual void LostMouseLock(RenderWidgetHostImpl* render_widget_host) {}
+  // Notification that the widget has lost the pointer lock.
+  virtual void LostPointerLock(RenderWidgetHostImpl* render_widget_host) {}
 
-  // Returns true if |render_widget_host| holds the mouse lock.
-  virtual bool HasMouseLock(RenderWidgetHostImpl* render_widget_host);
+  // Returns true if |render_widget_host| holds the pointer lock.
+  virtual bool HasPointerLock(RenderWidgetHostImpl* render_widget_host);
 
-  // Returns the widget that holds the mouse lock or nullptr if the mouse isn't
-  // locked.
-  virtual RenderWidgetHostImpl* GetMouseLockWidget();
+  // Returns the widget that holds the pointer lock or nullptr if the mouse
+  // pointer isn't locked.
+  virtual RenderWidgetHostImpl* GetPointerLockWidget();
 
   // Requests to lock the keyboard. Once the request is approved or rejected,
   // GotResponseToKeyboardLockRequest() will be called on the requesting render

@@ -66,8 +66,9 @@ DeviceChooserContentView::DeviceChooserContentView(
   std::vector<ui::TableColumn> table_columns = {ui::TableColumn()};
   auto table_view = std::make_unique<views::TableView>(
       this, table_columns,
-      chooser_controller_->ShouldShowIconBeforeText() ? views::ICON_AND_TEXT
-                                                      : views::TEXT_ONLY,
+      chooser_controller_->ShouldShowIconBeforeText()
+          ? views::TableType::kIconAndText
+          : views::TableType::kTextOnly,
       !chooser_controller_->AllowMultipleSelection() /* single_selection */);
   table_view_ = table_view.get();
   table_view->SetSelectOnRemove(false);
@@ -225,7 +226,7 @@ void DeviceChooserContentView::OnAdapterEnabledChanged(bool enabled) {
   ShowReScanButton(enabled);
 
   if (GetWidget() && GetWidget()->GetRootView())
-    GetWidget()->GetRootView()->Layout();
+    GetWidget()->GetRootView()->DeprecatedLayoutImmediately();
 }
 
 void DeviceChooserContentView::OnAdapterAuthorizationChanged(bool authorized) {
@@ -252,7 +253,7 @@ void DeviceChooserContentView::OnRefreshStateChanged(bool refreshing) {
     ShowReScanButton(/*enable=*/true);
 
   if (GetWidget() && GetWidget()->GetRootView())
-    GetWidget()->GetRootView()->Layout();
+    GetWidget()->GetRootView()->DeprecatedLayoutImmediately();
 }
 
 std::u16string DeviceChooserContentView::GetWindowTitle() const {
@@ -434,6 +435,6 @@ views::Label* DeviceChooserContentView::ThrobberLabelForTesting() {
   return throbber_label_;
 }
 
-BEGIN_METADATA(DeviceChooserContentView, views::View)
+BEGIN_METADATA(DeviceChooserContentView)
 ADD_READONLY_PROPERTY_METADATA(std::u16string, WindowTitle)
 END_METADATA

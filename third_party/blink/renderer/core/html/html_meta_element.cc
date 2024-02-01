@@ -547,6 +547,9 @@ void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
              EqualIgnoringASCIICase(name_value, "view-transition")) {
     ViewTransitionSupplement::From(GetDocument())
         ->OnMetaTagChanged(g_null_atom);
+  } else if (RuntimeEnabledFeatures::AppTitleEnabled(GetExecutionContext()) &&
+             EqualIgnoringASCIICase(name_value, "app-title")) {
+    GetDocument().UpdateAppTitle();
   }
 }
 
@@ -724,6 +727,9 @@ void HTMLMetaElement::ProcessContent() {
              EqualIgnoringASCIICase(name_value, "view-transition")) {
     ViewTransitionSupplement::From(GetDocument())
         ->OnMetaTagChanged(content_value);
+  } else if (RuntimeEnabledFeatures::AppTitleEnabled(GetExecutionContext()) &&
+             EqualIgnoringASCIICase(name_value, "app-title")) {
+    GetDocument().UpdateAppTitle();
   }
 }
 
@@ -765,16 +771,6 @@ void HTMLMetaElement::ProcessMetaCH(Document& document,
                                     network::MetaCHType type,
                                     bool is_doc_preloader,
                                     bool is_sync_parser) {
-  switch (type) {
-    case network::MetaCHType::HttpEquivAcceptCH:
-      if (!RuntimeEnabledFeatures::ClientHintsMetaHTTPEquivAcceptCHEnabled())
-        return;
-      break;
-    case network::MetaCHType::HttpEquivDelegateCH:
-      if (!RuntimeEnabledFeatures::ClientHintsMetaEquivDelegateCHEnabled())
-        return;
-      break;
-  }
 
   LocalFrame* frame = document.GetFrame();
   if (!frame)

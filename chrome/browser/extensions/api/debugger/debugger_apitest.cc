@@ -59,6 +59,12 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
+#include "pdf/buildflags.h"
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "base/test/with_feature_override.h"
+#include "pdf/pdf_features.h"
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -148,7 +154,7 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
   // Attach by targetId.
   scoped_refptr<DebuggerGetTargetsFunction> get_targets_function =
       new DebuggerGetTargetsFunction();
-  absl::optional<base::Value> value(
+  std::optional<base::Value> value(
       api_test_utils::RunFunctionAndReturnSingleResult(
           get_targets_function.get(), "[]", profile()));
   EXPECT_TRUE(value->is_list());
@@ -156,7 +162,7 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
   std::string debugger_target_id;
   for (const base::Value& target_value : value->GetList()) {
     EXPECT_TRUE(target_value.is_dict());
-    absl::optional<int> id = target_value.GetDict().FindInt("tabId");
+    std::optional<int> id = target_value.GetDict().FindInt("tabId");
     if (id == tab_id) {
       const std::string* id_str = target_value.GetDict().FindString("id");
       EXPECT_TRUE(id_str);
@@ -760,6 +766,12 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, ParentTargetPermissions) {
   ASSERT_TRUE(RunExtensionTest("parent_target_permissions")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, ReloadAndResetHistory) {
+  // Run test with file access disabled.
+  ASSERT_TRUE(RunExtensionTest("debugger_reload_and_reset_history"))
+      << message_;
+}
+
 // Tests that an extension is not allowed to inspect a worker through the
 // inspectWorker debugger command.
 // Regression test for https://crbug.com/1059577.
@@ -777,14 +789,38 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, AttachToEmptyUrls) {
   ASSERT_TRUE(RunExtensionTest("debugger_attach_to_empty_urls")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, AttachToPdf) {
+#if BUILDFLAG(ENABLE_PDF)
+class DebuggerExtensionApiPdfTest : public base::test::WithFeatureOverride,
+                                    public DebuggerExtensionApiTest {
+ public:
+  DebuggerExtensionApiPdfTest()
+      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfOopif) {}
+};
+
+IN_PROC_BROWSER_TEST_P(DebuggerExtensionApiPdfTest, AttachToPdf) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (IsParamFeatureEnabled()) {
+    GTEST_SKIP();
+  }
+
   ASSERT_TRUE(RunExtensionTest("debugger_attach_to_pdf")) << message_;
 }
+
+// TODO(crbug.com/1445746): Stop testing both modes after OOPIF PDF viewer
+// launches.
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(DebuggerExtensionApiPdfTest);
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 // Tests that navigation to a forbidden URL is properly denied and
 // does not cause a crash.
 // This is a regression test for https://crbug.com/1188889.
-IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, NavigateToForbiddenUrl) {
+// TODO(crbug.com/1517512): Re-enable this test.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_NavigateToForbiddenUrl DISABLED_NavigateToForbiddenUrl
+#else
+#define MAYBE_NavigateToForbiddenUrl NavigateToForbiddenUrl
+#endif
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, MAYBE_NavigateToForbiddenUrl) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(RunExtensionTest("debugger_navigate_to_forbidden_url"))
       << message_;

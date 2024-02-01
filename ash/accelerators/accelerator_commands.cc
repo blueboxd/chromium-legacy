@@ -5,7 +5,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 
 #include "ash/accelerators/accelerator_notifications.h"
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
@@ -446,7 +446,7 @@ bool CanCreateNewIncognitoWindow() {
   // For non-guest mode, consume the key and defer the decision to the browser.
   std::optional<user_manager::UserType> user_type =
       Shell::Get()->session_controller()->GetUserType();
-  return user_type && *user_type != user_manager::USER_TYPE_GUEST;
+  return user_type && *user_type != user_manager::UserType::kGuest;
 }
 
 bool CanCycleInputMethod() {
@@ -621,7 +621,7 @@ bool CanToggleOverview() {
   auto windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   // Do not toggle overview if there is a window being dragged.
-  for (auto* window : windows) {
+  for (aura::Window* window : windows) {
     if (WindowState::Get(window)->is_dragged())
       return false;
   }
@@ -700,8 +700,9 @@ void ActivateDeskAtIndex(AcceleratorAction action) {
         desks[target_index].get(),
         DesksSwitchSource::kIndexedDeskSwitchShortcut);
   } else {
-    for (auto* root : Shell::GetAllRootWindows())
+    for (aura::Window* root : Shell::GetAllRootWindows()) {
       desks_animations::PerformHitTheWallAnimation(root, /*going_left=*/false);
+    }
   }
 }
 
@@ -1112,11 +1113,7 @@ void ShowEmojiPicker(const base::TimeTicks accelerator_timestamp) {
 }
 
 void ShowKeyboardShortcutViewer() {
-  if (features::ShouldOnlyShowNewShortcutApp()) {
-    ShowShortcutCustomizationApp();
-    return;
-  }
-  NewWindowDelegate::GetInstance()->ShowKeyboardShortcutViewer();
+  ShowShortcutCustomizationApp();
 }
 
 void ShowShortcutCustomizationApp() {
@@ -1139,6 +1136,13 @@ void Suspend() {
 
 void SwitchToNextIme() {
   Shell::Get()->ime_controller()->SwitchToNextIme();
+}
+
+void SwitchToLastUsedIme(bool key_pressed) {
+  if (key_pressed) {
+    Shell::Get()->ime_controller()->SwitchToLastUsedIme();
+  }
+  // Else: consume the Ctrl+Space ET_KEY_RELEASED event but do not do anything.
 }
 
 void ToggleAppList(AppListShowSource show_source,
@@ -1326,7 +1330,7 @@ void ToggleDockedMagnifier() {
 
   DockedMagnifierController* docked_magnifier_controller =
       shell->docked_magnifier_controller();
-  AccessibilityControllerImpl* accessibility_controller =
+  AccessibilityController* accessibility_controller =
       shell->accessibility_controller();
 
   const bool current_enabled = docked_magnifier_controller->GetEnabled();
@@ -1394,7 +1398,7 @@ void ToggleFullscreenMagnifier() {
 
   FullscreenMagnifierController* magnification_controller =
       shell->fullscreen_magnifier_controller();
-  AccessibilityControllerImpl* accessibility_controller =
+  AccessibilityController* accessibility_controller =
       shell->accessibility_controller();
 
   const bool current_enabled = magnification_controller->IsEnabled();
@@ -1442,7 +1446,7 @@ void ToggleHighContrast() {
     return;
   }
 
-  AccessibilityControllerImpl* controller = shell->accessibility_controller();
+  AccessibilityController* controller = shell->accessibility_controller();
   const bool current_enabled = controller->high_contrast().enabled();
   const bool dialog_ever_accepted =
       controller->high_contrast().WasDialogAccepted();

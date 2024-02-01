@@ -4,6 +4,7 @@
 
 #include "content/browser/interest_group/test_interest_group_manager_impl.h"
 
+#include <optional>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -23,7 +24,6 @@
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -89,10 +89,14 @@ void TestInterestGroupManagerImpl::EnqueueReports(
 }
 
 void TestInterestGroupManagerImpl::OnInterestGroupAccessed(
-    const base::Time& access_time,
+    base::optional_ref<const std::string> devtools_auction_id,
+    base::Time access_time,
     AccessType type,
     const url::Origin& owner_origin,
-    const std::string& name) {
+    const std::string& name,
+    base::optional_ref<const url::Origin> component_seller_origin,
+    std::optional<double> bid,
+    base::optional_ref<const std::string> bid_currency) {
   if (type == AccessType::kBid) {
     interest_groups_that_bid_.emplace_back(owner_origin, name);
   }
@@ -163,16 +167,16 @@ std::vector<std::string> TestInterestGroupManagerImpl::TakeJoinedKAnonSets() {
   return std::exchange(joined_k_anon_sets_, {});
 }
 
-absl::optional<StorageInterestGroup>
+std::optional<SingleStorageInterestGroup>
 TestInterestGroupManagerImpl::BlockingGetInterestGroup(
     const url::Origin& owner,
     const std::string& name) {
   base::RunLoop run_loop;
-  absl::optional<StorageInterestGroup> out;
+  std::optional<SingleStorageInterestGroup> out;
   GetInterestGroup(
       {owner, name},
       base::BindLambdaForTesting(
-          [&](absl::optional<StorageInterestGroup> interest_group) {
+          [&](std::optional<SingleStorageInterestGroup> interest_group) {
             out = std::move(interest_group);
             run_loop.Quit();
           }));

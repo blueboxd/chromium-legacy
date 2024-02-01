@@ -6,12 +6,17 @@
 #define COMPONENTS_CAST_RECEIVER_RENDERER_WRAPPING_URL_LOADER_THROTTLE_PROVIDER_H_
 
 #include <memory>
+#include <string_view>
 
 #include "base/containers/flat_map.h"
 #include "base/functional/callback_forward.h"
 #include "base/sequence_checker.h"
 #include "third_party/blink/public/platform/url_loader_throttle_provider.h"
 #include "third_party/blink/public/platform/web_vector.h"
+
+namespace network {
+struct ResourceRequest;
+}
 
 namespace cast_receiver {
 
@@ -31,7 +36,7 @@ class WrappingURLLoaderThrottleProvider
         const blink::LocalFrameToken& frame_token) = 0;
 
     // Returns whether |header| is a cors exempt header.
-    virtual bool IsCorsExemptHeader(base::StringPiece header) = 0;
+    virtual bool IsCorsExemptHeader(std::string_view header) = 0;
   };
 
   // |client| is expected to outlive this instance.
@@ -54,7 +59,7 @@ class WrappingURLLoaderThrottleProvider
   std::unique_ptr<blink::URLLoaderThrottleProvider> Clone() override;
   blink::WebVector<std::unique_ptr<blink::URLLoaderThrottle>> CreateThrottles(
       base::optional_ref<const blink::LocalFrameToken> local_frame_token,
-      const blink::WebURLRequest& request) override;
+      const network::ResourceRequest& request) override;
   void SetOnline(bool is_online) override;
 
  private:

@@ -43,7 +43,30 @@ enum class PlatformWindowState {
   kSnappedPrimary,
   kSnappedSecondary,
   kFloated,
+  kPinnedFullscreen,
+  kTrustedPinnedFullscreen,
 };
+
+COMPONENT_EXPORT(PLATFORM_WINDOW)
+bool IsPlatformWindowStateFullscreen(PlatformWindowState state);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+enum class PlatformFullscreenType {
+  // kNone represents a non-fullscreen state. This should be set for most cases
+  // except for the window state is `kFullscreen`.
+  kNone,
+
+  // kPlain represents a fullscreen mode without immersive feature. This
+  // corresponds to fullscreen + non-immersive mode. The window state must be
+  // 'kFullscreen`. This state is also used by the locked fullscreen or pinned
+  // mode in other words.
+  kPlain,
+
+  // kImmersive represents a immersive fullscreen mode. This corresponds to
+  // fullscreen + immersive mode. The window state must be `kFullscreen`.
+  kImmersive,
+};
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 enum class PlatformWindowOcclusionState {
   kUnknown,
@@ -134,23 +157,19 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegate {
   virtual void OnWindowStateChanged(PlatformWindowState old_state,
                                     PlatformWindowState new_state) = 0;
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
   // Notifies the delegate that the tiled state of the window edges has changed.
   virtual void OnWindowTiledStateChanged(WindowTiledEdges new_tiled_edges);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Notifies delegate that the pending fullscreen operation has been completed.
-  virtual void OnFullscreenModeChanged();
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // TODO(ffred): We should just add kImmersiveFullscreen as a state. However,
   // that will require more refactoring in other places to understand that
   // kImmersiveFullscreen is a fullscreen status.
-  // Sets the immersive mode for the window. This will only have an effect on
-  // ChromeOS platforms.
-  virtual void OnImmersiveModeChanged(bool immersive) {}
+  //
+  // Notifies that fullscreen type has changed.
+  virtual void OnFullscreenTypeChanged(PlatformFullscreenType old_type,
+                                       PlatformFullscreenType new_type);
 
   // Lets the window know that ChromeOS overview mode has changed.
   virtual void OnOverviewModeChanged(bool in_overview) {}
@@ -197,9 +216,6 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegate {
   // `chromeos::kFrameRestoreLookKey` window property
   // with lacros-chrome.
   virtual void OnSurfaceFrameLockingChanged(bool lock);
-
-  // Returns a menu type of the window. Valid only for the menu windows.
-  virtual absl::optional<MenuType> GetMenuType();
 
   // Called when the location of mouse pointer entered the window.  This is
   // different from ui::ET_MOUSE_ENTERED which may not be generated when mouse

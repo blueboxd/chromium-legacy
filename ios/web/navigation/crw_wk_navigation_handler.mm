@@ -11,6 +11,8 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/timer/timer.h"
+#import "components/security_interstitials/core/insecure_form_util.h"
+#import "ios/components/security_interstitials/https_only_mode/feature.h"
 #import "ios/net/http_response_headers_util.h"
 #import "ios/net/protocol_handler_util.h"
 #import "ios/net/url_scheme_util.h"
@@ -44,7 +46,7 @@
 #import "ios/web/web_view/error_translation_util.h"
 #import "ios/web/web_view/wk_security_origin_util.h"
 #import "ios/web/web_view/wk_web_view_util.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "net/base/net_errors.h"
 #import "net/cert/x509_util_apple.h"
 #import "net/http/http_content_disposition.h"
@@ -171,7 +173,7 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
         std::make_unique<web::CertVerificationErrorsCacheType>(
             kMaxCertErrorsCount);
 
-    _nativeTaskBridges = [NSMutableSet new];
+    _nativeTaskBridges = [[NSMutableSet alloc] init];
 
     _shouldPerformDownload = NO;
 
@@ -400,9 +402,7 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
       requestURL.SchemeIs(url::kBlobScheme);
 
   _shouldPerformDownload = NO;
-  if (@available(iOS 15, *)) {
-    _shouldPerformDownload = action.shouldPerformDownload;
-  }
+  _shouldPerformDownload = action.shouldPerformDownload;
 
   __weak CRWWKNavigationHandler* weakSelf = self;
   auto callback =
@@ -431,6 +431,8 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
   }
 
   BOOL isUserInitiated = [self.delegate isUserInitiatedAction:action];
+  BOOL hasTappedRecently =
+      self.userInteractionState->HasUserTappedRecently(webView);
 
   BOOL isCrossOriginTargetFrame = NO;
   if (action.sourceFrame && action.targetFrame &&
@@ -452,7 +454,7 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
 
   const web::WebStatePolicyDecider::RequestInfo requestInfo(
       transition, isMainFrameNavigationAction, isCrossOriginTargetFrame,
-      isUserInitiated);
+      isUserInitiated, hasTappedRecently);
 
   self.webStateImpl->ShouldAllowRequest(action.request, requestInfo,
                                         std::move(callback));
@@ -520,20 +522,7 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
     return;
   }
 
-  if (@available(iOS 15, *)) {
-    handler(WKNavigationResponsePolicyDownload);
-    return;
-  }
-
-  if (web::UrlHasWebScheme(responseURL)) {
-    [self createDownloadTaskForResponse:WKResponse HTTPHeaders:headers.get()];
-  } else {
-    // DownloadTask only supports web schemes, so do nothing.
-  }
-  // Discard the pending item to ensure that the current URL is not different
-  // from what is displayed on the view.
-  self.navigationManagerImpl->DiscardNonCommittedItems();
-  std::move(callback).Run(web::WebStatePolicyDecider::PolicyDecision::Cancel());
+  handler(WKNavigationResponsePolicyDownload);
 }
 
 - (void)webView:(WKWebView*)webView
@@ -989,6 +978,11 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
     }
   }
 
+  [self updateStateForNavigation:navigation toFinishedWithContext:context];
+}
+
+- (void)updateStateForNavigation:(WKNavigation*)navigation
+           toFinishedWithContext:(web::NavigationContextImpl*)context {
   [self.navigationStates setState:web::WKNavigationState::FINISHED
                     forNavigation:navigation];
 
@@ -1031,6 +1025,17 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
                       forNavigation:navigation];
     self.webStateImpl->RemoveAllWebFrames();
     _certVerificationErrors->Clear();
+    return;
+  }
+
+  if ([error.domain isEqualToString:@(web::kWebKitErrorDomain)] &&
+      error.code == web::kWebKitErrorPlugInLoadFailed) {
+    // In cases where a Plug-in handles the load, mark the navigation as
+    // successful even though it is reported as a failed navigation.
+    web::NavigationContextImpl* navigationContext =
+        [self.navigationStates contextForNavigation:navigation];
+    [self updateStateForNavigation:navigation
+             toFinishedWithContext:navigationContext];
     return;
   }
 
@@ -1480,15 +1485,13 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
   // TODO(crbug.com/1308875): Remove this when `canShowMIMEType` is fixed.
   // On iOS 15 `canShowMIMEType` returns true for AR files although WebKit is
   // not capable of displaying them natively.
-  if (@available(iOS 15, *)) {
-    NSString* MIMEType = WKResponse.response.MIMEType;
-    if ([MIMEType isEqualToString:@"model/vnd.pixar.usd"] ||
-        [MIMEType isEqualToString:@"model/usd"] ||
-        [MIMEType isEqualToString:@"model/vnd.usdz+zip"] ||
-        [MIMEType isEqualToString:@"model/vnd.pixar.usd"] ||
-        [MIMEType isEqualToString:@"model/vnd.reality"]) {
-      return NO;
-    }
+  NSString* MIMEType = WKResponse.response.MIMEType;
+  if ([MIMEType isEqualToString:@"model/vnd.pixar.usd"] ||
+      [MIMEType isEqualToString:@"model/usd"] ||
+      [MIMEType isEqualToString:@"model/vnd.usdz+zip"] ||
+      [MIMEType isEqualToString:@"model/vnd.pixar.usd"] ||
+      [MIMEType isEqualToString:@"model/vnd.reality"]) {
+    return NO;
   }
 
   GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
@@ -1576,6 +1579,28 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
     [self.navigationStates removeNavigation:navigation];
 }
 
+// Returns the warning type to be shown for <form> posts, or kNone if no warning
+// should be shown.
+- (web::FormWarningType)formWarningType:(WKNavigationAction*)action {
+  if (action.navigationType == WKNavigationTypeFormResubmitted) {
+    return web::FormWarningType::kRepost;
+  }
+  if (web::GetWebClient()->IsInsecureFormWarningEnabled(
+          self.webStateImpl->GetBrowserState()) &&
+      action.navigationType == WKNavigationTypeFormSubmitted) {
+    if (action.sourceFrame) {
+      GURL source_url = web::GURLOriginWithWKSecurityOrigin(
+          action.sourceFrame.securityOrigin);
+      GURL form_action_url = net::GURLWithNSURL(action.request.URL);
+      if (security_interstitials::IsInsecureFormActionOnSecureSource(
+              source_url, form_action_url)) {
+        return web::FormWarningType::kInsecureForm;
+      }
+    }
+  }
+  return web::FormWarningType::kNone;
+}
+
 // This method should be called on deciding policy for navigation action. It
 // Answers the `decisionHandler` with a final decision caculated with passed
 // `policyDecision`. The passed `policyDecision` should be determined by some
@@ -1589,11 +1614,11 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
      forceBlockUniversalLinks:(BOOL)forceBlockUniversalLinks {
   if (policyDecision.ShouldAllowNavigation()) {
     if ([[action.request HTTPMethod] isEqualToString:@"POST"]) {
+      web::FormWarningType warning_type = [self formWarningType:action];
       // Display the confirmation dialog if a form repost is detected.
-      if (action.navigationType == WKNavigationTypeFormResubmitted) {
+      if (warning_type != web::FormWarningType::kNone) {
         self.webStateImpl->ShowRepostFormWarningDialog(
-            web::FormWarningType::kRepost,
-            base::BindOnce(^(bool shouldContinue) {
+            warning_type, base::BindOnce(^(bool shouldContinue) {
               if (self.beingDestroyed) {
                 decisionHandler(WKNavigationActionPolicyCancel);
               } else if (shouldContinue) {
@@ -1806,12 +1831,6 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
 
   if ([error.domain
           isEqualToString:base::SysUTF8ToNSString(web::kWebKitErrorDomain)]) {
-    if (error.code == web::kWebKitErrorPlugInLoadFailed) {
-      // In cases where a Plug-in handles the load do not take any further
-      // action.
-      return;
-    }
-
     if (error.code == web::kWebKitErrorUrlBlockedByContentFilter) {
       DCHECK(provisionalLoad);
       // If URL is blocked due to Restriction, do not take any further
@@ -1887,8 +1906,6 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
   originalContext->SetLoadingErrorPage(true);
   [self.navigationStates setContext:std::move(originalContext)
                       forNavigation:errorNavigation];
-  // Return as the context was moved.
-  return;
 }
 
 // Displays an error page with details from `error` in `webView`. The error page
@@ -2178,11 +2195,7 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
 }
 
 - (void)loadCancelled {
-  // TODO(crbug.com/821995):  Check if this function should be removed.
   if (self.navigationState != web::WKNavigationState::FINISHED) {
-    UMA_HISTOGRAM_BOOLEAN("IOS.NavigationStateNotFinishedInLoadCancelled",
-                          self.beingDestroyed);
-
     self.navigationState = web::WKNavigationState::FINISHED;
     if (!self.beingDestroyed) {
       self.webStateImpl->SetIsLoading(false);

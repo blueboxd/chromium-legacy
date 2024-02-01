@@ -9,6 +9,7 @@
 
 #include <list>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/command_line.h"
@@ -75,7 +76,6 @@
 #include "media/capture/video/video_capture_system_impl.h"
 #include "media/mojo/mojom/display_media_information.mojom.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -104,23 +104,28 @@
 #include "chromeos/lacros/lacros_service.h"
 #endif
 
-using blink::mojom::MediaDeviceType;
+#if !BUILDFLAG(IS_ANDROID)
+#include "content/browser/media/captured_surface_controller.h"
+#endif
+
+using ::blink::mojom::MediaDeviceType;
 
 namespace content {
 
 ABSL_CONST_INIT thread_local MediaStreamManager* media_stream_manager = nullptr;
 
-using blink::MediaStreamDevice;
-using blink::MediaStreamDevices;
-using blink::MediaStreamRequestType;
-using blink::StreamControls;
-using blink::TrackControls;
-using blink::mojom::GetOpenDeviceResponse;
-using blink::mojom::MediaStreamRequestResult;
-using blink::mojom::MediaStreamType;
-using blink::mojom::StreamSelectionInfo;
-using blink::mojom::StreamSelectionInfoPtr;
-using blink::mojom::StreamSelectionStrategy;
+using ::blink::MediaStreamDevice;
+using ::blink::MediaStreamDevices;
+using ::blink::MediaStreamRequestType;
+using ::blink::StreamControls;
+using ::blink::TrackControls;
+using ::blink::mojom::CapturedSurfaceControlResult;
+using ::blink::mojom::GetOpenDeviceResponse;
+using ::blink::mojom::MediaStreamRequestResult;
+using ::blink::mojom::MediaStreamType;
+using ::blink::mojom::StreamSelectionInfo;
+using ::blink::mojom::StreamSelectionInfoPtr;
+using ::blink::mojom::StreamSelectionStrategy;
 
 namespace {
 // Turns off available audio effects (removes the flag) if the options
@@ -151,7 +156,7 @@ bool GetDeviceIDAndGroupIDFromHMAC(
     const std::string& hmac_device_id,
     const blink::WebMediaDeviceInfoArray& devices,
     std::string* device_id,
-    absl::optional<std::string>* group_id) {
+    std::optional<std::string>* group_id) {
   // The source_id can be empty if the constraint is set but empty.
   if (hmac_device_id.empty()) {
     return false;
@@ -167,8 +172,8 @@ bool GetDeviceIDAndGroupIDFromHMAC(
     }
     if (group_id) {
       *group_id = device_info.group_id.empty()
-                      ? absl::nullopt
-                      : absl::make_optional<std::string>(device_info.group_id);
+                      ? std::nullopt
+                      : std::make_optional<std::string>(device_info.group_id);
     }
     return true;
   }
@@ -372,12 +377,20 @@ void SendVideoCaptureLogMessage(const std::string& message) {
 // If |kUseFakeDeviceForMediaStream| specifies a
 // browser window, use |render_process_id| and |render_frame_id| as the browser
 // window identifier.
+//
+// When the result of the configuration results in tab-capture,
+// if `captured_tab_id` is non-null, it represents the tab that
+// will be captured. Otherwise, the capturer ends up capturing
+// their own tab.
+//
+// TODO(crbug.com/1512911): Refactor this function.
 MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
     blink::mojom::MediaStreamType media_type,
     bool request_audio,
     GlobalRenderFrameHostId render_frame_host_id,
     blink::mojom::PreferredDisplaySurface preferred_display_surface,
-    bool exclude_monitor_type_surfaces) {
+    bool exclude_monitor_type_surfaces,
+    std::optional<WebContentsMediaCaptureId> captured_tab_id) {
   MediaStreamDevices devices;
   DesktopMediaID::Type desktop_media_type = DesktopMediaID::TYPE_SCREEN;
   DesktopMediaID::Id desktop_media_id_id = DesktopMediaID::kNullId;
@@ -410,8 +423,9 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
         case media::FakeVideoCaptureDevice::DisplayMediaType::BROWSER:
           desktop_media_type = DesktopMediaID::TYPE_WEB_CONTENTS;
           display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
-          web_contents_id = {render_frame_host_id.child_id,
-                             render_frame_host_id.frame_routing_id};
+          web_contents_id = captured_tab_id.value_or(
+              WebContentsMediaCaptureId{render_frame_host_id.child_id,
+                                        render_frame_host_id.frame_routing_id});
           break;
       }
     }
@@ -434,8 +448,9 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
     case blink::mojom::PreferredDisplaySurface::BROWSER:
       desktop_media_type = DesktopMediaID::TYPE_WEB_CONTENTS;
       display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
-      web_contents_id = {render_frame_host_id.child_id,
-                         render_frame_host_id.frame_routing_id};
+      web_contents_id = captured_tab_id.value_or(
+          WebContentsMediaCaptureId{render_frame_host_id.child_id,
+                                    render_frame_host_id.frame_routing_id});
       break;
   }
   DesktopMediaID media_id(desktop_media_type, desktop_media_id_id,
@@ -444,7 +459,8 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
                            media_id.ToString());
   device.display_media_info = media::mojom::DisplayMediaInformation::New(
       display_surface, /*logical_surface=*/true,
-      media::mojom::CursorCaptureType::NEVER, /*capture_handle=*/nullptr);
+      media::mojom::CursorCaptureType::NEVER, /*capture_handle=*/nullptr,
+      /*initial_zoom_level=*/100);
   devices.push_back(device);
   if (!request_audio) {
     return devices;
@@ -455,7 +471,8 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
       media::AudioDeviceDescription::kDefaultDeviceId, "Fake audio");
   audio_device.display_media_info = media::mojom::DisplayMediaInformation::New(
       display_surface, /*logical_surface=*/true,
-      media::mojom::CursorCaptureType::NEVER, /*capture_handle=*/nullptr);
+      media::mojom::CursorCaptureType::NEVER, /*capture_handle=*/nullptr,
+      /*initial_zoom_level=*/100);
   devices.emplace_back(audio_device);
   return devices;
 }
@@ -498,7 +515,7 @@ bool ChangeSourceSupported(const MediaStreamDevices& devices) {
   return true;  // getDisplayMedia() and killswitches did not trigger.
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 base::TimeDelta GetConditionalFocusWindow() {
   const std::string custom_window =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -517,12 +534,23 @@ base::TimeDelta GetConditionalFocusWindow() {
   // Conditional Focus should also change.
   return base::Seconds(1);
 }
+
+MediaStreamManager::CapturedSurfaceControllerFactoryCallback
+MakeDefaultCapturedSurfaceControllerFactory() {
+  return base::BindRepeating(
+      [](GlobalRenderFrameHostId capturer_rfh_id,
+         WebContentsMediaCaptureId captured_wc_id,
+         base::RepeatingCallback<void(int)> on_zoom_level_change_callback) {
+        return std::make_unique<CapturedSurfaceController>(
+            capturer_rfh_id, captured_wc_id, on_zoom_level_change_callback);
+      });
+}
 #endif
 
 const blink::MediaStreamDevice* GetStreamDevice(
     const blink::mojom::StreamDevices& stream_devices,
     const base::UnguessableToken& session_id) {
-  for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+  for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
            &stream_devices.audio_device,
            &stream_devices.video_device,
        }) {
@@ -633,22 +661,33 @@ class MediaStreamManager::DeviceRequest {
 
   MediaStreamType video_type() const { return video_type_; }
 
+  void SetAudioRawId(std::string id) { audio_raw_id_ = std::move(id); }
+  const std::optional<std::string>& audio_raw_id() const {
+    return audio_raw_id_;
+  }
+
+  void SetVideoRawId(std::string id) { video_raw_id_ = std::move(id); }
+  const std::optional<std::string>& video_raw_id() const {
+    return video_raw_id_;
+  }
+
   // Creates a MediaStreamRequest object that is used by this request when UI
   // is asked for permission and device selection.
-  void CreateUIRequest(const std::string& requested_audio_device_id,
-                       const std::string& requested_video_device_id) {
+  void CreateUIRequest(
+      const std::vector<std::string>& requested_audio_device_ids,
+      const std::vector<std::string>& requested_video_device_ids) {
     DCHECK(!ui_request_);
     SendLogMessage(base::StringPrintf(
         "DR::CreateUIRequest([requester_id=%d] {requested_audio_device_id=%s}, "
         "{requested_video_device_id=%s})",
-        requester_id, requested_audio_device_id.c_str(),
-        requested_video_device_id.c_str()));
+        requester_id, base::JoinString(requested_audio_device_ids, ",").c_str(),
+        base::JoinString(requested_video_device_ids, "").c_str()));
     target_render_frame_host_id_ = requesting_render_frame_host_id;
     ui_request_ = std::make_unique<MediaStreamRequest>(
         requesting_render_frame_host_id.child_id,
         requesting_render_frame_host_id.frame_routing_id, page_request_id,
         salt_and_origin.origin(), user_gesture, request_type_,
-        requested_audio_device_id, requested_video_device_id, audio_type_,
+        requested_audio_device_ids, requested_video_device_ids, audio_type_,
         video_type_, stream_controls_.disable_local_echo,
         stream_controls_.request_pan_tilt_zoom_permission);
     ui_request_->suppress_local_audio_playback =
@@ -671,8 +710,9 @@ class MediaStreamManager::DeviceRequest {
     ui_request_ = std::make_unique<MediaStreamRequest>(
         target_render_frame_host_id_.child_id,
         target_render_frame_host_id_.frame_routing_id, page_request_id,
-        salt_and_origin.origin(), user_gesture, request_type_, "", "",
-        audio_type_, video_type_, stream_controls_.disable_local_echo,
+        salt_and_origin.origin(), user_gesture, request_type_,
+        std::vector<std::string>{}, std::vector<std::string>{}, audio_type_,
+        video_type_, stream_controls_.disable_local_echo,
         /*request_pan_tilt_zoom_permission=*/false);
     ui_request_->exclude_system_audio = stream_controls_.exclude_system_audio;
   }
@@ -750,13 +790,13 @@ class MediaStreamManager::DeviceRequest {
     return devices_opened_count_[static_cast<int>(stream_type)];
   }
 
-  absl::optional<TransferState> GetTransferState(
+  std::optional<TransferState> GetTransferState(
       MediaStreamType stream_type,
       const base::UnguessableToken& transfer_id) {
     auto transfer_map = transfer_status_map_[static_cast<int>(stream_type)];
     auto it = transfer_map.find(transfer_id);
     if (it == transfer_map.end()) {
-      return absl::nullopt;
+      return std::nullopt;
     }
     return it->second.state;
   }
@@ -857,6 +897,46 @@ class MediaStreamManager::DeviceRequest {
       blink::mojom::MediaStreamType type,
       media::mojom::CaptureHandlePtr capture_handle) {}
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  // If capturing a tab, returns the tab's |WebContentsMediaCaptureId|.
+  // Otherwise, returns an empty |WebContentsMediaCaptureId|.
+  WebContentsMediaCaptureId GetCapturedTabId() const {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+    WebContentsMediaCaptureId captured_wc_id;
+
+    // Tab-capture will always have `size() == 1` here. A size greater than 1
+    // indicates getAllScreensMedia() - those devices can be skipped.
+    if (stream_devices_set.stream_devices.size() != 1 ||
+        !stream_devices_set.stream_devices[0]->video_device.has_value()) {
+      return captured_wc_id;
+    }
+
+    // Ignore Parse()'s return value. If it fails, `captured_wc_id` is left with
+    // the null ID, which is the value we need to return in that case.
+    WebContentsMediaCaptureId::Parse(
+        stream_devices_set.stream_devices[0]->video_device->id,
+        &captured_wc_id);
+
+    return captured_wc_id;
+  }
+
+  CapturedSurfaceController* captured_surface_controller() const {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    return captured_surface_controller_.get();
+  }
+
+  void SetCapturedSurfaceController(
+      std::unique_ptr<CapturedSurfaceController> controller) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    CHECK(!captured_surface_controller_);
+    captured_surface_controller_ = std::move(controller);
+  }
+
+  // If capturing a tab, zoom-level updates are received through this callback.
+  virtual void OnZoomLevelChange(const std::string& label, int zoom_level) {}
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
   // The render frame host id that requested this stream to be generated and
   // that will receive a handle to the MediaStream. This may be different from
   // MediaStreamRequest::render_process_id which in the tab capture case
@@ -894,7 +974,6 @@ class MediaStreamManager::DeviceRequest {
 
   PermissionController::SubscriptionId video_subscription_id;
 
- protected:
   virtual base::WeakPtr<DeviceRequest> GetWeakPtr() = 0;
 
  private:
@@ -956,10 +1035,17 @@ class MediaStreamManager::DeviceRequest {
   std::vector<TransferMap> transfer_status_map_;
   MediaStreamRequestType request_type_;
   StreamControls stream_controls_;
-  MediaStreamType audio_type_;
-  MediaStreamType video_type_;
+  MediaStreamType audio_type_ = MediaStreamType::NO_SERVICE;
+  std::optional<std::string> audio_raw_id_;
+  MediaStreamType video_type_ = MediaStreamType::NO_SERVICE;
+  std::optional<std::string> video_raw_id_;
   GlobalRenderFrameHostId target_render_frame_host_id_;
   std::string label_;
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  // If an attempt to access any of the Captured Surface Control APIs is made,
+  // a controller is instantiated to manage state.
+  std::unique_ptr<CapturedSurfaceController> captured_surface_controller_;
+#endif
 };
 
 class MediaStreamManager::MediaAccessRequest
@@ -1033,7 +1119,8 @@ class MediaStreamManager::CreateDeviceRequest
       DeviceRequestStateChangeCallback device_request_state_change_cb,
       DeviceCaptureConfigurationChangeCallback
           device_capture_configuration_change_cb,
-      DeviceCaptureHandleChangeCallback device_capture_handle_change_cb)
+      DeviceCaptureHandleChangeCallback device_capture_handle_change_cb,
+      ZoomLevelChangeCallback zoom_level_change_callback)
       : DeviceRequest(requesting_render_frame_host_id,
                       requester_id,
                       page_request_id,
@@ -1049,7 +1136,8 @@ class MediaStreamManager::CreateDeviceRequest
         device_capture_configuration_change_cb_(
             std::move(device_capture_configuration_change_cb)),
         device_capture_handle_change_cb_(
-            std::move(device_capture_handle_change_cb)) {}
+            std::move(device_capture_handle_change_cb)),
+        zoom_level_change_callback_(std::move(zoom_level_change_callback)) {}
 
   void FinalizeChangeDevice(const std::string& label) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1069,7 +1157,7 @@ class MediaStreamManager::CreateDeviceRequest
 
     std::vector<std::vector<MediaStreamDevice>> old_devices_by_type(
         static_cast<size_t>(MediaStreamType::NUM_MEDIA_TYPES));
-    for (const absl::optional<blink::MediaStreamDevice>* old_device_ptr :
+    for (const std::optional<blink::MediaStreamDevice>* old_device_ptr :
          {&old_devices.audio_device, &old_devices.video_device}) {
       if (!old_device_ptr->has_value()) {
         continue;
@@ -1079,7 +1167,7 @@ class MediaStreamManager::CreateDeviceRequest
           old_device);
     }
 
-    for (const absl::optional<blink::MediaStreamDevice>* new_device_ptr :
+    for (const std::optional<blink::MediaStreamDevice>* new_device_ptr :
          {&new_devices.audio_device, &new_devices.video_device}) {
       if (!new_device_ptr->has_value()) {
         continue;
@@ -1116,7 +1204,7 @@ class MediaStreamManager::CreateDeviceRequest
     for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
          stream_devices_set.stream_devices) {
       const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-      for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+      for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
                &stream_devices.audio_device,
                &stream_devices.video_device,
            }) {
@@ -1175,12 +1263,47 @@ class MediaStreamManager::CreateDeviceRequest
     }
   }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  void OnZoomLevelChange(const std::string& label, int zoom_level) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+    if (!zoom_level_change_callback_) {
+      return;
+    }
+
+    if (stream_devices_set.stream_devices.size() != 1u) {
+      return;
+    }
+
+    const blink::mojom::StreamDevices& devices =
+        *stream_devices_set.stream_devices[0];
+
+    if (!devices.video_device.has_value()) {
+      return;
+    }
+
+    const MediaStreamDevice* device = &devices.video_device.value();
+    if (!device) {
+      return;
+    }
+
+    if (!device->display_media_info) {
+      DVLOG(1) << "Tab capture without a DisplayMediaInformation (" << label
+               << ").";
+      return;
+    }
+
+    zoom_level_change_callback_.Run(label, *device, zoom_level);
+  }
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
  private:
   DeviceChangedCallback device_changed_cb_;
   DeviceRequestStateChangeCallback device_request_state_change_cb_;
   DeviceCaptureConfigurationChangeCallback
       device_capture_configuration_change_cb_;
   DeviceCaptureHandleChangeCallback device_capture_handle_change_cb_;
+  ZoomLevelChangeCallback zoom_level_change_callback_;
 };
 
 class MediaStreamManager::GenerateStreamsRequest
@@ -1200,6 +1323,7 @@ class MediaStreamManager::GenerateStreamsRequest
       DeviceCaptureConfigurationChangeCallback
           device_capture_configuration_change_cb,
       DeviceCaptureHandleChangeCallback device_capture_handle_change_cb,
+      ZoomLevelChangeCallback zoom_level_change_callback,
       GenerateStreamsCallback generate_streams_cb)
       : CreateDeviceRequest(requesting_render_frame_host_id,
                             requester_id,
@@ -1213,7 +1337,8 @@ class MediaStreamManager::GenerateStreamsRequest
                             std::move(device_changed_cb),
                             std::move(device_request_state_change_cb),
                             std::move(device_capture_configuration_change_cb),
-                            std::move(device_capture_handle_change_cb)),
+                            std::move(device_capture_handle_change_cb),
+                            std::move(zoom_level_change_callback)),
         generate_streams_cb_(std::move(generate_streams_cb)) {
     DCHECK(generate_streams_cb_);
   }
@@ -1269,6 +1394,7 @@ class MediaStreamManager::GetOpenDeviceRequest
       DeviceCaptureConfigurationChangeCallback
           device_capture_configuration_change_cb,
       DeviceCaptureHandleChangeCallback device_capture_handle_change_cb,
+      ZoomLevelChangeCallback zoom_level_change_callback,
       GetOpenDeviceCallback get_open_device_cb)
       : CreateDeviceRequest(requesting_render_frame_host_id,
                             requester_id,
@@ -1282,7 +1408,8 @@ class MediaStreamManager::GetOpenDeviceRequest
                             std::move(device_changed_cb),
                             std::move(device_request_state_change_cb),
                             std::move(device_capture_configuration_change_cb),
-                            std::move(device_capture_handle_change_cb)),
+                            std::move(device_capture_handle_change_cb),
+                            std::move(zoom_level_change_callback)),
         get_open_device_cb_(std::move(get_open_device_cb)) {
     DCHECK(get_open_device_cb_);
   }
@@ -1330,7 +1457,7 @@ class MediaStreamManager::GetOpenDeviceRequest
   // an existing open MediaStreamDevice (identified by its session_id). If the
   // device is found, it is returned to this callback along with a
   // MediaStreamRequestResult::OK. Otherwise, returns
-  // MediaStreamRequestResult::INVALID_STATE along with absl::nullopt instead of
+  // MediaStreamRequestResult::INVALID_STATE along with std::nullopt instead of
   // a MediaStreamDevice.
   GetOpenDeviceCallback get_open_device_cb_;
   base::WeakPtrFactory<DeviceRequest> weak_factory_{this};
@@ -1432,8 +1559,10 @@ MediaStreamManager::MediaStreamManager(
     media::AudioSystem* audio_system,
     std::unique_ptr<VideoCaptureProvider> video_capture_provider)
     :
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
       conditional_focus_window_(GetConditionalFocusWindow()),
+      captured_surface_controller_factory_(
+          MakeDefaultCapturedSurfaceControllerFactory()),
 #endif
       audio_system_(audio_system) {
   bool use_fake_ui_factory = false;
@@ -1586,7 +1715,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
   StreamSelectionInfoPtr audio_stream_selection_info_ptr =
       StreamSelectionInfo::New(
           blink::mojom::StreamSelectionStrategy::SEARCH_BY_DEVICE_ID,
-          absl::nullopt);
+          std::nullopt);
   auto request = std::make_unique<MediaAccessRequest>(
       render_frame_host_id, requester_id, page_request_id,
       std::move(audio_stream_selection_info_ptr), controls,
@@ -1622,7 +1751,8 @@ void MediaStreamManager::GenerateStreams(
     DeviceRequestStateChangeCallback device_request_state_change_cb,
     DeviceCaptureConfigurationChangeCallback
         device_capture_configuration_change_cb,
-    DeviceCaptureHandleChangeCallback device_capture_handle_change_cb) {
+    DeviceCaptureHandleChangeCallback device_capture_handle_change_cb,
+    ZoomLevelChangeCallback zoom_level_change_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SendLogMessage(GetGenerateStreamsLogString(render_frame_host_id, requester_id,
                                              page_request_id));
@@ -1635,6 +1765,7 @@ void MediaStreamManager::GenerateStreams(
           std::move(device_request_state_change_cb),
           std::move(device_capture_configuration_change_cb),
           std::move(device_capture_handle_change_cb),
+          std::move(zoom_level_change_callback),
           std::move(generate_streams_cb));
   DeviceRequests::const_iterator request_it = AddRequest(std::move(request));
   const std::string& label = request_it->first;
@@ -1676,7 +1807,8 @@ void MediaStreamManager::GetOpenDevice(
     DeviceRequestStateChangeCallback device_request_state_change_cb,
     DeviceCaptureConfigurationChangeCallback
         device_capture_configuration_change_cb,
-    DeviceCaptureHandleChangeCallback device_capture_handle_change_cb) {
+    DeviceCaptureHandleChangeCallback device_capture_handle_change_cb,
+    ZoomLevelChangeCallback zoom_level_change_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(base::FeatureList::IsEnabled(features::kMediaStreamTrackTransfer));
 
@@ -1688,13 +1820,13 @@ void MediaStreamManager::GetOpenDevice(
           std::move(device_request_state_change_cb),
           std::move(device_capture_configuration_change_cb),
           std::move(device_capture_handle_change_cb),
-          std::move(get_open_device_cb));
+          std::move(zoom_level_change_callback), std::move(get_open_device_cb));
 
   DeviceRequests::const_iterator request_it = AddRequest(std::move(request));
   const std::string& new_label = request_it->first;
   DeviceRequest* const request_ptr = request_it->second.get();
 
-  const absl::optional<MediaStreamDevice> new_device =
+  const std::optional<MediaStreamDevice> new_device =
       CloneExistingOpenDevice(device_session_id, transfer_id, new_label);
   if (!new_device.has_value()) {
     // No existing device with matching session id is found.
@@ -1905,7 +2037,7 @@ void MediaStreamManager::StopDevice(MediaStreamType type,
         if (request->state(type) == MEDIA_REQUEST_STATE_DONE) {
           CloseDevice(type, session_id);
         }
-        devices.audio_device = absl::nullopt;
+        devices.audio_device = std::nullopt;
       }
       if (devices.video_device.has_value() &&
           devices.video_device->type == type &&
@@ -1913,7 +2045,7 @@ void MediaStreamManager::StopDevice(MediaStreamType type,
         if (request->state(type) == MEDIA_REQUEST_STATE_DONE) {
           CloseDevice(type, session_id);
         }
-        devices.video_device = absl::nullopt;
+        devices.video_device = std::nullopt;
       }
 
       if (!devices.audio_device.has_value() &&
@@ -1952,7 +2084,7 @@ void MediaStreamManager::CloseDevice(MediaStreamType type,
     for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
          request->stream_devices_set.stream_devices) {
       const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-      for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+      for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
                &stream_devices.audio_device,
                &stream_devices.video_device,
            }) {
@@ -2004,10 +2136,10 @@ void MediaStreamManager::OpenDevice(
   StreamControls controls;
   if (blink::IsAudioInputMediaType(type)) {
     controls.audio.stream_type = type;
-    controls.audio.device_id = device_id;
+    controls.audio.device_ids.push_back(device_id);
   } else if (blink::IsVideoInputMediaType(type)) {
     controls.video.stream_type = type;
-    controls.video.device_id = device_id;
+    controls.video.device_ids.push_back(device_id);
   } else {
     NOTREACHED();
   }
@@ -2016,7 +2148,7 @@ void MediaStreamManager::OpenDevice(
   StreamSelectionInfoPtr audio_stream_selection_info_ptr =
       StreamSelectionInfo::New(
           blink::mojom::StreamSelectionStrategy::SEARCH_BY_DEVICE_ID,
-          absl::nullopt);
+          std::nullopt);
   auto request = std::make_unique<OpenDeviceRequest>(
       render_frame_host_id, requester_id, page_request_id,
       std::move(audio_stream_selection_info_ptr), controls,
@@ -2063,7 +2195,7 @@ void MediaStreamManager::StopRemovedDevice(
     for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
          request->stream_devices_set.stream_devices) {
       const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-      for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+      for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
                &stream_devices.audio_device,
                &stream_devices.video_device,
            }) {
@@ -2087,34 +2219,44 @@ void MediaStreamManager::StopRemovedDevice(
   }
 }
 
-bool MediaStreamManager::PickDeviceId(
+bool MediaStreamManager::RemoveInvalidDeviceIds(
     const MediaDeviceSaltAndOrigin& salt_and_origin,
     const TrackControls& controls,
     const blink::WebMediaDeviceInfoArray& devices,
-    std::string* device_id) const {
-  if (controls.device_id.empty()) {
+    std::vector<std::string>* device_ids) const {
+  if (controls.device_ids.empty()) {
     return true;
   }
-  if (!GetDeviceIDAndGroupIDFromHMAC(salt_and_origin, controls.device_id,
-                                     devices, device_id,
-                                     /*group_id=*/nullptr)) {
-    LOG(WARNING) << "Invalid device ID = " << controls.device_id;
+  for (const auto& controls_device_id : controls.device_ids) {
+    std::string device_id;
+    if (!GetDeviceIDAndGroupIDFromHMAC(salt_and_origin, controls_device_id,
+                                       devices, &device_id,
+                                       /*group_id=*/nullptr)) {
+      LOG(WARNING) << "Invalid device ID = " << controls_device_id;
+      continue;
+    }
+    device_ids->push_back(device_id);
+  }
+  if (device_ids->empty()) {
+    LOG(WARNING) << "No valid device IDs";
     return false;
   }
   return true;
 }
 
-bool MediaStreamManager::GetRequestedDeviceCaptureId(
+bool MediaStreamManager::GetEligibleCaptureDeviceids(
     const DeviceRequest* request,
     MediaStreamType type,
     const blink::WebMediaDeviceInfoArray& devices,
-    std::string* device_id) const {
+    std::vector<std::string>* device_ids) const {
   if (type == MediaStreamType::DEVICE_AUDIO_CAPTURE) {
-    return PickDeviceId(request->salt_and_origin,
-                        request->stream_controls().audio, devices, device_id);
+    return RemoveInvalidDeviceIds(request->salt_and_origin,
+                                  request->stream_controls().audio, devices,
+                                  device_ids);
   } else if (type == MediaStreamType::DEVICE_VIDEO_CAPTURE) {
-    return PickDeviceId(request->salt_and_origin,
-                        request->stream_controls().video, devices, device_id);
+    return RemoveInvalidDeviceIds(request->salt_and_origin,
+                                  request->stream_controls().video, devices,
+                                  device_ids);
   } else {
     NOTREACHED();
   }
@@ -2208,7 +2350,59 @@ MediaStreamManager::DeviceRequest* MediaStreamManager::FindRequest(
   return (it != requests_.end()) ? it->second.get() : nullptr;
 }
 
-absl::optional<MediaStreamDevice> MediaStreamManager::CloneExistingOpenDevice(
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+MediaStreamManager::DeviceRequest*
+MediaStreamManager::FindRequestByVideoSessionId(
+    const base::UnguessableToken& session_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (const LabeledDeviceRequest& labeled_request : requests_) {
+    DeviceRequest* const request = labeled_request.second.get();
+    if (!request) {
+      continue;
+    }
+    for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
+         request->stream_devices_set.stream_devices) {
+      const std::optional<blink::MediaStreamDevice>& video_device =
+          stream_devices_ptr->video_device;
+      if (video_device && video_device->serializable_session_id().has_value() &&
+          video_device->serializable_session_id().value() == session_id) {
+        return request;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+CapturedSurfaceController* MediaStreamManager::GetCapturedSurfaceController(
+    GlobalRenderFrameHostId capturer_rfh_id,
+    const base::UnguessableToken& session_id,
+    blink::mojom::CapturedSurfaceControlResult& result) {
+  DeviceRequest* const request = FindRequestByVideoSessionId(session_id);
+  if (!request) {
+    result = CapturedSurfaceControlResult::kCapturedSurfaceNotFoundError;
+    return nullptr;
+  }
+
+  if (request->requesting_render_frame_host_id != capturer_rfh_id) {
+    result = CapturedSurfaceControlResult::kUnknownError;
+    return nullptr;
+  }
+
+  CapturedSurfaceController* const controller =
+      request->captured_surface_controller();
+  if (!controller) {
+    result = blink::mojom::CapturedSurfaceControlResult::kUnknownError;
+    return nullptr;
+  }
+
+  result = blink::mojom::CapturedSurfaceControlResult::kSuccess;
+  return controller;
+}
+#endif
+
+std::optional<MediaStreamDevice> MediaStreamManager::CloneExistingOpenDevice(
     const base::UnguessableToken& existing_device_session_id,
     const base::UnguessableToken& transfer_id,
     const std::string& new_label) {
@@ -2250,7 +2444,7 @@ absl::optional<MediaStreamDevice> MediaStreamManager::CloneExistingOpenDevice(
         ReceivedBadMessage(
             new_request->requesting_render_frame_host_id.child_id,
             bad_message::MSM_GET_OPEN_DEVICE_FOR_UNSUPPORTED_STREAM_TYPE);
-        return absl::nullopt;
+        return std::nullopt;
       }
 
       new_device.set_session_id(
@@ -2260,7 +2454,7 @@ absl::optional<MediaStreamDevice> MediaStreamManager::CloneExistingOpenDevice(
       return new_device;
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void MediaStreamManager::UpdateDeviceTransferStatus(
@@ -2271,7 +2465,7 @@ void MediaStreamManager::UpdateDeviceTransferStatus(
   // TODO(https://crbug.com/1288839): Use |start_time| to enforce a timeout to
   // stop device in case a transfer never completes.
   MediaStreamType stream_type = device->type;
-  absl::optional<TransferState> existing_state =
+  std::optional<TransferState> existing_state =
       request->GetTransferState(stream_type, transfer_id);
   if (!existing_state) {
     request->SetTransferState(stream_type, transfer_id, transfer_state);
@@ -2310,7 +2504,7 @@ void MediaStreamManager::CancelRequest(
   for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
        request->stream_devices_set.stream_devices) {
     const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-    for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+    for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
              &stream_devices.audio_device,
              &stream_devices.video_device,
          }) {
@@ -2380,14 +2574,14 @@ void MediaStreamManager::ReadOutputParamsAndPostRequestToUI(
                        base::Unretained(this), label, enumeration));
   } else {
     PostRequestToUI(label, enumeration,
-                    absl::optional<media::AudioParameters>());
+                    std::optional<media::AudioParameters>());
   }
 }
 
 void MediaStreamManager::PostRequestToUI(
     const std::string& label,
     const MediaDeviceEnumeration& enumeration,
-    const absl::optional<media::AudioParameters>& output_parameters) {
+    const std::optional<media::AudioParameters>& output_parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!output_parameters || output_parameters->IsValid());
   DeviceRequest* request = FindRequest(label);
@@ -2519,14 +2713,15 @@ bool MediaStreamManager::SetUpDisplayCaptureRequest(DeviceRequest* request) {
   // selection of a source, see
   // https://w3c.github.io/mediacapture-screen-share/#constraints.
   if (!request->stream_controls().video.requested() ||
-      !request->stream_controls().video.device_id.empty() ||
-      !request->stream_controls().audio.device_id.empty()) {
+      !request->stream_controls().video.device_ids.empty() ||
+      !request->stream_controls().audio.device_ids.empty()) {
     LOG(ERROR) << "Invalid display media request.";
     return false;
   }
 
-  request->CreateUIRequest(std::string() /* requested_audio_device_id */,
-                           std::string() /* requested_video_device_id */);
+  request->CreateUIRequest(
+      std::vector<std::string>{} /* requested_audio_device_id */,
+      std::vector<std::string>{} /* requested_video_device_id */);
   DVLOG(3) << "Audio requested " << request->stream_controls().audio.requested()
            << " Video requested "
            << request->stream_controls().video.requested();
@@ -2542,28 +2737,28 @@ bool MediaStreamManager::SetUpDeviceCaptureRequest(
           request->video_type() == MediaStreamType::NO_SERVICE));
   SendLogMessage(base::StringPrintf(
       "SetUpDeviceCaptureRequest([requester_id=%d])", request->requester_id));
-  std::string audio_device_id;
+  std::vector<std::string> audio_device_ids;
   if (request->stream_controls().audio.requested() &&
-      !GetRequestedDeviceCaptureId(
+      !GetEligibleCaptureDeviceids(
           request, request->audio_type(),
           enumeration[static_cast<size_t>(MediaDeviceType::kMediaAudioInput)],
-          &audio_device_id)) {
+          &audio_device_ids)) {
     return false;
   }
 
-  std::string video_device_id;
+  std::vector<std::string> video_device_ids;
   if (request->stream_controls().video.requested() &&
-      !GetRequestedDeviceCaptureId(
+      !GetEligibleCaptureDeviceids(
           request, request->video_type(),
           enumeration[static_cast<size_t>(MediaDeviceType::kMediaVideoInput)],
-          &video_device_id)) {
+          &video_device_ids)) {
     return false;
   }
-  request->CreateUIRequest(audio_device_id, video_device_id);
+  request->CreateUIRequest(audio_device_ids, video_device_ids);
   DVLOG(3) << "Audio requested " << request->stream_controls().audio.requested()
-           << " device id = " << audio_device_id << "Video requested "
+           << " device id = " << audio_device_ids.size() << "Video requested "
            << request->stream_controls().video.requested()
-           << " device id = " << video_device_id;
+           << " device id = " << video_device_ids.size();
   return true;
 }
 
@@ -2573,10 +2768,11 @@ bool MediaStreamManager::SetUpTabCaptureRequest(DeviceRequest* request,
          request->video_type() == MediaStreamType::GUM_TAB_VIDEO_CAPTURE);
 
   std::string capture_device_id;
-  if (!request->stream_controls().audio.device_id.empty()) {
-    capture_device_id = request->stream_controls().audio.device_id;
-  } else if (!request->stream_controls().video.device_id.empty()) {
-    capture_device_id = request->stream_controls().video.device_id;
+  if (!request->stream_controls().audio.device_ids.empty() &&
+      !request->stream_controls().audio.device_ids.front().empty()) {
+    capture_device_id = request->stream_controls().audio.device_ids.front();
+  } else if (!request->stream_controls().video.device_ids.empty()) {
+    capture_device_id = request->stream_controls().video.device_ids.front();
   } else {
     return false;
   }
@@ -2664,18 +2860,18 @@ bool MediaStreamManager::SetUpScreenCaptureRequest(DeviceRequest* request) {
     return false;
   }
 
-  std::string video_device_id;
+  std::vector<std::string> video_device_ids;
   if (request->video_type() == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE &&
-      !request->stream_controls().video.device_id.empty()) {
-    video_device_id = request->stream_controls().video.device_id;
+      !request->stream_controls().video.device_ids.empty()) {
+    video_device_ids = request->stream_controls().video.device_ids;
   }
 
-  const std::string audio_device_id =
+  const std::vector<std::string> audio_device_ids =
       request->audio_type() == MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE
-          ? video_device_id
-          : "";
+          ? video_device_ids
+          : std::vector<std::string>{};
 
-  request->CreateUIRequest(audio_device_id, video_device_id);
+  request->CreateUIRequest(audio_device_ids, video_device_ids);
   return true;
 }
 
@@ -2692,9 +2888,10 @@ void MediaStreamManager::SetUpDesktopCaptureChangeSourceRequest(
   request->set_request_type(blink::MEDIA_DEVICE_UPDATE);
 
   request->CreateUIRequest(
-      std::string() /* requested_audio_device_id */,
-      media_id.is_null() ? std::string()
-                         : media_id.ToString() /* requested_video_device_id */);
+      std::vector<std::string>{} /* requested_audio_device_id */,
+      media_id.is_null()
+          ? std::vector<std::string>{}
+          : std::vector{media_id.ToString()} /* requested_video_device_id */);
 
   ReadOutputParamsAndPostRequestToUI(label, request, MediaDeviceEnumeration());
 }
@@ -2707,6 +2904,58 @@ MediaStreamDevices MediaStreamManager::GetDevicesOpenedByRequest(
     return MediaStreamDevices();
   }
   return blink::ToMediaStreamDevicesList(request->stream_devices_set);
+}
+
+void MediaStreamManager::GetRawDeviceIdsOpenedForFrame(
+    RenderFrameHost* render_frame_host,
+    blink::mojom::MediaStreamType type,
+    GetRawDeviceIdsOpenedForFrameCallback callback) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  CHECK(render_frame_host);
+  auto collect_all_render_frame_host_ids = base::BindOnce(
+      [](RenderFrameHost* render_frame_host) {
+        base::flat_set<GlobalRenderFrameHostId> all_render_frame_host_ids;
+        render_frame_host->ForEachRenderFrameHost(
+            [&all_render_frame_host_ids](RenderFrameHost* render_frame_host) {
+              all_render_frame_host_ids.insert(
+                  render_frame_host->GetGlobalId());
+            });
+        return all_render_frame_host_ids;
+      },
+      render_frame_host);
+
+  GetUIThreadTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE, std::move(collect_all_render_frame_host_ids),
+      base::BindPostTaskToCurrentDefault(
+          base::BindOnce(&MediaStreamManager::GetRawDeviceIdsOpenedForFrameIds,
+                         base::Unretained(this), type, std::move(callback))));
+}
+
+void MediaStreamManager::GetRawDeviceIdsOpenedForFrameIds(
+    blink::mojom::MediaStreamType type,
+    GetRawDeviceIdsOpenedForFrameCallback callback,
+    base::flat_set<GlobalRenderFrameHostId> render_frame_host_ids) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  std::vector<std::string> device_ids;
+  for (const auto& [label, request] : requests_) {
+    if (request->state(type) != MediaRequestState::MEDIA_REQUEST_STATE_DONE) {
+      continue;
+    }
+
+    if (!render_frame_host_ids.contains(
+            request->requesting_render_frame_host_id)) {
+      continue;
+    }
+
+    if (request->audio_type() == type && request->audio_raw_id()) {
+      device_ids.push_back(request->audio_raw_id().value());
+    } else if (request->video_type() == type && request->video_raw_id()) {
+      device_ids.push_back(request->video_raw_id().value());
+    }
+  }
+
+  std::move(callback).Run(device_ids);
 }
 
 bool MediaStreamManager::FindExistingRequestedDevice(
@@ -2731,7 +2980,7 @@ bool MediaStreamManager::FindExistingRequestedDevice(
     return false;
   }
 
-  absl::optional<base::UnguessableToken> requested_session_id =
+  std::optional<base::UnguessableToken> requested_session_id =
       new_request.audio_stream_selection_info_ptr->session_id;
 #if DCHECK_IS_ON()
   if (strategy == StreamSelectionStrategy::SEARCH_BY_SESSION_ID) {
@@ -2748,7 +2997,7 @@ bool MediaStreamManager::FindExistingRequestedDevice(
       if (request->requesting_render_frame_host_id ==
               new_request.requesting_render_frame_host_id &&
           request->request_type() == new_request.request_type()) {
-        for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+        for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
                  &stream_devices.audio_device,
                  &stream_devices.video_device,
              }) {
@@ -2815,6 +3064,18 @@ void MediaStreamManager::FinalizeGenerateStreams(const std::string& label,
     return;
   }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  CHECK(!request->captured_surface_controller());
+  const WebContentsMediaCaptureId captured_tab_id = request->GetCapturedTabId();
+  if (!captured_tab_id.is_null()) {
+    request->SetCapturedSurfaceController(
+        captured_surface_controller_factory_.Run(
+            request->requesting_render_frame_host_id, captured_tab_id,
+            base::BindRepeating(&DeviceRequest::OnZoomLevelChange,
+                                request->GetWeakPtr(), label)));
+  }
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
   // TODO(crbug.com/1300883): Generalize to multiple streams.
   DCHECK_EQ(1u, request->stream_devices_set.stream_devices.size());
 
@@ -2874,7 +3135,7 @@ void MediaStreamManager::FinalizeGetOpenDevice(const std::string& label,
 // focus-change with Conditional focus enabled.
 void MediaStreamManager::PanTiltZoomPermissionChecked(
     const std::string& label,
-    const absl::optional<MediaStreamDevice>& video_device,
+    const std::optional<MediaStreamDevice>& video_device,
     bool pan_tilt_zoom_allowed) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DeviceRequest* request = FindRequest(label);
@@ -2894,7 +3155,7 @@ void MediaStreamManager::PanTiltZoomPermissionChecked(
     return;
   }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // 1. Only the first call to SetCapturedDisplaySurfaceFocus() has an
   //    effect, so a direct call to SetCapturedDisplaySurfaceFocus()
   //    before the scheduled task is executed would render the scheduled
@@ -3085,7 +3346,7 @@ void MediaStreamManager::Opened(
     for (blink::mojom::StreamDevicesPtr& stream_devices_ptr :
          request->stream_devices_set.stream_devices) {
       blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-      for (absl::optional<blink::MediaStreamDevice>* device_ptr : {
+      for (std::optional<blink::MediaStreamDevice>* device_ptr : {
                &stream_devices.audio_device,
                &stream_devices.video_device,
            }) {
@@ -3232,10 +3493,12 @@ void MediaStreamManager::Aborted(
 void MediaStreamManager::UseFakeUIFactoryForTests(
     base::RepeatingCallback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
         fake_ui_factory,
-    bool use_for_gum_desktop_capture) {
+    bool use_for_gum_desktop_capture,
+    std::optional<WebContentsMediaCaptureId> captured_tab_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   fake_ui_factory_ = std::move(fake_ui_factory);
   use_fake_ui_for_gum_desktop_capture_ = use_for_gum_desktop_capture;
+  fake_ui_factory_captured_tab_id_ = captured_tab_id;
 }
 
 // static
@@ -3340,7 +3603,7 @@ void MediaStreamManager::HandleAccessRequestResponse(
     const blink::mojom::StreamDevicesPtr& stream_devices_ptr =
         stream_devices_set.stream_devices[stream_index];
     const blink::mojom::StreamDevices& devices = *stream_devices_ptr;
-    for (const absl::optional<blink::MediaStreamDevice>* device_ptr :
+    for (const std::optional<blink::MediaStreamDevice>* device_ptr :
          {&devices.audio_device, &devices.video_device}) {
       if (!device_ptr->has_value()) {
         continue;
@@ -3399,6 +3662,11 @@ void MediaStreamManager::HandleAccessRequestResponse(
         }
       }
       device.set_session_id(GetDeviceManager(device.type)->Open(device));
+      if (device.type == request->audio_type()) {
+        request->SetAudioRawId(device.id);
+      } else if (device.type == request->video_type()) {
+        request->SetVideoRawId(device.id);
+      }
       TranslateDeviceIdToSourceId(request, &device);
       SetRequestDevice(
           *request->stream_devices_set.stream_devices[stream_index], device);
@@ -3459,7 +3727,7 @@ void MediaStreamManager::HandleChangeSourceRequestResponse(
 
   const blink::mojom::StreamDevices& devices =
       *stream_devices_set.stream_devices[0];
-  for (const absl::optional<blink::MediaStreamDevice>* device :
+  for (const std::optional<blink::MediaStreamDevice>* device :
        {&devices.audio_device, &devices.video_device}) {
     if (!device->has_value()) {
       continue;
@@ -3475,6 +3743,16 @@ void MediaStreamManager::HandleChangeSourceRequestResponse(
   request->SetAudioType(devices.audio_device.has_value()
                             ? request->stream_controls().audio.stream_type
                             : MediaStreamType::NO_SERVICE);
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  if (CapturedSurfaceController* const captured_surface_controller =
+          request->captured_surface_controller()) {
+    // Either inform the controller that it's now controlling a new tab,
+    // or neutralize it if it's no longer capturing a tab.
+    captured_surface_controller->UpdateCaptureTarget(
+        request->GetCapturedTabId());
+  }
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 }
 
 void MediaStreamManager::StopMediaStreamFromBrowser(const std::string& label) {
@@ -3494,7 +3772,7 @@ void MediaStreamManager::StopMediaStreamFromBrowser(const std::string& label) {
     for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
          request->stream_devices_set.stream_devices) {
       const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-      for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+      for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
                &stream_devices.audio_device,
                &stream_devices.video_device,
            }) {
@@ -3526,7 +3804,7 @@ void MediaStreamManager::ChangeMediaStreamSourceFromBrowser(
       *request->stream_devices_set.stream_devices[0];
 
   if (request->ui_proxy) {
-    for (const absl::optional<blink::MediaStreamDevice>* device_ptr :
+    for (const std::optional<blink::MediaStreamDevice>* device_ptr :
          {&devices.audio_device, &devices.video_device}) {
       if (!device_ptr->has_value()) {
         continue;
@@ -3675,7 +3953,7 @@ void MediaStreamManager::OnMediaStreamUIWindowId(
   for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
        stream_devices_set->stream_devices) {
     const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-    for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+    for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
              &stream_devices.audio_device,
              &stream_devices.video_device,
          }) {
@@ -3748,7 +4026,7 @@ void MediaStreamManager::SetCapturingLinkSecured(
     for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
          request->stream_devices_set.stream_devices) {
       const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-      for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+      for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
                &stream_devices.audio_device,
                &stream_devices.video_device,
            }) {
@@ -3774,6 +4052,14 @@ void MediaStreamManager::SetStateForTesting(
   std::advance(requests_iterator, request_index);
   requests_iterator->second->SetState(stream_type, new_state);
 }
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+void MediaStreamManager::SetCapturedSurfaceControllerFactoryForTesting(
+    CapturedSurfaceControllerFactoryCallback factory) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  captured_surface_controller_factory_ = std::move(factory);
+}
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 void MediaStreamManager::SetGenerateStreamsCallbackForTesting(
     GenerateStreamTestCallback test_callback) {
@@ -3828,7 +4114,7 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
   for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
        request->stream_devices_set.stream_devices) {
     const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-    for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+    for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
              &stream_devices.audio_device,
              &stream_devices.video_device,
          }) {
@@ -3880,7 +4166,7 @@ void MediaStreamManager::OnCaptureConfigurationChanged(
 
 void MediaStreamManager::OnRegionCaptureRectChanged(
     const base::UnguessableToken& session_id,
-    const absl::optional<gfx::Rect>& region_capture_rect) {
+    const std::optional<gfx::Rect>& region_capture_rect) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   for (const LabeledDeviceRequest& labeled_device_request : requests_) {
@@ -3893,7 +4179,7 @@ void MediaStreamManager::OnRegionCaptureRectChanged(
          labeled_device_request.second->stream_devices_set.stream_devices) {
       const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
 
-      for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+      for (const std::optional<blink::MediaStreamDevice>* device_ptr : {
                &stream_devices.audio_device,
                &stream_devices.video_device,
            }) {
@@ -3913,7 +4199,7 @@ void MediaStreamManager::OnRegionCaptureRectChanged(
   }
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 void MediaStreamManager::SetCapturedDisplaySurfaceFocus(
     const std::string& label,
     bool focus,
@@ -3935,7 +4221,7 @@ void MediaStreamManager::SetCapturedDisplaySurfaceFocus(
       *request->stream_devices_set.stream_devices[0];
 
   DesktopMediaID media_id;
-  for (const absl::optional<blink::MediaStreamDevice>* device_ptr :
+  for (const std::optional<blink::MediaStreamDevice>* device_ptr :
        {&devices.audio_device, &devices.video_device}) {
     if (!device_ptr->has_value()) {
       continue;
@@ -3959,7 +4245,76 @@ void MediaStreamManager::SetCapturedDisplaySurfaceFocus(
   request->ui_proxy->SetFocus(media_id, focus, is_from_microtask,
                               is_from_timer);
 }
-#endif
+
+void MediaStreamManager::SendWheel(
+    GlobalRenderFrameHostId capturer_rfh_id,
+    const base::UnguessableToken& session_id,
+    blink::mojom::CapturedWheelActionPtr action,
+    base::OnceCallback<void(CapturedSurfaceControlResult)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  CapturedSurfaceControlResult result;
+  CapturedSurfaceController* const controller =
+      GetCapturedSurfaceController(capturer_rfh_id, session_id, result);
+  if (!controller) {
+    std::move(callback).Run(result);
+    return;
+  }
+
+  controller->SendWheel(std::move(action), std::move(callback));
+}
+
+void MediaStreamManager::GetZoomLevel(
+    GlobalRenderFrameHostId capturer_rfh_id,
+    const base::UnguessableToken& session_id,
+    base::OnceCallback<void(std::optional<int> zoom_level,
+                            blink::mojom::CapturedSurfaceControlResult result)>
+        callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  CapturedSurfaceControlResult result;
+  CapturedSurfaceController* const controller =
+      GetCapturedSurfaceController(capturer_rfh_id, session_id, result);
+  if (!controller) {
+    std::move(callback).Run(std::nullopt, result);
+    return;
+  }
+
+  controller->GetZoomLevel(std::move(callback));
+}
+
+void MediaStreamManager::SetZoomLevel(
+    GlobalRenderFrameHostId capturer_rfh_id,
+    const base::UnguessableToken& session_id,
+    int zoom_level,
+    base::OnceCallback<void(blink::mojom::CapturedSurfaceControlResult)>
+        callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DeviceRequest* const request = FindRequestByVideoSessionId(session_id);
+  if (!request) {
+    std::move(callback).Run(blink::mojom::CapturedSurfaceControlResult::
+                                kCapturedSurfaceNotFoundError);
+    return;
+  }
+  if (request->requesting_render_frame_host_id != capturer_rfh_id) {
+    std::move(callback).Run(
+        blink::mojom::CapturedSurfaceControlResult::kUnknownError);
+    return;
+  }
+
+  CapturedSurfaceController* const controller =
+      request->captured_surface_controller();
+  if (!controller) {
+    std::move(callback).Run(
+        blink::mojom::CapturedSurfaceControlResult::kUnknownError);
+    return;
+  }
+
+  controller->SetZoomLevel(zoom_level, std::move(callback));
+}
+
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 void MediaStreamManager::RegisterDispatcherHost(
     std::unique_ptr<blink::mojom::MediaStreamDispatcherHost> host,
@@ -4031,7 +4386,7 @@ void MediaStreamManager::SubscribeToPermissionControllerOnUIThread(
   if (is_audio_request) {
     // It is safe to bind base::Unretained(this) because MediaStreamManager is
     // owned by BrowserMainLoop.
-    audio_subscription_id = controller->SubscribePermissionStatusChange(
+    audio_subscription_id = controller->SubscribeToPermissionStatusChange(
         blink::PermissionType::AUDIO_CAPTURE,
         /*render_process_host=*/nullptr,
         RenderFrameHost::FromID(requesting_render_frame_host_id), origin,
@@ -4044,7 +4399,7 @@ void MediaStreamManager::SubscribeToPermissionControllerOnUIThread(
   if (is_video_request) {
     // It is safe to bind base::Unretained(this) because MediaStreamManager is
     // owned by BrowserMainLoop.
-    video_subscription_id = controller->SubscribePermissionStatusChange(
+    video_subscription_id = controller->SubscribeToPermissionStatusChange(
         blink::PermissionType::VIDEO_CAPTURE,
         /*render_process_host=*/nullptr,
         RenderFrameHost::FromID(requesting_render_frame_host_id), origin,
@@ -4104,8 +4459,8 @@ void MediaStreamManager::UnsubscribeFromPermissionControllerOnUIThread(
     return;
   }
 
-  controller->UnsubscribePermissionStatusChange(audio_subscription_id);
-  controller->UnsubscribePermissionStatusChange(video_subscription_id);
+  controller->UnsubscribeFromPermissionStatusChange(audio_subscription_id);
+  controller->UnsubscribeFromPermissionStatusChange(video_subscription_id);
 }
 
 void MediaStreamManager::PermissionChangedCallback(
@@ -4238,7 +4593,8 @@ std::unique_ptr<MediaStreamUIProxy> MediaStreamManager::MakeFakeUIProxy(
         request->audio_type() == MediaStreamType::DISPLAY_AUDIO_CAPTURE,
         request->requesting_render_frame_host_id,
         request->stream_controls().preferred_display_surface,
-        request->stream_controls().exclude_monitor_type_surfaces);
+        request->stream_controls().exclude_monitor_type_surfaces,
+        fake_ui_factory_captured_tab_id_);
   } else if (request->video_type() ==
              MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
     // Cache the |label| in the device name field, for unit test purpose only.

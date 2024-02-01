@@ -13,8 +13,11 @@
 #include "base/functional/callback.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/ime/ash/input_method_util.h"
 
 class PrefService;
@@ -168,6 +171,10 @@ using OnUpdatePacksForOobeCallback =
 // This class manages all Language Packs and their dependencies (called Base
 // Packs) on the device.
 // This is a Singleton and needs to be accessed via Get().
+//
+// Sequencing: This class is sequence-checked so all accesses to it - non-static
+// methods, `Initialise()` and `Shutdown()` - should be done on the same
+// sequence. This may be overly strict, see b/319906094 for more details.
 class LanguagePackManager : public DlcserviceClient::Observer {
  public:
   // Observer of Language Packs.
@@ -236,6 +243,9 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   static void UpdatePacksForOobe(const std::string& locale,
                                  OnUpdatePacksForOobeCallback callback);
 
+  // Registers itself as an Observer of all the relevant languages Prefs.
+  void ObservePrefs(PrefService* pref_service);
+
   // Adds an observer to the observer list.
   void AddObserver(Observer* observer);
 
@@ -272,7 +282,7 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   // Retrieves the list of installed DLCs and updates Packs accordingly.
   // This function should be called when LPM initializes and then each time
   // Prefs change.
-  static void CheckAndUpdateDlcsForInputMethods(PrefService* prefs);
+  static void CheckAndUpdateDlcsForInputMethods(PrefService* pref_service);
 
   // DlcserviceClient::Observer overrides.
   void OnDlcStateChanged(const dlcservice::DlcState& dlc_state) override;
@@ -280,11 +290,15 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   // Notification method called upon change of DLCs state.
   void NotifyPackStateChanged(std::string_view feature_id,
                               std::string_view locale,
-                              const dlcservice::DlcState& dlc_state);
+                              const dlcservice::DlcState& dlc_state)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::ObserverList<Observer> observers_;
   base::ScopedObservation<DlcserviceClient, DlcserviceClient::Observer> obs_{
       this};
+  PrefChangeRegistrar pref_change_registrar_;
 };
 
 }  // namespace ash::language_packs

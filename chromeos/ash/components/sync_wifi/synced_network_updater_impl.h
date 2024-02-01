@@ -17,9 +17,11 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace ash::sync_wifi {
-
+namespace cross_device {
 class TimerFactory;
+}  // namespace cross_device
+
+namespace ash::sync_wifi {
 
 // Implementation of SyncedNetworkUpdater. This class takes add/update/delete
 // requests from the sync backend and applies them to the local network stack
@@ -32,7 +34,7 @@ class SyncedNetworkUpdaterImpl
   SyncedNetworkUpdaterImpl(
       std::unique_ptr<PendingNetworkConfigurationTracker> tracker,
       chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config,
-      TimerFactory* timer_factory,
+      cross_device::TimerFactory* timer_factory,
       SyncedNetworkMetricsLogger* metrics_logger);
   ~SyncedNetworkUpdaterImpl() override;
 
@@ -83,18 +85,17 @@ class SyncedNetworkUpdaterImpl
                              bool success);
 
   std::unique_ptr<PendingNetworkConfigurationTracker> tracker_;
-  raw_ptr<chromeos::network_config::mojom::CrosNetworkConfig,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<chromeos::network_config::mojom::CrosNetworkConfig, DanglingUntriaged>
       cros_network_config_;
   mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
       cros_network_config_observer_receiver_{this};
   std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
       networks_;
-  raw_ptr<TimerFactory, ExperimentalAsh> timer_factory_;
+  raw_ptr<cross_device::TimerFactory> timer_factory_;
   base::flat_map<std::string, std::unique_ptr<base::OneShotTimer>>
       change_guid_to_timer_map_;
   base::flat_map<std::string, int> network_guid_to_updates_counter_;
-  raw_ptr<SyncedNetworkMetricsLogger, ExperimentalAsh> metrics_logger_;
+  raw_ptr<SyncedNetworkMetricsLogger> metrics_logger_;
 
   base::WeakPtrFactory<SyncedNetworkUpdaterImpl> weak_ptr_factory_{this};
 };

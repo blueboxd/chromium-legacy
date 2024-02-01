@@ -28,6 +28,10 @@ namespace syncer {
 class ModelTypeChangeProcessor;
 }  // namespace syncer
 
+namespace cross_device {
+class TimerFactory;
+}  // namespace cross_device
+
 namespace ash {
 
 class NetworkConfigurationHandler;
@@ -41,7 +45,6 @@ const char kHasFixedAutoconnect[] = "sync_wifi.has_fixed_autoconnect";
 class LocalNetworkCollector;
 class SyncedNetworkMetricsLogger;
 class SyncedNetworkUpdater;
-class TimerFactory;
 
 // Receives updates to network configurations from the Chrome sync back end and
 // from the system network stack and keeps both lists in sync.
@@ -54,7 +57,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
       LocalNetworkCollector* local_network_collector,
       NetworkConfigurationHandler* network_configuration_handler,
       SyncedNetworkMetricsLogger* metrics_recorder,
-      TimerFactory* timer_factory,
+      cross_device::TimerFactory* timer_factory,
       PrefService* pref_service,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       syncer::OnceModelTypeStoreFactory create_store_callback);
@@ -160,16 +163,12 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
   // the server and after local changes have been committed to the server.
   std::unique_ptr<syncer::ModelTypeStore> store_;
 
-  raw_ptr<SyncedNetworkUpdater, DanglingUntriaged | ExperimentalAsh>
-      synced_network_updater_;
-  raw_ptr<LocalNetworkCollector, DanglingUntriaged | ExperimentalAsh>
-      local_network_collector_;
-  raw_ptr<NetworkConfigurationHandler, ExperimentalAsh>
-      network_configuration_handler_;
-  raw_ptr<SyncedNetworkMetricsLogger, DanglingUntriaged | ExperimentalAsh>
-      metrics_recorder_;
-  raw_ptr<TimerFactory, DanglingUntriaged | ExperimentalAsh> timer_factory_;
-  raw_ptr<PrefService, DanglingUntriaged | ExperimentalAsh> pref_service_;
+  raw_ptr<SyncedNetworkUpdater, DanglingUntriaged> synced_network_updater_;
+  raw_ptr<LocalNetworkCollector, DanglingUntriaged> local_network_collector_;
+  raw_ptr<NetworkConfigurationHandler> network_configuration_handler_;
+  raw_ptr<SyncedNetworkMetricsLogger, DanglingUntriaged> metrics_recorder_;
+  raw_ptr<cross_device::TimerFactory, DanglingUntriaged> timer_factory_;
+  raw_ptr<PrefService, DanglingUntriaged> pref_service_;
   base::WeakPtr<NetworkMetadataStore> network_metadata_store_;
 
   base::WeakPtrFactory<WifiConfigurationBridge> weak_ptr_factory_{this};

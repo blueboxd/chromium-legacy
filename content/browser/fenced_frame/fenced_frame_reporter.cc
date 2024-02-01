@@ -7,6 +7,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -20,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/types/pass_key.h"
@@ -55,7 +57,6 @@
 #include "services/network/public/mojom/attribution.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
@@ -153,12 +154,64 @@ std::string AutomaticBeaconTypeAsString(
   }
 }
 
+blink::FencedFrameBeaconReportingResult CreateBeaconReportingResultEnum(
+    const FencedFrameReporter::DestinationVariant& event_variant,
+    std::optional<int> http_response_code) {
+  // Unfortunately absl::visit can't make this more compact, because each
+  // combination of results produces a unique output enum.
+  if (absl::holds_alternative<DestinationEnumEvent>(event_variant)) {
+    if (!http_response_code.has_value()) {
+      return blink::FencedFrameBeaconReportingResult::kDestinationEnumInvalid;
+    }
+    if (*http_response_code != 200) {
+      return blink::FencedFrameBeaconReportingResult::kDestinationEnumFailure;
+    }
+    return blink::FencedFrameBeaconReportingResult::kDestinationEnumSuccess;
+  }
+
+  if (absl::holds_alternative<DestinationURLEvent>(event_variant)) {
+    if (!http_response_code.has_value()) {
+      return blink::FencedFrameBeaconReportingResult::kDestinationUrlInvalid;
+    }
+    if (*http_response_code != 200) {
+      return blink::FencedFrameBeaconReportingResult::kDestinationUrlFailure;
+    }
+    return blink::FencedFrameBeaconReportingResult::kDestinationUrlSuccess;
+  }
+
+  if (absl::holds_alternative<AutomaticBeaconEvent>(event_variant)) {
+    if (!http_response_code.has_value()) {
+      return blink::FencedFrameBeaconReportingResult::kAutomaticInvalid;
+    }
+    if (*http_response_code != 200) {
+      return blink::FencedFrameBeaconReportingResult::kAutomaticFailure;
+    }
+    return blink::FencedFrameBeaconReportingResult::kAutomaticSuccess;
+  }
+
+  return blink::FencedFrameBeaconReportingResult::kUnknownResult;
+}
+
+void RecordBeaconReportingResultHistogram(
+    const FencedFrameReporter::DestinationVariant& event_variant,
+    net::HttpResponseHeaders* headers) {
+  std::optional<int> http_response_code;
+
+  if (headers != nullptr) {
+    http_response_code = headers->response_code();
+  }
+
+  base::UmaHistogramEnumeration(
+      blink::kFencedFrameBeaconReportingHttpResultUMA,
+      CreateBeaconReportingResultEnum(event_variant, http_response_code));
+}
+
 }  // namespace
 
 FencedFrameReporter::PendingEvent::PendingEvent(
     const DestinationVariant& event,
     const url::Origin& request_initiator,
-    absl::optional<AttributionReportingData> attribution_reporting_data,
+    std::optional<AttributionReportingData> attribution_reporting_data,
     int initiator_frame_tree_node_id)
     : event(event),
       request_initiator(request_initiator),
@@ -178,8 +231,8 @@ FencedFrameReporter::PendingEvent& FencedFrameReporter::PendingEvent::operator=(
 FencedFrameReporter::PendingEvent::~PendingEvent() = default;
 
 FencedFrameReporter::ReportingDestinationInfo::ReportingDestinationInfo(
-    absl::optional<url::Origin> reporting_url_declarer_origin,
-    absl::optional<ReportingUrlMap> reporting_url_map)
+    std::optional<url::Origin> reporting_url_declarer_origin,
+    std::optional<ReportingUrlMap> reporting_url_map)
     : reporting_url_declarer_origin(reporting_url_declarer_origin),
       reporting_url_map(std::move(reporting_url_map)) {}
 
@@ -196,7 +249,7 @@ FencedFrameReporter::ReportingDestinationInfo::operator=(
 scoped_refptr<FencedFrameReporter> FencedFrameReporter::CreateForSharedStorage(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     BrowserContext* browser_context,
-    const absl::optional<url::Origin>& reporting_url_declarer_origin,
+    const std::optional<url::Origin>& reporting_url_declarer_origin,
     ReportingUrlMap reporting_url_map,
     const url::Origin& main_frame_origin) {
   // `private_aggregation_manager_` and `winner_origin_`
@@ -220,8 +273,8 @@ scoped_refptr<FencedFrameReporter> FencedFrameReporter::CreateForFledge(
     PrivateAggregationManager* private_aggregation_manager,
     const url::Origin& main_frame_origin,
     const url::Origin& winner_origin,
-    const absl::optional<url::Origin>& aggregation_coordinator_origin,
-    const absl::optional<std::vector<url::Origin>>& allowed_reporting_origins) {
+    const std::optional<url::Origin>& aggregation_coordinator_origin,
+    const std::optional<std::vector<url::Origin>>& allowed_reporting_origins) {
   scoped_refptr<FencedFrameReporter> reporter =
       base::MakeRefCounted<FencedFrameReporter>(
           base::PassKey<FencedFrameReporter>(),
@@ -249,9 +302,9 @@ FencedFrameReporter::FencedFrameReporter(
     BrowserContext* browser_context,
     const url::Origin& main_frame_origin,
     PrivateAggregationManager* private_aggregation_manager,
-    const absl::optional<url::Origin>& winner_origin,
-    const absl::optional<url::Origin>& winner_aggregation_coordinator_origin,
-    const absl::optional<std::vector<url::Origin>>& allowed_reporting_origins)
+    const std::optional<url::Origin>& winner_origin,
+    const std::optional<url::Origin>& winner_aggregation_coordinator_origin,
+    const std::optional<std::vector<url::Origin>>& allowed_reporting_origins)
     : url_loader_factory_(std::move(url_loader_factory)),
       attribution_manager_(
           AttributionManager::FromBrowserContext(browser_context)),
@@ -283,9 +336,9 @@ FencedFrameReporter::~FencedFrameReporter() {
 
 void FencedFrameReporter::OnUrlMappingReady(
     blink::FencedFrame::ReportingDestination reporting_destination,
-    const absl::optional<url::Origin>& reporting_url_declarer_origin,
+    const std::optional<url::Origin>& reporting_url_declarer_origin,
     ReportingUrlMap reporting_url_map,
-    absl::optional<ReportingMacros> reporting_ad_macros) {
+    std::optional<ReportingMacros> reporting_ad_macros) {
   auto it = reporting_metadata_.find(reporting_destination);
   DCHECK(it != reporting_metadata_.end());
   DCHECK(!it->second.reporting_url_map);
@@ -319,7 +372,7 @@ bool FencedFrameReporter::SendReport(
     std::string& error_message,
     blink::mojom::ConsoleMessageLevel& console_message_level,
     int initiator_frame_tree_node_id,
-    absl::optional<int64_t> navigation_id) {
+    std::optional<int64_t> navigation_id) {
   DCHECK(request_initiator_frame);
 
   if (reporting_destination ==
@@ -347,7 +400,7 @@ bool FencedFrameReporter::SendReport(
 
   static base::AtomicSequenceNumber unique_id_counter;
 
-  absl::optional<AttributionReportingData> attribution_reporting_data;
+  std::optional<AttributionReportingData> attribution_reporting_data;
 
   const std::string devtools_request_id =
       base::UnguessableToken::Create().ToString();
@@ -376,9 +429,9 @@ bool FencedFrameReporter::SendReport(
   // If the reporting URL map is pending, queue the event.
   NotifyIsBeaconQueued(
       event_variant,
-      /*is_queued=*/it->second.reporting_url_map == absl::nullopt);
+      /*is_queued=*/it->second.reporting_url_map == std::nullopt);
 
-  if (it->second.reporting_url_map == absl::nullopt) {
+  if (it->second.reporting_url_map == std::nullopt) {
     it->second.pending_events.emplace_back(
         event_variant, request_initiator, std::move(attribution_reporting_data),
         initiator_frame_tree_node_id);
@@ -396,7 +449,7 @@ bool FencedFrameReporter::SendReportInternal(
     const DestinationVariant& event_variant,
     blink::FencedFrame::ReportingDestination reporting_destination,
     const url::Origin& request_initiator,
-    const absl::optional<AttributionReportingData>& attribution_reporting_data,
+    const std::optional<AttributionReportingData>& attribution_reporting_data,
     int initiator_frame_tree_node_id,
     std::string& error_message,
     blink::mojom::ConsoleMessageLevel& console_message_level,
@@ -687,7 +740,8 @@ bool FencedFrameReporter::SendReportInternal(
     simple_url_loader_ptr->DownloadHeadersOnly(
         url_loader_factory_.get(),
         base::BindOnce(
-            [](base::WeakPtr<AttributionDataHostManager>
+            [](DestinationVariant event_variant,
+               base::WeakPtr<AttributionDataHostManager>
                    attribution_data_host_manager,
                BeaconId beacon_id,
                network::AttributionReportingRuntimeFeatures
@@ -703,13 +757,16 @@ bool FencedFrameReporter::SendReportInternal(
                         loader->GetFinalURL(), headers.get(),
                         /*is_final_response=*/true);
               }
-
               // Set up DevTools integration for the response.
               devtools_instrumentation::OnFencedFrameReportResponseReceived(
                   initiator_frame_tree_node_id, devtools_request_id,
                   loader->GetFinalURL(), headers);
+
+              // Record UMA metrics for the destination.
+              RecordBeaconReportingResultHistogram(event_variant,
+                                                   headers.get());
             },
-            attribution_data_host_manager->AsWeakPtr(),
+            event_variant, attribution_data_host_manager->AsWeakPtr(),
             attribution_reporting_data->beacon_id,
             attribution_reporting_data->attribution_reporting_runtime_features,
             std::move(simple_url_loader), initiator_frame_tree_node_id,
@@ -719,7 +776,8 @@ bool FencedFrameReporter::SendReportInternal(
     simple_url_loader_ptr->DownloadHeadersOnly(
         url_loader_factory_.get(),
         base::BindOnce(
-            [](std::unique_ptr<network::SimpleURLLoader> loader,
+            [](DestinationVariant event_variant,
+               std::unique_ptr<network::SimpleURLLoader> loader,
                int initiator_frame_tree_node_id,
                std::string devtools_request_id,
                scoped_refptr<net::HttpResponseHeaders> headers) {
@@ -727,9 +785,13 @@ bool FencedFrameReporter::SendReportInternal(
               devtools_instrumentation::OnFencedFrameReportResponseReceived(
                   initiator_frame_tree_node_id, devtools_request_id,
                   loader->GetFinalURL(), headers);
+
+              // Record UMA metrics for the destination.
+              RecordBeaconReportingResultHistogram(event_variant,
+                                                   headers.get());
             },
-            std::move(simple_url_loader), initiator_frame_tree_node_id,
-            devtools_request_id));
+            event_variant, std::move(simple_url_loader),
+            initiator_frame_tree_node_id, devtools_request_id));
   }
 
   return true;
@@ -874,8 +936,7 @@ FencedFrameReporter::GetPrivateAggregationEventMapForTesting() {
 }
 
 void FencedFrameReporter::NotifyFencedFrameReportingBeaconFailed(
-    const absl::optional<AttributionReportingData>&
-        attribution_reporting_data) {
+    const std::optional<AttributionReportingData>& attribution_reporting_data) {
   if (!attribution_reporting_data.has_value()) {
     return;
   }

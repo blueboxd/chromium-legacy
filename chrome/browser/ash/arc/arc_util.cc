@@ -211,9 +211,10 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
   }
 
   if (base::FeatureList::IsEnabled(kUnaffiliatedDeviceArcRestriction)) {
-    if (policy_util::IsAccountManaged(profile) && !user->IsAffiliated() &&
+    if (!user->IsAffiliated() &&
         !(profile->GetPrefs()->GetBoolean(
-            prefs::kUnaffiliatedDeviceArcAllowed))) {
+            prefs::kUnaffiliatedDeviceArcAllowed)) &&
+        policy_util::IsAccountManaged(profile)) {
       VLOG_IF(1, should_report_reason)
         << "ARC disallowed for unaffiliated users";
       return false;
@@ -327,8 +328,8 @@ bool IsArcBlockedDueToIncompatibleFileSystem(const Profile* profile) {
   // for ARC kiosk as migration to ext4 should always be triggered.
   // Without this check it fails to start after browser crash as
   // compatibility info is stored in RAM.
-  if (user && (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT ||
-               user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP)) {
+  if (user && (user->GetType() == user_manager::UserType::kPublicAccount ||
+               user->GetType() == user_manager::UserType::kArcKioskApp)) {
     return false;
   }
 

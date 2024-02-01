@@ -1,7 +1,6 @@
 "use strict";
 
 (function() {
-    const is_test_context = window.__wptrunner_message_queue !== undefined;
     const pending = new Map();
 
     let result = null;
@@ -15,7 +14,7 @@
             return;
         }
 
-        if (is_test_context && data.type === "testdriver-command") {
+        if (is_test_context() && data.type === "testdriver-command") {
             const command = data.message;
             const ctx_id = command.cmd_id;
             delete command.cmd_id;
@@ -37,11 +36,15 @@
             pending.delete(cmd_id);
             const resolver = data.status === "success" ? on_success : on_failure;
             resolver(data);
-            if (is_test_context) {
+            if (is_test_context()) {
                 window.__wptrunner_process_next_event();
             }
         }
     });
+
+    function is_test_context() {
+      return window.__wptrunner_message_queue !== undefined;
+    }
 
     // Code copied from /common/utils.js
     function rand_int(bits) {
@@ -67,7 +70,7 @@
     }
 
     function get_window_id(win) {
-        if (win == window && is_test_context) {
+        if (win == window && is_test_context()) {
             return null;
         }
         if (!win.__wptrunner_id) {
@@ -130,7 +133,7 @@
         if (action_msg.context) {
           action_msg.context = get_window_id(action_msg.context);
         }
-        if (is_test_context) {
+        if (is_test_context()) {
             cmd_id = window.__wptrunner_message_queue.push(action_msg);
         } else {
             if (testharness_context === null) {
@@ -204,6 +207,10 @@
         return create_action("set_window_rect", {rect, context});
     };
 
+    window.test_driver_internal.get_window_rect = function(context=null) {
+        return create_action("get_window_rect", {context});
+    };
+
     window.test_driver_internal.send_keys = function(element, keys) {
         const selector = get_selector(element);
         const context = get_context(element);
@@ -269,12 +276,16 @@
         return create_action("set_spc_transaction_mode", {mode, context});
     };
 
+    window.test_driver_internal.set_rph_registration_mode = function(mode, context = null) {
+        return create_action("set_rph_registration_mode", {mode, context});
+    };
+
     window.test_driver_internal.cancel_fedcm_dialog = function(context = null) {
         return create_action("cancel_fedcm_dialog", {context});
     };
 
-    window.test_driver_internal.confirm_idp_login = function(context = null) {
-        return create_action("confirm_idp_login", {context});
+    window.test_driver_internal.click_fedcm_dialog_button = function(dialog_button, context = null) {
+        return create_action("click_fedcm_dialog_button", {dialog_button, context});
     };
 
     window.test_driver_internal.select_fedcm_account = function(account_index, context = null) {

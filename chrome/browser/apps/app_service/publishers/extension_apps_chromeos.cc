@@ -243,8 +243,11 @@ void ExtensionAppsChromeOs::Initialize() {
                                 ->GetMediaStreamCaptureIndicator()
                                 .get());
 
-  notification_display_service_.Observe(
-      NotificationDisplayServiceFactory::GetForProfile(profile()));
+  // NotificationDisplayService could be null in some tests.
+  if (auto* notification_display_service =
+          NotificationDisplayServiceFactory::GetForProfile(profile())) {
+    notification_display_service_.Observe(notification_display_service);
+  }
 
   profile_pref_change_registrar_.Init(profile()->GetPrefs());
   profile_pref_change_registrar_.Add(
@@ -314,7 +317,7 @@ void ExtensionAppsChromeOs::LaunchAppWithArgumentsCallback(
     bool should_open) {
   // Exit early, while notifying, in case `Don't open` was chosen.
   if (!should_open) {
-    std::move(callback).Run(LaunchResult(State::FAILED));
+    std::move(callback).Run(LaunchResult(State::kFailed));
     return;
   }
 
@@ -333,7 +336,7 @@ void ExtensionAppsChromeOs::LaunchAppWithIntent(const std::string& app_id,
   // `extension` is required.
   const auto* extension = MaybeGetExtension(app_id);
   if (!extension) {
-    std::move(callback).Run(LaunchResult(State::FAILED));
+    std::move(callback).Run(LaunchResult(State::kFailed));
     return;
   }
 
@@ -345,7 +348,7 @@ void ExtensionAppsChromeOs::LaunchAppWithIntent(const std::string& app_id,
     // This vector cannot be empty because this is reached after explicitly
     // opening one or more files.
     if (base_names.empty()) {
-      std::move(callback).Run(LaunchResult(State::FAILED));
+      std::move(callback).Run(LaunchResult(State::kFailed));
       return;
     }
 
@@ -780,8 +783,9 @@ bool ExtensionAppsChromeOs::IsBlocklisted(const std::string& app_id) {
   // In the App Service world, there should be a unique app publisher for any
   // given app. In this case, the ArcApps publisher publishes the Play Store
   // app, and the ExtensionApps publisher does not.
-  if (app_id == arc::kPlayStoreAppId)
+  if (app_id == arc::kPlayStoreAppId) {
     return true;
+  }
 
   // If lacros chrome apps is enabled, a small list of extension apps or
   // extensions on ash extension keeplist is allowed to run in both ash and
@@ -985,7 +989,7 @@ void ExtensionAppsChromeOs::OnSizeCalculated(const std::string& app_id,
   app->app_size_in_bytes = size;
   apps.push_back(std::move(app));
   AppPublisher::Publish(std::move(apps), app_type(),
-                        /*should_notify_initialized=*/true);
+                        /*should_notify_initialized=*/false);
 }
 
 IconEffects ExtensionAppsChromeOs::GetIconEffects(

@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_exclusion.h"
@@ -55,6 +57,7 @@
 #include "ui/color/color_provider.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 namespace content {
 class BrowserContext;
@@ -97,8 +100,9 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
     if (auto_cancel_) {
       listener_->FileSelectionCanceled(params);
     } else {
-      listener_->FileSelected(base::FilePath(FILE_PATH_LITERAL("/test/path")),
-                              file_type_index, params);
+      base::FilePath path(FILE_PATH_LITERAL("/test/path"));
+      listener_->FileSelected(ui::SelectedFileInfo(path), file_type_index,
+                              params);
     }
   }
   // Pure virtual methods that need to be implemented.
@@ -248,9 +252,8 @@ std::unique_ptr<TestingProfile> MakeTestingProfile(
 class CustomizeChromePageHandlerTest : public testing::Test {
  public:
   CustomizeChromePageHandlerTest()
-      : profile_(MakeTestingProfile(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_))),
+      : profile_(
+            MakeTestingProfile(test_url_loader_factory_.GetSafeWeakWrapper())),
         mock_ntp_custom_background_service_(profile_.get()),
         mock_ntp_background_service_(static_cast<MockNtpBackgroundService*>(
             NtpBackgroundServiceFactory::GetForProfile(profile_.get()))),
@@ -313,6 +316,7 @@ class CustomizeChromePageHandlerTest : public testing::Test {
  protected:
   // NOTE: The initialization order of these members matters.
   content::BrowserTaskEnvironment task_environment_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<TestingProfile> profile_;
   testing::NiceMock<MockNtpCustomBackgroundService>
       mock_ntp_custom_background_service_;
@@ -320,7 +324,6 @@ class CustomizeChromePageHandlerTest : public testing::Test {
   // #addr-of
   RAW_PTR_EXCLUSION NtpCustomBackgroundServiceObserver*
       ntp_custom_background_service_observer_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
   raw_ptr<MockNtpBackgroundService> mock_ntp_background_service_;
   content::TestWebContentsFactory web_contents_factory_;
   raw_ptr<content::WebContents> web_contents_;

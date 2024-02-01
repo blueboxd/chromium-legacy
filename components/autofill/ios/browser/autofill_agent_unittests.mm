@@ -5,6 +5,7 @@
 #import "components/autofill/ios/browser/autofill_agent.h"
 
 #include "base/apple/bundle_locations.h"
+#import "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
@@ -15,6 +16,7 @@
 #import "base/test/test_timeouts.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/ui/mock_autofill_popup_delegate.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
@@ -47,9 +49,9 @@
 using autofill::AutofillJavaScriptFeature;
 using autofill::FieldDataManager;
 using autofill::FieldRendererId;
+using autofill::FillingProduct;
 using autofill::FormRendererId;
 using autofill::PopupItemId;
-using autofill::PopupType;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 @interface AutofillAgent (Testing)
@@ -127,8 +129,8 @@ class AutofillAgentTests : public web::WebTest {
   // frames.
   autofill::TestAutofillClient client_;
   web::FakeWebState fake_web_state_;
-  web::FakeWebFrame* fake_main_frame_ = nullptr;
-  web::FakeWebFramesManager* fake_web_frames_manager_ = nullptr;
+  raw_ptr<web::FakeWebFrame> fake_main_frame_ = nullptr;
+  raw_ptr<web::FakeWebFramesManager> fake_web_frames_manager_ = nullptr;
   AutofillAgent* autofill_agent_;
 };
 
@@ -381,9 +383,9 @@ TEST_F(AutofillAgentTests, showAutofillPopup_ShowVirtualCards) {
       autofill::test::NextMonth() + "/" + autofill::test::NextYear().substr(2));
   // Mock different popup types.
   testing::NiceMock<autofill::MockAutofillPopupDelegate> mock_delegate;
-  EXPECT_CALL(mock_delegate, GetPopupType)
-      .WillOnce(testing::Return(PopupType::kCreditCards))
-      .WillOnce(testing::Return(PopupType::kCreditCards));
+  EXPECT_CALL(mock_delegate, GetMainFillingProduct)
+      .WillOnce(testing::Return(FillingProduct::kCreditCard))
+      .WillOnce(testing::Return(FillingProduct::kCreditCard));
 
   const std::string expiration_date_label = base::StrCat(
       {autofill::test::NextMonth(), "/", autofill::test::NextYear().substr(2)});
@@ -469,10 +471,10 @@ TEST_F(AutofillAgentTests,
 
   // Mock different popup types.
   testing::NiceMock<autofill::MockAutofillPopupDelegate> mock_delegate;
-  EXPECT_CALL(mock_delegate, GetPopupType)
-      .WillOnce(testing::Return(PopupType::kCreditCards))
-      .WillOnce(testing::Return(PopupType::kAddresses))
-      .WillOnce(testing::Return(PopupType::kUnspecified));
+  EXPECT_CALL(mock_delegate, GetMainFillingProduct)
+      .WillOnce(testing::Return(FillingProduct::kCreditCard))
+      .WillOnce(testing::Return(FillingProduct::kAddress))
+      .WillOnce(testing::Return(FillingProduct::kNone));
   // Initialize suggestion.
   std::vector<autofill::Suggestion> autofillSuggestions = {
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kCardVisa,
@@ -523,8 +525,8 @@ TEST_F(AutofillAgentTests, showAutofillPopup_EmptyIconInCreditCardSuggestion) {
   ASSERT_NE(nil, completion_handler_icon);
 
   testing::NiceMock<autofill::MockAutofillPopupDelegate> mock_delegate;
-  EXPECT_CALL(mock_delegate, GetPopupType)
-      .WillRepeatedly(testing::Return(PopupType::kCreditCards));
+  EXPECT_CALL(mock_delegate, GetMainFillingProduct)
+      .WillRepeatedly(testing::Return(FillingProduct::kCreditCard));
 
   std::vector<autofill::Suggestion> autofillSuggestions = {
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
@@ -610,8 +612,8 @@ TEST_F(AutofillAgentTests,
   gfx::Image custom_icon = gfx::test::CreateImage(5, 5);
 
   testing::NiceMock<autofill::MockAutofillPopupDelegate> mock_delegate;
-  EXPECT_CALL(mock_delegate, GetPopupType)
-      .WillRepeatedly(testing::Return(PopupType::kCreditCards));
+  EXPECT_CALL(mock_delegate, GetMainFillingProduct)
+      .WillRepeatedly(testing::Return(FillingProduct::kCreditCard));
 
   // Completion handler to retrieve suggestions.
   __block UIImage* completion_handler_icon = nil;

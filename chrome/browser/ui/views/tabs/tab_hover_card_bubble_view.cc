@@ -96,8 +96,9 @@ std::unique_ptr<views::Label> CreateAlertView(const TabAlertState& state) {
 gfx::Size GetPreviewImageSize(gfx::Size preview_size,
                               gfx::Size preferred_size) {
   DCHECK(!preferred_size.IsEmpty());
-  if (preview_size.IsEmpty())
+  if (preview_size.IsEmpty()) {
     return preview_size;
+  }
   const float preview_aspect_ratio =
       static_cast<float>(preview_size.width()) / preview_size.height();
   const float preferred_aspect_ratio =
@@ -111,8 +112,9 @@ gfx::Size GetPreviewImageSize(gfx::Size preview_size,
   // tuned).
   constexpr float kMinStretchRatio = 0.667f;
   constexpr float kMaxStretchRatio = 1.5f;
-  if (ratio >= kMinStretchRatio && ratio <= kMaxStretchRatio)
+  if (ratio >= kMinStretchRatio && ratio <= kMaxStretchRatio) {
     return preferred_size;
+  }
   return preview_size;
 }
 }  // namespace
@@ -125,8 +127,9 @@ gfx::Size GetPreviewImageSize(gfx::Size preview_size,
 class TabHoverCardBubbleView::ThumbnailView
     : public views::View,
       public views::AnimationDelegateViews {
+  METADATA_HEADER(ThumbnailView, views::View)
+
  public:
-  METADATA_HEADER(ThumbnailView);
   explicit ThumbnailView(TabHoverCardBubbleView* bubble_view)
       : AnimationDelegateViews(this),
         bubble_view_(bubble_view),
@@ -165,15 +168,17 @@ class TabHoverCardBubbleView::ThumbnailView
   // Clears the preview image and replaces it with a placeholder image. The old
   // image will be faded out.
   void SetPlaceholderImage() {
-    if (image_type_ == ImageType::kPlaceholder)
+    if (image_type_ == ImageType::kPlaceholder) {
       return;
+    }
 
     // Color provider may be null if there is no associated widget. In that case
     // there is nothing to render, and we can't get default colors to render
     // with anyway, so bail out.
     const auto* const color_provider = GetColorProvider();
-    if (!color_provider)
+    if (!color_provider) {
       return;
+    }
 
     StartFadeOut();
 
@@ -194,8 +199,9 @@ class TabHoverCardBubbleView::ThumbnailView
   }
 
   void ClearImage() {
-    if (image_type_ == ImageType::kNone)
+    if (image_type_ == ImageType::kNone) {
       return;
+    }
 
     StartFadeOut();
     SetImage(target_tab_image_, gfx::ImageSkia(), ImageType::kNone);
@@ -283,11 +289,13 @@ class TabHoverCardBubbleView::ThumbnailView
     // ColorProvider is needed for fading out placeholder images. (Note that
     // GetColorProvider() returns nullptr if there is no widget.)
     // See: crbug.com/1246914
-    if (!GetVisible() || !GetColorProvider())
+    if (!GetVisible() || !GetColorProvider()) {
       return;
+    }
 
-    if (!GetPreviewImageCrossfadeStart().has_value())
+    if (!GetPreviewImageCrossfadeStart().has_value()) {
       return;
+    }
 
     gfx::ImageSkia old_image = target_tab_image_->GetImage();
 
@@ -297,8 +305,9 @@ class TabHoverCardBubbleView::ThumbnailView
       // underneath.
       const double current_value =
           image_transition_animation_.GetCurrentValue();
-      if (current_value <= 0.5)
+      if (current_value <= 0.5) {
         return;
+      }
 
       // Currently we have:
       //  - old preview at `current_value` opacity
@@ -407,9 +416,9 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     footer_view_ = AddChildView(std::make_unique<FooterView>());
     footer_view_->SetProperty(
         views::kFlexBehaviorKey,
-        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
-                                 views::MaximumFlexSizeRule::kScaleToMaximum)
-            .WithOrder(2));
+        views::FlexSpecification(
+            footer_view_->flex_layout()->GetDefaultFlexRule())
+            .WithWeight(0));
   }
 
   // Set up layout.
@@ -558,11 +567,12 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
             : 0;
     show_footer =
         show_footer || show_discard_status || tab_memory_usage_in_bytes > 0;
-    const int hover_card_width = views::View::GetContentsBounds().width();
-    footer_view_->SetAlertData({alert_state_, hover_card_width});
+    footer_view_->SetAlertData({alert_state_});
+
     footer_view_->SetPerformanceData(
         {show_discard_status, tab_data.discarded_memory_savings_in_bytes,
-         tab_memory_usage_in_bytes, hover_card_width});
+         tab_memory_usage_in_bytes});
+
   } else {
     if (alert_state_ != old_alert_state) {
       std::unique_ptr<views::Label> alert_label =
@@ -613,8 +623,9 @@ views::View* TabHoverCardBubbleView::GetThumbnailViewForTesting() {
 std::optional<double> TabHoverCardBubbleView::GetPreviewImageCrossfadeStart() {
   // For consistency, always bail out with a "don't crossfade" response if
   // animations are disabled.
-  if (!TabHoverCardController::UseAnimations())
+  if (!TabHoverCardController::UseAnimations()) {
     return std::nullopt;
+  }
 
   static const double start_percent = base::GetFieldTrialParamByFeatureAsDouble(
       features::kTabHoverCardImages,
@@ -625,11 +636,13 @@ std::optional<double> TabHoverCardBubbleView::GetPreviewImageCrossfadeStart() {
 }
 
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
-  gfx::Size preferred_size = GetLayoutManager()->GetPreferredSize(this);
-  preferred_size.set_width(tab_style_->GetPreviewImageSize().width());
+  const int width = tab_style_->GetPreviewImageSize().width();
+  const int height =
+      GetLayoutManager()->GetPreferredHeightForWidth(this, width);
+  const gfx::Size preferred_size(width, height);
   DCHECK(!preferred_size.IsEmpty());
   return preferred_size;
 }
 
-BEGIN_METADATA(TabHoverCardBubbleView, views::BubbleDialogDelegateView)
+BEGIN_METADATA(TabHoverCardBubbleView)
 END_METADATA

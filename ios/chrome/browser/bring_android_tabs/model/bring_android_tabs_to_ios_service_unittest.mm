@@ -30,6 +30,7 @@
 #import "components/sync_sessions/session_sync_test_helper.h"
 #import "components/sync_sessions/synced_session.h"
 #import "ios/chrome/browser/bring_android_tabs/model/metrics.h"
+#import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/segmentation_platform/model/segmentation_platform_config.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -134,10 +135,12 @@ class MockOpenTabsUIDelegate : public sync_sessions::OpenTabsUIDelegate {
     create_duplicates_ = false;
   }
 
-  MOCK_METHOD(bool,
-              GetAllForeignSessions,
-              (std::vector<const sync_sessions::SyncedSession*>*),
-              (override));
+  MOCK_METHOD(
+      bool,
+      GetAllForeignSessions,
+      (std::vector<
+          vector_experimental_raw_ptr<const sync_sessions::SyncedSession>>*),
+      (override));
 
   MOCK_METHOD(bool,
               GetForeignSessionTabs,
@@ -194,7 +197,8 @@ class MockOpenTabsUIDelegate : public sync_sessions::OpenTabsUIDelegate {
   void MockForeignSessions() {
     ON_CALL(*this, GetAllForeignSessions)
         .WillByDefault(
-            [this](std::vector<const sync_sessions::SyncedSession*>* sessions) {
+            [this](std::vector<raw_ptr<const sync_sessions::SyncedSession,
+                                       VectorExperimental>>* sessions) {
               for (size_t i = 0; i < kPhoneSessionCount; i++) {
                 sessions->push_back(
                     Session(sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
@@ -242,6 +246,9 @@ class MockOpenTabsUIDelegate : public sync_sessions::OpenTabsUIDelegate {
 class BringAndroidTabsToIOSServiceTest : public PlatformTest {
  protected:
   BringAndroidTabsToIOSServiceTest() : PlatformTest() {
+    FirstRun::RemoveSentinel();
+    FirstRun::ClearStateForTesting();
+
     browser_state_ = TestChromeBrowserState::Builder().Build();
     browser_ = std::make_unique<TestBrowser>(browser_state_.get());
     device_info_tracker_ = std::make_unique<syncer::FakeDeviceInfoTracker>();

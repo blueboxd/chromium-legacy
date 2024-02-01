@@ -23,6 +23,7 @@
 #include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/geometry/size.h"
 
 class Profile;
 
@@ -40,12 +41,14 @@ const base::TimeDelta ICON_DOWNLOAD_RETRY_DELAY = base::Seconds(5);
 
 InstallPlaceholderJob::InstallPlaceholderJob(
     Profile* profile,
+    base::Value::Dict& debug_value,
     const ExternalInstallOptions& install_options,
     InstallAndReplaceCallback callback,
     SharedWebContentsWithAppLock& lock)
     : profile_(*profile),
+      debug_value_(debug_value),
       // For placeholder installs, the install_url is treated as the start_url.
-      app_id_(GenerateAppId(/*manifest_id_path=*/absl::nullopt,
+      app_id_(GenerateAppId(/*manifest_id_path=*/std::nullopt,
                             install_options.install_url)),
       lock_(lock),
       install_options_(install_options),
@@ -54,8 +57,8 @@ InstallPlaceholderJob::InstallPlaceholderJob(
       data_retriever_(WebAppProvider::GetForWebApps(&profile_.get())
                           ->web_contents_manager()
                           .CreateDataRetriever()) {
-  debug_value_.Set("external_install_options", install_options.AsDebugValue());
-  debug_value_.Set("app_id", app_id_);
+  debug_value_->Set("external_install_options", install_options.AsDebugValue());
+  debug_value_->Set("app_id", app_id_);
 }
 
 InstallPlaceholderJob::~InstallPlaceholderJob() = default;
@@ -68,17 +71,13 @@ void InstallPlaceholderJob::Start() {
                                       weak_factory_.GetWeakPtr()));
 }
 
-base::Value InstallPlaceholderJob::ToDebugValue() const {
-  return base::Value(debug_value_.Clone());
-}
-
 void InstallPlaceholderJob::SetDataRetrieverForTesting(
     std::unique_ptr<WebAppDataRetriever> data_retriever) {
   data_retriever_ = std::move(data_retriever);
 }
 
 void InstallPlaceholderJob::Abort(webapps::InstallResultCode code) {
-  debug_value_.Set("result_code", base::ToString(code));
+  debug_value_->Set("result_code", base::ToString(code));
   if (!callback_) {
     return;
   }
@@ -96,14 +95,15 @@ void InstallPlaceholderJob::OnUrlLoaded(
     return;
   }
 
-  FinalizeInstall(/*bitmaps=*/absl::nullopt);
+  FinalizeInstall(/*bitmaps=*/std::nullopt);
 }
 
 void InstallPlaceholderJob::FetchCustomIcon(const GURL& url, int retries_left) {
   CHECK(web_contents_ && !web_contents_->IsBeingDestroyed());
 
   data_retriever_->GetIcons(
-      web_contents_.get(), {url}, /*skip_page_favicons=*/true,
+      web_contents_.get(), {IconUrlWithSize::CreateForUnspecifiedSize(url)},
+      /*skip_page_favicons=*/true,
       /*fail_all_if_any_fail=*/false,
       base::BindOnce(&InstallPlaceholderJob::OnCustomIconFetched,
                      weak_factory_.GetWeakPtr(), url, retries_left));
@@ -118,14 +118,14 @@ void InstallPlaceholderJob::OnCustomIconFetched(
   auto bitmaps_it = icons_map.find(image_url);
   if (bitmaps_it != icons_map.end() && !bitmaps_it->second.empty()) {
     // Download succeeded.
-    debug_value_.Set("custom_icon_download_success", true);
+    debug_value_->Set("custom_icon_download_success", true);
     FinalizeInstall(bitmaps_it->second);
     return;
   }
   if (retries_left <= 0) {
     // Download failed.
-    debug_value_.Set("custom_icon_download_success", false);
-    FinalizeInstall(absl::nullopt);
+    debug_value_->Set("custom_icon_download_success", false);
+    FinalizeInstall(std::nullopt);
     return;
   }
   // Retry download.
@@ -137,7 +137,7 @@ void InstallPlaceholderJob::OnCustomIconFetched(
 }
 
 void InstallPlaceholderJob::FinalizeInstall(
-    absl::optional<std::reference_wrapper<const std::vector<SkBitmap>>>
+    std::optional<std::reference_wrapper<const std::vector<SkBitmap>>>
         bitmaps) {
   // For placeholder installs, the install_url is treated as the start_url.
   WebAppInstallInfo web_app_info(
@@ -183,7 +183,7 @@ void InstallPlaceholderJob::FinalizeInstall(
 void InstallPlaceholderJob::OnInstallFinalized(const webapps::AppId& app_id,
                                                webapps::InstallResultCode code,
                                                OsHooksErrors os_hooks_errors) {
-  debug_value_.Set("result_code", base::ToString(code));
+  debug_value_->Set("result_code", base::ToString(code));
 
   CHECK(web_contents_ && !web_contents_->IsBeingDestroyed());
 

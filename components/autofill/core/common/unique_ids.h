@@ -13,6 +13,11 @@
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
+// Temporary hack to avoid silent conflicts with the renaming of
+// `unique_renderer_id` to `renderer_id`.
+// TODO(crbug.com/1522715): Remove.
+#define unique_renderer_id renderer_id
+
 namespace autofill {
 
 namespace internal {
@@ -75,8 +80,7 @@ class TokenType
 // content::RenderFrameHost.
 //
 // On iOS, AutofillAgent and AutofillDriver inherit their LocalFrameToken from
-// web::WebFrame. RemoteFrameToken is not used on iOS.
-// TODO(crbug.com/1441921): Implement this actually.
+// web::WebFrame, and RemoteFrameTokens are generated during form extraction.
 //
 // FrameTokens must not be leaked to renderer processes other than the one
 // they originate from. Therefore, Autofill should generally not send

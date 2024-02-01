@@ -7,16 +7,16 @@ import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
 import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
+import type {VolumeManager} from '../../background/js/volume_manager.js';
 import {installMockChrome, MockMetrics} from '../../common/js/mock_chrome.js';
 import {MockDirectoryEntry, MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.js';
 import {VolumeType} from '../../common/js/volume_manager_types.js';
-import type {VolumeManager} from '../../externs/volume_manager.js';
 
 import {ActionsModel, CommonActionId, InternalActionId} from './actions_model.js';
 import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 import {MockMetadataModel} from './metadata/mock_metadata.js';
-import {ActionModelUI} from './ui/action_model_ui.js';
+import type {ActionModelUi} from './ui/action_model_ui.js';
 import {FilesAlertDialog} from './ui/files_alert_dialog.js';
 import {ListContainer} from './ui/list_container.js';
 
@@ -64,7 +64,7 @@ function createFakeFolderShortcutsDataModel(): FolderShortcutsDataModel {
   return model as unknown as FolderShortcutsDataModel;
 }
 
-class MockUi implements ActionModelUI {
+class MockUi implements ActionModelUi {
   listContainer: ListContainer;
   alertDialog: FilesAlertDialog;
 

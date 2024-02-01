@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -77,7 +78,7 @@ namespace views::examples {
 base::LazyInstance<base::TestDiscardableMemoryAllocator>::DestructorAtExit
     g_discardable_memory_allocator = LAZY_INSTANCE_INITIALIZER;
 
-ExamplesExitCode ExamplesMainProc(bool under_test) {
+ExamplesExitCode ExamplesMainProc(bool under_test, ExampleVector examples) {
 #if BUILDFLAG(IS_WIN)
   ui::ScopedOleInitializer ole_initializer;
 #endif
@@ -156,13 +157,18 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
   {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     ExamplesViewsDelegateChromeOS views_delegate;
-#else
+#else  // BUILDFLAG(IS_CHROMEOS_ASH)
     views::DesktopTestViewsDelegate views_delegate;
+#if BUILDFLAG(IS_MAC)
+    views_delegate.set_context_factory(context_factories->GetContextFactory());
+#endif
 #if defined(USE_AURA)
     wm::WMState wm_state;
 #endif
-#endif
-#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_MAC)
+    display::ScopedNativeScreen desktop_screen;
+#elif BUILDFLAG(ENABLE_DESKTOP_AURA)
     std::unique_ptr<display::Screen> desktop_screen =
         views::CreateDesktopScreen();
 #endif
@@ -190,7 +196,12 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
     base::test::ScopedDisableRunLoopTimeout disable_timeout;
 #endif
 
-    views::examples::ShowExamplesWindow(run_loop.QuitClosure());
+    if (examples.empty()) {
+      views::examples::ShowExamplesWindow(run_loop.QuitClosure());
+    } else {
+      views::examples::ShowExamplesWindow(run_loop.QuitClosure(),
+                                          std::move(examples));
+    }
 
     run_loop.Run();
 

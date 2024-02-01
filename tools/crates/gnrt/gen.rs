@@ -21,23 +21,15 @@ use std::process;
 
 use anyhow::{ensure, format_err, Context, Result};
 
-pub fn generate(
-    args: GenCommandArgs,
-    tools: &paths::ToolPaths,
-    paths: &paths::ChromiumPaths,
-) -> Result<()> {
+pub fn generate(args: GenCommandArgs, paths: &paths::ChromiumPaths) -> Result<()> {
     if args.for_std.is_some() {
-        generate_for_std(args, tools, paths)
+        generate_for_std(args, paths)
     } else {
-        generate_for_third_party(args, tools, paths)
+        generate_for_third_party(args, paths)
     }
 }
 
-fn generate_for_std(
-    args: GenCommandArgs,
-    tools: &paths::ToolPaths,
-    paths: &paths::ChromiumPaths,
-) -> Result<()> {
+fn generate_for_std(args: GenCommandArgs, paths: &paths::ChromiumPaths) -> Result<()> {
     // Load config file, which applies rustenv and cfg flags to some std crates.
     let config_file_contents = std::fs::read_to_string(paths.std_config_file).unwrap();
     let config: config::BuildConfig = toml::de::from_str(&config_file_contents).unwrap();
@@ -105,12 +97,7 @@ fn generate_for_std(
     //   Rust codebase (see
     //   https://github.com/rust-lang/rust/tree/master/library/rustc-std-workspace-core)
     let mut dependencies = deps::collect_dependencies(
-        &run_cargo_metadata(
-            paths.std_fake_root.into(),
-            tools,
-            cargo_extra_options,
-            cargo_extra_env,
-        )?,
+        &run_cargo_metadata(paths.std_fake_root.into(), cargo_extra_options, cargo_extra_env)?,
         Some(vec![config.resolve.root.clone()]),
         None,
         &config,
@@ -118,17 +105,14 @@ fn generate_for_std(
 
     // Filter out any crates' dependencies removed by config file.
     for dep in dependencies.iter_mut() {
-        let all: Option<&Vec<String>> = Some(&config.all_config.remove_deps);
-        let per: Option<&Vec<String>> =
-            config.per_crate_config.get(&dep.package_name).map(|config| &config.remove_deps);
-
-        let combined: Vec<&String> = all.into_iter().chain(per).flatten().collect();
+        let combined: HashSet<&str> =
+            config.get_combined_set(&dep.package_name, |crate_cfg| &crate_cfg.remove_deps);
         if combined.is_empty() {
             continue;
         }
 
         for kind in [&mut dep.dependencies, &mut dep.build_dependencies] {
-            kind.retain(|dep_of_dep| !combined.iter().any(|r| **r == dep_of_dep.package_name));
+            kind.retain(|dep_of_dep| !combined.contains(dep_of_dep.package_name.as_str()));
         }
     }
 
@@ -233,11 +217,7 @@ fn generate_for_std(
     Ok(())
 }
 
-fn generate_for_third_party(
-    args: GenCommandArgs,
-    tools: &paths::ToolPaths,
-    paths: &paths::ChromiumPaths,
-) -> Result<()> {
+fn generate_for_third_party(args: GenCommandArgs, paths: &paths::ChromiumPaths) -> Result<()> {
     let config_file_contents = std::fs::read_to_string(paths.third_party_config_file).unwrap();
     let config: config::BuildConfig = toml::de::from_str(&config_file_contents).unwrap();
 
@@ -259,7 +239,6 @@ fn generate_for_third_party(
     let mut dependencies = deps::collect_dependencies(
         &run_cargo_metadata(
             paths.third_party_cargo_root.into(),
-            tools,
             cargo_extra_options,
             HashMap::new(),
         )?,
@@ -303,10 +282,12 @@ fn generate_for_third_party(
         .iter()
         .map(|p| {
             crates::collect_std_crate_files(p, &config, crates::IncludeCrateTargets::LibAndBin)
-                .expect(&format!(
-                    "missing a crate input file for '{}'. Dependencies are not vendored?",
-                    p.package_name
-                ))
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "missing a crate input file for '{}'. Dependencies are not vendored?",
+                        p.package_name
+                    )
+                })
         })
         .collect();
 
@@ -316,7 +297,7 @@ fn generate_for_third_party(
         let mut found = HashSet::new();
         for dep in &dependencies {
             let epoch = crates::Epoch::from_version(&dep.version);
-            if found.insert((&dep.package_name, epoch)) == false {
+            if !found.insert((&dep.package_name, epoch)) {
                 Err(format_err!(
                     "Two '{}' crates found with the same {} epoch",
                     dep.package_name,
@@ -353,7 +334,7 @@ fn generate_for_third_party(
         map
     };
 
-    for (dir, _) in &all_build_files {
+    for dir in all_build_files.keys() {
         create_dirs_if_needed(dir).context(format!("dir: {}", dir.display()))?;
     }
 

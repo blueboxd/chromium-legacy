@@ -31,7 +31,6 @@
 #include "media/video/vpx_video_encoder.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_encoder_wrapper.h"
 #include "third_party/blink/renderer/modules/mediarecorder/vea_encoder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/vpx_encoder.h"
@@ -49,10 +48,10 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/geometry/size.h"
 
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(ENABLE_OPENH264)
 #include "media/video/openh264_video_encoder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/h264_encoder.h"
-#endif  // #if BUILDFLAG(RTC_USE_H264)
+#endif  // #if BUILDFLAG(ENABLE_OPENH264)
 
 #if BUILDFLAG(ENABLE_LIBAOM)
 #include "media/video/av1_video_encoder.h"
@@ -240,7 +239,7 @@ void UmaHistogramForCodec(bool uses_acceleration, CodecId codec_id) {
 }
 
 bool MustUseVEA(CodecId codec_id) {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && !BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS) && !BUILDFLAG(ENABLE_OPENH264)
   return codec_id == CodecId::kH264;
 #else
   return false;
@@ -263,14 +262,14 @@ GetCreateHardwareVideoEncoderCallback() {
 MediaRecorderEncoderWrapper::CreateEncoderCB
 GetCreateSoftwareVideoEncoderCallback(CodecId codec_id) {
   switch (codec_id) {
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(ENABLE_OPENH264)
     case CodecId::kH264:
       return ConvertToBaseRepeatingCallback(WTF::CrossThreadBindRepeating(
           [](media::GpuVideoAcceleratorFactories* /*gpu_factories*/)
               -> std::unique_ptr<media::VideoEncoder> {
             return std::make_unique<media::OpenH264VideoEncoder>();
           }));
-#endif  // BUILDFLAG(RTC_USE_H264)
+#endif  // BUILDFLAG(ENABLE_OPENH264)
 #if BUILDFLAG(ENABLE_LIBVPX)
     case CodecId::kVp8:
     case CodecId::kVp9:
@@ -313,13 +312,13 @@ VideoTrackRecorderImpl::CodecProfile::CodecProfile(CodecId codec_id)
 VideoTrackRecorderImpl::CodecProfile::CodecProfile(
     CodecId codec_id,
     absl::optional<media::VideoCodecProfile> opt_profile,
-    absl::optional<uint8_t> opt_level)
+    absl::optional<media::VideoCodecLevel> opt_level)
     : codec_id(codec_id), profile(opt_profile), level(opt_level) {}
 
 VideoTrackRecorderImpl::CodecProfile::CodecProfile(
     CodecId codec_id,
     media::VideoCodecProfile profile,
-    uint8_t level)
+    media::VideoCodecLevel level)
     : codec_id(codec_id), profile(profile), level(level) {}
 
 VideoTrackRecorderImpl::CodecEnumerator::CodecEnumerator(
@@ -530,10 +529,8 @@ VideoTrackRecorderImpl::Encoder::MaybeProvideEncodableFrame(
         is_opaque ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_I420A,
         visible_rect.size(), visible_rect, visible_rect.size(),
         video_frame->timestamp());
-
     if (!frame ||
-        !media::ConvertAndScaleFrame(*video_frame, *frame, resize_buffer_)
-             .is_ok()) {
+        !frame_converter_.ConvertAndScale(*video_frame, *frame).is_ok()) {
       // Send black frames (yuv = {0, 127, 127}).
       DLOG(ERROR) << "Can't convert RGB to I420";
       frame = media::VideoFrame::CreateColorFrame(
@@ -796,12 +793,12 @@ void VideoTrackRecorderImpl::Resume() {
 
 void VideoTrackRecorderImpl::OnVideoFrameForTesting(
     scoped_refptr<media::VideoFrame> frame,
-    base::TimeTicks timestamp) {
+    base::TimeTicks timestamp,
+    bool allow_vea_encoder) {
   DVLOG(3) << __func__;
-
   if (!encoder_) {
     DCHECK(!initialize_encoder_cb_.is_null());
-    initialize_encoder_cb_.Run(/*allow_vea_encoder=*/true, frame, timestamp);
+    initialize_encoder_cb_.Run(allow_vea_encoder, frame, timestamp);
   }
   encoder_.AsyncCall(&Encoder::StartFrameEncode)
       .WithArgs(WTF::CrossThreadBindRepeating(
@@ -825,12 +822,12 @@ VideoTrackRecorderImpl::CreateMediaVideoEncoder(
   media::VideoCodecProfile video_codec_profile =
       media::VIDEO_CODEC_PROFILE_UNKNOWN;
   switch (codec_profile.codec_id) {
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(ENABLE_OPENH264)
     case CodecId::kH264:
       video_codec_profile =
           codec_profile.profile.value_or(media::H264PROFILE_BASELINE);
       break;
-#endif  // BUILDFLAG(RTC_USE_H264)
+#endif  // BUILDFLAG(ENABLE_OPENH264)
     case CodecId::kVp8:
       video_codec_profile =
           codec_profile.profile.value_or(media::VP8PROFILE_ANY);
@@ -850,10 +847,24 @@ VideoTrackRecorderImpl::CreateMediaVideoEncoder(
                    << static_cast<int>(codec_profile.codec_id);
       return nullptr;
   }
-  auto on_error_cb = base::BindPostTask(
-      main_thread_task_runner_,
-      WTF::BindOnce(&CallbackInterface::OnVideoEncodingError,
-                    WrapWeakPersistent(callback_interface())));
+
+  MediaRecorderEncoderWrapper::OnErrorCB on_error_cb;
+  if (create_vea_encoder) {
+    // If |on_error_cb| is called, then MediaRecorderEncoderWrapper with a
+    // software encoder will be created.
+    // TODO(crbug.com/1441395): This should be handled by using
+    // media::VideoEncoderFallback. This should be achieved after refactoring
+    // VideoTrackRecorder to call media::VideoEncoder directly.
+    on_error_cb = base::BindPostTask(
+        main_thread_task_runner_,
+        WTF::BindOnce(&VideoTrackRecorderImpl::OnHardwareEncoderError,
+                      weak_factory_.GetWeakPtr()));
+  } else {
+    on_error_cb = base::BindPostTask(
+        main_thread_task_runner_,
+        WTF::BindOnce(&CallbackInterface::OnVideoEncodingError,
+                      WrapWeakPersistent(callback_interface())));
+  }
 
   media::GpuVideoAcceleratorFactories* gpu_factories =
       Platform::Current()->GetGpuFactories();
@@ -875,18 +886,26 @@ VideoTrackRecorderImpl::CreateSoftwareVideoEncoder(
     const OnEncodedVideoCB& on_encoded_video_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   switch (codec_profile.codec_id) {
-#if BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(ENABLE_OPENH264)
     case CodecId::kH264:
-      return std::make_unique<H264Encoder>(std::move(encoding_task_runner),
-                                           on_encoded_video_cb, codec_profile,
-                                           bits_per_second);
+      return std::make_unique<H264Encoder>(
+          std::move(encoding_task_runner), on_encoded_video_cb, codec_profile,
+          bits_per_second, is_screencast,
+          base::BindPostTask(
+              main_thread_task_runner_,
+              WTF::BindRepeating(&CallbackInterface::OnVideoEncodingError,
+                                 WrapWeakPersistent(callback_interface()))));
 #endif
     case CodecId::kVp8:
     case CodecId::kVp9:
       return std::make_unique<VpxEncoder>(
           std::move(encoding_task_runner),
           codec_profile.codec_id == CodecId::kVp9, on_encoded_video_cb,
-          bits_per_second);
+          bits_per_second, is_screencast,
+          base::BindPostTask(
+              main_thread_task_runner_,
+              WTF::BindRepeating(&CallbackInterface::OnVideoEncodingError,
+                                 WrapWeakPersistent(callback_interface()))));
 #if BUILDFLAG(ENABLE_LIBAOM)
     case CodecId::kAv1: {
       auto on_error_cb = base::BindPostTask(
@@ -978,7 +997,7 @@ void VideoTrackRecorderImpl::InitializeEncoderOnEncoderSupportKnown(
   const bool can_use_vea = CanUseAcceleratedEncoder(
       codec_profile.codec_id, input_size.width(), input_size.height());
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && !BUILDFLAG(RTC_USE_H264)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS) && !BUILDFLAG(ENABLE_OPENH264)
   if (MustUseVEA(codec_profile.codec_id) &&
       (!allow_vea_encoder || !can_use_vea)) {
     // This should only happen if the H264 isn't supported by the VEA or an

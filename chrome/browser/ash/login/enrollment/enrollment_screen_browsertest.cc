@@ -604,32 +604,31 @@ IN_PROC_BROWSER_TEST_P(ManualEnrollmentErrorScreenTest,
   // `EnrollmentScreenHandler` instead of here.
   // TODO(b/238986105): change the expectation on `isManualEnrollment_` to
   // EXPECT_TRUE once `EnrollmentModeToUIMode` is fixed.
-  EXPECT_EQ(test::OobeJS().GetAttributeBool("isManualEnrollment_",
+  EXPECT_EQ(test::OobeJS().GetAttributeBool("isManualEnrollment",
                                             {"enterprise-enrollment"}),
             IsManualEnrollmentMode(enrollment_config.mode));
   EXPECT_EQ(
-      test::OobeJS().GetAttributeBool("isForced_", {"enterprise-enrollment"}),
+      test::OobeJS().GetAttributeBool("isForced", {"enterprise-enrollment"}),
       enrollment_config.is_forced());
-  EXPECT_FALSE(test::OobeJS().GetAttributeBool("isAutoEnroll_",
+  EXPECT_FALSE(test::OobeJS().GetAttributeBool("isAutoEnroll",
                                                {"enterprise-enrollment"}));
-  EXPECT_FALSE(test::OobeJS().GetAttributeBool("hasAccountCheck_",
+  EXPECT_FALSE(test::OobeJS().GetAttributeBool("hasAccountCheck",
                                                {"enterprise-enrollment"}));
-  EXPECT_EQ(test::OobeJS().GetAttributeString("gaiaDialogButtonsType_",
+  EXPECT_EQ(test::OobeJS().GetAttributeString("gaiaDialogButtonsType",
                                               {"enterprise-enrollment"}),
             "enterprise-preferred");
-  EXPECT_EQ(test::OobeJS().GetAttributeString("authenticator_.idpOrigin_",
+  EXPECT_EQ(test::OobeJS().GetAttributeString("authenticator.idpOrigin_",
                                               {"enterprise-enrollment"}),
             GaiaUrls::GetInstance()->gaia_url().spec());
-  EXPECT_EQ(test::OobeJS().GetAttributeString("authenticator_.clientId_",
+  EXPECT_EQ(test::OobeJS().GetAttributeString("authenticator.clientId_",
                                               {"enterprise-enrollment"}),
             GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-  EXPECT_FALSE(test::OobeJS().GetAttributeBool("authenticator_.needPassword",
+  EXPECT_FALSE(test::OobeJS().GetAttributeBool("authenticator.needPassword",
                                                {"enterprise-enrollment"}));
   EXPECT_TRUE(test::OobeJS().GetAttributeBool(
-      "authenticator_.enableGaiaActionButtons_", {"enterprise-enrollment"}));
+      "authenticator.enableGaiaActionButtons_", {"enterprise-enrollment"}));
 
-  test::OobeJS().ExpectHasNoAttribute("licenseType_",
-                                      {"enterprise-enrollment"});
+  test::OobeJS().ExpectHasNoAttribute("licenseType", {"enterprise-enrollment"});
 
   enrollment_screen()->OnLoginDone(
       "testuser@test.com", static_cast<int>(policy::LicenseType::kEnterprise),
@@ -640,15 +639,15 @@ IN_PROC_BROWSER_TEST_P(ManualEnrollmentErrorScreenTest,
 
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   if (enrollment_config.is_forced()) {
-    EXPECT_TRUE(test::OobeJS().GetAttributeBool("isForced_",
-                                                {"enterprise-enrollment"}));
+    EXPECT_TRUE(
+        test::OobeJS().GetAttributeBool("isForced", {"enterprise-enrollment"}));
     // TODO(b/238175743) isCancelDisabled also blocks manual fallback. Figure
     // out what we want here and fix naming.
     // EXPECT_TRUE(test::OobeJS().GetAttributeBool("isCancelDisabled",
     //                                             {"enterprise-enrollment"}));
   } else {
-    EXPECT_FALSE(test::OobeJS().GetAttributeBool("isForced_",
-                                                 {"enterprise-enrollment"}));
+    EXPECT_FALSE(
+        test::OobeJS().GetAttributeBool("isForced", {"enterprise-enrollment"}));
     // TODO(b/238175743) isCancelDisabled also blocks manual fallback. Figure
     // out what we want here and fix naming.
     // EXPECT_FALSE(test::OobeJS().GetAttributeBool("isCancelDisabled",
@@ -710,44 +709,43 @@ IN_PROC_BROWSER_TEST_P(AttestationEnrollmentErrorScreenTest,
 
   // TODO(b/238986105): change the expectation on `isManualEnrollment_` to
   // EXPECT_TRUE once `EnrollmentModeToUIMode` is fixed.
-  EXPECT_EQ(test::OobeJS().GetAttributeBool("isManualEnrollment_",
+  EXPECT_EQ(test::OobeJS().GetAttributeBool("isManualEnrollment",
                                             {"enterprise-enrollment"}),
             IsManualEnrollmentMode(enrollment_config.mode));
   EXPECT_EQ(
-      test::OobeJS().GetAttributeBool("isForced_", {"enterprise-enrollment"}),
+      test::OobeJS().GetAttributeBool("isForced", {"enterprise-enrollment"}),
       enrollment_config.is_forced());
-  EXPECT_TRUE(test::OobeJS().GetAttributeBool("isAutoEnroll_",
+  EXPECT_TRUE(test::OobeJS().GetAttributeBool("isAutoEnroll",
                                               {"enterprise-enrollment"}));
   EXPECT_FALSE(test::OobeJS().GetAttributeBool("hasAccountCheck_",
                                                {"enterprise-enrollment"}));
 
-  test::OobeJS().ExpectHasNoAttribute("authenticator_.idpOrigin_",
+  test::OobeJS().ExpectHasNoAttribute("authenticator.idpOrigin_",
                                       {"enterprise-enrollment"});
-  test::OobeJS().ExpectHasNoAttribute("authenticator_.clientId_",
+  test::OobeJS().ExpectHasNoAttribute("authenticator.clientId_",
                                       {"enterprise-enrollment"});
-  test::OobeJS().ExpectHasNoAttribute("authenticator_.needPassword",
+  test::OobeJS().ExpectHasNoAttribute("authenticator.needPassword",
                                       {"enterprise-enrollment"});
-  test::OobeJS().ExpectHasNoAttribute("authenticator_.enableGaiaActionButtons_",
+  test::OobeJS().ExpectHasNoAttribute("authenticator.enableGaiaActionButtons_",
                                       {"enterprise-enrollment"});
-  test::OobeJS().ExpectHasNoAttribute("gaiaDialogButtonsType_",
+  test::OobeJS().ExpectHasNoAttribute("gaiaDialogButtonsType",
                                       {"enterprise-enrollment"});
-  test::OobeJS().ExpectHasNoAttribute("licenseType_",
-                                      {"enterprise-enrollment"});
+  test::OobeJS().ExpectHasNoAttribute("licenseType", {"enterprise-enrollment"});
 
   // Expect that the screen ends up on error screen.
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
 
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
   if (enrollment_config.is_forced()) {
-    EXPECT_TRUE(test::OobeJS().GetAttributeBool("isForced_",
-                                                {"enterprise-enrollment"}));
+    EXPECT_TRUE(
+        test::OobeJS().GetAttributeBool("isForced", {"enterprise-enrollment"}));
     // TODO(b/238175743) isCancelDisabled also blocks manual fallback. Figure
     // out what we want here and fix naming.
     // EXPECT_TRUE(test::OobeJS().GetAttributeBool("isCancelDisabled",
     //                                             {"enterprise-enrollment"}));
   } else {
-    EXPECT_FALSE(test::OobeJS().GetAttributeBool("isForced_",
-                                                 {"enterprise-enrollment"}));
+    EXPECT_FALSE(
+        test::OobeJS().GetAttributeBool("isForced", {"enterprise-enrollment"}));
     // TODO(b/238175743) isCancelDisabled also blocks manual fallback. Figure
     // out what we want here and fix naming.
     // EXPECT_FALSE(test::OobeJS().GetAttributeBool("isCancelDisabled",
@@ -774,35 +772,6 @@ INSTANTIATE_TEST_SUITE_P(
     testing::ValuesIn(std::vector<EnrollmentErrorScreenTestParams>{
         {policy::EnrollmentConfig::MODE_ATTESTATION,
          policy::EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE}}));
-
-class EnrollmentScreenHandsOffTest : public EnrollmentScreenTest {
- public:
-  EnrollmentScreenHandsOffTest() = default;
-  ~EnrollmentScreenHandsOffTest() override = default;
-
-  EnrollmentScreenHandsOffTest(const EnrollmentScreenHandsOffTest&) = delete;
-  EnrollmentScreenHandsOffTest& operator=(const EnrollmentScreenHandsOffTest&) =
-      delete;
-
-  // EnrollmentScreenTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    EnrollmentScreenTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
-  }
-};
-
-// TODO(crbug.com/1344492): Consistent failures, unable to cleanly revert
-// culprit CL.
-IN_PROC_BROWSER_TEST_F(EnrollmentScreenHandsOffTest,
-                       DISABLED_SkipEnrollmentCompleteScreen) {
-  enrollment_ui_.SetExitHandler();
-  enrollment_screen()->OnDeviceAttributeUpdatePermission(false /* granted */);
-  EnrollmentScreen::Result screen_result = enrollment_ui_.WaitForScreenExit();
-  EXPECT_EQ(EnrollmentScreen::Result::COMPLETED, screen_result);
-
-  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
-}
 
 // Class to test TPM pre-enrollment check that happens only with
 // --tpm-is-dynamic switch enabled. Test parameter represents take TPM

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "content/public/browser/document_user_data.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/origin_trial_feature/origin_trial_feature.mojom-shared.h"
 #include "third_party/blink/public/mojom/shared_storage/shared_storage.mojom.h"
 #include "url/origin.h"
@@ -33,6 +33,13 @@ extern CONTENT_EXPORT const char kSharedStorageDisabledMessage[];
 extern CONTENT_EXPORT const char kSharedStorageSelectURLDisabledMessage[];
 extern CONTENT_EXPORT const char kSharedStorageAddModuleDisabledMessage[];
 extern CONTENT_EXPORT const char kSharedStorageSelectURLLimitReachedMessage[];
+
+// Will conditionally combine an `input_message` with a `debug_message`
+// containing additional details if the
+// `blink::features::kSharedStorageDebugDisabledMessage` feature param is true,
+// returning `input_message` otherwise.
+std::string GetSharedStorageErrorMessage(const std::string& debug_message,
+                                         const std::string& input_message);
 
 // Handle renderer-initiated shared storage access and worklet operations. The
 // worklet operations (i.e. `addModule()`, `selectURL()`, `run()`) will be
@@ -82,9 +89,10 @@ class CONTENT_EXPORT SharedStorageDocumentServiceImpl final
 
   storage::SharedStorageManager* GetSharedStorageManager();
 
-  bool IsSharedStorageAllowed();
+  bool IsSharedStorageAllowed(std::string* out_debug_message = nullptr);
 
-  bool IsSharedStorageAddModuleAllowed();
+  bool IsSharedStorageAddModuleAllowed(
+      std::string* out_debug_message = nullptr);
 
   std::string SerializeLastCommittedOrigin() const;
 

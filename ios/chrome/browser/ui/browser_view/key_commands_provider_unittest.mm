@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 
+#import "base/memory/raw_ptr.h"
 #import "base/test/metrics/user_action_tester.h"
 #import "base/test/task_environment.h"
 #import "components/bookmarks/browser/bookmark_model.h"
@@ -19,7 +20,7 @@
 #import "ios/chrome/browser/lens/model/lens_browser_agent.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper_delegate.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/sessions/fake_tab_restore_service.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
@@ -27,6 +28,7 @@
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
@@ -153,9 +155,9 @@ class KeyCommandsProviderTest : public PlatformTest {
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<TestBrowser> browser_;
-  WebStateList* web_state_list_;
+  raw_ptr<WebStateList> web_state_list_;
   base::UserActionTester user_action_tester_;
-  bookmarks::BookmarkModel* bookmark_model_;
+  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
   KeyCommandsProvider* provider_;
 };
 
@@ -644,15 +646,15 @@ TEST_F(KeyCommandsProviderTest, ImplementsActions) {
 // Checks the openNewTab logic based on a regular browser state.
 TEST_F(KeyCommandsProviderTest, OpenNewTab_RegularBrowserState) {
   id handler = OCMStrictProtocolMock(@protocol(ApplicationCommands));
-  provider_.dispatcher = handler;
+  provider_.applicationHandler = handler;
   id newTabCommand = [OCMArg checkWithBlock:^BOOL(OpenNewTabCommand* command) {
     return command.shouldFocusOmnibox == YES && command.inIncognito == NO;
   }];
-  OCMExpect([provider_.dispatcher openURLInNewTab:newTabCommand]);
+  OCMExpect([provider_.applicationHandler openURLInNewTab:newTabCommand]);
 
   [provider_ keyCommand_openNewTab];
 
-  EXPECT_OCMOCK_VERIFY(provider_.dispatcher);
+  [handler verify];
 }
 
 // Checks the openNewTab logic based on an incognito browser state.
@@ -662,43 +664,43 @@ TEST_F(KeyCommandsProviderTest, OpenNewTab_IncognitoBrowserState) {
   browser_ = std::make_unique<TestBrowser>(incognito_browser_state);
   provider_ = [[KeyCommandsProvider alloc] initWithBrowser:browser_.get()];
   id handler = OCMStrictProtocolMock(@protocol(ApplicationCommands));
-  provider_.dispatcher = handler;
+  provider_.applicationHandler = handler;
   id newTabCommand = [OCMArg checkWithBlock:^BOOL(OpenNewTabCommand* command) {
     return command.shouldFocusOmnibox == YES && command.inIncognito == YES;
   }];
-  OCMExpect([provider_.dispatcher openURLInNewTab:newTabCommand]);
+  OCMExpect([provider_.applicationHandler openURLInNewTab:newTabCommand]);
 
   [provider_ keyCommand_openNewTab];
 
-  EXPECT_OCMOCK_VERIFY(provider_.dispatcher);
+  [handler verify];
 }
 
 // Checks that openNewRegularTab opens a tab in the regular browser state.
 TEST_F(KeyCommandsProviderTest, OpenNewRegularTab) {
   id handler = OCMStrictProtocolMock(@protocol(ApplicationCommands));
-  provider_.dispatcher = handler;
+  provider_.applicationHandler = handler;
   id newTabCommand = [OCMArg checkWithBlock:^BOOL(OpenNewTabCommand* command) {
     return command.shouldFocusOmnibox == YES && command.inIncognito == NO;
   }];
-  OCMExpect([provider_.dispatcher openURLInNewTab:newTabCommand]);
+  OCMExpect([provider_.applicationHandler openURLInNewTab:newTabCommand]);
 
   [provider_ keyCommand_openNewTab];
 
-  EXPECT_OCMOCK_VERIFY(provider_.dispatcher);
+  [handler verify];
 }
 
 // Checks that openNewIncognitoTab opens a tab in the Incognito browser state.
 TEST_F(KeyCommandsProviderTest, OpenNewIncognitoTab) {
   id handler = OCMStrictProtocolMock(@protocol(ApplicationCommands));
-  provider_.dispatcher = handler;
+  provider_.applicationHandler = handler;
   id newTabCommand = [OCMArg checkWithBlock:^BOOL(OpenNewTabCommand* command) {
     return command.shouldFocusOmnibox == YES && command.inIncognito == YES;
   }];
-  OCMExpect([provider_.dispatcher openURLInNewTab:newTabCommand]);
+  OCMExpect([provider_.applicationHandler openURLInNewTab:newTabCommand]);
 
   [provider_ keyCommand_openNewIncognitoTab];
 
-  EXPECT_OCMOCK_VERIFY(provider_.dispatcher);
+  [handler verify];
 }
 
 // Checks the next/previous tab actions work OK.
@@ -727,8 +729,8 @@ TEST_F(KeyCommandsProviderTest, NextPreviousTab) {
 // Verifies that the Bookmarks are asked to be shown.
 TEST_F(KeyCommandsProviderTest, ShowBookmarks) {
   id handler = OCMStrictProtocolMock(@protocol(BrowserCoordinatorCommands));
-  provider_.browserCoordinatorCommandsHandler = handler;
-  OCMExpect([provider_.browserCoordinatorCommandsHandler showBookmarksManager]);
+  provider_.browserCoordinatorHandler = handler;
+  OCMExpect([provider_.browserCoordinatorHandler showBookmarksManager]);
 
   [provider_ keyCommand_showBookmarks];
 
@@ -737,7 +739,7 @@ TEST_F(KeyCommandsProviderTest, ShowBookmarks) {
 
 // Verifies that nothing is added to Bookmarks when there is no tab.
 TEST_F(KeyCommandsProviderTest, AddToBookmarks_DoesntAddWhenNoTab) {
-  provider_.bookmarksCommandsHandler =
+  provider_.bookmarksHandler =
       OCMStrictProtocolMock(@protocol(BookmarksCommands));
 
   [provider_ keyCommand_addToBookmarks];
@@ -745,7 +747,7 @@ TEST_F(KeyCommandsProviderTest, AddToBookmarks_DoesntAddWhenNoTab) {
 
 // Verifies that nothing is added to Bookmarks when on the NTP.
 TEST_F(KeyCommandsProviderTest, AddToBookmarks_DoesntAddWhenNTP) {
-  provider_.bookmarksCommandsHandler =
+  provider_.bookmarksHandler =
       OCMStrictProtocolMock(@protocol(BookmarksCommands));
   InsertNewWebState(0);
 
@@ -755,13 +757,13 @@ TEST_F(KeyCommandsProviderTest, AddToBookmarks_DoesntAddWhenNTP) {
 // Verifies that the correct URL is added to Bookmarks.
 TEST_F(KeyCommandsProviderTest, AddToBookmarks_AddURL) {
   id handler = OCMStrictProtocolMock(@protocol(BookmarksCommands));
-  provider_.bookmarksCommandsHandler = handler;
+  provider_.bookmarksHandler = handler;
   GURL url = GURL("https://e.test");
   id addCommand = [OCMArg checkWithBlock:^BOOL(URLWithTitle* URL) {
     return URL.URL == url;
   }];
-  OCMExpect([provider_.bookmarksCommandsHandler
-      createOrEditBookmarkWithURL:addCommand]);
+  OCMExpect(
+      [provider_.bookmarksHandler createOrEditBookmarkWithURL:addCommand]);
   web::FakeWebState* web_state = InsertNewWebState(0);
   web_state->SetCurrentURL(url);
 
@@ -773,8 +775,8 @@ TEST_F(KeyCommandsProviderTest, AddToBookmarks_AddURL) {
 // Verifies that the Reading List is asked to be shown.
 TEST_F(KeyCommandsProviderTest, ShowReadingList) {
   id handler = OCMStrictProtocolMock(@protocol(BrowserCoordinatorCommands));
-  provider_.browserCoordinatorCommandsHandler = handler;
-  OCMExpect([provider_.browserCoordinatorCommandsHandler showReadingList]);
+  provider_.browserCoordinatorHandler = handler;
+  OCMExpect([provider_.browserCoordinatorHandler showReadingList]);
 
   [provider_ keyCommand_showReadingList];
 
@@ -783,14 +785,16 @@ TEST_F(KeyCommandsProviderTest, ShowReadingList) {
 
 // Verifies that nothing is added to Reading List when there is no tab.
 TEST_F(KeyCommandsProviderTest, AddToReadingList_DoesntAddWhenNoTab) {
-  provider_.dispatcher = OCMStrictProtocolMock(@protocol(ApplicationCommands));
+  provider_.applicationHandler =
+      OCMStrictProtocolMock(@protocol(ApplicationCommands));
 
   [provider_ keyCommand_addToReadingList];
 }
 
 // Verifies that nothing is added to Reading List when on the NTP.
 TEST_F(KeyCommandsProviderTest, AddToReadingList_DoesntAddWhenNTP) {
-  provider_.dispatcher = OCMStrictProtocolMock(@protocol(ApplicationCommands));
+  provider_.applicationHandler =
+      OCMStrictProtocolMock(@protocol(ApplicationCommands));
   InsertNewWebState(0);
 
   [provider_ keyCommand_addToReadingList];

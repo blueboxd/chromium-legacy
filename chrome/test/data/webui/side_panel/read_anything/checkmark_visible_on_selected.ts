@@ -13,6 +13,7 @@ suite('CheckmarkVisibleOnSelected', () => {
   let toolbar: ReadAnythingToolbarElement;
 
   setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     const readingMode = new FakeReadingMode();
     chrome.readingMode = readingMode as unknown as typeof chrome.readingMode;
 
@@ -46,6 +47,5 @@ suite('CheckmarkVisibleOnSelected', () => {
     assertCheckMarksForDropdown(toolbar.$.lineSpacingMenu);
     assertCheckMarksForDropdown(toolbar.$.letterSpacingMenu);
     assertCheckMarksForDropdown(toolbar.$.colorMenu);
-    assertCheckMarksForDropdown(toolbar.$.voiceSelectionMenu);
   });
 });

@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/customization/customization_document.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "ash/constants/ash_paths.h"
@@ -55,7 +56,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 namespace {
@@ -127,7 +127,7 @@ constexpr net::NetworkTrafficAnnotationTag kCustomizationDocumentNetworkTag =
         })");
 
 struct CustomizationDocumentTestOverride {
-  raw_ptr<ServicesCustomizationDocument, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<ServicesCustomizationDocument, DanglingUntriaged>
       customization_document = nullptr;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
 };
@@ -234,7 +234,7 @@ class ServicesCustomizationExternalLoader : public extensions::ExternalLoader {
  private:
   bool is_apps_set_ = false;
   base::Value::Dict apps_;
-  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<Profile> profile_;
   base::WeakPtrFactory<ServicesCustomizationExternalLoader> weak_ptr_factory_{
       this};
 };
@@ -342,7 +342,7 @@ void StartupCustomizationDocument::Init(
     if (keyboard_layout_ptr)
       keyboard_layout_ = *keyboard_layout_ptr;
 
-    if (const absl::optional<base::StringPiece> hwid =
+    if (const std::optional<base::StringPiece> hwid =
             statistics_provider->GetMachineStatistic(
                 system::kHardwareClassKey)) {
       base::Value::List* hwid_list = root_->FindList(kHwidMapAttr);
@@ -386,16 +386,16 @@ void StartupCustomizationDocument::Init(
   }
 
   // If manifest doesn't exist still apply values from VPD.
-  if (const absl::optional<base::StringPiece> locale_statistic =
+  if (const std::optional<base::StringPiece> locale_statistic =
           statistics_provider->GetMachineStatistic(system::kInitialLocaleKey)) {
     initial_locale_ = std::string(locale_statistic.value());
   }
-  if (const absl::optional<base::StringPiece> timezone_statistic =
+  if (const std::optional<base::StringPiece> timezone_statistic =
           statistics_provider->GetMachineStatistic(
               system::kInitialTimezoneKey)) {
     initial_timezone_ = std::string(timezone_statistic.value());
   }
-  if (const absl::optional<base::StringPiece> keyboard_statistic =
+  if (const std::optional<base::StringPiece> keyboard_statistic =
           statistics_provider->GetMachineStatistic(
               system::kKeyboardLayoutKey)) {
     keyboard_layout_ = std::string(keyboard_statistic.value());
@@ -441,7 +441,7 @@ class ServicesCustomizationDocument::ApplyingTask {
   void Finished(bool success);
 
  private:
-  raw_ptr<ServicesCustomizationDocument, ExperimentalAsh> document_;
+  raw_ptr<ServicesCustomizationDocument> document_;
 
   // This is error-checking flag to prevent destroying unfinished task
   // or double finish.
@@ -574,7 +574,7 @@ void ServicesCustomizationDocument::StartFetching() {
   if (!url_.is_valid()) {
     system::StatisticsProvider* provider =
         system::StatisticsProvider::GetInstance();
-    const absl::optional<base::StringPiece> customization_id =
+    const std::optional<base::StringPiece> customization_id =
         provider->GetMachineStatistic(system::kCustomizationIdKey);
     if (customization_id && !customization_id->empty()) {
       url_ = GURL(base::StringPrintf(
@@ -717,10 +717,10 @@ bool ServicesCustomizationDocument::GetDefaultWallpaperUrl(
   return true;
 }
 
-absl::optional<base::Value::Dict>
-ServicesCustomizationDocument::GetDefaultApps() const {
+std::optional<base::Value::Dict> ServicesCustomizationDocument::GetDefaultApps()
+    const {
   if (!IsReady())
-    return absl::nullopt;
+    return std::nullopt;
 
   return GetDefaultAppsInProviderFormat(*root_);
 }
@@ -839,7 +839,7 @@ void ServicesCustomizationDocument::InitializeForTesting(
   // `base::TimeDelta()` means zero time delta - i.e. the request will be
   // started immediately.
   g_test_overrides->customization_document->custom_network_delay_ =
-      absl::make_optional(base::TimeDelta());
+      std::make_optional(base::TimeDelta());
   g_test_overrides->url_loader_factory = std::move(factory);
 }
 

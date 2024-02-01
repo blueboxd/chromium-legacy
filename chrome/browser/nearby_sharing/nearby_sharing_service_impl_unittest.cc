@@ -173,8 +173,8 @@ class FakeFastInitiationAdvertiserFactory
   }
 
  private:
-  raw_ptr<FakeFastInitiationAdvertiser, ExperimentalAsh>
-      last_fake_fast_initiation_advertiser_ = nullptr;
+  raw_ptr<FakeFastInitiationAdvertiser> last_fake_fast_initiation_advertiser_ =
+      nullptr;
   bool should_succeed_on_start_ = false;
   bool stop_advertising_called_ = false;
   bool fast_initiation_advertiser_destroyed_ = false;
@@ -246,7 +246,7 @@ class FakeFastInitiationScannerFactory : public FastInitiationScanner::Factory {
  private:
   void OnScannerDestroyed() { ++scanner_destroyed_count_; }
 
-  raw_ptr<FakeFastInitiationScanner, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<FakeFastInitiationScanner, DanglingUntriaged>
       last_fake_fast_initiation_scanner_ = nullptr;
   size_t scanner_created_count_ = 0u;
   size_t scanner_destroyed_count_ = 0u;
@@ -429,7 +429,7 @@ sharing::mojom::FramePtr GetIntroductionFrame(
       sharing::mojom::V1Frame::NewIntroduction(
           sharing::mojom::IntroductionFrame::New(
               std::move(mojo_file_metadatas), std::move(mojo_text_metadatas),
-              /*required_package=*/absl::nullopt,
+              /*required_package=*/std::nullopt,
               std::move(mojo_wifi_credentials_metadatas)));
 
   sharing::mojom::FramePtr mojo_frame =
@@ -463,8 +463,8 @@ std::vector<std::unique_ptr<Attachment>> CreateTextAttachments(
   std::vector<std::unique_ptr<Attachment>> attachments;
   for (auto& text : texts) {
     attachments.push_back(std::make_unique<TextAttachment>(
-        TextAttachment::Type::kText, std::move(text), /*title=*/absl::nullopt,
-        /*mime_type=*/absl::nullopt));
+        TextAttachment::Type::kText, std::move(text), /*title=*/std::nullopt,
+        /*mime_type=*/std::nullopt));
   }
   return attachments;
 }
@@ -775,7 +775,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
           .Run(NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
               cert, GetNearbyShareTestEncryptedMetadataKey()));
     } else {
-      std::move(calls.back().callback).Run(absl::nullopt);
+      std::move(calls.back().callback).Run(std::nullopt);
     }
   }
 
@@ -800,7 +800,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
                       sharing::mojom::PairedKeyEncryptionFrame::New(
                           is_incoming ? kIncomingConnectionSignedData
                                       : kOutgoingConnectionSignedData,
-                          kPrivateCertificateHashAuthToken, absl::nullopt));
+                          kPrivateCertificateHashAuthToken, std::nullopt));
               sharing::mojom::FramePtr mojo_frame =
                   sharing::mojom::Frame::NewV1(std::move(mojo_v1frame));
               std::move(callback).Run(std::move(mojo_frame));
@@ -843,7 +843,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
                 return;
               }
 
-              absl::optional<std::string> device_name;
+              std::optional<std::string> device_name;
               if (!return_empty_device_name) {
                 device_name = kDeviceName;
               }
@@ -994,9 +994,9 @@ class NearbySharingServiceImplTestBase : public testing::Test {
     return discovered_target;
   }
 
-  absl::optional<ShareTarget> CreateShareTarget(
+  std::optional<ShareTarget> CreateShareTarget(
       const sharing::mojom::AdvertisementPtr& advertisement,
-      absl::optional<NearbyShareDecryptedPublicCertificate> certificate) {
+      std::optional<NearbyShareDecryptedPublicCertificate> certificate) {
     return service_->CreateShareTarget(kEndpointId, advertisement, certificate,
                                        /*is_incoming=*/true);
   }
@@ -1162,7 +1162,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
             nearby::connections::mojom::PayloadStatus::kSuccess,
             /*total_bytes=*/strlen(kTextPayload),
             /*bytes_transferred=*/strlen(kTextPayload)),
-        /*upgraded_medium=*/absl::nullopt);
+        /*upgraded_medium=*/std::nullopt);
     success_run_loop.Run();
   }
 
@@ -1257,7 +1257,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
               /*total_bytes=*/kPayloadSize,
               /*bytes_transferred=*/kPayloadSize);
       listener->OnStatusUpdate(std::move(payload),
-                               /*upgraded_medium=*/absl::nullopt);
+                               /*upgraded_medium=*/std::nullopt);
       run_loop_progress.Run();
 
       task_environment_.FastForwardBy(kMinProgressUpdateFrequency);
@@ -1313,7 +1313,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
             /*total_bytes=*/kPayloadSize,
             /*bytes_transferred=*/kPayloadSize);
     listener->OnStatusUpdate(std::move(payload),
-                             /*upgraded_medium=*/absl::nullopt);
+                             /*upgraded_medium=*/std::nullopt);
     run_loop_success.Run();
 
     EXPECT_FALSE(fake_nearby_connections_manager_->connection_endpoint_info(
@@ -1399,7 +1399,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
               /*total_bytes=*/kPayloadSize,
               /*bytes_transferred=*/kPayloadSize);
       listener->OnStatusUpdate(std::move(payload),
-                               /*upgraded_medium=*/absl::nullopt);
+                               /*upgraded_medium=*/std::nullopt);
       run_loop_progress.Run();
 
       task_environment_.FastForwardBy(kMinProgressUpdateFrequency);
@@ -1431,7 +1431,7 @@ class NearbySharingServiceImplTestBase : public testing::Test {
             /*total_bytes=*/kPayloadSize,
             /*bytes_transferred=*/kPayloadSize);
     listener->OnStatusUpdate(std::move(payload),
-                             /*upgraded_medium=*/absl::nullopt);
+                             /*upgraded_medium=*/std::nullopt);
 
     run_loop_success.Run();
 
@@ -1530,14 +1530,12 @@ class NearbySharingServiceImplTestBase : public testing::Test {
   std::unique_ptr<net::test::MockNetworkChangeNotifier> network_notifier_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
-  raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  raw_ptr<FakeNearbyConnectionsManager, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<FakeNearbyConnectionsManager, DanglingUntriaged>
       fake_nearby_connections_manager_ = nullptr;
-  raw_ptr<FakePowerClient, DanglingUntriaged | ExperimentalAsh> power_client_ =
-      nullptr;
-  raw_ptr<FakeWifiNetworkConfigurationHandler,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<FakePowerClient, DanglingUntriaged> power_client_ = nullptr;
+  raw_ptr<FakeWifiNetworkConfigurationHandler, DanglingUntriaged>
       wifi_network_handler_ = nullptr;
   FakeNearbyShareLocalDeviceDataManager::Factory
       local_device_data_manager_factory_;
@@ -1556,13 +1554,12 @@ class NearbySharingServiceImplTestBase : public testing::Test {
   bool is_bluetooth_powered_ = true;
   device::BluetoothAdapter::LowEnergyScanSessionHardwareOffloadingStatus
       hardware_support_state_;
-  raw_ptr<device::BluetoothAdapter::Observer,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<device::BluetoothAdapter::Observer, DanglingUntriaged>
       adapter_observer_ = nullptr;
   scoped_refptr<NiceMock<MockBluetoothAdapterWithIntervals>>
       mock_bluetooth_adapter_;
-  raw_ptr<device::MockBluetoothLowEnergyScanSession, ExperimentalAsh>
-      mock_scan_session_ = nullptr;
+  raw_ptr<device::MockBluetoothLowEnergyScanSession> mock_scan_session_ =
+      nullptr;
   NiceMock<ash::nearby::MockNearbySharingDecoder> mock_decoder_;
   FakeNearbyConnection connection_;
   size_t set_advertising_interval_call_count_ = 0u;
@@ -1709,7 +1706,7 @@ class TestObserver : public NearbySharingService::Observer {
   bool devices_detected_called_ = false;
   bool devices_not_detected_called_ = false;
   bool scanning_stopped_called_ = false;
-  raw_ptr<NearbySharingService, DanglingUntriaged | ExperimentalAsh> service_;
+  raw_ptr<NearbySharingService, DanglingUntriaged> service_;
 };
 
 TEST_P(NearbySharingServiceImplTest, DisableNearbyShutdownConnections) {
@@ -2977,7 +2974,7 @@ TEST_P(NearbySharingServiceImplTest, IncomingConnection_OutOfStorage) {
                 sharing::mojom::IntroductionFrame::New(
                     std::move(mojo_file_metadatas),
                     std::vector<sharing::mojom::TextMetadataPtr>(),
-                    /*required_package=*/absl::nullopt,
+                    /*required_package=*/std::nullopt,
                     std::vector<sharing::mojom::WifiCredentialsMetadataPtr>()));
 
         sharing::mojom::FramePtr mojo_frame =
@@ -3055,7 +3052,7 @@ TEST_P(NearbySharingServiceImplTest, IncomingConnection_FileSizeOverflow) {
                 sharing::mojom::IntroductionFrame::New(
                     std::move(mojo_file_metadatas),
                     std::vector<sharing::mojom::TextMetadataPtr>(),
-                    /*required_package=*/absl::nullopt,
+                    /*required_package=*/std::nullopt,
                     std::vector<sharing::mojom::WifiCredentialsMetadataPtr>()));
 
         sharing::mojom::FramePtr mojo_frame =
@@ -3178,7 +3175,7 @@ TEST_P(NearbySharingServiceImplTest,
                     sharing::mojom::IntroductionFrame::New(
                         std::vector<sharing::mojom::FileMetadataPtr>(),
                         std::vector<sharing::mojom::TextMetadataPtr>(),
-                        /*required_package=*/absl::nullopt,
+                        /*required_package=*/std::nullopt,
                         std::move(mojo_wifi_credentials_metadatas)));
 
             sharing::mojom::FramePtr mojo_frame =
@@ -3274,7 +3271,7 @@ TEST_P(NearbySharingServiceImplTest,
   // TODO(https://crbug.com/1122552) - Remove cleanups after bugfix
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    absl::optional<base::FilePath> path =
+    std::optional<base::FilePath> path =
         fake_nearby_connections_manager_->GetRegisteredPayloadPath(
             kFilePayloadId);
     EXPECT_TRUE(path);
@@ -3327,7 +3324,7 @@ TEST_P(NearbySharingServiceImplTest, AcceptValidShareTarget) {
   // TODO(https://crbug.com/1122552) - Remove cleanups after bugfix
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    absl::optional<base::FilePath> path =
+    std::optional<base::FilePath> path =
         fake_nearby_connections_manager_->GetRegisteredPayloadPath(
             kFilePayloadId);
     EXPECT_TRUE(path);
@@ -3459,7 +3456,7 @@ TEST_P(NearbySharingServiceImplTest,
             /*total_bytes=*/kPayloadSize,
             /*bytes_transferred=*/kPayloadSize);
     listener->OnStatusUpdate(std::move(payload),
-                             /*upgraded_medium=*/absl::nullopt);
+                             /*upgraded_medium=*/std::nullopt);
     run_loop_progress.Run();
 
     task_environment_.FastForwardBy(kMinProgressUpdateFrequency);
@@ -3493,7 +3490,7 @@ TEST_P(NearbySharingServiceImplTest,
           /*total_bytes=*/kPayloadSize,
           /*bytes_transferred=*/kPayloadSize);
   listener->OnStatusUpdate(std::move(payload),
-                           /*upgraded_medium=*/absl::nullopt);
+                           /*upgraded_medium=*/std::nullopt);
   run_loop_success.Run();
 
   EXPECT_FALSE(
@@ -3503,7 +3500,7 @@ TEST_P(NearbySharingServiceImplTest,
   // File deletion runs in a ThreadPool.
   task_environment_.RunUntilIdle();
 
-  absl::optional<base::FilePath> file_path =
+  std::optional<base::FilePath> file_path =
       fake_nearby_connections_manager_->GetRegisteredPayloadPath(
           kFilePayloadId);
   ASSERT_TRUE(file_path);
@@ -3566,7 +3563,7 @@ TEST_P(NearbySharingServiceImplTest, AcceptValidShareTarget_PayloadFailed) {
           /*total_bytes=*/kPayloadSize,
           /*bytes_transferred=*/kPayloadSize);
   listener->OnStatusUpdate(std::move(payload),
-                           /*upgraded_medium=*/absl::nullopt);
+                           /*upgraded_medium=*/std::nullopt);
   run_loop_failure.Run();
 
   EXPECT_FALSE(
@@ -3576,7 +3573,7 @@ TEST_P(NearbySharingServiceImplTest, AcceptValidShareTarget_PayloadFailed) {
   // File deletion runs in a ThreadPool.
   task_environment_.RunUntilIdle();
 
-  absl::optional<base::FilePath> file_path =
+  std::optional<base::FilePath> file_path =
       fake_nearby_connections_manager_->GetRegisteredPayloadPath(
           kFilePayloadId);
   ASSERT_TRUE(file_path);
@@ -3639,7 +3636,7 @@ TEST_P(NearbySharingServiceImplTest, AcceptValidShareTarget_PayloadCancelled) {
           /*total_bytes=*/kPayloadSize,
           /*bytes_transferred=*/kPayloadSize);
   listener->OnStatusUpdate(std::move(payload),
-                           /*upgraded_medium=*/absl::nullopt);
+                           /*upgraded_medium=*/std::nullopt);
   run_loop_failure.Run();
 
   EXPECT_FALSE(
@@ -3649,7 +3646,7 @@ TEST_P(NearbySharingServiceImplTest, AcceptValidShareTarget_PayloadCancelled) {
   // File deletion runs in a ThreadPool.
   task_environment_.RunUntilIdle();
 
-  absl::optional<base::FilePath> file_path =
+  std::optional<base::FilePath> file_path =
       fake_nearby_connections_manager_->GetRegisteredPayloadPath(
           kFilePayloadId);
   ASSERT_TRUE(file_path);
@@ -5267,13 +5264,13 @@ TEST_P(NearbySharingServiceImplTest, CreateShareTarget) {
           nearby_share::mojom::Visibility::kAllContacts);
   certificate_proto.set_for_self_share(true);
 
-  absl::optional<NearbyShareDecryptedPublicCertificate> certificate =
+  std::optional<NearbyShareDecryptedPublicCertificate> certificate =
       NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
           certificate_proto, GetNearbyShareTestEncryptedMetadataKey());
   ASSERT_TRUE(certificate.has_value());
   ASSERT_EQ(certificate_proto.for_self_share(), certificate->for_self_share());
 
-  absl::optional<ShareTarget> share_target =
+  std::optional<ShareTarget> share_target =
       CreateShareTarget(advertisement, certificate);
   ASSERT_TRUE(share_target.has_value());
   EXPECT_EQ(kDeviceName, share_target->device_name);
@@ -5283,8 +5280,7 @@ TEST_P(NearbySharingServiceImplTest, CreateShareTarget) {
   }
 
   // Test when |certificate| is null.
-  share_target =
-      CreateShareTarget(advertisement, /*certificate=*/absl::nullopt);
+  share_target = CreateShareTarget(advertisement, /*certificate=*/std::nullopt);
   ASSERT_TRUE(share_target.has_value());
   EXPECT_EQ(kDeviceName, share_target->device_name);
   EXPECT_EQ(kDeviceType, share_target->type);

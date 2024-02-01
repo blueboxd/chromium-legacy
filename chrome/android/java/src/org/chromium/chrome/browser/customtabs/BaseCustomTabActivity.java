@@ -228,6 +228,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                         getCompositorViewHolderSupplier(),
                         getTabContentManagerSupplier(),
                         this::getSnackbarManager,
+                        getEdgeToEdgeSupplier(),
                         getActivityType(),
                         this::isInOverviewMode,
                         this::isWarmOnResume,
@@ -279,7 +280,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
         // mIntentHandler comes from the base class.
         IntentIgnoringCriterion intentIgnoringCriterion =
-                (intent) -> IntentHandler.shouldIgnoreIntent(intent, isCustomTab());
+                (intent) -> IntentHandler.shouldIgnoreIntent(intent, this, isCustomTab());
 
         BaseCustomTabActivityModule baseCustomTabsModule =
                 overridenBaseCustomTabFactory != null
@@ -539,7 +540,9 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                 mIntentDataProvider.shouldShowDownloadButton(),
                 mIntentDataProvider.isIncognito(),
                 isMenuIconAtStart,
-                mBaseCustomTabRootUiCoordinator::isPageInsightsHubEnabled);
+                mBaseCustomTabRootUiCoordinator::isPageInsightsHubEnabled,
+                mBaseCustomTabRootUiCoordinator.getReadAloudControllerSupplier(),
+                mIntentDataProvider.getClientPackageName() != null);
     }
 
     @Override
@@ -571,6 +574,12 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
     @Override
     protected boolean handleBackPressed() {
+        if (!BackPressManager.isEnabled()
+                && getTabModalLifetimeHandler() != null
+                && getTabModalLifetimeHandler().onBackPressed()) {
+            BackPressManager.record(BackPressHandler.Type.TAB_MODAL_HANDLER);
+            return true;
+        }
         if (BackPressManager.correctTabNavigationOnFallback()) {
             if (getToolbarManager() != null && getToolbarManager().back()) {
                 return true;
@@ -718,14 +727,13 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
     @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
-        // Disable creating new tabs, bookmark, history, print, help, focus_url, etc.
+        // Disable creating new tabs, bookmark, print, help, focus_url, etc.
         if (id == R.id.focus_url_bar
                 || id == R.id.all_bookmarks_menu_id
                 || id == R.id.help_id
                 || id == R.id.recent_tabs_menu_id
                 || id == R.id.new_incognito_tab_menu_id
-                || id == R.id.new_tab_menu_id
-                || id == R.id.open_history_menu_id) {
+                || id == R.id.new_tab_menu_id) {
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);
@@ -774,9 +782,6 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
     @Override
     protected boolean shouldShowTabOnActivityShown() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PREFETCH_DELAY_SHOW_ON_START)) {
-            return true;
-        }
         // Hidden tabs from speculation will be shown and added to the tab model in
         // CustomTabActivityTabController#finalizeCreatingTab.
         return didFinishNativeInitialization()

@@ -7,14 +7,21 @@
 
 #include "build/build_config.h"
 
-// A wrapper around `__has_attribute`, similar to HAS_CPP_ATTRIBUTE.
+// A wrapper around `__has_cpp_attribute`.
+#if defined(__has_cpp_attribute)
+#define PA_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#else
+#define PA_HAS_CPP_ATTRIBUTE(x) 0
+#endif
+
+// A wrapper around `__has_attribute`, similar to PA_HAS_CPP_ATTRIBUTE.
 #if defined(__has_attribute)
 #define PA_HAS_ATTRIBUTE(x) __has_attribute(x)
 #else
 #define PA_HAS_ATTRIBUTE(x) 0
 #endif
 
-// A wrapper around `__has_builtin`, similar to HAS_CPP_ATTRIBUTE.
+// A wrapper around `__has_builtin`, similar to PA_HAS_CPP_ATTRIBUTE.
 #if defined(__has_builtin)
 #define PA_HAS_BUILTIN(x) __has_builtin(x)
 #else
@@ -77,6 +84,26 @@
 #define PA_ALIGNAS(byte_alignment) __attribute__((aligned(byte_alignment)))
 #endif
 
+// In case the compiler supports it PA_NO_UNIQUE_ADDRESS evaluates to the C++20
+// attribute [[no_unique_address]]. This allows annotating data members so that
+// they need not have an address distinct from all other non-static data members
+// of its class.
+//
+// References:
+// * https://en.cppreference.com/w/cpp/language/attributes/no_unique_address
+// * https://wg21.link/dcl.attr.nouniqueaddr
+#if defined(COMPILER_MSVC) && PA_HAS_CPP_ATTRIBUTE(msvc::no_unique_address)
+// Unfortunately MSVC ignores [[no_unique_address]] (see
+// https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/#msvc-extensions-and-abi),
+// and clang-cl matches it for ABI compatibility reasons. We need to prefer
+// [[msvc::no_unique_address]] when available if we actually want any effect.
+#define PA_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#elif PA_HAS_CPP_ATTRIBUTE(no_unique_address)
+#define PA_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+#define PA_NO_UNIQUE_ADDRESS
+#endif
+
 // Tells the compiler a function is using a printf-style format string.
 // |format_param| is the one-based index of the format string parameter;
 // |dots_param| is the one-based index of the "..." parameter.
@@ -126,6 +153,14 @@
 #define PA_LIKELY(x) (x)
 #endif  // defined(COMPILER_GCC)
 #endif  // !defined(PA_LIKELY)
+
+// Compiler feature-detection.
+// clang.llvm.org/docs/LanguageExtensions.html#has-feature-and-has-extension
+#if defined(__has_feature)
+#define PA_HAS_FEATURE(FEATURE) __has_feature(FEATURE)
+#else
+#define PA_HAS_FEATURE(FEATURE) 0
+#endif
 
 #if !defined(PA_CPU_ARM_NEON)
 #if defined(__arm__)
@@ -236,6 +271,35 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
 #define PA_CONSTEXPR_DTOR constexpr
 #else
 #define PA_CONSTEXPR_DTOR
+#endif
+
+// PA_LIFETIME_BOUND indicates that a resource owned by a function parameter or
+// implicit object parameter is retained by the return value of the annotated
+// function (or, for a parameter of a constructor, in the value of the
+// constructed object). This attribute causes warnings to be produced if a
+// temporary object does not live long enough.
+//
+// When applied to a reference parameter, the referenced object is assumed to be
+// retained by the return value of the function. When applied to a non-reference
+// parameter (for example, a pointer or a class type), all temporaries
+// referenced by the parameter are assumed to be retained by the return value of
+// the function.
+//
+// See also the upstream documentation:
+// https://clang.llvm.org/docs/AttributeReference.html#lifetimebound
+//
+// This attribute is based on `ABSL_ATTRIBUTE_LIFETIME_BOUND`, but:
+// * A separate definition is provided to avoid PartitionAlloc => Abseil
+//   dependency
+// * The definition is tweaked to avoid `__attribute__(lifetime))` because it
+//   can't be applied in the same places as `[[clang::lifetimebound]]`.  In
+//   particular `operator T*&() && __attribute__(lifetime))` fails to compile on
+//   `clang` with the following error: 'lifetimebound' attribute only applies to
+//   parameters and implicit object parameters
+#if PA_HAS_CPP_ATTRIBUTE(clang::lifetimebound)
+#define PA_LIFETIME_BOUND [[clang::lifetimebound]]
+#else
+#define PA_LIFETIME_BOUND
 #endif
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_COMPILER_SPECIFIC_H_

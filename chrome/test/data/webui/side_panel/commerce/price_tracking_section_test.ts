@@ -4,11 +4,11 @@
 
 import 'chrome://shopping-insights-side-panel.top-chrome/app.js';
 
+import {BrowserProxyImpl} from 'chrome://resources/cr_components/commerce/browser_proxy.js';
+import {BookmarkProductInfo, PageCallbackRouter, PageRemote, PriceInsightsInfo, PriceInsightsInfo_PriceBucket, ProductInfo} from 'chrome://resources/cr_components/commerce/shopping_service.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
 import {PriceTrackingSection} from 'chrome://shopping-insights-side-panel.top-chrome/price_tracking_section.js';
-import {ShoppingListApiProxyImpl} from 'chrome://shopping-insights-side-panel.top-chrome/shared/commerce/shopping_list_api_proxy.js';
-import {BookmarkProductInfo, PageCallbackRouter, PageRemote, PriceInsightsInfo, PriceInsightsInfo_PriceBucket, ProductInfo} from 'chrome://shopping-insights-side-panel.top-chrome/shared/shopping_list.mojom-webui.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {fakeMetricsPrivate, MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -18,7 +18,7 @@ suite('PriceTrackingSectionTest', () => {
   let priceTrackingSection: PriceTrackingSection;
   let callbackRouter: PageCallbackRouter;
   let callbackRouterRemote: PageRemote;
-  const shoppingListApi = TestMock.fromClass(ShoppingListApiProxyImpl);
+  const shoppingServiceApi = TestMock.fromClass(BrowserProxyImpl);
   let metrics: MetricsTracker;
 
   const productInfo: ProductInfo = {
@@ -90,16 +90,16 @@ suite('PriceTrackingSectionTest', () => {
   setup(async () => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
 
-    shoppingListApi.reset();
+    shoppingServiceApi.reset();
     callbackRouter = new PageCallbackRouter();
-    shoppingListApi.setResultFor('getCallbackRouter', callbackRouter);
-    shoppingListApi.setResultFor(
+    shoppingServiceApi.setResultFor('getCallbackRouter', callbackRouter);
+    shoppingServiceApi.setResultFor(
         'getParentBookmarkFolderNameForCurrentUrl',
         Promise.resolve({name: stringToMojoString16('Parent folder')}));
 
     callbackRouterRemote = callbackRouter.$.bindNewPipeAndPassRemote();
 
-    ShoppingListApiProxyImpl.setInstance(shoppingListApi);
+    BrowserProxyImpl.setInstance(shoppingServiceApi);
 
     priceTrackingSection = document.createElement('price-tracking-section');
     priceTrackingSection.productInfo = productInfo;
@@ -112,30 +112,23 @@ suite('PriceTrackingSectionTest', () => {
     test(
         `PriceTracking section rendering when tracked is ${tracked}`,
         async () => {
-          shoppingListApi.setResultFor(
-              'getPriceTrackingStatusForCurrentUrl',
-              Promise.resolve({tracked: tracked}));
+          priceTrackingSection.isProductTracked = tracked;
 
           document.body.appendChild(priceTrackingSection);
-          await shoppingListApi.whenCalled(
-              'getPriceTrackingStatusForCurrentUrl');
           await flushTasks();
 
           checkPriceTrackingSectionRendering(tracked);
         });
 
     test(`Toggle price tracking when tracked is ${tracked}`, async () => {
-      shoppingListApi.setResultFor(
-          'getPriceTrackingStatusForCurrentUrl',
-          Promise.resolve({tracked: tracked}));
+      priceTrackingSection.isProductTracked = tracked;
 
       document.body.appendChild(priceTrackingSection);
-      await shoppingListApi.whenCalled('getPriceTrackingStatusForCurrentUrl');
       await flushTasks();
 
       priceTrackingSection.$.toggle!.click();
 
-      const tracking = await shoppingListApi.whenCalled(
+      const tracking = await shoppingServiceApi.whenCalled(
           'setPriceTrackingStatusForCurrentUrl');
       assertEquals(!tracking, tracked);
       if (tracking) {
@@ -154,12 +147,9 @@ suite('PriceTrackingSectionTest', () => {
     });
 
     test(`Ignore unrealted product tracking status change`, async () => {
-      shoppingListApi.setResultFor(
-          'getPriceTrackingStatusForCurrentUrl',
-          Promise.resolve({tracked: tracked}));
+      priceTrackingSection.isProductTracked = tracked;
 
       document.body.appendChild(priceTrackingSection);
-      await shoppingListApi.whenCalled('getPriceTrackingStatusForCurrentUrl');
       await flushTasks();
 
       // Create a unrelated product.
@@ -191,12 +181,9 @@ suite('PriceTrackingSectionTest', () => {
   });
 
   test(`Observe current product tracking status change`, async () => {
-    shoppingListApi.setResultFor(
-        'getPriceTrackingStatusForCurrentUrl',
-        Promise.resolve({tracked: false}));
+    priceTrackingSection.isProductTracked = false;
 
     document.body.appendChild(priceTrackingSection);
-    await shoppingListApi.whenCalled('getPriceTrackingStatusForCurrentUrl');
     await flushTasks();
 
     callbackRouterRemote.priceTrackedForBookmark(bookmarkProductInfo);
@@ -209,12 +196,9 @@ suite('PriceTrackingSectionTest', () => {
   });
 
   test(`Trigger bookmark editor`, async () => {
-    shoppingListApi.setResultFor(
-        'getPriceTrackingStatusForCurrentUrl',
-        Promise.resolve({tracked: true}));
+    priceTrackingSection.isProductTracked = true;
 
     document.body.appendChild(priceTrackingSection);
-    await shoppingListApi.whenCalled('getPriceTrackingStatusForCurrentUrl');
     await flushTasks();
     checkPriceTrackingSectionRendering(true);
 
@@ -222,7 +206,7 @@ suite('PriceTrackingSectionTest', () => {
                        '#toggleAnnotationButton')! as HTMLElement;
     folder.click();
 
-    await shoppingListApi.whenCalled('showBookmarkEditorForCurrentUrl');
+    await shoppingServiceApi.whenCalled('showBookmarkEditorForCurrentUrl');
     assertEquals(
         1,
         metrics.count(
@@ -231,12 +215,9 @@ suite('PriceTrackingSectionTest', () => {
   });
 
   test(`Render error message`, async () => {
-    shoppingListApi.setResultFor(
-        'getPriceTrackingStatusForCurrentUrl',
-        Promise.resolve({tracked: false}));
+    priceTrackingSection.isProductTracked = false;
 
     document.body.appendChild(priceTrackingSection);
-    await shoppingListApi.whenCalled('getPriceTrackingStatusForCurrentUrl');
     await flushTasks();
 
     callbackRouterRemote.operationFailedForBookmark(bookmarkProductInfo, true);
@@ -265,12 +246,9 @@ suite('PriceTrackingSectionTest', () => {
   });
 
   test(`Observe product bookmark move event`, async () => {
-    shoppingListApi.setResultFor(
-        'getPriceTrackingStatusForCurrentUrl',
-        Promise.resolve({tracked: true}));
+    priceTrackingSection.isProductTracked = true;
 
     document.body.appendChild(priceTrackingSection);
-    await shoppingListApi.whenCalled('getPriceTrackingStatusForCurrentUrl');
     await flushTasks();
     checkPriceTrackingSectionRendering(true);
     let expectedAnnotation =
@@ -280,7 +258,7 @@ suite('PriceTrackingSectionTest', () => {
     checkAnnotationHasText(expectedAnnotation);
     checkAnnotationHasText(expectedSaveLocationText);
 
-    shoppingListApi.setResultFor(
+    shoppingServiceApi.setResultFor(
         'getParentBookmarkFolderNameForCurrentUrl',
         Promise.resolve({name: stringToMojoString16('New folder')}));
     callbackRouterRemote.onProductBookmarkMoved(bookmarkProductInfo);

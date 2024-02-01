@@ -514,7 +514,7 @@ void FrameCaptionButtonContainerView::ClearOnSizeButtonPressedCallback() {
 }
 
 void FrameCaptionButtonContainerView::Layout() {
-  views::View::Layout();
+  LayoutSuperclass<views::View>(this);
 
   // This ensures that the first frame of the animation to show the size button
   // pushes the buttons to the left of the size button into the center.
@@ -533,10 +533,22 @@ void FrameCaptionButtonContainerView::Layout() {
 }
 
 void FrameCaptionButtonContainerView::ChildPreferredSizeChanged(View* child) {
+  // In the `View::PreferredSizeChanged` method, `ChildPreferredSizeChanged`
+  // occurs before the `InvalidateLayout` method. If we call the `Layout` method
+  // in `ChildPreferredSizeChanged`, due to the order of calls, there is a
+  // layout cache in `LayoutManagerBase`. `Layout` cannot be laid out correctly
+  // at this time. So we need to actively call `InvalidateLayout` to clean up
+  // the layout cache of `LayoutManagerBase`.
+  //
+  // Here, we call `Layout` in
+  // `BrowserNonClientFrameViewChromeOS::ChildPreferredSizeChanged`.
+  InvalidateLayout();
   PreferredSizeChanged();
 }
 
 void FrameCaptionButtonContainerView::ChildVisibilityChanged(View* child) {
+  // Same as ChildPreferredSizeChanged.
+  InvalidateLayout();
   PreferredSizeChanged();
 }
 
@@ -556,7 +568,7 @@ void FrameCaptionButtonContainerView::LayoutButtonsFromAnimation(int x_slide,
   // Slide all buttons to the left of the size button. Usually this is just the
   // minimize button but it can also include a PWA menu button.
   int previous_x = 0;
-  for (auto* button : children()) {
+  for (views::View* button : children()) {
     if (button == size_button_) {
       break;
     }

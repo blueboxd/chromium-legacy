@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -85,8 +86,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // start accessibility.
   RenderAccessibilityImpl(
       RenderAccessibilityManager* const render_accessibility_manager,
-      RenderFrameImpl* const render_frame,
-      bool serialize_post_lifecycle);
+      RenderFrameImpl* const render_frame);
 
   RenderAccessibilityImpl(const RenderAccessibilityImpl&) = delete;
   RenderAccessibilityImpl& operator=(const RenderAccessibilityImpl&) = delete;
@@ -162,44 +162,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // versions. If any have moved, send an IPC with the new locations.
   void SendLocationChanges();
 
-  // Return true if the event indicates that the current batch of changes
-  // should be processed immediately in order for the user to get fast
-  // feedback, e.g. for navigation or data entry activities.
-  bool IsImmediateProcessingRequiredForEvent(const ui::AXEvent&) const;
-
-  // Get the amount of time, in ms, that event processing should be deferred
-  // in order to more efficiently batch changes.
-  int GetDeferredEventsDelay();
-
  private:
-  enum class LegacyEventScheduleMode {
-    kDeferEvents,
-    kProcessEventsImmediately
-  };
-
-  enum class LegacyEventScheduleStatus {
-    // Events have been scheduled with a delay, but have not been sent.
-    kScheduledDeferred,
-    // Events have been scheduled without a delay, but have not been sent.
-    kScheduledImmediate,
-    // Events have been sent, waiting for callback.
-    kWaitingForAck,
-    // Events are not scheduled and we are not waiting for an ack.
-    kNotWaiting
-  };
-
-  // Callback that will be called from the browser upon handling the message
-  // previously sent to it via SendPendingAccessibilityEvents().
-  void LegacyOnAccessibilityEventsHandled();
-
-  // If we are calling this from a task, scheduling is allowed even if there is
-  // a running task
-  void LegacyScheduleSendPendingAccessibilityEvents(
-      bool scheduling_from_task = false);
-
-  // Cancels scheduled events that are not yet in flight
-  void LegacyCancelScheduledEvents();
-
   // Called whenever the "ack" message is received for a serialization message
   // sent to the browser process, indicating it was received.
   void OnSerializationReceived();
@@ -283,12 +246,14 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   using PluginAXTreeSerializer =
       ui::AXTreeSerializer<const ui::AXNode*, std::vector<const ui::AXNode*>>;
-  std::unique_ptr<PluginAXTreeSerializer> plugin_serializer_;
+  // AXTreeSerializer's AXSourceNodeVectorType is not a vector<raw_ptr> due to
+  // performance regressions detected in blink_perf.accessibility tests.
+  RAW_PTR_EXCLUSION std::unique_ptr<PluginAXTreeSerializer> plugin_serializer_;
   raw_ptr<PluginAXTreeSource, ExperimentalRenderer> plugin_tree_source_;
 
   // Token to return this token in the next IPC, so that RenderFrameHostImpl
   // can discard stale data, when the token does not match the expected token.
-  absl::optional<uint32_t> reset_token_;
+  std::optional<uint32_t> reset_token_;
 
   // Whether or not we've injected a stylesheet in this document
   // (only when debugging flags are enabled, never under normal circumstances).
@@ -336,7 +301,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   //
   // Used to ensure that the tutor message that explains to screen reader users
   // how to turn on automatic image labels is provided only once.
-  mutable absl::optional<int32_t> first_unlabeled_image_id_ = absl::nullopt;
+  mutable std::optional<int32_t> first_unlabeled_image_id_ = std::nullopt;
 
   // Note: this is the accessibility mode communicated to this object.
   // The actual accessibility mode on a Document is the combination of this
@@ -345,22 +310,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   // A set of IDs for which we should always load inline text boxes.
   std::set<int32_t> load_inline_text_boxes_ids_;
-
-  // Controls whether serialization should be run synchronously at the end of a
-  // main frame update, or scheduled as an asynchronous task.
-  bool serialize_post_lifecycle_;
-
-  // The initial accessibility tree root still needs to be created. Like other
-  // accessible objects, it must be created when layout is clean.
-  bool legacy_needs_initial_ax_tree_root_ = true;
-
-  // Current event scheduling status
-  LegacyEventScheduleStatus legacy_event_schedule_status_ =
-      LegacyEventScheduleStatus::kNotWaiting;
-
-  // We defer events to improve performance during the initial page load.
-  LegacyEventScheduleMode legacy_event_schedule_mode_ =
-      LegacyEventScheduleMode::kDeferEvents;
 
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RenderAccessibilityImpl>

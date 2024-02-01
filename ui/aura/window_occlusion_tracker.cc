@@ -260,12 +260,13 @@ WindowOcclusionTracker::ComputeTargetOcclusionForWindow(Window* window) {
   base::AutoReset<OcclusionData> auto_reset_occlusion_data(
       &tracked_window_iter->second, OcclusionData());
   DCHECK(!target_occlusion_window_);
-  base::AutoReset<Window*> auto_reset_target_occlusion_window(
+  base::AutoReset<raw_ptr<Window>> auto_reset_target_occlusion_window(
       &target_occlusion_window_, window);
 
   Window* root_window = window->GetRootWindow();
   SkRegion occluded_region;
-  RecomputeOcclusionImpl(root_window, gfx::Transform(), nullptr,
+  SkIRect root_window_clip = gfx::RectToSkIRect(root_window->bounds());
+  RecomputeOcclusionImpl(root_window, gfx::Transform(), &root_window_clip,
                          &occluded_region);
 
   return tracked_window_iter->second;
@@ -324,15 +325,20 @@ void WindowOcclusionTracker::MaybeComputeOcclusion() {
               Window::OcclusionState::OCCLUDED) {
             SetWindowAndDescendantsAreOccluded(
                 root_window, /* is_occluded */ true, root_window->IsVisible());
+// TODO(crbug.com/1429517): Enable for other platforms in a separate CL.
+#if BUILDFLAG(IS_CHROMEOS)
           } else if (root_window_pair.second.occlusion_state ==
                      Window::OcclusionState::HIDDEN) {
             SetWindowAndDescendantsAreOccluded(root_window,
                                                /* is_occluded */ false,
                                                /* is_parent_visible */ false);
+#endif
           } else {
             SkRegion occluded_region = root_window_pair.second.occluded_region;
-            RecomputeOcclusionImpl(root_window, gfx::Transform(), nullptr,
-                                   &occluded_region);
+            SkIRect root_window_clip =
+                gfx::RectToSkIRect(root_window->bounds());
+            RecomputeOcclusionImpl(root_window, gfx::Transform(),
+                                   &root_window_clip, &occluded_region);
           }
         }
       }
@@ -429,7 +435,7 @@ bool WindowOcclusionTracker::RecomputeOcclusionImpl(
   SkRegion region_for_forced_visible_windows;
   SkRegion* occluded_region_for_children =
       force_visible ? &region_for_forced_visible_windows : occluded_region;
-  for (auto* child : base::Reversed(window->children())) {
+  for (aura::Window* child : base::Reversed(window->children())) {
     has_visible_child |= RecomputeOcclusionImpl(
         child, transform_relative_to_root, clipped_bounds_for_children,
         occluded_region_for_children);
@@ -483,9 +489,6 @@ bool WindowOcclusionTracker::VisibleWindowCanOccludeOtherWindows(
 bool WindowOcclusionTracker::WindowHasContent(Window* window) const {
   if (window->layer()->type() != ui::LAYER_NOT_DRAWN)
     return true;
-
-  if (window_has_content_callback_)
-    return window_has_content_callback_.Run(window);
 
   return false;
 }

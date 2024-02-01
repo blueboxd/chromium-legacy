@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <optional>
+
 #include "base/test/bind.h"
 #include "base/test/run_until.h"
 #include "base/test/test_future.h"
@@ -19,7 +21,6 @@
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "content/public/test/browser_test.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -31,7 +32,7 @@ namespace {
 // position in DIP screen coordinates set to |target_position|.
 void WaitForWindowPositionInScreen(const std::string& window_id,
                                    const gfx::Point& target_position) {
-  base::test::TestFuture<const absl::optional<gfx::Point>&> future;
+  base::test::TestFuture<const std::optional<gfx::Point>&> future;
   ASSERT_TRUE(base::test::RunUntil([&]() {
     chromeos::LacrosService::Get()
         ->GetRemote<crosapi::mojom::TestController>()
@@ -87,16 +88,12 @@ IN_PROC_BROWSER_TEST_F(PopupBrowserTest, LongPressOnTabOpensNonEmptyMenu) {
   // near the top of the screen.
   browser()->window()->Maximize();
 
-  // Wait for the window to be created.
-  aura::Window* window = browser()->window()->GetNativeWindow();
-  std::string window_id =
-      lacros_window_utility::GetRootWindowUniqueId(window->GetRootWindow());
-  ASSERT_TRUE(browser_test_util::WaitForWindowCreation(window_id));
-
   // Wait for the window to be globally positioned at 0,0. It will eventually
   // have this position because it is maximized. We cannot assert the position
   // lacros-side because Wayland clients do not know the position of their
   // windows on the display.
+  std::string window_id = lacros_window_utility::GetRootWindowUniqueId(
+      browser()->window()->GetNativeWindow()->GetRootWindow());
   WaitForWindowPositionInScreen(window_id, gfx::Point(0, 0));
 
   // Precondition: The browser is the only open widget.

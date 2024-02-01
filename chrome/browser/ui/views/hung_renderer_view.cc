@@ -290,8 +290,9 @@ HungRendererDialogView::HungRendererDialogView(WebContents* web_contents)
 
   hung_pages_table_model_ = std::make_unique<HungPagesTableModel>(this);
   const std::vector<ui::TableColumn> columns = {ui::TableColumn()};
-  auto hung_pages_table = std::make_unique<views::TableView>(
-      hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true);
+  auto hung_pages_table =
+      std::make_unique<views::TableView>(hung_pages_table_model_.get(), columns,
+                                         views::TableType::kIconAndText, true);
   hung_pages_table_ = hung_pages_table.get();
 
   SetButtonLabel(
@@ -447,5 +448,5 @@ void HungRendererDialogView::BypassActiveBrowserRequirementForTests() {
   g_bypass_active_browser_requirement = true;
 }
 
-BEGIN_METADATA(HungRendererDialogView, views::DialogDelegateView)
+BEGIN_METADATA(HungRendererDialogView)
 END_METADATA

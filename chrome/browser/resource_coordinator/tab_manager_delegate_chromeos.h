@@ -15,7 +15,7 @@
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/raw_ptr_exclusion.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/scoped_multi_source_observation.h"
@@ -29,6 +29,8 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/resourced/resourced_client.h"
+#include "components/memory_pressure/reclaim_target.h"
+#include "components/memory_pressure/unnecessary_discard_monitor.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_creation_observer.h"
@@ -133,6 +135,8 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, SetOomScoreAdj);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, TestDiscardedTabsAreSkipped);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, ReportProcesses);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
+                           TestTargetMemoryToFreeIsRespected);
 
   using OptionalArcProcessList = arc::ArcProcessService::OptionalArcProcessList;
 
@@ -281,6 +285,8 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   uint64_t tab_event_sequence_ = 0;
   uint64_t tab_report_sequence_ = 0;
 
+  memory_pressure::UnnecessaryDiscardMonitor unnecessary_discard_monitor_;
+
   // Weak pointer factory used for posting tasks to other threads.
   base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_{this};
 };
@@ -327,12 +333,8 @@ class TabManagerDelegate::Candidate {
   // Derive process type for this candidate. Used to initialize |process_type_|.
   ProcessType GetProcessTypeInternal() const;
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter
-  // for: #constexpr-ctor-field-initializer
-  RAW_PTR_EXCLUSION LifecycleUnit* lifecycle_unit_ = nullptr;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter
-  // for: #constexpr-ctor-field-initializer
-  RAW_PTR_EXCLUSION const arc::ArcProcess* app_ = nullptr;
+  raw_ptr<LifecycleUnit, DanglingUntriaged> lifecycle_unit_ = nullptr;
+  raw_ptr<const arc::ArcProcess, DanglingUntriaged> app_ = nullptr;
   ProcessType process_type_ = GetProcessTypeInternal();
 };
 
@@ -345,7 +347,7 @@ class TabManagerDelegate::MemoryStat {
 
   // Returns target size of memory to free given current memory pressure and
   // pre-configured low memory margin.
-  virtual int TargetMemoryToFreeKB();
+  virtual memory_pressure::ReclaimTarget TargetMemoryToFree();
 
   // Returns estimated memory to be freed if the process |handle| is killed.
   virtual int EstimatedMemoryFreedKB(base::ProcessHandle handle);

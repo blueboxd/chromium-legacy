@@ -43,6 +43,7 @@
 #include "ui/base/metadata/base_type_conversion.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 namespace policy {
 namespace {
@@ -169,8 +170,8 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
       return;
     }
 
-    base::FilePath selected_path = std::move(selected_path_);
-    listener_->FileSelected(selected_path, 0 /* index */, nullptr /* params */);
+    ui::SelectedFileInfo file(selected_path_, selected_path_);
+    listener_->FileSelected(file, /*index=*/0, /*params=*/nullptr);
   }
 
   bool IsRunning(gfx::NativeWindow owning_window) const override {
@@ -182,7 +183,7 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
  private:
   ~TestSelectFileDialog() override = default;
 
-  // The simulatd file path selected by the user.
+  // The simulated file path selected by the user.
   base::FilePath selected_path_;
 };
 
@@ -466,14 +467,19 @@ class MockDlpFilesController : public DlpFilesController {
       (override));
 
  protected:
-  MOCK_METHOD((absl::optional<data_controls::Component>),
+  MOCK_METHOD((std::optional<data_controls::Component>),
               MapFilePathToPolicyComponent,
               (Profile * profile, const base::FilePath& file_path),
               (override));
 
+  MOCK_METHOD(bool,
+              IsInLocalFileSystem,
+              (const base::FilePath& file_path),
+              (override));
+
   MOCK_METHOD(void,
               ShowDlpBlockedFiles,
-              (absl::optional<uint64_t> task_id,
+              (std::optional<uint64_t> task_id,
                std::vector<base::FilePath> blocked_files,
                dlp::FileAction action),
               (override));
@@ -560,7 +566,7 @@ IN_PROC_BROWSER_TEST_P(
   auto [isAllowed, directoryPicker, jsId] = GetParam();
   fake_dlp_client_->SetFileAccessAllowed(isAllowed);
 
-  absl::optional<PermissionContextHandle> permission_context_handle;
+  std::optional<PermissionContextHandle> permission_context_handle;
   if (directoryPicker) {
     permission_context_handle = PrepareDirPicker(/*createFile=*/true);
   } else {
@@ -614,7 +620,7 @@ IN_PROC_BROWSER_TEST_P(
           ::dlp::AddFilesResponse::default_instance()));
   fake_dlp_client_->SetAddFilesMock(request.Get());
 
-  absl::optional<PermissionContextHandle> permission_context_handle;
+  std::optional<PermissionContextHandle> permission_context_handle;
   if (directoryPicker) {
     permission_context_handle = PrepareDirPicker(/*createFile=*/false);
   } else {

@@ -41,6 +41,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
+#include "ui/ozone/platform/wayland/host/wayland_cursor_shape.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_drm.h"
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
@@ -109,8 +110,9 @@ int64_t ConvertTimespecToMicros(const struct timespec& ts) {
 int64_t ConvertTimespecResultToMicros(uint32_t tv_sec_hi,
                                       uint32_t tv_sec_lo,
                                       uint32_t tv_nsec) {
-  base::CheckedNumeric<int64_t> result =
-      (static_cast<int64_t>(tv_sec_hi) << 32) + tv_sec_lo;
+  base::CheckedNumeric<int64_t> result(tv_sec_hi);
+  result <<= 32;
+  result += tv_sec_lo;
   result *= base::Time::kMicrosecondsPerSecond;
   result += (tv_nsec / base::Time::kNanosecondsPerMicrosecond);
   return result.ValueOrDie();
@@ -165,6 +167,8 @@ bool WaylandConnection::Initialize(bool use_threaded_polling) {
     RegisterGlobalObjectFactory(WaylandZcrColorManager::kInterfaceName,
                                 &WaylandZcrColorManager::Instantiate);
   }
+  RegisterGlobalObjectFactory(WaylandCursorShape::kInterfaceName,
+                              &WaylandCursorShape::Instantiate);
   RegisterGlobalObjectFactory(WaylandZcrCursorShapes::kInterfaceName,
                               &WaylandZcrCursorShapes::Instantiate);
   RegisterGlobalObjectFactory(WaylandZcrTouchpadHaptics::kInterfaceName,

@@ -318,6 +318,31 @@ class FragmentTreeDumper {
   bool target_fragment_found_ = false;
 };
 
+OofContainingBlock<PhysicalOffset> PhysicalContainingBlock(
+    FragmentBuilder* builder,
+    PhysicalSize outer_size,
+    PhysicalSize inner_size,
+    const OofContainingBlock<LogicalOffset>& containing_block) {
+  return OofContainingBlock<PhysicalOffset>(
+      containing_block.Offset().ConvertToPhysical(
+          builder->Style().GetWritingDirection(), outer_size, inner_size),
+      RelativeInsetToPhysical(containing_block.RelativeOffset(),
+                              builder->Style().GetWritingDirection()),
+      containing_block.Fragment(),
+      containing_block.ClippedContainerBlockOffset(),
+      containing_block.IsInsideColumnSpanner());
+}
+
+OofContainingBlock<PhysicalOffset> PhysicalContainingBlock(
+    FragmentBuilder* builder,
+    PhysicalSize size,
+    const OofContainingBlock<LogicalOffset>& containing_block) {
+  PhysicalSize containing_block_size =
+      containing_block.Fragment() ? containing_block.Fragment()->Size() : size;
+  return PhysicalContainingBlock(builder, size, containing_block_size,
+                                 containing_block);
+}
+
 }  // namespace
 
 PhysicalFragment::PhysicalFragment(FragmentBuilder* builder,
@@ -376,42 +401,6 @@ PhysicalFragment::PhysicalFragment(FragmentBuilder* builder,
       builder->has_adjoining_object_descendants_;
   depends_on_percentage_block_size_ = DependsOnPercentageBlockSize(*builder);
   children_valid_ = true;
-}
-
-PhysicalFragment::OofData* PhysicalFragment::OofDataFromBuilder(
-    FragmentBuilder* builder) {
-  OofData* oof_data = nullptr;
-  if (has_fragmented_out_of_flow_data_)
-    oof_data = FragmentedOofDataFromBuilder(builder);
-
-  const WritingModeConverter converter(
-      {builder->Style().GetWritingMode(), builder->Direction()}, Size());
-
-  if (!builder->oof_positioned_descendants_.empty()) {
-    if (!oof_data)
-      oof_data = MakeGarbageCollected<OofData>();
-    oof_data->oof_positioned_descendants.reserve(
-        builder->oof_positioned_descendants_.size());
-    for (const auto& descendant : builder->oof_positioned_descendants_) {
-      OofInlineContainer<PhysicalOffset> inline_container(
-          descendant.inline_container.container,
-          converter.ToPhysical(descendant.inline_container.relative_offset,
-                               PhysicalSize()));
-      oof_data->oof_positioned_descendants.emplace_back(
-          descendant.Node(),
-          descendant.static_position.ConvertToPhysical(converter),
-          descendant.requires_content_before_breaking, inline_container);
-    }
-  }
-
-  if (const LogicalAnchorQuery* anchor_query = builder->AnchorQuery()) {
-    DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
-    if (!oof_data)
-      oof_data = MakeGarbageCollected<OofData>();
-    oof_data->anchor_query.SetFromLogical(*anchor_query, converter);
-  }
-
-  return oof_data;
 }
 
 // Even though the other constructors don't initialize many of these fields
@@ -496,7 +485,7 @@ PhysicalFragment::OutOfFlowPositionedDescendants() const {
           oof_data_->oof_positioned_descendants.size()};
 }
 
-FragmentedOofData* PhysicalFragment::GetFragmentedOofData() const {
+const FragmentedOofData* PhysicalFragment::GetFragmentedOofData() const {
   if (!has_fragmented_out_of_flow_data_)
     return nullptr;
   auto* oof_data = reinterpret_cast<FragmentedOofData*>(oof_data_.Get());
@@ -518,6 +507,106 @@ bool PhysicalFragment::NeedsOOFPositionedInfoPropagation() const {
                 (GetFragmentedOofData() &&
                  GetFragmentedOofData()->NeedsOOFPositionedInfoPropagation()));
   return !!oof_data_;
+}
+
+PhysicalFragment::OofData* PhysicalFragment::OofDataFromBuilder(
+    FragmentBuilder* builder) {
+  OofData* oof_data = nullptr;
+  if (has_fragmented_out_of_flow_data_) {
+    oof_data = FragmentedOofDataFromBuilder(builder);
+  }
+
+  const WritingModeConverter converter(
+      {builder->Style().GetWritingMode(), builder->Direction()}, Size());
+
+  if (!builder->oof_positioned_descendants_.empty()) {
+    if (!oof_data) {
+      oof_data = MakeGarbageCollected<OofData>();
+    }
+    oof_data->oof_positioned_descendants.reserve(
+        builder->oof_positioned_descendants_.size());
+    for (const auto& descendant : builder->oof_positioned_descendants_) {
+      OofInlineContainer<PhysicalOffset> inline_container(
+          descendant.inline_container.container,
+          converter.ToPhysical(descendant.inline_container.relative_offset,
+                               PhysicalSize()));
+      oof_data->oof_positioned_descendants.emplace_back(
+          descendant.Node(),
+          descendant.static_position.ConvertToPhysical(converter),
+          descendant.requires_content_before_breaking, inline_container);
+    }
+  }
+
+  if (const LogicalAnchorQuery* anchor_query = builder->AnchorQuery()) {
+    DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
+    if (!oof_data) {
+      oof_data = MakeGarbageCollected<OofData>();
+    }
+    oof_data->anchor_query.SetFromLogical(*anchor_query, converter);
+  }
+
+  return oof_data;
+}
+
+PhysicalFragment::OofData* PhysicalFragment::FragmentedOofDataFromBuilder(
+    FragmentBuilder* builder) {
+  DCHECK(has_fragmented_out_of_flow_data_);
+  DCHECK_EQ(has_fragmented_out_of_flow_data_,
+            !builder->oof_positioned_fragmentainer_descendants_.empty() ||
+                !builder->multicols_with_pending_oofs_.empty());
+  auto* fragmented_data = MakeGarbageCollected<FragmentedOofData>();
+  fragmented_data->oof_positioned_fragmentainer_descendants.reserve(
+      builder->oof_positioned_fragmentainer_descendants_.size());
+  const PhysicalSize& size = Size();
+  WritingDirectionMode writing_direction = builder->GetWritingDirection();
+  const WritingModeConverter converter(writing_direction, size);
+  for (const auto& descendant :
+       builder->oof_positioned_fragmentainer_descendants_) {
+    OofInlineContainer<PhysicalOffset> inline_container(
+        descendant.inline_container.container,
+        converter.ToPhysical(descendant.inline_container.relative_offset,
+                             PhysicalSize()));
+    OofInlineContainer<PhysicalOffset> fixedpos_inline_container(
+        descendant.fixedpos_inline_container.container,
+        converter.ToPhysical(
+            descendant.fixedpos_inline_container.relative_offset,
+            PhysicalSize()));
+
+    // The static position should remain relative to the containing block.
+    PhysicalSize containing_block_size =
+        descendant.containing_block.Fragment()
+            ? descendant.containing_block.Fragment()->Size()
+            : size;
+    const WritingModeConverter containing_block_converter(
+        writing_direction, containing_block_size);
+
+    fragmented_data->oof_positioned_fragmentainer_descendants.emplace_back(
+        descendant.Node(),
+        descendant.static_position.ConvertToPhysical(
+            containing_block_converter),
+        descendant.requires_content_before_breaking, inline_container,
+        PhysicalContainingBlock(builder, size, containing_block_size,
+                                descendant.containing_block),
+        PhysicalContainingBlock(builder, size,
+                                descendant.fixedpos_containing_block),
+        fixedpos_inline_container);
+  }
+  for (const auto& multicol : builder->multicols_with_pending_oofs_) {
+    auto& value = multicol.value;
+    OofInlineContainer<PhysicalOffset> fixedpos_inline_container(
+        value->fixedpos_inline_container.container,
+        converter.ToPhysical(value->fixedpos_inline_container.relative_offset,
+                             PhysicalSize()));
+    fragmented_data->multicols_with_pending_oofs.insert(
+        multicol.key,
+        MakeGarbageCollected<MulticolWithPendingOofs<PhysicalOffset>>(
+            value->multicol_offset.ConvertToPhysical(
+                builder->Style().GetWritingDirection(), size, PhysicalSize()),
+            PhysicalContainingBlock(builder, size,
+                                    value->fixedpos_containing_block),
+            fixedpos_inline_container));
+  }
+  return fragmented_data;
 }
 
 void PhysicalFragment::ClearOofData() {
@@ -618,51 +707,6 @@ void PhysicalFragment::CheckType() const {
   }
 }
 #endif
-
-PhysicalRect PhysicalFragment::ComputeRubyEmHeightBox(
-    const PhysicalBoxFragment& container) const {
-  switch (Type()) {
-    case kFragmentBox:
-      return To<PhysicalBoxFragment>(*this).ComputeRubyEmHeightBox();
-    case kFragmentLineBox:
-      NOTREACHED() << "You must call LineBoxFragment::ComputeRubyEmHeightBox "
-                      "explicitly.";
-      break;
-  }
-  NOTREACHED();
-  return {{}, Size()};
-}
-
-PhysicalRect PhysicalFragment::ComputeRubyEmHeightBoxForPropagation(
-    const PhysicalBoxFragment& container) const {
-  PhysicalRect overflow = ComputeRubyEmHeightBox(container);
-  AdjustRubyEmHeightBoxForPropagation(container, &overflow);
-  return overflow;
-}
-
-void PhysicalFragment::AdjustRubyEmHeightBoxForPropagation(
-    const PhysicalBoxFragment& container,
-    PhysicalRect* overflow) const {
-  DCHECK(!IsLineBox());
-  if (!IsCSSBox())
-    return;
-  if (UNLIKELY(IsLayoutObjectDestroyedOrMoved())) {
-    NOTREACHED();
-    return;
-  }
-
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  const LayoutObject* container_layout_object = container.GetLayoutObject();
-  DCHECK(container_layout_object);
-  if (layout_object->ShouldUseTransformFromContainer(container_layout_object)) {
-    gfx::Transform transform;
-    layout_object->GetTransformFromContainer(container_layout_object,
-                                             PhysicalOffset(), transform);
-    *overflow =
-        PhysicalRect::EnclosingRect(transform.MapRect(gfx::RectF(*overflow)));
-  }
-}
 
 LogicalRect PhysicalFragment::ConvertChildToLogical(
     const PhysicalRect& physical_rect) const {
@@ -820,20 +864,15 @@ void PhysicalFragment::AddOutlineRectsForCursor(
       }
       case FragmentItem::kGeneratedText:
       case FragmentItem::kText: {
-        if (!ShouldIncludeBlockInkOverflow(outline_type)) {
+        if (!item.IsSvgText() && !ShouldIncludeBlockInkOverflow(outline_type)) {
           break;
         }
-        PhysicalRect rect = item.RectInContainerFragment();
+        PhysicalRect rect =
+            item.IsSvgText() ? PhysicalRect::EnclosingRect(
+                                   cursor->Current().ObjectBoundingBox(*cursor))
+                             : item.RectInContainerFragment();
         if (UNLIKELY(text_combine))
           rect = text_combine->AdjustRectForBoundingBox(rect);
-        rect.Move(additional_offset);
-        collector.AddRect(rect);
-        break;
-      }
-      case FragmentItem::kSvgText: {
-        auto rect = PhysicalRect::EnclosingRect(
-            cursor->Current().ObjectBoundingBox(*cursor));
-        DCHECK(!text_combine);
         rect.Move(additional_offset);
         collector.AddRect(rect);
         break;
@@ -856,94 +895,6 @@ void PhysicalFragment::AddOutlineRectsForCursor(
         NOTREACHED_NORETURN();
     }
     cursor->MoveToNext();
-  }
-}
-
-void PhysicalFragment::AddRubyEmHeightBoxForInlineChild(
-    const PhysicalBoxFragment& container,
-    const ComputedStyle& container_style,
-    const FragmentItem& line,
-    bool has_hanging,
-    const InlineCursor& cursor,
-    PhysicalRect* overflow) const {
-  DCHECK(IsLineBox() || IsInlineBox());
-  DCHECK(cursor.Current().Item() &&
-         (cursor.Current().Item()->BoxFragment() == this ||
-          cursor.Current().Item()->LineBoxFragment() == this));
-  const WritingMode container_writing_mode = container_style.GetWritingMode();
-  for (InlineCursor descendants = cursor.CursorForDescendants(); descendants;) {
-    const FragmentItem* item = descendants.CurrentItem();
-    DCHECK(item);
-    if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
-      NOTREACHED();
-      descendants.MoveToNextSkippingChildren();
-      continue;
-    }
-    if (item->IsText()) {
-      PhysicalRect child_scroll_overflow = item->RectInContainerFragment();
-      child_scroll_overflow = AdjustTextRectForEmHeight(
-          child_scroll_overflow, item->Style(), item->TextShapeResult(),
-          container_writing_mode);
-      if (UNLIKELY(has_hanging)) {
-        AdjustRubyEmHeightBoxForHanging(line.RectInContainerFragment(),
-                                        container_writing_mode,
-                                        &child_scroll_overflow);
-      }
-      overflow->Unite(child_scroll_overflow);
-      descendants.MoveToNextSkippingChildren();
-      continue;
-    }
-
-    if (const PhysicalBoxFragment* child_box = item->PostLayoutBoxFragment()) {
-      PhysicalRect child_scroll_overflow;
-      if (child_box->GetBoxType() != kInlineBox && !IsRubyBox()) {
-        child_scroll_overflow = item->RectInContainerFragment();
-      }
-      if (child_box->IsInlineBox()) {
-        child_box->AddRubyEmHeightBoxForInlineChild(
-            container, container_style, line, has_hanging, descendants,
-            &child_scroll_overflow);
-        child_box->AdjustRubyEmHeightBoxForPropagation(container,
-                                                       &child_scroll_overflow);
-        if (UNLIKELY(has_hanging)) {
-          AdjustRubyEmHeightBoxForHanging(line.RectInContainerFragment(),
-                                          container_writing_mode,
-                                          &child_scroll_overflow);
-        }
-      } else {
-        child_scroll_overflow =
-            child_box->ComputeRubyEmHeightBoxForPropagation(container);
-        child_scroll_overflow.offset += item->OffsetInContainerFragment();
-      }
-      overflow->Unite(child_scroll_overflow);
-      descendants.MoveToNextSkippingChildren();
-      continue;
-    }
-
-    // Add all children of a culled inline box; i.e., an inline box without
-    // margin/border/padding etc.
-    DCHECK_EQ(item->Type(), FragmentItem::kBox);
-    descendants.MoveToNext();
-  }
-}
-
-// Chop the hanging part from scrollable overflow. Children overflow in inline
-// direction should hang, which should not cause scroll.
-// TODO(kojii): Should move to text fragment to make this more accurate.
-void PhysicalFragment::AdjustRubyEmHeightBoxForHanging(
-    const PhysicalRect& rect,
-    const WritingMode container_writing_mode,
-    PhysicalRect* overflow) {
-  if (IsHorizontalWritingMode(container_writing_mode)) {
-    if (overflow->offset.left < rect.offset.left)
-      overflow->offset.left = rect.offset.left;
-    if (overflow->Right() > rect.Right())
-      overflow->ShiftRightEdgeTo(rect.Right());
-  } else {
-    if (overflow->offset.top < rect.offset.top)
-      overflow->offset.top = rect.offset.top;
-    if (overflow->Bottom() > rect.Bottom())
-      overflow->ShiftBottomEdgeTo(rect.Bottom());
   }
 }
 

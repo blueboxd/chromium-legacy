@@ -26,6 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_
 
+#include <climits>
+
 #include "base/dcheck_is_on.h"
 #include "base/notreached.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
@@ -305,7 +307,8 @@ class CORE_EXPORT Node : public EventTarget {
   const AtomicString& lookupNamespaceURI(const String& prefix) const;
 
   String textContent(bool convert_brs_to_newlines = false,
-                     TextVisitor* visitor = nullptr) const;
+                     TextVisitor* visitor = nullptr,
+                     unsigned int max_length = UINT_MAX) const;
   virtual void setTextContent(const String&);
   V8UnionStringOrTrustedScript* textContentForBinding() const;
   virtual void setTextContentForBinding(
@@ -953,8 +956,6 @@ class CORE_EXPORT Node : public EventTarget {
   PartsList* GetDOMParts() const {
     return HasRareData() ? RareData()->GetDOMParts() : nullptr;
   }
-  void UpdateForRemovedDOMParts(ContainerNode& insertion_point);
-  void UpdateForInsertedDOMParts(ContainerNode& insertion_point);
 
   // For the imperative slot distribution API.
   void SetManuallyAssignedSlot(HTMLSlotElement* slot);
@@ -996,13 +997,15 @@ class CORE_EXPORT Node : public EventTarget {
   }
   void SetCachedDirectionality(TextDirection direction);
 
-  bool NeedsInheritDirectionalityFromParent() const;
-  void SetNeedsInheritDirectionalityFromParent();
-  void ClearNeedsInheritDirectionalityFromParent();
-
-  bool DirAutoInheritsFromParent() const;
-  void SetDirAutoInheritsFromParent();
-  void ClearDirAutoInheritsFromParent();
+  bool DirAutoInheritsFromParent() const {
+    return GetFlag(kDirAutoInheritsFromParent);
+  }
+  void SetDirAutoInheritsFromParent() {
+    return SetFlag(kDirAutoInheritsFromParent);
+  }
+  void ClearDirAutoInheritsFromParent() {
+    return ClearFlag(kDirAutoInheritsFromParent);
+  }
 
   void Trace(Visitor*) const override;
 
@@ -1059,15 +1062,6 @@ class CORE_EXPORT Node : public EventTarget {
 
     kSelfOrAncestorHasDirAutoAttribute = 1 << 28,
     kCachedDirectionalityIsRtl = 1 << 29,
-    // TODO(https://crbug.com/576815): Remove this duplication once new
-    // dir=auto handling ships as part of
-    // RuntimeEnabledFeatures::CSSPseudoDirEnabled().
-    //
-    // This has the same value as the next flag; this one is used only when
-    // !RuntimeEnabledFeatures::CSSPseudoDirEnabled():
-    kNeedsInheritDirectionalityFromParent = 1u << 30,
-    // This has the same value as the previous flag; this one is used only when
-    // RuntimeEnabledFeatures::CSSPseudoDirEnabled():
     kDirAutoInheritsFromParent = 1u << 30,
 
     // Indicates that the node was added in a task descendant of a potential
@@ -1134,7 +1128,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   Node(TreeScope*, ConstructionType);
 
-  void WillMoveToNewDocument(Document& old_document, Document& new_document);
+  void WillMoveToNewDocument(Document& new_document);
   virtual void DidMoveToNewDocument(Document& old_document);
 
   void AddedEventListener(const AtomicString& event_type,
@@ -1201,8 +1195,6 @@ class CORE_EXPORT Node : public EventTarget {
     return reinterpret_cast<NodeRareData*>(data_.Get());
   }
   ShadowRoot* GetSlotAssignmentRoot() const;
-
-  void AddCandidateDirectionalityForSlot();
 
   // Both parent and tree_scope are hot accessed members. Keep them uncompressed
   // for performance reasons.

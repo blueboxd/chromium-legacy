@@ -15,6 +15,7 @@
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
+#import "components/autofill/core/browser/autofill_plus_address_delegate.h"
 #import "components/autofill/core/browser/autofill_save_update_address_profile_delegate_ios.h"
 #import "components/autofill/core/browser/form_data_importer.h"
 #import "components/autofill/core/browser/logging/log_manager.h"
@@ -62,9 +63,9 @@
 #import "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/create_card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/ios_chrome_payments_autofill_client.h"
+#import "ios/chrome/browser/ui/autofill/scoped_autofill_payment_reauth_module_override.h"
 #import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #import "ios/chrome/common/channel_info.h"
-#import "ios/public/provider/chrome/browser/risk_data/risk_data_api.h"
 #import "ios/web/public/web_state.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 #import "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -107,7 +108,6 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
               browser_state_->IsOffTheRecord())),
       form_data_importer_(std::make_unique<FormDataImporter>(
           this,
-          payments_network_interface_.get(),
           personal_data_manager_,
           GetApplicationContext()->GetApplicationLocale())),
       infobar_manager_(infobar_manager),
@@ -272,7 +272,8 @@ GeoIpCountryCode ChromeAutofillClientIOS::GetVariationConfigCountryCode()
           : std::string());
 }
 
-void ChromeAutofillClientIOS::ShowAutofillSettings(PopupType popup_type) {
+void ChromeAutofillClientIOS::ShowAutofillSettings(
+    FillingProduct main_filling_product) {
   NOTREACHED();
 }
 
@@ -381,7 +382,7 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
     SaveAddressProfilePromptOptions options,
     AddressProfileSavePromptCallback callback) {
   // TODO(crbug.com/1167062): Respect SaveAddressProfilePromptOptions.
-  for (auto* infobar : infobar_manager_->infobars()) {
+  for (infobars::InfoBar* infobar : infobar_manager_->infobars()) {
     AutofillSaveUpdateAddressProfileDelegateIOS* existing_delegate =
         AutofillSaveUpdateAddressProfileDelegateIOS::FromInfobarDelegate(
             infobar->delegate());
@@ -430,16 +431,12 @@ void ChromeAutofillClientIOS::ShowDeleteAddressProfileDialog(
   NOTREACHED_NORETURN();
 }
 
-bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {
+bool ChromeAutofillClientIOS::HasCreditCardScanFeature() const {
   return false;
 }
 
 void ChromeAutofillClientIOS::ScanCreditCard(CreditCardScanCallback callback) {
   NOTREACHED();
-}
-
-bool ChromeAutofillClientIOS::IsTouchToFillCreditCardSupported() {
-  return false;
 }
 
 bool ChromeAutofillClientIOS::ShowTouchToFillCreditCard(
@@ -459,14 +456,13 @@ void ChromeAutofillClientIOS::ShowAutofillPopup(
   [bridge_ showAutofillPopup:open_args.suggestions popupDelegate:delegate];
 }
 
-plus_addresses::PlusAddressService*
-ChromeAutofillClientIOS::GetPlusAddressService() {
+AutofillPlusAddressDelegate* ChromeAutofillClientIOS::GetPlusAddressDelegate() {
   return PlusAddressServiceFactory::GetForBrowserState(browser_state_);
 }
 
 void ChromeAutofillClientIOS::OfferPlusAddressCreation(
     const url::Origin& main_frame_origin,
-    plus_addresses::PlusAddressCallback callback) {
+    PlusAddressCallback callback) {
   AutofillBottomSheetTabHelper* bottomSheetTabHelper =
       AutofillBottomSheetTabHelper::FromWebState(web_state_);
   bottomSheetTabHelper->ShowPlusAddressesBottomSheet(main_frame_origin,
@@ -495,7 +491,7 @@ AutofillClient::PopupOpenArgs ChromeAutofillClientIOS::GetReopenPopupArgs(
 
 void ChromeAutofillClientIOS::UpdatePopup(
     const std::vector<Suggestion>& suggestions,
-    PopupType popup_type,
+    FillingProduct main_filling_product,
     AutofillSuggestionTriggerSource trigger_source) {
   NOTIMPLEMENTED();
 }
@@ -552,15 +548,14 @@ std::unique_ptr<device_reauth::DeviceAuthenticator>
 ChromeAutofillClientIOS::GetDeviceAuthenticator() {
   device_reauth::DeviceAuthParams params(
       base::Seconds(60), device_reauth::DeviceAuthSource::kAutofill);
-  id<ReauthenticationProtocol> reauthModule =
-      [[ReauthenticationModule alloc] init];
-  return CreateIOSDeviceAuthenticator(reauthModule, browser_state_, params);
-}
+  id<ReauthenticationProtocol> reauthModule;
+  if (ScopedAutofillPaymentReauthModuleOverride::instance) {
+    reauthModule = ScopedAutofillPaymentReauthModuleOverride::instance->module;
+  } else {
+    reauthModule = [[ReauthenticationModule alloc] init];
+  }
 
-void ChromeAutofillClientIOS::LoadRiskData(
-    base::OnceCallback<void(const std::string&)> callback) {
-  std::move(callback).Run(
-      base::SysNSStringToUTF8(ios::provider::GetRiskData()));
+  return CreateIOSDeviceAuthenticator(reauthModule, browser_state_, params);
 }
 
 std::optional<std::u16string> ChromeAutofillClientIOS::GetUserEmail() {

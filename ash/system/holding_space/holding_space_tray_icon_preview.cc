@@ -9,6 +9,7 @@
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
+#include "ash/public/cpp/holding_space/holding_space_item_updated_fields.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -293,12 +294,13 @@ class HoldingSpaceTrayIconPreview::ImageLayerOwner
   }
 
   // HoldingSpaceModelObserver:
-  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item,
-                                 uint32_t updated_fields) override {
+  void OnHoldingSpaceItemUpdated(
+      const HoldingSpaceItem* item,
+      const HoldingSpaceItemUpdatedFields& updated_fields) override {
     if (item_ != item)
       return;
 
-    if (updated_fields & HoldingSpaceModelObserver::UpdatedField::kProgress) {
+    if (updated_fields.previous_progress) {
       UpdateOpacity();
       UpdateTransform();
     }
@@ -372,7 +374,7 @@ class HoldingSpaceTrayIconPreview::ImageLayerOwner
     layer()->SetTransform(target_transform);
   }
 
-  raw_ptr<const HoldingSpaceItem, ExperimentalAsh> item_ = nullptr;
+  raw_ptr<const HoldingSpaceItem> item_ = nullptr;
   base::CallbackListSubscription item_deletion_subscription_;
   base::CallbackListSubscription item_image_skia_subscription_;
   base::CallbackListSubscription progress_ring_animation_changed_subscription_;

@@ -10,11 +10,13 @@ import './share_password_dialog_header.js';
 import './share_password_group_avatar.js';
 import '../site_favicon.js';
 
+import type {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {PasswordManagerImpl, PasswordManagerProxy} from '../password_manager_proxy.js';
+import type {PasswordManagerProxy} from '../password_manager_proxy.js';
+import {PasswordManagerImpl} from '../password_manager_proxy.js';
 import {UserUtilMixin} from '../user_utils_mixin.js';
 
 import {PasswordSharingActions, recordPasswordSharingInteraction} from './metrics_utils.js';
@@ -22,9 +24,11 @@ import {getTemplate} from './share_password_confirmation_dialog.html.js';
 
 export interface SharePasswordConfirmationDialogElement {
   $: {
+    animation: HTMLElement,
     header: HTMLElement,
     cancel: HTMLElement,
     done: HTMLElement,
+    dialog: CrDialogElement,
     senderAvatar: HTMLImageElement,
     recipientAvatar: HTMLElement,
     description: HTMLElement,
@@ -56,7 +60,10 @@ export class SharePasswordConfirmationDialogElement extends
 
   static get properties() {
     return {
-      dialogStage_: Number,
+      dialogStage_: {
+        type: Number,
+        observer: 'stateChange_',
+      },
 
       password: Object,
       passwordName: String,
@@ -87,6 +94,11 @@ export class SharePasswordConfirmationDialogElement extends
   override ready() {
     super.ready();
 
+    // Start the animation after all elements have been loaded.
+    setTimeout(() => {
+      this.$.animation.classList.add('loading');
+    }, 0);
+
     // The user has 5 seconds to cancel the share action while loading/sharing
     // animation is in progress.
     setTimeout(() => {
@@ -100,6 +112,15 @@ export class SharePasswordConfirmationDialogElement extends
 
   private isStage_(stage: ConfirmationDialogStage): boolean {
     return this.dialogStage_ === stage;
+  }
+
+  private stateChange_() {
+    // Force the screen reader to focus on the updated dialog header.
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
+    this.$.dialog.focus();
   }
 
 
@@ -122,7 +143,6 @@ export class SharePasswordConfirmationDialogElement extends
           'sharePasswordConfirmationDescriptionMultipleRecipients', {
             substitutions: [
               this.passwordName,
-              this.i18n('passwordSharingLearnMoreURL'),
             ],
           });
     }
@@ -131,7 +151,6 @@ export class SharePasswordConfirmationDialogElement extends
           substitutions: [
             this.recipients[0].displayName,
             this.passwordName,
-            this.i18n('passwordSharingLearnMoreURL'),
           ],
         });
   }
@@ -159,14 +178,6 @@ export class SharePasswordConfirmationDialogElement extends
     });
   }
 
-  private onDescriptionClick_(e: Event) {
-    const element = e.target as HTMLElement;
-    if (element.tagName === 'A') {
-      recordPasswordSharingInteraction(
-          PasswordSharingActions.CONFIRMATION_DIALOG_LEARN_MORE_CLICKED);
-    }
-  }
-
   private onFooterClick_(e: Event) {
     const element = e.target as HTMLElement;
     if (element.tagName === 'A') {
@@ -188,6 +199,7 @@ export class SharePasswordConfirmationDialogElement extends
     recordPasswordSharingInteraction(
         PasswordSharingActions.CONFIRMATION_DIALOG_SHARING_CANCELED);
     this.dialogStage_ = ConfirmationDialogStage.CANCELED;
+    this.$.animation.classList.remove('loading');
   }
 }
 

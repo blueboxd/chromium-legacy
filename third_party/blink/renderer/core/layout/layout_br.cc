@@ -48,6 +48,11 @@ int LayoutBR::CaretMaxOffset() const {
   return 1;
 }
 
+unsigned LayoutBR::NonCollapsedCaretMaxOffset() const {
+  NOT_DESTROYED();
+  return 1;
+}
+
 PositionWithAffinity LayoutBR::PositionForPoint(const PhysicalOffset&) const {
   NOT_DESTROYED();
   // NG codepath requires |kPrePaintClean|.

@@ -171,7 +171,7 @@ class QuickPairMetricsLoggerTest : public NoSessionAshTestBase {
 
     auto accountId = AccountId::FromUserEmail(kUserEmail);
     session_controller->AddUserSession(kUserEmail,
-                                       user_manager::USER_TYPE_REGULAR,
+                                       user_manager::UserType::kRegular,
                                        /*provide_pref_service=*/false);
     session_controller->SetUserPrefService(accountId, std::move(user_prefs));
 
@@ -525,16 +525,12 @@ class QuickPairMetricsLoggerTest : public NoSessionAshTestBase {
 
   std::unique_ptr<MockQuickPairBrowserDelegate> browser_delegate_;
   TestingPrefServiceSimple pref_service_;
-  raw_ptr<TestingPrefServiceSimple, DanglingUntriaged | ExperimentalAsh>
-      user_prefs_;
+  raw_ptr<TestingPrefServiceSimple, DanglingUntriaged> user_prefs_;
 
-  raw_ptr<MockScannerBroker, DanglingUntriaged | ExperimentalAsh>
-      mock_scanner_broker_ = nullptr;
-  raw_ptr<MockPairerBroker, DanglingUntriaged | ExperimentalAsh>
-      mock_pairer_broker_ = nullptr;
-  raw_ptr<MockUIBroker, DanglingUntriaged | ExperimentalAsh> mock_ui_broker_ =
-      nullptr;
-  raw_ptr<FakeRetroactivePairingDetector, DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<MockScannerBroker, DanglingUntriaged> mock_scanner_broker_ = nullptr;
+  raw_ptr<MockPairerBroker, DanglingUntriaged> mock_pairer_broker_ = nullptr;
+  raw_ptr<MockUIBroker, DanglingUntriaged> mock_ui_broker_ = nullptr;
+  raw_ptr<FakeRetroactivePairingDetector, DanglingUntriaged>
       fake_retroactive_pairing_detector_ = nullptr;
 
   std::unique_ptr<FakeFastPairRepository> fake_fast_pair_repository_;

@@ -513,6 +513,25 @@ TEST_F(MediaControllerTest, ActiveController_Seek) {
   EXPECT_EQ(1, media_session.seek_count());
 }
 
+TEST_F(MediaControllerTest, ActiveController_SkipAd) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  EXPECT_EQ(0, media_session.skip_ad_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    EXPECT_EQ(0, media_session.skip_ad_count());
+  }
+
+  controller()->SkipAd();
+  controller().FlushForTesting();
+
+  EXPECT_EQ(1, media_session.skip_ad_count());
+}
+
 TEST_F(MediaControllerTest, ActiveController_SeekTo) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
@@ -577,7 +596,7 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_Abandoned) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaMetadata> test_metadata(metadata);
+  std::optional<MediaMetadata> test_metadata(metadata);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -598,7 +617,7 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_Empty) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaMetadata> test_metadata;
+  std::optional<MediaMetadata> test_metadata;
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -622,7 +641,7 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_WithInfo) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaMetadata> test_metadata(metadata);
+  std::optional<MediaMetadata> test_metadata(metadata);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -641,7 +660,7 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_AddObserver_Empty) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaMetadata> test_metadata;
+  std::optional<MediaMetadata> test_metadata;
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -666,7 +685,7 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_AddObserver_WithInfo) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaMetadata> test_metadata(metadata);
+  std::optional<MediaMetadata> test_metadata(metadata);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -894,7 +913,7 @@ TEST_F(MediaControllerTest, ActiveController_Position_Observer_Empty) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaPosition> test_position;
+  std::optional<MediaPosition> test_position;
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -919,7 +938,7 @@ TEST_F(MediaControllerTest, ActiveController_Position_Observer_WithInfo) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaPosition> test_position(position);
+  std::optional<MediaPosition> test_position(position);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -938,7 +957,7 @@ TEST_F(MediaControllerTest, ActiveController_Position_AddObserver_Empty) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaPosition> test_position;
+  std::optional<MediaPosition> test_position;
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -964,7 +983,7 @@ TEST_F(MediaControllerTest, ActiveController_Position_AddObserver_WithInfo) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaPosition> test_position(position);
+  std::optional<MediaPosition> test_position(position);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -990,7 +1009,7 @@ TEST_F(MediaControllerTest, ActiveController_Position_Observer_Abandoned) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 
-  absl::optional<MediaPosition> test_position(position);
+  std::optional<MediaPosition> test_position(position);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -1280,7 +1299,7 @@ TEST_F(MediaControllerTest, ActiveController_Observer_SessionChanged) {
 
   {
     test::TestMediaControllerObserver observer(controller());
-    observer.WaitForSession(absl::nullopt);
+    observer.WaitForSession(std::nullopt);
   }
 
   {
@@ -1314,7 +1333,7 @@ TEST_F(MediaControllerTest, ActiveController_Observer_SessionChanged) {
   {
     test::TestMediaControllerObserver observer(controller());
     media_session_1.SetIsControllable(false);
-    observer.WaitForSession(absl::nullopt);
+    observer.WaitForSession(std::nullopt);
   }
 }
 

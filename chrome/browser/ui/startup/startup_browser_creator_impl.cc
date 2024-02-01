@@ -76,6 +76,7 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
+#include "chrome/browser/app_controller_mac.h"
 #if BUILDFLAG(ENABLE_UPDATER)
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
 #endif
@@ -303,6 +304,13 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
               [](base::WeakPtr<Browser> browser,
                  headless::HeadlessCommandHandler::Result result) {
                 if (browser && browser->window()) {
+#if BUILDFLAG(IS_MAC)
+                  // On Macs Chrome keeps running after the last browser
+                  // window is closed which is not expected for headless
+                  // command execution, so explicitly allow application
+                  // to terminate after the browser window is closed.
+                  app_controller_mac::AllowApplicationToTerminate();
+#endif
                   browser->window()->Close();
                 }
               },
@@ -401,14 +409,12 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   bool privacy_sandbox_dialog_required = false;
   if (privacy_sandbox_service) {
     switch (privacy_sandbox_service->GetRequiredPromptType()) {
-      case PrivacySandboxService::PromptType::kConsent:
       case PrivacySandboxService::PromptType::kM1Consent:
       case PrivacySandboxService::PromptType::kM1NoticeEEA:
       case PrivacySandboxService::PromptType::kM1NoticeROW:
       case PrivacySandboxService::PromptType::kM1NoticeRestricted:
         privacy_sandbox_dialog_required = true;
         break;
-      case PrivacySandboxService::PromptType::kNotice:
       case PrivacySandboxService::PromptType::kNone:
         break;
     }

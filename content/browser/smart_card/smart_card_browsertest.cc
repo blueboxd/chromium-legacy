@@ -140,6 +140,11 @@ class FakeSmartCardDelegate : public SmartCardDelegate {
   GetSmartCardContextFactory(BrowserContext& browser_context) override;
 
   MOCK_METHOD(bool,
+              IsPermissionBlocked,
+              (RenderFrameHost & render_frame_host),
+              (override));
+
+  MOCK_METHOD(bool,
               HasReaderPermission,
               (content::RenderFrameHost & render_frame_host,
                const std::string& reader_name),
@@ -173,11 +178,10 @@ class SmartCardTestContentBrowserClient
   void SetSmartCardDelegate(std::unique_ptr<SmartCardDelegate>);
 
   // ContentBrowserClient:
-  SmartCardDelegate* GetSmartCardDelegate(
-      content::BrowserContext* browser_context) override;
+  SmartCardDelegate* GetSmartCardDelegate() override;
   bool ShouldUrlUseApplicationIsolationLevel(BrowserContext* browser_context,
                                              const GURL& url) override;
-  absl::optional<blink::ParsedPermissionsPolicy>
+  std::optional<blink::ParsedPermissionsPolicy>
   GetPermissionsPolicyForIsolatedWebApp(
       content::BrowserContext* browser_context,
       const url::Origin& app_origin) override;
@@ -189,7 +193,7 @@ class SmartCardTestContentBrowserClient
 class SmartCardTest : public ContentBrowserTest {
  public:
   GURL GetIsolatedContextUrl() {
-    return https_server_.GetURL(
+    return embedded_https_test_server().GetURL(
         "a.com",
         "/set-header?Cross-Origin-Opener-Policy: same-origin&"
         "Cross-Origin-Embedder-Policy: require-corp&"
@@ -198,7 +202,7 @@ class SmartCardTest : public ContentBrowserTest {
 
   FakeSmartCardDelegate& GetFakeSmartCardDelegate() {
     return *static_cast<FakeSmartCardDelegate*>(
-        test_client_->GetSmartCardDelegate(nullptr));
+        test_client_->GetSmartCardDelegate());
   }
 
   void TestEmptyTransaction(std::string expected_result,
@@ -250,7 +254,6 @@ class SmartCardTest : public ContentBrowserTest {
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    mock_cert_verifier_.SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
@@ -260,39 +263,29 @@ class SmartCardTest : public ContentBrowserTest {
     test_client_->SetSmartCardDelegate(
         std::make_unique<FakeSmartCardDelegate>());
 
-    mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
-
     // Serve a.com (and any other domain).
     host_resolver()->AddRule("*", "127.0.0.1");
 
     // Add a handler for the "/set-header" page (among others)
-    https_server_.AddDefaultHandlers(GetTestDataFilePath());
+    embedded_https_test_server().AddDefaultHandlers(GetTestDataFilePath());
 
-    ASSERT_TRUE(https_server_.Start());
+    ASSERT_TRUE(embedded_https_test_server().Start());
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     ContentBrowserTest::SetUpInProcessBrowserTestFixture();
-    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
   }
 
   void TearDownInProcessBrowserTestFixture() override {
     ContentBrowserTest::TearDownInProcessBrowserTestFixture();
-    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
   void TearDown() override {
-    ASSERT_TRUE(https_server_.ShutdownAndWaitUntilComplete());
+    ASSERT_TRUE(embedded_https_test_server().ShutdownAndWaitUntilComplete());
     ContentBrowserTest::TearDown();
   }
 
   std::unique_ptr<SmartCardTestContentBrowserClient> test_client_;
-
-  // Need a mock CertVerifier for HTTPS connections to succeed with the test
-  // server.
-  ContentMockCertVerifier mock_cert_verifier_;
-
-  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 
   base::test::ScopedFeatureList scoped_feature_list_{
       blink::features::kSmartCard};
@@ -305,8 +298,7 @@ SmartCardTestContentBrowserClient::SmartCardTestContentBrowserClient() =
 SmartCardTestContentBrowserClient::~SmartCardTestContentBrowserClient() =
     default;
 
-SmartCardDelegate* SmartCardTestContentBrowserClient::GetSmartCardDelegate(
-    content::BrowserContext* browser_context) {
+SmartCardDelegate* SmartCardTestContentBrowserClient::GetSmartCardDelegate() {
   return delegate_.get();
 }
 
@@ -321,14 +313,14 @@ bool SmartCardTestContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
   return true;
 }
 
-absl::optional<blink::ParsedPermissionsPolicy>
+std::optional<blink::ParsedPermissionsPolicy>
 SmartCardTestContentBrowserClient::GetPermissionsPolicyForIsolatedWebApp(
     content::BrowserContext* browser_context,
     const url::Origin& app_origin) {
   blink::ParsedPermissionsPolicyDeclaration coi_decl(
       blink::mojom::PermissionsPolicyFeature::kCrossOriginIsolated,
       /*allowed_origins=*/{},
-      /*self_if_matches=*/absl::nullopt, /*matches_all_origins=*/true,
+      /*self_if_matches=*/std::nullopt, /*matches_all_origins=*/true,
       /*matches_opaque_src=*/false);
   blink::ParsedPermissionsPolicyDeclaration smart_card_decl(
       blink::mojom::PermissionsPolicyFeature::kSmartCard,
@@ -1620,7 +1612,7 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, ContextDiesConnectionStays) {
 class NoCoiPermissionSmartCardTestContentBrowserClient
     : public SmartCardTestContentBrowserClient {
  public:
-  absl::optional<blink::ParsedPermissionsPolicy>
+  std::optional<blink::ParsedPermissionsPolicy>
   GetPermissionsPolicyForIsolatedWebApp(
       content::BrowserContext* browser_context,
       const url::Origin& app_origin) override {
@@ -1761,6 +1753,22 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, EndTransactionAfterContextOperation) {
 
       return "ok";
     })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, EstablishContextDenied) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  EXPECT_CALL(GetFakeSmartCardDelegate(), IsPermissionBlocked(_))
+      .WillOnce(Return(true));
+
+  EXPECT_EQ("NotAllowedError", EvalJs(shell(), R"((async () => {
+      try {
+         let context = await navigator.smartCard.establishContext();
+      } catch (e) {
+         return e.name;
+      }
+      return "ok";
+     })())"));
 }
 
 }  // namespace content

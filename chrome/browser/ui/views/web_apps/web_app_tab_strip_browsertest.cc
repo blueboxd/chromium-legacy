@@ -104,7 +104,8 @@ class WebAppTabStripBrowserTest : public WebAppControllerBrowserTest {
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"Test app";
     web_app_info->background_color = kAppBackgroundColor;
-    web_app_info->user_display_mode = mojom::UserDisplayMode::kTabbed;
+    web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
+    web_app_info->display_override = {blink::mojom::DisplayMode::kTabbed};
     webapps::AppId app_id =
         test::InstallWebApp(profile, std::move(web_app_info));
 
@@ -195,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, PopOutTabOnInstall) {
   GURL start_url = embedded_test_server()->GetURL("/web_apps/basic.html");
 
-  NavigateToURLAndWait(browser(), start_url);
+  NavigateViaLinkClickToURLAndWait(browser(), start_url);
 
   // Install the site with the user display mode set to kTabbed.
   webapps::AppId app_id;
@@ -321,6 +322,19 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, NewTabUrl) {
   EXPECT_EQ(
       app_browser->tab_strip_model()->GetActiveWebContents()->GetVisibleURL(),
       embedded_test_server()->GetURL("/web_apps/favicon_only.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, NonTabbedWebApp) {
+  Profile* profile = browser()->profile();
+
+  auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
+  web_app_info->title = u"Test app";
+  web_app_info->start_url = embedded_test_server()->GetURL(kAppPath);
+  webapps::AppId app_id = test::InstallWebApp(profile, std::move(web_app_info));
+
+  Browser* app_browser = web_app::LaunchWebAppBrowser(profile, app_id);
+
+  EXPECT_TRUE(app_browser->app_controller()->ShouldHideNewTabButton());
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, InstallingPinsHomeTab) {
@@ -1370,7 +1384,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripOriginTrialBrowserTest, OriginTrial) {
     UpdateAwaiter update_awaiter(provider.install_manager());
 
     serve_token = false;
-    NavigateToURLAndWait(browser(), GURL(kTestWebAppUrl));
+    NavigateViaLinkClickToURLAndWait(browser(), GURL(kTestWebAppUrl));
 
     update_awaiter.AwaitUpdate();
   }

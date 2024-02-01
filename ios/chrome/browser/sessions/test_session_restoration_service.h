@@ -30,6 +30,10 @@ class TestSessionRestorationService : public SessionRestorationService {
   void ScheduleSaveSessions() override;
   void SetSessionID(Browser* browser, const std::string& identifier) override;
   void LoadSession(Browser* browser) override;
+  void LoadWebStateStorage(Browser* browser,
+                           web::WebState* web_state,
+                           WebStateStorageCallback callback) override;
+  void AttachBackup(Browser* browser, Browser* backup) final;
   void Disconnect(Browser* browser) override;
   std::unique_ptr<web::WebState> CreateUnrealizedWebState(
       Browser* browser,
@@ -39,6 +43,7 @@ class TestSessionRestorationService : public SessionRestorationService {
   void InvokeClosureWhenBackgroundProcessingDone(
       base::OnceClosure closure) override;
   void PurgeUnassociatedData(base::OnceClosure closure) final;
+  bool PlaceholderTabsEnabled() const final;
 
  private:
   base::ObserverList<SessionRestorationObserver, true> observers_;

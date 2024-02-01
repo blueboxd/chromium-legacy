@@ -413,9 +413,10 @@ printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
 printing::PrintPreviewDialogController*
 TestingBrowserProcess::print_preview_dialog_controller() {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  if (!print_preview_dialog_controller_.get())
+  if (!print_preview_dialog_controller_) {
     print_preview_dialog_controller_ =
-        new printing::PrintPreviewDialogController();
+        std::make_unique<printing::PrintPreviewDialogController>();
+  }
   return print_preview_dialog_controller_.get();
 #else
   NOTIMPLEMENTED();
@@ -481,7 +482,7 @@ TestingBrowserProcess::network_time_tracker() {
     network_time_tracker_ = std::make_unique<network_time::NetworkTimeTracker>(
         std::unique_ptr<base::Clock>(new base::DefaultClock()),
         std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
-        local_state_, nullptr);
+        local_state_, nullptr, std::nullopt);
   }
   return network_time_tracker_.get();
 }

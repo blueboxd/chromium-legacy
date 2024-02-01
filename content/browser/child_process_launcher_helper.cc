@@ -4,9 +4,12 @@
 
 #include "content/browser/child_process_launcher_helper.h"
 
+#include <optional>
+
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_shared_memory.h"
 #include "base/no_destructor.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,11 +23,11 @@
 #include "content/browser/child_process_launcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_launcher_utils.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/core/configuration.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "content/browser/android/launcher_thread.h"
@@ -46,6 +49,52 @@ void RecordHistogramsOnLauncherThread(base::TimeDelta launch_time) {
     UMA_HISTOGRAM_TIMES("MPArch.ChildProcessLaunchFirst", launch_time);
     done_first_launch = true;
   }
+}
+
+// If the histogram shared memory region is valid and passing the histogram
+// shared memory region via the command line is enabled, update the launch
+// parameters to pass the shared memory handle.
+//
+// This function is NOP if the platform does not use Blink.
+void PassHistogramSharedMemoryHandle(
+    [[maybe_unused]] base::UnsafeSharedMemoryRegion histogram_memory_region,
+    [[maybe_unused]] base::CommandLine* command_line,
+    [[maybe_unused]] base::LaunchOptions* launch_options,
+    [[maybe_unused]] FileMappedForLaunch* files_to_register) {
+  CHECK(command_line);
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE)
+  // TODO(crbug/1028263): content::FileMappedForLaunch (POSIX) is redundant
+  // wrt the base::LaunchOptions::<platform-specific-handles-to-transfer>
+  // members. Refactor this so that the details of base::Launch vs Zygote on
+  // (some) POSIX platforms is an implementation detail and not exposed here.
+  // I.e., populate launch options (like for all other platforms) then if it's
+  // a Zygote launch pull out the handles to transfer and send them to the
+  // zygote, instead of (for posix only) ignoring the launch-options here,
+  // populating the |files_to_register| param then (if there's no zygote)
+  // filling in |launch_options|
+  CHECK(files_to_register);
+  base::ScopedFD descriptor_to_transfer;
+#else
+  CHECK(launch_options);
+#endif
+
+#if BUILDFLAG(USE_BLINK)
+  DCHECK(histogram_memory_region.IsValid());
+  base::HistogramSharedMemory::AddToLaunchParameters(
+      std::move(histogram_memory_region),
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE)
+      /*descriptor_key=*/kHistogramSharedMemoryDescriptor,
+      /*descriptor_to_share=*/descriptor_to_transfer,
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE)
+      command_line, launch_options);
+
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE)
+  if (descriptor_to_transfer.is_valid()) {
+    files_to_register->Transfer(kHistogramSharedMemoryDescriptor,
+                                std::move(descriptor_to_transfer));
+  }
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE)
+#endif  // BUILDFLAG(USE_BLINK)
 }
 
 }  // namespace
@@ -82,7 +131,8 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
 #endif
     mojo::OutgoingInvitation mojo_invitation,
     const mojo::ProcessErrorCallback& process_error_callback,
-    std::unique_ptr<ChildProcessLauncherFileData> file_data)
+    std::unique_ptr<ChildProcessLauncherFileData> file_data,
+    base::UnsafeSharedMemoryRegion histogram_memory_region)
     : child_process_id_(child_process_id),
       client_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       command_line_(std::move(command_line)),
@@ -91,12 +141,11 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
       terminate_on_shutdown_(terminate_on_shutdown),
       mojo_invitation_(std::move(mojo_invitation)),
       process_error_callback_(process_error_callback),
-      file_data_(std::move(file_data))
+      file_data_(std::move(file_data)),
 #if BUILDFLAG(IS_ANDROID)
-      ,
-      can_use_warm_up_connection_(can_use_warm_up_connection)
+      can_use_warm_up_connection_(can_use_warm_up_connection),
 #endif
-{
+      histogram_memory_region_(std::move(histogram_memory_region)) {
   if (!mojo::core::GetConfiguration().is_broker_process &&
       !command_line_->HasSwitch(switches::kDisableMojoBroker)) {
     command_line_->AppendSwitch(switches::kDisableMojoBroker);
@@ -144,11 +193,23 @@ void ChildProcessLauncherHelper::LaunchOnLauncherThread() {
 
   bool is_synchronous_launch = true;
   int launch_result = LAUNCH_RESULT_FAILURE;
-  absl::optional<base::LaunchOptions> options;
+  std::optional<base::LaunchOptions> options;
   base::LaunchOptions* options_ptr = nullptr;
   if (IsUsingLaunchOptions()) {
     options.emplace();
     options_ptr = &*options;
+  }
+
+  // If a histogram shared memory region has been allocated, add it to the
+  // launch parameters for the child process. The allocation of the shared
+  // memory region is dependent on the process-type being launched, and
+  // non-fatal if not enabled.
+  // TODO(crbug/1028263): Once all process types support histogram shared
+  // memory being passed at launch, CHECK(region.IsValid()) instead of "if".
+  if (histogram_memory_region_.IsValid()) {
+    PassHistogramSharedMemoryHandle(std::move(histogram_memory_region_),
+                                    command_line(), options_ptr,
+                                    files_to_register.get());
   }
 
   Process process;

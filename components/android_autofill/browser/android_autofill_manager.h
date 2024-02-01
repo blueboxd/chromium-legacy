@@ -20,24 +20,14 @@
 namespace autofill {
 
 class AutofillProvider;
-class ContentAutofillDriver;
 class FormEventLoggerWeblayerAndroid;
-
-// Creates an AndroidAutofillManager and attaches it to the `driver`.
-//
-// This hook is to be passed to CreateForWebContentsAndDelegate().
-// It is the glue between ContentAutofillDriver[Factory] and
-// AndroidAutofillManager.
-//
-// Other embedders (which don't want to use AndroidAutofillManager) shall use
-// other implementations.
-void AndroidDriverInitHook(AutofillClient* client,
-                           ContentAutofillDriver* driver);
 
 // This class forwards AutofillManager calls to AutofillProvider.
 class AndroidAutofillManager : public AutofillManager,
                                public AutofillManager::Observer {
  public:
+  AndroidAutofillManager(AutofillDriver* driver, AutofillClient* client);
+
   AndroidAutofillManager(const AndroidAutofillManager&) = delete;
   AndroidAutofillManager& operator=(const AndroidAutofillManager&) = delete;
 
@@ -84,19 +74,7 @@ class AndroidAutofillManager : public AutofillManager,
                          const FieldTypeGroup field_type_group,
                          const url::Origin& triggered_origin);
 
-  void FillOrPreviewField(mojom::ActionPersistence action_persistence,
-                          mojom::TextReplacement text_replacement,
-                          const FormData& form,
-                          const FormFieldData& field,
-                          const std::u16string& value,
-                          PopupItemId popup_item_id) override;
-
  protected:
-  friend void AndroidDriverInitHook(AutofillClient* client,
-                                    ContentAutofillDriver* driver);
-
-  AndroidAutofillManager(AutofillDriver* driver, AutofillClient* client);
-
   void OnFormSubmittedImpl(const FormData& form,
                            bool known_success,
                            mojom::SubmissionSource source) override;
@@ -138,11 +116,6 @@ class AndroidAutofillManager : public AutofillManager,
 
   void OnAfterProcessParsedForms(
       const DenseSet<FormType>& form_types) override {}
-
-  void OnServerRequestError(
-      FormSignature form_signature,
-      AutofillCrowdsourcingManager::RequestType request_type,
-      int http_error) override;
 
  private:
   // AutofillManager::Observer:

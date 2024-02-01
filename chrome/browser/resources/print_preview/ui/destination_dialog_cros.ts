@@ -21,7 +21,7 @@ import '../strings.m.js';
 import './throbber.css.js';
 import './destination_list_item_cros.js';
 
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import type {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/cr_elements/list_property_update_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
@@ -29,18 +29,20 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement, timeOut} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Destination, GooglePromotedDestinationId} from '../data/destination.js';
-import {DestinationStore, DestinationStoreEventType} from '../data/destination_store.js';
+import type {Destination} from '../data/destination.js';
+import {GooglePromotedDestinationId} from '../data/destination.js';
+import type {DestinationStore} from '../data/destination_store.js';
+import {DestinationStoreEventType} from '../data/destination_store.js';
 import {PrintServerStore, PrintServerStoreEventType} from '../data/print_server_store.js';
 import {MetricsContext, PrintPreviewLaunchSourceBucket} from '../metrics.js';
 import {NativeLayerImpl} from '../native_layer.js';
 import {NativeLayerCrosImpl} from '../native_layer_cros.js';
 
 import {getTemplate} from './destination_dialog_cros.html.js';
-import {PrintPreviewDestinationListItemElement} from './destination_list_item_cros.js';
-import {PrintPreviewSearchBoxElement} from './print_preview_search_box.js';
+import type {PrintPreviewDestinationListItemElement} from './destination_list_item_cros.js';
+import type {PrintPreviewSearchBoxElement} from './print_preview_search_box.js';
 import {PrinterSetupInfoMessageType, PrinterSetupInfoMetricsSource} from './printer_setup_info_cros.js';
-import {PrintPreviewProvisionalDestinationResolverElement} from './provisional_destination_resolver.js';
+import type {PrintPreviewProvisionalDestinationResolverElement} from './provisional_destination_resolver.js';
 
 interface PrintServersChangedEventDetail {
   printServerNames: string[];
@@ -137,6 +139,11 @@ export class PrintPreviewDestinationDialogCrosElement extends
             'isPrintPreviewSetupAssistanceEnabled_, showThrobber_)',
       },
 
+      isShowingDestinationList: {
+        type: Boolean,
+        computed: 'computeIsShowingDestinationList(destinations_.*)',
+      },
+
       showManagePrintersButton: {
         type: Boolean,
         computed: 'computeShowManagePrintersButton(' +
@@ -162,8 +169,6 @@ export class PrintPreviewDestinationDialogCrosElement extends
         type: Boolean,
         computed: 'computeShowThrobber_(' +
             'minLoadingTimeElapsed_, loadingAnyDestinations_)',
-        observer: PrintPreviewDestinationDialogCrosElement.prototype
-                      .showThrobberChanged_,
       },
 
       minLoadingTimeElapsed_: Boolean,
@@ -182,6 +187,7 @@ export class PrintPreviewDestinationDialogCrosElement extends
   private isPrintPreviewSetupAssistanceEnabled_: boolean;
   private metricsContext_: MetricsContext;
   private isShowingPrinterSetupAssistance: boolean;
+  private isShowingDestinationList: boolean;
   private showManagePrintersButton: boolean;
 
   private tracker_: EventTracker = new EventTracker();
@@ -269,6 +275,13 @@ export class PrintPreviewDestinationDialogCrosElement extends
 
     this.loadingDestinations_ =
         this.destinationStore.isPrintDestinationSearchInProgress;
+
+    // Workaround to force the iron-list in print-preview-destination-list to
+    // render all destinations and resize to fill dialog body.
+    if (this.isShowingDestinationList) {
+      window.dispatchEvent(new CustomEvent('resize'));
+      this.$.searchBox.focus();
+    }
   }
 
   private getDestinationList_(): Destination[] {
@@ -425,11 +438,24 @@ export class PrintPreviewDestinationDialogCrosElement extends
       return false;
     }
 
-    if (this.showThrobber_) {
-      return false;
+    return !this.showThrobber_ && !this.printerDestinationExists();
+  }
+
+  /**
+   * Returns true if the search-box and destination-list should be shown. They
+   * should be shown when at least one non-PDF printer destination is available
+   * for the user to select.
+   */
+  private computeIsShowingDestinationList(): boolean {
+    if (!this.isPrintPreviewSetupAssistanceEnabled_) {
+      return true;
     }
 
-    return !this.destinations_.some(
+    return this.printerDestinationExists();
+  }
+
+  private printerDestinationExists(): boolean {
+    return this.destinations_.some(
         (destination: Destination): boolean =>
             destination.id !== GooglePromotedDestinationId.SAVE_AS_PDF);
   }
@@ -438,31 +464,12 @@ export class PrintPreviewDestinationDialogCrosElement extends
     return this.showManagePrinters && !this.isShowingPrinterSetupAssistance;
   }
 
-  // Returns true if the search-box and destination-list should be shown.
-  private getShowDestinations_(): boolean {
+  private computeShowThrobber_(): boolean {
     if (!this.isPrintPreviewSetupAssistanceEnabled_) {
-      return true;
-    }
-
-    if (this.showThrobber_) {
       return false;
     }
 
-    return !this.isShowingPrinterSetupAssistance;
-  }
-
-  private computeShowThrobber_(): boolean {
     return !this.minLoadingTimeElapsed_ || this.loadingAnyDestinations_;
-  }
-
-  private showThrobberChanged_(): void {
-    if (!this.showThrobber_ && !this.isShowingPrinterSetupAssistance) {
-      // Workaround to force the iron-list in print-preview-destination-list to
-      // render all destinations and resize to fill dialog body.
-      window.dispatchEvent(new CustomEvent('resize'));
-      // Ensure search-box gets focus once throbber is hidden.
-      this.$.searchBox.focus();
-    }
   }
 
   // Clear throbber timer if it has not completed yet. Used to ensure throbber
@@ -481,6 +488,15 @@ export class PrintPreviewDestinationDialogCrosElement extends
         this.shadowRoot!.querySelector('print-preview-destination-list');
     assert(destinationList);
     destinationList.updatePrinterStatusIcon(destinationKey);
+  }
+
+  private showDestinationListThrobber(): boolean {
+    // When flag is enabled, DestinationDialogCros shows its own throbber.
+    if (this.isPrintPreviewSetupAssistanceEnabled_) {
+      return false;
+    }
+
+    return this.loadingAnyDestinations_;
   }
 }
 

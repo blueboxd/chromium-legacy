@@ -7,6 +7,7 @@
 #import "base/check_op.h"
 #import "base/feature_list.cc"
 #import "base/ios/block_types.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/user_metrics.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
@@ -16,8 +17,8 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
-#import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
-#import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
+#import "ios/chrome/browser/policy/model/browser_policy_connector_ios.h"
+#import "ios/chrome/browser/policy/model/cloud/user_policy_switch.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -121,7 +122,7 @@ bool HasMachineLevelPolicies() {
   // YES if user is opted into bookmark and reading list account storage.
   BOOL _shouldShowSigninSnackbar;
 
-  Browser* _browser;
+  raw_ptr<Browser> _browser;
   id<SystemIdentity> _identityToSignIn;
   signin_metrics::AccessPoint _accessPoint;
   NSString* _identityToSignInHostedDomain;

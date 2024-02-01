@@ -170,7 +170,7 @@ KeyframeEffect* KeyframeEffect::Create(
   if (!pseudo.empty()) {
     effect->target_pseudo_ = pseudo;
     if (element) {
-      element->GetDocument().UpdateStyleAndLayoutTreeForNode(
+      element->GetDocument().UpdateStyleAndLayoutTreeForElement(
           element, DocumentUpdateReason::kWebAnimation);
       PseudoId pseudo_id =
           CSSSelectorParser::ParsePseudoElement(pseudo, element);
@@ -267,7 +267,7 @@ void KeyframeEffect::RefreshTarget() {
   } else if (target_pseudo_.empty()) {
     new_target = target_element_;
   } else {
-    target_element_->GetDocument().UpdateStyleAndLayoutTreeForNode(
+    target_element_->GetDocument().UpdateStyleAndLayoutTreeForElement(
         target_element_, DocumentUpdateReason::kWebAnimation);
     PseudoId pseudoId =
         CSSSelectorParser::ParsePseudoElement(target_pseudo_, target_element_);
@@ -329,7 +329,7 @@ HeapVector<ScriptValue> KeyframeEffect::getKeyframes(
     V8ObjectBuilder object_builder(script_state);
     keyframes[indices[i]]->AddKeyframePropertiesToV8Object(object_builder,
                                                            target());
-    object_builder.Add("computedOffset", computed_offsets[indices[i]]);
+    object_builder.AddNumber("computedOffset", computed_offsets[indices[i]]);
     computed_keyframes.push_back(object_builder.GetScriptValue());
   }
 

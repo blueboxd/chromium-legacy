@@ -45,6 +45,22 @@ The current status of existing standards and Abseil features is:
       * Overload: Initially added to third_party Sep 27, 2023
       * NoDestructor: Initially added to third_party Nov 15, 2023
 
+## Banned features and third-party code
+
+Third-party libraries may generally use banned features internally, although features
+with poor compiler support or poor security properties may make the library
+unsuitable to use with Chromium.
+
+Chromium code that calls functions exported from a third-party library may use
+banned library types that are required by the interface, as long as:
+
+ * The disallowed type is used only at the interface, and converted to and from
+   an equivalent allowed type as soon as practical on the Chromium side.
+ * The feature is not banned due to security issues or lack of compiler support.
+   If it is, discuss with
+   [cxx@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/cxx)
+   to find a workaround.
+
 [TOC]
 
 ## C++11 Banned Language Features {#core-blocklist-11}
@@ -1628,18 +1644,21 @@ concepts, then enforcing them on template arguments.
 ### Default comparisons <sup>[allowed]</sup>
 
 ```c++
-struct S : public T {
-  bool operator==(const S&) const = default;  // Compares `T` bases, then `x`,
-                                              // then `y`, short-circuiting.
+class S : public T {
+  // Non-member equality operator with access to private members.
+  // Compares `T` bases, then `x`, then `y`, short-circuiting.
+  friend bool operator==(const S&, const S&) = default;
+
   int x;
   bool y;
 };
 ```
 
-**Description:** Requests that the compiler generate the implementation of any
-comparison operator, including `<=>`. Defaulting `<=>` and not declaring `==`
-implicitly defaults `==`, which together are sufficient to allow any comparison
-as long as callers do not need to take the address of any non-declared operator.
+**Description:** Requests that the compiler generate the implementation of
+any comparison operator, including `<=>`. Prefer non-member comparison
+operators. When defaulting `<=>`, also explicitly default `==`. Together these
+are sufficient to allow any comparison as long as callers do not need to take
+the address of any non-declared operator.
 
 **Documentation:**
 [Default comparisons](https://en.cppreference.com/w/cpp/language/default_comparisons)
@@ -1916,7 +1935,7 @@ aligned to at least some particular power of 2.
 
 **Notes:**
 *** promo
-[Migration bug](https://crbug.com/1414637)
+None
 ***
 
 ### std::erase[_if] for containers <sup>[allowed]</sup>
@@ -2040,7 +2059,7 @@ qualifiers from a type.
 
 **Notes:**
 *** promo
-[Migration bug](https://crbug.com/1414646)
+None
 ***
 
 ### std::ssize <sup>[allowed]</sup>
@@ -2094,7 +2113,7 @@ pointer does not refer to a constructed object (in which case an expression like
 
 **Notes:**
 *** promo
-[Migration bug](https://crbug.com/1414648)
+None
 ***
 
 ## C++20 Banned Language Features {#core-blocklist-20}
@@ -2147,8 +2166,6 @@ Has no effect on Windows, for compatibility with Microsoft's ABI. Use
 `NO_UNIQUE_ADDRESS` from `base/compiler_specific.h` instead. Do not use (either
 form) on members of unions due to
 [potential memory safety problems](https://github.com/llvm/llvm-project/issues/60711).
-
-[Migration bug](https://crbug.com/1414621)
 ***
 
 ## C++20 Banned Library Features {#library-blocklist-20}
@@ -2194,6 +2211,32 @@ to `absl::bind_front`.
 **Notes:**
 *** promo
 Overlaps with `base::Bind`.
+***
+
+### std::bit_cast <sup>[banned]</sup>
+
+```c++
+float quake_rsqrt(float number) {
+  long i = std::bit_cast<long>(number);
+  i = 0x5f3759df - (i >> 1);  // wtf?
+  float y = std::bit_cast<float>(i);
+  return y * (1.5f - (0.5f * number * y * y));
+}
+```
+
+**Description:** Returns an value constructed with the same bits as an value of
+a different type.
+
+**Documentation:**
+[`std::bit_cast`](https://en.cppreference.com/w/cpp/numeric/bit_cast)
+
+**Notes:**
+*** promo
+The `std::` version of `bit_cast` allows casting of pointer and reference types,
+which is both useless in that it doesn't avoid UB, and dangerous in that it
+allows arbitrary casting away of modifiers like `const`. Instead of using
+`bit_cast` on pointers, use standard C++ casts. For use on values, use
+`base::bit_cast` which does not allow this unwanted usage.
 ***
 
 ### std::{c8rtomb,mbrtoc8} <sup>[banned]</sup>
@@ -2530,6 +2573,7 @@ at runtime instead of compile time.
 Direct construction is banned due to the risk of UB with uninitialized
 trivially-default-constructible types. Instead use `base/types/fixed_array.h`,
 which is a light-weight wrapper that deletes the problematic constructor.
+***
 
 ### FunctionRef <sup>[banned]</sup>
 

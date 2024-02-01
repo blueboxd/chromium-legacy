@@ -7,6 +7,7 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "services/on_device_model/public/cpp/model_assets.h"
+#include "services/on_device_model/public/cpp/test_support/test_response_holder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,28 +15,6 @@ namespace on_device_model {
 namespace {
 
 using ::testing::ElementsAre;
-
-class ResponseHolder : public mojom::StreamingResponder {
- public:
-  mojo::PendingRemote<mojom::StreamingResponder> BindRemote() {
-    return receiver_.BindNewPipeAndPassRemote();
-  }
-
-  void OnResponse(const std::string& text) override {
-    responses_.push_back(text);
-  }
-
-  void OnComplete(mojom::ResponseStatus status) override { run_loop_.Quit(); }
-
-  void WaitForCompletion() { run_loop_.Run(); }
-
-  const std::vector<std::string> responses() const { return responses_; }
-
- private:
-  base::RunLoop run_loop_;
-  mojo::Receiver<mojom::StreamingResponder> receiver_{this};
-  std::vector<std::string> responses_;
-};
 
 class ContextClientWaiter : public mojom::ContextClient {
  public:
@@ -70,7 +49,7 @@ class OnDeviceModelServiceTest : public testing::Test {
     base::RunLoop run_loop;
     mojo::Remote<mojom::OnDeviceModel> remote;
     service()->LoadModel(
-        mojom::LoadModelParams::New(ModelAssets(), 0),
+        mojom::LoadModelParams::New(ModelAssets(), 0, std::nullopt),
         remote.BindNewPipeAndPassReceiver(),
         base::BindLambdaForTesting([&](mojom::LoadModelResult result) {
           EXPECT_EQ(mojom::LoadModelResult::kSuccess, result);
@@ -81,7 +60,8 @@ class OnDeviceModelServiceTest : public testing::Test {
   }
 
   mojom::InputOptionsPtr MakeInput(const std::string& input) {
-    return mojom::InputOptions::New(input, std::nullopt, std::nullopt, false);
+    return mojom::InputOptions::New(input, std::nullopt, std::nullopt, false,
+                                    std::nullopt, std::nullopt);
   }
 
  private:
@@ -93,7 +73,7 @@ class OnDeviceModelServiceTest : public testing::Test {
 TEST_F(OnDeviceModelServiceTest, Responds) {
   auto model = LoadModel();
   {
-    ResponseHolder response;
+    TestResponseHolder response;
     mojo::Remote<mojom::Session> session;
     model->StartSession(session.BindNewPipeAndPassReceiver());
     session->Execute(MakeInput("bar"), response.BindRemote());
@@ -104,7 +84,7 @@ TEST_F(OnDeviceModelServiceTest, Responds) {
   }
   // Try another input on  the same model.
   {
-    ResponseHolder response;
+    TestResponseHolder response;
     mojo::Remote<mojom::Session> session;
     model->StartSession(session.BindNewPipeAndPassReceiver());
     session->Execute(MakeInput("cat"), response.BindRemote());
@@ -118,7 +98,7 @@ TEST_F(OnDeviceModelServiceTest, Responds) {
 TEST_F(OnDeviceModelServiceTest, AddContext) {
   auto model = LoadModel();
 
-  ResponseHolder response;
+  TestResponseHolder response;
   mojo::Remote<mojom::Session> session;
   model->StartSession(session.BindNewPipeAndPassReceiver());
   session->AddContext(MakeInput("cheese"), {});
@@ -134,14 +114,14 @@ TEST_F(OnDeviceModelServiceTest, AddContext) {
 TEST_F(OnDeviceModelServiceTest, IgnoresContext) {
   auto model = LoadModel();
 
-  ResponseHolder response;
+  TestResponseHolder response;
   mojo::Remote<mojom::Session> session;
   model->StartSession(session.BindNewPipeAndPassReceiver());
   session->AddContext(MakeInput("cheese"), {});
-  session->Execute(
-      mojom::InputOptions::New("cheddar", std::nullopt, std::nullopt,
-                               /*ignore_context=*/true),
-      response.BindRemote());
+  session->Execute(mojom::InputOptions::New(
+                       "cheddar", std::nullopt, std::nullopt,
+                       /*ignore_context=*/true, std::nullopt, std::nullopt),
+                   response.BindRemote());
   response.WaitForCompletion();
 
   EXPECT_THAT(response.responses(), ElementsAre("Input: cheddar\n"));
@@ -150,20 +130,22 @@ TEST_F(OnDeviceModelServiceTest, IgnoresContext) {
 TEST_F(OnDeviceModelServiceTest, AddContextWithTokenLimits) {
   auto model = LoadModel();
 
-  ResponseHolder response;
+  TestResponseHolder response;
   mojo::Remote<mojom::Session> session;
   model->StartSession(session.BindNewPipeAndPassReceiver());
 
   std::string input = "big cheese";
   ContextClientWaiter client1;
   session->AddContext(
-      mojom::InputOptions::New(input, /*max_tokens=*/4, std::nullopt, false),
+      mojom::InputOptions::New(input, /*max_tokens=*/4, std::nullopt, false,
+                               std::nullopt, std::nullopt),
       client1.BindRemote());
   EXPECT_EQ(client1.WaitForCompletion(), 4);
 
   ContextClientWaiter client2;
   session->AddContext(
-      mojom::InputOptions::New(input, std::nullopt, /*token_offset=*/4, false),
+      mojom::InputOptions::New(input, std::nullopt, /*token_offset=*/4, false,
+                               std::nullopt, std::nullopt),
       client2.BindRemote());
   EXPECT_EQ(client2.WaitForCompletion(), 6);
 
@@ -178,7 +160,7 @@ TEST_F(OnDeviceModelServiceTest, AddContextWithTokenLimits) {
 TEST_F(OnDeviceModelServiceTest, CancelsPreviousSession) {
   auto model = LoadModel();
 
-  ResponseHolder response1;
+  TestResponseHolder response1;
   mojo::Remote<mojom::Session> session1;
   model->StartSession(session1.BindNewPipeAndPassReceiver());
   session1->Execute(MakeInput("1"), response1.BindRemote());
@@ -197,7 +179,7 @@ TEST_F(OnDeviceModelServiceTest, CancelsPreviousSession) {
   EXPECT_THAT(response1.responses(), ElementsAre("Input: 1\n"));
 
   // Second session still works.
-  ResponseHolder response2;
+  TestResponseHolder response2;
   session2->Execute(MakeInput("2"), response2.BindRemote());
   response2.WaitForCompletion();
   EXPECT_THAT(response2.responses(), ElementsAre("Input: 2\n"));

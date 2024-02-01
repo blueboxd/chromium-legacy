@@ -393,6 +393,9 @@ chromium-metrics-reviews@google.com.
   <int value="28" label="rndis_host"/>
   <int value="29" label="atl1c"/>
   <int value="30" label="sky2"/>
+  <int value="31" label="stgmac"/>
+  <int value="32" label="nforce"/>
+  <int value="33" label="r8153"/>
 </enum>
 
 <enum name="FallbackDNSTestResult">
@@ -500,6 +503,9 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="kSuspended: Hotspot disabled due to device suspend."/>
   <int value="7"
       label="kRestart: Hotspot disabled due to hotspot restart process."/>
+  <int value="8"
+      label="kUpstreamNoInternet: Hotspot disabled due to upstream network
+             has no Internet connectivity."/>
 </enum>
 
 <enum name="HotspotSetConfigResult">
@@ -626,6 +632,13 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="Admin allowed only managed cellular networks"/>
   <int value="1"
       label="Admin allowed both managed and unmanaged cellular networks"/>
+</enum>
+
+<enum name="NetworkCAPPORTSupport">
+  <int value="0" label="no CAPPORT support"/>
+  <int value="1" label="DHCPv4 option 114"/>
+  <int value="2" label="ICMP6 RA option 37"/>
+  <int value="3" label="DHCPv4 option 114 and ICMP6 RA option 37"/>
 </enum>
 
 <enum name="NetworkCellular3GPPRegistrationDelayedDrop">
@@ -957,6 +970,12 @@ chromium-metrics-reviews@google.com.
   <int value="38" label="BruschettaVmStartupSuccess"/>
   <int value="39" label="BruschettaVmShutdown"/>
   <int value="40" label="BruschettaVmShutdownSuccess"/>
+  <int value="41" label="BorealisVmStartup"/>
+  <int value="42" label="BorealisVmStartupSuccess"/>
+  <int value="43" label="BorealisVmShutdown"/>
+  <int value="44" label="BorealisVmShutdownSuccess"/>
+  <int value="45" label="ConfigureNetwork"/>
+  <int value="46" label="ConfigureNetworkSuccess"/>
 </enum>
 
 <enum name="NetworkPatchpanelDHCPServerEvent">
@@ -993,6 +1012,7 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="PSB 5MHz-wide"/>
   <int value="7" label="802.11ac"/>
   <int value="8" label="802.11ax"/>
+  <int value="9" label="802.11be"/>
 </enum>
 
 <enum name="NetworkPortalResult">
@@ -2022,8 +2042,9 @@ chromium-metrics-reviews@google.com.
   <int value="13" label="Too Many STAs"/>
   <int value="14" label="Bad Passphrase"/>
   <int value="15" label="Bad Wep Key"/>
-  <int value="16" label="Sim Locked"/>
+  <int value="16" label="Sim PIN/PUK Locked"/>
   <int value="17" label="Not registered"/>
+  <int value="18" label="Sim Carrier Locked"/>
 </enum>
 
 <enum name="ShillConnectResult">
@@ -2050,7 +2071,7 @@ chromium-metrics-reviews@google.com.
   <int value="20" label="Out Of Range"/>
   <int value="21" label="Pin Missing"/>
   <int value="22" label="Ppp Auth Failed"/>
-  <int value="23" label="Sim Locked"/>
+  <int value="23" label="Sim PIN/PUK Locked"/>
   <int value="24" label="Not Registered"/>
   <int value="25" label="Too Many STAs"/>
   <int value="26" label="Disconnect"/>
@@ -2101,6 +2122,7 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="PIN Locked"/>
   <int value="1" label="PUK Locked"/>
   <int value="2" label="Unlocked"/>
+  <int value="3" label="Carrier Locked"/>
 </enum>
 
 <enum name="SimPinOperationResult">
@@ -2158,7 +2180,7 @@ chromium-metrics-reviews@google.com.
   <int value="7" label="Cellular Inhibit Failure"/>
   <int value="8" label="ESim profile issue"/>
   <int value="9" label="Cellular out of credits"/>
-  <int value="10" label="Sim locked"/>
+  <int value="10" label="Sim PIN/PUK locked"/>
   <int value="11" label="Connect failed"/>
   <int value="12" label="Not connected"/>
   <int value="13" label="Activate Failed"/>
@@ -2166,6 +2188,7 @@ chromium-metrics-reviews@google.com.
   <int value="15" label="Cellular device busy"/>
   <int value="16" label="Error Connect Timeout"/>
   <int value="17" label="Cellular waiting for connectable timeout"/>
+  <int value="18" label="Carrier locked"/>
 </enum>
 
 <enum name="UserInitiatedNetworkConnectResult">
@@ -2193,7 +2216,7 @@ chromium-metrics-reviews@google.com.
   <int value="21" label="Cellular Inhibit Failure"/>
   <int value="22" label="Cellular Out Of Credits"/>
   <int value="23" label="ESim Profile Issue"/>
-  <int value="24" label="Sim Locked"/>
+  <int value="24" label="Sim PIN/PUK Locked"/>
   <int value="25" label="Cellular Device Busy"/>
   <int value="26" label="Connect Timeout"/>
   <int value="27" label="Connectable Cellular Timeout"/>
@@ -2470,10 +2493,6 @@ chromium-metrics-reviews@google.com.
   <int value="38" label="kReasonCodeSetupRequired"/>
   <int value="39" label="kReasonCodeTimeout"/>
   <int value="45" label="kReasonCodeCipherSuiteNotSupported"/>
-</enum>
-
-<enum name="WiFiRestartReason">
-  <int value="0" label="kRestartReasonCannotAssoc"/>
 </enum>
 
 <enum name="WiFiRoamComplete">

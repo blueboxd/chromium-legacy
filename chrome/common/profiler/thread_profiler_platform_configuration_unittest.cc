@@ -15,7 +15,8 @@
 
 #if (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86_64)) || BUILDFLAG(IS_MAC) || \
     (BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)) ||           \
-    (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_X86_64))
+    (BUILDFLAG(IS_CHROMEOS) &&                                              \
+     (defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)))
 #define THREAD_PROFILER_SUPPORTED_ON_PLATFORM true
 #else
 #define THREAD_PROFILER_SUPPORTED_ON_PLATFORM false
@@ -70,7 +71,7 @@ TEST_F(ThreadProfilerPlatformConfigurationTest, IsSupported) {
   EXPECT_FALSE(config()->IsSupported(version_info::Channel::BETA));
   EXPECT_FALSE(config()->IsSupported(version_info::Channel::STABLE));
 
-  EXPECT_FALSE(config()->IsSupported(absl::nullopt));
+  EXPECT_FALSE(config()->IsSupported(std::nullopt));
 #else
   EXPECT_FALSE(config()->IsSupported(version_info::Channel::UNKNOWN));
   EXPECT_TRUE(config()->IsSupported(version_info::Channel::CANARY));
@@ -78,7 +79,7 @@ TEST_F(ThreadProfilerPlatformConfigurationTest, IsSupported) {
   EXPECT_FALSE(config()->IsSupported(version_info::Channel::BETA));
   EXPECT_FALSE(config()->IsSupported(version_info::Channel::STABLE));
 
-  EXPECT_TRUE(config()->IsSupported(absl::nullopt));
+  EXPECT_TRUE(config()->IsSupported(std::nullopt));
 #endif
 }
 
@@ -103,7 +104,7 @@ MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
   EXPECT_CHECK_DEATH(config()->GetEnableRates(version_info::Channel::STABLE));
 
   EXPECT_EQ((RelativePopulations{100, 0}),
-            config()->GetEnableRates(absl::nullopt));
+            config()->GetEnableRates(std::nullopt));
 #endif
 }
 

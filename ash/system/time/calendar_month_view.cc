@@ -348,7 +348,8 @@ void CalendarDateCellView::PaintButtonContents(gfx::Canvas* canvas) {
 }
 
 void CalendarDateCellView::OnDateCellActivated(const ui::Event& event) {
-  if (grayed_out_ || !calendar_utils::ShouldFetchEvents()) {
+  if (grayed_out_ || !calendar_utils::ShouldFetchEvents() ||
+      !calendar_view_controller_->is_date_cell_clickable()) {
     return;
   }
 
@@ -579,19 +580,19 @@ void CalendarMonthView::OnEventsFetched(
 }
 
 void CalendarMonthView::EnableFocus() {
-  for (auto* cell : children()) {
+  for (views::View* cell : children()) {
     static_cast<CalendarDateCellView*>(cell)->EnableFocus();
   }
 }
 
 void CalendarMonthView::DisableFocus() {
-  for (auto* cell : children()) {
+  for (views::View* cell : children()) {
     static_cast<CalendarDateCellView*>(cell)->DisableFocus();
   }
 }
 
 void CalendarMonthView::UpdateIsFetchedAndRepaint(bool updated_is_fetched) {
-  for (auto* cell : children()) {
+  for (views::View* cell : children()) {
     static_cast<CalendarDateCellView*>(cell)->UpdateFetchStatus(
         updated_is_fetched);
   }

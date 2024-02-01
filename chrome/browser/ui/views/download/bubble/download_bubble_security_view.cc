@@ -7,6 +7,7 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -101,8 +102,9 @@ bool HandleButtonClickWithDefaultClose(
 
 // This class encapsulates a piece of text broken into several paragraphs.
 class ParagraphsView : public views::View {
+  METADATA_HEADER(ParagraphsView, views::View)
+
  public:
-  METADATA_HEADER(ParagraphsView);
   ParagraphsView() {
     SetLayoutManager(std::make_unique<views::FlexLayout>())
         ->SetOrientation(views::LayoutOrientation::kVertical)
@@ -201,10 +203,10 @@ class ParagraphsView : public views::View {
   int default_text_style_ = views::style::STYLE_PRIMARY;
   int after_paragraph_ = 0;
   int fixed_width_ = 0;
-  std::vector<views::StyledLabel*> paragraphs_;
+  std::vector<raw_ptr<views::StyledLabel, VectorExperimental>> paragraphs_;
 };
 
-BEGIN_METADATA(ParagraphsView, View)
+BEGIN_METADATA(ParagraphsView)
 END_METADATA
 
 bool DownloadBubbleSecurityView::IsInitialized() const {
@@ -607,6 +609,15 @@ bool DownloadBubbleSecurityView::ProcessButtonClick(
   return true;
 }
 
+void DownloadBubbleSecurityView::MaybeLogDismiss() {
+  if (did_log_action_ || !IsInitialized()) {
+    return;
+  }
+  delegate_->AddSecuritySubpageWarningActionEvent(
+      content_id_, DownloadItemWarningData::WarningAction::DISMISS);
+  did_log_action_ = true;
+}
+
 void DownloadBubbleSecurityView::UpdateButton(
     DownloadUIModel::BubbleUIInfo::SubpageButton button_info,
     bool is_secondary_button) {
@@ -624,7 +635,6 @@ void DownloadBubbleSecurityView::UpdateButton(
     if (button_info.color) {
       button->SetEnabledTextColorIds(*button_info.color);
     }
-    secondary_button_ = button;
   } else {
     bubble_delegate_->SetAcceptCallbackWithClose(callback);
   }
@@ -643,7 +653,6 @@ void DownloadBubbleSecurityView::UpdateButton(
 void DownloadBubbleSecurityView::UpdateButtons() {
   bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_NONE);
   bubble_delegate_->SetDefaultButton(ui::DIALOG_BUTTON_NONE);
-  secondary_button_ = nullptr;
 
   if (ui_info_.subpage_buttons.size() > 0) {
     bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_OK);
@@ -770,7 +779,6 @@ void DownloadBubbleSecurityView::OnDownloadUpdated(
   if (is_different_download || danger_type_changed) {
     warning_time_ = base::Time::Now();
     ui_info_ = DownloadItemModel(download).GetBubbleUIInfo();
-    download::DownloadDangerType old_danger_type = danger_type_;
     danger_type_ = download->GetDangerType();
     // If this represents a "terminal" state of a deep scan, or if the download
     // is otherwise no longer dangerous, we return to the primary dialog. Note
@@ -783,7 +791,8 @@ void DownloadBubbleSecurityView::OnDownloadUpdated(
       // the primary dialog anyway.
       return;
     }
-    UpdateViews(old_danger_type);
+    UpdateViews();
+    UpdateAccessibilityTextAndFocus();
   }
 }
 
@@ -799,18 +808,10 @@ void DownloadBubbleSecurityView::SetUIInfoForTesting(
   UpdateViews();
 }
 
-void DownloadBubbleSecurityView::UpdateViews(
-    download::DownloadDangerType old_danger_type) {
+void DownloadBubbleSecurityView::UpdateViews() {
   CHECK(IsInitialized());
-  // TODO(crbug.com/1478390): This should become a CHECK eventually.
-  if (!ui_info_.HasSubpage()) {
-    SCOPED_CRASH_KEY_NUMBER("DownloadBubble", "bad_update_from_type",
-                            old_danger_type);
-    SCOPED_CRASH_KEY_NUMBER("DownloadBubble", "bad_update_to_type",
-                            danger_type_);
-    base::debug::DumpWithoutCrashing(FROM_HERE);
-    return;
-  }
+  CHECK(ui_info_.HasSubpage());
+
   // Our multiline labels need to know the width of the bubble in order to size
   // themselves appropriately (see `GetMinimumLabelWidth`). This means that we
   // must reset fields that increase the width of the bubble before update. This
@@ -860,12 +861,7 @@ DownloadBubbleSecurityView::DownloadBubbleSecurityView(
   AddProgressBar();
 }
 
-DownloadBubbleSecurityView::~DownloadBubbleSecurityView() {
-  if (!did_log_action_ && IsInitialized()) {
-    delegate_->AddSecuritySubpageWarningActionEvent(
-        content_id_, DownloadItemWarningData::WarningAction::DISMISS);
-  }
-}
+DownloadBubbleSecurityView::~DownloadBubbleSecurityView() = default;
 
 int DownloadBubbleSecurityView::GetMinimumBubbleWidth() const {
   return ChromeLayoutProvider::Get()->GetSnappedDialogWidth(
@@ -929,5 +925,5 @@ bool DownloadBubbleSecurityView::ProcessLocalPasswordDecryptionClick() {
   return false;
 }
 
-BEGIN_METADATA(DownloadBubbleSecurityView, views::View)
+BEGIN_METADATA(DownloadBubbleSecurityView)
 END_METADATA

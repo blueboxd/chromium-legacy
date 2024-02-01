@@ -28,8 +28,6 @@
 #endif  // BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 
 class GURL;
-class PasswordProtectionServiceBase;
-class RequestCanceler;
 
 namespace content {
 class WebContents;
@@ -38,10 +36,13 @@ class WebContents;
 namespace safe_browsing {
 
 class PasswordProtectionCommitDeferringCondition;
+class PasswordProtectionServiceBase;
+class RequestCanceler;
 
 using password_manager::metrics_util::PasswordType;
 
-class PasswordProtectionRequestContent : public PasswordProtectionRequest {
+class PasswordProtectionRequestContent final
+    : public PasswordProtectionRequest {
  public:
   // Creates a request instance for testing which will stop short of issuing
   // real requests. See prevent_initiating_url_loader_for_testing_ in the base
@@ -99,6 +100,12 @@ class PasswordProtectionRequestContent : public PasswordProtectionRequest {
   std::set<PasswordProtectionCommitDeferringCondition*>&
   get_deferred_navigations_for_testing() {
     return deferred_navigations_;
+  }
+
+  base::WeakPtr<PasswordProtectionRequest> AsWeakPtr() override;
+
+  base::WeakPtr<PasswordProtectionRequestContent> AsWeakPtrImpl() {
+    return weak_factory_.GetWeakPtr();
   }
 
  private:
@@ -179,6 +186,8 @@ class PasswordProtectionRequestContent : public PasswordProtectionRequest {
   // successfully gathering the features.
   bool dom_features_collection_complete_;
 #endif  // BUILDFLAG(SAFE_BROWSING_AVAILABLE)
+
+  base::WeakPtrFactory<PasswordProtectionRequestContent> weak_factory_{this};
 };
 
 }  // namespace safe_browsing

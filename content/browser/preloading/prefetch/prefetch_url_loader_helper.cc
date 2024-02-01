@@ -101,7 +101,7 @@ void OnCookieCopyComplete(int frame_tree_node_id,
                           PrefetchProbeResult probe_result,
                           base::TimeTicks cookie_copy_start_time) {
   base::TimeDelta wait_time = base::TimeTicks::Now() - cookie_copy_start_time;
-  CHECK_GT(wait_time, base::TimeDelta());
+  CHECK_GE(wait_time, base::TimeDelta());
   RecordCookieWaitTime(wait_time);
   OnComplete(frame_tree_node_id, std::move(get_prefetch_callback),
              std::move(reader), probe_result);
@@ -225,11 +225,10 @@ void OnGotPrefetchToServe(
       break;
   }
 
-  if (reader.HaveDefaultContextCookiesChanged()) {
-    reader.GetPrefetchContainer()->OnCookiesChanged();
-    std::move(get_prefetch_callback).Run({});
-    return;
-  }
+  // We should not reach here if the cookies have changed; this should have
+  // already been checked in PrefetchService::ReturnPrefetchToServe and this
+  // method should have been called with an empty reader.
+  CHECK(!reader.HaveDefaultContextCookiesChanged());
 
   // TODO(crbug.com/1462206): Should we check for existence of an
   // `origin_prober` earlier instead of waiting until we have a matching

@@ -20,14 +20,15 @@
 #include "third_party/blink/renderer/core/layout/inline/text_offset_range.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
+#include "third_party/blink/renderer/core/layout/text_decoration_offset.h"
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
+#include "third_party/blink/renderer/core/paint/highlight_overlay.h"
 #include "third_party/blink/renderer/core/paint/line_relative_rect.h"
 #include "third_party/blink/renderer/core/paint/marker_range_mapping_context.h"
-#include "third_party/blink/renderer/core/paint/highlight_overlay.h"
-#include "third_party/blink/renderer/core/paint/text_decoration_painter.h"
-#include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/text_decoration_painter.h"
+#include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -174,7 +175,7 @@ bool HasNonTrivialSpellingGrammarStyles(const FragmentItem& fragment_item,
     // If the SVG-only fill- and stroke-related properties differ from their
     // values in the originating style. These checks must be skipped outside of
     // SVG content, because the initial ‘fill’ is ‘black’, not ‘currentColor’.
-    if (fragment_item.Type() == FragmentItem::kSvgText) {
+    if (fragment_item.IsSvgText()) {
       // If the ‘fill’ is ‘currentColor’, assume that it differs from the
       // originating style, even if the current color actually happens to
       // match. This simplifies the logic until we know it performs poorly.
@@ -415,21 +416,31 @@ HighlightPainter::HighlightPainter(
       }
     }
     if (!parts_.empty()) {
-      // TODO(schenney) The code here still results in n^2 calculations or,
-      // more precisely, O(num_edges * text_length) because
-      // CaretInlinePositionForOffset ultimately does a linear walk through
-      // the text shaping result looking for the offset while accumulating
-      // character widths. Given the edges are sorted, we should enable
-      // one pass through the text to accumulate all the necessary offset
-      // positions.
-      edges_info_.push_back(
-          HighlightEdgeInfo{parts_[0].range.from,
-                            fragment_item_.CaretInlinePositionForOffset(
-                                cursor_.CurrentText(), parts_[0].range.from)});
-      for (const HighlightPart& part : parts_) {
+      if (const ShapeResultView* shape_result_view =
+              fragment_item_->TextShapeResult()) {
+        const ShapeResult* shape_result =
+            shape_result_view->CreateShapeResult();
+        unsigned start_offset = fragment_item_->StartOffset();
         edges_info_.push_back(HighlightEdgeInfo{
-            part.range.to, fragment_item_.CaretInlinePositionForOffset(
-                               cursor_.CurrentText(), part.range.to)});
+            parts_[0].range.from,
+            LayoutUnit::FromFloatRound(shape_result->CaretPositionForOffset(
+                parts_[0].range.from - start_offset, cursor_.CurrentText()))});
+        for (const HighlightPart& part : parts_) {
+          edges_info_.push_back(HighlightEdgeInfo{
+              part.range.to,
+              LayoutUnit::FromFloatRound(shape_result->CaretPositionForOffset(
+                  part.range.to - start_offset, cursor_.CurrentText()))});
+        }
+      } else {
+        edges_info_.push_back(HighlightEdgeInfo{
+            parts_[0].range.from,
+            fragment_item_.CaretInlinePositionForOffset(cursor_.CurrentText(),
+                                                        parts_[0].range.from)});
+        for (const HighlightPart& part : parts_) {
+          edges_info_.push_back(HighlightEdgeInfo{
+              part.range.to, fragment_item_.CaretInlinePositionForOffset(
+                                 cursor_.CurrentText(), part.range.to)});
+        }
       }
     }
   }
@@ -478,7 +489,9 @@ void HighlightPainter::Paint(Phase phase) {
           Color color =
               LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
                   text_match_marker.IsActiveMatch(),
-                  originating_style_.UsedColorScheme());
+                  originating_style_.UsedColorScheme(),
+                  document.GetColorProviderForPainting(
+                      originating_style_.UsedColorScheme()));
           PaintRect(paint_info_.context, PhysicalOffset(box_origin_),
                     fragment_item_.LocalRect(text, paint_start_offset,
                                              paint_end_offset),
@@ -487,23 +500,25 @@ void HighlightPainter::Paint(Phase phase) {
         }
 
         TextPaintStyle text_style;
-        if (fragment_item_->Type() != FragmentItem::kSvgText) {
-          text_style = DocumentMarkerPainter::ComputeTextPaintStyleFrom(
-              document, node_, originating_style_, text_match_marker,
-              paint_info_);
-        } else {
+        if (fragment_item_->IsSvgText()) {
           // DocumentMarkerPainter::ComputeTextPaintStyleFrom() doesn't work
           // well with SVG <text>, which doesn't apply 'color' CSS property.
           const Color platform_matched_color =
               LayoutTheme::GetTheme().PlatformTextSearchColor(
                   text_match_marker.IsActiveMatch(),
-                  originating_style_.UsedColorScheme());
+                  originating_style_.UsedColorScheme(),
+                  document.GetColorProviderForPainting(
+                      originating_style_.UsedColorScheme()));
           text_painter_.SetSvgState(
               *To<LayoutSVGInlineText>(fragment_item_->GetLayoutObject()),
               originating_style_, platform_matched_color);
           text_style.current_color = platform_matched_color;
           text_style.stroke_width = originating_style_.TextStrokeWidth();
           text_style.color_scheme = originating_style_.UsedColorScheme();
+        } else {
+          text_style = DocumentMarkerPainter::ComputeTextPaintStyleFrom(
+              document, node_, originating_style_, text_match_marker,
+              paint_info_);
         }
         text_painter_.Paint(
             fragment_paint_info_.Slice(paint_start_offset, paint_end_offset),
@@ -727,15 +742,16 @@ void HighlightPainter::PaintOneSpellingGrammarDecoration(
   const LineRelativeRect rect = LineRelativeWorldRect(range);
 
   absl::optional<TextDecorationInfo> decoration_info{};
-  decoration_painter_.UpdateDecorationInfo(decoration_info, style, rect,
-                                           decoration_override);
+  decoration_painter_.UpdateDecorationInfo(decoration_info, fragment_item_,
+                                           style, rect, decoration_override);
 
   GraphicsContextStateSaver saver{paint_info_.context};
   ClipToPartDecorations(rect);
 
+  const TextDecorationOffset decoration_offset(fragment_item_.Style());
   text_painter_.PaintDecorationsExceptLineThrough(
       fragment_paint_info_.Slice(paint_start_offset, paint_end_offset),
-      fragment_item_, paint_info_, style, text_style, *decoration_info,
+      decoration_offset, paint_info_, text_style, *decoration_info,
       LineFor(marker_type));
 }
 
@@ -1055,6 +1071,13 @@ LineRelativeRect HighlightPainter::LocalRectInWritingModeSpace(
   DCHECK_NE(from_info, edges_info_.end());
   DCHECK_NE(to_info, edges_info_.end());
 
+  // This rect is used for 2 purposes: To set the offset and width for
+  // text decoration painting, and the set the clip. The former uses the
+  // offset and width, but not height, and the offset should be the
+  // fragment offset. The latter uses offset and size, but the offset should
+  // be the corner of the painted region. Return the origin for text decorations
+  // and the height for clipping, then update the offset for clipping in the
+  // calling code.
   const LayoutUnit height = fragment_item_.InkOverflowRect().Height();
   if (from_info->x > to_info->x) {
     return {{to_info->x, LayoutUnit{}}, {from_info->x - to_info->x, height}};
@@ -1065,20 +1088,11 @@ LineRelativeRect HighlightPainter::LocalRectInWritingModeSpace(
 void HighlightPainter::ClipToPartDecorations(
     const LineRelativeRect& part_rect) {
   gfx::RectF clip_rect{part_rect};
-
-  // Whether it’s best to clip to selection rect on both axes or only inline
-  // depends on the situation, but the latter can improve the appearance of
-  // decorations. For example, we often paint overlines entirely past the
-  // top edge of selection rect, and wavy underlines have similar problems.
-  //
-  // Sadly there’s no way to clip to a rect of infinite height, so for now,
-  // let’s clip to selection rect plus its height both above and below. This
-  // should be enough to avoid clipping most decorations in the wild.
-  //
-  // TODO(crbug.com/1433400): take text-underline-offset and other
-  // text-decoration properties into account?
-  clip_rect.set_y(clip_rect.y() - clip_rect.height());
-  clip_rect.set_height(3.0 * clip_rect.height());
+  if (UNLIKELY(fragment_item_.IsSvgText())) {
+    clip_rect = TextDecorationPainter::ExpandRectForSVGDecorations(part_rect);
+  } else {
+    clip_rect.Offset(0, fragment_item_.InkOverflowRect().Y());
+  }
   paint_info_.context.Clip(clip_rect);
 }
 
@@ -1124,16 +1138,17 @@ void HighlightPainter::PaintDecorationsExceptLineThrough(
     // highlight, but clip it to the range of the part.
     const LineRelativeRect decoration_rect =
         LineRelativeWorldRect(decoration.range);
-    const LineRelativeRect part_rect = part.range != decoration.range
-                                           ? LineRelativeWorldRect(part.range)
-                                           : decoration_rect;
 
     absl::optional<TextDecorationInfo> decoration_info{};
-    decoration_painter_.UpdateDecorationInfo(
-        decoration_info, *decoration_layer.style, decoration_rect);
+    decoration_painter_.UpdateDecorationInfo(decoration_info, fragment_item_,
+                                             *decoration_layer.style,
+                                             decoration_rect);
 
     if (!state_saver.Saved()) {
       state_saver.Save();
+      const LineRelativeRect part_rect = part.range != decoration.range
+                                             ? LineRelativeWorldRect(part.range)
+                                             : decoration_rect;
       ClipToPartDecorations(part_rect);
     }
 
@@ -1152,10 +1167,11 @@ void HighlightPainter::PaintDecorationsExceptLineThrough(
       }
     }
 
+    const TextDecorationOffset decoration_offset(fragment_item_.Style());
     text_painter_.PaintDecorationsExceptLineThrough(
         fragment_paint_info_.Slice(part.range.from, part.range.to),
-        fragment_item_, paint_info_, *decoration_layer.style,
-        decoration_layer.text_style, *decoration_info, lines_to_paint);
+        decoration_offset, paint_info_, decoration_layer.text_style,
+        *decoration_info, lines_to_paint);
   }
 }
 
@@ -1189,16 +1205,17 @@ void HighlightPainter::PaintDecorationsOnlyLineThrough(
     // highlight, but clip it to the range of the part.
     const LineRelativeRect decoration_rect =
         LineRelativeWorldRect(decoration.range);
-    const LineRelativeRect part_rect = part.range != decoration.range
-                                           ? LineRelativeWorldRect(part.range)
-                                           : decoration_rect;
 
     absl::optional<TextDecorationInfo> decoration_info{};
-    decoration_painter_.UpdateDecorationInfo(
-        decoration_info, *decoration_layer.style, decoration_rect);
+    decoration_painter_.UpdateDecorationInfo(decoration_info, fragment_item_,
+                                             *decoration_layer.style,
+                                             decoration_rect);
 
     if (!state_saver.Saved()) {
       state_saver.Save();
+      const LineRelativeRect part_rect = part.range != decoration.range
+                                             ? LineRelativeWorldRect(part.range)
+                                             : decoration_rect;
       ClipToPartDecorations(part_rect);
     }
 
@@ -1218,8 +1235,7 @@ void HighlightPainter::PaintDecorationsOnlyLineThrough(
     }
 
     text_painter_.PaintDecorationsOnlyLineThrough(
-        fragment_item_, paint_info_, *decoration_layer.style,
-        decoration_layer.text_style, *decoration_info);
+        paint_info_, decoration_layer.text_style, *decoration_info);
   }
 }
 
@@ -1300,11 +1316,11 @@ void HighlightPainter::PaintDecoratedText(const StringView& text,
       fragment_item_, text, paint_start_offset, paint_end_offset);
   decoration_rect.Move(LineRelativeOffset::CreateFromBoxOrigin(box_origin_));
   TextDecorationPainter decoration_painter(
-      text_painter_, fragment_item_, paint_info_,
+      text_painter_, decoration_painter_.InlineContext(), paint_info_,
       pseudo_style ? *pseudo_style : originating_style_, text_style,
       decoration_rect, selection_);
 
-  decoration_painter.Begin(TextDecorationPainter::kOriginating);
+  decoration_painter.Begin(fragment_item_, TextDecorationPainter::kOriginating);
   decoration_painter.PaintExceptLineThrough(
       fragment_paint_info_.Slice(paint_start_offset, paint_end_offset));
 

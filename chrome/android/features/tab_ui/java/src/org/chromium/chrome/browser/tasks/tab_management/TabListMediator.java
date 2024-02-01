@@ -11,11 +11,16 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.Card
 import static org.chromium.chrome.browser.tasks.tab_management.TabProperties.CLOSE_BUTTON_DESCRIPTION_STRING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabProperties.TAB_ID;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -38,6 +43,7 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
+import org.chromium.base.ValueChangedCallback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
@@ -50,7 +56,7 @@ import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.profiles.ProfileManager;
+import org.chromium.chrome.browser.quick_delete.QuickDeleteAnimationGradientDrawable;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -73,7 +79,6 @@ import org.chromium.chrome.browser.tasks.tab_management.PriceMessageService.Pric
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.TabFaviconFetcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMediator.PriceWelcomeMessageController;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiMetricsHelper.TabListEditorActionMetricGroups;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
@@ -91,10 +96,12 @@ import org.chromium.url.GURL;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
@@ -163,17 +170,21 @@ class TabListMediator {
 
     /** Provides capability to asynchronously acquire {@link ShoppingPersistedTabData} */
     static class ShoppingPersistedTabDataFetcher {
-        protected Tab mTab;
-        protected PriceWelcomeMessageController mPriceWelcomeMessageController;
+        protected final Tab mTab;
+        protected final Supplier<PriceWelcomeMessageController>
+                mPriceWelcomeMessageControllerSupplier;
 
         /**
          * @param tab {@link Tab} {@link ShoppingPersistedTabData} will be acquired for.
-         * @param priceWelcomeMessageController to show the price welcome message.
+         * @param priceWelcomeMessageControllerSupplier to show the price welcome message.
          */
         ShoppingPersistedTabDataFetcher(
-                Tab tab, @Nullable PriceWelcomeMessageController priceWelcomeMessageController) {
+                Tab tab,
+                @NonNull
+                        Supplier<PriceWelcomeMessageController>
+                                priceWelcomeMessageControllerSupplier) {
             mTab = tab;
-            mPriceWelcomeMessageController = priceWelcomeMessageController;
+            mPriceWelcomeMessageControllerSupplier = priceWelcomeMessageControllerSupplier;
         }
 
         /**
@@ -197,16 +208,19 @@ class TabListMediator {
                     .post(
                             () -> {
                                 if (!PriceTrackingUtilities.isPriceWelcomeMessageCardEnabled(
-                                                Profile.getLastUsedRegularProfile())
-                                        || (mPriceWelcomeMessageController == null)
+                                                mTab.getProfile())
+                                        || (mPriceWelcomeMessageControllerSupplier == null)
+                                        || (mPriceWelcomeMessageControllerSupplier.get() == null)
                                         || (shoppingPersistedTabData == null)
                                         || (shoppingPersistedTabData.getPriceDrop() == null)) {
                                     return;
                                 }
-                                mPriceWelcomeMessageController.showPriceWelcomeMessage(
-                                        new PriceTabData(
-                                                mTab.getId(),
-                                                shoppingPersistedTabData.getPriceDrop()));
+                                mPriceWelcomeMessageControllerSupplier
+                                        .get()
+                                        .showPriceWelcomeMessage(
+                                                new PriceTabData(
+                                                        mTab.getId(),
+                                                        shoppingPersistedTabData.getPriceDrop()));
                             });
         }
     }
@@ -320,18 +334,17 @@ class TabListMediator {
     private final ObservableSupplier<TabModelFilter> mCurrentTabModelFilterSupplier;
     // TODO(crbug/1505772): Refactor price drops so we don't need this.
     private final Supplier<TabModel> mRegularTabModelSupplier;
-    private final Callback<TabModelFilter> mOnTabModelFilterChanged = this::onTabModelFilterChanged;
+    private final ValueChangedCallback<TabModelFilter> mOnTabModelFilterChanged =
+            new ValueChangedCallback<>(this::onTabModelFilterChanged);
     private final TabActionListener mTabClosedListener;
     private final PseudoTab.TitleProvider mTitleProvider;
     private final SelectionDelegateProvider mSelectionDelegateProvider;
     private final GridCardOnClickListenerProvider mGridCardOnClickListenerProvider;
     private final TabGridDialogHandler mTabGridDialogHandler;
     private final TabListFaviconProvider mTabListFaviconProvider;
-    private final PriceWelcomeMessageController mPriceWelcomeMessageController;
+    private final Supplier<PriceWelcomeMessageController> mPriceWelcomeMessageControllerSupplier;
 
-    // This could come from mCurrentTabModelFilterSupplier, but we need to cache it for updating
-    // observers.
-    private TabModelFilter mCurrentTabModelFilter;
+    private @Nullable Profile mProfile;
     private Size mDefaultGridCardSize;
     private String mComponentName;
     private ThumbnailProvider mThumbnailProvider;
@@ -757,7 +770,8 @@ class TabListMediator {
      * @param gridCardOnClickListenerProvider Provides the onClickListener for opening dialog when
      *     click on a grid card.
      * @param dialogHandler A handler to handle requests about updating TabGridDialog.
-     * @param priceWelcomeMessageController A controller to show PriceWelcomeMessage.
+     * @param priceWelcomeMessageControllerSupplier A supplier of a controller to show
+     *     PriceWelcomeMessage.
      * @param componentName This is a unique string to identify different components.
      * @param uiType The type of UI this mediator should be building.
      */
@@ -774,7 +788,7 @@ class TabListMediator {
             @Nullable SelectionDelegateProvider selectionDelegateProvider,
             @Nullable GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             @Nullable TabGridDialogHandler dialogHandler,
-            @Nullable PriceWelcomeMessageController priceWelcomeMessageController,
+            @NonNull Supplier<PriceWelcomeMessageController> priceWelcomeMessageControllerSupplier,
             String componentName,
             @UiType int uiType) {
         mContext = context;
@@ -791,7 +805,7 @@ class TabListMediator {
         mTabGridDialogHandler = dialogHandler;
         mActionsOnAllRelatedTabs = actionOnRelatedTabs;
         mUiType = uiType;
-        mPriceWelcomeMessageController = priceWelcomeMessageController;
+        mPriceWelcomeMessageControllerSupplier = priceWelcomeMessageControllerSupplier;
 
         mTabModelObserver =
                 new TabModelObserver() {
@@ -1022,44 +1036,6 @@ class TabListMediator {
                         mComponentName,
                         mActionsOnAllRelatedTabs,
                         mMode);
-
-        // Right now we need to update layout only if there is a price welcome message card in tab
-        // switcher.
-        if (mMode == TabListMode.GRID
-                && mUiType != UiType.SELECTABLE
-                && ProfileManager.isInitialized()
-                && PriceTrackingFeatures.isPriceTrackingEnabled(
-                        Profile.getLastUsedRegularProfile())) {
-            mListObserver =
-                    new ListObserver<Void>() {
-                        @Override
-                        public void onItemRangeInserted(
-                                ListObservable source, int index, int count) {
-                            updateLayout();
-                        }
-
-                        @Override
-                        public void onItemRangeRemoved(
-                                ListObservable source, int index, int count) {
-                            updateLayout();
-                        }
-
-                        @Override
-                        public void onItemRangeChanged(
-                                ListObservable<Void> source,
-                                int index,
-                                int count,
-                                @Nullable Void payload) {
-                            updateLayout();
-                        }
-
-                        @Override
-                        public void onItemMoved(ListObservable source, int curIndex, int newIndex) {
-                            updateLayout();
-                        }
-                    };
-            mModel.addObserver(mListObserver);
-        }
     }
 
     /**
@@ -1118,10 +1094,12 @@ class TabListMediator {
         }
     }
 
-    public void initWithNative() {
-        mTabListFaviconProvider.initWithNative(Profile.getLastUsedRegularProfile());
+    public void initWithNative(Profile profile) {
+        assert !profile.isOffTheRecord() : "Expecting a non-incognito profile.";
+        mProfile = profile;
+        mTabListFaviconProvider.initWithNative(profile);
 
-        onTabModelFilterChanged(
+        mOnTabModelFilterChanged.onResult(
                 mCurrentTabModelFilterSupplier.addObserver(mOnTabModelFilterChanged));
 
         mTabGroupTitleEditor =
@@ -1157,6 +1135,42 @@ class TabListMediator {
                         TabGroupTitleUtils.storeTabGroupTitle(tabRootId, title);
                     }
                 };
+
+        // Right now we need to update layout only if there is a price welcome message card in tab
+        // switcher.
+        if (mMode == TabListMode.GRID
+                && mUiType != UiType.SELECTABLE
+                && PriceTrackingFeatures.isPriceTrackingEnabled(profile)) {
+            mListObserver =
+                    new ListObserver<Void>() {
+                        @Override
+                        public void onItemRangeInserted(
+                                ListObservable source, int index, int count) {
+                            updateLayout();
+                        }
+
+                        @Override
+                        public void onItemRangeRemoved(
+                                ListObservable source, int index, int count) {
+                            updateLayout();
+                        }
+
+                        @Override
+                        public void onItemRangeChanged(
+                                ListObservable<Void> source,
+                                int index,
+                                int count,
+                                @Nullable Void payload) {
+                            updateLayout();
+                        }
+
+                        @Override
+                        public void onItemMoved(ListObservable source, int curIndex, int newIndex) {
+                            updateLayout();
+                        }
+                    };
+            mModel.addObserver(mListObserver);
+        }
     }
 
     private void onTabClosedFrom(int tabId, String fromComponent) {
@@ -1337,10 +1351,10 @@ class TabListMediator {
 
     void hardCleanup() {
         assert !mVisible;
-        Profile profile = Profile.getLastUsedRegularProfile();
-        if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled(profile)
-                && (PriceTrackingFeatures.isPriceDropIphEnabled(profile)
-                        || PriceTrackingFeatures.isPriceDropBadgeEnabled(profile))) {
+        if (mProfile != null
+                && PriceTrackingUtilities.isTrackPricesOnTabsEnabled(mProfile)
+                && (PriceTrackingFeatures.isPriceDropIphEnabled(mProfile)
+                        || PriceTrackingFeatures.isPriceDropBadgeEnabled(mProfile))) {
             saveSeenPriceDrops();
         }
         sViewedTabIds.clear();
@@ -1518,12 +1532,11 @@ class TabListMediator {
     void registerOnScrolledListener(RecyclerView recyclerView) {
         // For InstantStart, this can be called before native is initialized, so ensure the Profile
         // is available before proceeding.
-        if (!ProfileManager.isInitialized()) return;
+        if (mProfile == null) return;
 
-        Profile profile = Profile.getLastUsedRegularProfile();
-        if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled(profile)
-                && (PriceTrackingFeatures.isPriceDropIphEnabled(profile)
-                        || PriceTrackingFeatures.isPriceDropBadgeEnabled(profile))) {
+        if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled(mProfile)
+                && (PriceTrackingFeatures.isPriceDropIphEnabled(mProfile)
+                        || PriceTrackingFeatures.isPriceDropBadgeEnabled(mProfile))) {
             mRecyclerView = recyclerView;
             mOnScrollListener =
                     new OnScrollListener() {
@@ -1621,7 +1634,7 @@ class TabListMediator {
         if (mListObserver != null) {
             mModel.removeObserver(mListObserver);
         }
-        removeCurrentTabModelFilterObservers();
+        removeTabModelFilterObservers(mCurrentTabModelFilterSupplier.get());
         mCurrentTabModelFilterSupplier.removeObserver(mOnTabModelFilterChanged);
 
         if (mComponentCallbacks != null) {
@@ -1692,6 +1705,9 @@ class TabListMediator {
                         .with(TabProperties.ACCESSIBILITY_DELEGATE, mAccessibilityDelegate)
                         .with(TabProperties.SHOULD_SHOW_PRICE_DROP_TOOLTIP, false)
                         .with(CARD_TYPE, TAB)
+                        .with(
+                                TabProperties.QUICK_DELETE_ANIMATION_STATUS,
+                                ClosableTabGridView.QuickDeleteAnimationStatus.TAB_RESTORE)
                         .build();
 
         tabInfo.set(
@@ -1884,29 +1900,18 @@ class TabListMediator {
         return TabModelUtils.getCurrentTabId(mCurrentTabModelFilterSupplier.get().getTabModel());
     }
 
-    /**
-     * Find the index of the given tab in the {@link TabListRecyclerView}.
-     * Note that Tabs may have different index in {@link TabListRecyclerView} and {@link
-     * TabModelSelector}, like when {@link resetWithListOfTabs} above is called with MRU mode
-     * enabled.
-     * @param tabId The given Tab id.
-     * @return The index of the Tab in the {@link TabListRecyclerView}.
-     */
-    int indexOfTab(int tabId) {
-        return mModel.indexFromId(tabId);
-    }
-
     private void setupPersistedTabDataFetcherForTab(PseudoTab pseudoTab, int index) {
         if (mMode == TabListMode.GRID && pseudoTab.hasRealTab() && !pseudoTab.isIncognito()) {
-            if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled(
-                            Profile.getLastUsedRegularProfile())
+            assert mProfile != null;
+            if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled(mProfile)
                     && isUngroupedTab(pseudoTab.getId())) {
                 mModel.get(index)
                         .model
                         .set(
                                 TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER,
                                 new ShoppingPersistedTabDataFetcher(
-                                        pseudoTab.getTab(), mPriceWelcomeMessageController));
+                                        pseudoTab.getTab(),
+                                        mPriceWelcomeMessageControllerSupplier));
             } else {
                 mModel.get(index)
                         .model
@@ -1981,14 +1986,13 @@ class TabListMediator {
     }
 
     /**
-     * Removes a special {@link @link org.chromium.ui.modelutil.MVCListAdapter.ListItem} that
-     * has the given {@code uiType} and/or its {@link PropertyModel} has the given
-     * {@code itemIdentifier} from the current {@link TabListModel}.
+     * Removes a special {@link org.chromium.ui.modelutil.MVCListAdapter.ListItem} that has the
+     * given {@code uiType} and/or its {@link PropertyModel} has the given {@code itemIdentifier}
+     * from the current {@link TabListModel}.
      *
      * @param uiType The uiType to match.
-     * @param itemIdentifier The itemIdentifier to match. This can be obsoleted if the {@link @link
-     *         org.chromium.ui.modelutil.MVCListAdapter.ListItem} does not need additional
-     *         identifier.
+     * @param itemIdentifier The itemIdentifier to match. This can be obsoleted if the {@link
+     *     org.chromium.ui.modelutil.MVCListAdapter.ListItem} does not need additional identifier.
      */
     void removeSpecialItemFromModel(
             @UiType int uiType, @MessageService.MessageType int itemIdentifier) {
@@ -2047,8 +2051,8 @@ class TabListMediator {
     void updateLayout() {
         // Right now we need to update layout only if there is a price welcome message card in tab
         // switcher.
-        if (!PriceTrackingUtilities.isPriceWelcomeMessageCardEnabled(
-                Profile.getLastUsedRegularProfile())) {
+        if (mProfile == null
+                || !PriceTrackingUtilities.isPriceWelcomeMessageCardEnabled(mProfile)) {
             return;
         }
         assert mGridLayoutManager != null;
@@ -2086,9 +2090,8 @@ class TabListMediator {
     void recordPriceAnnotationsEnabledMetrics() {
         if (mMode != TabListMode.GRID
                 || !mActionsOnAllRelatedTabs
-                || !ProfileManager.isInitialized()
-                || !PriceTrackingFeatures.isPriceTrackingEligible(
-                        Profile.getLastUsedRegularProfile())) {
+                || mProfile == null
+                || !PriceTrackingFeatures.isPriceTrackingEligible(mProfile)) {
             return;
         }
         SharedPreferencesManager preferencesManager = ChromeSharedPreferences.getInstance();
@@ -2100,8 +2103,7 @@ class TabListMediator {
                 >= PriceTrackingFeatures.getAnnotationsEnabledMetricsWindowDurationMilliSeconds()) {
             RecordHistogram.recordBooleanHistogram(
                     "Commerce.PriceDrop.AnnotationsEnabled",
-                    PriceTrackingUtilities.isTrackPricesOnTabsEnabled(
-                            Profile.getLastUsedRegularProfile()));
+                    PriceTrackingUtilities.isTrackPricesOnTabsEnabled(mProfile));
             preferencesManager.writeLong(
                     ChromePreferenceKeys.PRICE_TRACKING_ANNOTATIONS_ENABLED_METRICS_TIMESTAMP,
                     System.currentTimeMillis());
@@ -2112,7 +2114,7 @@ class TabListMediator {
      * @param tab the {@link Tab} to find the group index of.
      * @return the index for the tab group within {@link mModel}
      */
-    private int getIndexForTabWithRelatedTabs(Tab tab) {
+    int getIndexForTabWithRelatedTabs(Tab tab) {
         List<Integer> relatedTabIds = getRelatedTabsIds(tab.getId());
         if (!relatedTabIds.isEmpty()) {
             for (int i = 0; i < mModel.size(); i++) {
@@ -2135,22 +2137,22 @@ class TabListMediator {
         ResettersForTesting.register(() -> mComponentName = oldValue);
     }
 
-    private void onTabModelFilterChanged(TabModelFilter filter) {
-        if (mCurrentTabModelFilter == filter) return;
+    private void onTabModelFilterChanged(
+            @Nullable TabModelFilter newFilter, @Nullable TabModelFilter oldFilter) {
+        removeTabModelFilterObservers(oldFilter);
 
-        removeCurrentTabModelFilterObservers();
-
-        filter.addObserver(mTabModelObserver);
-        if (filter instanceof TabGroupModelFilter groupFilter) {
-            groupFilter.addTabGroupObserver(mTabGroupObserver);
+        if (newFilter != null) {
+            newFilter.addObserver(mTabModelObserver);
+            if (newFilter instanceof TabGroupModelFilter newGroupFilter) {
+                newGroupFilter.addTabGroupObserver(mTabGroupObserver);
+            }
         }
-        mCurrentTabModelFilter = filter;
     }
 
-    private void removeCurrentTabModelFilterObservers() {
-        if (mCurrentTabModelFilter == null) return;
+    private void removeTabModelFilterObservers(@Nullable TabModelFilter filter) {
+        if (filter == null) return;
 
-        TabModel tabModel = mCurrentTabModelFilter.getTabModel();
+        TabModel tabModel = filter.getTabModel();
         if (tabModel != null) {
             // Observers are added when tabs are shown via addTabInfoToModel(). When switching
             // filters the TabObservers should be removed from all the tabs in the previous model.
@@ -2160,9 +2162,107 @@ class TabListMediator {
                 tabModel.getTabAt(i).removeObserver(mTabObserver);
             }
         }
-        mCurrentTabModelFilter.removeObserver(mTabModelObserver);
-        if (mCurrentTabModelFilter instanceof TabGroupModelFilter groupFilter) {
+        filter.removeObserver(mTabModelObserver);
+        if (filter instanceof TabGroupModelFilter groupFilter) {
             groupFilter.removeTabGroupObserver(mTabGroupObserver);
+        }
+    }
+
+    /**
+     * @param itemIdentifier The itemIdentifier to match.
+     * @return whether a special {@link org.chromium.ui.modelutil.MVCListAdapter.ListItem} with the
+     *     given {@code itemIdentifier} for its {@link PropertyModel} exists in the current {@link
+     *     TabListModel}.
+     */
+    boolean specialItemExistsInModel(@MessageService.MessageType int itemIdentifier) {
+        if (itemIdentifier == MessageService.MessageType.ALL) {
+            return mModel.lastIndexForMessageItem() != TabModel.INVALID_TAB_INDEX;
+        }
+        return mModel.lastIndexForMessageItemFromType(itemIdentifier) != TabModel.INVALID_TAB_INDEX;
+    }
+
+    /**
+     * Prepare and run the Quick Delete animation on the tab list.
+     *
+     * @param onAnimationEnd Runnable that is invoked when the animation is completed.
+     * @param tabs The tabs to fade with the animation. These tabs will get closed after the
+     *     animation is complete.
+     * @param recyclerView The {@link TabListRecyclerView} that is showing the tab list UI.
+     */
+    public void showQuickDeleteAnimation(
+            @NonNull Runnable onAnimationEnd,
+            List<Tab> tabs,
+            @NonNull TabListRecyclerView recyclerView) {
+        recyclerView.setBlockTouchInput(true);
+        Drawable originalForeground = recyclerView.getForeground();
+
+        HashMap<Integer, List<Integer>> tabIndexesToClose = new HashMap<>();
+        PriorityQueue<Integer> tabOrderForFading = new PriorityQueue<>(Collections.reverseOrder());
+
+        // Prepare the order of tabs to be hidden with the animation.
+        for (Tab tab : tabs) {
+            int index = mModel.indexFromId(tab.getId());
+            Rect tabRect = recyclerView.getRectOfCurrentThumbnail(index, tab.getId());
+
+            // Ignore tabs outside the screen view.
+            if (tabRect == null) continue;
+
+            int bottom = tabRect.bottom;
+            mModel.get(index)
+                    .model
+                    .set(
+                            TabProperties.QUICK_DELETE_ANIMATION_STATUS,
+                            ClosableTabGridView.QuickDeleteAnimationStatus.TAB_PREPARE);
+
+            if (tabIndexesToClose.containsKey(bottom)) {
+                tabIndexesToClose.get(bottom).add(index);
+            } else {
+                tabOrderForFading.add(bottom);
+                tabIndexesToClose.put(bottom, new ArrayList<>(List.of(index)));
+            }
+        }
+
+        int tabGridHeight = recyclerView.getHeight();
+        int intersectionHeight =
+                QuickDeleteAnimationGradientDrawable.getAnimationsIntersectionHeight(tabGridHeight);
+        QuickDeleteAnimationGradientDrawable gradientDrawable =
+                QuickDeleteAnimationGradientDrawable.createQuickDeleteWipeAnimationDrawable(
+                        mContext, tabGridHeight);
+
+        ObjectAnimator wipeAnimation = gradientDrawable.createWipeAnimator(tabGridHeight);
+
+        wipeAnimation.addUpdateListener(
+                valueAnimator -> {
+                    if (tabOrderForFading.isEmpty()) return;
+                    float value = (float) valueAnimator.getAnimatedValue();
+                    int bottomVal = tabOrderForFading.peek();
+                    if (bottomVal >= Math.round(value) + intersectionHeight) {
+                        startQuickDeleteFadeAnimationForTabs(tabIndexesToClose.get(bottomVal));
+                        tabOrderForFading.poll();
+                    }
+                });
+
+        wipeAnimation.addListener(
+                new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        recyclerView.setBlockTouchInput(false);
+                        recyclerView.setForeground(originalForeground);
+                        onAnimationEnd.run();
+                    }
+                });
+
+        recyclerView.setForeground(gradientDrawable);
+        wipeAnimation.start();
+    }
+
+    private void startQuickDeleteFadeAnimationForTabs(List<Integer> indexes) {
+        for (int index : indexes) {
+            mModel.get(index)
+                    .model
+                    .set(
+                            TabProperties.QUICK_DELETE_ANIMATION_STATUS,
+                            ClosableTabGridView.QuickDeleteAnimationStatus.TAB_HIDE);
         }
     }
 }

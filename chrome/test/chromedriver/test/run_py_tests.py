@@ -79,6 +79,7 @@ if util.IsLinux():
   import devil_chromium
   from pylib import constants
 
+_ELEMENT_REF_REGEX = r'f\.[a-zA-Z0-9]+\.d\.[a-zA-Z0-9]+\.e\.\d+'
 
 _NEGATIVE_FILTER = [
     # This test is too flaky on the bots, but seems to run perfectly fine
@@ -576,6 +577,7 @@ class ChromeDriverBaseTest(unittest.TestCase):
 
     driver = chromedriver.ChromeDriver(server_url, server_pid,
                                        chrome_binary=_CHROME_BINARY,
+                                       http_timeout=_HTTP_TIMEOUT,
                                        browser_name=browser_name,
                                        android_package=android_package,
                                        android_activity=android_activity,
@@ -1131,19 +1133,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     with self.assertRaises(chromedriver.StaleElementReference):
       self._driver.ExecuteScript("return true;", div1)
 
-  def testExecuteScriptNoSuchBackendNodeId(self):
+  def testExecuteScriptMalformedReference(self):
     # Test the standard compliance of error handling
-    div = self._driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'return document.getElementsByTagName("div")[0];')
-    components = div._id.split('_')
-    self.assertEqual(3, len(components))
-    components[2] = "1000000001" # very large backend_id
-    div._id = '_'.join(components)
+    foo = webelement.WebElement(self._driver, "foo")
     with self.assertRaises(chromedriver.NoSuchElement):
-      self._driver.ExecuteScript("return arguments[0];", div)
+      self._driver.ExecuteScript("return arguments[0];", foo)
     with self.assertRaises(chromedriver.NoSuchElement):
-      self._driver.ExecuteScript("return true;", div)
+      self._driver.ExecuteScript("return true;", foo)
 
   def testExecuteScriptDetachedShadowRoot(self):
     # Test the standard compliance of error handling
@@ -1260,25 +1256,14 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       self._driver.SwitchToFrame(element)
 
   def testReturnFrameElement(self):
-    # The test is based on crbug.com/chromedriver/4477.
-    # It asserts the reason for closing the issue with WON'T FIX resolution.
-    # Informal explanation:
-    # Switching between frames is similar to switching between windows.
-    # ChromeDriver changes its focus to the new window / frame object.
-    # All the references outside it are treated as stale.
-    # Formal explantation:
-    # According to https://w3c.github.io/webdriver/#dfn-is-stale
-    # An element is stale if its node document is not the active document
-    # or if it is not connected.
-    # window.frameElement is connected because its shadow-including root is a
-    # document (just some document no matter which).
-    # However its node document is the higher level document, not the active
-    # one. Therefore it must be treated as stale.
+    # According to https://w3c.github.io/webdriver/#execute-script
+    # Upon rejection of promise the error code must be javascript error.
+    # The error message must mention that the element is stale.
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/nested.html'))
     frame = self._driver.FindElement('tag name', 'iframe')
     self._driver.SwitchToFrame(frame)
-    with self.assertRaises(chromedriver.StaleElementReference):
+    with self.assertRaisesRegex(chromedriver.JavaScriptError, 'stale element'):
       self._driver.ExecuteScript('return window.frameElement')
 
   def testGetTitle(self):
@@ -3130,21 +3115,21 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testElementReference(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/element_ref.html'))
     element = self._driver.FindElement('css selector', '#link')
-    self.assertRegex(element._id, '\\w+_element_\\w+',
+    self.assertRegex(element._id, _ELEMENT_REF_REGEX,
                      msg='Element id format is incorrect')
 
   def testElementReferenceViaScript(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/element_ref.html'))
     element = self._driver.ExecuteScript(
         'return document.getElementById("link")')
-    self.assertRegex(element._id, '\\w+_element_\\w+',
+    self.assertRegex(element._id, _ELEMENT_REF_REGEX,
                      msg='Element id format is incorrect')
 
   def testElementReferenceNoNavigation(self):
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'return document.getElementsByTagName("div")[0];')
-    self.assertRegex(div._id, '\\w+_element_\\w',
+    self.assertRegex(div._id, _ELEMENT_REF_REGEX,
                      msg='Element id format is incorrect')
 
   def testElementReferenceInNewWindow(self):
@@ -3157,7 +3142,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'return document.getElementsByTagName("div")[0];')
-    self.assertRegex(div._id, '\\w+_element_\\w',
+    self.assertRegex(div._id, _ELEMENT_REF_REGEX,
                      msg='Element id format is incorrect')
 
   def testFindElementWhenElementIsOverridden(self):
@@ -4470,8 +4455,10 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
                            })
 
   def testUpdateVirtualSensorWithoutXYZWValues(self):
+    expected_error = ("invalid argument: Could not parse absolute-orientation "
+                      "readings. Invalid alpha/beta/gamma values")
     self.assertRaisesRegex(chromedriver.InvalidArgument,
-                           "invalid argument: Could not parse quaternion",
+                           expected_error,
                            self._driver.UpdateVirtualSensor,
                            'absolute-orientation', {
                                'y': 2.0,
@@ -4479,7 +4466,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
                                'w': 4.0
                            })
     self.assertRaisesRegex(chromedriver.InvalidArgument,
-                           "invalid argument: Could not parse quaternion",
+                           expected_error,
                            self._driver.UpdateVirtualSensor,
                            'absolute-orientation', {
                                'x': 1.0,
@@ -4487,7 +4474,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
                                'w': 4.0
                            })
     self.assertRaisesRegex(chromedriver.InvalidArgument,
-                           "invalid argument: Could not parse quaternion",
+                           expected_error,
                            self._driver.UpdateVirtualSensor,
                            'absolute-orientation', {
                                'x': 1.0,
@@ -4495,13 +4482,59 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
                                'w': 4.0
                            })
     self.assertRaisesRegex(chromedriver.InvalidArgument,
-                           "invalid argument: Could not parse quaternion",
+                           expected_error,
                            self._driver.UpdateVirtualSensor,
                            'absolute-orientation', {
                                'x': 1.0,
                                'y': 2.0,
                                'z': 3.0
                            })
+
+  def testUpdateVirtualSensorWithoutAlphaBetaGammaValues(self):
+    expected_error = ("invalid argument: Could not parse relative-orientation "
+                      "readings. Invalid alpha/beta/gamma values")
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           expected_error,
+                           self._driver.UpdateVirtualSensor,
+                           'relative-orientation', {
+                               'beta': 2.0,
+                               'gamma': 3.0
+                           })
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           expected_error,
+                           self._driver.UpdateVirtualSensor,
+                           'relative-orientation', {
+                               'alpha': 1.0,
+                               'gamma': 3.0
+                           })
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           expected_error,
+                           self._driver.UpdateVirtualSensor,
+                           'relative-orientation', {
+                               'alpha': 1.0,
+                               'beta': 2.0
+                           })
+
+  def testUpdateVirtualSensorOutOfRangeEulerAngles(self):
+    # Alpha, beta and gamma must be within the ranges defined by the Device
+    # Orientation API.
+    test_inputs = (
+      # Alpha range: [0, 360).
+      [-1, 2, 3], [361, 2, 3],
+      # Beta range: [-180, 180).
+      [1, -181, 3], [1, 180, 3],
+      # Gamma range: [-90, 90).
+      [1, 2, -91], [1, 2, 90]
+    )
+    expected_error = ("invalid argument: Could not parse relative-orientation "
+                      "readings. Invalid alpha/beta/gamma values")
+    for test_input in test_inputs:
+      alpha, beta, gamma = test_input
+      self.assertRaisesRegex(chromedriver.InvalidArgument,
+                            expected_error,
+                            self._driver.UpdateVirtualSensor,
+                            'relative-orientation',
+                            { 'alpha': alpha, 'beta': beta, 'gamma': gamma })
 
   def testRemoveVirtualSensorWithInvalidSensorName(self):
     self.assertRaisesRegex(
@@ -6203,6 +6236,7 @@ class ChromeDriverLogTest(ChromeDriverBaseTest):
       driver = chromedriver.ChromeDriver(
           chromedriver_server.GetUrl(), chromedriver_server.GetPid(),
           chrome_binary=_CHROME_BINARY,
+          http_timeout=_HTTP_TIMEOUT,
           experimental_options={ self.UNEXPECTED_CHROMEOPTION_CAP : 1 })
       driver.Quit()
     except chromedriver.ChromeDriverException as e:
@@ -6431,6 +6465,7 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
         driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
                                            _CHROMEDRIVER_SERVER_PID,
                                            chrome_binary=f.name,
+                                           http_timeout=_HTTP_TIMEOUT,
                                            chrome_switches=switches,
                                            test_name=self.id())
         # The constructor above must throw an exception.
@@ -6471,6 +6506,7 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
         driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
                                            _CHROMEDRIVER_SERVER_PID,
                                            chrome_binary = f.name,
+                                           http_timeout=_HTTP_TIMEOUT,
                                            chrome_switches = switches,
                                            experimental_options =
                                               experimental_options,
@@ -6487,6 +6523,7 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
           _CHROMEDRIVER_SERVER_URL,
           _CHROMEDRIVER_SERVER_PID,
           chrome_binary=os.path.join(temp_dir, 'this_file_should_not_exist'),
+          http_timeout=_HTTP_TIMEOUT,
           test_name=self.id())
       # The constructor above must throw an exception.
       # Therefore normally this code should be unreachable.
@@ -6886,6 +6923,11 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
       command['id'] = id
     return conn.PostCommand(command)
 
+  @staticmethod
+  def GetHttpsUrlForFile(file_path, host=None):
+    return ChromeDriverSecureContextTest._https_server.GetUrl(
+        host) + file_path
+
   def testCreateContext(self):
     conn = self.createWebSocketConnection()
     old_handles = self._driver.GetWindowHandles()
@@ -7143,18 +7185,24 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
       command['channel'] = channel
     return conn.SendCommand(command, channel=channel)
 
-  def navigateSomewhere(self, conn, context_id=None, channel=None):
+  def navigateTo(self, conn, url, context_id=None, channel=None):
     if context_id is None:
       context_id = self.getContextId(conn, 0)
     command = {
         'method': 'browsingContext.navigate',
         'params': {
-            'url': 'data:text/html,navigated',
+            'url': url,
             'wait': 'complete',
             'context': context_id}}
     if channel is not None:
       command['channel'] = channel
     return conn.SendCommand(command, channel=channel)
+
+  def navigateSomewhere(self, conn, context_id=None, channel=None):
+    return self.navigateTo(conn,
+                           'data:text/html,navigated',
+                           context_id=context_id,
+                           channel=channel)
 
   def testEvent(self):
     conn = self.createWebSocketConnection()
@@ -7233,14 +7281,14 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/element_ref.html'))
     element = self._driver.FindElement('css selector', '#link')
     self._driver.FindElements('tag name', 'br')
-    self.assertRegex(element._id, '\\w+_element_\\w+',
+    self.assertRegex(element._id, _ELEMENT_REF_REGEX,
                      msg='Element id format is incorrect')
 
   def testElementReferenceNoNavigation(self):
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'return document.getElementsByTagName("div")[0];')
-    self.assertRegex(div._id, '\\w+_element_\\w',
+    self.assertRegex(div._id, _ELEMENT_REF_REGEX,
                      msg='Element id format is incorrect')
 
   def testCompareClassicAndBidiIds(self):
@@ -7249,12 +7297,9 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'return document.getElementsByTagName("div")[0];')
-    node_id = div._id
-    self.assertRegex(node_id, '\\w+_element_\\w',
+    classic_id = div._id
+    self.assertRegex(classic_id, _ELEMENT_REF_REGEX,
                      msg='Element id format is incorrect')
-    pos = node_id.rfind('_')
-    self.assertGreaterEqual(pos, 0, "Element Id format is incorrect")
-    classic_backend_node_id = node_id[pos+1:]
 
     resp = conn.SendCommand({
       'method': 'script.evaluate',
@@ -7267,13 +7312,10 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
           'resultOwnership': 'root',
       }
     })
-    shared_id = resp['result']['sharedId']
-    self.assertRegex(shared_id, '\\w+_element_\\w',
+    bidi_id = resp['result']['sharedId']
+    self.assertRegex(bidi_id, _ELEMENT_REF_REGEX,
                      msg='Shared id format is incorrect')
-    pos = shared_id.rfind('_')
-    bidi_backend_node_id = shared_id[pos+1:]
-
-    self.assertEqual(classic_backend_node_id, bidi_backend_node_id,
+    self.assertEqual(classic_id, bidi_id,
                      "Classic and BiDi id mismatch")
 
   def testClassicIdInBidi(self):
@@ -7369,6 +7411,32 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
     expected_titles = [''] + ['iframes' for _ in range(0, 10)]
     self.assertListEqual(expected_titles, sorted(titles))
 
+  def testInsecureSertificatesNotAllowed(self):
+    driver = self.CreateDriver(
+        web_socket_url=True,
+        accept_insecure_certs=False)
+    conn = self.createWebSocketConnection(driver)
+    page_name = self.id()
+    self._https_server.SetDataForPath('/%s.html' % page_name,
+       bytes('<head><<title>%s</title></head>' % page_name,
+             'utf-8'))
+    with self.assertRaisesRegex(chromedriver.ChromeDriverException,
+                                'net::ERR_CERT_AUTHORITY_INVALID'):
+      self.navigateTo(conn, self.GetHttpsUrlForFile('/%s.html' % page_name))
+
+  def testInsecureSertificatesAllowed(self):
+    driver = self.CreateDriver(
+        web_socket_url=True,
+        accept_insecure_certs=True)
+    conn = self.createWebSocketConnection(driver)
+    page_name = self.id()
+    self._https_server.SetDataForPath('/%s.html' % page_name,
+       bytes('<head><<title>%s</title></head>' % page_name,
+             'utf-8'))
+    self.navigateTo(conn, self.GetHttpsUrlForFile('/%s.html' % page_name))
+    title = driver.GetTitle()
+    self.assertEqual(title, page_name)
+
 
 class CustomBidiMapperTest(ChromeDriverBaseTest):
   """Base class for testing chromedriver with a custom bidi mapper path."""
@@ -7384,6 +7452,7 @@ class CustomBidiMapperTest(ChromeDriverBaseTest):
     driver = chromedriver.ChromeDriver(server_url=chromedriver_server.GetUrl(),
                                      server_pid=chromedriver_server.GetPid(),
                                      chrome_binary=_CHROME_BINARY,
+                                     http_timeout=_HTTP_TIMEOUT,
                                      test_name=self.id(),
                                      web_socket_url=True,
                                      browser_name=_BROWSER_NAME,
@@ -7773,6 +7842,31 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
                      self._https_server.GetUrl("localhost") +
                      "/chromedriver/fedcm/more_details.html", error)
 
+
+  def testClickPrivacyPolicy(self):
+    self._driver.Load(self._https_server.GetUrl() + "/fedcm.html")
+
+    self._driver.SetDelayEnabled(False)
+    self._driver.ResetCooldown()
+
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+    self._driver.ExecuteScript("callFedCm()")
+    self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
+
+    accounts = self._driver.GetAccounts()
+    self.assertEqual('AccountChooser', self._driver.GetDialogType())
+    self.assertEqual(2, len(accounts))
+
+    self._driver.ClickFedCmDialogButton("PrivacyPolicy", 1)
+    # The dialog should not have closed.
+    self.assertEqual('AccountChooser', self._driver.GetDialogType())
+
+    # Make sure that a popup actually opened.
+    self.assertTrue(self.WaitForCondition(self.FedCmPopupWindowCondition))
+
+    self._driver.CancelFedCmDialog()
+
+
 # 'Z' in the beginning is to make test executed in the end of suite.
 class ZChromeStartRetryCountTest(unittest.TestCase):
 
@@ -7820,6 +7914,18 @@ if __name__ == '__main__':
       default=None,
       help='Browser specific test subset selector. Inferred from the path '
            'to the binary if possible. Otherwise defaults to chrome')
+  # One can run ChromeDriver under a debugger and attach the tests to the
+  # running instance. Another instance of ChromeDriver server will be started
+  # by the tests but they won't communicate with it. The child processes spawned
+  # by the remote ChromeDriver service won't be cleaned up properly. Don't use
+  # this flag in production!
+  parser.add_argument(
+      '--remote-chromedriver-port',
+      type=int,
+      default=None,
+      help='Attach tests to the running instance of ChromeDriver server. '
+           'This parameter is intended for debugging purposes only. Don\'t '
+           'use it in production as it does not clean up resources properly')
 
   ##############################################################################
   # Note for other Chromium based browsers!!!
@@ -7857,6 +7963,11 @@ if __name__ == '__main__':
   global _CHROMEDRIVER_BINARY
   _CHROMEDRIVER_BINARY = util.GetAbsolutePathOfUserPath(options.chromedriver)
 
+  global _HTTP_TIMEOUT
+  _HTTP_TIMEOUT = None
+  if options.remote_chromedriver_port is not None:
+    _HTTP_TIMEOUT = 10 * 3600 # 10 hours
+
   if (options.android_package and
       options.android_package not in _ANDROID_NEGATIVE_FILTER):
     parser.error('Invalid --android-package')
@@ -7866,9 +7977,12 @@ if __name__ == '__main__':
     additional_args.append('--disable-build-check')
 
   global chromedriver_server
-  chromedriver_server = server.Server(_CHROMEDRIVER_BINARY, options.log_path,
-                                      replayable=options.replayable,
-                                      additional_args=additional_args)
+  chromedriver_server = server.Server(
+      _CHROMEDRIVER_BINARY,
+      options.log_path,
+      replayable=options.replayable,
+      remote_chromedriver_port=options.remote_chromedriver_port,
+      additional_args=additional_args)
 
   global _CHROMEDRIVER_SERVER_PID
   _CHROMEDRIVER_SERVER_PID = chromedriver_server.GetPid()

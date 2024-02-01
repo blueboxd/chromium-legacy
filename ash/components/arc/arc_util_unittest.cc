@@ -14,6 +14,7 @@
 #include "ash/components/arc/session/arc_vm_data_migration_status.h"
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/constants/app_types.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/test/ash_test_base.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -81,20 +82,14 @@ class ScopedRtVcpuFeature {
 // Fake user that can be created with a specified type.
 class FakeUser : public user_manager::User {
  public:
-  explicit FakeUser(user_manager::UserType user_type)
-      : User(AccountId::FromUserEmailGaiaId("user@test.com", "1234567890")),
-        user_type_(user_type) {}
+  explicit FakeUser(user_manager::UserType type)
+      : User(AccountId::FromUserEmailGaiaId("user@test.com", "1234567890"),
+             type) {}
 
   FakeUser(const FakeUser&) = delete;
   FakeUser& operator=(const FakeUser&) = delete;
 
   ~FakeUser() override = default;
-
-  // user_manager::User:
-  user_manager::UserType GetType() const override { return user_type_; }
-
- private:
-  const user_manager::UserType user_type_;
 };
 
 class ArcUtilTest : public ash::AshTestBase {
@@ -294,27 +289,38 @@ TEST_F(ArcUtilTest, IsArcVmDevConfIgnored) {
   EXPECT_TRUE(IsArcVmDevConfIgnored());
 }
 
-TEST_F(ArcUtilTest, GetArcVmUreadaheadMode) {
+TEST_F(ArcUtilTest, GetArcUreadaheadModeVmSwitch) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
+  const char* mode = ash::switches::kArcVmUreadaheadMode;
 
   command_line->InitFromArgv({""});
-  EXPECT_EQ(ArcVmUreadaheadMode::READAHEAD, GetArcVmUreadaheadMode());
-
-  command_line->InitFromArgv({"", "--arc-disable-ureadahead"});
-  EXPECT_EQ(ArcVmUreadaheadMode::DISABLED, GetArcVmUreadaheadMode());
-
-  command_line->InitFromArgv(
-      {"", "--arc-disable-ureadahead", "--arcvm-ureadahead-mode=readahead"});
-  EXPECT_EQ(ArcVmUreadaheadMode::READAHEAD, GetArcVmUreadaheadMode());
+  EXPECT_EQ(ArcUreadaheadMode::READAHEAD, GetArcUreadaheadMode(mode));
 
   command_line->InitFromArgv({"", "--arcvm-ureadahead-mode=readahead"});
-  EXPECT_EQ(ArcVmUreadaheadMode::READAHEAD, GetArcVmUreadaheadMode());
+  EXPECT_EQ(ArcUreadaheadMode::READAHEAD, GetArcUreadaheadMode(mode));
 
   command_line->InitFromArgv({"", "--arcvm-ureadahead-mode=generate"});
-  EXPECT_EQ(ArcVmUreadaheadMode::GENERATE, GetArcVmUreadaheadMode());
+  EXPECT_EQ(ArcUreadaheadMode::GENERATE, GetArcUreadaheadMode(mode));
 
   command_line->InitFromArgv({"", "--arcvm-ureadahead-mode=disabled"});
-  EXPECT_EQ(ArcVmUreadaheadMode::DISABLED, GetArcVmUreadaheadMode());
+  EXPECT_EQ(ArcUreadaheadMode::DISABLED, GetArcUreadaheadMode(mode));
+}
+
+TEST_F(ArcUtilTest, GetArcUreadaheadModeContainerSwitch) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  const char* mode = ash::switches::kArcHostUreadaheadMode;
+
+  command_line->InitFromArgv({""});
+  EXPECT_EQ(ArcUreadaheadMode::READAHEAD, GetArcUreadaheadMode(mode));
+
+  command_line->InitFromArgv({"", "--arc-host-ureadahead-mode=readahead"});
+  EXPECT_EQ(ArcUreadaheadMode::READAHEAD, GetArcUreadaheadMode(mode));
+
+  command_line->InitFromArgv({"", "--arc-host-ureadahead-mode=generate"});
+  EXPECT_EQ(ArcUreadaheadMode::GENERATE, GetArcUreadaheadMode(mode));
+
+  command_line->InitFromArgv({"", "--arc-host-ureadahead-mode=disabled"});
+  EXPECT_EQ(ArcUreadaheadMode::DISABLED, GetArcUreadaheadMode(mode));
 }
 
 TEST_F(ArcUtilTest, UreadaheadDefault) {
@@ -364,27 +370,21 @@ TEST_F(ArcUtilTest, IsArcOptInVerificationDisabled) {
 
 TEST_F(ArcUtilTest, IsArcAllowedForUser) {
   TestingPrefServiceSimple local_state;
-  user_manager::FakeUserManager* fake_user_manager =
-      new user_manager::FakeUserManager(&local_state);
-  user_manager::ScopedUserManager scoped_user_manager(
-      base::WrapUnique(fake_user_manager));
+  user_manager::TypedScopedUserManager fake_user_manager(
+      std::make_unique<user_manager::FakeUserManager>(&local_state));
 
-  struct {
-    user_manager::UserType user_type;
-    bool expected_allowed;
-  } const kTestCases[] = {
-      {user_manager::USER_TYPE_REGULAR, true},
-      {user_manager::USER_TYPE_GUEST, false},
-      {user_manager::USER_TYPE_PUBLIC_ACCOUNT, true},
-      {user_manager::USER_TYPE_KIOSK_APP, false},
-      {user_manager::USER_TYPE_CHILD, true},
-      {user_manager::USER_TYPE_ARC_KIOSK_APP, true},
-  };
-  for (const auto& test_case : kTestCases) {
-    const FakeUser user(test_case.user_type);
-    EXPECT_EQ(test_case.expected_allowed, IsArcAllowedForUser(&user))
-        << "User type=" << test_case.user_type;
-  }
+  EXPECT_TRUE(IsArcAllowedForUser(fake_user_manager->AddUser(
+      AccountId::FromUserEmailGaiaId("user1@test.com", "1234567890-1"))));
+  EXPECT_FALSE(IsArcAllowedForUser(fake_user_manager->AddGuestUser(
+      AccountId::FromUserEmailGaiaId("user2@test.com", "1234567890-2"))));
+  EXPECT_TRUE(IsArcAllowedForUser(fake_user_manager->AddPublicAccountUser(
+      AccountId::FromUserEmailGaiaId("user3@test.com", "1234567890-3"))));
+  EXPECT_FALSE(IsArcAllowedForUser(fake_user_manager->AddKioskAppUser(
+      AccountId::FromUserEmailGaiaId("user4@test.com", "1234567890-4"))));
+  EXPECT_TRUE(IsArcAllowedForUser(fake_user_manager->AddChildUser(
+      AccountId::FromUserEmailGaiaId("user5@test.com", "1234567890-5"))));
+  EXPECT_TRUE(IsArcAllowedForUser(fake_user_manager->AddArcKioskAppUser(
+      AccountId::FromUserEmailGaiaId("user6@test.com", "1234567890-6"))));
 
   // An ephemeral user is a logged in user but unknown to UserManager when
   // ephemeral policy is set.

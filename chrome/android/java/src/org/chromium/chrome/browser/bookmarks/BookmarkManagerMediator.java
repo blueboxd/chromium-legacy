@@ -141,8 +141,6 @@ class BookmarkManagerMediator
                                 openFolder(parent.getId());
                             }
                         } else {
-                            // Needs to remove the current node, and update any transitive parents
-                            // that may be showing child counts. Just refresh() for now.
                             int position = getPositionForBookmark(id);
                             // If the position couldn't be found, then do a full refresh. Otherwise
                             // be smart and remove only the index of the removed bookmark.
@@ -150,6 +148,8 @@ class BookmarkManagerMediator
                                 mPendingRefresh.post();
                             } else {
                                 mModelList.removeAt(position);
+                                updateAllLocations();
+
                                 // If the deleted node was selection, unselect it.
                                 if (mSelectionDelegate.isItemSelected(id)) {
                                     mSelectionDelegate.toggleSelectionForItem(id);
@@ -358,7 +358,6 @@ class BookmarkManagerMediator
     private final LargeIconBridge mLargeIconBridge;
     // Whether we're showing in a dialog UI which is only true for phones.
     private final boolean mIsDialogUi;
-    private final boolean mIsIncognito;
     private final ObservableSupplierImpl<Boolean> mBackPressStateSupplier;
     private final Profile mProfile;
     private final BookmarkPromoHeader mPromoHeaderManager;
@@ -401,7 +400,6 @@ class BookmarkManagerMediator
             DragReorderableRecyclerViewAdapter dragReorderableRecyclerViewAdapter,
             LargeIconBridge largeIconBridge,
             boolean isDialogUi,
-            boolean isIncognito,
             ObservableSupplierImpl<Boolean> backPressStateSupplier,
             Profile profile,
             BookmarkUndoController bookmarkUndoController,
@@ -428,7 +426,6 @@ class BookmarkManagerMediator
                 () -> mDragStateDelegate.getDragActive());
         mLargeIconBridge = largeIconBridge;
         mIsDialogUi = isDialogUi;
-        mIsIncognito = isIncognito;
         mBackPressStateSupplier = backPressStateSupplier;
         mProfile = profile;
         mModelList = modelList;
@@ -438,7 +435,9 @@ class BookmarkManagerMediator
         mBookmarkImageFetcher = bookmarkImageFetcher;
         mShoppingService = shoppingService;
         mSnackbarManager = snackbarManager;
-        mPromoHeaderManager = new BookmarkPromoHeader(mContext, mProfile, this::updateHeader);
+        mPromoHeaderManager =
+                new BookmarkPromoHeader(
+                        mContext, mProfile.getOriginalProfile(), this::updateHeader);
         mBookmarkUndoController = bookmarkUndoController;
 
         if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
@@ -450,7 +449,7 @@ class BookmarkManagerMediator
                     new LegacyBookmarkQueryHandler(
                             mBookmarkModel,
                             bookmarkUiPrefs,
-                            SyncServiceFactory.getForProfile(mProfile));
+                            SyncServiceFactory.getForProfile(mProfile.getOriginalProfile()));
         }
 
         if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
@@ -617,6 +616,10 @@ class BookmarkManagerMediator
     }
 
     public boolean isReorderable(BookmarkListEntry entry) {
+        if (!mCurrentPowerFilter.isEmpty()) {
+            return false;
+        }
+
         return entry != null
                 && entry.getBookmarkItem() != null
                 && entry.getBookmarkItem().isReorderable();
@@ -712,7 +715,7 @@ class BookmarkManagerMediator
 
     @Override
     public void openBookmark(BookmarkId bookmark) {
-        if (!mBookmarkOpener.openBookmarkInCurrentTab(bookmark, mIsIncognito)) return;
+        if (!mBookmarkOpener.openBookmarkInCurrentTab(bookmark, mProfile.isOffTheRecord())) return;
 
         // Close bookmark UI. Keep the reading list page open.
         if (bookmark != null && bookmark.getType() != BookmarkType.READING_LIST) {
@@ -883,7 +886,7 @@ class BookmarkManagerMediator
         if (state.mUiMode == BookmarkUiMode.FOLDER) {
             // Loading and searching states may be pushed to the stack but should never be stored in
             // preferences.
-            BookmarkUtils.setLastUsedUrl(mContext, state.mUrl);
+            BookmarkUtils.setLastUsedUrl(state.mUrl);
             // If a loading state is replaced by another loading state, do not notify this change.
             if (mNativePage != null) {
                 mNativePage.onStateChange(state.mUrl, false);
@@ -1337,7 +1340,7 @@ class BookmarkManagerMediator
         listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0, canMove));
         listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
 
-        boolean canReorder = bookmarkItem != null && bookmarkItem.isReorderable();
+        boolean canReorder = isReorderable(entry);
         if (getCurrentUiMode() == BookmarkUiMode.SEARCHING) {
             listItems.add(buildMenuListItem(R.string.bookmark_show_in_folder, 0, 0));
         } else if (getCurrentUiMode() == BookmarkUiMode.FOLDER

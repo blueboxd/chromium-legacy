@@ -40,7 +40,6 @@ build_webui("build") {
     "images/no_google_photos_images.svg",
     "images/no_google_photos_images_dark.svg",
     "images/slideshow.png",
-    "images/sea_pen_tile.svg",
 
     "css/base.css",
   ]
@@ -69,6 +68,7 @@ build_webui("build") {
     "js/personalization_router_element.ts",
     "js/personalization_toast_element.ts",
     "js/personalization_breadcrumb_element.ts",
+    "js/geolocation_dialog.ts",
     "js/time_of_day_banner_element.ts",
     "js/theme/personalization_theme_element.ts",
     "js/theme/color_scheme_icon_svg_element.ts",
@@ -85,22 +85,14 @@ build_webui("build") {
     "js/wallpaper/google_photos_zero_state_element.ts",
     "js/wallpaper/info_svg_element.ts",
     "js/wallpaper/local_images_element.ts",
-    "js/wallpaper/sea_pen/sea_pen_input_query_element.ts",
-    "js/wallpaper/sea_pen/sea_pen_template_query_element.ts",
-    "js/wallpaper/sea_pen/sea_pen_images_element.ts",
-    "js/wallpaper/sea_pen/sea_pen_recent_wallpapers_element.ts",
-    "js/wallpaper/sea_pen/sea_pen_templates_element.ts",
-    "js/wallpaper/sea_pen/sparkle_placeholder_element.ts",
     "js/wallpaper/time_of_day_wallpaper_dialog_element.ts",
     "js/wallpaper/wallpaper_collections_element.ts",
     "js/wallpaper/wallpaper_error_element.ts",
     "js/wallpaper/wallpaper_fullscreen_element.ts",
-    "js/wallpaper/wallpaper_grid_item_element.ts",
     "js/wallpaper/wallpaper_images_element.ts",
     "js/wallpaper/wallpaper_preview_element.ts",
     "js/wallpaper/wallpaper_selected_element.ts",
     "js/wallpaper/wallpaper_subpage_element.ts",
-    "js/wallpaper/wallpaper_subpage_top_element.ts",
   ]
 
   non_web_component_files = [
@@ -126,9 +118,7 @@ build_webui("build") {
     "js/personalization_state.ts",
     "js/personalization_store.ts",
     "js/personalization_test_api.ts",
-    "js/surface_effects/utils.ts",
-    "js/surface_effects/sparkle.ts",
-    "js/surface_effects/sparkle_shader.ts",
+    "js/sea_pen_store_adapter.ts",
     "js/theme/theme_actions.ts",
     "js/theme/theme_controller.ts",
     "js/theme/theme_interface_provider.ts",
@@ -148,16 +138,10 @@ build_webui("build") {
     "js/utils.ts",
     "js/wallpaper/constants.ts",
     "js/wallpaper/google_photos_metrics_logger.ts",
-    "js/wallpaper/sea_pen/constants.ts",
-    "js/wallpaper/sea_pen/sea_pen_actions.ts",
-    "js/wallpaper/sea_pen/sea_pen_controller.ts",
-    "js/wallpaper/sea_pen/sea_pen_reducer.ts",
-    "js/wallpaper/sea_pen/sea_pen_state.ts",
     "js/wallpaper/utils.ts",
     "js/wallpaper/wallpaper_actions.ts",
     "js/wallpaper/wallpaper_controller.ts",
     "js/wallpaper/wallpaper_interface_provider.ts",
-    "js/wallpaper/sea_pen/sea_pen_interface_provider.ts",
     "js/wallpaper/wallpaper_observer.ts",
     "js/wallpaper/wallpaper_reducers.ts",
     "js/wallpaper/wallpaper_state.ts",
@@ -166,20 +150,12 @@ build_webui("build") {
 
   icons_html_files = [ "common/icons.html" ]
 
-  css_files = [
-    "css/common.css",
-    "css/cros_button_style.css",
-    "css/sea_pen.css",
-    "css/wallpaper.css",
-  ]
-
   mojo_files_deps = [
     "../mojom:mojom_ts__generator",
     "//ash/style/mojom:color_scheme_ts__generator",
   ]
   mojo_files = [
     "$root_gen_dir/ash/webui/personalization_app/mojom/personalization_app.mojom-webui.ts",
-    "$root_gen_dir/ash/webui/personalization_app/mojom/sea_pen.mojom-webui.ts",
     "$root_gen_dir/ash/style/mojom/color_scheme.mojom-webui.ts",
   ]
 
@@ -187,6 +163,7 @@ build_webui("build") {
   ts_definitions = [ "//tools/typescript/definitions/metrics_private.d.ts" ]
   ts_deps = [
     "//ash/webui/common/resources:build_ts",
+    "//ash/webui/common/resources/personalization:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/cr_components/localized_link:build_ts",

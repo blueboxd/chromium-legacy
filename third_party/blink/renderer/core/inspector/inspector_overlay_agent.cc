@@ -43,6 +43,7 @@
 #include "third_party/blink/public/resources/grit/inspector_overlay_resources_map.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_inspector_overlay_host.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -336,9 +337,6 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
 
  private:
   // cc::ContentLayerClient implementation
-  gfx::Rect PaintableRegion() const override {
-    return gfx::Rect(layer_->bounds());
-  }
   bool FillsBoundsCompletely() const override { return false; }
 
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList() override {
@@ -346,7 +344,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
     display_list->StartPaint();
     display_list->push<cc::DrawRecordOp>(
         overlay_->OverlayMainFrame()->View()->GetPaintRecord());
-    display_list->EndPaintOfUnpaired(PaintableRegion());
+    display_list->EndPaintOfUnpaired(gfx::Rect(layer_->bounds()));
     display_list->Finalize();
     return display_list;
   }
@@ -487,6 +485,10 @@ protocol::Response InspectorOverlayAgent::enable() {
   backend_node_id_to_inspect_ = 0;
   SetNeedsUnbufferedInput(true);
   return protocol::Response::Success();
+}
+
+bool InspectorOverlayAgent::HasAXContext(Node* node) {
+  return document_to_ax_context_.Contains(&node->GetDocument());
 }
 
 void InspectorOverlayAgent::EnsureAXContext(Node* node) {
@@ -1392,11 +1394,11 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
   v8::MicrotasksScope microtasks_scope(
       isolate, ToMicrotaskQueue(script_state),
       v8::MicrotasksScope::kDoNotRunMicrotasks);
-  v8::Local<v8::Object> global = script_state->GetContext()->Global();
   v8::Local<v8::Value> overlay_host_obj =
-      ToV8(overlay_host_.Get(), global, isolate);
+      ToV8Traits<InspectorOverlayHost>::ToV8(script_state, overlay_host_.Get());
   DCHECK(!overlay_host_obj.IsEmpty());
-  global
+  script_state->GetContext()
+      ->Global()
       ->Set(script_state->GetContext(),
             V8AtomicString(isolate, "InspectorOverlayHost"), overlay_host_obj)
       .ToChecked();

@@ -149,7 +149,7 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
     // By default, we check all types except a few.
     static_assert(
         network::mojom::RequestDestination::kMaxValue ==
-            network::mojom::RequestDestination::kSpeculationRules,
+            network::mojom::RequestDestination::kJson,
         "Decide if new request destination should be skipped on mobile.");
     for (int t_int = 0;
          t_int <=
@@ -209,15 +209,10 @@ bool RemoteSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
          url.SchemeIsWSOrWSS();
 }
 
-bool RemoteSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
-  return true;
-}
-
 bool RemoteSafeBrowsingDatabaseManager::CheckBrowseUrl(
     const GURL& url,
     const SBThreatTypeSet& threat_types,
     Client* client,
-    MechanismExperimentHashDatabaseCache experiment_cache_selection,
     CheckBrowseUrlType check_type) {
   DCHECK(sb_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!threat_types.empty());
@@ -383,8 +378,10 @@ void RemoteSafeBrowsingDatabaseManager::StopOnSBThread(bool shutdown) {
 
   // Call back and delete any remaining clients. OnRequestDone() modifies
   // |current_requests_|, so we make a copy first.
-  std::vector<ClientRequest*> to_callback(current_requests_);
-  for (auto* req : to_callback) {
+  std::vector<raw_ptr<ClientRequest, VectorExperimental>> to_callback(
+      current_requests_);
+  for (safe_browsing::RemoteSafeBrowsingDatabaseManager::ClientRequest* req :
+       to_callback) {
     DVLOG(1) << "Stopping: Invoking unfinished req for URL " << req->url();
     req->OnRequestDone(SB_THREAT_TYPE_SAFE, ThreatMetadata());
   }

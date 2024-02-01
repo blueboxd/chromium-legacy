@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <cstdint>
+#include <optional>
 #include <tuple>
 
 #include "base/barrier_closure.h"
@@ -86,6 +87,7 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/preloading_test_util.h"
 #include "content/public/test/prerender_test_util.h"
+#include "content/public/test/scoped_accessibility_mode_override.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_utils.h"
@@ -110,7 +112,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/loader_constants.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
@@ -230,9 +231,9 @@ class PreloadingAttemptPreviousPrimaryPageUkmEntryBuilder {
       PreloadingTriggeringOutcome triggering_outcome,
       PreloadingFailureReason failure_reason,
       bool accurate,
-      absl::optional<base::TimeDelta> ready_time = absl::nullopt,
-      absl::optional<blink::mojom::SpeculationEagerness> eagerness =
-          absl::nullopt) const {
+      std::optional<base::TimeDelta> ready_time = std::nullopt,
+      std::optional<blink::mojom::SpeculationEagerness> eagerness =
+          std::nullopt) const {
     std::map<std::string, int64_t> metrics = {
         {Preloading_Attempt::kPreloadingTypeName,
          static_cast<int64_t>(preloading_type)},
@@ -387,7 +388,7 @@ class PrerenderBrowserTest : public ContentBrowserTest,
   }
 
   void AddPrerendersAsync(const std::vector<GURL>& prerendering_urls) {
-    prerender_helper_->AddPrerendersAsync(prerendering_urls, absl::nullopt,
+    prerender_helper_->AddPrerendersAsync(prerendering_urls, std::nullopt,
                                           std::string());
   }
 
@@ -660,7 +661,7 @@ class PrerenderBrowserTest : public ContentBrowserTest,
     bool final_status_entry_found = false;
     const auto entries = ukm_recorder_->GetEntriesByName(
         ukm::builders::PrerenderPageLoad::kEntryName);
-    for (const auto* entry : entries) {
+    for (const ukm::mojom::UkmEntry* entry : entries) {
       if (ukm_recorder_->EntryHasMetric(
               entry, ukm::builders::PrerenderPageLoad::kFinalStatusName)) {
         final_status_entry_found = true;
@@ -863,8 +864,8 @@ class PrerenderTargetAgnosticBrowserTest
     test::PrerenderHostObserver prerender_observer(prerender_web_contents, url);
     if (GetTargetHint() == "_blank") {
       TestNavigationObserver observer(&prerender_web_contents);
-      std::string script = R"(window.open($1, "_blank", "noopener");)";
-      EXPECT_TRUE(ExecJs(web_contents(), JsReplace(script, url.spec())));
+      test::PrerenderTestHelper::OpenNewWindowWithoutOpener(*web_contents(),
+                                                            url);
       observer.WaitForNavigationFinished();
     } else {
       test::PrerenderTestHelper::NavigatePrimaryPage(*web_contents(), url);
@@ -1071,7 +1072,7 @@ IN_PROC_BROWSER_TEST_F(AutoSpeculationRulesPrerenderBrowserTestWithHoldback,
         PreloadingTriggeringOutcome::kUnspecified,
         PreloadingFailureReason::kUnspecified,
         /*accurate=*/true,
-        /*ready_time=*/absl::nullopt,
+        /*ready_time=*/std::nullopt,
         blink::mojom::SpeculationEagerness::kEager)});
 
     ExpectPreloadingPredictionUkm({prediction_ukm_entry_builder().BuildEntry(
@@ -1083,26 +1084,85 @@ IN_PROC_BROWSER_TEST_F(AutoSpeculationRulesPrerenderBrowserTestWithHoldback,
 
 enum class PrerenderingResult { kSuccess, kFailed };
 enum class BodySize { kSmall, kLarge };
+enum class PrefetchHTTPCache { kEnabled, kDisabled };
 
 class PrerenderAndPrefetchBrowserTest
     : public PrerenderBrowserTest,
-      public testing::WithParamInterface<
-          std::tuple<PrerenderingResult, BodySize, PrefetchReusableForTests>> {
+      public testing::WithParamInterface<std::tuple<PrerenderingResult,
+                                                    BodySize,
+                                                    PrefetchReusableForTests,
+                                                    PrefetchHTTPCache>> {
+ public:
+  // Provides meaningful param names instead of /0, /1, ...
+  static std::string DescribeParams(
+      const testing::TestParamInfo<ParamType>& info) {
+    auto [prerendering_result, body_size, prefetch_reusable,
+          prefetch_uses_http_cache] = info.param;
+    std::stringstream params_description;
+    switch (prerendering_result) {
+      case PrerenderingResult::kSuccess:
+        params_description << "PrerenderSucceeded";
+        break;
+      case PrerenderingResult::kFailed:
+        params_description << "PrerenderFailed";
+        break;
+    }
+    switch (body_size) {
+      case BodySize::kSmall:
+        params_description << "_SmallBody";
+        break;
+      case BodySize::kLarge:
+        params_description << "_LargeBody";
+        break;
+    }
+    switch (prefetch_reusable) {
+      case PrefetchReusableForTests::kEnabled:
+        params_description << "_PrefetchReusableEnabled";
+        break;
+      case PrefetchReusableForTests::kDisabled:
+        params_description << "_PrefetchReusableDisabled";
+        break;
+    }
+    switch (prefetch_uses_http_cache) {
+      case PrefetchHTTPCache::kEnabled:
+        params_description << "_SameSitePrefetchUsesHTTPCacheEnabled";
+        break;
+      case PrefetchHTTPCache::kDisabled:
+        params_description << "_SameSitePrefetchUsesHTTPCacheDisabled";
+        break;
+    }
+    return params_description.str();
+  }
+
  private:
   void SetUp() override {
-    switch (std::get<2>(GetParam())) {
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+
+    switch (std::get<PrefetchReusableForTests>(GetParam())) {
       case PrefetchReusableForTests::kDisabled:
-        sub_feature_list_.InitAndDisableFeature(features::kPrefetchReusable);
+        disabled_features.push_back(features::kPrefetchReusable);
         break;
       case PrefetchReusableForTests::kEnabled:
         // Set the limit to the size of `/find_in_long_page.html` - 1, to check
         // that exceeding the limit by 1 byte disallows reuse.
-        sub_feature_list_.InitWithFeaturesAndParameters(
-            {{features::kPrefetchReusable,
-              {{features::kPrefetchReusableBodySizeLimit.name, "112262"}}}},
-            {});
+        enabled_features.push_back(
+            {features::kPrefetchReusable,
+             {{features::kPrefetchReusableBodySizeLimit.name, "112262"}}});
         break;
     }
+
+    switch (std::get<PrefetchHTTPCache>(GetParam())) {
+      case PrefetchHTTPCache::kEnabled:
+        enabled_features.push_back({features::kPrefetchUsesHTTPCache, {}});
+        break;
+      case PrefetchHTTPCache::kDisabled:
+        disabled_features.push_back(features::kPrefetchUsesHTTPCache);
+        break;
+    }
+
+    sub_feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                    disabled_features);
     PrerenderBrowserTest::SetUp();
   }
 
@@ -1168,12 +1228,16 @@ IN_PROC_BROWSER_TEST_P(PrerenderAndPrefetchBrowserTest,
   NavigationHandleObserver activation_observer(web_contents(),
                                                kPrerenderingUrl);
   NavigatePrimaryPage(kPrerenderingUrl);
+  auto delivery_type =
+      EvalJs(web_contents()->GetPrimaryMainFrame(),
+             "performance.getEntriesByType('navigation')[0].deliveryType");
 
   switch (std::get<0>(GetParam())) {
     case PrerenderingResult::kSuccess:
       // Main navigation activates the prerendered page even for the large page.
       ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kActivated);
       EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+      EXPECT_EQ(delivery_type, "navigational-prefetch");
       break;
     case PrerenderingResult::kFailed:
       // Main navigation shouldn't activate prerendered page (because it's
@@ -1186,10 +1250,19 @@ IN_PROC_BROWSER_TEST_P(PrerenderAndPrefetchBrowserTest,
         // The prefetched result should be still used for navigation for small
         // body, because it fits within PrefetchDataPipeTee buffer limit.
         EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+        EXPECT_EQ(delivery_type, "navigational-prefetch");
       } else {
         // The prefetched result can't be used for navigation for large body
         // due to PrefetchDataPipeTee buffer limit.
-        EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 2);
+        if (std::get<3>(GetParam()) == PrefetchHTTPCache::kEnabled) {
+          // A cached response from the HTTP cache is used instead, we still
+          // should not see another request.
+          EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+          EXPECT_EQ(delivery_type, "cache");
+        } else {
+          EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 2);
+          EXPECT_EQ(delivery_type, "");
+        }
       }
       break;
   }
@@ -1213,7 +1286,10 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::Values(PrerenderingResult::kSuccess,
                                      PrerenderingResult::kFailed),
                      testing::Values(BodySize::kSmall, BodySize::kLarge),
-                     testing::ValuesIn(PrefetchReusableValuesForTests())));
+                     testing::ValuesIn(PrefetchReusableValuesForTests()),
+                     testing::Values(PrefetchHTTPCache::kEnabled,
+                                     PrefetchHTTPCache::kDisabled)),
+    PrerenderAndPrefetchBrowserTest::DescribeParams);
 
 // Tests that the speculationrules-triggered prerender would be destroyed after
 // its initiator navigates away.
@@ -1326,7 +1402,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Start prerendering `kPrerenderingUrl`.
   int host_id = prerender_helper()->AddPrerender(
-      kPrerenderingUrl, /*eagerness=*/absl::nullopt, "_blank");
+      kPrerenderingUrl, /*eagerness=*/std::nullopt, "_blank");
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   ASSERT_NE(prerender_web_contents, web_contents_impl());
   ExpectWebContentsIsForNewTabPrerendering(*prerender_web_contents);
@@ -1418,7 +1494,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Start prerendering `kPrerenderingUrl`.
   int host_id = prerender_helper()->AddPrerender(
-      kPrerenderingUrl, /*eagerness=*/absl::nullopt, "_blank");
+      kPrerenderingUrl, /*eagerness=*/std::nullopt, "_blank");
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   ASSERT_NE(prerender_web_contents, web_contents_impl());
   ExpectWebContentsIsForNewTabPrerendering(*prerender_web_contents);
@@ -1517,7 +1593,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Start prerendering `kPrerenderingUrl`.
   int host_id = prerender_helper()->AddPrerender(
-      kPrerenderingUrl, /*eagerness=*/absl::nullopt, "_blank");
+      kPrerenderingUrl, /*eagerness=*/std::nullopt, "_blank");
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   ASSERT_NE(prerender_web_contents, web_contents_impl());
   ExpectWebContentsIsForNewTabPrerendering(*prerender_web_contents);
@@ -1584,7 +1660,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ActivateOnWindowOpen) {
 
   // Start prerendering `kPrerenderingUrl`.
   int host_id = prerender_helper()->AddPrerender(
-      kPrerenderingUrl, /*eagerness=*/absl::nullopt, "_blank");
+      kPrerenderingUrl, /*eagerness=*/std::nullopt, "_blank");
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   ASSERT_NE(prerender_web_contents, web_contents_impl());
   ExpectWebContentsIsForNewTabPrerendering(*prerender_web_contents);
@@ -1664,7 +1740,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Start prerendering.
   int host_id = prerender_helper()->AddPrerender(
-      prerendering_url, /*eagerness=*/absl::nullopt, "_blank");
+      prerendering_url, /*eagerness=*/std::nullopt, "_blank");
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   WebContentsDestroyedWatcher wc_destroyed_watcher(prerender_web_contents);
   test::PrerenderHostObserver host_observer(*prerender_web_contents, host_id);
@@ -1694,7 +1770,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Start prerendering.
   int host_id = prerender_helper()->AddPrerender(
-      prerendering_url, /*eagerness=*/absl::nullopt, "_blank");
+      prerendering_url, /*eagerness=*/std::nullopt, "_blank");
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   WebContentsDestroyedWatcher wc_destroyed_watcher(prerender_web_contents);
   test::PrerenderHostObserver host_observer(*prerender_web_contents, host_id);
@@ -1725,7 +1801,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Start prerendering.
   int host_id = prerender_helper()->AddPrerender(
-      prerendering_url, /*eagerness=*/absl::nullopt, "_blank");
+      prerendering_url, /*eagerness=*/std::nullopt, "_blank");
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   WebContentsDestroyedWatcher wc_destroyed_watcher(prerender_web_contents);
   test::PrerenderHostObserver host_observer(*prerender_web_contents, host_id);
@@ -1753,7 +1829,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderTargetAgnosticBrowserTest,
   // Start prerendering `kPrerenderingUrl`.
   test::PrerenderHostCreationWaiter host_creation_waiter;
   prerender_helper()->AddPrerendersAsync(
-      {kPrerenderingUrl}, /*eagerness=*/absl::nullopt, GetTargetHint());
+      {kPrerenderingUrl}, /*eagerness=*/std::nullopt, GetTargetHint());
   int host_id = host_creation_waiter.Wait();
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   test::PrerenderHostObserver host_observer(*prerender_web_contents, host_id);
@@ -1777,7 +1853,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderTargetAgnosticBrowserTest,
   // Add prerendering to the 404 error page, then check that it got cancelled.
   test::PrerenderHostCreationWaiter host_creation_waiter;
   prerender_helper()->AddPrerendersAsync(
-      {kPrerenderingUrl}, /*eagerness=*/absl::nullopt, GetTargetHint());
+      {kPrerenderingUrl}, /*eagerness=*/std::nullopt, GetTargetHint());
   int host_id = host_creation_waiter.Wait();
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   test::PrerenderHostObserver host_observer(*prerender_web_contents, host_id);
@@ -1801,7 +1877,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderTargetAgnosticBrowserTest,
   // Add prerendering to the 500 error page, then check that it got cancelled.
   test::PrerenderHostCreationWaiter host_creation_waiter;
   prerender_helper()->AddPrerendersAsync(
-      {kPrerenderingUrl}, /*eagerness=*/absl::nullopt, GetTargetHint());
+      {kPrerenderingUrl}, /*eagerness=*/std::nullopt, GetTargetHint());
   int host_id = host_creation_waiter.Wait();
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   test::PrerenderHostObserver host_observer(*prerender_web_contents, host_id);
@@ -1822,7 +1898,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderTargetAgnosticBrowserTest,
   const GURL kPrerenderingUrl = GetUrl("/echo?status=204");
   test::PrerenderHostCreationWaiter host_creation_waiter;
   prerender_helper()->AddPrerendersAsync(
-      {kPrerenderingUrl}, /*eagerness=*/absl::nullopt, GetTargetHint());
+      {kPrerenderingUrl}, /*eagerness=*/std::nullopt, GetTargetHint());
   int host_id = host_creation_waiter.Wait();
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   test::PrerenderHostObserver host_observer(*prerender_web_contents, host_id);
@@ -1846,7 +1922,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderTargetAgnosticBrowserTest,
   const GURL kPrerenderingUrl = GetUrl("/echo?status=205");
   test::PrerenderHostCreationWaiter host_creation_waiter;
   prerender_helper()->AddPrerendersAsync(
-      {kPrerenderingUrl}, /*eagerness=*/absl::nullopt, GetTargetHint());
+      {kPrerenderingUrl}, /*eagerness=*/std::nullopt, GetTargetHint());
   int host_id = host_creation_waiter.Wait();
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   test::PrerenderHostObserver host_observer(*prerender_web_contents, host_id);
@@ -1994,7 +2070,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelOnAuthRequested) {
       PreloadingTriggeringOutcome::kFailure,
       ToPreloadingFailureReason(PrerenderFinalStatus::kLoginAuthRequested),
       /*accurate=*/false,
-      /*ready_time=*/absl::nullopt,
+      /*ready_time=*/std::nullopt,
       blink::mojom::SpeculationEagerness::kEager)});
 
   // Cancellation must have occurred due to authentication request.
@@ -2103,7 +2179,7 @@ IN_PROC_BROWSER_TEST_F(
   // Start prerendering.
   const GURL kPrerenderingUrl = GetUrl("/title2.html");
   int host_id = prerender_helper()->AddPrerender(
-      kPrerenderingUrl, /*eagerness=*/absl::nullopt, "_blank");
+      kPrerenderingUrl, /*eagerness=*/std::nullopt, "_blank");
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   ASSERT_NE(prerender_web_contents, web_contents_impl());
   ExpectWebContentsIsForNewTabPrerendering(*prerender_web_contents);
@@ -3838,7 +3914,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderTargetAgnosticBrowserTest, SuppressOpenURL) {
   // Start prerendering `kPrerenderingUrl`.
   ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 0);
   int host_id = prerender_helper()->AddPrerender(
-      kPrerenderingUrl, /*eagerness=*/absl::nullopt, GetTargetHint());
+      kPrerenderingUrl, /*eagerness=*/std::nullopt, GetTargetHint());
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   RenderFrameHost* prerendered_render_frame_host =
       test::PrerenderTestHelper::GetPrerenderedMainFrameHost(
@@ -4740,7 +4816,7 @@ void PrerenderBrowserTest::TestCancelPrerenderWithTargetBlankWhenTimeout(
 
   // Start prerendering `kPrerenderUrl`.
   int host_id = prerender_helper()->AddPrerender(
-      kPrerenderUrl, /*eagerness=*/absl::nullopt, "_blank");
+      kPrerenderUrl, /*eagerness=*/std::nullopt, "_blank");
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   ASSERT_NE(prerender_web_contents, web_contents_impl());
   ExpectWebContentsIsForNewTabPrerendering(*prerender_web_contents);
@@ -5019,7 +5095,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderTargetAgnosticBrowserTest,
 
   // Start a prerender.
   int host_id = prerender_helper()->AddPrerender(
-      kPrerenderingUrl, /*eagerness=*/absl::nullopt, GetTargetHint());
+      kPrerenderingUrl, /*eagerness=*/std::nullopt, GetTargetHint());
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
 
   // Open an iframe in the prerendered page.
@@ -5535,7 +5611,7 @@ class TestViewportWebContentsObserver : public WebContentsObserver {
 
  private:
   base::OnceClosure waiting_for_wanted_value_;
-  absl::optional<blink::mojom::ViewportFit> value_;
+  std::optional<blink::mojom::ViewportFit> value_;
   const blink::mojom::ViewportFit wanted_value_;
 };
 
@@ -5628,7 +5704,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderLowMemoryBrowserTest, NoPrerender) {
       PreloadingTriggeringOutcome::kUnspecified,
       PreloadingFailureReason::kUnspecified,
       /*accurate=*/true,
-      /*ready_time=*/absl::nullopt,
+      /*ready_time=*/std::nullopt,
       blink::mojom::SpeculationEagerness::kEager)});
 }
 
@@ -5964,7 +6040,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
           PreloadingTriggeringOutcome::kRunning,
           PreloadingFailureReason::kUnspecified,
           /*accurate=*/false,
-          /*ready_time=*/absl::nullopt,
+          /*ready_time=*/std::nullopt,
           blink::mojom::SpeculationEagerness::kEager),
       attempt_ukm_entry_builder().BuildEntry(
           ukm_source_id, PreloadingType::kPrerender,
@@ -5972,7 +6048,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
           PreloadingTriggeringOutcome::kTriggeredButPending,
           PreloadingFailureReason::kUnspecified,
           /*accurate=*/true,
-          /*ready_time=*/absl::nullopt,
+          /*ready_time=*/std::nullopt,
           blink::mojom::SpeculationEagerness::kEager),
   });
 }
@@ -6299,7 +6375,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
           PreloadingTriggeringOutcome::kTriggeredButPending,
           PreloadingFailureReason::kUnspecified,
           /*accurate=*/false,
-          /*ready_time=*/absl::nullopt,
+          /*ready_time=*/std::nullopt,
           blink::mojom::SpeculationEagerness::kEager),
   });
 }
@@ -6359,7 +6435,7 @@ IN_PROC_BROWSER_TEST_F(
           PreloadingTriggeringOutcome::kRunning,
           PreloadingFailureReason::kUnspecified,
           /*accurate=*/false,
-          /*ready_time=*/absl::nullopt,
+          /*ready_time=*/std::nullopt,
           blink::mojom::SpeculationEagerness::kEager),
       attempt_ukm_entry_builder().BuildEntry(
           ukm_source_id, PreloadingType::kPrerender,
@@ -6367,7 +6443,7 @@ IN_PROC_BROWSER_TEST_F(
           PreloadingTriggeringOutcome::kTriggeredButPending,
           PreloadingFailureReason::kUnspecified,
           /*accurate=*/false,
-          /*ready_time=*/absl::nullopt,
+          /*ready_time=*/std::nullopt,
           blink::mojom::SpeculationEagerness::kEager),
   });
 }
@@ -6459,7 +6535,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
           PreloadingTriggeringOutcome::kRunning,
           PreloadingFailureReason::kUnspecified,
           /*accurate=*/false,
-          /*ready_time=*/absl::nullopt,
+          /*ready_time=*/std::nullopt,
           blink::mojom::SpeculationEagerness::kEager),
       attempt_ukm_entry_builder().BuildEntry(
           ukm_source_id, PreloadingType::kPrerender,
@@ -6467,7 +6543,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
           PreloadingTriggeringOutcome::kTriggeredButPending,
           PreloadingFailureReason::kUnspecified,
           /*accurate=*/false,
-          /*ready_time=*/absl::nullopt,
+          /*ready_time=*/std::nullopt,
           blink::mojom::SpeculationEagerness::kEager),
   });
 }
@@ -6489,7 +6565,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   std::vector<WebContents*> prerender_web_contents_list;
   for (const GURL& prerendering_url : prerendering_urls) {
     int host_id = prerender_helper()->AddPrerender(
-        prerendering_url, /*eagerness=*/absl::nullopt, "_blank");
+        prerendering_url, /*eagerness=*/std::nullopt, "_blank");
 
     EXPECT_FALSE(base::Contains(prerender_host_ids, host_id));
     prerender_host_ids.push_back(host_id);
@@ -9504,7 +9580,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SkipCrossSitePrerender) {
       PreloadingTriggeringOutcome::kUnspecified,
       PreloadingFailureReason::kUnspecified,
       /*accurate=*/true,
-      /*ready_time=*/absl::nullopt,
+      /*ready_time=*/std::nullopt,
       blink::mojom::SpeculationEagerness::kEager)});
 }
 
@@ -9879,8 +9955,8 @@ void PrerenderBrowserTest::TestEmbedderTriggerWithUnsupportedScheme(
       PreloadingTriggeringOutcome::kUnspecified,
       PreloadingFailureReason::kUnspecified,
       /*accurate=*/false,
-      /*ready_time=*/absl::nullopt,
-      /*eagerness=*/absl::nullopt)});
+      /*ready_time=*/std::nullopt,
+      /*eagerness=*/std::nullopt)});
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
@@ -10088,8 +10164,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TriggeredPrerenderUkm) {
 
   // PrerenderPageLoad:TriggeredPrerender is recorded for the initiator page
   // load.
-  const std::vector<const ukm::mojom::UkmEntry*> entries =
-      ukm_recorder.GetEntriesByName(
+  const std::vector<raw_ptr<const ukm::mojom::UkmEntry, VectorExperimental>>
+      entries = ukm_recorder.GetEntriesByName(
           ukm::builders::PrerenderPageLoad::kEntryName);
   ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId(),
@@ -10334,7 +10410,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderTargetAgnosticBrowserTest, MixedContent) {
 
   // Make a prerendered page.
   int host_id = prerender_helper()->AddPrerender(
-      kPrerenderingUrl, /*eagerness=*/absl::nullopt, GetTargetHint());
+      kPrerenderingUrl, /*eagerness=*/std::nullopt, GetTargetHint());
   auto* prerender_web_contents = WebContents::FromFrameTreeNodeId(host_id);
   auto* prerendered_rfh =
       test::PrerenderTestHelper::GetPrerenderedMainFrameHost(
@@ -11024,7 +11100,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderSpeculationRulesHoldbackBrowserTest,
       PreloadingTriggeringOutcome::kUnspecified,
       PreloadingFailureReason::kUnspecified,
       /*accurate=*/true,
-      /*ready_time=*/absl::nullopt,
+      /*ready_time=*/std::nullopt,
       blink::mojom::SpeculationEagerness::kEager)});
 }
 
@@ -11457,7 +11533,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderClientHintsBrowserTest, ViewPort_Height) {
 void CheckExpectedCrossOriginMetrics(
     const base::HistogramTester& histogram_tester,
     PrerenderCrossOriginRedirectionMismatch mismatch_type,
-    absl::optional<PrerenderCrossOriginRedirectionProtocolChange>
+    std::optional<PrerenderCrossOriginRedirectionProtocolChange>
         protocol_change) {
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
@@ -11499,7 +11575,7 @@ IN_PROC_BROWSER_TEST_F(
   CheckExpectedCrossOriginMetrics(
       histogram_tester,
       PrerenderCrossOriginRedirectionMismatch::kSchemeHostPortMismatch,
-      /*protocol_change=*/absl::nullopt);
+      /*protocol_change=*/std::nullopt);
 }
 
 // Tests a prerendering navigaton goes with HTTP protocol, and being redirected
@@ -11636,7 +11712,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       *web_contents_impl(), kPrerenderingUrl, kRedirectedUrl);
   CheckExpectedCrossOriginMetrics(
       histogram_tester, PrerenderCrossOriginRedirectionMismatch::kHostMismatch,
-      /*protocol_change=*/absl::nullopt);
+      /*protocol_change=*/std::nullopt);
 }
 
 // Tests that prerender works with accessibility.
@@ -11650,7 +11726,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ASSERT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
 
   // Enable accessibility.
-  EnableAccessibilityForWebContents(shell()->web_contents());
+  ScopedAccessibilityModeOverride inner_scoped_accessibility_mode(
+      shell()->web_contents(), ui::kAXModeComplete);
 
   // Start prerendering `kPrerenderingUrl`, which has an iframe attached.
   ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 0);

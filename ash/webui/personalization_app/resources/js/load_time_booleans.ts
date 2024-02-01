@@ -56,10 +56,6 @@ export function isTimeOfDayWallpaperForcedAutoScheduleEnabled() {
       'isTimeOfDayWallpaperForcedAutoScheduleEnabled');
 }
 
-export function isSeaPenEnabled() {
-  return loadTimeData.getBoolean('isSeaPenEnabled');
-}
-
-export function isSeaPenTextInputEnabled() {
-  return loadTimeData.getBoolean('isSeaPenTextInputEnabled');
+export function isCrosPrivacyHubLocationEnabled() {
+  return loadTimeData.getBoolean('isCrosPrivacyHubLocationEnabled');
 }

@@ -123,8 +123,9 @@ bool ContainsNonWhitespace(const LayoutBox* box) {
   const LayoutObject* next = box;
   while ((next = next->NextInPreOrder(box))) {
     if (const auto* text = DynamicTo<LayoutText>(next)) {
-      if (!text->GetText().ContainsOnlyWhitespaceOrEmpty())
+      if (!text->TransformedText().ContainsOnlyWhitespaceOrEmpty()) {
         return true;
+      }
     }
   }
   return false;
@@ -2525,7 +2526,7 @@ const LayoutResult* FlexLayoutAlgorithm::RelayoutWithNewRowSizes() {
   FlexLayoutAlgorithm algorithm_with_row_cross_sizes(params,
                                                      &row_cross_size_updates_);
   auto& new_builder = algorithm_with_row_cross_sizes.container_builder_;
-  new_builder.SetBoxType(container_builder_.BoxType());
+  new_builder.SetBoxType(container_builder_.GetBoxType());
   algorithm_with_row_cross_sizes.ignore_child_scrollbar_changes_ =
       ignore_child_scrollbar_changes_;
 

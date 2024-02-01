@@ -184,7 +184,8 @@ String UrlForLoggingMedia(const KURL& url) {
 
   if (url.GetString().length() < kMaximumURLLengthForLogging)
     return url.GetString();
-  return url.GetString().Substring(0, kMaximumURLLengthForLogging) + "...";
+  return url.GetString().GetString().Substring(0, kMaximumURLLengthForLogging) +
+         "...";
 }
 
 const char* BoolString(bool val) {
@@ -707,13 +708,6 @@ bool HTMLMediaElement::IsFocusable(UpdateBehavior update_behavior) const {
     return false;
   }
   return !IsFullscreen() || HTMLElement::IsFocusable(update_behavior);
-}
-
-bool HTMLMediaElement::IsKeyboardFocusable(
-    UpdateBehavior update_behavior) const {
-  // Media elements are keyboard focusable if they are focusable at all,
-  // and don't have a negative tabindex set.
-  return IsFocusable(update_behavior) && tabIndex() >= 0;
 }
 
 int HTMLMediaElement::DefaultTabIndex() const {

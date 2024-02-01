@@ -76,11 +76,11 @@ class Iban : public AutofillDataModel {
   AutofillMetadata GetMetadata() const override;
   bool SetMetadata(const AutofillMetadata& metadata) override;
 
-  std::u16string GetRawInfo(ServerFieldType type) const override;
-  void SetRawInfoWithVerificationStatus(ServerFieldType type,
+  std::u16string GetRawInfo(FieldType type) const override;
+  void SetRawInfoWithVerificationStatus(FieldType type,
                                         const std::u16string& value,
                                         VerificationStatus status) override;
-  void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
+  void GetSupportedTypes(FieldTypeSet* supported_types) const override;
 
   // Returns true if there are no values (field types) set.
   bool IsEmpty(const std::string& app_locale) const;
@@ -93,7 +93,6 @@ class Iban : public AutofillDataModel {
 
   // Equality operators compare GUIDs, origins, |value_| and |nickname_|.
   bool operator==(const Iban& iban) const;
-  bool operator!=(const Iban& iban) const;
 
   void set_identifier(const absl::variant<Guid, InstrumentId>& identifier);
 
@@ -126,6 +125,10 @@ class Iban : public AutofillDataModel {
   // server-based IBANs because server-based IBANs don't store the full `value`.
   bool IsValid();
 
+  // Logs the number of days since this IBAN was last used, increments its use
+  // count, and updates its last used date to today.
+  void RecordAndLogUse();
+
   // Construct an IBAN identifier from `prefix_`, `suffix_`, `length_` (and
   // `value_` if it's a local-based IBAN) by the following rules:
   // 1. Always reveal the first and the last four characters.
@@ -144,11 +147,6 @@ class Iban : public AutofillDataModel {
   // DE91 1000 0000 0123 4567 89 will be shown as: DE91 **** **** **** **67 89.
   std::u16string GetIdentifierStringForAutofillDisplay(
       bool is_value_masked = true) const;
-
-  // Returns a version of |value_| which does not have any separator characters
-  // (e.g., '-' and ' ').
-  // TODO(crbug.com/1422672): Cleanup and use value().
-  std::u16string GetStrippedValue() const;
 
   // Returns true if the `prefix_`, `suffix_` and `length_` of the given `iban`
   // matches this IBAN.

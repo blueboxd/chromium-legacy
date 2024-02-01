@@ -9,6 +9,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.view.View.OnClickListener;
+import android.view.View.OnDragListener;
 import android.view.ViewGroup;
 
 import androidx.appcompat.content.res.AppCompatResources;
@@ -80,7 +81,7 @@ class SearchBoxMediator implements DestroyObserver, NativeInitObserver {
 
     @Override
     public void onFinishNativeInitialization() {
-        Drawable drawable = AppCompatResources.getDrawable(mContext, R.drawable.btn_mic);
+        Drawable drawable = AppCompatResources.getDrawable(mContext, R.drawable.ic_mic_white_24dp);
         mModel.set(SearchBoxProperties.VOICE_SEARCH_DRAWABLE, drawable);
 
         ColorStateList colorStateList =
@@ -95,6 +96,11 @@ class SearchBoxMediator implements DestroyObserver, NativeInitObserver {
     /** Called to set a click listener for the search box. */
     void setSearchBoxClickListener(OnClickListener listener) {
         mModel.set(SearchBoxProperties.SEARCH_BOX_CLICK_CALLBACK, v -> listener.onClick(v));
+    }
+
+    /** Called to set a drag listener for the search box. */
+    void setSearchBoxDragListener(OnDragListener listener) {
+        mModel.set(SearchBoxProperties.SEARCH_BOX_DRAG_CALLBACK, listener);
     }
 
     /** Called to add a click listener for the voice search button. */

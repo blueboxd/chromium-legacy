@@ -5,21 +5,17 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.browserservices.intents.WebappIntentUtils;
 import org.chromium.chrome.browser.browserservices.metrics.WebApkUmaRecorder;
-import org.chromium.chrome.browser.browserservices.metrics.WebApkUmaRecorder.WebApkUserTheme;
 import org.chromium.components.webapps.WebApkInstallResult;
-import org.chromium.ui.util.ColorUtils;
 
 /**
  * Java counterpart to webapk_installer.h
@@ -54,13 +50,13 @@ public class WebApkInstaller {
 
     /**
      * Installs a WebAPK and monitors the installation.
+     *
      * @param packageName The package name of the WebAPK to install.
      * @param version The version of WebAPK to install.
      * @param title The title of the WebAPK to display during installation.
      * @param token The token from WebAPK Server.
      * @param source The source (either app banner or menu) that the install of a WebAPK was
-     *               triggered.
-     * @param icon The primary icon of the WebAPK to install.
+     *     triggered.
      */
     @CalledByNative
     private void installWebApkAsync(
@@ -68,8 +64,7 @@ public class WebApkInstaller {
             int version,
             final String title,
             String token,
-            final int source,
-            final Bitmap icon) {
+            final int source) {
         // Check whether the WebAPK package is already installed. The WebAPK may have been installed
         // by another Chrome version (e.g. Chrome Dev). We have to do this check because the Play
         // install API fails silently if the package is already installed.
@@ -113,12 +108,6 @@ public class WebApkInstaller {
                                     fetchCallback);
                 };
         mInstallDelegate.installAsync(packageName, version, title, token, callback);
-        @WebApkUserTheme
-        int themeSetting =
-                (ColorUtils.inNightMode(ContextUtils.getApplicationContext()))
-                        ? WebApkUserTheme.DARK_THEME
-                        : WebApkUserTheme.LIGHT_THEME;
-        WebApkUmaRecorder.recordUserThemeWhenInstall(themeSetting);
     }
 
     private void notify(@WebApkInstallResult int result) {

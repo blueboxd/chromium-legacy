@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
+#include "components/autofill/core/browser/autofill_plus_address_delegate.h"
 #include "components/plus_addresses/plus_address_types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -18,8 +19,21 @@ void PlusAddressMetrics::RecordModalEvent(
 }
 
 // static
+void PlusAddressMetrics::RecordModalShownDuration(
+    PlusAddressModalCompletionStatus status,
+    base::TimeDelta modal_shown_duration) {
+  base::UmaHistogramTimes(
+      base::ReplaceStringPlaceholders(
+          "Autofill.PlusAddresses.Modal.$1.ShownDuration",
+          {PlusAddressModalCompletionStatusToString(status)},
+          /*offsets=*/nullptr),
+      modal_shown_duration);
+}
+
+// static
 void PlusAddressMetrics::RecordAutofillSuggestionEvent(
-    PlusAddressAutofillSuggestionEvent plus_address_autofill_suggestion_event) {
+    autofill::AutofillPlusAddressDelegate::SuggestionEvent
+        plus_address_autofill_suggestion_event) {
   base::UmaHistogramEnumeration("Autofill.PlusAddresses.Suggestion.Events",
                                 plus_address_autofill_suggestion_event);
 }
@@ -79,6 +93,20 @@ std::string PlusAddressMetrics::PlusAddressNetworkRequestTypeToString(
       return "List";
     case PlusAddressNetworkRequestType::kReserve:
       return "Reserve";
+  }
+}
+
+std::string PlusAddressMetrics::PlusAddressModalCompletionStatusToString(
+    PlusAddressModalCompletionStatus status) {
+  switch (status) {
+    case PlusAddressModalCompletionStatus::kModalCanceled:
+      return "Canceled";
+    case PlusAddressModalCompletionStatus::kModalConfirmed:
+      return "Confirmed";
+    case PlusAddressModalCompletionStatus::kReservePlusAddressError:
+      return "ReserveError";
+    case PlusAddressModalCompletionStatus::kConfirmPlusAddressError:
+      return "ConfirmError";
   }
 }
 }  // namespace plus_addresses

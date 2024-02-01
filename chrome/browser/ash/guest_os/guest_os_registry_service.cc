@@ -447,6 +447,14 @@ bool GuestOsRegistryService::Registration::IsScaled() const {
   return GetBool(guest_os::prefs::kAppScaledKey);
 }
 
+std::string GuestOsRegistryService::Registration::StartupWmClass() const {
+  return GetString(guest_os::prefs::kAppStartupWMClassKey);
+}
+
+bool GuestOsRegistryService::Registration::StartupNotify() const {
+  return GetBool(guest_os::prefs::kAppStartupNotifyKey);
+}
+
 std::string GuestOsRegistryService::Registration::GetString(
     base::StringPiece key) const {
   return GetStringKey(pref_, key);
@@ -457,7 +465,7 @@ bool GuestOsRegistryService::Registration::GetBool(
   if (!pref_.is_dict()) {
     return false;
   }
-  const absl::optional<bool> value = pref_.GetDict().FindBool(key);
+  const std::optional<bool> value = pref_.GetDict().FindBool(key);
   return value.value_or(false);
 }
 
@@ -607,16 +615,16 @@ GuestOsRegistryService::GetRegisteredApps(VmType vm_type) const {
   return apps;
 }
 
-absl::optional<GuestOsRegistryService::Registration>
+std::optional<GuestOsRegistryService::Registration>
 GuestOsRegistryService::GetRegistration(const std::string& app_id) const {
   const base::Value::Dict& apps =
       prefs_->GetDict(guest_os::prefs::kGuestOsRegistry);
 
   const base::Value::Dict* pref_registration = apps.FindDict(app_id);
   if (!pref_registration) {
-    return absl::nullopt;
+    return std::nullopt;
   }
-  return absl::make_optional<Registration>(
+  return std::make_optional<Registration>(
       app_id, base::Value(pref_registration->Clone()));
 }
 
@@ -626,7 +634,7 @@ void GuestOsRegistryService::RegisterTransientUrlHandler(
   url_handlers_.emplace_back(handler, canHandleCallback);
 }
 
-absl::optional<GuestOsUrlHandler> GuestOsRegistryService::GetHandler(
+std::optional<GuestOsUrlHandler> GuestOsRegistryService::GetHandler(
     const GURL& url) const {
   // Transient URL handlers are system-installed, so always take priority.
   for (const auto& handler : url_handlers_) {
@@ -644,9 +652,9 @@ absl::optional<GuestOsUrlHandler> GuestOsRegistryService::GetHandler(
     }
   }
   if (!result) {
-    return absl::nullopt;
+    return std::nullopt;
   }
-  return absl::make_optional<GuestOsUrlHandler>(
+  return std::make_optional<GuestOsUrlHandler>(
       result->Name(),
       base::BindRepeating(Launch, result->VmType(), result->app_id()));
 }
@@ -736,7 +744,7 @@ void GuestOsRegistryService::LoadIcon(const std::string& app_id,
 }
 
 void GuestOsRegistryService::ApplyContainerBadge(
-    const absl::optional<std::string>& app_id,
+    const std::optional<std::string>& app_id,
     gfx::ImageSkia* image_skia) {
   if (crostini::CrostiniFeatures::Get()->IsMultiContainerAllowed(profile_)) {
     auto reg = GetRegistration(*app_id);
@@ -1141,7 +1149,7 @@ void GuestOsRegistryService::RequestContainerAppIcon(
     const std::string& app_id,
     ui::ResourceScaleFactor scale_factor) {
   // Ignore requests for app_id that isn't registered.
-  absl::optional<GuestOsRegistryService::Registration> registration =
+  std::optional<GuestOsRegistryService::Registration> registration =
       GetRegistration(app_id);
   DCHECK(registration);
   if (!registration) {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -10,6 +11,7 @@
 #include "chrome/browser/lacros/browser_service_lacros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/test/test_browser_closed_waiter.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -28,31 +30,9 @@ namespace {
 
 const char kNavigationUrl[] = "https://www.example.com/";
 
-// Observes BrowserList and blocks until a given browser is removed.
-class BrowserClosedWaiter : public BrowserListObserver {
- public:
-  explicit BrowserClosedWaiter(Browser* browser) : browser_{browser} {
-    BrowserList::AddObserver(this);
-  }
-
-  ~BrowserClosedWaiter() override { BrowserList::RemoveObserver(this); }
-
-  [[nodiscard]] bool Wait() { return future_.Wait(); }
-
- private:
-  void OnBrowserRemoved(Browser* browser) override {
-    if (browser_ == browser) {
-      future_.SetValue();
-    }
-  }
-
-  raw_ptr<Browser> browser_ = nullptr;
-  base::test::TestFuture<void> future_;
-};
-
 [[nodiscard]] bool WaitUntilBrowserClosed(Browser* browser) {
-  auto waiter = BrowserClosedWaiter(browser);
-  return waiter.Wait();
+  TestBrowserClosedWaiter waiter(browser);
+  return waiter.WaitUntilClosed();
 }
 
 }  // namespace
@@ -94,7 +74,7 @@ class WebKioskAcceleratorTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
     SetKioskSessionType();
     CreateKioskWindow();
-    CloseNonKioskWindow();
+    WaitForNonKioskWindowToClose();
     SelectFirstBrowser();
   }
 
@@ -129,17 +109,24 @@ class WebKioskAcceleratorTest : public InProcessBrowserTest {
     return browser_service_.get();
   }
 
-  void CloseNonKioskWindow() {
+  void WaitForNonKioskWindowToClose() {
+    // The test framework automatically spawns a separate, non-kiosk browser
+    // window.
+    // This browser will automatically be closed by the code, but that happens
+    // asynchronous so wait here until that's done.
     ASSERT_EQ(BrowserList::GetInstance()->size(), 2u);
+
     for (Browser* browser : *BrowserList::GetInstance()) {
-      const GURL& url =
-          browser->tab_strip_model()->GetActiveWebContents()->GetURL();
-      if (url != kNavigationUrl) {
-        browser->window()->Close();
+      // The non kiosk window will be automatically closed, but we have to wait
+      // for the closing to finish.
+      if (browser->IsAttemptingToCloseBrowser() ||
+          browser->IsBrowserClosing()) {
         ASSERT_TRUE(WaitUntilBrowserClosed(browser));
+        // do not continue looping since the browser list is now invalidated.
         break;
       }
     }
+
     ASSERT_EQ(BrowserList::GetInstance()->size(), 1u);
   }
 

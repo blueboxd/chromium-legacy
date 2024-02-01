@@ -32,18 +32,6 @@ std::vector<drmModeModeInfo> GetDrmModeVector(drmModeConnector* connector) {
   return modes;
 }
 
-void FillPowerFunctionValues(std::vector<display::GammaRampRGBEntry>* table,
-                             size_t table_size,
-                             float max_value,
-                             float exponent) {
-  for (size_t i = 0; i < table_size; i++) {
-    const uint16_t v = max_value * std::numeric_limits<uint16_t>::max() *
-                       pow((static_cast<float>(i) + 1) / table_size, exponent);
-    struct display::GammaRampRGBEntry gamma_entry = {v, v, v};
-    table->push_back(gamma_entry);
-  }
-}
-
 }  // namespace
 
 DrmDisplay::PrivacyScreenProperty::PrivacyScreenProperty(
@@ -312,10 +300,23 @@ bool DrmDisplay::SetHDCPState(
                                  kContentProtectionStates));
 }
 
+void DrmDisplay::SetColorTemperatureAdjustment(
+    const display::ColorTemperatureAdjustment& cta) {
+  drm_->plane_manager()->SetColorTemperatureAdjustment(crtc_, cta);
+}
+
+void DrmDisplay::SetColorCalibration(
+    const display::ColorCalibration& calibration) {
+  drm_->plane_manager()->SetColorCalibration(crtc_, calibration);
+}
+
+void DrmDisplay::SetGammaAdjustment(
+    const display::GammaAdjustment& adjustment) {
+  drm_->plane_manager()->SetGammaAdjustment(crtc_, adjustment);
+}
+
 void DrmDisplay::SetColorMatrix(const std::vector<float>& color_matrix) {
-  if (!drm_->plane_manager()->SetColorMatrix(crtc_, color_matrix)) {
-    LOG(ERROR) << "Failed to set color matrix for display: crtc_id = " << crtc_;
-  }
+  // TODO(https://crbug.com/1505062): Remove callers of this function.
 }
 
 void DrmDisplay::SetBackgroundColor(const uint64_t background_color) {
@@ -324,17 +325,7 @@ void DrmDisplay::SetBackgroundColor(const uint64_t background_color) {
 
 void DrmDisplay::SetGammaCorrection(const display::GammaCurve& degamma,
                                     const display::GammaCurve& gamma) {
-  // When both |degamma| and |gamma| are empty they are interpreted as
-  // "linear/pass-thru" [1]. If the display |is_hdr_capable_| we have to make
-  // sure the |current_color_space_| is considered properly.
-  // [1]
-  // https://www.kernel.org/doc/html/v4.19/gpu/drm-kms.html#color-management-properties
-  if (degamma.IsDefaultIdentity() && gamma.IsDefaultIdentity() &&
-      is_hdr_capable_) {
-    SetColorSpace(current_color_space_);
-  } else {
-    CommitGammaCorrection(degamma, gamma);
-  }
+  // TODO(https://crbug.com/1505062): Remove callers of this function.
 }
 
 bool DrmDisplay::SetPrivacyScreen(bool enabled) {
@@ -449,41 +440,6 @@ bool DrmDisplay::SetColorspaceProperty(const gfx::ColorSpace color_space) {
     return false;
   }
   return true;
-}
-
-void DrmDisplay::SetColorSpace(const gfx::ColorSpace& color_space) {
-  // There's only something to do if the display supports HDR.
-  if (!is_hdr_capable_)
-    return;
-  current_color_space_ = color_space;
-
-  // When |color_space| is HDR we can simply leave the gamma tables empty, which
-  // is interpreted as "linear/pass-thru", see [1]. However when we have an SDR
-  // |color_space|, we need to write a scaled down |gamma| function to prevent
-  // the mode change brightness to be visible.
-  if (current_color_space_.IsHDR())
-    return CommitGammaCorrection({}, {});
-
-  // TODO(mcasas) This should be the inverse value of DisplayChangeObservers's
-  // FillDisplayColorSpaces's kHDRLevel, move to a common place.
-  // TODO(b/165822222): adjust this level based on the display brightness.
-  constexpr float kSDRLevel = 0.85;
-  // TODO(mcasas): Retrieve this from the |drm_| HardwareDisplayPlaneManager.
-  constexpr size_t kNumGammaSamples = 64ul;
-  // Only using kSDRLevel of the available values shifts the contrast ratio, we
-  // restore it via a smaller local gamma correction using this exponent.
-  constexpr float kExponent = 1.2;
-  std::vector<display::GammaRampRGBEntry> gamma_entries;
-  FillPowerFunctionValues(&gamma_entries, kNumGammaSamples, kSDRLevel,
-                          kExponent);
-  CommitGammaCorrection({}, display::GammaCurve(gamma_entries));
-}
-
-void DrmDisplay::CommitGammaCorrection(const display::GammaCurve& degamma,
-                                       const display::GammaCurve& gamma) {
-  if (!drm_->plane_manager()->SetGammaCorrection(crtc_, degamma, gamma)) {
-    LOG(ERROR) << "Failed to set gamma tables for display: crtc_id = " << crtc_;
-  }
 }
 
 }  // namespace ui

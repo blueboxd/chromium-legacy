@@ -8,6 +8,8 @@ import {testcase} from '../testcase.js';
 import {remoteCall, setupAndWaitUntilReady} from './background.js';
 import {DirectoryTreePageObject} from './page_objects/directory_tree.js';
 
+// @ts-ignore: error TS4111: Property 'installLinuxPackageDialog' comes from an
+// index signature, so it must be accessed with ['installLinuxPackageDialog'].
 testcase.installLinuxPackageDialog = async () => {
   // The dialog has an INSTALL and OK button, both as .cr-dialog-ok, but only
   // one is visible at a time.
@@ -43,7 +45,7 @@ testcase.installLinuxPackageDialog = async () => {
     // returns as a single string. These values come from
     // fake_cicerone_client.cc.
     return elements[0] &&
-        elements[0].innerText ==
+        elements[0].innerText ===
             ('Details\n' +
              'Application: Fake Package\n' +
              'Version: 1.0\n' +
@@ -60,7 +62,7 @@ testcase.installLinuxPackageDialog = async () => {
     const elements = await remoteCall.callRemoteTestUtil(
         'queryAllElements', appId, ['.cr-dialog-text']);
     return elements[0] &&
-        elements[0].text == 'Installation successfully started.' ||
+        elements[0].text === 'Installation successfully started.' ||
         pending(caller, 'Waiting for installation to start.');
   });
 

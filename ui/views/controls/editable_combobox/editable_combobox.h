@@ -38,8 +38,6 @@ class MenuModel;
 
 namespace views {
 class Button;
-class EditableComboboxMenuModel;
-class EditableComboboxPreTargetHandler;
 class MenuRunner;
 class Textfield;
 
@@ -96,7 +94,7 @@ class VIEWS_EXPORT EditableCombobox
   const std::u16string& GetText() const;
   void SetText(const std::u16string& text);
 
-  std::u16string GetPlaceholderText() const;
+  const std::u16string& GetPlaceholderText() const;
   void SetPlaceholderText(const std::u16string& text);
 
   const gfx::FontList& GetFontList() const;

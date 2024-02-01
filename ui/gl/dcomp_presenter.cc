@@ -15,7 +15,6 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/dc_layer_tree.h"
-#include "ui/gl/direct_composition_child_surface_win.h"
 #include "ui/gl/direct_composition_support.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/vsync_thread_win.h"
@@ -40,10 +39,9 @@ DCompPresenter::PendingFrame::~PendingFrame() = default;
 DCompPresenter::PendingFrame& DCompPresenter::PendingFrame::operator=(
     PendingFrame&& other) = default;
 
-DCompPresenter::DCompPresenter(
-    GLDisplayEGL* display,
-    VSyncCallback vsync_callback,
-    const DirectCompositionSurfaceWin::Settings& settings)
+DCompPresenter::DCompPresenter(GLDisplayEGL* display,
+                               VSyncCallback vsync_callback,
+                               const Settings& settings)
     : vsync_callback_(std::move(vsync_callback)),
       vsync_thread_(VSyncThreadWin::GetInstance()),
       task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
@@ -229,10 +227,6 @@ void DCompPresenter::HandleVSyncOnMainThread(base::TimeTicks vsync_time,
   last_vsync_interval_ = interval;
 
   CheckPendingFrames();
-
-  UMA_HISTOGRAM_COUNTS_100("GPU.DirectComposition.NumPendingFrames",
-                           pending_frames_.size());
-
   if (SupportsLowLatencyPresentation() && VSyncCallbackEnabled() &&
       pending_frames_.size() < max_pending_frames_) {
     DCHECK(vsync_callback_);

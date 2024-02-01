@@ -9,6 +9,7 @@
 #include "chrome/browser/background_fetch/background_fetch_permission_context.h"
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/display_capture/captured_surface_control_permission_context.h"
 #include "chrome/browser/display_capture/display_capture_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_delegate.h"
 #include "chrome/browser/idle/idle_detection_permission_context.h"
@@ -41,6 +42,10 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/geolocation/geolocation_permission_context_delegate_android.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CUPS)
+#include "chrome/browser/printing/web_api/web_printing_permission_context.h"
+#endif  // BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CUPS)
 
 namespace {
 
@@ -136,6 +141,15 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
   // support it on WebLayer yet.
   permission_contexts[ContentSettingsType::WINDOW_MANAGEMENT] =
       std::make_unique<permissions::WindowManagementPermissionContext>(profile);
+
+  permission_contexts[ContentSettingsType::CAPTURED_SURFACE_CONTROL] =
+      std::make_unique<permissions::CapturedSurfaceControlPermissionContext>(
+          profile);
+
+#if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CUPS)
+  permission_contexts[ContentSettingsType::WEB_PRINTING] =
+      std::make_unique<WebPrintingPermissionContext>(profile);
+#endif  // BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CUPS)
 
   return permission_contexts;
 }

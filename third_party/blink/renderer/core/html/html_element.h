@@ -95,9 +95,10 @@ enum class HidePopoverTransitionBehavior {
   kNoEventsNoWaiting,
 };
 
-enum class HidePopoverIndependence {
-  kLeaveUnrelated,
-  kHideUnrelated,
+enum class TopLayerElementType {
+  kPopover,
+  kDialog,
+  kFullscreen,
 };
 
 class CORE_EXPORT HTMLElement : public Element {
@@ -219,14 +220,11 @@ class CORE_EXPORT HTMLElement : public Element {
   virtual FormAssociated* ToFormAssociatedOrNull() { return nullptr; }
   bool IsFormAssociatedCustomElement() const;
 
-  static void AdjustCandidateDirectionalityForSlot(
-      HeapHashSet<Member<Node>> candidate_set);
   void UpdateDescendantDirectionality(TextDirection direction);
   void UpdateDirectionalityAfterInputTypeChange(const AtomicString& old_value,
                                                 const AtomicString& new_value);
-  void AdjustDirectionalityIfNeededAfterShadowRootChanged();
   void AdjustDirectionAutoAfterRecalcAssignedNodes();
-  bool CalculateAndAdjustAutoDirectionality(Node* stay_within);
+  bool CalculateAndAdjustAutoDirectionality();
 
   V8UnionBooleanOrStringOrUnrestrictedDouble* hidden() const;
   void setHidden(const V8UnionBooleanOrStringOrUnrestrictedDouble*);
@@ -266,13 +264,15 @@ class CORE_EXPORT HTMLElement : public Element {
                            ExceptionState* exception_state);
   void PopoverHideFinishIfNeeded(bool immediate);
   static const HTMLElement* FindTopmostPopoverAncestor(
-      HTMLElement& new_popover,
-      Element* new_popovers_invoker);
+      Element& new_popover_or_top_layer_element,
+      HeapVector<Member<HTMLElement>>& stack_to_check,
+      Element* new_popovers_invoker,
+      TopLayerElementType top_layer_element_type =
+          TopLayerElementType::kPopover);
+  static const HTMLElement* TopLayerElementPopoverAncestor(
+      Element& top_layer_element,
+      TopLayerElementType top_layer_element_type);
 
-  // Retrieves the element pointed to by this element's 'anchor' content
-  // attribute, if that element exists.
-  Element* anchorElement();
-  void setAnchorElement(Element*);
   static void HandlePopoverLightDismiss(const Event& event, const Node& node);
   void InvokePopover(Element& invoker);
   void SetPopoverFocusOnShow();
@@ -281,8 +281,7 @@ class CORE_EXPORT HTMLElement : public Element {
   static void HideAllPopoversUntil(const HTMLElement*,
                                    Document&,
                                    HidePopoverFocusBehavior,
-                                   HidePopoverTransitionBehavior,
-                                   HidePopoverIndependence);
+                                   HidePopoverTransitionBehavior);
   // Popover hover triggering behavior.
   bool IsNodePopoverDescendant(const Node& node) const;
   void MaybeQueuePopoverHideEvent();
@@ -358,8 +357,6 @@ class CORE_EXPORT HTMLElement : public Element {
       MutableCSSPropertyValueSet*) override;
   unsigned ParseBorderWidthAttribute(const AtomicString&) const;
 
-  void ChildrenChanged(const ChildrenChange&) override;
-
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode& insertion_point) override;
   void DidMoveToNewDocument(Document& old_document) override;
@@ -379,13 +376,14 @@ class CORE_EXPORT HTMLElement : public Element {
 
   DocumentFragment* TextToFragment(const String&, ExceptionState&);
 
-  void AdjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);
-
-  void AdjustDirectionalityIfNeededAfterInsert(Node& node);
-
   TranslateAttributeMode GetTranslateAttributeMode() const;
 
   void HandleKeypressEvent(KeyboardEvent&);
+
+  static void CloseEntirePopoverStack(
+      HeapVector<Member<HTMLElement>>& stack,
+      HidePopoverFocusBehavior focus_behavior,
+      HidePopoverTransitionBehavior transition_behavior);
 
   static AttributeTriggers* TriggersForAttributeName(
       const QualifiedName& attr_name);
@@ -395,9 +393,6 @@ class CORE_EXPORT HTMLElement : public Element {
   void OnLangAttrChanged(const AttributeModificationParams&);
   void OnNonceAttrChanged(const AttributeModificationParams&);
   void OnPopoverChanged(const AttributeModificationParams&);
-
-  // Delegate ParseAttribute to base class
-  void ReparseAttribute(const AttributeModificationParams&);
 
   int AdjustedOffsetForZoom(LayoutUnit);
   int OffsetTopOrLeft(bool top);

@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "base/ranges/algorithm.h"
 #include "ui/aura/client/aura_constants.h"
 
 namespace ash {
@@ -46,8 +47,10 @@ void ScopedSetRasterScale::SetOrUpdateRasterScale(
 
 void ScopedSetRasterScale::Shutdown() {
   if (window_) {
-    Shell::Get()->raster_scale_controller()->PopRasterScale(window_,
-                                                            raster_scale_);
+    auto* rsc = Shell::Get()->raster_scale_controller();
+    if (rsc) {
+      rsc->PopRasterScale(window_, raster_scale_);
+    }
     window_->RemoveObserver(this);
     window_ = nullptr;
   }
@@ -67,7 +70,12 @@ ScopedPauseRasterScaleUpdates::~ScopedPauseRasterScaleUpdates() {
 }
 
 RasterScaleController::RasterScaleController() = default;
-RasterScaleController::~RasterScaleController() = default;
+RasterScaleController::~RasterScaleController() {
+  // Reset raster scales to 1.0 on destruction.
+  for (const auto& [window, _] : window_scales_) {
+    window->SetProperty(aura::client::kRasterScale, 1.0f);
+  }
+}
 
 float RasterScaleController::RasterScaleFromTransform(
     const gfx::Transform& transform) {
@@ -96,7 +104,7 @@ void RasterScaleController::PopRasterScale(aura::Window* window,
 
   auto& scales = iter->second;
   DCHECK(base::Contains(scales, raster_scale));
-  auto scale_iter = std::find(scales.begin(), scales.end(), raster_scale);
+  auto scale_iter = base::ranges::find(scales, raster_scale);
   if (scale_iter != scales.end()) {
     scales.erase(scale_iter);
   }

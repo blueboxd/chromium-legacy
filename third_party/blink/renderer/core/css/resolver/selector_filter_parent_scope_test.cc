@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 
 namespace blink {
 
@@ -23,6 +24,7 @@ class SelectorFilterParentScopeTest : public testing::Test {
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
  private:
+  test::TaskEnvironment task_environment_;
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
@@ -48,7 +50,8 @@ TEST_F(SelectorFilterParentScopeTest, ParentScope) {
       base::span<CSSSelector> selector_vector = CSSParser::ParseSelector(
           MakeGarbageCollected<CSSParserContext>(
               kHTMLStandardMode, SecureContextMode::kInsecureContext),
-          CSSNestingType::kNone, /*parent_rule_for_nesting=*/nullptr, nullptr,
+          CSSNestingType::kNone, /*parent_rule_for_nesting=*/nullptr,
+          /*is_within_scope=*/false, nullptr,
           "html *, body *, .match *, #myId *", arena);
       CSSSelectorList* selectors =
           CSSSelectorList::AdoptSelectorVector(selector_vector);
@@ -82,7 +85,8 @@ TEST_F(SelectorFilterParentScopeTest, RootScope) {
   base::span<CSSSelector> selector_vector = CSSParser::ParseSelector(
       MakeGarbageCollected<CSSParserContext>(
           kHTMLStandardMode, SecureContextMode::kInsecureContext),
-      CSSNestingType::kNone, /*parent_rule_for_nesting=*/nullptr, nullptr,
+      CSSNestingType::kNone, /*parent_rule_for_nesting=*/nullptr,
+      /*is_within_scope=*/false, nullptr,
       "html *, body *, div *, span *, .x *, #y *", arena);
   CSSSelectorList* selectors =
       CSSSelectorList::AdoptSelectorVector(selector_vector);
@@ -138,7 +142,8 @@ TEST_F(SelectorFilterParentScopeTest, AttributeFilter) {
   base::span<CSSSelector> selector_vector = CSSParser::ParseSelector(
       MakeGarbageCollected<CSSParserContext>(
           kHTMLStandardMode, SecureContextMode::kInsecureContext),
-      CSSNestingType::kNone, /*parent_rule_for_nesting=*/nullptr, nullptr,
+      CSSNestingType::kNone, /*parent_rule_for_nesting=*/nullptr,
+      /*is_within_scope=*/false, nullptr,
       "[Attr] *, [attr] *, [viewbox] *, [VIEWBOX] *", arena);
   CSSSelectorList* selectors =
       CSSSelectorList::AdoptSelectorVector(selector_vector);

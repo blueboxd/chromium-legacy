@@ -14,6 +14,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -88,6 +89,8 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -122,8 +125,6 @@ import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
@@ -154,9 +155,8 @@ import java.util.concurrent.atomic.AtomicReference;
     ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
     "force-fieldtrials=Study/Group"
 })
-@EnableFeatures({
-    ChromeFeatureList.DEFER_TAB_SWITCHER_LAYOUT_CREATION,
-})
+@EnableFeatures({ChromeFeatureList.DEFER_TAB_SWITCHER_LAYOUT_CREATION})
+@DisableFeatures({ChromeFeatureList.ANDROID_HUB})
 @Restriction({
     UiRestriction.RESTRICTION_TYPE_PHONE,
     Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE
@@ -879,10 +879,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @UseMethodParameter(RefactorTestParams.class)
     @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisableIf.Build(
-            message = "Flaky on Android P, see https://crbug.com/1063991",
-            sdk_is_greater_than = VERSION_CODES.O_MR1,
-            sdk_is_less_than = VERSION_CODES.Q)
     public void testIncognitoToggle_tabCount(boolean isStartSurfaceRefactorEnabled)
             throws InterruptedException {
         mActivityTestRule.loadUrl(mUrl);
@@ -1029,9 +1025,10 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         enterGTSWithThumbnailChecking();
 
         // TODO(meiliang): Avoid using static variable for tracking state,
-        // TabSwitcherCoordinator::hasAppendedMessagesForTesting. Instead, we can query the number
+        // TabSwitcherMessageManager::hasAppendedMessagesForTesting. Instead, we can query the
+        // number
         // of items that the inner model of the TabSwitcher has.
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         ViewUtils.onViewWaiting(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
         onView(allOf(withId(R.id.close_button), withParent(withId(R.id.tab_grid_message_item))))
                 .perform(click());
@@ -1063,7 +1060,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         mayEnterGTSAndLeave(mActivityTestRule.getActivity());
         enterGTSWithThumbnailChecking();
 
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         ViewUtils.onViewWaiting(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
         ViewUtils.onViewWaiting(
                         allOf(
@@ -1139,7 +1136,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         mayEnterGTSAndLeave(mActivityTestRule.getActivity());
         enterGTSWithThumbnailChecking();
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         ViewUtils.onViewWaiting(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
 
         closeFirstTabInTabSwitcher(mActivityTestRule.getActivity());
@@ -1182,7 +1179,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         mayEnterGTSAndLeave(mActivityTestRule.getActivity());
         enterGTSWithThumbnailChecking();
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
 
         // Force portrait mode since the device can be wrongly in landscape. See crbug/1063639.
         ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
@@ -1604,7 +1601,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         // TabObserver#didFirstVisuallyNonEmptyPaint and invalidates the suggestion. Do the
         // thumbnail checking here is to ensure the suggestion is valid when entering tab switcher.
         enterGTSWithThumbnailChecking();
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
         onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
                 .perform(click());
@@ -2072,9 +2069,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         onView(
                         allOf(
                                 withId(R.id.empty_state_container),
-                                withParent(
+                                isDescendantOfA(
                                         withId(
-                                                TabUiTestHelper.getTabSwitcherParentId(
+                                                TabUiTestHelper.getTabSwitcherAncestorId(
                                                         appContext)))))
                 .check(matches(isDisplayed()));
     }
@@ -2112,9 +2109,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         onView(
                         allOf(
                                 withId(R.id.empty_state_container),
-                                withParent(
+                                isDescendantOfA(
                                         withId(
-                                                TabUiTestHelper.getTabSwitcherParentId(
+                                                TabUiTestHelper.getTabSwitcherAncestorId(
                                                         appContext)))))
                 .check(matches(not(isDisplayed())));
 
@@ -2134,9 +2131,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         onView(
                         allOf(
                                 withId(R.id.empty_state_container),
-                                withParent(
+                                isDescendantOfA(
                                         withId(
-                                                TabUiTestHelper.getTabSwitcherParentId(
+                                                TabUiTestHelper.getTabSwitcherAncestorId(
                                                         appContext)))))
                 .check(matches(isDisplayed()));
     }
@@ -2144,10 +2141,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @Test
     @MediumTest
     @UseMethodParameter(RefactorTestParams.class)
-    @EnableFeatures({
-        ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
-        ChromeFeatureList.HIDE_TAB_ON_TAB_SWITCHER
-    })
+    @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testHideTabOnTabSwitcher(boolean isStartSurfaceRefactorEnabled) throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -2373,14 +2367,14 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         mayEnterGTSAndLeave(mActivityTestRule.getActivity());
         enterGTSWithThumbnailChecking();
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(allOf(withText(suggestionMessage), withParent(withId(R.id.tab_grid_message_item))))
                 .check(matches(isDisplayed()));
         leaveGTSAndVerifyThumbnailsAreReleased();
 
         // With soft or hard clean up depends on the soft-cleanup-delay and cleanup-delay params.
         enterGTSWithThumbnailChecking();
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         // This will fail with error "matched multiple views" when there is more than one suggestion
         // message card.
         onView(allOf(withText(suggestionMessage), withParent(withId(R.id.tab_grid_message_item))))
@@ -2389,9 +2383,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
     private Matcher<View> tabSwitcherViewMatcher() {
         return allOf(
-                withParent(
+                isDescendantOfA(
                         withId(
-                                TabUiTestHelper.getTabSwitcherParentId(
+                                TabUiTestHelper.getTabSwitcherAncestorId(
                                         mActivityTestRule.getActivity()))),
                 withId(R.id.tab_list_recycler_view));
     }

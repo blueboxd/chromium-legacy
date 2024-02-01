@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_OWNERSHIP_OWNER_KEY_LOADER_H_
 #define CHROME_BROWSER_ASH_OWNERSHIP_OWNER_KEY_LOADER_H_
 
+#include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -20,6 +21,9 @@ class PolicyData;
 namespace ash {
 
 class DeviceSettingsService;
+
+BASE_DECLARE_FEATURE(kStoreOwnerKeyInPrivateSlot);
+BASE_DECLARE_FEATURE(kMigrateOwnerKeyToPrivateSlot);
 
 // A helper single-use class to load the owner key.
 // Determines whether the current user is the owner or not.
@@ -66,9 +70,8 @@ class OwnerKeyLoader {
   void MaybeRegenerateLostKey(
       const enterprise_management::PolicyData* policy_data);
 
-  const raw_ptr<Profile, ExperimentalAsh> profile_;
-  const raw_ptr<DeviceSettingsService, ExperimentalAsh>
-      device_settings_service_;
+  const raw_ptr<Profile> profile_;
+  const raw_ptr<DeviceSettingsService> device_settings_service_;
   scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
   const bool is_enterprise_managed_;
   scoped_refptr<ownership::PublicKey> public_key_;

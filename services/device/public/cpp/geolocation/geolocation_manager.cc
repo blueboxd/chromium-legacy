@@ -103,21 +103,15 @@ SystemGeolocationSource& GeolocationManager::SystemGeolocationSourceForTest() {
 
 #endif
 
-void GeolocationManager::TrackGeolocationAttempted() {
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
-  system_geolocation_source_->TrackGeolocationAttempted();
-#endif
-}
-
-void GeolocationManager::TrackGeolocationRelinquished() {
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
-  system_geolocation_source_->TrackGeolocationRelinquished();
-#endif
-}
-
 void GeolocationManager::RequestSystemPermission() {
 #if BUILDFLAG(IS_APPLE)
   system_geolocation_source_->RequestPermission();
+#endif
+}
+
+void GeolocationManager::OpenSystemPermissionSetting() {
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
+  system_geolocation_source_->OpenSystemPermissionSetting();
 #endif
 }
 

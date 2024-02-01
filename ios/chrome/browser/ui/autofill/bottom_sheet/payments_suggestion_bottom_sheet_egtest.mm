@@ -8,6 +8,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "components/autofill/core/browser/autofill_test_utils.h"
+#import "components/autofill/core/common/autofill_payments_features.h"
 #import "components/url_formatter/elide_url.h"
 #import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -62,6 +63,11 @@ BOOL WaitForKeyboardToAppear() {
   net::test_server::RegisterDefaultHandlers(self.testServer);
   GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
 
+  [AutofillAppInterface setUpMockReauthenticationModule];
+  [AutofillAppInterface mockReauthenticationModuleCanAttempt:YES];
+  [AutofillAppInterface mockReauthenticationModuleExpectedResult:
+                            ReauthenticationResult::kSuccess];
+
   [AutofillAppInterface clearCreditCardStore];
   _lastDigits = [AutofillAppInterface saveLocalCreditCard];
 
@@ -73,6 +79,7 @@ BOOL WaitForKeyboardToAppear() {
 
 - (void)tearDown {
   [AutofillAppInterface clearCreditCardStore];
+  [AutofillAppInterface clearMockReauthenticationModule];
 
   [MetricsAppInterface stopOverridingMetricsAndCrashReportingForTesting];
   GREYAssertNil([MetricsAppInterface releaseHistogramTester],
@@ -82,7 +89,8 @@ BOOL WaitForKeyboardToAppear() {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-  config.features_enabled.push_back(kIOSPaymentsBottomSheet);
+  config.features_enabled.push_back(
+      autofill::features::kAutofillEnableVirtualCards);
   return config;
 }
 
@@ -126,9 +134,12 @@ id<GREYMatcher> SubtitleString(const GURL& url) {
 }
 
 id<GREYMatcher> ExpirationDateLabel() {
-  return grey_text(
-      base::SysUTF8ToNSString(autofill::test::NextMonth() + "/" +
-                              autofill::test::NextYear().substr(2)));
+  return grey_text(ExpirationDateNSString());
+}
+
+NSString* ExpirationDateNSString() {
+  return base::SysUTF8ToNSString(autofill::test::NextMonth() + "/" +
+                                 autofill::test::NextYear().substr(2));
 }
 
 #pragma mark - Helper methods
@@ -503,6 +514,38 @@ id<GREYMatcher> ExpirationDateLabel() {
       performAction:grey_tap()];
 
   WaitForKeyboardToAppear();
+}
+
+// Tests that both the virtual card and the original card are shown
+// in the Payments Bottom Sheet.
+- (void)testPaymentsBottomSheetShowsVirtualCard {
+  // Add a credit card enrolled in VCN to the Personal Data Manager.
+  [AutofillAppInterface saveMaskedCreditCardEnrolledInVirtualCard];
+
+  NSString* virtualCardAccessibleName =
+      @"Virtual card Mastercard ending in 2 1 0 9, , 1 of 3";
+  NSString* creditCardAccessibleName = [NSString
+      stringWithFormat:@"Mastercard ending in 2 1 0 9, expires on %@, , 2 of 3",
+                       ExpirationDateNSString()];
+
+  [self loadPaymentsPage];
+
+  // Trigger autofill.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElementWithId(kFormCardName)];
+
+  // Confirm virtual card is displayed.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(virtualCardAccessibleName)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Confirm original card is displayed.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(creditCardAccessibleName)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Dismiss the bottom sheet by tapping outside.
+  [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
+      performAction:grey_tap()];
 }
 
 @end

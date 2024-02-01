@@ -98,7 +98,7 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
     const user_manager::UserManager* const user_manager =
         user_manager::UserManager::Get();
     EXPECT_EQ(user_manager->GetActiveUser()->GetType(),
-              user_manager::USER_TYPE_CHILD);
+              user_manager::UserType::kChild);
     child_profile_ =
         ProfileHelper::Get()->GetProfileByUser(user_manager->GetActiveUser());
 
@@ -140,8 +140,7 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
-  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> child_profile_ =
-      nullptr;
+  raw_ptr<Profile, DanglingUntriaged> child_profile_ = nullptr;
 
  private:
   LoggedInUserMixin logged_in_user_mixin_{&mixin_host_,

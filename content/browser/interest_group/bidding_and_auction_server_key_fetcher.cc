@@ -5,8 +5,11 @@
 #include "content/browser/interest_group/bidding_and_auction_server_key_fetcher.h"
 
 #include "base/base64.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
+#include "content/browser/interest_group/interest_group_features.h"
 #include "net/base/isolation_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -75,7 +78,7 @@ BiddingAndAuctionServerKeyFetcher::BiddingAndAuctionServerKeyFetcher() {
     std::string config =
         blink::features::kFledgeBiddingAndAuctionKeyConfig.Get();
     if (!config.empty()) {
-      absl::optional<base::Value> config_value = base::JSONReader::Read(config);
+      std::optional<base::Value> config_value = base::JSONReader::Read(config);
       if (config_value && config_value->is_dict()) {
         for (const auto kv : config_value->GetDict()) {
           if (!kv.second.is_string()) {
@@ -108,9 +111,30 @@ BiddingAndAuctionServerKeyFetcher::BiddingAndAuctionServerKeyFetcher() {
 BiddingAndAuctionServerKeyFetcher::~BiddingAndAuctionServerKeyFetcher() =
     default;
 
+void BiddingAndAuctionServerKeyFetcher::MaybePrefetchKeys(
+    network::mojom::URLLoaderFactory* loader_factory) {
+  // We only prefetch keys if the prefetching is enabled and if
+  // kFledgeBiddingAndAuctionServer is enabled. We don't need to check
+  // kFledgeBiddingAndAuctionServer because if it's not enabled
+  // fetcher_state_map_ would have no keys.
+  if (!base::FeatureList::IsEnabled(features::kFledgePrefetchBandAKeys)) {
+    return;
+  }
+  // We only want to prefetch once.
+  if (did_prefetch_keys_) {
+    return;
+  }
+  did_prefetch_keys_ = true;
+  for (auto& [coordinator, state] : fetcher_state_map_) {
+    if (state.keys.size() == 0 || state.expiration < base::Time::Now()) {
+      FetchKeys(loader_factory, coordinator, state, base::DoNothing());
+    }
+  }
+}
+
 void BiddingAndAuctionServerKeyFetcher::GetOrFetchKey(
     network::mojom::URLLoaderFactory* loader_factory,
-    absl::optional<url::Origin> maybe_coordinator,
+    std::optional<url::Origin> maybe_coordinator,
     BiddingAndAuctionServerKeyFetcherCallback callback) {
   url::Origin coordinator = maybe_coordinator.value_or(
       url::Origin::Create(GURL(kDefaultBiddingAndAuctionGCPCoordinatorOrigin)));
@@ -131,15 +155,28 @@ void BiddingAndAuctionServerKeyFetcher::GetOrFetchKey(
   if (state.keys.size() > 0 && state.expiration > base::Time::Now()) {
     // Use a random key from the set to limit the server's ability to identify
     // us based on the key we use.
+    base::UmaHistogramBoolean("Ads.InterestGroup.ServerAuction.KeyFetch.Cached",
+                              true);
     std::move(callback).Run(
         state.keys[base::RandInt(0, state.keys.size() - 1)]);
     return;
   }
+  base::UmaHistogramBoolean("Ads.InterestGroup.ServerAuction.KeyFetch.Cached",
+                            false);
+  FetchKeys(loader_factory, coordinator, state, std::move(callback));
+}
 
+void BiddingAndAuctionServerKeyFetcher::FetchKeys(
+    network::mojom::URLLoaderFactory* loader_factory,
+    const url::Origin& coordinator,
+    PerCoordinatorFetcherState& state,
+    BiddingAndAuctionServerKeyFetcherCallback callback) {
   state.queue.push_back(std::move(callback));
   if (state.queue.size() > 1) {
     return;
   }
+
+  state.fetch_start = base::TimeTicks::Now();
   state.keys.clear();
 
   CHECK(!state.loader);
@@ -163,11 +200,18 @@ void BiddingAndAuctionServerKeyFetcher::GetOrFetchKey(
 void BiddingAndAuctionServerKeyFetcher::OnFetchKeyComplete(
     url::Origin coordinator,
     std::unique_ptr<std::string> response) {
-  fetcher_state_map_.at(coordinator).loader.reset();
+  PerCoordinatorFetcherState& state = fetcher_state_map_.at(coordinator);
+  bool was_cached = state.loader->LoadedFromCache();
+  state.loader.reset();
   if (!response) {
     FailAllCallbacks(coordinator);
     return;
   }
+  base::UmaHistogramTimes(
+      "Ads.InterestGroup.ServerAuction.KeyFetch.NetworkTime",
+      base::TimeTicks::Now() - state.fetch_start);
+  base::UmaHistogramBoolean(
+      "Ads.InterestGroup.ServerAuction.KeyFetch.NetworkCached", was_cached);
   data_decoder::DataDecoder::ParseJsonIsolated(
       *response,
       base::BindOnce(&BiddingAndAuctionServerKeyFetcher::OnParsedKeys,
@@ -227,6 +271,8 @@ void BiddingAndAuctionServerKeyFetcher::OnParsedKeys(
   PerCoordinatorFetcherState& state = fetcher_state_map_.at(coordinator);
   state.keys = std::move(keys);
   state.expiration = base::Time::Now() + kKeyRequestInterval;
+  base::UmaHistogramTimes("Ads.InterestGroup.ServerAuction.KeyFetch.TotalTime",
+                          base::TimeTicks::Now() - state.fetch_start);
 
   while (!state.queue.empty()) {
     // We call the callback *before* removing the current request from the list.

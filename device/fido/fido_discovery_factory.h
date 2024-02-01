@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/component_export.h"
@@ -33,6 +34,10 @@
 #endif  // BUILDFLAG(IS_MAC)
 
 namespace device {
+
+namespace enclave {
+struct CredentialRequest;
+}
 
 // FidoDiscoveryFactory offers methods to construct instances of
 // FidoDiscoveryBase for a given |transport| protocol.
@@ -92,16 +97,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 
   void set_hid_ignore_list(base::flat_set<VidPid> hid_ignore_list);
 
-  // Provides the passkeys that will be made available to use for cloud-based
-  // enclave authentication.
-  void set_enclave_passkeys(
-      std::vector<sync_pb::WebauthnCredentialSpecifics> passkeys);
-
   // Provides a callback that will be called when a passkey is created with
   // the enclave authenticator in order to save the new passkey to sync data.
   void set_enclave_passkey_creation_callback(
       base::RepeatingCallback<void(sync_pb::WebauthnCredentialSpecifics)>
           callback);
+
+  void set_enclave_ui_request_stream(
+      std::unique_ptr<FidoDiscoveryBase::EventStream<
+          std::unique_ptr<enclave::CredentialRequest>>> stream);
 
 #if BUILDFLAG(IS_MAC)
   // Configures the Touch ID authenticator. Set to absl::nullopt to disable it.
@@ -171,7 +175,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   absl::optional<std::array<uint8_t, cablev2::kQRKeySize>> qr_generator_key_;
   absl::optional<FidoRequestType> request_type_;
   std::unique_ptr<
-      FidoDeviceDiscovery::EventStream<std::unique_ptr<cablev2::Pairing>>>
+      FidoDiscoveryBase::EventStream<std::unique_ptr<cablev2::Pairing>>>
       contact_device_stream_;
   absl::optional<
       base::RepeatingCallback<void(std::unique_ptr<cablev2::Pairing>)>>
@@ -188,9 +192,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
       get_assertion_request_for_legacy_credential_check_;
 #endif  // BUILDFLAG(IS_CHROMEOS)
   base::flat_set<VidPid> hid_ignore_list_;
-  std::vector<sync_pb::WebauthnCredentialSpecifics> enclave_passkeys_;
   base::RepeatingCallback<void(sync_pb::WebauthnCredentialSpecifics)>
       enclave_passkey_creation_callback_;
+  std::unique_ptr<FidoDiscoveryBase::EventStream<
+      std::unique_ptr<enclave::CredentialRequest>>>
+      enclave_ui_request_stream_;
 };
 
 }  // namespace device

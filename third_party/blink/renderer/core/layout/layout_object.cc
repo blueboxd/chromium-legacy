@@ -420,7 +420,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return MakeGarbageCollected<LayoutMathMLBlock>(element);
     case EDisplay::kRuby:
       DCHECK(RuntimeEnabledFeatures::CssDisplayRubyEnabled());
-      return MakeGarbageCollected<LayoutRubyAsInline>(element);
+      return MakeGarbageCollected<LayoutRuby>(element);
     case EDisplay::kBlockRuby:
       DCHECK(RuntimeEnabledFeatures::CssDisplayRubyEnabled());
       return MakeGarbageCollected<LayoutRubyAsBlock>(element);
@@ -705,9 +705,11 @@ void LayoutObject::AddChild(LayoutObject* new_child,
     children->InsertChildNode(this, new_child, before_child);
   }
 
-  if (new_child->IsText() &&
-      new_child->StyleRef().TextTransform() == ETextTransform::kCapitalize)
-    To<LayoutText>(new_child)->TransformText();
+  if (auto* text = DynamicTo<LayoutText>(new_child)) {
+    if (new_child->StyleRef().TextTransform() == ETextTransform::kCapitalize) {
+      text->TransformAndSecureOriginalText();
+    }
+  }
 }
 
 void LayoutObject::RemoveChild(LayoutObject* old_child) {
@@ -1455,7 +1457,7 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout) {
   NOT_DESTROYED();
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
-  DCHECK(!GetDocument().InPostLifecycleSteps());
+  DCHECK(!GetDocument().InvalidationDisallowed());
 #endif
   // When we're in layout, we're marking a descendant as needing layout with
   // the intention of visiting it during this layout. We shouldn't be
@@ -1547,7 +1549,7 @@ void LayoutObject::MarkParentForSpannerOrOutOfFlowPositionedChange() {
   NOT_DESTROYED();
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
-  DCHECK(!GetDocument().InPostLifecycleSteps());
+  DCHECK(!GetDocument().InvalidationDisallowed());
 #endif
 
   LayoutObject* object = Parent();
@@ -1706,20 +1708,14 @@ LayoutBlock* LayoutObject::ContainingBlockForAbsolutePosition(
     AncestorSkipInfo* skip_info) const {
   NOT_DESTROYED();
   auto* container = ContainerForAbsolutePosition(skip_info);
-  if (RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled()) {
-    return container ? container->InclusiveContainingBlock(skip_info) : nullptr;
-  }
-  return FindNonAnonymousContainingBlock(container, skip_info);
+  return container ? container->InclusiveContainingBlock(skip_info) : nullptr;
 }
 
 LayoutBlock* LayoutObject::ContainingBlockForFixedPosition(
     AncestorSkipInfo* skip_info) const {
   NOT_DESTROYED();
   auto* container = ContainerForFixedPosition(skip_info);
-  if (RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled()) {
-    return container ? container->InclusiveContainingBlock(skip_info) : nullptr;
-  }
-  return FindNonAnonymousContainingBlock(container, skip_info);
+  return container ? container->InclusiveContainingBlock(skip_info) : nullptr;
 }
 
 LayoutBlock* LayoutObject::InclusiveContainingBlock(
@@ -1761,15 +1757,6 @@ const LayoutBox* LayoutObject::ContainingScrollContainer(
   return nullptr;
 }
 
-LayoutObject* LayoutObject::NonAnonymousAncestor() const {
-  NOT_DESTROYED();
-  DCHECK(!RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled());
-  LayoutObject* ancestor = Parent();
-  while (ancestor && ancestor->IsAnonymous())
-    ancestor = ancestor->Parent();
-  return ancestor;
-}
-
 LayoutObject* LayoutObject::NearestAncestorForElement() const {
   NOT_DESTROYED();
   LayoutObject* ancestor = Parent();
@@ -1777,47 +1764,6 @@ LayoutObject* LayoutObject::NearestAncestorForElement() const {
     ancestor = ancestor->Parent();
   }
   return ancestor;
-}
-
-bool LayoutObject::IsAnonymousNGMulticolInlineWrapper() const {
-  NOT_DESTROYED();
-  DCHECK(!RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled());
-  if (!IsLayoutNGBlockFlow() || !IsAnonymousBlock())
-    return false;
-
-  const LayoutBox* container = ContainingNGBox();
-  if (!container)
-    return false;
-
-  return container->IsFragmentationContextRoot();
-}
-
-LayoutBlock* LayoutObject::FindNonAnonymousContainingBlock(
-    LayoutObject* container,
-    AncestorSkipInfo* skip_info) {
-  DCHECK(!RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled());
-  // For inlines, we return the nearest non-anonymous enclosing
-  // block. We don't try to return the inline itself. This allows us to avoid
-  // having a positioned objects list in all LayoutInlines and lets us return a
-  // strongly-typed LayoutBlock* result from this method. The
-  // LayoutObject::Container() method can actually be used to obtain the inline
-  // directly.
-  if (container && !container->IsLayoutBlock())
-    container = container->ContainingBlock(skip_info);
-
-  // Allow an NG anonymous wrapper of an inline to be the containing block if it
-  // is the direct child of a multicol. This avoids the multicol from
-  // incorrectly becoming the containing block in the case of an inline
-  // container. Also explicitly allow the LayoutViewTransitionRoot to be a
-  // containing block since its purpose is to be the root containing block for
-  // the view transition hierarchy.
-  while (container && container->IsAnonymousBlock() &&
-         !container->IsAnonymousNGMulticolInlineWrapper() &&
-         !container->IsViewTransitionRoot()) {
-    container = container->ContainingBlock(skip_info);
-  }
-
-  return DynamicTo<LayoutBlock>(container);
 }
 
 bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
@@ -2118,20 +2064,45 @@ String LayoutObject::DecoratedName() const {
   StringBuilder name;
   name.Append(GetName());
 
-  if (IsAnonymous())
-    name.Append(" (anonymous)");
+  Vector<const char*> attributes;
+  if (IsAnonymous()) {
+    attributes.push_back("anonymous");
+  }
   // FIXME: Remove the special case for LayoutView here (requires rebaseline of
   // all tests).
-  if (IsOutOfFlowPositioned() && !IsA<LayoutView>(this))
-    name.Append(" (positioned)");
-  if (IsRelPositioned())
-    name.Append(" (relative positioned)");
-  if (IsStickyPositioned())
-    name.Append(" (sticky positioned)");
-  if (IsFloating())
-    name.Append(" (floating)");
-  if (SpannerPlaceholder())
-    name.Append(" (column spanner)");
+  if (IsOutOfFlowPositioned() && !IsA<LayoutView>(this)) {
+    attributes.push_back("positioned");
+  }
+  if (IsRelPositioned()) {
+    attributes.push_back("relative positioned");
+  }
+  if (IsStickyPositioned()) {
+    attributes.push_back("sticky positioned");
+  }
+  if (IsFloating()) {
+    attributes.push_back("floating");
+  }
+  if (SpannerPlaceholder()) {
+    attributes.push_back("column spanner");
+  }
+  if (IsLayoutBlock() && IsInline()) {
+    attributes.push_back("inline");
+  }
+  if (IsLayoutReplaced() && !IsInline()) {
+    attributes.push_back("block");
+  }
+  if (IsLayoutBlockFlow() && ChildrenInline() && SlowFirstChild()) {
+    attributes.push_back("children-inline");
+  }
+  if (!attributes.empty()) {
+    name.Append(" (");
+    name.Append(attributes[0]);
+    for (wtf_size_t i = 1; i < attributes.size(); ++i) {
+      name.Append(", ");
+      name.Append(attributes[i]);
+    }
+    name.Append(")");
+  }
 
   return name.ToString();
 }
@@ -2168,7 +2139,6 @@ void LayoutObject::InvalidateDisplayItemClients(
   NOT_DESTROYED();
   // This default implementation invalidates only the object itself as a
   // DisplayItemClient.
-  DCHECK(!GetSelectionDisplayItemClient());
   ObjectPaintInvalidator(*this).InvalidateDisplayItemClient(*this, reason);
 }
 
@@ -2424,7 +2394,7 @@ void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
 
   if (IsText() && To<LayoutText>(this)->IsTextFragment()) {
     string_builder.AppendFormat(
-        " \"%s\" ", To<LayoutText>(this)->GetText().Ascii().c_str());
+        " \"%s\" ", To<LayoutText>(this)->TransformedText().Ascii().c_str());
   }
 
   if (GetNode()) {
@@ -3919,7 +3889,7 @@ void LayoutObject::SetNeedsPaintPropertyUpdate() {
 
 void LayoutObject::SetNeedsPaintPropertyUpdatePreservingCachedRects() {
   NOT_DESTROYED();
-  DCHECK(!GetDocument().InPostLifecycleSteps());
+  DCHECK(!GetDocument().InvalidationDisallowed());
   if (bitfields_.NeedsPaintPropertyUpdate())
     return;
 
@@ -4336,8 +4306,9 @@ bool LayoutObject::WillRenderImage() {
   }
   // If paint invalidation of this object is delayed, animations can be
   // suspended. When the object is painted the next time, the animations will
-  // be started again.
-  if (ShouldDelayFullPaintInvalidation()) {
+  // be started again. Only suspend if the object is marked for paint
+  // invalidation in the future, or else may not end up being painted.
+  if (ShouldDelayFullPaintInvalidation() && ShouldCheckForPaintInvalidation()) {
     return false;
   }
   return true;
@@ -4541,8 +4512,8 @@ bool LayoutObject::CanUpdateSelectionOnRootLineBoxes() const {
 
 void LayoutObject::SetNeedsBoundariesUpdate() {
   NOT_DESTROYED();
-  DCHECK(!GetDocument().InPostLifecycleSteps());
-  InvalidateIntersectionObserverCachedRects();
+  DCHECK(!GetDocument().InvalidationDisallowed());
+  DeprecatedInvalidateIntersectionObserverCachedRects();
   if (LayoutObject* layout_object = Parent())
     layout_object->SetNeedsBoundariesUpdate();
 }
@@ -4604,7 +4575,7 @@ void LayoutObject::SetShouldDoFullPaintInvalidation(
   DCHECK(IsLayoutFullPaintInvalidationReason(reason));
   SetShouldCheckForPaintInvalidation();
   SetShouldDoFullPaintInvalidationWithoutLayoutChangeInternal(reason);
-  InvalidateIntersectionObserverCachedRects();
+  DeprecatedInvalidateIntersectionObserverCachedRects();
 }
 
 void LayoutObject::SetShouldDoFullPaintInvalidationWithoutLayoutChange(
@@ -4877,7 +4848,7 @@ void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {
 
 void LayoutObject::MarkEffectiveAllowedTouchActionChanged() {
   NOT_DESTROYED();
-  DCHECK(!GetDocument().InPostLifecycleSteps());
+  DCHECK(!GetDocument().InvalidationDisallowed());
   bitfields_.SetEffectiveAllowedTouchActionChanged(true);
   // If we're locked, mark our descendants as needing this change. This is used
   // a signal to ensure we mark the element as needing effective allowed
@@ -4892,7 +4863,7 @@ void LayoutObject::MarkEffectiveAllowedTouchActionChanged() {
 }
 
 void LayoutObject::MarkDescendantEffectiveAllowedTouchActionChanged() {
-  DCHECK(!GetDocument().InPostLifecycleSteps());
+  DCHECK(!GetDocument().InvalidationDisallowed());
   LayoutObject* obj = this;
   while (obj && !obj->DescendantEffectiveAllowedTouchActionChanged()) {
     obj->bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(true);
@@ -4904,7 +4875,7 @@ void LayoutObject::MarkDescendantEffectiveAllowedTouchActionChanged() {
 }
 
 void LayoutObject::MarkBlockingWheelEventHandlerChanged() {
-  DCHECK(!GetDocument().InPostLifecycleSteps());
+  DCHECK(!GetDocument().InvalidationDisallowed());
   bitfields_.SetBlockingWheelEventHandlerChanged(true);
   // If we're locked, mark our descendants as needing this change. This is used
   // as a signal to ensure we mark the element as needing wheel event handler
@@ -4919,7 +4890,7 @@ void LayoutObject::MarkBlockingWheelEventHandlerChanged() {
 }
 
 void LayoutObject::MarkDescendantBlockingWheelEventHandlerChanged() {
-  DCHECK(!GetDocument().InPostLifecycleSteps());
+  DCHECK(!GetDocument().InvalidationDisallowed());
   LayoutObject* obj = this;
   while (obj && !obj->DescendantBlockingWheelEventHandlerChanged()) {
     obj->bitfields_.SetDescendantBlockingWheelEventHandlerChanged(true);
@@ -5083,7 +5054,7 @@ bool LayoutObject::SelfPaintingLayerNeedsVisualOverflowRecalc() const {
 
 void LayoutObject::MarkSelfPaintingLayerForVisualOverflowRecalc() {
   NOT_DESTROYED();
-  DCHECK(!GetDocument().InPostLifecycleSteps());
+  DCHECK(!GetDocument().InvalidationDisallowed());
   if (HasLayer()) {
     auto* box_model_object = To<LayoutBoxModelObject>(this);
     if (box_model_object->HasSelfPaintingLayer())

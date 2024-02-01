@@ -79,6 +79,7 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/messaging_layer/public/report_client.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -262,7 +263,6 @@
 #endif  // defined(ARCH_CPU_X86_64)
 
 #include "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/ui/ui_features.h"
 #endif  // BUILDFLAG(IS_MAC)
 
@@ -514,8 +514,6 @@ void ProcessSingletonNotificationCallbackImpl(
   }
 #endif
 
-  g_browser_process->platform_part()->OnBrowserLaunch();
-
   StartupProfilePathInfo startup_profile_path_info =
       GetStartupProfilePath(current_directory, command_line,
                             /*ignore_profile_picker=*/false);
@@ -676,8 +674,12 @@ void ChromeBrowserMainParts::SetupMetrics() {
       variations::VariationsIdsProvider::GetInstance());
   metrics->GetSyntheticTrialRegistry()->AddObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
+  // TODO(crbug.com/1505638): Investiagte the reason why the mojo connection
+  // is often created and closed for the same render process on lacros-chrome.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   synthetic_trial_syncer_ = content::SyntheticTrialSyncer::Create(
       metrics->GetSyntheticTrialRegistry());
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
 
@@ -868,6 +870,10 @@ void ChromeBrowserMainParts::PostCreateMainMessageLoop() {
   // platforms (e.g. chromeos) may have already initialized this.
   if (!device_event_log::IsInitialized())
     device_event_log::Initialize(0 /* default max entries */);
+
+  // Set up and register ERP reporting client.
+  reporting_client_ =
+      reporting::ReportingClient::Create(content::GetUIThreadTaskRunner({}));
 
   for (auto& chrome_extra_part : chrome_extra_parts_)
     chrome_extra_part->PostCreateMainMessageLoop();
@@ -1912,6 +1918,10 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // not finish.
   NOTREACHED();
 #else
+
+  for (auto& chrome_extra_part : chrome_extra_parts_) {
+    chrome_extra_part->PostDestroyThreads();
+  }
 
   browser_shutdown::RestartMode restart_mode =
       browser_shutdown::RestartMode::kNoRestart;

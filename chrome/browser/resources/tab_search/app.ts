@@ -12,7 +12,8 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
-import {TabSearchApiProxy, TabSearchApiProxyImpl} from './tab_search_api_proxy.js';
+import type {TabSearchApiProxy} from './tab_search_api_proxy.js';
+import {TabSearchApiProxyImpl} from './tab_search_api_proxy.js';
 
 export class TabSearchAppElement extends PolymerElement {
   static get is() {
@@ -23,7 +24,7 @@ export class TabSearchAppElement extends PolymerElement {
     return {
       selectedTabIndex_: {
         type: Number,
-        value: loadTimeData.getInteger('tabIndex'),
+        value: () => loadTimeData.getInteger('tabIndex'),
       },
 
       tabNames_: {
@@ -35,10 +36,7 @@ export class TabSearchAppElement extends PolymerElement {
 
       tabIcons_: {
         type: Array,
-        value: () =>
-            ['images/tab_search.svg',
-             'images/auto_tab_groups.svg',
-    ],
+        value: () => ['images/tab_search.svg', 'images/auto_tab_groups.svg'],
       },
 
       tabOrganizationEnabled_: {
@@ -49,6 +47,7 @@ export class TabSearchAppElement extends PolymerElement {
   }
 
   private apiProxy_: TabSearchApiProxy = TabSearchApiProxyImpl.getInstance();
+  private listenerIds_: number[] = [];
   private selectedTabIndex_: number;
   private tabNames_: string[];
   private tabIcons_: string[];
@@ -58,12 +57,36 @@ export class TabSearchAppElement extends PolymerElement {
     return getTemplate();
   }
 
+  override connectedCallback() {
+    super.connectedCallback();
+
+    const callbackRouter = this.apiProxy_.getCallbackRouter();
+    this.listenerIds_.push(callbackRouter.tabSearchTabIndexChanged.addListener(
+        this.onTabIndexChanged_.bind(this)));
+    this.listenerIds_.push(
+        callbackRouter.tabOrganizationEnabledChanged.addListener(
+            this.onTabOrganizationEnabledChanged_.bind(this)));
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.listenerIds_.forEach(
+        id => this.apiProxy_.getCallbackRouter().removeListener(id));
+  }
+
+  private onTabIndexChanged_(index: number) {
+    this.selectedTabIndex_ = index;
+  }
+
+  private onTabOrganizationEnabledChanged_(enabled: boolean) {
+    this.tabOrganizationEnabled_ = enabled;
+  }
+
   private onSelectedTabChanged_(event: CustomEvent<{value: number}>) {
     if (event.detail.value === 1) {
       const tabOrganizationPage =
           this.shadowRoot!.querySelector('tab-organization-page')!;
       tabOrganizationPage.classList.toggle('changed-state', false);
-      tabOrganizationPage.updateContentsHeightAfterNextRender();
     }
     this.apiProxy_.setTabIndex(event.detail.value);
   }

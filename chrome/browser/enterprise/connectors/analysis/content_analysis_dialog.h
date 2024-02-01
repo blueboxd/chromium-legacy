@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_CONNECTORS_ANALYSIS_CONTENT_ANALYSIS_DIALOG_H_
 #define CHROME_BROWSER_ENTERPRISE_CONNECTORS_ANALYSIS_CONTENT_ANALYSIS_DIALOG_H_
 
+#include <cstddef>
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -143,6 +145,10 @@ class ContentAnalysisDialog : public views::DialogDelegate,
     return delegate_->GetCustomLearnMoreUrl().has_value();
   }
 
+  bool has_custom_message_ranges() const {
+    return delegate_->GetCustomRuleMessageRanges().has_value();
+  }
+
   bool bypass_requires_justification() const {
     return delegate_->BypassRequiresJustification();
   }
@@ -167,7 +173,7 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   // Accessors used to validate the views in tests.
   views::ImageView* GetTopImageForTesting() const;
   views::Throbber* GetSideIconSpinnerForTesting() const;
-  views::Label* GetMessageForTesting() const;
+  views::StyledLabel* GetMessageForTesting() const;
   views::Link* GetLearnMoreLinkForTesting() const;
   views::Label* GetBypassJustificationLabelForTesting() const;
   views::Textarea* GetBypassJustificationTextareaForTesting() const;
@@ -270,6 +276,12 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   // Helper that indicates if the dialog corresponds to a print scan.
   bool is_print_scan() const;
 
+  // Helper methods to get the admin message shown in dialog. As we are
+  // inserting it into IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE, offset here is
+  // the start index for the custom message.
+  void AddLinksToDialogMessage(size_t offset);
+  void UpdateDialogMessage(std::u16string new_message);
+
   void AcceptButtonCallback();
   void CancelButtonCallback();
   void LearnMoreLinkClickedCallback(const ui::Event& event);
@@ -301,7 +313,7 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   raw_ptr<DeepScanningSideIconImageView> side_icon_image_ = nullptr;
   raw_ptr<DeepScanningSideIconSpinnerView, DanglingUntriaged>
       side_icon_spinner_ = nullptr;
-  raw_ptr<views::Label> message_ = nullptr;
+  raw_ptr<views::StyledLabel> message_ = nullptr;
 
   // The following views are also owned by `contents_view_`, but remain nullptr
   // if they aren't required to be initialized.
@@ -353,7 +365,7 @@ class ContentAnalysisDialog : public views::DialogDelegate,
 
   // If input events for our `WebContents` have been ignored, then this is the
   // closure to re-enable them.
-  absl::optional<content::WebContents::ScopedIgnoreInputEvents>
+  std::optional<content::WebContents::ScopedIgnoreInputEvents>
       scoped_ignore_input_events_;
 
   // A reference to the top level web contents of the tab whose content is

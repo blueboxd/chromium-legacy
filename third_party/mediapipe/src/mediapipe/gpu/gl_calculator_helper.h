@@ -69,7 +69,7 @@ class GlCalculatorHelper {
   // This method can be called from GetContract to set up the needed GPU
   // resources.
   static absl::Status UpdateContract(CalculatorContract* cc,
-                                     bool requesst_gpu_as_optional = false);
+                                     bool request_gpu_as_optional = false);
 
   // This method can be called from FillExpectations to set the correct types
   // for the shared GL input side packet(s).
@@ -259,15 +259,15 @@ class GlTexture {
 // same thing.
 template <typename T>
 ABSL_DEPRECATED("Only for legacy calculators")
-auto TagOrIndex(const T& collection, const std::string& tag, int index)
-    -> decltype(collection.Tag(tag)) {
+auto TagOrIndex(const T& collection, const std::string& tag,
+                int index) -> decltype(collection.Tag(tag)) {
   return collection.UsesTags() ? collection.Tag(tag) : collection.Index(index);
 }
 
 template <typename T>
 ABSL_DEPRECATED("Only for legacy calculators")
-auto TagOrIndex(T* collection, const std::string& tag, int index)
-    -> decltype(collection->Tag(tag)) {
+auto TagOrIndex(T* collection, const std::string& tag,
+                int index) -> decltype(collection->Tag(tag)) {
   return collection->UsesTags() ? collection->Tag(tag)
                                 : collection->Index(index);
 }

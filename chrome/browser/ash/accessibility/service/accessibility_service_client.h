@@ -51,9 +51,9 @@ class AccessibilityServiceClient : public ax::mojom::AccessibilityServiceClient,
 
   // ax::mojom::AccessibilityServiceClient:
   void BindAutomation(
-      mojo::PendingAssociatedRemote<ax::mojom::Automation> automation,
-      mojo::PendingReceiver<ax::mojom::AutomationClient> automation_client)
-      override;
+      mojo::PendingAssociatedRemote<ax::mojom::Automation> automation) override;
+  void BindAutomationClient(mojo::PendingReceiver<ax::mojom::AutomationClient>
+                                automation_client) override;
   void BindAutoclickClient(mojo::PendingReceiver<ax::mojom::AutoclickClient>
                                autoclick_receiver) override;
   void BindSpeechRecognition(
@@ -119,7 +119,7 @@ class AccessibilityServiceClient : public ax::mojom::AccessibilityServiceClient,
   // and need to reconnect, for example when the profile changes.
   std::vector<ax::mojom::AssistiveTechnologyType> enabled_features_;
 
-  raw_ptr<content::BrowserContext, ExperimentalAsh> profile_ = nullptr;
+  raw_ptr<content::BrowserContext> profile_ = nullptr;
 
   // Here is the remote to the AT Controller, used to toggle features.
   mojo::Remote<ax::mojom::AssistiveTechnologyController> at_controller_;

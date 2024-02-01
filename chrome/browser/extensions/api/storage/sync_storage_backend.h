@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/value_store/value_store_factory.h"
@@ -29,7 +30,7 @@ class SyncableSettingsStorage;
 // Manages ValueStore objects for extensions, including routing
 // changes from sync to them.
 // Lives entirely on the FILE thread.
-class SyncStorageBackend : public syncer::SyncableService {
+class SyncStorageBackend final : public syncer::SyncableService {
  public:
   // |storage_factory| is use to create leveldb storage areas.
   // |observers| is the list of observers to settings changes.
@@ -51,14 +52,15 @@ class SyncStorageBackend : public syncer::SyncableService {
   // syncer::SyncableService implementation.
   void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncDataList GetAllSyncDataForTesting(syncer::ModelType type) const;
-  absl::optional<syncer::ModelError> MergeDataAndStartSyncing(
+  std::optional<syncer::ModelError> MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) override;
-  absl::optional<syncer::ModelError> ProcessSyncChanges(
+  std::optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
   void StopSyncing(syncer::ModelType type) override;
+  base::WeakPtr<SyncableService> AsWeakPtr() override;
 
  private:
   // Gets a weak reference to the storage area for a given extension,
@@ -93,6 +95,8 @@ class SyncStorageBackend : public syncer::SyncableService {
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   syncer::SyncableService::StartSyncFlare flare_;
+
+  base::WeakPtrFactory<SyncStorageBackend> weak_ptr_factory_{this};
 };
 
 }  // namespace extensions

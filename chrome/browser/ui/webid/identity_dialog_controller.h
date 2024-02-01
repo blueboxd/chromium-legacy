@@ -44,6 +44,7 @@ class IdentityDialogController
       const std::optional<std::string>& iframe_for_display,
       const std::vector<content::IdentityProviderData>& identity_provider_data,
       content::IdentityRequestAccount::SignInMode sign_in_mode,
+      blink::mojom::RpMode rp_mode,
       bool show_auto_reauthn_checkbox,
       AccountSelectionCallback on_selected,
       LoginToIdPCallback on_add_account,
@@ -51,14 +52,16 @@ class IdentityDialogController
   void ShowFailureDialog(const std::string& top_frame_for_display,
                          const std::optional<std::string>& iframe_for_display,
                          const std::string& idp_for_display,
-                         const blink::mojom::RpContext& rp_context,
+                         blink::mojom::RpContext rp_context,
+                         blink::mojom::RpMode rp_mode,
                          const content::IdentityProviderMetadata& idp_metadata,
                          DismissCallback dismiss_callback,
                          LoginToIdPCallback login_callback) override;
   void ShowErrorDialog(const std::string& top_frame_for_display,
                        const std::optional<std::string>& iframe_for_display,
                        const std::string& idp_for_display,
-                       const blink::mojom::RpContext& rp_context,
+                       blink::mojom::RpContext rp_context,
+                       blink::mojom::RpMode rp_mode,
                        const content::IdentityProviderMetadata& idp_metadata,
                        const std::optional<TokenError>& error,
                        DismissCallback dismiss_callback,
@@ -68,6 +71,7 @@ class IdentityDialogController
   std::string GetTitle() const override;
   std::optional<std::string> GetSubtitle() const override;
 
+  void ShowUrl(LinkType type, const GURL& url) override;
   // Show a modal dialog that loads content from the IdP in a WebView.
   content::WebContents* ShowModalDialog(
       const GURL& url,
@@ -78,7 +82,8 @@ class IdentityDialogController
   void OnAccountSelected(const GURL& idp_config_url,
                          const Account& account) override;
   void OnDismiss(DismissReason dismiss_reason) override;
-  void OnLoginToIdP(const GURL& idp_login_url) override;
+  void OnLoginToIdP(const GURL& idp_config_url,
+                    const GURL& idp_login_url) override;
   void OnMoreDetails() override;
   gfx::NativeView GetNativeView() override;
   content::WebContents* GetWebContents() override;

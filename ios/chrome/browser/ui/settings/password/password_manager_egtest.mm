@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
 #import "ios/chrome/browser/passwords/model/metrics/ios_password_manager_metrics.h"
-#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
+#import "ios/chrome/browser/policy/model/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
@@ -41,6 +41,7 @@
 #import "ios/chrome/common/ui/reauthentication/reauthentication_event.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -83,10 +84,11 @@ using password_manager_test_utils::kScrollAmount;
 using password_manager_test_utils::NavigationBarEditButton;
 using password_manager_test_utils::OpenPasswordManager;
 using password_manager_test_utils::PasswordDetailPassword;
+using password_manager_test_utils::PasswordDetailsTableViewMatcher;
 using password_manager_test_utils::PasswordSettingsTableView;
 using password_manager_test_utils::PasswordTextfieldForUsernameAndSites;
 using password_manager_test_utils::ReauthenticationController;
-using password_manager_test_utils::SavePasswordForm;
+using password_manager_test_utils::SavePasswordFormToProfileStore;
 using password_manager_test_utils::TapNavigationBarEditButton;
 using password_manager_test_utils::UsernameTextfieldForUsernameAndSites;
 using testing::ElementWithAccessibilityLabelSubstring;
@@ -135,7 +137,7 @@ GREYElementInteraction* GetInteractionForPasswordDetailItem(
   return [[EarlGrey
       selectElementWithMatcher:grey_allOf(matcher, grey_interactable(), nil)]
          usingSearchAction:grey_scrollToContentEdge(kGREYContentEdgeTop)
-      onElementWithMatcher:grey_accessibilityID(kPasswordDetailsTableViewID)];
+      onElementWithMatcher:PasswordDetailsTableViewMatcher()];
 }
 
 // Returns the GREYElementInteraction* for the item on the deletion alert
@@ -352,32 +354,34 @@ id<GREYMatcher> PasswordDetailsMoveToAccountButton() {
 
 // Saves two example forms in the store.
 void SaveExamplePasswordForms() {
-  SavePasswordForm(/*password=*/@"password1",
-                   /*username=*/@"user1",
-                   /*origin=*/@"https://example11.com");
-  SavePasswordForm(/*password=*/@"password2",
-                   /*username=*/@"user2",
-                   /*origin=*/@"https://example12.com");
+  SavePasswordFormToProfileStore(/*password=*/@"password1",
+                                 /*username=*/@"user1",
+                                 /*origin=*/@"https://example11.com");
+  SavePasswordFormToProfileStore(/*password=*/@"password2",
+                                 /*username=*/@"user2",
+                                 /*origin=*/@"https://example12.com");
 }
 
 // Saves an example form with note in the store.
-void SaveExamplePasswordFormWithNote() {
-  GREYAssert(
-      [PasswordSettingsAppInterface saveExampleNote:@"concrete note"
-                                           password:kDefaultPassword
-                                           username:kDefaultUsername
-                                             origin:@"https://example.com"],
-      kPasswordStoreErrorMessage);
+void SaveExamplePasswordFormToProfileStoreWithNote() {
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExampleNoteToProfileStore:@"concrete note"
+                                      password:kDefaultPassword
+                                      username:kDefaultUsername
+                                        origin:@"https://example.com"],
+             kPasswordStoreErrorMessage);
 }
 
 // Saves two example blocked forms in the store.
-void SaveExampleBlockedForms() {
-  GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlockedOrigin:@"https://exclude1.com"],
-             kPasswordStoreErrorMessage);
-  GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlockedOrigin:@"https://exclude2.com"],
-             kPasswordStoreErrorMessage);
+void SaveExampleBlockedFormsToProfileStore() {
+  GREYAssert(
+      [PasswordSettingsAppInterface
+          saveExampleBlockedOriginToProfileStore:@"https://exclude1.com"],
+      kPasswordStoreErrorMessage);
+  GREYAssert(
+      [PasswordSettingsAppInterface
+          saveExampleBlockedOriginToProfileStore:@"https://exclude2.com"],
+      kPasswordStoreErrorMessage);
 }
 
 // Taps on the "Settings" option to show the submenu.
@@ -660,7 +664,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   // settings get closed. Ensure that they are closed to avoid interference with
   // other tests.
   [PasswordSettingsAppInterface dismissSnackBar];
-  GREYAssert([PasswordSettingsAppInterface clearPasswordStore],
+  GREYAssert([PasswordSettingsAppInterface clearProfilePasswordStore],
              @"PasswordStore was not cleared.");
 
   GREYAssertNil([MetricsAppInterface releaseHistogramTester],
@@ -711,16 +715,6 @@ void OpenPasswordManagerWidgetPromoInstructions() {
             (testOpenPasswordSettingsSubmenuWithFailedAuth)] ||
       [self isRunningTest:@selector(testAddNewPasswordWithFailedAuth)]) {
     config.features_enabled.push_back(
-        password_manager::features::kIOSPasswordAuthOnEntry);
-    config.features_enabled.push_back(
-        password_manager::features::kIOSPasswordAuthOnEntryV2);
-  }
-
-  if ([self isRunningTest:@selector
-            (testPasswordManagerVisitMetricWithoutAuthRequired)]) {
-    config.features_disabled.push_back(
-        password_manager::features::kIOSPasswordAuthOnEntry);
-    config.features_disabled.push_back(
         password_manager::features::kIOSPasswordAuthOnEntryV2);
   }
 
@@ -751,8 +745,6 @@ void OpenPasswordManagerWidgetPromoInstructions() {
     config.features_enabled.push_back(
         password_manager::features::
             kIOSPasswordSettingsBulkUploadLocalPasswords);
-    config.features_disabled.push_back(
-        password_manager::features::kIOSPasswordAuthOnEntry);
     config.features_disabled.push_back(
         password_manager::features::kIOSPasswordAuthOnEntryV2);
   }
@@ -795,7 +787,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Verifies the UI elements are accessible on the Passwords page.
 - (void)testAccessibilityOnPasswords {
   // Saving a form is needed for using the "password details" view.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
@@ -821,7 +813,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks that attempt to copy a password provides appropriate feedback.
 - (void)testCopyPasswordToast {
   // Saving a form is needed for using the "password details" view.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -847,7 +839,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks that an attempt to show a password provides an appropriate feedback.
 - (void)testShowPasswordSucceeded {
   // Saving a form is needed for using the "password details" view.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -872,7 +864,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks that attempts to copy a username provide appropriate feedback.
 - (void)testCopyUsernameToast {
   // Saving a form is needed for using the "password details" view.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -897,7 +889,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks that attempts to copy a site URL provide appropriate feedback.
 - (void)testCopySiteToast {
   // Saving a form is needed for using the "password details" view.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -925,7 +917,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // to the list-of-passwords view which doesn't display that form anymore.
 - (void)testSavedFormDeletionInDetailView {
   // Save form to be deleted later.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -946,9 +938,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
       selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewID)]
       assertWithMatcher:grey_notNil()];
 
-  // Verify that the deletion was propagated to the PasswordStore.
-  GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
-                  @"Stored password was not removed from PasswordStore.");
+  // Verify that the deletion was propagated to the ProfilePasswordStore.
+  GREYAssertEqual(
+      0, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Stored password was not removed from ProfilePasswordStore.");
 
   // Also verify that the removed password is no longer in the list.
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
@@ -970,7 +963,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // after the user had edited the password.
 - (void)testSavedFormDeletionInDetailViewAfterEditingFields {
   // Save form to be deleted later.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -998,9 +991,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
       selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewID)]
       assertWithMatcher:grey_notNil()];
 
-  // Verify that the deletion was propagated to the PasswordStore.
-  GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
-                  @"Stored password was not removed from PasswordStore.");
+  // Verify that the deletion was propagated to the ProfilePasswordStore.
+  GREYAssertEqual(
+      0, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Stored password was not removed from ProfilePasswordStore.");
 
   // Also verify that the removed password is no longer in the list.
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
@@ -1022,10 +1016,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // to the list-of-passwords showing only previously saved blocked sites.
 - (void)testSavedFormDeletionInDetailViewWithBlockedSites {
   // Save form to be deleted later.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   // Saved blocked sites that should not be affected.
-  SaveExampleBlockedForms();
+  SaveExampleBlockedFormsToProfileStore();
 
   OpenPasswordManager();
 
@@ -1046,9 +1040,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
       selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewID)]
       assertWithMatcher:grey_notNil()];
 
-  // Verify that the deletion was propagated to the PasswordStore.
-  GREYAssertEqual(2, [PasswordSettingsAppInterface passwordStoreResultsCount],
-                  @"Stored password was not removed from PasswordStore.");
+  // Verify that the deletion was propagated to the ProfilePasswordStore.
+  GREYAssertEqual(
+      2, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Stored password was not removed from ProfilePasswordStore.");
 
   // Also verify that the removed password is no longer in the list.
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
@@ -1071,13 +1066,13 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // anymore.
 - (void)testDuplicatedSavedFormDeletionInDetailView {
   // Save form to be deleted later.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
   // Save duplicate of the previously saved form to be deleted at the same time.
   // This entry is considered duplicated because it maps to the same sort key
   // as the previous one.
-  SavePasswordForm(/*password=*/kDefaultPassword,
-                   /*username=*/kDefaultUsername,
-                   /*origin=*/@"https://example.com/example");
+  SavePasswordFormToProfileStore(/*password=*/kDefaultPassword,
+                                 /*username=*/kDefaultUsername,
+                                 /*origin=*/@"https://example.com/example");
 
   OpenPasswordManager();
 
@@ -1103,9 +1098,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
       selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewID)]
       assertWithMatcher:grey_notNil()];
 
-  // Verify that the deletion was propagated to the PasswordStore.
-  GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
-                  @"Stored password was not removed from PasswordStore.");
+  // Verify that the deletion was propagated to the ProfilePasswordStore.
+  GREYAssertEqual(
+      0, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Stored password was not removed from ProfilePasswordStore.");
 
   // Also verify that the removed password is no longer in the list.
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
@@ -1128,7 +1124,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 - (void)testBlockedFormDeletionInDetailView {
   // Save blocked form to be deleted later.
   GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlockedOrigin:@"https://blocked.com"],
+                 saveExampleBlockedOriginToProfileStore:@"https://blocked.com"],
              kPasswordStoreErrorMessage);
 
   OpenPasswordManager();
@@ -1153,9 +1149,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
       selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewID)]
       assertWithMatcher:grey_notNil()];
 
-  // Verify that the deletion was propagated to the PasswordStore.
-  GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
-                  @"Stored password was not removed from PasswordStore.");
+  // Verify that the deletion was propagated to the ProfilePasswordStore.
+  GREYAssertEqual(
+      0, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Stored password was not removed from ProfilePasswordStore.");
 
   // Also verify that the removed password is no longer in the list.
   [GetInteractionForPasswordEntry(@"secret.com")
@@ -1179,10 +1176,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 - (void)testBlockedFormDeletionInDetailViewWithSavedForm {
   // Save blocked form to be deleted later.
   GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlockedOrigin:@"https://blocked.com"],
+                 saveExampleBlockedOriginToProfileStore:@"https://blocked.com"],
              kPasswordStoreErrorMessage);
 
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -1206,9 +1203,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
       selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewID)]
       assertWithMatcher:grey_notNil()];
 
-  // Verify that the deletion was propagated to the PasswordStore.
-  GREYAssertEqual(1, [PasswordSettingsAppInterface passwordStoreResultsCount],
-                  @"Stored password was not removed from PasswordStore.");
+  // Verify that the deletion was propagated to the ProfilePasswordStore.
+  GREYAssertEqual(
+      1, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Stored password was not removed from ProfilePasswordStore.");
 
   // Also verify that the removed blocked site is no longer in the list.
   [GetInteractionForPasswordEntry(@"secret.com")
@@ -1227,7 +1225,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks that deleting a password from password details can be cancelled.
 - (void)testCancelDeletionInDetailView {
   // Save form to be deleted later.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -1246,13 +1244,13 @@ void OpenPasswordManagerWidgetPromoInstructions() {
       performAction:grey_tap()];
 
   // Check that the current view is still the detail view.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kPasswordDetailsTableViewID)]
+  [[EarlGrey selectElementWithMatcher:PasswordDetailsTableViewMatcher()]
       assertWithMatcher:grey_notNil()];
 
   // Verify that the deletion did not happen.
-  GREYAssertEqual(1u, [PasswordSettingsAppInterface passwordStoreResultsCount],
-                  @"Stored password was removed from PasswordStore.");
+  GREYAssertEqual(
+      1u, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Stored password was removed from ProfilePasswordStore.");
 
   // Go back to the list view and verify that the password is still in the
   // list.
@@ -1273,7 +1271,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // not accessible on tapping the entries.
 - (void)testEditMode {
   // Save a form to have something to tap on.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -1297,7 +1295,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // an appropriate feedback.
 - (void)testCopyPasswordMenuItem {
   // Saving a form is needed for using the "password details" view.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -1331,11 +1329,13 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 
 // Checks that federated credentials have no password but show the federation.
 - (void)testFederated {
-  GREYAssert([PasswordSettingsAppInterface
-                 saveExampleFederatedOrigin:@"https://famous.provider.net"
-                                   username:@"federated username"
-                                     origin:@"https://example.com"],
-             kPasswordStoreErrorMessage);
+  GREYAssert(
+      [PasswordSettingsAppInterface
+          saveExampleFederatedOriginToProfileStore:
+              @"https://famous.provider.net"
+                                          username:@"federated username"
+                                            origin:@"https://example.com"],
+      kPasswordStoreErrorMessage);
 
   OpenPasswordManager();
 
@@ -1376,7 +1376,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks the order of the elements in the detail view layout for a
 // non-federated, non-blocked credential.
 - (void)testLayoutNormal {
-  SaveExamplePasswordFormWithNote();
+  SaveExamplePasswordFormToProfileStoreWithNote();
 
   OpenPasswordManager();
 
@@ -1414,7 +1414,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks that entering too long note while editing a password blocks the save
 // button and displays a footer explanation.
 - (void)testLayoutWithLongNotes {
-  SaveExamplePasswordFormWithNote();
+  SaveExamplePasswordFormToProfileStoreWithNote();
 
   OpenPasswordManager();
 
@@ -1464,7 +1464,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // credential.
 - (void)testLayoutForBlockedCredential {
   GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlockedOrigin:@"https://example.com"],
+                 saveExampleBlockedOriginToProfileStore:@"https://example.com"],
              kPasswordStoreErrorMessage);
 
   OpenPasswordManager();
@@ -1492,11 +1492,13 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks the order of the elements in the detail view layout for a federated
 // credential.
 - (void)testLayoutFederated {
-  GREYAssert([PasswordSettingsAppInterface
-                 saveExampleFederatedOrigin:@"https://famous.provider.net"
-                                   username:@"federated username"
-                                     origin:@"https://example.com"],
-             kPasswordStoreErrorMessage);
+  GREYAssert(
+      [PasswordSettingsAppInterface
+          saveExampleFederatedOriginToProfileStore:
+              @"https://famous.provider.net"
+                                          username:@"federated username"
+                                            origin:@"https://example.com"],
+      kPasswordStoreErrorMessage);
 
   OpenPasswordManager();
 
@@ -1532,7 +1534,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Check that stored entries are shown no matter what the preference for saving
 // passwords is.
 - (void)testStoredEntriesAlwaysShown {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -1634,7 +1636,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks that deleting a password from the list view works.
 - (void)testDeletionInListView {
   // Save a password to be deleted later.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -1651,9 +1653,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   [[EarlGrey selectElementWithMatcher:BatchDeleteConfirmationButton()]
       performAction:grey_tap()];
 
-  // Verify that the deletion was propagated to the PasswordStore.
-  GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
-                  @"Stored password was not removed from PasswordStore.");
+  // Verify that the deletion was propagated to the ProfilePasswordStore.
+  GREYAssertEqual(
+      0, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Stored password was not removed from ProfilePasswordStore.");
   // Verify that the removed password is no longer in the list.
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
@@ -1684,14 +1687,16 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   // Enough just to ensure filling more than one page on all devices.
   constexpr int kPasswordsCount = 15;
 
-  // Send the passwords to the queue to be added to the PasswordStore.
-  [PasswordSettingsAppInterface saveExamplePasswordWithCount:kPasswordsCount];
+  // Send the passwords to the queue to be added to the ProfilePasswordStore.
+  [PasswordSettingsAppInterface
+      saveExamplePasswordToProfileWithCount:kPasswordsCount];
 
   // Use TestStoreConsumer::GetStoreResults to wait for the background storing
   // task to complete and to verify that the passwords have been stored.
-  GREYAssertEqual(kPasswordsCount,
-                  [PasswordSettingsAppInterface passwordStoreResultsCount],
-                  @"Unexpected PasswordStore results.");
+  GREYAssertEqual(
+      kPasswordsCount,
+      [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+      @"Unexpected ProfilePasswordStore results.");
 
   OpenPasswordManager();
 
@@ -1718,7 +1723,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
                                                kRemoteIndex]]]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   kScrollAmount)
-      onElementWithMatcher:grey_accessibilityID(kPasswordDetailsTableViewID)]
+      onElementWithMatcher:PasswordDetailsTableViewMatcher()]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -1733,7 +1738,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // button replaces the Done button.
 - (void)testEditButtonUpdateOnDeletion {
   // Save a password to be deleted later.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -1764,7 +1769,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Test export flow
 - (void)testExportFlow {
   // Saving a form is needed for exporting passwords.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -1828,7 +1833,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   }
 
   SaveExamplePasswordForms();
-  SaveExampleBlockedForms();
+  SaveExampleBlockedFormsToProfileStore();
 
   OpenPasswordManager();
 
@@ -1868,7 +1873,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // TODO(crbug.com/1441783): Flaky.
 - (void)DISABLED_testSearchAndDeleteAllPasswords {
   SaveExamplePasswordForms();
-  SaveExampleBlockedForms();
+  SaveExampleBlockedFormsToProfileStore();
 
   OpenPasswordManager();
 
@@ -1983,7 +1988,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 
 // Edit a password with only incognito tab opened should work.
 - (void)testEditPasswordWithOnlyIncognitoTabOpen {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey closeAllNormalTabs];
@@ -2024,7 +2029,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 
 // Checks that attempts to edit a password provide appropriate feedback.
 - (void)testEditPassword {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -2070,7 +2075,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 
 // Checks that attempts to edit a username provide appropriate feedback.
 - (void)testEditUsername {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -2118,11 +2123,11 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Checks that attempts to edit a username to a value which is already used for
 // the same domain fails.
 - (void)testEditUsernameFails {
-  SavePasswordForm(/*password=*/kDefaultPassword,
-                   /*username=*/@"concrete username1");
+  SavePasswordFormToProfileStore(/*password=*/kDefaultPassword,
+                                 /*username=*/@"concrete username1");
 
-  SavePasswordForm(/*password=*/kDefaultPassword,
-                   /*username=*/@"concrete username2");
+  SavePasswordFormToProfileStore(/*password=*/kDefaultPassword,
+                                 /*username=*/@"concrete username2");
 
   OpenPasswordManager();
 
@@ -2162,7 +2167,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 
 // Checks that attempts to edit a username provide appropriate feedback.
 - (void)testCancelDuringEditing {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -2196,11 +2201,12 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 - (void)testRemovingMultiplePasswords {
   constexpr int kPasswordsCount = 4;
 
-  // Send the passwords to the queue to be added to the PasswordStore.
-  [PasswordSettingsAppInterface saveExamplePasswordWithCount:kPasswordsCount];
+  // Send the passwords to the queue to be added to the ProfilePasswordStore.
+  [PasswordSettingsAppInterface
+      saveExamplePasswordToProfileWithCount:kPasswordsCount];
 
-    // Also save passwords for example11.com and example12.com, since the rest
-    // will be grouped together.
+  // Also save passwords for example11.com and example12.com, since the rest
+  // will be grouped together.
   SaveExamplePasswordForms();
 
   OpenPasswordManager();
@@ -2228,9 +2234,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
     [[EarlGrey selectElementWithMatcher:SavedPasswordsHeaderMatcher()]
         assertWithMatcher:grey_nil()];
 
-    // Verify that the deletion was propagated to the PasswordStore.
-    GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
-                    @"Stored password was not removed from PasswordStore.");
+    // Verify that the deletion was propagated to the ProfilePasswordStore.
+    GREYAssertEqual(
+        0, [PasswordSettingsAppInterface passwordProfileStoreResultsCount],
+        @"Stored password was not removed from ProfilePasswordStore.");
 
     // Finally, verify that the Add button is visible and enabled, because there
     // are no other password entries left for deletion via the "Edit" mode.
@@ -2246,7 +2253,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 
 // Checks that the "Add" button is not shown on Edit.
 - (void)testAddButtonDisabledInEditMode {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
   OpenPasswordManager();
 
   TapNavigationBarEditButton();
@@ -2399,12 +2406,12 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // the add credential flow, the VC auto scrolls to the newly created or the
 // updated entry.
 // TODO(crbug.com/1377079): Flaky, please re-enable once fixed.
-- (void)DISABLED_testAutoScroll {
+- (void)testAutoScroll {
   for (int i = 0; i < 20; i++) {
     NSString* username = [NSString stringWithFormat:@"username %d", i];
     NSString* password = [NSString stringWithFormat:@"password %d", i];
     NSString* site = [NSString stringWithFormat:@"https://example%d.com", i];
-    SavePasswordForm(password, username, site);
+    SavePasswordFormToProfileStore(password, username, site);
   }
 
   OpenPasswordManager();
@@ -2413,9 +2420,12 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
       performAction:grey_tap()];
 
+  NSString* const kAddedDomain = @"zexample.com";
+
   // Fill form.
   [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
-      performAction:grey_replaceText(@"https://zexample.com")];
+      performAction:grey_replaceText([NSString
+                        stringWithFormat:@"https://%@", kAddedDomain])];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
       performAction:grey_replaceText(@"zconcrete username")];
@@ -2426,19 +2436,24 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
       performAction:grey_tap()];
 
-  // The newly created credential exists.
-  [[self interactionForSinglePasswordEntryWithDomain:@"zexample.com"]
-      performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
+  // Verify that the added credential was automatically scrolled at and visible.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityID(kAddedDomain)]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(
+      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(2), condition),
+      @"Didn't scroll to the added credential item");
 }
 
 // Tests that adding new password credential where the username and website
 // matches with an existing credential results in showing a section alert for
 // the existing credential.
 - (void)testAddNewDuplicatedPasswordCredential {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -2665,7 +2680,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // enabled since the reauthentication happens before navigating to the details
 // view in this scenario.
 - (void)testShowHidePassword {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -2829,15 +2844,15 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // but stays if there are still passwords on the page.
 - (void)testPasswordsDeletionNavigation {
   // Save forms with the same origin to be deleted later.
-  SavePasswordForm(/*password=*/@"password1",
-                   /*username=*/@"user1",
-                   /*origin=*/@"https://example1.com");
-  SavePasswordForm(/*password=*/@"password2",
-                   /*username=*/@"user2",
-                   /*origin=*/@"https://example1.com");
-  SavePasswordForm(/*password=*/@"password3",
-                   /*username=*/@"user3",
-                   /*origin=*/@"https://example3.com");
+  SavePasswordFormToProfileStore(/*password=*/@"password1",
+                                 /*username=*/@"user1",
+                                 /*origin=*/@"https://example1.com");
+  SavePasswordFormToProfileStore(/*password=*/@"password2",
+                                 /*username=*/@"user2",
+                                 /*origin=*/@"https://example1.com");
+  SavePasswordFormToProfileStore(/*password=*/@"password3",
+                                 /*username=*/@"user3",
+                                 /*origin=*/@"https://example3.com");
 
   OpenPasswordManager();
 
@@ -2859,8 +2874,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   // still one more password left on the view.
   ConditionBlock condition = ^{
     NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            kPasswordDetailsTableViewID)]
+    [[EarlGrey selectElementWithMatcher:PasswordDetailsTableViewMatcher()]
         assertWithMatcher:grey_notNil()
                     error:&error];
     return error == nil;
@@ -2982,9 +2996,9 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 }
 
 - (void)testMovePasswordToAccount {
-  SavePasswordForm(/*password=*/@"localPassword",
-                   /*username=*/@"username",
-                   /*origin=*/@"https://local.com");
+  SavePasswordFormToProfileStore(/*password=*/@"localPassword",
+                                 /*username=*/@"username",
+                                 /*origin=*/@"https://local.com");
   [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
                                 enableSync:NO];
   OpenPasswordManager();
@@ -3027,9 +3041,9 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Regression test for crbug.com/1431975. Similar to testMovePasswordToAccount
 // above but the only open tab is an incognito one.
 - (void)testMovePasswordToAccountWithOnlyIncognitoTabOpen {
-  SavePasswordForm(/*password=*/@"localPassword",
-                   /*username=*/@"username",
-                   /*origin=*/@"https://local.com");
+  SavePasswordFormToProfileStore(/*password=*/@"localPassword",
+                                 /*username=*/@"username",
+                                 /*origin=*/@"https://local.com");
   [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
                                 enableSync:NO];
 
@@ -3075,7 +3089,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 
 // Tests that the save passwords in account section is hidden when syncing.
 - (void)testSavePasswordsInAccountHiddenWhenSyncing {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3098,7 +3112,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the save passwords in account section is hidden when not
 // signed-in.
 - (void)testSavePasswordsInAccountHiddenWhenNotSignedIn {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3119,7 +3133,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the save passwords in account section is hidden when not opted-in
 // for account storage.
 - (void)testSavePasswordsInAccountHiddenWhenNotOptedInToAccountStorage {
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3144,7 +3158,8 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the save passwords in account section is shown when the user is
 // eligible.
 - (void)testSavePasswordsInAccountShownWhenEligible {
-  SavePasswordForm(@"passwordtest1", @"user1", @"https://test1.com");
+  SavePasswordFormToProfileStore(@"passwordtest1", @"user1",
+                                 @"https://test1.com");
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3167,7 +3182,8 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the confirmation dialog contains the correct string for saving one
 // distinct domain to the account.
 - (void)testSavePasswordsInAccountOneDistinctDomain {
-  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example1.com");
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3188,7 +3204,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 
   // Ensure the confirmation dialog appears with the correct patterned string.
   NSString* result = @"You can save your password for example1.com in your "
-                     @"Google Account, foo1@gmail.com";
+                     @"Google Account, foo1@gmail.com.";
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(result)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
@@ -3196,8 +3212,10 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the confirmation dialog contains the correct string for saving two
 // distinct domains to the account.
 - (void)testSavePasswordsInAccountTwoDistinctDomains {
-  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
-  SavePasswordForm(@"password1", @"user1", @"https://example2.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example1.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example2.com");
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3218,7 +3236,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 
   // Ensure the confirmation dialog appears with the correct patterned string.
   NSString* result = @"You can save your passwords for example1.com and "
-                     @"example2.com in your Google Account, foo1@gmail.com";
+                     @"example2.com in your Google Account, foo1@gmail.com.";
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(result)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
@@ -3226,9 +3244,12 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the confirmation dialog contains the correct string for saving
 // three distinct domains to the account.
 - (void)testSavePasswordsInAccountThreeDistinctDomains {
-  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
-  SavePasswordForm(@"password1", @"user1", @"https://example2.com");
-  SavePasswordForm(@"password1", @"user1", @"https://example3.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example1.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example2.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example3.com");
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3250,7 +3271,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   // Ensure the confirmation dialog appears with the correct patterned string.
   NSString* result = @"You can save your passwords for example1.com, "
                      @"example2.com, and 1 other "
-                     @"in your Google Account, foo1@gmail.com";
+                     @"in your Google Account, foo1@gmail.com.";
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(result)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
@@ -3258,10 +3279,14 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the confirmation dialog contains the correct string for saving
 // four distinct domains to the account.
 - (void)testSavePasswordsInAccountFourDistinctDomains {
-  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
-  SavePasswordForm(@"password1", @"user1", @"https://example2.com");
-  SavePasswordForm(@"password1", @"user1", @"https://example3.com");
-  SavePasswordForm(@"password1", @"user1", @"https://example4.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example1.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example2.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example3.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example4.com");
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3283,7 +3308,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   // Ensure the confirmation dialog appears with the correct patterned string.
   NSString* result =
       @"You can save your passwords for example1.com, example2.com, and 2 "
-      @"others in your Google Account, foo1@gmail.com";
+      @"others in your Google Account, foo1@gmail.com.";
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(result)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
@@ -3291,7 +3316,8 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the local password is moved when accepting the confirmation
 // dialog, and that the corresponding snackbar appears.
 - (void)testSavePasswordsInAccountFlowCompletes {
-  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example1.com");
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3327,10 +3353,8 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the local password is not moved when accepting the confirmation
 // dialog since authentication failed.
 - (void)testSavePasswordsInAccountFlowAuthFailed {
-  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
-
-  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                    ReauthenticationResult::kFailure];
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example1.com");
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
 
@@ -3345,6 +3369,9 @@ void OpenPasswordManagerWidgetPromoInstructions() {
               kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kFailure];
 
   // Tap on "Save in Account" (accept) button.
   [SaveInAccountConfirmationDialogButton() performAction:grey_tap()];
@@ -3357,9 +3384,8 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the "set passcode" alert is shown if no authentication is set when
 // user tries to save passwords in their account.
 - (void)testSavePasswordsInAccountFlowNoAuthSetOnDevice {
-  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
-
-  [PasswordSettingsAppInterface mockReauthenticationModuleCanAttempt:NO];
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example1.com");
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
 
@@ -3374,6 +3400,8 @@ void OpenPasswordManagerWidgetPromoInstructions() {
               kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleCanAttempt:NO];
 
   // Tap on "Save in Account" (accept) button.
   [SaveInAccountConfirmationDialogButton() performAction:grey_tap()];
@@ -3389,15 +3417,19 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Tests that the local passwords are correctly handled in the save
 // passwords to account flow, and the correct snackbar appears.
 - (void)testSavePasswordsInAccountFlowCompletesMovingPasswords {
-  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
-  SavePasswordForm(@"password2", @"user1", @"https://example1.com");
-  SavePasswordForm(@"password1", @"user1", @"https://example2.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example1.com");
+  SavePasswordFormToProfileStore(@"password2", @"user1",
+                                 @"https://example1.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example2.com");
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
-  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+  SavePasswordFormToProfileStore(@"password1", @"user1",
+                                 @"https://example1.com");
 
   OpenPasswordManager();
   OpenSettingsSubmenu();
@@ -3530,21 +3562,11 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   CheckPasswordManagerVisitMetricCount(0);
 }
 
-// Tests that password manager visit histogram is recorded after opening
-// password manager without authentication required.
-- (void)testPasswordManagerVisitMetricWithoutAuthRequired {
-  OpenPasswordManager();
-
-  CheckPasswordManagerVisitMetricCount(1);
-
-  CheckReauthenticationUIEventMetricTotalCount(0);
-}
-
 // Tests that the Password Manager is opened is search mode when opened from the
 // Search Passwords widget.
 - (void)testOpenSearchPasswordsWidget {
   // Add a saved password to not get the Password Manager's empty state.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3577,7 +3599,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // Password Manager was initially opened with the Search Passwords widget.
 - (void)testGoingBackAfterOpeningInSearchMode {
   // Add a saved password to not get the Password Manager's empty state.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
@@ -3612,7 +3634,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // removes the promo from the table view.
 - (void)testClosingPasswordManagerWidgetPromo {
   // Add a saved password to not get the Password Manager's empty state.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -3632,7 +3654,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // promo displays the instructions on how to install the widget.
 - (void)testOpeningPasswordManagerWidgetPromoInstructions {
   // Add a saved password to not get the Password Manager's empty state.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManagerWidgetPromoInstructions();
 }
@@ -3641,7 +3663,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // authentication while in the Widget Promo Instructions page.
 - (void)testOpeningPasswordManagerWidgetPromoInstructionsWithFailedAuth {
   // Add a saved password to not get the Password Manager's empty state.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManagerWidgetPromoInstructions();
 
@@ -3667,7 +3689,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // promo are disabled when the Password Manager is in edit mode.
 - (void)testPasswordManagerWidgetPromoInEditMode {
   // Add a saved password to not get the Password Manager's empty state.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -3697,7 +3719,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   }
 
   // Add a saved password to not get the Password Manager's empty state.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -3721,7 +3743,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // dismissed by swipping it down and by tapping its close button.
 - (void)testDismissPasswordManagerWidgetPromoInstructionsScreen {
   // Add a saved password to not get the Password Manager's empty state.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -3768,7 +3790,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
   }
 
   // Add a saved password to not get the Password Manager's empty state.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   OpenPasswordManager();
 
@@ -3802,7 +3824,7 @@ void OpenPasswordManagerWidgetPromoInstructions() {
 // saved in the local store.
 - (void)testMovePasswordToAccountStoreIfSignedIn_SyncToSigninEnabled {
   // Save form to be moved to account later.
-  SavePasswordForm();
+  SavePasswordFormToProfileStore();
 
   // Sign in.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];

@@ -51,7 +51,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Browser.Actions.PinnedActionsCount" units="actions"
-    expires_after="2024-03-17">
+    expires_after="2024-07-07">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -61,7 +61,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ChromeOS.HatsStatus" enum="HatsStatus"
-    expires_after="2024-03-17">
+    expires_after="2024-06-09">
   <owner>aalsum@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
   <summary>
@@ -74,7 +74,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.DarkModeStatus" enum="DarkModeStatus"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>lgrey@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -84,7 +84,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ERP.AppInstallTrackerDiskConsumption" units="bytes"
-    expires_after="2024-05-08">
+    expires_after="2024-07-07">
   <owner>vshenvi@google.com</owner>
   <owner>cros-reporting-team@google.com</owner>
   <summary>
@@ -138,7 +138,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ERP.EventEnqueueResult"
-    enum="EnterpriseCloudReportingStatusCode" expires_after="2024-05-26">
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2024-07-28">
   <owner>lbaraz@chromium.org</owner>
   <owner>xuhong@chromium.org</owner>
   <owner>src/components/reporting/OWNERS</owner>
@@ -150,7 +150,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ERP.EventUploadSizeAdjustment.{Param}" units="bytes"
-    expires_after="2024-05-23">
+    expires_after="2024-07-28">
   <owner>xuhong@chromium.org</owner>
   <owner>lbaraz@chromium.org</owner>
   <owner>cros-reporting-team@google.com</owner>
@@ -169,7 +169,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Browser.ERP.FilteredOutEvents" units="BooleanFiltered"
+<histogram name="Browser.ERP.FilteredOutEvents" enum="BooleanFiltered"
     expires_after="2024-05-23">
   <owner>lbaraz@chromium.org</owner>
   <owner>cros-reporting-team@google.com</owner>
@@ -215,7 +215,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Browser.ERP.RateLimitedEvents" units="BooleanAccepted"
+<histogram name="Browser.ERP.RateLimitedEvents" enum="BooleanAccepted"
     expires_after="2024-05-23">
   <owner>lbaraz@chromium.org</owner>
   <owner>cros-reporting-team@google.com</owner>
@@ -238,7 +238,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ERP.RecordsPerUploadFrom{ManagementStatus}Device"
-    units="records" expires_after="2024-04-28">
+    units="records" expires_after="2024-06-30">
   <owner>jrhilke@chromium.org</owner>
   <owner>lbaraz@chromium.org</owner>
   <owner>cros-reporting-team@google.com</owner>
@@ -278,20 +278,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Browser.ERP.StorageQueueGenerationIdReset" enum="Boolean"
-    expires_after="2024-01-31">
-  <owner>vshenvi@google.com</owner>
-  <owner>cros-reporting-team@google.com</owner>
-  <summary>
-    Would only be true. Recorded whenever the generation id is reset in the
-    storage queue. The generation id is set up once during storage queue
-    initialization using the metadata file that matches the last sequencing id
-    used to track, deduplicate and confirm delivery by the server. The
-    generation id is reset when this file is missing or corrupted and the
-    sequencing is irreparably broken.
-  </summary>
-</histogram>
-
 <histogram name="Browser.ERP.UnuploadedCrashShouldNotReportReason"
     enum="EnterpriseReportingUnuploadedCrashShouldNotReportReason"
     expires_after="2024-10-18">
@@ -307,7 +293,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ERP.UnusualEnqueueTimestamp" enum="Boolean"
-    expires_after="2024-01-30">
+    expires_after="2024-12-26">
   <owner>xuhong@chromium.org</owner>
   <owner>lbaraz@chromium.org</owner>
   <owner>cros-reporting-team@google.com</owner>
@@ -318,7 +304,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ERP.{ManagementStatus}UploadEncryptedReport"
-    enum="EnterpriseDMServerRequestSuccess" expires_after="2024-05-05">
+    enum="EnterpriseDMServerRequestSuccess" expires_after="2024-07-07">
   <owner>jrhilke@google.com</owner>
   <owner>src/components/reporting/OWNERS</owner>
   <summary>
@@ -520,7 +506,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartedCorrectly"
-    enum="BooleanSuccess" expires_after="2024-05-27">
+    enum="BooleanSuccess" expires_after="2024-07-28">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -530,7 +516,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartupTime"
-    units="ms" expires_after="2024-05-27">
+    units="ms" expires_after="2024-07-28">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -548,7 +534,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.TimeToFirstBitmap" units="ms"
-    expires_after="2024-05-27">
+    expires_after="2024-07-28">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -559,7 +545,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.CompositorFailureReason"
-    enum="TabbedPaintPreviewCompositorFailureReason" expires_after="2024-05-27">
+    enum="TabbedPaintPreviewCompositorFailureReason" expires_after="2024-07-28">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -571,7 +557,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.ExitCause"
-    enum="TabbedPaintPreviewExitCause" expires_after="2024-05-27">
+    enum="TabbedPaintPreviewExitCause" expires_after="2024-07-28">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -582,7 +568,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.FirstPaintBeforeTabLoad"
-    enum="Boolean" expires_after="2024-05-27">
+    enum="Boolean" expires_after="2024-07-28">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -593,7 +579,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.HadCapture" enum="Boolean"
-    expires_after="2024-05-27">
+    expires_after="2024-07-28">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -616,7 +602,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap"
-    units="ms" expires_after="2024-05-27">
+    units="ms" expires_after="2024-07-28">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -628,7 +614,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Browser.PaintPreview.TabbedPlayer.UpTime{TabbedPaintPreviewPlayerUptime}"
-    units="ms" expires_after="2024-05-27">
+    units="ms" expires_after="2024-07-28">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -666,7 +652,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.IOJanksTotalPerMinute" units="janks"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>gab@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -680,7 +666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.IOJankyIntervalsPerMinute"
-    units="janks" expires_after="2024-05-19">
+    units="janks" expires_after="2024-07-21">
   <owner>gab@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -711,7 +697,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.TabDragging.DragAmongTabsPresentationTime" units="ms"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>robliao@chromium.org</owner>
   <owner>yuhengh@chromium.org</owner>
   <summary>
@@ -744,7 +730,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.TabDragging.PresentationTimeMax" units="ms"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>robliao@chromium.org</owner>
   <owner>yuhengh@chromium.org</owner>
   <summary>
@@ -755,7 +741,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.SelectionToVisibilityRequestTime"
-    units="microseconds" expires_after="2024-05-05">
+    units="microseconds" expires_after="2024-07-07">
   <owner>jonross@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -812,7 +798,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Guest" units="units"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -824,7 +810,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Incognito" units="units"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -909,7 +895,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserRenderProcessHost.Cleanup.DelayReason"
-    enum="RenderProcessHostDelayShutdownReason" expires_after="2024-04-28">
+    enum="RenderProcessHostDelayShutdownReason" expires_after="2024-06-30">
   <owner>mych@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -965,7 +951,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserRenderProcessHost.LabeledInTaskManager"
-    enum="BooleanLabeledRendererTask" expires_after="2024-04-28">
+    enum="BooleanLabeledRendererTask" expires_after="2024-06-30">
   <owner>creis@chromium.org</owner>
   <owner>avi@chromium.org</owner>
   <summary>
@@ -978,13 +964,38 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="BrowserRenderProcessHost.SpareProcessDelayTime" units="ms"
+    expires_after="2024-06-30">
+  <owner>kerenzhu@chromium.org</owner>
+  <owner>dayeung@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <summary>
+    Records the time elapsed from the initiation of the spare process warm-up to
+    the actual creation of the process.
+  </summary>
+</histogram>
+
 <histogram name="BrowserRenderProcessHost.SpareProcessMaybeTakeAction"
-    enum="SpareProcessMaybeTakeAction" expires_after="2024-04-28">
+    enum="SpareProcessMaybeTakeAction" expires_after="2024-06-30">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
     Records what happens when an attempt is made to use a spare
     RenderProcessHost - logs that either the attempt succeeded or why it failed.
+  </summary>
+</histogram>
+
+<histogram name="BrowserRenderProcessHost.SpareProcessStartupTime" units="ms"
+    expires_after="2024-06-30">
+  <owner>kerenzhu@chromium.org</owner>
+  <owner>dayeung@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <summary>
+    Records the time elapsed from the creation of the spare process to the point
+    when the process becomes ready. This does not include the scheduled delay
+    time (see SpareProcessDelayTime).
   </summary>
 </histogram>
 
@@ -1018,7 +1029,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.TwaOpenTime.V2" units="ms"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1038,7 +1049,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.VerificationTime.Offline" units="ms"
-    expires_after="2024-05-05">
+    expires_after="2024-07-07">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1049,7 +1060,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.VerificationTime.Online" units="ms"
-    expires_after="2024-05-05">
+    expires_after="2024-07-07">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1208,7 +1219,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.UrlListWildcard" enum="BooleanPresent"
-    expires_after="2024-05-05">
+    expires_after="2024-07-07">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1282,13 +1293,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.ComboboxMenuShown" enum="Boolean"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>Records true when the side panel combobox is opened.</summary>
 </histogram>
 
-<histogram name="SidePanel.OpenDuration" units="ms" expires_after="2024-04-28">
+<histogram name="SidePanel.OpenDuration" units="ms" expires_after="2024-06-30">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1300,7 +1311,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.OpenOrChangeEntryTrigger"
-    enum="SidePanelOpenTrigger" expires_after="2024-04-28">
+    enum="SidePanelOpenTrigger" expires_after="2024-06-30">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1311,7 +1322,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.OpenTrigger" enum="SidePanelOpenTrigger"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1320,7 +1331,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SidePanel.ResizedWidth" units="px" expires_after="2024-04-28">
+<histogram name="SidePanel.ResizedWidth" units="px" expires_after="2024-06-30">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1330,7 +1341,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.ResizedWidthPercentage" units="% of window width"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1340,7 +1351,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.{SidePanelEntry}.ResizedWidth" units="px"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1351,7 +1362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.{SidePanelEntry}.ResizedWidthPercentage"
-    units="% of window width" expires_after="2024-04-28">
+    units="% of window width" expires_after="2024-06-30">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1363,7 +1374,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.{SidePanelEntry}.ShownDuration" units="ms"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1375,7 +1386,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.{SidePanelEntry}.ShowTriggered"
-    enum="SidePanelOpenTrigger" expires_after="2024-04-28">
+    enum="SidePanelOpenTrigger" expires_after="2024-06-30">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>

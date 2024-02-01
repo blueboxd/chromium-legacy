@@ -186,6 +186,7 @@ TEST(VideoEncodeAcceleratorConfigStructTraitTest, RoundTrip) {
       ::media::VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer;
   input_config.content_type =
       ::media::VideoEncodeAccelerator::Config::ContentType::kCamera;
+  input_config.drop_frame_thresh_percentage = 30;
   input_config.spatial_layers = input_spatial_layers;
   input_config.inter_layer_pred = ::media::SVCInterLayerPredMode::kOnKeyPic;
 
@@ -242,6 +243,7 @@ TEST(BitstreamBufferMetadataTraitTest, RoundTrip) {
   input_metadata.payload_size_bytes = 1234;
   input_metadata.key_frame = true;
   input_metadata.timestamp = base::Milliseconds(123456);
+  input_metadata.end_of_picture = true;
   ::media::BitstreamBufferMetadata output_metadata;
   ASSERT_TRUE(
       mojo::test::SerializeAndDeserialize<mojom::BitstreamBufferMetadata>(
@@ -276,12 +278,12 @@ TEST(BitstreamBufferMetadataTraitTest, RoundTrip) {
   vp9.temporal_up_switch = true;
   vp9.referenced_by_upper_spatial_layers = true;
   vp9.reference_lower_spatial_layers = true;
-  vp9.end_of_picture = true;
   vp9.temporal_idx = 2;
   vp9.spatial_idx = 0;
   vp9.spatial_layer_resolutions = {gfx::Size(320, 180), gfx::Size(640, 360)};
   vp9.p_diffs = {0, 1};
   input_metadata.vp9 = vp9;
+  input_metadata.end_of_picture = false;
   output_metadata = ::media::BitstreamBufferMetadata();
   ASSERT_TRUE(
       mojo::test::SerializeAndDeserialize<mojom::BitstreamBufferMetadata>(

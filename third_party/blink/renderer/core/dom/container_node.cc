@@ -23,6 +23,8 @@
 
 #include "third_party/blink/renderer/core/dom/container_node.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_get_html_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_get_inner_html_options.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/selector_query.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -41,7 +43,6 @@
 #include "third_party/blink/renderer/core/dom/node_cloning_data.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
-#include "third_party/blink/renderer/core/dom/node_move_scope.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/part.h"
@@ -50,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/slot_assignment_recalc_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
+#include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/events/mutation_event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -155,9 +157,6 @@ static inline bool CollectChildrenAndRemoveFromOldParent(
     Node& node,
     NodeVector& nodes,
     ExceptionState& exception_state) {
-  if (RuntimeEnabledFeatures::DOMPartsAPIActivePartTrackingEnabled()) {
-    NodeMoveScope::SetCurrentNodeBeingRemoved(node);
-  }
   if (auto* fragment = DynamicTo<DocumentFragment>(node)) {
     GetChildNodes(*fragment, nodes);
     fragment->RemoveChildren();
@@ -419,10 +418,6 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   // 4. Adopt node into parent’s node document.
   NodeVector targets;
   DOMTreeMutationDetector detector(*new_child, *this);
-  NodeMoveScope node_move_scope(
-      *this, firstChild() == ref_child
-                 ? NodeMoveScopeType::kInsertBeforeAllChildren
-                 : NodeMoveScopeType::kOther);
   if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
                                              exception_state))
     return new_child;
@@ -611,11 +606,6 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
     // 13. Let nodes be node’s children if node is a DocumentFragment node, and
     // a list containing solely node otherwise.
     DOMTreeMutationDetector detector(*new_child, *this);
-    NodeMoveScope node_move_scope(
-        *this, !next ? NodeMoveScopeType::kAppendAfterAllChildren
-                     : (firstChild() == next
-                            ? NodeMoveScopeType::kInsertBeforeAllChildren
-                            : NodeMoveScopeType::kOther));
     if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
                                                exception_state))
       return old_child;
@@ -930,8 +920,6 @@ Node* ContainerNode::AppendChild(Node* new_child,
 
   NodeVector targets;
   DOMTreeMutationDetector detector(*new_child, *this);
-  NodeMoveScope node_move_scope(*this,
-                                NodeMoveScopeType::kAppendAfterAllChildren);
   if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
                                              exception_state))
     return new_child;
@@ -1718,6 +1706,51 @@ void ContainerNode::CheckSoftNavigationHeuristicsTracking(
       SetIsModifiedBySoftNavigation();
     }
   }
+}
+
+String ContainerNode::getInnerHTML(const GetInnerHTMLOptions* options) const {
+  CHECK(RuntimeEnabledFeatures::ElementGetInnerHTMLEnabled());
+  DCHECK(IsShadowRoot() || IsElementNode());
+  // This is the deprecated behavior: if includeShadowRoots is true, then
+  // include *all* open shadow roots (even if they aren't marked serializable).
+  // If includeShadowRoots is true and closedRoots is provided, also serialize
+  // the provided shadow roots, even if they're closed.
+  ShadowRootInclusion shadow_root_inclusion{
+      options->includeShadowRoots()
+          ? ShadowRootInclusion::Behavior::kIncludeAllOpenShadowRoots
+          : ShadowRootInclusion::Behavior::kOnlyProvidedShadowRoots};
+  if (options->includeShadowRoots() && options->hasClosedRoots()) {
+    for (auto& shadow_root : options->closedRoots()) {
+      shadow_root_inclusion.include_shadow_roots.insert(shadow_root);
+    }
+  }
+
+  return CreateMarkup(this, kChildrenOnly, kDoNotResolveURLs,
+                      shadow_root_inclusion);
+}
+
+String ContainerNode::getHTML(const GetHTMLOptions* options,
+                              ExceptionState& exception_state) const {
+  CHECK(RuntimeEnabledFeatures::ElementGetHTMLEnabled());
+  DCHECK(IsShadowRoot() || IsElementNode());
+  if (options->hasIncludeShadowRoots() && !options->includeShadowRoots() &&
+      options->hasShadowRoots() && !options->shadowRoots().empty()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "If includeShadowRoots is false, then shadowRoots must be empty.");
+    return "";
+  }
+  ShadowRootInclusion shadow_root_inclusion{
+      options->hasIncludeShadowRoots() && options->includeShadowRoots()
+          ? ShadowRootInclusion::Behavior::kIncludeAllSerializableShadowRoots
+          : ShadowRootInclusion::Behavior::kOnlyProvidedShadowRoots};
+  if (options->hasShadowRoots()) {
+    for (auto& shadow_root : options->shadowRoots()) {
+      shadow_root_inclusion.include_shadow_roots.insert(shadow_root);
+    }
+  }
+  return CreateMarkup(this, kChildrenOnly, kDoNotResolveURLs,
+                      shadow_root_inclusion);
 }
 
 }  // namespace blink

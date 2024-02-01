@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -194,6 +195,8 @@ class DisplayLockContextTest : public testing::Test,
   const int FAKE_FIND_ID = 1;
 
  private:
+  test::TaskEnvironment task_environment;
+
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
@@ -939,7 +942,7 @@ TEST_P(DisplayLockContextTest, DisplayLockPreventsActivation) {
       *slotted, DisplayLockActivationReason::kAny));
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML(
       "<div id='container' style='contain:style layout "
       "paint;'><slot></slot></div>");
@@ -1042,7 +1045,7 @@ TEST_P(DisplayLockContextTest,
   auto* host = GetDocument().getElementById(AtomicString("shadowHost"));
   auto* text_field = GetDocument().getElementById(AtomicString("textfield"));
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML(
       "<div id='container' style='contain:style layout "
       "paint;'><slot></slot></div>");

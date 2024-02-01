@@ -214,7 +214,7 @@ void GuestViewBase::InitWithWebContents(const base::Value::Dict& create_params,
   DidInitialize(create_params);
 }
 
-const absl::optional<
+const std::optional<
     std::pair<base::Value::Dict, content::WebContents::CreateParams>>&
 GuestViewBase::GetCreateParams() const {
   return create_params_;
@@ -482,7 +482,7 @@ void GuestViewBase::AttachToOuterWebContentsFrame(
       std::move(owned_guest_contents_);
   DCHECK_EQ(owned_guest_contents.get(), web_contents());
   if (owned_guest_contents) {
-    owned_guest_contents->SetOwnerLocationForDebug(absl::nullopt);
+    owned_guest_contents->SetOwnerLocationForDebug(std::nullopt);
   }
 
   // Since this inner WebContents is created from the browser side we do
@@ -764,7 +764,7 @@ double GuestViewBase::GetEmbedderZoomFactor() const {
 
 void GuestViewBase::SetUpSizing(const base::Value::Dict& params) {
   // Read the autosize parameters passed in from the embedder.
-  absl::optional<bool> auto_size_enabled_opt =
+  std::optional<bool> auto_size_enabled_opt =
       params.FindBool(kAttributeAutoSize);
   bool auto_size_enabled = auto_size_enabled_opt.value_or(auto_size_enabled_);
 
@@ -787,7 +787,7 @@ void GuestViewBase::SetUpSizing(const base::Value::Dict& params) {
   int normal_width = normal_size_.width();
   // If the element size was provided in logical units (versus physical), then
   // it will be converted to physical units.
-  absl::optional<bool> element_size_is_logical_opt =
+  std::optional<bool> element_size_is_logical_opt =
       params.FindBool(kElementSizeIsLogical);
   bool element_size_is_logical = element_size_is_logical_opt.value_or(false);
   if (element_size_is_logical) {
@@ -875,18 +875,12 @@ bool GuestViewBase::IsOwnedByControlledFrameEmbedder() const {
 }
 
 void GuestViewBase::SetOwnerHost() {
-  const GURL& url = GetOwnerLastCommittedURL();
   if (IsOwnedByExtension()) {
-    owner_host_ = url.host();
+    owner_host_ = GetOwnerLastCommittedURL().host();
   } else if (IsOwnedByWebUI()) {
     owner_host_ = std::string();
   } else if (IsOwnedByControlledFrameEmbedder()) {
-    // TODO(cmp): This function must return an empty string currently since
-    // events that pass a non-empty string are validated and will break
-    // Controlled Frame. A future CL will modify the validation to support the
-    // Controlled Frame case and allow us to use the following:
-    // owner_host_ = url.spec();
-    owner_host_ = std::string();
+    owner_host_ = owner_rfh()->GetLastCommittedOrigin().Serialize();
   } else {
     owner_host_ = std::string();
   }

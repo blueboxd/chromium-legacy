@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -56,8 +57,12 @@ class ManagePasswordsBubbleController : public PasswordBubbleControllerBase {
   // bubble footer in clicked by the user.
   void OnGooglePasswordManagerLinkClicked();
 
+  // Called by the view code when the "Save it in Google Account" link in the
+  // buuble footer is clicked by the user.
+  void OnMovePasswordLinkClicked();
+
   // Returns the available credentials which match the current site.
-  const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
+  base::span<std::unique_ptr<password_manager::PasswordForm> const>
   GetCredentials() const;
 
   // Calls the password store backend to update the currently selected password
@@ -75,6 +80,9 @@ class ManagePasswordsBubbleController : public PasswordBubbleControllerBase {
   // Returns whether any of the available credentials matching the current site
   // has the same username value as `username`.
   bool UsernameExists(const std::u16string& username);
+
+  // Returns whether user can currently use account storage.
+  bool IsOptedInForAccountStorage() const;
 
   void set_currently_selected_password(
       const std::optional<password_manager::PasswordForm>& password) {

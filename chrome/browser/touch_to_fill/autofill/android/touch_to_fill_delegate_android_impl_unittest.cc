@@ -44,8 +44,7 @@ class MockAutofillClient : public TestAutofillClient {
               ScanCreditCard,
               (CreditCardScanCallback callback),
               (override));
-  MOCK_METHOD(bool, IsTouchToFillCreditCardSupported, (), (override));
-  MOCK_METHOD(void, ShowAutofillSettings, (PopupType popup_type), (override));
+  MOCK_METHOD(void, ShowAutofillSettings, (FillingProduct), (override));
   MOCK_METHOD(bool,
               ShowTouchToFillCreditCard,
               (base::WeakPtr<autofill::TouchToFillDelegate> delegate,
@@ -148,8 +147,6 @@ class TouchToFillDelegateAndroidImplUnitTest : public testing::Test {
     // Default setup for successful `TryToShowTouchToFill`.
     autofill_client_.GetPersonalDataManager()->AddCreditCard(
         test::GetCreditCard());
-    ON_CALL(autofill_client_, IsTouchToFillCreditCardSupported)
-        .WillByDefault(Return(true));
     ON_CALL(*browser_autofill_manager_, CanShowAutofillUi)
         .WillByDefault(Return(true));
     ON_CALL(autofill_client_, ShowTouchToFillCreditCard)
@@ -285,15 +282,6 @@ TEST_F(TouchToFillDelegateAndroidImplUnitTest,
   histogram_tester_.ExpectUniqueSample(
       kUmaTouchToFillCreditCardTriggerOutcome,
       TouchToFillCreditCardTriggerOutcome::kShown, 1);
-}
-
-TEST_F(TouchToFillDelegateAndroidImplUnitTest,
-       TryToShowTouchToFillFailsIfNotSupported) {
-  ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
-  EXPECT_CALL(autofill_client_, IsTouchToFillCreditCardSupported)
-      .WillRepeatedly(Return(false));
-
-  TryToShowTouchToFill(/*expected_success=*/false);
 }
 
 TEST_F(TouchToFillDelegateAndroidImplUnitTest,
@@ -677,7 +665,7 @@ TEST_F(TouchToFillDelegateAndroidImplUnitTest, ShowCreditCardSettingsIsCalled) {
   TryToShowTouchToFill(/*expected_success=*/true);
 
   EXPECT_CALL(autofill_client_,
-              ShowAutofillSettings(testing::Eq(PopupType::kCreditCards)));
+              ShowAutofillSettings(testing::Eq(FillingProduct::kCreditCard)));
   touch_to_fill_delegate_->ShowCreditCardSettings();
 
   ASSERT_EQ(touch_to_fill_delegate_->IsShowingTouchToFill(), true);

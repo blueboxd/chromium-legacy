@@ -4,9 +4,10 @@
 
 #include "net/cert/internal/cert_issuer_source_aia.h"
 
+#include <string_view>
+
 #include "base/containers/span.h"
 #include "base/logging.h"
-#include "base/strings/string_piece.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/x509_util.h"
 #include "third_party/boringssl/src/pki/cert_errors.h"
@@ -70,14 +71,13 @@ bool ParseCertsFromCms(base::span<const uint8_t> data,
 bool ParseCertFromPem(const uint8_t* data,
                       size_t length,
                       bssl::ParsedCertificateList* results) {
-  base::StringPiece data_strpiece(reinterpret_cast<const char*>(data), length);
+  std::string_view data_strpiece(reinterpret_cast<const char*>(data), length);
 
   bssl::PEMTokenizer pem_tokenizer(data_strpiece, {"CERTIFICATE"});
   if (!pem_tokenizer.GetNext())
     return false;
 
-  return ParseCertFromDer(base::as_bytes(base::make_span(pem_tokenizer.data())),
-                          results);
+  return ParseCertFromDer(base::as_byte_span(pem_tokenizer.data()), results);
 }
 
 class AiaRequest : public bssl::CertIssuerSource::Request {

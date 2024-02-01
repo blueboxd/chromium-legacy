@@ -32,6 +32,7 @@ class Event;
 class KeyboardState;
 class PropertyCache;
 class VisualManager;
+class WmSync;
 class WriteBuffer;
 
 enum WmState : uint32_t {
@@ -222,12 +223,21 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
     return shm_version_;
   }
 
+  ExtensionVersion sync_version() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return sync_version_;
+  }
+
   ExtensionVersion xinput_version() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return xinput_version_;
   }
 
   WindowEventManager& window_event_manager() { return window_event_manager_; }
+
+  // Indicates if the connection was able to successfully sync with the
+  // window manager.
+  bool synced_with_wm() const { return synced_with_wm_; }
 
   // Returns the underlying socket's FD if the connection is valid, or -1
   // otherwise.
@@ -311,9 +321,9 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
   Future<void> SendEvent(const T& event, Window target, EventMask mask) {
     static_assert(T::type_id > 0, "T must be an *Event type");
     auto write_buffer = Write(event);
-    DUMP_WILL_BE_CHECK_EQ(write_buffer.GetBuffers().size(), 1ul);
+    CHECK_EQ(write_buffer.GetBuffers().size(), 1ul);
     auto& first_buffer = write_buffer.GetBuffers()[0];
-    DUMP_WILL_BE_CHECK_LE(first_buffer->size(), 32ul);
+    CHECK_LE(first_buffer->size(), 32ul);
     std::vector<uint8_t> event_bytes(32);
     memcpy(event_bytes.data(), first_buffer->data(), first_buffer->size());
 
@@ -348,8 +358,8 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
       return false;
     }
 
-    DUMP_WILL_BE_CHECK_EQ(response->format / CHAR_BIT * response->value_len,
-                          response->value->size());
+    CHECK_EQ(response->format / CHAR_BIT * response->value_len,
+             response->value->size());
     value->resize(response->value_len);
     if (response->value_len > 0) {
       memcpy(value->data(), response->value->data(), response->value->size());
@@ -511,6 +521,10 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
 
   bool WmSupportsEwmh() const;
 
+  void AttemptSyncWithWm();
+
+  void OnWmSynced();
+
   std::string display_string_;
   int default_screen_id_ = 0;
   std::unique_ptr<xcb_connection_t, void (*)(xcb_connection_t*)> connection_ = {
@@ -526,6 +540,7 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
   ExtensionVersion render_version_ = {0, 0};
   ExtensionVersion screensaver_version_ = {0, 0};
   ExtensionVersion shm_version_ = {0, 0};
+  ExtensionVersion sync_version_ = {0, 0};
   ExtensionVersion xinput_version_ = {0, 0};
 
   Setup setup_;
@@ -566,6 +581,9 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
   std::unique_ptr<VisualManager> visual_manager_;
 
   std::unique_ptr<AtomCache> atom_cache_;
+
+  std::unique_ptr<WmSync> wm_sync_;
+  bool synced_with_wm_ = false;
 
   std::unique_ptr<PropertyCache> root_props_;
   std::unique_ptr<PropertyCache> wm_props_;

@@ -1096,7 +1096,7 @@ policies:
   1095: InsecureHashesInTLSHandshakesEnabled
   1096: DeviceLoginScreenGeolocationAccessLevel
   1097: DeviceReportNetworkEvents
-  1098: SafeBrowsingExtensionProtectionAllowed
+  1098: ''
   1099: ShowDisplaySizeScreenEnabled
   1100: EssentialSearchEnabled
   1101: LegacyTechReportAllowlist
@@ -1126,9 +1126,9 @@ policies:
   1125: ArcVmDataMigrationStrategy
   1126: AccessibilityPerformanceFilteringAllowed
   1127: RemoteAccessHostAllowEnterpriseFileTransfer
-  1128: DefaultMidiSetting
-  1129: MidiAllowedForUrls
-  1130: MidiBlockedForUrls
+  1128: ''
+  1129: ''
+  1130: ''
   1131: GlanceablesEnabled
   1132: DeviceAuthenticationURLBlocklist
   1133: DeviceAuthenticationURLAllowlist
@@ -1184,10 +1184,30 @@ policies:
   1183: DeskAPIDeskSaveAndShareEnabled
   1184: OopPrintDriversAllowed
   1185: DeviceHardwareVideoDecodingEnabled
-  1186: TabOrganizationAllowed
-  1187: ComposeAllowed
-  1188: WallpaperSearchAllowed
+  1186: TabOrganizerSettings
+  1187: HelpMeWriteSettings
+  1188: CreateThemesSettings
   1189: ListenToThisPageEnabled
+  1190: AlwaysOnVpnPreConnectUrlAllowlist
+  1191: CACertificates
+  1192: CADistrustedCertificates
+  1193: CAHintCertificates
+  1194: DeviceLoginScreenTouchVirtualKeyboardEnabled
+  1195: DeviceExtendedAutoUpdateEnabled
+  1196: CAPlatformIntegrationEnabled
+  1197: FloatingSsoEnabled
+  1198: FloatingSsoDomainBlocklist
+  1199: FloatingSsoDomainBlocklistExceptions
+  1200: F11KeyModifier
+  1201: F12KeyModifier
+  1202: VirtualKeyboardSmartVisibilityEnabled
+  1203: WebAnnotations
+  1204: DeleteKeyModifier
+  1205: HomeAndEndKeysModifier
+  1206: PageUpAndPageDownKeysModifier
+  1207: InsertKeyModifier
+  1208: ToolbarAvatarLabelSettings
+  1209: DeviceWeeklyScheduledSuspend
 atomic_groups:
   1: Homepage
   2: RemoteAccess
@@ -1236,5 +1256,6 @@ atomic_groups:
   45: PrivacySandbox
   46: KerberosPrefilledConfig
   47: ThirdPartyStoragePartitioningSettings
-  48: MidiSettings
+  48: ''
   49: ProfileSeparation
+  50: FloatingSso

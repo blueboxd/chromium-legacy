@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::AssertionFailure;
@@ -90,7 +91,8 @@ class RuleFeatureSetTest : public testing::Test {
     HeapVector<CSSSelector> arena;
     base::span<CSSSelector> selector_vector = CSSParser::ParseSelector(
         StrictCSSParserContext(SecureContextMode::kInsecureContext),
-        nesting_type, parent_rule_for_nesting, nullptr, selector_text, arena);
+        nesting_type, parent_rule_for_nesting, false /* is_within_scope */,
+        nullptr, selector_text, arena);
     return CollectFeaturesTo(selector_vector, nullptr /* style_scope */, set);
   }
 
@@ -698,6 +700,7 @@ class RuleFeatureSetTest : public testing::Test {
   }
 
  protected:
+  test::TaskEnvironment task_environment_;
   ScopedNullExecutionContext execution_context_;
 
  private:
@@ -1954,7 +1957,7 @@ class RuleFeatureSetScopeRefTest
     while (IsA<StyleRuleScope>(rule)) {
       auto& scope_rule = To<StyleRuleScope>(*rule);
       scope = scope_rule.GetStyleScope().CopyWithParent(scope);
-      const HeapVector<Member<StyleRuleBase>>& child_rules =
+      const StyleRuleBase::ChildRuleVector& child_rules =
           scope_rule.ChildRules();
       ASSERT_EQ(1u, child_rules.size());
       rule = child_rules[0].Get();
@@ -2716,7 +2719,8 @@ TEST_F(RuleFeatureSetTest, NestedSelector) {
   base::span<CSSSelector> selector_vector = CSSParser::ParseSelector(
       StrictCSSParserContext(SecureContextMode::kInsecureContext),
       CSSNestingType::kNone,
-      /*parent_rule_for_nesting=*/nullptr, nullptr, ".a, .b", arena);
+      /*parent_rule_for_nesting=*/nullptr, /*is_within_scope=*/false, nullptr,
+      ".a, .b", arena);
   auto* parent_rule = StyleRule::Create(
       selector_vector,
       MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode));

@@ -14,13 +14,16 @@
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/magic_stack_module_container.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/parcel_tracking_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module_container.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/most_visited_tiles_config.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/shortcuts_config.h"
+#import "ios/chrome/browser/ui/content_suggestions/parcel_tracking/parcel_tracking_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_state.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_config.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view_data.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_item.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -73,6 +76,19 @@ class ContentSuggestionsViewControllerTest : public PlatformTest {
     return found;
   }
 
+  MostVisitedTilesConfig* MVTConfig() {
+    MostVisitedTilesConfig* mvtConfig = [[MostVisitedTilesConfig alloc] init];
+    mvtConfig.mostVisitedItems =
+        @[ [[ContentSuggestionsMostVisitedItem alloc] init] ];
+    return mvtConfig;
+  }
+
+  ShortcutsConfig* ShortcutsConfigWithBookmark() {
+    ShortcutsConfig* config = [[ShortcutsConfig alloc] init];
+    config.shortcutItems = @[ BookmarkActionItem() ];
+    return config;
+  }
+
  protected:
   web::WebTaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -95,9 +111,7 @@ TEST_F(ContentSuggestionsViewControllerTest,
   histogram_tester_->ExpectBucketCount(
       kMagicStackTopModuleImpressionHistogram,
       ContentSuggestionsModuleType::kMostVisited, 0);
-  [view_controller_ setMostVisitedTilesWithConfigs:@[
-    [[ContentSuggestionsMostVisitedItem alloc] init]
-  ]];
+  [view_controller_ setMostVisitedTilesConfig:MVTConfig()];
   histogram_tester_->ExpectBucketCount(
       kMagicStackTopModuleImpressionHistogram,
       ContentSuggestionsModuleType::kMostVisited, 1);
@@ -109,10 +123,8 @@ TEST_F(ContentSuggestionsViewControllerTest,
     @(int(ContentSuggestionsModuleType::kShortcuts)),
     @(int(ContentSuggestionsModuleType::kMostVisited))
   ]];
-  [view_controller_ setMostVisitedTilesWithConfigs:@[
-    [[ContentSuggestionsMostVisitedItem alloc] init]
-  ]];
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  [view_controller_ setMostVisitedTilesConfig:MVTConfig()];
+  [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   histogram_tester_->ExpectBucketCount(kMagicStackTopModuleImpressionHistogram,
                                        ContentSuggestionsModuleType::kShortcuts,
                                        1);
@@ -124,14 +136,14 @@ TEST_F(ContentSuggestionsViewControllerTest,
 
   histogram_tester_->ExpectBucketCount(
       kMagicStackTopModuleImpressionHistogram,
-      ContentSuggestionsModuleType::kSetUpListSync, 0);
+      ContentSuggestionsModuleType::kCompactedSetUpList, 0);
   [view_controller_ setMagicStackOrder:@[
-    @(int(ContentSuggestionsModuleType::kSetUpListSync)),
-    @(int(ContentSuggestionsModuleType::kSetUpListDefaultBrowser)),
-    @(int(ContentSuggestionsModuleType::kSetUpListAutofill)),
+    @(int(ContentSuggestionsModuleType::kCompactedSetUpList)),
     @(int(ContentSuggestionsModuleType::kShortcuts))
   ]];
-  [view_controller_ showSetUpListWithItems:@[
+  SetUpListConfig* config = [[SetUpListConfig alloc] init];
+  config.shouldShowCompactModule = YES;
+  config.setUpListItems = @[
     [[SetUpListItemViewData alloc] initWithType:SetUpListItemType::kSignInSync
                                        complete:NO],
     [[SetUpListItemViewData alloc]
@@ -139,12 +151,13 @@ TEST_F(ContentSuggestionsViewControllerTest,
             complete:NO],
     [[SetUpListItemViewData alloc] initWithType:SetUpListItemType::kAutofill
                                        complete:NO]
-  ]];
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  ];
+  [view_controller_ showSetUpListModuleWithConfigs:@[ config ]];
+  [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   [view_controller_ view];
   histogram_tester_->ExpectBucketCount(
       kMagicStackTopModuleImpressionHistogram,
-      ContentSuggestionsModuleType::kSetUpListSync, 1);
+      ContentSuggestionsModuleType::kCompactedSetUpList, 1);
 }
 
 // Tests that the Magic Stack top module impression metric logs correctly even
@@ -162,7 +175,7 @@ TEST_F(ContentSuggestionsViewControllerTest,
        {kMagicStack, {}}},
       {});
 
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   histogram_tester_->ExpectBucketCount(kMagicStackTopModuleImpressionHistogram,
                                        ContentSuggestionsModuleType::kShortcuts,
                                        0);
@@ -197,10 +210,10 @@ TEST_F(ContentSuggestionsViewControllerTest, TestInsertModuleIntoMagicStack) {
   // Shortcuts should be inserted at index 0
   // Safety Check should be inserted at index 1
   // Most Visited should be inserted at index 0
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   // Trigger -viewDidLoad for initial Magic Stack construction.
   // TODO(crbug.com/1477476): This view get should ideally happen before
-  // setShortcutTilesWithConfigs: to ensure Shortcuts is inserted correctly as
+  // setShortcutTilesConfig: to ensure Shortcuts is inserted correctly as
   // well.
   [view_controller_ loadViewIfNeeded];
   // If not implemented correctly, based on what is passed in
@@ -212,9 +225,7 @@ TEST_F(ContentSuggestionsViewControllerTest, TestInsertModuleIntoMagicStack) {
               safeBrowsingState:SafeBrowsingSafetyCheckState::kDefault
                    runningState:RunningSafetyCheckState::kDefault];
   [view_controller_ showSafetyCheck:defaultSafetyCheckState];
-  [view_controller_ setMostVisitedTilesWithConfigs:@[
-    [[ContentSuggestionsMostVisitedItem alloc] init]
-  ]];
+  [view_controller_ setMostVisitedTilesConfig:MVTConfig()];
 
   UIStackView* magicStack = FindMagicStack();
   // Assert order is correct.
@@ -247,10 +258,10 @@ TEST_F(ContentSuggestionsViewControllerTest, TestUpdateMagicStackOrder) {
     @(int(ContentSuggestionsModuleType::kShortcuts))
   ]];
 
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   // Trigger -viewDidLoad for initial Magic Stack construction.
   // TODO(crbug.com/1477476): This view get should ideally happen before
-  // setShortcutTilesWithConfigs: to ensure Shortcuts is inserted correctly as
+  // setShortcutTilesConfig: to ensure Shortcuts is inserted correctly as
   // well.
   [view_controller_ loadViewIfNeeded];
   SafetyCheckState* defaultSafetyCheckState = [[SafetyCheckState alloc]
@@ -259,9 +270,7 @@ TEST_F(ContentSuggestionsViewControllerTest, TestUpdateMagicStackOrder) {
               safeBrowsingState:SafeBrowsingSafetyCheckState::kDefault
                    runningState:RunningSafetyCheckState::kDefault];
   [view_controller_ showSafetyCheck:defaultSafetyCheckState];
-  [view_controller_ setMostVisitedTilesWithConfigs:@[
-    [[ContentSuggestionsMostVisitedItem alloc] init]
-  ]];
+  [view_controller_ setMostVisitedTilesConfig:MVTConfig()];
 
   // Verify Removing kSafetyCheck works.
   MagicStackOrderChange change;
@@ -323,7 +332,7 @@ TEST_F(ContentSuggestionsViewControllerTest,
     @(int(ContentSuggestionsModuleType::kSafetyCheckMultiRow)),
   ]];
 
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
 
   [view_controller_ loadViewIfNeeded];
 
@@ -334,9 +343,7 @@ TEST_F(ContentSuggestionsViewControllerTest,
               safeBrowsingState:SafeBrowsingSafetyCheckState::kDefault
                    runningState:RunningSafetyCheckState::kDefault];
 
-  [view_controller_ setMostVisitedTilesWithConfigs:@[
-    [[ContentSuggestionsMostVisitedItem alloc] init]
-  ]];
+  [view_controller_ setMostVisitedTilesConfig:MVTConfig()];
 
   [view_controller_ showSafetyCheck:multiRowSafetyCheckState];
 
@@ -398,7 +405,7 @@ TEST_F(ContentSuggestionsViewControllerTest, TestMagicStackPlaceholder) {
        {kMagicStack, {}}},
       {});
 
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
 
   [view_controller_ loadViewIfNeeded];
 
@@ -436,16 +443,14 @@ TEST_F(ContentSuggestionsViewControllerTest,
   // Shortcuts should be inserted at index 0
   // Safety Check should be inserted at index 1
   // Most Visited should be inserted at index 0
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   // Trigger -viewDidLoad for initial Magic Stack construction.
   // TODO(crbug.com/1477476): This view get should ideally happen before
-  // setShortcutTilesWithConfigs: to ensure Shortcuts is inserted correctly as
+  // setShortcutTilesConfig: to ensure Shortcuts is inserted correctly as
   // well.
   [view_controller_ loadViewIfNeeded];
 
-  [view_controller_ setMostVisitedTilesWithConfigs:@[
-    [[ContentSuggestionsMostVisitedItem alloc] init]
-  ]];
+  [view_controller_ setMostVisitedTilesConfig:MVTConfig()];
   ParcelTrackingItem* item = [[ParcelTrackingItem alloc] init];
   item.estimatedDeliveryTime = base::Time();
   [view_controller_ showParcelTrackingItems:@[ item ]];
@@ -482,16 +487,14 @@ TEST_F(ContentSuggestionsViewControllerTest,
   // Shortcuts should be inserted at index 0
   // Safety Check should be inserted at index 1
   // Most Visited should be inserted at index 0
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   // Trigger -viewDidLoad for initial Magic Stack construction.
   // TODO(crbug.com/1477476): This view get should ideally happen before
-  // setShortcutTilesWithConfigs: to ensure Shortcuts is inserted correctly as
+  // setShortcutTilesConfig: to ensure Shortcuts is inserted correctly as
   // well.
   [view_controller_ loadViewIfNeeded];
 
-  [view_controller_ setMostVisitedTilesWithConfigs:@[
-    [[ContentSuggestionsMostVisitedItem alloc] init]
-  ]];
+  [view_controller_ setMostVisitedTilesConfig:MVTConfig()];
   ParcelTrackingItem* item1 = [[ParcelTrackingItem alloc] init];
   item1.estimatedDeliveryTime = base::Time();
   ParcelTrackingItem* item2 = [[ParcelTrackingItem alloc] init];
@@ -512,54 +515,6 @@ TEST_F(ContentSuggestionsViewControllerTest,
             parcelTrackingModule.type);
   parcelTrackingModule = (MagicStackModuleContainer*)subviews[2];
   EXPECT_EQ(ContentSuggestionsModuleType::kParcelTracking,
-            parcelTrackingModule.type);
-}
-
-// Test that passing more than two parcel tracking items to the ViewController
-// adds the "See More" parcel tracking module.
-TEST_F(ContentSuggestionsViewControllerTest,
-       TestInsertMoreThanTwoParcelTrackingModulesIntoMagicStack) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      {{kMagicStack, {{kMagicStackMostVisitedModuleParam, "true"}}}}, {});
-  [view_controller_ setMagicStackOrder:@[
-    @(int(ContentSuggestionsModuleType::kMostVisited)),
-    @(int(ContentSuggestionsModuleType::kParcelTrackingSeeMore)),
-    @(int(ContentSuggestionsModuleType::kShortcuts))
-  ]];
-  // Simulate scenario where:
-  // Shortcuts should be inserted at index 0
-  // Safety Check should be inserted at index 1
-  // Most Visited should be inserted at index 0
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
-  // Trigger -viewDidLoad for initial Magic Stack construction.
-  // TODO(crbug.com/1477476): This view get should ideally happen before
-  // setShortcutTilesWithConfigs: to ensure Shortcuts is inserted correctly as
-  // well.
-  [view_controller_ loadViewIfNeeded];
-
-  [view_controller_ setMostVisitedTilesWithConfigs:@[
-    [[ContentSuggestionsMostVisitedItem alloc] init]
-  ]];
-  ParcelTrackingItem* item1 = [[ParcelTrackingItem alloc] init];
-  item1.estimatedDeliveryTime = base::Time();
-  ParcelTrackingItem* item2 = [[ParcelTrackingItem alloc] init];
-  item2.estimatedDeliveryTime = base::Time();
-  ParcelTrackingItem* item3 = [[ParcelTrackingItem alloc] init];
-  item3.estimatedDeliveryTime = base::Time();
-  [view_controller_ showParcelTrackingItems:@[ item1, item2, item3 ]];
-
-  UIStackView* magicStack = FindMagicStack();
-
-  // Assert order is correct.
-  NSArray<UIView*>* subviews = magicStack.arrangedSubviews;
-
-  // Three modules and edit button.
-  ASSERT_EQ(4u, [subviews count]);
-
-  MagicStackModuleContainer* parcelTrackingModule =
-      (MagicStackModuleContainer*)subviews[1];
-  EXPECT_EQ(ContentSuggestionsModuleType::kParcelTrackingSeeMore,
             parcelTrackingModule.type);
 }
 

@@ -72,18 +72,8 @@ void WebNNCommandRecorderTest::Download(CommandRecorder* command_recorder,
   ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateReadbackBuffer(
       buffer_size, L"Readback_Buffer", readback_buffer));
   // Copy the result from output buffer to readback buffer.
-  D3D12_RESOURCE_BARRIER barriers[1];
-
-  barriers[0] = CreateTransitionBarrier(src_resource.Get(),
-                                        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                                        D3D12_RESOURCE_STATE_COPY_SOURCE);
-  command_recorder->ResourceBarrier(barriers);
-  command_recorder->CopyBufferRegion(readback_buffer, 0, src_resource, 0,
-                                     buffer_size);
-  barriers[0] = CreateTransitionBarrier(src_resource.Get(),
-                                        D3D12_RESOURCE_STATE_COPY_SOURCE,
-                                        D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-  command_recorder->ResourceBarrier(barriers);
+  ReadbackBufferWithBarrier(command_recorder, readback_buffer,
+                            std::move(src_resource), buffer_size);
 
   // Close, execute and wait for completion.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
@@ -272,7 +262,7 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteReluOperator) {
   // Relu operator initializer deson't need to bind any input and persistent
   // resources.
   EXPECT_HRESULT_SUCCEEDED(command_recorder->InitializeOperator(
-      compiled_operator.Get(), absl::nullopt, absl::nullopt));
+      compiled_operator.Get(), std::nullopt, std::nullopt));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
   EXPECT_HRESULT_SUCCEEDED(
       command_recorder->GetCommandQueue()->WaitSyncForTesting());
@@ -317,7 +307,7 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteReluOperator) {
   // Execute the operator with input and output bindings.
   EXPECT_HRESULT_SUCCEEDED(command_recorder->ExecuteOperator(
       std::move(compiled_operator), descriptor_heap, input_bindings,
-      output_bindings, absl::nullopt, absl::nullopt));
+      output_bindings, std::nullopt, std::nullopt));
 
   // Download the result from output resource.
   std::vector<float> result(buffer_size / sizeof(float));
@@ -326,6 +316,152 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteReluOperator) {
 
   // Compare the result against expected.
   EXPECT_EQ(result, std::vector<float>({0.0, 0.0, 1.0, 2.0}));
+}
+
+TEST_F(WebNNCommandRecorderTest,
+       RecordOnceAndExecuteMultipleTimesForReluOperator) {
+  // Test initializing and executing a DirectML Relu operator.
+  //
+  // Create a Relu operator.
+  TensorDesc input_tensor_desc(DML_TENSOR_DATA_TYPE_FLOAT32, {1, 1, 2, 2});
+  DML_ACTIVATION_RELU_OPERATOR_DESC relu_operator_desc{
+      .InputTensor = &input_tensor_desc.GetDMLTensorDesc(),
+      .OutputTensor = &input_tensor_desc.GetDMLTensorDesc()};
+  DML_OPERATOR_DESC operator_desc{.Type = DML_OPERATOR_ACTIVATION_RELU,
+                                  .Desc = &relu_operator_desc};
+  ComPtr<IDMLOperator> dml_operator;
+  ASSERT_HRESULT_SUCCEEDED(adapter_->dml_device()->CreateOperator(
+      &operator_desc, IID_PPV_ARGS(&dml_operator)));
+
+  // Compile the operator.
+  ComPtr<IDMLCompiledOperator> compiled_operator;
+  ASSERT_HRESULT_SUCCEEDED(adapter_->dml_device()->CompileOperator(
+      dml_operator.Get(), DML_EXECUTION_FLAG_NONE,
+      IID_PPV_ARGS(&compiled_operator)));
+
+  // Relu operator should not require any persistent or temporary resources.
+  ASSERT_EQ(compiled_operator->GetBindingProperties().PersistentResourceSize,
+            0u);
+  ASSERT_EQ(compiled_operator->GetBindingProperties().TemporaryResourceSize,
+            0u);
+
+  // Initialize the operator.
+  auto command_recorder = CommandRecorder::Create(adapter_->command_queue(),
+                                                  adapter_->dml_device());
+  ASSERT_NE(command_recorder.get(), nullptr);
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->Open());
+  // Relu operator initializer deson't need to bind any input and persistent
+  // resources.
+  EXPECT_HRESULT_SUCCEEDED(command_recorder->InitializeOperator(
+      compiled_operator.Get(), std::nullopt, std::nullopt));
+  EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
+  EXPECT_HRESULT_SUCCEEDED(
+      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  adapter_->command_queue()->ReleaseCompletedResources();
+  EXPECT_HRESULT_SUCCEEDED(adapter_->dml_device()->GetDeviceRemovedReason());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->d3d12_device()->GetDeviceRemovedReason());
+
+  // Create the descriptor heap for execution.
+  ComPtr<ID3D12DescriptorHeap> descriptor_heap;
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDescriptorHeap(
+      compiled_operator->GetBindingProperties().RequiredDescriptorCount,
+      L"Descriptor_Heap_For_Execution", descriptor_heap));
+
+  // Create input and output resources that will be bound for operator for
+  // execution.
+  const uint64_t buffer_size = input_tensor_desc.GetTotalTensorSizeInBytes();
+  ComPtr<ID3D12Resource> input_buffer;
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
+      buffer_size, L"Input_Default_Buffer", input_buffer));
+  ComPtr<ID3D12Resource> output_buffer;
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
+      buffer_size, L"Output_Default_Buffer", output_buffer));
+
+  // Re-open the command recorder for recording operator execution commands.
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->Open());
+
+  // Create the input and output resources binding for operator execution.
+  DML_BUFFER_BINDING input_buffer_binding{
+      .Buffer = input_buffer.Get(), .Offset = 0, .SizeInBytes = buffer_size};
+  std::vector<DML_BINDING_DESC> input_bindings(
+      {{.Type = DML_BINDING_TYPE_BUFFER, .Desc = &input_buffer_binding}});
+  DML_BUFFER_BINDING output_buffer_binding{
+      .Buffer = output_buffer.Get(), .Offset = 0, .SizeInBytes = buffer_size};
+  std::vector<DML_BINDING_DESC> output_bindings(
+      {{.Type = DML_BINDING_TYPE_BUFFER, .Desc = &output_buffer_binding}});
+
+  ComPtr<ID3D12Resource> upload_buffer;
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateUploadBuffer(
+      buffer_size, L"Upload_Buffer", upload_buffer));
+  // Copy the input data from upload buffer to input buffer.
+  UploadBufferWithBarrier(command_recorder.get(), std::move(input_buffer),
+                          upload_buffer, buffer_size);
+
+  // Record the operator execution with input and output bindings once.
+  EXPECT_HRESULT_SUCCEEDED(command_recorder->ExecuteOperator(
+      std::move(compiled_operator), descriptor_heap, input_bindings,
+      output_bindings, std::nullopt, std::nullopt));
+
+  ComPtr<ID3D12Resource> readback_buffer;
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateReadbackBuffer(
+      buffer_size, L"Readback_Buffer", readback_buffer));
+  // Copy the result from output buffer to readback buffer.
+  ReadbackBufferWithBarrier(command_recorder.get(), readback_buffer,
+                            std::move(output_buffer), buffer_size);
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->Close());
+
+  std::vector<float> result(buffer_size / sizeof(float));
+
+  // Execute the command list and check the result for the first time.
+
+  // Upload input data to execute.
+  std::vector<float> input_data({-2.0, -1.0, 1.0, 2.0});
+  void* upload_buffer_data = nullptr;
+  ASSERT_HRESULT_SUCCEEDED(upload_buffer->Map(0, nullptr, &upload_buffer_data));
+  memcpy(upload_buffer_data, input_data.data(), buffer_size);
+  upload_buffer->Unmap(0, nullptr);
+
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->Execute());
+  ASSERT_HRESULT_SUCCEEDED(
+      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+
+  // Release the resources referred by GPU execution.
+  adapter_->command_queue()->ReleaseCompletedResources();
+  ASSERT_HRESULT_SUCCEEDED(adapter_->dml_device()->GetDeviceRemovedReason());
+  ASSERT_HRESULT_SUCCEEDED(adapter_->d3d12_device()->GetDeviceRemovedReason());
+
+  // Copy the contents from readback buffer to destination buffer.
+  void* readback_buffer_data = nullptr;
+  ASSERT_HRESULT_SUCCEEDED(
+      readback_buffer->Map(0, nullptr, &readback_buffer_data));
+  memcpy(result.data(), readback_buffer_data, buffer_size);
+  readback_buffer->Unmap(0, nullptr);
+  // Compare the result against expected.
+  EXPECT_EQ(result, std::vector<float>({0.0, 0.0, 1.0, 2.0}));
+
+  // Execute the command list and check the result for the second time.
+
+  // Upload new input data to execute.
+  input_data = {2.0, 1.0, -1.0, -2.0};
+  ASSERT_HRESULT_SUCCEEDED(upload_buffer->Map(0, nullptr, &upload_buffer_data));
+  memcpy(upload_buffer_data, input_data.data(), buffer_size);
+  upload_buffer->Unmap(0, nullptr);
+  ASSERT_HRESULT_SUCCEEDED(command_recorder->Execute());
+  ASSERT_HRESULT_SUCCEEDED(
+      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+
+  // Release the resources referred by GPU execution.
+  adapter_->command_queue()->ReleaseCompletedResources();
+  ASSERT_HRESULT_SUCCEEDED(adapter_->dml_device()->GetDeviceRemovedReason());
+  ASSERT_HRESULT_SUCCEEDED(adapter_->d3d12_device()->GetDeviceRemovedReason());
+
+  // Copy the contents from readback buffer to destination buffer.
+  ASSERT_HRESULT_SUCCEEDED(
+      readback_buffer->Map(0, nullptr, &readback_buffer_data));
+  memcpy(result.data(), readback_buffer_data, buffer_size);
+  readback_buffer->Unmap(0, nullptr);
+  // Compare the result against expected.
+  EXPECT_EQ(result, std::vector<float>({2.0, 1.0, 0.0, 0.0}));
 }
 
 TEST_F(WebNNCommandRecorderTest, ExecuteReluOperatorForMultipleBindings) {
@@ -363,7 +499,7 @@ TEST_F(WebNNCommandRecorderTest, ExecuteReluOperatorForMultipleBindings) {
   // Relu operator initializer deson't need to bind any input and persistent
   // resources.
   EXPECT_HRESULT_SUCCEEDED(command_recorder->InitializeOperator(
-      compiled_operator.Get(), absl::nullopt, absl::nullopt));
+      compiled_operator.Get(), std::nullopt, std::nullopt));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
   EXPECT_HRESULT_SUCCEEDED(
       command_recorder->GetCommandQueue()->WaitSyncForTesting());
@@ -427,7 +563,7 @@ TEST_F(WebNNCommandRecorderTest, ExecuteReluOperatorForMultipleBindings) {
          input_buffers[0].Get());
   EXPECT_HRESULT_SUCCEEDED(command_recorder->ExecuteOperator(
       compiled_operator, descriptor_heaps[0], input_bindings[0],
-      output_bindings[0], absl::nullopt, absl::nullopt));
+      output_bindings[0], std::nullopt, std::nullopt));
 
   // Upload second input data and execute the operator again.
   input_data = {2.0, 1.0, -1.0, -2.0};
@@ -435,7 +571,7 @@ TEST_F(WebNNCommandRecorderTest, ExecuteReluOperatorForMultipleBindings) {
          input_buffers[1].Get());
   EXPECT_HRESULT_SUCCEEDED(command_recorder->ExecuteOperator(
       compiled_operator, descriptor_heaps[1], input_bindings[1],
-      output_bindings[1], absl::nullopt, absl::nullopt));
+      output_bindings[1], std::nullopt, std::nullopt));
 
   // Download result from output resources.
   ComPtr<ID3D12Resource> readback_buffers[2];
@@ -657,7 +793,7 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteConvolutionOperator) {
   // Execute the operator with persistent, input and output bindings.
   EXPECT_HRESULT_SUCCEEDED(command_recorder->ExecuteOperator(
       std::move(compiled_operator), descriptor_heap, input_bindings,
-      output_bindings, persistent_buffer_binding_desc, absl::nullopt));
+      output_bindings, persistent_buffer_binding_desc, std::nullopt));
 
   // Download the result from output resource.
   std::vector<float> result(output_buffer_size / sizeof(float));

@@ -22,11 +22,13 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/values.h"
 #include "chrome/browser/ash/attestation/mock_machine_certificate_uploader.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
+#include "chrome/browser/ash/http_auth_dialog.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/saml/fake_saml_idp_mixin.h"
 #include "chrome/browser/ash/login/saml/lockscreen_reauth_dialog_test_helper.h"
@@ -57,8 +59,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/login/login_handler.h"
-#include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/saml_challenge_key_handler.h"
 #include "chrome/browser/ui/webui/ash/login/saml_confirm_password_handler.h"
@@ -302,9 +302,9 @@ class SamlTestBase : public OobeBaseTest {
   void SetupAuthFlowChangeListener() {
     content::ExecuteScriptAsync(
         GetLoginUI()->GetWebContents(),
-        "$('gaia-signin').authenticator_.addEventListener('authFlowChange',"
+        "$('gaia-signin').authenticator.addEventListener('authFlowChange',"
         "    function f() {"
-        "      $('gaia-signin').authenticator_.removeEventListener("
+        "      $('gaia-signin').authenticator.removeEventListener("
         "          'authFlowChange', f);"
         "      window.domAutomationController.send("
         "          $('gaia-signin').isSamlAuthFlowForTesting() ?"
@@ -355,8 +355,7 @@ class SamlTestBase : public OobeBaseTest {
   FakeSamlIdpMixin* fake_saml_idp() { return &fake_saml_idp_mixin_; }
 
  protected:
-  raw_ptr<SecretInterceptingFakeUserDataAuthClient,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<SecretInterceptingFakeUserDataAuthClient, DanglingUntriaged>
       cryptohome_client_;
 
   FakeGaiaMixin fake_gaia_{&mixin_host_};
@@ -511,16 +510,9 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, IdpRequiresHttpAuth) {
   extensions::WebViewGuest* gaia_guest = signin::GetAuthWebViewGuest(
       GetLoginUI()->GetWebContents(), gaia_frame_parent_);
   ASSERT_TRUE(gaia_guest);
-  content::NavigationController* gaia_frame_navigation_controller =
-      &gaia_guest->GetController();
 
   // Start observing before initiating SAML sign-in.
   content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
-  LoginPromptBrowserTestObserver login_prompt_observer;
-  login_prompt_observer.Register(content::Source<content::NavigationController>(
-      gaia_frame_navigation_controller));
-  WindowedAuthNeededObserver auth_needed_waiter(
-      gaia_frame_navigation_controller);
 
   SetupAuthFlowChangeListener();
   LoginDisplayHost::default_host()
@@ -529,12 +521,12 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, IdpRequiresHttpAuth) {
       ->ShowSigninScreenForTest(saml_test_users::kFirstUserCorpExampleComEmail,
                                 "", "[]");
 
-  auth_needed_waiter.Wait();
-  ASSERT_FALSE(login_prompt_observer.handlers().empty());
-  LoginHandler* handler = *login_prompt_observer.handlers().begin();
+  ASSERT_TRUE(base::test::RunUntil(
+      []() { return HttpAuthDialog::GetAllDialogsForTest().size() == 1; }));
   // Note that the actual credentials don't matter because `fake_saml_idp()`
   // doesn't check those (only that something has been provided).
-  handler->SetAuth(u"user", u"pwd");
+  HttpAuthDialog::GetAllDialogsForTest().front()->SupplyCredentialsForTest(
+      u"user", u"pwd");
 
   // Now the SAML sign-in form should actually load.
   std::string message;
@@ -553,6 +545,9 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, IdpRequiresHttpAuth) {
 
   // Login should finish login and a session should start.
   test::WaitForPrimaryUserSessionStart();
+
+  // We should no longer be using the ash http auth dialog.
+  EXPECT_FALSE(HttpAuthDialog::IsEnabled());
 }
 
 // Tests the sign-in flow when the credentials passing API is used.
@@ -661,7 +656,7 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedSingle) {
   // Make sure that the password is scraped correctly.
   ASSERT_TRUE(content::ExecJs(
       GetLoginUI()->GetWebContents(),
-      "$('gaia-signin').authenticator_.addEventListener('authCompleted',"
+      "$('gaia-signin').authenticator.addEventListener('authCompleted',"
       "    function(e) {"
       "      var password = e.detail.password;"
       "      window.domAutomationController.send(password);"
@@ -987,14 +982,14 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, NoticeUpdatedOnRedirect) {
       "  var processEventsAndSendIfHostFound = function() {"
       "    window.setTimeout(function() {"
       "      if (sendIfHostFound()) {"
-      "        $('gaia-signin').authenticator_.removeEventListener("
+      "        $('gaia-signin').authenticator.removeEventListener("
       "            'authDomainChange',"
       "            processEventsAndSendIfHostFound);"
       "      }"
       "    }, 0);"
       "  };"
       "  if (!sendIfHostFound()) {"
-      "    $('gaia-signin').authenticator_.addEventListener("
+      "    $('gaia-signin').authenticator.addEventListener("
       "        'authDomainChange',"
       "        processEventsAndSendIfHostFound);"
       "  }"
@@ -1132,7 +1127,7 @@ class SAMLEnrollmentTest : public SamlTestBase {
 
 SAMLEnrollmentTest::SAMLEnrollmentTest() {
   gaia_frame_parent_ = "authView";
-  authenticator_id_ = "$('enterprise-enrollment').authenticator_";
+  authenticator_id_ = "$('enterprise-enrollment').authenticator";
 }
 
 SAMLEnrollmentTest::~SAMLEnrollmentTest() = default;
@@ -1387,7 +1382,7 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
   content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
   ASSERT_TRUE(content::ExecJs(
       GetLoginUI()->GetWebContents(),
-      "$('gaia-signin').authenticator_.addEventListener('ready', function() {"
+      "$('gaia-signin').authenticator.addEventListener('ready', function() {"
       "  window.domAutomationController.send('ready');"
       "});"));
   ASSERT_TRUE(LoginScreenTestApi::ClickAddUserButton());
@@ -1581,8 +1576,11 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SamlReauthWithSamlRedirect) {
   test::OobeJS().CreateVisibilityWaiter(true, kSigninFrameDialog)->Wait();
   test::OobeJS().CreateVisibilityWaiter(false, kGaiaLoading)->Wait();
 
-  // Verify that samlredirect Gaia path is used by the Gaia screen.
-  EXPECT_EQ(GaiaPath(), WizardContext::GaiaPath::kSamlRedirect);
+  // Since this is a reauth of existing user, we expect them to use reauth
+  // endpoint regardless of LoginAuthenticationBehavior policy.
+  EXPECT_EQ(GaiaPath(), features::IsGaiaReauthEndpointEnabled()
+                            ? WizardContext::GaiaPath::kReauth
+                            : WizardContext::GaiaPath::kSamlRedirect);
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_PRE_TransferCookiesAffiliated) {
@@ -2160,8 +2158,7 @@ class SAMLDeviceAttestationTest : public SamlTestBase {
       const std::vector<std::string>& allowed_urls);
 
   ScopedTestingCrosSettings settings_helper_;
-  raw_ptr<StubCrosSettingsProvider, ExperimentalAsh> settings_provider_ =
-      nullptr;
+  raw_ptr<StubCrosSettingsProvider> settings_provider_ = nullptr;
 
   policy::DevicePolicyCrosTestHelper policy_helper_;
 

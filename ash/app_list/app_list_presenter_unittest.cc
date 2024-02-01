@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_model_provider.h"
@@ -71,7 +71,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_types.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller_test_api.h"
@@ -127,7 +127,11 @@ void EnableTabletMode(bool enable) {
   // again at the end of |TabletModeController::TabletModeController|.
   base::RunLoop().RunUntilIdle();
 
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enable);
+  if (enable) {
+    ash::TabletModeControllerTestApi().EnterTabletMode();
+  } else {
+    ash::TabletModeControllerTestApi().LeaveTabletMode();
+  }
 
   // The app list will be shown automatically when tablet mode is enabled (Home
   // launcher flag is enabled). Wait here for the animation complete.
@@ -529,8 +533,7 @@ class AppListBubbleAndTabletTestBase : public AshTestBase {
   const bool tablet_mode_;
 
   std::unique_ptr<test::AppsGridViewTestApi> grid_test_api_;
-  raw_ptr<AppsGridView, DanglingUntriaged | ExperimentalAsh> apps_grid_view_ =
-      nullptr;
+  raw_ptr<AppsGridView, DanglingUntriaged> apps_grid_view_ = nullptr;
 };
 
 // Parameterized by tablet/clamshell mode.
@@ -703,10 +706,10 @@ class PopulatedAppListTest : public AshTestBase,
   }
 
   std::unique_ptr<test::AppsGridViewTestApi> apps_grid_test_api_;
-  raw_ptr<AppListView, DanglingUntriaged | ExperimentalAsh> app_list_view_ =
+  raw_ptr<AppListView, DanglingUntriaged> app_list_view_ =
       nullptr;  // Owned by native widget.
-  raw_ptr<PagedAppsGridView, DanglingUntriaged | ExperimentalAsh>
-      apps_grid_view_ = nullptr;  // Owned by |app_list_view_|.
+  raw_ptr<PagedAppsGridView, DanglingUntriaged> apps_grid_view_ =
+      nullptr;  // Owned by |app_list_view_|.
   base::test::ScopedFeatureList scoped_feature_list_;
   const bool is_drag_drop_refactor_enabled_;
 };
@@ -4683,7 +4686,7 @@ TEST_F(AppListPresenterWithScaleAnimationOnTabletModeTransitionTest,
   const auto initial_opacity = 0.01f;
   const auto initial_transform = scaled_down_transform;
 
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_EQ(layer->opacity(), initial_opacity);
   EXPECT_EQ(layer->GetTargetOpacity(), 1.0f);
   EXPECT_EQ(layer->transform(), initial_transform);
@@ -4691,7 +4694,7 @@ TEST_F(AppListPresenterWithScaleAnimationOnTabletModeTransitionTest,
 
   // Interrupt clamshell -> tablet transition by switching back to clamshell
   // mode. Current transform and opacity stay at initial values.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  ash::TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_EQ(layer->opacity(), initial_opacity);
   EXPECT_EQ(layer->GetTargetOpacity(), 0.0f);
   EXPECT_EQ(layer->transform(), initial_transform);
@@ -4699,7 +4702,7 @@ TEST_F(AppListPresenterWithScaleAnimationOnTabletModeTransitionTest,
 
   // Interrupt tablet -> clamshell transition by switching back to tablet mode.
   // Current transform and opacity stay at initial values.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_EQ(layer->opacity(), initial_opacity);
   EXPECT_EQ(layer->GetTargetOpacity(), 1.0f);
   EXPECT_EQ(layer->transform(), initial_transform);
@@ -4714,13 +4717,13 @@ TEST_F(AppListPresenterWithScaleAnimationOnTabletModeTransitionTest,
   app_list_controller->AddObserver(visibility_observer.get());
 
   // Switch to tablet mode and set normal animation duration.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
   ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
   EXPECT_EQ(visibility_observer->visibility_changed_to_hidden_times(), 0);
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().LeaveTabletMode();
+  ash::TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_EQ(visibility_observer->visibility_changed_to_hidden_times(), 0);
 }
 

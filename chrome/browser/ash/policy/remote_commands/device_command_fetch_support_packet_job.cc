@@ -16,10 +16,13 @@
 #include "base/check_deref.h"
 #include "base/check_is_test.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -27,6 +30,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
@@ -59,6 +63,8 @@ using enterprise_management::FetchSupportPacketResultNote;
 using enterprise_management::UserSessionType;
 
 namespace {
+
+static const base::FilePath* g_target_directory_for_testing = nullptr;
 
 // The directory that the support packets will be stored.
 constexpr char kTargetDir[] = "/var/spool/support";
@@ -197,8 +203,15 @@ namespace policy {
 const char kFetchSupportPacketFailureHistogramName[] =
     "Enterprise.DeviceRemoteCommand.FetchSupportPacket.Failure";
 
-DeviceCommandFetchSupportPacketJob::DeviceCommandFetchSupportPacketJob()
-    : target_dir_(kTargetDir) {}
+// static
+void DeviceCommandFetchSupportPacketJob::SetTargetDirForTesting(
+    const base::FilePath* target_dir) {
+  CHECK_IS_TEST();
+  g_target_directory_for_testing = target_dir;
+}
+
+DeviceCommandFetchSupportPacketJob::DeviceCommandFetchSupportPacketJob() =
+    default;
 
 DeviceCommandFetchSupportPacketJob::~DeviceCommandFetchSupportPacketJob() =
     default;
@@ -208,17 +221,22 @@ SupportPacketDetails::~SupportPacketDetails() = default;
 
 enterprise_management::RemoteCommand_Type
 DeviceCommandFetchSupportPacketJob::GetType() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return enterprise_management::RemoteCommand_Type_FETCH_SUPPORT_PACKET;
 }
 
-void DeviceCommandFetchSupportPacketJob::SetReportQueueForTesting(
-    std::unique_ptr<reporting::ReportQueue> report_queue) {
-  CHECK_IS_TEST();
-  report_queue_ = std::move(report_queue);
+const base::FilePath DeviceCommandFetchSupportPacketJob::GetTargetDir() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (g_target_directory_for_testing) {
+    CHECK_IS_TEST();
+    return *g_target_directory_for_testing;
+  }
+  return base::FilePath(kTargetDir);
 }
 
 bool DeviceCommandFetchSupportPacketJob::ParseCommandPayload(
     const std::string& command_payload) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool parse_success = ParseCommandPayloadImpl(command_payload);
   if (!parse_success) {
     base::UmaHistogramEnumeration(
@@ -233,6 +251,7 @@ bool DeviceCommandFetchSupportPacketJob::ParseCommandPayload(
 
 bool DeviceCommandFetchSupportPacketJob::ParseCommandPayloadImpl(
     const std::string& command_payload) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::optional<base::Value> value = base::JSONReader::Read(command_payload);
   if (!value.has_value() || !value->is_dict()) {
     return false;
@@ -281,6 +300,7 @@ bool DeviceCommandFetchSupportPacketJob::ParseCommandPayloadImpl(
 }
 
 bool DeviceCommandFetchSupportPacketJob::IsCommandEnabled() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool log_upload_enabled;
   if (!ash::CrosSettings::IsInitialized() ||
       !ash::CrosSettings::Get()->GetBoolean(ash::kSystemLogUploadEnabled,
@@ -292,6 +312,7 @@ bool DeviceCommandFetchSupportPacketJob::IsCommandEnabled() const {
 
 void DeviceCommandFetchSupportPacketJob::RunImpl(
     CallbackWithResult result_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   result_callback_ = std::move(result_callback);
   // Check if the command is enabled for the user.
   if (!IsCommandEnabled()) {
@@ -309,10 +330,12 @@ void DeviceCommandFetchSupportPacketJob::RunImpl(
                 notes_)));
     return;
   }
+
   StartJobExecution();
 }
 
 bool DeviceCommandFetchSupportPacketJob::IsPiiAllowed() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (current_session_type_) {
     case UserSessionType::AUTO_LAUNCHED_KIOSK_SESSION:
     case UserSessionType::MANUALLY_LAUNCHED_KIOSK_SESSION:
@@ -330,6 +353,7 @@ bool DeviceCommandFetchSupportPacketJob::IsPiiAllowed() const {
 }
 
 void DeviceCommandFetchSupportPacketJob::StartJobExecution() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   current_session_type_ = GetCurrentUserSessionType();
 
   // Get sign-in profile on sign-in screen.
@@ -358,6 +382,7 @@ void DeviceCommandFetchSupportPacketJob::StartJobExecution() {
 void DeviceCommandFetchSupportPacketJob::OnDataCollected(
     const PIIMap& detected_pii,
     std::set<SupportToolError> errors) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Log the errors for information. We don't return any error for the command
   // job, we just continue the operation with as much data as we could collect.
   if (!errors.empty()) {
@@ -367,7 +392,7 @@ void DeviceCommandFetchSupportPacketJob::OnDataCollected(
   }
 
   base::FilePath target_file = GetFilepathToExport(
-      target_dir_, kFilenamePrefix, support_tool_handler_->GetCaseId(),
+      GetTargetDir(), kFilenamePrefix, support_tool_handler_->GetCaseId(),
       base::Time::Now());
 
   std::set<redaction::PIIType> pii_types =
@@ -386,6 +411,7 @@ void DeviceCommandFetchSupportPacketJob::OnDataCollected(
 void DeviceCommandFetchSupportPacketJob::OnDataExported(
     base::FilePath exported_path,
     std::set<SupportToolError> errors) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto export_error =
       base::ranges::find(errors, SupportToolErrorCode::kDataExportError,
                          &SupportToolError::error_code);
@@ -406,15 +432,6 @@ void DeviceCommandFetchSupportPacketJob::OnDataExported(
 
   exported_path_ = exported_path;
 
-  // No need to create a `report_queue_` if it is already initialized. Since the
-  // DeviceCommandFetchSupportPacketJob instance will be created per command,
-  // `report_queue_` will only be already initialized for tests by
-  // `SetReportQueueForTesting()` function.
-  if (report_queue_) {
-    EnqueueEvent();
-    return;
-  }
-
   ::reporting::SourceInfo source_info;
   source_info.set_source(::reporting::SourceInfo::ASH);
   ::reporting::ReportQueueFactory::Create(
@@ -428,18 +445,23 @@ void DeviceCommandFetchSupportPacketJob::OnDataExported(
 
 void DeviceCommandFetchSupportPacketJob::OnReportQueueCreated(
     std::unique_ptr<reporting::ReportQueue> report_queue) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SYSLOG(INFO) << "ReportQueue is created for LogUploadEvent.";
   report_queue_ = std::move(report_queue);
   EnqueueEvent();
 }
 
 void DeviceCommandFetchSupportPacketJob::EnqueueEvent() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto log_upload_event = std::make_unique<ash::reporting::LogUploadEvent>();
   log_upload_event->mutable_upload_settings()->set_origin_path(
       exported_path_.value());
   log_upload_event->mutable_upload_settings()->set_upload_parameters(
       GetUploadParameters(exported_path_, unique_id()));
   log_upload_event->set_command_id(unique_id());
+  log_upload_event->set_command_result_payload(GetCommandResultPayload(
+      FetchSupportPacketResultCode::FETCH_SUPPORT_PACKET_RESULT_SUCCESS,
+      notes_));
   report_queue_->Enqueue(
       std::move(log_upload_event), reporting::Priority::SLOW_BATCH,
       base::BindOnce(&DeviceCommandFetchSupportPacketJob::OnEventEnqueued,
@@ -448,17 +470,19 @@ void DeviceCommandFetchSupportPacketJob::EnqueueEvent() {
 
 void DeviceCommandFetchSupportPacketJob::OnEventEnqueued(
     reporting::Status status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (status.ok()) {
     base::UmaHistogramEnumeration(
         kFetchSupportPacketFailureHistogramName,
         EnterpriseFetchSupportPacketFailureType::kNoFailure);
     SYSLOG(INFO) << "FETCH_SUPPORT_PACKET command job has successfully "
                     "finished execution.";
-    std::move(result_callback_)
-        .Run(ResultType::kAcked,
-             GetCommandResultPayload(FetchSupportPacketResultCode::
-                                         FETCH_SUPPORT_PACKET_RESULT_SUCCESS,
-                                     notes_));
+    // Command result will only be send to DMServer if the command execution is
+    // finished (with success or failure). It won't be sent when command is only
+    // acked. That's why we omit result payload here. FETCH_SUPPORT_PACKET
+    // command execution will be counted as finished only when LogUploadEvent is
+    // uploaded to Reporting server.
+    std::move(result_callback_).Run(ResultType::kAcked, std::nullopt);
     return;
   }
 

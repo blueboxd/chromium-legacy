@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/app_service/web_app_publisher_helper.h"
 
 #include <stddef.h>
+
 #include <iterator>
 #include <memory>
 #include <ostream>
@@ -54,6 +55,7 @@
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/app_service/publisher_helper.h"
+#include "chrome/browser/web_applications/commands/compute_app_size_command.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
@@ -65,7 +67,6 @@
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
-#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -213,14 +214,6 @@ apps::InstallReason GetHighestPriorityInstallReason(const WebApp* web_app) {
     }
   }
 
-  // On some devices, Adobe Express is installed through App Preload Service
-  // as an OEM app, but should not appear in the OEM folder.
-  // TODO(b/300857328): Remove this workaround.
-  if (web_app->GetHighestPrioritySource() == WebAppManagement::kOem &&
-      web_app->app_id() == web_app::kAdobeExpressAppId) {
-    return apps::InstallReason::kDefault;
-  }
-
   switch (web_app->GetHighestPrioritySource()) {
     case WebAppManagement::kSystem:
       return apps::InstallReason::kSystem;
@@ -246,7 +239,7 @@ apps::InstallReason GetHighestPriorityInstallReason(const WebApp* web_app) {
 }
 
 apps::InstallSource GetInstallSource(
-    absl::optional<webapps::WebappInstallSource> source) {
+    std::optional<webapps::WebappInstallSource> source) {
   if (!source) {
     return apps::InstallSource::kUnknown;
   }
@@ -560,7 +553,7 @@ void WebAppPublisherHelper::SetWebAppShowInFields(const WebApp* web_app,
 #endif
     app.show_in_launcher = chromeos_data.show_in_launcher && should_show_app;
     app.show_in_shelf = app.show_in_search =
-        chromeos_data.show_in_search && should_show_app;
+        chromeos_data.show_in_search_and_shelf && should_show_app;
     app.show_in_management = chromeos_data.show_in_management;
     app.handles_intents =
         chromeos_data.handles_file_open_intents ? true : app.show_in_launcher;
@@ -772,8 +765,13 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
   }
 #endif
 
-  app->window_mode = ConvertDisplayModeToWindowMode(
-      registrar().GetAppEffectiveDisplayMode(web_app->app_id()));
+  // For the window mode setting in app service, with shortstand enabled, this
+  // field is no longer needed. However we want to keep populating the value
+  // with shortstand disabled so that we can use it to show a user education
+  // nudge when the display mode is changed by shortstand.
+  app->window_mode =
+      ConvertDisplayModeToWindowMode(registrar().GetAppEffectiveDisplayMode(
+          web_app->app_id(), /*ignore_shortstand = */ true));
 
   const auto login_mode = registrar().GetAppRunOnOsLoginMode(web_app->app_id());
   app->run_on_os_login = apps::RunOnOsLogin(
@@ -841,16 +839,12 @@ void WebAppPublisherHelper::UninstallWebApp(
       [](std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive) {},
       std::move(profile_keep_alive));
   content::ClearSiteData(
-      base::BindRepeating(
-          [](content::BrowserContext* browser_context) {
-            return browser_context;
-          },
-          base::Unretained(profile())),
-      /*storage_partition_config=*/absl::nullopt, origin,
+      profile()->GetWeakPtr(),
+      /*storage_partition_config=*/std::nullopt, origin,
       content::ClearSiteDataTypeSet::All(),
       /*storage_buckets_to_remove=*/{}, /*avoid_closing_connections=*/false,
-      /*cookie_partition_key=*/absl::nullopt,
-      /*storage_key=*/absl::nullopt,
+      /*cookie_partition_key=*/std::nullopt,
+      /*storage_key=*/std::nullopt,
       /*partitioned_state_allowed_only=*/false, std::move(callback));
 }
 
@@ -1018,7 +1012,7 @@ void WebAppPublisherHelper::LaunchAppWithIntent(
   CHECK(intent);
 
   if (IsShuttingDown()) {
-    std::move(callback).Run(apps::LaunchResult(apps::State::FAILED));
+    std::move(callback).Run(apps::LaunchResult(apps::State::kFailed));
     return;
   }
 
@@ -1046,7 +1040,7 @@ void WebAppPublisherHelper::LaunchAppWithIntent(
       window_info ? window_info->display_id : display::kInvalidDisplayId,
       base::BindOnce(
           [](apps::LaunchCallback callback, apps::LaunchSource launch_source,
-             const std::vector<content::WebContents*>& web_contentses) {
+             std::vector<content::WebContents*> web_contentses) {
 // TODO(crbug.com/1214763): Set ArcWebContentsData for Lacros.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
             for (content::WebContents* web_contents : web_contentses) {
@@ -1079,7 +1073,7 @@ void WebAppPublisherHelper::LaunchAppWithParams(
       params.intent);
 
   bool is_system_web_app = false;
-  absl::optional<GURL> override_url = absl::nullopt;
+  std::optional<GURL> override_url = std::nullopt;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Terminal SWA has custom launch code and manages its own restore data.
@@ -1217,16 +1211,18 @@ void WebAppPublisherHelper::SetWindowMode(const std::string& app_id,
       user_display_mode = mojom::UserDisplayMode::kTabbed;
       break;
   }
-  provider_->scheduler().ScheduleCallbackWithLock(
-      "WebAppPublisherHelper::SetWindowMode",
-      std::make_unique<AppLockDescription>(app_id),
+  provider_->scheduler().ScheduleCallback(
+      "WebAppPublisherHelper::SetWindowMode", AppLockDescription(app_id),
       base::BindOnce(
           [](webapps::AppId app_id, mojom::UserDisplayMode user_display_mode,
-             AppLock& lock) {
+             AppLock& lock, base::Value::Dict& debug_value) {
+            debug_value.Set("user_display_mode",
+                            base::ToString(user_display_mode));
             lock.sync_bridge().SetAppUserDisplayMode(app_id, user_display_mode,
                                                      /*is_user_action=*/true);
           },
-          app_id, std::move(user_display_mode)));
+          app_id, std::move(user_display_mode)),
+      /*on_complete=*/base::DoNothing());
 }
 
 void WebAppPublisherHelper::SetRunOnOsLoginMode(
@@ -1447,8 +1443,12 @@ void WebAppPublisherHelper::OnWebAppUserDisplayModeChanged(
   if (apps::AppServiceProxyFactory::GetForProfile(profile_)
           ->AppRegistryCache()
           .IsAppInstalled(app_id)) {
-    PublishWindowModeUpdate(app_id,
-                            registrar().GetAppEffectiveDisplayMode(app_id));
+    // For the window mode setting in app service, with shortstand enabled, this
+    // field is no longer needed. However we want to keep populating the value
+    // with shortstand disabled so that we can use it to show a user education
+    // nudge when the display mode is changed by shortstand.
+    PublishWindowModeUpdate(app_id, registrar().GetAppEffectiveDisplayMode(
+                                        app_id, /*ignore_shortstand = */ true));
   } else {
     const WebApp* web_app = GetWebApp(app_id);
     if (web_app) {
@@ -1625,11 +1625,13 @@ void WebAppPublisherHelper::OnWebAppSettingsPolicyChanged() {
 
 void WebAppPublisherHelper::Init() {
   // Allow for web app migration tests.
-  if (!AreWebAppsEnabled(profile_)) {
+  // In some tests, WebAppPublisherHelper could be created during the shutdown
+  // stage as the web app publisher is created async by AppServiceProxy. So
+  // provider_ could be null in some tests.
+  if (!AreWebAppsEnabled(profile_) || !provider_) {
     return;
   }
 
-  DCHECK(provider_);
   provider_->on_registry_ready().Post(
       FROM_HERE, base::BindOnce(&WebAppPublisherHelper::ObserveWebAppSubsystems,
                                 weak_ptr_factory_.GetWeakPtr()));
@@ -1638,8 +1640,11 @@ void WebAppPublisherHelper::Init() {
       HostContentSettingsMapFactory::GetForProfile(profile_));
 
 #if BUILDFLAG(IS_CHROMEOS)
-  notification_display_service_.Observe(
-      NotificationDisplayServiceFactory::GetForProfile(profile()));
+  // NotificationDisplayService could be null in some tests.
+  if (auto* notification_display_service =
+          NotificationDisplayServiceFactory::GetForProfile(profile())) {
+    notification_display_service_.Observe(notification_display_service);
+  }
 
   badge_manager_ = badging::BadgeManagerFactory::GetForProfile(profile());
   // badge_manager_ is nullptr in guest and incognito profiles.
@@ -1703,8 +1708,7 @@ void WebAppPublisherHelper::LaunchAppWithIntentImpl(
     apps::IntentPtr intent,
     apps::LaunchSource launch_source,
     int64_t display_id,
-    base::OnceCallback<void(const std::vector<content::WebContents*>&)>
-        callback) {
+    base::OnceCallback<void(std::vector<content::WebContents*>)> callback) {
   bool is_file_handling_launch =
       intent && !intent->files.empty() && !intent->IsShareIntent();
   auto params = apps::CreateAppLaunchParamsForIntent(
@@ -1721,7 +1725,7 @@ void WebAppPublisherHelper::LaunchAppWithIntentImpl(
   LaunchAppWithParams(
       std::move(params),
       base::BindOnce(
-          [](base::OnceCallback<void(const std::vector<content::WebContents*>&)>
+          [](base::OnceCallback<void(std::vector<content::WebContents*>)>
                  callback,
              content::WebContents* contents) {
             // These calls are piped through LaunchWebAppCommand and can end
@@ -1743,7 +1747,7 @@ std::vector<std::string> WebAppPublisherHelper::GetPolicyIds(
 
   std::vector<std::string> policy_ids;
 
-  if (absl::optional<base::StringPiece> preinstalled_web_app_policy_id =
+  if (std::optional<base::StringPiece> preinstalled_web_app_policy_id =
           apps_util::GetPolicyIdForPreinstalledWebApp(app_id)) {
     policy_ids.emplace_back(*preinstalled_web_app_policy_id);
   }
@@ -1754,7 +1758,7 @@ std::vector<std::string> WebAppPublisherHelper::GetPolicyIds(
     const auto& swa_data = web_app.client_data().system_web_app_data;
     DCHECK(swa_data);
     const ash::SystemWebAppType swa_type = swa_data->system_app_type;
-    const absl::optional<base::StringPiece> swa_policy_id =
+    const std::optional<base::StringPiece> swa_policy_id =
         apps_util::GetPolicyIdForSystemWebAppType(swa_type);
     if (swa_policy_id) {
       policy_ids.emplace_back(*swa_policy_id);
@@ -1816,8 +1820,8 @@ void WebAppPublisherHelper::UpdateAppDisabledMode(apps::App& app) {
     auto* system_app = swa_manager->GetSystemApp(*system_app_type);
     DCHECK(system_app);
     app.show_in_launcher = system_app->ShouldShowInLauncher();
-    app.show_in_search = system_app->ShouldShowInSearch();
-    app.show_in_shelf = app.show_in_search;
+    app.show_in_shelf = system_app->ShouldShowInSearchAndShelf();
+    app.show_in_search = system_app->ShouldShowInSearchAndShelf();
   }
 #endif
 }
@@ -1852,7 +1856,7 @@ void WebAppPublisherHelper::MaybeAddWebPageNotifications(
 
   if (persistent_metadata) {
     // For persistent notifications, find the web app with the SW scope url.
-    absl::optional<webapps::AppId> app_id = FindInstalledAppWithUrlInScope(
+    std::optional<webapps::AppId> app_id = FindInstalledAppWithUrlInScope(
         profile(), persistent_metadata->service_worker_scope,
         /*window_only=*/false);
     if (app_id.has_value()) {
@@ -1890,8 +1894,7 @@ bool WebAppPublisherHelper::ShouldShowBadge(const std::string& app_id,
 void WebAppPublisherHelper::LaunchAppWithFilesCheckingUserPermission(
     const std::string& app_id,
     apps::AppLaunchParams params,
-    base::OnceCallback<void(const std::vector<content::WebContents*>&)>
-        callback) {
+    base::OnceCallback<void(std::vector<content::WebContents*>)> callback) {
   std::vector<base::FilePath> file_paths = params.launch_files;
   auto launch_callback =
       base::BindOnce(&WebAppPublisherHelper::OnFileHandlerDialogCompleted,
@@ -1921,8 +1924,7 @@ void WebAppPublisherHelper::LaunchAppWithFilesCheckingUserPermission(
 void WebAppPublisherHelper::OnFileHandlerDialogCompleted(
     std::string app_id,
     apps::AppLaunchParams params,
-    base::OnceCallback<void(const std::vector<content::WebContents*>&)>
-        callback,
+    base::OnceCallback<void(std::vector<content::WebContents*>)> callback,
     bool allowed,
     bool remember_user_choice) {
   if (remember_user_choice) {
@@ -1985,7 +1987,7 @@ void WebAppPublisherHelper::OnFileHandlerDialogCompleted(
 void WebAppPublisherHelper::OnLaunchCompleted(
     apps::AppLaunchParams params_for_restore,
     bool is_system_web_app,
-    absl::optional<GURL> override_url,
+    std::optional<GURL> override_url,
     base::OnceCallback<void(content::WebContents*)> on_complete,
     base::WeakPtr<Browser> browser,
     base::WeakPtr<content::WebContents> web_contents,
@@ -2020,7 +2022,7 @@ void WebAppPublisherHelper::OnLaunchCompleted(
 
 void WebAppPublisherHelper::OnGetWebAppSize(
     webapps::AppId app_id,
-    absl::optional<ComputeAppSizeCommand::Size> size) {
+    std::optional<ComputedAppSize> size) {
   auto app = std::make_unique<apps::App>(app_type(), app_id);
   if (!size.has_value()) {
     return;

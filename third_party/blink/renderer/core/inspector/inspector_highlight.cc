@@ -874,41 +874,44 @@ std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
   LayoutUnit row_gap = grid->GridGap(kForRows);
   LayoutUnit column_gap = grid->GridGap(kForColumns);
 
-  for (const auto& item : grid->StyleRef().GridTemplateAreas()->named_areas) {
-    const GridArea& area = item.value;
-    const String& name = item.key;
+  absl::optional<NamedGridAreaMap> named_area_map =
+      grid->CachedPlacementData().line_resolver.NamedAreasMap();
+  if (named_area_map) {
+    for (const auto& item : *named_area_map) {
+      const GridArea& area = item.value;
+      const String& name = item.key;
 
-    LayoutUnit start_column = GetPositionForTrackAt(
-        grid, area.columns.StartLine(), kForColumns, columns);
-    LayoutUnit end_column = GetPositionForTrackAt(grid, area.columns.EndLine(),
-                                                  kForColumns, columns);
-    LayoutUnit start_row =
-        GetPositionForTrackAt(grid, area.rows.StartLine(), kForRows, rows);
-    LayoutUnit end_row =
-        GetPositionForTrackAt(grid, area.rows.EndLine(), kForRows, rows);
+      const auto start_column = GetPositionForTrackAt(
+          grid, area.columns.StartLine(), kForColumns, columns);
+      const auto end_column = GetPositionForTrackAt(
+          grid, area.columns.EndLine(), kForColumns, columns);
+      const auto start_row =
+          GetPositionForTrackAt(grid, area.rows.StartLine(), kForRows, rows);
+      const auto end_row =
+          GetPositionForTrackAt(grid, area.rows.EndLine(), kForRows, rows);
 
-    // Only subtract the gap size if the end line isn't the last line in the
-    // container.
-    LayoutUnit row_gap_offset =
-        area.rows.EndLine() == rows.size() - 1 ? LayoutUnit() : row_gap;
-    LayoutUnit column_gap_offset = area.columns.EndLine() == columns.size() - 1
-                                       ? LayoutUnit()
-                                       : column_gap;
-    if (is_rtl)
-      column_gap_offset *= -1;
+      // Only subtract the gap size if the end line isn't the last line in the
+      // container.
+      const auto row_gap_offset =
+          (area.rows.EndLine() == rows.size() - 1) ? LayoutUnit() : row_gap;
+      auto column_gap_offset = (area.columns.EndLine() == columns.size() - 1)
+                                   ? LayoutUnit()
+                                   : column_gap;
+      if (is_rtl) {
+        column_gap_offset = -column_gap_offset;
+      }
 
-    PhysicalOffset position(start_column, start_row);
-    PhysicalSize size(end_column - start_column - column_gap_offset,
-                      end_row - start_row - row_gap_offset);
-    PhysicalRect area_rect(position, size);
-    gfx::QuadF area_quad = grid->LocalRectToAbsoluteQuad(area_rect);
-    FrameQuadToViewport(containing_view, area_quad);
-    PathBuilder area_builder;
-    area_builder.AppendPath(QuadToPath(area_quad), scale);
+      PhysicalOffset position(start_column, start_row);
+      PhysicalSize size(end_column - start_column - column_gap_offset,
+                        end_row - start_row - row_gap_offset);
+      gfx::QuadF area_quad = grid->LocalRectToAbsoluteQuad({position, size});
+      FrameQuadToViewport(containing_view, area_quad);
+      PathBuilder area_builder;
+      area_builder.AppendPath(QuadToPath(area_quad), scale);
 
-    area_paths->setValue(name, area_builder.Release());
+      area_paths->setValue(name, area_builder.Release());
+    }
   }
-
   return area_paths;
 }
 
@@ -959,19 +962,13 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
   };
 
   const NamedGridLinesMap& explicit_lines_map =
-      (direction == kForColumns)
-          ? grid_container_style.GridTemplateColumns().named_grid_lines
-          : grid_container_style.GridTemplateRows().named_grid_lines;
+      grid->CachedPlacementData().line_resolver.ExplicitNamedLinesMap(
+          direction);
   process_grid_lines_map(explicit_lines_map);
-
-  if (const auto& grid_template_areas =
-          grid_container_style.GridTemplateAreas()) {
-    const NamedGridLinesMap& implicit_lines_map =
-        (direction == kForColumns)
-            ? grid_template_areas->implicit_named_grid_column_lines
-            : grid_template_areas->implicit_named_grid_row_lines;
-    process_grid_lines_map(implicit_lines_map);
-  }
+  const NamedGridLinesMap& implicit_lines_map =
+      grid->CachedPlacementData().line_resolver.ImplicitNamedLinesMap(
+          direction);
+  process_grid_lines_map(implicit_lines_map);
 
   return lines;
 }
@@ -1486,8 +1483,10 @@ void CollectQuads(Node* node,
     for (wtf_size_t i = old_size; i < new_size; i++) {
       if (containing_view)
         FrameQuadToViewport(containing_view, out_quads[i]);
-      if (adjust_for_absolute_zoom)
-        AdjustForAbsoluteZoom::AdjustQuad(out_quads[i], *layout_object);
+      if (adjust_for_absolute_zoom) {
+        AdjustForAbsoluteZoom::AdjustQuadMaybeExcludingCSSZoom(out_quads[i],
+                                                               *layout_object);
+      }
     }
   }
 }
@@ -2042,10 +2041,14 @@ bool InspectorHighlight::GetBoxModel(
   }
 
   if (use_absolute_zoom) {
-    AdjustForAbsoluteZoom::AdjustQuad(content, *layout_object);
-    AdjustForAbsoluteZoom::AdjustQuad(padding, *layout_object);
-    AdjustForAbsoluteZoom::AdjustQuad(border, *layout_object);
-    AdjustForAbsoluteZoom::AdjustQuad(margin, *layout_object);
+    AdjustForAbsoluteZoom::AdjustQuadMaybeExcludingCSSZoom(content,
+                                                           *layout_object);
+    AdjustForAbsoluteZoom::AdjustQuadMaybeExcludingCSSZoom(padding,
+                                                           *layout_object);
+    AdjustForAbsoluteZoom::AdjustQuadMaybeExcludingCSSZoom(border,
+                                                           *layout_object);
+    AdjustForAbsoluteZoom::AdjustQuadMaybeExcludingCSSZoom(margin,
+                                                           *layout_object);
   }
 
   float scale = PageScaleFromFrameView(view);

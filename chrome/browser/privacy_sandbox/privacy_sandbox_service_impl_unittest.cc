@@ -821,6 +821,62 @@ TEST_F(PrivacySandboxServiceTest, GetBlockedTopics) {
   EXPECT_EQ(kSecondTopic, blocked_topics[1]);
 }
 
+TEST_F(PrivacySandboxServiceTest, GetFirstLevelTopics) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      blink::features::kBrowsingTopicsParameters, {{"taxonomy_version", "2"}});
+
+  // Check that blocked topics are correctly alphabetically sorted and returned.
+  const privacy_sandbox::CanonicalTopic kFirstTopic =
+      privacy_sandbox::CanonicalTopic(browsing_topics::Topic(1),
+                                      kTestTaxonomyVersion);
+  const privacy_sandbox::CanonicalTopic kLastTopic =
+      privacy_sandbox::CanonicalTopic(browsing_topics::Topic(332),
+                                      kTestTaxonomyVersion);
+
+  auto first_level_topics = privacy_sandbox_service()->GetFirstLevelTopics();
+
+  ASSERT_EQ(22u, first_level_topics.size());
+  EXPECT_EQ(kFirstTopic, first_level_topics[0]);
+  EXPECT_EQ(kLastTopic, first_level_topics[21]);
+}
+
+TEST_F(PrivacySandboxServiceTest, GetChildTopicsCurrentlyAssigned) {
+  const privacy_sandbox::CanonicalTopic kParentTopic =
+      privacy_sandbox::CanonicalTopic(
+          browsing_topics::Topic(1),  // "Arts & Entertainment"
+          kTestTaxonomyVersion);
+  const privacy_sandbox::CanonicalTopic kDirectChildTopic =
+      privacy_sandbox::CanonicalTopic(
+          browsing_topics::Topic(23),  // "Music & audio"
+          kTestTaxonomyVersion);
+  const privacy_sandbox::CanonicalTopic kIndirectChildTopic =
+      privacy_sandbox::CanonicalTopic(browsing_topics::Topic(29),  // "Jazz"
+                                      kTestTaxonomyVersion);
+  const privacy_sandbox::CanonicalTopic kNotChildTopic =
+      privacy_sandbox::CanonicalTopic(
+          browsing_topics::Topic(99),  // "Hair Care"
+          kTestTaxonomyVersion);
+
+  // No child topic assigned initially.
+  auto currently_assigned_child_topics =
+      privacy_sandbox_service()->GetChildTopicsCurrentlyAssigned(kParentTopic);
+  ASSERT_EQ(0u, currently_assigned_child_topics.size());
+
+  // Assign some topics.
+  const std::vector<privacy_sandbox::CanonicalTopic> kTopTopics = {
+      kDirectChildTopic, kIndirectChildTopic, kNotChildTopic};
+  ON_CALL(*mock_browsing_topics_service(), GetTopTopicsForDisplay())
+      .WillByDefault(testing::Return(kTopTopics));
+
+  // Both direct and indirect child should be returned.
+  currently_assigned_child_topics =
+      privacy_sandbox_service()->GetChildTopicsCurrentlyAssigned(kParentTopic);
+  ASSERT_EQ(2u, currently_assigned_child_topics.size());
+  EXPECT_EQ(kIndirectChildTopic, currently_assigned_child_topics[0]);
+  EXPECT_EQ(kDirectChildTopic, currently_assigned_child_topics[1]);
+}
+
 TEST_F(PrivacySandboxServiceTest, SetTopicAllowed) {
   const privacy_sandbox::CanonicalTopic kTestTopic =
       privacy_sandbox::CanonicalTopic(browsing_topics::Topic(10),
@@ -910,14 +966,10 @@ TEST_F(PrivacySandboxServiceTest,
   base::HistogramTester histogram_tester;
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/false,
-      /*block_third_party_cookies=*/false,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+  prefs()->SetUserPref(prefs::kCookieControlsMode,
+                       std::make_unique<base::Value>(static_cast<int>(
+                           content_settings::CookieControlsMode::kOff)));
+  cookie_settings()->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
   CreateService();
 
   histogram_tester.ExpectUniqueSample(
@@ -930,14 +982,11 @@ TEST_F(PrivacySandboxServiceTest,
   base::HistogramTester histogram_tester;
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_BLOCK,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
+  cookie_settings()->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   CreateService();
 
   histogram_tester.ExpectUniqueSample(
@@ -949,14 +998,10 @@ TEST_F(PrivacySandboxServiceTest, FirstPartySetsEnabledMetric) {
   base::HistogramTester histogram_tester;
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
   CreateService();
 
   histogram_tester.ExpectUniqueSample(
@@ -968,14 +1013,10 @@ TEST_F(PrivacySandboxServiceTest, FirstPartySetsDisabledMetric) {
   base::HistogramTester histogram_tester;
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(false));
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
   CreateService();
 
   histogram_tester.ExpectUniqueSample(
@@ -991,7 +1032,8 @@ TEST_F(PrivacySandboxServiceTest, SampleFpsData) {
       prefs::kCookieControlsMode,
       std::make_unique<base::Value>(static_cast<int>(
           content_settings::CookieControlsMode::kBlockThirdParty)));
-  prefs()->SetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled, true);
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
+                       std::make_unique<base::Value>(true));
 
   EXPECT_EQ(u"google.com",
             privacy_sandbox_service()->GetFirstPartySetOwnerForDisplay(
@@ -1002,7 +1044,7 @@ TEST_F(PrivacySandboxServiceTest, SampleFpsData) {
   EXPECT_EQ(u"münchen.de",
             privacy_sandbox_service()->GetFirstPartySetOwnerForDisplay(
                 GURL("https://muenchen.de")));
-  EXPECT_EQ(absl::nullopt,
+  EXPECT_EQ(std::nullopt,
             privacy_sandbox_service()->GetFirstPartySetOwnerForDisplay(
                 GURL("https://example.com")));
 }
@@ -1025,12 +1067,9 @@ TEST_F(PrivacySandboxServiceTest,
 
   // Simulate 3PC are allowed while:
   // - FPS pref is enabled
-  // - FPS backend Feature is enabled
   // - FPS UI Feature is enabled
   feature_list()->InitWithFeatures(
-      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
-       features::kFirstPartySets},
-      {});
+      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI}, {});
   CreateService();
   ClearFpsUserPrefs(prefs());
   prefs()->SetUserPref(prefs::kCookieControlsMode,
@@ -1044,7 +1083,7 @@ TEST_F(PrivacySandboxServiceTest,
   first_party_sets_policy_service()->InitForTesting();
   // We shouldn't get associate1's owner since FPS is disabled.
   EXPECT_EQ(privacy_sandbox_service()->GetFirstPartySetOwner(associate1_gurl),
-            absl::nullopt);
+            std::nullopt);
 }
 
 TEST_F(PrivacySandboxServiceTest,
@@ -1065,12 +1104,9 @@ TEST_F(PrivacySandboxServiceTest,
 
   // Simulate all cookies are blocked while:
   // - FPS pref is enabled
-  // - FPS backend Feature is enabled
   // - FPS UI Feature is enabled
   feature_list()->InitWithFeatures(
-      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
-       features::kFirstPartySets},
-      {});
+      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI}, {});
   prefs()->SetUserPref(
       prefs::kCookieControlsMode,
       std::make_unique<base::Value>(static_cast<int>(
@@ -1086,7 +1122,7 @@ TEST_F(PrivacySandboxServiceTest,
   first_party_sets_policy_service()->InitForTesting();
   // We shouldn't get associate1's owner since FPS is disabled.
   EXPECT_EQ(privacy_sandbox_service()->GetFirstPartySetOwner(associate1_gurl),
-            absl::nullopt);
+            std::nullopt);
 }
 
 TEST_F(PrivacySandboxServiceTest,
@@ -1107,19 +1143,13 @@ TEST_F(PrivacySandboxServiceTest,
 
   // Simulate FPS UI feature disabled while:
   // - FPS pref is enabled
-  // - FPS backend Feature is enabled
   // - 3PC are being blocked
   feature_list()->InitWithFeatures(
-      {features::kFirstPartySets},
-      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI});
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+      {}, {privacy_sandbox::kPrivacySandboxFirstPartySetsUI});
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
   CreateService();
   ClearFpsUserPrefs(prefs());
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
@@ -1131,51 +1161,7 @@ TEST_F(PrivacySandboxServiceTest,
 
   // We shouldn't get associate1's owner since FPS is disabled.
   EXPECT_EQ(privacy_sandbox_service()->GetFirstPartySetOwner(associate1_gurl),
-            absl::nullopt);
-}
-
-TEST_F(PrivacySandboxServiceTest,
-       GetFirstPartySetOwner_SimulatedFpsData_DisabledByFpsFeature) {
-  GURL associate1_gurl("https://associate1.test");
-  net::SchemefulSite primary_site(GURL("https://primary.test"));
-  net::SchemefulSite associate1_site(associate1_gurl);
-
-  // Create Global First-Party Sets with the following set:
-  // { primary: "https://primary.test",
-  // associatedSites: ["https://associate1.test"}
-  net::GlobalFirstPartySets global_sets(
-      kFirstPartySetsVersion,
-      {{associate1_site,
-        {net::FirstPartySetEntry(primary_site, net::SiteType::kAssociated,
-                                 0)}}},
-      {});
-
-  // Simulate FPS backend feature disabled while:
-  // - FPS pref is enabled
-  // - FPS UI Feature is enabled
-  // - 3PC are being blocked
-  feature_list()->InitWithFeatures(
-      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI},
-      {features::kFirstPartySets});
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
-  CreateService();
-  ClearFpsUserPrefs(prefs());
-  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
-                       std::make_unique<base::Value>(true));
-
-  mock_first_party_sets_handler().SetGlobalSets(global_sets.Clone());
-  first_party_sets_policy_service()->InitForTesting();
-
-  // We shouldn't get associate1's owner since FPS is disabled.
-  EXPECT_EQ(privacy_sandbox_service()->GetFirstPartySetOwner(associate1_gurl),
-            absl::nullopt);
+            std::nullopt);
 }
 
 TEST_F(PrivacySandboxServiceTest,
@@ -1196,20 +1182,13 @@ TEST_F(PrivacySandboxServiceTest,
 
   // Simulate FPS pref disabled while:
   // - FPS UI Feature is enabled
-  // - FPS backend Feature is enabled
   // - 3PC are being blocked
   feature_list()->InitWithFeatures(
-      {features::kFirstPartySets,
-       privacy_sandbox::kPrivacySandboxFirstPartySetsUI},
-      {});
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI}, {});
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
   CreateService();
   ClearFpsUserPrefs(prefs());
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
@@ -1221,7 +1200,7 @@ TEST_F(PrivacySandboxServiceTest,
 
   // We shouldn't get associate1's owner since FPS is disabled.
   EXPECT_EQ(privacy_sandbox_service()->GetFirstPartySetOwner(associate1_gurl),
-            absl::nullopt);
+            std::nullopt);
 }
 
 TEST_F(PrivacySandboxServiceTest,
@@ -1234,19 +1213,13 @@ TEST_F(PrivacySandboxServiceTest,
   net::SchemefulSite associate2_site(associate2_gurl);
 
   // Set up state that fully enables the First-Party Sets for UI; blocking 3PC,
-  // and enabling the FPS UI and backend features and the FPS enabled pref.
+  // and enabling the FPS UI feature and the FPS enabled pref.
   feature_list()->InitWithFeatures(
-      {features::kFirstPartySets,
-       privacy_sandbox::kPrivacySandboxFirstPartySetsUI},
-      {});
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI}, {});
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
   CreateService();
   ClearFpsUserPrefs(prefs());
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
@@ -1255,9 +1228,9 @@ TEST_F(PrivacySandboxServiceTest,
   // Verify `GetFirstPartySetOwner` returns empty if FPS is enabled but the
   // Global sets are not ready yet.
   EXPECT_EQ(privacy_sandbox_service()->GetFirstPartySetOwner(associate1_gurl),
-            absl::nullopt);
+            std::nullopt);
   EXPECT_EQ(privacy_sandbox_service()->GetFirstPartySetOwner(associate2_gurl),
-            absl::nullopt);
+            std::nullopt);
 }
 
 TEST_F(PrivacySandboxServiceTest,
@@ -1270,19 +1243,13 @@ TEST_F(PrivacySandboxServiceTest,
   net::SchemefulSite associate2_site(associate2_gurl);
 
   // Set up state that fully enables the First-Party Sets for UI; blocking 3PC,
-  // and enabling the FPS UI and backend features and the FPS enabled pref.
+  // and enabling the FPS UI feature and the FPS enabled pref.
   feature_list()->InitWithFeatures(
-      {features::kFirstPartySets,
-       privacy_sandbox::kPrivacySandboxFirstPartySetsUI},
-      {});
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI}, {});
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
   CreateService();
   ClearFpsUserPrefs(prefs());
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
@@ -1314,7 +1281,7 @@ TEST_F(PrivacySandboxServiceTest,
       privacy_sandbox_service()->GetFirstPartySetOwner(associate1_gurl).value(),
       primary_site);
   EXPECT_EQ(privacy_sandbox_service()->GetFirstPartySetOwner(associate2_gurl),
-            absl::nullopt);
+            std::nullopt);
 }
 
 TEST_F(PrivacySandboxServiceTest, FpsPrefInit) {
@@ -1390,22 +1357,17 @@ TEST_F(PrivacySandboxServiceTest, UsesFpsSampleSetsWhenProvided) {
   // First-Party Sets queries instead of the actual sets.
 
   // Set up state that fully enables the First-Party Sets for UI; blocking
-  // 3PC, and enabling the FPS UI and backend features and the FPS enabled pref.
+  // 3PC, and enabling the FPS UI feature and the FPS enabled pref.
   //
   // Note: this indicates that the sample sets should be used.
   feature_list()->InitWithFeaturesAndParameters(
-      /*enabled_features=*/{{features::kFirstPartySets, {}},
-                            {privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
+      /*enabled_features=*/{{privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
                              {{"use-sample-sets", "true"}}}},
       /*disabled_features=*/{});
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
   CreateService();
   ClearFpsUserPrefs(prefs());
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
@@ -1450,17 +1412,11 @@ TEST_F(PrivacySandboxServiceTest, UsesFpsSampleSetsWhenProvided) {
 
   feature_list()->Reset();
   feature_list()->InitWithFeatures(
-      {features::kFirstPartySets,
-       privacy_sandbox::kPrivacySandboxFirstPartySetsUI},
-      {});
-  privacy_sandbox_test_util::SetupTestState(
-      prefs(), host_content_settings_map(),
-      /*privacy_sandbox_enabled=*/true,
-      /*block_third_party_cookies=*/true,
-      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
-      /*user_cookie_exceptions=*/{},
-      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
-      /*managed_cookie_exceptions=*/{});
+      {privacy_sandbox::kPrivacySandboxFirstPartySetsUI}, {});
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
   CreateService();
   ClearFpsUserPrefs(prefs());
   prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
@@ -2191,13 +2147,16 @@ TEST_F(PrivacySandboxServiceM1ConsentPromptTest, SuppressedConsent) {
 }
 
 TEST_F(PrivacySandboxServiceM1ConsentPromptTest, TrialsConsentDeclined) {
-  // If a previous consent decision was made to decline the privacy sandbox
-  // (privacy_sandbox.apis_enabled_v2 is false), set kTrialsConsentDeclined
-  // as suppressed reason and return kNone.
+  // If a previous consent decision was made to decline privacy sandbox, set
+  // kTrialsConsentDeclined as suppressed reason and return kNone.
+  // Now that the trials pref is deprecated users won't be able to enter that
+  // state. Users who had the prompt suppressed due to declining the trials
+  // consent should remain in this state.
   RunTestCase(
-      TestState{{kM1PromptPreviouslySuppressedReason,
-                 static_cast<int>(PromptSuppressedReason::kNone)},
-                {kTrialsConsentDecisionMade, true}},
+      TestState{
+          {kM1PromptPreviouslySuppressedReason,
+           static_cast<int>(PromptSuppressedReason::kTrialsConsentDeclined)},
+          {kTrialsConsentDecisionMade, true}},
       TestInput{{kForceChromeBuild, true}},
       TestOutput{
           {kPromptType, static_cast<int>(PromptType::kNone)},
@@ -2369,12 +2328,15 @@ TEST_F(PrivacySandboxServiceM1NoticePromptTest, SuppressedNotice) {
 }
 
 TEST_F(PrivacySandboxServiceM1NoticePromptTest, TrialsDisabledAfterNotice) {
-  // If a previous notice was shown and then the privacy sandbox was disabled
-  // after (privacy_sandbox.apis_enabled_v2 is false), set
-  // kTrialsDisabledAfterNotice as suppressed reason and return kNone.
+  // If a previous notice was shown and then privacy sandbox was disabled after,
+  // set kTrialsDisabledAfterNotice as suppressed reason and return kNone.
+  // Now that the trials pref is deprecated users won't be able to enter that
+  // state. Users who had the prompt suppressed due to declining the trials
+  // consent should remain in this state.
   RunTestCase(
       TestState{{kM1PromptPreviouslySuppressedReason,
-                 static_cast<int>(PromptSuppressedReason::kNone)},
+                 static_cast<int>(
+                     PromptSuppressedReason::kTrialsDisabledAfterNotice)},
                 {kTrialsNoticeDisplayed, true}},
       TestInput{{kForceChromeBuild, true}},
       TestOutput{{kPromptType, static_cast<int>(PromptType::kNone)},

@@ -70,7 +70,7 @@ std::unique_ptr<views::Label> CreateText(const std::u16string& message) {
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 class LogoView : public views::ImageView {
-  METADATA_HEADER(LogoView);
+  METADATA_HEADER(LogoView, views::ImageView)
 
  public:
   LogoView() {
@@ -92,7 +92,7 @@ class LogoView : public views::ImageView {
   }
 };
 
-BEGIN_METADATA(LogoView, views::ImageView)
+BEGIN_METADATA(LogoView)
 END_METADATA
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -279,11 +279,11 @@ void EnterpriseStartupDialogView::AddContent(
   // TODO(weili): The child views are added after the dialog shows. So it
   // requires relayout and repaint. Consider a refactoring to add content
   // before showing.
-  GetWidget()->GetRootView()->Layout();
+  GetWidget()->GetRootView()->DeprecatedLayoutImmediately();
   GetWidget()->GetRootView()->SchedulePaint();
 }
 
-BEGIN_METADATA(EnterpriseStartupDialogView, views::DialogDelegateView)
+BEGIN_METADATA(EnterpriseStartupDialogView)
 END_METADATA
 
 /*

@@ -44,8 +44,8 @@ if (use_typeface_fontations) {
     deps = [
       ":path_bridge",
       "//third_party/rust/font_types/v0_4:lib",
-      "//third_party/rust/read_fonts/v0_13:lib",
-      "//third_party/rust/skrifa/v0_13:lib",
+      "//third_party/rust/read_fonts/v0_15:lib",
+      "//third_party/rust/skrifa/v0_15:lib",
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
@@ -62,28 +62,11 @@ config("skia_config") {
     "SK_UNTIL_CRBUG_1187654_IS_FIXED",
     "SK_USER_CONFIG_HEADER=\"../../skia/config/SkUserConfig.h\"",
     "SK_WIN_FONTMGR_NO_SIMULATIONS",
-    "SK_DISABLE_LEGACY_SKSURFACE_METHODS",
-    "SK_DISABLE_LEGACY_GRAPHITE_IMAGE_FACTORIES",
-    "SK_DISABLE_LEGACY_GRAPHITE_IMAGE_METHODS",
-    "SK_DISABLE_LEGACY_SKSURFACE_FACTORIES",
-    "SK_DISABLE_LEGACY_SKSURFACE_FLUSH",
-    "SK_DISABLE_LEGACY_SKSURFACE_AS_IMAGE",
-    "SK_DISABLE_LEGACY_SKSURFACE_DISPLAYLIST",
-    "SK_DISABLE_LEGACY_IMAGE_SUBSET_METHODS",
-    "SK_DISABLE_LEGACY_IMAGE_COLORSPACE_METHODS",
-    "SK_DISABLE_LEGACY_IMAGE_RELEASE_PROCS",
-    "SK_DISABLE_LEGACY_GL_BACKEND_SURFACE",
     "SK_DISABLE_LEGACY_INIT_DECODERS",
-    "SK_DISABLE_LEGACY_GRDIRECTCONTEXT_FLUSH",
-    "SK_DISABLE_LEGACY_GRDIRECTCONTEXT_BOOLS",
-    "SK_DISABLE_LEGACY_GL_GRDIRECTCONTEXT_FACTORIES",
-    "SK_DISABLE_LEGACY_PNG_WRITEBUFFER",
     "SK_SLUG_DISABLE_LEGACY_DESERIALIZE",
-    "SK_DISABLE_LEGACY_VK_GRDIRECTCONTEXT_FACTORIES",
-    "SK_DEFAULT_TYPEFACE_IS_EMPTY",
-    "SK_DISABLE_LEGACY_DEFAULT_TYPEFACE",
     "SK_DISABLE_LEGACY_VULKAN_BACKENDSEMAPHORE",
     "SK_DISABLE_LEGACY_CREATE_CHARACTERIZATION",
+    "SK_DISABLE_LEGACY_VULKAN_MUTABLE_TEXTURE_STATE",
   ]
 
   include_dirs = [
@@ -100,11 +83,6 @@ config("skia_config") {
       "SK_ENCODE_WEBP",
     ]
     include_dirs += [ "//third_party/wuffs/src/release/c" ]
-  } else {
-    # Decoder sources are only added when use_blink == true, but SkCodec.cpp is
-    # always present.  SK_DISABLE_LEGACY_INIT_DECODERS ensures that SkCodec.cpp
-    # is not attempting to reference inexistent codec code.
-    defines += [ "SK_DISABLE_LEGACY_INIT_DECODERS" ]
   }
 
   if (is_component_build) {
@@ -601,18 +579,14 @@ component("skia") {
   }
 
   if (skia_support_pdf) {
+    # Blink includes Skia's JPEG encoder and decoder which pdf uses.
+    assert(use_blink)
     deps += [
       "//third_party:freetype_harfbuzz",
       "//third_party/zlib",
     ]
     public += skia_pdf_public
     sources += skia_pdf_sources
-    if (use_blink) {
-      # Blink includes Skia's JPEG decoder
-      sources += skia_pdf_jpeginfo_lib
-    } else {
-      sources += skia_pdf_jpeginfo_none
-    }
   } else {
     sources += [ "//third_party/skia/src/pdf/SkDocument_PDF_None.cpp" ]
   }
@@ -627,6 +601,7 @@ component("skia") {
     sources += skia_skresources_sources
     sources += skia_sksg_sources
     sources += skia_shaper_primitive_sources
+    defines += [ "SKOTTIE_TRIVIAL_FONTRUN_ITER" ]
   }
 }
 

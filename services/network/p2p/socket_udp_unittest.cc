@@ -63,7 +63,7 @@ class ScopedFakeClock : public rtc::ClockInterface {
 class FakeDatagramServerSocket : public net::DatagramServerSocket {
  public:
   typedef std::
-      tuple<net::IPEndPoint, std::vector<uint8_t>, absl::optional<uint64_t>>
+      tuple<net::IPEndPoint, std::vector<uint8_t>, std::optional<uint64_t>>
           UDPPacket;
 
   // P2PSocketUdp destroys a socket on errors so sent packets
@@ -117,7 +117,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
       memcpy(buffer->data(), &*(std::get<1>(incoming_packets_.front())).begin(),
              size);
       *address = std::get<0>(incoming_packets_.front());
-      absl::optional<uint64_t> received_time =
+      std::optional<uint64_t> received_time =
           std::get<2>(incoming_packets_.front());
       if (received_time) {
         fake_clock_ptr_->SetTimeNanos(*received_time);
@@ -139,7 +139,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
              net::CompletionOnceCallback callback) override {
     scoped_refptr<net::IOBuffer> buffer(buf);
     std::vector<uint8_t> data_vector(buffer->data(), buffer->data() + buf_len);
-    sent_packets_->push_back(UDPPacket(address, data_vector, absl::nullopt));
+    sent_packets_->push_back(UDPPacket(address, data_vector, std::nullopt));
     return buf_len;
   }
 
@@ -164,7 +164,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
   void AddRecvPacket(
       const net::IPEndPoint& address,
       const std::vector<uint8_t> data,
-      const absl::optional<uint64_t> received_time = absl::nullopt) {
+      const std::optional<uint64_t> received_time = std::nullopt) {
     incoming_packets_.push_back(UDPPacket(address, data, received_time));
   }
 
@@ -177,7 +177,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
       memcpy(recv_buffer_->data(),
              &*std::get<1>(incoming_packets_.front()).begin(), size);
       *recv_address_ = std::get<0>(incoming_packets_.front());
-      absl::optional<uint64_t> received_time =
+      std::optional<uint64_t> received_time =
           std::get<2>(incoming_packets_.front());
       if (received_time) {
         fake_clock_ptr_->SetTimeNanos(*received_time);
@@ -316,10 +316,9 @@ class P2PSocketUdpTest : public testing::Test {
   P2PMessageThrottler throttler_;
   ScopedFakeClock fake_clock_;
   base::circular_deque<FakeDatagramServerSocket::UDPPacket> sent_packets_;
-  raw_ptr<FakeDatagramServerSocket, DanglingUntriaged>
-      socket_;  // Owned by |socket_impl_|.
   FakeP2PSocketDelegate socket_delegate_;
   std::unique_ptr<P2PSocketUdp> socket_impl_;
+  raw_ptr<FakeDatagramServerSocket> socket_;  // Owned by |socket_impl_|.
   std::unique_ptr<FakeSocketClient> fake_client_;
 
   net::IPEndPoint local_address_;
@@ -361,6 +360,7 @@ TEST_F(P2PSocketUdpTest, SendDataNoAuth) {
   std::vector<uint8_t> packet;
   CreateRandomPacket(&packet);
 
+  socket_ = nullptr;  // Since about to give up `socket_impl_`.
   auto* socket_impl_ptr = socket_impl_.get();
   socket_delegate_.ExpectDestruction(std::move(socket_impl_));
   socket_impl_ptr->Send(packet, P2PPacketInfo(dest1_, options, 0));
@@ -438,6 +438,7 @@ TEST_F(P2PSocketUdpTest, SendAfterStunResponseDifferentHost) {
   std::vector<uint8_t> packet;
   CreateRandomPacket(&packet);
 
+  socket_ = nullptr;  // Since about to give up `socket_impl_`.
   auto* socket_impl_ptr = socket_impl_.get();
   socket_delegate_.ExpectDestruction(std::move(socket_impl_));
   socket_impl_ptr->Send(packet, P2PPacketInfo(dest2_, options, 0));

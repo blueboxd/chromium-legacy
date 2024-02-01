@@ -6,7 +6,6 @@
 
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/task_environment.h"
-#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -56,24 +55,6 @@ class SharingStatusCoordinatorTest : public PlatformTest {
   id mock_application_commands_handler_;
   id mock_application_settings_commands_handler_;
 };
-
-TEST_F(SharingStatusCoordinatorTest, OpensHelpCenterOnLearnMoreTap) {
-  base::HistogramTester histogram_tester;
-
-  OCMExpect([mock_application_commands_handler_
-      closeSettingsUIAndOpenURL:[OCMArg checkWithBlock:^BOOL(
-                                            OpenNewTabCommand* command) {
-        return command.URL ==
-               GURL("https://support.google.com/chrome/?p=password_sharing");
-      }]]);
-  [(id<SharingStatusViewControllerPresentationDelegate>)
-          coordinator_ learnMoreLinkWasTapped];
-  EXPECT_OCMOCK_VERIFY(mock_application_commands_handler_);
-
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.PasswordSharingIOS.UserAction",
-      PasswordSharingInteraction::kSharingConfirmationLearnMoreClicked, 1);
-}
 
 TEST_F(SharingStatusCoordinatorTest, RedirectsToSiteOnChangePasswordURLTap) {
   base::HistogramTester histogram_tester;

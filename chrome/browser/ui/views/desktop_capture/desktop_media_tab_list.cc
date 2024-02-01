@@ -241,8 +241,8 @@ DesktopMediaTabList::DesktopMediaTabList(DesktopMediaListController* controller,
       controller_, selection_changed_callback);
 
   auto table = std::make_unique<views::TableView>(
-      model_.get(), std::vector<ui::TableColumn>(1), views::ICON_AND_TEXT,
-      true);
+      model_.get(), std::vector<ui::TableColumn>(1),
+      views::TableType::kIconAndText, true);
   table->set_observer(view_observer_.get());
   table->GetViewAccessibility().OverrideName(accessible_name);
   table_ = table.get();
@@ -327,6 +327,7 @@ DesktopMediaTabList::~DesktopMediaTabList() {
       highlighted_tabs);
 
   table_->SetModel(nullptr);
+  table_->set_observer(nullptr);
 }
 
 gfx::Size DesktopMediaTabList::CalculatePreferredSize() const {
@@ -491,5 +492,5 @@ void DesktopMediaTabList::RecordSourceDiscardedStatus(
   }
 }
 
-BEGIN_METADATA(DesktopMediaTabList, DesktopMediaListController::ListView)
+BEGIN_METADATA(DesktopMediaTabList)
 END_METADATA

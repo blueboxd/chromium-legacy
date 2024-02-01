@@ -4,9 +4,11 @@
 
 #include "media/filters/manifest_demuxer.h"
 
+#include <optional>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
@@ -21,7 +23,6 @@
 #include "media/formats/hls/multivariant_playlist.h"
 #include "media/formats/hls/types.h"
 #include "media/formats/hls/variant_stream.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -81,7 +82,8 @@ ManifestDemuxer::ManifestDemuxer(
       media_task_runner_(std::move(media_task_runner)),
       impl_(std::move(impl)) {}
 
-std::vector<DemuxerStream*> ManifestDemuxer::GetAllStreams() {
+std::vector<raw_ptr<DemuxerStream, VectorExperimental>>
+ManifestDemuxer::GetAllStreams() {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
 
   // For each stream that ChunkDemuxer returns, we need to wrap it so that we
@@ -90,7 +92,7 @@ std::vector<DemuxerStream*> ManifestDemuxer::GetAllStreams() {
   // memory.
   // TODO(crbug/1266991): Rearchitect the demuxer stream ownership model to
   // prevent long-lived streams from potentially leaking memory.
-  std::vector<DemuxerStream*> streams;
+  std::vector<raw_ptr<DemuxerStream, VectorExperimental>> streams;
   for (DemuxerStream* chunk_demuxer_stream : chunk_demuxer_->GetAllStreams()) {
     auto it = streams_.find(chunk_demuxer_stream);
     if (it != streams_.end()) {
@@ -254,11 +256,11 @@ int64_t ManifestDemuxer::GetMemoryUsage() const {
   return demuxer_usage + impl_usage;
 }
 
-absl::optional<container_names::MediaContainerName>
+std::optional<container_names::MediaContainerName>
 ManifestDemuxer::GetContainerForMetrics() const {
   // TODO(crbug/1266991): Consider how this is used. HLS can involve multiple
   // stream types (mp2t, mp4, etc). Refactor to report something useful.
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void ManifestDemuxer::OnEnabledAudioTracksChanged(

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/wm/multi_display/persistent_window_controller.h"
+#include "base/memory/raw_ptr.h"
 
 #include "ash/display/display_move_window_util.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
@@ -25,6 +26,17 @@ using session_manager::SessionState;
 namespace ash {
 
 using PersistentWindowControllerTest = AshTestBase;
+
+display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
+                                              const gfx::Rect& bounds) {
+  display::ManagedDisplayInfo info = display::CreateDisplayInfo(id, bounds);
+  // Each display should have at least one native mode.
+  display::ManagedDisplayMode mode(bounds.size(), /*refresh_rate=*/60.f,
+                                   /*is_interlaced=*/true,
+                                   /*native=*/true);
+  info.SetManagedDisplayModes({mode});
+  return info;
+}
 
 TEST_F(PersistentWindowControllerTest, DisconnectDisplay) {
   UpdateDisplay("500x600,500x600");
@@ -81,7 +93,7 @@ TEST_F(PersistentWindowControllerTest, DisconnectDisplay) {
   // A third id which is different from primary and secondary.
   const int64_t third_id = secondary_id + 1;
   display::ManagedDisplayInfo third_info =
-      display::CreateDisplayInfo(third_id, gfx::Rect(0, 501, 600, 500));
+      CreateDisplayInfo(third_id, gfx::Rect(0, 501, 600, 500));
   // Connects another secondary display with |third_id|.
   display_info_list.push_back(third_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
@@ -102,7 +114,7 @@ TEST_F(PersistentWindowControllerTest, DisconnectDisplay) {
 
   // Sets |w2|'s bounds changed by user and then reconnects secondary display.
   WindowState* w2_state = WindowState::Get(w2);
-  w2_state->set_bounds_changed_by_user(true);
+  w2_state->SetBoundsChangedByUser(true);
   display_info_list.push_back(secondary_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(gfx::Rect(200, 0, 100, 200), w1->GetBoundsInScreen());
@@ -338,9 +350,6 @@ TEST_F(PersistentWindowControllerTest, ReconnectOnLockScreen) {
   EXPECT_EQ(gfx::Rect(200, 0, 100, 200), w1->GetBoundsInScreen());
   EXPECT_EQ(gfx::Rect(1, 0, 200, 100), w2->GetBoundsInScreen());
 
-  // Spin a run loop to ensure shelf is deleted. https://crbug.com/810807.
-  base::RunLoop().RunUntilIdle();
-
   // Enters locked session state and reconnects secondary display.
   GetSessionControllerClient()->SetSessionState(SessionState::LOCKED);
   display_info_list.push_back(secondary_info);
@@ -401,10 +410,9 @@ TEST_F(PersistentWindowControllerTest, SwapPrimaryDisplay) {
       display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
   const display::ManagedDisplayInfo native_display_info =
-      display::CreateDisplayInfo(internal_display_id,
-                                 gfx::Rect(0, 0, 500, 600));
+      CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 600));
   const display::ManagedDisplayInfo secondary_display_info =
-      display::CreateDisplayInfo(10, gfx::Rect(1, 1, 400, 500));
+      CreateDisplayInfo(10, gfx::Rect(1, 1, 400, 500));
 
   std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.push_back(native_display_info);
@@ -559,12 +567,12 @@ TEST_F(PersistentWindowControllerTest, MRUOrderMatchesStacking) {
           .GetSecondaryDisplay()
           .id();
   display::Screen* screen = display::Screen::GetScreen();
-  const std::vector<aura::Window*> expected_mru_order = {
-      window3.get(), window2.get(), window1.get()};
+  const std::vector<raw_ptr<aura::Window, VectorExperimental>>
+      expected_mru_order = {window3.get(), window2.get(), window1.get()};
   ASSERT_EQ(
       expected_mru_order,
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks));
-  for (auto* window : expected_mru_order) {
+  for (aura::Window* window : expected_mru_order) {
     ASSERT_EQ(secondary_id, screen->GetDisplayNearestWindow(window).id());
   }
 
@@ -582,7 +590,8 @@ TEST_F(PersistentWindowControllerTest, MRUOrderMatchesStacking) {
   // they are in the children() field.
   aura::Window* parent = window1->parent();
   ASSERT_TRUE(parent);
-  std::vector<aura::Window*> children_ordered_by_stacking = parent->children();
+  std::vector<raw_ptr<aura::Window, VectorExperimental>>
+      children_ordered_by_stacking = parent->children();
   std::reverse(children_ordered_by_stacking.begin(),
                children_ordered_by_stacking.end());
   EXPECT_EQ(
@@ -626,8 +635,9 @@ TEST_F(PersistentWindowControllerTest, MRUOrderMatchesStackingInterleaved) {
           .GetSecondaryDisplay()
           .id();
   display::Screen* screen = display::Screen::GetScreen();
-  const std::vector<aura::Window*> expected_mru_order = {
-      window4.get(), window3.get(), window2.get(), window1.get()};
+  const std::vector<raw_ptr<aura::Window, VectorExperimental>>
+      expected_mru_order = {window4.get(), window3.get(), window2.get(),
+                            window1.get()};
   ASSERT_EQ(
       expected_mru_order,
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks));
@@ -648,7 +658,8 @@ TEST_F(PersistentWindowControllerTest, MRUOrderMatchesStackingInterleaved) {
   aura::Window* parent = window1->parent();
   ASSERT_TRUE(parent);
   ASSERT_EQ(parent, window2->parent());
-  std::vector<aura::Window*> children_ordered_by_stacking = parent->children();
+  std::vector<raw_ptr<aura::Window, VectorExperimental>>
+      children_ordered_by_stacking = parent->children();
   std::reverse(children_ordered_by_stacking.begin(),
                children_ordered_by_stacking.end());
   EXPECT_EQ(
@@ -764,7 +775,7 @@ TEST_F(PersistentWindowControllerTest, RestoreBoundsOnScreenRotation) {
   w1->SetBounds(gfx::Rect(
       gfx::Point(bounds_in_portrait.x() - 100, bounds_in_portrait.y() - 100),
       bounds_in_portrait.size()));
-  window_state->set_bounds_changed_by_user(true);
+  window_state->SetBoundsChangedByUser(true);
   bounds_in_portrait = w1->GetBoundsInScreen();
   EXPECT_FALSE(window_state->persistent_window_info_of_screen_rotation());
 

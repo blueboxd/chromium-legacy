@@ -113,7 +113,7 @@ class SCTAuditingReporterTest : public testing::Test {
     SCTAuditingReporter::SCTHashdanceMetadata metadata =
         *SCTAuditingReporter::SCTHashdanceMetadata::FromValue(
             reporter_metadata_.ToValue());
-    mojom::SCTAuditingConfigurationPtr configuration(absl::in_place);
+    mojom::SCTAuditingConfigurationPtr configuration(std::in_place);
     configuration->log_expected_ingestion_delay = kExpectedIngestionDelay;
     configuration->log_max_ingestion_random_delay = kMaxIngestionRandomDelay;
     configuration->report_uri = GURL(kTestReportURL);
@@ -132,10 +132,8 @@ class SCTAuditingReporterTest : public testing::Test {
   // Simulates a response for a pending request with the values from the
   // |response_| template object.
   void SimulateResponse() {
-    std::string leaf_hash_base64;
-    base::Base64Encode(response_.hash_suffix, &leaf_hash_base64);
-    std::string log_id_base64;
-    base::Base64Encode(response_.log_id, &log_id_base64);
+    std::string leaf_hash_base64 = base::Base64Encode(response_.hash_suffix);
+    std::string log_id_base64 = base::Base64Encode(response_.log_id);
     url_loader_factory_.SimulateResponseForPendingRequest(
         url_loader_factory_.GetPendingRequest(0)->request.url.spec(),
         base::ReplaceStringPlaceholders(

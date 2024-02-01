@@ -25,7 +25,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/bind.h"
@@ -60,7 +60,7 @@ class AppListMainViewTest : public AshTestBase,
     // Create and show the app list in fullscreen apps grid state.
     // Tablet mode uses a fullscreen AppListMainView.
     auto* helper = GetAppListTestHelper();
-    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+    ash::TabletModeControllerTestApi().EnterTabletMode();
     app_list_view_ = helper->GetAppListView();
   }
 
@@ -208,7 +208,7 @@ class AppListMainViewTest : public AshTestBase,
   }
 
  protected:
-  raw_ptr<AppListView, DanglingUntriaged | ExperimentalAsh> app_list_view_ =
+  raw_ptr<AppListView, DanglingUntriaged> app_list_view_ =
       nullptr;  // Owned by native widget.
  private:
   const bool is_drag_drop_refactor_enabled_;

@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 
@@ -19,7 +20,6 @@
 #include "base/time/time.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/instance_update.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
 
 class InstanceRegistryTest;
@@ -37,10 +37,10 @@ struct InstanceParams {
   ~InstanceParams();
 
   const std::string app_id;
-  raw_ptr<aura::Window, ExperimentalAsh> window;
-  absl::optional<std::string> launch_id;
-  absl::optional<std::pair<InstanceState, base::Time>> state;
-  absl::optional<content::BrowserContext*> browser_context;
+  raw_ptr<aura::Window> window;
+  std::optional<std::string> launch_id;
+  std::optional<std::pair<InstanceState, base::Time>> state;
+  std::optional<content::BrowserContext*> browser_context;
 };
 
 // An in-memory store of all the Instances (i.e. running apps) seen by

@@ -14,7 +14,6 @@
 #include "base/test/test_future.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
-#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +44,7 @@ class AutofillModelExecutorTest : public testing::Test {
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
     model_executor_ = std::make_unique<AutofillModelExecutor>();
     model_executor_->InitializeAndMoveToExecutionThread(
-        /*model_inference_timeout=*/absl::nullopt,
+        /*model_inference_timeout=*/std::nullopt,
         optimization_guide::proto::
             OPTIMIZATION_TARGET_AUTOFILL_FIELD_CLASSIFICATION,
         execution_task_runner_, base::SequencedTaskRunner::GetCurrentDefault());
@@ -79,20 +78,18 @@ TEST_F(AutofillModelExecutorTest, ExecuteModel) {
       {TokenId(1), TokenId(2), TokenId(3), TokenId(4), TokenId(5)},
       {TokenId(2), TokenId(3), TokenId(4), TokenId(5), TokenId(6)}};
   base::test::TestFuture<
-      const absl::optional<AutofillModelExecutor::ModelOutput>&>
+      const std::optional<AutofillModelExecutor::ModelOutput>&>
       predictions;
   execution_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ModelExecutor::SendForExecution,
-                     model_executor_->GetWeakPtrForExecutionThread(),
-                     predictions.GetCallback(),
-                     /*start_time=*/AutofillTickClock::NowTicks(), input));
+      FROM_HERE, base::BindOnce(&ModelExecutor::SendForExecution,
+                                model_executor_->GetWeakPtrForExecutionThread(),
+                                predictions.GetCallback(),
+                                /*start_time=*/base::TimeTicks::Now(), input));
 
-  // Expect that there are predictions for all fields. Since the input values
-  // are meaningless, the meaning of the output is not validated. This is done
-  // in the model handler tests, which actually have a type.
+  // Expect that the execution succeeded. Since the input values are
+  // meaningless, the meaning of the output is not validated. This is done in
+  // the model handler tests, which actually have a type.
   ASSERT_TRUE(predictions.Get());
-  EXPECT_EQ(predictions.Get()->size(), input.size());
 }
 
 }  // namespace

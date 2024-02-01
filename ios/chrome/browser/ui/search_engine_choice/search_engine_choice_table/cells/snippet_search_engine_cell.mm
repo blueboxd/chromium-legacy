@@ -5,6 +5,9 @@
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/cells/snippet_search_engine_cell.h"
 
 #import "base/check.h"
+#import "base/check_op.h"
+#import "base/notreached.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -26,7 +29,10 @@ constexpr CGFloat kVerticalMargin = 17.;
 // Horizontal margin between elements in SnippetSearchEngineCell.
 constexpr CGFloat kInnerHorizontalMargin = 12.;
 // Chevron button size.
-constexpr CGFloat kChevronButtonSize = 24.;
+constexpr CGFloat kChevronButtonSize = 44.;
+// Horizontal chevron margin with the separtor, the name label and the snippet
+// label.
+constexpr CGFloat kChevronButtonHorizontalMargin = 2.;
 // Thickness of the vertical separator.
 constexpr CGFloat kSeparatorThickness = 1.;
 // Duration of the snippet animation when changing state.
@@ -148,13 +154,13 @@ constexpr NSTimeInterval kSnippetAnimationDurationInSecond = .3;
                          constant:kVerticalMargin],
       [_nameLabel.trailingAnchor
           constraintLessThanOrEqualToAnchor:_chevronButton.leadingAnchor
-                                   constant:-kInnerHorizontalMargin],
+                                   constant:-kChevronButtonHorizontalMargin],
       [_nameLabel.bottomAnchor constraintEqualToAnchor:_snippetLabel.topAnchor],
       [_snippetLabel.leadingAnchor
           constraintEqualToAnchor:_nameLabel.leadingAnchor],
       [_snippetLabel.trailingAnchor
           constraintLessThanOrEqualToAnchor:_chevronButton.leadingAnchor
-                                   constant:-kInnerHorizontalMargin],
+                                   constant:-kChevronButtonHorizontalMargin],
       [_chevronButton.heightAnchor
           constraintEqualToConstant:kChevronButtonSize],
       [_chevronButton.widthAnchor constraintEqualToConstant:kChevronButtonSize],
@@ -162,7 +168,7 @@ constexpr NSTimeInterval kSnippetAnimationDurationInSecond = .3;
           constraintEqualToAnchor:_nameLabel.centerYAnchor],
       [_chevronButton.trailingAnchor
           constraintEqualToAnchor:separatorLine.leadingAnchor
-                         constant:-kInnerHorizontalMargin],
+                         constant:-kChevronButtonHorizontalMargin],
       [separatorLine.heightAnchor
           constraintEqualToAnchor:_nameLabel.heightAnchor],
       [separatorLine.centerYAnchor
@@ -182,8 +188,18 @@ constexpr NSTimeInterval kSnippetAnimationDurationInSecond = .3;
     [NSLayoutConstraint activateConstraints:constraints];
     [self updateCellWithSnippetSate:SnippetState::kHidden animate:NO];
     [self updateCircleImageView];
+    self.userInteractionEnabled = YES;
   }
   return self;
+}
+
+- (void)updateAccessibilityTraits {
+  self.accessibilityTraits |= UIAccessibilityTraitButton;
+  if (_checked) {
+    self.accessibilityTraits |= UIAccessibilityTraitSelected;
+  } else {
+    self.accessibilityTraits &= ~UIAccessibilityTraitSelected;
+  }
 }
 
 #pragma mark - Properties
@@ -194,6 +210,7 @@ constexpr NSTimeInterval kSnippetAnimationDurationInSecond = .3;
   }
   _checked = checked;
   [self updateCircleImageView];
+  [self updateAccessibilityTraits];
 }
 
 - (void)setFaviconImage:(UIImage*)faviconImage {
@@ -207,21 +224,33 @@ constexpr NSTimeInterval kSnippetAnimationDurationInSecond = .3;
   return _faviconImageView.image;
 }
 
+- (void)setSnippetState:(SnippetState)snippetState {
+  // This method should be called only when being configured, before to be
+  // added to the view. Therefore there should be no animation.
+  [self updateCellWithSnippetSate:snippetState animate:NO];
+}
+
 #pragma mark - Private
 
 // Called by the chevron button.
 - (void)chevronToggleAction:(id)sender {
   switch (_snippetState) {
-    case SnippetState::kShown:
+    case SnippetState::kShown: {
       // Need to hide the snippet.
       [self updateCellWithSnippetSate:SnippetState::kHidden animate:YES];
+      NSString* collapsedFeedback = l10n_util::GetNSString(
+          IDS_IOS_SEARCH_ENGINE_ACCESSIBILITY_SNIPPET_COLLAPSED);
+      UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
+                                      collapsedFeedback);
       break;
-    case SnippetState::kHidden:
+    }
+    case SnippetState::kHidden: {
       // Need to show the snippet.
       [self updateCellWithSnippetSate:SnippetState::kShown animate:YES];
       UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
                                       self.snippetLabel.text);
       break;
+    }
   }
   if (self.chevronToggledBlock) {
     self.chevronToggledBlock(_snippetState);
@@ -293,22 +322,36 @@ constexpr NSTimeInterval kSnippetAnimationDurationInSecond = .3;
 - (void)prepareForReuse {
   [super prepareForReuse];
   _faviconImageView.image = nil;
+  self.nameLabel.text = nil;
+  self.nameLabel.textColor = UIColor.labelColor;
+  self.snippetLabel.text = nil;
+  [self updateCellWithSnippetSate:SnippetState::kHidden animate:NO];
+  self.checked = NO;
   self.chevronToggledBlock = nil;
+  self.accessibilityTraits |= UIAccessibilityTraitButton;
+  self.userInteractionEnabled = YES;
 }
 
 #pragma mark - Accessibility
 
 - (NSString*)accessibilityLabel {
-  NSString* accessibilityLabel = self.nameLabel.text;
-  if (self.snippetLabel.text.length > 0) {
-    accessibilityLabel = [NSString
-        stringWithFormat:@"%@. %@", accessibilityLabel, self.snippetLabel.text];
+  CHECK_NE(self.snippetLabel.text.length, 0ul, base::NotFatalUntil::M124)
+      << base::SysNSStringToUTF8(self.nameLabel.text) << " "
+      << base::SysNSStringToUTF8(self.snippetLabel.text);
+  switch (_snippetState) {
+    case SnippetState::kShown:
+      return [NSString stringWithFormat:@"%@. %@", self.nameLabel.text,
+                                        self.snippetLabel.text];
+    case SnippetState::kHidden:
+      return self.nameLabel.text;
   }
-  return accessibilityLabel;
+  NOTREACHED_NORETURN();
 }
 
 - (NSArray<NSString*>*)accessibilityUserInputLabels {
-  CHECK(self.nameLabel.text);
+  CHECK_NE(self.nameLabel.text.length, 0ul, base::NotFatalUntil::M124)
+      << base::SysNSStringToUTF8(self.nameLabel.text) << " "
+      << base::SysNSStringToUTF8(self.snippetLabel.text);
   return @[ self.nameLabel.text ];
 }
 

@@ -36,7 +36,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.base.test.util.Features;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -60,6 +60,14 @@ public class BookmarkUtilsTest {
     }
 
     @Test
+    public void testCanAddFolderToParent_accountFolders() {
+        BookmarkModel fakeBookmarkModel = FakeBookmarkModel.createModel();
+        assertFalse(
+                BookmarkUtils.canAddFolderToParent(
+                        fakeBookmarkModel, fakeBookmarkModel.getAccountReadingListFolder()));
+    }
+
+    @Test
     public void testCanAddFolderToParent() {
         assertFalse(BookmarkUtils.canAddFolderToParent(mBookmarkModel, ROOT_BOOKMARK_ID));
         assertTrue(BookmarkUtils.canAddFolderToParent(mBookmarkModel, DESKTOP_BOOKMARK_ID));
@@ -79,7 +87,8 @@ public class BookmarkUtilsTest {
                         true,
                         0,
                         false,
-                        0);
+                        0,
+                        false);
         doReturn(managedBookmarkItem).when(mBookmarkModel).getBookmarkById(managedBookmarkId);
         assertFalse(BookmarkUtils.canAddFolderToParent(mBookmarkModel, managedBookmarkId));
     }
@@ -109,7 +118,8 @@ public class BookmarkUtilsTest {
                         true,
                         0,
                         false,
-                        0);
+                        0,
+                        false);
         doReturn(managedBookmarkItem).when(mBookmarkModel).getBookmarkById(managedBookmarkId);
         assertFalse(BookmarkUtils.canAddBookmarkToParent(mBookmarkModel, managedBookmarkId));
     }

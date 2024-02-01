@@ -20,7 +20,8 @@
                   "mb"
                 ],
                 "config": "chromium",
-                "target_bits": 64
+                "target_bits": 64,
+                "target_platform": "mac"
               },
               "legacy_gclient_config": {
                 "apply_configs": [
@@ -38,7 +39,8 @@
           "builder": "mac-official",
           "project": "chromium"
         }
-      ]
+      ],
+      "targets_spec_directory": "src/infra/config/generated/builders/try/mac-official/targets"
     }
   },
   "$build/reclient": {

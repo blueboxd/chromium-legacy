@@ -11,10 +11,13 @@ source_set("ui") {
   ]
   deps = [
     ":constants",
+    "//build:branding_buildflags",
     "//components/plus_addresses",
+    "//components/resources",
     "//components/strings",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/common:string_util",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/confirmation_alert",
@@ -51,4 +54,18 @@ source_set("eg2_tests") {
     "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "plus_address_bottom_sheet_view_controller_unittest.mm" ]
+  deps = [
+    ":ui",
+    "//base/test:test_support",
+    "//components/plus_addresses",
+    "//ios/chrome/browser/shared/public/commands",
+    "//ios/chrome/common/ui/confirmation_alert",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
 }

@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -52,6 +51,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
+import org.chromium.base.FeatureList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -64,14 +64,16 @@ import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterPro
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.common.FillableItemCollectionInfo;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
-import org.chromium.chrome.browser.touch_to_fill.data.WebAuthnCredential;
+import org.chromium.chrome.browser.touch_to_fill.data.WebauthnCredential;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
+import org.chromium.components.webauthn.cred_man.CredManSupportProvider;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.device.DeviceFeatureList;
 import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -105,8 +107,8 @@ public class TouchToFillViewTest {
                     "mobile.example.xyz",
                     GetLoginMatchType.PSL,
                     0);
-    private static final WebAuthnCredential CAM =
-            new WebAuthnCredential("example.net", new byte[] {1}, new byte[] {2}, "Cam");
+    private static final WebauthnCredential CAM =
+            new WebauthnCredential("example.net", new byte[] {1}, new byte[] {2}, "Cam");
     private static final Credential NIK =
             new Credential(
                     "Nik", "***", "Nik", "group.xyz", "group.xyz", GetLoginMatchType.AFFILIATED, 0);
@@ -418,30 +420,30 @@ public class TouchToFillViewTest {
         assertThat(getCredentials().getChildCount(), is(4));
         assertThat(getCredentialOriginAt(0).getVisibility(), is(View.GONE));
         assertThat(getCredentialNameAt(0).getText(), is(ANA.getFormattedUsername()));
-        assertThat(getCredentialPasswordAt(0).getText(), is(ANA.getPassword()));
+        assertThat(getCredentialPasswordOrContextAt(0).getText(), is(ANA.getPassword()));
         assertThat(
-                getCredentialPasswordAt(0).getTransformationMethod(),
+                getCredentialPasswordOrContextAt(0).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
         assertThat(getCredentialOriginAt(1).getVisibility(), is(View.VISIBLE));
         assertThat(getCredentialOriginAt(1).getText(), is("m.example.xyz"));
         assertThat(getCredentialNameAt(1).getText(), is(NO_ONE.getFormattedUsername()));
-        assertThat(getCredentialPasswordAt(1).getText(), is(NO_ONE.getPassword()));
+        assertThat(getCredentialPasswordOrContextAt(1).getText(), is(NO_ONE.getPassword()));
         assertThat(
-                getCredentialPasswordAt(1).getTransformationMethod(),
+                getCredentialPasswordOrContextAt(1).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
         assertThat(getCredentialOriginAt(2).getVisibility(), is(View.VISIBLE));
         assertThat(getCredentialOriginAt(2).getText(), is("mobile.example.xyz"));
         assertThat(getCredentialNameAt(2).getText(), is(BOB.getFormattedUsername()));
-        assertThat(getCredentialPasswordAt(2).getText(), is(BOB.getPassword()));
+        assertThat(getCredentialPasswordOrContextAt(2).getText(), is(BOB.getPassword()));
         assertThat(
-                getCredentialPasswordAt(2).getTransformationMethod(),
+                getCredentialPasswordOrContextAt(2).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
         assertThat(getCredentialOriginAt(3).getVisibility(), is(View.VISIBLE));
         assertThat(getCredentialOriginAt(3).getText(), is("group.xyz"));
         assertThat(getCredentialNameAt(3).getText(), is(NIK.getFormattedUsername()));
-        assertThat(getCredentialPasswordAt(3).getText(), is(NIK.getPassword()));
+        assertThat(getCredentialPasswordOrContextAt(3).getText(), is(NIK.getPassword()));
         assertThat(
-                getCredentialPasswordAt(3).getTransformationMethod(),
+                getCredentialPasswordOrContextAt(3).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
     }
 
@@ -712,8 +714,14 @@ public class TouchToFillViewTest {
 
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
 
-        // The sheet should be expanded to half height.
-        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HALF);
+        // The sheet should be expanded to half height if possible, the half height state is
+        // disabled on small screens.
+        @BottomSheetController.SheetState
+        int desiredState =
+                mBottomSheetController.isSmallScreen()
+                        ? BottomSheetController.SheetState.FULL
+                        : BottomSheetController.SheetState.HALF;
+        pollUiThread(() -> getBottomSheetState() == desiredState);
     }
 
     @Test
@@ -728,7 +736,7 @@ public class TouchToFillViewTest {
 
         // The sheet should be expanded to half height and suppress scrolling.
         RecyclerView recyclerView = mTouchToFillView.getSheetItemListView();
-        assertTrue(recyclerView.isLayoutSuppressed());
+        assertEquals(!mBottomSheetController.isSmallScreen(), recyclerView.isLayoutSuppressed());
 
         // Expand the sheet to the full height and scrolling .
         TestThreadUtils.runOnUiThreadBlocking(
@@ -830,6 +838,41 @@ public class TouchToFillViewTest {
         pollUiThread(mMorePasskeysClicked::get);
     }
 
+    @Test
+    @MediumTest
+    public void testPasskeyCredentialSubheaderWhenGpmNotInCredManEnabled() {
+        CredManSupportProvider.setupForTesting(/*override*/ true);
+        FeatureList.TestValues testValues = new FeatureList.TestValues();
+        testValues.addFeatureFlagOverride(DeviceFeatureList.WEBAUTHN_ANDROID_CRED_MAN, true);
+        testValues.addFieldTrialParamOverride(
+                DeviceFeatureList.WEBAUTHN_ANDROID_CRED_MAN, "gpm_in_cred_man", "false");
+        FeatureList.setTestValues(testValues);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mModel.get(SHEET_ITEMS)
+                            .addAll(
+                                    asList(
+                                            buildWebAuthnCredentialItem(
+                                                    CAM, new FillableItemCollectionInfo(1, 1)),
+                                            buildFooterItem(false)));
+                    mModel.set(VISIBLE, true);
+                });
+
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+
+        assertNotNull(getCredentials().getChildAt(0));
+
+        assertThat(
+                getCredentialPasswordOrContextAt(0).getText(),
+                is(
+                        getActivity()
+                                .getString(
+                                        R.string.touch_to_fill_sheet_passkey_credential_context)));
+
+        CredManSupportProvider.setupForTesting(/*override*/ false);
+    }
+
     private ChromeActivity getActivity() {
         return mActivityTestRule.getActivity();
     }
@@ -846,7 +889,7 @@ public class TouchToFillViewTest {
         return getCredentials().getChildAt(index).findViewById(R.id.username);
     }
 
-    private TextView getCredentialPasswordAt(int index) {
+    private TextView getCredentialPasswordOrContextAt(int index) {
         return getCredentials().getChildAt(index).findViewById(R.id.password_or_context);
     }
 
@@ -874,7 +917,7 @@ public class TouchToFillViewTest {
     }
 
     private MVCListAdapter.ListItem buildWebAuthnCredentialItem(
-            WebAuthnCredential credential, FillableItemCollectionInfo collectionInfo) {
+            WebauthnCredential credential, FillableItemCollectionInfo collectionInfo) {
         return new MVCListAdapter.ListItem(
                 TouchToFillProperties.ItemType.WEBAUTHN_CREDENTIAL,
                 new PropertyModel.Builder(

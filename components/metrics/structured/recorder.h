@@ -11,10 +11,12 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/task/sequenced_task_runner.h"
+#include "components/metrics/structured/delegating_events_processor.h"
 #include "components/metrics/structured/event.h"
+#include "components/metrics/structured/events_processor_interface.h"
 #include "components/metrics/structured/structured_metrics_client.h"
 #include "components/metrics/structured/structured_metrics_validator.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
 namespace base {
 class FilePath;
@@ -55,8 +57,6 @@ class Recorder {
     virtual void OnEventRecord(const Event& event) = 0;
     // Called on a call to ProfileAdded.
     virtual void OnProfileAdded(const base::FilePath& profile_path) = 0;
-    // Called on a call to OnReportingStateChanged.
-    virtual void OnReportingStateChanged(bool enabled) = 0;
     // Called when SystemProfile has finished loading
     virtual void OnSystemProfileInitialized() {}
   };
@@ -78,9 +78,6 @@ class Recorder {
   // TODO(crbug.com/1016655): When structured metrics expands beyond Chrome OS,
   // investigate whether initialization can be simplified for Chrome.
   void ProfileAdded(const base::FilePath& profile_path);
-
-  // Notifies observers that metrics reporting has been enabled or disabled.
-  void OnReportingStateChanged(bool enabled);
 
   // Notifies observers that system profile has been loaded.
   void OnSystemProfileInitialized();

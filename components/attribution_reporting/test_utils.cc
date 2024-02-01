@@ -4,6 +4,7 @@
 
 #include "components/attribution_reporting/test_utils.h"
 
+#include <optional>
 #include <ostream>
 #include <string>
 
@@ -23,17 +24,17 @@
 #include "components/attribution_reporting/source_type.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/summary_buckets.h"
 #include "components/attribution_reporting/trigger_config.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "net/base/schemeful_site.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace attribution_reporting {
 
 FiltersDisjunction FiltersForSourceType(
     mojom::SourceType source_type,
-    absl::optional<base::TimeDelta> lookback_window) {
+    std::optional<base::TimeDelta> lookback_window) {
   return {*FilterConfig::Create(
       {
           {

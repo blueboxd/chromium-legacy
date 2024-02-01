@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
@@ -1664,7 +1665,7 @@ protocol::Response InspectorDOMAgent::getContainerForNode(
     }
   }
 
-  element->GetDocument().UpdateStyleAndLayoutTreeForNode(
+  element->GetDocument().UpdateStyleAndLayoutTreeForElement(
       element, DocumentUpdateReason::kInspector);
   StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();
   // Container rule origin no longer known at this point, match name from all
@@ -1797,7 +1798,10 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     bool pierce,
     NodeToIdMap* nodes_map,
     protocol::Array<protocol::DOM::Node>* flatten_result) {
-  int id = Bind(node, nodes_map);
+  // If no `nodes_map` is provided, do the best effort to provide a node id,
+  // but do not create one if it's not there, since absence of the map implies
+  // we're not pushing the node to the front-end at the moment.
+  const int id = nodes_map ? Bind(node, nodes_map) : BoundNodeId(node);
   String local_name;
   String node_value;
 
@@ -1867,12 +1871,9 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     }
 
     if (auto* template_element = DynamicTo<HTMLTemplateElement>(*element)) {
-      // The inspector should not try to access the .content() property of
-      // declarative Shadow DOM <template> elements, because it will be null.
-      if (!template_element->IsDeclarativeShadowRoot() &&
-          template_element->content()) {
-        value->setTemplateContent(BuildObjectForNode(
-            template_element->content(), 0, pierce, nodes_map, flatten_result));
+      if (DocumentFragment* content = template_element->content()) {
+        value->setTemplateContent(
+            BuildObjectForNode(content, 0, pierce, nodes_map, flatten_result));
         force_push_children = true;
       }
     }

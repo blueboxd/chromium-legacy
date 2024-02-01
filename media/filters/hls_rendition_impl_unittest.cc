@@ -69,6 +69,10 @@ const std::string kSecondFetchLivePlaylist =
 using testing::_;
 using testing::Return;
 
+MATCHER_P(MediaSegmentHasUrl, urlstr, "MediaSegment has provided URL") {
+  return arg.GetUri() == GURL(urlstr);
+}
+
 class HlsRenditionImplUnittest : public testing::Test {
  protected:
   std::unique_ptr<MockManifestDemuxerEngineHost> mock_mdeh_;
@@ -103,7 +107,7 @@ class HlsRenditionImplUnittest : public testing::Test {
     }
     return std::make_unique<HlsRenditionImpl>(mock_mdeh_.get(), mock_hrh_.get(),
                                               "test", std::move(parsed).value(),
-                                              absl::nullopt, uri);
+                                              std::nullopt, uri);
   }
 
   MOCK_METHOD(void, CheckStateComplete, (base::TimeDelta delay), ());
@@ -154,9 +158,9 @@ class HlsRenditionImplUnittest : public testing::Test {
                                base::TimeDelta initial_response_end,
                                base::TimeDelta fetch_expected_time) {
     std::string junk_content = "abcdefg, I dont like to sing rhyming songs";
-    EXPECT_CALL(*mock_hrh_, ReadFromUrl(_, _, _, _))
+    EXPECT_CALL(*mock_hrh_, ReadMediaSegment(_, _, _, _))
         .WillOnce([content = std::move(junk_content), host = mock_hrh_.get()](
-                      GURL url, bool, absl::optional<hls::types::ByteRange>,
+                      const hls::MediaSegment&, bool, bool,
                       HlsDataSourceProvider::ReadCb cb) {
           auto stream = StringHlsDataSourceStreamFactory::CreateStream(content);
           std::move(cb).Run(std::move(stream));
@@ -177,9 +181,9 @@ class HlsRenditionImplUnittest : public testing::Test {
   }
 
   void RespondToUrl(std::string uri, std::string content) {
-    EXPECT_CALL(*mock_hrh_, ReadFromUrl(GURL(uri), _, _, _))
+    EXPECT_CALL(*mock_hrh_, ReadMediaSegment(MediaSegmentHasUrl(uri), _, _, _))
         .WillOnce([content = std::move(content), host = mock_hrh_.get()](
-                      GURL url, bool, absl::optional<hls::types::ByteRange>,
+                      const hls::MediaSegment&, bool, bool,
                       HlsDataSourceProvider::ReadCb cb) {
           auto stream = StringHlsDataSourceStreamFactory::CreateStream(content);
           std::move(cb).Run(std::move(stream));
@@ -251,7 +255,7 @@ TEST_F(HlsRenditionImplUnittest, TestNonRealTimePlaybackRate) {
   auto rendition =
       MakeLiveRendition(GURL("http://example.com"), kInitialFetchPlaylist);
   ASSERT_NE(rendition, nullptr);
-  ASSERT_EQ(rendition->GetDuration(), absl::nullopt);
+  ASSERT_EQ(rendition->GetDuration(), std::nullopt);
 
   // Any rate not 0.0 or 1.0 should error.
   EXPECT_CALL(*mock_mdeh_, OnError(_));
@@ -263,7 +267,7 @@ TEST_F(HlsRenditionImplUnittest, TestCreateRenditionPaused) {
   auto rendition =
       MakeLiveRendition(GURL("http://example.com"), kInitialFetchPlaylist);
   ASSERT_NE(rendition, nullptr);
-  ASSERT_EQ(rendition->GetDuration(), absl::nullopt);
+  ASSERT_EQ(rendition->GetDuration(), std::nullopt);
 
   // CheckState causes the rentidion to:
   // Check buffered ranges first
@@ -284,7 +288,7 @@ TEST_F(HlsRenditionImplUnittest, TestPausedRenditionHasSomeData) {
   auto rendition =
       MakeLiveRendition(GURL("http://example.com"), kInitialFetchPlaylist);
   ASSERT_NE(rendition, nullptr);
-  ASSERT_EQ(rendition->GetDuration(), absl::nullopt);
+  ASSERT_EQ(rendition->GetDuration(), std::nullopt);
 
   // CheckState causes the rentidion to:
   // Check buffered ranges first. In this case, we've loaded a bunch of content
@@ -307,7 +311,7 @@ TEST_F(HlsRenditionImplUnittest, TestPausedRenditionHasEnoughBufferedData) {
   auto rendition =
       MakeLiveRendition(GURL("http://example.com"), kInitialFetchPlaylist);
   ASSERT_NE(rendition, nullptr);
-  ASSERT_EQ(rendition->GetDuration(), absl::nullopt);
+  ASSERT_EQ(rendition->GetDuration(), std::nullopt);
 
   // CheckState causes the rentidion to:
   // Check buffered ranges first. In this case, we've loaded a bunch of content
@@ -329,7 +333,7 @@ TEST_F(HlsRenditionImplUnittest, TestRenditionHasEnoughDataFetchNewManifest) {
   auto rendition =
       MakeLiveRendition(GURL("http://example.com"), kInitialFetchPlaylist);
   ASSERT_NE(rendition, nullptr);
-  ASSERT_EQ(rendition->GetDuration(), absl::nullopt);
+  ASSERT_EQ(rendition->GetDuration(), std::nullopt);
 
   // CheckState causes the rentidion to:
   // Check buffered ranges first. In this case, we've loaded a bunch of content
@@ -358,7 +362,7 @@ TEST_F(HlsRenditionImplUnittest, TestRenditionHasEnoughDataDeleteOldContent) {
   auto rendition =
       MakeLiveRendition(GURL("http://example.com"), kInitialFetchPlaylist);
   ASSERT_NE(rendition, nullptr);
-  ASSERT_EQ(rendition->GetDuration(), absl::nullopt);
+  ASSERT_EQ(rendition->GetDuration(), std::nullopt);
 
   // CheckState causes the rentidion to:
   // Check buffered ranges first. In this case, we've loaded a bunch of content
@@ -395,7 +399,7 @@ TEST_F(HlsRenditionImplUnittest, TestPauseAndUnpause) {
   auto rendition =
       MakeLiveRendition(GURL("http://example.com"), kInitialFetchPlaylist);
   ASSERT_NE(rendition, nullptr);
-  ASSERT_EQ(rendition->GetDuration(), absl::nullopt);
+  ASSERT_EQ(rendition->GetDuration(), std::nullopt);
 
   ON_CALL(*mock_mdeh_, OnError(_)).WillByDefault([](PipelineStatus st) {
     LOG(ERROR) << MediaSerialize(st);

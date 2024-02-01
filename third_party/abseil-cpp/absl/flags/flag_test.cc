@@ -144,7 +144,6 @@ using String = std::string;
 using int128 = absl::int128;
 using uint128 = absl::uint128;
 
-#if !defined(_MSC_VER) || defined(__clang__)
 #define DEFINE_CONSTRUCTED_FLAG(T, dflt, dflt_kind)                        \
   constexpr flags::FlagDefaultArg f1default##T{                            \
       flags::FlagDefaultSrc{dflt}, flags::FlagDefaultKind::dflt_kind};     \
@@ -157,16 +156,6 @@ using uint128 = absl::uint128;
           flags::FlagDefaultKind::kGenFunc                                 \
     }                                                                      \
   }
-#else
-#define DEFINE_CONSTRUCTED_FLAG(T, dflt, dflt_kind)                    \
-  constexpr flags::FlagDefaultArg f1default##T{                        \
-      flags::FlagDefaultSrc{dflt}, flags::FlagDefaultKind::dflt_kind}; \
-  constexpr absl::Flag<T> f1##T{"f1", "file", &TestLiteralHelpMsg,     \
-                                &TestMakeDflt<T>};                     \
-  ABSL_CONST_INIT absl::Flag<T> f2##T {                                \
-    "f2", "file", &TestHelpMsg, &TestMakeDflt<T>                       \
-  }
-#endif
 
 DEFINE_CONSTRUCTED_FLAG(bool, true, kOneWord);
 DEFINE_CONSTRUCTED_FLAG(int16_t, 1, kOneWord);
@@ -1055,13 +1044,7 @@ TEST_F(FlagTest, MacroWithinAbslFlag) {
 
 // --------------------------------------------------------------------
 
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ <= 5
-#define ABSL_SKIP_OPTIONAL_BOOL_TEST_DUE_TO_GCC_BUG
-#endif
-
-#ifndef ABSL_SKIP_OPTIONAL_BOOL_TEST_DUE_TO_GCC_BUG
 ABSL_FLAG(absl::optional<bool>, optional_bool, absl::nullopt, "help");
-#endif
 ABSL_FLAG(absl::optional<int>, optional_int, {}, "help");
 ABSL_FLAG(absl::optional<double>, optional_double, 9.3, "help");
 ABSL_FLAG(absl::optional<std::string>, optional_string, absl::nullopt, "help");
@@ -1075,7 +1058,6 @@ ABSL_FLAG(std::optional<int64_t>, std_optional_int64, std::nullopt, "help");
 
 namespace {
 
-#ifndef ABSL_SKIP_OPTIONAL_BOOL_TEST_DUE_TO_GCC_BUG
 TEST_F(FlagTest, TestOptionalBool) {
   EXPECT_FALSE(absl::GetFlag(FLAGS_optional_bool).has_value());
   EXPECT_EQ(absl::GetFlag(FLAGS_optional_bool), absl::nullopt);
@@ -1094,7 +1076,6 @@ TEST_F(FlagTest, TestOptionalBool) {
 }
 
 // --------------------------------------------------------------------
-#endif
 
 TEST_F(FlagTest, TestOptionalInt) {
   EXPECT_FALSE(absl::GetFlag(FLAGS_optional_int).has_value());

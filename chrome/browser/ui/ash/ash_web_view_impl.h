@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 
 namespace content {
 class Page;
@@ -19,6 +20,10 @@ class WebContents;
 namespace views {
 class WebView;
 }  // namespace views
+
+namespace gfx {
+class RoundedCornersF;
+}  // namespace gfx
 
 // Implements AshWebView used by Ash to work around dependency
 // restrictions.
@@ -45,6 +50,7 @@ class AshWebViewImpl : public ash::AshWebView,
   bool IsErrorDocument() override;
   void AddedToWidget() override;
   views::View* GetInitiallyFocusedView() override;
+  void SetCornerRadii(const gfx::RoundedCornersF& corner_radii) override;
 
   // content::WebContentsDelegate:
   bool IsWebContentsCreationOverridden(
@@ -94,7 +100,7 @@ class AshWebViewImpl : public ash::AshWebView,
   const InitParams params_;
 
   std::unique_ptr<content::WebContents> web_contents_;
-  raw_ptr<views::WebView, ExperimentalAsh> web_view_ = nullptr;
+  raw_ptr<views::WebView> web_view_ = nullptr;
 
   // Whether or not the embedded |web_contents_| can go back.
   bool can_go_back_ = false;

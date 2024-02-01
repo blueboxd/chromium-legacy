@@ -32,9 +32,7 @@ using ::testing::UnorderedElementsAre;
   do {                                                             \
     ASSERT_TRUE(CaretLayer());                                     \
     EXPECT_EQ(SkColors::kBlack, CaretLayer()->background_color()); \
-    if (RuntimeEnabledFeatures::SolidColorLayersEnabled()) {       \
-      EXPECT_TRUE(CaretLayer()->IsSolidColorLayerForTesting());    \
-    }                                                              \
+    EXPECT_TRUE(CaretLayer()->IsSolidColorLayerForTesting());      \
   } while (false)
 
 class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
@@ -74,8 +72,16 @@ class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
     return GetCaretDisplayItemClient().previous_layout_block_.Get();
   }
 
+  const PhysicalBoxFragment* CaretBoxFragment() {
+    return GetCaretDisplayItemClient().box_fragment_.Get();
+  }
+
   bool ShouldPaintCursorCaret(const LayoutBlock& block) {
     return Selection().ShouldPaintCaret(block);
+  }
+
+  bool ShouldPaintCursorCaret(const PhysicalBoxFragment& fragment) {
+    return Selection().ShouldPaintCaret(fragment);
   }
 
   Text* AppendTextNode(const String& data) {
@@ -90,18 +96,6 @@ class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
     block->AppendChild(text);
     GetDocument().body()->AppendChild(block);
     return block;
-  }
-
-  RasterInvalidationTracking* CaretRasterInvalidationTracking() const {
-    DCHECK(!RuntimeEnabledFeatures::SolidColorLayersEnabled());
-    wtf_size_t i = 0;
-    auto* pac = GetDocument().View()->GetPaintArtifactCompositor();
-    while (auto* client = pac->ContentLayerClientForTesting(i)) {
-      if (client->Layer().DebugName() == "Caret")
-        return client->GetRasterInvalidator().GetTracking();
-      ++i;
-    }
-    return nullptr;
   }
 
   const cc::Layer* CaretLayer() const {
@@ -138,9 +132,6 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   const auto* block = To<LayoutBlock>(GetDocument().body()->GetLayoutObject());
 
   // Focus the body. Should invalidate the new caret.
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    GetDocument().View()->SetTracksRasterInvalidations(true);
-  }
   GetDocument().body()->Focus();
 
   UpdateAllLifecyclePhasesExceptPaint();
@@ -152,20 +143,9 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_EQ(PhysicalRect(0, 0, 1, 1), CaretLocalRect());
 
   ASSERT_CARET_LAYER();
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_THAT(
-        CaretRasterInvalidationTracking()->Invalidations(),
-        UnorderedElementsAre(RasterInvalidationInfo{
-            GetCaretDisplayItemClient().Id(), "Caret", gfx::Rect(0, 0, 1, 1),
-            PaintInvalidationReason::kFullLayer}));
-    GetDocument().View()->SetTracksRasterInvalidations(false);
-  }
 
   // Move the caret to the end of the text. Should invalidate both the old and
   // new carets.
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    GetDocument().View()->SetTracksRasterInvalidations(true);
-  }
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().Collapse(Position(text, 5)).Build());
 
@@ -181,14 +161,6 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_EQ(PhysicalRect(delta, 0, 1, 1), CaretLocalRect());
 
   ASSERT_CARET_LAYER();
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_THAT(
-        CaretRasterInvalidationTracking()->Invalidations(),
-        UnorderedElementsAre(RasterInvalidationInfo{
-            GetCaretDisplayItemClient().Id(), "Caret", gfx::Rect(0, 0, 1, 1),
-            PaintInvalidationReason::kPaintProperty}));
-    GetDocument().View()->SetTracksRasterInvalidations(false);
-  }
 
   // Remove selection. Should invalidate the old caret.
   Selection().SetSelectionAndEndTyping(SelectionInDOMTree());
@@ -229,9 +201,6 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   EXPECT_FALSE(ShouldPaintCursorCaret(*block2));
 
   // Move the caret into block2. Should invalidate both the old and new carets.
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    GetDocument().View()->SetTracksRasterInvalidations(true);
-  }
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(block_element2, 0))
@@ -249,19 +218,8 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   EXPECT_TRUE(ShouldPaintCursorCaret(*block2));
 
   ASSERT_CARET_LAYER();
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_THAT(
-        CaretRasterInvalidationTracking()->Invalidations(),
-        UnorderedElementsAre(RasterInvalidationInfo{
-            GetCaretDisplayItemClient().Id(), "Caret", gfx::Rect(0, 0, 1, 1),
-            PaintInvalidationReason::kPaintProperty}));
-    GetDocument().View()->SetTracksRasterInvalidations(false);
-  }
 
   // Move the caret back into block1.
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    GetDocument().View()->SetTracksRasterInvalidations(true);
-  }
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .Collapse(Position(block_element1, 0))
@@ -279,14 +237,6 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   EXPECT_FALSE(ShouldPaintCursorCaret(*block2));
 
   ASSERT_CARET_LAYER();
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_THAT(
-        CaretRasterInvalidationTracking()->Invalidations(),
-        UnorderedElementsAre(RasterInvalidationInfo{
-            GetCaretDisplayItemClient().Id(), "Caret", gfx::Rect(0, 0, 1, 1),
-            PaintInvalidationReason::kPaintProperty}));
-    GetDocument().View()->SetTracksRasterInvalidations(false);
-  }
 }
 
 TEST_P(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
@@ -430,9 +380,6 @@ TEST_P(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   UpdateAllLifecyclePhasesForCaretTest();
   EXPECT_EQ(PhysicalRect(0, 0, 1, 1), CaretLocalRect());
 
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    GetDocument().View()->SetTracksRasterInvalidations(true);
-  }
   // Simulate that the blinking cursor becomes invisible.
   Selection().SetCaretEnabled(false);
   // Move the caret to the end of the text.
@@ -452,14 +399,6 @@ TEST_P(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   EXPECT_EQ(PhysicalRect(delta, 0, 1, 1), CaretLocalRect());
 
   ASSERT_CARET_LAYER();
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_THAT(
-        CaretRasterInvalidationTracking()->Invalidations(),
-        UnorderedElementsAre(RasterInvalidationInfo{
-            GetCaretDisplayItemClient().Id(), "Caret", gfx::Rect(0, 0, 1, 1),
-            PaintInvalidationReason::kPaintProperty}));
-    GetDocument().View()->SetTracksRasterInvalidations(false);
-  }
 }
 
 TEST_P(CaretDisplayItemClientTest, BlinkingCaretNoInvalidation) {
@@ -471,31 +410,18 @@ TEST_P(CaretDisplayItemClientTest, BlinkingCaretNoInvalidation) {
   UpdateAllLifecyclePhasesForCaretTest();
   EXPECT_EQ(PhysicalRect(0, 0, 1, 1), CaretLocalRect());
 
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    GetDocument().View()->SetTracksRasterInvalidations(true);
-  }
   // No paint or raster invalidation when caret is blinking.
   EXPECT_TRUE(IsVisibleIfActive());
   SetVisibleIfActive(false);
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_TRUE(CaretRasterInvalidationTracking()->Invalidations().empty());
-  }
 
   EXPECT_TRUE(IsVisibleIfActive());
   SetVisibleIfActive(true);
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(GetCaretDisplayItemClient().IsValid());
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_TRUE(CaretRasterInvalidationTracking()->Invalidations().empty());
-  }
-
-  if (!RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    GetDocument().View()->SetTracksRasterInvalidations(false);
-  }
 }
 
 TEST_P(CaretDisplayItemClientTest, CompositingChange) {
@@ -688,6 +614,49 @@ TEST_P(CaretDisplayItemClientTest, CaretAtStartInWhiteSpacePreWrapRTL) {
   const Position& position = Position::FirstPositionInNode(div);
   const PhysicalRect& rect = ComputeCaretRect(PositionWithAffinity(position));
   EXPECT_EQ(94, rect.X());
+}
+
+// https://crbug.com/1499405
+TEST_P(CaretDisplayItemClientTest, CaretAtEdgeOfInlineBlock) {
+  LoadAhem();
+  InsertStyleElement(
+      "body { margin: 0; padding: 0; font: 10px/10px Ahem; }"
+      "div#editable { width: 80px; padding: 0px 10px; text-align: center; }"
+      "span { padding: 0px 15px; display: inline-block }");
+  SetBodyContent(
+      "<div id=editable contenteditable>"
+      "<span contenteditable=false>foo</span>"
+      "</div>");
+
+  const Element& editable =
+      *GetDocument().QuerySelector(AtomicString("#editable"));
+  const LayoutBlock* editable_block =
+      To<LayoutBlock>(editable.GetLayoutObject());
+
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
+
+  auto test = [this, editable_block](const Position& position,
+                                     const PhysicalRect& expected_rect) {
+    Selection().SetSelectionAndEndTyping(
+        SelectionInDOMTree::Builder().Collapse(position).Build());
+
+    UpdateAllLifecyclePhasesExceptPaint();
+    EXPECT_FALSE(GetCaretDisplayItemClient().IsValid());
+    UpdateAllLifecyclePhasesForCaretTest();
+
+    EXPECT_TRUE(ShouldPaintCursorCaret(*editable_block));
+    EXPECT_EQ(editable_block, CaretLayoutBlock());
+    EXPECT_EQ(expected_rect, CaretLocalRect());
+
+    DCHECK_EQ(editable_block->PhysicalFragmentCount(), 1u);
+    auto* editable_fragment = editable_block->GetPhysicalFragment(0);
+    EXPECT_TRUE(ShouldPaintCursorCaret(*editable_fragment));
+    EXPECT_EQ(editable_fragment, CaretBoxFragment());
+  };
+
+  test(Position::FirstPositionInNode(editable), PhysicalRect(20, 0, 1, 10));
+  test(Position::LastPositionInNode(editable), PhysicalRect(79, 0, 1, 10));
 }
 
 class ComputeCaretRectTest : public EditingTestBase {

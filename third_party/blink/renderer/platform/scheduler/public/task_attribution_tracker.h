@@ -36,6 +36,7 @@ class PLATFORM_EXPORT TaskAttributionTracker {
     kPopState,
     kSchedulerPostTask,
     kRequestIdleCallback,
+    kXMLHttpRequest,
   };
 
   // A class maintaining the scope of the current task. Keeping it alive ensures
@@ -53,7 +54,6 @@ class PLATFORM_EXPORT TaskAttributionTracker {
   class Observer : public GarbageCollectedMixin {
    public:
     virtual void OnCreateTaskScope(TaskAttributionInfo&, ScriptState*) = 0;
-    virtual void OnTaskDisposal(const TaskAttributionInfo&) = 0;
     virtual ExecutionContext* GetExecutionContext() = 0;
   };
 
@@ -99,8 +99,6 @@ class PLATFORM_EXPORT TaskAttributionTracker {
   virtual void ResetSameDocumentNavigationTasks() = 0;
   virtual TaskAttributionInfo* CommitSameDocumentNavigation(
       TaskAttributionId) = 0;
-  virtual Observer* GetObserverForTaskDisposal(TaskAttributionId) = 0;
-  virtual void SetObserverForTaskDisposal(TaskAttributionId, Observer*) = 0;
 };
 
 }  // namespace blink::scheduler

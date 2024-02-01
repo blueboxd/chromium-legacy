@@ -5,10 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_AUTOFILL_MODEL_BOTTOM_SHEET_AUTOFILL_BOTTOM_SHEET_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_AUTOFILL_MODEL_BOTTOM_SHEET_AUTOFILL_BOTTOM_SHEET_TAB_HELPER_H_
 
+#import "base/memory/raw_ptr.h"
 #import "base/scoped_multi_source_observation.h"
 #import "components/autofill/core/browser/autofill_manager.h"
 #import "components/autofill/core/browser/field_types.h"
 #import "components/autofill/core/common/unique_ids.h"
+#import "components/plus_addresses/plus_address_types.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -125,7 +127,8 @@ class AutofillBottomSheetTabHelper
   void AttachListeners(
       const std::vector<autofill::FieldRendererId>& renderer_ids,
       std::set<autofill::FieldRendererId>& registered_renderer_ids,
-      const std::string& frame_id);
+      const std::string& frame_id,
+      bool allow_autofocus);
 
   // Detach listeners, which will deactivate the associated bottom sheet.
   void DetachListenersForFrame(
@@ -149,7 +152,7 @@ class AutofillBottomSheetTabHelper
       password_account_storage_notice_handler_;
 
   // The WebState with which this object is associated.
-  web::WebState* const web_state_;
+  const raw_ptr<web::WebState> web_state_;
 
   // TODO(crbug.com/1441921): Remove once this class uses FormGlobalIds.
   base::ScopedObservation<web::WebFramesManager,

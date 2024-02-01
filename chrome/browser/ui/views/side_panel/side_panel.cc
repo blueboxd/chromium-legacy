@@ -106,32 +106,30 @@ class SidePanelBorder : public views::Border {
     canvas->sk_canvas()->clipRRect(rect, SkClipOp::kDifference,
                                    /*do_anti_alias=*/true);
 
-    const SkScalar radii[8] = {
-        border_radii_.upper_left(),  border_radii_.upper_left(),
-        border_radii_.upper_right(), border_radii_.upper_right(),
-        border_radii_.lower_right(), border_radii_.lower_right(),
-        border_radii_.lower_left(),  border_radii_.lower_left()};
-
-    // Use ToEnclosedRect to make sure that `rounded_border_path` never end up
-    // larger than the view bounds.
-    const gfx::Rect scaled_view_bounds = ToEnclosedRect(scaled_view_bounds_f);
-
-    SkPath rounded_border_path;
-    rounded_border_path.addRoundRect(gfx::RectToSkRect(scaled_view_bounds),
-                                     radii, SkPathDirection::kCW);
-
-    // Add another clip to the canvas that rounds the outer corners of the
-    // border.
-    canvas->ClipPath(rounded_border_path, /*do_anti_alias=*/true);
-
-    // Draw the top-container background.
     {
-      // Redo device-scale factor, the theme background is drawn in DIPs. Note
-      // that the clip area above is in pixels, hence the
-      // UndoDeviceScaleFactor() call before this.
+      // Redo the device scale factor. The theme background and clip for the
+      // outer corners are drawn in DIPs. Note that the clip area above is in
+      // pixels because `UndoDeviceScaleFactor()` was called before this.
       gfx::ScopedCanvas scoped_rescale(canvas);
       canvas->Scale(dsf, dsf);
 
+      const SkScalar border_radii[8] = {
+          border_radii_.upper_left(),  border_radii_.upper_left(),
+          border_radii_.upper_right(), border_radii_.upper_right(),
+          border_radii_.lower_right(), border_radii_.lower_right(),
+          border_radii_.lower_left(),  border_radii_.lower_left()};
+
+      SkPath rounded_border_path;
+      rounded_border_path.addRoundRect(gfx::RectToSkRect(view.GetLocalBounds()),
+                                       border_radii, SkPathDirection::kCW);
+
+      // Add another clip to the canvas that rounds the outer corners of the
+      // border. This is done in DIPs because for some device scale factors, the
+      // conversion to pixels can cause the clip to be off by a pixel, resulting
+      // in a pixel gap between the side panel border and web contents.
+      canvas->ClipPath(rounded_border_path, /*do_anti_alias=*/true);
+
+      // Draw the top-container background.
       TopContainerBackground::PaintBackground(canvas, &view, browser_view_);
     }
 
@@ -151,12 +149,11 @@ class SidePanelBorder : public views::Border {
   gfx::Insets GetInsets() const override {
     // This additional inset matches the growth inside BorderView::Layout()
     // below to let us paint on top of the toolbar separator. This additional
-    // inset is outside the SidePanel itself, but not outside the BorderView.
-    // If there is a header we want to increase the top inset to give room for
-    // the header to paint on top of the border area.
+    // inset is outside the SidePanel itself, but not outside the BorderView. If
+    // there is a header we want to increase the top inset to give room for the
+    // header to paint on top of the border area.
     int top_inset = views::Separator::kThickness + header_height_;
-    if (base::FeatureList::IsEnabled(features::kSidePanelPinning) &&
-        features::IsChromeRefresh2023()) {
+    if (features::IsSidePanelPinningEnabled()) {
       top_inset -= kBorderThickness;
     }
     return kBorderInsets + gfx::Insets::TLBR(top_inset, 0, 0, 0);
@@ -172,8 +169,9 @@ class SidePanelBorder : public views::Border {
 };
 
 class BorderView : public views::View {
+  METADATA_HEADER(BorderView, views::View)
+
  public:
-  METADATA_HEADER(BorderView);
   explicit BorderView(BrowserView* browser_view) {
     SetVisible(false);
     auto border = std::make_unique<SidePanelBorder>(browser_view);
@@ -212,7 +210,7 @@ class BorderView : public views::View {
   raw_ptr<SidePanelBorder> border_;
 };
 
-BEGIN_METADATA(BorderView, views::View)
+BEGIN_METADATA(BorderView)
 END_METADATA
 
 }  // namespace
@@ -299,7 +297,7 @@ void SidePanel::AddHeaderView(std::unique_ptr<views::View> view) {
   // Update the border so that the insets include space for the header to be
   // placed on top of the border.
   int top_inset = header_view_->height();
-  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+  if (features::IsSidePanelPinningEnabled()) {
     top_inset -= kBorderThickness;
   }
   SetBorder(views::CreateEmptyBorder(kBorderInsets +
@@ -388,7 +386,7 @@ void SidePanel::UpdateVisibility() {
   bool any_child_visible = false;
   // TODO(pbos): Iterate content instead. Requires moving the owned pointer out
   // of owned contents before resetting it.
-  for (const auto* view : children()) {
+  for (const views::View* view : children()) {
     if (view == border_view_ || view == resize_area_ || view == header_view_) {
       continue;
     }
@@ -412,7 +410,7 @@ void SidePanel::UpdateVisibility() {
       if (header_view_) {
         static_cast<BorderView*>(border_view_)->HeaderViewChanged(header_view_);
         int top_inset = header_view_->height();
-        if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+        if (features::IsSidePanelPinningEnabled()) {
           top_inset -= kBorderThickness;
         }
         SetBorder(views::CreateEmptyBorder(
@@ -425,5 +423,5 @@ void SidePanel::UpdateVisibility() {
   SetVisible(any_child_visible);
 }
 
-BEGIN_METADATA(SidePanel, views::View)
+BEGIN_METADATA(SidePanel)
 END_METADATA

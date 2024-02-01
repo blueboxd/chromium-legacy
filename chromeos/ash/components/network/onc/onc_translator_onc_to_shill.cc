@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
@@ -51,7 +52,7 @@ base::Value ConvertVpnValueToString(const base::Value& value) {
 // Returns the string value of |key| from |dict| if found, or the empty string
 // otherwise.
 std::string FindStringKeyOrEmpty(const base::Value::Dict& dict,
-                                 base::StringPiece key) {
+                                 std::string_view key) {
   const std::string* value = dict.FindString(key);
   return value ? *value : std::string();
 }
@@ -138,12 +139,10 @@ class LocalTranslator {
                                 const StringTranslationEntry table[],
                                 const std::string& shill_property_name);
 
-  raw_ptr<const chromeos::onc::OncValueSignature, ExperimentalAsh>
-      onc_signature_;
-  raw_ptr<const FieldTranslationEntry, ExperimentalAsh>
-      field_translation_table_;
-  raw_ptr<const base::Value::Dict, ExperimentalAsh> onc_object_;
-  raw_ptr<base::Value::Dict, ExperimentalAsh> shill_dictionary_;
+  raw_ptr<const chromeos::onc::OncValueSignature> onc_signature_;
+  raw_ptr<const FieldTranslationEntry> field_translation_table_;
+  raw_ptr<const base::Value::Dict> onc_object_;
+  raw_ptr<base::Value::Dict> shill_dictionary_;
 };
 
 void LocalTranslator::TranslateFields() {

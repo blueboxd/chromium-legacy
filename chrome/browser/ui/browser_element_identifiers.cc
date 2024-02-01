@@ -9,6 +9,8 @@
 
 // Please keep this list alphabetized.
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kAddCurrentTabToReadingListElementId);
+DEFINE_ELEMENT_IDENTIFIER_VALUE(
+    kAnonymizedUrlCollectionPersonalizationSettingId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kAppUninstallDialogOkButtonId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kAutofillCreditCardSuggestionEntryElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kAutofillStandaloneCvcSuggestionElementId);
@@ -25,7 +27,7 @@ DEFINE_ELEMENT_IDENTIFIER_VALUE(kEnhancedProtectionSettingElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kExclusiveAccessBubbleViewElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kExtensionsMenuButtonElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kExtensionsRequestAccessButtonElementId);
-DEFINE_ELEMENT_IDENTIFIER_VALUE(kHighEfficiencyChipElementId);
+DEFINE_ELEMENT_IDENTIFIER_VALUE(kMemorySaverChipElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kInstallPwaElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kIntentChipElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kLocationIconElementId);
@@ -40,6 +42,7 @@ DEFINE_ELEMENT_IDENTIFIER_VALUE(kPriceInsightsChipElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kPriceTrackingBookmarkViewElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kPriceTrackingChipElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kReadLaterSidePanelWebViewElementId);
+DEFINE_ELEMENT_IDENTIFIER_VALUE(kReloadButtonElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kSavePasswordComboboxElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kSavedTabGroupBarElementId);
 DEFINE_ELEMENT_IDENTIFIER_VALUE(kSavedTabGroupButtonElementId);
@@ -95,3 +98,4 @@ DEFINE_CUSTOM_ELEMENT_EVENT_TYPE(kSidePanelComboboxChangedCustomEventId);
 DEFINE_CUSTOM_ELEMENT_EVENT_TYPE(kSidePanelReadingMarkedAsReadEventId);
 DEFINE_CUSTOM_ELEMENT_EVENT_TYPE(kSideSearchResultsClickedCustomEventId);
 DEFINE_CUSTOM_ELEMENT_EVENT_TYPE(kTabGroupedCustomEventId);
+DEFINE_CUSTOM_ELEMENT_EVENT_TYPE(kTabGroupSavedCustomEventId);

@@ -58,6 +58,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "build/build_config.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
@@ -284,6 +285,9 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
       base::CommandLine::ForCurrentProcess()->HasSwitch(ash::switches::kArcErofs);
   request.set_rootfs_o_direct(is_arc_erofs_enabled);
 
+  request.set_rootfs_multiple_workers(
+      base::FeatureList::IsEnabled(kEnableVirtioBlkMultipleWorkers));
+
   // Add /vendor as /dev/block/vdb. The device name has to be consistent with
   // the one in GenerateFirstStageFstab() in platform2/arc/setup/.
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
@@ -334,6 +338,8 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   disk_image->set_do_mount(true);
   if (data_disk_path) {
     disk_image->set_path(data_disk_path->value());
+    disk_image->set_multiple_workers(
+        base::FeatureList::IsEnabled(kEnableVirtioBlkMultipleWorkers));
     disk_image->set_writable(true);
     if (should_set_blocksize) {
       disk_image->set_block_size(kBlockSize);
@@ -459,6 +465,12 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
       base::FeatureList::IsEnabled(kVmmSwapPolicy) ||
       base::FeatureList::IsEnabled(kVmmSwapKeyboardShortcut));
 
+#if defined(ARCH_CPU_X86_64)
+  if (base::FeatureList::IsEnabled(kEnableArcS2Idle)) {
+    request.set_enable_s2idle(true);
+  }
+#endif  // defined(ARCH_CPU_X86_64)
+
   auto orientation = display::PanelOrientation::kNormal;
   if (auto* screen = display::Screen::GetScreen()) {
     const auto display_id = screen->GetPrimaryDisplay().id();
@@ -483,20 +495,22 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
       break;
   }
 
-  const ArcVmUreadaheadMode mode = GetArcVmUreadaheadMode();
+  const ArcUreadaheadMode mode =
+      GetArcUreadaheadMode(ash::switches::kArcVmUreadaheadMode);
   switch (mode) {
     using StartArcVmRequest = vm_tools::concierge::StartArcVmRequest;
-    case ArcVmUreadaheadMode::READAHEAD:
+    case ArcUreadaheadMode::READAHEAD:
       request.set_ureadahead_mode(StartArcVmRequest::UREADAHEAD_MODE_READAHEAD);
       break;
-    case ArcVmUreadaheadMode::GENERATE:
+    case ArcUreadaheadMode::GENERATE:
       request.set_ureadahead_mode(StartArcVmRequest::UREADAHEAD_MODE_GENERATE);
       break;
-    case ArcVmUreadaheadMode::DISABLED:
+    case ArcUreadaheadMode::DISABLED:
       request.set_ureadahead_mode(StartArcVmRequest::UREADAHEAD_MODE_DISABLED);
       break;
+    default:
+      NOTREACHED_NORETURN();
   }
-
   return request;
 }
 
@@ -1197,7 +1211,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   FileSystemStatusRewriter file_system_status_rewriter_for_testing_;
 
   // The delegate is owned by ArcSessionRunner.
-  raw_ptr<DemoModeDelegate, ExperimentalAsh> demo_mode_delegate_ = nullptr;
+  raw_ptr<DemoModeDelegate> demo_mode_delegate_ = nullptr;
 
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_{this};

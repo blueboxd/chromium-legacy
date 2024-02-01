@@ -94,13 +94,6 @@ void AddCrashKey(v8::CrashKeyId id, const std::string& value) {
 }
 }  // namespace
 
-// Function defined in third_party/blink/public/web/blink.h.
-v8::Isolate* MainThreadIsolate() {
-  return V8PerIsolateData::MainThreadIsolate();
-}
-
-static V8PerIsolateData* g_main_thread_per_isolate_data = nullptr;
-
 static void BeforeCallEnteredCallback(v8::Isolate* isolate) {
   CHECK(!ScriptForbiddenScope::IsScriptForbidden());
 }
@@ -148,19 +141,14 @@ V8PerIsolateData::V8PerIsolateData(
     GetIsolate()->AddBeforeCallEnteredCallback(&BeforeCallEnteredCallback);
   }
   if (IsMainThread()) {
-    g_main_thread_per_isolate_data = this;
     GetIsolate()->SetAddCrashKeyCallback(AddCrashKey);
-    main_world_ = DOMWrapperWorld::Create(GetIsolate(),
-                                          DOMWrapperWorld::WorldType::kMain);
+    main_world_ =
+        DOMWrapperWorld::Create(GetIsolate(), DOMWrapperWorld::WorldType::kMain,
+                                /*is_default_world_of_isolate=*/true);
   }
 }
 
 V8PerIsolateData::~V8PerIsolateData() = default;
-
-v8::Isolate* V8PerIsolateData::MainThreadIsolate() {
-  DCHECK(g_main_thread_per_isolate_data);
-  return g_main_thread_per_isolate_data->GetIsolate();
-}
 
 v8::Isolate* V8PerIsolateData::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -227,16 +215,14 @@ void V8PerIsolateData::Destroy(v8::Isolate* isolate) {
   V8PerIsolateData* data = From(isolate);
 
   // Clear everything before exiting the Isolate.
-  if (data->script_regexp_script_state_)
+  if (data->script_regexp_script_state_) {
     data->script_regexp_script_state_->DisposePerContextData();
+  }
   data->private_property_.reset();
   data->string_cache_->Dispose();
   data->string_cache_.reset();
   data->v8_template_map_for_main_world_.clear();
   data->v8_template_map_for_non_main_worlds_.clear();
-  if (IsMainThread()) {
-    g_main_thread_per_isolate_data = nullptr;
-  }
 
   // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
   isolate->Exit();

@@ -6,18 +6,314 @@
 
 load("@stdlib//internal/graph.star", "graph")
 load("@stdlib//internal/luci/common.star", "keys")
+load("./args.star", "args")
 load("./nodes.star", "nodes")
 
-_TARGET = nodes.create_unscoped_node_type("target")
+# A target that can be built to run a test
+#
+# Created by:
+# * functions in targets.binaries
+#
+# Parents:
+# * legacy-test (>=0)
+#   * created by targets.test.gtest_test and targets.tests.isolated_script_test
+#   * traversed when generating details in test_suites.pyl for a test in a basic
+#     suite that references a binary
+_TARGET_BINARY = nodes.create_unscoped_node_type("target-binary")
+
+# A mapping from the ninja target name to GN label and associated details.
+#
+# Created by:
+# * functions in targets.binaries
+# * targets.tests.junit_test
+#   * a mapping with type "generated_script" and the same name as the test is
+#     created
+# * targets.compile_target
+#   * a mapping is created if name != "all"
+#
+# Parents:
+# * project (1)
+#   * created for all mappings
+#   * traversed to generate entries in gn_isolate_map.pyl
+_TARGET_LABEL_MAPPING = nodes.create_unscoped_node_type("target-label-mapping")
+
+# A set of modifications to make when expanding tests in a suite
+#
+# Created by:
+# * targets.mixin
+#
+# Parents:
+# * project (1)
+#   * created for all mixins
+#   * traversed to generate entries in mixins.pyl
+# * legacy-test (>=0)
+#   * created when a test specifies a mixin in mixins
+#   * traversed to generate the mixins field for a test when generating a
+#     basic suite in test_suites.pyl
+# * legacy-basic-suite-config (>=0)
+#   * created when the config for a test in a basic suite references a mixin
+#   * traversed to generate the mixins field for a test when generating a
+#     basic suite in test_suites.pyl
+# * legacy-matrix-config (>=0)
+#   * created when the matrix config for a basic suite in a matrix compound
+#     suite references a mixin
+#   * traversed to generate the mixins field in test_suites.pyl for the config
+#     for a basic suite in a matrix compound suite
+# * legacy-remove-mixin (>=0)
+#   * created when a test specifies a mixin in remove_mixins
+#   * traversed to generate the remove_mixins field for a test when generating a
+#     basic suite in test_suites.pyl
 _TARGET_MIXIN = nodes.create_unscoped_node_type("target-mixin")
+
+# A set of modifications to make when multiply expanding a test in a matrix
+# compound suite
+#
+# Created by:
+# * targets.variant
+#
+# Parents:
+# * project (1)
+#   * created for all binaries
+#   * traversed to generate entries in variants.pyl
+# * legacy-matrix-config (>=0)
+#   * created when the matrix config for a basic suite in a matrix compound
+#     suite references a variant
+#   * traversed to generate the variants field in test_suites.pyl for the config
+#     for a basic suite in a matrix compound suite
 _TARGET_VARIANT = nodes.create_unscoped_node_type("target-variant")
 
+# A test that can be included in a basic suite
+#
+# Created by:
+# * functions in targets.tests
+#
+# Children:
+# * target-binary (0 or 1)
+#   * created by targets.test.gtest_test and targets.tests.isolated_script_test
+#   * traversed when generating details in test_suites.pyl for a test in a basic
+#     suite that references a binary
+# * target-mixin (>=0)
+#   * created when a test specifies a mixin in mixins
+#   * traversed to generate the mixins field for a test when generating a
+#     basic suite in test_suites.pyl
+#
+# Parents:
+# * legacy-basic-suite-config (>=0)
+#   * created when a basic suite references a test
+#   * traversed to generate the details for a test when generating a basic suite
+#     in test_suites.pyl
+_LEGACY_TEST = nodes.create_unscoped_node_type("legacy-test")
+
+# A basic suite, which is a set of tests with optional modifications
+#
+# Created by:
+# * targets.legacy_basic_suite
+#
+# Children:
+# * legacy-basic-suite-config (>0)
+#   * created when a basic suite references a test
+#   * traversed to generate the details for a test when generating a basic suite
+#     in test_suites.pyl
+#
+# Parents:
+# * project (1)
+#   * created for all basic suites
+#   * traversed to generate the basic_suites entries in test_suites.pyl
+# * legacy-compound-suite (>=0)
+#   * created when a compound suite includes a basic suite
+#   * traversed to generate the basic suite reference when generating a compound
+#     suite in test_suites.pyl
+# * legacy-matrix-compound-suite (>=0)
+#   * created when a matrix compound suite includes a basic suite
+#   * not traversed, created only to ensure the basic suite exists
 _LEGACY_BASIC_SUITE = nodes.create_unscoped_node_type("legacy-basic-suite")
+
+# Modifications to apply to a test included in a basic suite
+#
+# Created by:
+# * targets.legacy_basic_suite
+#
+# Children:
+# * legacy-test (1)
+#   * created when a basic suite references a test
+#   * traversed to generate the details for a test when generating a basic suite
+#     in test_suites.pyl
+# * target-mixin (>=0)
+#   * created when the config for a test in a basic suite references a mixin
+#   * traversed to generate the mixins field for a test when generating a
+#     basic suite in test_suites.pyl
+# * legacy-remove-mixin (>=0)
+#   * created when a test specifies a mixin in remove_mixins
+#   * traversed to generate the remove_mixins field for a test when generating a
+#     basic suite in test_suites.pyl
+#
+# Parents:
+# * legacy-basic-suite (0)
+#   * created when a basic suite references a test
+#   * traversed to generate the details for a test when generating a basic suite
+#     in test_suites.pyl
+_LEGACY_BASIC_SUITE_CONFIG = nodes.create_scoped_node_type("legacy-basic-suite-config", _LEGACY_BASIC_SUITE.kind)
+
+# A mixin to remove from a test included in a basic suite.
+#
+# Created by:
+# * targets.legacy_basic_suite
+#   * created when the config for a test specifies remove_mixins
+#
+# Children:
+# * target-mixin (1)
+#   * created when a test specifies a mixin in remove_mixins
+#   * traversed to generate the remove_mixins field for a test when generating a
+#     basic suite in test_suites.pyl
+#
+# Parents:
+# * legacy-basic-suite-config (>=0)
+#   * created when a test specifies a mixin in remove_mixins
+#   * traversed to generate the remove_mixins field for a test when generating a
+#     basic suite in test_suites.pyl
+_LEGACY_BASIC_SUITE_REMOVE_MIXIN = nodes.create_link_node_type("legacy-remove-mixin", _LEGACY_BASIC_SUITE_CONFIG, _TARGET_MIXIN)
+
+# A compound suite, which is a set of basic suites
+#
+# Created by:
+# * targets.legacy_compound_suite
+#
+# Children:
+# * legacy-basic-suite (>0)
+#   * created when a compound suite includes a basic suite
+#   * traversed to generate the basic suite reference when generating a compound
+#     suite in test_suites.pyl
+#
+# Parents:
+# * project (1)
+#   * create for all compound suites
+#   * traversed to generate the compound_suites entries in test_suites.pyl
 _LEGACY_COMPOUND_SUITE = nodes.create_unscoped_node_type("legacy-compound-suite")
+
+# A matrix compound suite, which is a set of basic suites that can be optionally
+# expanded with multiple variants
+#
+# Created by:
+# * targets.legacy_matrix_compound_suite
+#
+# Children:
+# * legacy-basic-suite (>0)
+#   * created when a matrix compound suite includes a basic suite
+#   * not traversed, created only to ensure the basic suite exists
+# * legacy-matrix-config (>0)
+#   * created for each basic suite in the matrix compound suite
+#   * traversed to generate the details for a basic suite when generating a
+#     matrix compound suite in test_suites.pyl
+#
+# Parents:
+# * project (1)
+#   * created for all matrix compound suites
+#   * traversed to generate the matrix_compound_suites entries in
+#     test_suites.pyl
 _LEGACY_MATRIX_COMPOUND_SUITE = nodes.create_unscoped_node_type("legacy-matrix-compound-suite")
+
+# The modifications to apply to tests in a basic suite included in a matix
+# compound suite
+#
+# Created by:
+# * targets.legacy_matrix_compound_suite
+#
+# Children:
+# * target-mixin (>=0)
+#   * created when the matrix config for a basic suite in a matrix compound
+#     suite references a mixin
+#   * traversed to generate the mixins field in test_suites.pyl for the config
+#     for a basic suite in a matrix compound suite
+# * target-variant (>=0)
+#   * created when the matrix config for a basic suite in a matrix compound
+#     suite references a variant
+#   * traversed to generate the variants field in test_suites.pyl for the config
+#     for a basic suite in a matrix compound suite
+#
+# Parents:
+# * legacy-matrix-compound-suite (1)
+#   * created for each basic suite in the matrix compound suite
+#   * traversed to generate the details for a basic suite when generating a
+#     matrix compound suite in test_suites.pyl
 _LEGACY_MATRIX_CONFIG = nodes.create_scoped_node_type("legacy-matrix-config", _LEGACY_MATRIX_COMPOUND_SUITE.kind)
 
-def _create_target(
+# Compile targets, which can be specified as additional compile targets in a
+# bundle
+#
+# Created by:
+# * targets.compile_target
+# * functions in targets.binaries
+#   * a compile target with the same name as the binary will be created
+# * targets.tests.junit_test
+#   * a compile target with the same name as the test will be created
+#
+# Parents:
+# * target-bundle (>=0)
+#   * created when a bundle references a compile target in
+#     additional_compile_targets
+#   * traversed when generating targets spec files for builders that have their
+#     tests defined in starlark
+_COMPILE_TARGET = nodes.create_unscoped_node_type("compile-target")
+
+# A collection of compile targets to build and tests to run with optional
+# modifications
+#
+# Created by:
+# * targets.bundle
+#   * unnamed instances can be created inline to apply builder-specific
+#     modifications or apply modifications to subgroupings of targets
+# * functions in targets.tests
+#   * creates a bundle with the same name as the test containing only that test
+# * builders.builder
+#   * if the builder sets targets, then a bundle is created with the
+#     bucket-qualified name of the builder)
+#
+# Children:
+# * target-bundle (>=0)
+#   * created when a bundle references another bundle in targets
+#   * traversed when generating targets spec files for builders that have their
+#     tests defined in starlark
+# * compile-target (>=0)
+#   * created when a bundle references a compile target in
+#     additional_compile_targets
+#   * traversed when generating targets spec files for builders that have their
+#     tests defined in starlark
+#
+# Parents:
+# * builder-config (0 or 1)
+#   * created when a builder sets targets
+#   * traversed when generating targets spec files for builders that have their
+#     targets defined in starlark
+# * target-bundle (>=0)
+#   * created when a bundle references another bundle in targets
+#   * traversed when generating targets spec files for builders that have their
+#     targets defined in starlark
+_TARGET_BUNDLE = nodes.create_unscoped_node_type("bundle", allow_unnamed = True)
+
+def _binary_test_config(*, results_handler = None, merge = None, resultdb = None):
+    """The details for a test provided by the test's binary.
+
+    When test_suites.pyl is generated, tests that are using the binary
+    will have these values written into the test's entry in the basic suite.
+
+    Args:
+        results_handler: The name of the results handler to use for the
+            test.
+        merge: A targets.merge describing the invocation to merge the
+            results from the test's tasks.
+        resultdb: A targets.resultdb describing the ResultDB integration
+            for the test.
+    """
+    return struct(
+        results_handler = results_handler,
+        merge = merge,
+        resultdb = resultdb,
+    )
+
+def _create_compile_target(*, name):
+    _COMPILE_TARGET.add(name)
+
+def _create_label_mapping(
         *,
         name,
         type,
@@ -28,7 +324,7 @@ def _create_target(
         script = None,
         skip_usage_check = False,
         args = None):
-    target_key = _TARGET.add(name, props = dict(
+    mapping_key = _TARGET_LABEL_MAPPING.add(name, props = dict(
         type = type,
         label = label,
         label_type = label_type,
@@ -38,9 +334,115 @@ def _create_target(
         skip_usage_check = skip_usage_check,
         args = args,
     ))
-    graph.add_edge(keys.project(), target_key)
+    graph.add_edge(keys.project(), mapping_key)
 
-def _compile_target(*, name, label, skip_usage_check = False):
+def _create_binary(
+        *,
+        name,
+        type,
+        label,
+        label_type = None,
+        executable = None,
+        executable_suffix = None,
+        script = None,
+        skip_usage_check = False,
+        args = None,
+        test_config = None):
+    _create_label_mapping(
+        name = name,
+        type = type,
+        label = label,
+        label_type = label_type,
+        executable = executable,
+        executable_suffix = executable_suffix,
+        script = script,
+        skip_usage_check = skip_usage_check,
+        args = args,
+    )
+
+    _TARGET_BINARY.add(name, props = dict(
+        test_config = test_config,
+    ))
+
+    _create_compile_target(
+        name = name,
+    )
+
+def _basic_suite_test_config(
+        *,
+        script = None,
+        binary = None,
+        telemetry_test_name = None,
+        args = None):
+    """The details for the test included when included in a basic suite.
+
+    When generating test_suites.pyl, these values will be written out
+    for a test in any basic suite that includes it.
+
+    Args:
+        script: The name of the file within the //testing/scripts
+            directory to run as the test. Only applicable to script tests.
+        binary: The name of the binary to run as the test. Only
+            applicable to gtests, isolated script tests and junit tests.
+        telemetry_test_name: The telemetry test to run. Only applicable
+            to telemetry test types.
+        args: Arguments to be passed to the test binary.
+    """
+    return struct(
+        script = script,
+        binary = binary,
+        telemetry_test_name = telemetry_test_name,
+        args = args,
+    )
+
+def _create_legacy_test(*, name, basic_suite_test_config, mixins = None):
+    test_key = _LEGACY_TEST.add(name, props = dict(
+        basic_suite_test_config = basic_suite_test_config,
+    ))
+    for m in args.listify(mixins):
+        graph.add_edge(test_key, _TARGET_MIXIN.key(m))
+    return test_key
+
+def _create_bundle(*, name, additional_compile_targets = [], targets = [], builder_group = None, test_spec_by_name = {}, modifications_by_name = {}):
+    key = _TARGET_BUNDLE.add(name, props = dict(
+        builder_group = builder_group,
+        test_spec_by_name = test_spec_by_name,
+        modifications_by_name = modifications_by_name,
+    ))
+
+    for t in additional_compile_targets:
+        graph.add_edge(key, _COMPILE_TARGET.key(t))
+    for t in targets:
+        graph.add_edge(key, _TARGET_BUNDLE.key(t))
+    return key
+
+def _create_test_target(*, name, spec_type, spec_value):
+    return _create_bundle(
+        name = name,
+        test_spec_by_name = {
+            name: struct(
+                spec_type = spec_type,
+                spec_value = spec_value,
+            ),
+        },
+    )
+
+def _spec_type(*, finalize):
+    return struct(
+        finalize = finalize,
+    )
+
+# TODO: crbug.com/1420012 - Update the handling of unimplemented test types so
+# that more context is provided about where the error is resulting from
+def _unimplemented_target_type(type_name):
+    def unimplemented():
+        fail("support for {} targets is not yet implemented".format(type_name))
+
+    return _spec_type(
+        finalize = (lambda name, spec: unimplemented()),
+    )
+
+def _compile_target(*, name, label = None, skip_usage_check = False):
     """Define a compile target to use in targets specs.
 
     A compile target provides a mapping to any ninja target that will
@@ -52,11 +454,21 @@ def _compile_target(*, name, label, skip_usage_check = False):
         skip_usage_check: Disables checking that the target is actually
             referenced in a targets spec for some builder.
     """
-    _create_target(
+
+    # The all target is a special ninja target that doesn't map to a GN label
+    # and so we don't create an entry in gn_isolate_map.pyl
+    if name != "all":
+        if label == None:
+            fail("label must be set in compile_target {}".format(name))
+        _create_label_mapping(
+            name = name,
+            type = "additional_compile_target",
+            label = label,
+            skip_usage_check = skip_usage_check,
+        )
+
+    _create_compile_target(
         name = name,
-        type = "additional_compile_target",
-        label = label,
-        skip_usage_check = skip_usage_check,
     )
 
 def _console_test_launcher(
@@ -84,7 +496,7 @@ def _console_test_launcher(
         args: The arguments to the test. These arguments will be
             included when the test is run using "mb try"
     """
-    _create_target(
+    _create_binary(
         name = name,
         type = "console_test_launcher",
         label = label,
@@ -93,7 +505,15 @@ def _console_test_launcher(
         args = args,
     )
 
-def _generated_script(*, name, label, skip_usage_check = False, args = None):
+def _generated_script(
+        *,
+        name,
+        label,
+        skip_usage_check = False,
+        args = None,
+        results_handler = None,
+        merge = None,
+        resultdb = None):
     """Define a generated script target to use in targets specs.
 
     A generated script target is a test that is executed via a script
@@ -108,32 +528,35 @@ def _generated_script(*, name, label, skip_usage_check = False, args = None):
             referenced in a targets spec for some builder.
         args: The arguments to the test. These arguments will be
             included when the test is run using "mb try"
+        results_handler: The name of the results handler to use for the
+            test.
+        merge: A targets.merge describing the invocation to merge the
+            results from the test's tasks.
+        resultdb: A targets.resultdb describing the ResultDB integration
+            for the test.
     """
-    _create_target(
+    _create_binary(
         name = name,
         type = "generated_script",
         label = label,
         skip_usage_check = skip_usage_check,
         args = args,
+        test_config = _binary_test_config(
+            results_handler = results_handler,
+            merge = merge,
+            resultdb = resultdb,
+        ),
     )
 
-def _junit_test(*, name, label, skip_usage_check = False, args = None):
-    """Define a junit test target to use in targets specs.
-
-    A junit test target is a test using the JUnit test framework.
-
-    crbug/1401052: we're migrating these tests to isolated scripts,
-    but leaving the junit_tests defs around as documentation.
-
-    Args:
-        name: The name that can be used to refer to the target.
-        label: The GN label for the ninja target.
-        skip_usage_check: Disables checking that the target is actually
-            referenced in a targets spec for some builder.
-    """
-    _generated_script(name = name, label = label, skip_usage_check = skip_usage_check, args = args)
-
-def _script(*, name, label, script, skip_usage_check = False, args = None):
+def _script(
+        *,
+        name,
+        label,
+        script,
+        skip_usage_check = False,
+        args = None,
+        merge = None,
+        resultdb = None):
     """Define a script target to use in targets specs.
 
     A script target is a test that is executed via a python script.
@@ -147,14 +570,22 @@ def _script(*, name, label, script, skip_usage_check = False, args = None):
             referenced in a targets spec for some builder.
         args: The arguments to the test. These arguments will be
             included when the test is run using "mb try"
+        merge: A targets.merge describing the invocation to merge the
+            results from the test's tasks.
+        resultdb: A targets.resultdb describing the ResultDB integration
+            for the test.
     """
-    _create_target(
+    _create_binary(
         name = name,
         type = "script",
         label = label,
         script = script,
         skip_usage_check = skip_usage_check,
         args = args,
+        test_config = _binary_test_config(
+            merge = merge,
+            resultdb = resultdb,
+        ),
     )
 
 def _windowed_test_launcher(
@@ -189,7 +620,7 @@ def _windowed_test_launcher(
         args: The arguments to the test. These arguments will be
             included when the test is run using "mb try"
     """
-    _create_target(
+    _create_binary(
         name = name,
         type = "windowed_test_launcher",
         label = label,
@@ -198,6 +629,185 @@ def _windowed_test_launcher(
         executable_suffix = executable_suffix,
         skip_usage_check = skip_usage_check,
         args = args,
+    )
+
+# TODO(gbeaty) The args that are specified for webgl2?_conformance(.*)_tests
+# in the basic suites are pretty formulaic, it would probably make sense to lift
+# many of those values into this function
+def _gpu_telemetry_test(
+        *,
+        name,
+        telemetry_test_name = None,
+        args = None,
+        mixins = None):
+    """Define a GPU telemetry test.
+
+    A GPU telemetry test can be included in a basic suite to run the
+    test for any builder that includes that basic suite.
+
+    Args:
+        name: The name that can be used to refer to the test in other
+            starlark declarations. The step name of the test will be
+            based on this name (additional components may be added by
+            the recipe or when generating a test with a variant).
+        telemetry_test_name: The name of the telemetry benchmark to run.
+        mixins: Mixins to apply when expanding the test.
+    """
+    _create_legacy_test(
+        name = name,
+        basic_suite_test_config = _basic_suite_test_config(
+            telemetry_test_name = telemetry_test_name,
+            args = args,
+        ),
+        mixins = mixins,
+    )
+    _create_test_target(
+        name = name,
+        spec_type = _unimplemented_target_type("gpu_telemetry_test"),
+        spec_value = None,
+    )
+
+def _gtest_test(*, name, binary = None, mixins = None, args = None):
+    """Define a gtest-based test.
+
+    A gtest test can be included in a basic suite to run the test for
+    any builder that includes that basic suite.
+
+    Args:
+        name: The name that can be used to refer to the test in other
+            starlark declarations. The step name of the test will be
+            based on this name (additional components may be added by
+            the recipe or when generating a test with a variant).
+        binary: The test binary to use. There must be a defined binary
+            with the given name. If none is provided, then an binary
+            with the same name as the test must be defined.
+        mixins: Mixins to apply when expanding the test.
+        args: Arguments to be passed to the test binary.
+    """
+    key = _create_legacy_test(
+        name = name,
+        basic_suite_test_config = _basic_suite_test_config(
+            binary = binary,
+            args = args,
+        ),
+        mixins = mixins,
+    )
+
+    # Make sure that the binary actually exists
+    graph.add_edge(key, _TARGET_BINARY.key(binary or name))
+
+    _create_test_target(
+        name = name,
+        spec_type = _unimplemented_target_type("gtest_test"),
+        spec_value = None,
+    )
+
+def _isolated_script_test(*, name, binary = None, mixins = None, args = None):
+    """Define an isolated script test.
+
+    An isolated script test can be included in a basic suite to run the
+    test for any builder that includes that basic suite.
+
+    Args:
+        name: The name that can be used to refer to the test in other
+            starlark declarations. The step name of the test will be
+            based on this name (additional components may be added by
+            the recipe or when generating a test with a variant).
+        binary: The test binary to use. There must be a defined binary
+            with the given name. If none is provided, then an binary
+            with the same name as the test must be defined.
+        mixins: Mixins to apply when expanding the test.
+        args: Arguments to be passed to the test binary.
+    """
+    key = _create_legacy_test(
+        name = name,
+        basic_suite_test_config = _basic_suite_test_config(
+            binary = binary,
+            args = args,
+        ),
+        mixins = mixins,
+    )
+
+    # Make sure that the binary actually exists
+    graph.add_edge(key, _TARGET_BINARY.key(binary or name))
+
+    _create_test_target(
+        name = name,
+        spec_type = _unimplemented_target_type("isolated_script_test"),
+        spec_value = None,
+    )
+
+def _junit_test(*, name, label, skip_usage_check = False):
+    """Define a junit test.
+
+    A junit test is a test using the JUnit test framework. A junit test
+    can be included in a basic suite to run the test for any builder
+    that includes that basic suite.
+
+    Args:
+        name: The name that can be used to refer to the test in other
+            starlark declarations. The step name of the test will be
+            based on this name (additional components may be added by
+            the recipe or when generating a test with a variant).
+        label: The GN label for the ninja target.
+        skip_usage_check: Disables checking that the target is actually
+            referenced in a targets spec for some builder.
+    """
+
+    # We don't need to reuse the test binary for multiple junit tests, so just
+    # define the isolate entry as part of the test declaration
+    _create_compile_target(
+        name = name,
+    )
+    _create_label_mapping(
+        name = name,
+        type = "generated_script",
+        label = label,
+        skip_usage_check = skip_usage_check,
+    )
+    _create_legacy_test(
+        name = name,
+        basic_suite_test_config = _basic_suite_test_config(),
+    )
+
+    _create_test_target(
+        name = name,
+        spec_type = _unimplemented_target_type("junit_test"),
+        spec_value = None,
+    )
+
+_script_test_target_type = _spec_type(
+    finalize = (lambda name, spec: ("scripts", name, spec)),
+)
+
+def _script_test(*, name, script):
+    """Define a script test.
+
+    A script test is a test that runs a python script wihin the
+    //testing/scripts directory.
+
+    Args:
+        name: The name that can be used to refer to the test in other
+            starlark declarations. The step name of the test will be
+            based on this name (additional components may be added by
+            the recipe or when generating a test with a variant).
+        script: The name of the file within the //testing/scripts
+            directory to run as the test.
+    """
+    _create_legacy_test(
+        name = name,
+        basic_suite_test_config = _basic_suite_test_config(
+            script = script,
+        ),
+    )
+
+    _create_test_target(
+        name = name,
+        spec_type = _script_test_target_type,
+        spec_value = dict(
+            name = name,
+            script = script,
+        ),
     )
 
 def _cipd_package(
@@ -569,6 +1179,22 @@ def _variant(
 
     graph.add_edge(keys.project(), key)
 
+def _bundle(*, name = None, additional_compile_targets = None, targets = None):
+    """Define a targets bundle.
+
+    A bundle is a grouping of targets to build and test.
+
+    Args:
+        name: The name of the bundle.
+        targets: A list of targets, bundles or legacy basic suites to
+            include in the bundle.
+    """
+    return graph.keyset(_create_bundle(
+        name = name,
+        additional_compile_targets = args.listify(additional_compile_targets),
+        targets = args.listify(targets),
+    ))
+
 def _legacy_basic_suite(*, name, tests):
     """Define a basic suite.
 
@@ -586,38 +1212,42 @@ def _legacy_basic_suite(*, name, tests):
         name: The name of the suite.
         tests: A dict mapping the name of the test to the base definition for
             the test, which must be an instance returned from
-            targets.legacy_test_config or None. A None value is equivalent to
-            targets.legacy_test_config(), which results in a test that uses the
-            isolate with the same name as the test.
+            targets.legacy_test_config.
     """
-    key = _LEGACY_BASIC_SUITE.add(name, props = dict(
-        tests = tests,
-    ))
+    key = _LEGACY_BASIC_SUITE.add(name)
     graph.add_edge(keys.project(), key)
+    for t, config in tests.items():
+        if not config:
+            fail("The value for test {} in basic suite {} must be an object returned from targets.legacy_test_config"
+                .format(t, name))
+        d = {a: getattr(config, a) for a in dir(config)}
+        mixins = d.pop("mixins") or []
+        remove_mixins = d.pop("remove_mixins") or []
+        config_key = _LEGACY_BASIC_SUITE_CONFIG.add(name, t, props = dict(
+            config = struct(**d),
+        ))
+        graph.add_edge(key, config_key)
+        graph.add_edge(config_key, _LEGACY_TEST.key(t))
+        for m in mixins:
+            graph.add_edge(config_key, _TARGET_MIXIN.key(m))
+        for r in remove_mixins:
+            _LEGACY_BASIC_SUITE_REMOVE_MIXIN.link(config_key, _TARGET_MIXIN.key(r))
 
 def _legacy_test_config(
         *,
-        script = None,
-        test = None,
-        results_handler = None,
-        telemetry_test_name = None,
+        # TODO(gbeaty) Tast tests should have their own test function defined
+        # and this should be removed from this function
         tast_expr = None,
+        # TODO(gbeaty) Skylab details should be modified to be under a separate
+        # structure like swarming details are and this should be made a part of
+        # mixins and removed from this function
         test_level_retries = None,
-        mixins = [],
-        remove_mixins = [],
+        mixins = None,
+        remove_mixins = None,
         **kwargs):
     """Define the details of a test in a basic suite.
 
     Args:
-        script: The name of the file within the //testing/scripts directory to
-            run as the test. Only applicable to script tests.
-        test: The name of the isolate to run as the test. Only applicable to
-            gtests, isolated script tests and junit tests.
-        results_handler: The name of the results handler to use for the test.
-            Only applicable to isolated script tests and gtests that set
-            use_isolated_scripts_api.
-        telemetry_test_name: The telemetry test to run. Only applicable to
-            telemetry test types.
         tast_expr: The tast expression to run. Only applicable to skylab tests.
         test_level_retries: The number of times to retry tests. Only applicable
             to skylab tests.
@@ -631,15 +1261,11 @@ def _legacy_test_config(
         tests argument of targets.legacy_basic_suite.
     """
     return struct(
-        script = script,
-        test = test,
-        telemetry_test_name = telemetry_test_name,
-        results_handler = results_handler,
         tast_expr = tast_expr,
         test_level_retries = test_level_retries,
         mixins = mixins,
         remove_mixins = remove_mixins,
-        mixin_values = _mixin_values(**kwargs),
+        mixin_values = _mixin_values(**kwargs) or None,
     )
 
 def _legacy_compound_suite(*, name, basic_suites):
@@ -663,6 +1289,8 @@ def _legacy_compound_suite(*, name, basic_suites):
 
     for s in basic_suites:
         graph.add_edge(key, _LEGACY_BASIC_SUITE.key(s))
+
+    # TODO: crbug.com/1420012 - Make compound suites usable as bundles
 
 def _legacy_matrix_compound_suite(*, name, basic_suites):
     """Define a matrix compound suite.
@@ -700,6 +1328,8 @@ def _legacy_matrix_compound_suite(*, name, basic_suites):
         for v in config.variants:
             graph.add_edge(matrix_config_key, _TARGET_VARIANT.key(v))
 
+    # TODO: crbug.com/1420012 - Make matrix compound suites usable as bundles
+
 def _legacy_matrix_config(*, mixins = [], variants = []):
     """Define the matrix details for a basic suite.
 
@@ -720,15 +1350,29 @@ def _legacy_matrix_config(*, mixins = [], variants = []):
     )
 
 targets = struct(
-    # Functions for declaring isolates
+    # Functions for declaring binaries, which can be referred to by gtests and
+    # isolated script tests
+    binaries = struct(
+        console_test_launcher = _console_test_launcher,
+        generated_script = _generated_script,
+        script = _script,
+        windowed_test_launcher = _windowed_test_launcher,
+    ),
+
+    # Functions for declaring tests
+    tests = struct(
+        gpu_telemetry_test = _gpu_telemetry_test,
+        gtest_test = _gtest_test,
+        isolated_script_test = _isolated_script_test,
+        junit_test = _junit_test,
+        script_test = _script_test,
+    ),
+
+    # Functions for declaring compile targets
     compile_target = _compile_target,
-    console_test_launcher = _console_test_launcher,
-    generated_script = _generated_script,
-    junit_test = _junit_test,
-    script = _script,
-    windowed_test_launcher = _windowed_test_launcher,
 
     # Functions for declaring bundles
+    bundle = _bundle,
     legacy_basic_suite = _legacy_basic_suite,
     legacy_test_config = _legacy_test_config,
     legacy_compound_suite = _legacy_compound_suite,
@@ -742,6 +1386,123 @@ targets = struct(
     swarming = _swarming,
     skylab = _skylab,
 )
+
+################################################################################
+# Code for generating targets spec files                                       #
+################################################################################
+
+def register_targets(*, parent_key, name, targets):
+    """Register the targets for a builder.
+
+    This will create the necessary nodes and edges so that the targets spec for
+    the builder can be generated via get_targets_spec_generator.
+
+    Args:
+      parent_key - The graph key of the parent node to register the targets for.
+      name - The name to use for the registered bundle. This will allow for
+        other builders to specify their targets in terms of another builder's.
+      targets - The targets for the builder. Can take the form of the name of a
+        separately-declared bundle, an unnamed targets.bundle instance or a list
+        of such elements.
+    """
+    targets_key = _create_bundle(
+        name = name,
+        targets = args.listify(targets),
+    )
+
+    graph.add_edge(parent_key, targets_key)
+
+def _get_bundle_resolver():
+    def resolved_bundle(*, additional_compile_targets, test_spec_and_source_by_name):
+        return struct(
+            additional_compile_targets = additional_compile_targets,
+            test_spec_and_source_by_name = test_spec_and_source_by_name,
+        )
+
+    def visitor(_, children):
+        return [c for c in children if c.key.kind == _TARGET_BUNDLE.kind]
+
+    resolved_bundle_by_bundle_node = {}
+
+    def resolve(bundle_node):
+        for n in graph.descendants(bundle_node.key, visitor = visitor, topology = graph.DEPTH_FIRST):
+            if n in resolved_bundle_by_bundle_node:
+                continue
+
+            # TODO: crbug.com/1420012 - Update the handling of conflicting defs
+            # so that more context is provided about where the error is
+            # resulting from
+            additional_compile_targets = set([t.key.id for t in graph.children(n.key, _COMPILE_TARGET.kind)])
+            test_spec_and_source_by_name = {name: (spec, n.key) for name, spec in n.props.test_spec_by_name.items()}
+            for child in graph.children(n.key, kind = _TARGET_BUNDLE.kind):
+                child_resolved_bundle = resolved_bundle_by_bundle_node[child]
+                additional_compile_targets = additional_compile_targets | child_resolved_bundle.additional_compile_targets
+                for name, (spec, source) in child_resolved_bundle.test_spec_and_source_by_name.items():
+                    if name in test_spec_and_source_by_name:
+                        existing_spec, existing_source = test_spec_and_source_by_name[name]
+                        if existing_spec != spec:
+                            fail("target {} has conflicting definitions in deps of {}\n  {}: {}\n  {}: {}".format(
+                                name,
+                                n.key,
+                                existing_source,
+                                existing_spec,
+                                source,
+                                spec,
+                            ))
+                    test_spec_and_source_by_name[name] = (spec, source)
+
+            resolved_bundle_by_bundle_node[n] = resolved_bundle(
+                additional_compile_targets = additional_compile_targets,
+                test_spec_and_source_by_name = test_spec_and_source_by_name,
+            )
+
+        resolved = resolved_bundle_by_bundle_node[bundle_node]
+        return (
+            resolved.additional_compile_targets,
+            {name: spec for name, (spec, _) in resolved.test_spec_and_source_by_name.items()},
+        )
+
+    return resolve
+
+def get_targets_spec_generator():
+    """Get a generator for builders' targets specs.
+
+    Returns:
+      A function that can be used to get the targets specs for a builder. The
+      function takes a single argument that is a node. If the node corresponds
+      to a builder that has tests registered using register_targets, then a dict
+      will be returned with the target specs for the builder. Otherwise, None
+      will be returned.
+    """
+    bundle_resolver = _get_bundle_resolver()
+
+    def get_targets_spec(parent_node):
+        bundle_nodes = graph.children(parent_node.key, _TARGET_BUNDLE.kind)
+        if not bundle_nodes:
+            return None
+        if len(bundle_nodes) > 1:
+            fail("internal error: there should be at most 1 targets_spec")
+        bundle_node = bundle_nodes[0]
+
+        additional_compile_targets, test_spec_by_name = bundle_resolver(bundle_node)
+        sort_key_and_specs_by_type_key = {}
+        for name, spec in test_spec_by_name.items():
+            type_key, sort_key, spec = spec.spec_type.finalize(name, spec.spec_value)
+            sort_key_and_specs_by_type_key.setdefault(type_key, []).append((sort_key, spec))
+
+        specs_by_type_key = {}
+        if additional_compile_targets:
+            specs_by_type_key["additional_compile_targets"] = sorted(additional_compile_targets)
+        for type_key, sort_key_and_specs in sorted(sort_key_and_specs_by_type_key.items()):
+            specs_by_type_key[type_key] = [spec for _, spec in sorted(sort_key_and_specs)]
+
+        return specs_by_type_key
+
+    return get_targets_spec
+
+################################################################################
+# Generators for legacy .pyl files                                             #
+################################################################################
 
 _PYL_HEADER_FMT = """\
 # THIS IS A GENERATED FILE DO NOT EDIT!!!
@@ -757,7 +1518,7 @@ _PYL_HEADER_FMT = """\
 
 def _generate_gn_isolate_map_pyl(ctx):
     entries = []
-    for n in graph.children(keys.project(), _TARGET.kind, graph.KEY_ORDER):
+    for n in graph.children(keys.project(), _TARGET_LABEL_MAPPING.kind, graph.KEY_ORDER):
         entries.append('  "{}": {{'.format(n.key.id))
         entries.append('    "label": "{}",'.format(n.props.label))
         if n.props.label_type != None:
@@ -778,7 +1539,7 @@ def _generate_gn_isolate_map_pyl(ctx):
             entries.append("    ],")
         entries.append("  },")
     ctx.output["testing/gn_isolate_map.pyl"] = _PYL_HEADER_FMT.format(
-        star_file = "//infra/config/targets/targets.star",
+        star_file = "//infra/config/targets/binaries.star and/or //infra/config/targets/tests.star (for tests defined using targets.tests.junit_test)",
         entries = "\n".join(entries),
     )
 
@@ -804,6 +1565,9 @@ def _formatter(*, indent_level = 1, indent_size = 2):
         state["indent"] -= indent_size
         add_line(s)
 
+    def lines():
+        return list(state["lines"])
+
     def output():
         return "\n".join(state["lines"])
 
@@ -811,6 +1575,7 @@ def _formatter(*, indent_level = 1, indent_size = 2):
         add_line = add_line,
         open_scope = open_scope,
         close_scope = close_scope,
+        lines = lines,
         output = output,
     )
 
@@ -1048,43 +1813,87 @@ def _generate_test_suites_pyl(ctx):
         formatter.add_line("")
         formatter.open_scope("'{}': {{".format(suite.key.id))
 
-        for test_name, test_config in sorted(suite.props.tests.items()):
-            if not test_config:
+        for test_config_node in graph.children(suite.key, _LEGACY_BASIC_SUITE_CONFIG.kind, graph.KEY_ORDER):
+            test_name = test_config_node.key.id
+            suite_test_config = test_config_node.props.config
+
+            test_nodes = graph.children(test_config_node.key, _LEGACY_TEST.kind)
+            if len(test_nodes) != 1:
+                fail("internal error: test config {} should have exactly 1 test: {}", test_config_node, test_nodes)
+            test_node = test_nodes[0]
+            target_test_config = test_node.props.basic_suite_test_config
+
+            binary_nodes = graph.children(test_node.key, _TARGET_BINARY.kind)
+            if len(binary_nodes) > 1:
+                fail("internal error: test {} has more than 1 binary: {}", test_node, binary_nodes)
+            binary_test_config = None
+            if binary_nodes:
+                binary_test_config = binary_nodes[0].props.test_config
+            binary_test_config = binary_test_config or _binary_test_config()
+
+            test_formatter = _formatter(indent_level = 0)
+
+            if target_test_config.script:
+                test_formatter.add_line("'script': '{}',".format(target_test_config.script))
+
+            # This is intentionally transforming binary -> test to remain
+            # backwards-compatible with //testing/buildbot
+            if target_test_config.binary:
+                test_formatter.add_line("'test': '{}',".format(target_test_config.binary))
+            if binary_test_config.results_handler:
+                test_formatter.add_line("'results_handler': '{}',".format(binary_test_config.results_handler))
+
+            if target_test_config.telemetry_test_name:
+                test_formatter.add_line("'telemetry_test_name': '{}',".format(target_test_config.telemetry_test_name))
+
+            if suite_test_config.tast_expr:
+                test_formatter.add_line("'tast_expr': '{}',".format(suite_test_config.tast_expr))
+            if suite_test_config.test_level_retries:
+                test_formatter.add_line("'test_level_retries': {},".format(suite_test_config.test_level_retries))
+
+            mixins = []
+            for n in (test_node, test_config_node):
+                # The order that mixins are declared is significant,
+                # DEFINITION_ORDER preserves the order that the edges were added
+                # from the parent to the child
+                for mixin in graph.children(n.key, _TARGET_MIXIN.kind, graph.DEFINITION_ORDER):
+                    mixins.append(mixin.key.id)
+            if mixins:
+                test_formatter.open_scope("'mixins': [")
+                for m in mixins:
+                    test_formatter.add_line("'{}',".format(m))
+                test_formatter.close_scope("],")
+            remove_mixins = [n.key.id for n in _LEGACY_BASIC_SUITE_REMOVE_MIXIN.children(test_config_node.key)]
+            if remove_mixins:
+                test_formatter.open_scope("'remove_mixins': [")
+                for m in remove_mixins:
+                    test_formatter.add_line("'{}',".format(m))
+                test_formatter.close_scope("],")
+
+            mixin_values = dict(suite_test_config.mixin_values or {})
+
+            # Merge any args from the target with those specified for the test
+            # in the suite
+            merged_args = args.listify(target_test_config.args, mixin_values.get("args"))
+            if merged_args:
+                mixin_values["args"] = merged_args
+
+            # merge and resultdb can be set on the binary, but don't override
+            # values set on the test in the suite
+            for a in ("merge", "resultdb"):
+                value = getattr(binary_test_config, a)
+                if value:
+                    mixin_values.setdefault(a, value)
+            _generate_mixin_values(test_formatter, mixin_values)
+
+            test_lines = test_formatter.lines()
+            if test_lines:
+                formatter.open_scope("'{}': {{".format(test_name))
+                for l in test_lines:
+                    formatter.add_line(l)
+                formatter.close_scope("},")
+            else:
                 formatter.add_line("'{}': {{}},".format(test_name))
-                continue
-
-            formatter.open_scope("'{}': {{".format(test_name))
-
-            if test_config.script:
-                formatter.add_line("'script': '{}',".format(test_config.script))
-
-            if test_config.test:
-                formatter.add_line("'test': '{}',".format(test_config.test))
-            if test_config.results_handler:
-                formatter.add_line("'results_handler': '{}',".format(test_config.results_handler))
-
-            if test_config.telemetry_test_name:
-                formatter.add_line("'telemetry_test_name': '{}',".format(test_config.telemetry_test_name))
-
-            if test_config.tast_expr:
-                formatter.add_line("'tast_expr': '{}',".format(test_config.tast_expr))
-            if test_config.test_level_retries:
-                formatter.add_line("'test_level_retries': {},".format(test_config.test_level_retries))
-
-            if test_config.mixins:
-                formatter.open_scope("'mixins': [")
-                for m in test_config.mixins:
-                    formatter.add_line("'{}',".format(m))
-                formatter.close_scope("],")
-            if test_config.remove_mixins:
-                formatter.open_scope("'remove_mixins': [")
-                for m in test_config.remove_mixins:
-                    formatter.add_line("'{}',".format(m))
-                formatter.close_scope("],")
-
-            _generate_mixin_values(formatter, test_config.mixin_values)
-
-            formatter.close_scope("},")
 
         formatter.close_scope("},")
 

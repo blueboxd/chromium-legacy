@@ -16,6 +16,7 @@ import("//third_party/blink/public/public_features.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/config.gni")
 import("//third_party/blink/renderer/platform/platform_generated.gni")
+import("//third_party/libgav1/options.gni")
 import("//v8/gni/v8.gni")
 
 if (is_ios) {
@@ -54,10 +55,10 @@ blink_python_runner("runtime_enabled_features") {
 
   build_scripts_output_dir = "$blink_platform_output_dir/../build/scripts"
   outputs = [
+    "$blink_platform_output_dir/exported/web_runtime_features_base.cc",
     "$blink_platform_output_dir/runtime_enabled_features.cc",
     "$blink_platform_output_dir/runtime_enabled_features.h",
     "$blink_platform_output_dir/testing/runtime_enabled_features_test_helpers.h",
-    "$blink_platform_output_dir/exported/web_runtime_features_base.cc",
     "$build_scripts_output_dir/runtime_enabled_features.pickle",
   ]
 
@@ -83,8 +84,8 @@ blink_python_runner("runtime_feature_state_override_context") {
              "../build/scripts/templates/runtime_feature_state_override_context.cc.tmpl",
            ]
   outputs = [
-    "$blink_platform_output_dir/runtime_feature_state/runtime_feature_state_override_context.h",
     "$blink_platform_output_dir/runtime_feature_state/runtime_feature_state_override_context.cc",
+    "$blink_platform_output_dir/runtime_feature_state/runtime_feature_state_override_context.h",
   ]
 
   args = [
@@ -435,8 +436,6 @@ component("platform") {
     "bindings/callback_method_retriever.cc",
     "bindings/callback_method_retriever.h",
     "bindings/cross_thread_copier.h",
-    "bindings/custom_wrappable.cc",
-    "bindings/custom_wrappable.h",
     "bindings/dictionary_base.cc",
     "bindings/dictionary_base.h",
     "bindings/dom_data_store.cc",
@@ -452,6 +451,8 @@ component("platform") {
     "bindings/exception_state.h",
     "bindings/extensions_registry.cc",
     "bindings/extensions_registry.h",
+    "bindings/frozen_array_base.cc",
+    "bindings/frozen_array_base.h",
     "bindings/idl_member_installer.cc",
     "bindings/idl_member_installer.h",
     "bindings/multi_worlds_v8_reference.cc",
@@ -487,7 +488,6 @@ component("platform") {
     "bindings/thread_debugger.h",
     "bindings/to_blink_string.cc",
     "bindings/to_blink_string.h",
-    "bindings/to_v8.h",
     "bindings/trace_wrapper_v8_reference.h",
     "bindings/union_base.cc",
     "bindings/union_base.h",
@@ -719,6 +719,7 @@ component("platform") {
     "fonts/shaping/font_features.cc",
     "fonts/shaping/font_features.h",
     "fonts/shaping/glyph_bounds_accumulator.h",
+    "fonts/shaping/glyph_data.h",
     "fonts/shaping/han_kerning.cc",
     "fonts/shaping/han_kerning.h",
     "fonts/shaping/harfbuzz_face.cc",
@@ -730,7 +731,6 @@ component("platform") {
     "fonts/shaping/harfbuzz_font_data.h",
     "fonts/shaping/harfbuzz_shaper.cc",
     "fonts/shaping/harfbuzz_shaper.h",
-    "fonts/shaping/ng_shape_cache.cc",
     "fonts/shaping/ng_shape_cache.h",
     "fonts/shaping/run_segmenter.cc",
     "fonts/shaping/run_segmenter.h",
@@ -996,8 +996,6 @@ component("platform") {
     "graphics/gpu/xr_frame_transport.h",
     "graphics/gpu/xr_webgl_drawing_buffer.cc",
     "graphics/gpu/xr_webgl_drawing_buffer.h",
-    "graphics/gpu_memory_buffer_image_copy.cc",
-    "graphics/gpu_memory_buffer_image_copy.h",
     "graphics/gradient.cc",
     "graphics/gradient.h",
     "graphics/gradient_generated_image.cc",
@@ -1027,6 +1025,8 @@ component("platform") {
     "graphics/image_orientation_enum.h",
     "graphics/image_pattern.cc",
     "graphics/image_pattern.h",
+    "graphics/image_to_buffer_copier.cc",
+    "graphics/image_to_buffer_copier.h",
     "graphics/intercepting_canvas.cc",
     "graphics/intercepting_canvas.h",
     "graphics/interpolation_space.cc",
@@ -1212,7 +1212,7 @@ component("platform") {
     "link_hash.cc",
     "link_hash.h",
     "media/web_audio_source_provider_client.h",
-    "media/webaudiosourceprovider_impl.cc",
+    "media/web_audio_source_provider_impl.cc",
     "media_capabilities/web_audio_configuration.h",
     "media_capabilities/web_media_capabilities_info.h",
     "media_capabilities/web_media_configuration.h",
@@ -1310,6 +1310,8 @@ component("platform") {
     "peerconnection/gpu_codec_support_waiter.h",
     "peerconnection/linear_histogram.cc",
     "peerconnection/linear_histogram.h",
+    "peerconnection/resolution_monitor.cc",
+    "peerconnection/resolution_monitor.h",
     "peerconnection/rtc_answer_options_platform.h",
     "peerconnection/rtc_api_name.h",
     "peerconnection/rtc_dtmf_sender_handler.cc",
@@ -1669,6 +1671,8 @@ component("platform") {
     "//third_party/blink/renderer/platform/scheduler",
   ]
 
+  assert(use_libgav1_parser)
+
   public_deps = [
     ":allow_discouraged_type",
     ":blink_platform_public_deps",
@@ -1716,6 +1720,7 @@ component("platform") {
     "//media/capture:capture_switches",
     "//media/capture/mojom:video_capture",
     "//media/mojo/clients:clients",
+    "//media/parsers",
     "//media/webrtc:webrtc",
     "//mojo/public/cpp/bindings:wtf_support",
     "//services/metrics/public/cpp:ukm_builders",
@@ -1734,6 +1739,7 @@ component("platform") {
     "//third_party/ced",
     "//third_party/emoji-segmenter",
     "//third_party/icu",
+    "//third_party/libgav1:libgav1_parser",
     "//third_party/libyuv",
     "//third_party/one_euro_filter",
     "//third_party/snappy:snappy",
@@ -1746,6 +1752,7 @@ component("platform") {
     "//ui/events/ipc",
     "//ui/gfx/geometry",
     "//ui/gfx/mojom",
+    "//ui/gl:buildflags",
     "//ui/native_theme",
   ]
 
@@ -1896,6 +1903,8 @@ static_library("test_support") {
     "testing/paint_test_configurations.h",
     "testing/picture_matchers.cc",
     "testing/picture_matchers.h",
+    "testing/renderer_fuzzing_support.cc",
+    "testing/renderer_fuzzing_support.h",
     "testing/scoped_fake_ukm_recorder.cc",
     "testing/scoped_fake_ukm_recorder.h",
     "testing/scoped_main_thread_overrider.cc",
@@ -1971,6 +1980,7 @@ static_library("test_support") {
     "//services/service_manager/public/cpp",
     "//skia",
     "//skia:skcms",
+    "//testing/libfuzzer:renderer_fuzzing",
     "//third_party/blink/public/common:common",
     "//third_party/blink/renderer/modules:modules",
     "//third_party/blink/renderer/platform/network:test_support",
@@ -1986,7 +1996,7 @@ static_library("test_support") {
 test("blink_platform_unittests") {
   deps = [ ":blink_platform_unittests_sources" ]
 
-  if (enable_nocompile_tests_new) {
+  if (enable_nocompile_tests) {
     deps += [ ":blink_platform_nocompile_tests" ]
   }
 
@@ -2008,11 +2018,15 @@ test("blink_platform_unittests") {
     ]
   }
   if (is_ios) {
-    bundle_deps = [ ":blink_platform_unittests_bundle_data" ]
+    bundle_deps = [
+      ":blink_platform_unittests_bundle_data",
+      "//media:unit_tests_bundle_data",
+      "//testing/buildbot/filters:blink_platform_unittests_filters_bundle_data",
+    ]
   }
 }
 
-if (enable_nocompile_tests_new) {
+if (enable_nocompile_tests) {
   nocompile_source_set("blink_platform_nocompile_tests") {
     sources = [ "wtf/functional_nocompile.nc" ]
 
@@ -2148,7 +2162,7 @@ source_set("blink_platform_unittests_sources") {
     "heap_observer_set_test.cc",
     "json/json_parser_test.cc",
     "json/json_values_test.cc",
-    "media/webaudiosourceprovider_impl_test.cc",
+    "media/web_audio_source_provider_impl_test.cc",
     "mediastream/audio_service_audio_processor_proxy_test.cc",
     "mediastream/media_stream_audio_processor_options_test.cc",
     "mediastream/media_stream_audio_test.cc",
@@ -2175,6 +2189,7 @@ source_set("blink_platform_unittests_sources") {
     "peerconnection/linear_histogram_test.cc",
     "peerconnection/low_precision_timer_test.cc",
     "peerconnection/metronome_source_test.cc",
+    "peerconnection/resolution_monitor_unittest.cc",
     "peerconnection/rtc_encoded_audio_stream_transformer_test.cc",
     "peerconnection/rtc_encoded_video_stream_transformer_test.cc",
     "peerconnection/rtc_rtp_source_test.cc",
@@ -2249,6 +2264,7 @@ source_set("blink_platform_unittests_sources") {
     sources += [ "text/locale_win_test.cc" ]
   } else if (is_mac) {
     sources += [
+      "fonts/mac/font_cache_mac_test.mm",
       "fonts/mac/font_matcher_mac_test.mm",
       "fonts/mac/font_platform_data_mac_test.mm",
       "fonts/opentype/open_type_caps_support_test.mm",

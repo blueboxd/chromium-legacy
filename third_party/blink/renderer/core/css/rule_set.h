@@ -426,9 +426,6 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   base::span<const RuleData> FocusVisiblePseudoClassRules() const {
     return focus_visible_pseudo_class_rules_;
   }
-  base::span<const RuleData> SpatialNavigationInterestPseudoClassRules() const {
-    return spatial_navigation_interest_class_rules_;
-  }
   base::span<const RuleData> RootElementRules() const {
     return root_element_rules_;
   }
@@ -596,7 +593,10 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
 
   bool MatchMediaForAddRules(const MediaQueryEvaluator& evaluator,
                              const MediaQuerySet* media_queries);
-  void AddChildRules(const HeapVector<Member<StyleRuleBase>>&,
+
+  // HeapVector<Member<StyleRuleBase>> or ChildRuleVector
+  template <typename T>
+  void AddChildRules(const T&,
                      const MediaQueryEvaluator& medium,
                      AddRuleFlags,
                      const ContainerQuery*,
@@ -689,7 +689,6 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   HeapVector<RuleData> cue_pseudo_rules_;
   HeapVector<RuleData> focus_pseudo_class_rules_;
   HeapVector<RuleData> focus_visible_pseudo_class_rules_;
-  HeapVector<RuleData> spatial_navigation_interest_class_rules_;
   HeapVector<RuleData> universal_rules_;
   HeapVector<RuleData> shadow_host_rules_;
   HeapVector<RuleData> part_pseudo_rules_;

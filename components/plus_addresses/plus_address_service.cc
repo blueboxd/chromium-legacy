@@ -9,8 +9,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/plus_addresses/features.h"
 #include "components/plus_addresses/plus_address_client.h"
+#include "components/plus_addresses/plus_address_metrics.h"
 #include "components/plus_addresses/plus_address_prefs.h"
 #include "components/plus_addresses/plus_address_types.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/persistent_repeating_timer.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -53,15 +55,18 @@ PlusAddressService::PlusAddressService(
       pref_service_(pref_service),
       plus_address_client_(std::move(plus_address_client)),
       excluded_sites_(GetAndParseExcludedSites()) {
-  // Begin PlusAddress periodic actions at construction.
-  CreateAndStartTimer();
+  if (pref_service) {
+    // Clear the pref to always force a poll on service construction.
+    pref_service->ClearPref(prefs::kPlusAddressLastFetchedTime);
+    CreateAndStartTimer();
+  }
   if (identity_manager) {
     identity_manager_observation_.Observe(identity_manager);
   }
 }
 
-bool PlusAddressService::SupportsPlusAddresses(url::Origin origin,
-                                               bool is_off_the_record) {
+bool PlusAddressService::SupportsPlusAddresses(const url::Origin& origin,
+                                               bool is_off_the_record) const {
   // First, check prerequisites (the feature enabled, etc.).
   if (!is_enabled()) {
     return false;
@@ -82,20 +87,20 @@ bool PlusAddressService::SupportsPlusAddresses(url::Origin origin,
   return GetPlusAddress(origin).has_value();
 }
 
-absl::optional<std::string> PlusAddressService::GetPlusAddress(
-    url::Origin origin) {
+std::optional<std::string> PlusAddressService::GetPlusAddress(
+    const url::Origin& origin) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  absl::optional<PlusProfile> profile = GetPlusProfile(origin);
-  return profile ? absl::make_optional(profile->plus_address) : absl::nullopt;
+  std::optional<PlusProfile> profile = GetPlusProfile(origin);
+  return profile ? std::make_optional(profile->plus_address) : std::nullopt;
 }
 
-absl::optional<PlusProfile> PlusAddressService::GetPlusProfile(
-    url::Origin origin) {
+std::optional<PlusProfile> PlusAddressService::GetPlusProfile(
+    const url::Origin& origin) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string etld_plus_one = GetEtldPlusOne(origin);
   auto it = plus_address_by_site_.find(etld_plus_one);
   if (it == plus_address_by_site_.end()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   // Assume that 'is_confirmed` = TRUE since this service only has a saved plus
   // address if it was successfully confirmed via the dialog or retrieved via
@@ -113,7 +118,8 @@ void PlusAddressService::SavePlusAddress(url::Origin origin,
   plus_addresses_.insert(plus_address);
 }
 
-bool PlusAddressService::IsPlusAddress(std::string potential_plus_address) {
+bool PlusAddressService::IsPlusAddress(
+    const std::string& potential_plus_address) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return plus_addresses_.contains(potential_plus_address);
 }
@@ -151,7 +157,7 @@ void PlusAddressService::ConfirmPlusAddress(
     return;
   }
   // Check the local mapping before attempting to confirm plus_address.
-  if (absl::optional<PlusProfile> stored_plus_profile = GetPlusProfile(origin);
+  if (std::optional<PlusProfile> stored_plus_profile = GetPlusProfile(origin);
       stored_plus_profile) {
     std::move(on_completed).Run(stored_plus_profile.value());
     return;
@@ -175,17 +181,17 @@ void PlusAddressService::ConfirmPlusAddress(
           base::Unretained(this), origin, std::move(on_completed)));
 }
 
-std::u16string PlusAddressService::GetCreateSuggestionLabel() {
+std::u16string PlusAddressService::GetCreateSuggestionLabel() const {
   // TODO(crbug.com/1467623): once ready, use standard
   // `l10n_util::GetStringUTF16` instead of using feature params.
   return base::UTF8ToUTF16(
-      plus_addresses::kEnterprisePlusAddressLabelOverride.Get());
+      plus_addresses::kEnterprisePlusAddressSuggestionLabelOverride.Get());
 }
 
-absl::optional<std::string> PlusAddressService::GetPrimaryEmail() {
+std::optional<std::string> PlusAddressService::GetPrimaryEmail() {
   if (!identity_manager_ ||
       !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   // TODO(crbug.com/1467623): This is fine for prototyping, but eventually we
   // must also take `AccountInfo::CanHaveEmailAddressDisplayed` into account
@@ -293,6 +299,11 @@ bool PlusAddressService::IsSupportedOrigin(const url::Origin& origin) const {
 
   return origin.scheme() == url::kHttpsScheme ||
          origin.scheme() == url::kHttpScheme;
+}
+
+void PlusAddressService::RecordAutofillSuggestionEvent(
+    SuggestionEvent suggestion_event) {
+  PlusAddressMetrics::RecordAutofillSuggestionEvent(suggestion_event);
 }
 
 }  // namespace plus_addresses

@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
+#include "chrome/services/sharing/nearby/common/nearby_features.h"
 #include "chrome/services/sharing/nearby/platform/ble_v2_remote_peripheral.h"
+#include "chrome/services/sharing/nearby/platform/ble_v2_server_socket.h"
 #include "third_party/nearby/src/internal/platform/byte_array.h"
 #include "third_party/nearby/src/internal/platform/implementation/ble_v2.h"
 
@@ -191,8 +193,10 @@ std::unique_ptr<api::ble_v2::GattClient> BleV2Medium::ConnectToGattServer(
 
 std::unique_ptr<api::ble_v2::BleServerSocket> BleV2Medium::OpenServerSocket(
     const std::string& service_id) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  // TODO(b/320554697): This function has no purpose in BLE V2 and can be
+  // removed once implementation of the GATT Server advertising is complete.
+  // Note that other platforms still use this function for now.
+  return std::make_unique<BleV2ServerSocket>();
 }
 
 std::unique_ptr<api::ble_v2::BleSocket> BleV2Medium::Connect(
@@ -205,8 +209,10 @@ std::unique_ptr<api::ble_v2::BleSocket> BleV2Medium::Connect(
 }
 
 bool BleV2Medium::IsExtendedAdvertisementsAvailable() {
-  NOTIMPLEMENTED();
-  return false;
+  // TODO(b/310269227): Also check hardware/chipset support for extended
+  // advertising; both the feature flag AND hardware support must be true to
+  // return true.
+  return features::IsNearbyBleV2ExtendedAdvertisingEnabled();
 }
 
 bool BleV2Medium::GetRemotePeripheral(const std::string& mac_address,

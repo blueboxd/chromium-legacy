@@ -19,6 +19,7 @@
 #include "third_party/blink/public/common/features.h"
 
 using ::testing::_;
+using ::testing::An;
 using ::testing::ByRef;
 using ::testing::Invoke;
 using ::testing::NiceMock;
@@ -58,7 +59,7 @@ void V8CompileHintsTabHelperTest::SetUp() {
                   base::BindRepeating([](content::BrowserContext* context)
                                           -> std::unique_ptr<KeyedService> {
                     return std::make_unique<
-                        NiceMock<MockOptimizationGuideKeyedService>>(context);
+                        NiceMock<MockOptimizationGuideKeyedService>>();
                   })));
   V8CompileHintsTabHelper::MaybeCreateForWebContents(web_contents());
   tab_helper_ = V8CompileHintsTabHelper::FromWebContents(web_contents());
@@ -122,7 +123,10 @@ TEST_F(V8CompileHintsTabHelperTest, DataFromOptimizationGuide) {
   optimization_guide::OptimizationMetadata optimization_metadata =
       CreateMetadata();
   optimization_guide::OptimizationGuideDecisionCallback stored_callback;
-  EXPECT_CALL(*mock_optimization_guide_keyed_service_, CanApplyOptimization)
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimization(
+          _, _, An<optimization_guide::OptimizationGuideDecisionCallback>()))
       .WillOnce(MoveArg<2>(&stored_callback));
 
   NavigateAndCommitInFrame("http://test.org", main_rfh());
@@ -141,7 +145,10 @@ TEST_F(V8CompileHintsTabHelperTest, NonHttpNavigationIgnored) {
   tab_helper_->SetSendDataToRendererForTesting(base::BindLambdaForTesting(
       [&data_sent](const proto::Model& model) { data_sent = true; }));
 
-  EXPECT_CALL(*mock_optimization_guide_keyed_service_, CanApplyOptimization)
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimization(
+          _, _, An<optimization_guide::OptimizationGuideDecisionCallback>()))
       .Times(0);
 
   NavigateAndCommitInFrame("ftp://test.org", main_rfh());
@@ -156,10 +163,10 @@ TEST_F(V8CompileHintsTabHelperTest, InvalidModelIgnored) {
 
   optimization_guide::OptimizationMetadata optimization_metadata =
       CreateInvalidMetadata();
-  EXPECT_CALL(
-      *mock_optimization_guide_keyed_service_,
-      CanApplyOptimization(_, optimization_guide::proto::V8_COMPILE_HINTS,
-                           base::test::IsNotNullCallback()))
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimization(
+                  _, optimization_guide::proto::V8_COMPILE_HINTS,
+                  An<optimization_guide::OptimizationGuideDecisionCallback>()))
       .WillOnce(base::test::RunOnceCallback<2>(
           optimization_guide::OptimizationGuideDecision::kTrue,
           ByRef(optimization_metadata)));
@@ -180,10 +187,10 @@ TEST_F(V8CompileHintsTabHelperTest, BadModelIgnored) {
 
   optimization_guide::OptimizationMetadata optimization_metadata =
       CreateBadMetadata();
-  EXPECT_CALL(
-      *mock_optimization_guide_keyed_service_,
-      CanApplyOptimization(_, optimization_guide::proto::V8_COMPILE_HINTS,
-                           base::test::IsNotNullCallback()))
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimization(
+                  _, optimization_guide::proto::V8_COMPILE_HINTS,
+                  An<optimization_guide::OptimizationGuideDecisionCallback>()))
       .WillOnce(base::test::RunOnceCallback<2>(
           optimization_guide::OptimizationGuideDecision::kTrue,
           ByRef(optimization_metadata)));

@@ -4,14 +4,15 @@
 
 #include "components/autofill/core/browser/form_structure_rationalizer.h"
 
+#include <string_view>
 #include <tuple>
 #include <utility>
 
 #include "base/base64.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_encoding.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -35,33 +36,31 @@ std::string SerializeAndEncode(const AutofillQueryResponse& response) {
     LOG(ERROR) << "Cannot serialize the response proto";
     return "";
   }
-  std::string response_string;
-  base::Base64Encode(unencoded_response_string, &response_string);
-  return response_string;
+  return base::Base64Encode(unencoded_response_string);
 }
 
 // The key information from which we build FormFieldData objects and an
 // AutofillQueryResponse for tests.
 struct FieldTemplate {
-  base::StringPiece label;
-  base::StringPiece name;
+  std::string_view label;
+  std::string_view name;
   // This is a field type we assume the autofill server would provide for
   // the given field.
   // TODO(crbug.com/1441057) Rename field_type to server_type to clarify what
   // it represents. Also change to server_type_is_override below.
-  ServerFieldType field_type = UNKNOWN_TYPE;
+  FieldType field_type = UNKNOWN_TYPE;
   // Section name of a field.
-  base::StringPiece section = "";
+  std::string_view section = "";
   FormControlType form_control_type = FormControlType::kInputText;
-  absl::optional<AutocompleteParsingResult> parsed_autocomplete = absl::nullopt;
+  std::optional<AutocompleteParsingResult> parsed_autocomplete = std::nullopt;
   bool is_focusable = true;
   size_t max_length = std::numeric_limits<int>::max();
   FormFieldData::RoleAttribute role = FormFieldData::RoleAttribute::kOther;
-  absl::optional<url::Origin> subframe_origin;
-  absl::optional<FormGlobalId> host_form;
+  std::optional<url::Origin> subframe_origin;
+  std::optional<FormGlobalId> host_form;
   bool field_type_is_override = false;
   // Only appled if BuildFormStructure is called with run_heuristics=false.
-  ServerFieldType heuristic_type = UNKNOWN_TYPE;
+  FieldType heuristic_type = UNKNOWN_TYPE;
 };
 
 // These are helper functions that set a special flag in a field_template.
@@ -89,7 +88,7 @@ std::pair<FormData, std::string> CreateFormAndServerClassification(
   form.url = GURL("http://foo.com");
   form.main_frame_origin = url::Origin::Create(form.url);
   form.host_frame = test::MakeLocalFrameToken();
-  form.unique_renderer_id = test::MakeFormRendererId();
+  form.renderer_id = test::MakeFormRendererId();
 
   // Build the fields for the form.
   for (const auto& field_template : fields) {
@@ -111,7 +110,7 @@ std::pair<FormData, std::string> CreateFormAndServerClassification(
         field_template.host_form.value_or(form.global_id()).frame_token;
     field.host_form_id =
         field_template.host_form.value_or(form.global_id()).renderer_id;
-    field.unique_renderer_id = test::MakeFieldRendererId();
+    field.renderer_id = test::MakeFieldRendererId();
     form.fields.push_back(std::move(field));
   }
 
@@ -149,14 +148,14 @@ std::unique_ptr<FormStructure> BuildFormStructure(
     }
   }
   // Calls RationalizeFieldTypePredictions.
-  FormStructure::ParseApiQueryResponse(
+  ParseServerPredictionsQueryResponse(
       response_string, {form_structure.get()},
       test::GetEncodedSignatures({form_structure.get()}), nullptr, nullptr);
   return form_structure;
 }
 
-std::vector<ServerFieldType> GetTypes(const FormStructure& form_structure) {
-  std::vector<ServerFieldType> server_types;
+std::vector<FieldType> GetTypes(const FormStructure& form_structure) {
+  std::vector<FieldType> server_types;
   server_types.reserve(form_structure.field_count());
   for (size_t i = 0; i < form_structure.field_count(); ++i) {
     server_types.emplace_back(
@@ -165,7 +164,7 @@ std::vector<ServerFieldType> GetTypes(const FormStructure& form_structure) {
   return server_types;
 }
 
-Matcher<AutofillField> HasType(ServerFieldType type) {
+Matcher<AutofillField> HasType(FieldType type) {
   return Property("AutofillField::Type", &AutofillField::Type,
                   Property("AutofillType::GetStorableType",
                            &AutofillType::GetStorableType, type));
@@ -176,7 +175,7 @@ Matcher<AutofillField> HasOffset(size_t offset) {
                   &AutofillField::credit_card_number_offset, offset);
 }
 
-Matcher<AutofillField> HasTypeAndOffset(ServerFieldType type, size_t offset) {
+Matcher<AutofillField> HasTypeAndOffset(FieldType type, size_t offset) {
   return AllOf(HasType(type), HasOffset(offset));
 }
 
@@ -303,7 +302,7 @@ TEST_F(FormStructureRationalizerTest, RationalizeStreetAddressAndAddressLine) {
 TEST_F(FormStructureRationalizerTest, RationalizePhoneNumberTrunkTypes) {
   // Different phone number representations spanned over one or more fields,
   // with incorrect and correct trunk-types.
-  const std::vector<ServerFieldType> kIncorrectTypes = {
+  const std::vector<FieldType> kIncorrectTypes = {
       PHONE_HOME_COUNTRY_CODE,
       PHONE_HOME_CITY_AND_NUMBER,
 
@@ -315,7 +314,7 @@ TEST_F(FormStructureRationalizerTest, RationalizePhoneNumberTrunkTypes) {
 
       PHONE_HOME_CITY_CODE,
       PHONE_HOME_NUMBER};
-  const std::vector<ServerFieldType> kCorrectTypes = {
+  const std::vector<FieldType> kCorrectTypes = {
       PHONE_HOME_COUNTRY_CODE,
       PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX,
 
@@ -333,17 +332,17 @@ TEST_F(FormStructureRationalizerTest, RationalizePhoneNumberTrunkTypes) {
   // `kCorrectTypes` and that the `kCorrectTypes` remain as-is.
   // Labels and field names are irrelevant.
   std::vector<FieldTemplate> fields;
-  for (ServerFieldType type : kIncorrectTypes) {
+  for (FieldType type : kIncorrectTypes) {
     fields.push_back({"", "", type});
   }
-  for (ServerFieldType type : kCorrectTypes) {
+  for (FieldType type : kCorrectTypes) {
     fields.push_back({"", "", type});
   }
   std::unique_ptr<FormStructure> form_structure =
       BuildFormStructure(fields, /*run_heuristics=*/false);
 
   // Expect `kCorrectTypes` twice.
-  std::vector<ServerFieldType> expected_types = kCorrectTypes;
+  std::vector<FieldType> expected_types = kCorrectTypes;
   expected_types.insert(expected_types.end(), kCorrectTypes.begin(),
                         kCorrectTypes.end());
   EXPECT_THAT(GetTypes(*form_structure), ElementsAreArray(expected_types));
@@ -747,15 +746,27 @@ TEST_F(FormStructureRationalizerTest,
               ElementsAre(EMAIL_ADDRESS, UNKNOWN_TYPE));
 }
 
+// Tests that contenteditables types are overridden with UNKNOWN_TYPE.
+TEST_F(FormStructureRationalizerTest, RationalizeContentEditables) {
+  std::unique_ptr<FormStructure> form_structure = BuildFormStructure(
+      {{.field_type = CREDIT_CARD_NUMBER,
+        .form_control_type = FormControlType::kContentEditable},
+       {.field_type = CREDIT_CARD_NUMBER,
+        .form_control_type = FormControlType::kInputText}},
+      /*run_heuristics=*/false);
+  EXPECT_THAT(GetTypes(*form_structure),
+              ElementsAre(UNKNOWN_TYPE, CREDIT_CARD_NUMBER));
+}
+
 // Tests the rationalization that ignores certain types on the main origin. The
 // underlying assumption is that the field in the main frame misclassified
 // because such fields usually do not occur on the main frame's origin due to
 // PCI-DSS.
 class FormStructureRationalizerTestMultiOriginCreditCardFields
     : public FormStructureRationalizerTest,
-      public ::testing::WithParamInterface<ServerFieldType> {
+      public ::testing::WithParamInterface<FieldType> {
  public:
-  ServerFieldType sensitive_type() const { return GetParam(); }
+  FieldType sensitive_type() const { return GetParam(); }
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1070,7 +1081,7 @@ TEST_F(FormStructureRationalizerTest, RationalizeAddressBetweenStreets) {
 
 struct RationalizeAutocompleteTestParam {
   std::vector<FieldTemplate> fields;
-  std::vector<ServerFieldType> final_types;
+  std::vector<FieldType> final_types;
 };
 class RationalizeAutocompleteTest
     : public testing::Test,
@@ -1179,12 +1190,12 @@ TEST_P(RationalizeAutocompleteTest, RationalizeAutocompleteAttribute) {
 }
 
 struct RationalizationTypeRelationshipsTestParams {
-  ServerFieldType server_type;
-  ServerFieldType required_type;
+  FieldType server_type;
+  FieldType required_type;
 };
 class RationalizationFieldTypeFilterTest
     : public testing::Test,
-      public testing::WithParamInterface<ServerFieldType> {
+      public testing::WithParamInterface<FieldType> {
   test::AutofillUnitTestEnvironment autofill_test_environment_;
 };
 class RationalizationFieldTypeRelationshipsTest
@@ -1210,7 +1221,7 @@ INSTANTIATE_TEST_SUITE_P(FormStructureRationalizerTest,
 // Tests that the rationalization logic will filter out fields of type |param|
 // when there is no other required type.
 TEST_P(RationalizationFieldTypeFilterTest, Rationalization_Rules_Filter_Out) {
-  ServerFieldType filtered_off_field = GetParam();
+  FieldType filtered_off_field = GetParam();
 
   // Just adding >=3 random fields to trigger rationalization.
   std::unique_ptr<FormStructure> form_structure = BuildFormStructure(

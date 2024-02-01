@@ -76,6 +76,11 @@ BASE_FEATURE(kGlobalMediaControlsCastStartStop,
 #else
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+BASE_FEATURE(kCastSilentlyRemoveVcOnNavigation,
+             "CastSilentlyRemoveVcOnNavigation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace {
@@ -174,7 +179,7 @@ std::string GetReceiverIdHashToken(PrefService* pref_service) {
   if (token.empty()) {
     crypto::RandBytes(base::WriteInto(&token, kHashTokenSize + 1),
                       kHashTokenSize);
-    base::Base64Encode(token, &token);
+    token = base::Base64Encode(token);
     pref_service->SetString(prefs::kMediaRouterReceiverIdHashToken, token);
   }
   return token;
@@ -189,8 +194,8 @@ bool GlobalMediaControlsCastStartStopEnabled(content::BrowserContext* context) {
          MediaRouterEnabled(context);
 }
 
-absl::optional<base::TimeDelta> GetCastMirroringPlayoutDelay() {
-  absl::optional<base::TimeDelta> target_playout_delay;
+std::optional<base::TimeDelta> GetCastMirroringPlayoutDelay() {
+  std::optional<base::TimeDelta> target_playout_delay;
 
   // First see if there is a command line switch for mirroring playout delay.
   // Otherwise, check the relevant feature.

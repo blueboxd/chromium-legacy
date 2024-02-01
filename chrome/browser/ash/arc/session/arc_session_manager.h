@@ -242,6 +242,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void OnRetryClicked() override;
   void OnSendFeedbackClicked() override;
   void OnRunNetworkTestsClicked() override;
+  void OnErrorPageShown(bool network_tests_shown) override;
 
   // StopArc(), then restart. Between them data clear may happens.
   // This is a special method to support enterprise device lost case.
@@ -368,8 +369,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // RequestEnable() has a check in order not to trigger starting procedure
   // twice. This method can be called to bypass that check when restarting.
-  // Returns true if ARC is started directly.
-  bool RequestEnableImpl();
+  void RequestEnableImpl();
 
   // Called when activation necessity check is done.
   void OnActivationNecessityChecked(bool result);
@@ -469,7 +469,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
       adb_sideloading_availability_delegate_;
 
   // Unowned pointer. Keeps current profile.
-  raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
 
   // Whether ArcSessionManager is requested to enable (starting to run ARC
   // instance) or not.

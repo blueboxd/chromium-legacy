@@ -48,6 +48,7 @@
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/services/app_service/public/cpp/app_shortcut_image.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -79,7 +80,6 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -153,6 +153,36 @@ constexpr int kNewInstallDotPadding = 4;
 // The maximum number that can be shown on the item counter in refreshed folder
 // icons.
 constexpr size_t kMaxItemCounterCount = 100u;
+
+// Creates a badged app shortcut image for the provided `app_list_config` from
+// the shortcut's `main_icon` and the `badge_icon`.
+gfx::ImageSkia CreateBadgedShortcutImage(
+    const AppListConfig& app_list_config,
+    const gfx::ImageSkia& main_icon,
+    const gfx::ImageSkia& badge_icon,
+    float icon_scale,
+    const ui::ColorProvider* color_provider) {
+  const gfx::Size badge_icon_size =
+      gfx::Size(app_list_config.shortcut_host_badge_icon_dimension(),
+                app_list_config.shortcut_host_badge_icon_dimension());
+  const int background_diameter =
+      app_list_config.GetShortcutBackgroundContainerDimension();
+  gfx::ImageSkia icon_with_badge =
+      apps::AppShortcutImage::CreateImageWithBadgeAndTeardropBackground(
+          background_diameter / 2,
+          app_list_config.GetShortcutTeardropCornerRadius(),
+          app_list_config.GetShortcutHostBadgeIconContainerDimension() / 2,
+          color_provider->GetColor(cros_tokens::kCrosSysSystemOnBaseOpaque),
+          gfx::ImageSkiaOperations::CreateResizedImage(
+              main_icon, skia::ImageOperations::RESIZE_BEST,
+              app_list_config.GetShortcutIconSize()),
+          gfx::ImageSkiaOperations::CreateResizedImage(
+              badge_icon, skia::ImageOperations::RESIZE_BEST, badge_icon_size));
+  return gfx::ImageSkiaOperations::CreateResizedImage(
+      icon_with_badge, skia::ImageOperations::RESIZE_BEST,
+      gfx::ScaleToRoundedSize(
+          gfx::Size(background_diameter, background_diameter), icon_scale));
+}
 
 // Draws a circular background for a promise icon view.
 class PromiseIconBackground : public views::Background {
@@ -485,12 +515,12 @@ class AppListItemView::FolderIconView : public views::View,
   }
 
   // The folder item this icon view paints.
-  raw_ptr<AppListFolderItem, ExperimentalAsh> folder_item_;
+  raw_ptr<AppListFolderItem> folder_item_;
 
   // Whether Jelly style feature is enabled.
   const bool jelly_style_;
 
-  raw_ptr<const AppListConfig, DanglingUntriaged | ExperimentalAsh> config_;
+  raw_ptr<const AppListConfig, DanglingUntriaged> config_;
 
   // The scaling factor used for cardified states in tablet mode.
   float icon_scale_;
@@ -610,7 +640,7 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
 
     if (has_host_badge_ &&
         features::IsSeparateWebAppShortcutBadgeIconEnabled()) {
-      SetHostBadgeIcon(item_weak_->GetHostBadgeIcon());
+      SetIconAndMaybeHostBadgeIcon(icon_image_, item_weak_->GetHostBadgeIcon());
     }
   } else {
     // Refreshed folder icons are painted on FolderIconView directly instead of
@@ -685,6 +715,7 @@ void AppListItemView::InitializeIconLoader() {
 }
 
 AppListItemView::~AppListItemView() {
+  set_context_menu_controller(nullptr);
   if (item_weak_) {
     item_weak_->RemoveObserver(this);
   }
@@ -694,7 +725,7 @@ AppListItemView::~AppListItemView() {
 void AppListItemView::UpdateIconView(bool update_item_icon) {
   if (!use_item_icon_) {
     folder_icon_->SetIconScale(icon_scale_);
-    Layout();
+    DeprecatedLayoutImmediately();
     return;
   }
 
@@ -703,7 +734,7 @@ void AppListItemView::UpdateIconView(bool update_item_icon) {
   }
 
   if (update_item_icon) {
-    if (HasPromiseIconPlaceholder()) {
+    if (ItemHasPlaceholderIcon()) {
       icon_image_model_ = ui::ImageModel(ui::ImageModel::FromVectorIcon(
           ash::kPlaceholderAppIcon, cros_tokens::kCrosSysPrimary));
     } else {
@@ -728,13 +759,12 @@ void AppListItemView::UpdateIconView(bool update_item_icon) {
                      .GetImageSkia(GetColorProvider());
   }
 
-  SetIcon(image_icon);
   if (features::IsSeparateWebAppShortcutBadgeIconEnabled()) {
-    if (update_item_icon) {
-      SetHostBadgeIcon(item_weak_->GetHostBadgeIcon());
-    } else {
-      SetHostBadgeIcon(host_badge_icon_image_);
-    }
+    SetIconAndMaybeHostBadgeIcon(
+        image_icon, update_item_icon ? item_weak_->GetHostBadgeIcon()
+                                     : host_badge_icon_image_);
+  } else {
+    SetIconAndMaybeHostBadgeIcon(image_icon, gfx::ImageSkia());
   }
 }
 
@@ -755,8 +785,11 @@ bool AppListItemView::ShouldUseFallbackIconImageModel() const {
          item_weak_->GetDefaultIcon().isNull();
 }
 
-void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
-  // This function is only used when AppListItem icons are used for painting.
+void AppListItemView::SetIconAndMaybeHostBadgeIcon(
+    const gfx::ImageSkia& icon,
+    const gfx::ImageSkia& host_badge_icon) {
+  // This function is used when AppListItem icons or host badge icons are used
+  // for painting.
   DCHECK(use_item_icon_);
 
   // Clear icon and bail out if item icon is empty.
@@ -773,29 +806,20 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
                                     icon_scale_)
           : gfx::ScaleToRoundedSize(GetIconSize(), icon_scale_);
 
-  gfx::ImageSkia resized_icon_image =
-      gfx::ImageSkiaOperations::CreateResizedImage(
-          icon, skia::ImageOperations::RESIZE_BEST, icon_size);
+  icon_image_ = icon;
 
-  if (has_host_badge_ && GetColorProvider()) {
-    resized_icon_image =
-        gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
-            (app_list_config_->GetShortcutBackgroundContainerDimension() *
-             icon_scale_) /
-                2,
-            GetColorProvider()->GetColor(
-                cros_tokens::kCrosSysSystemOnBaseOpaque),
-            resized_icon_image);
+  host_badge_icon_image_ = has_host_badge_ ? host_badge_icon : gfx::ImageSkia();
+
+  if (GetColorProvider() && !host_badge_icon_image_.isNull()) {
+    icon_->SetImage(CreateBadgedShortcutImage(*app_list_config_, icon,
+                                              host_badge_icon, icon_scale_,
+                                              GetColorProvider()));
+  } else {
+    icon_->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
+        icon, skia::ImageOperations::RESIZE_BEST, icon_size));
   }
 
-  if (is_promise_app_ || ShouldUseFallbackIconImageModel()) {
-    resized_icon_image = gfx::ImageSkiaOperations::CreateImageWithRoundRectClip(
-        icon_size.width(), resized_icon_image);
-  }
-
-  icon_->SetImage(resized_icon_image);
-
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 gfx::Size AppListItemView::GetIconSize() const {
@@ -803,60 +827,19 @@ gfx::Size AppListItemView::GetIconSize() const {
     return app_list_config_->folder_icon_size();
   }
   if (is_promise_app_ && features::ArePromiseIconsEnabled() && item_weak_) {
+    // Placeholder icons do not change size between states.
+    if (ImageModelHasPlaceholderIcon()) {
+      return gfx::Size(kPlaceholderIconDimension, kPlaceholderIconDimension);
+    }
     return GetPreferredIconSizeForProgressRing();
   }
 
   return app_list_config_->grid_icon_size();
 }
 
-bool AppListItemView::HasPromiseIconPlaceholder() {
+bool AppListItemView::ItemHasPlaceholderIcon() {
   return is_promise_app_ && item_weak_ &&
          item_weak_->GetMetadata()->is_placeholder_icon;
-}
-
-void AppListItemView::SetHostBadgeIcon(const gfx::ImageSkia& host_badge_icon) {
-  // This function is only used when AppListItem host icons are used for
-  // painting.
-  CHECK(use_item_icon_);
-
-  // Clear host badge icon and bail out if host badge icon is empty.
-  if (host_badge_icon.isNull()) {
-    if (host_badge_icon_view_) {
-      host_badge_icon_view_->SetImage(nullptr);
-    }
-    host_badge_icon_image_ = gfx::ImageSkia();
-    return;
-  }
-  host_badge_icon_image_ = host_badge_icon;
-
-  const gfx::Size host_badge_icon_size = gfx::ScaleToRoundedSize(
-      gfx::Size(app_list_config_->shortcut_host_badge_icon_dimension(),
-                app_list_config_->shortcut_host_badge_icon_dimension()),
-      icon_scale_);
-
-  gfx::ImageSkia resized_host_badge_icon_image =
-      gfx::ImageSkiaOperations::CreateResizedImage(
-          host_badge_icon, skia::ImageOperations::RESIZE_BEST,
-          host_badge_icon_size);
-
-  if (GetColorProvider()) {
-    resized_host_badge_icon_image =
-        gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
-            (app_list_config_->GetShortcutHostBadgeIconContainerDimension() *
-             icon_scale_) /
-                2,
-            GetColorProvider()->GetColor(
-                cros_tokens::kCrosSysSystemOnBaseOpaque),
-            resized_host_badge_icon_image);
-  }
-
-  if (!host_badge_icon_view_) {
-    host_badge_icon_view_ = AddChildView(std::make_unique<views::ImageView>());
-  }
-
-  host_badge_icon_view_->SetImage(resized_host_badge_icon_image);
-
-  Layout();
 }
 
 void AppListItemView::UpdateAppListConfig(
@@ -869,7 +852,7 @@ void AppListItemView::UpdateAppListConfig(
       this, gfx::Insets(1), app_list_config_->grid_focus_corner_radius());
 
   if (!item_weak_ && use_item_icon_) {
-    SetIcon(gfx::ImageSkia());
+    SetIconAndMaybeHostBadgeIcon(gfx::ImageSkia(), gfx::ImageSkia());
     return;
   }
 
@@ -888,12 +871,12 @@ void AppListItemView::UpdateDraggedItem(const AppListItem* dragged_item) {
 }
 
 gfx::Size AppListItemView::GetPreferredIconSizeForProgressRing() const {
-  DCHECK(is_promise_app_);
+  DCHECK(is_promise_app_ || ShouldUseFallbackIconImageModel());
   CHECK(item_weak_);
-  // Placeholder icons do not change size between states.
-  // TODO(b/314251625): Evaluate the correct size for icons across spec.
-  if (icon_image_model_.IsVectorIcon()) {
-    return gfx::Size(kPlaceholderIconDimension, kPlaceholderIconDimension);
+
+  if (ImageModelHasPlaceholderIcon()) {
+    return gfx::Size(app_list_config_->promise_icon_dimension_pending(),
+                     app_list_config_->promise_icon_dimension_pending());
   }
 
   switch (item_weak_->app_status()) {
@@ -924,6 +907,7 @@ void AppListItemView::ScaleIconImmediatly(float scale_factor) {
   layer()->SetTransform(gfx::Transform());
   if (progress_indicator_) {
     UpdateProgressRingBounds();
+    progress_indicator_->layer()->SetTransform(gfx::Transform());
   }
 }
 
@@ -1011,6 +995,9 @@ void AppListItemView::ScaleAppIcon(bool scale_up) {
     const gfx::Transform scale_transform = gfx::GetScaleTransform(
         GetIconView()->bounds().CenterPoint(), 1 / kDragDropAppIconScale);
     layer()->SetTransform(scale_transform);
+    if (progress_indicator_) {
+      progress_indicator_->layer()->SetTransform(scale_transform);
+    }
   } else if (drag_state_ != DragState::kNone) {
     // If a drag view has been created for this icon, the item transition to
     // target bounds is handled by the apps grid view bounds animator. At the
@@ -1028,13 +1015,20 @@ void AppListItemView::ScaleAppIcon(bool scale_up) {
                             : gfx::Tween::EASE_OUT_2);
   if (scale_up) {
     layer()->SetTransform(gfx::Transform());
+    if (progress_indicator_) {
+      progress_indicator_->layer()->SetTransform(gfx::Transform());
+    }
   } else {
     if (drag_state_ == DragState::kNone) {
       // To avoid poor quality icons, update icon image with the correct scale
       // after the transform animation is completed.
       settings.AddObserver(this);
-      layer()->SetTransform(gfx::GetScaleTransform(
-          GetContentsBounds().CenterPoint(), 1 / kDragDropAppIconScale));
+      const gfx::Transform reverse_scale_transform = gfx::GetScaleTransform(
+          GetContentsBounds().CenterPoint(), 1 / kDragDropAppIconScale);
+      layer()->SetTransform(reverse_scale_transform);
+      if (progress_indicator_) {
+        progress_indicator_->layer()->SetTransform(reverse_scale_transform);
+      }
     }
   }
 }
@@ -1179,7 +1173,7 @@ void AppListItemView::SetItemName(const std::u16string& display_name,
                        IDS_APP_LIST_FOLDER_BUTTON_ACCESSIBILE_NAME,
                        full_name.empty() ? folder_name_placeholder : full_name)
                  : full_name);
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void AppListItemView::SetItemAccessibleName(const std::u16string& name) {
@@ -1392,7 +1386,7 @@ void AppListItemView::Layout() {
     return;
   }
 
-  views::FocusRing::Get(this)->Layout();
+  views::FocusRing::Get(this)->DeprecatedLayoutImmediately();
 
   const gfx::Size icon_size = GetIconSize();
 
@@ -1420,20 +1414,6 @@ void AppListItemView::Layout() {
         title_bounds.x() - kNewInstallDotSize - kNewInstallDotPadding,
         title_bounds.y() + title_bounds.height() / 2 - kNewInstallDotSize / 2,
         kNewInstallDotSize, kNewInstallDotSize);
-  }
-
-  if (host_badge_icon_view_) {
-    const gfx::Size shortcut_host_badge_icon_container_size = gfx::Size(
-        app_list_config_->GetShortcutHostBadgeIconContainerDimension(),
-        app_list_config_->GetShortcutHostBadgeIconContainerDimension());
-    gfx::Rect host_badge_icon_bounds =
-        GetHostBadgeIconBoundsForTargetViewBounds(
-            icon_bounds,
-            gfx::ScaleToRoundedSize(shortcut_host_badge_icon_container_size,
-                                    icon_scale_),
-            icon_scale_);
-
-    host_badge_icon_view_->SetBoundsRect(host_badge_icon_bounds);
   }
 
   const float indicator_size =
@@ -1845,6 +1825,12 @@ void AppListItemView::SetMostRecentGridIndex(GridIndex new_grid_index,
   most_recent_grid_index_ = new_grid_index;
 }
 
+void AppListItemView::ClearItemDraggingState() {
+  SetState(STATE_NORMAL);
+  SetMouseDragging(false);
+  SetTouchDragging(false);
+}
+
 void AppListItemView::AnimateInFromPromiseApp(
     const ui::ImageModel& fallback_image,
     base::RepeatingClosure callback) {
@@ -1987,27 +1973,17 @@ gfx::Rect AppListItemView::GetIconBoundsInScreen() const {
 }
 
 gfx::ImageSkia AppListItemView::GetDragImage() const {
+  if (!GetColorProvider() || !app_list_config_) {
+    return gfx::ImageSkia();
+  }
+
   if (is_folder_) {
     return folder_icon_->CreateDragImage();
   }
-  if (has_host_badge_ && host_badge_icon_view_) {
-    const int background_radius =
-        std::round(app_list_config_->GetShortcutBackgroundContainerDimension() /
-                   2.0f * kDragDropAppIconScale);
-    const int badge_background_radius = std::round(
-        app_list_config_->GetShortcutHostBadgeIconContainerDimension() / 2.0f *
-        kDragDropAppIconScale);
-    return gfx::ImageSkiaOperations::CreateIconWithBadge(
-        gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
-            background_radius,
-            GetColorProvider()->GetColor(
-                cros_tokens::kCrosSysSystemOnBaseOpaque),
-            icon_->GetImage()),
-        gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
-            badge_background_radius,
-            GetColorProvider()->GetColor(
-                cros_tokens::kCrosSysSystemOnBaseOpaque),
-            host_badge_icon_view_->GetImage()));
+  if (has_host_badge_) {
+    return CreateBadgedShortcutImage(*app_list_config_, icon_image_,
+                                     host_badge_icon_image_,
+                                     kDragDropAppIconScale, GetColorProvider());
   }
   return icon_->GetImage();
 }
@@ -2109,7 +2085,7 @@ void AppListItemView::ItemIsNewInstallChanged() {
   DCHECK(item_weak_);
   if (new_install_dot_) {
     new_install_dot_->SetVisible(item_weak_->is_new_install());
-    Layout();
+    DeprecatedLayoutImmediately();
   }
 }
 
@@ -2139,6 +2115,12 @@ void AppListItemView::ItemProgressUpdated() {
 
 void AppListItemView::ItemAppStatusUpdated() {
   UpdateProgressIndicatorState();
+}
+
+bool AppListItemView::ImageModelHasPlaceholderIcon() const {
+  return ShouldUseFallbackIconImageModel()
+             ? fallback_icon_image_model_.IsVectorIcon()
+             : icon_image_model_.IsVectorIcon();
 }
 
 void AppListItemView::UpdateProgressIndicatorState() {
@@ -2183,8 +2165,7 @@ void AppListItemView::UpdateProgressIndicatorState() {
     progress_indicator_->SetColorId(cros_tokens::kCrosSysHighlightShape);
     progress_indicator_->SetOuterRingTrackVisible(true);
   } else {
-    progress_indicator_->SetColorId(
-        cros_tokens::kCrosSysSystemPrimaryContainer);
+    progress_indicator_->SetColorId(cros_tokens::kCrosSysPrimary);
     progress_indicator_->SetOuterRingTrackVisible(false);
   }
 
@@ -2202,17 +2183,34 @@ void AppListItemView::UpdateProgressRingBounds() {
   gfx::Rect progress_bounds = gfx::Rect(
       views::View::ConvertRectToTarget(icon_, this, icon_->GetImageBounds()));
 
+  const gfx::Size promise_icon_preferred_size = gfx::ScaleToRoundedSize(
+      GetPreferredIconSizeForProgressRing(), icon_scale_);
+
+  // If the icon is smaller than the expected icon size (i,e for placeholder
+  // icons), add padding to ensure the overall size of the promise icon is
+  // correct regardless of the image icon size.
+  progress_bounds.Outset(gfx::Outsets::VH(
+      std::max(
+          0,
+          (promise_icon_preferred_size.width() - progress_bounds.width()) / 2),
+      std::max(
+          0, (promise_icon_preferred_size.height() - progress_bounds.height()) /
+                 2)));
+
   const gfx::Insets progress_ring_padding =
-      icon_image_model_.IsVectorIcon() ||
-              item()->app_status() != AppStatus::kPending
-          ? kProgressRingMarginInstalling
-          : kProgressRingMarginPending;
+      ImageModelHasPlaceholderIcon() ||
+              item()->app_status() == AppStatus::kPending
+          ? kProgressRingMarginPending
+          : kProgressRingMarginInstalling;
 
   progress_bounds.Inset(progress_ring_padding);
 
   // The Progress indicator paints the ring within the bounds of the layer, so
   // add padding for the promise ring.
   progress_bounds.Inset(-gfx::Insets(kPromiseRingStrokeSize));
+
+  // The masked icons include 1px padding.
+  progress_bounds.Inset(1);
 
   progress_indicator_->layer()->SetBounds(progress_bounds);
 
@@ -2237,10 +2235,7 @@ void AppListItemView::SetBackgroundExtendedState(bool extend_icon,
   icon_background_->SetVisible(true);
   GetIconView()->SetPaintToLayer();
   GetIconView()->layer()->SetFillsBoundsOpaquely(false);
-  if (host_badge_icon_view_) {
-    host_badge_icon_view_->SetPaintToLayer();
-    host_badge_icon_view_->layer()->SetFillsBoundsOpaquely(false);
-  }
+
   base::AutoReset<bool> auto_reset(&setting_up_icon_animation_, true);
   ui::Layer* const background_layer = GetIconBackgroundLayer();
   DCHECK(background_layer);
@@ -2304,9 +2299,6 @@ void AppListItemView::OnExtendingAnimationEnded(bool extend_icon) {
   if (!setting_up_icon_animation_ && !extend_icon && !is_folder_) {
     icon_background_->SetVisible(false);
     GetIconView()->DestroyLayer();
-    if (host_badge_icon_view_) {
-      host_badge_icon_view_->DestroyLayer();
-    }
   }
 }
 

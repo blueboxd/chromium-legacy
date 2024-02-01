@@ -36,7 +36,8 @@ namespace {
 
 // The width and height of viewer contents.
 constexpr int kContentWidth = 960;
-constexpr int kContentHeight = 480;
+constexpr int kContentHeight = 496;
+constexpr int kBottomSpacing = 16;
 // The width of components menu.
 constexpr int kMenuWidth = 160;
 // The height of component button.
@@ -52,6 +53,30 @@ constexpr ui::ColorId kInactiveButtonBackgroundColorId =
 // The text color id of inactive component button.
 constexpr ui::ColorId kInactiveButtonTextColorId =
     cros_tokens::kCrosSysOnSurface;
+
+class SystemUIComponentsStyleViewerClientView : public views::ClientView {
+ public:
+  SystemUIComponentsStyleViewerClientView(views::Widget* widget,
+                                          views::View* contents_view)
+      : views::ClientView(widget, contents_view) {}
+
+  SystemUIComponentsStyleViewerClientView(
+      const SystemUIComponentsStyleViewerClientView&) = delete;
+  SystemUIComponentsStyleViewerClientView& operator=(
+      const SystemUIComponentsStyleViewerClientView&) = delete;
+
+  ~SystemUIComponentsStyleViewerClientView() override = default;
+
+  // ClientView:
+  void UpdateWindowRoundedCorners(int corner_radius) override {
+    //  The top corners will be rounded by NonClientFrameViewAsh. The
+    // client-view is responsible for rounding the bottom corners.
+
+    const gfx::RoundedCornersF radii(0, 0, corner_radius, corner_radius);
+    contents_view()->SetBackground(views::CreateThemedRoundedRectBackground(
+        ui::kColorDialogBackground, radii));
+  }
+};
 
 }  // namespace
 
@@ -134,6 +159,8 @@ SystemUIComponentsStyleViewerView::SystemUIComponentsStyleViewerView()
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal));
   SetBackground(views::CreateThemedSolidBackground(ui::kColorDialogBackground));
+  SetBorder(
+      views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, kBottomSpacing, 0)));
 
   // Set menu scroll view.
   menu_scroll_view_->SetPreferredSize(gfx::Size(kMenuWidth, kContentHeight));
@@ -228,8 +255,10 @@ void SystemUIComponentsStyleViewerView::ShowComponentInstances(
 
   // Set the button corresponding to the component indicated by the name active.
   // Set other buttons inactive.
-  for (auto* button : buttons_)
+  for (ash::SystemUIComponentsStyleViewerView::ComponentButton* button :
+       buttons_) {
     button->SetActive(button->GetText() == name);
+  }
 
   // Toggle corresponding components grid view.
   components_grid_view_ = component_instances_scroll_view_->SetContents(
@@ -240,11 +269,16 @@ void SystemUIComponentsStyleViewerView::Layout() {
   menu_contents_view_->SetSize(
       gfx::Size(kMenuWidth, menu_contents_view_->GetPreferredSize().height()));
   components_grid_view_->SizeToPreferredSize();
-  views::View::Layout();
+  LayoutSuperclass<views::View>(this);
 }
 
 std::u16string SystemUIComponentsStyleViewerView::GetWindowTitle() const {
   return u"System Components Style Viewer";
+}
+
+views::ClientView* SystemUIComponentsStyleViewerView::CreateClientView(
+    views::Widget* widget) {
+  return new SystemUIComponentsStyleViewerClientView(widget, this);
 }
 
 void SystemUIComponentsStyleViewerView::OnWidgetDestroyed(

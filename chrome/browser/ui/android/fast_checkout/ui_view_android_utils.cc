@@ -23,7 +23,7 @@ using ::base::android::ConvertUTF8ToJavaString;
 using ::base::android::JavaRef;
 
 void MaybeSetInfo(autofill::AutofillProfile* profile,
-                  autofill::ServerFieldType type,
+                  autofill::FieldType type,
                   const JavaRef<jstring>& value,
                   const std::string& locale) {
   if (value) {
@@ -32,7 +32,7 @@ void MaybeSetInfo(autofill::AutofillProfile* profile,
 }
 
 void MaybeSetRawInfo(autofill::AutofillProfile* profile,
-                     autofill::ServerFieldType type,
+                     autofill::FieldType type,
                      const JavaRef<jstring>& value) {
   if (value) {
     profile->SetRawInfo(type, ConvertJavaStringToUTF16(value));
@@ -51,8 +51,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateFastCheckoutAutofillProfile(
   return Java_FastCheckoutAutofillProfile_Constructor(
       env, ConvertUTF8ToJavaString(env, profile.guid()),
       /*isLocal=*/true,
-      ConvertUTF16ToJavaString(
-          env, profile.GetInfo(autofill::NAME_HONORIFIC_PREFIX, locale)),
       ConvertUTF16ToJavaString(env,
                                profile.GetInfo(autofill::NAME_FULL, locale)),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(autofill::COMPANY_NAME)),
@@ -130,9 +128,6 @@ CreateFastCheckoutAutofillProfileFromJava(
   MaybeSetInfo(profile.get(), autofill::NAME_FULL,
                Java_FastCheckoutAutofillProfile_getFullName(env, jprofile),
                locale);
-  MaybeSetRawInfo(
-      profile.get(), autofill::NAME_HONORIFIC_PREFIX,
-      Java_FastCheckoutAutofillProfile_getHonorificPrefix(env, jprofile));
   MaybeSetRawInfo(
       profile.get(), autofill::COMPANY_NAME,
       Java_FastCheckoutAutofillProfile_getCompanyName(env, jprofile));

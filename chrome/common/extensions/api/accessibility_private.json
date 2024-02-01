@@ -407,6 +407,20 @@
             "description": "The contents of the file as a Uint8Array."
           }
         }
+      },
+      {
+        "id": "FaceGazeAssets",
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "binary",
+            "description": "The contents of the FaceLandmarker model as a Uint8Array."
+          },
+          "wasm": {
+            "type": "binary",
+            "description": "The contents of the vision_wasm_internal.wasm file as a Uint8Array."
+          }
+        }
       }
     ],
     "properties": {
@@ -470,6 +484,22 @@
         }
       },
       {
+        "name": "installFaceGazeAssets",
+        "type": "function",
+        "description": "Called to request an install of the FaceGaze assets DLC, which contains files (e.g. the FaceLandmarker model) required for FaceGaze to work.",
+        "parameters": [],
+        "returns_async": {
+          "name": "callback",
+          "description": "Runs when the DLC download finishes.",
+          "parameters": [
+            {
+              "name": "assets",
+              "$ref": "FaceGazeAssets"
+            }
+          ]
+        }
+      },
+      {
         "name": "setNativeAccessibilityEnabled",
         "type": "function",
         "description": "Enables or disables native accessibility support. Once disabled, it is up to the calling extension to provide accessibility for web contents.",
@@ -514,6 +544,18 @@
             "name": "color",
             "type": "string",
             "description": "CSS-style hex color string beginning with # like #FF9982 or #EEE."
+          }
+        ]
+      },
+      {
+        "name": "setSelectToSpeakFocus",
+        "type": "function",
+        "description": "Informs the system where Select to Speak's reading focus is in screen coordinates. Causes chrome.accessibilityPrivate.onSelectToSpeakFocusChanged to be fired within the AccessibilityCommon component extension.",
+        "parameters": [
+          {
+            "name": "bounds",
+            "$ref": "ScreenRect",
+            "description": "Bounds of currently spoken word (if available) or node (if the spoken node is not a text node)."
           }
         ]
       },
@@ -1035,6 +1077,18 @@
         "type": "function",
         "description": "Fired when the Select to Speak context menu is clicked from outside the context of the Select to Speak extension.",
         "parameters": []
+      },
+      {
+        "name": "onSelectToSpeakFocusChanged",
+        "type": "function",
+        "description": "Fired when the Select to Speak reading focus changes.",
+        "parameters": [
+          {
+            "name": "bounds",
+            "$ref": "ScreenRect",
+            "description": "Select to Speak's focus bounds in global screen coordinates."
+          }
+        ]
       },
       {
         "name": "onSelectToSpeakStateChangeRequested",

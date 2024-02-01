@@ -172,12 +172,8 @@ PageSchedulerImpl::PageSchedulerImpl(
       had_recent_title_or_favicon_update_(false),
       delegate_(delegate),
       delay_for_background_tab_freezing_(GetDelayForBackgroundTabFreezing()),
-      throttle_foreground_timers_(
-          base::FeatureList::IsEnabled(features::kThrottleForegroundTimers)),
       throttle_unimportant_frame_timers_(base::FeatureList::IsEnabled(
           features::kThrottleUnimportantFrameTimers)),
-      foreground_timers_throttled_wake_up_interval_(
-          GetForegroundTimersThrottledWakeUpInterval()),
       unimportant_timers_throttled_wake_up_interval_(base::Milliseconds(
           features::kUnimportantFrameTimersThrottledWakeUpIntervalMills
               .Get())) {
@@ -521,32 +517,37 @@ void PageSchedulerImpl::WriteIntoTrace(perfetto::TracedValue context,
   dict.Add("is_frozen", is_frozen_);
   dict.Add("is_page_freezable", IsBackgrounded());
 
-  dict.Add("cpu_time_budget_pool", [&](perfetto::TracedValue context) {
-    cpu_time_budget_pool_->WriteIntoTrace(std::move(context), now);
-  });
-  dict.Add("foreground_wake_up_budget_pool",
-           [&](perfetto::TracedValue context) {
-             foreground_wake_up_budget_pool_->WriteIntoTrace(std::move(context),
-                                                             now);
-           });
-  dict.Add("unimportant_wake_up_budget_pool",
-           [&](perfetto::TracedValue context) {
-             unimportant_wake_up_budget_pool_->WriteIntoTrace(
-                 std::move(context), now);
-           });
-  dict.Add("hidden_wake_up_budget_pool", [&](perfetto::TracedValue context) {
-    hidden_wake_up_budget_pool_->WriteIntoTrace(std::move(context), now);
-  });
-  dict.Add("same_origin_intensive_wake_up_budget_pool",
-           [&](perfetto::TracedValue context) {
-             same_origin_intensive_wake_up_budget_pool_->WriteIntoTrace(
-                 std::move(context), now);
-           });
-  dict.Add("cross_origin_intensive_wake_up_budget_pool",
-           [&](perfetto::TracedValue context) {
-             cross_origin_intensive_wake_up_budget_pool_->WriteIntoTrace(
-                 std::move(context), now);
-           });
+  if (cpu_time_budget_pool_) {
+    dict.Add("cpu_time_budget_pool", [&](perfetto::TracedValue context) {
+      cpu_time_budget_pool_->WriteIntoTrace(std::move(context), now);
+    });
+  }
+  if (unimportant_wake_up_budget_pool_) {
+    dict.Add("unimportant_wake_up_budget_pool",
+             [&](perfetto::TracedValue context) {
+               unimportant_wake_up_budget_pool_->WriteIntoTrace(
+                   std::move(context), now);
+             });
+  }
+  if (hidden_wake_up_budget_pool_) {
+    dict.Add("hidden_wake_up_budget_pool", [&](perfetto::TracedValue context) {
+      hidden_wake_up_budget_pool_->WriteIntoTrace(std::move(context), now);
+    });
+  }
+  if (same_origin_intensive_wake_up_budget_pool_) {
+    dict.Add("same_origin_intensive_wake_up_budget_pool",
+             [&](perfetto::TracedValue context) {
+               same_origin_intensive_wake_up_budget_pool_->WriteIntoTrace(
+                   std::move(context), now);
+             });
+  }
+  if (cross_origin_intensive_wake_up_budget_pool_) {
+    dict.Add("cross_origin_intensive_wake_up_budget_pool",
+             [&](perfetto::TracedValue context) {
+               cross_origin_intensive_wake_up_budget_pool_->WriteIntoTrace(
+                   std::move(context), now);
+             });
+  }
 
   dict.Add("frame_schedulers", frame_schedulers_);
 }
@@ -562,6 +563,9 @@ void PageSchedulerImpl::AddQueueToWakeUpBudgetPool(
   WakeUpBudgetPool* wake_up_budget_pool =
       GetWakeUpBudgetPool(task_queue, frame_origin_type, frame_visible,
                           is_large, had_user_activation);
+  if (!wake_up_budget_pool) {
+    return;
+  }
   task_queue->AddToBudgetPool(lazy_now->Now(), wake_up_budget_pool);
   task_queue->SetWakeUpBudgetPool(wake_up_budget_pool);
 }
@@ -606,7 +610,7 @@ WakeUpBudgetPool* PageSchedulerImpl::GetWakeUpBudgetPool(
     }
   }
 
-  return foreground_wake_up_budget_pool_.get();
+  return nullptr;
 }
 
 CPUTimeBudgetPool* PageSchedulerImpl::background_cpu_time_budget_pool() {
@@ -644,8 +648,6 @@ void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPools(
   if (HasWakeUpBudgetPools())
     return;
 
-  foreground_wake_up_budget_pool_ = std::make_unique<WakeUpBudgetPool>(
-      "Page - Foreground Wake Up Throttling");
   unimportant_wake_up_budget_pool_ = std::make_unique<WakeUpBudgetPool>(
       "Page - Foreground Wake Up Throttling - Visible Unimportant & "
       "Cross-Origin to Main Frame");
@@ -774,8 +776,6 @@ void PageSchedulerImpl::UpdateWakeUpBudgetPools(base::LazyNow* lazy_now) {
   if (!same_origin_intensive_wake_up_budget_pool_)
     return;
 
-  foreground_wake_up_budget_pool_->SetWakeUpInterval(
-      lazy_now->Now(), foreground_timers_throttled_wake_up_interval_);
   unimportant_wake_up_budget_pool_->SetWakeUpInterval(
       lazy_now->Now(), unimportant_timers_throttled_wake_up_interval_);
   hidden_wake_up_budget_pool_->SetWakeUpInterval(
@@ -827,15 +827,13 @@ FrameSchedulerImpl* PageSchedulerImpl::SelectFrameForUkmAttribution() {
 
 bool PageSchedulerImpl::HasWakeUpBudgetPools() const {
   // All WakeUpBudgetPools should be initialized together.
-  DCHECK_EQ(!!foreground_wake_up_budget_pool_,
-            !!unimportant_wake_up_budget_pool_);
-  DCHECK_EQ(!!foreground_wake_up_budget_pool_, !!hidden_wake_up_budget_pool_);
-  DCHECK_EQ(!!foreground_wake_up_budget_pool_,
+  DCHECK_EQ(!!unimportant_wake_up_budget_pool_, !!hidden_wake_up_budget_pool_);
+  DCHECK_EQ(!!unimportant_wake_up_budget_pool_,
             !!same_origin_intensive_wake_up_budget_pool_);
-  DCHECK_EQ(!!foreground_wake_up_budget_pool_,
+  DCHECK_EQ(!!unimportant_wake_up_budget_pool_,
             !!cross_origin_intensive_wake_up_budget_pool_);
 
-  return !!foreground_wake_up_budget_pool_;
+  return !!unimportant_wake_up_budget_pool_;
 }
 
 void PageSchedulerImpl::MoveTaskQueuesToCorrectWakeUpBudgetPoolAndUpdate() {
@@ -892,8 +890,7 @@ void PageSchedulerImpl::UpdateFrozenState(
 
 std::array<WakeUpBudgetPool*, PageSchedulerImpl::kNumWakeUpBudgetPools>
 PageSchedulerImpl::AllWakeUpBudgetPools() {
-  return {foreground_wake_up_budget_pool_.get(),
-          unimportant_wake_up_budget_pool_.get(),
+  return {unimportant_wake_up_budget_pool_.get(),
           hidden_wake_up_budget_pool_.get(),
           same_origin_intensive_wake_up_budget_pool_.get(),
           cross_origin_intensive_wake_up_budget_pool_.get()};

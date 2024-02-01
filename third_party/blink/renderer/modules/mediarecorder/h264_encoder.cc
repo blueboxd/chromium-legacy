@@ -89,11 +89,15 @@ H264Encoder::H264Encoder(
     scoped_refptr<base::SequencedTaskRunner> encoding_task_runner,
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
     VideoTrackRecorder::CodecProfile codec_profile,
-    uint32_t bits_per_second)
+    uint32_t bits_per_second,
+    bool is_screencast,
+    const VideoTrackRecorder::OnErrorCB on_error_cb)
     : Encoder(std::move(encoding_task_runner),
               on_encoded_video_cb,
               bits_per_second),
-      codec_profile_(codec_profile) {
+      codec_profile_(codec_profile),
+      is_screencast_(is_screencast),
+      on_error_cb_(on_error_cb) {
   DCHECK_EQ(codec_profile_.codec_id, VideoTrackRecorder::CodecId::kH264);
 }
 
@@ -121,6 +125,7 @@ void H264Encoder::EncodeFrame(scoped_refptr<media::VideoFrame> frame,
   const gfx::Size frame_size = frame->visible_rect().size();
   if (!openh264_encoder_ || configured_size_ != frame_size) {
     if (!ConfigureEncoder(frame_size)) {
+      on_error_cb_.Run();
       return;
     }
     first_frame_timestamp_ = capture_timestamp;
@@ -155,7 +160,7 @@ void H264Encoder::EncodeFrame(scoped_refptr<media::VideoFrame> frame,
         {media::EncoderStatus::Codes::kEncoderFailedEncode,
          base::StrCat(
              {"OpenH264 failed to encode: ", base::NumberToString(ret)})});
-    NOTREACHED() << "OpenH264 encoding failed";
+    on_error_cb_.Run();
     return;
   }
   const media::Muxer::VideoParameters video_params(*frame);
@@ -204,7 +209,8 @@ bool H264Encoder::ConfigureEncoder(const gfx::Size& size) {
 
   SEncParamExt init_params;
   openh264_encoder_->GetDefaultParams(&init_params);
-  init_params.iUsageType = CAMERA_VIDEO_REAL_TIME;
+  init_params.iUsageType =
+      is_screencast_ ? SCREEN_CONTENT_REAL_TIME : CAMERA_VIDEO_REAL_TIME;
 
   DCHECK_EQ(AUTO_REF_PIC_COUNT, init_params.iNumRefFrame);
   DCHECK(!init_params.bSimulcastAVC);

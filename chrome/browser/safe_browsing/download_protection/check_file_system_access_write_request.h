@@ -57,7 +57,7 @@ class CheckFileSystemAccessWriteRequest
                                   bool upload_requested,
                                   const std::string& request_data,
                                   const std::string& response_body) override;
-  absl::optional<enterprise_connectors::AnalysisSettings> ShouldUploadBinary(
+  std::optional<enterprise_connectors::AnalysisSettings> ShouldUploadBinary(
       DownloadCheckResultReason reason) override;
   void UploadBinary(DownloadCheckResult result,
                     DownloadCheckResultReason reason,
@@ -70,7 +70,7 @@ class CheckFileSystemAccessWriteRequest
   void NotifyRequestFinished(DownloadCheckResult result,
                              DownloadCheckResultReason reason) override;
   bool IsAllowlistedByPolicy() const override;
-  void LogDeepScanningPrompt() const override;
+  void LogDeepScanningPrompt(bool did_prompt) const override;
 
   const std::unique_ptr<content::FileSystemAccessWriteItem> item_;
   std::unique_ptr<ReferrerChainData> referrer_chain_data_;

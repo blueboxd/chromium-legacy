@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/search_engine_choice_table_view_controller.h"
 
 #import "base/apple/foundation_util.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/table_view/legacy_chrome_table_view_styler.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
@@ -12,7 +14,6 @@
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/cells/snippet_search_engine_cell.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/cells/snippet_search_engine_item.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#import "ios/chrome/common/ui/favicon/favicon_constants.h"
 #import "url/gurl.h"
 
 namespace {
@@ -60,6 +61,11 @@ constexpr CGFloat kTableViewSeparatorLeadingInset = 56;
   self.styler.cellBackgroundColor =
       [UIColor colorNamed:kSecondaryBackgroundColor];
   tableView.separatorColor = [UIColor colorNamed:kGrey300Color];
+  // Add semantic group, so the user can skip all the table view cells, and
+  // jump to the primary button, using VoiceOver. This requires to set
+  // `semantic group` to the button too.
+  self.tableView.accessibilityContainerType =
+      UIAccessibilityContainerTypeSemanticGroup;
 
   [self loadModel];
 }
@@ -113,7 +119,7 @@ constexpr CGFloat kTableViewSeparatorLeadingInset = 56;
     items = @[ newDefaultEngine ];
   }
   [self reconfigureCellsForItems:items];
-  CHECK(self.delegate);
+  CHECK(self.delegate, base::NotFatalUntil::M124);
   [self.delegate selectSearchEngineAtRow:selectedRow];
 }
 
@@ -138,6 +144,10 @@ constexpr CGFloat kTableViewSeparatorLeadingInset = 56;
   URLCell.chevronToggledBlock = ^(SnippetState snippet_state) {
     engineItem.snippetState = snippet_state;
     [weakSelf.tableView reconfigureRowsAtIndexPaths:@[ indexPath ]];
+    if (snippet_state == SnippetState::kShown) {
+      base::RecordAction(
+          base::UserMetricsAction("ExpandSearchEngineDescription"));
+    }
   };
   return cell;
 }
@@ -147,10 +157,6 @@ constexpr CGFloat kTableViewSeparatorLeadingInset = 56;
 - (void)reloadData {
   [self loadModel];
   [self.tableView reloadData];
-}
-
-- (void)faviconAttributesUpdatedForItem:(SnippetSearchEngineItem*)item {
-  [self reconfigureCellsForItems:@[ item ]];
 }
 
 #pragma mark - Private

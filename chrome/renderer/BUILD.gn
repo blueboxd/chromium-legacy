@@ -159,9 +159,12 @@ static_library("renderer") {
     "//components/content_settings/renderer",
     "//components/continuous_search/renderer",
     "//components/dom_distiller/content/renderer",
+    "//components/facilitated_payments/content/renderer",
+    "//components/facilitated_payments/core/features",
     "//components/feed:buildflags",
     "//components/feed:feature_list",
     "//components/feed/content/renderer:feed_renderer",
+    "//components/google/core/common",
     "//components/heap_profiling/in_process",
     "//components/history_clusters/core",
     "//components/language/core/common",
@@ -447,7 +450,10 @@ static_library("renderer") {
       "net/page_auto_fetcher_helper_android.h",
       "sandbox_status_extension_android.cc",
       "sandbox_status_extension_android.h",
+      "wallet/boarding_pass_extractor.cc",
+      "wallet/boarding_pass_extractor.h",
     ]
+    deps += [ "//chrome/common/wallet:mojo_bindings" ]
   }
 
   if (is_chromeos_ash) {

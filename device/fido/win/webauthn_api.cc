@@ -338,7 +338,7 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   WEBAUTHN_RP_ENTITY_INFORMATION rp_info{
       WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION, base::as_wcstr(rp_id),
       base::as_wcstr(rp_name),
-      /*pwszIcon=*/base::as_wcstr(base::EmptyString16())};
+      /*pwszIcon=*/base::as_wcstr(std::u16string())};
 
   std::u16string user_name = base::UTF8ToUTF16(request.user.name.value_or(""));
   std::u16string user_display_name =
@@ -349,7 +349,7 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
       base::checked_cast<DWORD>(user_id.size()),
       const_cast<unsigned char*>(user_id.data()),
       base::as_wcstr(user_name),
-      /*pwszIcon=*/base::as_wcstr(base::EmptyString16()),
+      /*pwszIcon=*/base::as_wcstr(std::u16string()),
       base::as_wcstr(user_display_name),
   };
 
@@ -688,7 +688,7 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
 
 std::pair<bool, std::vector<DiscoverableCredentialMetadata>>
 AuthenticatorEnumerateCredentialsBlocking(WinWebAuthnApi* webauthn_api,
-                                          base::StringPiece16 rp_id,
+                                          std::u16string_view rp_id,
                                           bool is_incognito) {
   if (!webauthn_api || !webauthn_api->IsAvailable() ||
       !webauthn_api->SupportsSilentDiscovery()) {
@@ -698,7 +698,7 @@ AuthenticatorEnumerateCredentialsBlocking(WinWebAuthnApi* webauthn_api,
 
   WEBAUTHN_GET_CREDENTIALS_OPTIONS options{
       .dwVersion = WEBAUTHN_GET_CREDENTIALS_OPTIONS_VERSION_1,
-      // For a default-initialized StringPiece `pwszRpId` will be nullptr,
+      // For a default-initialized string_view `pwszRpId` will be nullptr,
       // which makes the API not filter on RP ID.
       .pwszRpId = base::as_wcstr(rp_id),
       .bBrowserInPrivateMode = is_incognito};

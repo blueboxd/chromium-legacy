@@ -58,7 +58,7 @@ std::string TreeToStringHelper(const AXNode* node) {
     result += "x";
   if (node->children().empty())
     return result;
-  const auto add_children = [](const std::string& str, const auto* node) {
+  const auto add_children = [](const std::string& str, const AXNode* node) {
     return str + " " + TreeToStringHelper(node);
   };
   return result + " (" +
@@ -423,12 +423,12 @@ TEST(AXGeneratedTreeTest, GeneratedTreesWithIgnoredNodes) {
           const AXNode* node = fat_tree.GetFromId(event.node_id);
           ASSERT_NE(nullptr, node);
           if (node->IsIgnored() ||
-              event.event_params.event ==
+              event.event_params->event ==
                   AXEventGenerator::Event::IGNORED_CHANGED) {
             continue;
           }
 
-          actual_events[event.node_id].insert(event.event_params.event);
+          actual_events[event.node_id].insert(event.event_params->event);
         }
 
         // Now, turn skinny_tree into skinny_tree1 and compare
@@ -448,7 +448,7 @@ TEST(AXGeneratedTreeTest, GeneratedTreesWithIgnoredNodes) {
         std::map<AXNodeID, std::set<AXEventGenerator::Event>> expected_events;
         for (const AXEventGenerator::TargetedEvent& event :
              skinny_event_generator)
-          expected_events[event.node_id].insert(event.event_params.event);
+          expected_events[event.node_id].insert(event.event_params->event);
 
         for (auto& entry : expected_events) {
           AXNodeID node_id = entry.first;

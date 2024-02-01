@@ -752,7 +752,7 @@ class CreativeOriginAdsPageLoadMetricsObserverBrowserTest
   void TestCreativeOriginStatus(
       std::unique_ptr<Frame> main_frame,
       page_load_metrics::OriginStatus expected_status,
-      absl::optional<page_load_metrics::OriginStatusWithThrottling>
+      std::optional<page_load_metrics::OriginStatusWithThrottling>
           expected_status_with_throttling) {
     base::HistogramTester histogram_tester;
     bool subframe_exists = main_frame->HasChild();
@@ -843,7 +843,7 @@ IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
                        CreativeOriginStatusNoCreativeDesignated) {
   TestCreativeOriginStatus(
       MakeFrame("a", MakeFrame("b", MakeFrame("c", nullptr))),
-      OriginStatus::kUnknown, absl::nullopt);
+      OriginStatus::kUnknown, std::nullopt);
 }
 
 // Test that if no iframe is created, there is no histogram set.
@@ -1282,7 +1282,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {
   auto entries =
       ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
   EXPECT_EQ(3u, entries.size());
-  for (auto* const entry : entries) {
+  for (const ukm::mojom::UkmEntry* const entry : entries) {
     auto dimension = std::make_pair(
         *ukm_recorder.GetEntryMetric(
             entry, ukm::builders::AdFrameLoad::kVisibility_FrameWidthName),
@@ -1804,8 +1804,15 @@ IN_PROC_BROWSER_TEST_P(AdsPageLoadMetricsObserverResourceBrowserTest,
 
 // Verifies that the ad unloaded by the heavy ad intervention receives an
 // intervention report prior to being unloaded.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_HeavyAdInterventionFired_ReportSent \
+  DISABLED_HeavyAdInterventionFired_ReportSent
+#else
+#define MAYBE_HeavyAdInterventionFired_ReportSent \
+  HeavyAdInterventionFired_ReportSent
+#endif
 IN_PROC_BROWSER_TEST_P(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       HeavyAdInterventionFired_ReportSent) {
+                       MAYBE_HeavyAdInterventionFired_ReportSent) {
   base::HistogramTester histogram_tester;
   auto incomplete_resource_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(

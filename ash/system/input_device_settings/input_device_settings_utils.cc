@@ -4,6 +4,8 @@
 
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
 
+#include <string_view>
+
 #include "ash/public/cpp/accelerators_util.h"
 #include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
@@ -28,6 +30,8 @@ namespace ash {
 
 namespace {
 
+const char kRedactedButtonName[] = "REDACTED";
+
 std::string HexEncode(uint16_t v) {
   // Load the bytes into the bytes array in reverse order as hex number should
   // be read from left to right.
@@ -37,7 +41,7 @@ std::string HexEncode(uint16_t v) {
   return base::ToLowerASCII(base::HexEncode(bytes));
 }
 
-bool ExistingSettingsHasValue(base::StringPiece setting_key,
+bool ExistingSettingsHasValue(std::string_view setting_key,
                               const base::Value::Dict* existing_settings_dict) {
   if (!existing_settings_dict) {
     return false;
@@ -46,12 +50,55 @@ bool ExistingSettingsHasValue(base::StringPiece setting_key,
   return existing_settings_dict->Find(setting_key) != nullptr;
 }
 
-}  // namespace
-
-constexpr bool VendorProductId::operator<(const VendorProductId& other) const {
-  return vendor_id == other.vendor_id ? product_id < other.product_id
-                                      : vendor_id < other.vendor_id;
+bool IsAlphaKeyboardCode(ui::KeyboardCode key_code) {
+  return key_code >= ui::VKEY_A && key_code <= ui::VKEY_Z;
 }
+
+bool IsNumberKeyboardCode(ui::KeyboardCode key_code) {
+  return key_code >= ui::VKEY_0 && key_code <= ui::VKEY_9;
+}
+
+// Verify if the customization restriction blocks the button remapping.
+// Block button remapping in the following cases:
+// 1. Customization restriction is kAllowCustomizations.
+// 2. Customization restriction is kDisableKeyEventRewrites and button is not
+// a keyboard key.
+// 3. Customization restriction is kAllowAlphabetKeyEventRewrites and button
+// is a mouse button or alphabet keyboard key.
+// 4. Customization restriction is kAllowAlphabetOrNumberKeyEventRewrites and
+// button is a mouse button or alphabet or number keyboard key.
+// In other cases, block button remapping.
+bool RestrictionBlocksRemapping(
+    const mojom::ButtonRemapping& remapping,
+    mojom::CustomizationRestriction customization_restriction) {
+  switch (customization_restriction) {
+    case mojom::CustomizationRestriction::kAllowCustomizations:
+      return false;
+    case mojom::CustomizationRestriction::kDisallowCustomizations:
+      return true;
+    case mojom::CustomizationRestriction::kDisableKeyEventRewrites:
+      if (remapping.button->is_vkey()) {
+        return true;
+      }
+      return false;
+    case mojom::CustomizationRestriction::kAllowAlphabetKeyEventRewrites:
+      if (remapping.button->is_vkey() &&
+          !IsAlphaKeyboardCode(remapping.button->get_vkey())) {
+        return true;
+      }
+      return false;
+    case mojom::CustomizationRestriction::
+        kAllowAlphabetOrNumberKeyEventRewrites:
+      if (remapping.button->is_vkey() &&
+          !IsAlphaKeyboardCode(remapping.button->get_vkey()) &&
+          !IsNumberKeyboardCode(remapping.button->get_vkey())) {
+        return true;
+      }
+      return false;
+  }
+}
+
+}  // namespace
 
 bool VendorProductId::operator==(const VendorProductId& other) const {
   return vendor_id == other.vendor_id && product_id == other.product_id;
@@ -70,7 +117,7 @@ std::string BuildDeviceKey(const ui::InputDevice& device) {
 }
 
 template <typename T>
-bool ShouldPersistSetting(base::StringPiece setting_key,
+bool ShouldPersistSetting(std::string_view setting_key,
                           T new_value,
                           T default_value,
                           bool force_persistence,
@@ -80,7 +127,7 @@ bool ShouldPersistSetting(base::StringPiece setting_key,
 }
 
 bool ShouldPersistSetting(const mojom::InputDeviceSettingsPolicyPtr& policy,
-                          base::StringPiece setting_key,
+                          std::string_view setting_key,
                           bool new_value,
                           bool default_value,
                           bool force_persistence,
@@ -105,7 +152,7 @@ bool ShouldPersistSetting(const mojom::InputDeviceSettingsPolicyPtr& policy,
 
 bool ShouldPersistFkeySetting(
     const mojom::InputDeviceSettingsFkeyPolicyPtr& policy,
-    base::StringPiece setting_key,
+    std::string_view setting_key,
     std::optional<ui::mojom::ExtendedFkeysModifier> new_value,
     ui::mojom::ExtendedFkeysModifier default_value,
     const base::Value::Dict* existing_settings_dict) {
@@ -129,14 +176,14 @@ bool ShouldPersistFkeySetting(
 }
 
 template EXPORT_TEMPLATE_DEFINE(ASH_EXPORT) bool ShouldPersistSetting(
-    base::StringPiece setting_key,
+    std::string_view setting_key,
     bool new_value,
     bool default_value,
     bool force_persistence,
     const base::Value::Dict* existing_settings_dict);
 
 template EXPORT_TEMPLATE_DEFINE(ASH_EXPORT) bool ShouldPersistSetting(
-    base::StringPiece setting_key,
+    std::string_view setting_key,
     int value,
     int default_value,
     bool force_persistence,
@@ -164,15 +211,6 @@ const base::Value::List* GetLoginScreenButtonRemappingList(
     return nullptr;
   }
   return &list_value->GetList();
-}
-
-bool IsMouseCustomizable(const ui::InputDevice& device) {
-  // TODO(wangdanny): Update uncustomizable mice set with devices' vid and pid.
-  static constexpr auto kUncustomizableMice =
-      base::MakeFixedFlatSet<VendorProductId>({
-          {0xffff, 0xffff},  // Fake data for testing.
-      });
-  return !kUncustomizableMice.contains({device.vendor_id, device.product_id});
 }
 
 bool IsKeyboardPretendingToBeMouse(const ui::InputDevice& device) {
@@ -218,6 +256,7 @@ bool IsKeyboardPretendingToBeMouse(const ui::InputDevice& device) {
           {0x3434, 0x0311},  // Keychron V1
           {0x3496, 0x0006},  // Keyboardio Model 100
           {0x4c44, 0x0040},  // LazyDesigners Dimple
+          {0x594d, 0x4409},  // YMDK YMD09
           {0xfeed, 0x1307},  // ErgoDox EZ
       });
 
@@ -239,18 +278,16 @@ bool IsKeyboardPretendingToBeMouse(const ui::InputDevice& device) {
 
 base::Value::Dict ConvertButtonRemappingToDict(
     const mojom::ButtonRemapping& remapping,
-    mojom::CustomizationRestriction customization_restriction) {
+    mojom::CustomizationRestriction customization_restriction,
+    bool redact_button_names) {
   base::Value::Dict dict;
 
-  if (customization_restriction ==
-          mojom::CustomizationRestriction::kDisallowCustomizations ||
-      (remapping.button->is_vkey() &&
-       customization_restriction ==
-           mojom::CustomizationRestriction::kDisableKeyEventRewrites)) {
+  if (RestrictionBlocksRemapping(remapping, customization_restriction)) {
     return dict;
   }
 
-  dict.Set(prefs::kButtonRemappingName, remapping.name);
+  dict.Set(prefs::kButtonRemappingName,
+           redact_button_names ? kRedactedButtonName : remapping.name);
   if (remapping.button->is_customizable_button()) {
     dict.Set(prefs::kButtonRemappingCustomizableButton,
              static_cast<int>(remapping.button->get_customizable_button()));
@@ -292,11 +329,12 @@ base::Value::Dict ConvertButtonRemappingToDict(
 
 base::Value::List ConvertButtonRemappingArrayToList(
     const std::vector<mojom::ButtonRemappingPtr>& remappings,
-    mojom::CustomizationRestriction customization_restriction) {
+    mojom::CustomizationRestriction customization_restriction,
+    bool redact_button_names) {
   base::Value::List list;
   for (const auto& remapping : remappings) {
-    base::Value::Dict dict =
-        ConvertButtonRemappingToDict(*remapping, customization_restriction);
+    base::Value::Dict dict = ConvertButtonRemappingToDict(
+        *remapping, customization_restriction, redact_button_names);
     // Remove empty dicts.
     if (dict.empty()) {
       continue;

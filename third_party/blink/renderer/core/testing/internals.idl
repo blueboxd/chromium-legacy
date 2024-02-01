@@ -261,6 +261,11 @@ interface Internals {
     [RaisesException] DOMRectList draggableRegions(Document document);
     [RaisesException] DOMRectList nonDraggableRegions(Document document);
 
+    // Overrides default behavior to support the app-region CSS property.
+    // Setting to true enables collection of draggable/non-draggable
+    // app regions.
+    void SetSupportsAppRegion(boolean supports_app_regions);
+
     // Returns a string with information about the mouse cursor used at the specified client location.
     DOMString getCurrentCursorInfo();
 
@@ -316,11 +321,6 @@ interface Internals {
 
     void setFocused(boolean focused);
     void setInitialFocus(boolean reverse);
-
-    // When the FocuslessSpatialNavigation feature is enabled, spatial
-    // navigation moves "interest" around a page, rather than focus. This
-    // attribute returns the currently interested element on the page.
-    readonly attribute Element? interestedElement;
 
     // Returns true if page associated with current internals object is
     // active.

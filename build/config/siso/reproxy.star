@@ -76,7 +76,13 @@ def __parse_cros_rewrapper_cmdline(ctx, cmd):
         fail("couldn't find rewrapper cfg file in %s" % str(cmd.args))
     rwcfg = rewrapper_cfg.parse(ctx, cfg_file)
     inputs = rwcfg.get("inputs", [])
-    inputs.append(toolchainpath)
+    inputs.extend([
+        path.join(toolchainpath, "bin"),
+        path.join(toolchainpath, "lib"),
+        path.join(toolchainpath, "usr/bin"),
+        # TODO: b/320189180 - Simple Chrome builds should use libraries under usr/lib64.
+        # But, Ninja/Reclient also don't use them unexpectedly.
+    ])
     rwcfg["inputs"] = inputs
     rwcfg["preserve_symlinks"] = True
     return args, rwcfg
@@ -285,19 +291,10 @@ def __step_config(ctx, step_config):
             if not rule.get("action"):
                 fail("clang rule %s found without action" % rule["name"])
 
-            if not config.get(ctx, "reproxy-cros"):
-                # TODO: b/314698010 - use reproxy mode once performance issue is fixed.
-                cros_rule = {
-                    "name": rule["name"] + "/cros",
-                    "action": rule["action"],
-                    "command_prefix": "../../build/cros_cache/",
-                    "use_remote_exec_wrapper": True,
-                }
-                new_rules.append(cros_rule)
-
             new_rule = {
                 "name": rule["name"],
                 "action": rule["action"],
+                "exclude_input_patterns": rule.get("exclude_input_patterns"),
                 "handler": "rewrite_rewrapper",
             }
             new_rules.append(new_rule)

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tpcd/experiment/experiment_manager_impl.h"
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -36,7 +37,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace tpcd::experiment {
 
@@ -45,7 +45,7 @@ using ::variations::HashName;
 struct SyntheticTrialTestCase {
   utils::ExperimentState prev_state;
   bool new_state_eligible;
-  absl::optional<std::string> expected_group_name;
+  std::optional<std::string> expected_group_name;
   std::string group_name_override;
   bool disable_3pcs = false;
   bool need_onboarding = false;
@@ -57,24 +57,13 @@ constexpr char kOverrideGroupName[] = "override";
 
 class ExperimentManagerImplBrowserTest : public InProcessBrowserTest {
  public:
-  ExperimentManagerImplBrowserTest(bool force_profiles_eligible_chromeos,
-                                   std::string group_name_override,
+  ExperimentManagerImplBrowserTest(std::string group_name_override,
                                    bool disable_3pcs,
                                    bool need_onboarding,
                                    bool enable_silent_onboarding = false) {
-    // Force profile eligibility on ChromeOS. There is a flaky issue where
-    // `SetClientEligibility` is sometimes called twice, the second time with an
-    // ineligible profile even if the first was eligible.
-#if !BUILDFLAG(IS_CHROMEOS)
-    force_profiles_eligible_chromeos = false;
-#endif  // !BUILDFLAG(IS_ANDROID)
-    std::string force_profiles_eligible_str =
-        force_profiles_eligible_chromeos ? "true" : "false";
-
     feature_list_.InitAndEnableFeatureWithParameters(
         features::kCookieDeprecationFacilitatedTesting,
         {{"label", kEligibleGroupName},
-         {"force_profiles_eligible", force_profiles_eligible_str},
          {"synthetic_trial_group_override", group_name_override},
          {kDisable3PCookiesName, disable_3pcs ? "true" : "false"},
          {kNeedOnboardingForSyntheticTrialName,
@@ -117,12 +106,10 @@ class ExperimentManagerImplSyntheticTrialTest
       public testing::WithParamInterface<SyntheticTrialTestCase> {
  public:
   ExperimentManagerImplSyntheticTrialTest()
-      : ExperimentManagerImplBrowserTest(
-            /*force_profiles_eligible_chromeos=*/GetParam().new_state_eligible,
-            GetParam().group_name_override,
-            GetParam().disable_3pcs,
-            GetParam().need_onboarding,
-            GetParam().enable_silent_onboarding) {}
+      : ExperimentManagerImplBrowserTest(GetParam().group_name_override,
+                                         GetParam().disable_3pcs,
+                                         GetParam().need_onboarding,
+                                         GetParam().enable_silent_onboarding) {}
 };
 
 IN_PROC_BROWSER_TEST_P(ExperimentManagerImplSyntheticTrialTest,
@@ -221,7 +208,7 @@ const SyntheticTrialTestCase kTestCases[] = {
     {
         .prev_state = utils::ExperimentState::kEligible,
         .new_state_eligible = true,
-        .expected_group_name = absl::nullopt,
+        .expected_group_name = std::nullopt,
         .need_onboarding = true,
         .enable_silent_onboarding = true,
     },
@@ -247,7 +234,7 @@ const SyntheticTrialTestCase kTestCases[] = {
     {
         .prev_state = utils::ExperimentState::kEligible,
         .new_state_eligible = true,
-        .expected_group_name = absl::nullopt,
+        .expected_group_name = std::nullopt,
         .disable_3pcs = true,
         .need_onboarding = true,
     },
@@ -283,11 +270,38 @@ class ExperimentManagerImplDisable3PCsSyntheticTrialTest
  public:
   ExperimentManagerImplDisable3PCsSyntheticTrialTest()
       : ExperimentManagerImplBrowserTest(
-            /*force_profiles_eligible_chromeos=*/false,
             /*group_name_override=*/"",
             /*disable_3pcs=*/true,
             /*need_onboarding=*/true) {}
 };
+
+IN_PROC_BROWSER_TEST_F(ExperimentManagerImplDisable3PCsSyntheticTrialTest,
+                       PRE_RegistersSyntheticTrialWhenNoticeRequested) {
+  Wait();
+
+  // Set up the previous state in the local state prefs.
+  g_browser_process->local_state()->SetInteger(
+      prefs::kTPCDExperimentClientState,
+      static_cast<int>(utils::ExperimentState::kEligible));
+}
+
+IN_PROC_BROWSER_TEST_F(ExperimentManagerImplDisable3PCsSyntheticTrialTest,
+                       RegistersSyntheticTrialWhenNoticeRequested) {
+  // Verify that the user has not been registered.
+  uint32_t group_name_hash = GetSyntheticTrialGroupNameHash();
+  ASSERT_EQ(group_name_hash, 0u);
+
+  auto* onboarding_service =
+      TrackingProtectionOnboardingFactory::GetForProfile(browser()->profile());
+  // Simulate onboarding request a profile.
+  onboarding_service->OnboardingNoticeRequested();
+
+  // Verify that the user has been registered with the correct synthetic
+  // trial group.
+  group_name_hash = GetSyntheticTrialGroupNameHash();
+  ASSERT_NE(group_name_hash, 0u);
+  EXPECT_EQ(group_name_hash, HashName(kEligibleGroupName));
+}
 
 IN_PROC_BROWSER_TEST_F(ExperimentManagerImplDisable3PCsSyntheticTrialTest,
                        PRE_RegistersSyntheticTrial) {
@@ -322,7 +336,6 @@ class ExperimentManagerImplSilentOnboardingSyntheticTrialTest
  public:
   ExperimentManagerImplSilentOnboardingSyntheticTrialTest()
       : ExperimentManagerImplBrowserTest(
-            /*force_profiles_eligible_chromeos=*/false,
             /*group_name_override=*/"",
             /*disable_3pcs=*/false,
             /*need_onboarding=*/true,

@@ -51,6 +51,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.util.DisplayMetrics;
@@ -111,6 +112,8 @@ import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -166,8 +169,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.components.browser_ui.widget.CoordinatorLayoutForPointer;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
@@ -2066,6 +2067,7 @@ public class CustomTabActivityTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.O_MR1)
     // Bug in O that's been fixed in 8.1
     // https://issuetracker.google.com/issues/68427483
+    @DisabledTest(message = "http://crbug/1521989")
     public void testLaunchPartialCustomTabActivity_SideSheet() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
@@ -2548,7 +2550,7 @@ public class CustomTabActivityTest {
                     BrowsingHistoryBridge historyService = new BrowsingHistoryBridge(profile);
                     historyService.setObserver(historyObserver);
                     String historyQueryFilter = "";
-                    historyService.queryHistory(historyQueryFilter);
+                    historyService.queryHistory(historyQueryFilter, null);
                 });
         historyObserver.getQueryCallback().waitForCallback(0);
         return historyObserver.getHistoryQueryResults();
@@ -2638,6 +2640,11 @@ public class CustomTabActivityTest {
 
                     ComponentName component = new ComponentName("com.foo.bar", "className");
                     when(activity.getCallingActivity()).thenReturn(component);
+                    PowerManager powerManager =
+                            (PowerManager)
+                                    ContextUtils.getApplicationContext()
+                                            .getSystemService(Context.POWER_SERVICE);
+                    when(activity.getSystemService(Context.POWER_SERVICE)).thenReturn(powerManager);
 
                     LaunchIntentDispatcher.dispatch(activity, intent);
                     verify(activity, times(1)).startActivity(mIntentCaptor.capture(), any());
@@ -2659,6 +2666,11 @@ public class CustomTabActivityTest {
                     Intent intent = createMinimalCustomTabIntent();
                     intent.putExtra(IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE, "spoofed");
                     Activity activity = Mockito.mock(Activity.class);
+                    PowerManager powerManager =
+                            (PowerManager)
+                                    ContextUtils.getApplicationContext()
+                                            .getSystemService(Context.POWER_SERVICE);
+                    when(activity.getSystemService(Context.POWER_SERVICE)).thenReturn(powerManager);
 
                     LaunchIntentDispatcher.dispatch(activity, intent);
                     verify(activity, times(1)).startActivity(mIntentCaptor.capture(), any());
@@ -2705,7 +2717,7 @@ public class CustomTabActivityTest {
         HistogramWatcher histogramWatcher =
                 HistogramWatcher.newSingleRecordWatcher(
                         "Android.BackPress.Failure",
-                        BackPressManager.getHistogramValueForTesting(
+                        BackPressManager.getHistogramValue(
                                 BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB));
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {

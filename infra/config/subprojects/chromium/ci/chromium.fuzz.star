@@ -74,6 +74,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
@@ -112,6 +113,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 32,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan-v8-arm",
@@ -151,6 +153,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
@@ -191,6 +194,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 32,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan-v8-arm",
@@ -231,6 +235,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
@@ -267,7 +272,6 @@ ci.builder(
             "asan",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "shared",
             "release",
@@ -298,6 +302,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 32,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan-v8-arm",
@@ -342,6 +347,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.CHROMEOS,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
@@ -384,6 +390,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "msan-chained-origins",
@@ -423,6 +430,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "msan-no-origins",
@@ -461,6 +469,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
@@ -471,7 +480,6 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "asan",
-            "disable_nacl",
             "fuzzer",
             "v8_heap",
             "release_builder",
@@ -487,10 +495,8 @@ ci.builder(
     ),
     contact_team_email = "chrome-sanitizer-builder-owners@google.com",
     health_spec = health_spec.modified_default({
-        "Unhealthy": struct(
-            pending_time = struct(
-                p50_mins = None,  # exception added because this builder has a pool of 1 machine and 2 concurrent invocations
-            ),
+        "Unhealthy": health_spec.unhealthy_thresholds(
+            pending_time = struct(),  # exception added because this builder has a pool of 1 machine and 2 concurrent invocations
         ),
     }),
 )
@@ -510,6 +516,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
@@ -520,7 +527,6 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "asan",
-            "disable_nacl",
             "fuzzer",
             "v8_heap",
             "chrome_with_codecs",
@@ -553,6 +559,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "tsan",
@@ -563,7 +570,6 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "tsan",
-            "disable_nacl",
             "debug_builder",
             "reclient",
         ],
@@ -592,6 +598,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "tsan",
@@ -602,7 +609,6 @@ ci.builder(
     gn_args = gn_args.config(
         configs = [
             "tsan",
-            "disable_nacl",
             "release_builder",
             "reclient",
         ],
@@ -627,6 +633,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "ubsan",
@@ -661,6 +668,7 @@ ci.builder(
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.LINUX,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "ubsan-vptr",
@@ -700,6 +708,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
@@ -742,6 +751,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 32,
+            target_platform = builder_config.target_platform.WIN,
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
@@ -785,7 +795,6 @@ ci.builder(
             "reclient",
             "chromeos_with_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "disable_seed_corpus",
         ],
@@ -795,7 +804,7 @@ ci.builder(
         short_name = "chromeos-asan",
     ),
     contact_team_email = "chrome-deet-core@google.com",
-    execution_timeout = 4 * time.hour,
+    execution_timeout = 6 * time.hour,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )
 
@@ -824,7 +833,7 @@ ci.builder(
     ),
     contact_team_email = "chrome-deet-core@google.com",
     execution_timeout = 4 * time.hour,
-    xcode = xcode.x14main,
+    xcode = xcode.xcode_default,
 )
 
 ci.builder(
@@ -839,7 +848,6 @@ ci.builder(
             "asan",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "mojo_fuzzer",
             "shared",
@@ -871,7 +879,6 @@ ci.builder(
             "shared",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "disable_seed_corpus",
         ],
@@ -901,7 +908,6 @@ ci.builder(
             "reclient",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "disable_seed_corpus",
         ],
@@ -929,7 +935,6 @@ ci.builder(
             "reclient",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "disable_seed_corpus",
             "shared",
@@ -961,7 +966,6 @@ ci.builder(
             "reclient",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "v8_simulate_arm64",
             "disable_seed_corpus",
@@ -989,7 +993,6 @@ ci.builder(
             "shared",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "v8_simulate_arm64",
             "disable_seed_corpus",
@@ -1017,7 +1020,6 @@ ci.builder(
             "reclient",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "x86",
             "disable_seed_corpus",
@@ -1046,7 +1048,6 @@ ci.builder(
             "reclient",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "v8_simulate_arm",
             "disable_seed_corpus",
@@ -1075,7 +1076,6 @@ ci.builder(
             "shared",
             "chromeos_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
             "v8_simulate_arm",
             "disable_seed_corpus",
@@ -1100,7 +1100,6 @@ ci.builder(
             "reclient",
             "chrome_with_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "optimize_for_fuzzing",
         ],
     ),
@@ -1131,7 +1130,6 @@ ci.builder(
             "reclient",
             "chrome_with_codecs",
             "pdf_xfa",
-            "disable_nacl",
             "minimal_symbols",
             "mojo_fuzzer",
         ],

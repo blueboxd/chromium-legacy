@@ -4,10 +4,13 @@
 
 package chrome.android.junit.src.org.chromium.chrome.browser.compositor.scene_layer;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.ContextThemeWrapper;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -23,6 +26,8 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -39,8 +44,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayerJni;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.ui.resources.ResourceManager;
 
 /** Tests for {@link TabStripSceneLayer}. */
@@ -132,7 +135,9 @@ public class TabStripSceneLayerTest {
                 mStripLayoutTabs,
                 1.f,
                 0,
-                -1);
+                -1,
+                Color.YELLOW,
+                0.3f);
 
         // Verify JNI calls.
         verify(mTabStripSceneMock)
@@ -154,5 +159,15 @@ public class TabStripSceneLayerTest {
                         mResourceManager);
         verify(mTabStripSceneMock)
                 .updateTabStripLeftFade(1L, mTabStripSceneLayer, 0, 0.f, mResourceManager, 0);
+        verify(mTabStripSceneMock)
+                .updateTabStripLayer(
+                        eq(1L),
+                        eq(mTabStripSceneLayer),
+                        anyInt(),
+                        anyInt(),
+                        /* yOffset= */ eq(1.f),
+                        anyInt(),
+                        /* scrimColor= */ eq(Color.YELLOW),
+                        /* scrimOpacity= */ eq(0.3f));
     }
 }

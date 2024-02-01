@@ -54,7 +54,31 @@ ContentSuggestionsModuleType SetUpListModuleTypeForSetUpListType(
       return ContentSuggestionsModuleType::kSetUpListAutofill;
     case SetUpListItemType::kAllSet:
       return ContentSuggestionsModuleType::kSetUpListAllSet;
+    case SetUpListItemType::kNotifications:
+      return ContentSuggestionsModuleType::kSetUpListNotifications;
     default:
       NOTREACHED_NORETURN();
+  }
+}
+
+bool IsSetUpListModuleType(ContentSuggestionsModuleType type) {
+  switch (type) {
+    case ContentSuggestionsModuleType::kTabResumption:
+    case ContentSuggestionsModuleType::kSafetyCheck:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
+    case ContentSuggestionsModuleType::kParcelTracking:
+    case ContentSuggestionsModuleType::kParcelTrackingSeeMore:
+    case ContentSuggestionsModuleType::kMostVisited:
+    case ContentSuggestionsModuleType::kShortcuts:
+    case ContentSuggestionsModuleType::kPlaceholder:
+      return false;
+    case ContentSuggestionsModuleType::kSetUpListSync:
+    case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
+    case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kSetUpListNotifications:
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+    case ContentSuggestionsModuleType::kSetUpListAllSet:
+      return true;
   }
 }

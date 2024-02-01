@@ -52,9 +52,23 @@ export class OobeI18nBehaviorInterface extends I18nBehaviorInterface {
    * @param {...string|number} var_args
    * @return {string}
    */
-  i18n(id, var_args) {}
+  i18n(id, ...var_args) {}
   i18nUpdateLocale() {}
 
+  /**
+   * @param {string} id
+   * @param {SanitizeInnerHtmlOpts=} opts
+   * @return {string}
+   */
+  i18nAdvanced(id, opts) {}
+
+  /**
+   * @param {string} locale
+   * @param {string} id
+   * @param {...string} varArgs
+   * @return {string}
+   */
+  i18nDynamic(locale, id, ...varArgs) {}
   /**
    * @param {string} locale The UI language used.
    * @param {string} id The ID of the string to translate.

@@ -7,7 +7,7 @@
 #import "base/notreached.h"
 #import "components/autofill/core/common/autofill_features.h"
 
-AutofillUIType AutofillUITypeFromAutofillType(autofill::ServerFieldType type) {
+AutofillUIType AutofillUITypeFromAutofillType(autofill::FieldType type) {
   switch (type) {
     case autofill::UNKNOWN_TYPE:
       return AutofillUITypeUnknown;
@@ -19,8 +19,6 @@ AutofillUIType AutofillUITypeFromAutofillType(autofill::ServerFieldType type) {
       return AutofillUITypeCreditCardExpMonth;
     case autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR:
       return AutofillUITypeCreditCardExpYear;
-    case autofill::NAME_HONORIFIC_PREFIX:
-      return AutofillUITypeProfileHonorificPrefix;
     case autofill::NAME_FULL:
       return AutofillUITypeProfileFullName;
     case autofill::COMPANY_NAME:
@@ -49,8 +47,6 @@ AutofillUIType AutofillUITypeFromAutofillType(autofill::ServerFieldType type) {
       return AutofillUITypeProfileHomePhoneWholeNumber;
     case autofill::EMAIL_ADDRESS:
       return AutofillUITypeProfileEmailAddress;
-    case autofill::NAME_FULL_WITH_HONORIFIC_PREFIX:
-      return AutofillUITypeNameFullWithHonorificPrefix;
     case autofill::ADDRESS_HOME_ADDRESS:
       return AutofillUITypeAddressHomeAddress;
     default:
@@ -59,7 +55,7 @@ AutofillUIType AutofillUITypeFromAutofillType(autofill::ServerFieldType type) {
   }
 }
 
-autofill::ServerFieldType AutofillTypeFromAutofillUIType(AutofillUIType type) {
+autofill::FieldType AutofillTypeFromAutofillUIType(AutofillUIType type) {
   switch (type) {
     case AutofillUITypeUnknown:
       return autofill::UNKNOWN_TYPE;
@@ -71,8 +67,6 @@ autofill::ServerFieldType AutofillTypeFromAutofillUIType(AutofillUIType type) {
       return autofill::CREDIT_CARD_EXP_MONTH;
     case AutofillUITypeCreditCardExpYear:
       return autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR;
-    case AutofillUITypeProfileHonorificPrefix:
-      return autofill::NAME_HONORIFIC_PREFIX;
     case AutofillUITypeProfileFullName:
       return autofill::NAME_FULL;
     case AutofillUITypeProfileCompanyName:
@@ -101,8 +95,6 @@ autofill::ServerFieldType AutofillTypeFromAutofillUIType(AutofillUIType type) {
       return autofill::PHONE_HOME_WHOLE_NUMBER;
     case AutofillUITypeProfileEmailAddress:
       return autofill::EMAIL_ADDRESS;
-    case AutofillUITypeNameFullWithHonorificPrefix:
-      return autofill::NAME_FULL_WITH_HONORIFIC_PREFIX;
     case AutofillUITypeAddressHomeAddress:
       return autofill::ADDRESS_HOME_ADDRESS;
     case AutofillUITypeCreditCardExpDate:
@@ -114,15 +106,15 @@ autofill::ServerFieldType AutofillTypeFromAutofillUIType(AutofillUIType type) {
   }
 }
 
-std::vector<autofill::ServerFieldType> GetAutofillTypeForProfileEdit() {
-  std::vector<autofill::ServerFieldType> all_visible_types;
+std::vector<autofill::FieldType> GetAutofillTypeForProfileEdit() {
+  std::vector<autofill::FieldType> all_visible_types;
   for (const AutofillProfileFieldDisplayInfo& row : kProfileFieldsToDisplay)
     all_visible_types.push_back(row.autofillType);
 
   return all_visible_types;
 }
 
-bool FieldIsUsedInAddress(autofill::ServerFieldType autofillType,
+bool FieldIsUsedInAddress(autofill::FieldType autofillType,
                           NSString* countryCode) {
   // TODO(crbug.com/1482269): Replace all this with libaddressinput.
 

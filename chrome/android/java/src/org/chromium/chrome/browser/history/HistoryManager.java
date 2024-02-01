@@ -129,17 +129,20 @@ public class HistoryManager
 
     /**
      * Creates a new HistoryManager.
+     *
      * @param activity The Activity associated with the HistoryManager.
      * @param isSeparateActivity Whether the history UI will be shown in a separate activity than
-     *                           the main Chrome activity.
+     *     the main Chrome activity.
      * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
      * @param profile The profile launching History.
      * @param tabSupplier Supplies the current tab, null if the history UI will be shown in a
-     *                    separate activity.
+     *     separate activity.
      * @param showHistoryClustersImmediately Whether the Journeys (history clusters) UI should be
-     *         shown immediately instead of the normal history UI.
+     *     shown immediately instead of the normal history UI.
      * @param historyClustersQuery The preset query that the Journeys UI should use.
      * @param historyProvider Provider of methods for querying and managing browsing history.
+     * @param clientPackageName Package name of the client the history UI is launched on top of.
+     * @param shouldShowClearData Whether the 'Clear browsing data' button should be shown.
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public HistoryManager(
@@ -150,7 +153,9 @@ public class HistoryManager
             @Nullable Supplier<Tab> tabSupplier,
             boolean showHistoryClustersImmediately,
             String historyClustersQuery,
-            HistoryProvider historyProvider) {
+            HistoryProvider historyProvider,
+            @Nullable String clientPackageName,
+            boolean shouldShowClearData) {
         mActivity = activity;
         mIsSeparateActivity = isSeparateActivity;
         mSnackbarManager = snackbarManager;
@@ -345,13 +350,14 @@ public class HistoryManager
                         isSeparateActivity,
                         profile,
                         shouldShowInfoHeader,
-                        /* shouldShowClearDataIfAvailable= */ true,
+                        shouldShowClearData,
                         /* hostName= */ null,
                         mSelectionDelegate,
                         tabSupplier,
                         mShowHistoryClustersToggleSupplier,
                         (vg) -> buildToggleView(vg, HISTORY_TAB_INDEX),
-                        historyProvider);
+                        historyProvider,
+                        clientPackageName);
         mSelectableListLayout.initializeRecyclerView(
                 mContentManager.getAdapter(), mContentManager.getRecyclerView());
 
@@ -752,21 +758,6 @@ public class HistoryManager
         }
     }
 
-    /**
-     * Called when the user presses the back key. This is only going to be called
-     * when the history UI is shown in a separate activity rather inside a tab.
-     * @return True if manager handles this event, false if it decides to ignore.
-     */
-    public boolean onBackPressed() {
-        if (mIsIncognito || mSelectableListLayout == null) {
-            // If Incognito placeholder is shown, the back press should handled by HistoryActivity.
-            return false;
-        } else if (isHistoryClustersUIShowing()) {
-            return mHistoryClustersCoordinator.onBackPressed();
-        }
-        return mSelectableListLayout.onBackPressed();
-    }
-
     // BackPressHandler implementation.
     @Override
     public @BackPressResult int handleBackPress() {
@@ -814,6 +805,22 @@ public class HistoryManager
     private void notifyHistoryClustersCoordinatorOfDeletion() {
         if (mHistoryClustersCoordinator == null) return;
         mHistoryClustersCoordinator.onHistoryDeletedExternally();
+    }
+
+    /**
+     * Called when the user presses the back key. This is only going to be called when the history
+     * UI is shown in a separate activity rather inside a tab.
+     *
+     * @return True if manager handles this event, false if it decides to ignore.
+     */
+    private boolean onBackPressed() {
+        if (mIsIncognito || mSelectableListLayout == null) {
+            // If Incognito placeholder is shown, the back press should handled by HistoryActivity.
+            return false;
+        } else if (isHistoryClustersUIShowing()) {
+            return mHistoryClustersCoordinator.onBackPressed();
+        }
+        return mSelectableListLayout.onBackPressed();
     }
 
     /**

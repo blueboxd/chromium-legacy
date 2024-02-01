@@ -162,10 +162,6 @@ class DlpContentManagerAshTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    test_reporting_ =
-        ::reporting::ReportingClient::TestEnvironment::CreateWithStorageModule(
-            base::MakeRefCounted<::reporting::test::TestStorageModule>());
-
     ASSERT_TRUE(profile_manager_.SetUp());
     LoginFakeUser();
 
@@ -216,12 +212,13 @@ class DlpContentManagerAshTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<::reporting::ReportingClient::TestEnvironment>
-      test_reporting_;
+      test_reporting_ = ::reporting::ReportingClient::TestEnvironment::
+          CreateWithStorageModule(
+              base::MakeRefCounted<::reporting::test::TestStorageModule>());
   DlpContentManagerTestHelper helper_;
   base::HistogramTester histogram_tester_;
   std::vector<DlpPolicyEvent> events_;
-  raw_ptr<MockDlpRulesManager, DanglingUntriaged | ExperimentalAsh>
-      mock_rules_manager_ = nullptr;
+  raw_ptr<MockDlpRulesManager, DanglingUntriaged> mock_rules_manager_ = nullptr;
   MockPrivacyScreenHelper mock_privacy_screen_helper_;
 
  private:
@@ -232,7 +229,7 @@ class DlpContentManagerAshTest : public testing::Test {
     profile_->SetIsNewProfile(true);
 
     user_manager_->AddUserWithAffiliationAndTypeAndProfile(
-        account_id, false /*is_affiliated*/, user_manager::USER_TYPE_REGULAR,
+        account_id, false /*is_affiliated*/, user_manager::UserType::kRegular,
         profile_);
     user_manager_->LoginUser(account_id, true /*set_profile_created_flag*/);
 
@@ -241,9 +238,8 @@ class DlpContentManagerAshTest : public testing::Test {
 
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   TestingProfileManager profile_manager_;
-  raw_ptr<TestingProfile, ExperimentalAsh> profile_;
-  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
-      user_manager_;
+  raw_ptr<TestingProfile> profile_;
+  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged> user_manager_;
   user_manager::ScopedUserManager scoped_user_manager_;
 };
 

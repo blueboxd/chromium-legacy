@@ -45,6 +45,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 
@@ -124,7 +125,7 @@ class ToggleBubbleButton : public IconButton {
 
  private:
   // Parent view of this button. Owned by the views hierarchy.
-  const raw_ptr<VideoConferenceTray, ExperimentalAsh> tray_;
+  const raw_ptr<VideoConferenceTray> tray_;
 };
 
 BEGIN_METADATA(ToggleBubbleButton)
@@ -300,7 +301,7 @@ VideoConferenceTray::VideoConferenceTray(Shelf* shelf)
                                     weak_ptr_factory_.GetWeakPtr())));
 
   VideoConferenceTrayController::Get()->AddObserver(this);
-  VideoConferenceTrayController::Get()->effects_manager().AddObserver(this);
+  VideoConferenceTrayController::Get()->GetEffectsManager().AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 
   // Update visibility of the tray and all child icons and indicators. If this
@@ -316,7 +317,8 @@ VideoConferenceTray::VideoConferenceTray(Shelf* shelf)
 
 VideoConferenceTray::~VideoConferenceTray() {
   Shell::Get()->session_controller()->RemoveObserver(this);
-  VideoConferenceTrayController::Get()->effects_manager().RemoveObserver(this);
+  VideoConferenceTrayController::Get()->GetEffectsManager().RemoveObserver(
+      this);
   VideoConferenceTrayController::Get()->RemoveObserver(this);
 }
 
@@ -541,6 +543,14 @@ void VideoConferenceTray::ConstructBubbleWithMediaApps(MediaApps apps) {
   bubble_->ShowBubble(std::move(bubble_view));
 
   toggle_bubble_button_->SetToggled(true);
+}
+
+void VideoConferenceTray::SetBackgroundReplaceUiVisible(bool visible) {
+  auto* bubble_view = GetBubbleView();
+  if (bubble_view) {
+    views::AsViewClass<video_conference::BubbleView>(bubble_view)
+        ->SetBackgroundReplaceUiVisible(visible);
+  }
 }
 
 BEGIN_METADATA(VideoConferenceTray, TrayBackgroundView)

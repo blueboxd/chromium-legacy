@@ -136,7 +136,7 @@ class HotseatWidgetAnimationMetricsReporter {
 
   metrics_util::ReportCallback GetReportCallback(HotseatState target_state) {
     DCHECK_NE(target_state, HotseatState::kNone);
-    return metrics_util::ForSmoothness(base::BindRepeating(
+    return metrics_util::ForSmoothnessV3(base::BindRepeating(
         &HotseatWidgetAnimationMetricsReporter::ReportSmoothness,
         weak_ptr_factory_.GetWeakPtr(), target_state));
   }
@@ -191,7 +191,7 @@ class ASH_EXPORT NavigationWidgetAnimationMetricsReporter {
   metrics_util::ReportCallback GetReportCallback(
       HotseatState target_hotseat_state) {
     DCHECK_NE(target_hotseat_state, HotseatState::kNone);
-    return metrics_util::ForSmoothness(base::BindRepeating(
+    return metrics_util::ForSmoothnessV3(base::BindRepeating(
         &NavigationWidgetAnimationMetricsReporter::ReportSmoothness,
         weak_ptr_factory_.GetWeakPtr(), target_hotseat_state));
   }
@@ -250,7 +250,7 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
   }
 
  private:
-  raw_ptr<Shelf, ExperimentalAsh> shelf_;
+  raw_ptr<Shelf> shelf_;
 };
 
 // Shelf::AutoDimEventHandler -----------------------------------------------
@@ -324,7 +324,7 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler,
 
  private:
   // Unowned pointer to the shelf that owns this event handler.
-  raw_ptr<Shelf, ExperimentalAsh> shelf_;
+  raw_ptr<Shelf> shelf_;
   // OneShotTimer that dims shelf due to inactivity.
   base::OneShotTimer dim_shelf_timer_;
   // An observer that notifies the AutoDimHandler that shelf visibility has
@@ -407,7 +407,7 @@ void Shelf::ActivateShelfItemOnDisplay(int item_index, int64_t display_id) {
 
 // static
 void Shelf::UpdateShelfVisibility() {
-  for (auto* root : Shell::Get()->GetAllRootWindows()) {
+  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
     Shelf::ForWindow(root)->UpdateVisibilityState();
   }
 }

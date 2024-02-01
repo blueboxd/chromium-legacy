@@ -5,6 +5,7 @@
 #include "services/network/url_loader_factory.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -35,7 +36,6 @@
 #include "services/network/trust_tokens/trust_token_request_helper_factory.h"
 #include "services/network/url_loader.h"
 #include "services/network/web_bundle/web_bundle_url_loader_factory.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -193,7 +193,7 @@ void URLLoaderFactory::CreateLoaderAndStartWithSyncClient(
   bool has_origin =
       resource_request.headers.GetHeader("Origin", &origin_string) &&
       origin_string != "null";
-  absl::optional<url::Origin> request_initiator =
+  std::optional<url::Origin> request_initiator =
       resource_request.request_initiator;
   if (has_origin && request_initiator.has_value()) {
     bool origin_head_same_as_request_origin =
@@ -287,25 +287,28 @@ void URLLoaderFactory::CreateLoaderAndStartWithSyncClient(
         // NetworkContext::CookieManager outlives the URLLoaders associated with
         // the NetworkContext.
         base::BindRepeating(
-            [](NetworkContext* context,
-               net::CookieSettingOverrides cookie_setting_overrides,
-               net::IsolationInfo isolation_info) {
-              // Trust tokens will be blocked if the user has either disabled
-              // the anti-abuse content setting or blocked the top level site
-              // from storing data (i.e. the cookie content setting for that
-              // site is blocked).
-              GURL top_frame_origin = isolation_info.top_frame_origin()
-                                          .value_or(url::Origin())
-                                          .GetURL();
-              ContentSetting cookie_setting =
-                  context->cookie_manager()->cookie_settings().GetCookieSetting(
-                      top_frame_origin, top_frame_origin,
-                      cookie_setting_overrides, nullptr);
-              return !(context->are_trust_tokens_blocked() ||
-                       cookie_setting == CONTENT_SETTING_BLOCK);
+            [](NetworkContext* context, const GURL& resource_request_url,
+               const GURL& top_frame_origin) {
+              // Private state tokens will be blocked if the user has either
+              // disabled the anti-abuse content setting or blocked the top
+              // level site or issuer from storing data through the cookie
+              // content settings.
+              return (
+                  // PST is not disabled through settings.
+                  !context->are_trust_tokens_blocked() &&
+                  // and top frame is not blocked.
+                  context->cookie_manager()
+                      ->cookie_settings()
+                      .ArePrivateStateTokensAllowed(top_frame_origin) &&
+                  // and issuer is not blocked.
+                  context->cookie_manager()
+                      ->cookie_settings()
+                      .ArePrivateStateTokensAllowed(resource_request_url));
             },
-            base::Unretained(context_), params_->cookie_setting_overrides,
-            params_->isolation_info));
+            base::Unretained(context_), resource_request.url,
+            params_->isolation_info.top_frame_origin()
+                .value_or(url::Origin())
+                .GetURL()));
   }
 
   std::unique_ptr<SharedDictionaryAccessChecker> shared_dictionary_checker;

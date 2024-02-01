@@ -305,7 +305,7 @@ void AnimatingLayoutManager::FadeOut(View* child_view) {
   }
 
   // This handles a case where we are in the middle of an animation where we
-  // would have hidden the target view, but haven't hit Layout() yet, so haven't
+  // would have hidden the target view, but haven't laid out yet, so haven't
   // actually hidden it yet. Because we plan fade-outs off of the current layout
   // if the view the child view is visible it will not get a proper fade-out and
   // will remain visible but not properly laid out. We remedy this by hiding the
@@ -430,19 +430,19 @@ int AnimatingLayoutManager::GetPreferredHeightForWidth(const View* host,
   return target_layout_manager()->GetPreferredHeightForWidth(host, width);
 }
 
-std::vector<View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
-    const View* host) const {
+std::vector<raw_ptr<View, VectorExperimental>>
+AnimatingLayoutManager::GetChildViewsInPaintOrder(const View* host) const {
   DCHECK_EQ(host_view(), host);
 
   if (!is_animating())
     return LayoutManagerBase::GetChildViewsInPaintOrder(host);
 
-  std::vector<View*> result;
+  std::vector<raw_ptr<View, VectorExperimental>> result;
   std::set<View*> fading;
 
   // Put all fading views to the front of the list (back of the Z-order).
   for (const LayoutFadeInfo& fade_info : fade_infos_) {
-    result.push_back(fade_info.child_view);
+    result.push_back(fade_info.child_view.get());
     fading.insert(fade_info.child_view);
   }
 

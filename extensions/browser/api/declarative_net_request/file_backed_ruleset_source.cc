@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <set>
+#include <string_view>
 #include <utility>
 
 #include "base/check_op.h"
@@ -57,7 +58,7 @@ std::string GetFilename(const base::FilePath& file_path) {
 }
 
 std::string GetErrorWithFilename(const base::FilePath& json_path,
-                                 base::StringPiece error) {
+                                 std::string_view error) {
   return base::StrCat({GetFilename(json_path), ": ", error});
 }
 
@@ -450,9 +451,7 @@ LoadRulesetResult FileBackedRulesetSource::CreateVerifiedMatcher(
     return LoadRulesetResult::kErrorVersionMismatch;
 
   if (expected_ruleset_checksum !=
-      GetChecksum(
-          base::make_span(reinterpret_cast<const uint8_t*>(ruleset_data.data()),
-                          ruleset_data.size()))) {
+      GetChecksum(base::as_byte_span(ruleset_data))) {
     return LoadRulesetResult::kErrorChecksumMismatch;
   }
 

@@ -17,6 +17,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/proxy_chain.h"
 #include "net/base/proxy_server.h"
+#include "net/base/session_usage.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
@@ -228,9 +229,9 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
       endpoint_host_port_pair_(kOriginHost, kOriginPort),
       proxy_chain_(ProxyServer::SCHEME_HTTPS, proxy_host_port_),
       endpoint_spdy_session_key_(endpoint_host_port_pair_,
-                                 proxy_chain_,
                                  PRIVACY_MODE_DISABLED,
-                                 SpdySessionKey::IsProxySession::kFalse,
+                                 proxy_chain_,
+                                 SessionUsage::kDestination,
                                  SocketTag(),
                                  NetworkAnonymizationKey(),
                                  SecureDnsPolicy::kAllow),

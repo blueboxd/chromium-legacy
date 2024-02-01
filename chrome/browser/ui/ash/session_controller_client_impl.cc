@@ -21,6 +21,8 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/floating_workspace/floating_workspace_service.h"
+#include "chrome/browser/ash/floating_workspace/floating_workspace_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
@@ -199,6 +201,17 @@ SessionControllerClientImpl* SessionControllerClientImpl::Get() {
 }
 
 void SessionControllerClientImpl::PrepareForLock(base::OnceClosure callback) {
+  if (ash::floating_workspace_util::IsFloatingWorkspaceV2Enabled()) {
+    User* active_user = UserManager::Get()->GetActiveUser();
+    Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(active_user);
+    if (profile) {
+      auto* floating_workspace_service =
+          ash::FloatingWorkspaceService::GetForProfile(profile);
+      if (floating_workspace_service) {
+        floating_workspace_service->CaptureAndUploadActiveDesk();
+      }
+    }
+  }
   session_controller_->PrepareForLock(std::move(callback));
 }
 
@@ -258,7 +271,7 @@ void SessionControllerClientImpl::ShowMultiProfileLogin() {
 
   // Only regular non-supervised users could add other users to current session.
   if (UserManager::Get()->GetActiveUser()->GetType() !=
-      user_manager::USER_TYPE_REGULAR) {
+      user_manager::UserType::kRegular) {
     return;
   }
 
@@ -407,7 +420,7 @@ bool SessionControllerClientImpl::CanLockScreen() {
 // static
 bool SessionControllerClientImpl::ShouldLockScreenAutomatically() {
   const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
-  for (auto* user : logged_in_users) {
+  for (user_manager::User* user : logged_in_users) {
     Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
     if (profile &&
         profile->GetPrefs()->GetBoolean(ash::prefs::kEnableAutoScreenLock)) {
@@ -627,7 +640,7 @@ void SessionControllerClientImpl::SendUserSessionOrder() {
 
   const UserList logged_in_users = user_manager->GetLoggedInUsers();
   std::vector<uint32_t> user_session_ids;
-  for (auto* user : user_manager->GetLRULoggedInUsers()) {
+  for (user_manager::User* user : user_manager->GetLRULoggedInUsers()) {
     const uint32_t user_session_id = GetSessionId(*user);
     DCHECK_NE(0u, user_session_id);
     user_session_ids.push_back(user_session_id);

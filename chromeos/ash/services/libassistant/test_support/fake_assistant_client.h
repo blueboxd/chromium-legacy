@@ -80,7 +80,6 @@ class FakeAssistantClient : public AssistantClient {
           void(const ::assistant::api::GetAssistantSettingsResponse&)> on_done)
       override;
   void SetLocaleOverride(const std::string& locale) override;
-  void SetDeviceAttributes(bool enable_dark_mode) override;
   std::string GetDeviceId() override;
   void EnableListening(bool listening_enabled) override;
   void AddTimeToTimer(const std::string& id,
@@ -98,8 +97,7 @@ class FakeAssistantClient : public AssistantClient {
  private:
   void GetAndNotifyTimerStatus();
 
-  raw_ptr<GrpcServicesObserver<::assistant::api::OnAlarmTimerEventRequest>,
-          ExperimentalAsh>
+  raw_ptr<GrpcServicesObserver<::assistant::api::OnAlarmTimerEventRequest>>
       timer_observer_;
 };
 

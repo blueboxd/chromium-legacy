@@ -25,13 +25,20 @@ class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
   static void TearDown();
   static void ResetForTesting();
 
-  explicit MockOptimizationGuideKeyedService(
-      content::BrowserContext* browser_context);
+  MockOptimizationGuideKeyedService();
   ~MockOptimizationGuideKeyedService() override;
+
+  void Shutdown() override;
 
   MOCK_METHOD(void,
               RegisterOptimizationTypes,
               (const std::vector<optimization_guide::proto::OptimizationType>&),
+              (override));
+  MOCK_METHOD(optimization_guide::OptimizationGuideDecision,
+              CanApplyOptimization,
+              (const GURL&,
+               optimization_guide::proto::OptimizationType,
+               optimization_guide::OptimizationMetadata*),
               (override));
   MOCK_METHOD(void,
               CanApplyOptimization,
@@ -47,8 +54,13 @@ class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
            optimization_types,
        optimization_guide::proto::RequestContext request_context,
        optimization_guide::OnDemandOptimizationGuideDecisionRepeatingCallback
-           callback),
+           callback,
+       optimization_guide::proto::RequestContextMetadata*
+           request_context_metadata),
       (override));
+  MOCK_METHOD(std::unique_ptr<Session>,
+              StartSession,
+              (optimization_guide::proto::ModelExecutionFeature feature));
   MOCK_METHOD(
       void,
       ExecuteModel,
@@ -59,9 +71,31 @@ class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
               ShouldFeatureBeCurrentlyEnabledForUser,
               (optimization_guide::proto::ModelExecutionFeature),
               (const));
+  MOCK_METHOD(bool,
+              ShouldFeatureBeCurrentlyAllowedForLogging,
+              (optimization_guide::proto::ModelExecutionFeature feature),
+              (const));
   MOCK_METHOD(void,
               UploadModelQualityLogs,
               (std::unique_ptr<optimization_guide::ModelQualityLogEntry>));
+  MOCK_METHOD(void,
+              AddObserverForOptimizationTargetModel,
+              (optimization_guide::proto::OptimizationTarget,
+               const std::optional<optimization_guide::proto::Any>&,
+               optimization_guide::OptimizationTargetModelObserver*),
+              (override));
+  MOCK_METHOD(void,
+              RemoveObserverForOptimizationTargetModel,
+              (optimization_guide::proto::OptimizationTarget,
+               optimization_guide::OptimizationTargetModelObserver*),
+              (override));
+
+  MOCK_METHOD(void,
+              OnNavigationStartOrRedirect,
+              (OptimizationGuideNavigationData*),
+              (override));
+
+  MOCK_METHOD(void, OnNavigationFinish, (const std::vector<GURL>&), (override));
 };
 
 #endif  // CHROME_BROWSER_OPTIMIZATION_GUIDE_MOCK_OPTIMIZATION_GUIDE_KEYED_SERVICE_H_

@@ -42,9 +42,6 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "third_party/cros_system_api/mojo/service_constants.h"
 
-using chromeos::mojo_service_manager::mojom::ErrorOrServiceState;
-using chromeos::mojo_service_manager::mojom::ServiceState;
-
 namespace media {
 
 namespace {
@@ -102,9 +99,9 @@ void CreateEnableDisableFile(const std::string& enable_path,
 }
 
 std::string GenerateRandomToken() {
-  char random_bytes[16];
-  base::RandBytes(random_bytes, 16);
-  return base::HexEncode(random_bytes, 16);
+  uint8_t random_bytes[16];
+  base::RandBytes(random_bytes);
+  return base::HexEncode(random_bytes);
 }
 
 // Waits until |raw_socket_fd| is readable.  We signal |raw_cancel_fd| when we
@@ -242,7 +239,7 @@ void CameraHalDispatcherImpl::TryConnectToCameraService() {
 
   mojo::PendingRemote<cros::mojom::CrosCameraService> camera_service;
   ash::mojo_service_manager::GetServiceManagerProxy()->Request(
-      chromeos::mojo_services::kCrosCameraService, absl::nullopt,
+      chromeos::mojo_services::kCrosCameraService, std::nullopt,
       camera_service.InitWithNewPipeAndPassReceiver().PassPipe());
   proxy_task_runner_->PostTask(
       FROM_HERE,
@@ -679,7 +676,8 @@ void CameraHalDispatcherImpl::GetCameraSWPrivacySwitchStateOnProxyThread(
         callback) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
   if (!camera_service_.is_bound()) {
-    LOG(ERROR) << "Camera HAL server is not registered";
+    LOG(ERROR) << "CameraHalDispatcherImpl has not connected to cros_camera "
+                  "service yet.";
     std::move(callback).Run(cros::mojom::CameraPrivacySwitchState::UNKNOWN);
     return;
   }
@@ -690,7 +688,8 @@ void CameraHalDispatcherImpl::SetCameraSWPrivacySwitchStateOnProxyThread(
     cros::mojom::CameraPrivacySwitchState state) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
   if (!camera_service_.is_bound()) {
-    LOG(ERROR) << "Camera HAL server is not registered";
+    LOG(ERROR) << "CameraHalDispatcherImpl has not connected to cros_camera "
+                  "service yet.";
     return;
   }
   camera_service_->SetCameraSWPrivacySwitchState(state);
@@ -1091,13 +1090,37 @@ bool CameraClientObserver::WaitForCameraModuleReadyForTesting() {
 }
 
 bool CameraHalDispatcherImpl::WaitForServiceReadyForTesting() {
+  CameraClientObserver* observer = nullptr;
+  base::WaitableEvent got_chrome_client;
+  proxy_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &CameraHalDispatcherImpl::GetChromeClientObserverForTesting,
+          base::Unretained(this), &got_chrome_client, &observer));
+  got_chrome_client.Wait();
+  if (!observer) {
+    LOG(ERROR) << "CameraHalDelegate hasn't registered yet.";
+    return false;
+  }
+  // In VCD unittests, every test case will block the main thread and
+  // VCDFactoryChromeOS is also released on this thread after all test cases are
+  // finished. In this case, CameraHalDelegate outlives the executed time of
+  // this function. Therefore, accessing |observer| is safe.
+  return observer->WaitForCameraModuleReadyForTesting();  // IN-TEST
+}
+
+void CameraHalDispatcherImpl::GetChromeClientObserverForTesting(
+    base::WaitableEvent* got_chrome_client,
+    CameraClientObserver** observer) {
+  CHECK(proxy_task_runner_->BelongsToCurrentThread());
+
   for (CameraClientObserver* client_observer : client_observers_) {
     if (client_observer->GetType() == cros::mojom::CameraClientType::CHROME) {
-      return client_observer->WaitForCameraModuleReadyForTesting();  // IN-TEST
+      *observer = client_observer;
+      break;
     }
   }
-  LOG(ERROR) << "CameraHalDelegate hasn't registered yet.";
-  return false;
+  got_chrome_client->Signal();
 }
 
 }  // namespace media

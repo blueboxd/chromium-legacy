@@ -14,10 +14,6 @@
 - (void)didSelectCountry:(NSString*)country;
 
 // Notifies the class that conforms this delegate to set that whether the
-// name data is required or not.
-- (void)setNameRequired:(BOOL)nameRequired;
-
-// Notifies the class that conforms this delegate to set that whether the
 // address line 1 data is required or not.
 - (void)setLine1Required:(BOOL)line1Required;
 
@@ -34,7 +30,6 @@
 - (void)setZipRequired:(BOOL)zipRequired;
 
 // Notifies the class that conforms this delegate to set the corresponding data.
-- (void)setHonorificPrefix:(NSString*)honorificPrefix;
 - (void)setCompanyName:(NSString*)companyName;
 - (void)setFullName:(NSString*)fullName;
 - (void)setHomeAddressLine1:(NSString*)homeAddressLine1;

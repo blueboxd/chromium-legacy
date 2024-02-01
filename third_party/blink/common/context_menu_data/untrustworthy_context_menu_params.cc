@@ -14,6 +14,7 @@ UntrustworthyContextMenuParams::UntrustworthyContextMenuParams()
       x(0),
       y(0),
       has_image_contents(false),
+      is_image_media_plugin_document(false),
       media_flags(0),
       spellcheck_enabled(false),
       is_editable(false),
@@ -52,6 +53,7 @@ void UntrustworthyContextMenuParams::Assign(
   unfiltered_link_url = other.unfiltered_link_url;
   src_url = other.src_url;
   has_image_contents = other.has_image_contents;
+  is_image_media_plugin_document = other.is_image_media_plugin_document;
   media_flags = other.media_flags;
   selection_text = other.selection_text;
   title_text = other.title_text;

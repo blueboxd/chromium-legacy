@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/promos_manager/promos_manager.h"
+#import "ios/chrome/browser/promos_manager/model/promos_manager.h"
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -17,13 +17,11 @@
 namespace ios {
 namespace provider {
 
-// Whether the feature flag is enabled on runs that are not the first run.
-// TODO(b/306576460): Update this method's name to make it clearer what is
-// enabled or not.
-bool IsChoiceEnabled();
-
-// Whether the feature flag is enabled for the first run.
-bool IsSearchEngineChoiceScreenEnabledFre();
+// Returns true if the search engine choice view
+// should by default be skipped. Note that even in a target where this function
+// returns `false`, that's just a default, and individual tests may still enable
+// this view.
+bool DisableDefaultSearchEngineChoice();
 
 }  // namespace provider
 }  // namespace ios

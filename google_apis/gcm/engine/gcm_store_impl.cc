@@ -4,6 +4,7 @@
 
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -16,7 +17,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
@@ -188,7 +188,7 @@ std::string ParseInstanceIDKey(const std::string& key) {
 // Note: leveldb::Slice keeps a pointer to the data in |s|, which must therefore
 // outlive the slice.
 // For example: MakeSlice(MakeOutgoingKey(x)) is invalid.
-leveldb::Slice MakeSlice(const base::StringPiece& s) {
+leveldb::Slice MakeSlice(std::string_view s) {
   return leveldb::Slice(s.begin(), s.size());
 }
 
@@ -358,7 +358,7 @@ void GCMStoreImpl::Backend::Load(StoreOpenMode open_mode,
                                  LoadCallback callback) {
   std::unique_ptr<LoadResult> result(new LoadResult());
   LoadStatus load_status = OpenStoreAndLoadData(open_mode, result.get());
-  UMA_HISTOGRAM_ENUMERATION("GCM.LoadStatus", load_status, LOAD_STATUS_COUNT);
+
   if (load_status != LOADING_SUCCEEDED) {
     result->Reset();
     result->store_does_not_exist = (load_status == STORE_DOES_NOT_EXIST);

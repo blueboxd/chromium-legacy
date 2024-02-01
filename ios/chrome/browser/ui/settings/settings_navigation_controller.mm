@@ -15,6 +15,7 @@
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/browser/ui/password_check_referrer.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -47,6 +48,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/notifications/notifications_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
@@ -94,10 +96,11 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 @interface SettingsNavigationController () <
     ClearBrowsingDataCoordinatorDelegate,
     GoogleServicesSettingsCoordinatorDelegate,
-    PrivacyCoordinatorDelegate,
     ManageSyncSettingsCoordinatorDelegate,
+    NotificationsCoordinatorDelegate,
     PasswordDetailsCoordinatorDelegate,
     PasswordsCoordinatorDelegate,
+    PrivacyCoordinatorDelegate,
     PrivacySafeBrowsingCoordinatorDelegate,
     SafetyCheckCoordinatorDelegate,
     UIAdaptivePresentationControllerDelegate,
@@ -135,6 +138,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 @property(nonatomic, strong)
     InactiveTabsSettingsCoordinator* inactiveTabsSettingsCoordinator;
 
+// Coordinator for the Notifications settings.
+@property(nonatomic, strong) NotificationsCoordinator* notificationsCoordinator;
 
 // Handler for Snackbar Commands.
 @property(nonatomic, weak) id<SnackbarCommands> snackbarCommandsHandler;
@@ -566,6 +571,20 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   return navigationController;
 }
 
++ (instancetype)
+    notificationsSettingsControllerForBrowser:(Browser*)browser
+                                     delegate:
+                                         (id<SettingsNavigationControllerDelegate>)
+                                             delegate {
+  SettingsNavigationController* navigationController =
+      [[SettingsNavigationController alloc]
+          initWithRootViewController:nil
+                             browser:browser
+                            delegate:delegate];
+  [navigationController showNotificationsSettings];
+  return navigationController;
+}
+
 #pragma mark - Lifecycle
 
 - (instancetype)initWithRootViewController:(UIViewController*)rootViewController
@@ -655,6 +674,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self stopPrivacySettingsCoordinator];
   [self stopInactiveTabSettingsCoordinator];
   [self stopPasswordDetailsCoordinator];
+  [self stopNotificationsCoordinator];
 
   // Reset the delegate to prevent any queued transitions from attempting to
   // close the settings.
@@ -736,10 +756,12 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   // users migrated to kSignin in phase 3. See ConsentLevel::kSync
   // documentation for details.
   SyncSettingsAccountState accountState =
-      SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState())
-              ->HasSyncConsent()
-          ? SyncSettingsAccountState::kSyncing
-          : SyncSettingsAccountState::kSignedIn;
+      (base::FeatureList::IsEnabled(
+           syncer::kReplaceSyncPromosWithSignInPromos) &&
+       !SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState())
+            ->HasSyncConsent())
+          ? SyncSettingsAccountState::kSignedIn
+          : SyncSettingsAccountState::kSyncing;
   self.manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
       initWithBaseNavigationController:self
                                browser:self.browser
@@ -883,6 +905,13 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.passwordDetailsCoordinator = nil;
 }
 
+// Stops the underlying NotificationsCoordinator.
+- (void)stopNotificationsCoordinator {
+  [self.notificationsCoordinator stop];
+  self.notificationsCoordinator.delegate = nil;
+  self.notificationsCoordinator = nil;
+}
+
 #pragma mark - GoogleServicesSettingsCoordinatorDelegate
 
 - (void)googleServicesSettingsCoordinatorDidRemove:
@@ -960,6 +989,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (PrivacySafeBrowsingCoordinator*)coordinator {
   DCHECK_EQ(self.privacySafeBrowsingCoordinator, coordinator);
   [self stopPrivacySafeBrowsingCoordinator];
+}
+
+#pragma mark - NotificationsCoordinatorDelegate
+
+- (void)notificationsCoordinatorDidRemove:
+    (NotificationsCoordinator*)coordinator {
+  DCHECK_EQ(self.notificationsCoordinator, coordinator);
+  [self stopNotificationsCoordinator];
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate
@@ -1175,6 +1212,15 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   ContentSettingsTableViewController* controller =
       [[ContentSettingsTableViewController alloc] initWithBrowser:self.browser];
   [self pushViewController:controller animated:YES];
+}
+
+- (void)showNotificationsSettings {
+  [self stopNotificationsCoordinator];
+  self.notificationsCoordinator = [[NotificationsCoordinator alloc]
+      initWithBaseNavigationController:self
+                               browser:_browser];
+  self.notificationsCoordinator.delegate = self;
+  [self.notificationsCoordinator start];
 }
 
 @end

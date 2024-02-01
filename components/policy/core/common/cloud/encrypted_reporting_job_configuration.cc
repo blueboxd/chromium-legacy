@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/encrypted_reporting_job_configuration.h"
 
 #include <initializer_list>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -16,7 +17,6 @@
 #include "components/reporting/util/encrypted_reporting_json_keys.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 
@@ -167,6 +167,7 @@ EncryptedReportingJobConfiguration::EncryptedReportingJobConfiguration(
   generation_id_ = -1;
   sequence_id_ = -1;
   if (encrypted_record_list != nullptr && !encrypted_record_list->empty()) {
+    record_count_ = encrypted_record_list->size();
     const auto sequence_information_it =
         std::prev(encrypted_record_list->cend());
     const auto* const sequence_information =
@@ -200,7 +201,7 @@ EncryptedReportingJobConfiguration::~EncryptedReportingJobConfiguration() {
     std::move(callback_).Run(/*job=*/nullptr,
                              DeviceManagementStatus::DM_STATUS_REQUEST_FAILED,
                              /*response_code=*/418,
-                             /*response_body=*/absl::nullopt);
+                             /*response_body=*/std::nullopt);
   }
 }
 
@@ -225,6 +226,10 @@ base::TimeDelta EncryptedReportingJobConfiguration::WhenIsAllowedToProceed()
   // Now pick up the state.
   const auto* const state =
       AccessState(priority_, generation_id_, sequence_id_);
+  // If there are no records, allow upload (it will not overload the server).
+  if (record_count_ == 0u) {
+    return base::TimeDelta();  // 0 - allowed right away.
+  }
   // Use and update previously recorded state, base upload decision on it.
   if (state->last_sequence_id > sequence_id_) {
     // Sequence id decreased, the upload is outdated, reject it forever.
@@ -254,7 +259,7 @@ void EncryptedReportingJobConfiguration::CancelNotAllowedJob() {
   std::move(callback_).Run(
       /*job=*/nullptr, DeviceManagementStatus::DM_STATUS_REQUEST_FAILED,
       /*response_code=*/DeviceManagementService::kTooManyRequests,
-      /*response_body=*/absl::nullopt);
+      /*response_body=*/std::nullopt);
 }
 
 void EncryptedReportingJobConfiguration::AccountForAllowedJob() {

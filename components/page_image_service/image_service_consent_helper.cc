@@ -25,7 +25,7 @@ void RunConsentThrottleCallback(
 }
 
 PageImageServiceConsentStatus ConsentStatusToUmaStatus(
-    absl::optional<bool> consent_status) {
+    std::optional<bool> consent_status) {
   if (!consent_status) {
     return PageImageServiceConsentStatus::kTimedOut;
   }
@@ -76,7 +76,7 @@ void ImageServiceConsentHelper::EnqueueRequest(
     return;
   }
 
-  absl::optional<bool> consent_status = GetConsentStatus();
+  std::optional<bool> consent_status = GetConsentStatus();
   if (consent_status.has_value()) {
     std::move(callback).Run(*consent_status
                                 ? PageImageServiceConsentStatus::kSuccess
@@ -98,19 +98,24 @@ void ImageServiceConsentHelper::OnStateChanged(
   CHECK_EQ(sync_service_, sync_service);
   CHECK(base::FeatureList::IsEnabled(kImageServiceObserveSyncDownloadStatus));
 
-  absl::optional<bool> consent_status = GetConsentStatus();
+  std::optional<bool> consent_status = GetConsentStatus();
   if (!consent_status.has_value()) {
     return;
   }
 
-  for (auto& request_callback_with_client_id : enqueued_request_callbacks_) {
+  request_processing_timer_.Stop();
+
+  // The request callbacks can modify the vector while running. Swap the vector
+  // onto the stack to prevent crashing. https://crbug.com/1472360.
+  std::vector<std::pair<base::OnceCallback<void(PageImageServiceConsentStatus)>,
+                        mojom::ClientId>>
+      callbacks;
+  std::swap(callbacks, enqueued_request_callbacks_);
+  for (auto& request_callback_with_client_id : callbacks) {
     std::move(request_callback_with_client_id.first)
         .Run(*consent_status ? PageImageServiceConsentStatus::kSuccess
                              : PageImageServiceConsentStatus::kFailure);
   }
-
-  enqueued_request_callbacks_.clear();
-  request_processing_timer_.Stop();
 }
 
 void ImageServiceConsentHelper::OnSyncShutdown(
@@ -119,16 +124,21 @@ void ImageServiceConsentHelper::OnSyncShutdown(
   CHECK(base::FeatureList::IsEnabled(kImageServiceObserveSyncDownloadStatus));
 
   sync_service_observer_.Reset();
+  sync_service_ = nullptr;
 }
 
-absl::optional<bool> ImageServiceConsentHelper::GetConsentStatus() {
+std::optional<bool> ImageServiceConsentHelper::GetConsentStatus() {
   CHECK(base::FeatureList::IsEnabled(kImageServiceObserveSyncDownloadStatus));
+
+  if (!sync_service_) {
+    return false;
+  }
 
   syncer::SyncService::ModelTypeDownloadStatus download_status =
       sync_service_->GetDownloadStatusFor(model_type_);
   switch (download_status) {
     case syncer::SyncService::ModelTypeDownloadStatus::kWaitingForUpdates:
-      return absl::nullopt;
+      return std::nullopt;
     case syncer::SyncService::ModelTypeDownloadStatus::kUpToDate:
       return true;
     case syncer::SyncService::ModelTypeDownloadStatus::kError:
@@ -137,21 +147,29 @@ absl::optional<bool> ImageServiceConsentHelper::GetConsentStatus() {
 }
 
 void ImageServiceConsentHelper::OnTimeoutExpired() {
-  for (auto& request_callback_with_client_id : enqueued_request_callbacks_) {
+  // The request callbacks can modify the vector while running. Swap the vector
+  // onto the stack to prevent crashing. https://crbug.com/1472360.
+  std::vector<std::pair<base::OnceCallback<void(PageImageServiceConsentStatus)>,
+                        mojom::ClientId>>
+      callbacks;
+  std::swap(callbacks, enqueued_request_callbacks_);
+  for (auto& request_callback_with_client_id : callbacks) {
     // Report consent status on timeout for each request to compare against the
     // number of all requests.
+    PageImageServiceConsentStatus consent_status =
+        ConsentStatusToUmaStatus(GetConsentStatus());
     base::UmaHistogramEnumeration("PageImageService.ConsentStatusOnTimeout",
-                                  ConsentStatusToUmaStatus(GetConsentStatus()));
-    sync_service_->RecordReasonIfWaitingForUpdates(
-        model_type_, kConsentTimeoutReasonHistogramName);
-    sync_service_->RecordReasonIfWaitingForUpdates(
-        model_type_,
-        std::string(kConsentTimeoutReasonHistogramName) + "." +
-            ClientIdToString(request_callback_with_client_id.second));
-    std::move(request_callback_with_client_id.first)
-        .Run(PageImageServiceConsentStatus::kTimedOut);
+                                  consent_status);
+    if (sync_service_) {
+      sync_service_->RecordReasonIfWaitingForUpdates(
+          model_type_, kConsentTimeoutReasonHistogramName);
+      sync_service_->RecordReasonIfWaitingForUpdates(
+          model_type_,
+          std::string(kConsentTimeoutReasonHistogramName) + "." +
+              ClientIdToString(request_callback_with_client_id.second));
+    }
+    std::move(request_callback_with_client_id.first).Run(consent_status);
   }
-  enqueued_request_callbacks_.clear();
 }
 
 }  // namespace page_image_service

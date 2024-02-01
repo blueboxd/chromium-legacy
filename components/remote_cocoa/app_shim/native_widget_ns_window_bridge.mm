@@ -447,7 +447,7 @@ void NativeWidgetNSWindowBridge::InitWindow(
   pending_restoration_data_ = params->state_restoration_data;
 
   if (params->is_headless_mode_window)
-    headless_mode_window_ = absl::make_optional<HeadlessModeWindow>();
+    headless_mode_window_ = std::make_optional<HeadlessModeWindow>();
 
   [window_ setIsHeadless:params->is_headless_mode_window];
 
@@ -509,13 +509,13 @@ void NativeWidgetNSWindowBridge::SetInitialBounds(
     adjusted_bounds = gfx::Rect(
         gfx::Point(), gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect)));
   }
-  SetBounds(adjusted_bounds, minimum_content_size, absl::nullopt);
+  SetBounds(adjusted_bounds, minimum_content_size, std::nullopt);
 }
 
 void NativeWidgetNSWindowBridge::SetBounds(
     const gfx::Rect& new_bounds,
     const gfx::Size& minimum_content_size,
-    const absl::optional<gfx::Size>& maximum_content_size) {
+    const std::optional<gfx::Size>& maximum_content_size) {
   // -[NSWindow contentMinSize] and [NSWindow contentMaxSize] are only checked
   // by Cocoa for user-initiated resizes. This is not what toolkit-views
   // expects, so clamp.
@@ -565,7 +565,7 @@ void NativeWidgetNSWindowBridge::SetSize(
   // which -[NSWindow setContentSize:] would do).
   gfx::Rect new_window_bounds = gfx::ScreenRectFromNSRect([window_ frame]);
   new_window_bounds.set_size(new_size);
-  SetBounds(new_window_bounds, minimum_content_size, absl::nullopt);
+  SetBounds(new_window_bounds, minimum_content_size, std::nullopt);
 }
 
 void NativeWidgetNSWindowBridge::SetSizeAndCenter(
@@ -573,7 +573,7 @@ void NativeWidgetNSWindowBridge::SetSizeAndCenter(
     const gfx::Size& minimum_content_size) {
   gfx::Rect new_window_bounds = gfx::ScreenRectFromNSRect([window_ frame]);
   new_window_bounds.set_size(GetWindowSizeForClientSize(window_, content_size));
-  SetBounds(new_window_bounds, minimum_content_size, absl::nullopt);
+  SetBounds(new_window_bounds, minimum_content_size, std::nullopt);
 
   // Note that this is not the precise center of screen, but it is the standard
   // location for windows like dialogs to appear on screen for Mac.
@@ -1408,6 +1408,8 @@ bool NativeWidgetNSWindowBridge::ShouldWaitInPreCommit() {
     return false;
   if (!bridged_view_)
     return false;
+  if (content_dip_size_.IsEmpty())
+    return false;
   // Suppress synchronous CA transactions during AppKit fullscreen transition
   // since there is no need for updates during such transition.
   // Re-layout and re-paint will be done after the transition. See
@@ -1766,12 +1768,13 @@ void NativeWidgetNSWindowBridge::ShowAsModalSheet() {
   NSWindow* parent_window = parent_->ns_window();
   DCHECK(parent_window);
 
-  // -beginSheet: does not retain |modalDelegate| (and we would not want it to).
-  // Since |this| may destroy [window_ delegate], use |window_| itself as the
-  // delegate, which will forward to ViewsNSWindowDelegate if |this| is still
-  // alive (i.e. it has not set the window delegate to nil).
-  // TODO(https://crbug.com/1422060): Migrate to `[NSWindow
-  // beginSheet:completionHandler:]` instead of this method.
+  // Don't show a sheet twice. If a sheet is shown twice but endSheet: only
+  // once it will leave a dangling blank sheet. This happened when the browser
+  // is restored from minimization.
+  if (parent_window.attachedSheet == window_) {
+    return;
+  }
+
   auto begin_sheet_closure = base::BindOnce(^{
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

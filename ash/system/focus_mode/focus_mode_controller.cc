@@ -9,10 +9,13 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/do_not_disturb_notification_controller.h"
+#include "ash/system/focus_mode/focus_mode_histogram_names.h"
+#include "ash/system/focus_mode/focus_mode_session.h"
 #include "ash/system/focus_mode/focus_mode_tray.h"
 #include "ash/system/focus_mode/focus_mode_util.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -28,15 +31,52 @@ FocusModeController* g_instance = nullptr;
 // The default Focus Mode session duration.
 constexpr base::TimeDelta kDefaultSessionDuration = base::Minutes(25);
 
-// The amount of time to extend the focus session by when the focus session
-// duration is extended during a currently active focus session.
-constexpr base::TimeDelta kExtendDuration = base::Minutes(10);
-
 bool IsQuietModeOnSetByFocusMode() {
   auto* message_center = message_center::MessageCenter::Get();
   return message_center->IsQuietMode() &&
          message_center->GetLastQuietModeChangeSourceType() ==
              message_center::QuietModeSourceType::kFocusMode;
+}
+
+// Updates the notification if DND was turned on by the focus mode.
+void MaybeUpdateDndNotification() {
+  if (!IsQuietModeOnSetByFocusMode()) {
+    return;
+  }
+
+  if (auto* notification_controller =
+          DoNotDisturbNotificationController::Get()) {
+    notification_controller->MaybeUpdateNotification();
+  }
+}
+
+void RecordInitialDurationHistogram(base::TimeDelta session_duration) {
+  base::UmaHistogramCustomTimes(
+      /*name=*/focus_mode_histogram_names::
+          kInitialDurationOnSessionStartsHistogramName,
+      /*sample=*/session_duration,
+      /*min=*/focus_mode_util::kMinimumDuration,
+      /*max=*/focus_mode_util::kMaximumDuration, /*buckets=*/50);
+}
+
+void RecordStartSessionSourceHistogram(
+    focus_mode_histogram_names::ToggleSource source) {
+  switch (source) {
+    case focus_mode_histogram_names::ToggleSource::kFocusPanel:
+      base::UmaHistogramEnumeration(
+          /*name=*/focus_mode_histogram_names::kStartSessionSourceHistogramName,
+          /*sample=*/focus_mode_histogram_names::StartSessionSource::
+              kFocusPanel);
+      break;
+    case focus_mode_histogram_names::ToggleSource::kFeaturePod:
+      base::UmaHistogramEnumeration(
+          /*name=*/focus_mode_histogram_names::kStartSessionSourceHistogramName,
+          /*sample=*/focus_mode_histogram_names::StartSessionSource::
+              kFeaturePod);
+      break;
+    default:
+      break;
+  }
 }
 
 }  // namespace
@@ -51,10 +91,7 @@ FocusModeController::FocusModeController()
 
 FocusModeController::~FocusModeController() {
   Shell::Get()->session_controller()->RemoveObserver(this);
-
-  if (in_focus_session_) {
-    ToggleFocusMode();
-  }
+  ResetFocusSession();
 
   CHECK_EQ(g_instance, this);
   g_instance = nullptr;
@@ -64,6 +101,12 @@ FocusModeController::~FocusModeController() {
 FocusModeController* FocusModeController::Get() {
   CHECK(g_instance);
   return g_instance;
+}
+
+// static
+bool FocusModeController::CanExtendSessionDuration(
+    const FocusModeSession::Snapshot& snapshot) {
+  return snapshot.session_duration < focus_mode_util::kMaximumDuration;
 }
 
 // static
@@ -86,46 +129,96 @@ void FocusModeController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FocusModeController::ToggleFocusMode() {
-  SetEnabled(!in_focus_session_);
+void FocusModeController::ToggleFocusMode(
+    focus_mode_histogram_names::ToggleSource source) {
+  if (in_focus_session()) {
+    base::UmaHistogramEnumeration(
+        /*name=*/focus_mode_histogram_names::
+            kToggleEndButtonDuringSessionHistogramName,
+        /*sample=*/source);
+    ResetFocusSession();
+    return;
+  }
+  StartFocusSession(source);
 }
 
 void FocusModeController::OnActiveUserSessionChanged(
     const AccountId& account_id) {
-  if (in_focus_session_) {
-    ToggleFocusMode();
-  }
-
+  ResetFocusSession();
   UpdateFromUserPrefs();
 }
 
-void FocusModeController::ExtendActiveSessionDuration() {
-  CHECK(in_focus_session_);
-  SetSessionDuration(session_duration_ + kExtendDuration);
+void FocusModeController::ExtendSessionDuration() {
+  CHECK(current_session_);
+  const base::Time now = base::Time::Now();
+  // We call this with `now` to make sure that all the actions taken are synced
+  // to the same time, since the state depends on `now`.
+  current_session_->ExtendSession(now);
 
-  // Only update the notification if DND was turned on by the focus mode.
-  if (!IsQuietModeOnSetByFocusMode()) {
-    return;
+  const auto session_snapshot = current_session_->GetSnapshot(now);
+  for (auto& observer : observers_) {
+    observer.OnActiveSessionDurationChanged(session_snapshot);
   }
 
-  if (auto* notification_controller =
-          DoNotDisturbNotificationController::Get()) {
-    notification_controller->MaybeUpdateNotification();
+  if (!timer_.IsRunning()) {
+    // Start the `session_duration_` timer again.
+    timer_.Start(FROM_HERE, base::Seconds(1), this,
+                 &FocusModeController::OnTimerTick, base::TimeTicks::Now());
+
+    for (auto& observer : observers_) {
+      observer.OnFocusModeChanged(/*in_focus_session=*/true);
+    }
+  }
+
+  MaybeUpdateDndNotification();
+}
+
+void FocusModeController::ResetFocusSession() {
+  if (timer_.IsRunning()) {
+    timer_.Stop();
+  }
+
+  SetFocusTrayVisibility(false);
+
+  if (IsQuietModeOnSetByFocusMode()) {
+    message_center::MessageCenter::Get()->SetQuietMode(
+        false, message_center::QuietModeSourceType::kFocusMode);
+  }
+
+  const bool was_in_focus_session = in_focus_session();
+  current_session_.reset();
+
+  if (was_in_focus_session) {
+    for (auto& observer : observers_) {
+      observer.OnFocusModeChanged(/*in_focus_session=*/false);
+    }
   }
 }
 
-void FocusModeController::SetSessionDuration(
-    const base::TimeDelta& new_session_duration) {
-  const base::TimeDelta valid_new_session_duration =
-      std::clamp(new_session_duration, focus_mode_util::kMinimumDuration,
-                 focus_mode_util::kMaximumDuration);
-  if (session_duration_ == valid_new_session_duration) {
+void FocusModeController::EnablePersistentEnding() {
+  // This is only used right now for when we click the tray icon to open the
+  // bubble during the ending moment. This prevents the bubble from being closed
+  // automatically.
+  if (!in_ending_moment()) {
     return;
   }
 
-  // Update `end_time_` only during an active focus session.
-  if (in_focus_session_) {
-    end_time_ += (valid_new_session_duration - session_duration_);
+  if (timer_.IsRunning()) {
+    timer_.Stop();
+  }
+  // Update the session to stay in the ending moment state.
+  current_session_->set_persistent_ending();
+}
+
+void FocusModeController::SetInactiveSessionDuration(
+    const base::TimeDelta& new_session_duration) {
+  CHECK(!in_focus_session());
+  const base::TimeDelta valid_new_session_duration =
+      std::clamp(new_session_duration, focus_mode_util::kMinimumDuration,
+                 focus_mode_util::kMaximumDuration);
+
+  if (session_duration_ == valid_new_session_duration) {
+    return;
   }
 
   // We do not immediately commit the change directly to the user prefs because
@@ -134,8 +227,40 @@ void FocusModeController::SetSessionDuration(
   session_duration_ = valid_new_session_duration;
 
   for (auto& observer : observers_) {
-    observer.OnSessionDurationChanged();
+    observer.OnInactiveSessionDurationChanged(session_duration_);
   }
+}
+
+bool FocusModeController::HasStartedSessionBefore() const {
+  // Since `kFocusModeDoNotDisturb` is always set whenever a focus session is
+  // started, we can use this as an indicator of if the user has ever started a
+  // focus session before.
+  if (PrefService* active_user_prefs =
+          Shell::Get()->session_controller()->GetActivePrefService()) {
+    return active_user_prefs->HasPrefPath(prefs::kFocusModeDoNotDisturb);
+  }
+  return false;
+}
+
+FocusModeSession::Snapshot FocusModeController::GetSnapshot(
+    const base::Time& now) const {
+  return current_session_ ? current_session_->GetSnapshot(now)
+                          : FocusModeSession::Snapshot{};
+}
+
+base::TimeDelta FocusModeController::GetSessionDuration() const {
+  return in_focus_session() ? current_session_->session_duration()
+                            : session_duration_;
+}
+
+base::Time FocusModeController::GetActualEndTime() const {
+  if (!current_session_) {
+    return base::Time();
+  }
+
+  return in_ending_moment() ? current_session_->end_time() +
+                                  focus_mode_util::kEndingMomentDuration
+                            : current_session_->end_time();
 }
 
 void FocusModeController::SetSelectedTask(const api::Task* task) {
@@ -158,77 +283,87 @@ void FocusModeController::CompleteTask() {
   SetSelectedTask(nullptr);
 }
 
-void FocusModeController::SetEnabled(bool enabled) {
-  if (in_focus_session_ == enabled) {
+void FocusModeController::TriggerEndingMomentImmediately() {
+  if (!in_focus_session()) {
     return;
   }
+  current_session_->set_end_time(base::Time::Now());
+  OnTimerTick();
+}
+
+void FocusModeController::StartFocusSession(
+    focus_mode_histogram_names::ToggleSource source) {
+  RecordInitialDurationHistogram(/*session_duration=*/session_duration_);
+  RecordStartSessionSourceHistogram(source);
+
+  current_session_ = FocusModeSession(session_duration_,
+                                      session_duration_ + base::Time::Now());
+
+  SaveSettingsToUserPrefs();
+
+  // Start timer for the specified `session_duration_`. Set `current_session_`
+  // before `SetQuietMode` called, because we may indirectly call
+  // `GetActualEndTime` to create a notification.
+  timer_.Start(FROM_HERE, base::Seconds(1), this,
+               &FocusModeController::OnTimerTick, base::TimeTicks::Now());
 
   auto* message_center = message_center::MessageCenter::Get();
   CHECK(message_center);
-
-  in_focus_session_ = enabled;
-  if (in_focus_session_) {
-    SaveSettingsToUserPrefs();
-
-    // Start timer for the specified `session_duration_`. Set `end_time_` before
-    // `SetQuietMode` called, because we may indirectly use `end_time_` to
-    // create a notification.
-    end_time_ = base::Time::Now() + session_duration_;
-    timer_.Start(FROM_HERE, base::Seconds(1), this,
-                 &FocusModeController::OnTimerTick, base::TimeTicks::Now());
-
-    // Only for the case DND is not enabled before starting a session and
-    // `turn_on_do_not_disturb_` is true, we set `QuietModeSourceType` with
-    // `kFocusMode` type.
-    if (!message_center->IsQuietMode() && turn_on_do_not_disturb_) {
-      message_center->SetQuietMode(
-          true, message_center::QuietModeSourceType::kFocusMode);
-    }
-
-    CloseSystemTrayBubble();
-    SetFocusTrayVisibility(true);
-  } else {
-    timer_.Stop();
-
-    SetFocusTrayVisibility(false);
-
-    if (IsQuietModeOnSetByFocusMode()) {
-      message_center->SetQuietMode(
-          false, message_center::QuietModeSourceType::kFocusMode);
-    }
-
-    // Reset the `session_duration_` as it may have been changed during the
-    // focus session.
-    session_duration_ = Shell::Get()
-                            ->session_controller()
-                            ->GetActivePrefService()
-                            ->GetTimeDelta(prefs::kFocusModeSessionDuration);
+  if (turn_on_do_not_disturb_ && !message_center->IsQuietMode()) {
+    // Only turn on DND if it is not enabled before starting a session and
+    // `turn_on_do_not_disturb_` is true.
+    message_center->SetQuietMode(
+        true, message_center::QuietModeSourceType::kFocusMode);
+  } else if (!turn_on_do_not_disturb_ && IsQuietModeOnSetByFocusMode()) {
+    // This is the case where a user toggles off DND in the focus panel before
+    // it has been switched off by the termination of the ending moment.
+    message_center->SetQuietMode(
+        false, message_center::QuietModeSourceType::kFocusMode);
+  } else if (turn_on_do_not_disturb_ && IsQuietModeOnSetByFocusMode()) {
+    // This can only happen if a new focus session is started during an ending
+    // moment. If the DND state is preserved (i.e. `turn_on_do_not_disturb_` is
+    // still true), then just update the notification.
+    MaybeUpdateDndNotification();
   }
+
+  CloseSystemTrayBubble();
+  SetFocusTrayVisibility(true);
 
   for (auto& observer : observers_) {
-    observer.OnFocusModeChanged(in_focus_session_);
+    observer.OnFocusModeChanged(/*in_focus_session=*/true);
   }
-}
-
-bool FocusModeController::HasStartedSessionBefore() const {
-  // Since `kFocusModeDoNotDisturb` is always set whenever a focus session is
-  // started, we can use this as an indicator of if the user has ever started a
-  // focus session before.
-  if (PrefService* active_user_prefs =
-          Shell::Get()->session_controller()->GetActivePrefService()) {
-    return active_user_prefs->HasPrefPath(prefs::kFocusModeDoNotDisturb);
-  }
-  return false;
 }
 
 void FocusModeController::OnTimerTick() {
-  if (in_focus_session_ && base::Time::Now() >= end_time_) {
-    ToggleFocusMode();
-    return;
-  }
+  CHECK(current_session_);
+  auto session_snapshot = current_session_->GetSnapshot(base::Time::Now());
+  switch (session_snapshot.state) {
+    case FocusModeSession::State::kOn:
+      for (auto& observer : observers_) {
+        observer.OnTimerTick(session_snapshot);
+      }
+      return;
+    case FocusModeSession::State::kEnding:
+      timer_.Stop();
 
-  for (auto& observer : observers_) {
-    observer.OnTimerTick();
+      // Set a timer to terminate the ending moment. If the focus tray bubble is
+      // open, the ending moment will exist until the bubble is closed.
+      if (!IsFocusTrayBubbleVisible()) {
+        timer_.Start(FROM_HERE, focus_mode_util::kEndingMomentDuration, this,
+                     &FocusModeController::ResetFocusSession,
+                     base::TimeTicks::Now());
+        MaybeUpdateDndNotification();
+      } else {
+        current_session_->set_persistent_ending();
+      }
+
+      for (auto& observer : observers_) {
+        observer.OnFocusModeChanged(/*in_focus_session=*/false);
+      }
+      return;
+    case FocusModeSession::State::kOff:
+      ResetFocusSession();
+      return;
   }
 }
 
@@ -274,9 +409,24 @@ void FocusModeController::SetFocusTrayVisibility(bool visible) {
   for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
     if (auto* status_area_widget =
             root_window_controller->GetStatusAreaWidget()) {
-      status_area_widget->focus_mode_tray()->SetVisiblePreferred(visible);
+      auto* tray = status_area_widget->focus_mode_tray();
+      if (!visible) {
+        tray->CloseBubble();
+      }
+      tray->SetVisiblePreferred(visible);
     }
   }
+}
+
+bool FocusModeController::IsFocusTrayBubbleVisible() const {
+  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
+    if (root_window_controller->GetStatusAreaWidget()
+            ->focus_mode_tray()
+            ->GetBubbleView()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace ash

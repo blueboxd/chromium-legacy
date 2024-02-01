@@ -78,6 +78,12 @@ id<GREYMatcher> ReauthenticationController();
 // Matcher for the TableView inside the Password Settings UI.
 id<GREYMatcher> PasswordSettingsTableView();
 
+// Matcher for the Password Details View.
+id<GREYMatcher> PasswordDetailsTableViewMatcher();
+
+// Matcher for the Share button in password details view.
+id<GREYMatcher> PasswordDetailsShareButtonMatcher();
+
 // GREYElementInteraction* for the item on the password issues list
 // with the given `matcher`. It scrolls in `direction` if necessary to ensure
 // that the matched item is interactable.
@@ -94,25 +100,27 @@ GREYElementInteraction* GetInteractionForPasswordIssueEntry(
     NSString* username,
     NSString* compromised_description = nil);
 
-// Saves a password form in the store.
-void SavePasswordForm(NSString* password = kDefaultPassword,
-                      NSString* username = kDefaultUsername,
-                      NSString* origin = kDefaultSite);
+// Saves a password form in the profile store.
+void SavePasswordFormToProfileStore(NSString* password = kDefaultPassword,
+                                    NSString* username = kDefaultUsername,
+                                    NSString* origin = kDefaultSite);
 
 // Saves a password form in the account store.
 void SavePasswordFormToAccountStore(NSString* password = kDefaultPassword,
                                     NSString* username = kDefaultUsername,
                                     NSString* origin = kDefaultSite);
 
-// Saves a compromised password form in the store.
-void SaveCompromisedPasswordForm(NSString* password = kDefaultPassword,
-                                 NSString* username = kDefaultUsername,
-                                 NSString* origin = kDefaultSite);
+// Saves a compromised password form in the profile store.
+void SaveCompromisedPasswordFormToProfileStore(
+    NSString* password = kDefaultPassword,
+    NSString* username = kDefaultUsername,
+    NSString* origin = kDefaultSite);
 
-// Saves a muted compromised password form in the store.
-void SaveMutedCompromisedPasswordForm(NSString* origin = kDefaultSite,
-                                      NSString* username = kDefaultUsername,
-                                      NSString* password = kDefaultPassword);
+// Saves a muted compromised password form in the profile store.
+void SaveMutedCompromisedPasswordFormToProfileStore(
+    NSString* origin = kDefaultSite,
+    NSString* username = kDefaultUsername,
+    NSString* password = kDefaultPassword);
 
 // Opens the Password Manager page from the NTP.
 void OpenPasswordManager();

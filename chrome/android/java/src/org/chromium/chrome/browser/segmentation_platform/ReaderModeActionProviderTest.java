@@ -30,6 +30,8 @@ import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.dom_distiller.DistillerHeuristicsType;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
@@ -38,8 +40,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.segmentation_platform.ContextualPageActionController.ActionProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 
@@ -150,7 +150,7 @@ public class ReaderModeActionProviderTest {
     public void testUsingReaderModeManagerRateLimiting() {
         TestValues testValues = new TestValues();
         testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS,
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE,
                 "reader_mode_session_rate_limiting",
                 "true");
         FeatureList.setTestValues(testValues);
@@ -168,7 +168,7 @@ public class ReaderModeActionProviderTest {
     public void testUsingReaderModeManagerRateLimiting_shouldIgnoreTabsWithNoManager() {
         TestValues testValues = new TestValues();
         testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS,
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE,
                 "reader_mode_session_rate_limiting",
                 "true");
         FeatureList.setTestValues(testValues);
@@ -187,7 +187,7 @@ public class ReaderModeActionProviderTest {
     public void testProviderDelaysSettingOnShown() throws TimeoutException {
         TestValues testValues = new TestValues();
         testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS,
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE,
                 "reader_mode_session_rate_limiting",
                 "true");
         FeatureList.setTestValues(testValues);
@@ -207,7 +207,7 @@ public class ReaderModeActionProviderTest {
     public void testProviderSetsOnShownAfterDelay() throws TimeoutException {
         TestValues testValues = new TestValues();
         testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS,
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE,
                 "reader_mode_session_rate_limiting",
                 "true");
         FeatureList.setTestValues(testValues);
@@ -227,7 +227,7 @@ public class ReaderModeActionProviderTest {
     public void testProviderSetsOnShownAfterDelay_ExceptIfTabIsDestroyed() throws TimeoutException {
         TestValues testValues = new TestValues();
         testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS,
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE,
                 "reader_mode_session_rate_limiting",
                 "true");
         FeatureList.setTestValues(testValues);

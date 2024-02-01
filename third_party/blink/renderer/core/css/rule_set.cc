@@ -286,7 +286,6 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoFileSelectorButton:
         case CSSSelector::kPseudoHost:
         case CSSSelector::kPseudoHostContext:
-        case CSSSelector::kPseudoSpatialNavigationInterest:
         case CSSSelector::kPseudoSlotted:
         case CSSSelector::kPseudoSelectorFragmentAnchor:
         case CSSSelector::kPseudoRoot:
@@ -295,7 +294,6 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoWebKitCustomElement:
         case CSSSelector::kPseudoBlinkInternalElement:
         case CSSSelector::kPseudoDetailsContent:
-        case CSSSelector::kPseudoDetailsSummary:
           custom_pseudo_element_name = selector->Value();
           break;
         case CSSSelector::kPseudoPart:
@@ -496,9 +494,6 @@ void RuleSet::FindBestRuleSetAndAdd(CSSSelector& component,
         });
       }
       AddToRuleSet(link_pseudo_class_rules_, rule_data);
-      return;
-    case CSSSelector::kPseudoSpatialNavigationInterest:
-      AddToRuleSet(spatial_navigation_interest_class_rules_, rule_data);
       return;
     case CSSSelector::kPseudoFocus:
       if (bucket_coverage == BucketCoverage::kCompute) {
@@ -707,15 +702,14 @@ void RuleSet::AddViewTransitionRule(StyleRuleViewTransition* rule) {
   view_transition_rules_.push_back(rule);
 }
 
-void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
+template <typename T>
+void RuleSet::AddChildRules(const T& rules,
                             const MediaQueryEvaluator& medium,
                             AddRuleFlags add_rule_flags,
                             const ContainerQuery* container_query,
                             CascadeLayer* cascade_layer,
                             const StyleScope* style_scope) {
-  for (unsigned i = 0; i < rules.size(); ++i) {
-    StyleRuleBase* rule = rules[i].Get();
-
+  for (StyleRuleBase* rule : rules) {
     if (auto* style_rule = DynamicTo<StyleRule>(rule)) {
       AddStyleRule(style_rule, medium, add_rule_flags, container_query,
                    cascade_layer, style_scope);
@@ -935,14 +929,8 @@ void RuleSet::AddFilteredRulesFromOtherSet(
     AddFilteredRulesFromOtherBucket(other, other.focus_pseudo_class_rules_,
                                     only_include, &focus_pseudo_class_rules_);
     AddFilteredRulesFromOtherBucket(
-        other, other.spatial_navigation_interest_class_rules_, only_include,
-        &spatial_navigation_interest_class_rules_);
-    AddFilteredRulesFromOtherBucket(
         other, other.focus_visible_pseudo_class_rules_, only_include,
         &focus_visible_pseudo_class_rules_);
-    AddFilteredRulesFromOtherBucket(
-        other, other.spatial_navigation_interest_class_rules_, only_include,
-        &spatial_navigation_interest_class_rules_);
     AddFilteredRulesFromOtherBucket(other, other.universal_rules_, only_include,
                                     &universal_rules_);
     AddFilteredRulesFromOtherBucket(other, other.shadow_host_rules_,
@@ -1274,7 +1262,6 @@ void RuleSet::CompactRules() {
   focus_pseudo_class_rules_.shrink_to_fit();
   selector_fragment_anchor_rules_.shrink_to_fit();
   focus_visible_pseudo_class_rules_.shrink_to_fit();
-  spatial_navigation_interest_class_rules_.shrink_to_fit();
   universal_rules_.shrink_to_fit();
   shadow_host_rules_.shrink_to_fit();
   part_pseudo_rules_.shrink_to_fit();
@@ -1347,7 +1334,6 @@ void RuleSet::AssertRuleListsSorted() const {
   DCHECK(IsRuleListSorted(focus_pseudo_class_rules_));
   DCHECK(IsRuleListSorted(selector_fragment_anchor_rules_));
   DCHECK(IsRuleListSorted(focus_visible_pseudo_class_rules_));
-  DCHECK(IsRuleListSorted(spatial_navigation_interest_class_rules_));
   DCHECK(IsRuleListSorted(universal_rules_));
   DCHECK(IsRuleListSorted(shadow_host_rules_));
   DCHECK(IsRuleListSorted(part_pseudo_rules_));
@@ -1393,7 +1379,6 @@ void RuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(focus_pseudo_class_rules_);
   visitor->Trace(selector_fragment_anchor_rules_);
   visitor->Trace(focus_visible_pseudo_class_rules_);
-  visitor->Trace(spatial_navigation_interest_class_rules_);
   visitor->Trace(universal_rules_);
   visitor->Trace(shadow_host_rules_);
   visitor->Trace(part_pseudo_rules_);

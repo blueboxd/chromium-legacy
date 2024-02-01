@@ -28,8 +28,8 @@ import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
-import '/shared/settings/controls/controlled_button.js';
-import '/shared/settings/controls/settings_toggle_button.js';
+import '../controls/controlled_button.js';
+import '../controls/settings_toggle_button.js';
 import './cellular_roaming_toggle_button.js';
 import './internet_shared.css.js';
 import './network_proxy_section.js';
@@ -1892,7 +1892,8 @@ export class SettingsInternetDetailPageElement extends
     } else if (isSecondaryUser) {
       first = 'secondary';
     } else if (this.showShared_(
-                   managedProperties, globalPolicy, managedNetworkAvailable)) {
+                   managedProperties, globalPolicy, managedNetworkAvailable,
+                   deviceState)) {
       first = 'shared';
     } else if (this.showSynced_(
                    managedProperties, globalPolicy, managedNetworkAvailable,
@@ -1916,7 +1917,12 @@ export class SettingsInternetDetailPageElement extends
 
   private showShared_(
       managedProperties: ManagedProperties, _globalPolicy: GlobalPolicy,
-      _managedNetworkAvailable: boolean): boolean {
+      _managedNetworkAvailable: boolean,
+      deviceState: OncMojo.DeviceStateProperties|null): boolean {
+    if (this.isCarrierLockedActiveSim_(managedProperties, deviceState)) {
+      return false;
+    }
+
     return !this.propertiesMissingOrBlockedByPolicy_() &&
         (managedProperties.source === OncSource.kDevice ||
          managedProperties.source === OncSource.kDevicePolicy);

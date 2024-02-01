@@ -5,12 +5,15 @@
 #include "chrome/services/printing/print_backend_service_impl.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/check.h"
 #include "base/containers/adapters.h"
+#include "base/containers/heap_array.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
@@ -36,7 +39,6 @@
 #include "printing/mojom/print.mojom.h"
 #include "printing/printed_document.h"
 #include "printing/printing_context.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "base/threading/thread_restrictions.h"
@@ -122,11 +124,11 @@ std::unique_ptr<Metafile> CreateMetafile(mojom::MetafileDataType data_type) {
 }
 
 struct RenderData {
-  std::unique_ptr<uint8_t[]> data_copy;
+  base::HeapArray<uint8_t> data_copy;
   std::unique_ptr<Metafile> metafile;
 };
 
-absl::optional<RenderData> PrepareRenderData(
+std::optional<RenderData> PrepareRenderData(
     int document_cookie,
     mojom::MetafileDataType page_data_type,
     const base::ReadOnlySharedMemoryRegion& serialized_data) {
@@ -134,7 +136,7 @@ absl::optional<RenderData> PrepareRenderData(
   if (!mapping.IsValid()) {
     DLOG(ERROR) << "Failure printing document " << document_cookie
                 << ", cannot map input.";
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   RenderData render_data;
@@ -147,14 +149,14 @@ absl::optional<RenderData> PrepareRenderData(
   // be written by the sender.
   base::span<const uint8_t> data = mapping.GetMemoryAsSpan<uint8_t>();
   if (render_data.metafile->ShouldCopySharedMemoryRegionData()) {
-    render_data.data_copy = std::make_unique<uint8_t[]>(data.size());
-    base::ranges::copy(data, render_data.data_copy.get());
-    data = base::span<const uint8_t>(render_data.data_copy.get(), data.size());
+    render_data.data_copy = base::HeapArray<uint8_t>::Uninit(data.size());
+    render_data.data_copy.as_span().copy_from(data);
+    data = render_data.data_copy.as_span();
   }
   if (!render_data.metafile->InitFromData(data)) {
     DLOG(ERROR) << "Failure printing document " << document_cookie
                 << ", unable to initialize.";
-    return absl::nullopt;
+    return std::nullopt;
   }
   return render_data;
 }
@@ -174,7 +176,7 @@ class DocumentContainer {
   ~DocumentContainer() = default;
 
   // Helper functions that runs on a task runner.
-  mojom::ResultCode StartPrintingReadyDocument();
+  PrintBackendServiceImpl::StartPrintingResult StartPrintingReadyDocument();
 #if BUILDFLAG(IS_WIN)
   mojom::ResultCode DoRenderPrintedPage(
       uint32_t page_index,
@@ -201,20 +203,24 @@ class DocumentContainer {
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
-mojom::ResultCode DocumentContainer::StartPrintingReadyDocument() {
+PrintBackendServiceImpl::StartPrintingResult
+DocumentContainer::StartPrintingReadyDocument() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DVLOG(1) << "Start printing for document " << document_->cookie();
 
-  mojom::ResultCode result = context_->NewDocument(document_->name());
-  if (result != mojom::ResultCode::kSuccess) {
+  PrintBackendServiceImpl::StartPrintingResult printing_result;
+  printing_result.result = context_->NewDocument(document_->name());
+  if (printing_result.result != mojom::ResultCode::kSuccess) {
     DLOG(ERROR) << "Failure initializing new document " << document_->cookie()
-                << ", error: " << result;
+                << ", error: " << printing_result.result;
     context_->Cancel();
-    return result;
+    printing_result.job_id = PrintingContext::kNoPrintJobId;
+    return printing_result;
   }
+  printing_result.job_id = context_->job_id();
 
-  return mojom::ResultCode::kSuccess;
+  return printing_result;
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -230,7 +236,7 @@ mojom::ResultCode DocumentContainer::DoRenderPrintedPage(
   DVLOG(1) << "Render printed page " << page_index << " for document "
            << document_->cookie();
 
-  absl::optional<RenderData> render_data =
+  std::optional<RenderData> render_data =
       PrepareRenderData(document_->cookie(), page_data_type, serialized_page);
   if (!render_data) {
     DLOG(ERROR) << "Failure preparing render data for document "
@@ -261,7 +267,7 @@ mojom::ResultCode DocumentContainer::DoRenderPrintedDocument(
 
   DVLOG(1) << "Render printed document " << document_->cookie();
 
-  absl::optional<RenderData> render_data =
+  std::optional<RenderData> render_data =
       PrepareRenderData(document_->cookie(), data_type, serialized_document);
   if (!render_data) {
     DLOG(ERROR) << "Failure preparing render data for document "
@@ -604,7 +610,7 @@ void PrintBackendServiceImpl::GetPaperPrintableArea(
   crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
       printer_name, print_backend_->GetPrinterDriverInfo(printer_name));
 
-  absl::optional<gfx::Rect> printable_area_um =
+  std::optional<gfx::Rect> printable_area_um =
       print_backend_->GetPaperPrintableArea(printer_name, media.vendor_id,
                                             media.size_microns);
   std::move(callback).Run(printable_area_um.value_or(gfx::Rect()));
@@ -715,7 +721,7 @@ void PrintBackendServiceImpl::StartPrinting(
     int document_cookie,
     const std::u16string& document_name,
 #if !BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
-    const absl::optional<PrintSettings>& settings,
+    const std::optional<PrintSettings>& settings,
 #endif
     mojom::PrintBackendService::StartPrintingCallback callback) {
 #if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CUPS)
@@ -728,7 +734,8 @@ void PrintBackendServiceImpl::StartPrinting(
       // off on issuing the callback.
       // TODO(crbug.com/809738)  Place this in a queue of waiting jobs.
       DLOG(ERROR) << "Need queue for print jobs awaiting a connection";
-      std::move(callback).Run(mojom::ResultCode::kFailed);
+      std::move(callback).Run(mojom::ResultCode::kFailed,
+                              PrintingContext::kNoPrintJobId);
       return;
     }
   }
@@ -873,9 +880,10 @@ void PrintBackendServiceImpl::OnDidAskUserForSettings(
 
 void PrintBackendServiceImpl::OnDidStartPrintingReadyDocument(
     DocumentHelper& document_helper,
-    mojom::ResultCode result) {
+    StartPrintingResult printing_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
-  document_helper.TakeStartPrintingCallback().Run(result);
+  document_helper.TakeStartPrintingCallback().Run(printing_result.result,
+                                                  printing_result.job_id);
 }
 
 void PrintBackendServiceImpl::OnDidDocumentDone(

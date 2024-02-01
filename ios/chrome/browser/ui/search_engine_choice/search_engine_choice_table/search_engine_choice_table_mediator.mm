@@ -6,45 +6,41 @@
 
 #import <memory>
 
+#import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
 #import "components/prefs/pref_service.h"
+#import "components/search_engines/choice_made_location.h"
+#import "components/search_engines/prepopulated_engines.h"
 #import "components/search_engines/search_engine_choice_utils.h"
 #import "components/search_engines/template_url.h"
 #import "components/search_engines/template_url_service.h"
 #import "components/search_engines/template_url_service_observer.h"
-#import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/search_engines/model/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/cells/snippet_search_engine_item.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/search_engine_choice_table_consumer.h"
-#import "ios/chrome/common/ui/favicon/favicon_attributes.h"
-#import "ios/chrome/common/ui/favicon/favicon_constants.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_ui_util.h"
 
 namespace {
 
-// Creates a SnippetSearchEngineItem for `templateURL`.
+// Creates a SnippetSearchEngineItem for `template_url`. The template url can
+// only be for a prepopulated search engine. This function doesn't support
+// custom search engine.
 SnippetSearchEngineItem* CreateSnippetSearchEngineItemFromTemplateURL(
-    TemplateURL* template_url,
-    TemplateURLService* template_url_service) {
+    const TemplateURL& template_url) {
   SnippetSearchEngineItem* item = nil;
-  if (template_url->prepopulate_id() > 0) {
-    item = [[SnippetSearchEngineItem alloc] initWithType:kItemTypeEnumZero];
-    // Fake up a page URL for favicons of prepopulated search engines, since
-    // favicons may be fetched from Google server which doesn't suppoprt
-    // icon URL.
-    std::string empty_page_url = template_url->url_ref().ReplaceSearchTerms(
-        TemplateURLRef::SearchTermsArgs(std::u16string()),
-        template_url_service->search_terms_data());
-    item.URL = GURL(empty_page_url);
-  } else {
-    item = [[SnippetSearchEngineItem alloc] initWithType:kItemTypeEnumZero];
-    // Use icon URL for favicons of custom search engines.
-    item.URL = template_url->favicon_url();
-  }
-  item.name = base::SysUTF16ToNSString(template_url->short_name());
+  // Only works for prepopulated search engines.
+  CHECK_GT(template_url.prepopulate_id(), 0, base::NotFatalUntil::M124)
+      << base::UTF16ToUTF8(template_url.short_name());
+  item = [[SnippetSearchEngineItem alloc] initWithType:kItemTypeEnumZero];
+  // Add the name and snippet to the item.
+  item.name = base::SysUTF16ToNSString(template_url.short_name());
   std::u16string string =
-      search_engines::GetMarketingSnippetString(template_url->data());
+      search_engines::GetMarketingSnippetString(template_url.data());
   item.snippetDescription = base::SysUTF16ToNSString(string);
+  // Add the favicon to the item.
+  item.faviconImage = SearchEngineFaviconFromTemplateURL(template_url);
   return item;
 }
 
@@ -54,8 +50,8 @@ SnippetSearchEngineItem* CreateSnippetSearchEngineItemFromTemplateURL(
 @end
 
 @implementation SearchEngineChoiceTableMediator {
-  TemplateURLService* _templateURLService;  // weak
-  PrefService* _prefService;
+  raw_ptr<TemplateURLService> _templateURLService;  // weak
+  raw_ptr<PrefService> _prefService;
   std::unique_ptr<SearchEngineObserverBridge> _observer;
   // The list of URLs of prepopulated search engines and search engines that are
   // created by policy.
@@ -63,19 +59,14 @@ SnippetSearchEngineItem* CreateSnippetSearchEngineItemFromTemplateURL(
   // The corresponding list of search engines as items that can be inserted into
   // a tableView.
   NSArray<SnippetSearchEngineItem*>* _searchEngineList;
-  // FaviconLoader is a keyed service that uses LargeIconService to retrieve
-  // favicon images.
-  FaviconLoader* _faviconLoader;
 }
 
 - (instancetype)initWithTemplateURLService:
                     (TemplateURLService*)templateURLService
-                               prefService:(PrefService*)prefService
-                             faviconLoader:(FaviconLoader*)faviconLoader {
+                               prefService:(PrefService*)prefService {
   self = [super init];
   if (self) {
     _templateURLService = templateURLService;
-    _faviconLoader = faviconLoader;
     _prefService = prefService;
     _observer =
         std::make_unique<SearchEngineObserverBridge>(self, _templateURLService);
@@ -87,16 +78,13 @@ SnippetSearchEngineItem* CreateSnippetSearchEngineItemFromTemplateURL(
 
 - (void)saveDefaultSearchEngine {
   _templateURLService->SetUserSelectedDefaultSearchProvider(
-      _urlList[self.selectedRow].get());
-  search_engines::RecordChoiceMade(
-      _prefService, search_engines::ChoiceMadeLocation::kChoiceScreen,
-      _templateURLService);
+      _urlList[self.selectedRow].get(),
+      search_engines::ChoiceMadeLocation::kChoiceScreen);
 }
 
 - (void)disconnect {
   _observer.reset();
   _templateURLService = nullptr;
-  _faviconLoader = nullptr;
 }
 
 #pragma mark - Properties
@@ -129,16 +117,8 @@ SnippetSearchEngineItem* CreateSnippetSearchEngineItemFromTemplateURL(
   // Convert TemplateURLs to SnippetSearchEngineItems.
   for (auto& templateURL : _urlList) {
     SnippetSearchEngineItem* item =
-        CreateSnippetSearchEngineItemFromTemplateURL(templateURL.get(),
-                                                     _templateURLService);
+        CreateSnippetSearchEngineItemFromTemplateURL(*templateURL);
     [searchEngineList addObject:item];
-    __weak __typeof(self) weakSelf = self;
-    _faviconLoader->FaviconForPageUrl(
-        item.URL, kDesiredMediumFaviconSizePt, kMinFaviconSizePt,
-        /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
-          item.faviconImage = attributes.faviconImage;
-          [weakSelf.consumer faviconAttributesUpdatedForItem:item];
-        });
   }
 
   _searchEngineList = [searchEngineList copy];

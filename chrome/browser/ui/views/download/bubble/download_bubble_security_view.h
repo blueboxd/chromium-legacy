@@ -24,7 +24,6 @@ class ImageView;
 class StyledLabel;
 class ImageButton;
 class BubbleDialogDelegate;
-class LabelButton;
 }  // namespace views
 
 class DownloadBubbleNavigationHandler;
@@ -33,6 +32,8 @@ class DownloadBubblePasswordPromptView;
 
 class DownloadBubbleSecurityView : public views::View,
                                    public download::DownloadItem::Observer {
+  METADATA_HEADER(DownloadBubbleSecurityView, views::View)
+
  public:
   // Interface allowing this to interact with the download item/model its was
   // created for.
@@ -75,7 +76,6 @@ class DownloadBubbleSecurityView : public views::View,
         const offline_items_collection::ContentId& id) = 0;
   };
 
-  METADATA_HEADER(DownloadBubbleSecurityView);
   DownloadBubbleSecurityView(
       Delegate* delegate,
       base::WeakPtr<DownloadBubbleNavigationHandler> navigation_handler,
@@ -115,6 +115,10 @@ class DownloadBubbleSecurityView : public views::View,
   bool ProcessButtonClick(DownloadCommands::Command command,
                           bool is_secondary_button);
 
+  // Logs the DISMISS action on the DownloadItemWarningData, if initialized.
+  // Should be called when the security view is about to be destroyed.
+  void MaybeLogDismiss();
+
   const offline_items_collection::ContentId& content_id() const {
     return content_id_;
   }
@@ -134,11 +138,7 @@ class DownloadBubbleSecurityView : public views::View,
   void AddProgressBar();
   void AddPasswordPrompt(views::View* parent);
 
-  // `old_danger_type` is the previous danger type before the update, which is
-  // used for debugging only.
-  void UpdateViews(
-      download::DownloadDangerType old_danger_type =
-          download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+  void UpdateViews();
   void UpdateHeader();
   void UpdateIconAndText();
   void UpdateSecondaryIconAndText();
@@ -174,7 +174,8 @@ class DownloadBubbleSecurityView : public views::View,
 
   // Following 4 fields are cached when the download/model is updated.
 
-  // ContentId of the download this refers to.
+  // ContentId of the download this refers to, if initialized.
+  // TODO: This should be std::optional<offline_items_collection::ContentId>.
   offline_items_collection::ContentId content_id_;
   // UI info at the last time this was created/updated.
   DownloadUIModel::BubbleUIInfo ui_info_;
@@ -190,7 +191,6 @@ class DownloadBubbleSecurityView : public views::View,
   raw_ptr<views::BubbleDialogDelegate, DanglingUntriaged> bubble_delegate_ =
       nullptr;
 
-  raw_ptr<views::LabelButton, DanglingUntriaged> secondary_button_ = nullptr;
   raw_ptr<views::StyledLabel> title_ = nullptr;
   raw_ptr<views::ImageView> icon_ = nullptr;
   raw_ptr<ParagraphsView> paragraphs_ = nullptr;

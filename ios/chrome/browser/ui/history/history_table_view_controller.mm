@@ -19,8 +19,8 @@
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/model/table_view_url_drag_drop_handler.h"
 #import "ios/chrome/browser/metrics/model/new_tab_page_uma.h"
-#import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/net/model/crurl.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -58,6 +58,7 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/referrer.h"
+#import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/strings/grit/ui_strings.h"
@@ -1229,9 +1230,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   if (!self.browser) {
     return;
   }
-  new_tab_page_uma::RecordAction(
-      self.browser->GetBrowserState()->IsOffTheRecord(),
-      self.browser->GetWebStateList()->GetActiveWebState(),
+  bool is_ntp =
+      self.browser->GetWebStateList()->GetActiveWebState()->GetVisibleURL() ==
+      kChromeUINewTabURL;
+  new_tab_page_uma::RecordNTPAction(
+      self.browser->GetBrowserState()->IsOffTheRecord(), is_ntp,
       new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;

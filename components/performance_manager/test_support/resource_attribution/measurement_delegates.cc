@@ -4,10 +4,10 @@
 
 #include "components/performance_manager/test_support/resource_attribution/measurement_delegates.h"
 
+#include <map>
 #include <utility>
 
 #include "base/check_op.h"
-#include "base/containers/cxx20_erase_map.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "components/performance_manager/public/graph/process_node.h"
@@ -89,7 +89,7 @@ SimulatedCPUMeasurementDelegateFactory::CreateDelegateForProcess(
 void SimulatedCPUMeasurementDelegateFactory::OnDelegateDeleted(
     base::PassKey<SimulatedCPUMeasurementDelegate>,
     SimulatedCPUMeasurementDelegate* delegate) {
-  const size_t erased = base::EraseIf(
+  const size_t erased = std::erase_if(
       simulated_cpu_delegates_,
       [delegate](const auto& entry) { return delegate == entry.second; });
   CHECK_EQ(erased, 1U);
@@ -118,17 +118,10 @@ void SimulatedCPUMeasurementDelegate::SetCPUUsage(SimulatedCPUUsage usage,
   });
 }
 
-void SimulatedCPUMeasurementDelegate::SetError(base::TimeDelta usage_error) {
-  usage_error_ = usage_error;
-}
-
-void SimulatedCPUMeasurementDelegate::ClearError() {
-  usage_error_ = absl::nullopt;
-}
-
-base::TimeDelta SimulatedCPUMeasurementDelegate::GetCumulativeCPUUsage() {
-  if (usage_error_.has_value()) {
-    return usage_error_.value();
+std::optional<base::TimeDelta>
+SimulatedCPUMeasurementDelegate::GetCumulativeCPUUsage() {
+  if (has_error_) {
+    return std::nullopt;
   }
   base::TimeDelta cumulative_usage;
   for (const auto& usage_period : cpu_usage_periods_) {

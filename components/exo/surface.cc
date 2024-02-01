@@ -251,7 +251,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   }
 
  private:
-  const raw_ptr<Surface, ExperimentalAsh> surface_;
+  const raw_ptr<Surface> surface_;
 };
 
 class CustomWindowTargeter : public aura::WindowTargeter {
@@ -365,8 +365,9 @@ Surface* Surface::AsSurface(const aura::Window* window) {
   return window->GetProperty(kSurfaceKey);
 }
 
-std::vector<aura::Window*> Surface::GetChildWindows() const {
-  std::vector<aura::Window*> children;
+std::vector<raw_ptr<aura::Window, VectorExperimental>>
+Surface::GetChildWindows() const {
+  std::vector<raw_ptr<aura::Window, VectorExperimental>> children;
   for (const auto& [sub_surface, _] : sub_surfaces_) {
     children.push_back(sub_surface->window());
   }
@@ -446,7 +447,7 @@ void Surface::SetInputRegion(const cc::Region& region) {
 void Surface::ResetInputRegion() {
   TRACE_EVENT0("exo", "Surface::ResetInputRegion");
 
-  pending_state_.basic_state.input_region = absl::nullopt;
+  pending_state_.basic_state.input_region = std::nullopt;
 }
 
 void Surface::SetInputOutset(int outset) {
@@ -631,7 +632,7 @@ void Surface::SetOverlayPriorityHint(OverlayPriority hint) {
   pending_state_.overlay_priority_hint = hint;
 }
 
-void Surface::SetClipRect(const absl::optional<gfx::RectF>& clip_rect) {
+void Surface::SetClipRect(const std::optional<gfx::RectF>& clip_rect) {
   TRACE_EVENT1("exo", "Surface::SetClipRect", "clip_rect",
                (clip_rect ? clip_rect->ToString() : "nullopt"));
 
@@ -645,7 +646,7 @@ void Surface::SetClipRect(const absl::optional<gfx::RectF>& clip_rect) {
 }
 
 void Surface::SetClipRectOnParentSurface(
-    const absl::optional<gfx::RectF>& clip_rect) {
+    const std::optional<gfx::RectF>& clip_rect) {
   TRACE_EVENT1("exo", "Surface::SetClipRectOnParentSurface", "clip_rect",
                (clip_rect ? clip_rect->ToString() : "nullopt"));
 
@@ -667,7 +668,7 @@ void Surface::SetSurfaceTransform(const gfx::Transform& transform) {
   }
 }
 
-void Surface::SetBackgroundColor(absl::optional<SkColor4f> background_color) {
+void Surface::SetBackgroundColor(std::optional<SkColor4f> background_color) {
   TRACE_EVENT0("exo", "Surface::SetBackgroundColor");
   pending_state_.basic_state.background_color = background_color;
 }
@@ -869,16 +870,6 @@ void Surface::UnsetPip() {
 void Surface::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
   if (delegate_)
     delegate_->SetAspectRatio(aspect_ratio);
-}
-
-void Surface::SetEmbeddedSurfaceId(
-    base::RepeatingCallback<viz::SurfaceId()> surface_id_callback) {
-  get_current_surface_id_ = std::move(surface_id_callback);
-  first_embedded_surface_id_ = viz::SurfaceId();
-}
-
-void Surface::SetEmbeddedSurfaceSize(const gfx::Size& size) {
-  embedded_surface_size_ = size;
 }
 
 void Surface::SetAcquireFence(std::unique_ptr<gfx::GpuFence> gpu_fence) {
@@ -1226,7 +1217,7 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
     const gfx::PointF& to_parent_dp,
     bool needs_full_damage,
     FrameSinkResourceManager* resource_manager,
-    absl::optional<float> device_scale_factor,
+    std::optional<float> device_scale_factor,
     viz::CompositorFrame* frame) {
   // The top most sub-surface is at the front of the RenderPass's quad_list,
   // so we need composite sub-surface in reversed order.
@@ -1479,7 +1470,7 @@ static viz::SharedQuadState* AppendOrCreateSharedQuadState(
     const gfx::Transform quad_to_target_transform,
     const gfx::Rect& quad_rect,
     const gfx::MaskFilterInfo& msk,
-    const absl::optional<gfx::Rect>& quad_clip_rect,
+    const std::optional<gfx::Rect>& quad_clip_rect,
     const bool are_contents_opaque) {
   viz::SharedQuadState* quad_state =
       !render_pass->shared_quad_state_list.empty()
@@ -1528,7 +1519,7 @@ static viz::SharedQuadState* AppendOrCreateSharedQuadState(
 void Surface::AppendContentsToFrame(const gfx::PointF& parent_to_root_px,
                                     const gfx::PointF& to_parent_dp,
                                     bool needs_full_damage,
-                                    absl::optional<float> device_scale_factor,
+                                    std::optional<float> device_scale_factor,
                                     viz::CompositorFrame* frame) {
   const std::unique_ptr<viz::CompositorRenderPass>& render_pass =
       frame->render_pass_list.back();
@@ -1567,7 +1558,7 @@ void Surface::AppendContentsToFrame(const gfx::PointF& parent_to_root_px,
     }
   }
 
-  absl::optional<gfx::Rect> quad_clip_rect;
+  std::optional<gfx::Rect> quad_clip_rect;
   if (state_.clip_rect) {
     // `state_.clip_rect` should be on local surface coordinates but the
     // deprecated implementation still uses parent surface coordinates. If so,
@@ -1589,26 +1580,7 @@ void Surface::AppendContentsToFrame(const gfx::PointF& parent_to_root_px,
 
   gfx::Vector2dF translate(0.0f, 0.0f);
 
-  // Surface quads require the quad rect to be appropriately sized and need to
-  // use the shared quad clip rect.
-  if (get_current_surface_id_) {
-    quad_rect = gfx::Rect(embedded_surface_size_);
-    scale = gfx::Vector2dF(1.0f, 1.0f);
-
-    if (!state_.basic_state.crop.IsEmpty()) {
-      // In order to crop an AxB rect to CxD we need to scale by A/C, B/D.
-      // We achieve clipping by scaling it up and then drawing only in the
-      // output rectangle.
-      scale.Scale(content_size_.width() / state_.basic_state.crop.width(),
-                  content_size_.height() / state_.basic_state.crop.height());
-
-      auto offset = state_.basic_state.crop.origin().OffsetFromOrigin();
-      translate =
-          gfx::Vector2dF(-offset.x() * scale.x(), -offset.y() * scale.y());
-    }
-  } else {
-    scale.Scale(state_.basic_state.buffer_scale);
-  }
+  scale.Scale(state_.basic_state.buffer_scale);
 
   bool are_contents_opaque =
       !current_resource_has_alpha_ ||
@@ -1698,46 +1670,16 @@ void Surface::AppendContentsToFrame(const gfx::PointF& parent_to_root_px,
     else if (current_resource_has_alpha_ && are_contents_opaque)
       background_color = SkColors::kBlack;  // Avoid writing alpha < 1
 
-    // If this surface is being replaced by a SurfaceId emit a SurfaceDrawQuad.
-    if (get_current_surface_id_) {
-      auto current_surface_id = get_current_surface_id_.Run();
-      // If the surface ID is valid update it, otherwise keep showing the old
-      // one for now.
-      if (current_surface_id.is_valid()) {
-        latest_embedded_surface_id_ = current_surface_id;
-        if (!current_surface_id.HasSameEmbedTokenAs(
-                first_embedded_surface_id_)) {
-          first_embedded_surface_id_ = current_surface_id;
-        }
-      }
-      if (latest_embedded_surface_id_.is_valid() &&
-          !embedded_surface_size_.IsEmpty()) {
-        viz::SharedQuadState* quad_state =
-            render_pass->CreateAndAppendSharedQuadState();
-        quad_state->SetAll(quad_to_target_transform, quad_rect, quad_rect, msk,
-                           quad_clip_rect, are_contents_opaque,
-                           state_.basic_state.alpha, SkBlendMode::kSrcOver,
-                           /*sorting_context=*/0, /*layer_id=*/0u,
-                           /*fast_rounded_corner=*/false);
-        if (!state_.basic_state.crop.IsEmpty()) {
-          quad_state->clip_rect = gfx::ToEnclosedRect(output_rect);
-        }
-        viz::SurfaceDrawQuad* surface_quad =
-            render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
-        surface_quad->SetNew(quad_state, quad_rect, quad_rect,
-                             viz::SurfaceRange(first_embedded_surface_id_,
-                                               latest_embedded_surface_id_),
-                             background_color,
-                             /*stretch_content_to_fill_bounds=*/false);
-      }
-      // A resource was still produced for this so we still need to release it
-      // later.
-      frame->resource_list.push_back(current_resource_);
-    } else if (state_.basic_state.alpha != 0.0f) {
+    if (state_.basic_state.alpha != 0.0f) {
       const viz::SharedQuadState* quad_state = AppendOrCreateSharedQuadState(
           state_.basic_state.alpha, render_pass, quad_to_target_transform,
           quad_rect, msk, quad_clip_rect, are_contents_opaque);
 
+      // Our historical implementation of the wayland blending protocol is to
+      // treat blend none as fully opaque alpha and not simply "src". This allow
+      // us to treat client buffers as rgbx. For an example see b/305977429
+      const bool force_rgbx_for_opaque =
+          are_contents_opaque && current_resource_has_alpha_;
       // Draw quad is only needed if buffer is not fully transparent.
       const bool requires_texture_draw_quad =
           state_.basic_state.only_visible_on_secure_output ||
@@ -1746,17 +1688,20 @@ void Surface::AppendContentsToFrame(const gfx::PointF& parent_to_root_px,
       if (requires_texture_draw_quad) {
         viz::TextureDrawQuad* texture_quad =
             render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-        float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
-        texture_quad->SetNew(
-            quad_state, quad_rect, quad_rect,
-            /* needs_blending=*/!are_contents_opaque, current_resource_.id,
-            /* premultiplied*/ true, uv_crop.origin(), uv_crop.bottom_right(),
-            background_color, vertex_opacity,
-            /* flipped=*/false, /* nearest*/ false,
-            state_.basic_state.only_visible_on_secure_output,
-            gfx::ProtectedVideoType::kClear);
+        texture_quad->SetNew(quad_state, quad_rect, quad_rect,
+                             /* needs_blending=*/!are_contents_opaque,
+                             current_resource_.id,
+                             /* premultiplied*/ true, uv_crop.origin(),
+                             uv_crop.bottom_right(), background_color,
+                             /* flipped=*/false, /* nearest*/ false,
+                             state_.basic_state.only_visible_on_secure_output,
+                             gfx::ProtectedVideoType::kClear);
         if (current_resource_.is_overlay_candidate)
           texture_quad->set_resource_size_in_pixels(current_resource_.size);
+
+        if (force_rgbx_for_opaque) {
+          texture_quad->set_force_rgbx();
+        }
 
         switch (state_.overlay_priority_hint) {
           case OverlayPriority::LOW:
@@ -1972,7 +1917,7 @@ void Surface::SetClientAccessibilityId(int id) {
   if (id >= 0) {
     exo::SetShellClientAccessibilityId(window_.get(), id);
   } else {
-    exo::SetShellClientAccessibilityId(window_.get(), absl::nullopt);
+    exo::SetShellClientAccessibilityId(window_.get(), std::nullopt);
   }
 }
 

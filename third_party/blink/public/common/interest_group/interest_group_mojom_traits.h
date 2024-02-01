@@ -24,8 +24,8 @@ namespace mojo {
 template <>
 struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::InterestGroupAdDataView,
                                         blink::InterestGroup::Ad> {
-  static const GURL& render_url(const blink::InterestGroup::Ad& ad) {
-    return ad.render_url;
+  static const std::string& render_url(const blink::InterestGroup::Ad& ad) {
+    return ad.render_url_;
   }
 
   static const absl::optional<std::string>& size_group(
@@ -177,6 +177,11 @@ struct BLINK_COMMON_EXPORT
   trusted_bidding_signals_slot_size_mode(
       const blink::InterestGroup& interest_group) {
     return interest_group.trusted_bidding_signals_slot_size_mode;
+  }
+
+  static int32_t max_trusted_bidding_signals_url_length(
+      const blink::InterestGroup& interest_group) {
+    return interest_group.max_trusted_bidding_signals_url_length;
   }
 
   static const absl::optional<std::string>& user_bidding_signals(

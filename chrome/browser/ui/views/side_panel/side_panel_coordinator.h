@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/toolbar/pinned_toolbar_actions_model.h"
+#include "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
@@ -135,8 +135,6 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
                            ShowEmptyUserNoteSidePanel);
   FRIEND_TEST_ALL_PREFIXES(UserNoteUICoordinatorTest,
                            PopulateUserNoteSidePanel);
-  FRIEND_TEST_ALL_PREFIXES(SidePanelPinningCoordinatorTest,
-                           SidePanelTitleUpdates);
 
   // Unlike `Show()` which takes in a SidePanelEntry's id or key, this version
   // should only be used for the rare case when we need to show a particular

@@ -282,8 +282,9 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     same_tab_observer.set_expected_initial_url(url);
 
   std::set<Browser*> initial_browsers;
-  for (auto* initial_browser : *BrowserList::GetInstance())
+  for (Browser* initial_browser : *BrowserList::GetInstance()) {
     initial_browsers.insert(initial_browser);
+  }
 
   AllBrowserTabAddedWaiter tab_added_waiter;
 
@@ -492,7 +493,7 @@ void SendToOmniboxAndSubmit(Browser* browser,
 }
 
 Browser* GetBrowserNotInSet(const std::set<Browser*>& excluded_browsers) {
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     if (excluded_browsers.find(browser) == excluded_browsers.end())
       return browser;
   }
@@ -877,6 +878,28 @@ bool CheckWaiter::Check() {
     std::move(quit_).Run();
   }
   return true;
+}
+
+ViewBoundsWaiter::ViewBoundsWaiter(views::View* observed_view)
+    : observed_view_(observed_view) {
+  observed_view_->AddObserver(this);
+}
+
+ViewBoundsWaiter::~ViewBoundsWaiter() {
+  observed_view_->RemoveObserver(this);
+}
+
+void ViewBoundsWaiter::WaitForNonEmptyBounds() {
+  if (!observed_view_->bounds().IsEmpty()) {
+    return;
+  }
+  run_loop_.Run();
+}
+
+void ViewBoundsWaiter::OnViewBoundsChanged(views::View* observed_view) {
+  if (!observed_view_->bounds().IsEmpty()) {
+    run_loop_.Quit();
+  }
 }
 
 }  // namespace ui_test_utils

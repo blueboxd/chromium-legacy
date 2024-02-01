@@ -4,10 +4,12 @@
 
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 
+#include <array>
 #include <atomic>
 #include <queue>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/stack_trace.h"
@@ -424,7 +426,9 @@ SequenceManagerImpl::GetFlagToRequestReloadForEmptyQueue(
       &TaskQueueImpl::ReloadEmptyImmediateWorkQueue, Unretained(task_queue)));
 }
 
-void SequenceManagerImpl::ReloadEmptyWorkQueues() const {
+void SequenceManagerImpl::ReloadEmptyWorkQueues() {
+  work_tracker_.WillReloadImmediateWorkQueues();
+
   // There are two cases where a queue needs reloading.  First, it might be
   // completely empty and we've just posted a task (this method handles that
   // case). Secondly if the work queue becomes empty when calling
@@ -515,11 +519,20 @@ void SequenceManagerImpl::MaybeEmitTaskDetails(
 #endif  //  BUILDFLAG(ENABLE_BASE_TRACING)
 }
 
+void SequenceManagerImpl::SetRunTaskSynchronouslyAllowed(
+    bool can_run_tasks_synchronously) {
+  work_tracker_.SetRunTaskSynchronouslyAllowed(can_run_tasks_synchronously);
+}
+
 absl::optional<SequenceManagerImpl::SelectedTask>
 SequenceManagerImpl::SelectNextTask(LazyNow& lazy_now,
                                     SelectTaskOption option) {
   absl::optional<SelectedTask> selected_task =
       SelectNextTaskImpl(lazy_now, option);
+
+  if (selected_task.has_value()) {
+    work_tracker_.AssertHasWork();
+  }
 
   return selected_task;
 }
@@ -652,6 +665,8 @@ SequenceManagerImpl::SelectNextTaskImpl(LazyNow& lazy_now,
 }
 
 void SequenceManagerImpl::DidRunTask(LazyNow& lazy_now) {
+  work_tracker_.AssertHasWork();
+
   ExecutingTask& executing_task =
       *main_thread_only().task_execution_stack.rbegin();
 
@@ -763,7 +778,11 @@ bool SequenceManagerImpl::HasPendingHighResolutionTasks() {
   return main_thread_only().wake_up_queue->has_pending_high_resolution_tasks();
 }
 
-bool SequenceManagerImpl::OnSystemIdle() {
+void SequenceManagerImpl::OnBeginWork() {
+  work_tracker_.OnBeginWork();
+}
+
+bool SequenceManagerImpl::OnIdle() {
   bool have_work_to_do = false;
   if (main_thread_only().time_domain) {
     auto wakeup = main_thread_only().wake_up_queue->GetNextDelayedWakeUp();
@@ -772,10 +791,20 @@ bool SequenceManagerImpl::OnSystemIdle() {
   }
   if (!have_work_to_do) {
     MaybeReclaimMemory();
-    if (main_thread_only().on_next_idle_callback)
-      std::move(main_thread_only().on_next_idle_callback).Run();
+    main_thread_only().on_next_idle_callbacks.Notify();
+    if (main_thread_only().task_execution_stack.empty()) {
+      work_tracker_.OnIdle();
+    }
   }
   return have_work_to_do;
+}
+
+void SequenceManagerImpl::WillRequestReloadImmediateWorkQueue() {
+  work_tracker_.WillRequestReloadImmediateWorkQueue();
+}
+
+SyncWorkAuthorization SequenceManagerImpl::TryAcquireSyncWorkAuthorization() {
+  return work_tracker_.TryAcquireSyncWorkAuthorization();
 }
 
 void SequenceManagerImpl::WillQueueTask(Task* pending_task) {
@@ -1004,6 +1033,10 @@ void SequenceManagerImpl::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
     ScheduleWork();
 }
 
+void SequenceManagerImpl::OnWorkAvailable() {
+  work_tracker_.OnBeginWork();
+}
+
 void SequenceManagerImpl::MaybeReclaimMemory() {
   if (!main_thread_only().memory_reclaim_scheduled)
     return;
@@ -1128,10 +1161,10 @@ void SequenceManagerImpl::RemoveDestructionObserver(
   main_thread_only().destruction_observers.RemoveObserver(destruction_observer);
 }
 
-void SequenceManagerImpl::RegisterOnNextIdleCallback(
+CallbackListSubscription SequenceManagerImpl::RegisterOnNextIdleCallback(
     OnceClosure on_next_idle_callback) {
-  DCHECK(!main_thread_only().on_next_idle_callback || !on_next_idle_callback);
-  main_thread_only().on_next_idle_callback = std::move(on_next_idle_callback);
+  return main_thread_only().on_next_idle_callbacks.Add(
+      std::move(on_next_idle_callback));
 }
 
 void SequenceManagerImpl::SetTaskRunner(

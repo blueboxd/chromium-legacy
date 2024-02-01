@@ -203,7 +203,7 @@ class SimulatedExtensionsContainer : public SimulatedToolbarElement {
   void SetIconVisibility(int position, bool visible) {
     DCHECK_GE(position, 0);
     DCHECK_LT(position, static_cast<int>(children().size()) - 1);
-    auto* const button = children()[position];
+    auto* const button = children()[position].get();
     if (visible) {
       layout()->FadeIn(button);
       visible_views_.insert(button);
@@ -439,13 +439,13 @@ class CompositeLayoutTest : public testing::Test {
       avatar_test_api_->IncrementTime(delta);
     if (extensions()->layout()->is_animating())
       extensions_test_api_->IncrementTime(delta);
-    toolbar_->Layout();
+    toolbar_->DeprecatedLayoutImmediately();
   }
 
   void ResetAnimation() {
     avatar()->layout()->ResetLayout();
     extensions()->layout()->ResetLayout();
-    toolbar()->Layout();
+    toolbar()->DeprecatedLayoutImmediately();
   }
 
   bool IsAnimating() const {

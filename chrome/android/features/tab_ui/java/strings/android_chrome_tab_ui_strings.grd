@@ -269,7 +269,7 @@
           other {Bookmark tabs}
         }
       </message>
-      <message name="IDS_ACCESSIBILITY_TAB_SELECTION_EDITOR_BOOKMARK_TABS_ACTION_BUTTON" desc="The accessibility string for the share button in the Tab Selection Editor Toolbar. Tap this button to bookmark all selected tabs.">
+      <message name="IDS_ACCESSIBILITY_TAB_SELECTION_EDITOR_BOOKMARK_TABS_ACTION_BUTTON" desc="The accessibility string for the bookmark button in the Tab Selection Editor Toolbar. Tap this button to bookmark all selected tabs.">
         {TABS_COUNT, plural,
           =1 {Bookmark <ph name="TABS_COUNT_ONE">%1$d<ex>1</ex></ph> selected tab}
           other {Bookmark <ph name="TABS_COUNT_MANY">%1$d<ex>8</ex></ph> selected tabs}
@@ -402,6 +402,20 @@
       </message>
       <message name="IDS_TAB_CLEANUP_MESSAGE_CARD_CLOSE_TABS_BUTTON" desc="Button text where a user can close suggested tabs without reviewing them.">
           Close without reviewing
+      </message>
+
+      <!-- Tab Declutter strings -->
+      <message name="IDS_TAB_DECLUTTER_MESSAGE_CARD_TEXT_INFO" desc="Text info for the Tab Declutter message card that indicates the number of archived tabs a user can review to close.">
+          {TABS_COUNT, plural,
+            =1 {You have <ph name="TABS_COUNT_ONE">%1$s<ex>1</ex></ph> archived tab}
+            other {You have <ph name="TABS_COUNT_MANY">%1$s<ex>8</ex></ph> archived tabs}
+          }
+      </message>
+      <message name="IDS_TAB_DECLUTTER_MESSAGE_CARD_REVIEW_SETTINGS_DESCRIPTION" desc="Acessibility string describing the settings icon on the tab declutter message card interface.">
+          Review the current declutter settings.
+      </message>
+      <message name="IDS_TAB_DECLUTTER_MESSAGE_CARD_REVIEW_ARCHIVED_TABS_DESCRIPTION" desc="Acessibility string describing the expand icon for reviewing archived tabs on the tab declutter message card interface.">
+          Review all archived tabs for declutter by entering this editor.
       </message>
 
       <!-- Accessibility strings for Tab Suggestion -->
@@ -567,6 +581,17 @@
       </message>
       <message name="IDS_CLOSE_ALL_TABS_DIALOG_MESSAGE_INCOGNITO" desc="When users click the menu item 'Close all tabs' in Incognito tab switcher, a dialog will pop up and this text is the message of the dialog.">
         Your activity in these Incognito tabs will be removed from this device
+      </message>
+
+      <!-- New Tab Group Dialog Strings -->
+      <message name="IDS_TAB_GROUP_CREATION_DIALOG_TITLE" desc="When users create a new tab group, a dialog will pop up and this text is the title of the dialog. [CHAR_LIMIT=24]">
+        New tab group
+      </message>
+      <message name="IDS_TAB_GROUP_CREATION_MISSING_TITLE" desc="Error message appearing when a user tries to create a tab group without a title. s[CHAR_LIMIT=32]">
+        Title required
+      </message>
+      <message name="IDS_TAB_GROUP_CREATION_POSITIVE_BUTTON_TEXT" desc="Text for creating a new tab group from the merged tabs after confirming the editable details">
+        Create group
       </message>
     </messages>
   </release>

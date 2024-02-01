@@ -37,6 +37,7 @@ using ::blink_testing::RecordedOpsAre;
 using ::blink_testing::RecordedOpsView;
 using ::cc::ClipPathOp;
 using ::cc::ClipRectOp;
+using ::cc::DrawRectOp;
 using ::cc::PaintOpEq;
 using ::cc::RestoreOp;
 using ::cc::SaveLayerAlphaOp;
@@ -63,10 +64,8 @@ class TestRenderingContext2D final
       : BaseRenderingContext2D(
             scheduler::GetSingleThreadTaskRunnerForTesting()),
         execution_context_(scope.GetExecutionContext()),
-        recorder_(this),
-        host_canvas_element_(nullptr) {
-    recorder_.beginRecording(gfx::Size(Width(), Height()));
-  }
+        recorder_(gfx::Size(Width(), Height()), this),
+        host_canvas_element_(nullptr) {}
   ~TestRenderingContext2D() override = default;
 
   // Returns the content of the paint recorder, leaving it empty.
@@ -96,10 +95,10 @@ class TestRenderingContext2D final
   Color GetCurrentColor() const override { return Color::kBlack; }
 
   cc::PaintCanvas* GetOrCreatePaintCanvas() override {
-    return recorder_.getRecordingCanvas();
+    return &recorder_.getRecordingCanvas();
   }
   cc::PaintCanvas* GetPaintCanvas() override {
-    return recorder_.getRecordingCanvas();
+    return &recorder_.getRecordingCanvas();
   }
   void WillDraw(const SkIRect& dirty_rect,
                 CanvasPerformanceMonitor::DrawType) override {}
@@ -136,8 +135,6 @@ class TestRenderingContext2D final
     return PredefinedColorSpace::kSRGB;
   }
 
-  void WillOverwriteCanvas() override {}
-
   HTMLCanvasElement* HostAsHTMLCanvasElement() const override {
     return host_canvas_element_;
   }
@@ -148,10 +145,13 @@ class TestRenderingContext2D final
       RestoreMatrixClipStack(canvas);
     }
   }
+  void RecordingCleared() override {}
 
   absl::optional<cc::PaintRecord> FlushCanvas(FlushReason) override {
     return recorder_.finishRecordingAsPicture();
   }
+
+  MemoryManagedPaintRecorder* Recorder() override { return &recorder_; }
 
   bool ResolveFont(const String& new_font) override {
     if (host_canvas_element_ == nullptr) {
@@ -169,9 +169,9 @@ class TestRenderingContext2D final
   }
 
   Member<ExecutionContext> execution_context_;
-  MemoryManagedPaintRecorder recorder_;
-  bool context_lost_ = false;
   bool restore_matrix_enabled_ = true;
+  bool context_lost_ = false;
+  MemoryManagedPaintRecorder recorder_;
   Member<HTMLCanvasElement> host_canvas_element_;
 };
 
@@ -1196,21 +1196,34 @@ TEST(BaseRenderingContextResetTest, DiscardsRenderStates) {
   context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
                       exception_state);
 
+  EXPECT_EQ(context->StateStackDepth(), 1);
+  EXPECT_EQ(context->OpenedLayerCount(), 1);
+
   // Discard the rendering states:
   context->reset();
-  // Discard the recording:
-  EXPECT_THAT(RecordedOpsView(context->FlushRecorder()), Not(IsEmpty()));
+
+  EXPECT_EQ(context->StateStackDepth(), 0);
+  EXPECT_EQ(context->OpenedLayerCount(), 0);
+
+  // `reset` discards all paint ops and reset the canvas content.
+  cc::PaintFlags reset_rect_flags;
+  EXPECT_THAT(context->FlushRecorder(),
+              RecordedOpsAre(PaintOpEq<DrawRectOp>(
+                  SkRect::MakeXYWH(0, 0, context->Width(), context->Height()),
+                  reset_rect_flags)));
+
   // The recording should now be empty:
   ASSERT_THAT(RecordedOpsView(context->FlushRecorder()), IsEmpty());
 
   // Do some operation and check that the rendering state was reset:
-  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
-                      exception_state);
+  context->fillRect(1, 2, 3, 4);
+
+  cc::PaintFlags fill_rect_flags;
+  fill_rect_flags.setAntiAlias(true);
+  fill_rect_flags.setFilterQuality(cc::PaintFlags::FilterQuality::kLow);
   EXPECT_THAT(context->FlushRecorder(),
-              RecordedOpsAre(PaintOpEq<SaveLayerAlphaOp>(1.0f),
-                             PaintOpEq<RestoreOp>()));
-  EXPECT_EQ(context->StateStackDepth(), 1);
-  EXPECT_EQ(context->OpenedLayerCount(), 1);
+              RecordedOpsAre(PaintOpEq<DrawRectOp>(SkRect::MakeXYWH(1, 2, 3, 4),
+                                                   fill_rect_flags)));
 }
 
 TEST(BaseRenderingContextLayersCallOrderTests, LoneBeginLayer) {
@@ -1385,6 +1398,30 @@ TEST(BaseRenderingContextLayersCallOrderTests, BeginLayerSaveEndLayer) {
             DOMExceptionCode::kInvalidStateError);
   EXPECT_EQ(context->StateStackDepth(), 2);
   EXPECT_EQ(context->OpenedLayerCount(), 1);
+}
+
+TEST(BaseRenderingContextLayersCallOrderTests, NestedLayers) {
+  test::TaskEnvironment task_environment;
+  ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
+  V8TestingScope scope;
+  auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
+  NonThrowableExceptionState no_exception;
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      no_exception);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      no_exception);
+  EXPECT_EQ(context->StateStackDepth(), 2);
+  EXPECT_EQ(context->OpenedLayerCount(), 2);
+  context->endLayer(no_exception);
+  context->endLayer(no_exception);
+  EXPECT_EQ(context->StateStackDepth(), 0);
+  EXPECT_EQ(context->OpenedLayerCount(), 0);
+
+  EXPECT_THAT(context->FlushRecorder(),
+              RecordedOpsAre(PaintOpEq<SaveLayerAlphaOp>(1.0f),  //
+                             PaintOpEq<SaveLayerAlphaOp>(1.0f),  //
+                             PaintOpEq<RestoreOp>(),             //
+                             PaintOpEq<RestoreOp>()));
 }
 
 TEST(BaseRenderingContextLayersCSSTests,

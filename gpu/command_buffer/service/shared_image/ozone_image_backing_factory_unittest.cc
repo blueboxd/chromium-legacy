@@ -95,7 +95,7 @@ TEST_F(OzoneImageBackingFactoryTest, UsesCacheForTextureHolders) {
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, viz::SinglePlaneFormat::kRGBA_8888, gpu::kNullSurfaceHandle,
       {100, 100}, gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2, "TestLabel", false);
+      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2_READ, "TestLabel", false);
   EXPECT_TRUE(backing);
 
   auto* backing_ptr = static_cast<OzoneImageBacking*>(backing.get());
@@ -176,7 +176,7 @@ TEST_F(OzoneImageBackingFactoryTest, UsesCacheForTextureHolders2) {
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, viz::SinglePlaneFormat::kRGBA_8888, gpu::kNullSurfaceHandle,
       {100, 100}, gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2, "TestLabel", false);
+      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2_READ, "TestLabel", false);
   EXPECT_TRUE(backing);
 
   auto* backing_ptr = static_cast<OzoneImageBacking*>(backing.get());
@@ -233,7 +233,7 @@ TEST_F(OzoneImageBackingFactoryTest, MarksContextLostOnContextLost) {
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, viz::SinglePlaneFormat::kRGBA_8888, gpu::kNullSurfaceHandle,
       {100, 100}, gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2, "TestLabel", false);
+      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2_READ, "TestLabel", false);
   EXPECT_TRUE(backing);
 
   auto* backing_ptr = static_cast<OzoneImageBacking*>(backing.get());
@@ -295,7 +295,7 @@ TEST_F(OzoneImageBackingFactoryTest, MarksContextLostOnContextLost2) {
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, viz::SinglePlaneFormat::kRGBA_8888, gpu::kNullSurfaceHandle,
       {100, 100}, gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2, "TestLabel", false);
+      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2_READ, "TestLabel", false);
   EXPECT_TRUE(backing);
 
   auto* backing_ptr = static_cast<OzoneImageBacking*>(backing.get());
@@ -379,7 +379,7 @@ TEST_F(OzoneImageBackingFactoryTest, RemovesTextureHoldersOnContextDestroy) {
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, viz::SinglePlaneFormat::kRGBA_8888, gpu::kNullSurfaceHandle,
       {100, 100}, gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2, "TestLabel", false);
+      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2_READ, "TestLabel", false);
   EXPECT_TRUE(backing);
 
   auto* backing_ptr = static_cast<OzoneImageBacking*>(backing.get());
@@ -422,7 +422,7 @@ TEST_F(OzoneImageBackingFactoryTest, RestoresContextOnAnotherContextDestroy) {
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, viz::SinglePlaneFormat::kRGBA_8888, gpu::kNullSurfaceHandle,
       {100, 100}, gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2, "TestLabel", false);
+      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2_READ, "TestLabel", false);
   EXPECT_TRUE(backing);
 
   auto shared_image =
@@ -471,7 +471,7 @@ TEST_F(OzoneImageBackingFactoryTest, FindsCompatibleContextAndReusesTexture) {
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, viz::SinglePlaneFormat::kRGBA_8888, gpu::kNullSurfaceHandle,
       {100, 100}, gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2, "TestLabel", false);
+      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2_READ, "TestLabel", false);
   EXPECT_TRUE(backing);
 
   auto* backing_ptr = static_cast<OzoneImageBacking*>(backing.get());
@@ -573,7 +573,7 @@ TEST_F(OzoneImageBackingFactoryTest, CorrectlyDestroysAndMarksContextLost) {
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, viz::SinglePlaneFormat::kRGBA_8888, gpu::kNullSurfaceHandle,
       {100, 100}, gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2, "TestLabel", false);
+      kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2_READ, "TestLabel", false);
   EXPECT_TRUE(backing);
 
   auto* backing_ptr = static_cast<OzoneImageBacking*>(backing.get());

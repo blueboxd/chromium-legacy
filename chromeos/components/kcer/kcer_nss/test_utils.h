@@ -39,18 +39,18 @@ class TokenHolder {
 
   // Returns a weak pointer to the token that can be used to post requests for
   // it. The pointer should only be dereferenced on the IO thread.
-  base::WeakPtr<internal::KcerTokenImplNss> GetWeakPtr() { return weak_ptr_; }
+  base::WeakPtr<internal::KcerToken> GetWeakPtr() { return weak_ptr_; }
 
  private:
-  base::WeakPtr<internal::KcerTokenImplNss> weak_ptr_;
+  base::WeakPtr<internal::KcerToken> weak_ptr_;
   std::unique_ptr<internal::KcerTokenImplNss> io_token_;
   crypto::ScopedTestNSSDB nss_slot_;
   bool is_initialized_ = false;
 };
 
 // Compares two KerPermissions, returns true if they are equal.
-bool KeyPermissionsEqual(const std::optional<chaps::KeyPermissions>& a,
-                         const std::optional<chaps::KeyPermissions>& b);
+bool ExpectKeyPermissionsEqual(const std::optional<chaps::KeyPermissions>& a,
+                               const std::optional<chaps::KeyPermissions>& b);
 
 // Verifies `signature` created with `signing_scheme` and the public key from
 // `spki` for `data_to_sign`. By default (with `strict` == true) only returns

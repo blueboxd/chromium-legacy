@@ -30,6 +30,21 @@ constexpr auto kTargetFrameTime = base::Seconds(1) / kTargetFps;
 // any commit for |kIdleThresholdFrames| frames.
 constexpr uint64_t kIdleThresholdFrames = 10;
 
+double calcVSyncError(const auto& frame_delta) {
+  // Calculate the number of display frames passed between two updates.
+  // Ideally we should have one frame for target FPS. In case the app drops
+  // frames, the number of dropped frames would be accounted. The result is
+  // fractional part of target frame interval |kTargetFrameTime| and is less
+  // or equal half of it.
+  const uint64_t display_frames_passed =
+      base::ClampRound<uint64_t>(frame_delta / kTargetFrameTime);
+  // Calculate difference from the ideal commit time, that should happen with
+  // equal delay for each display frame.
+  const base::TimeDelta vsync_error =
+      frame_delta - display_frames_passed * kTargetFrameTime;
+  return (vsync_error.InMicrosecondsF() * vsync_error.InMicrosecondsF());
+}
+
 }  // namespace
 
 ArcAppPerformanceTracingSession::ArcAppPerformanceTracingSession(
@@ -50,7 +65,8 @@ void ArcAppPerformanceTracingSession::Schedule(
     const base::TimeDelta& start_delay,
     const base::TimeDelta& tracing_period,
     DoneCallback on_done) {
-  DCHECK(!TracingActive());
+  DCHECK(!tracing_active());
+  DCHECK(!HasPresentFrames());
   DCHECK(!tracing_timer_.IsRunning());
   detect_idles_ = detect_idles;
   tracing_period_ = tracing_period;
@@ -65,7 +81,8 @@ void ArcAppPerformanceTracingSession::Schedule(
 }
 
 void ArcAppPerformanceTracingSession::Finish() {
-  DCHECK(TracingActive());
+  DCHECK(tracing_active());
+  DCHECK(HasPresentFrames());
   Analyze(ticks_now_callback_.Run() - tracing_start_);
 }
 
@@ -91,6 +108,7 @@ void ArcAppPerformanceTracingSession::Start() {
 
   VLOG(1) << "Start tracing.";
 
+  frame_times_.clear();
   frames_.emplace();
 
   exo::Surface* const surface = exo::GetShellRootSurface(window_);
@@ -111,15 +129,17 @@ void ArcAppPerformanceTracingSession::Start() {
         base::BindOnce(&ArcAppPerformanceTracingSession::Analyze,
                        base::Unretained(this), tracing_period_));
   }
+  tracing_active_ = true;
 }
 
-bool ArcAppPerformanceTracingSession::TracingActive() const {
+bool ArcAppPerformanceTracingSession::HasPresentFrames() const {
   return frames_.has_value();
 }
 
 void ArcAppPerformanceTracingSession::Stop(
     const std::optional<PerfTraceResult>& result) {
   VLOG(1) << "Stop tracing.";
+  tracing_active_ = false;
   frames_.reset();
   tracing_timer_.Stop();
   scoped_surface_.reset();
@@ -152,52 +172,54 @@ void ArcAppPerformanceTracingSession::OnCommit(exo::Surface* surface) {
   }
 
   frames_->ListenForPresent(surface);
+  frame_times_.emplace_back(ticks_now_callback_.Run());
 }
 
 void ArcAppPerformanceTracingSession::Analyze(base::TimeDelta tracing_period) {
-  if (frames_->presents().size() < 2 || tracing_period <= base::TimeDelta() ||
-      DetectIdle()) {
+  const auto& presents = frames_->presents();
+
+  if (frame_times_.size() < 2 || presents.size() < 2 ||
+      tracing_period <= base::TimeDelta() || DetectIdle()) {
     Stop(std::nullopt);
     return;
   }
 
   VLOG(1) << "Analyze tracing.";
 
+  std::vector<base::TimeDelta> commit_deltas, present_deltas;
+  commit_deltas.reserve(frame_times_.size() - 1);
+  present_deltas.reserve(presents.size() - 1);
+
+  PerfTraceResult result;
   double vsync_error_deviation_accumulator = 0;
-  std::vector<base::TimeDelta> deltas;
-  deltas.reserve(frames_->presents().size() - 1);
-
-  for (auto fitr = frames_->presents().begin() + 1;
-       fitr != frames_->presents().end(); fitr++) {
-    const auto frame_delta = base::Microseconds(*fitr - *(fitr - 1));
-    deltas.push_back(frame_delta);
-
-    // Calculate the number of display frames passed between two updates.
-    // Ideally we should have one frame for target FPS. In case the app drops
-    // frames, the number of dropped frames would be accounted. The result is
-    // fractional part of target frame interval |kTargetFrameTime| and is less
-    // or equal half of it.
-    const uint64_t display_frames_passed =
-        base::ClampRound<uint64_t>(frame_delta / kTargetFrameTime);
-    // Calculate difference from the ideal commit time, that should happen with
-    // equal delay for each display frame.
-    const base::TimeDelta vsync_error =
-        frame_delta - display_frames_passed * kTargetFrameTime;
-    vsync_error_deviation_accumulator +=
-        (vsync_error.InMicrosecondsF() * vsync_error.InMicrosecondsF());
+  for (auto fitr = frame_times_.begin() + 1; fitr != frame_times_.end();
+       fitr++) {
+    const auto frame_delta = *fitr - *(fitr - 1);
+    commit_deltas.push_back(frame_delta);
+    vsync_error_deviation_accumulator += calcVSyncError(frame_delta);
   }
-  const double present_deviation =
-      sqrt(vsync_error_deviation_accumulator / deltas.size());
+  result.commit_deviation =
+      sqrt(vsync_error_deviation_accumulator / commit_deltas.size());
+  vsync_error_deviation_accumulator = 0;
+  for (auto fitr = presents.begin() + 1; fitr != presents.end(); fitr++) {
+    const auto frame_delta = base::Microseconds(*fitr - *(fitr - 1));
+    present_deltas.push_back(frame_delta);
+    vsync_error_deviation_accumulator += calcVSyncError(frame_delta);
+  }
+  result.present_deviation =
+      sqrt(vsync_error_deviation_accumulator / present_deltas.size());
 
-  std::sort(deltas.begin(), deltas.end());
+  std::sort(commit_deltas.begin(), commit_deltas.end());
   // Get 10% and 90% indices.
-  const size_t lower_position = deltas.size() / 10;
-  const size_t upper_position = deltas.size() - 1 - lower_position;
-  const double render_quality = deltas[lower_position] / deltas[upper_position];
+  const size_t lower_position = commit_deltas.size() / 10;
+  const size_t upper_position = commit_deltas.size() - 1 - lower_position;
+  result.render_quality =
+      commit_deltas[lower_position] / commit_deltas[upper_position];
 
-  const double fps = deltas.size() / tracing_period.InSecondsF();
+  result.fps = commit_deltas.size() / tracing_period.InSecondsF();
+  result.perceived_fps = presents.size() / tracing_period.InSecondsF();
 
-  Stop(PerfTraceResult{fps, present_deviation, render_quality});
+  Stop(result);
 }
 
 }  // namespace arc

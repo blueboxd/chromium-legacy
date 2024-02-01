@@ -332,6 +332,24 @@ bool IsEligibleForDelay(const Resource& resource,
     return false;
   }
 
+  bool is_ad_resource = resource.GetResourceRequest().IsAdResource();
+  static const features::AsyncScriptExperimentalSchedulingTarget target =
+      features::kDelayAsyncScriptExecutionTargetParam.Get();
+  switch (target) {
+    case features::AsyncScriptExperimentalSchedulingTarget::kAds:
+      if (!is_ad_resource) {
+        return false;
+      }
+      break;
+    case features::AsyncScriptExperimentalSchedulingTarget::kNonAds:
+      if (is_ad_resource) {
+        return false;
+      }
+      break;
+    case features::AsyncScriptExperimentalSchedulingTarget::kBoth:
+      break;
+  }
+
   static const features::DelayAsyncScriptTarget delay_async_script_target =
       features::kDelayAsyncScriptTargetParam.Get();
   switch (delay_async_script_target) {
@@ -1085,6 +1103,17 @@ PendingScript* ScriptLoader::PrepareScript(
         // return.</spec>
         if (!module_script)
           return nullptr;
+
+        if (RuntimeEnabledFeatures::RenderBlockingInlineModuleScriptEnabled() &&
+            potentially_render_blocking &&
+            element_document.GetRenderBlockingResourceManager()) {
+          // After https://github.com/whatwg/html/pull/10035:
+          // <spec label="fetch-an-inline-module-script-graph" step="3">If el is
+          // potentially render-blocking, then block rendering on el and set
+          // options's  render-blocking  to true.</spec>
+          element_document.GetRenderBlockingResourceManager()->AddPendingScript(
+              *element_);
+        }
 
         // <spec label="fetch-an-inline-module-script-graph" step="4">Fetch the
         // descendants of and link script, given settings object, the

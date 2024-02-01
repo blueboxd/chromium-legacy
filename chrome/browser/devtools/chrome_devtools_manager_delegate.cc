@@ -223,7 +223,7 @@ bool ChromeDevToolsManagerDelegate::AllowInspectingRenderFrameHost(
 
   if (auto* web_app_provider =
           web_app::WebAppProvider::GetForWebApps(profile)) {
-    absl::optional<webapps::AppId> app_id =
+    std::optional<webapps::AppId> app_id =
         web_app_provider->registrar_unsafe().FindAppWithUrlInScope(
             rfh->GetMainFrame()->GetLastCommittedURL());
     if (app_id) {
@@ -439,11 +439,16 @@ void ChromeDevToolsManagerDelegate::ResetAndroidDeviceManagerForTesting() {
 void ChromeDevToolsManagerDelegate::CloseBrowserSoon() {
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce([]() {
-        if (GetInstance()) {
-          // Do not keep the application running anymore, we got an explicit
-          // request to close.
-          GetInstance()->keep_alive_.reset();
-        }
+        // Do not keep the application running anymore, we got an explicit
+        // request to close.
+        AllowBrowserToClose();
         chrome::ExitIgnoreUnloadHandlers();
       }));
+}
+
+// static
+void ChromeDevToolsManagerDelegate::AllowBrowserToClose() {
+  if (auto* instance = GetInstance()) {
+    instance->keep_alive_.reset();
+  }
 }

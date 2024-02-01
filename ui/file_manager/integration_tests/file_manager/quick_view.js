@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/ash/common/assert.js';
-
-import {DialogType} from '../dialog_type.js';
+import {DialogType} from '../prod/file_manager/shared_types.js';
 import {ExecuteScriptError} from '../remote_call.js';
 import {addEntries, ENTRIES, EntryType, getCaller, getHistogramCount, pending, repeatUntil, RootPath, sanitizeDate, sendTestMessage, TestEntryInfo, wait} from '../test_util.js';
 import {testcase} from '../testcase.js';
@@ -58,6 +56,8 @@ async function isDarkModeEnabled() {
 async function waitQuickViewOpen(appId) {
   const caller = getCaller();
 
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkQuickViewElementsDisplayBlock(elements) {
     const haveElements = Array.isArray(elements) && elements.length !== 0;
     if (!haveElements || elements[0].styles.display !== 'block') {
@@ -82,9 +82,11 @@ async function waitQuickViewOpen(appId) {
 async function waitQuickViewClose(appId) {
   const caller = getCaller();
 
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkQuickViewElementsDisplayNone(elements) {
     chrome.test.assertTrue(Array.isArray(elements));
-    if (elements.length == 0 || elements[0].styles.display !== 'none') {
+    if (elements.length === 0 || elements[0].styles.display !== 'none') {
       return pending(caller, 'Waiting for Quick View to close.');
     }
   }
@@ -300,6 +302,8 @@ async function executeJsInPreviewTagAndCatchErrors(appId, query, statement) {
 /**
  * Tests opening Quick View on a local downloads file.
  */
+// @ts-ignore: error TS4111: Property 'openQuickView' comes from an index
+// signature, so it must be accessed with ['openQuickView'].
 testcase.openQuickView = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
@@ -316,10 +320,14 @@ testcase.openQuickView = async () => {
 /**
  * Tests opening Quick View on a local downloads file in an open file dialog.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewDialog' comes from an index
+// signature, so it must be accessed with ['openQuickViewDialog'].
 testcase.openQuickViewDialog = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.hello], [],
+      // @ts-ignore: error TS2345: Argument of type '{ type: string; }' is not
+      // assignable to parameter of type 'FilesAppState'.
       {type: DialogType.SELECT_OPEN_FILE});
 
   // Open the file in Quick View.
@@ -333,6 +341,9 @@ testcase.openQuickViewDialog = async () => {
 /**
  * Tests that Quick View opens via the context menu with a single selection.
  */
+// @ts-ignore: error TS4111: Property
+// 'openQuickViewViaContextMenuSingleSelection' comes from an index signature,
+// so it must be accessed with ['openQuickViewViaContextMenuSingleSelection'].
 testcase.openQuickViewViaContextMenuSingleSelection = async () => {
   // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
   const appId = await setupAndWaitUntilReady(
@@ -349,6 +360,9 @@ testcase.openQuickViewViaContextMenuSingleSelection = async () => {
  * Tests that Quick View opens via the context menu when multiple files
  * are selected (file-list check-select mode).
  */
+// @ts-ignore: error TS4111: Property
+// 'openQuickViewViaContextMenuCheckSelections' comes from an index signature,
+// so it must be accessed with ['openQuickViewViaContextMenuCheckSelections'].
 testcase.openQuickViewViaContextMenuCheckSelections = async () => {
   // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
   const appId = await setupAndWaitUntilReady(
@@ -356,6 +370,8 @@ testcase.openQuickViewViaContextMenuCheckSelections = async () => {
 
   // Ctrl+A to select all files in the file-list.
   const ctrlA = ['#file-list', 'a', true, false, false];
+  // @ts-ignore: error TS2556: A spread argument must either have a tuple type
+  // or be passed to a rest parameter.
   await remoteCall.fakeKeyDown(appId, ...ctrlA);
 
   // Check: clicking the context menu "Get Info" should open Quick View.
@@ -365,6 +381,8 @@ testcase.openQuickViewViaContextMenuCheckSelections = async () => {
 /**
  * Tests opening then closing Quick View on a local downloads file.
  */
+// @ts-ignore: error TS4111: Property 'closeQuickView' comes from an index
+// signature, so it must be accessed with ['closeQuickView'].
 testcase.closeQuickView = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
@@ -380,6 +398,8 @@ testcase.closeQuickView = async () => {
 /**
  * Tests opening Quick View on a Drive file.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewDrive' comes from an index
+// signature, so it must be accessed with ['openQuickViewDrive'].
 testcase.openQuickViewDrive = async () => {
   // Open Files app on Drive containing ENTRIES.hello.
   const appId =
@@ -401,6 +421,8 @@ testcase.openQuickViewDrive = async () => {
 /**
  * Tests opening Quick View on a Smbfs file.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewSmbfs' comes from an index
+// signature, so it must be accessed with ['openQuickViewSmbfs'].
 testcase.openQuickViewSmbfs = async () => {
   // Open Files app on Downloads containing ENTRIES.photos.
   const appId =
@@ -426,6 +448,8 @@ testcase.openQuickViewSmbfs = async () => {
 /**
  * Tests opening Quick View on a USB file.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewUsb' comes from an index
+// signature, so it must be accessed with ['openQuickViewUsb'].
 testcase.openQuickViewUsb = async () => {
   // Open Files app on Downloads containing ENTRIES.photos.
   const appId =
@@ -439,6 +463,9 @@ testcase.openQuickViewUsb = async () => {
 /**
  * Tests opening Quick View on a removable partition.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewRemovablePartitions' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewRemovablePartitions'].
 testcase.openQuickViewRemovablePartitions = async () => {
   // Open Files app on Downloads containing ENTRIES.photos.
   const appId =
@@ -453,6 +480,7 @@ testcase.openQuickViewRemovablePartitions = async () => {
   await directoryTree.navigateToPath('/Drive Label');
 
   // Wait for 2 removable partitions to appear in the directory tree.
+  await directoryTree.expandTreeItemByLabel('Drive Label');
   await directoryTree.waitForChildItemsCountByLabel('Drive Label', 2);
 
   // Click to open the first partition.
@@ -460,6 +488,10 @@ testcase.openQuickViewRemovablePartitions = async () => {
 
   // Check: the USB files should appear in the file list.
   const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
+  // @ts-ignore: error TS2345: Argument of type '{ ignoreLastModifiedTime: true;
+  // }' is not assignable to parameter of type '{ orderCheck: boolean | null |
+  // undefined; ignoreFileSize: boolean | null | undefined;
+  // ignoreLastModifiedTime: boolean | null | undefined; }'.
   await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 
   // Open the file in Quick View.
@@ -470,6 +502,8 @@ testcase.openQuickViewRemovablePartitions = async () => {
  * Tests opening Quick View on an item that was Trashed shows original location
  * instead of the current file location.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewTrash' comes from an index
+// signature, so it must be accessed with ['openQuickViewTrash'].
 testcase.openQuickViewTrash = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
@@ -502,6 +536,9 @@ testcase.openQuickViewTrash = async () => {
 /**
  * Tests seeing dashes for an empty last_modified for DocumentsProvider.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewLastModifiedMetaData' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewLastModifiedMetaData'].
 testcase.openQuickViewLastModifiedMetaData = async () => {
   const documentsProviderVolumeType = 'documents_provider';
 
@@ -520,6 +557,10 @@ testcase.openQuickViewLastModifiedMetaData = async () => {
 
   // Check: the DocumentsProvider files should appear in the file list.
   const files = TestEntryInfo.getExpectedRows(MODIFIED_ENTRY_SET);
+  // @ts-ignore: error TS2345: Argument of type '{ ignoreLastModifiedTime: true;
+  // }' is not assignable to parameter of type '{ orderCheck: boolean | null |
+  // undefined; ignoreFileSize: boolean | null | undefined;
+  // ignoreLastModifiedTime: boolean | null | undefined; }'.
   await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 
   // Open a DocumentsProvider file in Quick View.
@@ -532,6 +573,8 @@ testcase.openQuickViewLastModifiedMetaData = async () => {
   await closeQuickView(appId);
 
   // Open a DocumentsProvider file in Quick View.
+  // @ts-ignore: error TS4111: Property 'invalidLastModifiedDate' comes from an
+  // index signature, so it must be accessed with ['invalidLastModifiedDate'].
   await openQuickView(appId, ENTRIES.invalidLastModifiedDate.nameText);
 
   // Modified time should be displayed as "--" when it's absent.
@@ -543,6 +586,8 @@ testcase.openQuickViewLastModifiedMetaData = async () => {
 /**
  * Tests opening Quick View on an MTP file.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewMtp' comes from an index
+// signature, so it must be accessed with ['openQuickViewMtp'].
 testcase.openQuickViewMtp = async () => {
   // Open Files app on Downloads containing ENTRIES.photos.
   const appId =
@@ -557,6 +602,10 @@ testcase.openQuickViewMtp = async () => {
 
   // Check: the MTP files should appear in the file list.
   const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
+  // @ts-ignore: error TS2345: Argument of type '{ ignoreLastModifiedTime: true;
+  // }' is not assignable to parameter of type '{ orderCheck: boolean | null |
+  // undefined; ignoreFileSize: boolean | null | undefined;
+  // ignoreLastModifiedTime: boolean | null | undefined; }'.
   await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 
   // Open an MTP file in Quick View.
@@ -566,6 +615,8 @@ testcase.openQuickViewMtp = async () => {
 /**
  * Tests opening Quick View on a Crostini file.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewCrostini' comes from an
+// index signature, so it must be accessed with ['openQuickViewCrostini'].
 testcase.openQuickViewCrostini = async () => {
   // Open Files app on Downloads containing ENTRIES.photos.
   const appId =
@@ -579,6 +630,8 @@ testcase.openQuickViewCrostini = async () => {
 /**
  * Tests opening Quick View on a GuestOS file.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewGuestOs' comes from an index
+// signature, so it must be accessed with ['openQuickViewGuestOs'].
 testcase.openQuickViewGuestOs = async () => {
   // Open Files app on Downloads containing ENTRIES.photos.
   const appId =
@@ -592,11 +645,15 @@ testcase.openQuickViewGuestOs = async () => {
 /**
  * Tests opening Quick View on an Android file.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewAndroid' comes from an index
+// signature, so it must be accessed with ['openQuickViewAndroid'].
 testcase.openQuickViewAndroid = async () => {
   // Open Files app on Android files.
   const appId = await openNewWindow(RootPath.ANDROID_FILES);
 
   // Add files to the Android files volume.
+  // @ts-ignore: error TS4111: Property 'documentsText' comes from an index
+  // signature, so it must be accessed with ['documentsText'].
   const entrySet = BASIC_ANDROID_ENTRY_SET.concat([ENTRIES.documentsText]);
   await addEntries(['android_files'], entrySet);
 
@@ -605,6 +662,10 @@ testcase.openQuickViewAndroid = async () => {
 
   // Check: the basic Android file set should appear in the file list.
   let files = TestEntryInfo.getExpectedRows(BASIC_ANDROID_ENTRY_SET);
+  // @ts-ignore: error TS2345: Argument of type '{ ignoreLastModifiedTime: true;
+  // }' is not assignable to parameter of type '{ orderCheck: boolean | null |
+  // undefined; ignoreFileSize: boolean | null | undefined;
+  // ignoreLastModifiedTime: boolean | null | undefined; }'.
   await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 
   // Navigate to the Android files '/Documents' directory.
@@ -612,10 +673,18 @@ testcase.openQuickViewAndroid = async () => {
   await directoryTree.navigateToPath('/My files/Play files/Documents');
 
   // Check: the 'android.txt' file should appear in the file list.
+  // @ts-ignore: error TS4111: Property 'documentsText' comes from an index
+  // signature, so it must be accessed with ['documentsText'].
   files = [ENTRIES.documentsText.getExpectedRow()];
+  // @ts-ignore: error TS2345: Argument of type '{ ignoreLastModifiedTime: true;
+  // }' is not assignable to parameter of type '{ orderCheck: boolean | null |
+  // undefined; ignoreFileSize: boolean | null | undefined;
+  // ignoreLastModifiedTime: boolean | null | undefined; }'.
   await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 
   // Open the Android file in Quick View.
+  // @ts-ignore: error TS4111: Property 'documentsText' comes from an index
+  // signature, so it must be accessed with ['documentsText'].
   const documentsFileName = ENTRIES.documentsText.nameText;
   await openQuickView(appId, documentsFileName);
 };
@@ -623,11 +692,16 @@ testcase.openQuickViewAndroid = async () => {
 /**
  * Tests opening Quick View on an Android file on GuestOS.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewAndroidGuestOs' comes from
+// an index signature, so it must be accessed with
+// ['openQuickViewAndroidGuestOs'].
 testcase.openQuickViewAndroidGuestOs = async () => {
   // Open Files app on Android files.
   const appId = await openNewWindow(RootPath.ANDROID_FILES);
 
   // Add files to the Android files volume.
+  // @ts-ignore: error TS4111: Property 'documentsText' comes from an index
+  // signature, so it must be accessed with ['documentsText'].
   const entrySet = BASIC_ANDROID_ENTRY_SET.concat([ENTRIES.documentsText]);
   await addEntries(['android_files'], entrySet);
 
@@ -636,6 +710,10 @@ testcase.openQuickViewAndroidGuestOs = async () => {
 
   // Check: the basic Android file set should appear in the file list.
   let files = TestEntryInfo.getExpectedRows(BASIC_ANDROID_ENTRY_SET);
+  // @ts-ignore: error TS2345: Argument of type '{ ignoreLastModifiedTime: true;
+  // }' is not assignable to parameter of type '{ orderCheck: boolean | null |
+  // undefined; ignoreFileSize: boolean | null | undefined;
+  // ignoreLastModifiedTime: boolean | null | undefined; }'.
   await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 
   // Navigate to the Android files '/Documents' directory.
@@ -643,10 +721,18 @@ testcase.openQuickViewAndroidGuestOs = async () => {
   await directoryTree.navigateToPath('/My files/Play files/Documents');
 
   // Check: the 'android.txt' file should appear in the file list.
+  // @ts-ignore: error TS4111: Property 'documentsText' comes from an index
+  // signature, so it must be accessed with ['documentsText'].
   files = [ENTRIES.documentsText.getExpectedRow()];
+  // @ts-ignore: error TS2345: Argument of type '{ ignoreLastModifiedTime: true;
+  // }' is not assignable to parameter of type '{ orderCheck: boolean | null |
+  // undefined; ignoreFileSize: boolean | null | undefined;
+  // ignoreLastModifiedTime: boolean | null | undefined; }'.
   await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 
   // Open the Android file in Quick View.
+  // @ts-ignore: error TS4111: Property 'documentsText' comes from an index
+  // signature, so it must be accessed with ['documentsText'].
   const documentsFileName = ENTRIES.documentsText.nameText;
   await openQuickView(appId, documentsFileName);
 };
@@ -654,6 +740,9 @@ testcase.openQuickViewAndroidGuestOs = async () => {
 /**
  * Tests opening Quick View on a DocumentsProvider root.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewDocumentsProvider' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewDocumentsProvider'].
 testcase.openQuickViewDocumentsProvider = async () => {
   const DOCUMENTS_PROVIDER_VOLUME_TYPE = 'documents_provider';
 
@@ -686,6 +775,8 @@ testcase.openQuickViewDocumentsProvider = async () => {
 
   // Wait for the Quick View preview to load and display its content.
   const caller = getCaller();
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -702,6 +793,7 @@ testcase.openQuickViewDocumentsProvider = async () => {
   });
 
   // Wait until the preview displays the file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -724,6 +816,8 @@ testcase.openQuickViewDocumentsProvider = async () => {
  * Tests opening Quick View with a local text document identified as text from
  * file sniffing (the first word of the file is "From ", note trailing space).
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewSniffedText' comes from an
+// index signature, so it must be accessed with ['openQuickViewSniffedText'].
 testcase.openQuickViewSniffedText = async () => {
   const caller = getCaller();
 
@@ -735,12 +829,18 @@ testcase.openQuickViewSniffedText = async () => {
 
   // Open Files app on Downloads containing ENTRIES.plainText.
   const appId =
+      // @ts-ignore: error TS4111: Property 'plainText' comes from an index
+      // signature, so it must be accessed with ['plainText'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.plainText], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'plainText' comes from an index
+  // signature, so it must be accessed with ['plainText'].
   await openQuickView(appId, ENTRIES.plainText.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -765,6 +865,9 @@ testcase.openQuickViewSniffedText = async () => {
  * Tests opening Quick View with a local text document whose MIME type cannot
  * be identified by MIME type sniffing.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewTextFileWithUnknownMimeType'
+// comes from an index signature, so it must be accessed with
+// ['openQuickViewTextFileWithUnknownMimeType'].
 testcase.openQuickViewTextFileWithUnknownMimeType = async () => {
   const caller = getCaller();
 
@@ -782,6 +885,8 @@ testcase.openQuickViewTextFileWithUnknownMimeType = async () => {
   await openQuickView(appId, ENTRIES.hello.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -805,6 +910,8 @@ testcase.openQuickViewTextFileWithUnknownMimeType = async () => {
  * Tests opening Quick View with a text file containing some UTF-8 encoded
  * characters: crbug.com/1064855
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewUtf8Text' comes from an
+// index signature, so it must be accessed with ['openQuickViewUtf8Text'].
 testcase.openQuickViewUtf8Text = async () => {
   const caller = getCaller();
 
@@ -822,6 +929,8 @@ testcase.openQuickViewUtf8Text = async () => {
   await openQuickView(appId, ENTRIES.utf8Text.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -838,6 +947,7 @@ testcase.openQuickViewUtf8Text = async () => {
   });
 
   // Wait until the preview displays the file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -858,6 +968,8 @@ testcase.openQuickViewUtf8Text = async () => {
  * Tests opening Quick View and scrolling its preview contents which contains a
  * tall text document.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewScrollText' comes from an
+// index signature, so it must be accessed with ['openQuickViewScrollText'].
 testcase.openQuickViewScrollText = async () => {
   const caller = getCaller();
 
@@ -867,11 +979,13 @@ testcase.openQuickViewScrollText = async () => {
    */
   const preview = ['#quick-view', `#dialog[open] ${previewTag}.text-content`];
 
+  // @ts-ignore: error TS7006: Parameter 'y' implicitly has an 'any' type.
   function scrollQuickViewTextBy(y) {
     const doScrollBy = `${contentWindowQuery}.scrollBy(0,${y})`;
     return remoteCall.executeJsInPreviewTag(appId, preview, doScrollBy);
   }
 
+  // @ts-ignore: error TS7006: Parameter 'scrollY' implicitly has an 'any' type.
   async function checkQuickViewTextScrollY(scrollY) {
     if (!scrollY || Number(scrollY.toString()) <= 150) {
       await scrollQuickViewTextBy(100);
@@ -881,12 +995,18 @@ testcase.openQuickViewScrollText = async () => {
 
   // Open Files app on Downloads containing ENTRIES.tallText.
   const appId =
+      // @ts-ignore: error TS4111: Property 'tallText' comes from an index
+      // signature, so it must be accessed with ['tallText'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tallText], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'tallText' comes from an index
+  // signature, so it must be accessed with ['tallText'].
   await openQuickView(appId, ENTRIES.tallText.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -906,6 +1026,7 @@ testcase.openQuickViewScrollText = async () => {
   const getScrollY = `${contentWindowQuery}.scrollY`;
 
   // The initial preview scrollY should be 0.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const scrollY =
         await executeJsInPreviewTagAndCatchErrors(appId, preview, getScrollY);
@@ -925,6 +1046,8 @@ testcase.openQuickViewScrollText = async () => {
 /**
  * Tests opening Quick View containing a PDF document.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewPdf' comes from an index
+// signature, so it must be accessed with ['openQuickViewPdf'].
 testcase.openQuickViewPdf = async () => {
   const caller = getCaller();
 
@@ -936,12 +1059,18 @@ testcase.openQuickViewPdf = async () => {
 
   // Open Files app on Downloads containing ENTRIES.tallPdf.
   const appId =
+      // @ts-ignore: error TS4111: Property 'tallPdf' comes from an index
+      // signature, so it must be accessed with ['tallPdf'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tallPdf], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'tallPdf' comes from an index signature,
+  // so it must be accessed with ['tallPdf'].
   await openQuickView(appId, ENTRIES.tallPdf.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewPdfLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -958,6 +1087,7 @@ testcase.openQuickViewPdf = async () => {
   });
 
   // Get the preview embed type attribute.
+  // @ts-ignore: error TS7006: Parameter 'type' implicitly has an 'any' type.
   function checkPdfEmbedType(type) {
     const haveElements = Array.isArray(type) && type.length === 1;
     if (!haveElements || !type[0].toString().includes('pdf')) {
@@ -984,6 +1114,8 @@ testcase.openQuickViewPdf = async () => {
 /**
  * Tests opening Quick View on a PDF document that opens a popup JS dialog.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewPdfPopup' comes from an
+// index signature, so it must be accessed with ['openQuickViewPdfPopup'].
 testcase.openQuickViewPdfPopup = async () => {
   const caller = getCaller();
 
@@ -995,12 +1127,18 @@ testcase.openQuickViewPdfPopup = async () => {
 
   // Open Files app on Downloads containing ENTRIES.popupPdf.
   const appId =
+      // @ts-ignore: error TS4111: Property 'popupPdf' comes from an index
+      // signature, so it must be accessed with ['popupPdf'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.popupPdf], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'popupPdf' comes from an index
+  // signature, so it must be accessed with ['popupPdf'].
   await openQuickView(appId, ENTRIES.popupPdf.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewPdfLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1017,6 +1155,7 @@ testcase.openQuickViewPdfPopup = async () => {
   });
 
   // Get the preview embed type attribute.
+  // @ts-ignore: error TS7006: Parameter 'type' implicitly has an 'any' type.
   function checkPdfEmbedType(type) {
     const haveElements = Array.isArray(type) && type.length === 1;
     if (!haveElements || !type[0].toString().includes('pdf')) {
@@ -1044,6 +1183,9 @@ testcase.openQuickViewPdfPopup = async () => {
  * Tests that Quick View does not display a PDF file preview when that is
  * disabled by system settings (preferences).
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewPdfPreviewsDisabled' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewPdfPreviewsDisabled'].
 testcase.openQuickViewPdfPreviewsDisabled = async () => {
   const caller = getCaller();
 
@@ -1058,12 +1200,18 @@ testcase.openQuickViewPdfPreviewsDisabled = async () => {
 
   // Open Files app on Downloads containing ENTRIES.tallPdf.
   const appId =
+      // @ts-ignore: error TS4111: Property 'tallPdf' comes from an index
+      // signature, so it must be accessed with ['tallPdf'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tallPdf], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'tallPdf' comes from an index signature,
+  // so it must be accessed with ['tallPdf'].
   await openQuickView(appId, ENTRIES.tallPdf.nameText);
 
   // Wait for the innerContentPanel to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkInnerContentPanel(elements) {
     const haveElements = Array.isArray(elements) && elements.length === 1;
     if (!haveElements || elements[0].styles.display !== 'flex') {
@@ -1086,6 +1234,8 @@ testcase.openQuickViewPdfPreviewsDisabled = async () => {
 /**
  * Tests opening Quick View with a '.mhtml' filename extension.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewMhtml' comes from an index
+// signature, so it must be accessed with ['openQuickViewMhtml'].
 testcase.openQuickViewMhtml = async () => {
   const caller = getCaller();
 
@@ -1097,12 +1247,18 @@ testcase.openQuickViewMhtml = async () => {
 
   // Open Files app on Downloads containing ENTRIES.plainText.
   const appId =
+      // @ts-ignore: error TS4111: Property 'mHtml' comes from an index
+      // signature, so it must be accessed with ['mHtml'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.mHtml], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'mHtml' comes from an index signature,
+  // so it must be accessed with ['mHtml'].
   await openQuickView(appId, ENTRIES.mHtml.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1131,6 +1287,8 @@ testcase.openQuickViewMhtml = async () => {
  * Tests opening Quick View and scrolling its preview contents which contains a
  * tall html document.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewScrollHtml' comes from an
+// index signature, so it must be accessed with ['openQuickViewScrollHtml'].
 testcase.openQuickViewScrollHtml = async () => {
   const caller = getCaller();
 
@@ -1140,11 +1298,13 @@ testcase.openQuickViewScrollHtml = async () => {
    */
   const preview = ['#quick-view', 'files-safe-media[type="html"]', previewTag];
 
+  // @ts-ignore: error TS7006: Parameter 'y' implicitly has an 'any' type.
   function scrollQuickViewHtmlBy(y) {
     const doScrollBy = `window.scrollBy(0,${y})`;
     return remoteCall.executeJsInPreviewTag(appId, preview, doScrollBy);
   }
 
+  // @ts-ignore: error TS7006: Parameter 'scrollY' implicitly has an 'any' type.
   async function checkQuickViewHtmlScrollY(scrollY) {
     if (!scrollY || Number(scrollY.toString()) <= 200) {
       await scrollQuickViewHtmlBy(100);
@@ -1154,12 +1314,18 @@ testcase.openQuickViewScrollHtml = async () => {
 
   // Open Files app on Downloads containing ENTRIES.tallHtml.
   const appId =
+      // @ts-ignore: error TS4111: Property 'tallHtml' comes from an index
+      // signature, so it must be accessed with ['tallHtml'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tallHtml], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'tallHtml' comes from an index
+  // signature, so it must be accessed with ['tallHtml'].
   await openQuickView(appId, ENTRIES.tallHtml.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewHtmlLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1179,6 +1345,7 @@ testcase.openQuickViewScrollHtml = async () => {
   const getScrollY = 'window.scrollY';
 
   // The initial preview scrollY should be 0.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const scrollY =
         await executeJsInPreviewTagAndCatchErrors(appId, preview, getScrollY);
@@ -1203,6 +1370,9 @@ testcase.openQuickViewScrollHtml = async () => {
  * color of the <files-safe-media type="html"> that contains the preview is
  * solid white.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewBackgroundColorHtml' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewBackgroundColorHtml'].
 testcase.openQuickViewBackgroundColorHtml = async () => {
   const caller = getCaller();
 
@@ -1215,12 +1385,18 @@ testcase.openQuickViewBackgroundColorHtml = async () => {
 
   // Open Files app on Downloads containing ENTRIES.tallHtml.
   const appId =
+      // @ts-ignore: error TS4111: Property 'tallHtml' comes from an index
+      // signature, so it must be accessed with ['tallHtml'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tallHtml], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'tallHtml' comes from an index
+  // signature, so it must be accessed with ['tallHtml'].
   await openQuickView(appId, ENTRIES.tallHtml.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewHtmlLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1248,6 +1424,8 @@ testcase.openQuickViewBackgroundColorHtml = async () => {
 /**
  * Tests opening Quick View containing an audio file without album preview.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewAudio' comes from an index
+// signature, so it must be accessed with ['openQuickViewAudio'].
 testcase.openQuickViewAudio = async () => {
   const caller = getCaller();
 
@@ -1265,12 +1443,18 @@ testcase.openQuickViewAudio = async () => {
 
   // Open Files app on Downloads containing ENTRIES.beautiful song.
   const appId =
+      // @ts-ignore: error TS4111: Property 'beautiful' comes from an index
+      // signature, so it must be accessed with ['beautiful'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'beautiful' comes from an index
+  // signature, so it must be accessed with ['beautiful'].
   await openQuickView(appId, ENTRIES.beautiful.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewAudioLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1316,6 +1500,8 @@ testcase.openQuickViewAudio = async () => {
 /**
  * Tests opening Quick View containing an audio file on Drive.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewAudioOnDrive' comes from an
+// index signature, so it must be accessed with ['openQuickViewAudioOnDrive'].
 testcase.openQuickViewAudioOnDrive = async () => {
   const caller = getCaller();
 
@@ -1327,12 +1513,18 @@ testcase.openQuickViewAudioOnDrive = async () => {
 
   // Open Files app on Downloads containing ENTRIES.beautiful song.
   const appId =
+      // @ts-ignore: error TS4111: Property 'beautiful' comes from an index
+      // signature, so it must be accessed with ['beautiful'].
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.beautiful]);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'beautiful' comes from an index
+  // signature, so it must be accessed with ['beautiful'].
   await openQuickView(appId, ENTRIES.beautiful.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewAudioLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1367,6 +1559,9 @@ testcase.openQuickViewAudioOnDrive = async () => {
  * Tests opening Quick View containing an audio file that has an album art
  * image in its metadata.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewAudioWithImageMetadata'
+// comes from an index signature, so it must be accessed with
+// ['openQuickViewAudioWithImageMetadata'].
 testcase.openQuickViewAudioWithImageMetadata = async () => {
   const caller = getCaller();
 
@@ -1396,6 +1591,8 @@ testcase.openQuickViewAudioWithImageMetadata = async () => {
   await openQuickView(appId, id3Audio.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1425,6 +1622,8 @@ testcase.openQuickViewAudioWithImageMetadata = async () => {
 /**
  * Tests opening Quick View containing an image with extension 'jpg'.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewImageJpg' comes from an
+// index signature, so it must be accessed with ['openQuickViewImageJpg'].
 testcase.openQuickViewImageJpg = async () => {
   const caller = getCaller();
 
@@ -1436,12 +1635,18 @@ testcase.openQuickViewImageJpg = async () => {
 
   // Open Files app on Downloads containing ENTRIES.smallJpeg.
   const appId =
+      // @ts-ignore: error TS4111: Property 'smallJpeg' comes from an index
+      // signature, so it must be accessed with ['smallJpeg'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.smallJpeg], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'smallJpeg' comes from an index
+  // signature, so it must be accessed with ['smallJpeg'].
   await openQuickView(appId, ENTRIES.smallJpeg.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1479,6 +1684,8 @@ testcase.openQuickViewImageJpg = async () => {
 /**
  * Tests opening Quick View containing an image with extension 'jpeg'.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewImageJpeg' comes from an
+// index signature, so it must be accessed with ['openQuickViewImageJpeg'].
 testcase.openQuickViewImageJpeg = async () => {
   const caller = getCaller();
 
@@ -1490,12 +1697,18 @@ testcase.openQuickViewImageJpeg = async () => {
 
   // Open Files app on Downloads containing ENTRIES.sampleJpeg.
   const appId = await setupAndWaitUntilReady(
+      // @ts-ignore: error TS4111: Property 'sampleJpeg' comes from an index
+      // signature, so it must be accessed with ['sampleJpeg'].
       RootPath.DOWNLOADS, [ENTRIES.sampleJpeg], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'sampleJpeg' comes from an index
+  // signature, so it must be accessed with ['sampleJpeg'].
   await openQuickView(appId, ENTRIES.sampleJpeg.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1534,6 +1747,8 @@ testcase.openQuickViewImageJpeg = async () => {
  * Tests that opening Quick View on a JPEG image with EXIF displays the EXIF
  * information in the QuickView Metadata Box.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewImageExif' comes from an
+// index signature, so it must be accessed with ['openQuickViewImageExif'].
 testcase.openQuickViewImageExif = async () => {
   const caller = getCaller();
 
@@ -1545,12 +1760,18 @@ testcase.openQuickViewImageExif = async () => {
 
   // Open Files app on Downloads containing ENTRIES.exifImage.
   const appId =
+      // @ts-ignore: error TS4111: Property 'exifImage' comes from an index
+      // signature, so it must be accessed with ['exifImage'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.exifImage], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'exifImage' comes from an index
+  // signature, so it must be accessed with ['exifImage'].
   await openQuickView(appId, ENTRIES.exifImage.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1587,6 +1808,8 @@ testcase.openQuickViewImageExif = async () => {
  * Tests opening Quick View on an RAW image. The RAW image has EXIF and that
  * information should be displayed in the QuickView metadata box.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewImageRaw' comes from an
+// index signature, so it must be accessed with ['openQuickViewImageRaw'].
 testcase.openQuickViewImageRaw = async () => {
   const caller = getCaller();
 
@@ -1598,12 +1821,18 @@ testcase.openQuickViewImageRaw = async () => {
 
   // Open Files app on Downloads containing ENTRIES.rawImage.
   const appId =
+      // @ts-ignore: error TS4111: Property 'rawImage' comes from an index
+      // signature, so it must be accessed with ['rawImage'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.rawImage], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'rawImage' comes from an index
+  // signature, so it must be accessed with ['rawImage'].
   await openQuickView(appId, ENTRIES.rawImage.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1636,6 +1865,9 @@ testcase.openQuickViewImageRaw = async () => {
  * Tests opening Quick View on an RAW .NEF image and that the dimensions
  * shown in the metadata box respect the image EXIF orientation.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewImageRawWithOrientation'
+// comes from an index signature, so it must be accessed with
+// ['openQuickViewImageRawWithOrientation'].
 testcase.openQuickViewImageRawWithOrientation = async () => {
   const caller = getCaller();
 
@@ -1648,12 +1880,18 @@ testcase.openQuickViewImageRawWithOrientation = async () => {
 
   // Open Files app on Downloads containing ENTRIES.rawNef.
   const appId =
+      // @ts-ignore: error TS4111: Property 'nefImage' comes from an index
+      // signature, so it must be accessed with ['nefImage'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.nefImage], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'nefImage' comes from an index
+  // signature, so it must be accessed with ['nefImage'].
   await openQuickView(appId, ENTRIES.nefImage.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1682,16 +1920,24 @@ testcase.openQuickViewImageRawWithOrientation = async () => {
   const element = await remoteCall.waitForElement(appId, filesSafeMedia);
   const image = new Image();
   image.onload = () => {
+    // @ts-ignore: error TS2339: Property 'imageSize' does not exist on type
+    // 'HTMLImageElement'.
     image.imageSize = `${image.naturalWidth} x ${image.naturalHeight}`;
   };
 
   const sourceContent =
+      // @ts-ignore: error TS4111: Property 'src' comes from an index signature,
+      // so it must be accessed with ['src'].
       /** @type {FilePreviewContent} */ (JSON.parse(element.attributes.src));
-  assert(sourceContent.data);
+
+  chrome.test.assertTrue(!!sourceContent.data);
   image.src = sourceContent.data;
 
   // Check: the preview thumbnail should have an orientiated size.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
+    // @ts-ignore: error TS2339: Property 'imageSize' does not exist on type
+    // 'HTMLImageElement'.
     if (!image.complete || image.imageSize !== '120 x 160') {
       return pending(caller, 'Waiting for preview thumbnail size.');
     }
@@ -1701,6 +1947,8 @@ testcase.openQuickViewImageRawWithOrientation = async () => {
 /**
  * Tests opening Quick View with a VP8X format WEBP image.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewImageWebp' comes from an
+// index signature, so it must be accessed with ['openQuickViewImageWebp'].
 testcase.openQuickViewImageWebp = async () => {
   const caller = getCaller();
 
@@ -1712,12 +1960,18 @@ testcase.openQuickViewImageWebp = async () => {
 
   // Open Files app on Downloads containing ENTRIES.rawImage.
   const appId =
+      // @ts-ignore: error TS4111: Property 'webpImage' comes from an index
+      // signature, so it must be accessed with ['webpImage'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.webpImage], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'webpImage' comes from an index
+  // signature, so it must be accessed with ['webpImage'].
   await openQuickView(appId, ENTRIES.webpImage.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1747,6 +2001,8 @@ testcase.openQuickViewImageWebp = async () => {
  * focus the image. Instead, the user should still be able to cycle through
  * file list items in Quick View: crbug.com/1038835.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewImageClick' comes from an
+// index signature, so it must be accessed with ['openQuickViewImageClick'].
 testcase.openQuickViewImageClick = async () => {
   const caller = getCaller();
 
@@ -1758,12 +2014,18 @@ testcase.openQuickViewImageClick = async () => {
 
   // Open Files app on Downloads containing two images.
   const appId = await setupAndWaitUntilReady(
+      // @ts-ignore: error TS4111: Property 'image3' comes from an index
+      // signature, so it must be accessed with ['image3'].
       RootPath.DOWNLOADS, [ENTRIES.desktop, ENTRIES.image3], []);
 
   // Open the first image in Quick View.
+  // @ts-ignore: error TS4111: Property 'desktop' comes from an index signature,
+  // so it must be accessed with ['desktop'].
   await openQuickView(appId, ENTRIES.desktop.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1809,6 +2071,8 @@ testcase.openQuickViewImageClick = async () => {
  * Tests that opening a broken image in Quick View displays the "no-preview
  * available" generic icon and has a [load-error] attribute.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewBrokenImage' comes from an
+// index signature, so it must be accessed with ['openQuickViewBrokenImage'].
 testcase.openQuickViewBrokenImage = async () => {
   const caller = getCaller();
 
@@ -1824,15 +2088,21 @@ testcase.openQuickViewBrokenImage = async () => {
 
   // Open Files app on Downloads containing ENTRIES.brokenJpeg.
   const appId = await setupAndWaitUntilReady(
+      // @ts-ignore: error TS4111: Property 'brokenJpeg' comes from an index
+      // signature, so it must be accessed with ['brokenJpeg'].
       RootPath.DOWNLOADS, [ENTRIES.brokenJpeg], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'brokenJpeg' comes from an index
+  // signature, so it must be accessed with ['brokenJpeg'].
   await openQuickView(appId, ENTRIES.brokenJpeg.nameText);
 
   // Check: the quick view element should have a 'load-error' attribute.
   await remoteCall.waitForElement(appId, '#quick-view[load-error]');
 
   // Wait for the generic thumbnail to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkForGenericThumbnail(elements) {
     const haveElements = Array.isArray(elements) && elements.length === 1;
     if (!haveElements || elements[0].styles.display !== 'block') {
@@ -1851,6 +2121,8 @@ testcase.openQuickViewBrokenImage = async () => {
 /**
  * Tests opening Quick View containing a video.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewVideo' comes from an index
+// signature, so it must be accessed with ['openQuickViewVideo'].
 testcase.openQuickViewVideo = async () => {
   const caller = getCaller();
 
@@ -1862,12 +2134,18 @@ testcase.openQuickViewVideo = async () => {
 
   // Open Files app on Downloads containing ENTRIES.webm video.
   const appId =
+      // @ts-ignore: error TS4111: Property 'webm' comes from an index
+      // signature, so it must be accessed with ['webm'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.webm], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'webm' comes from an index signature, so
+  // it must be accessed with ['webm'].
   await openQuickView(appId, ENTRIES.webm.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewVideoLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1912,6 +2190,8 @@ testcase.openQuickViewVideo = async () => {
 /**
  * Tests opening Quick View containing a video on Drive.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewVideoOnDrive' comes from an
+// index signature, so it must be accessed with ['openQuickViewVideoOnDrive'].
 testcase.openQuickViewVideoOnDrive = async () => {
   const caller = getCaller();
 
@@ -1923,12 +2203,18 @@ testcase.openQuickViewVideoOnDrive = async () => {
 
   // Open Files app on Downloads containing ENTRIES.webm video.
   const appId =
+      // @ts-ignore: error TS4111: Property 'webm' comes from an index
+      // signature, so it must be accessed with ['webm'].
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.webm]);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'webm' comes from an index signature, so
+  // it must be accessed with ['webm'].
   await openQuickView(appId, ENTRIES.webm.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewVideoLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -1974,6 +2260,9 @@ testcase.openQuickViewVideoOnDrive = async () => {
  * Tests opening Quick View with multiple files and using the up/down arrow
  * keys to select and view their content.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewKeyboardUpDownChangesView'
+// comes from an index signature, so it must be accessed with
+// ['openQuickViewKeyboardUpDownChangesView'].
 testcase.openQuickViewKeyboardUpDownChangesView = async () => {
   const caller = getCaller();
 
@@ -1984,13 +2273,21 @@ testcase.openQuickViewKeyboardUpDownChangesView = async () => {
   const preview = ['#quick-view', `#dialog[open] ${previewTag}.text-content`];
 
   // Open Files app on Downloads containing two text files.
+  // @ts-ignore: error TS4111: Property 'tallText' comes from an index
+  // signature, so it must be accessed with ['tallText'].
   const files = [ENTRIES.hello, ENTRIES.tallText];
+  // @ts-ignore: error TS2345: Argument of type '(TestEntryInfo | undefined)[]'
+  // is not assignable to parameter of type 'TestEntryInfo[]'.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
 
   // Open the last file in Quick View.
+  // @ts-ignore: error TS4111: Property 'tallText' comes from an index
+  // signature, so it must be accessed with ['tallText'].
   await openQuickView(appId, ENTRIES.tallText.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -2012,6 +2309,7 @@ testcase.openQuickViewKeyboardUpDownChangesView = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downArrow));
 
   // Wait until the preview displays that file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -2027,6 +2325,7 @@ testcase.openQuickViewKeyboardUpDownChangesView = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, upArrow));
 
   // Wait until the preview displays that file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -2041,6 +2340,9 @@ testcase.openQuickViewKeyboardUpDownChangesView = async () => {
  * Tests opening Quick View with multiple files and using the left/right arrow
  * keys to select and view their content.
  */
+// @ts-ignore: error TS4111: Property
+// 'openQuickViewKeyboardLeftRightChangesView' comes from an index signature, so
+// it must be accessed with ['openQuickViewKeyboardLeftRightChangesView'].
 testcase.openQuickViewKeyboardLeftRightChangesView = async () => {
   const caller = getCaller();
 
@@ -2051,13 +2353,21 @@ testcase.openQuickViewKeyboardLeftRightChangesView = async () => {
   const preview = ['#quick-view', `#dialog[open] ${previewTag}.text-content`];
 
   // Open Files app on Downloads containing two text files.
+  // @ts-ignore: error TS4111: Property 'tallText' comes from an index
+  // signature, so it must be accessed with ['tallText'].
   const files = [ENTRIES.hello, ENTRIES.tallText];
+  // @ts-ignore: error TS2345: Argument of type '(TestEntryInfo | undefined)[]'
+  // is not assignable to parameter of type 'TestEntryInfo[]'.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
 
   // Open the last file in Quick View.
+  // @ts-ignore: error TS4111: Property 'tallText' comes from an index
+  // signature, so it must be accessed with ['tallText'].
   await openQuickView(appId, ENTRIES.tallText.nameText);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -2079,6 +2389,7 @@ testcase.openQuickViewKeyboardLeftRightChangesView = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, rightArrow));
 
   // Wait until the preview displays that file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -2094,6 +2405,7 @@ testcase.openQuickViewKeyboardLeftRightChangesView = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, leftArrow));
 
   // Wait until the preview displays that file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -2108,6 +2420,9 @@ testcase.openQuickViewKeyboardLeftRightChangesView = async () => {
  * Tests that the metadatabox can be toggled opened/closed by pressing the
  * Enter key on the Quick View toolbar info button.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewToggleInfoButtonKeyboard'
+// comes from an index signature, so it must be accessed with
+// ['openQuickViewToggleInfoButtonKeyboard'].
 testcase.openQuickViewToggleInfoButtonKeyboard = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
@@ -2145,6 +2460,9 @@ testcase.openQuickViewToggleInfoButtonKeyboard = async () => {
  * Tests that the metadatabox can be toggled opened/closed by clicking the
  * the Quick View toolbar info button.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewToggleInfoButtonClick' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewToggleInfoButtonClick'].
 testcase.openQuickViewToggleInfoButtonClick = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
@@ -2180,6 +2498,9 @@ testcase.openQuickViewToggleInfoButtonClick = async () => {
 /**
  * Tests that Quick View opens with multiple files selected.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewWithMultipleFiles' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewWithMultipleFiles'].
 testcase.openQuickViewWithMultipleFiles = async () => {
   const caller = getCaller();
 
@@ -2220,6 +2541,8 @@ testcase.openQuickViewWithMultipleFiles = async () => {
   await openQuickViewMultipleSelection(appId, ['Desktop', 'hello']);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -2246,6 +2569,9 @@ testcase.openQuickViewWithMultipleFiles = async () => {
  * Tests that Quick View displays text files when multiple files are
  * selected.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewWithMultipleFilesText' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewWithMultipleFilesText'].
 testcase.openQuickViewWithMultipleFilesText = async () => {
   const caller = getCaller();
 
@@ -2255,7 +2581,11 @@ testcase.openQuickViewWithMultipleFilesText = async () => {
    */
   const preview = ['#quick-view', 'files-safe-media[type="image"]', previewTag];
 
+  // @ts-ignore: error TS4111: Property 'smallJpeg' comes from an index
+  // signature, so it must be accessed with ['smallJpeg'].
   const files = [ENTRIES.tallText, ENTRIES.hello, ENTRIES.smallJpeg];
+  // @ts-ignore: error TS2345: Argument of type '(TestEntryInfo | undefined)[]'
+  // is not assignable to parameter of type 'TestEntryInfo[]'.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
 
   // Add item 1 to the check-selection, ENTRIES.smallJpeg.
@@ -2283,6 +2613,8 @@ testcase.openQuickViewWithMultipleFilesText = async () => {
   await openQuickViewMultipleSelection(appId, ['small', 'hello']);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -2312,6 +2644,8 @@ testcase.openQuickViewWithMultipleFilesText = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downArrow));
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -2338,6 +2672,9 @@ testcase.openQuickViewWithMultipleFilesText = async () => {
  * Tests that Quick View displays pdf files when multiple files are
  * selected.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewWithMultipleFilesPdf' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewWithMultipleFilesPdf'].
 testcase.openQuickViewWithMultipleFilesPdf = async () => {
   const caller = getCaller();
 
@@ -2347,7 +2684,11 @@ testcase.openQuickViewWithMultipleFilesPdf = async () => {
    */
   const preview = ['#quick-view', 'files-safe-media[type="image"]', previewTag];
 
+  // @ts-ignore: error TS4111: Property 'smallJpeg' comes from an index
+  // signature, so it must be accessed with ['smallJpeg'].
   const files = [ENTRIES.tallPdf, ENTRIES.desktop, ENTRIES.smallJpeg];
+  // @ts-ignore: error TS2345: Argument of type '(TestEntryInfo | undefined)[]'
+  // is not assignable to parameter of type 'TestEntryInfo[]'.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
 
   // Add item 1 to the check-selection, ENTRIES.smallJpeg.
@@ -2375,6 +2716,8 @@ testcase.openQuickViewWithMultipleFilesPdf = async () => {
   await openQuickViewMultipleSelection(appId, ['small', 'tall']);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -2404,6 +2747,8 @@ testcase.openQuickViewWithMultipleFilesPdf = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downArrow));
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewPdfLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -2430,6 +2775,9 @@ testcase.openQuickViewWithMultipleFilesPdf = async () => {
  * Tests that the content panel changes when using the up/down arrow keys
  * when multiple files are selected.
  */
+// @ts-ignore: error TS4111: Property
+// 'openQuickViewWithMultipleFilesKeyboardUpDown' comes from an index signature,
+// so it must be accessed with ['openQuickViewWithMultipleFilesKeyboardUpDown'].
 testcase.openQuickViewWithMultipleFilesKeyboardUpDown = async () => {
   const caller = getCaller();
 
@@ -2440,7 +2788,11 @@ testcase.openQuickViewWithMultipleFilesKeyboardUpDown = async () => {
   const preview = ['#quick-view', `#dialog[open] ${previewTag}.text-content`];
 
   // Open Files app on Downloads containing three text files.
+  // @ts-ignore: error TS4111: Property 'plainText' comes from an index
+  // signature, so it must be accessed with ['plainText'].
   const files = [ENTRIES.hello, ENTRIES.tallText, ENTRIES.plainText];
+  // @ts-ignore: error TS2345: Argument of type '(TestEntryInfo | undefined)[]'
+  // is not assignable to parameter of type 'TestEntryInfo[]'.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
 
   // Add item 1 to the check-selection, ENTRIES.tallText.
@@ -2468,6 +2820,8 @@ testcase.openQuickViewWithMultipleFilesKeyboardUpDown = async () => {
   await openQuickViewMultipleSelection(appId, ['tall', 'hello']);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -2489,6 +2843,7 @@ testcase.openQuickViewWithMultipleFilesKeyboardUpDown = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downArrow));
 
   // Wait until the preview displays that file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -2505,6 +2860,7 @@ testcase.openQuickViewWithMultipleFilesKeyboardUpDown = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, upArrow));
 
   // Wait until the preview displays that file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -2520,6 +2876,10 @@ testcase.openQuickViewWithMultipleFilesKeyboardUpDown = async () => {
  * Tests that the content panel changes when using the left/right arrow keys
  * when multiple files are selected.
  */
+// @ts-ignore: error TS4111: Property
+// 'openQuickViewWithMultipleFilesKeyboardLeftRight' comes from an index
+// signature, so it must be accessed with
+// ['openQuickViewWithMultipleFilesKeyboardLeftRight'].
 testcase.openQuickViewWithMultipleFilesKeyboardLeftRight = async () => {
   const caller = getCaller();
 
@@ -2530,7 +2890,11 @@ testcase.openQuickViewWithMultipleFilesKeyboardLeftRight = async () => {
   const preview = ['#quick-view', `#dialog[open] ${previewTag}.text-content`];
 
   // Open Files app on Downloads containing three text files.
+  // @ts-ignore: error TS4111: Property 'plainText' comes from an index
+  // signature, so it must be accessed with ['plainText'].
   const files = [ENTRIES.hello, ENTRIES.tallText, ENTRIES.plainText];
+  // @ts-ignore: error TS2345: Argument of type '(TestEntryInfo | undefined)[]'
+  // is not assignable to parameter of type 'TestEntryInfo[]'.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
 
   // Add item 1 to the check-selection, ENTRIES.tallText.
@@ -2558,6 +2922,8 @@ testcase.openQuickViewWithMultipleFilesKeyboardLeftRight = async () => {
   await openQuickViewMultipleSelection(appId, ['tall', 'hello']);
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewTextLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -2579,6 +2945,7 @@ testcase.openQuickViewWithMultipleFilesKeyboardLeftRight = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, rightArrow));
 
   // Wait until the preview displays that file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -2595,6 +2962,7 @@ testcase.openQuickViewWithMultipleFilesKeyboardLeftRight = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, leftArrow));
 
   // Wait until the preview displays that file's content.
+  // @ts-ignore: error TS7030: Not all code paths return a value.
   await repeatUntil(async () => {
     const getTextContent = contentWindowQuery + '.document.body.textContent';
     const text = await executeJsInPreviewTagAndCatchErrors(
@@ -2610,6 +2978,8 @@ testcase.openQuickViewWithMultipleFilesKeyboardLeftRight = async () => {
  * Tests opening Quick View and closing with Escape key returns focus to file
  * list.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewAndEscape' comes from an
+// index signature, so it must be accessed with ['openQuickViewAndEscape'].
 testcase.openQuickViewAndEscape = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
@@ -2638,6 +3008,9 @@ testcase.openQuickViewAndEscape = async () => {
  * Test opening Quick View when Directory Tree is focused it should display if
  * there is only 1 file/folder selected in the file list.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewFromDirectoryTree' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewFromDirectoryTree'].
 testcase.openQuickViewFromDirectoryTree = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
@@ -2649,6 +3022,8 @@ testcase.openQuickViewFromDirectoryTree = async () => {
 
   // Ctrl+A to select the only file.
   const ctrlA = [directoryTree.rootSelector, 'a', true, false, false];
+  // @ts-ignore: error TS2556: A spread argument must either have a tuple type
+  // or be passed to a rest parameter.
   await remoteCall.fakeKeyDown(appId, ...ctrlA);
 
   // Use selection menu button to open Quick View.
@@ -2682,6 +3057,8 @@ testcase.openQuickViewFromDirectoryTree = async () => {
  * Tests the tab-index focus order when sending tab keys when an image file is
  * shown in Quick View.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewTabIndexImage' comes from an
+// index signature, so it must be accessed with ['openQuickViewTabIndexImage'].
 testcase.openQuickViewTabIndexImage = async () => {
   // Prepare a list of tab-index focus queries.
   const tabQueries = [
@@ -2693,14 +3070,20 @@ testcase.openQuickViewTabIndexImage = async () => {
 
   // Open Files app on Downloads containing ENTRIES.smallJpeg.
   const appId =
+      // @ts-ignore: error TS4111: Property 'smallJpeg' comes from an index
+      // signature, so it must be accessed with ['smallJpeg'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.smallJpeg], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'smallJpeg' comes from an index
+  // signature, so it must be accessed with ['smallJpeg'].
   await openQuickView(appId, ENTRIES.smallJpeg.nameText);
 
   for (const query of tabQueries) {
     // Make the browser dispatch a tab key event to FilesApp.
     const result = await sendTestMessage(
+        // @ts-ignore: error TS2339: Property 'shift' does not exist on type '{
+        // query: string[]; }'.
         {name: 'dispatchTabKey', shift: query.shift || false});
     chrome.test.assertEq(
         'tabKeyDispatched', result, 'Tab key dispatch failure');
@@ -2718,6 +3101,8 @@ testcase.openQuickViewTabIndexImage = async () => {
  * Tests the tab-index focus order when sending tab keys when a text file is
  * shown in Quick View.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewTabIndexText' comes from an
+// index signature, so it must be accessed with ['openQuickViewTabIndexText'].
 testcase.openQuickViewTabIndexText = async () => {
   // Prepare a list of tab-index focus queries.
   const tabQueries = [
@@ -2731,14 +3116,20 @@ testcase.openQuickViewTabIndexText = async () => {
 
   // Open Files app on Downloads containing ENTRIES.tallText.
   const appId =
+      // @ts-ignore: error TS4111: Property 'tallText' comes from an index
+      // signature, so it must be accessed with ['tallText'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tallText], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'tallText' comes from an index
+  // signature, so it must be accessed with ['tallText'].
   await openQuickView(appId, ENTRIES.tallText.nameText);
 
   for (const query of tabQueries) {
     // Make the browser dispatch a tab key event to FilesApp.
     const result = await sendTestMessage(
+        // @ts-ignore: error TS2339: Property 'shift' does not exist on type '{
+        // query: string[]; }'.
         {name: 'dispatchTabKey', shift: query.shift || false});
     chrome.test.assertEq(
         'tabKeyDispatched', result, 'Tab key dispatch failure');
@@ -2756,6 +3147,8 @@ testcase.openQuickViewTabIndexText = async () => {
  * Tests the tab-index focus order when sending tab keys when an HTML file is
  * shown in Quick View.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewTabIndexHtml' comes from an
+// index signature, so it must be accessed with ['openQuickViewTabIndexHtml'].
 testcase.openQuickViewTabIndexHtml = async () => {
   // Prepare a list of tab-index focus queries.
   const tabQueries = [
@@ -2767,14 +3160,20 @@ testcase.openQuickViewTabIndexHtml = async () => {
 
   // Open Files app on Downloads containing ENTRIES.tallHtml.
   const appId =
+      // @ts-ignore: error TS4111: Property 'tallHtml' comes from an index
+      // signature, so it must be accessed with ['tallHtml'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tallHtml], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'tallHtml' comes from an index
+  // signature, so it must be accessed with ['tallHtml'].
   await openQuickView(appId, ENTRIES.tallHtml.nameText);
 
   for (const query of tabQueries) {
     // Make the browser dispatch a tab key event to FilesApp.
     const result = await sendTestMessage(
+        // @ts-ignore: error TS2339: Property 'shift' does not exist on type '{
+        // query: string[]; }'.
         {name: 'dispatchTabKey', shift: query.shift || false});
     chrome.test.assertEq(
         'tabKeyDispatched', result, 'Tab key dispatch failure');
@@ -2792,12 +3191,18 @@ testcase.openQuickViewTabIndexHtml = async () => {
  * Tests the tab-index focus order when sending tab keys when an audio file
  * is shown in Quick View.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewTabIndexAudio' comes from an
+// index signature, so it must be accessed with ['openQuickViewTabIndexAudio'].
 testcase.openQuickViewTabIndexAudio = async () => {
   // Open Files app on Downloads containing ENTRIES.beautiful song.
   const appId =
+      // @ts-ignore: error TS4111: Property 'beautiful' comes from an index
+      // signature, so it must be accessed with ['beautiful'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'beautiful' comes from an index
+  // signature, so it must be accessed with ['beautiful'].
   await openQuickView(appId, ENTRIES.beautiful.nameText);
 
   // Prepare a list of tab-index focus queries.
@@ -2811,6 +3216,8 @@ testcase.openQuickViewTabIndexAudio = async () => {
   for (const query of tabQueries) {
     // Make the browser dispatch a tab key event to FilesApp.
     const result = await sendTestMessage(
+        // @ts-ignore: error TS2339: Property 'shift' does not exist on type '{
+        // query: string[]; }'.
         {name: 'dispatchTabKey', shift: query.shift || false});
     chrome.test.assertEq(
         'tabKeyDispatched', result, 'Tab key dispatch failure');
@@ -2848,12 +3255,18 @@ testcase.openQuickViewTabIndexAudio = async () => {
  * Tests the tab-index focus order when sending tab keys when a video file is
  * shown in Quick View.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewTabIndexVideo' comes from an
+// index signature, so it must be accessed with ['openQuickViewTabIndexVideo'].
 testcase.openQuickViewTabIndexVideo = async () => {
   // Open Files app on Downloads containing ENTRIES.webm video.
   const appId =
+      // @ts-ignore: error TS4111: Property 'webm' comes from an index
+      // signature, so it must be accessed with ['webm'].
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.webm], []);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'webm' comes from an index signature, so
+  // it must be accessed with ['webm'].
   await openQuickView(appId, ENTRIES.webm.nameText);
 
   // Prepare a list of tab-index focus queries.
@@ -2867,6 +3280,8 @@ testcase.openQuickViewTabIndexVideo = async () => {
   for (const query of tabQueries) {
     // Make the browser dispatch a tab key event to FilesApp.
     const result = await sendTestMessage(
+        // @ts-ignore: error TS2339: Property 'shift' does not exist on type '{
+        // query: string[]; }'.
         {name: 'dispatchTabKey', shift: query.shift || false});
     chrome.test.assertEq(
         'tabKeyDispatched', result, 'Tab key dispatch failure');
@@ -2903,6 +3318,9 @@ testcase.openQuickViewTabIndexVideo = async () => {
 /**
  * Tests that the tab-index focus stays within the delete confirm dialog.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewTabIndexDeleteDialog' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewTabIndexDeleteDialog'].
 testcase.openQuickViewTabIndexDeleteDialog = async () => {
   // Open Files app.
   const appId =
@@ -2933,6 +3351,8 @@ testcase.openQuickViewTabIndexDeleteDialog = async () => {
   for (const query of tabQueries) {
     // Make the browser dispatch a tab key event to FilesApp.
     const result = await sendTestMessage(
+        // @ts-ignore: error TS2339: Property 'shift' does not exist on type '{
+        // query: string[]; }'.
         {name: 'dispatchTabKey', shift: query.shift || false});
     chrome.test.assertEq(
         'tabKeyDispatched', result, 'Tab key dispatch failure');
@@ -2950,6 +3370,9 @@ testcase.openQuickViewTabIndexDeleteDialog = async () => {
  * Tests deleting an item from Quick View when in single select mode, and
  * that Quick View closes when there are no more items to view.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewAndDeleteSingleSelection'
+// comes from an index signature, so it must be accessed with
+// ['openQuickViewAndDeleteSingleSelection'].
 testcase.openQuickViewAndDeleteSingleSelection = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
@@ -2978,6 +3401,9 @@ testcase.openQuickViewAndDeleteSingleSelection = async () => {
  * the item below the item deleted is shown in Quick View after the item's
  * deletion.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewAndDeleteCheckSelection'
+// comes from an index signature, so it must be accessed with
+// ['openQuickViewAndDeleteCheckSelection'].
 testcase.openQuickViewAndDeleteCheckSelection = async () => {
   // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
   const appId = await setupAndWaitUntilReady(
@@ -3015,6 +3441,8 @@ testcase.openQuickViewAndDeleteCheckSelection = async () => {
 
   // Check: Quick View should display the entry below |hello.txt|,
   // which is |world.ogv|.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewVideoLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -3041,6 +3469,9 @@ testcase.openQuickViewAndDeleteCheckSelection = async () => {
 /**
  * Tests that deleting all items in a check-selection closes the Quick View.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewDeleteEntireCheckSelection'
+// comes from an index signature, so it must be accessed with
+// ['openQuickViewDeleteEntireCheckSelection'].
 testcase.openQuickViewDeleteEntireCheckSelection = async () => {
   const caller = getCaller();
 
@@ -3082,6 +3513,8 @@ testcase.openQuickViewDeleteEntireCheckSelection = async () => {
       ['#quick-view', 'files-safe-media[type="audio"]', previewTag];
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewAudioLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -3115,6 +3548,8 @@ testcase.openQuickViewDeleteEntireCheckSelection = async () => {
       ['#quick-view', 'files-safe-media[type="image"]', previewTag];
 
   // Wait for the Quick View preview to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkPreviewImageLoaded(elements) {
     let haveElements = Array.isArray(elements) && elements.length === 1;
     if (haveElements) {
@@ -3146,6 +3581,9 @@ testcase.openQuickViewDeleteEntireCheckSelection = async () => {
 /**
  * Tests that an item can be deleted using the Quick View delete button.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewClickDeleteButton' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewClickDeleteButton'].
 testcase.openQuickViewClickDeleteButton = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
@@ -3170,6 +3608,9 @@ testcase.openQuickViewClickDeleteButton = async () => {
  * Tests that the delete button is not shown if the file displayed in Quick
  * View cannot be deleted.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewDeleteButtonNotShown' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewDeleteButtonNotShown'].
 testcase.openQuickViewDeleteButtonNotShown = async () => {
   // Open Files app on My Files
   const appId = await openNewWindow('');
@@ -3184,6 +3625,10 @@ testcase.openQuickViewDeleteButtonNotShown = async () => {
     ['Linux files', '--', 'Folder'],
   ];
   await remoteCall.waitForFiles(
+      // @ts-ignore: error TS2345: Argument of type '{ ignoreLastModifiedTime:
+      // true; }' is not assignable to parameter of type '{ orderCheck: boolean
+      // | null | undefined; ignoreFileSize: boolean | null | undefined;
+      // ignoreLastModifiedTime: boolean | null | undefined; }'.
       appId, expectedRows, {ignoreLastModifiedTime: true});
 
   // Open Play files in Quick View, which cannot be deleted.
@@ -3198,6 +3643,9 @@ testcase.openQuickViewDeleteButtonNotShown = async () => {
  * Tests that the correct WayToOpen UMA histogram is recorded when opening
  * a single file via Quick View using "Get Info" from the context menu.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewUmaViaContextMenu' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewUmaViaContextMenu'].
 testcase.openQuickViewUmaViaContextMenu = async () => {
   // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
   const appId = await setupAndWaitUntilReady(
@@ -3235,6 +3683,9 @@ testcase.openQuickViewUmaViaContextMenu = async () => {
  * Quick View in check-select mode using "Get Info" from the context
  * menu.
  */
+// @ts-ignore: error TS4111: Property
+// 'openQuickViewUmaForCheckSelectViaContextMenu' comes from an index signature,
+// so it must be accessed with ['openQuickViewUmaForCheckSelectViaContextMenu'].
 testcase.openQuickViewUmaForCheckSelectViaContextMenu = async () => {
   // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
   const appId = await setupAndWaitUntilReady(
@@ -3251,6 +3702,8 @@ testcase.openQuickViewUmaForCheckSelectViaContextMenu = async () => {
 
   // Ctrl+A to select all files in the file-list.
   const ctrlA = ['#file-list', 'a', true, false, false];
+  // @ts-ignore: error TS2556: A spread argument must either have a tuple type
+  // or be passed to a rest parameter.
   await remoteCall.fakeKeyDown(appId, ...ctrlA);
 
   // Open Quick View using the context menu.
@@ -3276,6 +3729,9 @@ testcase.openQuickViewUmaForCheckSelectViaContextMenu = async () => {
  * Quick View in check-select mode using "Get Info" from the Selection
  * menu.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewUmaViaSelectionMenu' comes
+// from an index signature, so it must be accessed with
+// ['openQuickViewUmaViaSelectionMenu'].
 testcase.openQuickViewUmaViaSelectionMenu = async () => {
   // Open Files app on Downloads containing BASIC_LOCAL_ENTRY_SET.
   const appId = await setupAndWaitUntilReady(
@@ -3283,14 +3739,18 @@ testcase.openQuickViewUmaViaSelectionMenu = async () => {
 
   // Ctrl+A to select all files in the file-list.
   const ctrlA = ['#file-list', 'a', true, false, false];
+  // @ts-ignore: error TS2556: A spread argument must either have a tuple type
+  // or be passed to a rest parameter.
   await remoteCall.fakeKeyDown(appId, ...ctrlA);
 
   const caller = getCaller();
 
   // Wait until the selection menu is visible.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkElementsDisplayVisible(elements) {
     chrome.test.assertTrue(Array.isArray(elements));
-    if (elements.length == 0 || elements[0].styles.display === 'none') {
+    if (elements.length === 0 || elements[0].styles.display === 'none') {
       return pending(caller, 'Waiting for Selection Menu to be visible.');
     }
   }
@@ -3358,6 +3818,9 @@ testcase.openQuickViewUmaViaSelectionMenu = async () => {
  * Quick View in check-select mode using "Get Info" from the context
  * menu opened via keyboard tabbing (not mouse).
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewUmaViaSelectionMenuKeyboard'
+// comes from an index signature, so it must be accessed with
+// ['openQuickViewUmaViaSelectionMenuKeyboard'].
 testcase.openQuickViewUmaViaSelectionMenuKeyboard = async () => {
   const caller = getCaller();
 
@@ -3367,12 +3830,16 @@ testcase.openQuickViewUmaViaSelectionMenuKeyboard = async () => {
 
   // Ctrl+A to select all files in the file-list.
   const ctrlA = ['#file-list', 'a', true, false, false];
+  // @ts-ignore: error TS2556: A spread argument must either have a tuple type
+  // or be passed to a rest parameter.
   await remoteCall.fakeKeyDown(appId, ...ctrlA);
 
   // Wait until the selection menu is visible.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkElementsDisplayVisible(elements) {
     chrome.test.assertTrue(Array.isArray(elements));
-    if (elements.length == 0 || elements[0].styles.display === 'none') {
+    if (elements.length === 0 || elements[0].styles.display === 'none') {
       return pending(caller, 'Waiting for Selection Menu to be visible.');
     }
   }
@@ -3460,6 +3927,8 @@ testcase.openQuickViewUmaViaSelectionMenuKeyboard = async () => {
 /**
  * Tests that Quick View does not display a CSE file preview.
  */
+// @ts-ignore: error TS4111: Property 'openQuickViewEncryptedFile' comes from an
+// index signature, so it must be accessed with ['openQuickViewEncryptedFile'].
 testcase.openQuickViewEncryptedFile = async () => {
   const caller = getCaller();
 
@@ -3470,12 +3939,18 @@ testcase.openQuickViewEncryptedFile = async () => {
   const contentPanel = ['#quick-view', '#dialog[open] #innerContentPanel'];
 
   const appId =
+      // @ts-ignore: error TS4111: Property 'testCSEFile' comes from an index
+      // signature, so it must be accessed with ['testCSEFile'].
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.testCSEFile]);
 
   // Open the file in Quick View.
+  // @ts-ignore: error TS4111: Property 'testCSEFile' comes from an index
+  // signature, so it must be accessed with ['testCSEFile'].
   await openQuickView(appId, ENTRIES.testCSEFile.nameText);
 
   // Wait for the innerContentPanel to load and display its content.
+  // @ts-ignore: error TS7006: Parameter 'elements' implicitly has an 'any'
+  // type.
   function checkInnerContentPanel(elements) {
     const haveElements = Array.isArray(elements) && elements.length === 1;
     if (!haveElements || elements[0].styles.display !== 'flex') {

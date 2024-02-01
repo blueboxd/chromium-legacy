@@ -29,6 +29,11 @@ BASE_FEATURE(kAllowEyeDropperWGCScreenCapture,
 #endif  // BUILDFLAG(IS_WIN)
 );
 
+// Enables icon in titlebar for web apps.
+BASE_FEATURE(kWebAppIconInTitlebar,
+             "WebAppIconInTitlebar",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Chrome Labs menu in the toolbar. See https://crbug.com/1145666
 BASE_FEATURE(kChromeLabs, "ChromeLabs", base::FEATURE_ENABLED_BY_DEFAULT);
 const char kChromeLabsActivationParameterName[] =
@@ -67,12 +72,6 @@ BASE_FEATURE(kCameraMicPreview,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-// Enables displaying the submenu to open a link with a different profile if
-// there is at least one other active profile. Fully rolled out on Desktop.
-BASE_FEATURE(kDisplayOpenLinkAsProfile,
-             "DisplayOpenLinkAsProfile",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables showing the EV certificate details in the Page Info bubble.
 BASE_FEATURE(kEvDetailsInPageInfo,
              "EvDetailsInPageInfo",
@@ -108,7 +107,12 @@ BASE_FEATURE(kQuickCommands,
 // the browser width is resized smaller than normal.
 BASE_FEATURE(kResponsiveToolbar,
              "ResponsiveToolbar",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 // Enables the side search feature for Google Search. Presents recent Google
 // search results in a browser side panel.
@@ -153,9 +157,14 @@ BASE_FEATURE(kSidePanelPinning,
              "SidePanelPinning",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+bool IsSidePanelPinningEnabled() {
+  return (IsChromeRefresh2023() &&
+          base::FeatureList::IsEnabled(kSidePanelPinning));
+}
+
 BASE_FEATURE(kSidePanelMinimumWidth,
              "SidePanelMinimumWidth",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<int> kSidePanelMinimumWidthParameter{
     &kSidePanelMinimumWidth, "minPanelWidth", 360};
 int GetSidePanelMinimumWidth() {
@@ -209,19 +218,7 @@ BASE_FEATURE(kTabGroupsCollapseFreezing,
 
 // Enables users to explicitly save and recall tab groups.
 // https://crbug.com/1223929
-BASE_FEATURE(kTabGroupsSave,
-             "TabGroupsSave",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables configuring tab hover card image previews in the settings.
-BASE_FEATURE(kTabHoverCardImageSettings,
-             "TabHoverCardImageSettings",
-#if BUILDFLAG(IS_MAC)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-);
+BASE_FEATURE(kTabGroupsSave, "TabGroupsSave", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables preview images in tab-hover cards.
 // https://crbug.com/928954
@@ -261,6 +258,16 @@ const base::FeatureParam<double> kTabOrganizationTriggerBackoffBase{
 
 const base::FeatureParam<double> kTabOrganizationTriggerThreshold{
     &kTabOrganization, "trigger_threshold", 7.0};
+
+const base::FeatureParam<double> kTabOrganizationTriggerSensitivityThreshold{
+    &kTabOrganization, "trigger_sensitivity_threshold", 0.5};
+
+const base::FeatureParam<bool> KTabOrganizationTriggerDemoMode{
+    &kTabOrganization, "trigger_demo_mode", false};
+
+BASE_FEATURE(kTabOrganizationRefreshButton,
+             "TabOrganizationRefreshButton",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabSearchChevronIcon,
              "TabSearchChevronIcon",
@@ -320,6 +327,12 @@ BASE_FEATURE(kTabSearchUseMetricsReporter,
              "TabSearchUseMetricsReporter",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables creating a web app window when tearing off a tab with a url
+// controlled by a web app.
+BASE_FEATURE(kTearOffWebAppTabOpensWebAppWindow,
+             "TearOffWebAppTabOpensWebAppWindow",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kToolbarUseHardwareBitmapDraw,
              "ToolbarUseHardwareBitmapDraw",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -341,6 +354,12 @@ BASE_FEATURE(kUpdateTextOptions,
 const base::FeatureParam<int> kUpdateTextOptionNumber{
     &kUpdateTextOptions, "UpdateTextOptionNumber", 2};
 #endif
+
+// Enables enterprise profile badging on the toolbar avatar and in the profile
+// menu.
+BASE_FEATURE(kEnterpriseProfileBadging,
+             "EnterpriseProfileBadging",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // This enables enables persistence of a WebContents in a 1-to-1 association
 // with the current Profile for WebUI bubbles. See https://crbug.com/1177048.

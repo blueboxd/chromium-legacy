@@ -29,11 +29,12 @@ import org.robolectric.annotation.LooperMode;
 
 import org.chromium.base.Callback;
 import org.chromium.base.UserDataHost;
-import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
@@ -45,8 +46,6 @@ import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.messages.ManagedMessageDispatcher;
@@ -170,20 +169,7 @@ public class ChromeMessageQueueMediatorTest {
         when(mBrowserControlsManager.getBrowserVisibilityDelegate())
                 .thenReturn(
                         new BrowserStateBrowserControlsVisibilityDelegate(
-                                new ObservableSupplier<Boolean>() {
-                                    @Override
-                                    public Boolean addObserver(Callback<Boolean> obs) {
-                                        return null;
-                                    }
-
-                                    @Override
-                                    public void removeObserver(Callback<Boolean> obs) {}
-
-                                    @Override
-                                    public Boolean get() {
-                                        return false;
-                                    }
-                                }));
+                                new ObservableSupplierImpl<>(false)));
         mMediator =
                 new ChromeMessageQueueMediator(
                         mBrowserControlsManager,

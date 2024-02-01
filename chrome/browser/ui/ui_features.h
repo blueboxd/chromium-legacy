@@ -27,6 +27,8 @@ BASE_DECLARE_FEATURE(kAllowWindowDragUsingSystemDragDrop);
 
 BASE_DECLARE_FEATURE(kAllowEyeDropperWGCScreenCapture);
 
+BASE_DECLARE_FEATURE(kWebAppIconInTitlebar);
+
 BASE_DECLARE_FEATURE(kChromeLabs);
 extern const char kChromeLabsActivationParameterName[];
 extern const base::FeatureParam<int> kChromeLabsActivationPercentage;
@@ -43,8 +45,6 @@ BASE_DECLARE_FEATURE(kAccessCodeCastUI);
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
 BASE_DECLARE_FEATURE(kCameraMicPreview);
 #endif
-
-BASE_DECLARE_FEATURE(kDisplayOpenLinkAsProfile);
 
 BASE_DECLARE_FEATURE(kEvDetailsInPageInfo);
 
@@ -85,6 +85,8 @@ BASE_DECLARE_FEATURE(kSidePanelCompanionDefaultPinned);
 
 BASE_DECLARE_FEATURE(kSidePanelPinning);
 
+bool IsSidePanelPinningEnabled();
+
 BASE_DECLARE_FEATURE(kSidePanelMinimumWidth);
 extern const base::FeatureParam<int> kSidePanelMinimumWidthParameter;
 int GetSidePanelMinimumWidth();
@@ -103,8 +105,6 @@ extern const base::FeatureParam<int> kSideSearchAutoTriggeringReturnCount;
 BASE_DECLARE_FEATURE(kTabGroupsCollapseFreezing);
 
 BASE_DECLARE_FEATURE(kTabGroupsSave);
-
-BASE_DECLARE_FEATURE(kTabHoverCardImageSettings);
 
 BASE_DECLARE_FEATURE(kTabHoverCardImages);
 
@@ -142,6 +142,16 @@ extern const base::FeatureParam<double> kTabOrganizationTriggerBackoffBase;
 
 // The minimum score threshold for proactive nudge triggering to occur.
 extern const base::FeatureParam<double> kTabOrganizationTriggerThreshold;
+
+// The maximum sensitivity score for a tab to contribute to trigger scoring.
+extern const base::FeatureParam<double>
+    kTabOrganizationTriggerSensitivityThreshold;
+
+// Enable 'demo mode' for Tab Organization triggering, which triggers much more
+// predictably and frequently.
+extern const base::FeatureParam<bool> KTabOrganizationTriggerDemoMode;
+
+BASE_DECLARE_FEATURE(kTabOrganizationRefreshButton);
 
 BASE_DECLARE_FEATURE(kTabSearchChevronIcon);
 
@@ -201,6 +211,8 @@ extern const base::FeatureParam<int> kTabSearchRecentlyClosedTabCountThreshold;
 
 BASE_DECLARE_FEATURE(kTabSearchUseMetricsReporter);
 
+BASE_DECLARE_FEATURE(kTearOffWebAppTabOpensWebAppWindow);
+
 // Determines how screenshots of the toolbar uses Software or Hardware drawing.
 // Works on Android 10+.
 BASE_DECLARE_FEATURE(kToolbarUseHardwareBitmapDraw);
@@ -211,6 +223,8 @@ BASE_DECLARE_FEATURE(kTopChromeWebUIUsesSpareRenderer);
 BASE_DECLARE_FEATURE(kUpdateTextOptions);
 extern const base::FeatureParam<int> kUpdateTextOptionNumber;
 #endif
+
+BASE_DECLARE_FEATURE(kEnterpriseProfileBadging);
 
 BASE_DECLARE_FEATURE(kWebUIBubblePerProfilePersistence);
 

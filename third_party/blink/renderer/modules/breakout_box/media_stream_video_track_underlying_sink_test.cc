@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 
 using testing::_;
 
@@ -68,11 +69,11 @@ class MediaStreamVideoTrackUnderlyingSinkTest : public testing::Test {
     if (video_frame_out)
       *video_frame_out = video_frame;
     return ScriptValue(script_state->GetIsolate(),
-                       ToV8Traits<VideoFrame>::ToV8(script_state, video_frame)
-                           .ToLocalChecked());
+                       ToV8Traits<VideoFrame>::ToV8(script_state, video_frame));
   }
 
  protected:
+  test::TaskEnvironment task_environment_;
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   Persistent<MediaStreamSource> media_stream_source_;
   raw_ptr<PushableMediaStreamVideoSource, ExperimentalRenderer>
@@ -126,7 +127,9 @@ TEST_F(MediaStreamVideoTrackUnderlyingSinkTest, WriteInvalidDataFails) {
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   auto* sink = CreateUnderlyingSink(script_state);
-  ScriptValue v8_integer = ScriptValue::From(script_state, 0);
+  ScriptValue v8_integer =
+      ScriptValue(script_state->GetIsolate(),
+                  v8::Integer::New(script_state->GetIsolate(), 0));
 
   // Writing something that is not a VideoFrame to the sink should fail.
   DummyExceptionStateForTesting dummy_exception_state;

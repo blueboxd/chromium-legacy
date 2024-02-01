@@ -7,15 +7,13 @@
 #include <stddef.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 
+#include "base/base64url.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
-#include "base/task/single_thread_task_runner.h"
-#include "base/test/scoped_feature_list.h"
-
-#include "base/base64url.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -23,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -45,7 +44,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/omnibox_proto/types.pb.h"
@@ -220,7 +218,7 @@ void TestProvider::StartPrefetch(const AutocompleteInput& input) {
 void TestProvider::OnPrefetchRequestDone() {
   AddResults(0, kResultsPerProvider);
   prefetch_done_ = true;
-  for (auto* listener : listeners_) {
+  for (AutocompleteProviderListener* listener : listeners_) {
     static_cast<TestAutocompleteProviderListener*>(listener)
         ->OnProviderFinishedPrefetch();
   }
@@ -232,8 +230,9 @@ void TestProvider::Start(const AutocompleteInput& input, bool minimal_changes) {
 
   matches_.clear();
 
-  if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT)
+  if (input.IsZeroSuggest()) {
     return;
+  }
 
   // Generate 4 results synchronously, the rest later.
   AddResults(0, 1);
@@ -345,12 +344,12 @@ class AutocompleteProviderTest : public testing::Test {
 
   struct SuggestionGroupsTestData {
     omnibox::GroupConfigMap suggestion_groups_map;
-    std::vector<absl::optional<omnibox::GroupId>> suggestion_group_ids;
+    std::vector<std::optional<omnibox::GroupId>> suggestion_group_ids;
   };
 
   struct SearchboxStatsTestData {
     const AutocompleteMatch::Type match_type;
-    absl::optional<omnibox::GroupId> group_id;
+    std::optional<omnibox::GroupId> group_id;
     const omnibox::metrics::ChromeSearchboxStats expected_searchbox_stats;
     omnibox::SuggestType type;
     base::flat_set<omnibox::SuggestSubtype> subtypes;
@@ -425,13 +424,16 @@ class AutocompleteProviderTest : public testing::Test {
   // platform, flags, etc.) be instantiated.
   void ResetControllerWithType(int type);
 
-  AutocompleteResult result_;
   base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
   TestAutocompleteControllerObserver autocomplete_controller_observer_;
   std::unique_ptr<AutocompleteController> controller_;
   // Owned by |controller_|.
   raw_ptr<MockAutocompleteProviderClient> client_;
+  // `result_` may contain a `raw_ptr` (e.g. `AutocompleteMatch::provider) to
+  // the `controller_`.  This means that (per //docs/dangling_ptr_guide.md) the
+  // `result_` field needs to be declared *after* the `controller_` field.
+  AutocompleteResult result_;
   // Used to ensure that |client_| ownership has been passed to |controller_|
   // exactly once.
   bool client_owned_{};

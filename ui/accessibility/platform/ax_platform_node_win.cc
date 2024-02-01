@@ -1087,6 +1087,9 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
               L"textbox"};
 
     case ax::mojom::Role::kLabelText:
+          return {UIALocalizationStrategy::kSupply, UIA_GroupControlTypeId,
+              L"description"};
+
     case ax::mojom::Role::kLegend:
       return {UIALocalizationStrategy::kSupply, UIA_TextControlTypeId,
               L"description"};
@@ -7527,7 +7530,6 @@ bool AXPlatformNodeWin::IsUIAControl() const {
       case ax::mojom::Role::kFooterAsNonLandmark:
       case ax::mojom::Role::kHeader:
       case ax::mojom::Role::kHeaderAsNonLandmark:
-      case ax::mojom::Role::kLabelText:
       case ax::mojom::Role::kListBoxOption:
       case ax::mojom::Role::kListItem:
       // Treat the root of a MathML tree as content/control so that it is seen
@@ -7944,6 +7946,8 @@ absl::optional<EVENTID> AXPlatformNodeWin::MojoEventToUIAEvent(
       return UIA_SelectionItem_ElementAddedToSelectionEventId;
     case ax::mojom::Event::kSelectionRemove:
       return UIA_SelectionItem_ElementRemovedFromSelectionEventId;
+    case ax::mojom::Event::kTextSelectionChanged:
+      return UIA_Text_TextSelectionChangedEventId;
     case ax::mojom::Event::kTooltipClosed:
       return UIA_ToolTipClosedEventId;
     case ax::mojom::Event::kTooltipOpened:

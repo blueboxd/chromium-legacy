@@ -118,7 +118,7 @@ class IndexedRulesetLocator {
 //
 // Obsolete files deletion and rulesets indexing are posted to
 // |background_task_runner|.
-class RulesetService : public base::SupportsWeakPtr<RulesetService> {
+class RulesetService {
  public:
   // Enumerates the possible outcomes of indexing a ruleset and writing it to
   // disk. Used in UMA histograms, so the order of enumerators should not be
@@ -224,7 +224,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Writes all files comprising the given |indexed_version| of the ruleset
   // into the corresponding subdirectory in |indexed_ruleset_base_dir|.
   // More specifically, it writes:
-  //  -- the |indexed_ruleset_data| of the given |indexed_ruleset_size|,
+  //  -- the |indexed_ruleset_data|,
   //  -- a copy of the LICENSE file at |license_path|, if exists.
   // Returns true on success. To be called on the |background_task_runner|.
   // Attempts not to leave an incomplete copy in the target directory.
@@ -234,8 +234,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   static IndexAndWriteRulesetResult WriteRuleset(
       const base::FilePath& indexed_ruleset_version_dir,
       const base::FilePath& license_source_path,
-      const uint8_t* indexed_ruleset_data,
-      size_t indexed_ruleset_size);
+      base::span<const uint8_t> indexed_ruleset_data);
 
   // Indirections for accessing these routines, so as to allow overriding and
   // injecting faults in tests.
@@ -271,6 +270,8 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   bool is_initialized_;
 
   const base::FilePath indexed_ruleset_base_dir_;
+
+  base::WeakPtrFactory<RulesetService> weak_ptr_factory_{this};
 };
 
 }  // namespace subresource_filter

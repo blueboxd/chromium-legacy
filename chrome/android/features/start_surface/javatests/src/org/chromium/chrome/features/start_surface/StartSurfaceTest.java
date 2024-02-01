@@ -71,6 +71,8 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
@@ -95,8 +97,6 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -873,11 +873,15 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
-        Assert.assertEquals(0, RenderProcessHostUtils.getCurrentRenderProcessCount());
+
+        // The spareTab initializes a renderer process.
+        Assert.assertEquals(1, RenderProcessHostUtils.getCurrentRenderProcessCount());
 
         StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount= */ 1);
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
         StartSurfaceTestUtils.waitForCurrentTabLoaded(mActivityTestRule);
+
+        // The renderer process initialized by spareTab is used.
         Assert.assertEquals(1, RenderProcessHostUtils.getCurrentRenderProcessCount());
     }
 
@@ -893,7 +897,6 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @EnableFeatures({ChromeFeatureList.SPARE_TAB, ChromeFeatureList.START_SURFACE_SPARE_TAB})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void test_UsesSpareTabForNavigationFromMVTiles() {
         if (!mImmediateReturn) return;
@@ -913,9 +916,8 @@ public class StartSurfaceTest {
                     WarmupManager.getInstance().hasSpareTab(Profile.getLastUsedRegularProfile());
                 });
 
-        // The renderer process count should be 0 as spareTab doesn't initialize renderer by
-        // default.
-        Assert.assertEquals(0, RenderProcessHostUtils.getCurrentRenderProcessCount());
+        // The spareTab initializes a renderer process.
+        Assert.assertEquals(1, RenderProcessHostUtils.getCurrentRenderProcessCount());
 
         StartSurfaceTestUtils.launchFirstMVTile(cta, 1);
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
@@ -932,13 +934,15 @@ public class StartSurfaceTest {
                         HISTOGRAM_SPARE_TAB_FINAL_STATUS,
                         WarmupManager.SpareTabFinalStatus.TAB_USED));
         histogramWatcher.assertExpected();
+
+        // The renderer process initialized by spareTab is used.
+        Assert.assertEquals(1, RenderProcessHostUtils.getCurrentRenderProcessCount());
     }
 
     /** Tests that on navigation from start surface using search box should use spare tab. */
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @EnableFeatures({ChromeFeatureList.SPARE_TAB, ChromeFeatureList.START_SURFACE_SPARE_TAB})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     @DisabledTest(message = "https://crbug.com/1470714")
     public void test_UsesSpareTabForNavigationFromSearchBox() {
@@ -983,7 +987,6 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @EnableFeatures({ChromeFeatureList.SPARE_TAB, ChromeFeatureList.START_SURFACE_SPARE_TAB})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void test_DoesntUseSpareTabForNavigationFromSingleTabSwitcher() {
         if (!mImmediateReturn) return;
@@ -1022,13 +1025,9 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @EnableFeatures({ChromeFeatureList.SPARE_TAB, ChromeFeatureList.START_SURFACE_SPARE_TAB})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void test_SpareTabCreatesNewRendererProcessWithParamEnabled() {
         if (!mImmediateReturn) return;
-
-        // Set the param to true allowing renderer initialization.
-        WarmupManager.SPARE_TAB_INITIALIZE_RENDERER.setForTesting(true);
 
         // Show Start Surface.
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -1055,7 +1054,6 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @EnableFeatures({ChromeFeatureList.SPARE_TAB, ChromeFeatureList.START_SURFACE_SPARE_TAB})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void test_SpareTabNotUsedOnOtherSurface() {
         if (!mImmediateReturn) return;

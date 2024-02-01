@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadat
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content.webid.IdentityRequestDialogDismissReason;
+import org.chromium.content.webid.IdentityRequestDialogLinkType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
@@ -178,6 +179,11 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
     }
 
     @CalledByNative
+    private void showUrl(@IdentityRequestDialogLinkType int linkType, GURL url) {
+        mAccountSelectionComponent.showUrl(linkType, url);
+    }
+
+    @CalledByNative
     private WebContents showModalDialog(GURL url) {
         return mAccountSelectionComponent.showModalDialog(url);
     }
@@ -211,9 +217,9 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
     }
 
     @Override
-    public void onLoginToIdP(GURL idpLoginUrl) {
+    public void onLoginToIdP(GURL idpConfigUrl, GURL idpLoginUrl) {
         if (mNativeView != 0) {
-            AccountSelectionBridgeJni.get().onLoginToIdP(mNativeView, idpLoginUrl);
+            AccountSelectionBridgeJni.get().onLoginToIdP(mNativeView, idpConfigUrl, idpLoginUrl);
         }
     }
 
@@ -242,7 +248,8 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
                 long nativeAccountSelectionViewAndroid,
                 @IdentityRequestDialogDismissReason int dismissReason);
 
-        void onLoginToIdP(long nativeAccountSelectionViewAndroid, GURL idpLoginUrl);
+        void onLoginToIdP(
+                long nativeAccountSelectionViewAndroid, GURL idpConfigUrl, GURL idpLoginUrl);
 
         void onMoreDetails(long nativeAccountSelectionViewAndroid);
     }

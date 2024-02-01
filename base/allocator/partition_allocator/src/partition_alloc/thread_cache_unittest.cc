@@ -10,6 +10,7 @@
 
 #include "build/build_config.h"
 #include "partition_alloc/extended_api.h"
+#include "partition_alloc/internal_allocator.h"
 #include "partition_alloc/partition_address_space.h"
 #include "partition_alloc/partition_alloc_base/thread_annotations.h"
 #include "partition_alloc/partition_alloc_base/threading/platform_thread_for_testing.h"
@@ -61,7 +62,6 @@ class DeltaCounter {
 // Forbid extras, since they make finding out which bucket is used harder.
 std::unique_ptr<PartitionAllocatorForTesting> CreateAllocator() {
   PartitionOptions opts;
-  opts.aligned_alloc = PartitionOptions::kAllowed;
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   opts.thread_cache = PartitionOptions::kEnabled;
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -128,8 +128,7 @@ class PartitionAllocThreadCacheTest
     ASSERT_TRUE(tcache);
     tcache->Purge();
 
-    ASSERT_EQ(root()->get_total_size_of_allocated_bytes(),
-              GetBucketSizeForThreadCache());
+    ASSERT_EQ(root()->get_total_size_of_allocated_bytes(), 0u);
   }
 
   PartitionRoot* root() { return allocator_->root(); }
@@ -275,7 +274,6 @@ TEST_P(PartitionAllocThreadCacheTest, Purge) {
 
 TEST_P(PartitionAllocThreadCacheTest, NoCrossPartitionCache) {
   PartitionOptions opts;
-  opts.aligned_alloc = PartitionOptions::kAllowed;
   opts.star_scan_quarantine = PartitionOptions::kAllowed;
   PartitionAllocatorForTesting allocator(opts);
 
@@ -1212,16 +1210,8 @@ TEST_P(PartitionAllocThreadCacheTest, MAYBE_Bookkeeping) {
                       PurgeFlags::kDiscardUnusedSystemPages);
   root()->ResetBookkeepingForTesting();
 
-  // The ThreadCache is allocated before we change buckets, so its size is
-  // always based on the neutral distribution.
-  size_t tc_bucket_index = root()->SizeToBucketIndex(
-      sizeof(ThreadCache), PartitionRoot::BucketDistribution::kNeutral);
-  auto* tc_bucket = &root()->buckets[tc_bucket_index];
-  size_t expected_allocated_size =
-      tc_bucket->slot_size;  // For the ThreadCache itself.
-  size_t expected_committed_size = kUseLazyCommit
-                                       ? internal::SystemPageSize()
-                                       : tc_bucket->get_bytes_per_span();
+  size_t expected_allocated_size = 0;
+  size_t expected_committed_size = 0;
 
   EXPECT_EQ(expected_committed_size, root()->total_size_of_committed_pages);
   EXPECT_EQ(expected_committed_size, root()->max_size_of_committed_pages);
@@ -1271,8 +1261,9 @@ TEST_P(PartitionAllocThreadCacheTest, MAYBE_Bookkeeping) {
   EXPECT_EQ(root()->get_total_size_of_allocated_bytes(),
             expected_allocated_size);
   tcache->Purge();
-  EXPECT_EQ(root()->get_total_size_of_allocated_bytes(),
-            GetBucketSizeForThreadCache());
+  EXPECT_EQ(
+      internal::InternalAllocatorRoot().get_total_size_of_allocated_bytes(),
+      GetBucketSizeForThreadCache());
 }
 
 TEST_P(PartitionAllocThreadCacheTest, TryPurgeNoAllocs) {

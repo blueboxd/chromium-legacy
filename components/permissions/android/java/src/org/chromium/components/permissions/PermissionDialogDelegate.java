@@ -6,11 +6,16 @@ package org.chromium.components.permissions;
 
 import android.graphics.Bitmap;
 
+import androidx.core.util.Pair;
+
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.ui.base.WindowAndroid;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Delegate class for modal permission dialogs. Contains all of the data displayed in a prompt,
@@ -37,14 +42,26 @@ public class PermissionDialogDelegate {
     /** Text shown in the dialog. */
     private String mMessageText;
 
-    /** Text shown on the primary button, e.g. "Allow". */
-    private String mPrimaryButtonText;
+    /** Text to display on the persistent grant button, e.g. "Allow". */
+    private String mPositiveButtonText;
 
-    /** Text shown on the secondary button, e.g. "Block". */
-    private String mSecondaryButtonText;
+    /** Text The text to display on the persistent deny button, e.g. "Block". */
+    private String mNegativeButtonText;
+
+    /**
+     * Text to display on the ephemeral grant button, e.g. "Allow this time". May be an empty string
+     * in which case the button should not be shown.
+     */
+    private String mPositiveEphemeralButtonText;
 
     /** The {@link ContentSettingsType}s requested in this dialog.  */
     private int[] mContentSettingsTypes;
+
+    /**
+     * Defines a (potentially empty) list of ranges represented as pairs of <startIndex, endIndex>,
+     * which shall be used by the UI to format the specified ranges as bold text.
+     */
+    private List<Pair<Integer, Integer>> mBoldedRanges = new ArrayList<>();
 
     public WindowAndroid getWindow() {
         return mWindow;
@@ -52,6 +69,10 @@ public class PermissionDialogDelegate {
 
     public int[] getContentSettingsTypes() {
         return mContentSettingsTypes.clone();
+    }
+
+    public boolean canShowEphemeralOption() {
+        return !mPositiveEphemeralButtonText.isEmpty();
     }
 
     public int getDrawableId() {
@@ -62,17 +83,31 @@ public class PermissionDialogDelegate {
         return mMessageText;
     }
 
-    public String getPrimaryButtonText() {
-        return mPrimaryButtonText;
+    public List<Pair<Integer, Integer>> getBoldedRanges() {
+        return mBoldedRanges;
     }
 
-    public String getSecondaryButtonText() {
-        return mSecondaryButtonText;
+    public String getPositiveButtonText() {
+        return mPositiveButtonText;
+    }
+
+    public String getNegativeButtonText() {
+        return mNegativeButtonText;
+    }
+
+    public String getPositiveEphemeralButtonText() {
+        return mPositiveEphemeralButtonText;
     }
 
     public void onAccept() {
         assert mNativeDelegatePtr != 0;
         PermissionDialogDelegateJni.get().accept(mNativeDelegatePtr, PermissionDialogDelegate.this);
+    }
+
+    public void onAcceptThisTime() {
+        assert mNativeDelegatePtr != 0;
+        PermissionDialogDelegateJni.get()
+                .acceptThisTime(mNativeDelegatePtr, PermissionDialogDelegate.this);
     }
 
     public void onCancel() {
@@ -129,8 +164,12 @@ public class PermissionDialogDelegate {
      * @param contentSettingsTypes The content settings types requested by this dialog.
      * @param iconId The id of the icon to display in the dialog.
      * @param message The message to display in the dialog.
-     * @param primaryTextButton The text to display on the primary button.
-     * @param secondaryTextButton The text to display on the primary button.
+     * @param boldedRanges A list of ranges (pairs of <textOffset, rangeSize>) that should be
+     *     formatted as bold in the message.
+     * @param positiveButtonText The text to display on the persistent grant button.
+     * @param negativeButtonText The text to display on the persistent deny button.
+     * @param positiveEphemeralButtonText The text to display on the ephemeral grant button. May be
+     *     empty in which case only persistent grant and deny buttons are shown.
      */
     @CalledByNative
     private static PermissionDialogDelegate create(
@@ -139,16 +178,22 @@ public class PermissionDialogDelegate {
             int[] contentSettingsTypes,
             int iconId,
             String message,
-            String primaryButtonText,
-            String secondaryButtonText) {
+            int[] boldedRanges,
+            String positiveButtonText,
+            String negativeButtonText,
+            String positiveEphemeralButtonText) {
+        assert (boldedRanges.length % 2 == 0); // Contains a list of offset and length values
+
         return new PermissionDialogDelegate(
                 nativeDelegatePtr,
                 window,
                 contentSettingsTypes,
                 iconId,
                 message,
-                primaryButtonText,
-                secondaryButtonText);
+                boldedRanges,
+                positiveButtonText,
+                negativeButtonText,
+                positiveEphemeralButtonText);
     }
 
     /** Upon construction, this class takes ownership of the passed in native delegate. */
@@ -158,20 +203,28 @@ public class PermissionDialogDelegate {
             int[] contentSettingsTypes,
             int iconId,
             String message,
-            String primaryButtonText,
-            String secondaryButtonText) {
+            int[] boldedRanges,
+            String positiveButtonText,
+            String negativeButtonText,
+            String positiveEphemeralButtonText) {
         mNativeDelegatePtr = nativeDelegatePtr;
         mWindow = window;
         mContentSettingsTypes = contentSettingsTypes;
         mDrawableId = iconId;
         mMessageText = message;
-        mPrimaryButtonText = primaryButtonText;
-        mSecondaryButtonText = secondaryButtonText;
+        for (int i = 0; i + 1 < boldedRanges.length; i += 2) {
+            mBoldedRanges.add(new Pair(boldedRanges[i], boldedRanges[i] + boldedRanges[i + 1]));
+        }
+        mPositiveButtonText = positiveButtonText;
+        mNegativeButtonText = negativeButtonText;
+        mPositiveEphemeralButtonText = positiveEphemeralButtonText;
     }
 
     @NativeMethods
     interface Natives {
         void accept(long nativePermissionDialogDelegate, PermissionDialogDelegate caller);
+
+        void acceptThisTime(long nativePermissionDialogDelegate, PermissionDialogDelegate caller);
 
         void cancel(long nativePermissionDialogDelegate, PermissionDialogDelegate caller);
 

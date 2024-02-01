@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.content_settings.SessionModel;
 import org.chromium.content_public.browser.BrowserContextHandle;
 
 import java.io.Serializable;
@@ -17,10 +18,15 @@ public class PermissionInfo implements Serializable {
     private final boolean mIsEmbargoed;
     private final String mEmbedder;
     private final String mOrigin;
-    private final @ContentSettingsType int mContentSettingsType;
+    private final @ContentSettingsType.EnumType int mContentSettingsType;
+    private final @SessionModel int mSessionModel;
 
     public PermissionInfo(
-            @ContentSettingsType int type, String origin, String embedder, boolean isEmbargoed) {
+            @ContentSettingsType.EnumType int type,
+            String origin,
+            String embedder,
+            boolean isEmbargoed,
+            @SessionModel int sessionModel) {
         assert WebsitePermissionsFetcher.getPermissionsType(type)
                         == WebsitePermissionsFetcher.WebsitePermissionsType.PERMISSION_INFO
                 : "invalid type: " + type;
@@ -28,9 +34,10 @@ public class PermissionInfo implements Serializable {
         mEmbedder = embedder;
         mContentSettingsType = type;
         mIsEmbargoed = isEmbargoed;
+        mSessionModel = sessionModel;
     }
 
-    public @ContentSettingsType int getContentSettingsType() {
+    public @ContentSettingsType.EnumType int getContentSettingsType() {
         return mContentSettingsType;
     }
 
@@ -50,18 +57,36 @@ public class PermissionInfo implements Serializable {
         return mIsEmbargoed;
     }
 
+    public @SessionModel int getSessionModel() {
+        return mSessionModel;
+    }
+
+    /** Returns the ContentSetting value using the minimal set of defining parameters. */
+    public static @ContentSettingValues @Nullable Integer getContentSetting(
+            BrowserContextHandle browserContextHandle,
+            @ContentSettingsType.EnumType int mContentSettingsType,
+            String origin,
+            @Nullable String embeddingOrigin) {
+        return org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni.get()
+                .getPermissionSettingForOrigin(
+                        browserContextHandle,
+                        mContentSettingsType,
+                        origin,
+                        embeddingOrigin != null ? embeddingOrigin : origin);
+    }
+
     /** Returns the ContentSetting value for this origin. */
     public @ContentSettingValues @Nullable Integer getContentSetting(
             BrowserContextHandle browserContextHandle) {
-        return WebsitePreferenceBridgeJni.get()
-                .getPermissionSettingForOrigin(
-                        browserContextHandle, mContentSettingsType, mOrigin, getEmbedderSafe());
+        return PermissionInfo.getContentSetting(
+                browserContextHandle, mContentSettingsType, mOrigin, mEmbedder);
     }
+
 
     /** Sets the native ContentSetting value for this origin. */
     public void setContentSetting(
             BrowserContextHandle browserContextHandle, @ContentSettingValues int value) {
-        WebsitePreferenceBridgeJni.get()
+        org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni.get()
                 .setPermissionSettingForOrigin(
                         browserContextHandle,
                         mContentSettingsType,

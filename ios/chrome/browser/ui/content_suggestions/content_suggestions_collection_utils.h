@@ -14,6 +14,9 @@ extern const CGFloat kHintTextScale;
 // Bottom margin for the Return to Recent Tab tile.
 extern const CGFloat kReturnToRecentTabSectionBottomMargin;
 
+// The width of NTP modules, as a multiplier of the view width.
+extern const CGFloat kModuleWidth;
+
 // Returns the proper height for the doodle. `logo_is_showing` is YES if showing
 // the Google logo. `doodle_is_showing` is YES if the doodle is showing. The
 // SizeClass of the `trait_collection` of the view displaying the doodle is used
@@ -70,6 +73,12 @@ BOOL ShouldShowWiderMagicStackLayer(UITraitCollection* traitCollection,
 
 // Returns the color of the search hint label in the fakebox.
 UIColor* SearchHintLabelColor();
+
+// Returns the string ID to be used to get the title of the SetUpList.
+int SetUpListTitleStringID();
+
+// Returns the localized title to be used for the SetUpList.
+NSString* SetUpListTitleString();
 
 }  // namespace content_suggestions
 

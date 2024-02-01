@@ -105,8 +105,7 @@ std::string GetPathWithPortReplacement(const std::string& path, uint16_t port) {
 }
 
 GURL GetDataURLWithContent(const std::string& content) {
-  std::string encoded_content;
-  base::Base64Encode(content, &encoded_content);
+  std::string encoded_content = base::Base64Encode(content);
   std::string data_uri_content = "data:text/html;base64," + encoded_content;
   return GURL(data_uri_content);
 }
@@ -439,7 +438,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
     preconnect_manager_observer_ =
         std::make_unique<TestPreconnectManagerObserver>(
             loading_predictor_->preconnect_manager());
-    if (loading_predictor_->prefetch_manager()) {
+    if (base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch)) {
       prefetch_manager_observer_ =
           std::make_unique<TestPrefetchManagerObserver>(
               *loading_predictor_->prefetch_manager());
@@ -917,7 +916,7 @@ class LCPCriticalPathPredictorBrowserTest : public LoadingPredictorBrowserTest {
         loading_predictor()->resource_prefetch_predictor()->GetLcppData(url);
     std::vector<std::string> locators;
     if (lcpp_data) {
-      absl::optional<blink::mojom::LCPCriticalPathPredictorNavigationTimeHint>
+      std::optional<blink::mojom::LCPCriticalPathPredictorNavigationTimeHint>
           hint = ConvertLcppDataToLCPCriticalPathPredictorNavigationTimeHint(
               *lcpp_data);
       if (hint) {

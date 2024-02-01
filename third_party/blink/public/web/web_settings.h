@@ -75,14 +75,6 @@ class WebSettings {
     kSubtitles
   };
 
-  // Defines the default for 'passive' field used in the AddEventListenerOptions
-  // interface when javascript calls addEventListener.
-  enum class PassiveEventListenerDefault {
-    kFalse,        // Default of false.
-    kTrue,         // Default of true.
-    kForceAllTrue  // Force all values to be true even when specified.
-  };
-
   // Sets value of a setting by its string identifier from Settings.in and
   // string representation of value. An enum's string representation is the
   // string representation of the integer value of the enum.
@@ -177,6 +169,7 @@ class WebSettings {
   virtual void SetMinimumFontSize(int) = 0;
   virtual void SetMinimumLogicalFontSize(int) = 0;
   virtual void SetHideScrollbars(bool) = 0;
+  virtual void SetPrefersDefaultScrollbarStyles(bool) = 0;
   virtual void SetPasswordEchoDurationInSeconds(double) = 0;
   virtual void SetPasswordEchoEnabled(bool) = 0;
   virtual void SetPluginsEnabled(bool) = 0;
@@ -245,7 +238,6 @@ class WebSettings {
   virtual void SetTouchDragDropEnabled(bool) = 0;
   virtual void SetTouchDragEndContextMenu(bool) = 0;
   virtual void SetBarrelButtonForDragEnabled(bool) = 0;
-  virtual void SetUseLegacyBackgroundSizeShorthandBehavior(bool) = 0;
   virtual void SetViewportStyle(mojom::ViewportStyle) = 0;
   virtual void SetUseWideViewport(bool) = 0;
   virtual void SetV8CacheOptions(mojom::V8CacheOptions) = 0;

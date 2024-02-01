@@ -10,21 +10,13 @@
     display: flex;
   }
 
-  tab-organization-not-started[shown],
-  tab-organization-in-progress[shown],
-  tab-organization-results[shown],
-  tab-organization-failure[shown] {
-    animation: fadeIn 200ms linear forwards,
-               paddingIn 250ms var(--standard-curve) forwards;
-  }
-
   :host(.changed-state) tab-organization-not-started[shown],
   :host(.changed-state) tab-organization-in-progress[shown],
   :host(.changed-state) tab-organization-results[shown],
   :host(.changed-state) tab-organization-failure[shown] {
     animation: fadeIn 100ms linear 100ms forwards,
                displayIn 200ms linear forwards,
-               paddingIn 250ms var(--standard-curve) forwards;
+               slideIn 250ms var(--standard-curve) forwards;
   }
 
   tab-organization-not-started:not([shown]),
@@ -46,20 +38,15 @@
   tab-organization-failure:not([shown]) {
     animation: fadeOut 100ms linear forwards,
                displayOut 200ms linear forwards,
-               marginOut 250ms var(--standard-curve) forwards;
+               slideOut 250ms var(--standard-curve) forwards;
   }
 
   #body {
-    margin: 16px var(--mwb-list-item-horizontal-margin);
+    margin: var(--mwb-list-item-horizontal-margin);
   }
 
   #contents {
     overflow: hidden;
-    transition: height 250ms var(--standard-curve);
-  }
-
-  #contents.no-transition {
-    transition: none;
   }
 </style>
 
@@ -67,7 +54,6 @@
   <div id="body">
     <tab-organization-not-started id="notStarted"
         shown$="[[isState_(tabOrganizationStateEnum_.kNotStarted, state_)]]"
-        on-sync-change="updateContentsHeightAfterNextRender"
         on-sync-click="onSyncClick_"
         on-sign-in-click="onSignInClick_"
         on-settings-click="onSettingsClick_"
@@ -81,7 +67,10 @@
         shown$="[[isState_(tabOrganizationStateEnum_.kSuccess, state_)]]"
         name="[[name_]]"
         tabs="[[tabs_]]"
+        organization-id="[[organizationId_]]"
+        is-last-organization="[[isLastOrganization_]]"
         available-height="[[availableHeight_]]"
+        on-refresh-click="onRefreshClick_"
         on-create-group-click="onCreateGroupClick_"
         on-remove-tab="onRemoveTab_"
         on-learn-more-click="onLearnMoreClick_"

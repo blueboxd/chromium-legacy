@@ -51,8 +51,8 @@
 #import "ios/chrome/browser/gcm/model/ios_chrome_gcm_profile_service_factory.h"
 #import "ios/chrome/browser/history/model/history_service_factory.h"
 #import "ios/chrome/browser/metrics/model/ios_chrome_metrics_services_manager_client.h"
-#import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
-#import "ios/chrome/browser/policy/configuration_policy_handler_list_factory.h"
+#import "ios/chrome/browser/policy/model/browser_policy_connector_ios.h"
+#import "ios/chrome/browser/policy/model/configuration_policy_handler_list_factory.h"
 #import "ios/chrome/browser/prefs/model/ios_chrome_pref_service_factory.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_service.h"
 #import "ios/chrome/browser/segmentation_platform/model/otr_web_state_observer.h"
@@ -177,6 +177,7 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
 
 void ApplicationContextImpl::StartTearDown() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  tearing_down_ = true;
 
   // Destroy the segmentation OTR observer before
   // `chrome_browser_state_manager_`. `segmentation_otr_web_state_observer_` may
@@ -246,6 +247,7 @@ void ApplicationContextImpl::PostDestroyThreads() {
 
 void ApplicationContextImpl::OnAppEnterForeground() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!tearing_down_);
 
   // Tell the metrics services that the application resumes.
   PrefService* local_state = GetLocalState();
@@ -267,6 +269,8 @@ void ApplicationContextImpl::OnAppEnterForeground() {
 
 void ApplicationContextImpl::OnAppEnterBackground() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!tearing_down_);
+
   // Mark all the ChromeBrowserStates as clean and persist history.
   std::vector<ChromeBrowserState*> loaded_browser_state =
       GetChromeBrowserStateManager()->GetLoadedBrowserStates();
@@ -357,7 +361,9 @@ ApplicationContextImpl::GetChromeBrowserStateManager() {
 metrics_services_manager::MetricsServicesManager*
 ApplicationContextImpl::GetMetricsServicesManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!metrics_services_manager_) {
+  // Only create the objects if teardown hasn't started yet, as otherwise these
+  // may have already been destroyed.
+  if (!metrics_services_manager_ && !tearing_down_) {
     metrics_services_manager_.reset(
         new metrics_services_manager::MetricsServicesManager(
             std::make_unique<IOSChromeMetricsServicesManagerClient>(
@@ -368,17 +374,29 @@ ApplicationContextImpl::GetMetricsServicesManager() {
 
 metrics::MetricsService* ApplicationContextImpl::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return GetMetricsServicesManager()->GetMetricsService();
+  auto* metrics_services_manager = GetMetricsServicesManager();
+  if (metrics_services_manager_) {
+    return metrics_services_manager->GetMetricsService();
+  }
+  return nullptr;
 }
 
 ukm::UkmRecorder* ApplicationContextImpl::GetUkmRecorder() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return GetMetricsServicesManager()->GetUkmService();
+  auto* metrics_services_manager = GetMetricsServicesManager();
+  if (metrics_services_manager_) {
+    return metrics_services_manager->GetUkmService();
+  }
+  return nullptr;
 }
 
 variations::VariationsService* ApplicationContextImpl::GetVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return GetMetricsServicesManager()->GetVariationsService();
+  auto* metrics_services_manager = GetMetricsServicesManager();
+  if (metrics_services_manager_) {
+    return metrics_services_manager->GetVariationsService();
+  }
+  return nullptr;
 }
 
 net::NetLog* ApplicationContextImpl::GetNetLog() {
@@ -401,7 +419,7 @@ ApplicationContextImpl::GetNetworkTimeTracker() {
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
         base::WrapUnique(new base::DefaultClock),
         base::WrapUnique(new base::DefaultTickClock), GetLocalState(),
-        GetSharedURLLoaderFactory()));
+        GetSharedURLLoaderFactory(), std::nullopt));
   }
   return network_time_tracker_.get();
 }

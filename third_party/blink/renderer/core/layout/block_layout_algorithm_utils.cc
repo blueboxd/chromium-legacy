@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/layout/block_layout_algorithm_utils.h"
 
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/layout/box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/exclusions/exclusion_space.h"
+#include "third_party/blink/renderer/core/layout/fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/length_utils.h"
 
 namespace blink {
@@ -12,7 +15,8 @@ namespace blink {
 namespace {
 
 BlockContentAlignment ComputeContentAlignment(const ComputedStyle& style,
-                                              bool is_table_cell) {
+                                              bool is_table_cell,
+                                              UseCounter* use_counter) {
   const StyleContentAlignmentData& alignment = style.AlignContent();
   ContentPosition position = alignment.GetPosition();
   OverflowAlignment overflow = alignment.Overflow();
@@ -37,6 +41,19 @@ BlockContentAlignment ComputeContentAlignment(const ComputedStyle& style,
     position = ContentPosition::kEnd;
   }
 
+  if (use_counter) {
+    if (!is_table_cell && position != ContentPosition::kNormal &&
+        position != ContentPosition::kStart &&
+        position != ContentPosition::kBaseline &&
+        position != ContentPosition::kFlexStart) {
+      UseCounter::Count(*use_counter,
+                        WebFeature::kEffectiveAlignContentForBlock);
+    } else if (is_table_cell && position != ContentPosition::kNormal &&
+               position != ContentPosition::kCenter) {
+      UseCounter::Count(*use_counter,
+                        WebFeature::kEffectiveAlignContentForTableCell);
+    }
+  }
   if (!RuntimeEnabledFeatures::AlignContentForBlocksEnabled()) {
     position = ContentPosition::kNormal;
   }
@@ -141,13 +158,66 @@ LayoutUnit CalculateOutOfFlowStaticInlineLevelOffset(
 }
 
 BlockContentAlignment ComputeContentAlignmentForBlock(
-    const ComputedStyle& style) {
-  return ComputeContentAlignment(style, /* is_table_cell */ false);
+    const ComputedStyle& style,
+    UseCounter* use_counter) {
+  // ruby-text uses BlockLayoutAlgorithm, but they are not a block container
+  // officially.
+  if (!style.IsDisplayBlockContainer()) {
+    return BlockContentAlignment::kStart;
+  }
+  return ComputeContentAlignment(style, /* is_table_cell */ false, use_counter);
 }
 
 BlockContentAlignment ComputeContentAlignmentForTableCell(
-    const ComputedStyle& style) {
-  return ComputeContentAlignment(style, /* is_table_cell */ true);
+    const ComputedStyle& style,
+    UseCounter* use_counter) {
+  return ComputeContentAlignment(style, /* is_table_cell */ true, use_counter);
+}
+
+void AlignBlockContent(const ComputedStyle& style,
+                       const BlockBreakToken* break_token,
+                       LayoutUnit content_block_size,
+                       BoxFragmentBuilder& builder) {
+  if (IsBreakInside(break_token)) {
+    // Do nothing for the second or later fragments.
+    return;
+  }
+
+  LayoutUnit free_space = builder.FragmentBlockSize() - content_block_size;
+  if (style.AlignContentBlockCenter()) {
+    builder.MoveChildrenInBlockDirection(free_space / 2);
+    return;
+  }
+
+  if (!RuntimeEnabledFeatures::AlignContentForBlocksEnabled()) {
+    ComputeContentAlignmentForBlock(style, &builder.Node().GetDocument());
+    return;
+  }
+  if (!ShouldIncludeBlockEndBorderPadding(builder)) {
+    // Do nothing for the first fragment without block-end border and padding.
+    // See css/css-align/blocks/align-content-block-break-overflow-010.html
+    return;
+  }
+
+  BlockContentAlignment alignment =
+      ComputeContentAlignmentForBlock(style, &builder.Node().GetDocument());
+  if (alignment == BlockContentAlignment::kSafeCenter ||
+      alignment == BlockContentAlignment::kSafeEnd) {
+    free_space = free_space.ClampNegativeToZero();
+  }
+  switch (alignment) {
+    case BlockContentAlignment::kStart:
+    case BlockContentAlignment::kBaseline:
+      // Nothing to do.
+      break;
+    case BlockContentAlignment::kSafeCenter:
+    case BlockContentAlignment::kUnsafeCenter:
+      builder.MoveChildrenInBlockDirection(free_space / 2);
+      break;
+    case BlockContentAlignment::kSafeEnd:
+    case BlockContentAlignment::kUnsafeEnd:
+      builder.MoveChildrenInBlockDirection(free_space);
+  }
 }
 
 }  // namespace blink

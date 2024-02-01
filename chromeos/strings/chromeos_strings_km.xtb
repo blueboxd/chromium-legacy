@@ -16,10 +16,12 @@
 <translation id="1075811647922107217">ទំហំ​ទំព័រ</translation>
 <translation id="1082009148392559545">កំពុង​ទាញយក​ធាតុរក្សា​អេក្រង់</translation>
 <translation id="1094693127011229778">មិនមានអាសយដ្ឋាន IP ទេ</translation>
+<translation id="1116694919640316211">អំពី</translation>
 <translation id="1118572504348554005">យើង​អាច​ចែករំលែក​មតិកែលម្អ​ដែលបានដាក់បញ្ជូន​តាមរយៈទម្រង់បែបបទ​នេះ​ជាមួយ​ដៃគូ​របស់យើង ដើម្បីដោះស្រាយ​បញ្ហា និង​បញ្ហា​ផ្សេងៗទៀត​ដែល​អ្នក​រាយការណ៍​មកយើង។ សូមកុំរួមបញ្ចូល​ព័ត៌មាន​រសើប​ដូចជា​ពាក្យសម្ងាត់​ជាដើម។</translation>
 <translation id="1119447706177454957">កំហុសឆ្គងខាងក្នុង</translation>
 <translation id="1124772482545689468">អ្នកប្រើ</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
+<translation id="1134416403025830762">គុណ</translation>
 <translation id="1145018782460575098">វិនដូដំឡើងកំណែកម្មវិធីបង្កប់សម្រាប់ឧបករណ៍ខាងក្រៅត្រូវបានបើក។ មានកំណែថ្មី <ph name="NUM_UPDATES" />។</translation>
 <translation id="1145516343487477149">រក​អត្ថបទ​ជំនួយ និង​ចម្លើយ​ចំពោះ​សំណួរ Chromebook ទូទៅ</translation>
 <translation id="1154390310959620237">អ្នកអាច​ប្ដូរផ្លូវកាត់​បានតែ 5 ប៉ុណ្ណោះតាមបំណង។ លុបផ្លូវកាត់​ណាមួយ ដើម្បីបញ្ចូល​ផ្លូវកាត់ថ្មី។</translation>
@@ -42,6 +44,7 @@
 <translation id="1264369926465113395">ពិនិត្យមើល​ទស្សនាវដ្ដី​ឌីជីថលថ្មី​របស់ Chromebook សម្រាប់​អ្នកបង្កើត</translation>
 <translation id="1270369111467284986">បានសន្មតថាជាច្រកចូលប្រើបណ្ដាញ</translation>
 <translation id="1290331692326790741">សេវាខ្សោយ</translation>
+<translation id="1300115153046603471">APN គឺជា​ប្រភេទ​លំនាំដើម និង <ph name="ATTACH" />។</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">កំពុងដំឡើងកំណែ (បានបញ្ចប់ <ph name="PERCENTAGE_VALUE" />% ហើយ)</translation>
 <translation id="1309341072016605398"><ph name="MINUTES" /> នាទី</translation>
@@ -54,6 +57,7 @@
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">ប៉ុន​កន្លែង​ស្កេន</translation>
 <translation id="1367951781824006909">ជ្រើសរើសឯកសារមួយ</translation>
+<translation id="1371650399987522809">មតិកែលម្អ​អំពី​ផ្ទាំង​រូបភាព​ដែលដំណើរការដោយ Google AI</translation>
 <translation id="1387854245479784695">នេះគឺជា​ការវាស់ស្ទង់​ការប្រើប្រាស់សរុប​នៃស្នូលទាំងអស់</translation>
 <translation id="1394661041439318933">ឧបករណ៍មានថ្មប្រអប់កាស <ph name="BATTERY_PERCENTAGE" />%។</translation>
 <translation id="1397738625398125236">អាចធ្វើតេស្ដភីងលើច្រកបាន</translation>
@@ -81,18 +85,20 @@
 <translation id="1515129336378114413">ទំព័រដើម​កម្មវិធីរុករក​តាមអ៊ីនធឺណិត</translation>
 <translation id="1526389707933164996">រូបមានចលនានៃធាតុរក្សាអេក្រង់</translation>
 <translation id="152892567002884378">បង្កើន​សំឡេង</translation>
-<translation id="1539242642795599947">APN គឺជា​ប្រភេទ​ភ្ជាប់ និង​លំនាំដើម។</translation>
 <translation id="1555130319947370107">ខៀវ</translation>
 <translation id="155865706765934889">ផ្ទាំងប៉ះ</translation>
 <translation id="1561927818299383735">ពណ៌ពន្លឺពីក្រោម</translation>
 <translation id="1565038567006703504">មិនអាចដំឡើងកំណែ <ph name="DEVICE_NAME" /> បានទេ</translation>
+<translation id="1566493343215789965">ចែក</translation>
 <translation id="1567064801249837505">អាល់ប៊ុម</translation>
 <translation id="1572585716423026576">កំណត់​ជា​ផ្ទាំង​រូបភាព</translation>
 <translation id="1578784163189013834">ជ្រើសរើសផ្ទៃខាងក្រោយរបស់ធាតុរក្សាអេក្រង់</translation>
 <translation id="160633243685262989">មើល​រូបភាពសាកល្បង</translation>
 <translation id="1611649489706141841">ទៅមុខ</translation>
 <translation id="1615335640928990664">ការប្រើទិន្នន័យចាប់តាំងពីថ្ងៃ<ph name="FRIENDLY_DATE" /></translation>
+<translation id="1615576200479539465">កំពុង​បង្កើត​រូបភាព...</translation>
 <translation id="1621067168122174824">ដំណើរការតេស្តសាកថ្ម</translation>
+<translation id="1626590945318984973">មិនអាចប្រើ​ផ្លូវកាត់​បានទេ។ សូមចុច​ផ្លូវកាត់ថ្មី​ដោយមិនប្រើ​គ្រាប់ចុច Function និងគ្រាប់ចុច<ph name="META_KEY" />។</translation>
 <translation id="1639239467298939599">កំពុងដំណើរការ</translation>
 <translation id="1641857168437328880">ឧបករណ៍​បញ្ចូល​ឯកសារ (ម្ខាង)</translation>
 <translation id="1643449475550628585">ប្ដូរផ្ទាំងរូបភាព​ជារៀងរាល់ថ្ងៃ</translation>
@@ -143,7 +149,6 @@
 <translation id="188114911237521550">បិទ​មុខងារ​ងងឹត</translation>
 <translation id="1885577615937958993">ខាមេឌៀ​ទៅមុខ</translation>
 <translation id="1887850431809612466">ការផ្លាស់ប្តូរផ្នែករឹង</translation>
-<translation id="1897672602657312171">ផ្លូវកាត់​ដែលគ្មាន​ប៊ូតុងស្វែងរក​ប្រហែលជា​ជាន់គ្នា​ជាមួយ​ផ្លូវកាត់​របស់កម្មវិធី​មួយចំនួន។ សូមចុច​ផ្លូវកាត់នេះ​ម្ដងទៀត ដើម្បីបន្ត​ប្រើប្រាស់​វា ឬចុច​ផ្លូវកាត់ថ្មី​ដោយប្រើ​ប៊ូតុងស្វែងរក។</translation>
 <translation id="1904932688895783618">ទាំង​នេះ​គឺជា​ធនធាន​ដែល​មាន​ប្រយោជន៍​ផ្សេងៗ​មួយចំនួន​ទៀត៖</translation>
 <translation id="1905710495812624430">បាន​លើស​ការ​ព្យាយាម​ចូូល​អតិបរមា​ដែល​បាន​អនុញ្ញាត​ហើយ​។​</translation>
 <translation id="1908234395526491708">សំណើ UDP មិនបានសម្រេច</translation>
@@ -175,7 +180,6 @@
 <translation id="2152882202543497059">រូបថត <ph name="NUMBER" /> សន្លឹក</translation>
 <translation id="2157660087437850958">ផ្ទាំង​ជ្រើសរើស​រូបអារម្មណ៍</translation>
 <translation id="2157959690810728433">បានដាក់ជាជួរ</translation>
-<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{អ្នកគ្រប់គ្រងរបស់អ្នកបានកំណត់ <ph name="APP_NAME_1" /> ឱ្យចាប់ផ្ដើមដោយស្វ័យប្រវត្តិរាល់ពេលអ្នកចូលគណនី។}=2{អ្នកគ្រប់គ្រងរបស់អ្នកបានកំណត់ <ph name="APP_NAME_1" /> និង <ph name="APP_NAME_2" /> ឱ្យចាប់ផ្ដើមដោយស្វ័យប្រវត្តិរាល់ពេលអ្នកចូលគណនី។}=3{អ្នកគ្រប់គ្រងរបស់អ្នកបានកំណត់ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> និង <ph name="APP_NAME_3" /> ឱ្យចាប់ផ្ដើមដោយស្វ័យប្រវត្តិរាល់ពេលអ្នកចូលគណនី។}other{អ្នកគ្រប់គ្រងរបស់អ្នកបានកំណត់ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> និងកម្មវិធីចំនួន # ផ្សេងទៀតឱ្យចាប់ផ្ដើមដោយស្វ័យប្រវត្តិរាល់ពេលអ្នកចូលគណនី។}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />៖ ព្យាយាម​ម្ដងទៀត</translation>
 <translation id="215916044711630446">ឥឡូវនេះ ប៊ូតុង​បញ្ចូល APN ត្រូវបានបិទ</translation>
 <translation id="2161394479394250669">បោះបង់​ការងារ​បោះពុម្ព</translation>
@@ -185,6 +189,7 @@
 <translation id="2189104374785738357">កែព័ត៌មានលម្អិតអំពី APN</translation>
 <translation id="2209788852729124853">កំណត់មុខងាររាប់ចំនួនចរាចរណ៍ឡើងវិញ</translation>
 <translation id="2212733584906323460">កម្រិតច្បាស់​នៃឈ្មោះ</translation>
+<translation id="2215920961700443347">គ្មាន​អ៊ីនធឺណិតទេ។ សូមភ្ជាប់​អ៊ីនធឺណិត រួច​ព្យាយាមម្ដងទៀត។</translation>
 <translation id="2217935453350629363">ល្បឿនបច្ចុប្បន្ន</translation>
 <translation id="2224337661447660594">គ្មាន​អ៊ីនធឺណិតទេ</translation>
 <translation id="222447520299472966">ត្រូវជ្រើសរើសអាល់ប៊ុមវិចិត្រសាលយ៉ាងហោចណាស់មួយ</translation>
@@ -218,6 +223,7 @@
 <translation id="2421798028054665193">រូបភាព <ph name="CURRENT_PAGE" /> នៃ <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">ភាពត្រឹមត្រូវនៃ​ពិន្ទុអណ្ដែត</translation>
 <translation id="2448312741937722512">ប្រភេទ</translation>
+<translation id="2465272316171730950">យើង​ជាប់រវល់​ហើយ។ សូម​ត្រឡប់​មកវិញ​មួយសន្ទុះ​ទៀត។</translation>
 <translation id="248546197012830854">ឧបករណ៍​គ្មាន​អ៊ីនធឺណិត​ទេ។ ភ្ជាប់ទៅ​បណ្ដាញ WiFi ដើម្បីមើល​ខ្លឹមសារជំនួយ។</translation>
 <translation id="2491955442992294626">គ្រាប់ចុចមិនត្រូវបានធ្វើតេស្ត នៅពេលអ្នកកំពុងប្រើវិនដូផ្សេងទៀតទេ</translation>
 <translation id="2493126929778606526">រូបថតល្អបំផុត​របស់អ្នក ដែលបាន​ជ្រើសរើស​ដោយស្វ័យប្រវត្តិ</translation>
@@ -225,7 +231,6 @@
 <translation id="2505327257735685095">ផ្ទុក​ផ្ទាំងរូបភាព​បច្ចុប្បន្ន​ឡើងវិញ</translation>
 <translation id="2512979179176933762">បង្ហាញ​វិនដូ</translation>
 <translation id="2513396635448525189">រូបភាពចូលគណនី</translation>
-<translation id="2515109918609218604">មិនអាចប្រើ​ផ្លូវកាត់​នេះបានទេ។ សូមចុច​ផ្លូវកាត់ថ្មី​ដោយមិនប្រើ​គ្រាប់ចុច​ស្វែងរក និង​មុខងារ។</translation>
 <translation id="2517472476991765520">ស្កេន</translation>
 <translation id="2521835766824839541">ចម្រៀង​មុន</translation>
 <translation id="2526590354069164005">ដេស៍ថប</translation>
@@ -241,6 +246,7 @@
 <translation id="2638662041295312666">រូបភាពចូលគណនី</translation>
 <translation id="2640549051766135490">បានជ្រើសរើស​អាល់ប៊ុម <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="2652403576514495859">បើក ឬបិទការសរសេរ​តាមអាន</translation>
+<translation id="2656001153562991489">ផ្ដាច់មុខសម្រាប់ Chromebook Plus</translation>
 <translation id="267442004702508783">ធ្វើឲ្យថ្មីឡើងវិញ</translation>
 <translation id="268270014981824665">បន្ថយពន្លឺក្ដារចុច</translation>
 <translation id="2712812801627182647">សោផ្ទៀងផ្ទាត់ TLS</translation>
@@ -263,6 +269,7 @@
 <translation id="2878387241690264070">បានឈប់សាកថ្ម <ph name="RATE" /> ក្នុងរយៈពេល <ph name="NUM_SECONDS" /> វិនាទី។</translation>
 <translation id="2880569433548999039">ធាតុរក្សាអេក្រង់ដែលបង្ហាញចលនាពពក</translation>
 <translation id="2926057806159140518">បញ្ចូលឈ្មោះអ្នកប្រើប្រាស់ និងពាក្យ​សម្ងាត់របស់អ្នក ឬស្កេនកូដ QR របស់អ្នក</translation>
+<translation id="2938573842839598578">ដើម្បីទទួលបាន​លទ្ធផល​ប្រហាក់​ប្រហែល សូម<ph name="OPERATOR_TEXT" />តម្លៃ <ph name="CATEGORY_TEXT" /> នឹង <ph name="CONVERSION_RATE" /></translation>
 <translation id="2940811910881150316">មិន​អាច​ធ្វើ​តេស្ត​ឧបករណ៍​បាន​ទេ។ បើក​គម្រប​ឡើងវិញ ដើម្បី​ធ្វើ​តេស្ត។</translation>
 <translation id="2941112035454246133">ទាប</translation>
 <translation id="3008341117444806826">ផ្ទុក​ឡើង​វិញ</translation>
@@ -335,6 +342,7 @@
 <translation id="3517001332549868749">កំណែថ្មី ChromeOS</translation>
 <translation id="3527036260304016759">មិនបានសម្រេច - មានបញ្ហា​ដែលមិនស្គាល់</translation>
 <translation id="3532980081107202182">នៅសល់ប្រហែល <ph name="MIN_REMAINING" /> នាទីទៀត</translation>
+<translation id="3547264467365135390">រូបមន្ត</translation>
 <translation id="3557205324756024651">អត្តសញ្ញាណ​មូលដ្ឋាន (មិនតម្រូវ)</translation>
 <translation id="3565064564551103223">IP ដែលត្រូវបាន​អនុញ្ញាត</translation>
 <translation id="3569407787324516067">ធាតុរក្សាអេក្រង់</translation>
@@ -373,11 +381,13 @@
 <translation id="385051799172605136">ថយក្រោយ</translation>
 <translation id="3858860766373142691">ឈ្មោះ</translation>
 <translation id="3862598938296403232">តម្រូវឱ្យ​មាន​ការពណ៌នា</translation>
+<translation id="386280020966669610">បំផុសគំនិតខ្ញុំ</translation>
 <translation id="3865289341173661845">មិនអាចចូលមើល​ខ្លឹមសារ​ជំនួយ​បានទេ។</translation>
 <translation id="3865414814144988605">គុណភាពបង្ហាញ</translation>
 <translation id="3866249974567520381">ការពិពណ៌នា</translation>
 <translation id="387301095347517405">ចំនួនដង​ដែលថ្មរបស់អ្នក​បានសាកពេញ</translation>
 <translation id="3885327323343477505">ប្ដូរធាតុរក្សាអេក្រង់</translation>
+<translation id="3892148308691398805">ចម្លង​អត្ថបទ</translation>
 <translation id="391412459402535266">មិន​អាច​ធ្វើ​តេស្ត​ឧបករណ៍​បាន​ទេ។ សូម​ប្ដូរ​ទៅ​មុខងារ​កុំព្យូទ័រ​យួរ​ដៃ ដើម្បី​ធ្វើ​តេស្ត។</translation>
 <translation id="3916998944874125962">ថត​រូបអេក្រង់</translation>
 <translation id="3923184630988645767">ការប្រើទិន្នន័យ</translation>
@@ -403,14 +413,15 @@
 <translation id="4060260348856573701">APN ថ្មី</translation>
 <translation id="4093865285251893588">រូបភាព​កម្រង​ព័ត៌មាន</translation>
 <translation id="409427325554347132">រក្សាទុក​ព័ត៌មានលម្អិត​អំពី​ការធ្វើតេស្ត</translation>
+<translation id="409469431304488632">ការពិសោធ</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">ជ្រើសរើស​អាល់ប៊ុម <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">ផ្ទាំងប៉ះ USB</translation>
 <translation id="4113067922640381334">ឥឡូវនេះ អ្នកមាន​សិទ្ធិចូលប្រើ<ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />ផ្ទាំង​រូបភាព<ph name="END_LINK_WALLPAPER_SUBPAGE" />ថ្មីហើយ</translation>
 <translation id="4117637339509843559">មុខងារ​ងងឹត</translation>
 <translation id="4130035430755296270">បន្តដាក់ព្រួញលើ​សម្រាប់​ជម្រើស​ប្លង់​ច្រើនទៀត</translation>
+<translation id="4130750466177569591">ខ្ញុំយល់ព្រម</translation>
 <translation id="4131410914670010031">ពណ៌ខ្មៅ និងស</translation>
-<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> ត្រូវបានចាប់ផ្ដើមដោយស្វ័យប្រវត្តិ}other{កម្មវិធីចំនួន # ត្រូវបានចាប់ផ្ដើមដោយស្វ័យប្រវត្តិ}}</translation>
 <translation id="4145784616224233563">ជញ្ជាំងភ្លើង HTTP</translation>
 <translation id="4147897805161313378">Google រូបថត</translation>
 <translation id="4150201353443180367">ការបង្ហាញ</translation>
@@ -422,7 +433,6 @@
 <translation id="4171077696775491955">បន្ថយ​ពន្លឺ</translation>
 <translation id="4176463684765177261">បានបិទដំណើរការ</translation>
 <translation id="4176659219503619100">ផ្ទាំង​គ្រប់គ្រង</translation>
-<translation id="4185315616950253617">ផ្លូវកាត់​ដែលប្រើ​គ្រាប់ចុច​ជួរដេក​ខាងលើ​ត្រូវតែរួមបញ្ចូល​ប៊ូតុងស្វែងរក។</translation>
 <translation id="420283545744377356">បិទធាតុរក្សាអេក្រង់</translation>
 <translation id="4213104098953699324">ក្តារចុច USB</translation>
 <translation id="4227825898293920515">ពាក្យសម្ងាត់ផុតកំណត់​ក្នុងរយៈពេល <ph name="TIME" /></translation>
@@ -438,17 +448,21 @@
 <translation id="4289849978083912975">បញ្ចាំងស្លាយ</translation>
 <translation id="4297501883039923494">បានឈប់ - មានបញ្ហា​ដែលមិនស្គាល់</translation>
 <translation id="4300073214558989">រូបភាព <ph name="IMAGE_COUNT" /></translation>
+<translation id="4310735698903592804">ផ្ទាំង​រូបភាពថ្មីៗ​ដែល​ដំណើរការដោយ Google AI</translation>
 <translation id="4333390807948134856">បានចុច​គ្រាប់ចុច <ph name="KEY_NAME" /></translation>
 <translation id="4354430579665871434">គ្រាប់ចុច</translation>
 <translation id="4361257691546579041">APN គឺជា​ប្រភេទ​លំនាំដើម។</translation>
 <translation id="437294888293595148">កំណត់​ផ្លូវ​កាត់​ទាំងអស់​ឡើងវិញ</translation>
+<translation id="4376423484621194274">អ្នកគ្រប់គ្រងរបស់អ្នកមិនអនុញ្ញាតឱ្យបិទ <ph name="APP_NAME" /> ទេ</translation>
 <translation id="4378373042927530923">មិនដំណើរការទេ</translation>
 <translation id="4378551569595875038">កំពុងភ្ជាប់...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4394049700291259645">បិទដំណើរការ</translation>
 <translation id="439429847087949098">កំពុង​ចាប់ផ្តើម <ph name="DEVICE_NAME" /> ឡើងវិញ</translation>
 <translation id="4395835743215824109">ប្ដូរក្ដារចុចតាម​បំណង</translation>
+<translation id="4403262788869804671">ផ្លូវកាត់​ដែលគ្មានគ្រាប់ចុច<ph name="META_KEY" /> ប្រហែលជា​ជាន់គ្នា​ជាមួយ​ផ្លូវកាត់​របស់កម្មវិធី​មួយចំនួន។ សូមចុច​ផ្លូវកាត់នេះ​ម្ដងទៀត ដើម្បីបន្ត​ប្រើប្រាស់​វា ឬចុច​ផ្លូវកាត់ថ្មី​ដោយប្រើគ្រាប់ចុច<ph name="KEY" />។</translation>
 <translation id="4415951057168511744">រូបតំណាងបច្ចុប្បន្ន</translation>
+<translation id="4417830657741848074">អ្នកគ្រប់គ្រងរបស់អ្នកបានរៀបចំកម្មវិធីមួយចំនួនឱ្យចាប់ផ្ដើមដោយស្វ័យប្រវត្តិ។ មិនអាចបិទកម្មវិធី​មួយចំនួនក្នុងចំណោមកម្មវិធីទាំងនេះ​បានទេ។</translation>
 <translation id="4422041425070339732">ព្រួញ​ចុះក្រោម</translation>
 <translation id="4425149324548788773">ដ្រាយរបស់ខ្ញុំ</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" /> បានបិទ</translation>
@@ -461,6 +475,7 @@
 <translation id="4469288414739283461">ធាតុរក្សាអេក្រង់ដែលបង្ហាញចលនាផែនដី</translation>
 <translation id="4479639480957787382">ខ្សែអ៊ីនធឺណិត</translation>
 <translation id="4483049906298469269">មិនអាចភីងច្រកបណ្ដាញមិនមែនលំនាំដើមបានទេ</translation>
+<translation id="4500722292849917410">មិនអាចប្រើ​ផ្លូវកាត់​បានទេ។ សូមចុច​ផ្លូវកាត់ថ្មី​ដោយប្រើគ្រាប់ចុចកែសម្រួល (ctrl, alt, shift ឬ<ph name="META_KEY" />)។</translation>
 <translation id="4500966230243561393">ពណ៌​ផ្ទៃ</translation>
 <translation id="4503223151711056411">ព្រួញទៅឆ្វេង</translation>
 <translation id="4507392511610824664">បង្កើន​ពន្លឺ</translation>
@@ -508,6 +523,7 @@
 <translation id="4832079907277790330">ជ្រើសរើសថតនៅក្នុងកម្មវិធី Files...</translation>
 <translation id="4835901797422965222">មិនមាន​បណ្ដាញ​ដែលសកម្មទេ</translation>
 <translation id="4839698083503556542">បង្កើតភាពយន្តរបស់អ្នកផ្ទាល់</translation>
+<translation id="48409034532829769">អ្នកគ្រប់គ្រងរបស់អ្នកបានរៀបចំ "<ph name="APP_NAME" />" ឱ្យចាប់ផ្ដើមដោយស្វ័យប្រវត្តិ។ មិនអាចបិទកម្មវិធីនេះបានទេ។</translation>
 <translation id="484462545196658690">ស្វ័យប្រវត្តិ</translation>
 <translation id="4847902821209177679">បានជ្រើសរើស <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> សូមចុច "Enter" ដើម្បីជ្រើសរើសអាល់ប៊ុម <ph name="TOPIC_SOURCE" /></translation>
 <translation id="484790837831576105">(Android) កម្រិតច្បាស់ DNS</translation>
@@ -534,6 +550,7 @@
 <translation id="4969079779290789265">បំបែក</translation>
 <translation id="4972592110715526173">ការប្ដូរ​មុខងារ</translation>
 <translation id="498186245079027698">ពិនិត្យមើល​កម្មវិធីស្កេន រួចព្យាយាមម្ដងទៀត។ ត្រូវប្រាកដថា មានទំហំផ្ទុក​ក្នុងឧបករណ៍​គ្រប់គ្រាន់ ដើម្បីរក្សាទុក​ឯកសារដែលបានស្កេន។</translation>
+<translation id="4982627662315910959">មិនអាចប្រើ​ផ្លូវកាត់​បានទេ។ សូមចុច​ផ្លូវកាត់ថ្មី​ដោយប្រើ shift និងគ្រាប់ចុចកែសម្រួល 1 ទៀត (ctrl, alt ឬ<ph name="META_KEY" />)។</translation>
 <translation id="4985509611418653372">ដំណើរការ</translation>
 <translation id="4987769320337599931">ជញ្ជាំង​ភ្លើង</translation>
 <translation id="4988526792673242964">ទំព័រ</translation>
@@ -550,6 +567,7 @@
 <translation id="5088172560898466307">ឈ្មោះម៉ាស៊ីនមេ</translation>
 <translation id="5089810972385038852">រដ្ឋ</translation>
 <translation id="5090362543162270857">IPsec (IKEv2)</translation>
+<translation id="5108781503443873320">ស្រដៀង៖</translation>
 <translation id="5137451382116112100">អេក្រង់ពេញ</translation>
 <translation id="5142961317498132443">ការ​ផ្ទៀងផ្ទាត់​</translation>
 <translation id="5145081769226915336">បើកមុខងារងងឹតដោយស្វ័យប្រវត្តិឬទេ?</translation>
@@ -566,6 +584,7 @@
 <translation id="5227902338748591677">កាលវិភាគ​រចនាប័ទ្ម​ងងឹត</translation>
 <translation id="5229344016299762883">ចេញពី​អេក្រង់​ពេញ</translation>
 <translation id="5234764350956374838">ច្រានចោល</translation>
+<translation id="5244638145904800454">{NUM_ROOL_APPS,plural,offset:1 =1{អ្នកគ្រប់គ្រងរបស់អ្នកបានរៀបចំ "<ph name="APP_NAME" />" ឱ្យចាប់ផ្តើមដោយស្វ័យប្រវត្តិរាល់ពេលដែលអ្នកចូលគណនី។}=2{អ្នកគ្រប់គ្រងរបស់អ្នកបានរៀបចំ "<ph name="APP_NAME" />" និងកម្មវិធី 1 ផ្សេងទៀតឱ្យចាប់ផ្តើមដោយស្វ័យប្រវត្តិរាល់ពេលដែលអ្នកចូលគណនី។}other{អ្នកគ្រប់គ្រងរបស់អ្នកបានរៀបចំ "<ph name="APP_NAME" />" និងកម្មវិធី # ផ្សេងទៀតឱ្យចាប់ផ្តើមដោយស្វ័យប្រវត្តិរាល់ពេលដែលអ្នកចូលគណនី។}}</translation>
 <translation id="5252456968953390977">រ៉ូមីង</translation>
 <translation id="5257811368506016604">បើកមុខងារពណ៌ភ្លឺ</translation>
 <translation id="5264277876637023664">ដំណើរការតេស្ត CPU</translation>
@@ -611,7 +630,6 @@
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">ស្កេន​ឡើងវិញ</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5584044598279886848">មិន​អាច​បិទ ឬ​ដក APN នេះ​ចេញ​បាន​ទេ។ សូមប្រាកដថាបិទ ឬដកចេញនូវ APN ដែល​បានភ្ជាប់​ដែលបានបើក។</translation>
 <translation id="5600027863942488546">បានធ្វើតេស្ត​គ្រាប់ចុច <ph name="KEY_NAME" /></translation>
 <translation id="5620281292257375798">ផ្ទៃក្នុង​តែប៉ុណ្ណោះ</translation>
 <translation id="5649768706273821470">ស្តាប់</translation>
@@ -642,6 +660,7 @@
 <translation id="5843706793424741864">ហ្វារិនហៃ</translation>
 <translation id="584953448295717128">APN ត្រូវបាន​រកឃើញ​ដោយស្វ័យប្រវត្តិ។</translation>
 <translation id="5849570051105887917">លេខកូដអ្នកផ្តល់សេវាកម្មនៅផ្ទះ</translation>
+<translation id="5856267793478861942"><ph name="ATTACH" /> (<ph name="IA" />)</translation>
 <translation id="5859603669299126575">អាល់ប៊ុមវិចិត្រសាល</translation>
 <translation id="5859969039821714932">មិនអាចប្រើ​ផ្លូវកាត់​បានទេ។ សូមចុច​ផ្លូវកាត់ថ្មី​ដោយមិនប្រើ <ph name="KEY" />។</translation>
 <translation id="5860033963881614850">បិទ</translation>
@@ -657,12 +676,12 @@
 <translation id="5916664084637901428">បើក</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{ឯកសាររបស់អ្នកត្រូវបានស្កេន និងរក្សាទុកនៅក្នុង <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> ដោយជោគជ័យហើយ។}other{ឯកសាររបស់អ្នកត្រូវបានស្កេន និងរក្សាទុកនៅក្នុង <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> ដោយជោគជ័យហើយ។}}</translation>
 <translation id="5931523347251946569">រក​មិន​ឃើញ​ឯកសារទេ</translation>
+<translation id="593880865674747800">បង្កើត​បន្ថែមទៀត​ជារចនាប័ទ្មនេះ</translation>
 <translation id="5939518447894949180">កំណត់ឡើងវិញ</translation>
 <translation id="594552776027197022">បង្កើត​គូសោ​ចៃដន្យ</translation>
 <translation id="5946538341867151940">អ្នកមិនត្រូវបានភ្ជាប់នៅឡើយ​ទេ។ ប្រសិនបើ​ក្រុមហ៊ុន​សេវាទូរសព្ទចល័ត​​របស់​អ្នក​ណែនាំ​ APN ផ្ទាល់ខ្លួន សូម​បញ្ចូល​ព័ត៌មាន​ APN ដោយ​ជ្រើសរើស "+ APN ថ្មី"</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">ផ្ទាំង​រូបភាព​លំនាំដើម</translation>
-<translation id="6001235009374883388">APN គឺជា​ប្រភេទ​ភ្ជាប់។</translation>
 <translation id="6017514345406065928">បៃតង</translation>
 <translation id="6019566113895157499">ផ្លូវកាត់​គ្រាប់ចុច</translation>
 <translation id="6034694447310538551">បើកការកំណត់ឡើងវិញប្រចាំខែដោយស្វ័យប្រវត្តិ</translation>
@@ -680,6 +699,7 @@
 <translation id="6104112872696127344">បានបោះបង់ការស្កេនហើយ</translation>
 <translation id="6106186594183574873">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ចាស់​របស់អ្នក</translation>
 <translation id="6108689792487843350">មិនអាចភ្ជាប់ជាមួយច្រកបានទេ</translation>
+<translation id="6108952804512516814">បង្កើតដោយប្រើ AI</translation>
 <translation id="6112878310391905610">ការកំណត់នេះ​ត្រូវបានគ្រប់គ្រង​ដោយអ្នកគ្រប់គ្រង​របស់អ្នក</translation>
 <translation id="6113701710518389813">ព្រួញ​ឡើង​លើ</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, អាល់ប៊ុម +<ph name="NUMBER" /> ទៀត</translation>
@@ -693,6 +713,7 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">កម្រិតថ្ម​ធ្លាក់ចុះ​តាមរយៈ​ការប្រើប្រាស់</translation>
 <translation id="6191293864534840972">DNS មានទម្រង់មិនត្រឹមត្រូវ</translation>
+<translation id="6196607555925437199">បង្កើត​ឡើងវិញ</translation>
 <translation id="6205145102504628069">លំហូរ​ពពក</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">មិនមាន​ម៉ាស៊ីនស្កេន​ទេ</translation>
@@ -728,7 +749,7 @@
 <translation id="641081527798843608">ប្រធានបទ​ត្រូវគ្នា</translation>
 <translation id="6411934471898487866">ពន្លឺ​កា្តរចុច</translation>
 <translation id="6412715219990689313">ក្ដារចុច​ដែលបានភ្ជាប់​មកជាមួយ​ស្រាប់</translation>
-<translation id="6417265370957905582">Google ជំនួយការ</translation>
+<translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">ខ្សោយ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">ចូលទៅកាន់ការកំណត់គណនី</translation>
@@ -747,6 +768,7 @@
 <translation id="6526200165918397681">ផ្គូផ្គងផ្ទាំង​រូបភាព</translation>
 <translation id="6527081081771465939">មិនស្គាល់​ប្រូតូកូល​សុវត្ថិភាព WiFi</translation>
 <translation id="6535178685492749208">អ្នក​គ្មាន​អ៊ីនធឺណិត​ទេ។ មតិកែលម្អ​នឹង​ត្រូវ​បាន​ផ្ញើ​នៅ​ពេល​ក្រោយ។</translation>
+<translation id="6557784757915238407">APN គឺជាប្រភេទ <ph name="ATTACH" />។</translation>
 <translation id="65587193855025101">ផ្ទៃ​កញ្ចក់</translation>
 <translation id="6560196641871357166">ឆើត</translation>
 <translation id="6564646048574748301">មិនបានសម្រេច - ​​មិនអាចភ្ជាប់​ម៉ាស៊ីនបោះពុម្ព​បាន</translation>
@@ -806,6 +828,7 @@
 <translation id="7059230779847288458">កំពុងសាកថ្ម <ph name="TIME_VALUE" /> ទៀត​ទើបពេញ</translation>
 <translation id="7066538517128343186">គ្រាប់ចុច <ph name="KEY" /></translation>
 <translation id="7068619307603204412">រៀបចំ​ឧបករណ៍​របស់អ្នក</translation>
+<translation id="7076851914315147928">ជ្រើសរើស​ផ្ទាំង​រូបភាព</translation>
 <translation id="708426984172631313">បានឈប់</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">មិនបានសម្រេច - ការផ្ដល់សិទ្ធិមិនបានសម្រេចទេ</translation>
@@ -829,12 +852,13 @@
 <translation id="7180611975245234373">ធ្វើឲ្យថ្មីឡើងវិញ…</translation>
 <translation id="7180865173735832675">កែសម្រួល</translation>
 <translation id="7184043045742675738">ចុច​លើ​គ្រាប់ចុច​ណា​មួយ ដើម្បី​ប្ដូរ​ប៊ូតុង​របស់​អ្នក​តាមបំណង។ ប្ដូរទីតាំងគ្រាប់ចុច ដោយ​ប្រើ​កណ្ដុរ ឬ​គ្រាប់ចុច​ព្រួញ។</translation>
+<translation id="7206979415662233817">លក្ខខណ្ឌ​ប្រើប្រាស់</translation>
 <translation id="7212547870105584639">គ្រប់គ្រង​ការកំណត់ APN បណ្ដាញ។ APN បង្កើត​ការតភ្ជាប់​រវាង​បណ្ដាញ​ចល័ត និង​អ៊ីនធឺណិត។ <ph name="BEGIN_LINK_LEARN_MORE" />ស្វែងយល់បន្ថែម<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7212734716605298123">ការដំឡើងកំណែកម្មវិធីបង្កប់សម្រាប់ឧបករណ៍ខាងក្រៅ</translation>
 <translation id="7216409898977639127">ក្រុមហ៊ុន​ផ្តល់សេវា​ទូរសព្ទ</translation>
 <translation id="725133483556299729">ជ្រើសរើស​អ៊ីមែល</translation>
 <translation id="7271040990581020067">បច្ចុប្បន្ននេះ ម៉ាស៊ីនស្កេន​កំពុងស្ថិតក្នុង​ការប្រើប្រាស់។ សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ។</translation>
-<translation id="7273347807225967898">មិនអាចប្រើ​ផ្លូវកាត់​បានទេ។ សូមចុច​ផ្លូវកាត់ថ្មី​ដោយប្រើ​ប៊ូតុងឧបករណ៍​កែសម្រួល (ctrl, alt, shift, ស្វែងរក ឬ​គ្រាប់ចុច​ចាប់ផ្ដើម)។</translation>
+<translation id="7271932918253517778">ផ្លូវកាត់​ដែលប្រើ​គ្រាប់ចុច​នៅជួរដេក​ខាងលើ​ត្រូវតែរួមបញ្ចូលគ្រាប់ចុច<ph name="META_KEY" />។</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">ខ្យល់បក់ត្រសៀកៗ</translation>
 <translation id="7287310195820267359">បណ្ដុំ​ផ្ទាំងរូបភាព</translation>
@@ -847,6 +871,10 @@
 <translation id="7311368985037279727">ពណ៌ក្ដារចុច</translation>
 <translation id="7317831949569936035">ការ​ចុះឈ្មោះចូលរៀន</translation>
 <translation id="7319430975418800333">A3</translation>
+<translation id="7331297744262591636">អ្នកត្រូវតែ​មានអាយុ​យ៉ាងតិច 18 ឆ្នាំ និង​យល់ព្រមថា​ការប្រើប្រាស់​ផ្ទាំង​រូបភាព AI របស់អ្នក​គឺអនុលោមតាម<ph name="GOOGLE_TERMS_OF_SERVICE_LINK" />លក្ខខណ្ឌ​ប្រើប្រាស់ Google<ph name="END_LINK_GOOGLE_TERMS_OF_SERVICE" /> និង<ph name="BEGIN_LINK_GEN_AI_TERMS_OF_SERVICE" />លក្ខខណ្ឌ​ប្រើប្រាស់បន្ថែម​របស់ AI ដែលមានសមត្ថភាពបង្កើត<ph name="END_LINK_GEN_AI_TERMS_OF_SERVICE" />។
+          <ph name="LINE_BREAK" />
+          <ph name="LINE_BREAK" />
+          អ្នកអាច​ត្រឹមតែ​បង្កើត​ផ្ទាំង​រូបភាព​តាមរយៈ AI សម្រាប់​ការប្រើប្រាស់​លក្ខណៈ​ផ្ទាល់ខ្លួន និង​មិនមែន​ពាណិជ្ជកម្ម​ប៉ុណ្ណោះ។ នៅពេល​ដែលអ្នក​ទទួលបាន​ជំនួយ​ពាក់ព័ន្ធនឹង​ផ្ទាំងរូបភាព អក្សរ​ត្រូវបាន​បញ្ជូនទៅ​ម៉ាស៊ីនមេ Google AI ដើម្បី​បង្កើត​ការណែនាំ​ផ្ទាំងរូបភាព​ដោយ​អនុលោមតាម<ph name="BEGIN_LINK_GOOGLE_PRIVACY_POLICY" />គោលការណ៍ឯកជនភាពរបស់ Google<ph name="END_LINK_GOOGLE_PRIVACY_POLICY" />។ <ph name="BEGIN_LINK_LEARN_MORE" />ស្វែងយល់បន្ថែម<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; ចុច "ស្វែងរក" រួមជាមួយ "ដកឃ្លា" ដើម្បីមើល​លទ្ធផល​នៅក្នុង​កម្មវិធីស្វែងរក​នៅលើ Google។</translation>
 <translation id="7343649194310845056">ឧបករណ៍​បណ្ដាញ</translation>
 <translation id="7353413232959255829">លទ្ធផលស្វែងរក <ph name="LIST_POSITION" /> នៃ <ph name="LIST_SIZE" />៖ <ph name="SEARCH_RESULT_TEXT" />។ ចុច Enter ដើម្បី​ទៅកាន់​ផ្លូវកាត់។</translation>
@@ -859,6 +887,7 @@
 <translation id="741244894080940828">ការបំប្លែង</translation>
 <translation id="7415801143053185905">ការពន្យារ HTTP ខ្ពស់ខ្លាំង</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
+<translation id="7438298994385592770">មិន​អាច​បិទ ឬ​ដក APN នេះ​ចេញ​បាន​ទេ។ សូមប្រាកដថាបិទ ឬដកចេញនូវ APN <ph name="ATTACH" /> ដែលបានបើក។</translation>
 <translation id="7458970041932198923">សូម​ភ្ជាប់​ទៅ​បណ្ដាញ រួច​ផ្ទុក​ទំព័រ​ឡើងវិញ ដើម្បី​មើល​ និង​កំណត់​រូបអវតារ។</translation>
 <translation id="7469648432129124067">បានរកឃើញ​ច្រក</translation>
 <translation id="7481312909269577407">ទៅមុខ</translation>
@@ -869,7 +898,9 @@
 <translation id="7502658306369382406">អាសយដ្ឋាន IPv6</translation>
 <translation id="7513770521371759388">ក្រោម</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7525067979554623046">បង្កើត</translation>
 <translation id="7528507600602050979">មិនអាចចូលមើល​ខ្លឹមសារ​ជំនួយ​បានទេ</translation>
+<translation id="753556296624075801">ដំណើរការ​ដោយ Google</translation>
 <translation id="7535791657097741517">បើក​រចនាប័ទ្ម​ភ្លឺ</translation>
 <translation id="7550715992156305117">ការធ្វើតេស្ត​តាមការកំណត់</translation>
 <translation id="7551123448725492271">ឧបករណ៍គឺជាឧបករណ៍សំឡេង។</translation>
@@ -908,9 +939,11 @@
 <translation id="7799817062559422778">មុខងារភ្លឺ</translation>
 <translation id="780301667611848630">ទេ អរគុណ</translation>
 <translation id="7805768142964895445">ស្ថានភាព</translation>
+<translation id="7819831665603418705">ប្រើ​ទម្រង់គំរូ</translation>
 <translation id="7819857487979277519">PSK (WPA ឬ RSN)</translation>
 <translation id="7841134249932030522">បើក​មុខងារ​ងងឹត</translation>
 <translation id="7846634333498149051">ក្ដារចុច</translation>
+<translation id="7850847810298646851">ផ្ទាំង​រូបភាព​ដែលដំណើរការដោយ Google AI</translation>
 <translation id="7856267634822906833">អេក្រង់ថាច់​ប៊្លូធូស</translation>
 <translation id="7869143217755017858">បិទ​មុខងារ​ងងឹត</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -928,6 +961,7 @@
 <translation id="7971535376154084247">ការ​គ្រប់គ្រង​ទូទៅ</translation>
 <translation id="7977800524392185497">ដើម្បីចូលរួមបណ្ដាញ <ph name="NETWORK_NAME" /> សូមចូលទៅកាន់ការកំណត់</translation>
 <translation id="7978412674231730200">សោឯកជន</translation>
+<translation id="7983597390787556680">{NUM_ROOL_APPS,plural, =1{"<ph name="APP_NAME_1" />" ត្រូវបានចាប់ផ្តើមដោយស្វ័យប្រវត្តិ}other{កម្មវិធីចំនួន # ត្រូវបានចាប់ផ្ដើមដោយស្វ័យប្រវត្តិ}}</translation>
 <translation id="7994702968232966508">វិធីសាស្ត្រ EAP</translation>
 <translation id="8004582292198964060">កម្មវិធីរុករក</translation>
 <translation id="8017679124341497925">បាន​កែសម្រួល​ផ្លូវកាត់</translation>
@@ -944,7 +978,6 @@
 <translation id="808894953321890993">ប្ដូរ​ពាក្យ​សម្ងាត់</translation>
 <translation id="8094062939584182041">អនុញ្ញាត​ឱ្យ Google ផ្ញើអ៊ីមែល​ទៅអ្នក​អំពី​បញ្ហានេះ</translation>
 <translation id="8104083085214006426">អ្នកកំពុងប្រើបណ្ដាញចំហ និងគ្មានសុវត្ថិភាព</translation>
-<translation id="8111706652656628199">មិនអាចប្រើ​ផ្លូវកាត់​បានទេ។ សូមចុច​ផ្លូវកាត់ថ្មី​ដោយប្រើ shift និង​ប៊ូតុងឧបករណ៍​កែសម្រួល 1 ទៀត (ctrl, alt, ស្វែងរក ឬ​គ្រាប់ចុច​ចាប់ផ្ដើម)។</translation>
 <translation id="811820734797650957">(Android) អាចធ្វើតេស្ដ​ភីងលើច្រកបាន</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8132480444149501833">ស្នើសុំមុខងាររាប់ចំនួនចរាចរណ៍</translation>
@@ -953,13 +986,13 @@
 <translation id="8151185429379586178">ឧបករណ៍អ្នកអភិវឌ្ឍន៍</translation>
 <translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />។</translation>
 <translation id="8179976553408161302">បញ្ចូល</translation>
-<translation id="8183974620058026102">ភ្ជាប់</translation>
 <translation id="8206859287963243715">ប្រព័ន្ធទូរស័ព្ទ</translation>
 <translation id="8208861521865154048">អត្ថប្រយោជន៍</translation>
 <translation id="8226628635270268143">ជ្រើសរើស​រូបថត និងអាល់ប៊ុមដែលអ្នកចូលចិត្ត</translation>
 <translation id="8227119283605456246">ភ្ជាប់ឯកសារ</translation>
 <translation id="8230672074305416752">មិនអាចភីងច្រកបណ្ដាញលំនាំដើមបានទេ</translation>
 <translation id="8246209727385807362">ក្រុមហ៊ុនបម្រើសេវាទូរសព្ទ​ដែលមិនស្គាល់</translation>
+<translation id="8261506727792406068">លុប</translation>
 <translation id="8262870577632766028">1 ម៉ោង</translation>
 <translation id="827422111966801947">ទឹកប៊ិក</translation>
 <translation id="8286154143153872371">សូមភ្ជាប់​បណ្ដាញ រួចផ្ទុកទំព័រ​ឡើងវិញ ដើម្បីមើល​ផ្ទាំងរូបភាព។</translation>
@@ -970,6 +1003,7 @@
 <translation id="8318753676953949627">មិនមាន​រូបភាព​ទេ</translation>
 <translation id="8329018942023753850">កម្មវិធី​ម៉ាស៊ីនគិតលេខ</translation>
 <translation id="8336739000755212683">ប្ដូរ​រូបភាពគណនីរបស់​ឧបករណ៍</translation>
+<translation id="8339024191194156249">ស្វែងយល់បន្ថែមអំពីការចាប់ផ្ដើមដោយស្វ័យប្រវត្តិ</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> ឬ <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">ការងារ​បោះពុម្ព</translation>
 <translation id="8349826889576450703">កម្មវិធី​ចាប់ផ្ដើម</translation>

@@ -20,6 +20,9 @@ namespace updater {
 
 namespace {
 
+constexpr char kCloudPolicyOverridesPlatformPolicy[] =
+    "CloudPolicyOverridesPlatformPolicy";
+
 // Preferences Category.
 constexpr char kAutoUpdateCheckPeriodOverrideMinutes[] =
     "AutoUpdateCheckPeriodMinutes";
@@ -88,6 +91,12 @@ PolicyManager::PolicyManager(base::Value::Dict policies)
 
 PolicyManager::~PolicyManager() = default;
 
+std::optional<bool> PolicyManager::CloudPolicyOverridesPlatformPolicy() const {
+  std::optional<int> policy =
+      GetIntegerPolicy(kCloudPolicyOverridesPlatformPolicy);
+  return policy ? std::optional<bool>(policy.value()) : std::nullopt;
+}
+
 bool PolicyManager::HasActiveDevicePolicies() const {
   return !policies_.empty();
 }
@@ -112,8 +121,9 @@ std::optional<UpdatesSuppressedTimes> PolicyManager::GetUpdatesSuppressedTimes()
   std::optional<int> duration_min =
       GetIntegerPolicy(kUpdatesSuppressedDurationMin);
 
-  if (!start_hour || !start_min || !duration_min)
+  if (!start_hour || !start_min || !duration_min) {
     return std::nullopt;
+  }
 
   UpdatesSuppressedTimes supressed_times;
   supressed_times.start_hour_ = start_hour.value();

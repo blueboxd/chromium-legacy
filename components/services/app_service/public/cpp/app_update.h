@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 #define COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 
+#include <optional>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/permission.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace apps {
 
@@ -118,7 +118,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   const std::vector<std::string>& AdditionalSearchTerms() const;
   bool AdditionalSearchTermsChanged() const;
 
-  absl::optional<apps::IconKey> IconKey() const;
+  std::optional<apps::IconKey> IconKey() const;
   bool IconKeyChanged() const;
 
   base::Time LastLaunchTime() const;
@@ -130,9 +130,14 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   apps::Permissions Permissions() const;
   bool PermissionsChanged() const;
 
+  // The main reason why this app is currently installed on the device (e.g.
+  // because it is required by Policy). This may change over time and is not
+  // necessarily the reason why the app was originally installed.
   apps::InstallReason InstallReason() const;
   bool InstallReasonChanged() const;
 
+  // How installation of the app was triggered on this device. Either a UI
+  // surface (e.g. Play Store), or a system component (e.g. Sync).
   apps::InstallSource InstallSource() const;
   bool InstallSourceChanged() const;
 
@@ -143,60 +148,60 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
 
   bool InstalledInternally() const;
 
-  absl::optional<bool> IsPlatformApp() const;
+  std::optional<bool> IsPlatformApp() const;
   bool IsPlatformAppChanged() const;
 
-  absl::optional<bool> Recommendable() const;
+  std::optional<bool> Recommendable() const;
   bool RecommendableChanged() const;
 
-  absl::optional<bool> Searchable() const;
+  std::optional<bool> Searchable() const;
   bool SearchableChanged() const;
 
-  absl::optional<bool> ShowInLauncher() const;
+  std::optional<bool> ShowInLauncher() const;
   bool ShowInLauncherChanged() const;
 
-  absl::optional<bool> ShowInShelf() const;
+  std::optional<bool> ShowInShelf() const;
   bool ShowInShelfChanged() const;
 
-  absl::optional<bool> ShowInSearch() const;
+  std::optional<bool> ShowInSearch() const;
   bool ShowInSearchChanged() const;
 
-  absl::optional<bool> ShowInManagement() const;
+  std::optional<bool> ShowInManagement() const;
   bool ShowInManagementChanged() const;
 
-  absl::optional<bool> HandlesIntents() const;
+  std::optional<bool> HandlesIntents() const;
   bool HandlesIntentsChanged() const;
 
-  absl::optional<bool> AllowUninstall() const;
+  std::optional<bool> AllowUninstall() const;
   bool AllowUninstallChanged() const;
 
-  absl::optional<bool> HasBadge() const;
+  std::optional<bool> HasBadge() const;
   bool HasBadgeChanged() const;
 
-  absl::optional<bool> Paused() const;
+  std::optional<bool> Paused() const;
   bool PausedChanged() const;
 
   apps::IntentFilters IntentFilters() const;
   bool IntentFiltersChanged() const;
 
-  absl::optional<bool> ResizeLocked() const;
+  std::optional<bool> ResizeLocked() const;
   bool ResizeLockedChanged() const;
 
   apps::WindowMode WindowMode() const;
   bool WindowModeChanged() const;
 
-  absl::optional<apps::RunOnOsLogin> RunOnOsLogin() const;
+  std::optional<apps::RunOnOsLogin> RunOnOsLogin() const;
   bool RunOnOsLoginChanged() const;
 
-  absl::optional<bool> AllowClose() const;
+  std::optional<bool> AllowClose() const;
   bool AllowCloseChanged() const;
 
   const ::AccountId& AccountId() const;
 
-  absl::optional<uint64_t> AppSizeInBytes() const;
+  std::optional<uint64_t> AppSizeInBytes() const;
   bool AppSizeInBytesChanged() const;
 
-  absl::optional<uint64_t> DataSizeInBytes() const;
+  std::optional<uint64_t> DataSizeInBytes() const;
   bool DataSizeInBytesChanged() const;
 
   // App-specified supported locales.
@@ -206,8 +211,11 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   // Currently selected locale, empty string means system language is used.
   // ARC-specific note: Based on Android implementation, `selected_locale`
   //  is not necessarily part of `supported_locales`.
-  absl::optional<std::string> SelectedLocale() const;
+  std::optional<std::string> SelectedLocale() const;
   bool SelectedLocaleChanged() const;
+
+  std::optional<base::Value::Dict> Extra() const;
+  bool ExtraChanged() const;
 
   const App* State() const { return state_.get(); }
   const App* Delta() const { return delta_.get(); }

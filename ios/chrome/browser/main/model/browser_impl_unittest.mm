@@ -7,6 +7,8 @@
 #import "ios/chrome/browser/shared/coordinator/scene/test/fake_scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/test/fake_browser_observer.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
 
@@ -23,6 +25,7 @@ class BrowserImplTest : public PlatformTest {
   std::unique_ptr<BrowserImpl> CreateBrowser() {
     return std::make_unique<BrowserImpl>(
         chrome_browser_state_.get(), scene_state_,
+        [[CommandDispatcher alloc] init],
         /*active_browser=*/nullptr,
         BrowserWebStateListDelegate::InsertionPolicy::kDoNothing,
         BrowserWebStateListDelegate::ActivationPolicy::kDoNothing);
@@ -33,6 +36,7 @@ class BrowserImplTest : public PlatformTest {
 
  private:
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   __strong FakeSceneState* scene_state_;
 };

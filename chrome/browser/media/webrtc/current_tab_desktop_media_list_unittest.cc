@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc/current_tab_desktop_media_list.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -146,9 +148,7 @@ class CurrentTabDesktopMediaListTest : public testing::Test {
     TabStripModel* tab_strip_model = browser_->tab_strip_model();
     tab_strip_model->DetachAndDeleteWebContentsAt(
         tab_strip_model->GetIndexOfWebContents(web_contents));
-    all_web_contents_.erase(std::remove(all_web_contents_.begin(),
-                                        all_web_contents_.end(), web_contents),
-                            all_web_contents_.end());
+    std::erase(all_web_contents_, web_contents);
   }
 
   void Wait() {
@@ -171,7 +171,7 @@ class CurrentTabDesktopMediaListTest : public testing::Test {
   StrictMock<MockObserver> observer_;
   std::unique_ptr<CurrentTabDesktopMediaList> list_;
 
-  std::vector<WebContents*> all_web_contents_;
+  std::vector<raw_ptr<WebContents, VectorExperimental>> all_web_contents_;
 
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};

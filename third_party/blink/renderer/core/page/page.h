@@ -162,8 +162,11 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   static void ColorSchemeChanged();
   static void ColorProvidersChanged();
 
+  void EmulateForcedColors(bool is_dark_theme);
+  void DisableEmulatedForcedColors();
   void UpdateColorProviders(
       const ColorProviderColorMaps& color_provider_colors);
+  void UpdateColorProvidersForTest();
   const ui::ColorProvider* GetColorProviderForPainting(
       mojom::blink::ColorScheme color_scheme,
       bool in_forced_colors) const;
@@ -219,6 +222,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   ChromeClient& GetChromeClient() const {
     DCHECK(chrome_client_) << "No chrome client";
     return *chrome_client_;
+  }
+  void SetChromeClientForTesting(ChromeClient* chrome_client) {
+    chrome_client_ = chrome_client;
   }
   AutoscrollController& GetAutoscrollController() const {
     return *autoscroll_controller_;
@@ -586,6 +592,10 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   std::unique_ptr<ui::ColorProvider> light_color_provider_;
   std::unique_ptr<ui::ColorProvider> dark_color_provider_;
   std::unique_ptr<ui::ColorProvider> forced_colors_color_provider_;
+
+  // This provider is used when forced color emulation is enabled via DevTools,
+  // overriding the light, dark or forced colors color providers.
+  std::unique_ptr<ui::ColorProvider> emulated_forced_colors_provider_;
 
   HeapHashSet<WeakMember<PluginsChangedObserver>> plugins_changed_observers_;
 

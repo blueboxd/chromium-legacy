@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_WEBID_WEBID_UTILS_H_
 #define CONTENT_BROWSER_WEBID_WEBID_UTILS_H_
 
+#include <optional>
+
 #include "content/browser/webid/idp_network_request_manager.h"
 #include "content/common/content_export.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -18,6 +19,7 @@ enum class IdpSigninStatus;
 
 namespace content {
 class BrowserContext;
+enum class FedCmDisconnectStatus;
 enum class FedCmIdpSigninStatusMode;
 class FedCmMetrics;
 class FederatedIdentityApiPermissionContextDelegate;
@@ -39,9 +41,9 @@ void SetIdpSigninStatus(BrowserContext* context,
 
 // Computes string to display in developer tools console for a FedCM endpoint
 // request with the passed-in `endpoint_name` and which returns the passed-in
-// `http_response_code`. Returns absl::nullopt if the `http_response_code` does
+// `http_response_code`. Returns std::nullopt if the `http_response_code` does
 // not represent an error in the fetch.
-absl::optional<std::string> ComputeConsoleMessageForHttpResponseCode(
+std::optional<std::string> ComputeConsoleMessageForHttpResponseCode(
     const char* endpoint_name,
     int http_response_code);
 
@@ -49,6 +51,10 @@ absl::optional<std::string> ComputeConsoleMessageForHttpResponseCode(
 // endpoint URL.
 bool IsEndpointSameOrigin(const GURL& identity_provider_config_url,
                           const GURL& endpoint_url);
+
+// Returns whether the two origins are considered same-site (same eTLD+1). Also
+// ensures that the scheme is the same.
+bool IsSameSite(const url::Origin& origin1, const url::Origin& origin2);
 
 // Returns whether FedCM should fail/skip the accounts endpoint request because
 // the user is not signed-in to the IdP.
@@ -76,6 +82,11 @@ void UpdateIdpSigninStatusForAccountsEndpointResponse(
 CONTENT_EXPORT std::string GetConsoleErrorMessageFromResult(
     blink::mojom::FederatedAuthRequestResult result);
 
+// Returns a string to be used as the console error message for a disconnect()
+// call.
+CONTENT_EXPORT std::string GetDisconnectConsoleErrorMessage(
+    FedCmDisconnectStatus disconnect_status_for_metrics);
+
 FedCmIdpSigninStatusMode GetIdpSigninStatusMode(RenderFrameHost& host,
                                                 const url::Origin& idp_origin);
 
@@ -91,7 +102,7 @@ bool HasSharingPermissionOrIdpHasThirdPartyCookiesAccess(
     const GURL& provider_url,
     const url::Origin& embedder_origin,
     const url::Origin& requester_origin,
-    const absl::optional<std::string>& account_id,
+    const std::optional<std::string>& account_id,
     FederatedIdentityPermissionContextDelegate* sharing_permission_delegate,
     FederatedIdentityApiPermissionContextDelegate* api_permission_delegate);
 

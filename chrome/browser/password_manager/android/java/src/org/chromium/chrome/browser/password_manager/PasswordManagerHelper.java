@@ -6,8 +6,10 @@ package org.chromium.chrome.browser.password_manager;
 
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.PASSKEY_MANAGEMENT_USING_ACCOUNT_SETTINGS_ANDROID;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -17,12 +19,14 @@ import android.os.Looper;
 import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -46,10 +50,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Optional;
 
-/**
- * A helper class for showing PasswordSettings.
- * TODO(crbug.com/1345232): Split up this class
- **/
+/** A helper class for showing PasswordSettings. TODO(crbug.com/1345232): Split up this class */
 public class PasswordManagerHelper {
     // Key for the argument with which PasswordsSettings will be launched. The value for
     // this argument should be part of the ManagePasswordsReferrer enum, which contains
@@ -87,42 +88,12 @@ public class PasswordManagerHelper {
     // |PasswordSettings.class.getName()| once it's modularized.
     private static final String PASSWORD_SETTINGS_CLASS =
             "org.chromium.chrome.browser.password_manager.settings.PasswordSettings";
-    private static final String ACCOUNT_GET_INTENT_LATENCY_HISTOGRAM =
-            "PasswordManager.CredentialManager.Account.GetIntent.Latency";
-    private static final String ACCOUNT_GET_INTENT_SUCCESS_HISTOGRAM =
-            "PasswordManager.CredentialManager.Account.GetIntent.Success";
-    private static final String ACCOUNT_GET_INTENT_ERROR_HISTOGRAM =
-            "PasswordManager.CredentialManager.Account.GetIntent.Error";
-    private static final String ACCOUNT_GET_INTENT_API_ERROR_HISTOGRAM =
-            "PasswordManager.CredentialManager.Account.GetIntent.APIError";
-    private static final String ACCOUNT_GET_INTENT_ERROR_CONNECTION_RESULT_CODE_HISTOGRAM =
-            "PasswordManager.CredentialManager.Account.GetIntent.APIError.ConnectionResultCode";
-    private static final String ACCOUNT_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM =
-            "PasswordManager.CredentialManager.Account.Launch.Success";
-
-    private static final String LOCAL_GET_INTENT_LATENCY_HISTOGRAM =
-            "PasswordManager.CredentialManager.LocalProfile.GetIntent.Latency";
-    private static final String LOCAL_GET_INTENT_SUCCESS_HISTOGRAM =
-            "PasswordManager.CredentialManager.LocalProfile.GetIntent.Success";
-    private static final String LOCAL_GET_INTENT_ERROR_HISTOGRAM =
-            "PasswordManager.CredentialManager.LocalProfile.GetIntent.Error";
-    private static final String LOCAL_GET_INTENT_API_ERROR_HISTOGRAM =
-            "PasswordManager.CredentialManager.LocalProfile.GetIntent.APIError";
-    private static final String LOCAL_GET_INTENT_ERROR_CONNECTION_RESULT_CODE_HISTOGRAM =
-            "PasswordManager.CredentialManager.LocalProfile.GetIntent.APIError"
-                    + ".ConnectionResultCode";
-    private static final String LOCAL_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM =
-            "PasswordManager.CredentialManager.LocalProfile.Launch.Success";
-
-    private static final String PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM =
-            "PasswordManager.PasswordCheckup.Launch.Success";
 
     /**
-     *  The identifier of the loading dialog outcome.
+     * The identifier of the loading dialog outcome.
      *
-     *  These values are persisted to logs. Entries should not be renumbered and
-     *  numeric values should never be reused.
-     *  Please, keep in sync with tools/metrics/histograms/enums.xml.
+     * <p>These values are persisted to logs. Entries should not be renumbered and numeric values
+     * should never be reused. Please, keep in sync with tools/metrics/histograms/enums.xml.
      */
     @VisibleForTesting
     @IntDef({
@@ -137,7 +108,7 @@ public class PasswordManagerHelper {
         /** The loading dialog was requested but loading finished before it got shown. */
         int NOT_SHOWN_LOADED = 0;
 
-        /** The loading dialog was shown, loading process finished.  */
+        /** The loading dialog was shown, loading process finished. */
         int SHOWN_LOADED = 1;
 
         /** The loading dialog was shown and cancelled by user before loading finished. */
@@ -155,7 +126,7 @@ public class PasswordManagerHelper {
      *
      * @param context used to show the UI to manage passwords.
      * @param managePasskeys indicates whether passkey management is needed, which when true will
-     *      attempt to launch the credential manager even without syncing enabled.
+     *     attempt to launch the credential manager even without syncing enabled.
      */
     public static void showPasswordSettings(
             Context context,
@@ -201,7 +172,11 @@ public class PasswordManagerHelper {
                     (syncService != null)
                             ? CoreAccountInfo.getEmailFrom(syncService.getAccountInfo())
                             : "";
-            credentialManagerLauncher.getAccountSettingsIntent(accountName, context::startActivity);
+            // TODO(crbug.com/1507785): Find an alternative to account settings intent.
+            credentialManagerLauncher.getAccountSettingsIntent(
+                    accountName,
+                    (intent) ->
+                            PasswordManagerHelper.startAccountSettingsActivity(context, intent));
             return;
         }
 
@@ -213,15 +188,15 @@ public class PasswordManagerHelper {
     }
 
     /**
-     * Checks the availability and status of the UPM feature.
-     * All clients should check this before trying to use UPM methods.
-     * Checks for the UPM to be anabled and downstream backend to be available.
+     * Checks the availability and status of the UPM feature. All clients should check this before
+     * trying to use UPM methods. Checks for the UPM to be anabled and downstream backend to be
+     * available.
      *
-     * TODO(crbug.com/1327294): Make sure we rely on the same util in all places that need
-     * to check whether UPM can be used (for password check as well as for all other cases that
-     * share the same preconditions, e.g. launching the credential manager).
+     * <p>TODO(crbug.com/1327294): Make sure we rely on the same util in all places that need to
+     * check whether UPM can be used (for password check as well as for all other cases that share
+     * the same preconditions, e.g. launching the credential manager).
      *
-     * TODO(crbug.com/1345232): pass syncService and prefService instances as parameters
+     * <p>TODO(crbug.com/1345232): pass syncService and prefService instances as parameters
      *
      * @return True if Unified Password Manager can be used, false otherwise.
      */
@@ -239,12 +214,12 @@ public class PasswordManagerHelper {
     }
 
     /**
-     * Checks the ability to use an AccountSettings intent to launch the password manager.
-     * This provides a fallback for users who attempt to manage passkeys when UPM is not
-     * available. Passkeys cannot be managed from the Chrome password settings page.
+     * Checks the ability to use an AccountSettings intent to launch the password manager. This
+     * provides a fallback for users who attempt to manage passkeys when UPM is not available.
+     * Passkeys cannot be managed from the Chrome password settings page.
      *
-     * Since there is not necessarily a signed in Chrome user, the intent might show an
-     * account chooser before showing the password manager.
+     * <p>Since there is not necessarily a signed in Chrome user, the intent might show an account
+     * chooser before showing the password manager.
      *
      * @return True if the AccountSettings intent is available for use, false otherwise.
      */
@@ -260,19 +235,25 @@ public class PasswordManagerHelper {
      * @param referrer the place that requested to show the UI.
      * @param syncService the service to query about the sync status.
      * @param modalDialogManagerSupplier The supplier of the ModalDialogManager to be used by
-     *         loading dialog.
+     *     loading dialog.
+     * @param accountEmail is the email of the account syncing passwords. If it's empty, the checkup
+     *     for local will show. The purpose of this is to enable showing the checkup for local
+     *     storage if the password checkup is launched from the leak detection dialog and the leaked
+     *     credential is only saved in the local password storage.
      */
     public static void showPasswordCheckup(
             Context context,
             @PasswordCheckReferrer int referrer,
             SyncService syncService,
-            Supplier<ModalDialogManager> modalDialogManagerSupplier) {
+            Supplier<ModalDialogManager> modalDialogManagerSupplier,
+            @Nullable String accountEmail) {
+        assert accountEmail == null || !accountEmail.isEmpty();
         assert canUseUpm();
 
+        // TODO(crbug.com/1504551): Change PasswordCheckupClientHelper.getPasswordCheckupIntent to
+        // take the accountEmail as String.
         Optional<String> account =
-                hasChosenToSyncPasswords(syncService)
-                        ? Optional.of(CoreAccountInfo.getEmailFrom(syncService.getAccountInfo()))
-                        : Optional.empty();
+                accountEmail == null ? Optional.empty() : Optional.of(accountEmail);
 
         LoadingModalDialogCoordinator loadingDialogCoordinator =
                 LoadingModalDialogCoordinator.create(modalDialogManagerSupplier, context);
@@ -282,18 +263,18 @@ public class PasswordManagerHelper {
     }
 
     /**
-     * Asynchronously runs Password Checkup in GMS Core and stores the result in
-     * PasswordSpecifics then saves it to the ChromeSync module.
+     * Asynchronously runs Password Checkup in GMS Core and stores the result in PasswordSpecifics
+     * then saves it to the ChromeSync module.
      *
      * @param referrer the place that requested to start a check.
      * @param accountName the account name that is syncing passwords. If no value was provided, the
-     *         local account will be used
+     *     local account will be used
      * @param successCallback callback called when password check finishes successfully
      * @param failureCallback callback called if password check encountered an error
      */
     public static void runPasswordCheckupInBackground(
             @PasswordCheckReferrer int referrer,
-            Optional<String> accountName,
+            String accountName,
             Callback<Void> successCallback,
             Callback<Exception> failureCallback) {
         assert canUseUpm();
@@ -328,13 +309,13 @@ public class PasswordManagerHelper {
      *
      * @param referrer the place that requested number of breached credentials.
      * @param accountName the account name that is syncing passwords. If no value was provided, the
-     *         local account will be used.
+     *     local account will be used.
      * @param successCallback callback called with the number of breached passwords.
      * @param failureCallback callback called if encountered an error.
      */
     public static void getBreachedCredentialsCount(
             @PasswordCheckReferrer int referrer,
-            Optional<String> accountName,
+            String accountName,
             Callback<Integer> successCallback,
             Callback<Exception> failureCallback) {
         assert canUseUpm();
@@ -365,8 +346,8 @@ public class PasswordManagerHelper {
     }
 
     /**
-     * Checks whether the sync feature is enabled and the user has chosen to sync passwords.
-     * Note that this doesn't mean that passwords are actively syncing.
+     * Checks whether the sync feature is enabled and the user has chosen to sync passwords. Note
+     * that this doesn't mean that passwords are actively syncing.
      *
      * @param syncService the service to query about the sync status.
      * @return true if syncing passwords is enabled
@@ -378,12 +359,11 @@ public class PasswordManagerHelper {
     }
 
     /**
-     * Checks whether the sync feature is enabled, the user has chosen to sync passwords and
-     * they haven't set up a custom passphrase.
-     * The caller should make sure that the sync engine is initialized before calling this
-     * method.
+     * Checks whether the sync feature is enabled, the user has chosen to sync passwords and they
+     * haven't set up a custom passphrase. The caller should make sure that the sync engine is
+     * initialized before calling this method.
      *
-     *  Note that this doesn't mean that passwords are actively syncing.
+     * <p>Note that this doesn't mean that passwords are actively syncing.
      *
      * @param syncService the service to query about the sync status.
      * @return true if syncing passwords is enabled without custom passphrase.
@@ -395,9 +375,8 @@ public class PasswordManagerHelper {
     }
 
     /**
-     * Checks whether the user is actively syncing passwords without a custom passphrase.
-     * The caller should make sure that the sync engine is initialized before calling this
-     * method.
+     * Checks whether the user is actively syncing passwords without a custom passphrase. The caller
+     * should make sure that the sync engine is initialized before calling this method.
      *
      * @param syncService the service to query about the sync status.
      * @return true if actively syncing passwords and no custom passphrase was set.
@@ -516,6 +495,8 @@ public class PasswordManagerHelper {
         PasswordCheckupClientMetricsRecorder passwordCheckupMetricsRecorder =
                 new PasswordCheckupClientMetricsRecorder(
                         (PasswordCheckOperation.GET_PASSWORD_CHECKUP_INTENT));
+        // TODO(crbug.com/1504551): Change PasswordCheckupClientHelper.getPasswordCheckupIntent to
+        // take the accountEmail as String.
         checkupClient.getPasswordCheckupIntent(
                 referrer,
                 account,
@@ -524,7 +505,8 @@ public class PasswordManagerHelper {
                     maybeLaunchIntentWithLoadingDialog(
                             loadingDialogCoordinator,
                             intent,
-                            PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM);
+                            PasswordMetricsUtil
+                                    .PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM);
                 },
                 (error) -> {
                     passwordCheckupMetricsRecorder.recordMetrics(Optional.of(error));
@@ -535,10 +517,12 @@ public class PasswordManagerHelper {
     private static void recordFailureMetrics(Exception exception, boolean forAccount) {
         final String kGetIntentSuccessHistogram =
                 forAccount
-                        ? ACCOUNT_GET_INTENT_SUCCESS_HISTOGRAM
-                        : LOCAL_GET_INTENT_SUCCESS_HISTOGRAM;
+                        ? PasswordMetricsUtil.ACCOUNT_GET_INTENT_SUCCESS_HISTOGRAM
+                        : PasswordMetricsUtil.LOCAL_GET_INTENT_SUCCESS_HISTOGRAM;
         final String kGetIntentErrorHistogram =
-                forAccount ? ACCOUNT_GET_INTENT_ERROR_HISTOGRAM : LOCAL_GET_INTENT_ERROR_HISTOGRAM;
+                forAccount
+                        ? PasswordMetricsUtil.ACCOUNT_GET_INTENT_ERROR_HISTOGRAM
+                        : PasswordMetricsUtil.LOCAL_GET_INTENT_ERROR_HISTOGRAM;
         RecordHistogram.recordBooleanHistogram(kGetIntentSuccessHistogram, false);
         if (exception instanceof CredentialManagerBackendException) {
             int errorCode = ((CredentialManagerBackendException) exception).errorCode;
@@ -558,12 +542,14 @@ public class PasswordManagerHelper {
 
         final String kGetIntentApiErrorHistogram =
                 forAccount
-                        ? ACCOUNT_GET_INTENT_API_ERROR_HISTOGRAM
-                        : LOCAL_GET_INTENT_API_ERROR_HISTOGRAM;
+                        ? PasswordMetricsUtil.ACCOUNT_GET_INTENT_API_ERROR_HISTOGRAM
+                        : PasswordMetricsUtil.LOCAL_GET_INTENT_API_ERROR_HISTOGRAM;
         final String kGetIntentErrorConnectionResultCodeHistogram =
                 forAccount
-                        ? ACCOUNT_GET_INTENT_ERROR_CONNECTION_RESULT_CODE_HISTOGRAM
-                        : LOCAL_GET_INTENT_ERROR_CONNECTION_RESULT_CODE_HISTOGRAM;
+                        ? PasswordMetricsUtil
+                                .ACCOUNT_GET_INTENT_ERROR_CONNECTION_RESULT_CODE_HISTOGRAM
+                        : PasswordMetricsUtil
+                                .LOCAL_GET_INTENT_ERROR_CONNECTION_RESULT_CODE_HISTOGRAM;
 
         int apiErrorCode = PasswordManagerAndroidBackendUtil.getApiErrorCode(exception);
         RecordHistogram.recordSparseHistogram(kGetIntentApiErrorHistogram, apiErrorCode);
@@ -598,28 +584,27 @@ public class PasswordManagerHelper {
                 loadingDialogCoordinator,
                 intent,
                 forAccount
-                        ? ACCOUNT_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM
-                        : LOCAL_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM);
+                        ? PasswordMetricsUtil.ACCOUNT_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM
+                        : PasswordMetricsUtil.LOCAL_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM);
     }
 
     private static void recordSuccessMetrics(long elapsedTimeMs, boolean forAccount) {
         final String kGetIntentLatencyHistogram =
                 forAccount
-                        ? ACCOUNT_GET_INTENT_LATENCY_HISTOGRAM
-                        : LOCAL_GET_INTENT_LATENCY_HISTOGRAM;
+                        ? PasswordMetricsUtil.ACCOUNT_GET_INTENT_LATENCY_HISTOGRAM
+                        : PasswordMetricsUtil.LOCAL_GET_INTENT_LATENCY_HISTOGRAM;
         final String kGetIntentSuccessHistogram =
                 forAccount
-                        ? ACCOUNT_GET_INTENT_SUCCESS_HISTOGRAM
-                        : LOCAL_GET_INTENT_SUCCESS_HISTOGRAM;
+                        ? PasswordMetricsUtil.ACCOUNT_GET_INTENT_SUCCESS_HISTOGRAM
+                        : PasswordMetricsUtil.LOCAL_GET_INTENT_SUCCESS_HISTOGRAM;
 
         RecordHistogram.recordTimesHistogram(kGetIntentLatencyHistogram, elapsedTimeMs);
         RecordHistogram.recordBooleanHistogram(kGetIntentSuccessHistogram, true);
     }
 
     /**
-     * Launches the pending intent and reports metrics if the loading dialog was not cancelled
-     * or timed out. Intent launch metric is not recorded if the loading was cancelled or timed
-     * out.
+     * Launches the pending intent and reports metrics if the loading dialog was not cancelled or
+     * timed out. Intent launch metric is not recorded if the loading was cancelled or timed out.
      *
      * @param loadingDialogCoordinator {@link LoadingModalDialogCoordinator}.
      * @param intent {@link PendingIntent} to be launched.
@@ -733,5 +718,19 @@ public class PasswordManagerHelper {
 
         throw new CredentialManagerBackendException(
                 "Can not instantiate backend client.", CredentialManagerError.UNCATEGORIZED);
+    }
+
+    private static void startAccountSettingsActivity(Context context, Intent intent) {
+        boolean success = false;
+        Activity activity = ContextUtils.activityFromContext(context);
+        if (activity != null) {
+            try {
+                activity.startActivityForResult(intent, 0);
+                success = true;
+            } catch (ActivityNotFoundException e) {
+            }
+        }
+        RecordHistogram.recordBooleanHistogram(
+                PasswordMetricsUtil.ACCOUNT_SETTINGS_ACTIVITY_HISTOGRAM, success);
     }
 }

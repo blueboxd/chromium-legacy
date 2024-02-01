@@ -4,8 +4,6 @@
 
 source_set("account_picker_confirmation") {
   sources = [
-    "account_picker_confirmation_screen_constants.h",
-    "account_picker_confirmation_screen_constants.mm",
     "account_picker_confirmation_screen_consumer.h",
     "account_picker_confirmation_screen_coordinator.h",
     "account_picker_confirmation_screen_coordinator.mm",
@@ -16,6 +14,7 @@ source_set("account_picker_confirmation") {
     "account_picker_confirmation_screen_view_controller.mm",
   ]
   deps = [
+    ":constants",
     "//base",
     "//components/signin/public/base",
     "//components/signin/public/identity_manager",
@@ -36,9 +35,15 @@ source_set("account_picker_confirmation") {
     "//ios/chrome/browser/ui/authentication/enterprise:enterprise_utils",
     "//ios/chrome/browser/ui/authentication/signin:constants",
     "//ios/chrome/browser/ui/authentication/views",
-    "//ios/chrome/common:button_config",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ui/base",
+  ]
+}
+
+source_set("constants") {
+  sources = [
+    "account_picker_confirmation_screen_constants.h",
+    "account_picker_confirmation_screen_constants.mm",
   ]
 }

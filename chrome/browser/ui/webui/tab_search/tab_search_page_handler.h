@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_TAB_SEARCH_TAB_SEARCH_PAGE_HANDLER_H_
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/organization/tab_data.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -82,7 +82,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   void RemoveTabFromOrganization(int32_t session_id,
                                  int32_t organization_id,
                                  tab_search::mojom::TabPtr tab) override;
-  void ResetSession() override;
+  void RestartSession() override;
   void SaveRecentlyClosedExpandedPref(bool expanded) override;
   void SetTabIndex(int32_t index) override;
   void StartTabGroupTutorial() override;
@@ -144,12 +144,8 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
     TabDetails(Browser* browser, TabStripModel* tab_strip_model, int index)
         : browser(browser), tab_strip_model(tab_strip_model), index(index) {}
 
-    // This field is not a raw_ptr<> because it was filtered by the rewriter
-    // for: #union
-    RAW_PTR_EXCLUSION Browser* browser;
-    // This field is not a raw_ptr<> because it was filtered by the rewriter
-    // for: #union
-    RAW_PTR_EXCLUSION TabStripModel* tab_strip_model;
+    raw_ptr<Browser> browser;
+    raw_ptr<TabStripModel> tab_strip_model;
     int index;
   };
 
@@ -193,6 +189,10 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   // Call TabsChanged() and stop the timer if it's running.
   void NotifyTabsChanged();
 
+  void NotifyTabIndexPrefChanged(const Profile* profile);
+
+  void NotifySettingEnabledPrefChanged(Profile* profile);
+
   mojo::Receiver<tab_search::mojom::PageHandler> receiver_;
   mojo::Remote<tab_search::mojom::Page> page_;
   const raw_ptr<content::WebUI> web_ui_;
@@ -202,6 +202,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   BrowserTabStripTracker browser_tab_strip_tracker_{this, this};
   std::unique_ptr<base::RetainingOneShotTimer> debounce_timer_;
   raw_ptr<TabOrganizationService> organization_service_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Tracks how many times |CloseTab()| has been evoked for the currently open
   // instance of Tab Search for logging in UMA.
@@ -215,8 +216,12 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   // purposes.
   bool called_switch_to_tab_ = false;
 
+  // Tracks whether a session restart is currently in progress.
+  bool restarting_ = false;
+
   // Listened TabOrganization sessions.
-  std::vector<TabOrganizationSession*> listened_sessions_;
+  std::vector<raw_ptr<TabOrganizationSession, VectorExperimental>>
+      listened_sessions_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_TAB_SEARCH_TAB_SEARCH_PAGE_HANDLER_H_

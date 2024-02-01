@@ -64,8 +64,7 @@ class ObservableOverflowIndicator : public views::View {
   }
 
  private:
-  raw_ptr<UiElementContainerView, ExperimentalAsh> ui_element_container_view_ =
-      nullptr;
+  raw_ptr<UiElementContainerView> ui_element_container_view_ = nullptr;
 };
 
 BEGIN_METADATA(ObservableOverflowIndicator, views::View)
@@ -122,7 +121,7 @@ gfx::Size UiElementContainerView::GetMinimumSize() const {
 }
 
 void UiElementContainerView::Layout() {
-  AnimatedContainerView::Layout();
+  LayoutSuperclass<AnimatedContainerView>(this);
 
   // Scroll indicator.
   scroll_indicator_->SetBounds(0, height() - kScrollIndicatorHeightDip, width(),

@@ -26,7 +26,6 @@ extension View {
 }
 
 /// A view displaying a list of destinations.
-@available(iOS 15, *)
 struct OverflowMenuDestinationList: View {
   enum Constants {
     /// Padding breakpoints for each width. The ranges should be inclusive of
@@ -50,10 +49,6 @@ struct OverflowMenuDestinationList: View {
 
     /// Range of icon paddings; varies based on view width.
     static let iconPaddingRange: ClosedRange<CGFloat> = 0...3
-
-    /// When the dynamic text size is large, the width of each item is the
-    /// screen width minus a fixed space.
-    static let largeTextSizeSpace: CGFloat = 120
 
     /// The top margin between the destinations and the edge of the list.
     static let defaultTopMargin: CGFloat = 15
@@ -323,7 +318,7 @@ struct OverflowMenuDestinationList: View {
     let spacing = OverflowMenuDestinationList.destinationSpacing(forScreenWidth: width)
 
     return sizeCategory >= .accessibilityMedium
-      ? .horizontal(itemWidth: width - Constants.largeTextSizeSpace)
+      ? .horizontal
       : .vertical(
         iconSpacing: spacing.iconSpacing,
         iconPadding: spacing.iconPadding)
@@ -336,9 +331,20 @@ struct OverflowMenuDestinationList: View {
   {
     let layoutParameters = OverflowMenuDestinationList.layoutParameters(
       forScreenWidth: width, forSizeCategory: sizeCategory)
-    let destinationWidth = OverflowMenuDestinationView.destinationWidth(layoutParameters)
 
-    return (width / destinationWidth).rounded(.up)
+    switch layoutParameters {
+    case .vertical(let iconSpacing, let iconPadding):
+      let destinationWidth = OverflowMenuDestinationView.verticalLayoutDestinationWidth(
+        iconSpacing: iconSpacing, iconPadding: iconPadding)
+
+      return (width / destinationWidth).rounded(.up)
+    case .horizontal:
+      // In horizontal layout, the width of an individual item depends on the
+      // text length. However, it'll always be pretty long, so 2 is a good
+      // estimate.
+      return 2
+    }
+
   }
 
   /// Maps the given `number` from its relative position in `inRange` to its

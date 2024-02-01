@@ -20,10 +20,8 @@ namespace {
 const base::Feature* const kFeaturesExposedToJava[] = {
     &device::kWebAuthnAndroidCredMan,
     &device::kWebAuthnAndroidCredManForHybrid,
-    &device::kWebAuthnAndroidHybridClientUi,
+    &device::kWebAuthnAndroidFidoJson,
     &device::kWebAuthnAndroidIncognitoConfirmation,
-    &device::kWebAuthnCableViaCredMan,
-    &device::kWebAuthnDontPrelinkInProfiles,
     &device::kWebAuthnHybridLinkWithoutNotifications,
     &kGenericSensorExtraClasses,
 };

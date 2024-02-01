@@ -22,7 +22,6 @@ BASE_DECLARE_FEATURE(kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
 BASE_DECLARE_FEATURE(kSupervisedPrefsControlledBySupervisedStore);
 BASE_DECLARE_FEATURE(kEnableManagedByParentUi);
 extern const base::FeatureParam<std::string> kManagedByParentUiMoreInfoUrl;
-BASE_DECLARE_FEATURE(kClearingCookiesKeepsSupervisedUsersSignedIn);
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 BASE_DECLARE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
@@ -31,9 +30,6 @@ BASE_DECLARE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
 // Returns whether banner can be displayed to the user after website filtering
 // is enabled
 bool CanDisplayFirstTimeInterstitialBanner();
-
-// Experiments to enable proto fetchers
-BASE_DECLARE_FEATURE(kEnableProtoApiForClassifyUrl);
 
 // Request priority experiment for ClassifyUrl (for critical path of rendering).
 BASE_DECLARE_FEATURE(kHighestRequestPriorityForClassifyUrl);
@@ -60,9 +56,6 @@ BASE_DECLARE_FEATURE(kForceGoogleSafeSearchForSupervisedUsers);
 // Local web approvals are only available when refreshed version of web
 // filter interstitial is enabled.
 bool IsLocalWebApprovalsEnabled();
-
-// Returns whether the ClassifyUrl call uses proto apis.
-bool IsProtoApiForClassifyUrlEnabled();
 
 // Returns true if child account supervision features should be enabled for this
 // client.

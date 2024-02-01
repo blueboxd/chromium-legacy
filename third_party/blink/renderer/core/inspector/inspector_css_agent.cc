@@ -27,6 +27,7 @@
 
 #include <utility>
 
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
 #include "third_party/blink/renderer/core/css/cascade_layer.h"
 #include "third_party/blink/renderer/core/css/cascade_layer_map.h"
@@ -1073,7 +1074,8 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
 
   // Matched rules.
   *matched_css_rules =
-      BuildArrayForMatchedRuleList(resolver.MatchedRules(), element);
+      BuildArrayForMatchedRuleList(resolver.MatchedRules(), element,
+                                   element_pseudo_id, view_transition_name);
 
   // Inherited styles.
   *inherited_entries =
@@ -1081,21 +1083,26 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
   for (InspectorCSSMatchedRules* match : resolver.ParentRules()) {
     std::unique_ptr<protocol::CSS::InheritedStyleEntry> entry =
         protocol::CSS::InheritedStyleEntry::create()
-            .setMatchedCSSRules(
-                BuildArrayForMatchedRuleList(match->matched_rules, element))
+            .setMatchedCSSRules(BuildArrayForMatchedRuleList(
+                match->matched_rules, element, element_pseudo_id,
+                view_transition_name))
             .build();
     if (match->element->style() && match->element->style()->length()) {
       InspectorStyleSheetForInlineStyle* style_sheet =
           AsInspectorStyleSheet(match->element);
       if (style_sheet) {
         entry->setInlineStyle(style_sheet->BuildObjectForStyle(
-            style_sheet->InlineStyle(), element));
+            style_sheet->InlineStyle(), element, element_pseudo_id,
+            view_transition_name));
       }
     }
     inherited_entries->value().emplace_back(std::move(entry));
   }
 
   *css_keyframes_rules = AnimationsForNode(element, animating_element);
+
+  std::tie(*css_property_rules, *css_property_registrations) =
+      CustomPropertiesForNode(element);
 
   // Pseudo elements.
   if (element_pseudo_id)
@@ -1117,8 +1124,9 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
         protocol::CSS::PseudoElementMatches::create()
             .setPseudoType(
                 InspectorDOMAgent::ProtocolPseudoElementType(match->pseudo_id))
-            .setMatches(
-                BuildArrayForMatchedRuleList(match->matched_rules, element))
+            .setMatches(BuildArrayForMatchedRuleList(
+                match->matched_rules, element, match->pseudo_id,
+                match->view_transition_name))
             .build());
     if (match->view_transition_name) {
       pseudo_id_matches->value().back()->setPseudoIdentifier(
@@ -1157,8 +1165,6 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
         std::move(inherited_pseudo_element_matches));
   }
 
-  std::tie(*css_property_rules, *css_property_registrations) =
-      CustomPropertiesForNode(element);
   *css_position_fallback_rules = PositionFallbackRulesForNode(element);
 
   if (auto rule = FontPalettesForNode(*element)) {
@@ -1624,8 +1630,12 @@ protocol::Response InspectorCSSAgent::getComputedStyleForNode(
         "Node is not an element and does not have a parent element");
   }
 
+  TRACE_EVENT1("devtools", "InspectorCSSAgent::getComputedStyleForNode", "node",
+               element->DebugName());
   auto* computed_style_info =
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element, true);
+  CSSComputedStyleDeclaration::ScopedCleanStyleForAllProperties
+      clean_style_scope(computed_style_info);
   *style = std::make_unique<
       protocol::Array<protocol::CSS::CSSComputedStyleProperty>>();
   for (CSSPropertyID property_id : CSSPropertyIDList()) {
@@ -1978,6 +1988,7 @@ protocol::Response InspectorCSSAgent::MultipleStyleTextsActions(
 
 protocol::Response InspectorCSSAgent::setStyleTexts(
     std::unique_ptr<protocol::Array<protocol::CSS::StyleDeclarationEdit>> edits,
+    protocol::Maybe<int> node_for_property_syntax_validation,
     std::unique_ptr<protocol::Array<protocol::CSS::CSSStyle>>* result) {
   FrontendOperationScope scope;
   HeapVector<Member<StyleSheetAction>> actions;
@@ -1987,6 +1998,14 @@ protocol::Response InspectorCSSAgent::setStyleTexts(
     return response;
 
   DummyExceptionStateForTesting exception_state;
+
+  Element* element = nullptr;
+  if (node_for_property_syntax_validation.has_value()) {
+    response = dom_agent_->AssertElement(
+        node_for_property_syntax_validation.value(), element);
+    if (!response.IsSuccess())
+      return response;
+  }
 
   int n = actions.size();
   auto serialized_styles =
@@ -2005,10 +2024,15 @@ protocol::Response InspectorCSSAgent::setStyleTexts(
           String::Format("Failed applying edit #%d: ", i).Utf8() +
           InspectorDOMAgent::ToResponse(exception_state).Message());
     }
-    serialized_styles->emplace_back(
-        // TODO (crbug/1498877) We also need to re-validate registered
-        // properties on edits
-        action->TakeSerializedStyle(nullptr));
+  }
+
+  if (element) {
+    element->GetDocument().UpdateStyleAndLayoutForNode(
+        element, DocumentUpdateReason::kInspector);
+  }
+  for (int i = 0; i < n; ++i) {
+    Member<StyleSheetAction> action = actions.at(i);
+    serialized_styles->emplace_back(action->TakeSerializedStyle(element));
   }
 
   for (int i = 0; i < n; ++i) {
@@ -2204,6 +2228,7 @@ protocol::Response InspectorCSSAgent::addRule(
     const String& style_sheet_id,
     const String& rule_text,
     std::unique_ptr<protocol::CSS::SourceRange> location,
+    protocol::Maybe<int> node_for_property_syntax_validation,
     std::unique_ptr<protocol::CSS::CSSRule>* result) {
   FrontendOperationScope scope;
   InspectorStyleSheet* inspector_style_sheet = nullptr;
@@ -2211,6 +2236,15 @@ protocol::Response InspectorCSSAgent::addRule(
       AssertInspectorStyleSheetForId(style_sheet_id, inspector_style_sheet);
   if (!response.IsSuccess())
     return response;
+
+  Element* element = nullptr;
+  if (node_for_property_syntax_validation.has_value()) {
+    response = dom_agent_->AssertElement(
+        node_for_property_syntax_validation.value(), element);
+    if (!response.IsSuccess())
+      return response;
+  }
+
   SourceRange rule_location;
   response = JsonRangeToSourceRange(inspector_style_sheet, location.get(),
                                     &rule_location);
@@ -2225,9 +2259,11 @@ protocol::Response InspectorCSSAgent::addRule(
     return InspectorDOMAgent::ToResponse(exception_state);
 
   CSSStyleRule* rule = action->TakeRule();
-  // TODO (crbug/1498877) We also need to re-validate registered
-  // properties on edits
-  *result = BuildObjectForRule(rule, nullptr);
+  if (element) {
+    element->GetDocument().UpdateStyleAndLayoutForNode(
+        element, DocumentUpdateReason::kInspector);
+  }
+  *result = BuildObjectForRule(rule, element);
   return protocol::Response::Success();
 }
 
@@ -2659,7 +2695,7 @@ void InspectorCSSAgent::FillAncestorData(CSSRule* rule,
   auto rule_types_list =
       std::make_unique<protocol::Array<protocol::CSS::CSSRuleType>>();
 
-  CSSRule* parent_rule = rule->parentRule();
+  CSSRule* parent_rule = rule;
   auto nesting_selectors = std::make_unique<protocol::Array<String>>();
   while (parent_rule) {
     CollectLayersFromRule(parent_rule, layers_list.get(),
@@ -2672,9 +2708,12 @@ void InspectorCSSAgent::FillAncestorData(CSSRule* rule,
                             rule_types_list.get());
     CollectScopesFromRule(parent_rule, scopes_list.get(),
                           rule_types_list.get());
-    if (auto* style_rule = DynamicTo<CSSStyleRule>(parent_rule)) {
-      nesting_selectors->emplace_back(style_rule->selectorText());
-      rule_types_list->emplace_back(protocol::CSS::CSSRuleTypeEnum::StyleRule);
+    if (parent_rule != rule) {
+      if (auto* style_rule = DynamicTo<CSSStyleRule>(parent_rule)) {
+        nesting_selectors->emplace_back(style_rule->selectorText());
+        rule_types_list->emplace_back(
+            protocol::CSS::CSSRuleTypeEnum::StyleRule);
+      }
     }
 
     if (parent_rule->parentRule()) {
@@ -2906,21 +2945,26 @@ protocol::CSS::StyleSheetOrigin InspectorCSSAgent::DetectOrigin(
 
 std::unique_ptr<protocol::CSS::CSSRule> InspectorCSSAgent::BuildObjectForRule(
     CSSStyleRule* rule,
-    Element* element) {
+    Element* element,
+    PseudoId pseudo_id,
+    const AtomicString& pseudo_argument) {
   InspectorStyleSheet* inspector_style_sheet = InspectorStyleSheetForRule(rule);
   if (!inspector_style_sheet)
     return nullptr;
 
   std::unique_ptr<protocol::CSS::CSSRule> result =
-      inspector_style_sheet->BuildObjectForRuleWithoutAncestorData(rule,
-                                                                   element);
+      inspector_style_sheet->BuildObjectForRuleWithoutAncestorData(
+          rule, element, pseudo_id, pseudo_argument);
   FillAncestorData(rule, result.get());
   return result;
 }
 
 std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>>
-InspectorCSSAgent::BuildArrayForMatchedRuleList(RuleIndexList* rule_list,
-                                                Element* element) {
+InspectorCSSAgent::BuildArrayForMatchedRuleList(
+    RuleIndexList* rule_list,
+    Element* element,
+    PseudoId pseudo_id,
+    const AtomicString& pseudo_argument) {
   auto result = std::make_unique<protocol::Array<protocol::CSS::RuleMatch>>();
   if (!rule_list)
     return result;
@@ -2946,7 +2990,7 @@ InspectorCSSAgent::BuildArrayForMatchedRuleList(RuleIndexList* rule_list,
   for (auto it = uniq_rules.rbegin(); it != uniq_rules.rend(); ++it) {
     CSSStyleRule* rule = it->Get();
     std::unique_ptr<protocol::CSS::CSSRule> rule_object =
-        BuildObjectForRule(rule, element);
+        BuildObjectForRule(rule, element, pseudo_id, pseudo_argument);
     if (!rule_object)
       continue;
 

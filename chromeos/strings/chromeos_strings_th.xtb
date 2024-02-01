@@ -16,10 +16,12 @@
 <translation id="1075811647922107217">ขนาดหน้า</translation>
 <translation id="1082009148392559545">กำลังดาวน์โหลดโปรแกรมรักษาหน้าจอ</translation>
 <translation id="1094693127011229778">ที่อยู่ IP ไม่พร้อมใช้งาน</translation>
+<translation id="1116694919640316211">เกี่ยวกับ</translation>
 <translation id="1118572504348554005">เราอาจแชร์ความคิดเห็นที่ส่งมาทางแบบฟอร์มนี้กับพาร์ทเนอร์เพื่อแก้ไขข้อบกพร่องและปัญหาอื่นๆ ที่คุณรายงานให้ทราบ อย่าใส่ข้อมูลที่ละเอียดอ่อน เช่น รหัสผ่าน</translation>
 <translation id="1119447706177454957">ข้อผิดพลาดภายใน</translation>
 <translation id="1124772482545689468">ผู้ใช้</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
+<translation id="1134416403025830762">คูณ</translation>
 <translation id="1145018782460575098">หน้าต่างการอัปเดตเฟิร์มแวร์สำหรับอุปกรณ์ภายนอกเปิดอยู่ <ph name="NUM_UPDATES" /> การอัปเดตที่พร้อมใช้งาน</translation>
 <translation id="1145516343487477149">ดูบทความช่วยเหลือและคําตอบสำหรับคําถามที่พบบ่อยเกี่ยวกับ Chromebook</translation>
 <translation id="1154390310959620237">คุณปรับแต่งแป้นพิมพ์ลัดได้เพียง 5 รายการเท่านั้น โปรดลบแป้นพิมพ์ลัดเพื่อเพิ่มแป้นพิมพ์ลัดใหม่</translation>
@@ -42,6 +44,7 @@
 <translation id="1264369926465113395">ดูนิตยสารดิจิทัลใหม่ของ Chromebook สำหรับผู้สร้างสรรค์งานศิลปะและการออกแบบ</translation>
 <translation id="1270369111467284986">สงสัยว่าเป็นแคพทีฟพอร์ทัล</translation>
 <translation id="1290331692326790741">สัญญาณไม่ดี</translation>
+<translation id="1300115153046603471">APN เป็นแบบ Default และ <ph name="ATTACH" /></translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">กำลังอัปเดต (เสร็จสมบูรณ์ <ph name="PERCENTAGE_VALUE" />%)</translation>
 <translation id="1309341072016605398"><ph name="MINUTES" /> นาที</translation>
@@ -54,6 +57,7 @@
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">พอดีกับพื้นที่สแกน</translation>
 <translation id="1367951781824006909">เลือกไฟล์</translation>
+<translation id="1371650399987522809">ความคิดเห็นเกี่ยวกับวอลเปเปอร์ที่ทำงานด้วย AI ของ Google</translation>
 <translation id="1387854245479784695">นี่เป็นการรวม Core ทั้งหมด</translation>
 <translation id="1394661041439318933">อุปกรณ์มีระดับแบตเตอรี่ของเคส <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1397738625398125236">ปิงเกตเวย์ได้</translation>
@@ -81,18 +85,20 @@
 <translation id="1515129336378114413">หน้าหลักของเบราว์เซอร์</translation>
 <translation id="1526389707933164996">ภาพเคลื่อนไหวของโปรแกรมรักษาหน้าจอ</translation>
 <translation id="152892567002884378">เพิ่มระดับเสียง</translation>
-<translation id="1539242642795599947">APN เป็นแบบ Default และ Attach</translation>
 <translation id="1555130319947370107">สีน้ำเงิน</translation>
 <translation id="155865706765934889">ทัชแพด</translation>
 <translation id="1561927818299383735">สีเรืองแสง</translation>
 <translation id="1565038567006703504">อัปเดต <ph name="DEVICE_NAME" /> ไม่ได้</translation>
+<translation id="1566493343215789965">หาร</translation>
 <translation id="1567064801249837505">อัลบั้ม</translation>
 <translation id="1572585716423026576">ตั้งเป็นวอลเปเปอร์</translation>
 <translation id="1578784163189013834">เลือกพื้นหลังของโปรแกรมรักษาหน้าจอ</translation>
 <translation id="160633243685262989">แสดงตัวอย่างรูปภาพ</translation>
 <translation id="1611649489706141841">ไปข้างหน้า</translation>
 <translation id="1615335640928990664">ปริมาณการใช้อินเทอร์เน็ตตั้งแต่ <ph name="FRIENDLY_DATE" /></translation>
+<translation id="1615576200479539465">กำลังสร้างรูปภาพ...</translation>
 <translation id="1621067168122174824">ทดสอบการชาร์จแบตเตอรี่</translation>
+<translation id="1626590945318984973">แป้นพิมพ์ลัดไม่พร้อมใช้งาน กดแป้นพิมพ์ลัดใหม่โดยไม่ใช้ฟังก์ชันและแป้น<ph name="META_KEY" /></translation>
 <translation id="1639239467298939599">กำลังโหลด</translation>
 <translation id="1641857168437328880">ตัวป้อนเอกสาร (ด้านเดียว)</translation>
 <translation id="1643449475550628585">เปลี่ยนรูปภาพวอลเปเปอร์ทุกวัน</translation>
@@ -143,7 +149,6 @@
 <translation id="188114911237521550">ปิดโหมดมืด</translation>
 <translation id="1885577615937958993">กรอสื่อไปข้างหน้า</translation>
 <translation id="1887850431809612466">การแก้ไขฮาร์ดแวร์</translation>
-<translation id="1897672602657312171">แป้นพิมพ์ลัดที่ไม่มีแป้นค้นหาอาจขัดแย้งกับแป้นพิมพ์ลัดของบางแอป กดแป้นพิมพ์ลัดนี้อีกครั้งเพื่อใช้ต่อไป หรือกดแป้นพิมพ์ลัดใหม่โดยใช้แป้นค้นหา</translation>
 <translation id="1904932688895783618">แหล่งข้อมูลอื่นๆ บางส่วนที่เป็นประโยชน์มีดังต่อไปนี้</translation>
 <translation id="1905710495812624430">ลองทำเกินจำนวนครั้งที่กำหนดไว้แล้ว</translation>
 <translation id="1908234395526491708">ขอ UDP ไม่สำเร็จ</translation>
@@ -175,7 +180,6 @@
 <translation id="2152882202543497059"><ph name="NUMBER" /> ภาพ</translation>
 <translation id="2157660087437850958">เครื่องมือเลือกอีโมจิ</translation>
 <translation id="2157959690810728433">อยู่ในคิว</translation>
-<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{ผู้ดูแลระบบของคุณตั้งค่าให้ <ph name="APP_NAME_1" /> เริ่มทำงานโดยอัตโนมัติทุกครั้งที่คุณเข้าสู่ระบบ}=2{ผู้ดูแลระบบของคุณตั้งค่าให้ <ph name="APP_NAME_1" /> และ <ph name="APP_NAME_2" /> เริ่มทำงานโดยอัตโนมัติทุกครั้งที่คุณเข้าสู่ระบบ}=3{ผู้ดูแลระบบของคุณตั้งค่าให้ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> และ <ph name="APP_NAME_3" /> เริ่มทำงานโดยอัตโนมัติทุกครั้งที่คุณเข้าสู่ระบบ}other{ผู้ดูแลระบบของคุณตั้งค่าให้ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> และแอปอื่นๆ อีก # แอปเริ่มทำงานโดยอัตโนมัติทุกครั้งที่คุณเข้าสู่ระบบ}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: ลองอีกครั้ง</translation>
 <translation id="215916044711630446">ปิดใช้ปุ่ม "เพิ่ม APN" แล้ว</translation>
 <translation id="2161394479394250669">ยกเลิกงานพิมพ์</translation>
@@ -185,6 +189,7 @@
 <translation id="2189104374785738357">แก้ไขรายละเอียด APN</translation>
 <translation id="2209788852729124853">รีเซ็ตตัวนับการรับส่งข้อมูล</translation>
 <translation id="2212733584906323460">การจำแนกชื่อ</translation>
+<translation id="2215920961700443347">ไม่มีอินเทอร์เน็ต เชื่อมต่ออินเทอร์เน็ตแล้วลองอีกครั้ง</translation>
 <translation id="2217935453350629363">ความเร็วในปัจจุบัน</translation>
 <translation id="2224337661447660594">ไม่มีอินเทอร์เน็ต</translation>
 <translation id="222447520299472966">ต้องเลือกอัลบั้มแกลเลอรีศิลปะอย่างน้อย 1 อัลบั้ม</translation>
@@ -218,6 +223,7 @@
 <translation id="2421798028054665193">ภาพที่ <ph name="CURRENT_PAGE" /> จาก <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">ความแม่นยำของจุดลอยตัว</translation>
 <translation id="2448312741937722512">ประเภท</translation>
+<translation id="2465272316171730950">ระบบไม่ว่างดำเนินการ โปรดกลับมาใหม่ในภายหลัง</translation>
 <translation id="248546197012830854">อุปกรณ์ออฟไลน์อยู่ เชื่อมต่อกับเครือข่าย Wi-Fi เพื่อดูเนื้อหาช่วยเหลือ</translation>
 <translation id="2491955442992294626">แป้นจะไม่ได้รับการทดสอบเมื่อใช้หน้าต่างอื่น</translation>
 <translation id="2493126929778606526">รูปภาพที่ดีที่สุดซึ่งเลือกสรรมาให้คุณโดยอัตโนมัติ</translation>
@@ -225,7 +231,6 @@
 <translation id="2505327257735685095">รีเฟรชรูปภาพวอลเปเปอร์ปัจจุบัน</translation>
 <translation id="2512979179176933762">แสดงหน้าต่าง</translation>
 <translation id="2513396635448525189">รูปภาพการเข้าสู่ระบบ</translation>
-<translation id="2515109918609218604">แป้นพิมพ์ลัดไม่พร้อมใช้งาน กดแป้นพิมพ์ลัดใหม่โดยไม่ใช้ฟังก์ชันและแป้นค้นหา</translation>
 <translation id="2517472476991765520">สแกน</translation>
 <translation id="2521835766824839541">แทร็กก่อนหน้า</translation>
 <translation id="2526590354069164005">เดสก์ท็อป</translation>
@@ -241,6 +246,7 @@
 <translation id="2638662041295312666">รูปภาพการลงชื่อเข้าใช้</translation>
 <translation id="2640549051766135490">เลือกอัลบั้ม <ph name="TITLE" /> <ph name="DESC" /> อยู่</translation>
 <translation id="2652403576514495859">เปิดใช้หรือเปิด/ปิดการพิมพ์ตามคำบอก</translation>
+<translation id="2656001153562991489">เฉพาะสำหรับ Chromebook Plus</translation>
 <translation id="267442004702508783">รีเฟรช</translation>
 <translation id="268270014981824665">หรี่แสงแป้นพิมพ์</translation>
 <translation id="2712812801627182647">คีย์การตรวจสอบสิทธิ์ TLS</translation>
@@ -263,6 +269,7 @@
 <translation id="2878387241690264070">คายประจุ <ph name="RATE" /> ใน <ph name="NUM_SECONDS" /> วินาที</translation>
 <translation id="2880569433548999039">ภาพพักหน้าจอการเคลื่อนตัวของเมฆ</translation>
 <translation id="2926057806159140518">ป้อนชื่อผู้ใช้และรหัสผ่าน หรือสแกนคิวอาร์โค้ด</translation>
+<translation id="2938573842839598578">สำหรับผลลัพธ์โดยประมาณ ให้นำค่า <ph name="CATEGORY_TEXT" /> มา<ph name="OPERATOR_TEXT" />ด้วย <ph name="CONVERSION_RATE" /></translation>
 <translation id="2940811910881150316">ทดสอบอุปกรณ์ไม่ได้ เปิดฝาหน้าจออีกครั้งเพื่อทดสอบ</translation>
 <translation id="2941112035454246133">ต่ำ</translation>
 <translation id="3008341117444806826">รีเฟรช</translation>
@@ -335,6 +342,7 @@
 <translation id="3517001332549868749">การอัปเดต Chrome OS</translation>
 <translation id="3527036260304016759">ไม่สำเร็จ - ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="3532980081107202182">เหลือเวลาอีกประมาณ <ph name="MIN_REMAINING" /> นาที</translation>
+<translation id="3547264467365135390">สูตร</translation>
 <translation id="3557205324756024651">ข้อมูลประจำตัวในเครื่อง (ไม่บังคับ)</translation>
 <translation id="3565064564551103223">IP ที่อนุญาต</translation>
 <translation id="3569407787324516067">โปรแกรมรักษาหน้าจอ</translation>
@@ -373,11 +381,13 @@
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3858860766373142691">ชื่อ</translation>
 <translation id="3862598938296403232">ต้องป้อนคำอธิบาย</translation>
+<translation id="386280020966669610">ขอแรงบันดาลใจหน่อย</translation>
 <translation id="3865289341173661845">เนื้อหาช่วยเหลือไม่พร้อมใช้งาน</translation>
 <translation id="3865414814144988605">ความละเอียด</translation>
 <translation id="3866249974567520381">คำอธิบาย</translation>
 <translation id="387301095347517405">จำนวนครั้งที่ชาร์จแบตเตอรี่จนเต็ม</translation>
 <translation id="3885327323343477505">เปลี่ยนโปรแกรมรักษาหน้าจอ</translation>
+<translation id="3892148308691398805">คัดลอกข้อความ</translation>
 <translation id="391412459402535266">ทดสอบอุปกรณ์ไม่ได้ เปลี่ยนเป็นโหมดแล็ปท็อปเพื่อทดสอบ</translation>
 <translation id="3916998944874125962">จับภาพหน้าจอ</translation>
 <translation id="3923184630988645767">การใช้อินเทอร์เน็ต</translation>
@@ -403,14 +413,15 @@
 <translation id="4060260348856573701">APN ใหม่</translation>
 <translation id="4093865285251893588">รูปโปรไฟล์</translation>
 <translation id="409427325554347132">บันทึกรายละเอียดการทดสอบ</translation>
+<translation id="409469431304488632">เวอร์ชันทดลอง</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">เลือกอัลบั้ม <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">ทัชแพด USB</translation>
 <translation id="4113067922640381334">ตอนนี้คุณเข้าถึง<ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />วอลเปเปอร์<ph name="END_LINK_WALLPAPER_SUBPAGE" />ใหม่ได้แล้ว</translation>
 <translation id="4117637339509843559">โหมดมืด</translation>
 <translation id="4130035430755296270">ลากเมาส์ไปเรื่อยๆ เพื่อดูตัวเลือกเลย์เอาต์เพิ่มเติม</translation>
+<translation id="4130750466177569591">ฉันยอมรับ</translation>
 <translation id="4131410914670010031">ขาวดำ</translation>
-<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> เริ่มทำงานโดยอัตโนมัติแล้ว}other{แอป # แอปเริ่มทำงานโดยอัตโนมัติแล้ว}}</translation>
 <translation id="4145784616224233563">ไฟร์วอลล์ HTTP</translation>
 <translation id="4147897805161313378">Google Photos</translation>
 <translation id="4150201353443180367">การแสดงผล</translation>
@@ -422,7 +433,6 @@
 <translation id="4171077696775491955">ลดความสว่าง</translation>
 <translation id="4176463684765177261">ปิดการทำงาน</translation>
 <translation id="4176659219503619100">แผงควบคุม</translation>
-<translation id="4185315616950253617">แป้นพิมพ์ลัดที่ประกอบด้วยแป้นแถวบนสุดต้องมีแป้นค้นหารวมอยู่ด้วย</translation>
 <translation id="420283545744377356">ปิดโปรแกรมรักษาหน้าจอ</translation>
 <translation id="4213104098953699324">แป้นพิมพ์ USB</translation>
 <translation id="4227825898293920515">รหัสผ่านจะหมดอายุในอีก <ph name="TIME" /></translation>
@@ -438,17 +448,21 @@
 <translation id="4289849978083912975">แสดงภาพสไลด์</translation>
 <translation id="4297501883039923494">หยุดพิมพ์ - ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> ภาพ</translation>
+<translation id="4310735698903592804">วอลเปเปอร์ล่าสุดที่ทำงานด้วยระบบ AI ของ Google</translation>
 <translation id="4333390807948134856">กดปุ่ม <ph name="KEY_NAME" /> อยู่</translation>
 <translation id="4354430579665871434">แป้น</translation>
 <translation id="4361257691546579041">APN เป็นแบบ Default</translation>
 <translation id="437294888293595148">รีเซ็ตทางลัดทั้งหมด</translation>
+<translation id="4376423484621194274">ผู้ดูแลระบบไม่อนุญาตให้ปิด <ph name="APP_NAME" /></translation>
 <translation id="4378373042927530923">ไม่ทำงาน</translation>
 <translation id="4378551569595875038">กำลังเชื่อมต่อ</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4394049700291259645">ปิดการใช้งาน</translation>
 <translation id="439429847087949098">กำลังรีสตาร์ท <ph name="DEVICE_NAME" /></translation>
 <translation id="4395835743215824109">การปรับแต่งแป้นพิมพ์</translation>
+<translation id="4403262788869804671">แป้นพิมพ์ลัดที่ไม่มีแป้น<ph name="META_KEY" />อาจขัดแย้งกับแป้นพิมพ์ลัดของบางแอป กดแป้นพิมพ์ลัดนี้อีกครั้งเพื่อใช้ต่อไป หรือกดแป้นพิมพ์ลัดใหม่โดยใช้แป้น<ph name="KEY" /></translation>
 <translation id="4415951057168511744">รูปโปรไฟล์ปัจจุบัน</translation>
+<translation id="4417830657741848074">ผู้ดูแลระบบของคุณตั้งค่าให้บางแอปเริ่มทำงานโดยอัตโนมัติ คุณจึงปิดบางแอปเหล่านี้ไม่ได้</translation>
 <translation id="4422041425070339732">ลูกศรลง</translation>
 <translation id="4425149324548788773">ไดรฟ์ของฉัน</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" /> ปิดอยู่</translation>
@@ -461,6 +475,7 @@
 <translation id="4469288414739283461">ภาพพักหน้าจอการเคลื่อนที่ของโลก</translation>
 <translation id="4479639480957787382">อีเทอร์เน็ต</translation>
 <translation id="4483049906298469269">ใช้คำสั่ง ping กับเกตเวย์เครือข่ายที่ไม่ใช่ค่าเริ่มต้นไม่สำเร็จ</translation>
+<translation id="4500722292849917410">แป้นพิมพ์ลัดไม่พร้อมใช้งาน กดแป้นพิมพ์ลัดใหม่โดยใช้แป้นกดร่วม (Ctrl, Alt, Shift หรือ<ph name="META_KEY" />)</translation>
 <translation id="4500966230243561393">สีของอินเทอร์เฟซ</translation>
 <translation id="4503223151711056411">ลูกศรซ้าย</translation>
 <translation id="4507392511610824664">เพิ่มความสว่าง</translation>
@@ -508,6 +523,7 @@
 <translation id="4832079907277790330">เลือกโฟลเดอร์ในแอป Files...</translation>
 <translation id="4835901797422965222">ไม่มีเครือข่ายที่ใช้งานอยู่</translation>
 <translation id="4839698083503556542">สร้างภาพยนตร์ของคุณเอง</translation>
+<translation id="48409034532829769">ผู้ดูแลระบบของคุณตั้งค่าให้ "<ph name="APP_NAME" />" เริ่มทำงานโดยอัตโนมัติ คุณจึงปิดแอปนี้ไม่ได้</translation>
 <translation id="484462545196658690">อัตโนมัติ</translation>
 <translation id="4847902821209177679">เลือก <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> อยู่ กด Enter เพื่อเลือกอัลบั้ม <ph name="TOPIC_SOURCE" /></translation>
 <translation id="484790837831576105">(Android) การแปลง DNS</translation>
@@ -534,6 +550,7 @@
 <translation id="4969079779290789265">แยก</translation>
 <translation id="4972592110715526173">เปลี่ยนโหมด</translation>
 <translation id="498186245079027698">ตรวจสอบเครื่องสแกนแล้วลองอีกครั้ง ตรวจดูว่ามีพื้นที่ว่างในเครื่องเพียงพอสำหรับบันทึกไฟล์ที่สแกน</translation>
+<translation id="4982627662315910959">แป้นพิมพ์ลัดไม่พร้อมใช้งาน กดแป้นพิมพ์ลัดใหม่โดยใช้ Shift และแป้นกดร่วมอีก 1 รายการ (Ctrl, Alt หรือ<ph name="META_KEY" />)</translation>
 <translation id="4985509611418653372">เรียกใช้</translation>
 <translation id="4987769320337599931">ไฟร์วอลล์</translation>
 <translation id="4988526792673242964">หน้า</translation>
@@ -550,6 +567,7 @@
 <translation id="5088172560898466307">ชื่อโฮสต์ของเซิร์ฟเวอร์</translation>
 <translation id="5089810972385038852">รัฐ</translation>
 <translation id="5090362543162270857">IPsec (IKEv2)</translation>
+<translation id="5108781503443873320">คล้ายกัน:</translation>
 <translation id="5137451382116112100">เต็ม</translation>
 <translation id="5142961317498132443">การตรวจสอบสิทธิ์</translation>
 <translation id="5145081769226915336">เปิดโหมดมืดโดยอัตโนมัติใช่ไหม</translation>
@@ -566,6 +584,7 @@
 <translation id="5227902338748591677">กำหนดเวลาธีมมืด</translation>
 <translation id="5229344016299762883">ออกจากหน้าจอแบบเต็ม</translation>
 <translation id="5234764350956374838">ปิด</translation>
+<translation id="5244638145904800454">{NUM_ROOL_APPS,plural,offset:1 =1{ผู้ดูแลระบบตั้งค่าให้ "<ph name="APP_NAME" />" เริ่มทำงานโดยอัตโนมัติทุกครั้งที่คุณเข้าสู่ระบบ}=2{ผู้ดูแลระบบตั้งค่าให้ "<ph name="APP_NAME" />" และแอปอื่นๆ อีก 1 แอปเริ่มทำงานโดยอัตโนมัติทุกครั้งที่คุณเข้าสู่ระบบ}other{ผู้ดูแลระบบตั้งค่าให้ "<ph name="APP_NAME" />" และแอปอื่นๆ อีก # แอปเริ่มทำงานโดยอัตโนมัติทุกครั้งที่คุณเข้าสู่ระบบ}}</translation>
 <translation id="5252456968953390977">โรมมิ่ง</translation>
 <translation id="5257811368506016604">เปิดใช้โหมดสีสว่าง</translation>
 <translation id="5264277876637023664">ทดสอบ CPU</translation>
@@ -611,7 +630,6 @@
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">สแกนอีกครั้ง</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5584044598279886848">ปิดใช้หรือนํา APN นี้ออกไม่ได้ ตรวจสอบว่า APN ที่แนบมาและเปิดใช้อยู่ถูกปิดใช้หรือนำออกแล้ว</translation>
 <translation id="5600027863942488546">ทดสอบปุ่ม <ph name="KEY_NAME" /> อยู่</translation>
 <translation id="5620281292257375798">ภายในเท่านั้น</translation>
 <translation id="5649768706273821470">ฟัง</translation>
@@ -642,6 +660,7 @@
 <translation id="5843706793424741864">ฟาเรนไฮต์</translation>
 <translation id="584953448295717128">ระบบจะตรวจหา APN โดยอัตโนมัติ</translation>
 <translation id="5849570051105887917">รหัสผู้ให้บริการหน้าแรก</translation>
+<translation id="5856267793478861942"><ph name="ATTACH" /> (<ph name="IA" />)</translation>
 <translation id="5859603669299126575">อัลบั้มแกลเลอรีศิลปะ</translation>
 <translation id="5859969039821714932">แป้นพิมพ์ลัดไม่พร้อมใช้งาน กดแป้นพิมพ์ลัดใหม่โดยไม่ใช้ <ph name="KEY" /></translation>
 <translation id="5860033963881614850">ปิด</translation>
@@ -657,12 +676,12 @@
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{สแกนไฟล์และบันทึกไว้ใน <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> เรียบร้อยแล้ว}other{สแกนไฟล์และบันทึกไว้ใน <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> เรียบร้อยแล้ว}}</translation>
 <translation id="5931523347251946569">ไม่พบไฟล์</translation>
+<translation id="593880865674747800">สร้างเพิ่มเติมในสไตล์นี้</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="594552776027197022">สร้างคู่คีย์แบบสุ่ม</translation>
 <translation id="5946538341867151940">คุณยังไม่ได้เชื่อมต่อ หากผู้ให้บริการเครือข่ายมือถือของคุณแนะนำ APN ที่กําหนดเอง ให้ป้อนข้อมูล APN ดังกล่าวโดยเลือก "+ APN ใหม่"</translation>
 <translation id="5972388717451707488">อัปเดตเครื่องมือ</translation>
 <translation id="5984145644188835034">วอลเปเปอร์เริ่มต้น</translation>
-<translation id="6001235009374883388">APN เป็นแบบ Attach</translation>
 <translation id="6017514345406065928">สีเขียว</translation>
 <translation id="6019566113895157499">แป้นพิมพ์ลัด</translation>
 <translation id="6034694447310538551">เปิดใช้การรีเซ็ตทุกเดือนโดยอัตโนมัติ</translation>
@@ -680,6 +699,7 @@
 <translation id="6104112872696127344">ยกเลิกการสแกนแล้ว</translation>
 <translation id="6106186594183574873">ป้อนรหัสผ่านเดิมเพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6108689792487843350">เข้าถึงเกตเวย์ไม่ได้</translation>
+<translation id="6108952804512516814">สร้างด้วย AI</translation>
 <translation id="6112878310391905610">การตั้งค่านี้จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="6113701710518389813">ลูกศรขึ้น</translation>
 <translation id="6117895505466548728"><ph name="TITLE" /> และอีก <ph name="NUMBER" /> อัลบั้ม</translation>
@@ -693,6 +713,7 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">ความจุแบตเตอรี่จะลดลงเมื่อใช้ไปเรื่อยๆ</translation>
 <translation id="6191293864534840972">เนมเซิร์ฟเวอร์มีรูปแบบไม่ถูกต้อง</translation>
+<translation id="6196607555925437199">สร้างใหม่</translation>
 <translation id="6205145102504628069">การเคลื่อนตัวของเมฆ</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">ไม่มีเครื่องสแกนที่ใช้ได้</translation>
@@ -747,6 +768,7 @@
 <translation id="6526200165918397681">จับคู่วอลเปเปอร์ที่เข้ากัน</translation>
 <translation id="6527081081771465939">โปรโตคอลรักษาความปลอดภัย WiFi ที่ไม่รู้จัก</translation>
 <translation id="6535178685492749208">คุณออฟไลน์อยู่ ระบบจะส่งความคิดเห็นในภายหลัง</translation>
+<translation id="6557784757915238407">APN เป็นแบบ <ph name="ATTACH" /></translation>
 <translation id="65587193855025101">แผ่นกระจกสำหรับสแกน</translation>
 <translation id="6560196641871357166">ฉูดฉาด</translation>
 <translation id="6564646048574748301">ไม่สำเร็จ - เข้าถึงเครื่องพิมพ์ไม่ได้</translation>
@@ -806,6 +828,7 @@
 <translation id="7059230779847288458">กำลังชาร์จ อีก <ph name="TIME_VALUE" />จะเต็ม</translation>
 <translation id="7066538517128343186">คีย์ <ph name="KEY" /></translation>
 <translation id="7068619307603204412">เตรียมอุปกรณ์ให้พร้อม</translation>
+<translation id="7076851914315147928">เลือกวอลเปเปอร์</translation>
 <translation id="708426984172631313">หยุดแล้ว</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">ไม่สำเร็จ - การให้สิทธิ์ไม่สำเร็จ</translation>
@@ -829,12 +852,13 @@
 <translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="7180865173735832675">กำหนดค่า</translation>
 <translation id="7184043045742675738">คลิกแป้นใดก็ได้เพื่อปรับแต่งปุ่ม เปลี่ยนตำแหน่งแป้นด้วยเมาส์หรือแป้นลูกศร</translation>
+<translation id="7206979415662233817">ข้อกำหนดในการให้บริการ</translation>
 <translation id="7212547870105584639">จัดการการตั้งค่า APN ของเครือข่าย APN จะเริ่มการเชื่อมต่อระหว่างเครือข่ายมือถือกับอินเทอร์เน็ต <ph name="BEGIN_LINK_LEARN_MORE" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7212734716605298123">การอัปเดตเฟิร์มแวร์สำหรับอุปกรณ์ภายนอก</translation>
 <translation id="7216409898977639127">ผู้ให้บริการเครือข่ายมือถือ</translation>
 <translation id="725133483556299729">เลือกอีเมล</translation>
 <translation id="7271040990581020067">เครื่องสแกนกำลังทำงานอยู่ ลองอีกครั้งในภายหลัง</translation>
-<translation id="7273347807225967898">แป้นพิมพ์ลัดไม่พร้อมใช้งาน โปรดกดแป้นพิมพ์ลัดใหม่โดยใช้คีย์ตัวปรับแต่ง (Ctrl, Alt, Shift, ค้นหา หรือ Launcher)</translation>
+<translation id="7271932918253517778">แป้นพิมพ์ลัดที่ประกอบด้วยแป้นแถวบนสุดต้องมีแป้น<ph name="META_KEY" />รวมอยู่ด้วย</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">สัมผัสสายลมเย็น</translation>
 <translation id="7287310195820267359">คอลเล็กชันภาพวอลเปเปอร์</translation>
@@ -847,6 +871,10 @@
 <translation id="7311368985037279727">สีแป้นพิมพ์</translation>
 <translation id="7317831949569936035">การลงทะเบียนโรงเรียน</translation>
 <translation id="7319430975418800333">A3</translation>
+<translation id="7331297744262591636">คุณต้องมีอายุไม่ต่ำกว่า 18 ปีและยอมรับว่าการใช้วอลเปเปอร์ AI ของคุณอยู่ภายใต้<ph name="GOOGLE_TERMS_OF_SERVICE_LINK" />ข้อกำหนดในการให้บริการของ Google<ph name="END_LINK_GOOGLE_TERMS_OF_SERVICE" /> และ<ph name="BEGIN_LINK_GEN_AI_TERMS_OF_SERVICE" />ข้อกำหนดในการให้บริการเพิ่มเติมของ Generative AI<ph name="END_LINK_GEN_AI_TERMS_OF_SERVICE" />
+          <ph name="LINE_BREAK" />
+          <ph name="LINE_BREAK" />
+          คุณสามารถสร้างวอลเปเปอร์ด้วย AI สำหรับการใช้งานส่วนบุคคลและไม่ใช่เชิงพาณิชย์เท่านั้น เมื่อคุณรับความช่วยเหลือเกี่ยวกับวอลเปเปอร์ ระบบจะส่งข้อความไปยังเซิร์ฟเวอร์ AI ของ Google เพื่อสร้างคำแนะนำเกี่ยวกับวอลเปเปอร์ โดยอยู่ภายใต้<ph name="BEGIN_LINK_GOOGLE_PRIVACY_POLICY" />นโยบายความเป็นส่วนตัวของ Google<ph name="END_LINK_GOOGLE_PRIVACY_POLICY" /> <ph name="BEGIN_LINK_LEARN_MORE" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" /> <ph name="RESULT_TEXT" /> กดแป้นค้นหากับแป้นเว้นวรรคเพื่อดูผลการค้นหาใน Google Search</translation>
 <translation id="7343649194310845056">อุปกรณ์เครือข่าย</translation>
 <translation id="7353413232959255829">ผลการค้นหา <ph name="LIST_POSITION" /> จาก <ph name="LIST_SIZE" /> รายการ: <ph name="SEARCH_RESULT_TEXT" /> กด Enter เพื่อไปยังทางลัด</translation>
@@ -859,6 +887,7 @@
 <translation id="741244894080940828">การแปลง</translation>
 <translation id="7415801143053185905">เวลาในการตอบสนองของ HTTP สูงมาก</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
+<translation id="7438298994385592770">ปิดใช้หรือนํา APN นี้ออกไม่ได้ ตรวจสอบว่า APN แบบ <ph name="ATTACH" /> ที่เปิดใช้อยู่ถูกปิดใช้หรือนำออกแล้ว</translation>
 <translation id="7458970041932198923">โปรดเชื่อมต่อเครือข่ายและโหลดหน้าเว็บซ้ำเพื่อดูและตั้งค่ารูปโปรไฟล์</translation>
 <translation id="7469648432129124067">ตรวจพบพอร์ทัล</translation>
 <translation id="7481312909269577407">ส่งต่อ</translation>
@@ -869,7 +898,9 @@
 <translation id="7502658306369382406">ที่อยู่ IPv6</translation>
 <translation id="7513770521371759388">ด้านล่าง</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7525067979554623046">สร้าง</translation>
 <translation id="7528507600602050979">เนื้อหาช่วยเหลือไม่พร้อมใช้งาน</translation>
+<translation id="753556296624075801">ขับเคลื่อนโดย Google</translation>
 <translation id="7535791657097741517">เปิดธีมสว่าง</translation>
 <translation id="7550715992156305117">กิจวัตรในการวินิจฉัย</translation>
 <translation id="7551123448725492271">อุปกรณ์เป็นอุปกรณ์เสียง</translation>
@@ -908,9 +939,11 @@
 <translation id="7799817062559422778">โหมดสว่าง</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7805768142964895445">สถานะ</translation>
+<translation id="7819831665603418705">ใช้เทมเพลต</translation>
 <translation id="7819857487979277519">PSK (WPA หรือ RSN)</translation>
 <translation id="7841134249932030522">เปิดใช้โหมดมืด</translation>
 <translation id="7846634333498149051">แป้นพิมพ์</translation>
+<translation id="7850847810298646851">วอลเปเปอร์ที่ทำงานด้วยระบบ AI ของ Google</translation>
 <translation id="7856267634822906833">หน้าจอสัมผัสบลูทูธ</translation>
 <translation id="7869143217755017858">ปิดใช้โหมดมืด</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -928,6 +961,7 @@
 <translation id="7971535376154084247">การควบคุมทั่วไป</translation>
 <translation id="7977800524392185497">ไปที่การตั้งค่าเพื่อเข้าร่วมเครือข่าย <ph name="NETWORK_NAME" /></translation>
 <translation id="7978412674231730200">กุญแจส่วนตัว</translation>
+<translation id="7983597390787556680">{NUM_ROOL_APPS,plural, =1{"<ph name="APP_NAME_1" />" เริ่มทำงานโดยอัตโนมัติแล้ว}other{แอป # แอปเริ่มทำงานโดยอัตโนมัติแล้ว}}</translation>
 <translation id="7994702968232966508">วิธีการ EAP</translation>
 <translation id="8004582292198964060">เบราว์เซอร์</translation>
 <translation id="8017679124341497925">แก้ไขทางลัดแล้ว</translation>
@@ -944,7 +978,6 @@
 <translation id="808894953321890993">เปลี่ยนรหัสผ่าน</translation>
 <translation id="8094062939584182041">อนุญาตให้ Google ส่งอีเมลถึงคุณเกี่ยวกับปัญหานี้</translation>
 <translation id="8104083085214006426">คุณกำลังใช้เครือข่ายแบบเปิดที่ไม่ปลอดภัย</translation>
-<translation id="8111706652656628199">แป้นพิมพ์ลัดไม่พร้อมใช้งาน กดแป้นพิมพ์ลัดใหม่โดยใช้ Shift และคีย์ตัวปรับแต่งอีก 1 รายการ (Ctrl, Alt, ค้นหา หรือ launcher)</translation>
 <translation id="811820734797650957">(Android) ปิงเกตเวย์ได้</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />°C</translation>
 <translation id="8132480444149501833">ขอตัวนับการรับส่งข้อมูล</translation>
@@ -953,13 +986,13 @@
 <translation id="8151185429379586178">เครื่องมือสำหรับนักพัฒนาซอฟต์แวร์</translation>
 <translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" /></translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183974620058026102">แนบ</translation>
 <translation id="8206859287963243715">โทรศัพท์มือถือ</translation>
 <translation id="8208861521865154048">สิทธิประโยชน์</translation>
 <translation id="8226628635270268143">เลือกรูปภาพและอัลบั้มที่ชื่นชอบ</translation>
 <translation id="8227119283605456246">แนบไฟล์</translation>
 <translation id="8230672074305416752">ใช้คำสั่ง ping กับเกตเวย์เครือข่ายเริ่มต้นไม่สำเร็จ</translation>
 <translation id="8246209727385807362">ผู้ให้บริการที่ไม่รู้จัก</translation>
+<translation id="8261506727792406068">ลบ</translation>
 <translation id="8262870577632766028">1 ชั่วโมง</translation>
 <translation id="827422111966801947">สีคราม</translation>
 <translation id="8286154143153872371">โปรดเชื่อมต่อเครือข่ายและโหลดหน้าซ้ำเพื่อดูวอลเปเปอร์</translation>
@@ -970,6 +1003,7 @@
 <translation id="8318753676953949627">ไม่มีภาพ</translation>
 <translation id="8329018942023753850">แอปเครื่องคิดเลข</translation>
 <translation id="8336739000755212683">เปลี่ยนรูปภาพของบัญชีอุปกรณ์</translation>
+<translation id="8339024191194156249">ดูข้อมูลเพิ่มเติมเกี่ยวกับการเปิดใช้งานอัตโนมัติ</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> หรือ <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">งานพิมพ์</translation>
 <translation id="8349826889576450703">Launcher</translation>
@@ -1091,7 +1125,7 @@
 <translation id="9111102763498581341">ปลดล็อก</translation>
 <translation id="9122602430962285795">ไปที่การตั้งค่าเพื่อเชื่อมต่ออีกครั้ง</translation>
 <translation id="9126720536733509015">บันทึกหลายหน้าเป็น PDF ไฟล์เดียว</translation>
-<translation id="9133772297793293778">กดคีย์ตัวปรับแต่ง 1-4 รายการและคีย์อื่นๆ อีก 1 รายการบนแป้นพิมพ์ หากต้องการออกจากโหมแก้ไข ให้กด alt + esc</translation>
+<translation id="9133772297793293778">กดแป้นกดร่วม 1-4 รายการและคีย์อื่นๆ อีก 1 รายการบนแป้นพิมพ์ หากต้องการออกจากโหมดแก้ไข ให้กด alt + esc</translation>
 <translation id="9137526406337347448">Google Services</translation>
 <translation id="9138630967333032450">Shift ซ้าย</translation>
 <translation id="9149391708638971077">ทดสอบหน่วยความจำ</translation>

@@ -5,6 +5,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
@@ -31,11 +32,14 @@ class CodeCacheTestLoaderFactory : public ResourceFetcher::LoaderFactory {
   ~CodeCacheTestLoaderFactory() override = default;
 
   std::unique_ptr<URLLoader> CreateURLLoader(
-      const ResourceRequest& request,
+      const network::ResourceRequest& request,
       const ResourceLoaderOptions& options,
       scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
-      BackForwardCacheLoaderHelper* back_forward_cache_loader_helper) override {
+      BackForwardCacheLoaderHelper* back_forward_cache_loader_helper,
+      const absl::optional<base::UnguessableToken>&
+          service_worker_race_network_request_token,
+      bool is_from_origin_dirty_style_sheet) override {
     return std::make_unique<NoopURLLoader>(std::move(freezable_task_runner));
   }
   CodeCacheHost* GetCodeCacheHost() override { return nullptr; }
@@ -58,7 +62,7 @@ class ResourceLoaderCodeCacheTest : public testing::Test {
         /*back_forward_cache_loader_helper=*/nullptr));
   }
 
-  void CommonSetup(const char* url_string = nullptr) {
+  void CommonSetup(v8::Isolate* isolate, const char* url_string = nullptr) {
 #if DCHECK_IS_ON()
     WTF::SetIsBeforeThreadCreatedForTest();  // Required for next operation:
 #endif
@@ -81,7 +85,7 @@ class ResourceLoaderCodeCacheTest : public testing::Test {
     constexpr v8_compile_hints::V8CrowdsourcedCompileHintsConsumer*
         kNoCompileHintsConsumer = nullptr;
     resource_ = ScriptResource::Fetch(
-        params, fetcher, nullptr, ScriptResource::kNoStreaming,
+        params, fetcher, nullptr, isolate, ScriptResource::kNoStreaming,
         kNoCompileHintsProducer, kNoCompileHintsConsumer);
     loader_ = resource_->Loader();
 
@@ -144,7 +148,8 @@ class ResourceLoaderCodeCacheTest : public testing::Test {
 };
 
 TEST_F(ResourceLoaderCodeCacheTest, WebUICodeCacheEmptyCachedMetadataInfo) {
-  CommonSetup();
+  V8TestingScope scope;
+  CommonSetup(scope.GetIsolate());
 
   loader_->DidReceiveResponse(WrappedResourceResponse(response_),
                               /*body=*/mojo::ScopedDataPipeConsumerHandle(),
@@ -155,7 +160,9 @@ TEST_F(ResourceLoaderCodeCacheTest, WebUICodeCacheEmptyCachedMetadataInfo) {
 }
 
 TEST_F(ResourceLoaderCodeCacheTest, WebUICodeCacheFullResponse) {
-  CommonSetup();
+  V8TestingScope scope;
+  CommonSetup(scope.GetIsolate());
+
   std::vector<uint8_t> cache_data{2, 3, 4, 5, 6};
   loader_->DidReceiveResponse(
       WrappedResourceResponse(response_),
@@ -168,7 +175,8 @@ TEST_F(ResourceLoaderCodeCacheTest, WebUICodeCacheFullResponse) {
 }
 
 TEST_F(ResourceLoaderCodeCacheTest, CodeCacheFullHttpsScheme) {
-  CommonSetup("https://www.example.com/");
+  V8TestingScope scope;
+  CommonSetup(scope.GetIsolate(), "https://www.example.com/");
 
   std::vector<uint8_t> cache_data{2, 3, 4, 5, 6};
   loader_->DidReceiveResponse(
@@ -182,7 +190,8 @@ TEST_F(ResourceLoaderCodeCacheTest, CodeCacheFullHttpsScheme) {
 }
 
 TEST_F(ResourceLoaderCodeCacheTest, CodeCacheFullHttpsSchemeWithResponseFlag) {
-  CommonSetup("https://www.example.com/");
+  V8TestingScope scope;
+  CommonSetup(scope.GetIsolate(), "https://www.example.com/");
 
   std::vector<uint8_t> cache_data{2, 3, 4, 5, 6};
 
@@ -201,7 +210,8 @@ TEST_F(ResourceLoaderCodeCacheTest, CodeCacheFullHttpsSchemeWithResponseFlag) {
 }
 
 TEST_F(ResourceLoaderCodeCacheTest, WebUICodeCacheInvalidOuterType) {
-  CommonSetup();
+  V8TestingScope scope;
+  CommonSetup(scope.GetIsolate());
 
   std::vector<uint8_t> cache_data{2, 3, 4, 5, 6};
   loader_->DidReceiveResponse(
@@ -214,7 +224,8 @@ TEST_F(ResourceLoaderCodeCacheTest, WebUICodeCacheInvalidOuterType) {
 }
 
 TEST_F(ResourceLoaderCodeCacheTest, WebUICodeCacheHashCheckSuccess) {
-  CommonSetup();
+  V8TestingScope scope;
+  CommonSetup(scope.GetIsolate());
 
   std::vector<uint8_t> cache_data{2, 3, 4, 5, 6};
   String source_text("alert('hello world');");
@@ -245,7 +256,8 @@ TEST_F(ResourceLoaderCodeCacheTest, WebUICodeCacheHashCheckSuccess) {
 }
 
 TEST_F(ResourceLoaderCodeCacheTest, WebUICodeCacheHashCheckFailure) {
-  CommonSetup();
+  V8TestingScope scope;
+  CommonSetup(scope.GetIsolate());
 
   std::vector<uint8_t> cache_data{2, 3, 4, 5, 6};
   String source_text("alert('hello world');");

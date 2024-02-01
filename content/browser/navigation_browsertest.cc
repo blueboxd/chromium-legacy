@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <variant>
 
 #include "base/command_line.h"
@@ -92,11 +93,11 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-shared.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -117,7 +118,8 @@ class InterceptAndCancelDidCommitProvisionalLoad
     }
   }
 
-  const std::vector<NavigationRequest*>& intercepted_navigations() const {
+  const std::vector<raw_ptr<NavigationRequest, VectorExperimental>>&
+  intercepted_navigations() const {
     return intercepted_navigations_;
   }
 
@@ -143,7 +145,8 @@ class InterceptAndCancelDidCommitProvisionalLoad
 
   // Note: Do not dereference the intercepted_navigations_, they are used as
   // indices in the RenderFrameHostImpl and not for themselves.
-  std::vector<NavigationRequest*> intercepted_navigations_;
+  std::vector<raw_ptr<NavigationRequest, VectorExperimental>>
+      intercepted_navigations_;
   std::vector<mojom::DidCommitProvisionalLoadParamsPtr> intercepted_messages_;
   std::unique_ptr<base::RunLoop> loop_;
 };
@@ -155,7 +158,7 @@ class RenderFrameHostImplForHistoryBackInterceptor
 
   void GoToEntryAtOffset(int32_t offset,
                          bool has_user_gesture,
-                         absl::optional<blink::scheduler::TaskAttributionId>
+                         std::optional<blink::scheduler::TaskAttributionId>
                              soft_navigation_heuristics_task_id) override {
     if (quit_handler_)
       std::move(quit_handler_).Run();
@@ -881,8 +884,7 @@ IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
   monitor.WaitForUrls();
 
-  absl::optional<network::ResourceRequest> request =
-      monitor.GetRequestInfo(url);
+  std::optional<network::ResourceRequest> request = monitor.GetRequestInfo(url);
   ASSERT_TRUE(request->trusted_params);
   EXPECT_TRUE(net::IsolationInfo::Create(
                   net::IsolationInfo::RequestType::kMainFrame, origin, origin,
@@ -899,8 +901,7 @@ IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
   EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url));
   monitor.WaitForUrls();
 
-  absl::optional<network::ResourceRequest> request =
-      monitor.GetRequestInfo(url);
+  std::optional<network::ResourceRequest> request = monitor.GetRequestInfo(url);
   ASSERT_TRUE(request->trusted_params);
   EXPECT_TRUE(net::IsolationInfo::Create(
                   net::IsolationInfo::RequestType::kMainFrame, origin, origin,
@@ -918,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
   monitor.WaitForUrls();
 
-  absl::optional<network::ResourceRequest> main_frame_request =
+  std::optional<network::ResourceRequest> main_frame_request =
       monitor.GetRequestInfo(url);
   ASSERT_TRUE(main_frame_request.has_value());
   ASSERT_TRUE(main_frame_request->trusted_params);
@@ -928,7 +929,7 @@ IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
                   .IsEqualForTesting(
                       main_frame_request->trusted_params->isolation_info));
 
-  absl::optional<network::ResourceRequest> iframe_request =
+  std::optional<network::ResourceRequest> iframe_request =
       monitor.GetRequestInfo(iframe_document);
   ASSERT_TRUE(iframe_request->trusted_params);
   EXPECT_TRUE(
@@ -948,8 +949,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserNavigationInitiator) {
   // Perform the actual navigation.
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  absl::optional<network::ResourceRequest> request =
-      monitor.GetRequestInfo(url);
+  std::optional<network::ResourceRequest> request = monitor.GetRequestInfo(url);
   ASSERT_TRUE(request.has_value());
   ASSERT_FALSE(request->request_initiator.has_value());
 }
@@ -970,8 +970,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, RendererNavigationInitiator) {
   // Perform the actual navigation.
   EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url));
 
-  absl::optional<network::ResourceRequest> request =
-      monitor.GetRequestInfo(url);
+  std::optional<network::ResourceRequest> request = monitor.GetRequestInfo(url);
   ASSERT_TRUE(request.has_value());
   EXPECT_EQ(starting_page_origin, request->request_initiator);
 }
@@ -1011,8 +1010,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SubFrameJsNavigationInitiator) {
   starting_page_origin = starting_page_origin.Create(starting_page);
 
   monitor.WaitForUrls();
-  absl::optional<network::ResourceRequest> request =
-      monitor.GetRequestInfo(url);
+  std::optional<network::ResourceRequest> request = monitor.GetRequestInfo(url);
   EXPECT_EQ(starting_page_origin, request->request_initiator);
 }
 
@@ -1053,8 +1051,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   url::Origin starting_page_origin;
   starting_page_origin = starting_page_origin.Create(starting_page);
 
-  absl::optional<network::ResourceRequest> request =
-      monitor.GetRequestInfo(url);
+  std::optional<network::ResourceRequest> request = monitor.GetRequestInfo(url);
   ASSERT_TRUE(request.has_value());
   EXPECT_EQ(starting_page_origin, request->request_initiator);
 }
@@ -1924,7 +1921,8 @@ class CorsContentBrowserClient : public ContentBrowserTestContentBrowserClient {
       BrowserContext* browser_context,
       const base::RepeatingCallback<WebContents*()>& wc_getter,
       NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id) override {
+      int frame_tree_node_id,
+      std::optional<int64_t> navigation_id) override {
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
     throttles.push_back(
         std::make_unique<CorsInjectingUrlLoader>(last_cors_header_value_));
@@ -2067,6 +2065,86 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BlockedSrcDocRendererInitiated) {
     EXPECT_FALSE(handle_observer.is_error());
     EXPECT_EQ(net::OK, handle_observer.net_error_code());
   }
+}
+
+// Ensure that about:srcdoc navigations get their origin and base URL from their
+// parent frame (since that's where the content comes from) and not from the
+// initiator of the navigation (like about:blank cases). See also the
+// NavigateGrandchildToAboutBlank test. See https://crbug.com/1515381.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, GrandchildToAboutSrcdoc_BaseUrl) {
+  GURL url_a = embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_one_frame.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  FrameTreeNode* subframe = main_frame()->child_at(0);
+
+  // Navigate the subframe to a cross-site URL with a srcdoc subframe.
+  GURL url_b = embedded_test_server()->GetURL(
+      "b.com", "/frame_tree/page_with_srcdoc_frame.html");
+  TestNavigationObserver observer(web_contents());
+  EXPECT_TRUE(ExecJs(subframe, JsReplace("location.href = $1", url_b)));
+  observer.Wait();
+  EXPECT_EQ(url_b, subframe->current_frame_host()->GetLastCommittedURL());
+  FrameTreeNode* grandchild = subframe->child_at(0);
+  EXPECT_EQ("hello",
+            EvalJs(grandchild, "document.body.innerHTML").ExtractString());
+
+  // From the main frame, navigate the grandchild frame to about:srcdoc.
+  TestNavigationObserver srcdoc_observer(web_contents());
+  // TODO(https://crbug.com/1169736): It shouldn't be possible to navigate to
+  // about:srcdoc by executing location.href = "about:srcdoc".
+  EXPECT_TRUE(
+      ExecJs(main_frame(), "frames[0][0].location.href = 'about:srcdoc';"));
+  srcdoc_observer.Wait();
+
+  // The content comes from the parent frame and not the initiator.
+  EXPECT_EQ("hello",
+            EvalJs(grandchild, "document.body.innerHTML").ExtractString());
+
+  // The origin and base URI should be inherited from the parent frame and not
+  // the initiator, unlike navigations to about:blank.
+  EXPECT_EQ(GURL(url::kAboutSrcdocURL),
+            grandchild->current_frame_host()->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(url_b),
+            grandchild->current_frame_host()->GetLastCommittedOrigin());
+  EXPECT_EQ(url_b, EvalJs(grandchild, "document.baseURI").ExtractString());
+}
+
+// Ensure that about:blank navigations get their origin and base URL from the
+// initiator of the navigation, and not from their parent frame (like
+// about:srcdoc cases). See also the NavigateGrandchildToAboutSrcdoc test.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, GrandchildToAboutBlank_BaseUrl) {
+  GURL url_a = embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_one_frame.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  FrameTreeNode* subframe = main_frame()->child_at(0);
+
+  // Navigate the subframe to a cross-site URL with a srcdoc subframe.
+  GURL url_b = embedded_test_server()->GetURL(
+      "b.com", "/frame_tree/page_with_srcdoc_frame.html");
+  TestNavigationObserver observer(web_contents());
+  EXPECT_TRUE(ExecJs(subframe, JsReplace("location.href = $1", url_b)));
+  observer.Wait();
+  EXPECT_EQ(url_b, subframe->current_frame_host()->GetLastCommittedURL());
+  FrameTreeNode* grandchild = subframe->child_at(0);
+  EXPECT_EQ("hello",
+            EvalJs(grandchild, "document.body.innerHTML").ExtractString());
+
+  // From the main frame, navigate the grandchild frame to about:blank.
+  TestNavigationObserver srcdoc_observer(web_contents());
+  EXPECT_TRUE(
+      ExecJs(main_frame(), "frames[0][0].location.href = 'about:blank';"));
+  srcdoc_observer.Wait();
+
+  // There is no content when navigating to about:blank.
+  EXPECT_EQ("", EvalJs(grandchild, "document.body.innerHTML").ExtractString());
+
+  // The origin and base URI should be inherited from the initiator of the
+  // navigation and not the parent frame, unlike navigations to about:srcdoc.
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            grandchild->current_frame_host()->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(url_a),
+            grandchild->current_frame_host()->GetLastCommittedOrigin());
+  EXPECT_EQ(url_a, EvalJs(grandchild, "document.baseURI").ExtractString());
 }
 
 // Test renderer initiated navigations to about:srcdoc are routed through the
@@ -3432,7 +3510,7 @@ class GetEffectiveUrlClient : public ContentBrowserTestContentBrowserClient {
   void set_disallowed_process(int id) { disallowed_process_id_ = id; }
 
  private:
-  absl::optional<GURL> effective_url_;
+  std::optional<GURL> effective_url_;
   int disallowed_process_id_ = 0;
 };
 
@@ -3693,7 +3771,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       web_contents(), base::BindLambdaForTesting([&](NavigationHandle* handle) {
         auto* request = NavigationRequest::From(handle);
 
-        const absl::optional<blink::LocalFrameToken>& frame_token =
+        const std::optional<blink::LocalFrameToken>& frame_token =
             request->GetInitiatorFrameToken();
         EXPECT_TRUE(frame_token.has_value());
         EXPECT_EQ(initiator_global_token.frame_token, frame_token.value());
@@ -3783,7 +3861,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, FormSubmissionThenDeleteFrame) {
         auto* request = NavigationRequest::From(handle);
         ASSERT_TRUE(request->IsPost());
 
-        const absl::optional<blink::LocalFrameToken>& frame_token =
+        const std::optional<blink::LocalFrameToken>& frame_token =
             request->GetInitiatorFrameToken();
         EXPECT_TRUE(frame_token.has_value());
         EXPECT_EQ(initiator_global_token.frame_token, frame_token.value());
@@ -3889,7 +3967,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
         auto* request = NavigationRequest::From(handle);
         ASSERT_TRUE(request->IsPost());
 
-        const absl::optional<blink::LocalFrameToken>& frame_token =
+        const std::optional<blink::LocalFrameToken>& frame_token =
             request->GetInitiatorFrameToken();
         EXPECT_TRUE(frame_token.has_value());
         EXPECT_EQ(initiator_global_token.frame_token, frame_token.value());
@@ -4175,8 +4253,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OriginToCommitBasic) {
   shell()->LoadURL(url);
   EXPECT_TRUE(manager.WaitForResponse());
   NavigationRequest* navigation = main_frame()->navigation_request();
-  absl::optional<url::Origin> origin_to_commit =
-      navigation->GetOriginToCommit();
+  std::optional<url::Origin> origin_to_commit = navigation->GetOriginToCommit();
   ASSERT_TRUE(origin_to_commit.has_value());
   ASSERT_TRUE(manager.WaitForNavigationFinished());
   url::Origin origin_committed = current_frame_host()->GetLastCommittedOrigin();
@@ -4193,8 +4270,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OriginToCommit204) {
   shell()->LoadURL(url);
   EXPECT_TRUE(manager.WaitForResponse());
   NavigationRequest* navigation = main_frame()->navigation_request();
-  absl::optional<url::Origin> origin_to_commit =
-      navigation->GetOriginToCommit();
+  std::optional<url::Origin> origin_to_commit = navigation->GetOriginToCommit();
   EXPECT_FALSE(origin_to_commit.has_value());
   ASSERT_TRUE(manager.WaitForNavigationFinished());
 }
@@ -5464,7 +5540,7 @@ namespace {
 
 struct Result {
   GURL url;
-  absl::optional<url::Origin> origin;
+  std::optional<url::Origin> origin;
   bool committed;
 };
 
@@ -5629,7 +5705,7 @@ IN_PROC_BROWSER_TEST_F(UndoCommitNavigationBrowserTest,
   // This test always uses UndoCommitNavigation, so navigation corresponding to
   // the paused commit should never commit.
   EXPECT_FALSE(results[0].committed);
-  EXPECT_EQ(absl::nullopt, results[0].origin);
+  EXPECT_EQ(std::nullopt, results[0].origin);
   EXPECT_EQ(infinitely_loading_url, results[0].url);
   EXPECT_TRUE(results[1].committed);
   EXPECT_EQ(embedded_test_server()->GetOrigin("c.com"), results[1].origin);
@@ -5784,7 +5860,7 @@ IN_PROC_BROWSER_TEST_F(NavigationQueueingBrowserTest, Regular) {
     const GURL next_url =
         embedded_test_server()->GetURL("c.com", "/title1.html");
 
-    absl::optional<ResumeCommitClosureSetWaiter>
+    std::optional<ResumeCommitClosureSetWaiter>
         resume_commit_closure_set_waiter;
     OnNextDidStartNavigation(web_contents, [&](NavigationHandle* handle) {
       resume_commit_closure_set_waiter.emplace(handle);
@@ -5798,7 +5874,7 @@ IN_PROC_BROWSER_TEST_F(NavigationQueueingBrowserTest, Regular) {
   // subsequent navigations to queue is correctly counted in the metrics.
   const GURL final_url =
       embedded_test_server()->GetURL("d.com", "/title1.html");
-  absl::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
+  std::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
   OnNextDidStartNavigation(web_contents, [&](NavigationHandle* handle) {
     resume_commit_closure_set_waiter.emplace(handle);
   });
@@ -5909,7 +5985,7 @@ IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
   CommitNavigationPauser commit_pauser(speculative_render_frame_host);
   commit_pauser.WaitForCommitAndPause();
 
-  absl::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
+  std::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // If navigation queueing is enabled, the test should verify that a resume
     // commit closure is actually set. Install a watcher now, before beginning
@@ -5946,7 +6022,7 @@ IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
     EXPECT_EQ(embedded_test_server()->GetOrigin("b.com"), results[0].origin);
   } else {
     EXPECT_FALSE(results[0].committed);
-    EXPECT_EQ(absl::nullopt, results[0].origin);
+    EXPECT_EQ(std::nullopt, results[0].origin);
   }
   EXPECT_TRUE(results[1].committed);
   EXPECT_EQ(embedded_test_server()->GetOrigin("c.com"), results[1].origin);
@@ -5991,7 +6067,7 @@ IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
   CommitNavigationPauser commit_pauser(speculative_render_frame_host);
   commit_pauser.WaitForCommitAndPause();
 
-  absl::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
+  std::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // If navigation queueing is enabled, the test should verify that a resume
     // commit closure is actually set. Install a watcher now, before beginning
@@ -6029,7 +6105,7 @@ IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
     EXPECT_EQ(embedded_test_server()->GetOrigin("b.com"), results[0].origin);
   } else {
     EXPECT_FALSE(results[0].committed);
-    EXPECT_EQ(absl::nullopt, results[0].origin);
+    EXPECT_EQ(std::nullopt, results[0].origin);
   }
   EXPECT_EQ(infinitely_loading_url, results[0].url);
   EXPECT_TRUE(results[1].committed);
@@ -6089,7 +6165,7 @@ IN_PROC_BROWSER_TEST_P(
   CommitNavigationPauser commit_pauser(speculative_render_frame_host);
   commit_pauser.WaitForCommitAndPause();
 
-  absl::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
+  std::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // If navigation queueing is enabled, the test should verify that a resume
     // commit closure is actually set. Install a watcher now, before beginning
@@ -6134,7 +6210,7 @@ IN_PROC_BROWSER_TEST_P(
     EXPECT_EQ(embedded_test_server()->GetOrigin("b.com"), results[0].origin);
   } else {
     EXPECT_FALSE(results[0].committed);
-    EXPECT_EQ(absl::nullopt, results[0].origin);
+    EXPECT_EQ(std::nullopt, results[0].origin);
   }
   EXPECT_TRUE(results[1].committed);
   EXPECT_TRUE(results[1].origin->opaque());
@@ -6184,7 +6260,7 @@ IN_PROC_BROWSER_TEST_P(
   CommitNavigationPauser commit_pauser(speculative_render_frame_host);
   commit_pauser.WaitForCommitAndPause();
 
-  absl::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
+  std::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // If navigation queueing is enabled, the test should verify that a resume
     // commit closure is actually set. Install a watcher now, before beginning
@@ -6232,7 +6308,7 @@ IN_PROC_BROWSER_TEST_P(
     EXPECT_EQ(embedded_test_server()->GetOrigin("b.com"), results[0].origin);
   } else {
     EXPECT_FALSE(results[0].committed);
-    EXPECT_EQ(absl::nullopt, results[0].origin);
+    EXPECT_EQ(std::nullopt, results[0].origin);
   }
   EXPECT_EQ(infinitely_loading_url, results[0].url);
   EXPECT_TRUE(results[1].committed);
@@ -6293,7 +6369,7 @@ IN_PROC_BROWSER_TEST_P(
   CommitNavigationPauser commit_pauser(speculative_render_frame_host);
   commit_pauser.WaitForCommitAndPause();
 
-  absl::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
+  std::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // If navigation queueing is enabled, the test should verify that a resume
     // commit closure is actually set. Install a watcher now, before beginning
@@ -6329,7 +6405,7 @@ IN_PROC_BROWSER_TEST_P(
     EXPECT_EQ(embedded_test_server()->GetOrigin("b.com"), results[0].origin);
   } else {
     EXPECT_FALSE(results[0].committed);
-    EXPECT_EQ(absl::nullopt, results[0].origin);
+    EXPECT_EQ(std::nullopt, results[0].origin);
   }
   EXPECT_TRUE(results[1].committed);
   EXPECT_EQ(embedded_test_server()->GetOrigin("a.com"), results[1].origin);
@@ -6373,7 +6449,7 @@ IN_PROC_BROWSER_TEST_P(
   CommitNavigationPauser commit_pauser(speculative_render_frame_host);
   commit_pauser.WaitForCommitAndPause();
 
-  absl::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
+  std::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // If navigation queueing is enabled, the test should verify that a resume
     // commit closure is actually set. Install a watcher now, before beginning
@@ -6410,7 +6486,7 @@ IN_PROC_BROWSER_TEST_P(
     EXPECT_EQ(embedded_test_server()->GetOrigin("b.com"), results[0].origin);
   } else {
     EXPECT_FALSE(results[0].committed);
-    EXPECT_EQ(absl::nullopt, results[0].origin);
+    EXPECT_EQ(std::nullopt, results[0].origin);
   }
   EXPECT_EQ(infinitely_loading_url, results[0].url);
   EXPECT_TRUE(results[1].committed);
@@ -6466,7 +6542,7 @@ IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
 
   // Now begin a new navigation to c.com while the previous b.com navigation
   // above is paused in the pending commit state.
-  absl::optional<ResumeCommitClosureSetWaiter>
+  std::optional<ResumeCommitClosureSetWaiter>
       url_c_resume_commit_closure_set_waiter;
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // If navigation queueing is enabled, the test should verify that a resume
@@ -6493,7 +6569,7 @@ IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
 
   // Now begin another navigation to d.com, which will cancel the navigation to
   // c.com.
-  absl::optional<ResumeCommitClosureSetWaiter>
+  std::optional<ResumeCommitClosureSetWaiter>
       url_d_resume_commit_closure_set_waiter;
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // Install a commit closure watched for the `url_d` navigation too.
@@ -6530,7 +6606,7 @@ IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
   ASSERT_EQ(3u, results.size());
 
   EXPECT_FALSE(results[0].committed);
-  EXPECT_EQ(absl::nullopt, results[0].origin);
+  EXPECT_EQ(std::nullopt, results[0].origin);
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // When navigation queueing is enabled, the pending commit navigation to
     // b.com won't get canceled when the c.com navigation starts. Then when the
@@ -6549,7 +6625,7 @@ IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
     EXPECT_EQ(url_b, results[0].url);
     EXPECT_FALSE(results[1].committed);
     EXPECT_EQ(url_c, results[1].url);
-    EXPECT_EQ(absl::nullopt, results[1].origin);
+    EXPECT_EQ(std::nullopt, results[1].origin);
   }
   // Finally, the d.com navigation finishes and commits last.
   EXPECT_TRUE(results[2].committed);
@@ -6664,7 +6740,7 @@ IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
 
   // Now begin a new back navigation while the previous back navigation above is
   // paused in the pending commit state.
-  absl::optional<ResumeCommitClosureSetWaiter>
+  std::optional<ResumeCommitClosureSetWaiter>
       second_back_nav_resume_commit_closure_set_waiter;
   if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
     // If navigation queueing is enabled, the test should verify that a resume
@@ -6863,7 +6939,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   // A credentialless document has a storage key with a nonce.
   EXPECT_TRUE(child->current_frame_host()->GetStorageKey().nonce().has_value());
   base::UnguessableToken credentialless_nonce =
-      current_frame_host()->credentialless_iframes_nonce();
+      current_frame_host()->GetPage().credentialless_iframes_nonce();
   EXPECT_EQ(credentialless_nonce,
             child->current_frame_host()->GetStorageKey().nonce().value());
 
@@ -6968,7 +7044,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_TRUE(
       child_b->current_frame_host()->GetStorageKey().nonce().has_value());
   base::UnguessableToken credentialless_nonce_b =
-      current_frame_host()->credentialless_iframes_nonce();
+      current_frame_host()->GetPage().credentialless_iframes_nonce();
   EXPECT_NE(credentialless_nonce, credentialless_nonce_b);
   EXPECT_EQ(credentialless_nonce_b,
             child_b->current_frame_host()->GetStorageKey().nonce().value());
@@ -7089,12 +7165,6 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 class NavigationBrowserTestWarnSandboxIneffective
     : public NavigationBrowserTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    NavigationBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "WarnSandboxIneffective");
-  }
-
   static constexpr char kSandboxEscapeWarningMessage[] =
       "An iframe which has both allow-scripts and allow-same-origin for its "
       "sandbox attribute can escape its sandboxing.";
@@ -7299,6 +7369,7 @@ IN_PROC_BROWSER_TEST_P(
       shell(), embedded_test_server()->GetURL(
                    "a.com", "/cross_site_iframe_factory.html?a(a,a)")));
 
+  current_frame_host()->DisableUnloadTimerForTesting();
   // Set up the unload handler if needed.
   MaybeAddUnloadHandler();
 
@@ -7804,6 +7875,61 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, FixedStoragePartition) {
   EXPECT_EQ(GetSiteInstance(shell)->GetStoragePartitionConfig(),
             storage_partition_config);
   EXPECT_TRUE(GetSiteInstance(shell)->IsFixedStoragePartition());
+}
+
+class NavigationBrowserTestDeprecateUnloadOptOut
+    : public NavigationBrowserTest,
+      public ::testing::WithParamInterface<bool> {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    NavigationBrowserTest::SetUpCommandLine(command_line);
+    if (IsOptOutEnabled()) {
+      scoped_feature_list_.InitWithFeatures(
+          {blink::features::kDeprecateUnload,
+           blink::features::kDeprecateUnloadOptOut},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {blink::features::kDeprecateUnload},
+          {blink::features::kDeprecateUnloadOptOut});
+    }
+  }
+
+ protected:
+  bool IsOptOutEnabled() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         NavigationBrowserTestDeprecateUnloadOptOut,
+                         ::testing::Bool());
+
+// Test that enabled/disabled kDeprecateUnloadOptOut has the desired effect.
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTestDeprecateUnloadOptOut,
+                       DeprecateUnloadOptOutFlagRespected) {
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+
+  // Unload will not run on Android if the page is cacheable.
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      BackForwardCacheImpl::TEST_USES_UNLOAD_EVENT);
+  // Navigate to a page and install an unload handler with a side-effect.
+  ASSERT_TRUE(NavigateToURL(web_contents(), url_1));
+  ASSERT_TRUE(ExecJs(web_contents(), R"(
+    localStorage.setItem("unload", "not_dispatched");
+    addEventListener("unload", () => {
+      localStorage.setItem("unload", "dispatched");
+    })
+  )"));
+
+  // Navigate to a same-site page (to ensure that the unload handler's
+  // side-effect is reliably visible).
+  ASSERT_TRUE(NavigateToURL(web_contents(), url_2));
+
+  // Check for the side-effect.
+  ASSERT_EQ(EvalJs(web_contents(), "localStorage.getItem('unload')"),
+            IsOptOutEnabled() ? "dispatched" : "not_dispatched");
 }
 
 }  // namespace content

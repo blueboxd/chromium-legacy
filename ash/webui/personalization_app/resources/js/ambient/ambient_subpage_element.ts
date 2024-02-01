@@ -7,11 +7,11 @@
  * the ambient mode settings.
  */
 
-import '../../css/common.css.js';
+import 'chrome://resources/ash/common/personalization/common.css.js';
 import './albums_subpage_element.js';
-import './ambient_weather_element.js';
 import './ambient_preview_small_element.js';
 import './ambient_theme_list_element.js';
+import './ambient_weather_element.js';
 import './toggle_row_element.js';
 import './topic_source_list_element.js';
 
@@ -22,7 +22,6 @@ import {AmbientModeAlbum, AmbientTheme, TemperatureUnit, TopicSource} from '../.
 import {isAmbientModeAllowed, isPersonalizationJellyEnabled, isScreenSaverDurationEnabled} from '../load_time_booleans.js';
 import {Paths, ScrollableTarget} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
-import {getZerosArray} from '../utils.js';
 
 import {dismissTimeOfDayBanner, setAmbientModeEnabled} from './ambient_controller.js';
 import {getAmbientProvider} from './ambient_interface_provider.js';
@@ -242,7 +241,7 @@ export class AmbientSubpageElement extends WithPersonalizationStore {
   }
 
   private getPlaceholders_(x: number): number[] {
-    return getZerosArray(x);
+    return new Array(x).fill(0);
   }
 }
 

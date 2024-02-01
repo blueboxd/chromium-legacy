@@ -54,11 +54,11 @@ api::tab_groups::TabGroup CreateTabGroupObject(
   return tab_group_object;
 }
 
-absl::optional<api::tab_groups::TabGroup> CreateTabGroupObject(
+std::optional<api::tab_groups::TabGroup> CreateTabGroupObject(
     const tab_groups::TabGroupId& id) {
   Browser* browser = chrome::FindBrowserWithGroup(id, nullptr);
   if (!browser)
-    return absl::nullopt;
+    return std::nullopt;
 
   CHECK(browser->tab_strip_model()->SupportsTabGroups());
   TabGroupModel* group_model = browser->tab_strip_model()->group_model();
@@ -85,7 +85,7 @@ bool GetGroupById(int group_id,
       include_incognito && profile->HasPrimaryOTRProfile()
           ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
           : nullptr;
-  for (auto* target_browser : *BrowserList::GetInstance()) {
+  for (Browser* target_browser : *BrowserList::GetInstance()) {
     if (target_browser->profile() == profile ||
         target_browser->profile() == incognito_profile) {
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();

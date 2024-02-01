@@ -32,6 +32,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/wm/wm_move_loop_handler.h"
 #include "ui/views/corewm/tooltip_controller.h"
@@ -130,7 +131,8 @@ ui::PlatformWindowShadowType GetPlatformWindowShadowType(
 
 ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
     const Widget::InitParams& params,
-    bool requires_accelerated_widget) {
+    bool requires_accelerated_widget,
+    float device_scale_factor) {
   ui::PlatformWindowInitProperties properties;
   properties.type =
       GetPlatformWindowType(params.type, requires_accelerated_widget);
@@ -169,6 +171,9 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
     }
   }
   properties.inhibit_keyboard_shortcuts = params.inhibit_keyboard_shortcuts;
+
+  properties.frame_insets_px =
+      gfx::ScaleToCeiledInsets(params.frame_insets, device_scale_factor);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -271,8 +276,8 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
   const bool requires_accelerated_widget = false;
 #endif
   ui::PlatformWindowInitProperties properties =
-      ConvertWidgetInitParamsToInitProperties(params,
-                                              requires_accelerated_widget);
+      ConvertWidgetInitParamsToInitProperties(
+          params, requires_accelerated_widget, device_scale_factor());
   AddAdditionalInitProperties(params, &properties);
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -425,6 +430,7 @@ aura::WindowTreeHost* DesktopWindowTreeHostPlatform::AsWindowTreeHost() {
 
 void DesktopWindowTreeHostPlatform::Show(ui::WindowShowState show_state,
                                          const gfx::Rect& restore_bounds) {
+  OnAcceleratedWidgetMadeVisible(true);
   if (compositor())
     SetVisible(true);
 
@@ -759,8 +765,8 @@ void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen,
 }
 
 bool DesktopWindowTreeHostPlatform::IsFullscreen() const {
-  return platform_window()->GetPlatformWindowState() ==
-         ui::PlatformWindowState::kFullScreen;
+  return ui::IsPlatformWindowStateFullscreen(
+      platform_window()->GetPlatformWindowState());
 }
 
 void DesktopWindowTreeHostPlatform::SetOpacity(float opacity) {
@@ -794,11 +800,6 @@ void DesktopWindowTreeHostPlatform::FlashFrame(bool flash_frame) {
 
 bool DesktopWindowTreeHostPlatform::IsAnimatingClosed() const {
   return platform_window()->IsAnimatingClosed();
-}
-
-bool DesktopWindowTreeHostPlatform::IsTranslucentWindowOpacitySupported()
-    const {
-  return platform_window()->IsTranslucentWindowOpacitySupported();
 }
 
 void DesktopWindowTreeHostPlatform::SizeConstraintsChanged() {
@@ -959,10 +960,6 @@ SkPath DesktopWindowTreeHostPlatform::GetWindowMaskForWindowShapeInPixels() {
         gfx::TransformToFlattenedSkMatrix(GetRootTransform()));
   }
   return window_mask;
-}
-
-absl::optional<ui::MenuType> DesktopWindowTreeHostPlatform::GetMenuType() {
-  return GetContentWindow()->GetProperty(aura::client::kMenuType);
 }
 
 absl::optional<ui::OwnedWindowAnchor>

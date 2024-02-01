@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_ASH_SHORTCUT_CUSTOMIZATION_SHORTCUT_CUSTOMIZATION_TEST_BASE_H_
 #define CHROME_BROWSER_UI_WEBUI_ASH_SHORTCUT_CUSTOMIZATION_SHORTCUT_CUSTOMIZATION_TEST_BASE_H_
 
+#include "ash/accelerators/accelerator_lookup.h"
+#include "ash/public/cpp/accelerator_actions.h"
+#include "ash/shell.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/system_web_apps/test_support/system_web_app_browsertest_base.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -107,6 +110,16 @@ class ShortcutCustomizationInteractiveUiTestBase
         ExecuteJsAt(webcontents_id_, kDoneButtonQuery, kClickFn));
   }
 
+ auto ClickAddShortcutButton() {
+    CHECK(webcontents_id_);
+    return Steps(ExecuteJsAt(webcontents_id_, kAddShortcutButtonQuery, kClickFn));
+  }
+
+ auto ClickDoneButton() {
+    CHECK(webcontents_id_);
+    return Steps(ExecuteJsAt(webcontents_id_, kDoneButtonQuery, kClickFn));
+  }
+
   ui::InteractionSequence::StepBuilder LaunchShortcutCustomizationApp();
 
   // Ensure focusing web contents doesn't accidentally block accelerator
@@ -116,6 +129,14 @@ class ShortcutCustomizationInteractiveUiTestBase
 
   ui::test::InteractiveTestApi::MultiStep SendShortcutAccelerator(
       ui::Accelerator accel);
+
+  ui::Accelerator GetDefaultAcceleratorForAction(AcceleratorAction action) {
+    return Shell::Get()
+        ->accelerator_lookup()
+        ->GetAcceleratorsForAction(action)
+        .front()
+        .accelerator;
+  }
 
   void SetUpOnMainThread() override;
 

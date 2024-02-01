@@ -84,6 +84,17 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Site settings exception list"/>
 </enum>
 
+<enum name="AndroidDefaultBrowserPromoOutcomeType">
+  <int value="0" label="No Default"/>
+  <int value="1" label="Other Default"/>
+  <int value="2" label="Chrome Default"/>
+</enum>
+
+<enum name="AndroidDefaultBrowserPromoType">
+  <int value="0" label="No Default"/>
+  <int value="1" label="Other Default"/>
+</enum>
+
 <enum name="AndroidDownloadFilterType">
   <int value="0" label="All"/>
   <int value="1" label="Page"/>
@@ -161,6 +172,7 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Failed: Chrome already run locally"/>
   <int value="3" label="Failed: Chrome startup failed"/>
   <int value="4" label="Failed: Cannot sign in as previous user"/>
+  <int value="5" label="Failed: Sign-in timed-out or interrupted"/>
 </enum>
 
 <enum name="AndroidSearchEngineChoiceEvents">
@@ -787,27 +799,27 @@ chromium-metrics-reviews@google.com.
   -->
 
   <int value="0" label="(00) TEXT_BUBBLE"/>
-  <int value="1" label="(01) VR_DELEGATE"/>
-  <int value="2" label="(02) AR_DELEGATE"/>
-  <int value="3" label="(03) SCENE_OVERLAY"/>
-  <int value="4" label="(06) START_SURFACE (with tab switcher if enabled)"/>
-  <int value="5" label="(10) SELECTION_POPUP"/>
-  <int value="6" label="(11) MANUAL_FILLING"/>
-  <int value="7" label="(09) FULLSCREEN"/>
-  <int value="8" label="(04) BOTTOM_SHEET"/>
-  <int value="9" label="(13) TAB_MODAL_HANDLER"/>
-  <int value="10" label="(08) TAB_SWITCHER (if Start surface is disabled)"/>
-  <int value="11" label="(14) CLOSE_WATCHER"/>
-  <int value="12" label="(17) TAB_HISTORY (and bottom controls)"/>
-  <int value="13" label="(18) TAB_RETURN_TO_CHROME_START_SURFACE"/>
-  <int value="14" label="(19) SHOW_READING_LIST"/>
-  <int value="15" label="(20) MINIMIZE_APP_AND_CLOSE_TAB"/>
-  <int value="16" label="(15) FIND_TOOLBAR"/>
-  <int value="17" label="(12) LOCATION_BAR"/>
-  <int value="18" label="(02) XR_DELEGATE"/>
-  <int value="19" label="(05) PAGE_INSIGHTS_BOTTOM_SHEET"/>
-  <int value="20" label="(16) BOTTOM_CONTROLS"/>
-  <int value="21" label="(07) HUB"/>
+  <int value="1" label="(XX) VR_DELEGATE (Deprecated)"/>
+  <int value="2" label="(XX) AR_DELEGATE (Deprecated)"/>
+  <int value="3" label="(02) SCENE_OVERLAY"/>
+  <int value="4" label="(05) START_SURFACE (with tab switcher if enabled)"/>
+  <int value="5" label="(09) SELECTION_POPUP"/>
+  <int value="6" label="(10) MANUAL_FILLING"/>
+  <int value="7" label="(08) FULLSCREEN"/>
+  <int value="8" label="(03) BOTTOM_SHEET"/>
+  <int value="9" label="(12) TAB_MODAL_HANDLER"/>
+  <int value="10" label="(07) TAB_SWITCHER (if Start surface is disabled)"/>
+  <int value="11" label="(13) CLOSE_WATCHER"/>
+  <int value="12" label="(16) TAB_HISTORY (and bottom controls)"/>
+  <int value="13" label="(17) TAB_RETURN_TO_CHROME_START_SURFACE"/>
+  <int value="14" label="(18) SHOW_READING_LIST"/>
+  <int value="15" label="(19) MINIMIZE_APP_AND_CLOSE_TAB"/>
+  <int value="16" label="(14) FIND_TOOLBAR"/>
+  <int value="17" label="(11) LOCATION_BAR"/>
+  <int value="18" label="(01) XR_DELEGATE"/>
+  <int value="19" label="(04) PAGE_INSIGHTS_BOTTOM_SHEET"/>
+  <int value="20" label="(15) BOTTOM_CONTROLS"/>
+  <int value="21" label="(06) HUB"/>
 </enum>
 
 <enum name="ChildAppInfoError">
@@ -916,6 +928,29 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="TASK_REMOVED"/>
   <int value="3" label="LOW_MEMORY"/>
   <int value="4" label="START_STICKY"/>
+</enum>
+
+<enum name="DragDropTabResult">
+  <summary>
+    SUCCESS is recorded during ACTION_DRAG_ENDED. The rest enums are all for
+    failed drops, which are recorded in ACTION_DROP. Also see
+    Android.DragDrop.Tab.FromStrip.Result
+  </summary>
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="IGNORED_TOOLBAR"/>
+  <int value="2" label="IGNORED_DIFF_MODEL_NOT_SUPPORTED"/>
+  <int value="3" label="IGNORED_TAB_SWITCHER"/>
+  <int value="4" label="IGNORED_SAME_INSTANCE"/>
+  <int value="5" label="ERROR_TAB_NOT_FOUND"/>
+</enum>
+
+<enum name="DragDropType">
+  <summary>See Android.DragDrop.Tab.Type</summary>
+  <int value="0" label="TAB_STRIP_TO_TAB_STRIP"/>
+  <int value="1" label="TAB_STRIP_TO_CONTENT"/>
+  <int value="2" label="TAB_STRIP_TO_NEW_INSTANCE"/>
+  <int value="3" label="LINK_TO_NEW_INSTANCE"/>
+  <int value="4" label="UNKNOWN_TO_NEW_INSTANCE"/>
 </enum>
 
 <enum name="ExifOrientation">
@@ -1066,16 +1101,6 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="Stylus"/>
 </enum>
 
-<enum name="IntentUriNavigationResult">
-  <int value="0" label="Intent with an unused fallback URL was launched"/>
-  <int value="1" label="Intent fallback URL was used"/>
-  <int value="2" label="Intent with an unused fallback URL was blocked"/>
-  <int value="3" label="Intent with a fallback URL prompted the user"/>
-  <int value="4" label="Intent without a fallback URL was launched"/>
-  <int value="5" label="Intent without a fallback URL was blocked"/>
-  <int value="6" label="Intent without a fallback URL prompted the user"/>
-</enum>
-
 <enum name="LightTheme">
   <int value="0" label="undefined"/>
   <int value="1" label="no"/>
@@ -1148,6 +1173,12 @@ chromium-metrics-reviews@google.com.
   <int value="39" label="CvcSave"/>
   <int value="40" label="TrackingProtectionNotice"/>
   <int value="41" label="DesktopSiteWindowSetting"/>
+  <int value="42" label="PromptHatsLocationCustomInvitation"/>
+  <int value="43" label="PromptHatsLocationGenericInvitation"/>
+  <int value="44" label="PromptHatsCameraCustomInvitation"/>
+  <int value="45" label="PromptHatsCameraGenericInvitation"/>
+  <int value="46" label="PromptHatsMicrophoneCustomInvitation"/>
+  <int value="47" label="PromptHatsMicrophoneGenericInvitation"/>
 </enum>
 
 <enum name="MinimizeAppAndCloseTabType">
@@ -1273,6 +1304,16 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Photo picked"/>
   <int value="2" label="New photo"/>
   <int value="3" label="Use Android picker"/>
+</enum>
+
+<enum name="PreAssignedActivityState">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Not in app task, is Finishing"/>
+  <int value="2" label="Not in app task, not Finishing"/>
+  <int value="3" label="In app task, same task, is Finishing"/>
+  <int value="4" label="In app task, same task, not Finishing"/>
+  <int value="5" label="In app task, different task, is Finishing"/>
+  <int value="6" label="In app task, different task, not Finishing"/>
 </enum>
 
 <enum name="PrimaryCpuAbiBitness">
@@ -1494,6 +1535,12 @@ chromium-metrics-reviews@google.com.
   <int value="13" label="Unknown reason for failure"/>
 </enum>
 
+<enum name="SwipeEdge">
+  <summary>The edge from which the gesture is swiped from.</summary>
+  <int value="0" label="LeftEdge"/>
+  <int value="1" label="RightEdge"/>
+</enum>
+
 <enum name="TabListEditorShareActionState">
   <int value="0" label="UNKNOWN_SHARE_STATE"/>
   <int value="1" label="SUCCESSFULLY_SHARED_TABS"/>
@@ -1558,6 +1605,7 @@ chromium-metrics-reviews@google.com.
   <int value="11" label="COMPOSITOR_IN_MOTION"/>
   <int value="12" label="NTP_Y_TRANSLATION"/>
   <int value="13" label="FULLSCREEN"/>
+  <int value="14" label="TABLET_BUTTON_ANIMATION_IN_PROGRESS"/>
 </enum>
 
 <enum name="UserAgentMetadataAvailableType">

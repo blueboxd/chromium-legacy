@@ -51,7 +51,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Android.ProcessedRealMinidumps"
-    enum="AndroidProcessedMinidumps" expires_after="2024-04-28">
+    enum="AndroidProcessedMinidumps" expires_after="2024-06-30">
   <owner>wnwen@chromium.org</owner>
   <owner>src/components/minidump_uploader/OWNERS</owner>
   <summary>
@@ -63,7 +63,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Android.RendererCrash" enum="Boolean"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>wnwen@chromium.org</owner>
   <summary>
     Counts renderer crashes including OOMs. Android only. Mirrors old stability
@@ -72,7 +72,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Stability.Android.SystemExitReason"
-    enum="AndroidProcessExitReason" expires_after="2024-04-28">
+    enum="AndroidProcessExitReason" expires_after="2024-06-30">
   <owner>boliu@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <owner>wnwen@chromium.org</owner>
@@ -280,7 +280,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Experimental.PageLoads" enum="StabilityPageLoadType"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -356,7 +356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.IOS.PostCrashAction" enum="IOSPostCrashAction"
-    expires_after="2024-02-04">
+    expires_after="2025-02-04">
   <owner>justincohen@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -366,7 +366,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.TabCountBefore{Event}" units="tabs"
-    expires_after="2024-05-26">
+    expires_after="2024-07-28">
   <owner>ajuma@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -398,21 +398,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Stability.iOS.UTE.AvailableStorage" units="KB"
-    expires_after="2021-10-10">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>olivierrobin@chromium.org</owner>
-  <summary>
-    Number of kilobytes available for &quot;important&quot; data. When an iOS
-    device is critically low on space, actions generally assumed to succeed can
-    fail. In extreme cases, this could potentially include writing the
-    &quot;unclean shutdown&quot; bit to signal a clean shutdown. Logged on
-    application launch if the last session terminated in an unclean state.
-  </summary>
-</histogram>
-
 <histogram name="Stability.iOS.UTE.BatteryCharge" units="%"
-    expires_after="2024-05-01">
+    expires_after="2024-06-30">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -425,7 +412,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.DeviceThermalState"
-    enum="IOSDeviceThermalState" expires_after="2024-05-01">
+    enum="IOSDeviceThermalState" expires_after="2024-06-30">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -435,7 +422,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.HasPossibleExplanation"
-    enum="BooleanHasPossibleExplanation" expires_after="2024-05-01">
+    enum="BooleanHasPossibleExplanation" expires_after="2024-06-30">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -446,7 +433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.MobileSessionAppState" enum="IOSAppState"
-    expires_after="2024-05-01">
+    expires_after="2024-06-30">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -457,7 +444,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.MobileSessionAppWillTerminateWasReceived"
-    enum="AppWillTerminateReceived" expires_after="2024-05-01">
+    enum="AppWillTerminateReceived" expires_after="2024-06-30">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -482,7 +469,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.OSRestartedAfterPreviousSession"
-    enum="BooleanRebooted" expires_after="2024-05-01">
+    enum="BooleanRebooted" expires_after="2024-06-30">
   <owner>olivierrobin@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <summary>
@@ -505,7 +492,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.TimeBetweenUTEAndNextLaunch" units="ms"
-    expires_after="2024-05-01">
+    expires_after="2024-06-30">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -516,7 +503,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.MobileSessionShutdownType"
-    enum="MobileSessionShutdownType" expires_after="2024-05-01">
+    enum="MobileSessionShutdownType" expires_after="2024-06-30">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -549,7 +536,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Stability.RendererAbnormalTermination.ByHostedContentType"
+<histogram name="Stability.RendererAbnormalTermination2.HostedContentType"
     enum="RendererHostedContentType" expires_after="2024-06-30">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
@@ -559,7 +546,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Stability.RendererAbnormalTermination.{HostedContentType}"
+<histogram name="Stability.RendererAbnormalTermination2.{HostedContentType}"
     enum="TerminationStatus" expires_after="2024-06-30">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>

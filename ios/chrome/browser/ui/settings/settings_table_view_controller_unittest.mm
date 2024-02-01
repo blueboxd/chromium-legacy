@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 
 #import "base/apple/foundation_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
@@ -18,7 +19,7 @@
 #import "components/sync/base/features.h"
 #import "components/sync/test/mock_sync_service.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
@@ -199,11 +200,11 @@ class SettingsTableViewControllerTest
   // Needed for test browser state created by TestChromeBrowserState().
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState scoped_testing_local_state_;
-  PrefService* test_manager_pref_service_;
+  raw_ptr<PrefService> test_manager_pref_service_;
 
   FakeSystemIdentity* fake_identity_ = nullptr;
-  AuthenticationService* auth_service_ = nullptr;
-  syncer::MockSyncService* sync_service_mock_ = nullptr;
+  raw_ptr<AuthenticationService> auth_service_ = nullptr;
+  raw_ptr<syncer::MockSyncService> sync_service_mock_ = nullptr;
   scoped_refptr<password_manager::TestPasswordStore> password_store_mock_;
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;

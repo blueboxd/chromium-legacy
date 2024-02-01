@@ -183,6 +183,7 @@ const gpu::MailboxHolder& GetVideoFrameMailboxHolder(VideoFrame* video_frame) {
          PIXEL_FORMAT_XBGR == video_frame->format() ||
          PIXEL_FORMAT_XB30 == video_frame->format() ||
          PIXEL_FORMAT_XR30 == video_frame->format() ||
+         PIXEL_FORMAT_YV12 == video_frame->format() ||
          PIXEL_FORMAT_NV12 == video_frame->format() ||
          PIXEL_FORMAT_NV12A == video_frame->format() ||
          PIXEL_FORMAT_P016LE == video_frame->format() ||
@@ -680,6 +681,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
   done->Run();
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 // Valid gl texture internal format that can try to use direct uploading path.
 bool ValidFormatForDirectUploading(
     viz::RasterContextProvider* raster_context_provider,
@@ -704,6 +706,7 @@ bool ValidFormatForDirectUploading(
       return false;
   }
 }
+#endif
 
 std::tuple<SkYUVAInfo::PlaneConfig, SkYUVAInfo::Subsampling>
 VideoPixelFormatAsSkYUVAInfoValues(VideoPixelFormat format) {
@@ -726,26 +729,14 @@ VideoPixelFormatAsSkYUVAInfoValues(VideoPixelFormat format) {
   }
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 // Controls whether the one-copy path when copying a VideoFrame to a GL texture
-// is enabled or disabled. This codepath is disabled on Android by default
-// pending the full transition of the codebase to the passthrough decoder and
-// the transition of this function away from using legacy mailboxes to do 1-copy
-// upload (see crbug.com/1494365 for details). On Android, this Feature serves
-// as a reverse-killswitch while we roll out the complete disabling of this
-// codepath.
-// TODO(crbug.com/1494365): Remove the usage of this feature for Android once
-// explicit disabling has safely rolled out and make
-// UploadOfVideoFrameToGLTexture() unconditionally disabled on Android.
-// On all other platforms, the one-copy path being enabled is the default
+// is enabled or disabled. The one-copy path being enabled is the default
 // production state, with this Feature being used to be able to disable this
 // path for performance testing.
 BASE_FEATURE(kOneCopyUploadOfVideoFrameToGLTexture,
              "OneCopyUploadOfVideoFrameToGLTexture",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#else
              base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
 
 // Controls whether the one-copy path when copying a pure software VideoFrame
 // (i.e., a VideoFrame with no textures) to a GL texture is enabled or disabled.
@@ -772,6 +763,7 @@ BASE_FEATURE(kOneCopyUploadOfPureSoftwareVideoFrameToGLTexture,
 BASE_FEATURE(kOneCopyLegacyMPVideoFrameUploadViaSI,
              "OneCopyLegacyMPVideoFrameUploadViaSI",
              base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // anonymous namespace
 
@@ -1197,16 +1189,10 @@ void PaintCanvasVideoRenderer::Paint(
   // Make sure to flush so we can remove the videoframe from the generator.
   canvas->flush();
 
-  if (video_frame->HasTextures()) {
-    // Synchronize |video_frame| with the read operations in UpdateLastImage(),
-    // which are triggered by canvas->flush().
-    SynchronizeVideoFrameRead(std::move(video_frame),
-                              raster_context_provider->RasterInterface(),
-                              raster_context_provider->ContextSupport());
-  }
   // Because we are not retaining a reference to the VideoFrame, it would be
   // invalid for the texture_backing to directly wrap its texture(s), as they
-  // will be recycled.
+  // will be recycled. For this reason, we also do not need to synchronize video
+  // frame read here since it's already taken care of in UpdateLastImage().
   DCHECK(!CacheBackingWrapsTexture());
 }
 
@@ -1520,6 +1506,10 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     // alpha been requested. And dst texture mipLevel must be 0.
     // TODO(crbug.com/1155003): Figure out whether premultiply options here are
     // accurate.
+    // NOTE: The direct upload path is not supported on Android (see comment on
+    // UploadVideoFrameToGLTexture()).
+    // TODO(crbug.com/1494365): Enable on Android.
+#if !BUILDFLAG(IS_ANDROID)
     if ((media::IsOpaque(video_frame->format()) || premultiply_alpha) &&
         level == 0 &&
         (video_frame->NumTextures() > 1 ||
@@ -1534,6 +1524,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         }
       }
     }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
     if (!UpdateLastImage(video_frame, raster_context_provider,
                          true /* allow_wrap_texture */)) {
@@ -1600,6 +1591,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
   return true;
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTexture(
     viz::RasterContextProvider* raster_context_provider,
     gpu::gles2::GLES2Interface* destination_gl,
@@ -1646,7 +1638,7 @@ bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTexture(
   // * The Video is not MultiplanarSI and the codepath to handle legacy
   //   multiplanar via ConvertYUVAMailboxesToTexture() is not enabled.
   bool yuv_rgb_conversion_not_supported =
-      !destination_gl_capabilities.supports_yuv_rgb_conversion;
+      !destination_gl_capabilities.supports_yuv_to_rgb_conversion;
   bool video_frame_is_legacy_mailbox =
       video_frame->HasTextures() &&
       !video_frame->mailbox_holder(0).mailbox.IsSharedImage();
@@ -1768,6 +1760,7 @@ bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTexture(
 
   return true;
 }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     viz::RasterContextProvider* raster_context_provider,
@@ -1810,6 +1803,10 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   // alpha been requested. And dst texture mipLevel must be 0.
   // TODO(crbug.com/1155003): Figure out whether premultiply options here are
   // accurate.
+  // NOTE: The direct upload path is not supported on Android (see comment on
+  // UploadVideoFrameToGLTexture()).
+  // TODO(crbug.com/1494365): Enable on Android.
+#if !BUILDFLAG(IS_ANDROID)
   if ((media::IsOpaque(video_frame->format()) || premultiply_alpha) &&
       level == 0) {
     if (base::FeatureList::IsEnabled(kOneCopyUploadOfVideoFrameToGLTexture)) {
@@ -1821,6 +1818,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
       }
     }
   }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   auto* sii = raster_context_provider->SharedImageInterface();
   gpu::raster::RasterInterface* source_ri =
@@ -1829,8 +1827,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   // We need a shared image to receive the intermediate RGB result. Try to reuse
   // one if compatible, otherwise create a new one.
   gpu::SyncToken token;
-  if (!yuv_cache_.mailbox.IsZero() &&
-      yuv_cache_.size == video_frame->coded_size() &&
+  if (yuv_cache_.shared_image && yuv_cache_.size == video_frame->coded_size() &&
       yuv_cache_.raster_context_provider == raster_context_provider) {
     token = yuv_cache_.sync_token;
   } else {
@@ -1838,25 +1835,32 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     yuv_cache_.raster_context_provider = raster_context_provider;
     yuv_cache_.size = video_frame->coded_size();
 
-    uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2;
+    // We read out the contents of the intermediate SI into the destination GL
+    // texture via the GLES2 interface.
+    uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2_READ;
+
+    // We copy the contents of the source VideoFrame *into* the
+    // intermediate SI over the raster interface - the usage bits depend on
+    // whether OOP-Raster is enabled.
     if (raster_context_provider->ContextCapabilities().gpu_rasterization) {
-      usage |= gpu::SHARED_IMAGE_USAGE_RASTER |
+      usage |= gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
                gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+    } else {
+      usage |= gpu::SHARED_IMAGE_USAGE_GLES2_WRITE;
     }
 
-    auto client_shared_image = sii->CreateSharedImage(
+    yuv_cache_.shared_image = sii->CreateSharedImage(
         SHARED_IMAGE_FORMAT, video_frame->coded_size(),
         GetVideoFrameRGBColorSpacePreferringSRGB(video_frame.get()),
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
         "PaintCanvasVideoRenderer", gpu::kNullSurfaceHandle);
-    CHECK(client_shared_image);
-    yuv_cache_.mailbox = client_shared_image->mailbox();
+    CHECK(yuv_cache_.shared_image);
     token = sii->GenUnverifiedSyncToken();
   }
 
   // On the source Raster context, do the YUV->RGB conversion.
   gpu::MailboxHolder dest_holder;
-  dest_holder.mailbox = yuv_cache_.mailbox;
+  dest_holder.mailbox = yuv_cache_.shared_image->mailbox();
   dest_holder.texture_target = GL_TEXTURE_2D;
   dest_holder.sync_token = token;
   yuv_cache_.yuv_converter.ConvertYUVVideoFrame(
@@ -1870,8 +1874,8 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   // destination texture.
   CopyMailboxToTexture(
       destination_gl, video_frame->coded_size(), video_frame->visible_rect(),
-      yuv_cache_.mailbox, post_conversion_sync_token, target, texture,
-      internal_format, format, type, level, premultiply_alpha, flip_y);
+      yuv_cache_.shared_image->mailbox(), post_conversion_sync_token, target,
+      texture, internal_format, format, type, level, premultiply_alpha, flip_y);
   destination_gl->GenUnverifiedSyncTokenCHROMIUM(
       yuv_cache_.sync_token.GetData());
 
@@ -2065,12 +2069,18 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
       } else {
         cache_.emplace(video_frame->unique_id());
         auto* sii = raster_context_provider->SharedImageInterface();
-        // TODO(nazabris): Sort out what to do when GLES2 is needed but the
-        // cached shared image is created without it.
-        uint32_t flags =
-            gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_RASTER;
+
+        // This SI is used to cache the VideoFrame. We will eventually read out
+        // its contents into a destination GL texture via the GLES2 interface.
+        uint32_t flags = gpu::SHARED_IMAGE_USAGE_GLES2_READ;
+        // We copy the contents of the source VideoFrame *into* the
+        // cached SI over the raster interface - the usage bits depend on
+        // whether OOP-Raster is enabled.
+        flags |= gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
         if (gpu_rasterization) {
           flags |= gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+        } else {
+          flags |= gpu::SHARED_IMAGE_USAGE_GLES2_WRITE;
         }
         client_shared_image = sii->CreateSharedImage(
             SHARED_IMAGE_FORMAT, video_frame->coded_size(),
@@ -2219,8 +2229,9 @@ PaintCanvasVideoRenderer::YUVTextureCache::~YUVTextureCache() {
 }
 
 void PaintCanvasVideoRenderer::YUVTextureCache::Reset() {
-  if (mailbox.IsZero())
+  if (!shared_image) {
     return;
+  }
   DCHECK(raster_context_provider);
 
   gpu::raster::RasterInterface* ri = raster_context_provider->RasterInterface();
@@ -2228,8 +2239,7 @@ void PaintCanvasVideoRenderer::YUVTextureCache::Reset() {
   ri->OrderingBarrierCHROMIUM();
 
   auto* sii = raster_context_provider->SharedImageInterface();
-  sii->DestroySharedImage(sync_token, mailbox);
-  mailbox.SetZero();
+  sii->DestroySharedImage(sync_token, std::move(shared_image));
 
   yuv_converter.ReleaseCachedData();
 

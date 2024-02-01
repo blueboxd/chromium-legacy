@@ -26,6 +26,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter.h"
@@ -570,14 +571,25 @@ bool MediaStreamVideoSource::SupportsEncodedOutput() const {
 
 #if !BUILDFLAG(IS_ANDROID)
 void MediaStreamVideoSource::SendWheel(
-    CapturedWheelAction* action,
-    base::OnceCallback<void(bool, const String&)> callback) {
-  std::move(callback).Run(false, "Unsupported.");
+    double relative_x,
+    double relative_y,
+    int wheel_delta_x,
+    int wheel_delta_y,
+    base::OnceCallback<void(DOMException*)> callback) {
+  std::move(callback).Run(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kNotSupportedError, "Unsupported."));
 }
 
 void MediaStreamVideoSource::GetZoomLevel(
     base::OnceCallback<void(absl::optional<int>, const String&)> callback) {
   std::move(callback).Run(false, "Unsupported.");
+}
+
+void MediaStreamVideoSource::SetZoomLevel(
+    int zoom_level,
+    base::OnceCallback<void(DOMException*)> callback) {
+  std::move(callback).Run(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kNotSupportedError, "Unsupported."));
 }
 
 void MediaStreamVideoSource::ApplySubCaptureTarget(

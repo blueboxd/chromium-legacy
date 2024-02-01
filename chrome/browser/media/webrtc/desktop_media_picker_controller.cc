@@ -30,12 +30,9 @@
 #include "desktop_media_picker.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/switches.h"
+#include "media/audio/audio_features.h"
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if BUILDFLAG(IS_MAC)
-#include "base/mac/mac_util.h"
-#endif
 
 DesktopMediaPickerController::DesktopMediaPickerController(
     DesktopMediaPickerFactory* picker_factory)
@@ -85,21 +82,26 @@ void DesktopMediaPickerController::WebContentsDestroyed() {
 
 // static
 bool DesktopMediaPickerController::IsSystemAudioCaptureSupported(
-    Params::RequestSource request_sourcce) {
-#if BUILDFLAG(IS_WIN) || defined(USE_CRAS)
-  return true;
-#elif BUILDFLAG(IS_MAC)
-  // Only supported on macOS 13.0+.
-  if (base::mac::MacOSVersion() < 13'00'00) {
+    Params::RequestSource request_source) {
+  if (!media::IsSystemLoopbackCaptureSupported()) {
     return false;
-  } else if (request_sourcce == Params::RequestSource::kCast) {
+  }
+#if BUILDFLAG(IS_MAC)
+  if (request_source == Params::RequestSource::kCast) {
     return base::FeatureList::IsEnabled(media::kMacLoopbackAudioForCast);
   } else {
     return base::FeatureList::IsEnabled(media::kMacLoopbackAudioForScreenShare);
   }
+#elif BUILDFLAG(IS_LINUX)
+  if (request_source == Params::RequestSource::kCast) {
+    return base::FeatureList::IsEnabled(media::kPulseaudioLoopbackForCast);
+  } else {
+    return base::FeatureList::IsEnabled(
+        media::kPulseaudioLoopbackForScreenShare);
+  }
 #else
-  return false;
-#endif  // BUILDFLAG(IS_WIN) || defined(USE_CRAS)
+  return true;
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 void DesktopMediaPickerController::OnInitialMediaListFound() {

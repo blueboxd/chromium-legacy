@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_result.h"
@@ -133,6 +134,13 @@ void LayoutBoxModelObject::StyleWillChange(StyleDifference diff,
     ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
   }
 
+  if (Style()) {
+    LayoutFlowThread* flow_thread = FlowThreadContainingBlock();
+    if (flow_thread && flow_thread != this) {
+      flow_thread->FlowThreadDescendantStyleWillChange(this, diff, new_style);
+    }
+  }
+
   LayoutObject::StyleWillChange(diff, new_style);
 }
 
@@ -225,10 +233,13 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   }
 
   if (old_style && Parent()) {
-    LayoutBlock* block =
-        RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled()
-            ? InclusiveContainingBlock()
-            : FindNonAnonymousContainingBlock(this);
+    if (LayoutFlowThread* flow_thread = FlowThreadContainingBlock()) {
+      if (flow_thread != this) {
+        flow_thread->FlowThreadDescendantStyleDidChange(this, diff, *old_style);
+      }
+    }
+
+    LayoutBlock* block = InclusiveContainingBlock();
 
     if ((could_contain_fixed && !can_contain_fixed) ||
         (could_contain_absolute && !can_contain_absolute)) {
@@ -427,11 +438,27 @@ void LayoutBoxModelObject::RecalcVisualOverflow() {
   LayoutObject::RecalcVisualOverflow();
 }
 
+bool LayoutBoxModelObject::ShouldBeHandledAsInline(
+    const ComputedStyle& style) const {
+  if (style.IsDisplayInlineType()) {
+    return true;
+  }
+  // Table-internal display types create anonymous inline or block <table>s
+  // depending on the parent. But if an element with a table-internal display
+  // type creates a domain-specific LayoutObject such as LayoutImage, such
+  // anonymous <table> is not created, and the LayoutObject should adjust
+  // IsInline flag for inlinifying.
+  //
+  // LayoutRubyBase and LayoutRubyText should be blocks even in a ruby.
+  return style.IsInInlinifyingDisplay() && !IsTablePart() && !IsRubyBase() &&
+         !IsRubyText();
+}
+
 void LayoutBoxModelObject::UpdateFromStyle() {
   NOT_DESTROYED();
   const ComputedStyle& style_to_use = StyleRef();
   SetHasBoxDecorationBackground(style_to_use.HasBoxDecorationBackground());
-  SetInline(style_to_use.IsDisplayInlineType());
+  SetInline(ShouldBeHandledAsInline(style_to_use));
   SetPositionState(style_to_use.GetPosition());
   SetHorizontalWritingMode(style_to_use.IsHorizontalWritingMode());
   SetCanContainAbsolutePositionObjects(
@@ -736,7 +763,7 @@ LayoutUnit LayoutBoxModelObject::ContainingBlockLogicalWidthForContent() const {
   return ContainingBlock()->AvailableLogicalWidth();
 }
 
-DeprecatedLayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
+LogicalRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
     LayoutUnit width,
     LayoutUnit text_indent_offset) const {
   NOT_DESTROYED();
@@ -777,14 +804,12 @@ DeprecatedLayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
 
   LayoutUnit x = BorderLeft() + PaddingLeft();
   LayoutUnit max_x = width - BorderRight() - PaddingRight();
-  BoxStrut border_padding;
-  if (RuntimeEnabledFeatures::EmptyCaretInVerticalEnabled()) {
-    border_padding = (BorderOutsets() + PaddingOutsets())
-                         .ConvertToLogical({current_style.GetWritingMode(),
-                                            TextDirection::kLtr});
-    x = border_padding.inline_start;
-    max_x = width - border_padding.inline_end;
-  }
+  BoxStrut border_padding =
+      (BorderOutsets() + PaddingOutsets())
+          .ConvertToLogical(
+              {current_style.GetWritingMode(), TextDirection::kLtr});
+  x = border_padding.inline_start;
+  max_x = width - border_padding.inline_end;
   LayoutUnit caret_width = GetFrameView()->CaretWidth();
 
   switch (alignment) {
@@ -815,15 +840,8 @@ DeprecatedLayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
   if (font_data)
     height = LayoutUnit(font_data->GetFontMetrics().Height());
   LayoutUnit vertical_space = FirstLineHeight() - height;
-  if (RuntimeEnabledFeatures::EmptyCaretInVerticalEnabled()) {
-    LayoutUnit block_start = border_padding.block_start + (vertical_space / 2);
-    // Returns a logical box.
-    return DeprecatedLayoutRect(x, block_start, caret_width, height);
-  }
-  LayoutUnit y = PaddingTop() + BorderTop() + (vertical_space / 2);
-  return current_style.IsHorizontalWritingMode()
-             ? DeprecatedLayoutRect(x, y, caret_width, height)
-             : DeprecatedLayoutRect(y, x, height, caret_width);
+  LayoutUnit block_start = border_padding.block_start + (vertical_space / 2);
+  return LogicalRect(x, block_start, caret_width, height);
 }
 
 void LayoutBoxModelObject::MoveChildTo(

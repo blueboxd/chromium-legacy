@@ -1092,6 +1092,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Search_RWin" not_user_triggered="true">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of this user action.</description>
+</action>
+
 <action name="Accel_SelectNextTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -4366,6 +4371,32 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="AutofillCreditCardDeleted">
+  <owner>koulvipul@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user deletes a card via chrome://settings/payments page.
+  </description>
+</action>
+
+<action name="AutofillCreditCardDeletedAndHadCvc">
+  <owner>koulvipul@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user deletes card via chrome://settings/payments page and CVC
+    was not empty.
+  </description>
+</action>
+
+<action name="AutofillCreditCardDeletedAndHadNickname">
+  <owner>koulvipul@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user deletes card via chrome://settings/payments page and
+    nickname was not empty.
+  </description>
+</action>
+
 <action name="AutofillCreditCardsAdded">
   <owner>battre@chromium.org</owner>
   <owner>jsaul@google.com</owner>
@@ -4395,6 +4426,51 @@ should be able to be added at any place in this file.
   <owner>jsaul@google.com</owner>
   <description>
     Recorded when user edits card via chrome://settings/payments page.
+  </description>
+</action>
+
+<action name="AutofillCreditCardsEditedAndCvcWasAdded">
+  <owner>koulvipul@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user edits card via chrome://settings/payments page and CVC
+    was added.
+  </description>
+</action>
+
+<action name="AutofillCreditCardsEditedAndCvcWasLeftBlank">
+  <owner>koulvipul@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user edits card via chrome://settings/payments page and CVC
+    was left blank.
+  </description>
+</action>
+
+<action name="AutofillCreditCardsEditedAndCvcWasRemoved">
+  <owner>koulvipul@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user edits card via chrome://settings/payments page and CVC
+    was removed.
+  </description>
+</action>
+
+<action name="AutofillCreditCardsEditedAndCvcWasUnchanged">
+  <owner>koulvipul@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user edits card via chrome://settings/payments page and CVC
+    was unchanged.
+  </description>
+</action>
+
+<action name="AutofillCreditCardsEditedAndCvcWasUpdated">
+  <owner>koulvipul@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user edits card via chrome://settings/payments page and CVC
+    was updated.
   </description>
 </action>
 
@@ -6017,6 +6093,40 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ChromeOS.AppInstallDialog.AppLaunched">
+  <owner>glenrob@chromium.org</owner>
+  <owner>cros-web-apps-infra-team@google.com</owner>
+  <description>
+    Recorded when the user requested a previously installed app to be launched
+    in the CrOS App Install dialog.
+  </description>
+</action>
+
+<action name="ChromeOS.AppInstallDialog.Cancelled">
+  <owner>glenrob@chromium.org</owner>
+  <owner>cros-web-apps-infra-team@google.com</owner>
+  <description>
+    Recorded when the user closed an installation dialog without installing.
+  </description>
+</action>
+
+<action name="ChromeOS.AppInstallDialog.Installed">
+  <owner>glenrob@chromium.org</owner>
+  <owner>cros-web-apps-infra-team@google.com</owner>
+  <description>
+    Recorded when the user requested an app to be installed in the CrOS App
+    Install dialog.
+  </description>
+</action>
+
+<action name="ChromeOS.AppInstallDialog.Shown">
+  <owner>glenrob@chromium.org</owner>
+  <owner>cros-web-apps-infra-team@google.com</owner>
+  <description>
+    Recorded when the CrOS App Install dialog was opened by the user.
+  </description>
+</action>
+
 <action name="ChromeOS.Settings.InputMethod.Autocorrect.Open">
   <owner>zacpartridge@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
@@ -6708,6 +6818,26 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Commerce.PriceTracking.IOS.Track.Failure"
+    not_user_triggered="true">
+  <owner>danieltwhite@google.com</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a users attempts to price track an item through the UI, but is
+    unsuccessful due to an error. (iOS only)
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.IOS.Untrack.Failure"
+    not_user_triggered="true">
+  <owner>danieltwhite@google.com</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a users attempts to untrack an item through the UI, but is
+    unsuccessful due to an error. (iOS only)
+  </description>
+</action>
+
 <action name="Commerce.PriceTracking.OmniboxChip.Tracked">
   <owner>meiliang@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -6973,6 +7103,115 @@ should be able to be added at any place in this file.
   <description>Triggered when ther user visits the checkout page.</description>
 </action>
 
+<action name="Compose.ComposeRequest.CreateClicked">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    Records when the user presses the &quot;Create&quot; button in the input
+    state of the Compose dialog. This is emitted when the button is pressed and
+    before the Compose request is made, at most once per Compose session.
+  </description>
+</action>
+
+<action name="Compose.ContextMenu.ItemSeen">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    Records when the user opens the right-click context menu and the &quot;Help
+    me write&quot; menu item is available. This is emitted when the right-click
+    menu is opened.
+  </description>
+</action>
+
+<action name="Compose.DialogSeen.FirstRunDisclaimer">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    The Compose dialog can be shown in one of three UI states. The first run
+    disclaimer is shown as the first state if the user has never progressed past
+    it. This is emitted when the dialog is shown for a newly created session and
+    is in this disclaimer state. This is emitted at most once per Compose
+    session.
+  </description>
+</action>
+
+<action name="Compose.DialogSeen.FirstRunMSBB">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    The Compose dialog can be shown in one of three UI states. This dialog state
+    is shown if the user has not agreed to the MSBB setting, and is shown after
+    the FRE disclaimer (if relevant). This is emitted when the dialog is shown
+    for a newly created session and is in this MSBB state, or when the dialog
+    moves from the FRE disclaimer to the MSBB state by user action. This is
+    emitted at most once per Compose session.
+  </description>
+</action>
+
+<action name="Compose.DialogSeen.MainDialog">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    The Compose dialog can be shown in one of three UI states. The main dialog
+    encompasses the actual feature experience, and is shown after the first run
+    disclaimer and MSBB states (if they are relevant). This is emitted when the
+    dialog is shown for a newly created session and is in this main state, when
+    the dialog moves from the FRE disclaimer to this main state by user action,
+    or when the dialog is shown in this main state and the last state it was
+    open in was the MSBB state. This is emitted at most once per Compose
+    session.
+  </description>
+</action>
+
+<action name="Compose.EndedSession.CloseButtonClicked">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    Records when a Compose session ends because the close button of its
+    corresponding Compose dialog is pressed. This is emitted at most once per
+    session.
+  </description>
+</action>
+
+<action name="Compose.EndedSession.EndedImplicitly">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    Records when a Compose session ends implicitly. This is emitted when the
+    session is destroyed because the owning WebContents navigates or is
+    destroyed. This is emitted at most once per session.
+  </description>
+</action>
+
+<action name="Compose.EndedSession.InsertButtonClicked">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    Records when a Compose session ends because the &quot;Insert&quot; button of
+    its corresponding Compose dialog is pressed. This is emitted at most once
+    per session.
+  </description>
+</action>
+
+<action name="Compose.EndedSession.NewSessionWithSelectedText">
+  <owner>cuianthony@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    Records when a Compose session ends because a dialog was opened with a text
+    selection from the same page field. This is emitted at most once per
+    session.
+  </description>
+</action>
+
+<action name="Compose.SessionPaused.MSBBSettingsShown">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>chrome-compose-frontend@google.com</owner>
+  <description>
+    Records when a Compose session pauses because the user opened the MSBB
+    settings from inside the compose dialog.
+  </description>
+</action>
+
 <action name="ConfirmNotToOrderSpringCharger">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -7054,6 +7293,84 @@ should be able to be added at any place in this file.
 <action name="ConnectivityDiagnostics.UA.TestSuiteRun">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="ContentNotifications.Promo.Prompt.GoToSettingsTapped">
+  <owner>tinazwang@chromium.org</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    The user tapped 'Go to Settings' on the OS notification permission prompt.
+  </description>
+</action>
+
+<action name="ContentNotifications.Promo.Prompt.NoThanksTapped">
+  <owner>tinazwang@chromium.org</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    The user tapped 'No Thanks' on the OS notification permission prompt.
+  </description>
+</action>
+
+<action name="ContentNotifications.Promo.SetUpList.Accepted">
+  <owner>tinazwang@chromium.org</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    The user accepted a Set Up List content notification promo modal, and was
+    asked if they want to enable Chrome notifications.
+  </description>
+</action>
+
+<action name="ContentNotifications.Promo.SetUpList.Canceled">
+  <owner>tinazwang@chromium.org</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    The user denied the SetUpList content notification promo and it dismissed.
+  </description>
+</action>
+
+<action name="ContentNotifications.Promo.SetUpList.Uncompleted">
+  <owner>tinazwang@chromium.org</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    The user tapped 'Remind Me Later' in the SetUpList content notification
+    promo and it dismissed.
+  </description>
+</action>
+
+<action name="ContentNotifications.Promo.Snackbar.ActionButtonTapped">
+  <owner>tinazwang@chromium.org</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    The user tapped the action button in the confirmation snackbar when
+    successfully opt-in content notification.
+  </description>
+</action>
+
+<action name="ContentNotifications.Promo.TopOfFeed.MainButtonTapped">
+  <owner>guiperez@google.com</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    The user has tapped on the main button to enable notifications from the Top
+    Of Feed Notifications Promo.
+  </description>
+</action>
+
+<action name="ContentNotifications.Promo.TopOfFeed.Permission.Accepted">
+  <owner>guiperez@google.com</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    The user has accepted the OS prompt to enable notifications from the Top Of
+    Feed Notifications Promo.
+  </description>
+</action>
+
+<action name="ContentNotifications.Promo.TopOfFeed.Permission.Declined">
+  <owner>guiperez@google.com</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <description>
+    The user has declined on the OS prompt to disable notifications from the Top
+    Of Feed Notifications Promo.
+  </description>
 </action>
 
 <action name="ContentSettings.Geolocation.BlockedIconShown">
@@ -8133,6 +8450,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Crosh_Run_top">
+  <owner>yuholong@google.com</owner>
+  <description>The user ran the command top in crosh.</description>
+</action>
+
 <action name="Crow.EntryPointShown">
   <owner>skare@chromium.org</owner>
   <owner>sophey@chromium.org</owner>
@@ -8149,14 +8471,6 @@ should be able to be added at any place in this file.
   <owner>src/chrome/browser/share/OWNERS</owner>
   <description>
     User launched the Crow custom tab via an entry point.
-  </description>
-</action>
-
-<action name="CryptidRendered">
-  <owner>tmartino@chromium.org</owner>
-  <description>
-    Logged when Probabilistic Cryptid Rendering successfully occurs (i.e., the
-    conditions are satisfied and the NTP injection is completed).
   </description>
 </action>
 
@@ -9171,6 +9485,60 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DownloadNotificationV2.Button_Cancel">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>cros-system-ui-productivity-eng@google.com</owner>
+  <description>
+    User clicks &quot;Cancel&quot; button on a download notification with the
+    downloads integration V2 feature enabled.
+  </description>
+</action>
+
+<action name="DownloadNotificationV2.Button_Pause">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>cros-system-ui-productivity-eng@google.com</owner>
+  <description>
+    User clicks &quot;Pause&quot; button on a download notification with the
+    downloads integration V2 feature enabled.
+  </description>
+</action>
+
+<action name="DownloadNotificationV2.Button_Resume">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>cros-system-ui-productivity-eng@google.com</owner>
+  <description>
+    User clicks &quot;Resume&quot; button on a download notification with the
+    downloads integration V2 feature enabled.
+  </description>
+</action>
+
+<action name="DownloadNotificationV2.Button_ShowInFolder">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>cros-system-ui-productivity-eng@google.com</owner>
+  <description>
+    User clicks &quot;Show in folder&quot; button on a download notification
+    with the downloads integration V2 feature enabled.
+  </description>
+</action>
+
+<action name="DownloadNotificationV2.Click_Completed">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>cros-system-ui-productivity-eng@google.com</owner>
+  <description>
+    User clicks a completed download notification's body with the downloads
+    integration V2 feature enabled.
+  </description>
+</action>
+
+<action name="DownloadNotificationV2.Click_InProgress">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>cros-system-ui-productivity-eng@google.com</owner>
+  <description>
+    User clicks an in-progress download notification's body with the downloads
+    integration V2 feature enabled.
+  </description>
+</action>
+
 <action name="Downloads_OpenUrlOfDownloadedItem">
   <owner>chrome-analysis-team@google.com</owner>
   <description>
@@ -9350,6 +9718,25 @@ should be able to be added at any place in this file.
   <description>
     User exited browser/API fullscreen mode by clicking on the pop up close
     button on the top of the screen.
+  </description>
+</action>
+
+<action name="ExpandSearchEngineDescription">
+  <owner>jyammine@google.com</owner>
+  <owner>chrome-waffle-eng@google.com</owner>
+  <description>
+    Action indicating that the user expanded the chevron in the search engine
+    choice page to view the search engine description.
+  </description>
+</action>
+
+<action name="ExperimentalAI_IPHPromo_SettingsPageOpened">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>chrome-intelligence-core@chromium.org</owner>
+  <description>
+    The AI Settings page was opened from the displayed IPH promo for
+    Experimental AI. Recorded whenever the IPH promo is clicked to view
+    settings.
   </description>
 </action>
 
@@ -10118,6 +10505,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="FirstVisibleContentAfterBackPress">
+  <owner>lazzzis@google.com</owner>
+  <description>
+    Record that the first visible content is drawn (i.e. at the moment when
+    Startup.Android.Cold.TimeToFirstVisibleContent2) after a back press. Android
+    only.
+  </description>
+</action>
+
 <action name="Flash.JavaScriptUsed" not_user_triggered="true">
   <obsolete>Deprecated 02/2017.</obsolete>
   <owner>tommycli@chromium.org</owner>
@@ -10579,6 +10975,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Glanceables_Classroom_UserAction">
+  <owner>amitrokhin@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User performed an actoin in the classroom glanceables. This aggregates all
+    user actions that the user can perform in the classroom glanceable.
+  </description>
+</action>
+
 <action name="Glanceables_Tasks_ActiveTaskListChanged">
   <owner>yulunwu@chromium.org</owner>
   <owner>chromeos-launcher@google.com</owner>
@@ -10591,20 +10997,43 @@ should be able to be added at any place in this file.
   <owner>yulunwu@chromium.org</owner>
   <owner>chromeos-launcher@google.com</owner>
   <description>
-    The add task button is shown for an empty tasks list.
+    The add task button is shown for an empty tasks list - used in the first
+    version of the glanceables UI (used for trusted tester program), where the
+    add task button was shown only for an empty task list.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_AddTaskStarted">
+  <owner>amitrokhin@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on the button to add a new task. Not recorded for Trusted
+    Tester Glanceables UI, which has its own add task button, but with different
+    semantics.
   </description>
 </action>
 
 <action name="Glanceables_Tasks_LaunchTasksApp_AddNewTaskButton">
-  <owner>yulunwu@chromium.org</owner>
+  <owner>wcwang@chromium.org</owner>
   <owner>chromeos-launcher@google.com</owner>
   <description>
-    User clicked on the add new task button on the tasks glanceable.
+    User clicked on the add new task button on the tasks glanceable. Recoreded
+    for Trusted Tester Glanceables UI only.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_LaunchTasksApp_EditInGoogleTasksButton">
+  <owner>wcwang@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on the Edit In Google Tasks label button in the task view of
+    the tasks glanceable.
   </description>
 </action>
 
 <action name="Glanceables_Tasks_LaunchTasksApp_FooterButton">
-  <owner>yulunwu@chromium.org</owner>
+  <owner>wcwang@chromium.org</owner>
   <owner>chromeos-launcher@google.com</owner>
   <description>
     User clicked on the see all button in the footer of the tasks glanceable.
@@ -10612,10 +11041,30 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Glanceables_Tasks_LaunchTasksApp_HeaderButton">
-  <owner>yulunwu@chromium.org</owner>
+  <owner>wcwang@chromium.org</owner>
   <owner>chromeos-launcher@google.com</owner>
   <description>
     User clicked on the tasks icon in the header of the tasks glanceable.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_ModifyTaskStarted">
+  <owner>amitrokhin@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on the task title, and entered UI to modify the task title.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_NewUserNavigatedToTasks">
+  <owner>amitrokhin@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User that has a single empty task lists in Google Tasks performed an action
+    in tasks time management glanceables UI that opened tasks web UI in another
+    window.
   </description>
 </action>
 
@@ -10632,6 +11081,16 @@ should be able to be added at any place in this file.
   <owner>chromeos-launcher@google.com</owner>
   <description>
     User marks a task in the tasks glanceable as incomplete.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_UserAction">
+  <owner>amitrokhin@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User performed an action in the tasks glanceables. This aggregates all user
+    actions that the user can perform intaskss glanceable.
   </description>
 </action>
 
@@ -12902,6 +13361,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.InsecureFormCancel">
+  <owner>meacer@chromium.org</owner>
+  <owner>trusty-transport@chromium.org</owner>
+  <description>
+    Reported when an insecure form submission is cancelled. iOS only.
+  </description>
+</action>
+
+<action name="IOS.InsecureFormSendAnyway">
+  <owner>meacer@chromium.org</owner>
+  <owner>trusty-transport@chromium.org</owner>
+  <description>
+    Reported when an insecure form is submitted anyway despite the warning. iOS
+    only.
+  </description>
+</action>
+
 <action name="IOS.NTP.Doodle.Tapped">
   <owner>gambard@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
@@ -12911,6 +13387,40 @@ should be able to be added at any place in this file.
     Breadcrumbs. iOS Breadcrumbs attaches steps the user performed in the app to
     crash logs. These steps can help debug causes of crashes when the stack
     doesn't provide enough information.
+  </description>
+</action>
+
+<action name="IOS.Omnibox.Promo.PositionDiscarded">
+  <owner>christianxu@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <description>
+    Recorded when the user dismisses the promo by discarding the selected
+    position.
+  </description>
+</action>
+
+<action name="IOS.Omnibox.Promo.PositionValidated">
+  <owner>christianxu@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <description>
+    Recorded when the user dismisses the promo by validating the selected
+    position.
+  </description>
+</action>
+
+<action name="IOS.Omnibox.Promo.Presented" not_user_triggered="true">
+  <owner>christianxu@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <description>
+    Recorded when the omnibox position choice promo is presented.
+  </description>
+</action>
+
+<action name="IOS.Omnibox.Promo.Skipped">
+  <owner>christianxu@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <description>
+    Recorded when the user dismisses the promo by tapping on skip.
   </description>
 </action>
 
@@ -13264,6 +13774,15 @@ should be able to be added at any place in this file.
   <owner>ewannpv@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <description>User started the download in Download Manager.</description>
+</action>
+
+<action name="IOSDownloadStartDownloadToDrive">
+  <owner>qpubert@google.com</owner>
+  <owner>ewannpv@chromium.org</owner>
+  <description>
+    User started the download in Download Manager, with Drive as destination for
+    their download.
+  </description>
 </action>
 
 <action name="IOSDownloadTryCloseWhenInProgress">
@@ -20324,6 +20843,14 @@ should be able to be added at any place in this file.
   <owner>sdefresne@chromium.org</owner>
   <description>
     User attempted to retry downloading a file after the download failed.
+  </description>
+</action>
+
+<action name="MobileDownloadRetryUpload">
+  <owner>qpubert@google.Com</owner>
+  <owner>ewannpv@chromium.org</owner>
+  <description>
+    User attempted to retry uploading a file after the upload failed.
   </description>
 </action>
 
@@ -29597,6 +30124,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ReadAloud.PlaybackStarted">
+  <owner>andreaxg@google.com</owner>
+  <owner>basiaz@google.com</owner>
+  <owner>iwells@chromium.org</owner>
+  <description>The user started a Read Aloud playback.</description>
+</action>
+
 <action name="ReadingList.Dialog.AddCurrentPage">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -29861,6 +30395,44 @@ should be able to be added at any place in this file.
   <owner>bjfong@google.com</owner>
   <description>
     User took an action on the RestoreTabsOnFRE feature.
+  </description>
+</action>
+
+<action name="ReviewAccountSettings_Impression_FromBookmarkManager"
+    not_user_triggered="true">
+  <owner>jood@google.com</owner>
+  <owner>treib@chromium.org</owner>
+  <description>
+    Recorded when showing review account settings promo in the bookmark manager.
+    iOS only.
+  </description>
+</action>
+
+<action name="ReviewAccountSettings_Impression_FromReadingListManager"
+    not_user_triggered="true">
+  <owner>jood@google.com</owner>
+  <owner>treib@chromium.org</owner>
+  <description>
+    Recorded when showing review account settings promo in the reading list
+    manager. iOS only.
+  </description>
+</action>
+
+<action name="ReviewAccountSettings_Tapped_FromBookmarkManager">
+  <owner>jood@google.com</owner>
+  <owner>treib@chromium.org</owner>
+  <description>
+    Recorded when the user taps the button to review account settings in the
+    bookmark manager. iOS only.
+  </description>
+</action>
+
+<action name="ReviewAccountSettings_Tapped_FromReadingListManager">
+  <owner>jood@google.com</owner>
+  <owner>treib@chromium.org</owner>
+  <description>
+    Recorded when the user taps the button to review account settings in the
+    reading list manager. iOS only.
   </description>
 </action>
 
@@ -30137,6 +30709,13 @@ should be able to be added at any place in this file.
   <owner>chrome-privacy-controls@google.com</owner>
   <description>
     Reported when the password check is run by Safety Hub in the backgroud.
+  </description>
+</action>
+
+<action name="Sanitize">
+  <owner>behnoodm@google.com</owner>
+  <description>
+    Used by the user for the Sanitize option to do a soft reset on the settings.
   </description>
 </action>
 
@@ -30463,6 +31042,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SeaPen_FeedbackPressed">
+  <owner>pzliu@google.com</owner>
+  <owner>assistive-eng@google.com</owner>
+  <description>
+    Records that the user pressed the Sea Pen feedback button.
+  </description>
+</action>
+
 <action name="Search.ContextualSearch.All.ResultsSeen.true">
   <owner>donnd@chromium.org</owner>
   <owner>contextual-search-eng@google.com</owner>
@@ -30580,6 +31167,16 @@ should be able to be added at any place in this file.
     disables search engine auto switch feature in special locale. This is
     recorded on Android for every locale, but is currently only meaningful for
     studying special locales.
+  </description>
+</action>
+
+<action name="SearchEngineChoiceScreenShown">
+  <owner>jyammine@google.com</owner>
+  <owner>chrome-waffle-eng@google.com</owner>
+  <description>
+    Recorded when the search engine choice screen is displayed. The screen could
+    be displayed in the modal dialog (or promo) and the first run experience on
+    iOS and Desktop and the profile creation flow on Desktop.
   </description>
 </action>
 
@@ -31900,6 +32497,36 @@ should be able to be added at any place in this file.
   <description>User started a browser safety check in settings.</description>
 </action>
 
+<action name="Settings.SafetyHub.IncognitoLinkClicked">
+  <owner>sideyilmaz@chromium.org</owner>
+  <owner>aisulu@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
+  <description>
+    Recorded whenever the user clicks on 'Incognito' link in the Education
+    module of Safety Check page in settings.
+  </description>
+</action>
+
+<action name="Settings.SafetyHub.SafeBrowsingLinkClicked">
+  <owner>sideyilmaz@chromium.org</owner>
+  <owner>aisulu@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
+  <description>
+    Recorded whenever the user clicks on 'Safe Browsing' link in the Education
+    module of Safety Check page in settings.
+  </description>
+</action>
+
+<action name="Settings.SafetyHub.SafetyToolsLinkClicked">
+  <owner>sideyilmaz@chromium.org</owner>
+  <owner>aisulu@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
+  <description>
+    Recorded whenever the user clicks on 'Safety Tools' link in the Education
+    module of Safety Check page in settings.
+  </description>
+</action>
+
 <action name="Settings.Searching">
   <owner>dschuyler@chromium.org</owner>
   <description>
@@ -31946,6 +32573,15 @@ should be able to be added at any place in this file.
   <owner>chromeleon@chromium.org</owner>
   <description>
     Reported when user navigates to Tab Pickup Tabs Settings. iOS only.
+  </description>
+</action>
+
+<action name="Settings.TrackingProtection.OpenedFromPrivacyPage">
+  <owner>alvingo@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    Reported when user navigates to Tracking Protection Settings via the
+    Tracking Protection link row in the Privacy Page.
   </description>
 </action>
 
@@ -33383,6 +34019,84 @@ should be able to be added at any place in this file.
   <description>
     Recorded when dialog is shown to resolve Google Play services error (e.g.,
     update request).
+  </description>
+</action>
+
+<action name="Signin_AuthenticationFlowPerformer_ErrorDialog_Confirmed">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    This user action is triggered when the error dialog from
+    AuthenticationFlowPerformer is confirmed by the user.
+  </description>
+</action>
+
+<action name="Signin_AuthenticationFlowPerformer_ErrorDialog_Presented">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    This user action is triggered when the error dialog is presented. This user
+    action will help to understand crbug.com/1482623 using breadcrumbs.
+    TODO(crbug.com/1482623): Remove once the bug will be closed.
+  </description>
+</action>
+
+<action
+    name="Signin_AuthenticationFlowPerformer_ManagedConfirmationDialog_Canceled">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    This user action is triggered when the managed confirmation dialog from
+    AuthenticationFlowPerformer is canceled by the user.
+  </description>
+</action>
+
+<action
+    name="Signin_AuthenticationFlowPerformer_ManagedConfirmationDialog_Confirmed">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    This user action is triggered when the managed confirmation dialog from
+    AuthenticationFlowPerformer is confirmed by the user.
+  </description>
+</action>
+
+<action
+    name="Signin_AuthenticationFlowPerformer_ManagedConfirmationDialog_Presented">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    This user action is triggered when the managed confirmation dialog is
+    presented. This user action will help to understand crbug.com/1482623 using
+    breadcrumbs. TODO(crbug.com/1482623): Remove once the bug will be closed.
+  </description>
+</action>
+
+<action name="Signin_AuthenticationFlowPerformer_SwitchDialog_Canceled">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    This user action is triggered when the switch account dialog from
+    AuthenticationFlowPerformer is canceled by the user.
+  </description>
+</action>
+
+<action name="Signin_AuthenticationFlowPerformer_SwitchDialog_Confirmed">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    This user action is triggered when the switch account dialog from
+    AuthenticationFlowPerformer is confirmed by the user.
+  </description>
+</action>
+
+<action name="Signin_AuthenticationFlowPerformer_SwitchDialog_Presented">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    This user action is triggered when the switch account dialog is presented.
+    This user action will help to understand crbug.com/1482623 using
+    breadcrumbs. TODO(crbug.com/1482623): Remove once the bug will be closed.
   </description>
 </action>
 
@@ -37265,6 +37979,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SystemBackBeforeFirstVisibleContent">
+  <owner>lazzzis@google.com</owner>
+  <description>
+    Records that a back press occurs before the first visible content is drawn
+    (i.e. at the moment Startup.Android.Cold.TimeToFirstVisibleContent2 is
+    recorded). Android only.
+  </description>
+</action>
+
 <action name="SystemBackBeforeNativeInitialized">
   <owner>lazzzis@google.com</owner>
   <description>
@@ -38804,6 +39527,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="UniversalInstallFromMenu">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
 <action name="Unlink">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -38821,6 +39549,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="UpdateNotificaion.NotificationShown">
+  <obsolete>Not present in the codebase. Removed in M123.</obsolete>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <description>
@@ -38897,6 +39626,7 @@ should be able to be added at any place in this file.
 
 <action name="UserEducation.MessageAction.Abort.IPH">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>
     The In-Product Help Bubble was aborted due to leaving the flow of the
     feature promotion. This is specific to the IPH implementation and could mean
@@ -38906,6 +39636,7 @@ should be able to be added at any place in this file.
 
 <action name="UserEducation.MessageAction.Action.IPH">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>
     The In-Product Help Bubble was closed after the user selected the action in
     the IPH. For a Custom Action IPH, this means the custom action was
@@ -38915,6 +39646,7 @@ should be able to be added at any place in this file.
 
 <action name="UserEducation.MessageAction.Cancel.IPH">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>
     The In-Product Help Bubble was closed after the user pressed Escape or
     clicked &quot;X&quot; in the IPH.
@@ -38923,11 +39655,13 @@ should be able to be added at any place in this file.
 
 <action name="UserEducation.MessageAction.Dismiss.IPH">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>The user dismissed the In-Product Help Bubble.</description>
 </action>
 
 <action name="UserEducation.MessageAction.FeatureEngaged.IPH">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>
     The user engaged with the promoted feature outside the In-Product Help
     Bubble in a way that obviated the need for this IPH.
@@ -38937,6 +39671,7 @@ should be able to be added at any place in this file.
 <action name="UserEducation.MessageAction.OverrideForPrecedence.IPH"
     not_user_triggered="true">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>
     The In-Product Help Bubble was closed to allow showing a message with higher
     priority.
@@ -38945,6 +39680,7 @@ should be able to be added at any place in this file.
 
 <action name="UserEducation.MessageAction.OverrideForUIRegionConflict.IPH">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>
     The In-Product Help Bubble was closed to avoid overlap with an important UI
     element.
@@ -38953,38 +39689,163 @@ should be able to be added at any place in this file.
 
 <action name="UserEducation.MessageAction.Snooze.IPH">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>The user snoozed the In-Product Help Bubble.</description>
 </action>
 
 <action name="UserEducation.MessageAction.Timeout.IPH">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>
     The In-Product Help Bubble spontaneously timed out after some time interval.
   </description>
 </action>
 
+<action name="UserEducation.MessageNotShown">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to a starving condition.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.BlockedByConfig">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to being blocked by configuration.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.BlockedByContext">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to being blocked by context.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.BlockedByCooldown">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to being blocked by the cooldown
+    period.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.BlockedByGracePeriod">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to being blocked by the grace period.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.BlockedByPromo">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to being block by another promo.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.BlockedByUi">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to being blocked by UI.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.Canceled">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to being canceled.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.Error">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>An IPH was not shown to the user due to an error.</description>
+</action>
+
+<action name="UserEducation.MessageNotShown.FeatureDisabled">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to the feature being disabled .
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    This IPH was not shown to the user due to a starving condition.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.PermanentlyDismissed">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to being permanently dismissed.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.RecentlyAborted">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown because it was aborted by a UI change and is not yet
+    allowed to be shown again.
+  </description>
+</action>
+
+<action name="UserEducation.MessageNotShown.Snoozed">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    An IPH was not shown to the user due to being snoozed.
+  </description>
+</action>
+
 <action name="UserEducation.MessageShown">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>An IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.MessageShown.ActionableAlert.CustomAction">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>An Actionable Alert IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.CustomAction">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Custom Action IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.IPH">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>The IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.Legacy">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Legacy IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.LegalNotice.CustomAction">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>
     A Legal Notice Custom Action IPH was shown to the user.
   </description>
@@ -38992,62 +39853,82 @@ should be able to be added at any place in this file.
 
 <action name="UserEducation.MessageShown.LegalNotice.Legacy">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Legal Notice Legacy IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.LegalNotice.Snooze">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Legal Notice Snooze IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.LegalNotice.Toast">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Legal Notice Toast IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.LegalNotice.Tutorial">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Legal Notice Tutorial IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.PerApp.CustomAction">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Per App Custom Action IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.PerApp.Legacy">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Per App Legacy IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.PerApp.Snooze">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Per App Snooze IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.PerApp.Toast">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Per App Toast IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.PerApp.Tutorial">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Per App Tutorial IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.Snooze">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Snooze IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.Toast">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Toast IPH was shown to the user.</description>
 </action>
 
 <action name="UserEducation.MessageShown.Tutorial">
   <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
   <description>A Tutorial IPH was shown to the user.</description>
+</action>
+
+<action name="UserEducation.Session.ActivePeriodStart">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <description>
+    Records the starting point of an Active Period in a User Education Session.
+  </description>
 </action>
 
 <action name="UserManager_Cleared_Legacy_User_Prefs">
@@ -39469,6 +40350,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="WebView.PermissionAllow.HID">
+  <owner>vkovalova@google.com</owner>
+  <description>
+    Tracks when showing the HID selection dialog is explicitly allowed on a
+    webview.
+  </description>
+</action>
+
 <action name="WebView.PermissionAllow.JSDialog">
   <owner>fsamuel@chromium.org</owner>
   <owner>lazyboy@chromium.org</owner>
@@ -39522,6 +40411,14 @@ should be able to be added at any place in this file.
   <owner>lazyboy@chromium.org</owner>
   <description>
     Tracks when the geolocation permission is explicitly denied on a webview.
+  </description>
+</action>
+
+<action name="WebView.PermissionDeny.HID">
+  <owner>vkovalova@google.com</owner>
+  <description>
+    Tracks when showing the HID selection dialog is explicitly denied on a
+    webview.
   </description>
 </action>
 
@@ -40257,6 +41154,10 @@ should be able to be added at any place in this file.
   <suffix name="CompanionSidePanel" label="For companion side panel feature."/>
   <suffix name="CompanionSidePanelRegionSearch"
       label="For companion side panel region search feature."/>
+  <suffix name="ComposeMenuNewBadgeFeature"
+      label="For Compose new badge in context menu feature"/>
+  <suffix name="ComposeMSBBSettingsFeature"
+      label="For Compose MSBB Settings badge feature"/>
   <suffix name="ComposeNewBadgeFeature" label="For Compose new badge feature"/>
   <suffix name="ContextualPageActions_PriceTracking"
       label="For Contextual page actions price tracking feature."/>
@@ -40303,6 +41204,7 @@ should be able to be added at any place in this file.
   <suffix name="DesktopTabGroupsNewGroup" label="For desktop Tab Groups."/>
   <suffix name="DiscoverFeedHeaderMenu"
       label="For DiscoverFeedHeaderMenu feature."/>
+  <suffix name="DownloadEsbPromo" label="For Download Esb Iph feature promo."/>
   <suffix name="DownloadHome" label="For DownloadHome feature."/>
   <suffix name="DownloadIndicator" label="For DownloadIndicator feature."/>
   <suffix name="DownloadInfoBarDownloadContinuing"
@@ -40388,6 +41290,9 @@ should be able to be added at any place in this file.
       label="For iOSDefaultBrowserSettingsBadge feature"/>
   <suffix name="iOSDefaultBrowserVideoPromoTrigger"
       label="For iOSDefaultBrowserVideoPromoTrigger feature"/>
+  <suffix name="iOSDockingPromoFeature" label="For iOSDockingPromo feature"/>
+  <suffix name="iOSDockingPromoRemindMeLaterFeature"
+      label="For iOSDockingPromoRemindMeLater feature"/>
   <suffix name="iOSHistoryOnOverflowMenuFeature"
       label="For iOSHistoryOnOverflowMenuFeature feature"/>
   <suffix name="iOSInlinePromoEnhancedSafeBrowsing"
@@ -40419,6 +41324,10 @@ should be able to be added at any place in this file.
       label="For iOSReplaceSyncPromosWithSignInPromos feature"/>
   <suffix name="iOSShareToolbarItemFeature"
       label="For iOSShareToolbarItemFeature feature"/>
+  <suffix name="iOSSwipeBackForwardFeature"
+      label="For iOSSwipeBackForwardFeature feature"/>
+  <suffix name="iOSTabGridSwipeLeftForIncognito"
+      label="For iOSTabGridSwipeLeftForIncognito feature"/>
   <suffix name="iOSTabGridToolbarItemFeature"
       label="For iOSTabGridToolbarItemFeature feature"/>
   <suffix name="KeyboardAccessoryAddressFilling"
@@ -40442,7 +41351,7 @@ should be able to be added at any place in this file.
   <suffix name="NewTab" label="For NewTab feature."/>
   <suffix name="NewTabPageButton" label="Deprecated in M79-."/>
   <suffix name="NewTabPageHomeButton"
-      label="For NewTabPageHomeButton feature."/>
+      label="For NewTabPageHomeButton feature. (obsolete)"/>
   <suffix name="NewTabTip" label="For NewTabTip feature."/>
   <suffix name="PageInfo" label="In product help for opening PageInfo."/>
   <suffix name="PageInfoStoreInfo" label="For PageInfoStoreInfo feature."/>
@@ -40507,7 +41416,7 @@ should be able to be added at any place in this file.
   <suffix name="RequestDesktopSiteExceptionsGeneric"
       label="For the RequestDesktopSiteExceptionsGeneric feature."/>
   <suffix name="RequestDesktopSiteOptIn"
-      label="For the RequestDesktopSiteOptIn feature."/>
+      label="For the RequestDesktopSiteOptIn feature. (obsolete)"/>
   <suffix name="RequestDesktopSiteWindowSetting"
       label="For the RequestDesktopSiteWindowSetting feature."/>
   <suffix name="RestoreTabsOnFRE" label="For the RestoreTabsOnFRE feature."/>
@@ -40633,6 +41542,7 @@ should be able to be added at any place in this file.
       label="For Web Feed successful follow operations after the UI update."/>
   <suffix name="WebUiHelpBubbleTest" label="For WebUiHelpBubbleTest feature."/>
   <suffix name="WebUITabStrip" label="For the WebUI tab strip."/>
+  <suffix name="WhatsNewUpdated" label="For what's new updated content."/>
   <affected-action name="InProductHelp.NotifyEvent.IPH"/>
   <affected-action name="InProductHelp.NotifyUsedEvent.IPH"/>
   <affected-action name="InProductHelp.ShouldTriggerHelpUI.IPH"/>
@@ -40653,6 +41563,7 @@ should be able to be added at any place in this file.
       name="UserEducation.MessageAction.OverrideForUIRegionConflict.IPH"/>
   <affected-action name="UserEducation.MessageAction.Snooze.IPH"/>
   <affected-action name="UserEducation.MessageAction.Timeout.IPH"/>
+  <affected-action name="UserEducation.MessageNotShown.IPH"/>
   <affected-action name="UserEducation.MessageShown.IPH"/>
 </action-suffix>
 
@@ -41123,6 +42034,18 @@ should be able to be added at any place in this file.
   <suffix name="HomeButton" label="Home button"/>
   <suffix name="MediaButton" label="Media button"/>
   <suffix name="NewTabButton" label="New tab button for thumbnail tab strip"/>
+  <suffix name="PinnedShowBookmarkSidePanelButton"
+      label="Pinned show bookmark side panel button"/>
+  <suffix name="PinnedShowHistorySidePanelButton"
+      label="Pinned show history side panel button"/>
+  <suffix name="PinnedShowReadAnythingSidePanelButton"
+      label="Pinned show read anything side panel button"/>
+  <suffix name="PinnedShowReadingListSidePanelButton"
+      label="Pinned show reading list side panel button"/>
+  <suffix name="PinnedShowSearchCompanionSidePanelButton"
+      label="Pinned show search companion side panel button"/>
+  <suffix name="ShowPerformanceSidePanelButton"
+      label="Show performance side panel button"/>
   <suffix name="SidePanelButton" label="Side Panel button"/>
   <affected-action name="ResponsiveToolbar.OverflowMenuItemActivated"/>
 </action-suffix>
@@ -41145,6 +42068,15 @@ should be able to be added at any place in this file.
       label="Show user note side panel action"/>
   <affected-action name="Actions.PinnedToolbarButton.Pinned.ByContextMenu"/>
   <affected-action name="Actions.PinnedToolbarButton.Unpinned.ByContextMenu"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="FRE" label="During FRE"/>
+  <suffix name="Startup" label="During startup promo"/>
+  <affected-action name="IOS.Omnibox.Promo.PositionDiscarded"/>
+  <affected-action name="IOS.Omnibox.Promo.PositionValidated"/>
+  <affected-action name="IOS.Omnibox.Promo.Presented"/>
+  <affected-action name="IOS.Omnibox.Promo.Skipped"/>
 </action-suffix>
 
 </actions>

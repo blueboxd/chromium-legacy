@@ -16,9 +16,9 @@
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_constants.h"
 #import "ios/chrome/browser/ui/ntp/incognito/incognito_view.h"
 #import "ios/chrome/browser/ui/ntp/incognito/revamped_incognito_view.h"
-#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -332,31 +332,17 @@ const CGFloat kTitleLabelLineHeightMultiple = 1.3;
   CGFloat backgroundAlpha = CGColorGetAlpha(backgroundColor.CGColor);
   CGFloat shadowAlpha = CGColorGetAlpha(shadowColor.CGColor);
 
-  if (@available(iOS 15, *)) {
-    UINavigationBarAppearance* appearance =
-        [[UINavigationBarAppearance alloc] init];
-    [appearance configureWithOpaqueBackground];
-    appearance.backgroundColor =
-        [backgroundColor colorWithAlphaComponent:backgroundAlpha * opacity];
-    appearance.shadowColor =
-        [shadowColor colorWithAlphaComponent:shadowAlpha * opacity];
+  UINavigationBarAppearance* appearance =
+      [[UINavigationBarAppearance alloc] init];
+  [appearance configureWithOpaqueBackground];
+  appearance.backgroundColor =
+      [backgroundColor colorWithAlphaComponent:backgroundAlpha * opacity];
+  appearance.shadowColor =
+      [shadowColor colorWithAlphaComponent:shadowAlpha * opacity];
 
-    self.navigationBar.compactAppearance = appearance;
-    self.navigationBar.standardAppearance = appearance;
-    self.navigationBar.scrollEdgeAppearance = appearance;
-  } else {
-    UIImage* whiteImage = ImageWithColor(UIColor.whiteColor);
-    UIImage* navigationBarBackgroundImage = [whiteImage
-        imageWithTintColor:[backgroundColor
-                               colorWithAlphaComponent:backgroundAlpha *
-                                                       opacity]];
-    UIImage* navigationBarShadowImage = [whiteImage
-        imageWithTintColor:[shadowColor
-                               colorWithAlphaComponent:shadowAlpha * opacity]];
-    [self.navigationBar setBackgroundImage:navigationBarBackgroundImage
-                             forBarMetrics:UIBarMetricsDefault];
-    self.navigationBar.shadowImage = navigationBarShadowImage;
-  }
+  self.navigationBar.compactAppearance = appearance;
+  self.navigationBar.standardAppearance = appearance;
+  self.navigationBar.scrollEdgeAppearance = appearance;
 
   self.navigationBar.tintColor = [UIColor colorNamed:kBlueColor];
 }

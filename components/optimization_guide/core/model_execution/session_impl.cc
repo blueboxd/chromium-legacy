@@ -6,18 +6,39 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
+#include "base/timer/elapsed_timer.h"
+#include "base/uuid.h"
 #include "components/optimization_guide/core/model_execution/model_execution_util.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_access_controller.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_execution_config_interpreter.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_service_controller.h"
+#include "components/optimization_guide/core/model_execution/redactor.h"
+#include "components/optimization_guide/core/model_execution/repetition_checker.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
+#include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 
 namespace optimization_guide {
+namespace {
 
 using ModelExecutionError =
     OptimizationGuideModelExecutionError::ModelExecutionError;
+
+void LogResponseHasRepeats(proto::ModelExecutionFeature feature,
+                           bool has_repeats) {
+  base::UmaHistogramBoolean(
+      base::StrCat(
+          {"OptimizationGuide.ModelExecution.OnDeviceResponseHasRepeats.",
+           GetStringNameForModelExecutionFeature(feature)}),
+      has_repeats);
+}
+
+std::string GenerateExecutionId() {
+  return "on-device:" + base::Uuid::GenerateRandomV4().AsLowercaseString();
+}
+
+}  // namespace
 
 // Handles incrementally processing context. After the min context size has been
 // processed, any pending context processing will be cancelled if an
@@ -41,8 +62,13 @@ class SessionImpl::ContextProcessor
   void OnComplete(uint32_t tokens_processed) override {
     tokens_processed_ += tokens_processed;
 
+    if (has_cancelled_) {
+      return;
+    }
+
     // This means input has been fully processed.
     if (tokens_processed < expected_tokens_) {
+      finished_processing_ = true;
       return;
     }
 
@@ -56,10 +82,13 @@ class SessionImpl::ContextProcessor
     }
   }
 
-  void MaybeCancelProcessing() {
+  // Returns whether the full context was processed.
+  bool MaybeCancelProcessing() {
+    has_cancelled_ = true;
     if (can_cancel_) {
       client_.reset();
     }
+    return finished_processing_;
   }
 
   std::string& input() { return input_; }
@@ -75,27 +104,34 @@ class SessionImpl::ContextProcessor
     }
     session_->GetOrCreateSession().AddContext(
         on_device_model::mojom::InputOptions::New(
-            input_, num_tokens, tokens_processed_, /*ignore_context=*/false),
+            input_, num_tokens, tokens_processed_, /*ignore_context=*/false,
+            /*max_output_tokens=*/std::nullopt, /*ts_interval=*/std::nullopt),
         client_.BindNewPipeAndPassRemote());
   }
 
   raw_ref<SessionImpl> session_;
   std::string input_;
+  bool finished_processing_ = false;
   uint32_t expected_tokens_ = 0;
   uint32_t tokens_processed_ = 0;
   bool can_cancel_ = false;
+  bool has_cancelled_ = false;
   mojo::Receiver<on_device_model::mojom::ContextClient> client_{this};
 };
 
 SessionImpl::SessionImpl(
     StartSessionFn start_session_fn,
     proto::ModelExecutionFeature feature,
+    std::optional<proto::OnDeviceModelVersions> on_device_model_versions,
     const OnDeviceModelExecutionConfigInterpreter* config_interpreter,
     base::WeakPtr<OnDeviceModelServiceController> controller,
+    const std::optional<proto::FeatureTextSafetyConfiguration>& safety_config,
     ExecuteRemoteFn execute_remote_fn,
     OptimizationGuideLogger* optimization_guide_logger)
     : controller_(controller),
       feature_(feature),
+      on_device_model_versions_(on_device_model_versions),
+      safety_config_(safety_config),
       execute_remote_fn_(std::move(execute_remote_fn)),
       optimization_guide_logger_(optimization_guide_logger) {
   if (controller_ && controller_->ShouldStartNewSession()) {
@@ -179,12 +215,27 @@ void SessionImpl::ExecuteModel(
   std::unique_ptr<ExecuteModelHistogramLogger> logger =
       std::make_unique<ExecuteModelHistogramLogger>(feature_);
   last_message_ = MergeContext(request_metadata);
+
+  auto log_ai_data_request = std::make_unique<proto::LogAiDataRequest>();
+  SetExecutionRequest(feature_, *log_ai_data_request, *last_message_);
+  proto::OnDeviceModelServiceRequest* logged_request =
+      log_ai_data_request->mutable_model_execution_info()
+          ->mutable_on_device_model_execution_info()
+          ->add_execution_infos()
+          ->mutable_request()
+          ->mutable_on_device_model_service_request();
+
   if (context_start_time_ != base::TimeTicks()) {
+    base::TimeDelta context_start_to_execution =
+        base::TimeTicks::Now() - context_start_time_;
     base::UmaHistogramLongTimes(
         base::StrCat(
             {"OptimizationGuide.ModelExecution.ContextStartToExecutionTime.",
              GetStringNameForModelExecutionFeature(feature_)}),
-        base::TimeTicks::Now() - context_start_time_);
+        context_start_to_execution);
+    logged_request
+        ->set_time_from_input_context_processed_to_request_initiated_millis(
+            context_start_to_execution.InMilliseconds());
     // Only interested in logging the first request after adding context.
     context_start_time_ = base::TimeTicks();
   }
@@ -196,6 +247,11 @@ void SessionImpl::ExecuteModel(
                            std::move(callback));
     return;
   }
+
+  CHECK(on_device_model_versions_);
+  *(log_ai_data_request->mutable_model_execution_info()
+        ->mutable_on_device_model_execution_info()
+        ->mutable_model_versions()) = *on_device_model_versions_;
 
   if (on_device_state_->add_context_before_execute) {
     CHECK(context_);
@@ -221,17 +277,35 @@ void SessionImpl::ExecuteModel(
 
   // Cancel any optional context still processing.
   if (on_device_state_->context_processor) {
-    on_device_state_->context_processor->MaybeCancelProcessing();
+    bool finished_processing =
+        on_device_state_->context_processor->MaybeCancelProcessing();
     base::UmaHistogramCounts10000(
         base::StrCat(
             {"OptimizationGuide.ModelExecution.OnDeviceContextTokensProcessed.",
              GetStringNameForModelExecutionFeature(feature_)}),
+        on_device_state_->context_processor->tokens_processed());
+    base::UmaHistogramBoolean(
+        base::StrCat({"OptimizationGuide.ModelExecution."
+                      "OnDeviceContextFinishedProcessing.",
+                      GetStringNameForModelExecutionFeature(feature_)}),
+        finished_processing);
+    logged_request->set_input_context_num_tokens_processed(
         on_device_state_->context_processor->tokens_processed());
   }
 
   // Note: if on-device fails for some reason, the result will be changed.
   logger->set_result(ExecuteModelResult::kUsedOnDevice);
   on_device_state_->histogram_logger = std::move(logger);
+
+  if (!input->should_ignore_input_context &&
+      on_device_state_->context_processor) {
+    logged_request->set_input_context_string(
+        on_device_state_->context_processor->input());
+  }
+  logged_request->set_execution_string(input->input_string);
+  // TODO(b/302327957): Probably do some math to get the accurate number here.
+  logged_request->set_execution_num_tokens_processed(
+      features::GetOnDeviceModelMaxTokensForOutput());
 
   if (optimization_guide_logger_->ShouldEnableDebugLogs()) {
     OPTIMIZATION_GUIDE_LOGGER(
@@ -240,23 +314,15 @@ void SessionImpl::ExecuteModel(
         << "Executing model "
         << (input->should_ignore_input_context
                 ? ""
-                : base::StringPrintf("with input context of %d tokens:\n",
-                                     on_device_state_->context_processor
-                                         ? on_device_state_->context_processor
-                                               ->tokens_processed()
-                                         : 0))
-        << (!input->should_ignore_input_context &&
-                    on_device_state_->context_processor
-                ? (on_device_state_->context_processor->input() + "\n")
-                : "")
+                : base::StringPrintf(
+                      "with input context of %d tokens:\n%s\n",
+                      logged_request->input_context_num_tokens_processed(),
+                      logged_request->input_context_string().c_str()))
         << "with string:\n"
-        << input->input_string;
+        << logged_request->execution_string();
   }
 
-  on_device_state_->log_ai_data_request =
-      std::make_unique<proto::LogAiDataRequest>();
-  SetExecutionRequest(feature_, *(on_device_state_->log_ai_data_request),
-                      *last_message_);
+  on_device_state_->log_ai_data_request = std::move(log_ai_data_request);
   on_device_state_->callback = std::move(callback);
   on_device_state_->start = base::TimeTicks::Now();
   on_device_state_->timer_for_first_response.Start(
@@ -266,38 +332,88 @@ void SessionImpl::ExecuteModel(
   GetOrCreateSession().Execute(
       on_device_model::mojom::InputOptions::New(
           input->input_string, features::GetOnDeviceModelMaxTokensForExecute(),
-          /*token_offset=*/std::nullopt, input->should_ignore_input_context),
+          /*token_offset=*/std::nullopt, input->should_ignore_input_context,
+          features::GetOnDeviceModelMaxTokensForOutput(),
+          safety_config_
+              ? std::make_optional(
+                    features::GetOnDeviceModelTextSafetyTokenInterval())
+              : std::nullopt),
       on_device_state_->receiver.BindNewPipeAndPassRemote());
   on_device_state_->receiver.set_disconnect_handler(
       base::BindOnce(&SessionImpl::OnDisconnect, base::Unretained(this)));
 }
 
 // on_device_model::mojom::StreamingResponder:
-void SessionImpl::OnResponse(const std::string& response) {
+void SessionImpl::OnResponse(on_device_model::mojom::ResponseChunkPtr chunk) {
   on_device_state_->timer_for_first_response.Stop();
   if (on_device_state_->current_response.empty()) {
+    base::TimeDelta time_to_first_response =
+        base::TimeTicks::Now() - on_device_state_->start;
     base::UmaHistogramMediumTimes(
         base::StrCat(
             {"OptimizationGuide.ModelExecution.OnDeviceFirstResponseTime.",
              GetStringNameForModelExecutionFeature(feature_)}),
-        base::TimeTicks::Now() - on_device_state_->start);
+        time_to_first_response);
+    on_device_state_->MutableLoggedResponse()
+        ->set_time_to_first_response_millis(
+            time_to_first_response.InMilliseconds());
   }
-  on_device_state_->current_response += response;
-  SendResponse(/*is_complete=*/false);
+
+  if (!on_device_state_->MutableLoggedResponse()->has_repeats()) {
+    // Only continue updating the response if repeats have not been detected.
+    on_device_state_->current_response += chunk->text;
+
+    // Check for repeats here instead of SendResponse since we see each new
+    // token as it comes in here, and SendResponse will only see tokens if
+    // ts_scores are available.
+    int num_repeats = features::GetOnDeviceModelNumRepeats();
+    if (num_repeats > 1 &&
+        HasRepeatingSuffix(features::GetOnDeviceModelMinRepeatChars(),
+                           num_repeats, on_device_state_->current_response)) {
+      on_device_state_->MutableLoggedResponse()->set_has_repeats(true);
+      LogResponseHasRepeats(feature_, true);
+    }
+  }
+
+  if (chunk->ts_scores) {
+    on_device_state_->current_text_safety_scores = *chunk->ts_scores;
+  }
+
+  // Only proceed to send the response if we are not evaluating text safety or
+  // if there are text safety scores to evaluate.
+  if (!safety_config_ || chunk->ts_scores) {
+    SendResponse(ResponseType::kPartial);
+  }
 }
 
-void SessionImpl::OnComplete(on_device_model::mojom::ResponseStatus status) {
-  on_device_state_->histogram_logger.reset();
-  // TODO(b/302395507): Handle a retracted response.
+void SessionImpl::OnComplete(
+    on_device_model::mojom::ResponseSummaryPtr summary) {
+  base::TimeDelta time_to_completion =
+      base::TimeTicks::Now() - on_device_state_->start;
   base::UmaHistogramMediumTimes(
       base::StrCat(
           {"OptimizationGuide.ModelExecution.OnDeviceResponseCompleteTime.",
            GetStringNameForModelExecutionFeature(feature_)}),
-      base::TimeTicks::Now() - on_device_state_->start);
+      time_to_completion);
+  on_device_state_->MutableLoggedResponse()->set_time_to_completion_millis(
+      time_to_completion.InMilliseconds());
   if (controller_) {
     controller_->access_controller(/*pass_key=*/{})->OnResponseCompleted();
   }
-  SendResponse(/*is_complete=*/true);
+
+  if (safety_config_ && !summary->ts_scores) {
+    on_device_state_->receiver.ReportBadMessage(
+        "Missing required safety scores on complete");
+    CancelPendingResponse(
+        ExecuteModelResult::kResponseCompleteButNoRequiredSafetyScores,
+        ModelExecutionError::kGenericFailure);
+    return;
+  }
+
+  if (summary->ts_scores) {
+    on_device_state_->current_text_safety_scores = *summary->ts_scores;
+  }
+  SendResponse(ResponseType::kComplete);
   on_device_state_->ResetRequestState();
 }
 
@@ -335,24 +451,86 @@ void SessionImpl::CancelPendingResponse(ExecuteModelResult result,
     on_device_state_->histogram_logger->set_result(result);
   }
   auto callback = std::move(on_device_state_->callback);
+  auto log_ai_data_request = std::move(on_device_state_->log_ai_data_request);
   on_device_state_->ResetRequestState();
   if (callback) {
-    callback.Run(
-        base::unexpected(
-            OptimizationGuideModelExecutionError::FromModelExecutionError(
-                error)),
-        nullptr);
+    OptimizationGuideModelExecutionError og_error =
+        OptimizationGuideModelExecutionError::FromModelExecutionError(error);
+    std::unique_ptr<ModelQualityLogEntry> log_entry = nullptr;
+    if (og_error.ShouldLogModelQuality()) {
+      log_entry = std::make_unique<ModelQualityLogEntry>(
+          std::move(log_ai_data_request));
+      log_entry->set_model_execution_id(GenerateExecutionId());
+    }
+    callback.Run(OptimizationGuideModelStreamingExecutionResult(
+        base::unexpected(og_error), /*provided_by_on_device=*/true,
+        std::move(log_entry)));
   }
 }
 
-void SessionImpl::SendResponse(bool is_complete) {
+void SessionImpl::SendResponse(ResponseType response_type) {
   on_device_state_->timer_for_first_response.Stop();
   if (!on_device_state_->callback) {
+    on_device_state_->histogram_logger.get();
     return;
   }
 
+  proto::OnDeviceModelServiceResponse* logged_response =
+      on_device_state_->MutableLoggedResponse();
+
+  std::string current_response = on_device_state_->current_response;
+  logged_response->set_output_string(current_response);
+
+  if (auto* redactor =
+          on_device_state_->config_interpreter->GetRedactorForFeature(
+              feature_)) {
+    auto redact_string_input =
+        on_device_state_->config_interpreter->GetStringToCheckForRedacting(
+            feature_, *last_message_);
+    base::ElapsedTimer elapsed_timer;
+    auto redact_result =
+        redactor->Redact(redact_string_input, current_response);
+    base::UmaHistogramMicrosecondsTimes(
+        base::StrCat(
+            {"OptimizationGuide.ModelExecution.TimeToProcessRedactions.",
+             GetStringNameForModelExecutionFeature(feature_)}),
+        elapsed_timer.Elapsed());
+    if (redact_result == RedactResult::kReject) {
+      if (on_device_state_->histogram_logger) {
+        on_device_state_->histogram_logger->set_result(
+            ExecuteModelResult::kContainedPII);
+        on_device_state_->histogram_logger.reset();
+      }
+      logged_response->set_status(
+          proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_RETRACTED);
+      CancelPendingResponse(ExecuteModelResult::kUsedOnDeviceOutputUnsafe,
+                            ModelExecutionError::kFiltered);
+      return;
+    }
+  }
+
+  const bool is_complete = response_type != ResponseType::kPartial;
+
+  bool is_unsafe = IsUnsafeText(on_device_state_->current_text_safety_scores);
+  if (is_unsafe || is_complete) {
+    on_device_state_->AddTextSafetyExecutionLogging(is_unsafe);
+  }
+  if (is_unsafe) {
+    if (on_device_state_->histogram_logger) {
+      on_device_state_->histogram_logger->set_result(
+          ExecuteModelResult::kUsedOnDeviceOutputUnsafe);
+    }
+
+    if (features::GetOnDeviceModelRetractUnsafeContent()) {
+      on_device_state_->current_response.clear();
+      CancelPendingResponse(ExecuteModelResult::kUsedOnDeviceOutputUnsafe,
+                            ModelExecutionError::kFiltered);
+      return;
+    }
+  }
+
   auto output = on_device_state_->config_interpreter->ConstructOutputMetadata(
-      feature_, on_device_state_->current_response);
+      feature_, current_response);
   if (!output) {
     if (on_device_state_->histogram_logger) {
       on_device_state_->histogram_logger->set_result(
@@ -365,23 +543,54 @@ void SessionImpl::SendResponse(bool is_complete) {
     return;
   }
 
-  std::unique_ptr<ModelQualityLogEntry> log_entry;
-  if (is_complete && on_device_state_->log_ai_data_request) {
-    SetExecutionResponse(feature_, *(on_device_state_->log_ai_data_request),
-                         *output);
-    // Create corresponding log entry for `log_ai_data_request` to pass it with
-    // the callback.
-    log_entry = std::make_unique<ModelQualityLogEntry>(
-        std::move(on_device_state_->log_ai_data_request));
-    on_device_state_->log_ai_data_request.reset();
+  if (!is_complete &&
+      on_device_state_->MutableLoggedResponse()->has_repeats()) {
+    if (features::GetOnDeviceModelRetractRepeats()) {
+      on_device_state_->current_response.clear();
+      logged_response->set_status(
+          proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_RETRACTED);
+      CancelPendingResponse(ExecuteModelResult::kResponseHadRepeats,
+                            ModelExecutionError::kFiltered);
+      return;
+    }
+
+    // If a repeat is detected, halt the response, and artificially send the
+    // OnComplete event.
+    on_device_state_->receiver.reset();
+    auto summary = on_device_model::mojom::ResponseSummary::New();
+    if (!on_device_state_->current_text_safety_scores.empty()) {
+      summary->ts_scores = on_device_state_->current_text_safety_scores;
+    }
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SessionImpl::OnComplete,
+                       on_device_state_->session_weak_ptr_factory_.GetWeakPtr(),
+                       std::move(summary)));
+  } else if (is_complete &&
+             !on_device_state_->MutableLoggedResponse()->has_repeats()) {
+    // Log completed responses with no repeats to calculate percentage of
+    // responses that have repeats.
+    LogResponseHasRepeats(feature_, false);
   }
 
-  on_device_state_->callback.Run(
-      StreamingResponse{
-          .response = *output,
-          .is_complete = is_complete,
-      },
-      std::move(log_entry));
+  std::unique_ptr<ModelQualityLogEntry> log_entry;
+  if (is_complete) {
+    // Only bother setting the full response if the request is complete.
+    if (on_device_state_->log_ai_data_request) {
+      SetExecutionResponse(feature_, *(on_device_state_->log_ai_data_request),
+                           *output);
+      logged_response->set_status(
+          proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_SUCCESS);
+      log_entry = std::make_unique<ModelQualityLogEntry>(
+          std::move(on_device_state_->log_ai_data_request));
+      log_entry->set_model_execution_id(GenerateExecutionId());
+      on_device_state_->log_ai_data_request.reset();
+    }
+  }
+  on_device_state_->callback.Run(OptimizationGuideModelStreamingExecutionResult(
+      base::ok(
+          StreamingResponse{.response = *output, .is_complete = is_complete}),
+      true, std::move(log_entry)));
 }
 
 bool SessionImpl::ShouldUseOnDeviceModel() const {
@@ -421,20 +630,84 @@ std::unique_ptr<google::protobuf::MessageLite> SessionImpl::MergeContext(
   return message;
 }
 
-SessionImpl::OnDeviceState::OnDeviceState(
-    StartSessionFn start_session_fn,
-    on_device_model::mojom::StreamingResponder* session)
-    : start_session_fn(std::move(start_session_fn)), receiver(session) {}
+bool SessionImpl::IsUnsafeText(const std::vector<float>& scores) const {
+  if (!safety_config_) {
+    // If no safety config and we are allowed here, that means we don't care
+    // about the safety scores so just mark the content as safe.
+    return false;
+  }
+
+  CHECK(!scores.empty());
+
+  for (const auto& threshold : safety_config_->safety_category_thresholds()) {
+    size_t output_index = static_cast<size_t>(threshold.output_index());
+    if (static_cast<size_t>(output_index) >= scores.size()) {
+      // Needed to evaluate a score, but output was invalid. Mark it as unsafe.
+      return true;
+    }
+
+    if (scores.at(output_index) >= threshold.threshold()) {
+      // Output score exceeded threshold.
+      return true;
+    }
+  }
+
+  // If it gets here, everything has passed.
+  return false;
+}
+
+SessionImpl::OnDeviceState::OnDeviceState(StartSessionFn start_session_fn,
+                                          SessionImpl* session)
+    : start_session_fn(std::move(start_session_fn)),
+      receiver(session),
+      session_weak_ptr_factory_(session) {}
 
 SessionImpl::OnDeviceState::~OnDeviceState() = default;
+
+proto::OnDeviceModelServiceResponse*
+SessionImpl::OnDeviceState::MutableLoggedResponse() {
+  CHECK(log_ai_data_request);
+  CHECK_GT(log_ai_data_request->model_execution_info()
+               .on_device_model_execution_info()
+               .execution_infos_size(),
+           0);
+  return log_ai_data_request->mutable_model_execution_info()
+      ->mutable_on_device_model_execution_info()
+      ->mutable_execution_infos(0)
+      ->mutable_response()
+      ->mutable_on_device_model_service_response();
+}
+
+void SessionImpl::OnDeviceState::AddTextSafetyExecutionLogging(bool is_unsafe) {
+  if (current_text_safety_scores.empty()) {
+    return;
+  }
+
+  CHECK(log_ai_data_request);
+
+  auto* ts_execution_info = log_ai_data_request->mutable_model_execution_info()
+                                ->mutable_on_device_model_execution_info()
+                                ->add_execution_infos();
+  ts_execution_info->mutable_request()
+      ->mutable_text_safety_model_request()
+      ->set_text(current_response);
+  auto* ts_resp = ts_execution_info->mutable_response()
+                      ->mutable_text_safety_model_response();
+  *ts_resp->mutable_scores() = {current_text_safety_scores.begin(),
+                                current_text_safety_scores.end()};
+  ts_resp->set_is_unsafe(is_unsafe);
+}
 
 void SessionImpl::OnDeviceState::ResetRequestState() {
   receiver.reset();
   callback.Reset();
   current_response.clear();
+  current_text_safety_scores.clear();
   start = base::TimeTicks();
   timer_for_first_response.Stop();
   histogram_logger.reset();
+  log_ai_data_request.reset();
+  session_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 SessionImpl::ExecuteModelHistogramLogger::~ExecuteModelHistogramLogger() {

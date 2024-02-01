@@ -4,6 +4,8 @@
 
 #include "components/plus_addresses/plus_address_service.h"
 
+#include <optional>
+
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -23,7 +25,6 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace plus_addresses {
@@ -43,7 +44,7 @@ TEST_F(PlusAddressServiceTest, BasicTest) {
   service.SavePlusAddress(test_origin, test_address);
   EXPECT_TRUE(service.IsPlusAddress(test_address));
   EXPECT_EQ(service.GetPlusAddress(test_origin), test_address);
-  EXPECT_EQ(service.GetPlusAddress(url::Origin()), absl::nullopt);
+  EXPECT_EQ(service.GetPlusAddress(url::Origin()), std::nullopt);
   EXPECT_EQ(service.GetPlusProfile(test_origin)->plus_address, test_address);
 }
 
@@ -96,14 +97,14 @@ TEST_F(PlusAddressServiceTest, SupportsPlusAddressNoServer) {
       /*is_off_the_record=*/false));
 }
 
-// Tests for the label overrides. These tests are not in the enabled/disabled
-// fixtures as they vary parameters.
-TEST_F(PlusAddressServiceTest, LabelOverrides) {
+// Tests for the suggestion label overrides. These tests are not in the
+// enabled/disabled fixtures as they vary parameters.
+TEST_F(PlusAddressServiceTest, SuggestionLabelOverride) {
   base::test::ScopedFeatureList scoped_feature_list;
   // Setting the override should result in echoing the override back.
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       plus_addresses::kFeature,
-      {{plus_addresses::kEnterprisePlusAddressLabelOverride.name,
+      {{plus_addresses::kEnterprisePlusAddressSuggestionLabelOverride.name,
         "mattwashere"}});
   PlusAddressService service;
   EXPECT_EQ(service.GetCreateSuggestionLabel(), u"mattwashere");
@@ -114,7 +115,7 @@ TEST_F(PlusAddressServiceTest, LabelOverrideWithSpaces) {
   // Setting the override should result in echoing the override back.
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       plus_addresses::kFeature,
-      {{plus_addresses::kEnterprisePlusAddressLabelOverride.name,
+      {{plus_addresses::kEnterprisePlusAddressSuggestionLabelOverride.name,
         "matt was here"}});
   PlusAddressService service;
   EXPECT_EQ(service.GetCreateSuggestionLabel(), u"matt was here");
@@ -768,13 +769,13 @@ TEST_F(PlusAddressServiceEnabledTest, DefaultLabel) {
 
 TEST_F(PlusAddressServiceEnabledTest, NoIdentityServiceGetEmail) {
   PlusAddressService service;
-  EXPECT_EQ(service.GetPrimaryEmail(), absl::nullopt);
+  EXPECT_EQ(service.GetPrimaryEmail(), std::nullopt);
 }
 
 TEST_F(PlusAddressServiceEnabledTest, SignedOutGetEmail) {
   signin::IdentityTestEnvironment identity_test_env;
   PlusAddressService service(identity_test_env.identity_manager());
-  EXPECT_EQ(service.GetPrimaryEmail(), absl::nullopt);
+  EXPECT_EQ(service.GetPrimaryEmail(), std::nullopt);
 }
 
 TEST_F(PlusAddressServiceEnabledTest, SignedInGetEmail) {

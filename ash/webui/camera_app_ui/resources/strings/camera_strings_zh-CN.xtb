@@ -46,6 +46,7 @@
 <translation id="3067436040345934772">向右平移</translation>
 <translation id="3081586908890909590">切换到录制视频模式</translation>
 <translation id="313467653172006084">30 FPS</translation>
+<translation id="3158534262962737808">加入“<ph name="WIFINAME" />”</translation>
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="3240426699337459095">已复制链接</translation>
 <translation id="3354465018370944241">照片设置</translation>
@@ -78,12 +79,14 @@
 <translation id="4705093842003735294">最大分辨率</translation>
 <translation id="4864143361253542638">已扫描的页面的列表</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="4892746741161549733">复制链接地址“<ph name="URL" />”</translation>
 <translation id="491895758387112773">录制多个视频流</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4984613436295737187">2K (1440p)</translation>
 <translation id="5034763830503483128">照片宽高比</translation>
 <translation id="5057360777601936059">您的摄像头目前不可用。
         请检查此摄像头是否连接正确。</translation>
+<translation id="5157591164390831335">检测到网址。</translation>
 <translation id="5163387177077603948">正在向右移动</translation>
 <translation id="5235304959032763950">16:9</translation>
 <translation id="5266635337630551423">文件左上角</translation>
@@ -110,6 +113,7 @@
 <translation id="6353688143752491039">感谢您针对“相机”应用提供宝贵意见。
 
 如果您的反馈是关于图片或视频的画质，请附上示例照片或视频，并说明问题所在（例如照片太暗或摄像头无法聚焦）。</translation>
+<translation id="6519884562954018934">加入“<ph name="WIFINAME" />”</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6617916774429601017">显示所有分辨率</translation>
 <translation id="6631515515009660915">镜像已关闭</translation>
@@ -129,6 +133,7 @@
 <translation id="7450541714075000668">文本已复制</translation>
 <translation id="7488619942230388918">录制 GIF 视频</translation>
 <translation id="7557677699350329807">切换到下一个摄像头</translation>
+<translation id="7562584071994185503">复制文字“<ph name="TEXT" />”</translation>
 <translation id="7607002721634913082">已暂停</translation>
 <translation id="7608223098072244877">4 x 4</translation>
 <translation id="761421184377987513">正在向左下角移动</translation>
@@ -141,6 +146,7 @@
 <translation id="7726641833034062494">录制一般视频</translation>
 <translation id="7748344063862150053">文件右上角</translation>
 <translation id="7933675232020478311">正在向右下角移动</translation>
+<translation id="7983668134180549431">检测到文字。</translation>
 <translation id="8079255378695216066">无法开始录制</translation>
 <translation id="8120146556401698679">平移，倾斜，缩放</translation>
 <translation id="8131740175452115882">确认</translation>
@@ -150,16 +156,17 @@
 <translation id="8346544573713510785">由相机 HAL 缩放帧</translation>
 <translation id="8425673304802773841">向下倾斜</translation>
 <translation id="8428213095426709021">设置</translation>
+<translation id="8609951387004618906">打开“<ph name="URL" />”</translation>
 <translation id="8629662593426079630">360p</translation>
 <translation id="8711011893539266636">使用切换开关可将麦克风静音或取消静音。目前已静音</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8732462232047530626">预览元数据</translation>
+<translation id="874854738381978209">检测到 Wi-Fi 网络。</translation>
 <translation id="8815966864175525708">切换到人像拍摄模式</translation>
 <translation id="8828441885228359828">继续录制</translation>
 <translation id="8870695351537079478">无法开始录制</translation>
 <translation id="8880167521484863515">4:3</translation>
 <translation id="8903921497873541725">放大</translation>
-<translation id="8926890870105777777">加入“<ph name="WIFINAME" />”网络</translation>
 <translation id="9045010116236796332">请将文件的各个边置于框内</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="906331135292332864">正在处理图片…</translation>

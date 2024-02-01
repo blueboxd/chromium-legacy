@@ -7,14 +7,15 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 
+#include "base/containers/queue.h"
 #include "base/functional/callback.h"
 #include "base/strings/string_piece.h"
 #include "base/types/id_type.h"
 #include "media/base/media_export.h"
 #include "media/base/status.h"
 #include "media/formats/hls/types.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -43,12 +44,19 @@ class MEDIA_EXPORT HlsDataSourceProvider {
   using ReadResult = ReadStatus::Or<std::unique_ptr<HlsDataSourceStream>>;
   using ReadCb = base::OnceCallback<void(ReadResult)>;
 
-  // Kicks off a read from the given url and the optional constrained byterange
-  // and replies with a stream reference, which can be use to continue reading
-  // and to extract already fetched data.
-  virtual void ReadFromUrl(GURL uri,
-                           absl::optional<hls::types::ByteRange> range,
-                           ReadCb callback) = 0;
+  // Represents reading from a specific URI at the given byte range. Multiple
+  // segments can be added to a read queue to join chunks together from either
+  // multiple URIs or from multiple disjoing ranges on the same URI.
+  struct UrlDataSegment {
+    const GURL uri;
+    const std::optional<hls::types::ByteRange> range;
+  };
+  using SegmentQueue = base::queue<UrlDataSegment>;
+
+  // Kicks off a read to a chain of segments, and replies with a stream
+  // reference which can be used to continue fetching partial data.
+  virtual void ReadFromCombinedUrlQueue(SegmentQueue segments,
+                                        ReadCb callback) = 0;
 
   // Continues to read from an existing stream.
   virtual void ReadFromExistingStream(
@@ -57,6 +65,10 @@ class MEDIA_EXPORT HlsDataSourceProvider {
 
   // Aborts all pending reads and calls `callback` when finished.
   virtual void AbortPendingReads(base::OnceClosure callback) = 0;
+
+  // Helper function for reading from a single segment by creating a queue of
+  // size 1 for use with `ReadFromCombinedUrlQueue`
+  void ReadFromUrl(UrlDataSegment segment, ReadCb callback);
 };
 
 // A buffer-owning wrapper for an HlsDataSource which can be instructed to
@@ -73,8 +85,8 @@ class MEDIA_EXPORT HlsDataSourceStream {
   // except for an ownership-holding smart pointer, as the destruction cb may
   // do work across threads.
   HlsDataSourceStream(StreamId stream_id,
-                      base::OnceClosure on_destructed_cb,
-                      absl::optional<hls::types::ByteRange> range);
+                      HlsDataSourceProvider::SegmentQueue segments,
+                      base::OnceClosure on_destructed_cb);
   ~HlsDataSourceStream();
 
   // Streams use an ID associated with a MultiBufferDataSource without
@@ -88,15 +100,22 @@ class MEDIA_EXPORT HlsDataSourceStream {
 
   size_t buffer_size() const { return buffer_.size(); }
 
-  absl::optional<size_t> max_read_position() const {
-    return max_read_position_;
-  }
+  std::optional<size_t> max_read_position() const { return max_read_position_; }
 
   const uint8_t* raw_data() const { return buffer_.data(); }
 
   // Often the network data for HLS consists of plain-text manifest files, so
   // this supports accessing the fetched data as a string view.
   std::string_view AsString() const;
+
+  // Determines whether the current segment has finished reading, and there are
+  // more segments in the queue to read from.
+  bool RequiresNextDataSource() const;
+
+  // Gets the next segment URI from the queue of segments. It is invalid to call
+  // this method if `RequiresResetForNewSegment` does not return true. This
+  // method will also update the internal range if the segment has one set.
+  GURL GetNextSegmentURI();
 
   // Has the stream read all possible data?
   bool CanReadMore() const;
@@ -131,7 +150,7 @@ class MEDIA_EXPORT HlsDataSourceStream {
 
   // If this optional value is set, then data can't be read past this maximum
   // value.
-  absl::optional<size_t> max_read_position_;
+  std::optional<size_t> max_read_position_;
 
   // The data source read response indicated that the stream has ended.
   bool reached_end_of_stream_ = false;
@@ -139,6 +158,12 @@ class MEDIA_EXPORT HlsDataSourceStream {
   // The stream is unable to start a second write or clear until it is unlocked
   // by UnlockStreamPostWrite.
   bool stream_locked_ = false;
+
+  // The queue of segments to read from.
+  HlsDataSourceProvider::SegmentQueue segments_;
+
+  // Does this stream require a reset to get the next data source.
+  bool requires_next_data_source_;
 
   base::OnceClosure on_destructed_cb_;
 

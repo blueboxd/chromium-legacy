@@ -15,7 +15,6 @@
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
@@ -67,9 +66,7 @@ class ASH_EXPORT ContentsView : public views::View,
     }
 
    private:
-    // This field is not a raw_ptr<> because it was filtered by the rewriter
-    // for: #union
-    RAW_PTR_EXCLUSION ContentsView* const contents_view_;
+    const raw_ptr<ContentsView> contents_view_;
   };
 
   explicit ContentsView(AppListView* app_list_view);
@@ -226,16 +223,15 @@ class ASH_EXPORT ContentsView : public views::View,
   gfx::Rect ConvertRectToWidgetWithoutTransform(const gfx::Rect& rect);
 
   // Sub-views of the ContentsView. All owned by the views hierarchy.
-  raw_ptr<AssistantPageView, ExperimentalAsh> assistant_page_view_ = nullptr;
-  raw_ptr<AppsContainerView, ExperimentalAsh> apps_container_view_ = nullptr;
-  raw_ptr<SearchResultPageView, ExperimentalAsh> search_result_page_view_ =
-      nullptr;
+  raw_ptr<AssistantPageView> assistant_page_view_ = nullptr;
+  raw_ptr<AppsContainerView> apps_container_view_ = nullptr;
+  raw_ptr<SearchResultPageView> search_result_page_view_ = nullptr;
 
   // The child page views. Owned by the views hierarchy.
-  std::vector<AppListPage*> app_list_pages_;
+  std::vector<raw_ptr<AppListPage, VectorExperimental>> app_list_pages_;
 
   // Owned by the views hierarchy.
-  const raw_ptr<AppListView, ExperimentalAsh> app_list_view_;
+  const raw_ptr<AppListView> app_list_view_;
 
   // Maps State onto |view_model_| indices.
   std::map<AppListState, int> state_to_view_;

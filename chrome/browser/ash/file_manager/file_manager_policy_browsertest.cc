@@ -309,8 +309,8 @@ class DlpFilesAppBrowserTestBase {
 
   // MockDlpRulesManager is owned by KeyedService and is guaranteed to outlive
   // this class.
-  raw_ptr<policy::MockDlpRulesManager, DanglingUntriaged | ExperimentalAsh>
-      mock_rules_manager_ = nullptr;
+  raw_ptr<policy::MockDlpRulesManager, DanglingUntriaged> mock_rules_manager_ =
+      nullptr;
 
   std::unique_ptr<policy::DlpFilesControllerAsh> files_controller_;
 
@@ -696,7 +696,8 @@ class FileTransferConnectorFilesAppBrowserTestBase {
           expected_results,
           /*username*/ kUserName,
           /*profile_identifier*/ profile->GetPath().AsUTF8Unsafe(),
-          /*scan_ids*/ expected_scan_ids);
+          /*scan_ids*/ expected_scan_ids,
+          /*content_transfer_method*/ absl::nullopt);
 
       return true;
     }
@@ -946,7 +947,7 @@ class FileTransferConnectorFilesAppBrowserTest
 
     // Verify the displayed blocked files shown in the dialog.
     std::vector<std::string> displayed_files;
-    for (const auto* row_view : view->children()) {
+    for (const views::View* row_view : view->children()) {
       const views::Label* label =
           static_cast<const views::Label*>(row_view->GetViewByID(
               policy::PolicyDialogBase::kConfidentialRowTitleViewId));
@@ -988,7 +989,7 @@ class FileTransferConnectorFilesAppBrowserTest
 
     // Verify the displayed blocked files shown in the dialog.
     std::vector<std::string> displayed_files;
-    for (const auto* row_view : view->children()) {
+    for (const views::View* row_view : view->children()) {
       const views::Label* label =
           static_cast<const views::Label*>(row_view->GetViewByID(
               policy::PolicyDialogBase::kConfidentialRowTitleViewId));
@@ -1234,6 +1235,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         FILE_TRANSFER_TEST_CASE("transferConnectorFromDriveToDownloadsFlat")
             .FileTransferConnectorReportOnlyMode()
             .NewDirectoryTree(),
+        FILE_TRANSFER_TEST_CASE("transferConnectorFromDriveToDownloadsFlatDesti"
+                                "nationNoSpaceForReportOnly")
+            .FileTransferConnectorReportOnlyMode()
+            .NewDirectoryTree(),
         FILE_TRANSFER_TEST_CASE("transferConnectorFromDriveToDownloadsMoveDeep")
             .NewDirectoryTree(),
         FILE_TRANSFER_TEST_CASE("transferConnectorFromDriveToDownloadsMoveDeep")
@@ -1292,6 +1297,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .FileTransferConnectorReportOnlyMode(),
         FILE_TRANSFER_TEST_CASE("transferConnectorFromDriveToDownloadsFlat"),
         FILE_TRANSFER_TEST_CASE("transferConnectorFromDriveToDownloadsFlat")
+            .FileTransferConnectorReportOnlyMode(),
+        FILE_TRANSFER_TEST_CASE("transferConnectorFromDriveToDownloadsFlatDesti"
+                                "nationNoSpaceForReportOnly")
             .FileTransferConnectorReportOnlyMode(),
         FILE_TRANSFER_TEST_CASE(
             "transferConnectorFromDriveToDownloadsMoveDeep"),

@@ -93,13 +93,6 @@ std::string BuildTranslationTitleText(const IntentInfo& intent_info) {
                                    locale_name);
 }
 
-std::string BuildTranslationTitleText(const std::string& query_text,
-                                      const std::string& locale_name) {
-  return l10n_util::GetStringFUTF8(IDS_QUICK_ANSWERS_TRANSLATION_TITLE_TEXT,
-                                   base::UTF8ToUTF16(query_text),
-                                   base::UTF8ToUTF16(locale_name));
-}
-
 std::string BuildUnitConversionResultText(const std::string& result_value,
                                           const std::string& name) {
   return l10n_util::GetStringFUTF8(
@@ -111,11 +104,18 @@ std::string UnescapeStringForHTML(const std::string& string) {
   return base::UTF16ToUTF8(base::UnescapeForHTML(base::UTF8ToUTF16(string)));
 }
 
-std::optional<double> GetRatio(const double value1, const double value2) {
-  if (value1 == 0 || value2 == 0)
+std::optional<double> GetRatio(const std::optional<double>& value1,
+                               const std::optional<double>& value2) {
+  if (!value1.has_value() || !value2.has_value()) {
     return std::nullopt;
+  }
 
-  return std::max(value1, value2) / std::min(value1, value2);
+  if (value1.value() == 0 || value2.value() == 0) {
+    return std::nullopt;
+  }
+
+  return std::max(value1.value(), value2.value()) /
+         std::min(value1.value(), value2.value());
 }
 
 }  // namespace quick_answers

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -15,6 +17,7 @@
 #include "third_party/blink/renderer/core/css/parser/sizes_attribute_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -909,6 +912,8 @@ void PreloadHelper::FetchDictionaryIfNeeded(
 Resource* PreloadHelper::StartPreload(ResourceType type,
                                       FetchParameters& params,
                                       Document& document) {
+  base::ElapsedTimer timer;
+
   ResourceFetcher* resource_fetcher = document.Fetcher();
   Resource* resource = nullptr;
   switch (type) {
@@ -931,8 +936,9 @@ Resource* PreloadHelper::StartPreload(ResourceType type,
       params.SetRequestContext(mojom::blink::RequestContextType::SCRIPT);
       params.SetRequestDestination(network::mojom::RequestDestination::kScript);
       resource = ScriptResource::Fetch(
-          params, resource_fetcher, nullptr, ScriptResource::kAllowStreaming,
-          v8_compile_hints_producer, v8_compile_hints_consumer);
+          params, resource_fetcher, nullptr, document.GetAgent().isolate(),
+          ScriptResource::kAllowStreaming, v8_compile_hints_producer,
+          v8_compile_hints_consumer);
       break;
     }
     case ResourceType::kCSSStyleSheet:
@@ -966,6 +972,9 @@ Resource* PreloadHelper::StartPreload(ResourceType type,
     default:
       NOTREACHED();
   }
+
+  base::UmaHistogramMicrosecondsTimes("Blink.PreloadRequestStartDuration",
+                                      timer.Elapsed());
 
   return resource;
 }

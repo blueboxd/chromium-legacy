@@ -15,6 +15,7 @@
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
+#include "ash/system/toast/anchored_nudge.h"
 #include "ash/system/unified/feature_tile.h"
 #include "base/timer/timer.h"
 #include "base/types/cxx23_to_underlying.h"
@@ -40,7 +41,7 @@ const base::RepeatingTimer& GameDashboardContextTestApi::GetRecordingTimer()
 
 const std::u16string& GameDashboardContextTestApi::GetRecordingDuration()
     const {
-  return context_->recording_duration_;
+  return context_->GetRecordingDuration();
 }
 
 GameDashboardWidget* GameDashboardContextTestApi::GetGameDashboardButtonWidget()
@@ -105,13 +106,13 @@ GameDashboardContextTestApi::GetMainMenuGameControlsDetailsButton() {
 PillButton* GameDashboardContextTestApi::GetMainMenuGameControlsSetupButton() {
   auto* main_menu_view = GetMainMenuView();
   CHECK(main_menu_view);
-  return main_menu_view->game_controls_setup_button_;
+  return main_menu_view->GetGameControlsSetupButton();
 }
 
 Switch* GameDashboardContextTestApi::GetMainMenuGameControlsFeatureSwitch() {
   auto* main_menu_view = GetMainMenuView();
   CHECK(main_menu_view);
-  return main_menu_view->game_controls_feature_switch_;
+  return main_menu_view->GetGameControlsFeatureSwith();
 }
 
 views::LabelButton* GameDashboardContextTestApi::GetMainMenuFeedbackButton() {
@@ -127,6 +128,17 @@ IconButton* GameDashboardContextTestApi::GetMainMenuHelpButton() {
 IconButton* GameDashboardContextTestApi::GetMainMenuSettingsButton() {
   return views::AsViewClass<IconButton>(
       GetMainMenuViewById(VIEW_ID_GD_GENERAL_SETTINGS_BUTTON));
+}
+
+AnchoredNudge* GameDashboardContextTestApi::GetGameControlsSetupNudge() {
+  if (auto* main_menu = GetMainMenuView()) {
+    return main_menu->GetGameControlsSetupNudgeForTesting();
+  }
+  return nullptr;
+}
+
+views::Widget* GameDashboardContextTestApi::GetWelcomeDialogWidget() {
+  return context_->welcome_dialog_widget_.get();
 }
 
 void GameDashboardContextTestApi::OpenTheMainMenu() {

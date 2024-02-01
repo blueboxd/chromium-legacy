@@ -1126,7 +1126,7 @@ TEST_F(AggregationServiceStorageSqlTest,
       "PrivacySandbox.AggregationService.Storage.Sql.Error",
       base::checked_cast<base::HistogramBase::Sample>(
           sql::SqliteLoggedResultCode::kCorrupt),
-      /*expected_bucket_count=*/6);
+      /*expected_bucket_count=*/1);
 
   CloseDatabase();
 }
@@ -1170,6 +1170,10 @@ TEST_F(AggregationServiceStorageSqlTest, StoreRequest_RespectsLimit) {
   histograms_.ExpectBucketCount(
       "PrivacySandbox.AggregationService.Storage.Sql.StoreRequestHasCapacity",
       false, 1);
+  histograms_.ExpectTotalCount(
+      "PrivacySandbox.AggregationService.Storage.Sql."
+      "StoredRequestsPerReportingOrigin",
+      example_limit + 2);
 }
 
 TEST_F(AggregationServiceStorageSqlTest, StoreRequest_LimitIsScopedCorrectly) {
@@ -1228,6 +1232,10 @@ TEST_F(AggregationServiceStorageSqlTest, StoreRequest_LimitIsScopedCorrectly) {
   histograms_.ExpectBucketCount(
       "PrivacySandbox.AggregationService.Storage.Sql.StoreRequestHasCapacity",
       false, 2);
+  histograms_.ExpectTotalCount(
+      "PrivacySandbox.AggregationService.Storage.Sql."
+      "StoredRequestsPerReportingOrigin",
+      example_limit + 3);
 }
 
 TEST_F(AggregationServiceStorageSqlTest,

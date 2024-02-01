@@ -95,6 +95,7 @@
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/math_transform.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_offset_map.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -110,14 +111,12 @@ namespace blink {
 struct SameSizeAsComputedStyleBase
     : public GarbageCollected<SameSizeAsComputedStyleBase> {
   SameSizeAsComputedStyleBase() {
-    base::debug::Alias(&data_refs);
     base::debug::Alias(&pointers);
     base::debug::Alias(&bitfields);
   }
 
  private:
-  void* data_refs[8];
-  Member<void*> pointers[1];
+  Member<void*> pointers[10];
   unsigned bitfields[5];
 };
 
@@ -414,7 +413,8 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
     return Difference::kDescendantAffecting;
   }
   if (old_style.Display() != new_style.Display() &&
-      old_style.BlockifiesChildren() != new_style.BlockifiesChildren()) {
+      (old_style.BlockifiesChildren() != new_style.BlockifiesChildren() ||
+       old_style.InlinifiesChildren() != new_style.InlinifiesChildren())) {
     return Difference::kDescendantAffecting;
   }
   // TODO(crbug.com/1213888): Only recalc affected descendants.
@@ -579,28 +579,86 @@ bool ComputedStyle::operator==(const ComputedStyle& o) const {
          InheritedVariablesEqual(o);
 }
 
-bool ComputedStyle::HighlightPseudoElementStylesDependOnFontMetrics() const {
+bool ComputedStyle::HighlightPseudoElementStylesDependOnRelativeUnits() const {
   const StyleHighlightData& highlight_data = HighlightData();
   if (highlight_data.Selection() &&
-      highlight_data.Selection()->HasFontRelativeUnits()) {
+      highlight_data.Selection()->HasAnyRelativeUnits()) {
     return true;
   }
   if (highlight_data.TargetText() &&
-      highlight_data.TargetText()->HasFontRelativeUnits()) {
+      highlight_data.TargetText()->HasAnyRelativeUnits()) {
     return true;
   }
   if (highlight_data.SpellingError() &&
-      highlight_data.SpellingError()->HasFontRelativeUnits()) {
+      highlight_data.SpellingError()->HasAnyRelativeUnits()) {
     return true;
   }
   if (highlight_data.GrammarError() &&
-      highlight_data.GrammarError()->HasFontRelativeUnits()) {
+      highlight_data.GrammarError()->HasAnyRelativeUnits()) {
     return true;
   }
   const CustomHighlightsStyleMap& custom_highlights =
       highlight_data.CustomHighlights();
   for (auto custom_highlight : custom_highlights) {
-    if (custom_highlight.value->HasFontRelativeUnits()) {
+    if (custom_highlight.value->HasAnyRelativeUnits()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ComputedStyle::HighlightPseudoElementStylesDependOnContainerUnits() const {
+  const StyleHighlightData& highlight_data = HighlightData();
+  if (highlight_data.Selection() &&
+      highlight_data.Selection()->HasContainerRelativeUnits()) {
+    return true;
+  }
+  if (highlight_data.TargetText() &&
+      highlight_data.TargetText()->HasContainerRelativeUnits()) {
+    return true;
+  }
+  if (highlight_data.SpellingError() &&
+      highlight_data.SpellingError()->HasContainerRelativeUnits()) {
+    return true;
+  }
+  if (highlight_data.GrammarError() &&
+      highlight_data.GrammarError()->HasContainerRelativeUnits()) {
+    return true;
+  }
+  const CustomHighlightsStyleMap& custom_highlights =
+      highlight_data.CustomHighlights();
+  for (auto custom_highlight : custom_highlights) {
+    if (custom_highlight.value->HasContainerRelativeUnits()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ComputedStyle::HighlightPseudoElementStylesDependOnViewportUnits() const {
+  const StyleHighlightData& highlight_data = HighlightData();
+  if (highlight_data.Selection() &&
+      highlight_data.Selection()->HasViewportUnits()) {
+    return true;
+  }
+  if (highlight_data.TargetText() &&
+      highlight_data.TargetText()->HasViewportUnits()) {
+    return true;
+  }
+  if (highlight_data.SpellingError() &&
+      highlight_data.SpellingError()->HasViewportUnits()) {
+    return true;
+  }
+  if (highlight_data.GrammarError() &&
+      highlight_data.GrammarError()->HasViewportUnits()) {
+    return true;
+  }
+  const CustomHighlightsStyleMap& custom_highlights =
+      highlight_data.CustomHighlights();
+  for (auto custom_highlight : custom_highlights) {
+    if (custom_highlight.value->HasViewportUnits()) {
       return true;
     }
   }
@@ -728,7 +786,9 @@ bool ComputedStyle::NonInheritedEqual(const ComputedStyle& other) const {
 }
 
 bool ComputedStyle::InheritedDataShared(const ComputedStyle& other) const {
-  // This is a fast check that only looks if the data structures are shared.
+  // We use a by-value check that is a bit more expensive than
+  // pointer comparison, but yields many more full MPC hits,
+  // so it generally makes up for it.
   return ComputedStyleBase::InheritedDataShared(other);
 }
 
@@ -960,7 +1020,7 @@ void ComputedStyle::AdjustDiffForNeedsPaintInvalidation(
   }
 
   if (PaintImagesInternal()) {
-    for (const auto& image : *PaintImagesInternal()) {
+    for (const auto& image : PaintImagesInternal()->Images()) {
       DCHECK(image);
       if (DiffNeedsPaintInvalidationForPaintImage(*image, other, document)) {
         diff.SetNeedsNormalPaintInvalidation();
@@ -1181,7 +1241,7 @@ bool ComputedStyle::HasCSSPaintImagesUsingCustomProperty(
     const AtomicString& custom_property_name,
     const Document& document) const {
   if (PaintImagesInternal()) {
-    for (const auto& image : *PaintImagesInternal()) {
+    for (const auto& image : PaintImagesInternal()->Images()) {
       DCHECK(image);
       // IsPaintImage is true for CSS Paint images only, please refer to the
       // constructor of StyleGeneratedImage.
@@ -1823,47 +1883,49 @@ static String DisableNewGeorgianCapitalLetters(const String& text) {
 
 namespace {
 
-static void ApplyMathAutoTransform(String* text) {
-  if (text->length() != 1) {
-    return;
+String ApplyMathAutoTransform(const String& text, TextOffsetMap* offset_map) {
+  if (text.length() != 1) {
+    return text;
   }
-  UChar character = (*text)[0];
-  UChar32 transformed_char = ItalicMathVariant((*text)[0]);
+  UChar character = text[0];
+  UChar32 transformed_char = ItalicMathVariant(text[0]);
   if (transformed_char == static_cast<UChar32>(character)) {
-    return;
+    return text;
   }
 
   Vector<UChar> transformed_text(U16_LENGTH(transformed_char));
   int i = 0;
   U16_APPEND_UNSAFE(transformed_text, i, transformed_char);
-  *text = String(transformed_text);
+  String transformed_string = String(transformed_text);
+  if (offset_map) {
+    offset_map->Append(text.length(), transformed_string.length());
+  }
+  return transformed_string;
 }
 
 }  // namespace
 
-void ComputedStyle::ApplyTextTransform(String* text,
-                                       UChar previous_character) const {
+String ComputedStyle::ApplyTextTransform(const String& text,
+                                         UChar previous_character,
+                                         TextOffsetMap* offset_map) const {
   switch (TextTransform()) {
     case ETextTransform::kNone:
-      return;
+      return text;
     case ETextTransform::kCapitalize:
-      *text = Capitalize(*text, previous_character);
-      return;
+      return Capitalize(text, previous_character);
     case ETextTransform::kUppercase: {
       const LayoutLocale* locale = GetFontDescription().Locale();
       CaseMap case_map(locale ? locale->CaseMapLocale() : CaseMap::Locale());
-      *text = DisableNewGeorgianCapitalLetters(case_map.ToUpper(*text));
-      return;
+      return DisableNewGeorgianCapitalLetters(
+          case_map.ToUpper(text, offset_map));
     }
     case ETextTransform::kLowercase: {
       const LayoutLocale* locale = GetFontDescription().Locale();
       CaseMap case_map(locale ? locale->CaseMapLocale() : CaseMap::Locale());
-      *text = case_map.ToLower(*text);
-      return;
+      return case_map.ToLower(text, offset_map);
     }
     case ETextTransform::kMathAuto:
-      ApplyMathAutoTransform(text);
-      return;
+      return ApplyMathAutoTransform(text, offset_map);
   }
   NOTREACHED();
 }

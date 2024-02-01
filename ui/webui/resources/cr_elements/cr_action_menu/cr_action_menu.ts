@@ -10,9 +10,10 @@ import {FocusRow} from '//resources/js/focus_row.js';
 import {focusWithoutInk} from '//resources/js/focus_without_ink.js';
 import {isMac, isWindows} from '//resources/js/platform.js';
 import {getDeepActiveElement} from '//resources/js/util.js';
-import {FlattenedNodesObserver, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrLitElement} from '//resources/lit/v3_0/lit.rollup.js';
 
-import {getTemplate} from './cr_action_menu.html.js';
+import {getCss} from './cr_action_menu.css.js';
+import {getHtml} from './cr_action_menu.html.js';
 
 interface ShowAtConfig {
   top?: number;
@@ -119,54 +120,48 @@ export interface CrActionMenuElement {
   };
 }
 
-export class CrActionMenuElement extends PolymerElement {
+export class CrActionMenuElement extends CrLitElement {
   static get is() {
     return 'cr-action-menu';
   }
 
-  static get template() {
-    return getTemplate();
+  static override get styles() {
+    return getCss();
   }
 
-  static get properties() {
+  override render() {
+    return getHtml.bind(this)();
+  }
+
+  static override get properties() {
     return {
       // Accessibility text of the menu. Should be something along the lines of
       // "actions", or "more actions".
-      accessibilityLabel: String,
+      accessibilityLabel: {type: String},
 
       // Setting this flag will make the menu listen for content size changes
       // and reposition to its anchor accordingly.
-      autoReposition: {
-        type: Boolean,
-        value: false,
-      },
+      autoReposition: {type: Boolean},
 
-      open: {
-        type: Boolean,
-        notify: true,
-        value: false,
-      },
+      open: {type: Boolean},
 
       // Descriptor of the menu. Should be something along the lines of "menu"
-      roleDescription: String,
+      roleDescription: {type: String},
     };
   }
 
-  accessibilityLabel: string;
-  autoReposition: boolean;
-  open: boolean;
-  roleDescription: string;
+  accessibilityLabel?: string;
+  autoReposition: boolean = false;
+  open: boolean = false;
+  roleDescription?: string;
 
   private boundClose_: (() => void)|null = null;
-  private contentObserver_: FlattenedNodesObserver|null = null;
   private resizeObserver_: ResizeObserver|null = null;
   private hasMousemoveListener_: boolean = false;
   private anchorElement_: HTMLElement|null = null;
   private lastConfig_: ShowAtPositionConfig|null = null;
 
-  override ready() {
-    super.ready();
-
+  override firstUpdated() {
     this.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.addEventListener('mouseover', this.onMouseover_);
     this.addEventListener('click', this.onClick_);
@@ -193,10 +188,6 @@ export class CrActionMenuElement extends PolymerElement {
   private removeListeners_() {
     window.removeEventListener('resize', this.boundClose_!);
     window.removeEventListener('popstate', this.boundClose_!);
-    if (this.contentObserver_) {
-      this.contentObserver_.disconnect();
-      this.contentObserver_ = null;
-    }
 
     if (this.resizeObserver_) {
       this.resizeObserver_.disconnect();
@@ -204,7 +195,7 @@ export class CrActionMenuElement extends PolymerElement {
     }
   }
 
-  private onNativeDialogClose_(e: Event) {
+  protected onNativeDialogClose_(e: Event) {
     // Ignore any 'close' events not fired directly by the <dialog> element.
     if (e.target !== this.$.dialog) {
       return;
@@ -296,6 +287,10 @@ export class CrActionMenuElement extends PolymerElement {
   }
 
   close() {
+    if (!this.open) {
+      return;
+    }
+
     // Removing 'resize' and 'popstate' listeners when dialog is closed.
     this.removeListeners_();
     this.$.dialog.close();
@@ -308,6 +303,8 @@ export class CrActionMenuElement extends PolymerElement {
     if (this.lastConfig_) {
       this.lastConfig_ = null;
     }
+
+    this.fire_('open-changed', {value: this.open});
   }
 
   /**
@@ -411,6 +408,8 @@ export class CrActionMenuElement extends PolymerElement {
         });
       }
     }
+
+    this.fire_('open-changed', {value: this.open});
   }
 
   private resetStyle_() {
@@ -456,6 +455,15 @@ export class CrActionMenuElement extends PolymerElement {
     this.$.dialog.style.top = menuTop + 'px';
   }
 
+  protected onSlotchange_() {
+    for (const node of this.$.contentNode.assignedElements({flatten: true})) {
+      if (node.classList.contains(DROPDOWN_ITEM_CLASS) &&
+          !node.getAttribute('role')) {
+        node.setAttribute('role', 'menuitem');
+      }
+    }
+  }
+
   private addListeners_() {
     this.boundClose_ = this.boundClose_ || (() => {
                          if (this.$.dialog.open) {
@@ -464,17 +472,6 @@ export class CrActionMenuElement extends PolymerElement {
                        });
     window.addEventListener('resize', this.boundClose_);
     window.addEventListener('popstate', this.boundClose_);
-
-    this.contentObserver_ = new FlattenedNodesObserver(
-        this.$.contentNode, (info: {addedNodes: Element[]}) => {
-          info.addedNodes.forEach(node => {
-            if (node.classList &&
-                node.classList.contains(DROPDOWN_ITEM_CLASS) &&
-                !node.getAttribute('role')) {
-              node.setAttribute('role', 'menuitem');
-            }
-          });
-        });
 
     if (this.autoReposition) {
       this.resizeObserver_ = new ResizeObserver(() => {

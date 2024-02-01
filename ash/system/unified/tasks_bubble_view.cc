@@ -55,6 +55,8 @@ constexpr int kInteriorGlanceableBubbleMargin = 16;
 constexpr int kAddNewButtonCornerRadius = 16;
 constexpr auto kAddNewTaskButtonMargins = gfx::Insets::TLBR(0, 0, 16, 0);
 constexpr auto kHeaderIconButtonMargins = gfx::Insets::TLBR(0, 0, 0, 4);
+constexpr int kFooterStartSpacing = 6;
+constexpr int kFooterVerticalSpacing = 7;
 
 constexpr char kTasksManagementPage[] =
     "https://calendar.google.com/calendar/u/0/r/week?opentasks=1";
@@ -173,6 +175,10 @@ TasksBubbleView::TasksBubbleView(
                           TasksLaunchSource::kFooterButton)));
   list_footer_view_->SetID(
       base::to_underlying(GlanceablesViewId::kTasksBubbleListFooter));
+  list_footer_view_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::TLBR(kFooterVerticalSpacing, kFooterStartSpacing,
+                        kFooterVerticalSpacing, 0));
 
   ScheduleUpdateTasksList(/*initial_update=*/true);
 }
@@ -233,6 +239,7 @@ void TasksBubbleView::ScheduleUpdateTasksList(bool initial_update) {
 void TasksBubbleView::UpdateTasksList(const std::string& task_list_id,
                                       const std::string& task_list_title,
                                       bool initial_update,
+                                      bool fetch_success,
                                       const ui::ListModel<api::Task>* tasks) {
   if (initial_update) {
     base::UmaHistogramCounts100(
@@ -258,9 +265,8 @@ void TasksBubbleView::UpdateTasksList(const std::string& task_list_id,
 
     if (num_tasks_shown_ < kMaximumTasks) {
       task_items_container_view_->AddChildView(
-          std::make_unique<GlanceablesTaskView>(
-              task.get(), mark_task_as_completed,
-              /*save_callback=*/base::DoNothing()));
+          std::make_unique<GlanceablesTaskView>(task.get(),
+                                                mark_task_as_completed));
       ++num_tasks_shown_;
     }
     ++num_tasks_;
@@ -269,7 +275,7 @@ void TasksBubbleView::UpdateTasksList(const std::string& task_list_id,
 
   const bool add_new_task_button_visible = (num_tasks_shown_ == 0);
   if (add_new_task_button_visible) {
-    RecordAddTaskButtonShown();
+    RecordAddTaskButtonShownForTT();
     if (tasks_combobox_model_->GetItemCount() == 1) {
       RecordAddTaskButtonUsageForNewTasksUsersTT(/*pressed=*/false);
     }

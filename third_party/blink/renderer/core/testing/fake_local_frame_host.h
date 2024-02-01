@@ -33,9 +33,6 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void FullscreenStateChanged(
       bool is_fullscreen,
       mojom::blink::FullscreenOptionsPtr options) override;
-  void Maximize() override;
-  void Minimize() override;
-  void Restore() override;
   void RegisterProtocolHandler(const WTF::String& scheme,
                                const ::blink::KURL& url,
                                bool user_gesture) override;
@@ -87,6 +84,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void NavigateEventHandlerPresenceChanged(bool present) override {}
   void UpdateTitle(const WTF::String& title,
                    base::i18n::TextDirection title_direction) override;
+  void UpdateAppTitle(const WTF::String& app_title) override;
   void UpdateUserActivationState(
       mojom::blink::UserActivationUpdateType update_type,
       mojom::UserActivationNotificationType notification_type) override;
@@ -178,26 +176,25 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void SendFencedFrameReportingBeacon(
       const WTF::String& event_data,
       const WTF::String& event_type,
-      const WTF::Vector<blink::FencedFrame::ReportingDestination>& destinations,
-      network::AttributionReportingRuntimeFeatures
-          attribution_reporting_runtime_features) override;
+      const WTF::Vector<blink::FencedFrame::ReportingDestination>& destinations)
+      override;
   void SendFencedFrameReportingBeaconToCustomURL(
-      const blink::KURL& destination_url,
-      network::AttributionReportingRuntimeFeatures
-          attribution_reporting_runtime_features) override;
+      const blink::KURL& destination_url) override;
   void SetFencedFrameAutomaticBeaconReportEventData(
       blink::mojom::AutomaticBeaconType event_type,
       const WTF::String& event_data,
       const WTF::Vector<blink::FencedFrame::ReportingDestination>& destinations,
-      network::AttributionReportingRuntimeFeatures
-          attribution_reporting_runtime_features,
       bool once,
       bool cross_origin_exposed) override;
+  void DisableUntrustedNetworkInFencedFrame(
+      DisableUntrustedNetworkInFencedFrameCallback callback) override;
   void SendLegacyTechEvent(
       const WTF::String& type,
       mojom::blink::LegacyTechEventCodeLocationPtr code_location) override;
   void SendPrivateAggregationRequestsForFencedFrameEvent(
       const WTF::String& event_type) override;
+  void SetAttributionReportingRuntimeFeatures(
+      network::AttributionReportingRuntimeFeatures features) override;
   void CreateFencedFrame(
       mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>,
       mojom::blink::RemoteFrameInterfacesFromRendererPtr

@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -23,7 +24,6 @@
 #include "build/build_config.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/updater/util/win_util.h"
@@ -57,7 +57,7 @@ std::unique_ptr<UpdaterState::StateReader> UpdaterState::StateReader::Create(
         const updater::UpdaterScope updater_scope =
             is_machine ? updater::UpdaterScope::kSystem
                        : updater::UpdaterScope::kUser;
-        const absl::optional<base::FilePath> global_prefs_dir =
+        const std::optional<base::FilePath> global_prefs_dir =
 #if BUILDFLAG(IS_WIN)
             // Google Chrome ships with an x86 updater.
             updater::GetInstallDirectoryX86(updater_scope);
@@ -74,7 +74,7 @@ std::unique_ptr<UpdaterState::StateReader> UpdaterState::StateReader::Create(
                 kMaxPrefsFileSize)) {
           return nullptr;
         }
-        absl::optional<base::Value::Dict> parsed_json =
+        std::optional<base::Value::Dict> parsed_json =
             base::JSONReader::ReadDict(contents);
         return parsed_json ? std::make_unique<StateReaderChromiumUpdater>(
                                  std::move(*parsed_json))
@@ -163,11 +163,12 @@ UpdaterState::Attributes UpdaterState::GetState(bool is_machine) {
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 }
 
-absl::optional<UpdaterState::State> UpdaterState::ReadState(bool is_machine) {
+std::optional<UpdaterState::State> UpdaterState::ReadState(bool is_machine) {
   std::unique_ptr<UpdaterState::StateReader> state_reader =
       UpdaterState::StateReader::Create(is_machine);
-  if (!state_reader)
-    return absl::nullopt;
+  if (!state_reader) {
+    return std::nullopt;
+  }
   return state_reader->Read(is_machine);
 }
 
@@ -179,16 +180,19 @@ UpdaterState::Attributes UpdaterState::Serialize() const {
   if (state_) {
     attributes["name"] = state_->updater_name;
 
-    if (state_->updater_version.IsValid())
+    if (state_->updater_version.IsValid()) {
       attributes["version"] = state_->updater_version.GetString();
+    }
 
     const base::Time now = base::Time::NowFromSystemTime();
-    if (!state_->last_autoupdate_started.is_null())
+    if (!state_->last_autoupdate_started.is_null()) {
       attributes["laststarted"] =
           NormalizeTimeDelta(now - state_->last_autoupdate_started);
-    if (!state_->last_checked.is_null())
+    }
+    if (!state_->last_checked.is_null()) {
       attributes["lastchecked"] =
           NormalizeTimeDelta(now - state_->last_checked);
+    }
 
     attributes["autoupdatecheckenabled"] =
         state_->is_autoupdate_check_enabled ? "1" : "0";

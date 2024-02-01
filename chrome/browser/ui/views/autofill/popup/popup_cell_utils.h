@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_POPUP_POPUP_CELL_UTILS_H_
 
 #include <memory>
+#include <optional>
 
-#include "components/autofill/core/browser/ui/popup_types.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/style/typography.h"
@@ -109,7 +110,7 @@ void AddSuggestionContentToView(
 
 void FormatLabel(views::Label& label,
                  const Suggestion::Text& text,
-                 PopupType popup_type,
+                 FillingProduct main_filling_product,
                  int maximum_width_single_line);
 
 // Creates a label for the suggestion's main text.
@@ -121,17 +122,16 @@ std::unique_ptr<views::Label> CreateMainTextLabel(
 std::unique_ptr<views::Label> CreateMinorTextLabel(
     const Suggestion::Text& minor_text);
 
+// Creates sub-text views and pass their references to `PopupRowContentView` for
+// centralized style management. If `text_style` is not provided, the default
+// style from GetSecondaryTextStyle() will be used for the label views."
 std::vector<std::unique_ptr<views::View>> CreateAndTrackSubtextViews(
     PopupRowContentView& content_view,
     const Suggestion& suggestion,
-    PopupType popup_type,
-    int text_style = views::style::STYLE_SECONDARY);
+    FillingProduct main_filling_product,
+    std::optional<int> text_style = std::nullopt);
 
 int GetMaxPopupAddressProfileWidth();
-
-void AddSuggestionStrategyContentCellChildren(PopupRowContentView* view,
-                                              const Suggestion& suggestion,
-                                              PopupType popup_type);
 
 std::unique_ptr<views::ImageView> ImageViewFromVectorIcon(
     const gfx::VectorIcon& vector_icon,

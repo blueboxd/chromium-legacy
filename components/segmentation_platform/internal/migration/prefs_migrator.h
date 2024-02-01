@@ -45,15 +45,14 @@ class PrefsMigrator {
  private:
   bool IsPrefMigrationRequired(Config* config);
   void UpdateNewPrefs(Config* config,
-                      absl::optional<SelectedSegment> old_result,
+                      std::optional<SelectedSegment> old_result,
                       const proto::ClientResult* new_result);
   void DeleteOldPrefsEntryIfFullyMigrated(
       Config* config,
-      absl::optional<SelectedSegment> old_result);
+      std::optional<SelectedSegment> old_result);
 
   // Configs for all registered clients.
-  const raw_ref<const std::vector<std::unique_ptr<Config>>, ExperimentalAsh>
-      configs_;
+  const raw_ref<const std::vector<std::unique_ptr<Config>>> configs_;
 
   // The underlying pref backed store to read the pref values from before multi
   // output.

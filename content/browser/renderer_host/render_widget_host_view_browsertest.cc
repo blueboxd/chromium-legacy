@@ -574,8 +574,6 @@ class BFCachedRenderWidgetHostViewBrowserTest
     std::vector<base::test::FeatureRefAndParams> enabled_features =
         GetDefaultEnabledBackForwardCacheFeaturesForTesting(
             /*ignore_outstanding_network_request=*/false);
-    // To evict the main frame's `viz::SurfaceId` while in BFCache.
-    enabled_features.push_back({features::kEvictSubtree, {{}}});
 
     scoped_feature_list_.InitWithFeaturesAndParameters(
         enabled_features,
@@ -1787,7 +1785,7 @@ IN_PROC_BROWSER_TEST_P(RenderWidgetHostViewCopyFromSurfaceBrowserTest,
   const viz::SurfaceRange range_for_copy(rwhv_android->GetCurrentSurfaceId(),
                                          rwhv_android->GetCurrentSurfaceId());
   const viz::SurfaceRange range_for_mainframe(
-      absl::nullopt, rwhv_android->GetCurrentSurfaceId());
+      std::nullopt, rwhv_android->GetCurrentSurfaceId());
   base::RunLoop run_loop;
   GetRenderViewHost()->GetWidget()->GetView()->CopyFromSurface(
       gfx::Rect(), gfx::Size(),

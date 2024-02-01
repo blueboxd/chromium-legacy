@@ -31,6 +31,7 @@
 #include "ash/style/ash_color_mixer.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/containers/contains.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
@@ -259,14 +260,13 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
   base::test::ScopedFeatureList scoped_feature_list_;
   AshColorProvider ash_color_provider_;
-  raw_ptr<AppListSearchView, DanglingUntriaged | ExperimentalAsh> search_view_ =
-      nullptr;
+  raw_ptr<AppListSearchView, DanglingUntriaged> search_view_ = nullptr;
   AppListTestViewDelegate view_delegate_;
-  raw_ptr<views::Widget, DanglingUntriaged | ExperimentalAsh> widget_ = nullptr;
-  raw_ptr<AppListView, ExperimentalAsh> app_list_view_ = nullptr;
-  raw_ptr<SearchBoxView, DanglingUntriaged | ExperimentalAsh> view_ =
+  raw_ptr<views::Widget, DanglingUntriaged> widget_ = nullptr;
+  raw_ptr<AppListView> app_list_view_ = nullptr;
+  raw_ptr<SearchBoxView, DanglingUntriaged> view_ =
       nullptr;  // Owned by views hierarchy.
-  raw_ptr<KeyPressCounterView, ExperimentalAsh> counter_view_ =
+  raw_ptr<KeyPressCounterView> counter_view_ =
       nullptr;  // Owned by views hierarchy.
   int last_result_id_ = 0;
 };
@@ -1064,7 +1064,7 @@ class SearchBoxViewTabletTest : public AshTestBase {
   ~SearchBoxViewTabletTest() override = default;
   void SetUp() override {
     AshTestBase::SetUp();
-    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+    ash::TabletModeControllerTestApi().EnterTabletMode();
   }
 };
 
@@ -1081,7 +1081,7 @@ class SearchBoxViewAnimationTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+    ash::TabletModeControllerTestApi().EnterTabletMode();
     non_zero_duration_mode_ =
         std::make_unique<ui::ScopedAnimationDurationScaleMode>(
             ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);

@@ -123,7 +123,6 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
     remote_url_loader_factory_.reset();
     url_loader_factory_proxy_ = std::make_unique<AuctionURLLoaderFactoryProxy>(
         remote_url_loader_factory_.BindNewPipeAndPassReceiver(),
-        /*auction_network_events_handler=*/mojo::NullReceiver(),
         base::BindRepeating(
             [](network::mojom::URLLoaderFactory* factory) { return factory; },
             &frame_url_loader_factory_),
@@ -132,6 +131,9 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
             &trusted_url_loader_factory_),
         base::BindOnce(&AuctionUrlLoaderFactoryProxyTest::PreconnectSocket,
                        base::Unretained(this)),
+        base::BindRepeating(
+            []() -> std::optional<std::string> { return std::nullopt; }),
+        base::BindRepeating([]() -> std::vector<std::string> { return {}; }),
         /*force_reload=*/force_reload_, top_frame_origin_, frame_origin_,
         /*renderer_process_id=*/kRenderProcessId, is_for_seller_,
         client_security_state_.Clone(), GURL(kScriptUrl), wasm_url_,
@@ -153,7 +155,7 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
       // also be nullopt if `trusted_signals_base_url_` is nullopt.
       EXPECT_FALSE(preconnect_network_anonymization_key_);
     }
-    preconnect_url_ = absl::nullopt;
+    preconnect_url_ = std::nullopt;
   }
 
   void PreconnectSocket(
@@ -373,7 +375,7 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
   }
 
   void TryMakeRequest(const std::string& url,
-                      absl::optional<std::string> accept_value,
+                      std::optional<std::string> accept_value,
                       ExpectedResponse expected_response,
                       bool expect_bundle_request = false) {
     SCOPED_TRACE(accept_value ? *accept_value : "No accept value");
@@ -408,16 +410,16 @@ class AuctionUrlLoaderFactoryProxyTest : public testing::Test {
   bool force_reload_ = false;
   const network::mojom::ClientSecurityStatePtr client_security_state_ =
       network::mojom::ClientSecurityState::New();
-  absl::optional<GURL> trusted_signals_base_url_ = GURL(kTrustedSignalsBaseUrl);
-  absl::optional<GURL> wasm_url_ = GURL(kWasmUrl);
+  std::optional<GURL> trusted_signals_base_url_ = GURL(kTrustedSignalsBaseUrl);
+  std::optional<GURL> wasm_url_ = GURL(kWasmUrl);
   bool needs_cors_for_additional_bid_ = false;
 
   url::Origin top_frame_origin_ =
       url::Origin::Create(GURL("https://top.test/"));
   url::Origin frame_origin_ = url::Origin::Create(GURL("https://foo.test/"));
 
-  absl::optional<GURL> preconnect_url_;
-  absl::optional<net::NetworkAnonymizationKey>
+  std::optional<GURL> preconnect_url_;
+  std::optional<net::NetworkAnonymizationKey>
       preconnect_network_anonymization_key_;
 
   network::TestURLLoaderFactory frame_url_loader_factory_;
@@ -437,21 +439,20 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, Basic) {
     TryMakeRequest(kScriptUrl, kAcceptJson, ExpectedResponse::kReject);
     TryMakeRequest(kScriptUrl, kAcceptOther, ExpectedResponse::kReject);
     TryMakeRequest(kScriptUrl, kAcceptWasm, ExpectedResponse::kReject);
-    TryMakeRequest(kScriptUrl, absl::nullopt, ExpectedResponse::kReject);
+    TryMakeRequest(kScriptUrl, std::nullopt, ExpectedResponse::kReject);
 
     TryMakeRequest(kTrustedSignalsUrl, kAcceptJavascript,
                    ExpectedResponse::kReject);
     TryMakeRequest(kTrustedSignalsUrl, kAcceptJson, ExpectedResponse::kAllow);
     TryMakeRequest(kTrustedSignalsUrl, kAcceptOther, ExpectedResponse::kReject);
     TryMakeRequest(kTrustedSignalsUrl, kAcceptWasm, ExpectedResponse::kReject);
-    TryMakeRequest(kTrustedSignalsUrl, absl::nullopt,
-                   ExpectedResponse::kReject);
+    TryMakeRequest(kTrustedSignalsUrl, std::nullopt, ExpectedResponse::kReject);
 
     TryMakeRequest(kWasmUrl, kAcceptJavascript, ExpectedResponse::kReject);
     TryMakeRequest(kWasmUrl, kAcceptJson, ExpectedResponse::kReject);
     TryMakeRequest(kWasmUrl, kAcceptOther, ExpectedResponse::kReject);
     TryMakeRequest(kWasmUrl, kAcceptWasm, ExpectedResponse::kAllow);
-    TryMakeRequest(kWasmUrl, absl::nullopt, ExpectedResponse::kReject);
+    TryMakeRequest(kWasmUrl, std::nullopt, ExpectedResponse::kReject);
 
     TryMakeRequest("https://host.test/", kAcceptJavascript,
                    ExpectedResponse::kReject);
@@ -461,7 +462,7 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, Basic) {
                    ExpectedResponse::kReject);
     TryMakeRequest("https://host.test/", kAcceptWasm,
                    ExpectedResponse::kReject);
-    TryMakeRequest("https://host.test/", absl::nullopt,
+    TryMakeRequest("https://host.test/", std::nullopt,
                    ExpectedResponse::kReject);
   }
 }
@@ -476,17 +477,17 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, ForceReload) {
 }
 
 TEST_F(AuctionUrlLoaderFactoryProxyTest, NoWasmUrl) {
-  wasm_url_ = absl::nullopt;
+  wasm_url_ = std::nullopt;
   CreateUrlLoaderFactoryProxy();
   TryMakeRequest(kWasmUrl, kAcceptJavascript, ExpectedResponse::kReject);
   TryMakeRequest(kWasmUrl, kAcceptJson, ExpectedResponse::kReject);
   TryMakeRequest(kWasmUrl, kAcceptOther, ExpectedResponse::kReject);
   TryMakeRequest(kWasmUrl, kAcceptWasm, ExpectedResponse::kReject);
-  TryMakeRequest(kWasmUrl, absl::nullopt, ExpectedResponse::kReject);
+  TryMakeRequest(kWasmUrl, std::nullopt, ExpectedResponse::kReject);
 }
 
 TEST_F(AuctionUrlLoaderFactoryProxyTest, NoTrustedSignalsUrl) {
-  trusted_signals_base_url_ = absl::nullopt;
+  trusted_signals_base_url_ = std::nullopt;
 
   for (bool is_for_seller : {false, true}) {
     is_for_seller_ = is_for_seller;
@@ -497,14 +498,13 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, NoTrustedSignalsUrl) {
     TryMakeRequest(kScriptUrl, kAcceptJavascript, ExpectedResponse::kAllow);
     TryMakeRequest(kScriptUrl, kAcceptJson, ExpectedResponse::kReject);
     TryMakeRequest(kScriptUrl, kAcceptOther, ExpectedResponse::kReject);
-    TryMakeRequest(kScriptUrl, absl::nullopt, ExpectedResponse::kReject);
+    TryMakeRequest(kScriptUrl, std::nullopt, ExpectedResponse::kReject);
 
     TryMakeRequest(kTrustedSignalsUrl, kAcceptJavascript,
                    ExpectedResponse::kReject);
     TryMakeRequest(kTrustedSignalsUrl, kAcceptJson, ExpectedResponse::kReject);
     TryMakeRequest(kTrustedSignalsUrl, kAcceptOther, ExpectedResponse::kReject);
-    TryMakeRequest(kTrustedSignalsUrl, absl::nullopt,
-                   ExpectedResponse::kReject);
+    TryMakeRequest(kTrustedSignalsUrl, std::nullopt, ExpectedResponse::kReject);
 
     TryMakeRequest(top_frame_origin_.GetURL().spec(), kAcceptJavascript,
                    ExpectedResponse::kReject);
@@ -512,7 +512,7 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, NoTrustedSignalsUrl) {
                    ExpectedResponse::kReject);
     TryMakeRequest(top_frame_origin_.GetURL().spec(), kAcceptOther,
                    ExpectedResponse::kReject);
-    TryMakeRequest(top_frame_origin_.GetURL().spec(), absl::nullopt,
+    TryMakeRequest(top_frame_origin_.GetURL().spec(), std::nullopt,
                    ExpectedResponse::kReject);
 
     TryMakeRequest(frame_origin_.GetURL().spec(), kAcceptJavascript,
@@ -521,7 +521,7 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, NoTrustedSignalsUrl) {
                    ExpectedResponse::kReject);
     TryMakeRequest(frame_origin_.GetURL().spec(), kAcceptOther,
                    ExpectedResponse::kReject);
-    TryMakeRequest(frame_origin_.GetURL().spec(), absl::nullopt,
+    TryMakeRequest(frame_origin_.GetURL().spec(), std::nullopt,
                    ExpectedResponse::kReject);
   }
 }
@@ -655,7 +655,7 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, SameUrl) {
     TryMakeRequest(kScriptUrl, kAcceptJavascript, ExpectedResponse::kAllow);
     TryMakeRequest(kScriptUrl, kAcceptJson, ExpectedResponse::kReject);
     TryMakeRequest(kScriptUrl, kAcceptOther, ExpectedResponse::kReject);
-    TryMakeRequest(kScriptUrl, absl::nullopt, ExpectedResponse::kReject);
+    TryMakeRequest(kScriptUrl, std::nullopt, ExpectedResponse::kReject);
 
     std::string url_with_parameters =
         std::string(kScriptUrl) + "?hostname=top.test&keys=jabberwocky";
@@ -664,15 +664,14 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, SameUrl) {
     TryMakeRequest(url_with_parameters, kAcceptJson, ExpectedResponse::kAllow);
     TryMakeRequest(url_with_parameters, kAcceptOther,
                    ExpectedResponse::kReject);
-    TryMakeRequest(url_with_parameters, absl::nullopt,
+    TryMakeRequest(url_with_parameters, std::nullopt,
                    ExpectedResponse::kReject);
 
     TryMakeRequest(kTrustedSignalsUrl, kAcceptJavascript,
                    ExpectedResponse::kReject);
     TryMakeRequest(kTrustedSignalsUrl, kAcceptJson, ExpectedResponse::kReject);
     TryMakeRequest(kTrustedSignalsUrl, kAcceptOther, ExpectedResponse::kReject);
-    TryMakeRequest(kTrustedSignalsUrl, absl::nullopt,
-                   ExpectedResponse::kReject);
+    TryMakeRequest(kTrustedSignalsUrl, std::nullopt, ExpectedResponse::kReject);
   }
 }
 

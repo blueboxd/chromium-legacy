@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar.top;
 
 import android.content.Context;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -24,12 +25,12 @@ class ToolbarColorObserverManager implements ToolbarAlphaInOverviewObserver, Too
 
     private Context mContext;
     private IncognitoStateProvider mIncognitoStateProvider;
-    private float mToolbarAlphaValue;
-    private int mToolbarColor;
+    private float mOverviewAlpha;
+    private @ColorInt int mToolbarColor;
 
-    ToolbarColorObserverManager(Context context, ToolbarLayout toolbarLayout) {
+    ToolbarColorObserverManager(Context context) {
         mContext = context;
-        mToolbarAlphaValue = 0;
+        mOverviewAlpha = 0;
     }
 
     /**
@@ -51,15 +52,15 @@ class ToolbarColorObserverManager implements ToolbarAlphaInOverviewObserver, Too
 
     // TopToolbarCoordinator.ToolbarColorObserver implementation.
     @Override
-    public void onToolbarColorChanged(int color) {
+    public void onToolbarColorChanged(@ColorInt int color) {
         mToolbarColor = color;
         notifyToolbarColorChanged();
     }
 
     // TopToolbarCoordinator.ToolbarAlphaInOverviewObserver implementation.
     @Override
-    public void onToolbarAlphaInOverviewChanged(float fraction) {
-        mToolbarAlphaValue = fraction;
+    public void onOverviewAlphaChanged(float fraction) {
+        mOverviewAlpha = fraction;
         notifyToolbarColorChanged();
     }
 
@@ -70,10 +71,22 @@ class ToolbarColorObserverManager implements ToolbarAlphaInOverviewObserver, Too
     private void notifyToolbarColorChanged() {
         if (mToolbarColorObserver != null && mIncognitoStateProvider != null) {
             boolean isIncognito = mIncognitoStateProvider.isIncognitoSelected();
+            @ColorInt
             int overviewColor = ChromeColors.getPrimaryBackgroundColor(mContext, isIncognito);
+
+            // #overlayColor does not allow colors with any transparency. During toolbar expansion,
+            // our toolbar color does contain transparency, but this should all be gone once the
+            // overview fade animation begins. However this class has no real concept of what the
+            // true color is behind the toolbar is. It is possible to guess with
+            // #getPrimaryBackgroundColor, but with surface polish enabled, that isn't strictly
+            // true. Just making the toolbar color opaque is good enough, though could cause some
+            // colors to be slightly off.
+            @ColorInt int opaqueToolbarColor = ColorUtils.getOpaqueColor(mToolbarColor);
+
+            @ColorInt
             int toolbarRenderingColor =
                     ColorUtils.getColorWithOverlay(
-                            mToolbarColor, overviewColor, mToolbarAlphaValue);
+                            opaqueToolbarColor, overviewColor, mOverviewAlpha);
             mToolbarColorObserver.onToolbarColorChanged(toolbarRenderingColor);
         }
     }

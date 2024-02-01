@@ -10,8 +10,8 @@
 import 'chrome://resources/ash/common/smb_shares/add_smb_share_dialog.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import '/shared/settings/controls/settings_toggle_button.js';
-import '/shared/settings/controls/controlled_button.js';
+import '../controls/settings_toggle_button.js';
+import '../controls/controlled_button.js';
 import '../os_settings_page/settings_card.js';
 import '../settings_shared.css.js';
 
@@ -52,7 +52,7 @@ export class FilesSettingsCardElement extends FilesSettingsCardElementBase {
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set<Setting>([Setting.kGoogleDriveConnection]),
+        value: () => new Set<Setting>([]),
       },
 
       bulkPinningPrefEnabled_: Boolean,
@@ -106,11 +106,10 @@ export class FilesSettingsCardElement extends FilesSettingsCardElementBase {
         },
       },
 
-      shouldShowGoogleDriveSettings_: {
+      shouldShowOneDriveSettings_: {
         type: Boolean,
         value: () => {
-          return loadTimeData.getBoolean('showGoogleDriveSettingsPage') ||
-              loadTimeData.getBoolean('enableDriveFsBulkPinning');
+          return loadTimeData.getBoolean('showOneDriveSettings');
         },
         readOnly: true,
       },
@@ -157,7 +156,7 @@ export class FilesSettingsCardElement extends FilesSettingsCardElementBase {
   private smbBrowserProxy_: SmbBrowserProxy;
   private shouldShowAddSmbButton_: boolean;
   private shouldShowAddSmbDialog_: boolean;
-  private shouldShowGoogleDriveSettings_: boolean;
+  private shouldShowOneDriveSettings_: boolean;
   private shouldShowOfficeSettings_: boolean;
 
 
@@ -170,7 +169,7 @@ export class FilesSettingsCardElement extends FilesSettingsCardElementBase {
 
     this.smbBrowserProxy_ = SmbBrowserProxyImpl.getInstance();
 
-    if (this.shouldShowOfficeSettings_) {
+    if (this.shouldShowOneDriveSettings_) {
       this.oneDriveBrowserProxy_ = OneDriveBrowserProxy.getInstance();
     }
   }
@@ -178,7 +177,7 @@ export class FilesSettingsCardElement extends FilesSettingsCardElementBase {
   override connectedCallback(): void {
     super.connectedCallback();
 
-    if (this.shouldShowOfficeSettings_) {
+    if (this.shouldShowOneDriveSettings_) {
       this.updateOneDriveEmail_();
       this.oneDriveBrowserProxy_!.observer.onODFSMountOrUnmount.addListener(
           this.updateOneDriveEmail_.bind(this));
@@ -229,14 +228,18 @@ export class FilesSettingsCardElement extends FilesSettingsCardElementBase {
     this.bulkPinningPrefEnabled_ = enabled;
   }
 
-  private computeGoogleDriveSublabel_(): string {
+  private getGoogleDriveSubLabelInnerHtml_(): TrustedHTML {
     if (this.driveDisabled_) {
-      return this.i18n('googleDriveNotSignedInSublabel');
+      return this.i18nAdvanced('googleDriveNotSignedInSublabel');
+    }
+
+    if (this.isBulkPinningEnabled_ && this.bulkPinningPrefEnabled_) {
+      return this.i18nAdvanced('googleDriveFileSyncOnSublabel');
     }
 
     return (this.isBulkPinningEnabled_ && this.bulkPinningPrefEnabled_) ?
-        this.i18n('googleDriveFileSyncOnSublabel') :
-        this.i18n('googleDriveSignedInAs');
+        this.i18nAdvanced('googleDriveFileSyncOnSublabel') :
+        this.i18nAdvanced('googleDriveSignedInAs', {attrs: ['id']});
   }
 
   private computeOneDriveSignedInLabel_(): string {

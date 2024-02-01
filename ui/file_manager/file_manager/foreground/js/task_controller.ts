@@ -4,18 +4,18 @@
 
 import {assertInstanceof, assertNotReached} from 'chrome://resources/ash/common/assert.js';
 
+import type {Crostini} from '../../background/js/crostini.js';
+import type {ProgressCenter} from '../../background/js/progress_center.js';
+import type {VolumeManager} from '../../background/js/volume_manager.js';
 import {getMimeType, startIOTask} from '../../common/js/api.js';
 import {unwrapEntry} from '../../common/js/entry_utils.js';
 import {type AnnotatedTask, getDefaultTask} from '../../common/js/file_tasks.js';
+import {FilesAppDirEntry, FilesAppEntry} from '../../common/js/files_app_entry_types.js';
 import {recordDirectoryListLoadWithTolerance, startInterval} from '../../common/js/metrics.js';
 import {str, strf} from '../../common/js/translations.js';
 import {checkAPIError} from '../../common/js/util.js';
-import {Crostini} from '../../externs/background/crostini.js';
-import {ProgressCenter} from '../../externs/background/progress_center.js';
-import {FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {FileData, FileKey, FileTasks as StoreFileTasks, PropStatus, State} from '../../externs/ts/state.js';
-import type {VolumeManager} from '../../externs/volume_manager.js';
 import {fetchFileTasks} from '../../state/ducks/current_directory.js';
+import {type FileData, type FileKey, type FileTasks as StoreFileTasks, PropStatus, type State} from '../../state/state.js';
 import {getFilesData, getStore, type Store, waitForState} from '../../state/store.js';
 import {XfPasswordDialog} from '../../widgets/xf_password_dialog.js';
 
@@ -25,7 +25,8 @@ import {FileTasks, TaskPickerType} from './file_tasks.js';
 import {FileTransferController} from './file_transfer_controller.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 import {MetadataUpdateController} from './metadata_update_controller.js';
-import {TaskHistory} from './task_history.js';
+import {EventType, TaskHistory} from './task_history.js';
+import type {ComboButtonSelectEvent} from './ui/combobutton.js';
 import {Command} from './ui/command.js';
 import {FileManagerUI} from './ui/file_manager_ui.js';
 
@@ -34,7 +35,7 @@ import {FileManagerUI} from './ui/file_manager_ui.js';
  */
 interface ExtractingTasks {
   entries: Array<Entry|FilesAppEntry>;
-  params: chrome.fileManagerPrivate.IOTaskParams;
+  params: chrome.fileManagerPrivate.IoTaskParams;
 }
 
 export class TaskController {
@@ -78,10 +79,10 @@ export class TaskController {
     this.store_.subscribe(this);
 
     ui_.taskMenuButton.addEventListener(
-        'select', this.onTaskItemClicked_.bind(this));
+        'combobutton-select', this.onTaskItemClicked_.bind(this));
     // TODO: Move the following events to the Store.
     this.taskHistory_.addEventListener(
-        TaskHistory.EventType.UPDATE, this.updateTasks_.bind(this));
+        EventType.UPDATE, this.updateTasks_.bind(this));
     chrome.fileManagerPrivate.onIOTaskProgressStatus.addListener(
         this.onIoTaskProgressStatus_.bind(this));
     chrome.fileManagerPrivate.onAppsUpdated.addListener(
@@ -132,7 +133,7 @@ export class TaskController {
    *
    * @param event Event containing task which was clicked.
    */
-  private async onTaskItemClicked_(event: Event) {
+  private async onTaskItemClicked_(event: ComboButtonSelectEvent) {
     // If the clicked target has an associated command, the click event should
     // not be handled here since it is handled as a command.
     // TODO(lucmult): Add TS definition for these events instead of using any.
@@ -140,10 +141,11 @@ export class TaskController {
       return;
     }
 
-    // 'select' event from ComboButton has the item as event.item.
-    // 'activate' event from MenuButton has the item as event.target.data.
-    const item: DropdownItem =
-        (event as any).item || (event.target as any).data;
+    const item: null|DropdownItem = event.detail;
+    if (!item) {
+      return;
+    }
+
     try {
       const tasks = await this.getFileTasks();
       switch (item.type) {
@@ -151,7 +153,7 @@ export class TaskController {
           this.ui_.taskMenuButton.showMenu(false);
           break;
         case TaskMenuItemType.RUN_TASK:
-          tasks.execute(item.task);
+          tasks.execute(item.task!);
           break;
         case TaskMenuItemType.CHANGE_DEFAULT_TASK:
           const selection = this.selectionHandler_.selection;
@@ -161,7 +163,7 @@ export class TaskController {
             const match = /\.(\w+)$/g.exec(selection.entries[i]!.toURL());
             if (match) {
               const ext = match[1]!.toUpperCase();
-              if (extensions.indexOf(ext) == -1) {
+              if (extensions.indexOf(ext) === -1) {
                 extensions.push(ext);
               }
             }
@@ -169,7 +171,7 @@ export class TaskController {
 
           let format = '';
 
-          if (extensions.length == 1) {
+          if (extensions.length === 1) {
             format = extensions[0]!;
           }
 
@@ -239,11 +241,11 @@ export class TaskController {
     const tasks = fileTasks.getAnnotatedTasks();
 
     combobutton.hidden =
-        tasks.length == 0 || fileTasks.entries.some(e => e.isDirectory);
+        tasks.length === 0 || fileTasks.entries.some(e => e.isDirectory);
 
     // Even if the task menu button is hidden, we still update the items if
     // tasks exist since they are used for the right-click context menu.
-    if (tasks.length == 0) {
+    if (tasks.length === 0) {
       return;
     }
 
@@ -320,8 +322,8 @@ export class TaskController {
       }
 
       // Sort by last-executed time.
-      const aTime = this.taskHistory_.getLastExecutedTime(a.task.descriptor);
-      const bTime = this.taskHistory_.getLastExecutedTime(b.task.descriptor);
+      const aTime = this.taskHistory_.getLastExecutedTime(a.task!.descriptor);
+      const bTime = this.taskHistory_.getLastExecutedTime(b.task!.descriptor);
       if (aTime !== bTime) {
         return bTime - aTime;
       }
@@ -525,8 +527,8 @@ export class TaskController {
     }
 
     this.canExecuteDefaultTask_ =
-        defaultTask != null && !defaultTask.isDlpBlocked;
-    this.shouldHideDefaultTask_ = defaultTask == null;
+        defaultTask !== null && !defaultTask.isDlpBlocked;
+    this.shouldHideDefaultTask_ = defaultTask === null;
     this.defaultTaskCommand_.canExecuteChange(this.ui_.listContainer.element);
     this.canExecuteOpenActions_ =
         taskCount > 1 || (taskCount === 1 && !defaultTask);
@@ -567,17 +569,17 @@ export class TaskController {
     // TaskController only manages IOTasks related to zip extract that were
     // started in this window.
     if (!(this.extractTasks_.has(taskId) &&
-          event.type === chrome.fileManagerPrivate.IOTaskType.EXTRACT)) {
+          event.type === chrome.fileManagerPrivate.IoTaskType.EXTRACT)) {
       return;
     }
 
     switch (event.state) {
-      case chrome.fileManagerPrivate.IOTaskState.SUCCESS:
-      case chrome.fileManagerPrivate.IOTaskState.CANCELLED:
-      case chrome.fileManagerPrivate.IOTaskState.ERROR:
+      case chrome.fileManagerPrivate.IoTaskState.SUCCESS:
+      case chrome.fileManagerPrivate.IoTaskState.CANCELLED:
+      case chrome.fileManagerPrivate.IoTaskState.ERROR:
         this.deleteExtractTaskDetails_(taskId);
         break;
-      case chrome.fileManagerPrivate.IOTaskState.NEED_PASSWORD:
+      case chrome.fileManagerPrivate.IoTaskState.NEED_PASSWORD:
         this.handleMissingPassword_(taskId);
         break;
     }
@@ -594,7 +596,7 @@ export class TaskController {
       destination: DirectoryEntry|FilesAppDirEntry): Promise<void> {
     const params = {
       destinationFolder: destination,
-    } as chrome.fileManagerPrivate.IOTaskParams;
+    } as chrome.fileManagerPrivate.IoTaskParams;
     return this.startExtractTask_(entries, params);
   }
 
@@ -604,10 +606,10 @@ export class TaskController {
    */
   private async startExtractTask_(
       entries: Array<Entry|FilesAppEntry>,
-      params: chrome.fileManagerPrivate.IOTaskParams): Promise<void> {
+      params: chrome.fileManagerPrivate.IoTaskParams): Promise<void> {
     try {
       const taskId = await startIOTask(
-          chrome.fileManagerPrivate.IOTaskType.EXTRACT, entries, params);
+          chrome.fileManagerPrivate.IoTaskType.EXTRACT, entries, params);
       this.extractTasks_.set(taskId, {entries, params});
     } catch (error: any) {
       console.warn('Error getting extract taskID', error);
@@ -620,7 +622,7 @@ export class TaskController {
    */
   private async startGetPasswordThenExtractTask_(
       entry: Entry|FilesAppEntry,
-      params: chrome.fileManagerPrivate.IOTaskParams) {
+      params: chrome.fileManagerPrivate.IoTaskParams) {
     let password: string|null = null;
     // Ask for password.
     try {
@@ -649,7 +651,7 @@ export class TaskController {
       // that's encrypted.
       const selectionEntries = existingOperation['entries'];
       const params = existingOperation['params'];
-      if (selectionEntries.length == 1) {
+      if (selectionEntries.length === 1) {
         this.startGetPasswordThenExtractTask_(selectionEntries[0]!, params);
       } else {
         for (const entry of selectionEntries) {
@@ -674,12 +676,14 @@ export interface DropdownItem {
   type: TaskMenuItemType;
   label: string;
   iconUrl?: string;
-  iconType: string;
-  task: chrome.fileManagerPrivate.FileTask;
-  isDefault: boolean;
-  isPolicyDefault: boolean;
+  iconType?: string;
+  task?: chrome.fileManagerPrivate.FileTask;
+  isDefault?: boolean;
+  isPolicyDefault?: boolean;
   isGenericFileHandler?: boolean;
   isDlpBlocked?: boolean;
+  class
+  ?: string;
 }
 
 /**

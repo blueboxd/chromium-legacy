@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -32,7 +32,7 @@ AudioEffectsController::AudioEffectsController() {
 AudioEffectsController::~AudioEffectsController() {
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
   VideoConferenceTrayEffectsManager& effects_manager =
-      VideoConferenceTrayController::Get()->effects_manager();
+      VideoConferenceTrayController::Get()->GetEffectsManager();
   if (effects_manager.IsDelegateRegistered(this)) {
     effects_manager.UnregisterDelegate(this);
   }
@@ -94,7 +94,7 @@ void AudioEffectsController::OnEffectControlActivated(
     }
     case VcEffectId::kLiveCaption: {
       // Toggle live caption.
-      AccessibilityControllerImpl* controller =
+      AccessibilityController* controller =
           Shell::Get()->accessibility_controller();
       controller->live_caption().SetEnabled(
           !controller->live_caption().enabled());
@@ -156,7 +156,7 @@ void AudioEffectsController::RefreshNoiseCancellationSupported() {
   }
 
   VideoConferenceTrayController::Get()
-      ->effects_manager()
+      ->GetEffectsManager()
       .NotifyEffectSupportStateChanged(VcEffectId::kNoiseCancellation,
                                        noise_cancellation_supported_);
 }
@@ -197,7 +197,7 @@ void AudioEffectsController::AddNoiseCancellationEffect() {
   // Note that other functions might register this delegate already and we need
   // to avoid registering twice.
   VideoConferenceTrayEffectsManager& effects_manager =
-      VideoConferenceTrayController::Get()->effects_manager();
+      VideoConferenceTrayController::Get()->GetEffectsManager();
   if (!effects_manager.IsDelegateRegistered(this)) {
     effects_manager.RegisterDelegate(this);
   }
@@ -237,7 +237,7 @@ void AudioEffectsController::AddLiveCaptionEffect() {
   // Note that other functions might register this delegate already and we need
   // to avoid registering twice.
   VideoConferenceTrayEffectsManager& effects_manager =
-      VideoConferenceTrayController::Get()->effects_manager();
+      VideoConferenceTrayController::Get()->GetEffectsManager();
   if (!effects_manager.IsDelegateRegistered(this)) {
     effects_manager.RegisterDelegate(this);
   }

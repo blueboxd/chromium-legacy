@@ -21,7 +21,7 @@
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1384959399684842514">ડાઉનલોડ થોભાવ્યું</translation>
 <translation id="1415402041810619267">URL ટૂંકી કરી છે</translation>
-<translation id="1426410128494586442">હા</translation>
+<translation id="1434873037477293673">કિંમતમાં ઘટાડાનું કાર્ડ</translation>
 <translation id="1448064542941920355">નાનું-મોટું કરવાની ટકાવારી ઘટાડો</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> સાઇટ}one{<ph name="SITE_COUNT" /> સાઇટ}other{<ph name="SITE_COUNT" /> સાઇટ}}</translation>
 <translation id="1510341833810331442">સાઇટને તમારા ડિવાઇસ પર ડેટા સાચવવાની મંજૂરી આપવામાં આવતી નથી</translation>
@@ -108,6 +108,7 @@
 <translation id="2750481671343847896">સાઇટ ઓળખ સેવાઓના સાઇન ઇન કરવાના સંકેતો બતાવી શકે છે.</translation>
 <translation id="2790501146643349491">ચાલુ હોય ત્યારે, તાજેતરમાં બંધ કરેલી સાઇટ ડેટા મોકલવાનું અને પ્રાપ્ત કરવાનું પૂર્ણ કરી શકે છે. બંધ હોય ત્યારે, તાજેતરમાં બંધ કરેલી સાઇટ ડેટા મોકલવાનું અને પ્રાપ્ત કરવાનું પૂર્ણ કરી શકતી નથી.</translation>
 <translation id="2822354292072154809">શું તમે ખરેખર <ph name="CHOSEN_OBJECT_NAME" />ની બધી સાઇટ પસંદગીઓને રીસેટ કરવા માગો છે?</translation>
+<translation id="2836978798613876756"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="2850913818900871965">મોબાઇલ વ્યૂની વિનંતી કરો</translation>
 <translation id="2870560284913253234">સાઇટ</translation>
 <translation id="2874939134665556319">પાછલું ટ્રૅક</translation>
@@ -148,6 +149,7 @@
 <translation id="3448554387819310837">ચાલુ હોય ત્યારે, સાઇટ તમારા કૅમેરાનો ઉપયોગ કરવાનું પૂછી શકે છે. બંધ હોય ત્યારે, સાઇટ તમારા કૅમેરાનો ઉપયોગ કરી શકતી નથી.</translation>
 <translation id="3465378418721443318">{DAYS,plural, =1{Chrome આવતીકાલે પણ ફરી કુકી બ્લૉક કરશે}one{Chrome # દિવસમાં કુકીને ફરીથી બ્લૉક કરશે}other{Chrome # દિવસમાં કુકીને ફરીથી બ્લૉક કરશે}}</translation>
 <translation id="3521663503435878242"><ph name="DOMAIN" /> હેઠળની સાઇટ</translation>
+<translation id="3536227077203206203">આ વખતે મંજૂરી આપી છે</translation>
 <translation id="3538390592868664640">કોઈ સાઇટને તમારી આજુબાજુનો 3D નકશો બનાવવા અથવા કૅમેરાના સ્ટેટસને ટ્રૅક કરી શકવા માટે બ્લૉક કરો</translation>
 <translation id="3544058026430919413">કંપની એવી સાઇટનું ગ્રૂપ નિર્ધારિત કરી શકે છે, જે ગ્રૂપમાં તમારી પ્રવૃત્તિ શેર કરવા માટે કુકીનો ઉપયોગ કરી શકે. આ સુવિધા છૂપા મોડમાં કામ કરતી નથી.</translation>
 <translation id="3551268116566418498">છૂપો મોડ છોડીએ?</translation>
@@ -189,6 +191,7 @@
 <translation id="4169549551965910670">કોઈ USB ડિવાઇસથી કનેક્ટેડ</translation>
 <translation id="4194328954146351878">NFC ડિવાઇસ પર સાઇટને માહિતી જોવાની અને બદલવાની મંજૂરી આપતા પહેલાં પૂછો (ભલામણ કરવામાં આવે છે)</translation>
 <translation id="4200726100658658164">સ્થાન સેટિંગ ખોલો</translation>
+<translation id="4212246570487010370">બ્રાઉઝ કરવાનું ચાલુ રાખો</translation>
 <translation id="4226663524361240545">સૂચનાઓ ઉપકરણને વાઇબ્રેટ કરી શકે છે</translation>
 <translation id="4259722352634471385">નૅવિગેશન બ્લૉક કરેલું છે: <ph name="URL" /></translation>
 <translation id="4278390842282768270">મંજૂર</translation>
@@ -238,6 +241,7 @@
 <translation id="5099358668261120049">આમ કરવાથી તમારી હોમ સ્ક્રીન પર <ph name="ORIGIN" /> અથવા તેની ઍપ દ્વારા સ્ટોર કરવામાં આવેલો બધો ડેટા અને કુકી ડિલીટ કરવામાં આવશે.</translation>
 <translation id="5100237604440890931">સંકુચિત - વિસ્તૃત કરવા માટે ક્લિક કરો.</translation>
 <translation id="5123685120097942451">છૂપા મોડમાંની ટૅબ</translation>
+<translation id="5139253256813381453">{PRICE_DROP_COUNT,plural, =1{તમારા ખુલ્લા ટૅબ પર કિંમતમાં ઘટાડો}one{તમારા ખુલ્લા ટૅબ પર કિંમતમાં ઘટાડો}other{તમારા ખુલ્લા ટૅબ પર કિંમતમાં ઘટાડા}}</translation>
 <translation id="5186036860380548585">સ્ક્રીનની ટોચની નજીક વિકલ્પ ઉપલબ્ધ છે</translation>
 <translation id="5197729504361054390">તમે પસંદ કરશો તે સંપર્કોને <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> સાથે શેર કરવામાં આવશે.</translation>
 <translation id="5216942107514965959">છેલ્લે આજે મુલાકાત લીધી</translation>
@@ -325,6 +329,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">સાઇટને તમારું વર્ચ્યુઅલ રિયાલિટી ડિવાઇસ અને ડેટાનો ઉપયોગ કરવાથી બ્લૉક કરો</translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
+<translation id="6452138246455930388">તમારા ખુલ્લા ટૅબ પર કિંમતમાં ઘટાડો, <ph name="OLD_PRICE" />માંથી <ph name="NEW_PRICE" />, <ph name="PRODUCT_NAME" />, <ph name="DOMAIN_NAME" /></translation>
 <translation id="6500423977866688905">વિન્ડો નાની હોય ત્યારે, મોબાઇલ વ્યૂની વિનંતી કરો</translation>
 <translation id="6527303717912515753">શેર કરો</translation>
 <translation id="652937045869844725">ત્રીજા પક્ષની કુકીને મંજૂરી આપવાનો પ્રયાસ કરવાનો અર્થ છે ઓછું સંરક્ષણ પરંતુ સાઇટની સુવિધાઓની કાર્ય કરવાની સંભાવના વધુ છે</translation>
@@ -344,10 +349,12 @@
 <translation id="6746124502594467657">નીચે ખસેડો</translation>
 <translation id="6749077623962119521">પરવાનગીઓ રીસેટ કરીએ?</translation>
 <translation id="6766622839693428701">બંધ કરવા માટે નીચેની તરફ સ્વાઇપ કરો.</translation>
+<translation id="6785959295338971061"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="FROM_DEVICE" /> તરફથી</translation>
 <translation id="6787751205395685251"><ph name="SITE_NAME" /> માટે કોઈ વિકલ્પ પસંદ કરો</translation>
 <translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6818926723028410516">આઇટમ પસંદ કરો</translation>
 <translation id="6864395892908308021">આ ડિવાઇસ NFC વાંચી શકતું નથી</translation>
+<translation id="6867014948848323204"><ph name="FROM_DEVICE" /> તરફથી</translation>
 <translation id="6912998170423641340">બધી સાઇટને ક્લિપબોર્ડ પરની ટેક્સ્ટ અને છબીઓ વાંચવાથી બ્લૉક કરો</translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>
 <translation id="6950072572526089586">તમે મુલાકાત લેતા હો એવી કોઈ સાઇટ, તમે સાઇટ પર જે કરી રહ્યાં હો તે વિશેની માહિતી સાચવી શકે છે, જેથી તે અપેક્ષિત રીતે કામ કરી શકે — ઉદાહરણ તરીકે, તમને કોઈ સાઇટમાં સાઇન ઇન કરી રાખવા કે તમારા શૉપિંગ કાર્ટમાં આઇટમ સાચવવા માટે. સાઇટ ઘણીવાર આ માહિતીને તમારા ડિવાઇસ પર હંગામી રીતે સાચવે છે.</translation>
@@ -364,6 +371,7 @@
 <translation id="7141896414559753902">સાઇટને પૉપ-અપ અને રીડાયરેક્ટ બતાવવા દેવાથી બ્લૉક કરો (સુઝાવ આપીએ છીએ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">રિફ્રેશ કરો</translation>
+<translation id="7180865173735832675">કસ્ટમાઇઝ કરો</translation>
 <translation id="7188508872042490670">ડિવાઇસ પર સાઇટનો ડેટા</translation>
 <translation id="7201549776650881587">આ ક્રિયાના પરિણામે <ph name="ORIGIN" /> હેઠળની બધી સાઇટ અથવા તેની ઍપ દ્વારા તમારી હોમ સ્ક્રીન પર સ્ટોર કરવામાં આવેલો બધો ડેટા અને કુકી ડિલીટ થઈ જશે</translation>
 <translation id="7203150201908454328">વિસ્તૃત કરેલ</translation>
@@ -395,6 +403,7 @@
 <translation id="7667547420449112975">ધ વન્ડરફુલ વિઝાર્ડ ઑફ ઓઝ</translation>
 <translation id="7684642910516280563">સાઇટને ત્રીજા પક્ષની કુકીનો ઉપયોગ કરવાની મંજૂરી ન આપો</translation>
 <translation id="7719367874908701697">પેજ નાનું-મોટું કરો</translation>
+<translation id="7770832849480336015">"<ph name="TITLE_OF_MODULE" />" છુપાવો</translation>
 <translation id="7781829728241885113">ગઈ કાલે</translation>
 <translation id="7791543448312431591">ઉમેરો</translation>
 <translation id="780301667611848630">નહીં, આભાર</translation>

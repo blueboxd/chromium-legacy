@@ -20,11 +20,13 @@ import "chromeos/crosapi/mojom/browser_version.mojom";
 import "chromeos/crosapi/mojom/guest_os_sk_forwarder.mojom";
 import "chromeos/crosapi/mojom/cert_database.mojom";
 import "chromeos/crosapi/mojom/cert_provisioning.mojom";
+import "chromeos/crosapi/mojom/chaps_service.mojom";
 import "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom";
 import "chromeos/crosapi/mojom/clipboard.mojom";
 import "chromeos/crosapi/mojom/clipboard_history.mojom";
 import "chromeos/crosapi/mojom/content_protection.mojom";
 import "chromeos/crosapi/mojom/cros_display_config.mojom";
+import "chromeos/crosapi/mojom/debug_interface.mojom";
 import "chromeos/crosapi/mojom/desk.mojom";
 import "chromeos/crosapi/mojom/desk_profiles.mojom";
 import "chromeos/crosapi/mojom/desk_template.mojom";
@@ -47,6 +49,7 @@ import "chromeos/crosapi/mojom/extension_keeplist.mojom";
 import "chromeos/crosapi/mojom/eye_dropper.mojom";
 import "chromeos/crosapi/mojom/feedback.mojom";
 import "chromeos/crosapi/mojom/field_trial.mojom";
+import "chromeos/crosapi/mojom/file_change_service_bridge.mojom";
 import "chromeos/crosapi/mojom/file_manager.mojom";
 import "chromeos/crosapi/mojom/file_system_access_cloud_identifier.mojom";
 import "chromeos/crosapi/mojom/file_system_provider.mojom";
@@ -60,6 +63,7 @@ import "chromeos/crosapi/mojom/idle_service.mojom";
 import "chromeos/crosapi/mojom/image_writer.mojom";
 import "chromeos/crosapi/mojom/kerberos_in_browser.mojom";
 import "chromeos/crosapi/mojom/keystore_service.mojom";
+import "chromeos/crosapi/mojom/lacros_shelf_item_tracker.mojom";
 import "chromeos/crosapi/mojom/launcher_search.mojom";
 import "chromeos/crosapi/mojom/local_printer.mojom";
 import "chromeos/crosapi/mojom/login.mojom";
@@ -75,11 +79,13 @@ import "chromeos/crosapi/mojom/native_theme.mojom";
 import "chromeos/crosapi/mojom/network_change.mojom";
 import "chromeos/crosapi/mojom/networking_attributes.mojom";
 import "chromeos/crosapi/mojom/networking_private.mojom";
+import "chromeos/crosapi/mojom/one_drive_notification_service.mojom";
 import "chromeos/crosapi/mojom/power.mojom";
 import "chromeos/crosapi/mojom/network_settings_service.mojom";
 import "chromeos/crosapi/mojom/parent_access.mojom";
 import "chromeos/crosapi/mojom/passkeys.mojom";
 import "chromeos/crosapi/mojom/prefs.mojom";
+import "chromeos/crosapi/mojom/nonclosable_app_toast_service.mojom";
 import "chromeos/crosapi/mojom/printing_metrics.mojom";
 import "chromeos/crosapi/mojom/probe_service.mojom";
 import "chromeos/crosapi/mojom/remoting.mojom";
@@ -96,6 +102,7 @@ import "chromeos/crosapi/mojom/system_display.mojom";
 import "chromeos/crosapi/mojom/task_manager.mojom";
 import "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom";
 import "chromeos/crosapi/mojom/telemetry_event_service.mojom";
+import "chromeos/crosapi/mojom/telemetry_management_service.mojom";
 import "chromeos/crosapi/mojom/test_controller.mojom";
 import "chromeos/crosapi/mojom/timezone.mojom";
 import "chromeos/crosapi/mojom/tts.mojom";
@@ -151,8 +158,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 125
-// Next method id: 127
+// Next version: 132
+// Next method id: 134
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -238,6 +245,11 @@ interface Crosapi {
   [MinVersion=83]
   BindCertProvisioning@86(pending_receiver<CertProvisioning> receiver);
 
+  // Binds the ChapsService interface for communicating with the Chaps daemon.
+  // Added in M121.
+  [MinVersion=125] BindChapsService@127(
+      pending_receiver<ChapsService> receiver);
+
   // Binds the chrome app publisher service, which allows Lacros to connect its
   // Chrome apps to the app service.
   // Added in M93.
@@ -268,6 +280,11 @@ interface Crosapi {
   // Added in M106.
   [MinVersion=89] BindCrosDisplayConfigController@93(
       pending_receiver<CrosDisplayConfigController> receiver);
+
+  // Binds the DebugInterfaceRegisterer for registering DebugInterface.
+  // Added in M122.
+  [MinVersion=131] BindDebugInterfaceRegisterer@133(
+      pending_receiver<DebugInterfaceRegisterer> receiver);
 
   // Binds the desk factory interface.
   // Added in M109.
@@ -378,6 +395,15 @@ interface Crosapi {
   [MinVersion=70]
   BindExtensionPublisher@73(pending_receiver<AppPublisher> receiver);
 
+  // Binds the bridge implemented in Ash which is connected to the
+  // `FileChangeServiceBridge` in Lacros via crosapi. This bridge enables file
+  // change events originating from Lacros to be propagated to the
+  // `FileChangeService`, and its observers, in Ash.
+  // Added in M122.
+  [MinVersion=128]
+  BindFileChangeServiceBridge@130(
+      pending_receiver<FileChangeServiceBridge> receiver);
+
   // Binds the FileManager interface for showing files, folders, etc.
   // Added in M88.
   [MinVersion=5]
@@ -457,6 +483,12 @@ interface Crosapi {
   // Added in M87.
   BindKeystoreService@2(pending_receiver<KeystoreService> receiver);
 
+  // Binds the LacrosShelfItemTracker interface for integrating ephemeral Lacros
+  // Windows with Ash Shelf.
+  [MinVersion=126]
+  BindLacrosShelfItemTracker@128(
+      pending_receiver<LacrosShelfItemTracker> receiver);
+
   // Binds the Lacros app publisher service, which allows Lacros to connect the
   // Lacros app to the app service.
   // Added in M118.
@@ -521,6 +553,12 @@ interface Crosapi {
   [MinVersion=39]
   BindNetworkingAttributes@44(pending_receiver<NetworkingAttributes> receiver);
 
+  // Binds the OneDrive notification service which is used by the
+  // odfsConfigPrivate extension API to show notifications.
+  [MinVersion=130]
+  BindOneDriveNotificationService@132(
+      pending_receiver<OneDriveNotificationService> receiver);
+
   // Binds the Parent Access UI to allow Lacros to request parent access
   // from Ash when needed.
   [MinVersion=97]
@@ -544,6 +582,11 @@ interface Crosapi {
   // Binds the prefs service which allows get, set, and notify update of prefs.
   // Added in M89.
   [MinVersion=11] BindPrefs@16(pending_receiver<Prefs> receiver);
+
+  // Binds the prevent close service which can be used to provide user feedback
+  // about nonclosable web apps.
+  [MinVersion=129] BindNonclosableAppToastService@131(
+      pending_receiver<NonclosableAppToastService> receiver);
 
   // Binds the RemoteAppsLacrosBridge for the Remote Apps private Mojo API.
   // Added in M103.
@@ -698,6 +741,12 @@ interface Crosapi {
   // Added in M114.
   [MinVersion=106] BindTelemetryEventService@109(
     pending_receiver<TelemetryEventService> receiver);
+
+  // Binds the TelemetryManagementService interface for managing ChromeOS
+  // settings in Lacros-Chrome.
+  // Added in M122.
+  [MinVersion=127] BindTelemetryManagementService@129(
+    pending_receiver<TelemetryManagementService> receiver);
 
   // Binds the telemetry probe service to allow Lacros request telemetry data
   // from Ash.
@@ -1521,6 +1570,10 @@ struct BrowserInitParams {
   // behaviour between web apps and browser created shortcuts to be displayed.
   [MinVersion=74]
   bool is_cros_shortstand_enabled@74;
+
+  // If true, "Compose" will be disabled. Only applies on chromeos devices.
+  [MinVersion=75]
+  bool should_disable_chrome_compose_on_chromeos@75;
 };
 
 // BrowserPostLoginParams is the subset of parameters in BrowserInitParams

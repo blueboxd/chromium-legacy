@@ -14,13 +14,16 @@
 #include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/types/optional_ref.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_plus_address_delegate.h"
 #include "components/autofill/core/browser/autofill_trigger_details.h"
 #include "components/autofill/core/browser/country_type.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
-#include "components/autofill/core/browser/payments/risk_data_loader.h"
+#include "components/autofill/core/browser/payments/payments_window_manager.h"
 #include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
@@ -31,7 +34,6 @@
 #include "components/autofill/core/common/form_interactions_flow.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/device_reauth/device_authenticator.h"
-#include "components/plus_addresses/plus_address_types.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_state/core/security_state.h"
 #include "components/translate/core/browser/language_state.h"
@@ -44,10 +46,6 @@
 #include "url/origin.h"
 
 class PrefService;
-
-namespace plus_addresses {
-class PlusAddressService;
-}
 
 namespace signin {
 class IdentityManager;
@@ -97,15 +95,14 @@ class CreditCardOtpAuthenticator;
 class CreditCardRiskBasedAuthenticator;
 class FormDataImporter;
 class Iban;
+class IbanAccessManager;
 class IbanManager;
 class LogManager;
 class MerchantPromoCodeManager;
-class MigratableCreditCard;
 struct OfferNotificationOptions;
 class OtpUnmaskDelegate;
 enum class OtpUnmaskResult;
 class PersonalDataManager;
-class SingleFieldFormFillRouter;
 class StrikeDatabase;
 struct Suggestion;
 class TouchToFillDelegate;
@@ -119,6 +116,7 @@ namespace payments {
 class MandatoryReauthManager;
 class PaymentsAutofillClient;
 class PaymentsNetworkInterface;
+class PaymentsWindowManager;
 }
 
 // A client interface that needs to be supplied to the Autofill component by the
@@ -128,7 +126,7 @@ class PaymentsNetworkInterface;
 // BrowserAutofillManager is used (e.g. a single tab), so when we say "for the
 // client" below, we mean "in the execution context the client is associated
 // with" (e.g. for the tab the BrowserAutofillManager is attached to).
-class AutofillClient : public RiskDataLoader {
+class AutofillClient {
  public:
   enum class PaymentsRpcResult {
     // Empty result. Used for initializing variables and should generally
@@ -218,8 +216,8 @@ class AutofillClient : public RiskDataLoader {
     // The user declined the save/update/migration flow from the edit dialog.
     kEditDeclined,
     // The user selected to never migrate a `kLocalOrSyncable` profile to the
-    // account storage.
-    // Currently unused for new profile and update prompts.
+    // account storage. Currently unused for new profile and update prompts, but
+    // is triggered by explicitly declining a migration prompt.
     kNever,
     // The user ignored the prompt.
     kIgnored,
@@ -312,9 +310,9 @@ class AutofillClient : public RiskDataLoader {
                   AutofillSuggestionTriggerSource trigger_source);
     PopupOpenArgs(const PopupOpenArgs&);
     PopupOpenArgs(PopupOpenArgs&&);
-    ~PopupOpenArgs();
     PopupOpenArgs& operator=(const PopupOpenArgs&);
     PopupOpenArgs& operator=(PopupOpenArgs&&);
+    ~PopupOpenArgs();
 
     gfx::RectF element_bounds;
     base::i18n::TextDirection text_direction =
@@ -358,19 +356,6 @@ class AutofillClient : public RiskDataLoader {
 
   using CreditCardScanCallback = base::OnceCallback<void(const CreditCard&)>;
 
-  // Callback to run if user presses the Save button in the migration dialog.
-  // Will pass a vector of GUIDs of cards that the user selected to upload to
-  // LocalCardMigrationManager.
-  using LocalCardMigrationCallback =
-      base::OnceCallback<void(const std::vector<std::string>&)>;
-
-  // Callback to run if the user presses the trash can button in the
-  // action-required dialog. Will pass to LocalCardMigrationManager a
-  // string of GUID of the card that the user selected to delete from local
-  // storage.
-  using MigrationDeleteCardCallback =
-      base::RepeatingCallback<void(const std::string&)>;
-
   // Callback to run after local/upload IBAN save is offered. The callback runs
   // with `user_decision` indicating whether the prompt was accepted, declined,
   // or ignored. `nickname` is optionally provided by the user when IBAN local
@@ -397,7 +382,7 @@ class AutofillClient : public RiskDataLoader {
   // user closing the dialog directly and not when user closes the browser tab.
   using AddressProfileDeleteDialogCallback = base::OnceCallback<void(bool)>;
 
-  ~AutofillClient() override = default;
+  virtual ~AutofillClient() = default;
 
   // Returns the channel for the installation. In branded builds, this will be
   // version_info::Channel::{STABLE,BETA,DEV,CANARY}. In unbranded builds, or
@@ -439,18 +424,20 @@ class AutofillClient : public RiskDataLoader {
   // Gets the IbanManager instance associated with the client.
   virtual IbanManager* GetIbanManager();
 
-  // When the enterprise plus address feature is supported, gets the
-  // KeyedService that manages that data.
-  virtual plus_addresses::PlusAddressService* GetPlusAddressService();
+  // Gets the IbanAccessManager instance associated with the client.
+  virtual IbanAccessManager* GetIbanAccessManager();
 
   // Returns the `AutofillComposeDelegate` instance for the tab of this client.
   virtual AutofillComposeDelegate* GetComposeDelegate();
 
+  // Returns the `AutofillPlusAddressDelegate` associated with the profile of
+  // the window of this tab.
+  virtual AutofillPlusAddressDelegate* GetPlusAddressDelegate();
+
   // Orchestrates UI for enterprise plus address creation; no-op except on
   // supported platforms.
-  virtual void OfferPlusAddressCreation(
-      const url::Origin& main_frame_origin,
-      plus_addresses::PlusAddressCallback callback);
+  virtual void OfferPlusAddressCreation(const url::Origin& main_frame_origin,
+                                        PlusAddressCallback callback);
 
   // Gets the MerchantPromoCodeManager instance associated with the
   // client (can be null for unsupported platforms).
@@ -460,11 +447,6 @@ class AutofillClient : public RiskDataLoader {
   virtual CreditCardCvcAuthenticator* GetCvcAuthenticator();
   virtual CreditCardOtpAuthenticator* GetOtpAuthenticator();
   virtual CreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator();
-
-  // Creates and returns a SingleFieldFormFillRouter using the
-  // AutocompleteHistoryManager, IbanManager and MerchantPromoCodeManager
-  // instances associated with the client.
-  std::unique_ptr<SingleFieldFormFillRouter> CreateSingleFieldFormFillRouter();
 
   // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;
@@ -484,6 +466,9 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the payments::PaymentsNetworkInterface instance owned by the client.
   virtual payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() = 0;
+
+  // Gets the payments::PaymentsWindowManager owned by the client.
+  virtual payments::PaymentsWindowManager* GetPaymentsWindowManager();
 
   // Gets the StrikeDatabase associated with the client. Note: Nullptr may be
   // returned so check before use.
@@ -540,7 +525,7 @@ class AutofillClient : public RiskDataLoader {
 #endif
 
   // Causes the Autofill settings UI to be shown.
-  virtual void ShowAutofillSettings(PopupType popup_type) = 0;
+  virtual void ShowAutofillSettings(FillingProduct main_filling_product) = 0;
 
   // Show the OTP unmask dialog to accept user-input OTP value.
   virtual void ShowCardUnmaskOtpInputDialog(
@@ -607,33 +592,6 @@ class AutofillClient : public RiskDataLoader {
   // Hides the virtual card enroll bubble and icon if it is visible.
   virtual void HideVirtualCardEnrollBubbleAndIconIfVisible();
 
-  // Runs |show_migration_dialog_closure| if the user accepts the card migration
-  // offer. This causes the card migration dialog to be shown.
-  virtual void ShowLocalCardMigrationDialog(
-      base::OnceClosure show_migration_dialog_closure);
-
-  // Shows a dialog with the given |legal_message_lines| and the |user_email|.
-  // Runs |start_migrating_cards_callback| if the user would like the selected
-  // cards in the |migratable_credit_cards| to be uploaded to cloud.
-  virtual void ConfirmMigrateLocalCardToCloud(
-      const LegalMessageLines& legal_message_lines,
-      const std::string& user_email,
-      const std::vector<MigratableCreditCard>& migratable_credit_cards,
-      LocalCardMigrationCallback start_migrating_cards_callback);
-
-  // Will show a dialog containing a error message if |has_server_error|
-  // is true, or the migration results for cards in
-  // |migratable_credit_cards| otherwise. If migration succeeds the dialog will
-  // contain a |tip_message|. |migratable_credit_cards| will be used when
-  // constructing the dialog. The dialog is invoked when the migration process
-  // is finished. Runs |delete_local_card_callback| if the user chose to delete
-  // one invalid card from local storage.
-  virtual void ShowLocalCardMigrationResults(
-      const bool has_server_error,
-      const std::u16string& tip_message,
-      const std::vector<MigratableCreditCard>& migratable_credit_cards,
-      MigrationDeleteCardCallback delete_local_card_callback);
-
   // TODO(crbug.com/991037): Find a way to merge these two functions. Shouldn't
   // use WebauthnDialogState as that state is a purely UI state (should not be
   // accessible for managers?), and some of the states |KInactive| may be
@@ -663,7 +621,7 @@ class AutofillClient : public RiskDataLoader {
   // as a virtual card. |candidates| must not be empty and has at least one
   // card. Runs |callback| when a card is selected.
   virtual void OfferVirtualCardOptions(
-      const std::vector<CreditCard*>& candidates,
+      const std::vector<raw_ptr<CreditCard, VectorExperimental>>& candidates,
       base::OnceCallback<void(const std::string&)> callback);
 
 #else  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
@@ -728,8 +686,9 @@ class AutofillClient : public RiskDataLoader {
 
   // Called after credit card upload is finished. Will show upload result to
   // users. |card_saved| indicates if the card is successfully saved.
-  // TODO(crbug.com/932818): This function is overridden in iOS codebase.
-  // Ideally should remove it if iOS is not using it to do anything.
+  // TODO(crbug.com/932818): This function is overridden in iOS codebase and in
+  // the desktop codebase. If iOS is not using it to do anything, please keep
+  // this function for desktop.
   virtual void CreditCardUploadCompleted(bool card_saved);
 
   // Will show an infobar to get user consent for Credit Card assistive filling.
@@ -764,29 +723,23 @@ class AutofillClient : public RiskDataLoader {
 
   // Returns true if both the platform and the device support scanning credit
   // cards. Should be called before ScanCreditCard().
-  virtual bool HasCreditCardScanFeature() = 0;
+  virtual bool HasCreditCardScanFeature() const = 0;
 
   // Shows the user interface for scanning a credit card. Invokes the |callback|
   // when a credit card is scanned successfully. Should be called only if
   // HasCreditCardScanFeature() returns true.
   virtual void ScanCreditCard(CreditCardScanCallback callback) = 0;
 
-  // Returns true if the Touch To Fill feature is both supported by platform and
-  // enabled. Should be called before |ShowTouchToFillCreditCard| or
-  // |HideTouchToFillCreditCard|.
-  virtual bool IsTouchToFillCreditCardSupported() = 0;
-
   // Shows the Touch To Fill surface for filling credit card information, if
   // possible, and returns |true| on success. |delegate| will be notified of
-  // events. Should be called only if |IsTouchToFillCreditCardSupported|
-  // returns true.
+  // events. Should be called only if the feature is supported by the platform.
   virtual bool ShowTouchToFillCreditCard(
       base::WeakPtr<TouchToFillDelegate> delegate,
       base::span<const autofill::CreditCard> cards_to_suggest) = 0;
 
   // Hides the Touch To Fill surface for filling credit card information
-  // if one is currently shown. Should be called only if
-  // |IsTouchToFillCreditCardSupported| returns true.
+  // if one is currently shown. Should be called only if the feature is
+  // supported by the platform.
   virtual void HideTouchToFillCreditCard() = 0;
 
   // Shows an Autofill popup with the given |values|, |labels|, |icons|, and
@@ -828,7 +781,7 @@ class AutofillClient : public RiskDataLoader {
   // `trigger_source` indicates the reason for updating the popup. (However, the
   // password manager makes no distinction).
   virtual void UpdatePopup(const std::vector<Suggestion>& suggestions,
-                           PopupType popup_type,
+                           FillingProduct main_filling_product,
                            AutofillSuggestionTriggerSource trigger_source) = 0;
 
   // Hide the Autofill popup if one is currently showing.
@@ -868,6 +821,16 @@ class AutofillClient : public RiskDataLoader {
       bool show_confirmation_before_closing,
       base::OnceClosure no_interactive_authentication_callback =
           base::OnceClosure());
+
+  // Maybe triggers a hats survey that measures the user's perception of
+  // Autofill. When triggering happens, the survey dialog will be displayed with
+  // a 5s delay. Note:  This survey should be triggered after form submissions.
+  // `field_filling_stats_data` contains a key-value string representation of
+  // `autofill_metrics::FormGroupFillingStats`. See
+  // chrome/browser/ui/hats/survey_config.cc for details on what values should
+  // be present.
+  virtual void TriggerUserPerceptionOfAutofillSurvey(
+      const std::map<std::string, std::string>& field_filling_stats_data);
 
   // Whether the Autocomplete feature of Autofill should be enabled.
   virtual bool IsAutocompleteEnabled() const = 0;

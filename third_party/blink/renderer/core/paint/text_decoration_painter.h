@@ -15,6 +15,7 @@ namespace blink {
 class ComputedStyle;
 class FragmentItem;
 class GraphicsContextStateSaver;
+class InlinePaintContext;
 class TextPainter;
 struct LineRelativeRect;
 struct PaintInfo;
@@ -37,7 +38,7 @@ class CORE_EXPORT TextDecorationPainter {
  public:
   explicit TextDecorationPainter(
       TextPainter& text_painter,
-      const FragmentItem& text_item,
+      const InlinePaintContext* inline_context,
       const PaintInfo& paint_info,
       const ComputedStyle& style,
       const TextPaintStyle& text_style,
@@ -48,21 +49,29 @@ class CORE_EXPORT TextDecorationPainter {
   // Sets the given optional to a new TextDecorationInfo with the decorations
   // that need to be painted, or nullopt if decorations should not be painted.
   void UpdateDecorationInfo(absl::optional<TextDecorationInfo>&,
+                            const FragmentItem&,
                             const ComputedStyle&,
                             absl::optional<LineRelativeRect> = {},
                             const AppliedTextDecoration* = nullptr);
 
   enum Phase { kOriginating, kSelection };
-  void Begin(Phase phase);
+  void Begin(const FragmentItem&, Phase phase);
   void PaintExceptLineThrough(const TextFragmentPaintInfo&);
   void PaintOnlyLineThrough();
+
+  const InlinePaintContext* InlineContext() const { return inline_context_; }
+
+  // Expand a rect to be suitable for clipping without affecting
+  // decorations. This is currently an approximation only used for SVG
+  // because SVG does not have correct InkOverflow.
+  static gfx::RectF ExpandRectForSVGDecorations(const LineRelativeRect&);
 
  private:
   enum Step { kBegin, kExcept, kOnly };
   void ClipIfNeeded(GraphicsContextStateSaver&);
 
   TextPainter& text_painter_;
-  const FragmentItem& text_item_;
+  const InlinePaintContext* inline_context_;
   const PaintInfo& paint_info_;
   const ComputedStyle& style_;
   const TextPaintStyle& text_style_;

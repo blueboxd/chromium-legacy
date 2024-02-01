@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/autofill/autofill_context_menu_manager.h"
+#include "chrome/browser/ui/user_education/scoped_new_badge_tracker.h"
 #include "components/compose/buildflags.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/lens/buildflags.h"
@@ -114,6 +115,7 @@ class RenderViewContextMenu
       public custom_handlers::ProtocolHandlerRegistry::Observer {
  public:
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kExitFullscreenMenuItem);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kComposeMenuItem);
 
   using ExecutePluginActionCallback =
       base::OnceCallback<void(content::RenderFrameHost*,
@@ -394,6 +396,9 @@ class RenderViewContextMenu
   void ExecLanguageSettings(int event_flags);
   void ExecProtocolHandlerSettings(int event_flags);
   void ExecPictureInPicture();
+#if BUILDFLAG(ENABLE_COMPOSE)
+  void ExecOpenCompose();
+#endif
   void ExecOpenInReadAnything();
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   void ExecRunLayoutExtraction();
@@ -541,6 +546,8 @@ class RenderViewContextMenu
 
   // Responsible for handling autofill related context menu items.
   autofill::AutofillContextMenuManager autofill_context_menu_manager_;
+
+  ScopedNewBadgeTracker new_badge_tracker_;
 
   base::WeakPtrFactory<RenderViewContextMenu> weak_pointer_factory_{this};
 };

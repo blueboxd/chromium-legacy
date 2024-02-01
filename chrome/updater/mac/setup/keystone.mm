@@ -125,8 +125,9 @@ bool CopyKeystoneBundle(UpdaterScope scope) {
 
   const std::optional<base::FilePath> dest_folder_path =
       GetKeystoneFolderPath(scope);
-  if (!dest_folder_path)
+  if (!dest_folder_path) {
     return false;
+  }
   const base::FilePath dest_path = *dest_folder_path;
 
   // CopyDir() does not remove files in destination.
@@ -173,8 +174,8 @@ bool CopyKeystoneBundle(UpdaterScope scope) {
     return false;
   }
 
-  if (!RemoveQuarantineAttributes(dest_keystone_bundle_path)) {
-    VLOG(1) << "Couldn't remove quarantine bits for Keystone.";
+  if (!PrepareToRunBundle(dest_keystone_bundle_path)) {
+    VLOG(1) << "Gatekeeper may prompt for Keystone shim.";
   }
 
   return true;
@@ -311,6 +312,11 @@ bool MigrateKeystoneApps(
         registration.version = version;
       } else {
         registration.version = base::Version(kNullVersion);
+      }
+      if (ticket.versionPath && ticket.versionKey) {
+        registration.version_path =
+            base::apple::NSStringToFilePath(ticket.versionPath);
+        registration.version_key = base::SysNSStringToUTF8(ticket.versionKey);
       }
       if (ticket.existenceChecker) {
         registration.existence_checker_path =

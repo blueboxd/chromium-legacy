@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <optional>
 #include <sstream>
 #include <string>
 
@@ -159,12 +160,11 @@ class AutofillCapturedSitesInteractiveTest
       public ::testing::WithParamInterface<CapturedSiteParams> {
  public:
   // TestRecipeReplayChromeFeatureActionExecutor
-  bool AutofillForm(
-      const std::string& focus_element_css_selector,
-      const std::vector<std::string>& iframe_path,
-      const int attempts,
-      content::RenderFrameHost* frame,
-      absl::optional<ServerFieldType> triggered_field_type) override {
+  bool AutofillForm(const std::string& focus_element_css_selector,
+                    const std::vector<std::string>& iframe_path,
+                    const int attempts,
+                    content::RenderFrameHost* frame,
+                    std::optional<FieldType> triggered_field_type) override {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(frame);
     auto& autofill_manager = static_cast<BrowserAutofillManager&>(
@@ -211,13 +211,13 @@ class AutofillCapturedSitesInteractiveTest
       }
       DoNothingAndWait(base::Milliseconds(500));
 
-      absl::optional<std::u16string> cvc = profile_controller_->cvc();
+      std::optional<std::u16string> cvc = profile_controller_->cvc();
       // If CVC is available in the Action Recorder receipts and this is a
       // payment form, this means it's running the test with a server card. So
       // the "Enter CVC" dialog will pop up for card autofill.
       bool is_credit_card_field =
           triggered_field_type.has_value() &&
-          GroupTypeOfServerFieldType(triggered_field_type.value()) ==
+          GroupTypeOfFieldType(triggered_field_type.value()) ==
               FieldTypeGroup::kCreditCard;
       bool should_cvc_dialog_pop_up = is_credit_card_field && cvc;
 

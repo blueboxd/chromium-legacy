@@ -559,6 +559,9 @@ id<GREYMatcher> TabGridOtherDevicesPanelButton();
 // be used to validate that the tab grid normal mode is active.
 id<GREYMatcher> TabGridNormalModePageControl();
 
+// Returns a matcher for the Inactive Tabs button of the tab grid.
+id<GREYMatcher> TabGridInactiveTabsButton();
+
 // Returns a matcher for the tab grid background.
 id<GREYMatcher> TabGridBackground();
 
@@ -683,9 +686,6 @@ id<GREYMatcher> ManualFallbackOtherPasswordsDismissMatcher();
 
 // Returns a matcher for the a password in the manual fallback list.
 id<GREYMatcher> ManualFallbackPasswordButtonMatcher();
-
-// Returns a matcher for the PasswordTableView window.
-id<GREYMatcher> ManualFallbackPasswordTableViewWindowMatcher();
 
 // Returns a matcher for the profiles icon in the keyboard accessory bar.
 id<GREYMatcher> ManualFallbackProfilesIconMatcher();

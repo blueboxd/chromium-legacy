@@ -45,8 +45,7 @@ void DownloadDidFinishWithSize(
 @interface DownloadNativeTaskBridge ()
 
 @property(nonatomic, readwrite, strong) NSData* resumeData;
-@property(nonatomic, readwrite, strong)
-    WKDownload* download API_AVAILABLE(ios(15));
+@property(nonatomic, readwrite, strong) WKDownload* download;
 
 @end
 
@@ -123,13 +122,11 @@ void DownloadDidFinishWithSize(
 
   if (_resumeData) {
     DCHECK(!_startDownloadBlock);
-    if (@available(iOS 15, *)) {
-      __weak __typeof(self) weakSelf = self;
-      [_delegate resumeDownloadNativeTask:_resumeData
-                        completionHandler:^(WKDownload* download) {
-                          [weakSelf onResumedDownload:download];
-                        }];
-    }
+    __weak __typeof(self) weakSelf = self;
+    [_delegate resumeDownloadNativeTask:_resumeData
+                      completionHandler:^(WKDownload* download) {
+                        [weakSelf onResumedDownload:download];
+                      }];
     return;
   }
 

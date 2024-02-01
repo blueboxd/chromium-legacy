@@ -137,12 +137,44 @@ int GetMessageIDMultiplePermissions(
   return IDS_PERMISSION_REQUEST_CAMERA_MICROPHONE;
 }
 
+// Helper to get `PermissionsPolicyFeature` from permission name
+mojom::blink::PermissionsPolicyFeature PermissionNameToPermissionsPolicyFeature(
+    PermissionName permission_name) {
+  switch (permission_name) {
+    case PermissionName::AUDIO_CAPTURE:
+      return mojom::blink::PermissionsPolicyFeature::kMicrophone;
+    case PermissionName::VIDEO_CAPTURE:
+      return mojom::blink::PermissionsPolicyFeature::kCamera;
+    case PermissionName::GEOLOCATION:
+      return mojom::blink::PermissionsPolicyFeature::kGeolocation;
+    default:
+      NOTREACHED_NORETURN() << "Not supported permission " << permission_name;
+  }
+}
+
+// Helper to translate permission names into strings, primarily used for logging
+// console messages.
+String PermissionNameToString(PermissionName permission_name) {
+  switch (permission_name) {
+    case PermissionName::GEOLOCATION:
+      return "geolocation";
+    case PermissionName::AUDIO_CAPTURE:
+      return "audio_capture";
+    case PermissionName::VIDEO_CAPTURE:
+      return "video_capture";
+    default:
+      NOTREACHED_NORETURN() << "Not supported permission " << permission_name;
+  }
+}
+
 }  // namespace
 
 HTMLPermissionElement::HTMLPermissionElement(Document& document)
     : HTMLElement(html_names::kPermissionTag, document),
       permission_service_(document.GetExecutionContext()),
-      receivers_(this, document.GetExecutionContext()) {
+      permission_observer_receivers_(this, document.GetExecutionContext()),
+      embedded_permission_control_receiver_(this,
+                                            document.GetExecutionContext()) {
   DCHECK(RuntimeEnabledFeatures::PermissionElementEnabled());
   EnsureUserAgentShadowRoot();
 }
@@ -155,7 +187,8 @@ const AtomicString& HTMLPermissionElement::GetType() const {
 
 void HTMLPermissionElement::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
-  visitor->Trace(receivers_);
+  visitor->Trace(permission_observer_receivers_);
+  visitor->Trace(embedded_permission_control_receiver_);
   visitor->Trace(shadow_element_);
   visitor->Trace(permission_text_span_);
   HTMLElement::Trace(visitor);
@@ -205,25 +238,31 @@ void HTMLPermissionElement::AttributeChanged(
 
     permission_descriptors_ = ParsePermissionDescriptorsFromString(GetType());
     if (permission_descriptors_.empty()) {
-      ConsoleMessage* console_message = MakeGarbageCollected<ConsoleMessage>(
-          mojom::blink::ConsoleMessageSource::kRendering,
-          mojom::blink::ConsoleMessageLevel::kError,
+      AddConsoleError(
           String::Format("The permission type '%s' is not supported by the "
                          "permission element.",
                          GetType().Utf8().c_str()));
-      console_message->SetNodes(GetDocument().GetFrame(),
-                                {this->GetDomNodeId()});
-      GetDocument().AddConsoleMessage(console_message);
       return;
+    }
+
+    for (const PermissionDescriptorPtr& descriptor : permission_descriptors_) {
+      if (!GetExecutionContext()->IsFeatureEnabled(
+              PermissionNameToPermissionsPolicyFeature(descriptor->name))) {
+        AddConsoleError(String::Format(
+            "The permission '%s' is not allowed in the current context due to "
+            "PermissionsPolicy",
+            PermissionNameToString(descriptor->name).Utf8().c_str()));
+        return;
+      }
     }
 
     // TODO(crbug.com/1462930): We might consider not displaying the element
     // until the element is registered
+    mojo::PendingRemote<EmbeddedPermissionControlClient> client;
+    embedded_permission_control_receiver_.Bind(
+        client.InitWithNewPipeAndPassReceiver(), GetTaskRunner());
     GetPermissionService()->RegisterPageEmbeddedPermissionControl(
-        mojo::Clone(permission_descriptors_),
-        WTF::BindOnce(
-            &HTMLPermissionElement::OnPageEmbeddedPermissionControlRegistered,
-            WrapWeakPersistent(this)));
+        mojo::Clone(permission_descriptors_), std::move(client));
   }
 
   HTMLElement::AttributeChanged(params);
@@ -272,21 +311,21 @@ void HTMLPermissionElement::RegisterPermissionObserver(
     const PermissionDescriptorPtr& descriptor,
     PermissionStatus current_status) {
   mojo::PendingRemote<PermissionObserver> observer;
-  receivers_.Add(observer.InitWithNewPipeAndPassReceiver(), descriptor->name,
-                 GetTaskRunner());
+  permission_observer_receivers_.Add(observer.InitWithNewPipeAndPassReceiver(),
+                                     descriptor->name, GetTaskRunner());
   GetPermissionService()->AddPermissionObserver(
       descriptor.Clone(), current_status, std::move(observer));
 }
 
 void HTMLPermissionElement::OnPermissionStatusChange(PermissionStatus status) {
-  auto permission_name = receivers_.current_context();
+  auto permission_name = permission_observer_receivers_.current_context();
   auto it = permission_status_map_.find(permission_name);
   CHECK(it != permission_status_map_.end());
   it->value = status;
   UpdateAppearance();
 }
 
-void HTMLPermissionElement::OnPageEmbeddedPermissionControlRegistered(
+void HTMLPermissionElement::OnEmbeddedPermissionControlRegistered(
     bool allowed,
     const absl::optional<Vector<PermissionStatus>>& statuses) {
   CHECK_EQ(permission_status_map_.size(), 0U);
@@ -327,19 +366,12 @@ void HTMLPermissionElement::OnEmbeddedPermissionsDecided(
     case EmbeddedPermissionControlResult::kDenied:
       DispatchEvent(*Event::Create(event_type_names::kResolve));
       return;
-    case EmbeddedPermissionControlResult::kNotSupported: {
-      ConsoleMessage* console_message = MakeGarbageCollected<ConsoleMessage>(
-          mojom::blink::ConsoleMessageSource::kRendering,
-          mojom::blink::ConsoleMessageLevel::kError,
-          String::Format(
-              "The permission request type '%s' is not supported and "
-              "this <permission> element will not be functional.",
-              GetType().Utf8().c_str()));
-      console_message->SetNodes(GetDocument().GetFrame(),
-                                {this->GetDomNodeId()});
-      GetDocument().AddConsoleMessage(console_message);
+    case EmbeddedPermissionControlResult::kNotSupported:
+      AddConsoleError(String::Format(
+          "The permission request type '%s' is not supported and "
+          "this <permission> element will not be functional.",
+          GetType().Utf8().c_str()));
       return;
-    }
     case EmbeddedPermissionControlResult::kResolvedNoUserGesture:
       return;
   }
@@ -412,6 +444,14 @@ void HTMLPermissionElement::UpdateText() {
 
   CHECK(message_id);
   permission_text_span_->setInnerText(GetLocale().QueryString(message_id));
+}
+
+void HTMLPermissionElement::AddConsoleError(String error) {
+  ConsoleMessage* console_message = MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kRendering,
+      mojom::blink::ConsoleMessageLevel::kError, error);
+  console_message->SetNodes(GetDocument().GetFrame(), {this->GetDomNodeId()});
+  GetDocument().AddConsoleMessage(console_message);
 }
 
 }  // namespace blink

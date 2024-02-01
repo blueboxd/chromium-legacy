@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/frame/attribution_src_loader.h"
 
 #include <stddef.h>
-
 #include <stdint.h>
+
 #include <memory>
 
 #include "base/test/metrics/histogram_tester.h"
@@ -779,22 +779,25 @@ class AttributionSrcLoaderInBrowserMigrationEnabledTest
 };
 
 TEST_F(AttributionSrcLoaderInBrowserMigrationEnabledTest,
-       MaybeRegisterAttributionHeaders_ResponseIgnored) {
+       MaybeRegisterAttributionHeaders_KeepAliveRequestsResponseIgnored) {
   KURL test_url = ToKURL("https://example1.com/foo.html");
 
-  ResourceRequest request(test_url);
-  request.SetKeepalive(true);
-  request.SetAttributionReportingEligibility(
-      AttributionReportingEligibility::kTrigger);
-  auto* resource = MakeGarbageCollected<MockResource>(test_url);
-  ResourceResponse response(test_url);
-  response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(
-      http_names::kAttributionReportingRegisterTrigger,
-      AtomicString(R"({"event_trigger_data":[{"trigger_data": "7"}]})"));
+  for (bool is_keep_alive : {true, false}) {
+    ResourceRequest request(test_url);
+    request.SetKeepalive(is_keep_alive);
+    request.SetAttributionReportingEligibility(
+        AttributionReportingEligibility::kTrigger);
+    auto* resource = MakeGarbageCollected<MockResource>(test_url);
+    ResourceResponse response(test_url);
+    response.SetHttpStatusCode(200);
+    response.SetHttpHeaderField(
+        http_names::kAttributionReportingRegisterTrigger,
+        AtomicString(R"({"event_trigger_data":[{"trigger_data": "7"}]})"));
 
-  EXPECT_FALSE(attribution_src_loader_->MaybeRegisterAttributionHeaders(
-      request, response, resource));
+    EXPECT_EQ(attribution_src_loader_->MaybeRegisterAttributionHeaders(
+                  request, response, resource),
+              is_keep_alive ? false : true);
+  }
 }
 
 }  // namespace

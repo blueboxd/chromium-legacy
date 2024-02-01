@@ -85,7 +85,8 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       data.privileged_webgl_extensions_enabled();
   out->webgl_errors_to_console_enabled = data.webgl_errors_to_console_enabled();
   out->hide_scrollbars = data.hide_scrollbars();
-  out->enable_webkit_scrollbar_styling = data.enable_webkit_scrollbar_styling();
+  out->prefers_default_scrollbar_styles =
+      data.prefers_default_scrollbar_styles();
   out->accelerated_2d_canvas_enabled = data.accelerated_2d_canvas_enabled();
   out->canvas_2d_layers_enabled = data.canvas_2d_layers_enabled();
   out->antialiased_2d_canvas_disabled = data.antialiased_2d_canvas_disabled();
@@ -167,8 +168,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->force_enable_zoom = data.force_enable_zoom();
   out->support_deprecated_target_density_dpi =
       data.support_deprecated_target_density_dpi();
-  out->use_legacy_background_size_shorthand_behavior =
-      data.use_legacy_background_size_shorthand_behavior();
   out->wide_viewport_quirk = data.wide_viewport_quirk();
   out->use_wide_viewport = data.use_wide_viewport();
   out->force_zero_layout_height = data.force_zero_layout_height();

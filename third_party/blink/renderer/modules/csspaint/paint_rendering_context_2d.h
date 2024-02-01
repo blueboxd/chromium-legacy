@@ -60,6 +60,8 @@ class MODULES_EXPORT PaintRenderingContext2D
 
   cc::PaintCanvas* GetOrCreatePaintCanvas() final { return GetPaintCanvas(); }
   cc::PaintCanvas* GetPaintCanvas() final;
+  MemoryManagedPaintRecorder* Recorder() override { return &paint_recorder_; }
+
   void WillDraw(const SkIRect&, CanvasPerformanceMonitor::DrawType) final;
 
   double shadowOffsetX() const final;
@@ -104,13 +106,13 @@ class MODULES_EXPORT PaintRenderingContext2D
  protected:
   PredefinedColorSpace GetDefaultImageDataColorSpace() const final;
   bool IsPaint2D() const override { return true; }
-  void WillOverwriteCanvas() override;
 
   // PaintRenderingContext2D is unable to resolve fonts.
   bool ResolveFont(const String& new_font) final { return false; }
 
  private:
   void InitializeForRecording(cc::PaintCanvas* canvas) const override;
+  void RecordingCleared() override;
 
   MemoryManagedPaintRecorder paint_recorder_;
   absl::optional<PaintRecord> previous_frame_;

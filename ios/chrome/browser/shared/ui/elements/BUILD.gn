@@ -6,9 +6,11 @@ source_set("elements") {
   sources = [
     "crossfade_label.h",
     "crossfade_label.mm",
+    "custom_highlight_button.h",
+    "custom_highlight_button.mm",
     "extended_touch_target_button.h",
     "extended_touch_target_button.mm",
-    "fade_truncating_label+private.h",
+    "fade_truncating_label+Testing.h",
     "fade_truncating_label.h",
     "fade_truncating_label.mm",
     "gray_highlight_button.h",
@@ -30,6 +32,7 @@ source_set("elements") {
   ]
   deps = [
     "//base",
+    "//base:i18n",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/elements:constants",

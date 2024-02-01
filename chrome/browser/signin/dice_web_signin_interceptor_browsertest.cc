@@ -49,6 +49,7 @@
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
+#include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/public/base/consent_level.h"
@@ -72,9 +73,7 @@
 
 namespace {
 
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
 const char kCustomSearchEngineDomain[] = "bar.com";
-#endif
 
 // Fake response for OAuth multilogin.
 const char kMultiloginSuccessResponse[] =
@@ -165,31 +164,6 @@ class FakeDiceWebSigninInterceptorDelegate
   base::WeakPtr<FakeBubbleHandle> weak_bubble_handle_;
 };
 
-class BrowserCloseObserver : public BrowserListObserver {
- public:
-  explicit BrowserCloseObserver(Browser* browser) : browser_(browser) {
-    BrowserList::AddObserver(this);
-  }
-
-  BrowserCloseObserver(const BrowserCloseObserver&) = delete;
-  BrowserCloseObserver& operator=(const BrowserCloseObserver&) = delete;
-
-  ~BrowserCloseObserver() override { BrowserList::RemoveObserver(this); }
-
-  void Wait() { run_loop_.Run(); }
-
-  // BrowserListObserver implementation.
-  void OnBrowserRemoved(Browser* browser) override {
-    if (browser == browser_) {
-      run_loop_.Quit();
-    }
-  }
-
- private:
-  raw_ptr<Browser> browser_;
-  base::RunLoop run_loop_;
-};
-
 // Runs the interception and returns the new profile that was created.
 Profile* InterceptAndWaitProfileCreation(content::WebContents* contents,
                                          const CoreAccountId& account_id) {
@@ -214,7 +188,6 @@ void CheckHistograms(const base::HistogramTester& histogram_tester,
                                       outcome, 1);
 }
 
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
 void SetUserSelectedDefaultSearchProvider(
     TemplateURLService* template_url_service) {
   TemplateURLData data;
@@ -232,7 +205,6 @@ void SetUserSelectedDefaultSearchProvider(
       template_url_service->Add(std::make_unique<TemplateURL>(data));
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
 }
-#endif
 
 }  // namespace
 
@@ -519,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, CloseSourceTab) {
 class DiceWebSigninInterceptorWithChromeSigninHelpersBrowserTest
     : public DiceWebSigninInterceptorBrowserTest {
  public:
-  absl::optional<int> GetChromeSigninInterceptDeclinedCountPref(
+  std::optional<int> GetChromeSigninInterceptDeclinedCountPref(
       const AccountInfo& account_info) {
     return GetProfile()
         ->GetPrefs()
@@ -529,7 +501,7 @@ class DiceWebSigninInterceptorWithChromeSigninHelpersBrowserTest
             account_info.email));
   }
 
-  absl::optional<int> GetChromeSigninInterceptShownCountPref(
+  std::optional<int> GetChromeSigninInterceptShownCountPref(
       const AccountInfo& account_info) {
     return GetProfile()
         ->GetPrefs()
@@ -541,7 +513,7 @@ class DiceWebSigninInterceptorWithChromeSigninHelpersBrowserTest
 
   FakeDiceWebSigninInterceptorDelegate* ShowSigninBubble(
       const AccountInfo& account_info,
-      absl::optional<SigninInterceptionResult> expected_result) {
+      std::optional<SigninInterceptionResult> expected_result) {
     GURL intercepted_url = embedded_test_server()->GetURL("/defaultresponse");
     content::WebContents* contents = AddTab(intercepted_url);
 
@@ -775,7 +747,8 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorWithUnoEnabledBrowserTest,
   base::HistogramTester histogram_tester;
 
   // Setup a first account for interception.
-  AccountInfo info1 = MakeAccountInfoAvailableAndUpdate("alice1@example.com");
+  AccountInfo info1 =
+      MakeAccountInfoAvailableAndUpdate("alice1@consumer.example.com");
 
   // Makes sure Chrome is not signed in to trigger the Chrome Sigin intercept
   // bubble.
@@ -805,7 +778,8 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorWithUnoEnabledBrowserTest,
   identity_test_env()->RemoveRefreshTokenForAccount(info1.account_id);
 
   // Setup the second account for interception.
-  AccountInfo info2 = MakeAccountInfoAvailableAndUpdate("alice2@example.com");
+  AccountInfo info2 =
+      MakeAccountInfoAvailableAndUpdate("alice2@consumer.exmaple.com");
   ASSERT_FALSE(info2.IsEmpty());
   ASSERT_FALSE(GetChromeSigninInterceptShownCountPref(info2).has_value());
 
@@ -848,8 +822,13 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorWithUnoEnabledBrowserTest,
   // Attempts to show a 6th time. It should not show the bubble.
   // No expected result since the bubble should be not be shown.
   FakeDiceWebSigninInterceptorDelegate* delegate =
-      ShowSigninBubble(info1, /*expected_result=*/absl::nullopt);
+      ShowSigninBubble(info1, /*expected_result=*/std::nullopt);
   EXPECT_FALSE(delegate->intercept_bubble_shown());
+  histogram_tester.ExpectBucketCount(
+      "Signin.Intercept.Heuristic.ShouldShowChromeSigninBubbleWithReason",
+      ShouldShowChromeSigninBubbleWithReason::
+          kShouldNotShowMaxShownCountReached,
+      1);
   // Pref bubble shown count should remain the same.
   EXPECT_EQ(GetChromeSigninInterceptShownCountPref(info1),
             expected_bubble_shown_count_info1);
@@ -952,7 +931,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(IsChromeSignedIn());
   EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
-      syncer::prefs::kExplicitBrowserSignin));
+      prefs::kExplicitBrowserSignin));
   // Passwords are defaulted to disabled without an explicit signin.
   EXPECT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
       SyncServiceFactory::GetForProfile(GetProfile())));
@@ -971,7 +950,7 @@ IN_PROC_BROWSER_TEST_F(
   // Starting Chrome with a Signed in account prior to `switches::kUnoDesktop`
   // activation should not turn this pref on.
   EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
-      syncer::prefs::kExplicitBrowserSignin));
+      prefs::kExplicitBrowserSignin));
   // Since we did not interact with passwords before, passwords should remain
   // disabled as long as we did not explicitly sign in.
   syncer::SyncService* sync_service =
@@ -994,7 +973,7 @@ IN_PROC_BROWSER_TEST_F(
   // Explicit Signing in while `switches::kUnoDesktop` is active should be
   // stored.
   EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
-      syncer::prefs::kExplicitBrowserSignin));
+      prefs::kExplicitBrowserSignin));
   // Signing in with `switches::kUnoDesktop` enabled, should affect the
   // passwords default.
   EXPECT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
@@ -1003,7 +982,7 @@ IN_PROC_BROWSER_TEST_F(
   // Sign out should clear the explicit signin pref.
   identity_test_env()->ClearPrimaryAccount();
   EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
-      syncer::prefs::kExplicitBrowserSignin));
+      prefs::kExplicitBrowserSignin));
 }
 
 // Test Suite where PRE_* tests are with `switches::kUnoDesktop` enabled, and
@@ -1038,7 +1017,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(IsChromeSignedIn());
   EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
-      syncer::prefs::kExplicitBrowserSignin));
+      prefs::kExplicitBrowserSignin));
   // Passwords are defaulted to enabled with an explicit sign in and
   // `switches::kUnoDesktop` active.
   EXPECT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
@@ -1054,7 +1033,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Disabling `switches::kUnoDesktop` should not reset the pref.
   EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
-      syncer::prefs::kExplicitBrowserSignin));
+      prefs::kExplicitBrowserSignin));
   // Disabling `switches::kUnoDesktop` feature should revert back to the
   // previous default state, since there were no interactions, defaults to
   // disabled.
@@ -1830,9 +1809,11 @@ class DiceWebSigninInterceptorParametrizedBrowserTest
  public:
   DiceWebSigninInterceptorParametrizedBrowserTest() {
     if (WithSearchEngineChoiceEnabled()) {
-      scoped_feature_list_.InitAndEnableFeature(switches::kSearchEngineChoice);
+      scoped_feature_list_.InitAndEnableFeature(
+          switches::kSearchEngineChoiceTrigger);
     } else {
-      scoped_feature_list_.InitAndDisableFeature(switches::kSearchEngineChoice);
+      scoped_feature_list_.InitAndDisableFeature(
+          switches::kSearchEngineChoiceTrigger);
     }
   }
 
@@ -1854,7 +1835,6 @@ IN_PROC_BROWSER_TEST_P(DiceWebSigninInterceptorParametrizedBrowserTest,
 
   SetupGaiaResponses();
 
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
   int64_t search_engine_choice_timestamp =
       base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
   const char kChoiceVersion[] = "1.2.3.4";
@@ -1871,7 +1851,6 @@ IN_PROC_BROWSER_TEST_P(DiceWebSigninInterceptorParametrizedBrowserTest,
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
     SetUserSelectedDefaultSearchProvider(template_url_service);
   }
-#endif
 
   // Add a tab.
   GURL intercepted_url = embedded_test_server()->GetURL("/defaultresponse");
@@ -1911,7 +1890,6 @@ IN_PROC_BROWSER_TEST_P(DiceWebSigninInterceptorParametrizedBrowserTest,
                     ->UsingAutogeneratedTheme());
   }
 
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
   if (WithSearchEngineChoiceEnabled()) {
     PrefService* new_pref_service = new_profile->GetPrefs();
     EXPECT_EQ(new_pref_service->GetInt64(
@@ -1927,7 +1905,6 @@ IN_PROC_BROWSER_TEST_P(DiceWebSigninInterceptorParametrizedBrowserTest,
         new_template_url_service->GetDefaultSearchProvider()->short_name(),
         base::UTF8ToUTF16(std::string(kCustomSearchEngineDomain)));
   }
-#endif
 
   // A browser has been created for the new profile and the tab was moved there.
   Browser* added_browser = ui_test_utils::WaitForBrowserToOpen();

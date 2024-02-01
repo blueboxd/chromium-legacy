@@ -32,7 +32,6 @@ class WebContents;
 class CustomizeChromePageHandler;
 class CartHandler;
 class Profile;
-class HelpBubbleHandler;
 class CustomizeColorSchemeModeHandler;
 class ThemeColorPickerHandler;
 class WallpaperSearchBackgroundManager;
@@ -102,6 +101,8 @@ class CustomizeChromeUI
       mojo::PendingReceiver<
           side_panel::customize_chrome::mojom::WallpaperSearchHandlerFactory>
           pending_receiver);
+
+  static constexpr std::string GetWebUIName() { return "CustomizeChrome"; }
 
  private:
   // side_panel::mojom::CustomizeChromePageHandlerFactory

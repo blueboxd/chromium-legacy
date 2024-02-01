@@ -23,7 +23,8 @@
 
 // A base view controller for showing a choice screen.
 @interface SearchEngineChoiceViewController
-    : UIViewController <SearchEngineChoiceConsumer, UITextViewDelegate>
+    : UIViewController <SearchEngineChoiceConsumer,
+                        UITextViewDelegate>
 
 // Delegate for all the user actions.
 @property(nonatomic, weak) id<SearchEngineChoiceActionDelegate> actionDelegate;
@@ -32,7 +33,8 @@
 @property(nonatomic, assign, readwrite) BOOL didUserSelectARow;
 
 - (instancetype)initWithSearchEngineTableViewController:
-    (SearchEngineChoiceTableViewController*)tableViewController
+                    (SearchEngineChoiceTableViewController*)tableViewController
+                                                 forFRE:(BOOL)isForFRE
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil

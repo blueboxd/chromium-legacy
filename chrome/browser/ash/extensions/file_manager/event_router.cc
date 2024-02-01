@@ -15,7 +15,6 @@
 
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
@@ -85,12 +84,12 @@
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "ui/display/tablet_state.h"
 
 using apps::AppServiceProxy;
 using apps::AppServiceProxyFactory;
 using arc::ArcIntentHelperBridge;
 using ash::LoginState;
-using ash::TabletMode;
 using ash::disks::Disk;
 using ash::disks::DiskMountManager;
 using chromeos::DlpClient;
@@ -161,54 +160,54 @@ void DispatchEventToExtension(
 }
 
 // Convert the IO Task State enum to the Private API enum.
-fmp::IOTaskState GetIOTaskState(io_task::State state) {
+fmp::IoTaskState GetIoTaskState(io_task::State state) {
   switch (state) {
     case io_task::State::kQueued:
-      return fmp::IOTaskState::kQueued;
+      return fmp::IoTaskState::kQueued;
     case io_task::State::kScanning:
-      return fmp::IOTaskState::kScanning;
+      return fmp::IoTaskState::kScanning;
     case io_task::State::kInProgress:
-      return fmp::IOTaskState::kInProgress;
+      return fmp::IoTaskState::kInProgress;
     case io_task::State::kPaused:
-      return fmp::IOTaskState::kPaused;
+      return fmp::IoTaskState::kPaused;
     case io_task::State::kSuccess:
-      return fmp::IOTaskState::kSuccess;
+      return fmp::IoTaskState::kSuccess;
     case io_task::State::kError:
-      return fmp::IOTaskState::kError;
+      return fmp::IoTaskState::kError;
     case io_task::State::kNeedPassword:
-      return fmp::IOTaskState::kNeedPassword;
+      return fmp::IoTaskState::kNeedPassword;
     case io_task::State::kCancelled:
-      return fmp::IOTaskState::kCancelled;
+      return fmp::IoTaskState::kCancelled;
     default:
       NOTREACHED();
-      return fmp::IOTaskState::kError;
+      return fmp::IoTaskState::kError;
   }
 }
 
 // Convert the IO Task Type enum to the Private API enum.
-fmp::IOTaskType GetIOTaskType(io_task::OperationType type) {
+fmp::IoTaskType GetIoTaskType(io_task::OperationType type) {
   switch (type) {
     case io_task::OperationType::kCopy:
-      return fmp::IOTaskType::kCopy;
+      return fmp::IoTaskType::kCopy;
     case io_task::OperationType::kDelete:
-      return fmp::IOTaskType::kDelete;
+      return fmp::IoTaskType::kDelete;
     case io_task::OperationType::kEmptyTrash:
-      return fmp::IOTaskType::kEmptyTrash;
+      return fmp::IoTaskType::kEmptyTrash;
     case io_task::OperationType::kExtract:
-      return fmp::IOTaskType::kExtract;
+      return fmp::IoTaskType::kExtract;
     case io_task::OperationType::kMove:
-      return fmp::IOTaskType::kMove;
+      return fmp::IoTaskType::kMove;
     case io_task::OperationType::kRestore:
-      return fmp::IOTaskType::kRestore;
+      return fmp::IoTaskType::kRestore;
     case io_task::OperationType::kRestoreToDestination:
-      return fmp::IOTaskType::kRestoreToDestination;
+      return fmp::IoTaskType::kRestoreToDestination;
     case io_task::OperationType::kTrash:
-      return fmp::IOTaskType::kTrash;
+      return fmp::IoTaskType::kTrash;
     case io_task::OperationType::kZip:
-      return fmp::IOTaskType::kZip;
+      return fmp::IoTaskType::kZip;
     default:
       NOTREACHED();
-      return fmp::IOTaskType::kCopy;
+      return fmp::IoTaskType::kCopy;
   }
 }
 
@@ -386,7 +385,7 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
   }
 
  private:
-  const raw_ptr<Profile, ExperimentalAsh> profile_;
+  const raw_ptr<Profile> profile_;
 };
 
 class DriveFsEventRouterImpl : public DriveFsEventRouter {
@@ -463,9 +462,8 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
     extensions::EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
   }
 
-  const raw_ptr<Profile, ExperimentalAsh> profile_;
-  const raw_ptr<const std::map<base::FilePath, std::unique_ptr<FileWatcher>>,
-                ExperimentalAsh>
+  const raw_ptr<Profile> profile_;
+  const raw_ptr<const std::map<base::FilePath, std::unique_ptr<FileWatcher>>>
       file_watchers_;
 };
 
@@ -632,10 +630,6 @@ void EventRouter::OnIntentFiltersUpdated(
 void EventRouter::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (TabletMode* const mode = TabletMode::Get()) {
-    mode->RemoveObserver(this);
-  }
-
   if (ArcIntentHelperBridge* const bridge =
           arc::ArcIntentHelperBridge::GetForBrowserContext(profile_)) {
     bridge->RemoveObserver(this);
@@ -760,10 +754,6 @@ void EventRouter::ObserveEvents() {
   if (GuestOsSharePath* const path =
           GuestOsSharePath::GetForProfile(profile_)) {
     path->AddObserver(this);
-  }
-
-  if (TabletMode* const mode = TabletMode::Get()) {
-    mode->AddObserver(this);
   }
 
   // GuestOsService doesn't exist for all profiles.
@@ -1167,18 +1157,16 @@ void EventRouter::OnGuestUnregistered(const guest_os::GuestId& guest) {
                  fmp::OnCrostiniChanged::Create(event));
 }
 
-void EventRouter::OnTabletModeStarted() {
-  BroadcastEvent(
-      profile_, extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
-      fmp::OnTabletModeChanged::kEventName,
-      fmp::OnTabletModeChanged::Create(/*enabled=*/true));
-}
+void EventRouter::OnDisplayTabletStateChanged(display::TabletState state) {
+  if (display::IsTabletStateChanging(state)) {
+    return;
+  }
 
-void EventRouter::OnTabletModeEnded() {
   BroadcastEvent(
       profile_, extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
       fmp::OnTabletModeChanged::kEventName,
-      fmp::OnTabletModeChanged::Create(/*enabled=*/false));
+      fmp::OnTabletModeChanged::Create(state ==
+                                       display::TabletState::kInTabletMode));
 }
 
 void EventRouter::NotifyDriveConnectionStatusChanged() {
@@ -1284,8 +1272,8 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
   // If any Files app window exists we send the progress to all of them.
   fmp::ProgressStatus event_status;
   event_status.task_id = status.task_id;
-  event_status.type = GetIOTaskType(status.type);
-  event_status.state = GetIOTaskState(status.state);
+  event_status.type = GetIoTaskType(status.type);
+  event_status.state = GetIoTaskState(status.state);
   if (status.policy_error.has_value()) {
     event_status.policy_error.emplace();
     event_status.policy_error->type =
@@ -1353,7 +1341,7 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
 
   // CopyOrMoveIOTask can enter PAUSED state when it needs the user to resolve
   // a file name conflict, or because it needs user to review a policy warning.
-  if (GetIOTaskState(status.state) == fmp::IOTaskState::kPaused) {
+  if (GetIoTaskState(status.state) == fmp::IoTaskState::kPaused) {
     fmp::PauseParams pause_params;
     if (status.pause_params.conflict_params) {
       pause_params.conflict_params.emplace();
@@ -1388,7 +1376,7 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
 
   // The TrashIOTask is the only IOTask that uses the output Entry's, so don't
   // try to resolve the outputs for all other IOTasks.
-  if (GetIOTaskType(status.type) != fmp::IOTaskType::kTrash ||
+  if (GetIoTaskType(status.type) != fmp::IoTaskType::kTrash ||
       outputs.size() == 0) {
     BroadcastIOTask(std::move(event_status));
     return;

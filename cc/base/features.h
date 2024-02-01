@@ -150,9 +150,14 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kUseMapRectForPixelMovement);
 // viz::Surface.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kEvictionThrottlesDraw);
 
-// Kill switch for trigger late deadline timer immediately in scheduler when
-// there's no active tree likely.
-CC_BASE_EXPORT BASE_DECLARE_FEATURE(kResetTimerWhenNoActiveTreeLikely);
+// Whether to use the recorded bounds (i.e. `DisplayItemList::bounds()`) to
+// determine the area of tiling. See crbug.com/1517714.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kUseRecordedBoundsForTiling);
+
+// Permits adjusting the threshold we use for determining if main thread updates
+// are fast. Specifically, via a scalar on the range [0,1] that we multiply with
+// the existing threshold. I.e., |new_threshold| = |scalar| * |old_threshold|.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kAdjustFastMainThreadThreshold);
 
 }  // namespace features
 

@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/types/optional_util.h"
@@ -109,6 +110,8 @@ const char* MediaStreamRequestResultToString(MediaStreamRequestResult value) {
       return "SYSTEM_PERMISSION_DENIED";
     case MediaStreamRequestResult::DEVICE_IN_USE:
       return "DEVICE_IN_USE";
+    case MediaStreamRequestResult::REQUEST_CANCELLED:
+      return "REQUEST_CANCELLED";
     case MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS:
       return "NUM_MEDIA_REQUEST_RESULTS";
     default:
@@ -214,12 +217,15 @@ void SurfaceAudioProcessingSettings(MediaStreamSource* source) {
         break;
     }
 
-    source->SetAudioProcessingProperties(echo_cancellation_mode,
-                                         properties.goog_auto_gain_control,
-                                         properties.goog_noise_suppression);
+    source->SetAudioProcessingProperties(
+        echo_cancellation_mode, properties.goog_auto_gain_control,
+        properties.goog_noise_suppression,
+        properties.voice_isolation ==
+            AudioProcessingProperties::VoiceIsolationType::
+                kVoiceIsolationEnabled);
   } else {
     // If the source is not a processed source, it could still support system
-    // echo cancellation. Surface that if it does.
+    // echo cancellation or voice. Surface that if it does.
     media::AudioParameters params = source_impl->GetAudioParameters();
     const MediaStreamSource::EchoCancellationMode echo_cancellation_mode =
         params.IsValid() &&
@@ -227,7 +233,12 @@ void SurfaceAudioProcessingSettings(MediaStreamSource* source) {
             ? MediaStreamSource::EchoCancellationMode::kSystem
             : MediaStreamSource::EchoCancellationMode::kDisabled;
 
-    source->SetAudioProcessingProperties(echo_cancellation_mode, false, false);
+    source->SetAudioProcessingProperties(
+        echo_cancellation_mode, false, false,
+        params.IsValid() &&
+            (params.effects() &
+             media::AudioParameters::VOICE_ISOLATION_SUPPORTED) &&
+            (params.effects() & media::AudioParameters::VOICE_ISOLATION));
   }
 }
 
@@ -286,6 +297,8 @@ String ErrorCodeToString(MediaStreamRequestResult result) {
       return "Permission denied by system";
     case MediaStreamRequestResult::DEVICE_IN_USE:
       return "Device in use";
+    case MediaStreamRequestResult::REQUEST_CANCELLED:
+      return "Request was cancelled";
     default:
       NOTREACHED();
       return "";
@@ -719,8 +732,8 @@ void UserMediaProcessor::SelectAudioSettings(
   }
   if (current_request_info_->stream_controls()->audio.stream_type !=
       MediaStreamType::DISPLAY_AUDIO_CAPTURE) {
-    current_request_info_->stream_controls()->audio.device_id =
-        settings.device_id();
+    current_request_info_->stream_controls()->audio.device_ids = {
+        settings.device_id()};
     current_request_info_->stream_controls()->disable_local_echo =
         settings.disable_local_echo();
   }
@@ -892,8 +905,8 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
     GetUserMediaRequestFailed(result, failed_constraint_name);
     return;
   }
-  current_request_info_->stream_controls()->video.device_id =
-      settings.device_id();
+  current_request_info_->stream_controls()->video.device_ids = {
+      settings.device_id()};
   current_request_info_->SetVideoCaptureSettings(
       settings, false /* is_content_capture */);
 
@@ -936,8 +949,8 @@ void UserMediaProcessor::SelectVideoContentSettings() {
   if (stream_type != MediaStreamType::DISPLAY_VIDEO_CAPTURE &&
       stream_type != MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB &&
       stream_type != MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET) {
-    current_request_info_->stream_controls()->video.device_id =
-        settings.device_id();
+    current_request_info_->stream_controls()->video.device_ids = {
+        settings.device_id()};
   }
 
   current_request_info_->SetVideoCaptureSettings(settings,
@@ -952,10 +965,14 @@ void UserMediaProcessor::GenerateStreamForCurrentRequestInfo(
   DCHECK(current_request_info_);
   SendLogMessage(base::StringPrintf(
       "GenerateStreamForCurrentRequestInfo({request_id=%d}, "
-      "{audio.device_id=%s}, {video.device_id=%s})",
+      "{audio.device_ids=%s}, {video.device_ids=%s})",
       current_request_info_->request_id(),
-      current_request_info_->stream_controls()->audio.device_id.c_str(),
-      current_request_info_->stream_controls()->video.device_id.c_str()));
+      base::JoinString(
+          current_request_info_->stream_controls()->audio.device_ids, ",")
+          .c_str(),
+      base::JoinString(
+          current_request_info_->stream_controls()->video.device_ids, ",")
+          .c_str()));
   current_request_info_->set_state(RequestInfo::State::kSentForGeneration);
 
   // If SessionId is set, this request is for a transferred MediaStreamTrack and
@@ -1053,6 +1070,8 @@ void UserMediaProcessor::OnStreamsGenerated(
     SendLogMessage(base::StringPrintf(
         "OnStreamsGenerated([request_id=%d]) => (ERROR: invalid request ID)",
         request_id));
+    blink::LogUserMediaRequestResult(
+        MediaStreamRequestResult::REQUEST_CANCELLED);
     for (const mojom::blink::StreamDevicesPtr& stream_devices :
          stream_devices_set->stream_devices) {
       OnStreamGeneratedForCancelledRequest(*stream_devices);
@@ -1490,6 +1509,7 @@ MediaStreamSource* UserMediaProcessor::InitializeAudioSourceObject(
   }
   capabilities.auto_gain_control = {true, false};
   capabilities.noise_suppression = {true, false};
+  capabilities.voice_isolation = {true, false};
   capabilities.sample_size = {
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
@@ -1937,13 +1957,9 @@ void UserMediaProcessor::StopAllProcessing() {
         [[fallthrough]];
 
       case RequestInfo::State::kNotSentForGeneration:
-        LogUserMediaRequestWithNoResult(
-            blink::MEDIA_STREAM_REQUEST_NOT_GENERATED);
         break;
 
       case RequestInfo::State::kGenerated:
-        LogUserMediaRequestWithNoResult(
-            blink::MEDIA_STREAM_REQUEST_PENDING_MEDIA_TRACKS);
         break;
     }
     current_request_info_ = nullptr;
@@ -2014,7 +2030,7 @@ bool UserMediaProcessor::HasActiveSources() const {
   return !local_sources_.empty();
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 void UserMediaProcessor::FocusCapturedSurface(const String& label, bool focus) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   GetMediaStreamDispatcherHost()->FocusCapturedSurface(label, focus);

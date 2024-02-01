@@ -5,6 +5,7 @@
 #include "chrome/browser/ip_protection/ip_protection_config_provider.h"
 
 #include <memory>
+#include <optional>
 
 #include "base/base64.h"
 #include "base/metrics/histogram_functions.h"
@@ -13,11 +14,14 @@
 #include "chrome/browser/ip_protection/get_proxy_config.pb.h"
 #include "chrome/browser/ip_protection/ip_protection_config_http.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/google_api_keys.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/features.h"
 #include "net/third_party/quiche/src/quiche/blind_sign_auth/blind_sign_auth.h"
 #include "net/third_party/quiche/src/quiche/blind_sign_auth/proto/blind_sign_auth_options.pb.h"
@@ -25,10 +29,15 @@
 
 IpProtectionConfigProvider::IpProtectionConfigProvider(
     signin::IdentityManager* identity_manager,
+    privacy_sandbox::TrackingProtectionSettings* tracking_protection_settings,
     Profile* profile)
-    : identity_manager_(identity_manager), profile_(profile) {
+    : identity_manager_(identity_manager),
+      tracking_protection_settings_(tracking_protection_settings),
+      profile_(profile) {
   CHECK(identity_manager);
   identity_manager_->AddObserver(this);
+  CHECK(tracking_protection_settings);
+  tracking_protection_settings_->AddObserver(this);
 }
 
 void IpProtectionConfigProvider::SetUp() {
@@ -92,12 +101,26 @@ void IpProtectionConfigProvider::TryGetAuthTokens(
   if (last_try_get_auth_tokens_backoff_ &&
       *last_try_get_auth_tokens_backoff_ == base::TimeDelta::Max()) {
     TryGetAuthTokensComplete(
-        absl::nullopt, std::move(callback),
+        std::nullopt, std::move(callback),
         IpProtectionTryGetAuthTokensResult::kFailedNoAccount);
     return;
   }
 
-  RequestOAuthToken(batch_size, proxy_layer, std::move(callback));
+  if (!CanRequestOAuthToken()) {
+    TryGetAuthTokensComplete(
+        std::nullopt, std::move(callback),
+        IpProtectionTryGetAuthTokensResult::kFailedNoAccount);
+    return;
+  }
+
+  auto oauth_token_fetch_start_time = base::TimeTicks::Now();
+  auto request_token_callback =
+      base::BindOnce(&IpProtectionConfigProvider::
+                         OnRequestOAuthTokenCompletedForTryGetAuthTokens,
+                     weak_ptr_factory_.GetWeakPtr(), batch_size, proxy_layer,
+                     std::move(callback), oauth_token_fetch_start_time);
+
+  RequestOAuthToken(std::move(request_token_callback));
 }
 
 void IpProtectionConfigProvider::GetProxyList(GetProxyListCallback callback) {
@@ -105,61 +128,26 @@ void IpProtectionConfigProvider::GetProxyList(GetProxyListCallback callback) {
   CHECK(!is_shutting_down_);
   SetUp();
 
-  ip_protection_config_http_->GetProxyConfig(base::BindOnce(
-      [](GetProxyListCallback callback,
-         absl::StatusOr<ip_protection::GetProxyConfigResponse> response) {
-        if (!response.ok()) {
-          VLOG(2) << "IPATP::GetProxyList failed: " << response.status();
-          std::move(callback).Run(absl::nullopt);
-          return;
-        }
-        std::vector<std::vector<std::string>> proxy_list;
-        if (net::features::kIpPrivacyUseProxyChains.Get()) {
-          for (const auto& proxy_chain : response->proxy_chain()) {
-            std::vector<std::string> proxies = {};
-            if (const std::string a_override =
-                    net::features::kIpPrivacyProxyAHostnameOverride.Get();
-                a_override != "") {
-              proxies.push_back(a_override);
-            } else {
-              proxies.push_back(proxy_chain.proxy_a());
-            }
-            if (const std::string b_override =
-                    net::features::kIpPrivacyProxyBHostnameOverride.Get();
-                b_override != "") {
-              proxies.push_back(b_override);
-            } else {
-              // TODO(crbug.com/1491092): Remove check once proxy_b is populated
-              // by Phosphor.
-              if (!proxy_chain.proxy_b().empty()) {
-                proxies.push_back(proxy_chain.proxy_b());
-              }
-            }
-            proxy_list.push_back(std::move(proxies));
-          }
-        } else {
-          for (const auto& hostname : response->first_hop_hostnames()) {
-            proxy_list.push_back({hostname});
-          }
-        }
-        VLOG(2) << "IPATP::GetProxyList got proxy list of length "
-                << proxy_list.size();
-        std::move(callback).Run(std::move(proxy_list));
-      },
-      std::move(callback)));
-}
-
-void IpProtectionConfigProvider::RequestOAuthToken(
-    uint32_t batch_size,
-    network::mojom::IpProtectionProxyLayer proxy_layer,
-    TryGetAuthTokensCallback callback) {
-  if (!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
-    TryGetAuthTokensComplete(
-        absl::nullopt, std::move(callback),
-        IpProtectionTryGetAuthTokensResult::kFailedNoAccount);
+  // This feature flag is false by default.
+  if (!net::features::kIpPrivacyIncludeOAuthTokenInGetProxyConfig.Get()) {
+    CallGetProxyConfig(std::move(callback), std::nullopt);
     return;
   }
 
+  if (!CanRequestOAuthToken()) {
+    std::move(callback).Run(std::nullopt);
+    return;
+  }
+  auto request_token_callback =
+      base::BindOnce(&IpProtectionConfigProvider::
+                         OnRequestOAuthTokenCompletedForGetProxyConfig,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  RequestOAuthToken(std::move(request_token_callback));
+}
+
+void IpProtectionConfigProvider::RequestOAuthToken(
+    RequestOAuthTokenCallback callback) {
   // TODO(https://crbug.com/1444621): Add a client side account capabilities
   // check to compliment the server-side checks.
 
@@ -176,7 +164,6 @@ void IpProtectionConfigProvider::RequestOAuthToken(
   // alive long enough for the callback to occur, and we will pass a weak
   // pointer to ensure that the callback won't be called if this object gets
   // destroyed.
-  auto oauth_token_fetch_start_time = base::TimeTicks::Now();
   auto oauth_token_fetcher =
       std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
           /*consumer_name=*/"IpProtectionService", identity_manager_, scopes,
@@ -185,17 +172,13 @@ void IpProtectionConfigProvider::RequestOAuthToken(
   oauth_token_fetcher_ptr->Start(base::BindOnce(
       &IpProtectionConfigProvider::OnRequestOAuthTokenCompleted,
       weak_ptr_factory_.GetWeakPtr(), std::move(oauth_token_fetcher),
-      oauth_token_fetch_start_time, batch_size, proxy_layer,
       std::move(callback)));
 }
 
 void IpProtectionConfigProvider::OnRequestOAuthTokenCompleted(
     std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
         oauth_token_fetcher,
-    base::TimeTicks oauth_token_fetch_start_time,
-    uint32_t batch_size,
-    network::mojom::IpProtectionProxyLayer proxy_layer,
-    TryGetAuthTokensCallback callback,
+    RequestOAuthTokenCallback callback,
     GoogleServiceAuthError error,
     signin::AccessTokenInfo access_token_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -203,13 +186,25 @@ void IpProtectionConfigProvider::OnRequestOAuthTokenCompleted(
     return;
   }
 
+  std::move(callback).Run(error, access_token_info);
+}
+
+void IpProtectionConfigProvider::
+    OnRequestOAuthTokenCompletedForTryGetAuthTokens(
+        uint32_t batch_size,
+        network::mojom::IpProtectionProxyLayer proxy_layer,
+        TryGetAuthTokensCallback callback,
+        base::TimeTicks oauth_token_fetch_start_time,
+        GoogleServiceAuthError error,
+        signin::AccessTokenInfo access_token_info) {
   // If we fail to get an OAuth token don't attempt to fetch from Phosphor as
   // the request is guaranteed to fail.
   if (error.state() != GoogleServiceAuthError::NONE) {
-    VLOG(2) << "IPATP::OnRequestOAuthTokenCompleted got an error: "
+    VLOG(2) << "IPATP::OnRequestOAuthTokenCompletedForTryGetAuthTokens got an "
+               "error: "
             << static_cast<int>(error.state());
     TryGetAuthTokensComplete(
-        absl::nullopt, std::move(callback),
+        std::nullopt, std::move(callback),
         error.IsTransientError()
             ? IpProtectionTryGetAuthTokensResult::kFailedOAuthTokenTransient
             : IpProtectionTryGetAuthTokensResult::kFailedOAuthTokenPersistent);
@@ -221,6 +216,70 @@ void IpProtectionConfigProvider::OnRequestOAuthTokenCompleted(
                           current_time - oauth_token_fetch_start_time);
   FetchBlindSignedToken(access_token_info, batch_size, proxy_layer,
                         std::move(callback));
+}
+
+void IpProtectionConfigProvider::OnRequestOAuthTokenCompletedForGetProxyConfig(
+    GetProxyListCallback callback,
+    GoogleServiceAuthError error,
+    signin::AccessTokenInfo access_token_info) {
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    VLOG(2) << "IPATP::OnRequestOAuthTokenCompletedForGetProxyConfig failed: "
+            << static_cast<int>(error.state());
+    std::move(callback).Run(std::nullopt);
+    return;
+  }
+
+  CallGetProxyConfig(std::move(callback), access_token_info.token);
+}
+
+void IpProtectionConfigProvider::CallGetProxyConfig(
+    GetProxyListCallback callback,
+    std::optional<std::string> oauth_token) {
+  ip_protection_config_http_->GetProxyConfig(
+      oauth_token,
+      base::BindOnce(
+          [](GetProxyListCallback callback,
+             absl::StatusOr<ip_protection::GetProxyConfigResponse> response) {
+            if (!response.ok()) {
+              VLOG(2) << "IPATP::GetProxyList failed: " << response.status();
+              std::move(callback).Run(std::nullopt);
+              return;
+            }
+            std::vector<std::vector<std::string>> proxy_list;
+            if (net::features::kIpPrivacyUseProxyChains.Get()) {
+              for (const auto& proxy_chain : response->proxy_chain()) {
+                std::vector<std::string> proxies = {};
+                if (const std::string a_override =
+                        net::features::kIpPrivacyProxyAHostnameOverride.Get();
+                    a_override != "") {
+                  proxies.push_back(a_override);
+                } else {
+                  proxies.push_back(proxy_chain.proxy_a());
+                }
+                if (const std::string b_override =
+                        net::features::kIpPrivacyProxyBHostnameOverride.Get();
+                    b_override != "") {
+                  proxies.push_back(b_override);
+                } else {
+                  // TODO(crbug.com/1491092): Remove check once proxy_b is
+                  // populated by Phosphor.
+                  if (!proxy_chain.proxy_b().empty()) {
+                    proxies.push_back(proxy_chain.proxy_b());
+                  }
+                }
+                proxy_list.push_back(std::move(proxies));
+              }
+            } else {
+              for (const auto& hostname : response->first_hop_hostnames()) {
+                proxy_list.push_back({hostname});
+              }
+            }
+
+            VLOG(2) << "IPATP::GetProxyList got proxy list of length "
+                    << proxy_list.size();
+            std::move(callback).Run(std::move(proxy_list));
+          },
+          std::move(callback)));
 }
 
 void IpProtectionConfigProvider::FetchBlindSignedToken(
@@ -272,14 +331,14 @@ void IpProtectionConfigProvider::OnFetchBlindSignedTokenCompleted(
     }
     VLOG(2) << "IPATP::OnFetchBlindSignedTokenCompleted got an error: "
             << static_cast<int>(result);
-    TryGetAuthTokensComplete(absl::nullopt, std::move(callback), result);
+    TryGetAuthTokensComplete(std::nullopt, std::move(callback), result);
     return;
   }
 
   if (tokens.value().size() == 0) {
     VLOG(2) << "IPATP::OnFetchBlindSignedTokenCompleted called with no tokens";
     TryGetAuthTokensComplete(
-        absl::nullopt, std::move(callback),
+        std::nullopt, std::move(callback),
         IpProtectionTryGetAuthTokensResult::kFailedBSAOther);
     return;
   }
@@ -290,7 +349,7 @@ void IpProtectionConfigProvider::OnFetchBlindSignedTokenCompleted(
         CreateBlindSignedAuthToken(token);
     if (converted_token->token.empty()) {
       TryGetAuthTokensComplete(
-          absl::nullopt, std::move(callback),
+          std::nullopt, std::move(callback),
           IpProtectionTryGetAuthTokensResult::kFailedBSAOther);
       return;
     }
@@ -301,7 +360,7 @@ void IpProtectionConfigProvider::OnFetchBlindSignedTokenCompleted(
   base::UmaHistogramTimes("NetworkService.IpProtection.TokenBatchRequestTime",
                           current_time - bsa_get_tokens_start_time);
 
-  TryGetAuthTokensComplete(absl::make_optional(std::move(bsa_tokens)),
+  TryGetAuthTokensComplete(std::make_optional(std::move(bsa_tokens)),
                            std::move(callback),
                            IpProtectionTryGetAuthTokensResult::kSuccess);
 }
@@ -325,8 +384,7 @@ IpProtectionConfigProvider::CreateBlindSignedAuthToken(
                         privacy_pass_token_data.encoded_extensions(), "\""});
     }
   } else {
-    std::string encoded_token;
-    base::Base64Encode(bsa_token.token, &encoded_token);
+    std::string encoded_token = base::Base64Encode(bsa_token.token);
 
     token_header_value = base::StrCat({"Bearer ", encoded_token});
   }
@@ -335,15 +393,15 @@ IpProtectionConfigProvider::CreateBlindSignedAuthToken(
 }
 
 void IpProtectionConfigProvider::TryGetAuthTokensComplete(
-    absl::optional<std::vector<network::mojom::BlindSignedAuthTokenPtr>>
+    std::optional<std::vector<network::mojom::BlindSignedAuthTokenPtr>>
         bsa_tokens,
     TryGetAuthTokensCallback callback,
     IpProtectionTryGetAuthTokensResult result) {
   base::UmaHistogramEnumeration(
       "NetworkService.IpProtection.TryGetAuthTokensResult", result);
 
-  absl::optional<base::TimeDelta> backoff = CalculateBackoff(result);
-  absl::optional<base::Time> try_again_after;
+  std::optional<base::TimeDelta> backoff = CalculateBackoff(result);
+  std::optional<base::Time> try_again_after;
   if (backoff) {
     if (*backoff == base::TimeDelta::Max()) {
       try_again_after = base::Time::Max();
@@ -361,25 +419,15 @@ void IpProtectionConfigProvider::InvalidateNetworkContextTryAgainAfterTime() {
     // called in unit tests.
     return;
   }
-  // Notify the main profile network context to invalidate its stored backoff
-  // time.
-  profile_->GetDefaultStoragePartition()
-      ->GetNetworkContext()
-      ->InvalidateIpProtectionConfigCacheTryAgainAfterTime();
 
-  // If an associated incognito profile exists, tell it to invalidate its
-  // backoff time as well.
-  if (profile_->HasPrimaryOTRProfile()) {
-    profile_->GetPrimaryOTRProfile(/*create_if_needed=*/false)
-        ->GetDefaultStoragePartition()
-        ->GetNetworkContext()
-        ->InvalidateIpProtectionConfigCacheTryAgainAfterTime();
+  for (auto& ipp_proxy_delegate : remotes_) {
+    ipp_proxy_delegate->InvalidateIpProtectionConfigCacheTryAgainAfterTime();
   }
 }
 
-absl::optional<base::TimeDelta> IpProtectionConfigProvider::CalculateBackoff(
+std::optional<base::TimeDelta> IpProtectionConfigProvider::CalculateBackoff(
     IpProtectionTryGetAuthTokensResult result) {
-  absl::optional<base::TimeDelta> backoff;
+  std::optional<base::TimeDelta> backoff;
   bool exponential = false;
   switch (result) {
     case IpProtectionTryGetAuthTokensResult::kSuccess:
@@ -463,6 +511,9 @@ void IpProtectionConfigProvider::Shutdown() {
   CHECK(identity_manager_);
   identity_manager_->RemoveObserver(this);
   identity_manager_ = nullptr;
+  CHECK(tracking_protection_settings_);
+  tracking_protection_settings_->RemoveObserver(this);
+  tracking_protection_settings_ = nullptr;
   profile_ = nullptr;
   // If we are shutting down, we can't process messages anymore because we rely
   // on having `identity_manager_` to get the OAuth token. Thus, just reset the
@@ -476,14 +527,17 @@ IpProtectionConfigProvider* IpProtectionConfigProvider::Get(Profile* profile) {
   return IpProtectionConfigProviderFactory::GetForProfile(profile);
 }
 
-void IpProtectionConfigProvider::AddReceiver(
+void IpProtectionConfigProvider::AddNetworkService(
     mojo::PendingReceiver<network::mojom::IpProtectionConfigGetter>
-        pending_receiver) {
+        pending_receiver,
+    mojo::PendingRemote<network::mojom::IpProtectionProxyDelegate>
+        pending_remote) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (is_shutting_down_) {
     return;
   }
   receiver_id_for_testing_ = receivers_.Add(this, std::move(pending_receiver));
+  remote_id_for_testing_ = remotes_.Add(std::move(pending_remote));
 
   // We only expect two concurrent receivers, one corresponding to the main
   // profile network context and one for an associated incognito mode profile
@@ -541,4 +595,17 @@ void IpProtectionConfigProvider::OnErrorStateOfRefreshTokenUpdatedForAccount(
     last_try_get_auth_tokens_backoff_ = base::TimeDelta::Max();
     return;
   }
+}
+
+bool IpProtectionConfigProvider::CanRequestOAuthToken() {
+  if (is_shutting_down_) {
+    return false;
+  }
+
+  return identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin);
+}
+
+void IpProtectionConfigProvider::OnIpProtectionEnabledChanged() {
+  // TODO(https://crbug.com/1521138): Update IP protection state based on user
+  // settings.
 }

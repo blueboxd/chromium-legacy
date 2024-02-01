@@ -18,6 +18,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "ui/accessibility/ax_common.h"
@@ -138,6 +139,12 @@ class AXTreeSerializer {
   // as explored by the serializer.
   size_t ClientTreeNodeCount() const;
 
+#if DCHECK_IS_ON()
+  std::vector<AXNodeID> ClientTreeNodeIds() const;
+
+  AXSourceNode ParentOf(AXNodeID id);
+#endif
+
  private:
   // Return the least common ancestor of a node in the source tree
   // and a node in the client tree, or nullptr if there is no such node.
@@ -256,7 +263,8 @@ struct AX_EXPORT ClientTreeNode {
   bool IsDirty() { return in_dirty_subtree || is_dirty; }
   AXNodeID id;
   raw_ptr<ClientTreeNode, DanglingUntriaged> parent;
-  std::vector<ClientTreeNode*> children;
+  // Not a vector<raw_ptr> due to regressions in blink_perf.accessibility tests.
+  RAW_PTR_EXCLUSION std::vector<ClientTreeNode*> children;
   bool ignored : 1;
   // Additional nodes that must be serialized. When a dirty subtree is reached,
   // the entire subtree will be added to the current serialization.
@@ -318,6 +326,29 @@ size_t AXTreeSerializer<AXSourceNode,
                         AXSourceNodeVectorType>::ClientTreeNodeCount() const {
   return client_id_map_.size();
 }
+
+#if DCHECK_IS_ON()
+template <typename AXSourceNode, typename AXSourceNodeVectorType>
+std::vector<AXNodeID>
+AXTreeSerializer<AXSourceNode, AXSourceNodeVectorType>::ClientTreeNodeIds()
+    const {
+  std::vector<AXNodeID> keys;
+  std::transform(
+      client_id_map_.begin(), client_id_map_.end(), std::back_inserter(keys),
+      [](std::pair<AXNodeID, ClientTreeNode*> item) { return item.first; });
+  return keys;
+}
+
+template <typename AXSourceNode, typename AXSourceNodeVectorType>
+AXSourceNode AXTreeSerializer<AXSourceNode, AXSourceNodeVectorType>::ParentOf(
+    AXNodeID id) {
+  ClientTreeNode* node = ClientTreeNodeById(id);
+  if (!node || !node->parent) {
+    return nullptr;
+  }
+  return tree_->GetFromId(node->parent->id);
+}
+#endif
 
 template <typename AXSourceNode, typename AXSourceNodeVectorType>
 AXSourceNode

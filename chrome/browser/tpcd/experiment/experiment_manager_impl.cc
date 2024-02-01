@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tpcd/experiment/experiment_manager_impl.h"
 
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -16,6 +17,8 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/task/single_thread_task_runner.h"
+#include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,7 +29,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/synthetic_trials.h"
 #include "content/public/common/content_features.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/profiles/profile_types_ash.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace tpcd::experiment {
 namespace {
@@ -45,18 +51,20 @@ bool NeedsOnboardingForExperiment() {
 
 }  // namespace
 
-// TODO(b/302798031): This flag is needed to deflake
-// ExperimentManagerImplSyntheticTrialTest on CQ. Remove once test is fixed.
-const base::FeatureParam<bool> kForceProfilesEligibleForTesting{
-    &features::kCookieDeprecationFacilitatedTesting, "force_profiles_eligible",
-    false};
-
 // static
 ExperimentManagerImpl* ExperimentManagerImpl::GetForProfile(Profile* profile) {
   if (!base::FeatureList::IsEnabled(
           features::kCookieDeprecationFacilitatedTesting)) {
     return nullptr;
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Ash internal profile should not be accounted for the experiment
+  // eligibility, and therefore should not create the experiment manager.
+  if (!IsUserProfile(profile)) {
+    return nullptr;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   if (!features::kCookieDeprecationFacilitatedTestingEnableOTRProfiles.Get() &&
       (profile->IsOffTheRecord() || profile->IsGuestSession())) {
@@ -113,7 +121,7 @@ void ExperimentManagerImpl::SetClientEligibility(
     EligibilityDecisionCallback on_eligibility_decision_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (absl::optional<bool> client_is_eligible = IsClientEligible()) {
+  if (std::optional<bool> client_is_eligible = IsClientEligible()) {
     // If client eligibility is already known, just run callback.
     client_is_eligible_ = *client_is_eligible;
     std::move(on_eligibility_decision_callback).Run(client_is_eligible_);
@@ -122,9 +130,7 @@ void ExperimentManagerImpl::SetClientEligibility(
 
   // Wait to run callback when decision is made in
   // `CaptureEligibilityInLocalStatePref`
-  if (!kForceProfilesEligibleForTesting.Get()) {
-    client_is_eligible_ = client_is_eligible_ && is_eligible;
-  }
+  client_is_eligible_ = client_is_eligible_ && is_eligible;
   callbacks_.push_back(std::move(on_eligibility_decision_callback));
 }
 
@@ -155,7 +161,7 @@ void ExperimentManagerImpl::MaybeUpdateSyntheticTrialRegistration() {
     return;
   }
 
-  absl::optional<bool> is_client_eligible = IsClientEligible();
+  std::optional<bool> is_client_eligible = IsClientEligible();
   CHECK(is_client_eligible.has_value());
 
   std::string eligible_group_name =
@@ -170,7 +176,7 @@ void ExperimentManagerImpl::MaybeUpdateSyntheticTrialRegistration() {
       variations::SyntheticTrialAnnotationMode::kCurrentLog);
 }
 
-absl::optional<bool> ExperimentManagerImpl::IsClientEligible() const {
+std::optional<bool> ExperimentManagerImpl::IsClientEligible() const {
   if (kForceEligibleForTesting.Get()) {
     return true;
   }
@@ -183,7 +189,7 @@ absl::optional<bool> ExperimentManagerImpl::IsClientEligible() const {
     case static_cast<int>(utils::ExperimentState::kIneligible):
       return false;
     case static_cast<int>(utils::ExperimentState::kUnknownEligibility):
-      return absl::nullopt;
+      return std::nullopt;
     default:
       // invalid
       return false;

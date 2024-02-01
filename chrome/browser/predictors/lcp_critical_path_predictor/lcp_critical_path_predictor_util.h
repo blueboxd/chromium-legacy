@@ -5,16 +5,17 @@
 #ifndef CHROME_BROWSER_PREDICTORS_LCP_CRITICAL_PATH_PREDICTOR_LCP_CRITICAL_PATH_PREDICTOR_UTIL_H_
 #define CHROME_BROWSER_PREDICTORS_LCP_CRITICAL_PATH_PREDICTOR_LCP_CRITICAL_PATH_PREDICTOR_UTIL_H_
 
+#include <optional>
+
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/lcp_critical_path_predictor/lcp_critical_path_predictor.mojom.h"
 
 namespace predictors {
 
 // Converts LcppData to LCPCriticalPathPredictorNavigationTimeHint
 // so that it can be passed to the renderer via the navigation handle.
-absl::optional<blink::mojom::LCPCriticalPathPredictorNavigationTimeHint>
+std::optional<blink::mojom::LCPCriticalPathPredictorNavigationTimeHint>
 ConvertLcppDataToLCPCriticalPathPredictorNavigationTimeHint(
     const LcppData& data);
 
@@ -23,6 +24,18 @@ ConvertLcppDataToLCPCriticalPathPredictorNavigationTimeHint(
 // frequent one comes first). If there is no data, it returns an empty
 // vector.
 std::vector<GURL> PredictFetchedFontUrls(const LcppData& data);
+
+// Returns possible preconnects based on past loads for a given `data`.
+// The returned origins are ordered by descending frequency (the most
+// frequent one comes first). If there is no data, it returns an empty
+// vector.
+std::vector<GURL> PredictPreconnectableOrigins(const LcppData& data);
+
+// Returns possible subresource URLs from past loads for a given `data`.
+// The returned URLs are ordered by descending frequency (the most
+// frequent one comes first). If there is no data, it returns an empty
+// vector.
+std::vector<GURL> PredictFetchedSubresourceUrls(const LcppData& data);
 
 // An input to update LcppData.
 struct LcppDataInputs {
@@ -41,6 +54,7 @@ struct LcppDataInputs {
   std::string lcp_element_locator;
   // async script urls of the latest LCP candidate element.
   std::vector<GURL> lcp_influencer_scripts;
+  std::vector<GURL> preconnect_origins;
 
   // Fetched font URLs.
   // Unlike data above, the field will be updated per font fetch.
@@ -50,6 +64,10 @@ struct LcppDataInputs {
   // This field keeps the number of font URLs without omitting due to
   // reaching `kLCPPFontURLPredictorMaxUrlCountPerOrigin` or deduplication.
   size_t font_url_count = 0;
+  // This field keeps the subresource URLs as a key, and the TimeDelta as a
+  // value. TimeDelta stores the duration from navigation start to resource
+  // loading start time.
+  std::map<GURL, base::TimeDelta> subresource_urls;
 };
 
 bool UpdateLcppDataWithLcppDataInputs(const LoadingPredictorConfig& config,

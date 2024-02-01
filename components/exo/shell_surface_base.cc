@@ -69,6 +69,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/client_view.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
@@ -166,7 +167,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
         ash::WindowState::Get(GetWidget()->GetNativeWindow());
 
     // When un-pipped (window state changed from pip), we must undo the
-    // rounded corners from the host_window.
+    // rounded corners of the host_window.
     const int pip_corner_radius =
         window_state->IsPip() ? chromeos::kPipRoundedCornerRadius : 0;
     const gfx::RoundedCornersF pip_radii(pip_corner_radius);
@@ -182,7 +183,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
       return;
     }
 
-    absl::optional<gfx::RoundedCornersF> window_radii =
+    std::optional<gfx::RoundedCornersF> window_radii =
         shell_surface_->window_corners_radii();
 
     if (!chromeos::features::IsRoundedWindowsEnabled() || !window_radii) {
@@ -192,21 +193,13 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
     // TODO(crbug.com/1415486): Support variable window radii.
     DCHECK(IsRadiiUniform(window_radii.value()));
 
+    const int corner_radius = window_radii->upper_left();
+
     if (GetFrameEnabled()) {
-      header_view_->SetHeaderCornerRadius(window_radii->upper_left());
+      header_view_->SetHeaderCornerRadius(corner_radius);
     }
 
-    const gfx::RoundedCornersF root_surface_radii = {
-        GetFrameEnabled() ? 0 : window_radii->upper_left(),
-        GetFrameEnabled() ? 0 : window_radii->upper_right(),
-        window_radii->lower_right(), window_radii->lower_left()};
-
-    Surface* root_surface = shell_surface_->root_surface();
-    DCHECK(root_surface);
-
-    shell_surface_->ApplyRoundedCornersToSurfaceTree(
-        gfx::RectF(root_surface->surface_hierarchy_content_bounds()),
-        root_surface_radii);
+    GetWidget()->client_view()->UpdateWindowRoundedCorners(corner_radius);
   }
 
   gfx::Rect GetWindowBoundsForClientBounds(
@@ -263,7 +256,51 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
   }
 
  private:
-  const raw_ptr<ShellSurfaceBase, ExperimentalAsh> shell_surface_;
+  const raw_ptr<ShellSurfaceBase> shell_surface_;
+};
+
+class CustomClientView : public views::ClientView {
+ public:
+  CustomClientView(views::Widget* widget, ShellSurfaceBase* shell_surface)
+      : views::ClientView(widget, shell_surface),
+        shell_surface_(shell_surface) {}
+
+  CustomClientView(const CustomClientView&) = delete;
+  CustomClientView& operator=(const CustomClientView&) = delete;
+
+  ~CustomClientView() override = default;
+
+  // ClientView:
+  void UpdateWindowRoundedCorners(int corner_radius) override {
+    DCHECK(GetWidget());
+    const CustomFrameView* custom_frame_view = static_cast<CustomFrameView*>(
+        GetWidget()->non_client_view()->frame_view());
+
+    // In the typical scenario with frame enabled, we round:
+    //   * Upper corners of the frame.
+    //   * Lower corners of the client view.
+    // But when the frame is overlapped with the client view, for upper corners,
+    // both the top (frame) and the bottom (client view) views need to be
+    // rounded.
+    const bool should_round_client_view_upper_corner =
+        !custom_frame_view->GetFrameEnabled() ||
+        custom_frame_view->GetFrameOverlapped();
+
+    const float corner_radius_f = corner_radius;
+    const gfx::RoundedCornersF root_surface_radii = {
+        should_round_client_view_upper_corner ? corner_radius_f : 0,
+        should_round_client_view_upper_corner ? corner_radius_f : 0,
+        corner_radius_f, corner_radius_f};
+
+    const Surface* root_surface = shell_surface_->root_surface();
+
+    shell_surface_->ApplyRoundedCornersToSurfaceTree(
+        gfx::RectF(root_surface->surface_hierarchy_content_bounds()),
+        root_surface_radii);
+  }
+
+ private:
+  raw_ptr<ShellSurfaceBase> shell_surface_;
 };
 
 class CustomWindowTargeter : public aura::WindowTargeter {
@@ -345,8 +382,8 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     return false;
   }
 
-  raw_ptr<ShellSurfaceBase, ExperimentalAsh> shell_surface_;
-  const raw_ptr<views::Widget, DanglingUntriaged | ExperimentalAsh> widget_;
+  raw_ptr<ShellSurfaceBase> shell_surface_;
+  const raw_ptr<views::Widget, DanglingUntriaged> widget_;
 };
 
 void CloseAllShellSurfaceTransientChildren(aura::Window* window) {
@@ -539,7 +576,7 @@ void ShellSurfaceBase::SetShadowCornersRadii(
 }
 
 void ShellSurfaceBase::SetBoundsForShadows(
-    const absl::optional<gfx::Rect>& shadow_bounds) {
+    const std::optional<gfx::Rect>& shadow_bounds) {
   if (shadow_bounds_ != shadow_bounds) {
     // Set normal shadow bounds.
     shadow_bounds_ = shadow_bounds;
@@ -1181,7 +1218,7 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
     }
   }
 
-  widget_->GetRootView()->Layout();
+  widget_->GetRootView()->DeprecatedLayoutImmediately();
   // TODO(oshima): We probably should wait applying these if the
   // window is animating.
   set_bounds_is_dirty(true);
@@ -1297,6 +1334,10 @@ views::View* ShellSurfaceBase::GetContentsView() {
   return this;
 }
 
+views::ClientView* ShellSurfaceBase::CreateClientView(views::Widget* widget) {
+  return new CustomClientView(widget, this);
+}
+
 std::unique_ptr<views::NonClientFrameView>
 ShellSurfaceBase::CreateNonClientFrameView(views::Widget* widget) {
   return CreateNonClientFrameViewInternal(widget);
@@ -1320,12 +1361,13 @@ void ShellSurfaceBase::GetWidgetHitTestMask(SkPath* mask) const {
 
   GetHitTestMask(mask);
 
-  gfx::Point origin = host_window()->bounds().origin();
   SkMatrix matrix;
-  float scale = GetScale();
-  matrix.setScaleTranslate(
-      SkFloatToScalar(1.0f / scale), SkFloatToScalar(1.0f / scale),
-      SkIntToScalar(origin.x()), SkIntToScalar(origin.y()));
+  const float scale = GetScale();
+  // `matrix` should be on Widget space, so use `origin_` as an origin instead
+  // of the root surface origin.
+  matrix.setScaleTranslate(SkFloatToScalar(1.0f / scale),
+                           SkFloatToScalar(1.0f / scale), origin_.x(),
+                           origin_.y());
   mask->transform(matrix);
 }
 
@@ -1412,7 +1454,7 @@ void ShellSurfaceBase::OnCaptureChanged(aura::Window* lost_capture,
   // Use index instead of iterator because the vector grows during the
   // iteration.
   for (size_t i = 0; i < all.size(); ++i) {
-    const std::vector<aura::Window*>& children =
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& children =
         wm::GetTransientChildren(all[i].first);
     for (aura::Window* child : children) {
       const bool to_close =
@@ -1865,7 +1907,7 @@ gfx::Rect ShellSurfaceBase::ComputeAdjustedBounds(
 
 void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
-  absl::optional<gfx::Rect> bounds = GetWidgetBounds();
+  std::optional<gfx::Rect> bounds = GetWidgetBounds();
   if (!bounds) {
     return;
   }
@@ -2278,7 +2320,7 @@ void ShellSurfaceBase::CommitWidget() {
   gfx::Rect bounds = geometry_;
   if (!bounds.IsEmpty() && !widget_->GetNativeWindow()->GetProperty(
                                aura::client::kUseWindowBoundsForShadow)) {
-    SetBoundsForShadows(absl::make_optional(bounds));
+    SetBoundsForShadows(std::make_optional(bounds));
   }
 
   // The calling order matters. Updated window radius is need to correctly
@@ -2394,7 +2436,7 @@ void ShellSurfaceBase::SetZOrder(ui::ZOrderLevel z_order) {
   initial_z_order_ = z_order;
 }
 
-void ShellSurfaceBase::SetShape(absl::optional<cc::Region> shape) {
+void ShellSurfaceBase::SetShape(std::optional<cc::Region> shape) {
   if (!shape) {
     pending_shape_dp_.reset();
     return;

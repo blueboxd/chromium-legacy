@@ -170,15 +170,49 @@ public class AccountManagerFacadeImplTest {
     }
 
     @Test
+    public void testAccountFetching() throws Exception {
+        AccountHolder accountHolder = AccountHolder.createFromEmail("test@gmail.com");
+        doReturn(new Account[] {accountHolder.getAccount()})
+                .when(mDelegate)
+                .getAccountsSynchronous();
+        HistogramWatcher retriesHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Signin.GetAccountsBackoffRetries")
+                        .build();
+        HistogramWatcher successHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Signin.GetAccountsBackoffSuccess")
+                        .build();
+
+        mDelegate.callOnCoreAccountInfoChanged();
+        // Called once on AccountManagerFacade creation and a second time when
+        // onCoreAccountInfoChanged is called.
+        verify(mDelegate, times(2)).getAccountsSynchronous();
+
+        Assert.assertTrue(mPostTaskRunner.mRunnables.isEmpty());
+        retriesHistogram.assertExpected();
+        successHistogram.assertExpected();
+    }
+
+    @Test
     public void testErrorFetchingAccounts() throws Exception {
         AccountHolder accountHolder = AccountHolder.createFromEmail("test@gmail.com");
         doThrow(AccountManagerDelegateException.class)
                 .doReturn(new Account[] {accountHolder.getAccount()})
                 .when(mDelegate)
                 .getAccountsSynchronous();
+        HistogramWatcher retriesHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord("Signin.GetAccountsBackoffRetries", /* retries= */ 1)
+                        .build();
+        HistogramWatcher successHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectBooleanRecord("Signin.GetAccountsBackoffSuccess", true)
+                        .build();
 
         mDelegate.callOnCoreAccountInfoChanged();
-        // Called once on AccountManagerFacade creation and a second time when the account is added.
+        // Called once on AccountManagerFacade creation and a second time when
+        // onCoreAccountInfoChanged is called..
         // TODO(crbug.com/1502123): Add verification that getCoreAccountInfos isn't fulfilled until
         // getAccountsSynchronous stops throwing exceptions (and that it is correctly fulfilled when
         // it stops throwing).
@@ -188,14 +222,25 @@ public class AccountManagerFacadeImplTest {
         // the mock).
         mPostTaskRunner.runAll();
         verify(mDelegate, times(3)).getAccountsSynchronous();
+        retriesHistogram.assertExpected();
+        successHistogram.assertExpected();
     }
 
     @Test
     public void testErrorFetchingAccounts_maxNumberOfRetries() throws Exception {
         doThrow(AccountManagerDelegateException.class).when(mDelegate).getAccountsSynchronous();
+        HistogramWatcher retriesHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Signin.GetAccountsBackoffRetries")
+                        .build();
+        HistogramWatcher successHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectBooleanRecord("Signin.GetAccountsBackoffSuccess", false)
+                        .build();
 
         mDelegate.callOnCoreAccountInfoChanged();
-        // Called once on AccountManagerFacade creation and a second time when the account is added.
+        // Called once on AccountManagerFacade creation and a second time when
+        // onCoreAccountInfoChanged is called.
         verify(mDelegate, times(2)).getAccountsSynchronous();
 
         // The delegate call fails indefinitely but is only retried MAXIMUM_RETRIES times (plus the
@@ -203,6 +248,8 @@ public class AccountManagerFacadeImplTest {
         mPostTaskRunner.runAll();
         verify(mDelegate, times(AccountManagerFacadeImpl.MAXIMUM_RETRIES + 2))
                 .getAccountsSynchronous();
+        retriesHistogram.assertExpected();
+        successHistogram.assertExpected();
     }
 
     // If this test starts flaking, please re-open crbug.com/568636 and make sure there is some sort
@@ -364,20 +411,22 @@ public class AccountManagerFacadeImplTest {
 
     @Test
     public void testCheckChildAccount() {
-        final Account account =
+        final CoreAccountInfo coreAccountInfo =
                 setFeaturesForAccount(
                         "usm@gmail.com", AccountManagerFacadeImpl.FEATURE_IS_USM_ACCOUNT_KEY);
 
-        mFacadeWithSystemDelegate.checkChildAccountStatus(account, mChildAccountStatusListenerMock);
+        mFacadeWithSystemDelegate.checkChildAccountStatus(
+                coreAccountInfo, mChildAccountStatusListenerMock);
 
-        verify(mChildAccountStatusListenerMock).onStatusReady(true, account);
+        verify(mChildAccountStatusListenerMock).onStatusReady(true, coreAccountInfo);
     }
 
     @Test
     public void testCheckChildAccountForAdult() {
-        final Account account = setFeaturesForAccount("adult@gmail.com");
+        final CoreAccountInfo coreAccountInfo = setFeaturesForAccount("adult@gmail.com");
 
-        mFacadeWithSystemDelegate.checkChildAccountStatus(account, mChildAccountStatusListenerMock);
+        mFacadeWithSystemDelegate.checkChildAccountStatus(
+                coreAccountInfo, mChildAccountStatusListenerMock);
 
         verify(mChildAccountStatusListenerMock).onStatusReady(false, null);
     }
@@ -409,13 +458,14 @@ public class AccountManagerFacadeImplTest {
     @Test
     public void testGetAccountCapabilitiesResponseYes() throws Exception {
         AccountManagerFacade facade = new AccountManagerFacadeImpl(mDelegate);
-        final Account account = AccountUtils.createAccountFromName("test1@gmail.com");
-        mDelegate.addAccount(AccountHolder.createFromAccount(account));
+        CoreAccountInfo accountInfo = addTestAccount("test@gmail.com");
 
-        doReturn(CapabilityResponse.YES).when(mDelegate).hasCapability(eq(account), any());
+        doReturn(CapabilityResponse.YES)
+                .when(mDelegate)
+                .hasCapability(eq(CoreAccountInfo.getAndroidAccountFrom(accountInfo)), any());
 
-        AccountCapabilities capabilities = facade.getAccountCapabilities(account).getResult();
-        Assert.assertEquals(capabilities.canOfferExtendedSyncPromos(), Tribool.TRUE);
+        AccountCapabilities capabilities = facade.getAccountCapabilities(accountInfo).getResult();
+        Assert.assertEquals(capabilities.isSubjectToChromePrivacySandboxRestrictedMeasurementNotice(), Tribool.TRUE);
         Assert.assertEquals(capabilities.isSubjectToParentalControls(), Tribool.TRUE);
         Assert.assertEquals(capabilities.canRunChromePrivacySandboxTrials(), Tribool.TRUE);
         Assert.assertEquals(
@@ -426,13 +476,14 @@ public class AccountManagerFacadeImplTest {
     @Test
     public void testGetAccountCapabilitiesResponseNo() throws Exception {
         AccountManagerFacade facade = new AccountManagerFacadeImpl(mDelegate);
-        final Account account = AccountUtils.createAccountFromName("test1@gmail.com");
-        mDelegate.addAccount(AccountHolder.createFromAccount(account));
+        CoreAccountInfo accountInfo = addTestAccount("test@gmail.com");
 
-        doReturn(CapabilityResponse.NO).when(mDelegate).hasCapability(eq(account), any());
+        doReturn(CapabilityResponse.NO)
+                .when(mDelegate)
+                .hasCapability(eq(CoreAccountInfo.getAndroidAccountFrom(accountInfo)), any());
 
-        AccountCapabilities capabilities = facade.getAccountCapabilities(account).getResult();
-        Assert.assertEquals(capabilities.canOfferExtendedSyncPromos(), Tribool.FALSE);
+        AccountCapabilities capabilities = facade.getAccountCapabilities(accountInfo).getResult();
+        Assert.assertEquals(capabilities.isSubjectToChromePrivacySandboxRestrictedMeasurementNotice(), Tribool.FALSE);
         Assert.assertEquals(capabilities.isSubjectToParentalControls(), Tribool.FALSE);
         Assert.assertEquals(capabilities.canRunChromePrivacySandboxTrials(), Tribool.FALSE);
         Assert.assertEquals(
@@ -443,13 +494,14 @@ public class AccountManagerFacadeImplTest {
     @Test
     public void testGetAccountCapabilitiesResponseException() throws Exception {
         AccountManagerFacade facade = new AccountManagerFacadeImpl(mDelegate);
-        final Account account = AccountUtils.createAccountFromName("test1@gmail.com");
-        mDelegate.addAccount(AccountHolder.createFromAccount(account));
+        CoreAccountInfo accountInfo = addTestAccount("test@gmail.com");
 
-        doReturn(CapabilityResponse.EXCEPTION).when(mDelegate).hasCapability(eq(account), any());
+        doReturn(CapabilityResponse.EXCEPTION)
+                .when(mDelegate)
+                .hasCapability(eq(CoreAccountInfo.getAndroidAccountFrom(accountInfo)), any());
 
-        AccountCapabilities capabilities = facade.getAccountCapabilities(account).getResult();
-        Assert.assertEquals(capabilities.canOfferExtendedSyncPromos(), Tribool.UNKNOWN);
+        AccountCapabilities capabilities = facade.getAccountCapabilities(accountInfo).getResult();
+        Assert.assertEquals(capabilities.isSubjectToChromePrivacySandboxRestrictedMeasurementNotice(), Tribool.UNKNOWN);
         Assert.assertEquals(capabilities.isSubjectToParentalControls(), Tribool.UNKNOWN);
         Assert.assertEquals(capabilities.canRunChromePrivacySandboxTrials(), Tribool.UNKNOWN);
         Assert.assertEquals(
@@ -457,10 +509,12 @@ public class AccountManagerFacadeImplTest {
                 Tribool.UNKNOWN);
     }
 
-    private Account setFeaturesForAccount(String email, String... features) {
+    private CoreAccountInfo setFeaturesForAccount(String email, String... features) {
         final Account account = AccountUtils.createAccountFromName(email);
+        final CoreAccountInfo coreAccountInfo =
+                CoreAccountInfo.createFromEmailAndGaiaId(email, "notUsedGaiaId");
         mShadowAccountManager.setFeatures(account, features);
-        return account;
+        return coreAccountInfo;
     }
 
     private void setAccountRestrictionPatterns(String... patterns) {

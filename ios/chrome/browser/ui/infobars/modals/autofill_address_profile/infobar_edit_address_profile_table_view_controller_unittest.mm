@@ -67,9 +67,6 @@ class InfobarEditAddressProfileTableViewControllerTest
   void CreateProfileData() {
     autofill::AutofillProfile profile = autofill::test::GetFullProfile2();
     [autofill_profile_edit_table_view_controller_
-        setHonorificPrefix:base::SysUTF16ToNSString(profile.GetRawInfo(
-                               autofill::NAME_HONORIFIC_PREFIX))];
-    [autofill_profile_edit_table_view_controller_
         setFullName:base::SysUTF16ToNSString(
                         profile.GetRawInfo(autofill::NAME_FULL))];
     [autofill_profile_edit_table_view_controller_
@@ -194,21 +191,14 @@ class InfobarEditAddressProfileTableViewControllerTestWithUnionViewEnabled
                                NSString* expectedButtonText) {
     autofill::AutofillProfile profile = autofill::test::GetFullProfile2();
     NSString* countryCode = base::SysUTF16ToNSString(
-        profile.GetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_COUNTRY));
+        profile.GetRawInfo(autofill::FieldType::ADDRESS_HOME_COUNTRY));
 
-    std::vector<std::pair<autofill::ServerFieldType, std::u16string>>
-        expected_values;
+    std::vector<std::pair<autofill::FieldType, std::u16string>> expected_values;
 
     for (size_t i = 0; i < std::size(kProfileFieldsToDisplay); ++i) {
       const AutofillProfileFieldDisplayInfo& field = kProfileFieldsToDisplay[i];
 
       if (!FieldIsUsedInAddress(field.autofillType, countryCode)) {
-        continue;
-      }
-
-      if (field.autofillType == autofill::NAME_HONORIFIC_PREFIX &&
-          !base::FeatureList::IsEnabled(
-              autofill::features::kAutofillEnableSupportForHonorificPrefixes)) {
         continue;
       }
 

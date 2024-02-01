@@ -15,6 +15,10 @@ struct wl_client;
 struct wl_global;
 struct wl_resource;
 
+namespace display {
+class Display;
+}  // namespace display
+
 namespace exo {
 namespace wayland {
 
@@ -46,6 +50,17 @@ class WaylandDisplayOutput {
   void UnregisterOutput(wl_resource* output_resource);
   void RegisterOutput(wl_resource* output_resource);
 
+  // Dispatches updated metrics to all clients currently bound to the wrapped
+  // wl_output global.
+  // TODO(tluk): `display` is only used by WaylandDisplayObservers to construct
+  // wayland output metrics to send to the client. Wrap any remaining metrics
+  // into OutputMetrics and propagate this instead.
+  void SendDisplayMetricsChanges(const display::Display& display,
+                                 uint32_t changed_metrics);
+
+  // Notifies clients of the activation of this output.
+  void SendOutputActivated();
+
   wl_resource* GetOutputResourceForClient(wl_client* client);
 
   // Self destruct in 5 seconeds.
@@ -57,7 +72,7 @@ class WaylandDisplayOutput {
 
  private:
   const int64_t id_;
-  raw_ptr<wl_global, DanglingUntriaged | ExperimentalAsh> global_ = nullptr;
+  raw_ptr<wl_global, DanglingUntriaged> global_ = nullptr;
   base::flat_map<wl_client*, wl_resource*> output_ids_;
   bool had_registered_output_ = false;
   bool is_destructing_ = false;

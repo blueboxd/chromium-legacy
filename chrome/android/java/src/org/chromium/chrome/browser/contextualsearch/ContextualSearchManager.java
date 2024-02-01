@@ -23,6 +23,7 @@ import org.jni_zero.NativeMethods;
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.blink_public.input.SelectionGranularity;
 import org.chromium.cc.input.BrowserControlsState;
@@ -57,6 +58,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeController;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -83,16 +85,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Manages the Contextual Search feature. This class keeps track of the status of Contextual
- * Search and coordinates the control with the layout.
- * This class is driven by {@link ContextualSearchInternalStateController} through the
- * {@link ContextualSearchInternalStateHandler} interface to advance each stage of processing
- * events. The events are fed in by {@link ContextualSearchSelectionController} and business
- * decisions are made in the {@link ContextualSearchPolicy} class. There is a native
- * class corresponding to this class that communicates with the server through a delegate.
- * The server interaction is vectored through an interface to allow a stub for testing in
- * {@Link ContextualSearchNetworkCommunicator}.
- * The lifetime of this class corresponds to the Activity, and this class creates and owns a
+ * Manages the Contextual Search feature. This class keeps track of the status of Contextual Search
+ * and coordinates the control with the layout.
+ *
+ * <p>This class is driven by {@link ContextualSearchInternalStateController} through the {@link
+ * ContextualSearchInternalStateHandler} interface to advance each stage of processing events. The
+ * events are fed in by {@link ContextualSearchSelectionController} and business decisions are made
+ * in the {@link ContextualSearchPolicy} class.
+ *
+ * <p>There is a native class corresponding to this class that communicates with the server through
+ * a delegate. The server interaction is vectored through an interface to allow a stub for testing
+ * in {@Link ContextualSearchNetworkCommunicator}.
+ *
+ * <p>The lifetime of this class corresponds to the Activity, and this class creates and owns a
  * {@link ContextualSearchPanel} with the same lifetime.
  */
 public class ContextualSearchManager
@@ -152,6 +157,8 @@ public class ContextualSearchManager
 
     /** A supplier of the last time the user interacted with the browser. */
     private final Supplier<Long> mLastUserInteractionTimeSupplier;
+
+    private final Supplier<EdgeToEdgeController> mEdgeToEdgeControllerSupplier;
 
     private ContextualSearchSelectionController mSelectionController;
     private ContextualSearchNetworkCommunicator mNetworkCommunicator;
@@ -249,9 +256,10 @@ public class ContextualSearchManager
 
     /**
      * Constructs the manager for the given activity, and will attach views to the given parent.
+     *
      * @param activity The {@link Activity} in use.
      * @param tabPromotionDelegate The {@link ContextualSearchTabPromotionDelegate} that is
-     *        responsible for building tabs from contextual search {@link WebContents}.
+     *     responsible for building tabs from contextual search {@link WebContents}.
      * @param scrimCoordinator A mechanism for showing and hiding the shared scrim.
      * @param tabSupplier Access to the tab that is currently active.
      * @param fullscreenManager Access to the fullscreen state.
@@ -259,7 +267,8 @@ public class ContextualSearchManager
      * @param windowAndroid A window to create the overlay panel with.
      * @param tabModelSelector A means of observing all tabs in the browser.
      * @param lastUserInteractionTimeSupplier A supplier of the last time a user interacted with the
-     *                                        browser.
+     *     browser.
+     * @param edgeToEdgeControllerSupplier Supplies an {@link EdgeToEdgeController} when available.
      */
     public ContextualSearchManager(
             Activity activity,
@@ -270,7 +279,8 @@ public class ContextualSearchManager
             BrowserControlsStateProvider browserControlsStateProvider,
             WindowAndroid windowAndroid,
             TabModelSelector tabModelSelector,
-            Supplier<Long> lastUserInteractionTimeSupplier) {
+            Supplier<Long> lastUserInteractionTimeSupplier,
+            ObservableSupplier<EdgeToEdgeController> edgeToEdgeControllerSupplier) {
         mActivity = activity;
         mTabPromotionDelegate = tabPromotionDelegate;
         mScrimCoordinator = scrimCoordinator;
@@ -280,6 +290,7 @@ public class ContextualSearchManager
         mWindowAndroid = windowAndroid;
         mTabModelSelector = tabModelSelector;
         mLastUserInteractionTimeSupplier = lastUserInteractionTimeSupplier;
+        mEdgeToEdgeControllerSupplier = edgeToEdgeControllerSupplier;
         mDpToPx = mActivity.getResources().getDisplayMetrics().density;
 
         final View controlContainer = mActivity.findViewById(R.id.control_container);
@@ -373,7 +384,8 @@ public class ContextualSearchManager
                             toolbarHeightDp,
                             toolbarManager,
                             activityType,
-                            mTabSupplier);
+                            mTabSupplier,
+                            mEdgeToEdgeControllerSupplier);
         }
 
         panel.setManagementDelegate(this);
@@ -697,8 +709,9 @@ public class ContextualSearchManager
     }
 
     /**
-     * Called by native code when the surrounding text and selection range are available.
-     * This is done for both Tap and Long-press gestures.
+     * Called by native code when the surrounding text and selection range are available. This is
+     * done for both Tap and Long-press gestures.
+     *
      * @param encoding The original encoding used on the base page.
      * @param surroundingText The Text surrounding the selection.
      * @param startOffset The start offset of the selection.
@@ -725,21 +738,22 @@ public class ContextualSearchManager
     /**
      * Called in response to the {@link ContextualSearchManagerJni#startSearchTermResolutionRequest}
      * method. If {@code startSearchTermResolutionRequest} is called with a previous request sill
-     * pending our native delegate is supposed to cancel all previous requests.  So this code should
+     * pending our native delegate is supposed to cancel all previous requests. So this code should
      * only be called with data corresponding to the most recent request.
+     *
      * @param isNetworkUnavailable Indicates if the network is unavailable, in which case all other
-     *        parameters should be ignored.
+     *     parameters should be ignored.
      * @param responseCode The HTTP response code. If the code is not OK, the query should be
-     *        ignored.
+     *     ignored.
      * @param searchTerm The term to use in our subsequent search.
      * @param displayText The text to display in our UX.
      * @param alternateTerm The alternate term to display on the results page.
-     * @param mid the MID for an entity to use to trigger a Knowledge Panel, or an empty string.
-     *        A MID is a unique identifier for an entity in the Search Knowledge Graph.
+     * @param mid the MID for an entity to use to trigger a Knowledge Panel, or an empty string. A
+     *     MID is a unique identifier for an entity in the Search Knowledge Graph.
      * @param selectionStartAdjust A positive number of characters that the start of the existing
-     *        selection should be expanded by.
+     *     selection should be expanded by.
      * @param selectionEndAdjust A positive number of characters that the end of the existing
-     *        selection should be expanded by.
+     *     selection should be expanded by.
      * @param contextLanguage The language of the original search term, or an empty string.
      * @param thumbnailUrl The URL of the thumbnail to display in our UX.
      * @param caption The caption to display.
@@ -849,11 +863,12 @@ public class ContextualSearchManager
 
     /**
      * Displays the given {@link ResolvedSearchTerm} in the panel and logs the action.
+     *
      * @param resolvedSearchTerm The bundle of data from the server to be displayed
      * @param message The main message to display in the Bar. This is usually the same as the
-     *                SearchTerm except in cases where an error is returned by the server.
-     * @param doLiteralSearch Whether this is a literal search for the verbatim selection
-     *     or a resolved search.
+     *     SearchTerm except in cases where an error is returned by the server.
+     * @param doLiteralSearch Whether this is a literal search for the verbatim selection or a
+     *     resolved search.
      */
     void displayResolvedSearchTerm(
             ResolvedSearchTerm resolvedSearchTerm, String message, boolean doLiteralSearch) {
@@ -1144,11 +1159,6 @@ public class ContextualSearchManager
             } else {
                 // Could be just prefetching, check if that failed.
                 onContextualSearchRequestNavigation(isFailure);
-
-                // Record metrics for when the prefetched results became viewable.
-                if (mSearchRequest != null && mSearchRequest.wasPrefetch()) {
-                    boolean didResolve = mPolicy.shouldPreviousGestureResolve();
-                }
             }
         }
 
@@ -1595,8 +1605,8 @@ public class ContextualSearchManager
 
     /**
      * Notifies this class that the selection has changed. This may be due to the user moving the
-     * selection handles after a long-press, or after a Tap gesture has called selectAroundCaret
-     * to expand the selection to a whole word or sentence.
+     * selection handles after a long-press, or after a Tap gesture has called selectAroundCaret to
+     * expand the selection to a whole word or sentence.
      */
     @Override
     public void handleSelection(
@@ -1828,7 +1838,6 @@ public class ContextualSearchManager
                 assert !TextUtils.isEmpty(selection);
 
                 WebContents baseWebContents = getBaseWebContents();
-                boolean isExactResolve = mSelectionController.isAdjustedSelection();
                 if (baseWebContents != null && mContext != null && mContext.canResolve()) {
                     issueResolveRequest();
                 } else {
@@ -2033,24 +2042,9 @@ public class ContextualSearchManager
     }
 
     @VisibleForTesting
-    ContextualSearchTabPromotionDelegate getTabPromotionDelegate() {
-        return mTabPromotionDelegate;
-    }
-
-    @VisibleForTesting
     void setContextualSearchInternalStateController(
             ContextualSearchInternalStateController controller) {
         mInternalStateController = controller;
-    }
-
-    @VisibleForTesting
-    protected ContextualSearchInternalStateController getContextualSearchInternalStateController() {
-        return mInternalStateController;
-    }
-
-    @VisibleForTesting
-    ContextualSearchContext getContext() {
-        return mContext;
     }
 
     @VisibleForTesting

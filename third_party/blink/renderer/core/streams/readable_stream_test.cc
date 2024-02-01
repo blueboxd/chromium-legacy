@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/string_resource.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "v8/include/v8.h"
 
@@ -54,7 +55,7 @@ class ReadableStreamTest : public testing::Test {
     v8::Isolate* isolate = script_state->GetIsolate();
     v8::Local<v8::Context> context = script_state->GetContext();
     v8::Local<v8::Value> v8_stream =
-        ToV8Traits<ReadableStream>::ToV8(script_state, stream).ToLocalChecked();
+        ToV8Traits<ReadableStream>::ToV8(script_state, stream);
     v8::Local<v8::Object> global = context->Global();
     bool set_result = false;
     if (!global->Set(context, V8String(isolate, "stream"), v8_stream)
@@ -107,6 +108,7 @@ readAll(stream);
     NOTREACHED();
     return absl::nullopt;
   }
+  test::TaskEnvironment task_environment_;
 };
 
 // This breaks expectations for general ReadableStreamTransferringOptimizer
@@ -130,8 +132,8 @@ class TestTransferringOptimizer final
         : UnderlyingSourceBase(script_state) {}
 
     ScriptPromise Start(ScriptState* script_state, ExceptionState&) override {
-      Controller()->Enqueue("foo");
-      Controller()->Enqueue(", bar");
+      Controller()->Enqueue(V8String(script_state->GetIsolate(), "foo"));
+      Controller()->Enqueue(V8String(script_state->GetIsolate(), ", bar"));
       Controller()->Close();
       return ScriptPromise::CastUndefined(script_state);
     }
@@ -596,15 +598,15 @@ class ReadableByteStreamTest : public testing::Test {
     auto* script_state = scope.GetScriptState();
     ReadableStream* stream = Stream();
     v8::Local<v8::Object> global = script_state->GetContext()->Global();
-    EXPECT_TRUE(global
-                    ->Set(scope.GetContext(),
-                          V8String(scope.GetIsolate(), "stream"),
-                          ToV8Traits<ReadableStream>::ToV8(script_state, stream)
-                              .ToLocalChecked())
-                    .IsJust());
+    EXPECT_TRUE(
+        global
+            ->Set(scope.GetContext(), V8String(scope.GetIsolate(), "stream"),
+                  ToV8Traits<ReadableStream>::ToV8(script_state, stream))
+            .IsJust());
   }
 
  private:
+  test::TaskEnvironment task_environment_;
   Persistent<ReadableStream> stream_;
 };
 

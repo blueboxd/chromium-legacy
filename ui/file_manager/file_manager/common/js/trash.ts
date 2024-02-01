@@ -21,8 +21,8 @@
 
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 
-import type {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import type {VolumeManager} from '../../externs/volume_manager.js';
+import type {VolumeManager} from '../../background/js/volume_manager.js';
+import type {FilesAppEntry} from '../../common/js/files_app_entry_types.js';
 
 import {parseTrashInfoFiles, startIOTask} from './api.js';
 import {isDirectoryEntry, isFileEntry} from './entry_utils.js';
@@ -542,7 +542,7 @@ class TrashDirectoryReader implements FileSystemDirectoryReader {
 
     if (entriesToDelete.length > 0) {
       startIOTask(
-          chrome.fileManagerPrivate.IOTaskType.DELETE, entriesToDelete, {
+          chrome.fileManagerPrivate.IoTaskType.DELETE, entriesToDelete, {
             showNotification: false,
             destinationFolder: undefined,
             password: undefined,

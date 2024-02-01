@@ -42,6 +42,8 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -64,8 +66,6 @@ import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.TabStripUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -507,13 +507,26 @@ public class TabSwitcherTabletTest {
     }
 
     private void retrieveTabListDelegate() {
-        Layout layout = sActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
-        assertTrue(layout instanceof TabSwitcherAndStartSurfaceLayout);
-        TabSwitcherAndStartSurfaceLayout mTabSwitcherAndStartSurfaceLayout =
-                (TabSwitcherAndStartSurfaceLayout) layout;
+        Layout overviewLayout =
+                sActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
+
+        if (overviewLayout == null) {
+            Layout tabSwitcherLayout =
+                sActivityTestRule.getActivity().getLayoutManager().getTabSwitcherLayoutForTesting();
+            assertTrue("Layout not instance of TabSwitcherLayout -" + tabSwitcherLayout,
+                tabSwitcherLayout instanceof TabSwitcherLayout);
+            mTabListDelegate =
+                ((TabSwitcherLayout) tabSwitcherLayout)
+                    .getTabSwitcherForTesting()
+                    .getTabListDelegate();
+            return;
+        }
+
+        assertTrue("Layout not instance of TabSwitcherAndStartSurfaceLayout" + overviewLayout,
+            overviewLayout instanceof TabSwitcherAndStartSurfaceLayout);
 
         mTabListDelegate =
-                mTabSwitcherAndStartSurfaceLayout
+            ((TabSwitcherAndStartSurfaceLayout) overviewLayout)
                         .getStartSurfaceForTesting()
                         .getGridTabListDelegate();
     }

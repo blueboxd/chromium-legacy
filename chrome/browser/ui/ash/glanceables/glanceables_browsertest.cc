@@ -12,6 +12,7 @@
 #include "ash/glanceables/common/glanceables_view_id.h"
 #include "ash/glanceables/glanceables_controller.h"
 #include "ash/glanceables/tasks/glanceables_task_view.h"
+#include "ash/glanceables/tasks/glanceables_task_view_v2.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/style/combobox.h"
@@ -40,6 +41,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view_utils.h"
 
@@ -146,6 +148,11 @@ class GlanceablesBrowserTest : public InProcessBrowserTest {
         base::to_underlying(GlanceablesViewId::kTasksBubbleComboBox)));
   }
 
+  views::ScrollView* GetTasksScrollView() const {
+    return views::AsViewClass<views::ScrollView>(GetTasksView()->GetViewByID(
+        base::to_underlying(GlanceablesViewId::kTasksBubbleListScrollView)));
+  }
+
   views::View* GetTasksItemContainerView() const {
     return views::AsViewClass<views::View>(GetTasksView()->GetViewByID(
         base::to_underlying(GlanceablesViewId::kTasksBubbleListContainer)));
@@ -168,11 +175,6 @@ class GlanceablesBrowserTest : public InProcessBrowserTest {
       }
     }
     return current_items;
-  }
-
-  GlanceablesTaskView* GetTaskItemView(int item_index) {
-    return views::AsViewClass<GlanceablesTaskView>(
-        GetTasksItemContainerView()->children()[item_index]);
   }
 
   ClassroomBubbleStudentView* GetStudentView() const {
@@ -214,23 +216,37 @@ class GlanceablesBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  raw_ptr<DateTray, DanglingUntriaged | ExperimentalAsh> date_tray_;
+  raw_ptr<DateTray, DanglingUntriaged> date_tray_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
   AccountId account_id_ =
       AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId);
   std::unique_ptr<api::FakeTasksClient> fake_glanceables_tasks_client_;
   std::unique_ptr<FakeGlanceablesClassroomClient>
       fake_glanceables_classroom_client_;
-
-  base::test::ScopedFeatureList features_{features::kGlanceablesV2};
 };
 
 class GlanceablesMvpBrowserTest : public GlanceablesBrowserTest {
+ public:
+  GlanceablesMvpBrowserTest() {
+    features_.InitWithFeatures(
+        /*enabled_features=*/{features::kGlanceablesV2},
+        /*disabled_features=*/{features::kGlanceablesTimeManagementTasksView});
+  }
+
   void SetUpOnMainThread() override {
     GlanceablesBrowserTest::SetUpOnMainThread();
     base::AddFeatureIdTagToTestResult(
         "screenplay-ace3b729-5402-40cd-b2bf-d488bc95b7e2");
   }
+
+  // Returns the task view at `item_index`.
+  GlanceablesTaskView* GetTaskItemView(int item_index) {
+    return views::AsViewClass<GlanceablesTaskView>(
+        GetTasksItemContainerView()->children()[item_index]);
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
 };
 
 IN_PROC_BROWSER_TEST_F(GlanceablesMvpBrowserTest, OpenStudentCourseItemURL) {
@@ -474,9 +490,16 @@ IN_PROC_BROWSER_TEST_F(GlanceablesMvpBrowserTest, CheckOffTaskItems) {
 }
 
 class GlanceablesWithAddEditBrowserTest : public GlanceablesBrowserTest {
+ public:
+  // Returns the task view at `item_index`.
+  GlanceablesTaskViewV2* GetTaskItemView(int item_index) {
+    return views::AsViewClass<GlanceablesTaskViewV2>(
+        GetTasksItemContainerView()->children()[item_index]);
+  }
+
  private:
   base::test::ScopedFeatureList features_{
-      features::kGlanceablesTimeManagementStableLaunch};
+      features::kGlanceablesTimeManagementTasksView};
 };
 
 IN_PROC_BROWSER_TEST_F(GlanceablesWithAddEditBrowserTest, AddTaskItem) {
@@ -633,6 +656,63 @@ IN_PROC_BROWSER_TEST_F(GlanceablesWithAddEditBrowserTest, EditTaskItem) {
     ASSERT_FALSE(title_text_field);
     EXPECT_EQ(title_label->GetText(), u"Task List 1 Item 1 Title upd");
   }
+}
+
+IN_PROC_BROWSER_TEST_F(GlanceablesWithAddEditBrowserTest, TasksViewLayout) {
+  // Click the date tray to show the glanceable bubbles.
+  GetEventGenerator()->MoveMouseTo(
+      GetDateTray()->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+
+  ASSERT_TRUE(GetGlanceableTrayBubble());
+  ASSERT_TRUE(GetTasksView());
+
+  // Calculate the available space for tasks and make sure there is enough for
+  // additional task view.
+  auto display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  const int kGlanceableMargins = 8;
+  const int kCalendarHeight = 340;
+  const int available_height_for_tasks =
+      display.work_area().height() - kCalendarHeight - kGlanceableMargins;
+  const int original_task_view_height = GetTasksView()->height();
+  ASSERT_GT(available_height_for_tasks, original_task_view_height);
+
+  const auto* const add_task_button =
+      views::AsViewClass<views::LabelButton>(GetTasksView()->GetViewByID(
+          base::to_underlying(GlanceablesViewId::kTasksBubbleAddNewButton)));
+  ASSERT_TRUE(add_task_button);
+
+  const auto* const task_items_container = GetTasksItemContainerView();
+  ASSERT_TRUE(task_items_container);
+
+  // Use the visibility of the scroll bar to determine if the contents of the
+  // scroll view is larger than its viewport. In this case, they should have the
+  // same sizes.
+  const auto* scroll_bar = GetTasksScrollView()->vertical_scroll_bar();
+  EXPECT_FALSE(scroll_bar->GetVisible());
+
+  // Click on `add_task_button` and verify that `task_items_container` has the
+  // new "pending" item.
+  EXPECT_EQ(task_items_container->children().size(), 2u);
+  GetEventGenerator()->MoveMouseTo(
+      add_task_button->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_EQ(task_items_container->children().size(), 3u);
+
+  // The tasks view should update its height if there is space available.
+  EXPECT_GT(GetTasksView()->height(), original_task_view_height);
+  EXPECT_FALSE(scroll_bar->GetVisible());
+
+  // Commit the empty new task, which removes the temporary task view.
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_ESCAPE);
+  base::RunLoop().RunUntilIdle();
+  GetTasksView()->GetWidget()->LayoutRootViewIfNecessary();
+  EXPECT_EQ(task_items_container->children().size(), 2u);
+
+  // Verify that the tasks view height is resized to its original height without
+  // the new task.
+  EXPECT_EQ(GetTasksView()->height(), original_task_view_height);
+  EXPECT_FALSE(scroll_bar->GetVisible());
 }
 
 }  // namespace ash

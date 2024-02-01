@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/messaging_layer/upload/record_upload_request_builder.h"
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -18,7 +19,6 @@
 #include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/util/encrypted_reporting_json_keys.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
 // Feature that controls if the configuration file should be requested
@@ -79,7 +79,7 @@ UploadEncryptedReportingRequestBuilder::AddRecord(
           .Build();
   if (!record_result.has_value()) {
     // Record has errors. Stop here.
-    result_ = absl::nullopt;
+    result_ = std::nullopt;
     return *this;
   }
 
@@ -100,7 +100,7 @@ UploadEncryptedReportingRequestBuilder::SetRequestId(
   return *this;
 }
 
-absl::optional<base::Value::Dict>
+std::optional<base::Value::Dict>
 UploadEncryptedReportingRequestBuilder::Build() {
   // Ensure that if result_ has value, then it must not have a non-string
   // requestId.
@@ -187,8 +187,8 @@ EncryptedRecordDictionaryBuilder::EncryptedRecordDictionaryBuilder(
 
   // Gap records won't fill in this field, so it can be missing.
   if (record.has_encrypted_wrapped_record()) {
-    std::string base64_encode;
-    base::Base64Encode(record.encrypted_wrapped_record(), &base64_encode);
+    std::string base64_encode =
+        base::Base64Encode(record.encrypted_wrapped_record());
     ScopedReservation base64_encode_reservation(base64_encode.size(),
                                                 scoped_reservation);
     if (!base64_encode_reservation.reserved()) {
@@ -208,7 +208,7 @@ EncryptedRecordDictionaryBuilder::EncryptedRecordDictionaryBuilder(
 
 EncryptedRecordDictionaryBuilder::~EncryptedRecordDictionaryBuilder() = default;
 
-absl::optional<base::Value::Dict> EncryptedRecordDictionaryBuilder::Build() {
+std::optional<base::Value::Dict> EncryptedRecordDictionaryBuilder::Build() {
   return std::move(result_);
 }
 
@@ -267,8 +267,7 @@ SequenceInformationDictionaryBuilder::SequenceInformationDictionaryBuilder(
 SequenceInformationDictionaryBuilder::~SequenceInformationDictionaryBuilder() =
     default;
 
-absl::optional<base::Value::Dict>
-SequenceInformationDictionaryBuilder::Build() {
+std::optional<base::Value::Dict> SequenceInformationDictionaryBuilder::Build() {
   return std::move(result_);
 }
 
@@ -316,8 +315,7 @@ EncryptionInfoDictionaryBuilder::EncryptionInfoDictionaryBuilder(
     return;
   }
 
-  std::string base64_key;
-  base::Base64Encode(encryption_info.encryption_key(), &base64_key);
+  std::string base64_key = base::Base64Encode(encryption_info.encryption_key());
   encryption_info_dictionary.Set(GetEncryptionKeyPath(), base64_key);
   encryption_info_dictionary.Set(
       GetPublicKeyIdPath(),
@@ -327,7 +325,7 @@ EncryptionInfoDictionaryBuilder::EncryptionInfoDictionaryBuilder(
 
 EncryptionInfoDictionaryBuilder::~EncryptionInfoDictionaryBuilder() = default;
 
-absl::optional<base::Value::Dict> EncryptionInfoDictionaryBuilder::Build() {
+std::optional<base::Value::Dict> EncryptionInfoDictionaryBuilder::Build() {
   return std::move(result_);
 }
 
@@ -361,7 +359,7 @@ CompressionInformationDictionaryBuilder::
 CompressionInformationDictionaryBuilder::
     ~CompressionInformationDictionaryBuilder() = default;
 
-absl::optional<base::Value::Dict>
+std::optional<base::Value::Dict>
 CompressionInformationDictionaryBuilder::Build() {
   return std::move(result_);
 }

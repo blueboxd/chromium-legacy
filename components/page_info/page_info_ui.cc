@@ -233,6 +233,8 @@ base::span<const PageInfoUI::PermissionUIInfo> GetContentSettingsUIInfo() {
        IDS_SITE_SETTINGS_TYPE_IMAGES_MID_SENTENCE},
       {ContentSettingsType::SERIAL_GUARD, IDS_SITE_SETTINGS_TYPE_SERIAL_PORTS,
        IDS_SITE_SETTINGS_TYPE_SERIAL_PORTS_MID_SENTENCE},
+      {ContentSettingsType::WEB_PRINTING, IDS_SITE_SETTINGS_TYPE_WEB_PRINTING,
+       IDS_SITE_SETTINGS_TYPE_WEB_PRINTING_MID_SENTENCE},
       {ContentSettingsType::WINDOW_MANAGEMENT,
        IDS_SITE_SETTINGS_TYPE_WINDOW_MANAGEMENT,
        IDS_SITE_SETTINGS_TYPE_WINDOW_MANAGEMENT_MID_SENTENCE},
@@ -644,7 +646,7 @@ std::u16string PageInfoUI::PermissionTypeToUIStringMidSentence(
 // static
 std::u16string PageInfoUI::PermissionTooltipUiString(
     ContentSettingsType type,
-    const absl::optional<url::Origin>& requesting_origin) {
+    const std::optional<url::Origin>& requesting_origin) {
   switch (type) {
     case ContentSettingsType::STORAGE_ACCESS:
       return l10n_util::GetStringFUTF16(
@@ -861,7 +863,7 @@ std::u16string PageInfoUI::PermissionAutoBlockedToUIString(
               permission.type);
       permission_result = delegate->GetPermissionResult(permission_type);
     } else if (permission.type == ContentSettingsType::FEDERATED_IDENTITY_API) {
-      absl::optional<content::PermissionResult> embargo_result =
+      std::optional<content::PermissionResult> embargo_result =
           delegate->GetEmbargoResult(permission.type);
       if (embargo_result)
         permission_result = *embargo_result;

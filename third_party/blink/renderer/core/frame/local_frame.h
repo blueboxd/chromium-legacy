@@ -38,7 +38,6 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/device/public/mojom/device_posture_provider.mojom-blink-forward.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/common/frame/frame_ad_evidence.h"
@@ -48,8 +47,8 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/device_posture/device_posture_provider.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
@@ -61,7 +60,6 @@
 #include "third_party/blink/public/mojom/lcp_critical_path_predictor/lcp_critical_path_predictor.mojom-blink.h"
 #include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/loader/resource_cache.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/navigation/renderer_content_settings.mojom.h"
 #include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink-forward.h"
@@ -118,6 +116,7 @@ namespace blink {
 class AdTracker;
 class AssociatedInterfaceProvider;
 class AttributionSrcLoader;
+class AuditsIssue;
 class BackgroundColorPaintImageGenerator;
 class BoxShadowPaintImageGenerator;
 class BrowserInterfaceBrokerProxy;
@@ -151,7 +150,6 @@ class NodeTraversal;
 class PerformanceMonitor;
 class PluginData;
 class PolicyContainer;
-class ResourceCacheImpl;
 class ScrollSnapshotClient;
 class SmoothScrollSequencer;
 class SpellChecker;
@@ -264,7 +262,8 @@ class CORE_EXPORT LocalFrame final
 
   // BackForwardCacheLoaderHelperImpl::Delegate:
   void EvictFromBackForwardCache(
-      mojom::blink::RendererEvictionReason reason) override;
+      mojom::blink::RendererEvictionReason reason,
+      std::unique_ptr<SourceLocation> source_location) override;
   void DidBufferLoadWhileInBackForwardCache(bool update_process_wide_count,
                                             size_t num_bytes) override;
 
@@ -443,9 +442,9 @@ class CORE_EXPORT LocalFrame final
       const WebVector<gfx::Rect>& window_segments);
 
   void OverrideDevicePostureForEmulation(
-      device::mojom::blink::DevicePostureType device_posture_param);
+      mojom::blink::DevicePostureType device_posture_param);
   void DisableDevicePostureOverrideForEmulation();
-  device::mojom::blink::DevicePostureType GetDevicePosture();
+  mojom::blink::DevicePostureType GetDevicePosture();
 
   String SelectedText() const;
   String SelectedText(const TextIteratorBehavior& behavior) const;
@@ -659,7 +658,7 @@ class CORE_EXPORT LocalFrame final
   SmoothScrollSequencer* GetSmoothScrollSequencer() const;
 
   mojom::blink::ReportingServiceProxy* GetReportingService();
-  device::mojom::blink::DevicePostureProvider* GetDevicePostureProvider();
+  mojom::blink::DevicePostureProvider* GetDevicePostureProvider();
 
   // Returns the frame host ptr. The interface returned is backed by an
   // associated interface with the legacy Chrome IPC channel.
@@ -755,7 +754,7 @@ class CORE_EXPORT LocalFrame final
 
   void NotifyUserActivation(
       mojom::blink::UserActivationNotificationType notification_type);
-  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr);
+  void AddInspectorIssue(AuditsIssue issue);
   void SaveImageAt(const gfx::Point& window_point);
   void AdvanceFocusForIME(mojom::blink::FocusType focus_type);
   void PostMessageEvent(
@@ -906,13 +905,6 @@ class CORE_EXPORT LocalFrame final
   static BlockingDetailsList ConvertFeatureAndLocationToMojomStruct(
       const BFCacheBlockingFeatureAndLocations&,
       const BFCacheBlockingFeatureAndLocations&);
-
-  // Binds a ResourceCache. Creates a new ResourceCache when there is no
-  // existing one.
-  void BindResourceCache(mojo::PendingReceiver<mojom::blink::ResourceCache>);
-
-  // Sets a ResourceCache hosted by another frame in a different renderer.
-  void SetResourceCacheRemote(mojo::PendingRemote<mojom::blink::ResourceCache>);
 
   bool IsSameOrigin();
 
@@ -1128,9 +1120,6 @@ class CORE_EXPORT LocalFrame final
   // be registered at the actual elements as the references here are weak.
   HeapHashSet<WeakMember<ScrollSnapshotClient>> scroll_snapshot_clients_;
 
-  // Set lazily, when the browser asks to host a resource cache in this frame.
-  Member<ResourceCacheImpl> resource_cache_;
-
   // Manages a transient affordance for this frame to enter fullscreen.
   TransientAllowFullscreen transient_allow_fullscreen_;
 
@@ -1186,6 +1175,11 @@ class CORE_EXPORT LocalFrame final
 
   Member<v8_compile_hints::V8LocalCompileHintsProducer>
       v8_local_compile_hints_producer_;
+
+  // This handle notifies the scheduler of whether the unload handler is used or
+  // not so it can block BFCache.
+  FrameScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

@@ -72,14 +72,17 @@ const WebApp* WebApps::GetWebApp(const webapps::AppId& app_id) const {
 
 void WebApps::Initialize() {
   DCHECK(profile_);
-  if (!AreWebAppsEnabled(profile_)) {
+
+  // In some tests, WebAppPublisherHelper could be created during the shutdown
+  // stage as the web app publisher is created async by AppServiceProxy. So
+  // provider_ could be null in some tests.
+  if (!AreWebAppsEnabled(profile_) || !provider_) {
     return;
   }
 
-  DCHECK(provider_);
-
   provider_->on_registry_ready().Post(
-      FROM_HERE, base::BindOnce(&WebApps::InitWebApps, AsWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&WebApps::InitWebApps, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApps::LoadIcon(const std::string& app_id,
@@ -137,9 +140,9 @@ void WebApps::LaunchAppWithParams(apps::AppLaunchParams&& params,
       base::BindOnce(
           [](apps::LaunchCallback callback,
              content::WebContents* web_contents) {
-            apps::LaunchResult::State result = web_contents
-                                                   ? apps::LaunchResult::SUCCESS
-                                                   : apps::LaunchResult::FAILED;
+            apps::LaunchResult::State result =
+                web_contents ? apps::LaunchResult::State::kSuccess
+                             : apps::LaunchResult::State::kFailed;
             std::move(callback).Run(apps::LaunchResult(result));
           },
           std::move(callback)));
@@ -330,8 +333,8 @@ void WebApps::PublishWebApp(apps::AppPtr app) {
 
 void WebApps::ModifyWebAppCapabilityAccess(
     const std::string& app_id,
-    absl::optional<bool> accessing_camera,
-    absl::optional<bool> accessing_microphone) {
+    std::optional<bool> accessing_camera,
+    std::optional<bool> accessing_microphone) {
   CHECK(!IsAppServiceShortcut(app_id, *provider_));
   apps::AppPublisher::ModifyCapabilityAccess(
       app_id, std::move(accessing_camera), std::move(accessing_microphone));
@@ -390,7 +393,7 @@ void WebApps::GetAppShortcutMenuModel(
   if (!web_app->shortcuts_menu_item_infos().empty()) {
     provider()->icon_manager().ReadAllShortcutsMenuIcons(
         app_id, base::BindOnce(&WebApps::OnShortcutsMenuIconsRead,
-                               base::AsWeakPtr<WebApps>(this), app_id,
+                               weak_ptr_factory_.GetWeakPtr(), app_id,
                                std::move(menu_items), std::move(callback)));
   } else {
     std::move(callback).Run(std::move(menu_items));

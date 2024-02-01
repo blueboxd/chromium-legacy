@@ -177,7 +177,7 @@ H264VaapiVideoEncoderDelegateTest::CreateEncodeJob(bool keyframe) {
   // metadata.
   constexpr base::TimeDelta timestamp;
   return std::make_unique<VaapiVideoEncoderDelegate::EncodeJob>(
-      keyframe, timestamp, next_surface_id_++, picture,
+      keyframe, timestamp, /*end_of_picture=*/true, next_surface_id_++, picture,
       std::move(scoped_va_buffer));
 }
 
@@ -273,7 +273,8 @@ void H264VaapiVideoEncoderDelegateTest::EncodeFrame(bool force_keyframe) {
         .WillOnce(Return(true));
   }
 
-  EXPECT_TRUE(encoder_->PrepareEncodeJob(*encode_job.get()));
+  EXPECT_EQ(encoder_->PrepareEncodeJob(*encode_job.get()),
+            VaapiVideoEncoderDelegate::PrepareEncodeJobResult::kSuccess);
 
   const H264Picture& pic =
       *reinterpret_cast<H264Picture*>(encode_job->picture().get());

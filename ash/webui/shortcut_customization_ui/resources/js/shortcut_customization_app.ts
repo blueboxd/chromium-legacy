@@ -18,6 +18,7 @@ import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {NavigationViewPanelElement} from 'chrome://resources/ash/common/navigation_view_panel.js';
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
 import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 import {FindShortcutMixin} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -25,7 +26,7 @@ import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {AcceleratorsUpdatedObserverInterface, AcceleratorsUpdatedObserverReceiver, PolicyUpdatedObserverInterface, PolicyUpdatedObserverReceiver, UserAction} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
+import {AcceleratorsUpdatedObserverInterface, AcceleratorsUpdatedObserverReceiver, PolicyUpdatedObserverInterface, PolicyUpdatedObserverReceiver, UserAction} from '../mojom-webui/shortcut_customization.mojom-webui.js';
 
 import {AcceleratorEditDialogElement} from './accelerator_edit_dialog.js';
 import {RequestUpdateAcceleratorEvent} from './accelerator_edit_view.js';
@@ -319,7 +320,7 @@ export class ShortcutCustomizationAppElement extends
   }
 
   protected onCancelRestoreButtonClicked(): void {
-    this.closeRestoreAllDialog();
+    strictQuery('#restoreDialog', this.shadowRoot, CrDialogElement).close();
   }
 
   protected onConfirmRestoreButtonClicked(): void {
@@ -327,7 +328,7 @@ export class ShortcutCustomizationAppElement extends
       // TODO(jimmyxgong): Explore error state with restore all.
       if (result.result === AcceleratorConfigResult.kSuccess) {
         this.shortcutProvider.recordUserAction(UserAction.kResetAll);
-        this.closeRestoreAllDialog();
+        strictQuery('#restoreDialog', this.shadowRoot, CrDialogElement).close();
       }
     });
   }

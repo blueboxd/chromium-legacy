@@ -21,7 +21,7 @@
 <translation id="1383876407941801731">검색</translation>
 <translation id="1384959399684842514">다운로드 일시중지됨</translation>
 <translation id="1415402041810619267">URL 잘림</translation>
-<translation id="1426410128494586442">예</translation>
+<translation id="1434873037477293673">가격 인하 카드</translation>
 <translation id="1448064542941920355">축소</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> 사이트}other{<ph name="SITE_COUNT" /> 사이트}}</translation>
 <translation id="1510341833810331442">사이트에서 기기에 데이터를 저장할 수 없습니다.</translation>
@@ -108,6 +108,7 @@
 <translation id="2750481671343847896">사이트에서 ID 서비스의 로그인 메시지를 표시할 수 있습니다.</translation>
 <translation id="2790501146643349491">사용 설정하면 최근에 닫은 사이트에서 데이터 전송 및 수신을 완료할 수 있습니다. 사용 중지하면 최근에 닫은 사이트에서 데이터 전송 또는 수신을 완료할 수 없습니다.</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" />의 모든 사이트 권한을 재설정하시겠습니까?</translation>
+<translation id="2836978798613876756"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="2850913818900871965">모바일 뷰 요청</translation>
 <translation id="2870560284913253234">사이트</translation>
 <translation id="2874939134665556319">이전 트랙</translation>
@@ -148,6 +149,7 @@
 <translation id="3448554387819310837">사용 설정하면 사이트에서 카메라 사용을 요청할 수 있습니다. 사용 중지하면 사이트에서 카메라를 사용할 수 없습니다.</translation>
 <translation id="3465378418721443318">{DAYS,plural, =1{내일 Chrome에서 다시 쿠키를 차단합니다}other{#일 후 Chrome에서 다시 쿠키를 차단합니다}}</translation>
 <translation id="3521663503435878242"><ph name="DOMAIN" />의 사이트</translation>
+<translation id="3536227077203206203">현재 허용됨</translation>
 <translation id="3538390592868664640">사이트에서 주변 환경의 3D 지도를 생성하거나 카메라 위치를 추적하지 못하도록 차단</translation>
 <translation id="3544058026430919413">쿠키를 사용하여 내 그룹 활동을 공유할 수 있는 사이트 그룹을 회사가 정의할 수 있습니다. 시크릿 모드에서는 이 기능이 사용 중지되어 있습니다.</translation>
 <translation id="3551268116566418498">시크릿 모드를 종료하시겠습니까?</translation>
@@ -189,6 +191,7 @@
 <translation id="4169549551965910670">USB 기기에 연결되었습니다.</translation>
 <translation id="4194328954146351878">사이트에서 NFC 기기의 정보를 보고 변경하도록 허용하기 전에 확인(권장)</translation>
 <translation id="4200726100658658164">위치 설정 열기</translation>
+<translation id="4212246570487010370">계속 탐색</translation>
 <translation id="4226663524361240545">알림이 있으면 진동이 울릴 수도 있습니다.</translation>
 <translation id="4259722352634471385">탐색이 차단됨: <ph name="URL" /></translation>
 <translation id="4278390842282768270">허용됨</translation>
@@ -238,6 +241,7 @@
 <translation id="5099358668261120049">이렇게 하면 <ph name="ORIGIN" /> 또는 홈 화면의 앱에 저장한 데이터 및 쿠키가 모두 삭제됩니다.</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="5123685120097942451">시크릿 탭</translation>
+<translation id="5139253256813381453">{PRICE_DROP_COUNT,plural, =1{열려 있는 탭의 가격 인하}other{열려 있는 탭의 가격 인하}}</translation>
 <translation id="5186036860380548585">화면 상단에서 옵션을 선택할 수 있습니다</translation>
 <translation id="5197729504361054390">선택한 연락처가 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />과(와) 공유됩니다.</translation>
 <translation id="5216942107514965959">최근 방문: 오늘</translation>
@@ -325,6 +329,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">사이트에서 내 가상 현실 기기 및 데이터를 사용하지 못하도록 차단</translation>
 <translation id="6447842834002726250">쿠키</translation>
+<translation id="6452138246455930388">열려 있는 탭의 가격 인하(<ph name="OLD_PRICE" />~<ph name="NEW_PRICE" />, <ph name="PRODUCT_NAME" />, <ph name="DOMAIN_NAME" />)</translation>
 <translation id="6500423977866688905">창이 좁은 경우 모바일 뷰 요청</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="652937045869844725">서드 파티 쿠키를 허용해 보세요. 보안은 취약해지지만 사이트 기능이 작동할 가능성은 높아집니다.</translation>
@@ -344,10 +349,12 @@
 <translation id="6746124502594467657">아래로 이동</translation>
 <translation id="6749077623962119521">권한을 재설정하시겠습니까?</translation>
 <translation id="6766622839693428701">닫으려면 아래로 스와이프하세요.</translation>
+<translation id="6785959295338971061"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> 출처: <ph name="FROM_DEVICE" /></translation>
 <translation id="6787751205395685251"><ph name="SITE_NAME" />에 적용할 옵션 선택</translation>
 <translation id="6790428901817661496">재생</translation>
 <translation id="6818926723028410516">항목 선택</translation>
 <translation id="6864395892908308021">기기에서 NFC를 읽을 수 없음</translation>
+<translation id="6867014948848323204">출처: <ph name="FROM_DEVICE" /></translation>
 <translation id="6912998170423641340">사이트에서 클립보드의 텍스트 및 이미지에 액세스하지 못하도록 차단</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6950072572526089586">내가 방문하는 사이트에서 로그인 상태를 유지하거나 장바구니에 상품을 저장하는 등 사이트의 정상적인 작동을 위하여 내 활동 정보를 저장할 수 있습니다. 사이트에서는 이 정보를 주로 기기에 임시 저장합니다.</translation>
@@ -364,6 +371,7 @@
 <translation id="7141896414559753902">사이트에서 팝업 및 리디렉션을 표시하지 못하도록 차단(권장)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" />KB</translation>
 <translation id="7180611975245234373">새로고침</translation>
+<translation id="7180865173735832675">맞춤설정</translation>
 <translation id="7188508872042490670">기기 내 사이트 데이터</translation>
 <translation id="7201549776650881587">이 작업을 실행하면 <ph name="ORIGIN" />의 모든 하위 사이트 또는 홈 화면에 있는 앱에서 저장한 데이터와 쿠키가 모두 삭제됩니다.</translation>
 <translation id="7203150201908454328">펼쳐짐</translation>
@@ -395,6 +403,7 @@
 <translation id="7667547420449112975">오즈의 마법사</translation>
 <translation id="7684642910516280563">사이트에서 서드 파티 쿠키를 사용하도록 허용하지 않습니다</translation>
 <translation id="7719367874908701697">페이지 확대/축소</translation>
+<translation id="7770832849480336015">"<ph name="TITLE_OF_MODULE" />" 숨기기</translation>
 <translation id="7781829728241885113">어제</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="780301667611848630">취소</translation>

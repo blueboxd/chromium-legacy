@@ -36,7 +36,6 @@ export interface ProfilePickerMainViewElement {
     wrapper: HTMLElement,
     profiles: DomRepeat,
     forceSigninErrorDialog: CrDialogElement,
-
   };
 }
 
@@ -80,6 +79,23 @@ export class ProfilePickerMainViewElement extends
           return loadTimeData.getBoolean('askOnStartup');
         },
       },
+
+      forceSigninErrorDialogTitle_: {
+        type: String,
+      },
+
+      forceSigninErrorDialogBody_: {
+        type: String,
+      },
+
+      forceSigninErrorProfilePath_: {
+        type: String,
+      },
+
+      shouldShownSigninButton_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -94,6 +110,14 @@ export class ProfilePickerMainViewElement extends
 
   private dragDelegate_: DragDropReorderTileListDelegate|null = null;
   private dragDuration_: number = 300;
+
+  // TODO(crbug.com/1478217): Move the dialog into it's own element with the
+  // below members. This dialog state should be independent of the Profile
+  // Picker itself.
+  private forceSigninErrorDialogTitle_: string;
+  private forceSigninErrorDialogBody_: string;
+  private forceSigninErrorProfilePath_: string;
+  private shouldShownSigninButton_: boolean;
 
   override ready() {
     super.ready();
@@ -119,7 +143,8 @@ export class ProfilePickerMainViewElement extends
         'profile-removed', this.handleProfileRemoved_.bind(this));
     this.addWebUiListener(
         'display-force-signin-error-dialog',
-        () => this.showForceSigninErrorDialog());
+        (title: string, body: string, profilePath: string) =>
+            this.showForceSigninErrorDialog(title, body, profilePath));
     this.manageProfilesBrowserProxy_.initializeMainView();
   }
 
@@ -274,12 +299,32 @@ export class ProfilePickerMainViewElement extends
     return this.profilesList_;
   }
 
-  showForceSigninErrorDialog(): void {
+  showForceSigninErrorDialog(title: string, body: string, profilePath: string):
+      void {
+    this.forceSigninErrorDialogTitle_ = title;
+    this.forceSigninErrorDialogBody_ = body;
+    this.forceSigninErrorProfilePath_ = profilePath;
+    this.shouldShownSigninButton_ = profilePath.length !== 0;
     this.$.forceSigninErrorDialog.showModal();
   }
 
   private onForceSigninErrorDialogOkButtonClicked_(): void {
     this.$.forceSigninErrorDialog.close();
+    this.clearErrorDialogInfo_();
+  }
+
+  private onReauthClicked_(): void {
+    this.$.forceSigninErrorDialog.close();
+    this.manageProfilesBrowserProxy_.launchSelectedProfile(
+        this.forceSigninErrorProfilePath_);
+    this.clearErrorDialogInfo_();
+  }
+
+  private clearErrorDialogInfo_(): void {
+    this.forceSigninErrorDialogTitle_ = '';
+    this.forceSigninErrorDialogBody_ = '';
+    this.forceSigninErrorProfilePath_ = '';
+    this.shouldShownSigninButton_ = false;
   }
 }
 

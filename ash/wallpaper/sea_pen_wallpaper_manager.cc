@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/logging.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom-shared.h"
 
 namespace ash {
@@ -24,18 +25,20 @@ SeaPenWallpaperManager::~SeaPenWallpaperManager() = default;
 void SeaPenWallpaperManager::DecodeAndSaveSeaPenImage(
     const SeaPenImage& sea_pen_image,
     const base::FilePath& wallpaper_dir,
+    const std::string& query_info,
     DecodeAndSaveSeaPenImageCallback callback) {
   // TODO(b/307591556) also save metadata to a file.
   image_util::DecodeImageData(
       base::BindOnce(base::BindOnce(
           &SeaPenWallpaperManager::SaveSeaPenImage, weak_factory_.GetWeakPtr(),
-          sea_pen_image.id, wallpaper_dir, std::move(callback))),
+          sea_pen_image.id, wallpaper_dir, query_info, std::move(callback))),
       data_decoder::mojom::ImageCodec::kDefault, sea_pen_image.jpg_bytes);
 }
 
 void SeaPenWallpaperManager::SaveSeaPenImage(
     uint32_t sea_pen_image_id,
     const base::FilePath& wallpaper_dir,
+    const std::string& query_info,
     DecodeAndSaveSeaPenImageCallback callback,
     const gfx::ImageSkia& image_skia) {
   if (image_skia.isNull()) {
@@ -43,13 +46,14 @@ void SeaPenWallpaperManager::SaveSeaPenImage(
     std::move(callback).Run(gfx::ImageSkia());
     return;
   }
+  DVLOG(2) << __func__ << " image_skia.size()=" << image_skia.size().ToString();
   std::string file_name = base::NumberToString(sea_pen_image_id) + ".jpg";
   auto on_saved = base::BindOnce(&SeaPenWallpaperManager::OnSeaPenImageSaved,
                                  weak_factory_.GetWeakPtr(), image_skia,
                                  std::move(callback));
   wallpaper_file_manager_->SaveWallpaperToDisk(
       WallpaperType::kSeaPen, wallpaper_dir, file_name,
-      WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED, image_skia,
+      WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED, image_skia, query_info,
       std::move(on_saved));
 }
 

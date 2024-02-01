@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/base_switches.h"
+#include "base/callback_list.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -501,7 +502,7 @@ BrowserMainLoop::BrowserMainLoop(
       ,
       // TODO(fdoray): Create the fence on Android too. Not enabled yet because
       // tests timeout. https://crbug.com/887407
-      scoped_best_effort_execution_fence_(absl::in_place)
+      scoped_best_effort_execution_fence_(std::in_place)
 #endif
 {
   DCHECK(!g_current_browser_main_loop);
@@ -783,9 +784,9 @@ int BrowserMainLoop::PreCreateThreads() {
   // This must occur before metrics recording initialization in
   // ChromeBrowserMainParts::PreCreateThreads() because it's used in
   // BackgroundTracingMetricsProvider.
-  tracing_controller_ = std::make_unique<content::TracingControllerImpl>();
+  tracing_controller_ = std::make_unique<TracingControllerImpl>();
   background_tracing_manager_ =
-      content::BackgroundTracingManagerImpl::CreateInstance();
+      BackgroundTracingManagerImpl::CreateInstance();
 
   // Make sure no accidental call to initialize GpuDataManager earlier.
   DCHECK(!GpuDataManagerImpl::Initialized());
@@ -962,7 +963,7 @@ int BrowserMainLoop::CreateThreads() {
       base::BindOnce(
           [](BrowserMainLoop* browser_main_loop) {
             // Informs BrowserTaskExecutor that startup is complete.
-            content::BrowserTaskExecutor::OnStartupComplete();
+            BrowserTaskExecutor::OnStartupComplete();
             browser_main_loop->scoped_best_effort_execution_fence_.reset();
           },
           // Main thread tasks can't run after BrowserMainLoop destruction.
@@ -977,7 +978,7 @@ int BrowserMainLoop::CreateThreads() {
 int BrowserMainLoop::PostCreateThreads() {
   TRACE_EVENT0("startup", "BrowserMainLoop::PostCreateThreads");
 
-  content::BackgroundTracingManagerImpl::GetInstance()
+  BackgroundTracingManagerImpl::GetInstance()
       .AddMetadataGeneratorFunction();
 
   if (parts_)
@@ -1017,27 +1018,32 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
   // Unretained(this) is safe as the main message loop expected to run it is
   // stopped before ~BrowserMainLoop (in the event the message loop doesn't
   // reach idle before that point).
-  base::CurrentThread::Get()->RegisterOnNextIdleCallback(base::BindOnce(
-      [](BrowserMainLoop* self) {
-        if (self->parts_)
-          self->parts_->OnFirstIdle();
+  idle_callback_subscription_ =
+      base::CurrentThread::Get()->RegisterOnNextIdleCallback(
+          {}, base::BindOnce(
+                  [](BrowserMainLoop* self) {
+                    if (self->parts_) {
+                      self->parts_->OnFirstIdle();
+                    }
 
-        self->responsiveness_watcher_->OnFirstIdle();
+                    self->responsiveness_watcher_->OnFirstIdle();
 
-        // Enable MessagePumpPhases metrics/tracing on-first-idle, not before as
-        // queuing time is not relevant before first idle.
-        // TODO(1329717): Consider supporting the initial run (until first idle)
-        // as well.
-        auto enable_message_pump_metrics =
-            base::BindRepeating([](const char* thread_name) {
-              base::CurrentThread::Get()->EnableMessagePumpTimeKeeperMetrics(
-                  thread_name);
-            });
-        enable_message_pump_metrics.Run("BrowserUI");
-        GetIOThreadTaskRunner({})->PostTask(
-            FROM_HERE, BindOnce(enable_message_pump_metrics, "BrowserIO"));
-      },
-      base::Unretained(this)));
+                    // Enable MessagePumpPhases metrics/tracing on-first-idle,
+                    // not before as queuing time is not relevant before first
+                    // idle.
+                    // TODO(1329717): Consider supporting the initial run (until
+                    // first idle) as well.
+                    auto enable_message_pump_metrics =
+                        base::BindRepeating([](const char* thread_name) {
+                          base::CurrentThread::Get()
+                              ->EnableMessagePumpTimeKeeperMetrics(thread_name);
+                        });
+                    enable_message_pump_metrics.Run("BrowserUI");
+                    GetIOThreadTaskRunner({})->PostTask(
+                        FROM_HERE,
+                        BindOnce(enable_message_pump_metrics, "BrowserIO"));
+                  },
+                  base::Unretained(this)));
 
   // If the UI thread blocks, the whole UI is unresponsive. Do not allow
   // unresponsive tasks from the UI thread and instantiate a
@@ -1108,7 +1114,7 @@ void BrowserMainLoop::PreShutdown() {
   // Clear OnNextIdleCallback if it's still pending. Failure to do so can result
   // in an OnFirstIdle phase incorrectly triggering during shutdown if an early
   // exit paths results in a shutdown path that happens to RunLoop.
-  base::CurrentThread::Get()->RegisterOnNextIdleCallback(base::NullCallback());
+  idle_callback_subscription_ = {};
 
   ui::Clipboard::OnPreShutdownForCurrentThread();
 }
@@ -1574,7 +1580,7 @@ void BrowserMainLoop::InitializeAudio() {
 
   if (base::FeatureList::IsEnabled(features::kAudioServiceLaunchOnStartup)) {
     // Schedule the audio service startup on the main thread.
-    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+    GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
         ->PostTask(FROM_HERE, base::BindOnce([]() {
                      TRACE_EVENT0("audio", "Starting audio service");
                      GetAudioService();

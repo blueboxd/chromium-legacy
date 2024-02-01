@@ -5,6 +5,7 @@
 #include "net/cert/cert_verify_proc.h"
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -17,7 +18,6 @@
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -34,6 +34,8 @@
 #include "net/cert/cert_verify_proc_builtin.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/system_trust_store.h"
 #include "net/cert/test_root_certs.h"
@@ -201,9 +203,10 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
     CertificateList additional_trust_anchors,
     CertificateList additional_untrusted_authorities) {
   CertVerifyProc::InstanceParams instance_params;
-  instance_params.additional_trust_anchors = additional_trust_anchors;
+  instance_params.additional_trust_anchors =
+      net::x509_util::ParseAllValidCerts(additional_trust_anchors);
   instance_params.additional_untrusted_authorities =
-      additional_untrusted_authorities;
+      net::x509_util::ParseAllValidCerts(additional_untrusted_authorities);
   switch (type) {
 #if BUILDFLAG(IS_ANDROID)
     case CERT_VERIFY_PROC_ANDROID:
@@ -217,12 +220,16 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
     case CERT_VERIFY_PROC_BUILTIN:
       return CreateCertVerifyProcBuiltin(
           std::move(cert_net_fetcher), std::move(crl_set),
+          std::make_unique<DoNothingCTVerifier>(),
+          base::MakeRefCounted<DefaultCTPolicyEnforcer>(),
           CreateSslSystemTrustStore(), instance_params);
 #endif
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
     case CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS:
       return CreateCertVerifyProcBuiltin(
           std::move(cert_net_fetcher), std::move(crl_set),
+          std::make_unique<DoNothingCTVerifier>(),
+          base::MakeRefCounted<DefaultCTPolicyEnforcer>(),
           CreateSslSystemTrustStoreChromeRoot(
               std::make_unique<net::TrustStoreChrome>()),
           instance_params);
@@ -272,11 +279,9 @@ bool ScopedTestRootCanTrustIntermediateCert(
 }
 
 std::string MakeRandomHexString(size_t num_bytes) {
-  std::vector<char> rand_bytes;
-  rand_bytes.resize(num_bytes);
-
-  base::RandBytes(rand_bytes.data(), rand_bytes.size());
-  return base::HexEncode(rand_bytes.data(), rand_bytes.size());
+  std::vector<uint8_t> rand_bytes(num_bytes);
+  base::RandBytes(rand_bytes);
+  return base::HexEncode(rand_bytes);
 }
 
 }  // namespace
@@ -525,7 +530,7 @@ TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
   //
   // This way CRLSet coverage will be sufficient for EV revocation checking,
   // so this test does not depend on online revocation checking.
-  base::StringPiece spki;
+  std::string_view spki;
   ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(
       x509_util::CryptoBufferAsStringPiece(root->GetCertBuffer()), &spki));
   SHA256HashValue spki_sha256;
@@ -796,7 +801,7 @@ TEST_P(CertVerifyProcInternalTest, UnnecessaryInvalidIntermediate) {
   base::FilePath certs_dir =
       GetTestNetDataDirectory().AppendASCII("parse_certificate_unittest");
   bssl::UniquePtr<CRYPTO_BUFFER> bad_cert =
-      x509_util::CreateCryptoBuffer(base::StringPiece("invalid"));
+      x509_util::CreateCryptoBuffer(std::string_view("invalid"));
   ASSERT_TRUE(bad_cert);
 
   scoped_refptr<X509Certificate> ok_cert(
@@ -1125,7 +1130,7 @@ class CertVerifyProcInspectSignatureAlgorithmsTest : public ::testing::Test {
   // |algorithm|. Note this violates the constness of StringPiece.
   [[nodiscard]] static bool SetAlgorithmSequence(
       bssl::DigestAlgorithm algorithm,
-      base::StringPiece* algorithm_sequence) {
+      std::string_view* algorithm_sequence) {
     // This string of bytes is the full SEQUENCE for an AlgorithmIdentifier.
     std::vector<uint8_t> replacement_sequence;
     switch (algorithm) {
@@ -1165,16 +1170,18 @@ class CertVerifyProcInspectSignatureAlgorithmsTest : public ::testing::Test {
 
   // Locate the serial number bytes.
   [[nodiscard]] static bool ExtractSerialNumberFromDERCert(
-      base::StringPiece der_cert,
-      base::StringPiece* serial_value) {
+      std::string_view der_cert,
+      std::string_view* serial_value) {
     bssl::der::Parser parser((bssl::der::Input(der_cert)));
     bssl::der::Parser certificate;
-    if (!parser.ReadSequence(&certificate))
+    if (!parser.ReadSequence(&certificate)) {
       return false;
+    }
 
     bssl::der::Parser tbs_certificate;
-    if (!certificate.ReadSequence(&tbs_certificate))
+    if (!certificate.ReadSequence(&tbs_certificate)) {
       return false;
+    }
 
     bool unused;
     if (!tbs_certificate.SkipOptionalTag(
@@ -1216,15 +1223,15 @@ class CertVerifyProcInspectSignatureAlgorithmsTest : public ::testing::Test {
 
     // Parse the certificate and identify the locations of interest within
     // |cert_der|.
-    base::StringPiece cert_algorithm_sequence;
-    base::StringPiece tbs_algorithm_sequence;
+    std::string_view cert_algorithm_sequence;
+    std::string_view tbs_algorithm_sequence;
     if (!asn1::ExtractSignatureAlgorithmsFromDERCert(
             cert_der, &cert_algorithm_sequence, &tbs_algorithm_sequence)) {
       ADD_FAILURE() << "Failed parsing certificate algorithms";
       return nullptr;
     }
 
-    base::StringPiece serial_value;
+    std::string_view serial_value;
     if (!ExtractSerialNumberFromDERCert(cert_der, &serial_value)) {
       ADD_FAILURE() << "Failed parsing certificate serial number";
       return nullptr;
@@ -1248,8 +1255,7 @@ class CertVerifyProcInspectSignatureAlgorithmsTest : public ::testing::Test {
 
     // NOTE: The signature is NOT recomputed over TBSCertificate -- for these
     // tests it isn't needed.
-    return X509Certificate::CreateFromBytes(
-        base::as_bytes(base::make_span(cert_der)));
+    return X509Certificate::CreateFromBytes(base::as_byte_span(cert_der));
   }
 
   static scoped_refptr<X509Certificate> CreateChain(
@@ -1536,39 +1542,6 @@ TEST_P(CertVerifyProcInternalTest, PublicKeyHashes) {
   // |public_key_hashes| does not have an ordering guarantee.
   EXPECT_THAT(expected_public_key_hashes,
               testing::UnorderedElementsAreArray(public_key_hash_strings));
-}
-
-// Tests that a Netscape Server Gated crypto is accepted in place of a
-// serverAuth EKU.
-// TODO(crbug.com/843735): Deprecate support for this.
-TEST_P(CertVerifyProcInternalTest, Sha1IntermediateUsesServerGatedCrypto) {
-  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
-
-  ASSERT_TRUE(root->UseKeyFromFile(
-      GetTestCertsDirectory().AppendASCII("rsa-2048-1.key")));
-  root->SetSignatureAlgorithm(bssl::SignatureAlgorithm::kRsaPkcs1Sha1);
-
-  intermediate->SetExtendedKeyUsages(
-      {bssl::der::Input(bssl::kNetscapeServerGatedCrypto)});
-  intermediate->SetSignatureAlgorithm(bssl::SignatureAlgorithm::kRsaPkcs1Sha1);
-
-  ScopedTestRoot scoped_root(root->GetX509Certificate());
-
-  int flags = 0;
-  CertVerifyResult verify_result;
-  // The cert chain including the root is passed to Verify, as on recent
-  // Android versions (something like 11+) the verifier fails on SHA1 certs and
-  // then the CertVerifyProc wrapper just returns the input chain, which this
-  // test then depends on for its expectations. (This is all kind of silly, but
-  // this is just matching how the test was originally written, and we'll
-  // delete this sometime soon anyway so there's not much benefit to thinking
-  // about it too hard.)
-  int error = Verify(leaf->GetX509CertificateFullChain().get(),
-                     "www.example.com", flags, &verify_result);
-
-  EXPECT_NE(error, OK);
-  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
-  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_SHA1_SIGNATURE_PRESENT);
 }
 
 // Basic test for returning the chain in CertVerifyResult. Note that the
@@ -2843,7 +2816,7 @@ class CertVerifyProcInternalWithNetFetchingTest
   }
 
   // Returns a random URL path (starting with /) that has the given suffix.
-  static std::string MakeRandomPath(base::StringPiece suffix) {
+  static std::string MakeRandomPath(std::string_view suffix) {
     return "/" + MakeRandomHexString(12) + std::string(suffix);
   }
 

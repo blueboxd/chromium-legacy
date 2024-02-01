@@ -152,13 +152,13 @@ TEST_F(ProcessNodeImplTest, ObserverWorks) {
   process_node->SetMainThreadTaskLoadIsLow(true);
   EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
 
-  // This call does nothing as the priority is always at LOWEST.
-  EXPECT_EQ(base::TaskPriority::LOWEST, process_node->GetPriority());
-  process_node->set_priority(base::TaskPriority::LOWEST);
+  // This call does nothing as the priority is initialized at HIGHEST.
+  EXPECT_EQ(base::TaskPriority::HIGHEST, process_node->GetPriority());
+  process_node->set_priority(base::TaskPriority::HIGHEST);
 
   // This call should fire a notification.
-  EXPECT_CALL(obs, OnPriorityChanged(_, base::TaskPriority::LOWEST));
-  process_node->set_priority(base::TaskPriority::HIGHEST);
+  EXPECT_CALL(obs, OnPriorityChanged(_, base::TaskPriority::HIGHEST));
+  process_node->set_priority(base::TaskPriority::LOWEST);
 
   EXPECT_CALL(obs, OnAllFramesInProcessFrozen(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
@@ -274,9 +274,8 @@ class LenientFakeBackgroundTracingManager
 
   bool HasTraceToUpload() override { return false; }
   void GetTraceToUpload(
-      base::OnceCallback<void(absl::optional<std::string>,
-                              absl::optional<std::string>)> callback) override {
-  }
+      base::OnceCallback<void(std::optional<std::string>,
+                              std::optional<std::string>)> callback) override {}
   std::unique_ptr<content::BackgroundTracingConfig> GetBackgroundTracingConfig(
       const std::string& trial_name) override {
     return nullptr;

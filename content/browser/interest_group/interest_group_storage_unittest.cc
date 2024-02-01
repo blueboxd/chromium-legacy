@@ -23,6 +23,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "content/browser/interest_group/bidding_and_auction_server_key_fetcher.h"
 #include "content/browser/interest_group/interest_group_update.h"
 #include "content/browser/interest_group/storage_interest_group.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
@@ -42,6 +43,7 @@ namespace {
 
 using blink::InterestGroup;
 using testing::Field;
+using testing::Property;
 using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
 using SellerCapabilities = blink::SellerCapabilities;
@@ -148,6 +150,7 @@ class InterestGroupStorageTest : public testing::Test {
             .SetTrustedBiddingSignalsSlotSizeMode(
                 blink::InterestGroup::TrustedBiddingSignalsSlotSizeMode::
                     kAllSlotsRequestedSizes)
+            .SetMaxTrustedBiddingSignalsURLLength(8000)
             .SetUserBiddingSignals("foo")
             .SetAds(std::vector<InterestGroup::Ad>{
                 blink::InterestGroup::Ad(
@@ -160,8 +163,8 @@ class InterestGroupStorageTest : public testing::Test {
             .SetAdComponents(std::vector<InterestGroup::Ad>{
                 blink::InterestGroup::Ad(
                     GURL("https://full.example.com/adcomponent1"), "metadata1c",
-                    "group_1", /*buyer_reporting_id=*/absl::nullopt,
-                    /*buyer_and_seller_reporting_id=*/absl::nullopt,
+                    "group_1", /*buyer_reporting_id=*/std::nullopt,
+                    /*buyer_and_seller_reporting_id=*/std::nullopt,
                     "adRenderId2"),
                 blink::InterestGroup::Ad(
                     GURL("https://full.example.com/adcomponent2"), "metadata2c",
@@ -284,8 +287,8 @@ TEST_F(InterestGroupStorageTest, DatabaseInitialized_CreateDatabase) {
 
     // [interest_groups], [join_history], [bid_history], [win_history],
     // [k_anon], [meta], [lockout_debugging_only_report],
-    // [cooldown_debugging_only_report].
-    EXPECT_EQ(8u, sql::test::CountSQLTables(&raw_db)) << raw_db.GetSchema();
+    // [cooldown_debugging_only_report], [bidding_and_auction_server_keys].
+    EXPECT_EQ(9u, sql::test::CountSQLTables(&raw_db)) << raw_db.GetSchema();
   }
 }
 
@@ -321,8 +324,8 @@ TEST_F(InterestGroupStorageTest, DatabaseRazesOldVersion) {
 
     // [interest_groups], [join_history], [bid_history], [win_history],
     // [k_anon], [meta], [lockout_debugging_only_report],
-    // [cooldown_debugging_only_report].
-    EXPECT_EQ(8u, sql::test::CountSQLTables(&raw_db)) << raw_db.GetSchema();
+    // [cooldown_debugging_only_report], [bidding_and_auction_server_keys].
+    EXPECT_EQ(9u, sql::test::CountSQLTables(&raw_db)) << raw_db.GetSchema();
   }
 }
 
@@ -358,8 +361,8 @@ TEST_F(InterestGroupStorageTest, DatabaseRazesNewVersion) {
 
     // [interest_groups], [join_history], [bid_history], [win_history],
     // [k_anon], [meta], [lockout_debugging_only_report],
-    // [cooldown_debugging_only_report].
-    EXPECT_EQ(8u, sql::test::CountSQLTables(&raw_db)) << raw_db.GetSchema();
+    // [cooldown_debugging_only_report], [bidding_and_auction_server_keys].
+    EXPECT_EQ(9u, sql::test::CountSQLTables(&raw_db)) << raw_db.GetSchema();
   }
 }
 
@@ -564,7 +567,7 @@ TEST_F(InterestGroupStorageTest, ClearOriginJoinedInterestGroupsClearsHistory) {
   storage->RecordInterestGroupWin(kGroupKey, "{\"url\": \"https://ad.test\"}");
 
   // Check the group is in the expected state.
-  absl::optional<content::StorageInterestGroup> group =
+  std::optional<content::StorageInterestGroup> group =
       storage->GetInterestGroup(kGroupKey);
   ASSERT_TRUE(group);
   EXPECT_EQ(2, group->bidding_browser_signals->join_count);
@@ -737,6 +740,110 @@ TEST_F(InterestGroupStorageTest, RecordsWins) {
   EXPECT_EQ(0u, origins.size());
 }
 
+TEST_F(InterestGroupStorageTest, RecordsDebugReportLockoutAndCooldown) {
+  const url::Origin test_origin =
+      url::Origin::Create(GURL("https://owner.example.com"));
+  const url::Origin test_origin2 =
+      url::Origin::Create(GURL("https://seller.example.com"));
+  std::vector<url::Origin> origins{test_origin, test_origin2};
+  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
+
+  std::optional<DebugReportLockoutAndCooldowns> cooldowns =
+      storage->GetDebugReportLockoutAndCooldowns(origins);
+  ASSERT_TRUE(cooldowns.has_value());
+  EXPECT_FALSE(cooldowns->last_report_sent_time.has_value());
+  EXPECT_TRUE(cooldowns->debug_report_cooldown_map.empty());
+
+  base::Time time = base::Time::Now();
+  base::Time expected_time = base::Time::FromDeltaSinceWindowsEpoch(
+      time.ToDeltaSinceWindowsEpoch().CeilToMultiple(base::Hours(1)));
+  storage->RecordDebugReportLockout(time);
+  cooldowns = storage->GetDebugReportLockoutAndCooldowns(origins);
+  ASSERT_TRUE(cooldowns.has_value());
+  ASSERT_TRUE(cooldowns->last_report_sent_time.has_value());
+  EXPECT_EQ(expected_time, *cooldowns->last_report_sent_time);
+  EXPECT_TRUE(cooldowns->debug_report_cooldown_map.empty());
+
+  storage->RecordDebugReportCooldown(test_origin, time,
+                                     DebugReportCooldownType::kShortCooldown);
+  cooldowns = storage->GetDebugReportLockoutAndCooldowns(origins);
+  std::map<url::Origin, DebugReportCooldown> expected_cooldown_map;
+  expected_cooldown_map[test_origin] = DebugReportCooldown(
+      expected_time, DebugReportCooldownType::kShortCooldown);
+  ASSERT_TRUE(cooldowns.has_value());
+  ASSERT_TRUE(cooldowns->last_report_sent_time.has_value());
+  EXPECT_EQ(expected_time, *cooldowns->last_report_sent_time);
+  EXPECT_EQ(expected_cooldown_map, cooldowns->debug_report_cooldown_map);
+  expected_cooldown_map.clear();
+
+  // Ensure we get to a different hour, to get a different time.
+  task_environment().FastForwardBy(base::Minutes(90));
+  base::Time time2 = base::Time::Now();
+  base::Time expected_time2 = base::Time::FromDeltaSinceWindowsEpoch(
+      time2.ToDeltaSinceWindowsEpoch().CeilToMultiple(base::Hours(1)));
+  storage->RecordDebugReportLockout(time2);
+  storage->RecordDebugReportCooldown(
+      test_origin, time2, DebugReportCooldownType::kRestrictedCooldown);
+  storage->RecordDebugReportCooldown(test_origin2, time2,
+                                     DebugReportCooldownType::kShortCooldown);
+  cooldowns = storage->GetDebugReportLockoutAndCooldowns(origins);
+  expected_cooldown_map[test_origin] = DebugReportCooldown(
+      expected_time2, DebugReportCooldownType::kRestrictedCooldown);
+  expected_cooldown_map[test_origin2] = DebugReportCooldown(
+      expected_time2, DebugReportCooldownType::kShortCooldown);
+  ASSERT_TRUE(cooldowns.has_value());
+  ASSERT_TRUE(cooldowns->last_report_sent_time.has_value());
+  EXPECT_EQ(expected_time2, *cooldowns->last_report_sent_time);
+  EXPECT_EQ(expected_cooldown_map, cooldowns->debug_report_cooldown_map);
+}
+
+TEST_F(InterestGroupStorageTest, DeleteExpiredDebugReportCooldown) {
+  const url::Origin test_origin =
+      url::Origin::Create(GURL("https://owner.example.com"));
+  const url::Origin test_origin2 =
+      url::Origin::Create(GURL("https://seller.example.com"));
+  std::vector<url::Origin> origins{test_origin, test_origin2};
+  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
+
+  base::Time time = base::Time::Now();
+  base::Time expected_time = base::Time::FromDeltaSinceWindowsEpoch(
+      time.ToDeltaSinceWindowsEpoch().CeilToMultiple(base::Hours(1)));
+  storage->RecordDebugReportCooldown(test_origin, time,
+                                     DebugReportCooldownType::kShortCooldown);
+  storage->RecordDebugReportCooldown(test_origin2, time,
+                                     DebugReportCooldownType::kShortCooldown);
+  std::optional<DebugReportLockoutAndCooldowns> cooldowns =
+      storage->GetDebugReportLockoutAndCooldowns(origins);
+  std::map<url::Origin, DebugReportCooldown> expected_cooldown_map;
+  expected_cooldown_map[test_origin] = DebugReportCooldown(
+      expected_time, DebugReportCooldownType::kShortCooldown);
+  expected_cooldown_map[test_origin2] = DebugReportCooldown(
+      expected_time, DebugReportCooldownType::kShortCooldown);
+  ASSERT_TRUE(cooldowns.has_value());
+  EXPECT_EQ(expected_cooldown_map, cooldowns->debug_report_cooldown_map);
+
+  // Fast-forward past kFledgeDebugReportShortCooldown so that the cooldown will
+  // expire. Fast-forward extra time to make sure the cooldown expires,
+  // because the starting_time is ceiled to its nearest hour.
+  task_environment().FastForwardBy(
+      blink::features::kFledgeDebugReportShortCooldown.Get() + expected_time -
+      time);
+  // If maintenance has not been triggered yet, the cooldown table will not be
+  // updated.
+  cooldowns = storage->GetDebugReportLockoutAndCooldowns(origins);
+  ASSERT_TRUE(cooldowns.has_value());
+  EXPECT_EQ(expected_cooldown_map, cooldowns->debug_report_cooldown_map);
+  // Trigger scheduling of the next maintenance.
+  storage->GetAllInterestGroupOwners();
+  // Allow enough idle time to trigger maintenance.
+  task_environment().FastForwardBy(InterestGroupStorage::kIdlePeriod +
+                                   base::Seconds(1));
+
+  cooldowns = storage->GetDebugReportLockoutAndCooldowns(origins);
+  ASSERT_TRUE(cooldowns.has_value());
+  EXPECT_TRUE(cooldowns->debug_report_cooldown_map.empty());
+}
+
 TEST_F(InterestGroupStorageTest, UpdatesAdKAnonymity) {
   url::Origin test_origin =
       url::Origin::Create(GURL("https://owner.example.com"));
@@ -747,13 +854,13 @@ TEST_F(InterestGroupStorageTest, UpdatesAdKAnonymity) {
   InterestGroup g = NewInterestGroup(test_origin, "name");
   g.ads.emplace();
   g.ads->emplace_back(ad1_url, "metadata1",
-                      /*size_group=*/absl::nullopt,
+                      /*size_group=*/std::nullopt,
                       /*buyer_reporting_id=*/"brid1",
                       /*buyer_and_seller_reporting_id=*/"shrid1");
   g.ads->emplace_back(ad2_url, "metadata2",
-                      /*size_group=*/absl::nullopt,
+                      /*size_group=*/std::nullopt,
                       /*buyer_reporting_id=*/"brid2",
-                      /*buyer_and_seller_reporting_id=*/absl::nullopt);
+                      /*buyer_and_seller_reporting_id=*/std::nullopt);
   g.ad_components.emplace();
   g.ad_components->push_back(
       blink::InterestGroup::Ad(ad1_url, "component_metadata1"));
@@ -770,12 +877,9 @@ TEST_F(InterestGroupStorageTest, UpdatesAdKAnonymity) {
 
   groups = storage->GetInterestGroupsForOwner(test_origin);
 
-  std::vector<StorageInterestGroup::KAnonymityData> expected_bidding = {
-  };
-  std::vector<StorageInterestGroup::KAnonymityData> expected_component_ad = {
-  };
-  std::vector<StorageInterestGroup::KAnonymityData> expected_reporting = {
-  };
+  std::vector<StorageInterestGroup::KAnonymityData> expected_bidding = {};
+  std::vector<StorageInterestGroup::KAnonymityData> expected_component_ad = {};
+  std::vector<StorageInterestGroup::KAnonymityData> expected_reporting = {};
 
   ASSERT_EQ(1u, groups.size());
   EXPECT_THAT(groups[0].bidding_ads_kanon,
@@ -1822,19 +1926,19 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                         &InterestGroup::enable_bidding_signals_prioritization,
                         false),
                   Field("priority_vector", &InterestGroup::priority_vector,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("priority_signals_overrides",
                         &InterestGroup::priority_signals_overrides,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("seller_capabilities",
-                        &InterestGroup::seller_capabilities, absl::nullopt),
+                        &InterestGroup::seller_capabilities, std::nullopt),
                   Field("all_sellers_capabilities",
                         &InterestGroup::all_sellers_capabilities,
                         SellerCapabilitiesType()),
                   Field("bidding_url", &InterestGroup::bidding_url,
                         GURL("https://owner.example.com/bidder.js")),
                   Field("bidding_wasm_helper_url",
-                        &InterestGroup::bidding_wasm_helper_url, absl::nullopt),
+                        &InterestGroup::bidding_wasm_helper_url, std::nullopt),
                   Field("update_url", &InterestGroup::update_url,
                         GURL("https://owner.example.com/update")),
                   Field("trusted_bidding_signals_url",
@@ -1848,25 +1952,28 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                       "trusted_bidding_signals_slot_size_mode",
                       &InterestGroup::trusted_bidding_signals_slot_size_mode,
                       InterestGroup::TrustedBiddingSignalsSlotSizeMode::kNone),
+                  Field("max_trusted_bidding_signals_url_length",
+                        &InterestGroup::max_trusted_bidding_signals_url_length,
+                        0),
                   Field("user_bidding_signals",
-                        &InterestGroup::user_bidding_signals, absl::nullopt),
+                        &InterestGroup::user_bidding_signals, std::nullopt),
                   Field("ads", &InterestGroup::ads,
                         testing::Property(
                             "value()",
-                            &absl::optional<
+                            &std::optional<
                                 std::vector<blink::InterestGroup::Ad>>::value,
                             testing::ElementsAre(testing::AllOf(
-                                Field("render_url",
-                                      &InterestGroup::Ad::render_url,
-                                      GURL("https://ads.example.com/1")),
+                                Property("render_url",
+                                         &InterestGroup::Ad::render_url,
+                                         GURL("https://ads.example.com/1")),
                                 Field("metadata", &InterestGroup::Ad::metadata,
                                       "[\"4\",\"5\",null,\"6\"]"))))),
                   Field("ad_components", &InterestGroup::ad_components,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("ad_sizes", &InterestGroup::ad_components,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("size_groups", &InterestGroup::ad_components,
-                        absl::nullopt))),
+                        std::nullopt))),
           Field(
               "bidding_browser_signals",
               &StorageInterestGroup::bidding_browser_signals,
@@ -1906,19 +2013,19 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                         &InterestGroup::enable_bidding_signals_prioritization,
                         false),
                   Field("priority_vector", &InterestGroup::priority_vector,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("priority_signals_overrides",
                         &InterestGroup::priority_signals_overrides,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("seller_capabilities",
-                        &InterestGroup::seller_capabilities, absl::nullopt),
+                        &InterestGroup::seller_capabilities, std::nullopt),
                   Field("all_sellers_capabilities",
                         &InterestGroup::all_sellers_capabilities,
                         SellerCapabilitiesType()),
                   Field("bidding_url", &InterestGroup::bidding_url,
                         GURL("https://owner.example.com/bidder.js")),
                   Field("bidding_wasm_helper_url",
-                        &InterestGroup::bidding_wasm_helper_url, absl::nullopt),
+                        &InterestGroup::bidding_wasm_helper_url, std::nullopt),
                   Field("update_url", &InterestGroup::update_url,
                         GURL("https://owner.example.com/update")),
                   Field("trusted_bidding_signals_url",
@@ -1931,26 +2038,29 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                       "trusted_bidding_signals_slot_size_mode",
                       &InterestGroup::trusted_bidding_signals_slot_size_mode,
                       InterestGroup::TrustedBiddingSignalsSlotSizeMode::kNone),
+                  Field("max_trusted_bidding_signals_url_length",
+                        &InterestGroup::max_trusted_bidding_signals_url_length,
+                        0),
                   Field("user_bidding_signals",
                         &InterestGroup::user_bidding_signals,
                         "[[\"1\",\"2\"]]"),
                   Field("ads", &InterestGroup::ads,
                         testing::Property(
                             "value()",
-                            &absl::optional<
+                            &std::optional<
                                 std::vector<blink::InterestGroup::Ad>>::value,
                             testing::ElementsAre(testing::AllOf(
-                                Field("render_url",
-                                      &InterestGroup::Ad::render_url,
-                                      GURL("https://ads.example.com/1")),
+                                Property("render_url",
+                                         &InterestGroup::Ad::render_url,
+                                         GURL("https://ads.example.com/1")),
                                 Field("metadata", &InterestGroup::Ad::metadata,
                                       "[\"4\",\"5\",null,\"6\"]"))))),
                   Field("ad_components", &InterestGroup::ad_components,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("ad_sizes", &InterestGroup::ad_components,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("size_groups", &InterestGroup::ad_components,
-                        absl::nullopt))),
+                        std::nullopt))),
           Field(
               "bidding_browser_signals",
               &StorageInterestGroup::bidding_browser_signals,
@@ -1990,19 +2100,19 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                         &InterestGroup::enable_bidding_signals_prioritization,
                         false),
                   Field("priority_vector", &InterestGroup::priority_vector,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("priority_signals_overrides",
                         &InterestGroup::priority_signals_overrides,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("seller_capabilities",
-                        &InterestGroup::seller_capabilities, absl::nullopt),
+                        &InterestGroup::seller_capabilities, std::nullopt),
                   Field("all_sellers_capabilities",
                         &InterestGroup::all_sellers_capabilities,
                         SellerCapabilitiesType()),
                   Field("bidding_url", &InterestGroup::bidding_url,
                         GURL("https://owner.example.com/bidder.js")),
                   Field("bidding_wasm_helper_url",
-                        &InterestGroup::bidding_wasm_helper_url, absl::nullopt),
+                        &InterestGroup::bidding_wasm_helper_url, std::nullopt),
                   Field("update_url", &InterestGroup::update_url,
                         GURL("https://owner.example.com/update")),
                   Field("trusted_bidding_signals_url",
@@ -2015,26 +2125,29 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                       "trusted_bidding_signals_slot_size_mode",
                       &InterestGroup::trusted_bidding_signals_slot_size_mode,
                       InterestGroup::TrustedBiddingSignalsSlotSizeMode::kNone),
+                  Field("max_trusted_bidding_signals_url_length",
+                        &InterestGroup::max_trusted_bidding_signals_url_length,
+                        0),
                   Field("user_bidding_signals",
                         &InterestGroup::user_bidding_signals,
                         "[[\"1\",\"3\"]]"),
                   Field("ads", &InterestGroup::ads,
                         testing::Property(
                             "value()",
-                            &absl::optional<
+                            &std::optional<
                                 std::vector<blink::InterestGroup::Ad>>::value,
                             testing::ElementsAre(testing::AllOf(
-                                Field("render_url",
-                                      &InterestGroup::Ad::render_url,
-                                      GURL("https://ads.example.com/1")),
+                                Property("render_url",
+                                         &InterestGroup::Ad::render_url,
+                                         GURL("https://ads.example.com/1")),
                                 Field("metadata", &InterestGroup::Ad::metadata,
                                       "[\"4\",\"5\",null,\"6\"]"))))),
                   Field("ad_components", &InterestGroup::ad_components,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("ad_sizes", &InterestGroup::ad_components,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("size_groups", &InterestGroup::ad_components,
-                        absl::nullopt))),
+                        std::nullopt))),
           Field(
               "bidding_browser_signals",
               &StorageInterestGroup::bidding_browser_signals,
@@ -2074,19 +2187,19 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                         &InterestGroup::enable_bidding_signals_prioritization,
                         false),
                   Field("priority_vector", &InterestGroup::priority_vector,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("priority_signals_overrides",
                         &InterestGroup::priority_signals_overrides,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("seller_capabilities",
-                        &InterestGroup::seller_capabilities, absl::nullopt),
+                        &InterestGroup::seller_capabilities, std::nullopt),
                   Field("all_sellers_capabilities",
                         &InterestGroup::all_sellers_capabilities,
                         SellerCapabilitiesType()),
                   Field("bidding_url", &InterestGroup::bidding_url,
                         GURL("https://owner.example.com/bidder.js")),
                   Field("bidding_wasm_helper_url",
-                        &InterestGroup::bidding_wasm_helper_url, absl::nullopt),
+                        &InterestGroup::bidding_wasm_helper_url, std::nullopt),
                   Field("update_url", &InterestGroup::update_url,
                         GURL("https://owner.example.com/update")),
                   Field("trusted_bidding_signals_url",
@@ -2099,26 +2212,29 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                       "trusted_bidding_signals_slot_size_mode",
                       &InterestGroup::trusted_bidding_signals_slot_size_mode,
                       InterestGroup::TrustedBiddingSignalsSlotSizeMode::kNone),
+                  Field("max_trusted_bidding_signals_url_length",
+                        &InterestGroup::max_trusted_bidding_signals_url_length,
+                        0),
                   Field("user_bidding_signals",
                         &InterestGroup::user_bidding_signals,
                         "[[\"3\",\"2\"]]"),
                   Field("ads", &InterestGroup::ads,
                         testing::Property(
                             "value()",
-                            &absl::optional<
+                            &std::optional<
                                 std::vector<blink::InterestGroup::Ad>>::value,
                             testing::ElementsAre(testing::AllOf(
-                                Field("render_url",
-                                      &InterestGroup::Ad::render_url,
-                                      GURL("https://ads.example.com/1")),
+                                Property("render_url",
+                                         &InterestGroup::Ad::render_url,
+                                         GURL("https://ads.example.com/1")),
                                 Field("metadata", &InterestGroup::Ad::metadata,
                                       "[\"4\",\"5\",null,\"6\"]"))))),
                   Field("ad_components", &InterestGroup::ad_components,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("ad_sizes", &InterestGroup::ad_components,
-                        absl::nullopt),
+                        std::nullopt),
                   Field("size_groups", &InterestGroup::ad_components,
-                        absl::nullopt))),
+                        std::nullopt))),
           Field(
               "bidding_browser_signals",
               &StorageInterestGroup::bidding_browser_signals,
@@ -2300,7 +2416,7 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV16) {
   std::string key_without_ig_in_ig_table =
       "AdBid\nhttps://owner.example2.com/\nhttps://owner.example2.com/"
       "bidder.js\nhttps://ads.example2.com/1";
-  absl::optional<base::Time> last_reported =
+  std::optional<base::Time> last_reported =
       storage->GetLastKAnonymityReported(key_without_ig_in_ig_table);
   EXPECT_EQ(last_reported, base::Time::Min() + base::Microseconds(8));
 }
@@ -2522,7 +2638,7 @@ TEST_F(InterestGroupStorageTest, SetGetLastKAnonReported) {
   std::string k_anon_key_2 = blink::KAnonKeyForAdBid(g, ad2_url);
   std::string k_anon_key_3 = blink::KAnonKeyForAdComponentBid(ad3_url);
 
-  absl::optional<base::Time> last_report =
+  std::optional<base::Time> last_report =
       storage->GetLastKAnonymityReported(k_anon_key_1);
   EXPECT_EQ(base::Time::Min(), last_report);  // Not in the database.
 
@@ -2791,6 +2907,85 @@ TEST_F(InterestGroupStorageTest, OnlyDeletesExpiredKAnon) {
             storage->GetLastKAnonymityReported(k_anon_key_1));
   EXPECT_EQ(base::Time::Min(),
             storage->GetLastKAnonymityReported(k_anon_key_2));
+}
+
+TEST_F(InterestGroupStorageTest, SetGetBiddingAndAuctionKeys) {
+  const url::Origin origin_a =
+      url::Origin::Create(GURL("https://a.example.com"));
+  const url::Origin origin_b =
+      url::Origin::Create(GURL("https://b.example.com"));
+  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
+  // No keys should be returned before any values are set.
+  std::vector<BiddingAndAuctionServerKey> a_loaded_keys =
+      storage->GetBiddingAndAuctionServerKeys(origin_a);
+  std::vector<BiddingAndAuctionServerKey> b_loaded_keys =
+      storage->GetBiddingAndAuctionServerKeys(origin_b);
+  EXPECT_TRUE(a_loaded_keys.empty());
+  EXPECT_TRUE(b_loaded_keys.empty());
+
+  // The set values should be returned.
+  std::vector<BiddingAndAuctionServerKey> a_keys{{"1", 1}, {"2", 2}};
+  base::Time expiration = base::Time::Now() + base::Seconds(5);
+  storage->SetBiddingAndAuctionServerKeys(origin_a, a_keys, expiration);
+  a_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_a);
+  b_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_b);
+  EXPECT_EQ(a_loaded_keys.size(), 2u);
+  EXPECT_NE(a_loaded_keys[0].id, a_loaded_keys[1].id);
+  for (const BiddingAndAuctionServerKey& key : a_loaded_keys) {
+    EXPECT_TRUE((key.id == 1 && key.key == "1") ||
+                (key.id == 2 && key.key == "2"));
+  }
+  EXPECT_TRUE(b_loaded_keys.empty());
+
+  // Setting values for a different origin shouldn't affect the previously
+  // set values.
+  std::vector<BiddingAndAuctionServerKey> b_keys{{"3", 3}};
+  storage->SetBiddingAndAuctionServerKeys(origin_b, b_keys, expiration);
+  a_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_a);
+  b_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_b);
+  EXPECT_EQ(a_loaded_keys.size(), 2u);
+  EXPECT_NE(a_loaded_keys[0].id, a_loaded_keys[1].id);
+  for (const BiddingAndAuctionServerKey& key : a_loaded_keys) {
+    EXPECT_TRUE((key.id == 1 && key.key == "1") ||
+                (key.id == 2 && key.key == "2"));
+  }
+  EXPECT_EQ(b_loaded_keys.size(), 1u);
+  EXPECT_EQ("3", b_loaded_keys[0].key);
+  EXPECT_EQ(3, b_loaded_keys[0].id);
+
+  // Resetting the keys should overwrite the previous keys.
+  a_keys = {{"1", 1}};
+  task_environment().FastForwardBy(base::Seconds(2));
+  expiration = base::Time::Now() + base::Days(7);
+  storage->SetBiddingAndAuctionServerKeys(origin_a, a_keys, expiration);
+  a_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_a);
+  b_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_b);
+  EXPECT_EQ(a_loaded_keys.size(), 1u);
+  EXPECT_EQ("1", a_loaded_keys[0].key);
+  EXPECT_EQ(1, a_loaded_keys[0].id);
+  EXPECT_EQ(b_loaded_keys.size(), 1u);
+  EXPECT_EQ("3", b_loaded_keys[0].key);
+  EXPECT_EQ(3, b_loaded_keys[0].id);
+
+  // Only get unexpired values.
+  task_environment().FastForwardBy(base::Seconds(3));
+  a_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_a);
+  b_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_b);
+  EXPECT_EQ(a_loaded_keys.size(), 1u);
+  EXPECT_EQ("1", a_loaded_keys[0].key);
+  EXPECT_EQ(1, a_loaded_keys[0].id);
+  EXPECT_TRUE(b_loaded_keys.empty());
+
+  // DB maintenance should not delete unexpired values.
+  EXPECT_EQ(base::Time::Min(), storage->GetLastMaintenanceTimeForTesting());
+  task_environment().FastForwardBy(InterestGroupStorage::kIdlePeriod);
+  EXPECT_NE(base::Time::Min(), storage->GetLastMaintenanceTimeForTesting());
+  a_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_a);
+  b_loaded_keys = storage->GetBiddingAndAuctionServerKeys(origin_b);
+  EXPECT_EQ(a_loaded_keys.size(), 1u);
+  EXPECT_EQ("1", a_loaded_keys[0].key);
+  EXPECT_EQ(1, a_loaded_keys[0].id);
+  EXPECT_TRUE(b_loaded_keys.empty());
 }
 
 }  // namespace

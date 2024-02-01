@@ -20,10 +20,10 @@ enum class SafeBrowsingSafetyCheckState;
 
 namespace experimental_flags {
 
-// Whether the First Run UI will be always be displayed.
+// Whether the First Run UI will always be displayed.
 bool AlwaysDisplayFirstRun();
 
-// Whether the Upgrade Promo UI will be always be displayed.
+// Whether the Upgrade Promo UI will always be displayed.
 bool AlwaysDisplayUpgradePromo();
 
 // Returns the host name for an alternative Origin Server host for use by
@@ -120,6 +120,9 @@ std::optional<int> GetSafetyCheckReusedPasswordsCount();
 // (Magic Stack) module.
 std::optional<int> GetSafetyCheckCompromisedPasswordsCount();
 
+// Returns the forced number of days since first run.
+std::optional<int> GetFirstRunRecency();
+
 // Returns the selected device segment the user wants to simulate as a string;
 // the string should either be nil or one of the options from synthetic trial
 // "Segmentation_DeviceSwitcher."
@@ -129,6 +132,11 @@ std::string GetSegmentForForcedDeviceSwitcherExperience();
 
 // Whether a phone backup/restore state should be simulated.
 bool SimulatePostDeviceRestore();
+
+// In production, the history sync opt-in isn't shown if it was declined too
+// recently or too many consecutive times. If this function is true, those
+// limits are suppressed for simpler testing.
+bool ShouldIgnoreHistorySyncDeclineLimits();
 
 }  // namespace experimental_flags
 

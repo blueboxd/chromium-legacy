@@ -45,20 +45,13 @@ ScopedJavaLocalRef<jobjectArray> ToJavaTopicsArray(
   for (const auto& topic : topics) {
     j_topics.push_back(Java_PrivacySandboxBridge_createTopic(
         env, topic.topic_id().value(), topic.taxonomy_version(),
-        ConvertUTF16ToJavaString(env, topic.GetLocalizedRepresentation())));
+        ConvertUTF16ToJavaString(env, topic.GetLocalizedRepresentation()),
+        ConvertUTF16ToJavaString(env, topic.GetLocalizedDescription())));
   }
   return base::android::ToJavaArrayOfObjects(
       env, base::android::GetClass(env, TOPICS_JAVA_CLASS), j_topics);
 }
 }  // namespace
-
-static jboolean JNI_PrivacySandboxBridge_IsPrivacySandboxEnabled(JNIEnv* env) {
-  return GetPrivacySandboxService()->IsPrivacySandboxEnabled();
-}
-
-static jboolean JNI_PrivacySandboxBridge_IsPrivacySandboxManaged(JNIEnv* env) {
-  return GetPrivacySandboxService()->IsPrivacySandboxManaged();
-}
 
 static jboolean JNI_PrivacySandboxBridge_IsPrivacySandboxRestricted(
     JNIEnv* env) {
@@ -70,12 +63,6 @@ static jboolean JNI_PrivacySandboxBridge_IsRestrictedNoticeEnabled(
   return GetPrivacySandboxService()->IsRestrictedNoticeEnabled();
 }
 
-static void JNI_PrivacySandboxBridge_SetPrivacySandboxEnabled(
-    JNIEnv* env,
-    jboolean enabled) {
-  GetPrivacySandboxService()->SetPrivacySandboxEnabled(enabled);
-}
-
 static ScopedJavaLocalRef<jobjectArray>
 JNI_PrivacySandboxBridge_GetCurrentTopTopics(JNIEnv* env) {
   return ToJavaTopicsArray(env,
@@ -85,6 +72,12 @@ JNI_PrivacySandboxBridge_GetCurrentTopTopics(JNIEnv* env) {
 static ScopedJavaLocalRef<jobjectArray>
 JNI_PrivacySandboxBridge_GetBlockedTopics(JNIEnv* env) {
   return ToJavaTopicsArray(env, GetPrivacySandboxService()->GetBlockedTopics());
+}
+
+static ScopedJavaLocalRef<jobjectArray>
+JNI_PrivacySandboxBridge_GetFirstLevelTopics(JNIEnv* env) {
+  return ToJavaTopicsArray(env,
+                           GetPrivacySandboxService()->GetFirstLevelTopics());
 }
 
 static void JNI_PrivacySandboxBridge_SetTopicAllowed(JNIEnv* env,
@@ -109,7 +102,7 @@ static void JNI_PrivacySandboxBridge_GetFledgeJoiningEtldPlusOneForDisplay(
             base::android::RunObjectCallbackAndroid(
                 j_callback, base::android::ToJavaArrayOfStrings(env, strings));
           },
-          base::android::ScopedJavaGlobalRef(j_callback)));
+          base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
 static base::android::ScopedJavaLocalRef<jobjectArray>
@@ -169,7 +162,7 @@ JNI_PrivacySandboxBridge_GetFirstPartySetOwner(
     JNIEnv* env,
     const JavaParamRef<jstring>& memberOrigin) {
   auto fpsOwner = GetPrivacySandboxService()->GetFirstPartySetOwner(
-      GURL(ConvertJavaStringToUTF8(env, memberOrigin)));
+      GURL(base::android::ConvertJavaStringToUTF8(env, memberOrigin)));
 
   if (!fpsOwner.has_value()) {
     return nullptr;
@@ -181,8 +174,8 @@ JNI_PrivacySandboxBridge_GetFirstPartySetOwner(
 static jboolean JNI_PrivacySandboxBridge_IsPartOfManagedFirstPartySet(
     JNIEnv* env,
     const JavaParamRef<jstring>& origin) {
-  auto schemefulSite =
-      net::SchemefulSite(GURL(ConvertJavaStringToUTF8(env, origin)));
+  auto schemefulSite = net::SchemefulSite(
+      GURL(base::android::ConvertJavaStringToUTF8(env, origin)));
 
   return GetPrivacySandboxService()->IsPartOfManagedFirstPartySet(
       schemefulSite);

@@ -187,7 +187,15 @@ IN_PROC_BROWSER_TEST_F(ReadAnythingAppTest,
   ASSERT_TRUE(RunTest("update_content_selection_with_inline_text.js"));
 }
 
-IN_PROC_BROWSER_TEST_F(ReadAnythingAppTest, UpdateContent_SetSelectedText) {
+// TODO(crbug.com/1521475): Test is flaky on macOS 12
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_UpdateContent_SetSelectedText \
+  DISABLED_UpdateContent_SetSelectedText
+#else
+#define MAYBE_UpdateContent_SetSelectedText UpdateContent_SetSelectedText
+#endif
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppTest,
+                       MAYBE_UpdateContent_SetSelectedText) {
   ASSERT_TRUE(RunTest("update_content_set_selected_text.js"));
 }
 
@@ -219,10 +227,4 @@ IN_PROC_BROWSER_TEST_F(ReadAnythingAppTest, UpdateContent_NoContentNodes) {
 
 IN_PROC_BROWSER_TEST_F(ReadAnythingAppTest, UpdateContent_InteractiveElement) {
   ASSERT_TRUE(RunTest("update_content_interactive_element.js"));
-}
-
-// TODO(crbug.com/1474951): Remove this test once the ReadAnythingWebUiToolbar
-// flag is removed.
-IN_PROC_BROWSER_TEST_F(ReadAnythingAppTest, ReadAnythingToolbar_Hidden) {
-  ASSERT_TRUE(RunTest("toolbar_hidden_without_flag.js"));
 }

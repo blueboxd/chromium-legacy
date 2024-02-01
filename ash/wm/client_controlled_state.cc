@@ -337,6 +337,14 @@ void ClientControlledState::UpdateWindowForTransitionEvents(
           event_type == WM_EVENT_RESTORE;
       CHECK(is_restoring || event->IsSnapEvent());
 
+      // If the window is being unminimized to any snapped state and it's still
+      // transitioning, no need to handle the extra snap event.
+      if (window_state->IsMinimized() && is_restoring &&
+          SplitViewController::Get(window)->IsWindowInTransitionalState(
+              window)) {
+        return;
+      }
+
       const WindowSnapActionSource snap_action_source =
           is_restoring ? WindowSnapActionSource::kSnapByWindowStateRestore
                        : event->AsSnapEvent()->snap_action_source();
@@ -369,12 +377,18 @@ void ClientControlledState::UpdateWindowForTransitionEvents(
               << ", state=" << state_type_
               << ", next_state=" << next_state_type;
 
+      const gfx::Rect snapped_bounds = GetSnappedWindowBoundsInParent(
+          window, next_state_type, next_snap_ratio);
+
+      // The snap ratio of `snapped_bounds` may be different from the requested
+      // snap ratio (e.g., if the window has a minimum size requirement or the
+      // opposite side of splitview is partial-snapped).
+      window_state->ForceUpdateSnapRatio(snapped_bounds);
+
       // Then ask delegate to set the desired bounds for the snap state.
-      delegate_->HandleBoundsRequest(
-          window_state, next_state_type,
-          GetSnappedWindowBoundsInParent(window, next_state_type,
-                                         next_snap_ratio),
-          window_state->GetDisplay().id());
+      delegate_->HandleBoundsRequest(window_state, next_state_type,
+                                     snapped_bounds,
+                                     window_state->GetDisplay().id());
     }
   } else if (next_state_type == WindowStateType::kFloated) {
     if (chromeos::wm::CanFloatWindow(window)) {

@@ -7,13 +7,18 @@
 #include "base/features.h"
 #include "base/functional/callback.h"
 #include "base/time/time.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
+#include "chrome/browser/preloading/preview/preview_zoom_controller.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
+#include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/preview_cancel_reason.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
@@ -29,12 +34,10 @@
 namespace {
 
 content::WebContents::CreateParams CreateWebContentsCreateParams(
-    content::BrowserContext* context,
-    content::WebContentsDelegate* delegate) {
+    content::BrowserContext* context) {
   CHECK(context);
-  CHECK(delegate);
   content::WebContents::CreateParams params(context);
-  params.delegate = delegate;
+  params.preview_mode = true;
   return params;
 }
 
@@ -68,7 +71,8 @@ class PreviewTab::PreviewWidget final : public views::Widget {
     if (!is_event_for_preview_window &&
         event->type() == ui::ET_MOUSE_RELEASED) {
       event->SetHandled();
-      preview_manager_->Cancel();
+      preview_manager_->Cancel(content::PreviewCancelReason::Build(
+          content::PreviewFinalStatus::kCancelledByWindowClose));
       return;
     }
 
@@ -80,66 +84,31 @@ class PreviewTab::PreviewWidget final : public views::Widget {
   raw_ptr<PreviewManager> preview_manager_;
 };
 
-class PreviewTab::WebContentsObserver final
-    : public content::WebContentsObserver {
- public:
-  explicit WebContentsObserver(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents) {
-    UpdateZoomSettings();
-  }
-
- private:
-  // content::WebContentsObserver.
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    // TODO(b:291842891): We will update zoom settings also at the preview
-    // navigation.
-    if (!navigation_handle->IsInPrimaryMainFrame() ||
-        !navigation_handle->HasCommitted()) {
-      return;
-    }
-    // Zoom settings will be reset by ZoomController::DidFinishNavigation when
-    // the primary main frame navigation happens. We need to override them
-    // again whenever the settings are reset.
-    UpdateZoomSettings();
-  }
-
-  void UpdateZoomSettings() {
-    auto* zoom_controller =
-        zoom::ZoomController::FromWebContents(web_contents());
-    zoom_controller->SetZoomMode(
-        zoom::ZoomController::ZoomMode::ZOOM_MODE_ISOLATED);
-    const double level = blink::PageZoomFactorToZoomLevel(0.5f);
-    zoom_controller->SetZoomLevel(level);
-  }
-};
-
 PreviewTab::PreviewTab(PreviewManager* preview_manager,
                        content::WebContents& initiator_web_contents,
                        const GURL& url)
     : web_contents_(content::WebContents::Create(CreateWebContentsCreateParams(
-          initiator_web_contents.GetBrowserContext(),
-          this))),
+          initiator_web_contents.GetBrowserContext()))),
       widget_(std::make_unique<PreviewWidget>(preview_manager)),
       view_(std::make_unique<views::WebView>(nullptr)),
       url_(url) {
   CHECK(base::FeatureList::IsEnabled(blink::features::kLinkPreview));
+  web_contents_->SetDelegate(this);
 
   // WebView setup.
   view_->SetWebContents(web_contents_.get());
 
   AttachTabHelpersForInit();
-  // Our observer should be created after ZoomController is created in
-  // AttachTabHelpersForInit() above to ensure our DidFinishNavigation is called
-  // after ZoomController::DidFinishNavigation resets zoom settings. This is
-  // because the observer invocation order depends on its registration order.
-  observer_ = std::make_unique<WebContentsObserver>(web_contents_.get());
+  // See the comment of PreviewZoomController for creation order.
+  preview_zoom_controller_ =
+      std::make_unique<PreviewZoomController>(web_contents_.get());
 
   // TODO(b:292184832): Ensure if we provide enough information to perform an
   // equivalent navigation with a link navigation.
   view_->LoadInitialURL(url_);
 
   InitWindow(initiator_web_contents);
+  RegisterKeyboardAccelerators();
 }
 
 PreviewTab::~PreviewTab() = default;
@@ -191,27 +160,40 @@ content::PreloadingEligibility PreviewTab::IsPrerender2Supported(
   return content::PreloadingEligibility::kPreloadingDisabled;
 }
 
-bool PreviewTab::IsInPreviewMode() const {
-  return true;
+void PreviewTab::CancelPreview(content::PreviewCancelReason reason) {
+  // TODO(b:299240273): Show an error page when final status is
+  // kBlockedByMojoBinderPolicy.
+  cancel_reason_ = std::move(reason);
 }
 
 void PreviewTab::PromoteToNewTab(content::WebContents& initiator_web_contents) {
+  // If preview failed, prevent activation and just close the preview window.
+  //
+  // Currently, PreviewFinalStatus::kBlockedByMojoBinderPolicy contains just
+  // deferred cases and we don't reject activation here.
+  //
+  // TODO(b:316226787): Consider to split the final status into
+  // cancelled/deferred.
+  if (cancel_reason_.has_value() &&
+      cancel_reason_->GetFinalStatus() !=
+          content::PreviewFinalStatus::kBlockedByMojoBinderPolicy) {
+    return;
+  }
+
   view_->SetWebContents(nullptr);
   view_ = nullptr;
 
   auto web_contents = web_contents_->GetWeakPtr();
 
-  // This force-set zoom factor 1 and don't respect per-site settings.
-  //
-  // TODO(b:308061954): Implement better zoom and fix this.
-  auto* zoom_controller =
-      zoom::ZoomController::FromWebContents(web_contents_.get());
-  const double level = blink::PageZoomFactorToZoomLevel(1.0f);
-  zoom_controller->SetZoomLevel(level);
-  zoom_controller->SetZoomMode(
-      zoom::ZoomController::ZoomMode::ZOOM_MODE_DEFAULT);
+  preview_zoom_controller_->ResetZoomForActivation();
 
   TabHelpers::AttachTabHelpers(web_contents_.get());
+
+  // TODO(b:314242439): Should be called before the AttachTabHelpers() above.
+  // We should update the preview mode status so that the AttachTabHelpers() can
+  // know the helpers should be initialized for normal mode rather than preview
+  // mode.
+  web_contents_->WillActivatePreviewPage();
 
   // Detach WebContentsDelegate before passing WebContents to another
   // WebContentsDelegate. It would be not necessary, but it's natural because
@@ -240,7 +222,55 @@ void PreviewTab::Activate(base::WeakPtr<content::WebContents> web_contents) {
   web_contents->ActivatePreviewPage();
 }
 
-void PreviewTab::CancelPreviewByMojoBinderPolicy(
-    const std::string& interface_name) {
-  // TODO(b:299240273): Navigate to an error page.
+// Copied from chrome/browser/ui/views/accelerator_table.h
+struct AcceleratorMapping {
+  ui::KeyboardCode keycode;
+  int modifiers;
+  int command_id;
+};
+
+constexpr AcceleratorMapping kAcceleratorMap[] = {
+    {ui::VKEY_OEM_MINUS, ui::EF_PLATFORM_ACCELERATOR, IDC_ZOOM_MINUS},
+    {ui::VKEY_SUBTRACT, ui::EF_PLATFORM_ACCELERATOR, IDC_ZOOM_MINUS},
+    {ui::VKEY_0, ui::EF_PLATFORM_ACCELERATOR, IDC_ZOOM_NORMAL},
+    {ui::VKEY_NUMPAD0, ui::EF_PLATFORM_ACCELERATOR, IDC_ZOOM_NORMAL},
+    {ui::VKEY_OEM_PLUS, ui::EF_PLATFORM_ACCELERATOR, IDC_ZOOM_PLUS},
+    {ui::VKEY_ADD, ui::EF_PLATFORM_ACCELERATOR, IDC_ZOOM_PLUS},
+};
+
+void PreviewTab::RegisterKeyboardAccelerators() {
+  for (const auto& entry : kAcceleratorMap) {
+    ui::Accelerator accelerator(entry.keycode, entry.modifiers);
+    accelerator_table_[accelerator] = entry.command_id;
+    view_->GetFocusManager()->RegisterAccelerator(
+        accelerator, ui::AcceleratorManager::HandlerPriority::kNormalPriority,
+        this);
+  }
+}
+
+bool PreviewTab::CanHandleAccelerators() const {
+  return web_contents_ != nullptr;
+}
+
+bool PreviewTab::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  auto it = accelerator_table_.find(accelerator);
+  if (it == accelerator_table_.end()) {
+    return false;
+  }
+
+  switch (it->second) {
+    case IDC_ZOOM_MINUS:
+      preview_zoom_controller_->Zoom(content::PAGE_ZOOM_OUT);
+      break;
+    case IDC_ZOOM_NORMAL:
+      preview_zoom_controller_->Zoom(content::PAGE_ZOOM_RESET);
+      break;
+    case IDC_ZOOM_PLUS:
+      preview_zoom_controller_->Zoom(content::PAGE_ZOOM_IN);
+      break;
+    default:
+      NOTREACHED_NORETURN();
+  }
+
+  return true;
 }

@@ -50,8 +50,7 @@ namespace net {
 class IOBuffer;
 }  // namespace net
 
-namespace ash {
-namespace file_system_provider {
+namespace ash::file_system_provider {
 
 namespace {
 
@@ -134,7 +133,7 @@ struct ProvidedFileSystem::AddWatcherInQueueArgs {
         persistent(persistent),
         callback(std::move(callback)),
         notification_callback(std::move(notification_callback)) {}
-  ~AddWatcherInQueueArgs() {}
+  ~AddWatcherInQueueArgs() = default;
   AddWatcherInQueueArgs(AddWatcherInQueueArgs&&) = default;
 
   const size_t token;
@@ -166,7 +165,7 @@ struct ProvidedFileSystem::NotifyInQueueArgs {
   NotifyInQueueArgs(const NotifyInQueueArgs&) = delete;
   NotifyInQueueArgs& operator=(const NotifyInQueueArgs&) = delete;
 
-  ~NotifyInQueueArgs() {}
+  ~NotifyInQueueArgs() = default;
 
   const size_t token;
   const base::FilePath entry_path;
@@ -970,5 +969,4 @@ void ProvidedFileSystem::ConstructRequestManager() {
   }
 }
 
-}  // namespace file_system_provider
-}  // namespace ash
+}  // namespace ash::file_system_provider

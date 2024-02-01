@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.signin.services;
 
-import android.accounts.Account;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
@@ -61,8 +59,14 @@ public interface SigninManager {
 
     /** Callbacks for the sign-in flow. */
     interface SignInCallback {
-        /** Invoked after sign-in is completed successfully. */
+        /**
+         * Invoked after sign-in is completed successfully. Sign-in preferences may not be committed
+         * yet.
+         */
         void onSignInComplete();
+
+        /** Invoked after sign-in preferences are committed. */
+        default void onPrefsCommitted() {}
 
         /** Invoked if the sign-in processes does not complete for any reason. */
         void onSignInAborted();
@@ -124,22 +128,6 @@ public interface SigninManager {
      * <p>- Wait for AccountTrackerService to be seeded. - Complete sign-in with the native
      * IdentityManager. - Call the callback if provided.
      *
-     * @param account The account to sign in to.
-     * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
-     * @param callback Optional callback for when the sign-in process is finished.
-     */
-    @Deprecated
-    void signin(
-            Account account, @SigninAccessPoint int accessPoint, @Nullable SignInCallback callback);
-
-    /**
-     * Starts the sign-in flow, and executes the callback when finished.
-     *
-     * <p>The sign-in flow goes through the following steps:
-     *
-     * <p>- Wait for AccountTrackerService to be seeded. - Complete sign-in with the native
-     * IdentityManager. - Call the callback if provided.
-     *
      * @param coreAccountInfo The {@link CoreAccountInfo} to sign in to.
      * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
      * @param callback Optional callback for when the sign-in process is finished.
@@ -148,23 +136,6 @@ public interface SigninManager {
             CoreAccountInfo coreAccountInfo,
             @SigninAccessPoint int accessPoint,
             @Nullable SignInCallback callback);
-
-    /**
-     * Starts the sign-in flow, and executes the callback when finished.
-     *
-     * <p>The sign-in flow goes through the following steps:
-     *
-     * <p>- Wait for AccountTrackerService to be seeded. - Wait for policy to be checked for the
-     * account. - If managed, wait for the policy to be fetched. - Complete sign-in with the native
-     * IdentityManager. - Call the callback if provided.
-     *
-     * @param account The account to sign in to.
-     * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
-     * @param callback Optional callback for when the sign-in process is finished.
-     */
-    @Deprecated
-    void signinAndEnableSync(
-            Account account, @SigninAccessPoint int accessPoint, @Nullable SignInCallback callback);
 
     /**
      * Starts the sign-in flow, and executes the callback when finished.

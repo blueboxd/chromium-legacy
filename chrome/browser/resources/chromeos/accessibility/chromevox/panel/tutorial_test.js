@@ -20,7 +20,7 @@ ChromeVoxTutorialTest = class extends ChromeVoxPanelTestBase {
           'ChromeVoxRange', '/chromevox/background/chromevox_range.js'),
       importModule(
           'BackgroundKeyboardHandler',
-          '/chromevox/background/input/keyboard_handler.js'),
+          '/chromevox/background/input/background_keyboard_handler.js'),
       importModule(
           'CommandHandlerInterface',
           '/chromevox/background/input/command_handler_interface.js'),
@@ -101,7 +101,8 @@ ChromeVoxTutorialTest = class extends ChromeVoxPanelTestBase {
   }
 };
 
-AX_TEST_F('ChromeVoxTutorialTest', 'BasicTest', async function() {
+// TODO(crbug.com/1501314): Flaky on ChromeOS.
+AX_TEST_F('ChromeVoxTutorialTest', 'DISABLED_BasicTest', async function() {
   const mockFeedback = this.createMockFeedback();
   const root = await this.runWithLoadedTree(this.simpleDoc);
   await this.launchAndWaitForTutorial();

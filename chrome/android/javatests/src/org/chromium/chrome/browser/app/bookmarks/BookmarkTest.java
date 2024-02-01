@@ -67,6 +67,9 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
@@ -102,9 +105,6 @@ import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.MenuUtils;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -372,9 +372,7 @@ public class BookmarkTest {
         BookmarkTestUtil.waitForBookmarkModelLoaded();
 
         assertEquals(BookmarkUiMode.FOLDER, mDelegate.getCurrentUiMode());
-        assertEquals(
-                "chrome-native://bookmarks/folder/3",
-                BookmarkUtils.getLastUsedUrl(mActivityTestRule.getActivity()));
+        assertEquals("chrome-native://bookmarks/folder/3", BookmarkUtils.getLastUsedUrl());
     }
 
     @Test
@@ -677,7 +675,6 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @DisableFeatures({ChromeFeatureList.SHOPPING_LIST})
     public void testSearchBookmarks_DeleteFolderWithChildrenInResults() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTesting(SyncPromoState.NO_PROMO);
         BookmarkId testFolder = addFolder(TEST_FOLDER_TITLE);
@@ -775,7 +772,7 @@ public class BookmarkTest {
                 () -> {
                     BookmarkId folderId = mBookmarkModel.getMobileFolderId();
                     String prefUrl = BookmarkUiState.createFolderUrl(folderId).toString();
-                    BookmarkUtils.setLastUsedUrl(mActivityTestRule.getActivity(), prefUrl);
+                    BookmarkUtils.setLastUsedUrl(prefUrl);
                 });
 
         // Prevent loading so we can verify we see the spinner initially.
@@ -1423,7 +1420,6 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @DisableFeatures({ChromeFeatureList.SHOPPING_LIST})
     public void testTopLevelFolderUpdateAfterSync() throws Exception {
         // Set up the test and open the bookmark manager to the Mobile Bookmarks folder.
         BookmarkTestUtil.readPartnerBookmarks(mActivityTestRule);

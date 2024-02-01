@@ -11,6 +11,7 @@ import logging
 import os
 import optparse
 import signal
+import subprocess
 import sys
 from collections import defaultdict
 from datetime import datetime
@@ -26,7 +27,7 @@ from blinkpy.w3c.wpt_results_processor import WPTResultsProcessor
 from blinkpy.web_tests.controllers.web_test_finder import WebTestFinder
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.port import factory
-from blinkpy.wpt_tests.product import make_product_registry
+from blinkpy.wpt_tests import product
 from blinkpy.wpt_tests.test_loader import TestLoader, wpt_url_to_blink_test
 
 path_finder.bootstrap_wpt_imports()
@@ -131,6 +132,7 @@ class StructuredLogAdapter(logging.Handler):
 
 class WPTAdapter:
     PORT_NAME_BY_PRODUCT = {
+        'android_webview': 'webview',
         'chrome': 'chrome',
     }
 
@@ -305,7 +307,8 @@ class WPTAdapter:
         ])
         runner_options.binary_args.extend([
             '--host-resolver-rules='
-            'MAP nonexistent.*.test ^NOTFOUND, MAP *.test 127.0.0.1',
+            'MAP nonexistent.*.test ^NOTFOUND,'
+            'MAP *.test 127.0.0.1, MAP *.test. 127.0.0.1',
             *self.port.additional_driver_flags(),
         ])
         # Implicitly pass `--enable-blink-features=MojoJS,MojoJSTest` to Chrome.
@@ -613,12 +616,17 @@ class WPTAdapter:
             reset_results=self.options.reset_results)
         with processor.stream_results() as events:
             runner_options.log.add_handler(events.put)
-            yield
+            try:
+                yield
+            finally:
+                # Always copy `results.html` into `layout-test-results/` so that
+                # the partial results can be viewed, and the directory is
+                # archived next run. See crbug.com/1475556.
+                processor.copy_results_viewer()
+                processor.process_results_json(
+                    self.port.get_option('json_test_results'))
         if runner_options.log_wptreport:
             processor.process_wpt_report(runner_options.log_wptreport[0].name)
-        processor.process_results_json(
-            self.port.get_option('json_test_results'))
-        processor.copy_results_viewer()
         if (self.port.get_option('show_results')
                 and processor.num_initial_failures > 0):
             self.port.show_results_html_file(
@@ -658,7 +666,7 @@ def _load_entry_point():
 
 def make_product(port, options):
     name = options.product
-    product_cls = make_product_registry()[name]
+    product_cls = product.make_product_registry()[name]
     return product_cls(port, options)
 
 
@@ -675,10 +683,10 @@ def handle_interrupt_signals():
 def parse_arguments(argv):
     parser = command_line.ArgumentParser(usage='%(prog)s [options] [tests]',
                                          description=__doc__.splitlines()[0])
-    factory.add_configuration_options_group(parser,
-                                            rwt=False,
-                                            product_choices=list(
-                                                make_product_registry()))
+    factory.add_configuration_options_group(
+        parser,
+        rwt=False,
+        product_choices=list(product.make_product_registry()))
     factory.add_logging_options_group(parser)
     factory.add_results_options_group(parser, rwt=False)
     factory.add_testing_options_group(parser, rwt=False)
@@ -701,6 +709,23 @@ def parse_arguments(argv):
     options.use_xvfb = options.headless
     return options, args
 
+
+def _install_xcode(xcode_build_version: str):
+    path_finder.add_build_ios_to_sys_path()
+    import xcode_util as xcode
+    if xcode_build_version:
+        try:
+            xcode.install_xcode('../../mac_toolchain', xcode_build_version,
+                                '../../Xcode.app', '../../Runtime-ios-',
+                                product.IOS_VERSION)
+        except subprocess.CalledProcessError as e:
+            logger.error('Xcode build version %s failed to install: %s ',
+                         xcode_build_version, e)
+        else:
+            logger.info('Xcode build version %s successfully installed.',
+                        xcode_build_version)
+    else:
+        logger.warning('Skip the Xcode installation, no xcode_build_version.')
 
 def _run_with_upstream_wpt(host: Host, argv: List[str]) -> int:
     checkout_path = _checkout_upstream_wpt(host)
@@ -747,10 +772,19 @@ def main(argv) -> int:
     # This early declaration allow graceful exit when Chromium swarming kill process before wpt starts
     handle_interrupt_signals()
 
+    host = Host()
     exit_code = exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
     try:
-        host = Host()
         adapter = WPTAdapter.from_args(host, argv)
+        if adapter.product.name == 'chrome' and not host.platform.is_linux():
+            logger.error(
+                '`run_wpt_tests.py --product=chrome` does not yet support '
+                'non-Linux platforms; follow https://crbug.com/1512219 for '
+                'status.')
+            return exit_code
+        if (adapter.product.name == 'chrome_ios'
+                and adapter.options.xcode_build_version):
+            _install_xcode(adapter.options.xcode_build_version)
         if adapter.options.use_upstream_wpt:
             exit_code = _run_with_upstream_wpt(host, argv)
         else:

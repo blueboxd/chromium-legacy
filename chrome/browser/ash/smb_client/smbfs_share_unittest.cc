@@ -150,8 +150,7 @@ class SmbFsShareTest : public testing::Test {
   SmbFsShare::MounterCreationCallback mounter_creation_callback_;
   std::unique_ptr<MockSmbFsMounter> mounter_ =
       std::make_unique<MockSmbFsMounter>();
-  raw_ptr<MockSmbFsMounter, DanglingUntriaged | ExperimentalAsh> raw_mounter_ =
-      mounter_.get();
+  raw_ptr<MockSmbFsMounter, DanglingUntriaged> raw_mounter_ = mounter_.get();
 };
 
 TEST_F(SmbFsShareTest, Mount) {
@@ -454,7 +453,7 @@ TEST_F(SmbFsShareTest, GenerateStableMountIdInput) {
 
   smbfs::SmbFsMounter::MountOptions options2;
   options2.kerberos_options =
-      absl::make_optional<smbfs::SmbFsMounter::KerberosOptions>(
+      std::make_optional<smbfs::SmbFsMounter::KerberosOptions>(
           smbfs::SmbFsMounter::KerberosOptions::Source::kKerberos,
           kKerberosIdentity);
   SmbFsShare share2(&profile_, SmbUrl(kSharePath2), kDisplayName, options2);

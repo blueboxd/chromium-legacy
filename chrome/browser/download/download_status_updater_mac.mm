@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 #include "components/download/public/common/download_item.h"
-#include "url/gurl.h"
+#import "net/base/apple/url_conversions.h"
 
 namespace {
 

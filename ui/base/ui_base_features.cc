@@ -253,8 +253,6 @@ BASE_FEATURE(kInputPaneOnScreenKeyboard,
 BASE_FEATURE(kPointerEventsForTouch,
              "PointerEventsForTouch",
              base::FEATURE_ENABLED_BY_DEFAULT);
-// Enables using TSF (over IMM32) for IME.
-BASE_FEATURE(kTSFImeSupport, "TSFImeSupport", base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsUsingWMPointerForTouch() {
   return base::FeatureList::IsEnabled(kPointerEventsForTouch);
@@ -327,15 +325,6 @@ BASE_FEATURE(kEyeDropper,
 
 bool IsEyeDropperEnabled() {
   return base::FeatureList::IsEnabled(features::kEyeDropper);
-}
-
-// Enable the common select popup.
-BASE_FEATURE(kUseCommonSelectPopup,
-             "UseCommonSelectPopup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsUseCommonSelectPopupEnabled() {
-  return base::FeatureList::IsEnabled(features::kUseCommonSelectPopup);
 }
 
 // Used to enable keyboard accessible tooltips in in-page content

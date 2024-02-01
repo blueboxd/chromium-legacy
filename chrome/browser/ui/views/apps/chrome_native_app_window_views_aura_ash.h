@@ -91,6 +91,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   // WidgetDelegate:
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
+  views::ClientView* CreateClientView(views::Widget* widget) override;
   ui::ImageModel GetWindowIcon() override;
 
   // NativeAppWindow:
@@ -132,7 +133,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   bool IsImmersiveModeEnabled() const override;
   gfx::Rect GetTopContainerBoundsInScreen() override;
   void DestroyAnyExclusiveAccessBubble() override;
-  bool CanTriggerOnMouse() const override;
+  bool CanTriggerOnMousePointer() const override;
 
   // WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
@@ -146,9 +147,6 @@ class ChromeNativeAppWindowViewsAuraAsh
                                const void* key,
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
-
-  // views::View
-  void AddedToWidget() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,

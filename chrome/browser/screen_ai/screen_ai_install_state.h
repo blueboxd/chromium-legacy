@@ -10,7 +10,9 @@
 
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
-#include "base/observer_list_types.h"
+#include "base/memory/raw_ptr.h"
+#include "base/observer_list.h"
+#include "base/version.h"
 
 class PrefService;
 
@@ -18,17 +20,16 @@ namespace screen_ai {
 
 class ScreenAIInstallState {
  public:
+  // TODO(crbug.com/1520424): Remove `kFailed` and `kReady` when all use cases
+  // updated.
   enum class State {
     // Component does not exist on device.
     kNotDownloaded,
     // Component download is in progress.
     kDownloading,
-    // Either component download or initialization failed. Component load and
-    // initialization may fail due to different OS or malware protection
-    // restrictions, however this is expected to be quite rare.
-    // Note that if library load and initialization crashes, the Failed state
-    // may never be set.
+    // Component download failed.
     kFailed,
+    kDownloadFailed = kFailed,
     // Component is downloaded but not loaded yet.
     kDownloaded,
     // Component is initialized successfully by at least one profile.
@@ -56,7 +57,7 @@ class ScreenAIInstallState {
   // Verifies that the library version is compatible with current Chromium
   // version. Will be used to avoid accepting the library if a newer version is
   // expected.
-  static bool VerifyLibraryVersion(const std::string& version);
+  static bool VerifyLibraryVersion(const base::Version& version);
 
   // Verifies that the library is in the expected folder. On Windows, it is
   // also checked that the library is loadable.
@@ -102,6 +103,7 @@ class ScreenAIInstallState {
   State get_state() { return state_; }
 
   void ResetForTesting();
+  void SetComponentFolderForTesting();
   void SetStateForTesting(State state);
 
  private:
@@ -113,7 +115,7 @@ class ScreenAIInstallState {
   base::FilePath component_binary_path_;
   State state_ = State::kNotDownloaded;
 
-  std::vector<Observer*> observers_;
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace screen_ai

@@ -20,7 +20,7 @@ SidePanelRoundedCorner::SidePanelRoundedCorner(BrowserView* browser_view)
 }
 
 void SidePanelRoundedCorner::Layout() {
-  views::View::Layout();
+  LayoutSuperclass<views::View>(this);
   SkPath path;
   if (features::IsChromeRefresh2023() && browser_view_->unified_side_panel()) {
     bool is_right_aligned =
@@ -85,5 +85,5 @@ void SidePanelRoundedCorner::OnThemeChanged() {
   View::OnThemeChanged();
 }
 
-BEGIN_METADATA(SidePanelRoundedCorner, views::View)
+BEGIN_METADATA(SidePanelRoundedCorner)
 END_METADATA

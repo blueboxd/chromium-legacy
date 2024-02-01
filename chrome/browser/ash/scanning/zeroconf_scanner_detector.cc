@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/scanning/zeroconf_scanner_detector.h"
 
 #include <array>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,7 +22,6 @@
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chromeos/ash/components/scanning/scanner.h"
 #include "components/device_event_log/device_event_log.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -100,7 +100,7 @@ class ParsedMetadata {
   ParsedMetadata& operator=(const ParsedMetadata&) = delete;
   ~ParsedMetadata() = default;
 
-  const absl::optional<std::string>& rs() const { return rs_; }
+  const std::optional<std::string>& rs() const { return rs_; }
   const std::string& manufacturer() const { return manufacturer_; }
   const std::string& model() const { return model_; }
   const std::string& uuid() const { return uuid_; }
@@ -108,16 +108,36 @@ class ParsedMetadata {
 
  private:
   // Used to construct the path for a device name URL.
-  absl::optional<std::string> rs_;
+  std::optional<std::string> rs_;
   std::string manufacturer_;
   std::string model_;
   std::string uuid_;
   std::vector<std::string> pdl_;
 };
 
+// Some scanners return zeroconf responses for multiple protocols where some
+// protocols are known to work better than others.  This function looks at
+// |service_type| and |metadata| and returns true if this record represents a
+// protocol/device combination that should be skipped.
+bool ShouldSkipZeroconfScanner(const std::string& service_type,
+                               const ParsedMetadata& metadata) {
+  if (service_type != ZeroconfScannerDetector::kGenericScannerServiceType) {
+    return false;
+  }
+
+  if (metadata.manufacturer() == "EPSON") {
+    // Prefer eSCL for XP-7100 (b/288301496).
+    if (metadata.model().find("XP-7100") != std::string::npos) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // Attempts to create a Scanner using the information in |service_description|
-// and |metadata|. Returns the Scanner on success, absl::nullopt on failure.
-absl::optional<Scanner> CreateScanner(
+// and |metadata|. Returns the Scanner on success, std::nullopt on failure.
+std::optional<Scanner> CreateScanner(
     const std::string& service_type,
     const ServiceDescription& service_description,
     const ParsedMetadata& metadata) {
@@ -129,12 +149,23 @@ absl::optional<Scanner> CreateScanner(
       service_description.ip_address.empty() ||
       service_description.address.port() == 0) {
     PRINTER_LOG(ERROR) << "Found zeroconf " << service_type
-                       << " scanner that isn't usable";
-    return absl::nullopt;
+                       << " scanner that isn't usable: "
+                       << service_description.service_name << "("
+                       << service_description.address.ToString() << ")";
+    return std::nullopt;
   }
 
-  PRINTER_LOG(EVENT) << "Found zeroconf " << service_type
-                     << " scanner: " << service_description.instance_name();
+  if (ShouldSkipZeroconfScanner(service_type, metadata)) {
+    PRINTER_LOG(DEBUG) << "Skipped zeroconf " << service_type
+                       << " scanner named '"
+                       << service_description.instance_name() << "' at "
+                       << service_description.address.ToString();
+    return std::nullopt;
+  }
+
+  PRINTER_LOG(EVENT) << "Found zeroconf " << service_type << " scanner named '"
+                     << service_description.instance_name() << "' at "
+                     << service_description.address.ToString();
 
   return CreateSaneScanner(service_description.instance_name(), service_type,
                            metadata.manufacturer(), metadata.model(),

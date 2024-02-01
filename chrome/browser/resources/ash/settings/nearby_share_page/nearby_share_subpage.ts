@@ -12,7 +12,7 @@ import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
-import '/shared/settings/controls/settings_toggle_button.js';
+import '../controls/settings_toggle_button.js';
 import '../settings_shared.css.js';
 import './nearby_share_contact_visibility_dialog.js';
 import './nearby_share_device_name_dialog.js';
@@ -411,13 +411,6 @@ export class SettingsNearbyShareSubpageElement extends
     return this.i18n(
         'nearbyShareAccountRowLabel', this.i18n('nearbyShareFeatureName'),
         profileName, profileLabel);
-  }
-
-  private getEnabledToggleClassName_(): string {
-    if (this.getPref('nearby_sharing.enabled').value) {
-      return 'enabled-toggle-on';
-    }
-    return 'enabled-toggle-off';
   }
 
   private onOnboardingCancelled_(): void {

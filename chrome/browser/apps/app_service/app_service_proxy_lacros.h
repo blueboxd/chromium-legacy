@@ -115,9 +115,7 @@ class AppServiceProxyLacros : public KeyedService,
   // Convenience method that calls app_icon_loader()->LoadIcon to load app icons
   // with `app_id`. `callback` may be dispatched synchronously if it's possible
   // to quickly return a result.
-  // TODO(crbug.com/1412708): Remove app_type from interface.
   std::unique_ptr<IconLoader::Releaser> LoadIcon(
-      AppType app_type,
       const std::string& app_id,
       const IconType& icon_type,
       int32_t size_hint_in_dip,

@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(BrowserUserEducationServiceBrowserTest,
        IPHFailureReason::kWrongSessionRate, "crbug.com/1443063"},
       {&feature_engagement::kIPHSideSearchFeature,
        IPHFailureReason::kWrongSessionRate, "crbug.com/1443063"},
-      {&feature_engagement::kIPHHighEfficiencyModeFeature,
+      {&feature_engagement::kIPHMemorySaverModeFeature,
        IPHFailureReason::kWrongSessionRate, "crbug.com/1443063"},
       {&feature_engagement::kIPHPriceTrackingInSidePanelFeature, std::nullopt,
        "crbug.com/1443063"},
@@ -392,6 +392,15 @@ IN_PROC_BROWSER_TEST_F(BrowserUserEducationServiceBrowserTest,
             break;
           case user_education::FeaturePromoSpecification::PromoSubtype::
               kLegalNotice:
+            // These should not be session limited, and should limit other IPH.
+            if (is_session_limited || !limits_other_iph) {
+              MaybeAddFailure(failures, exceptions, feature,
+                              IPHFailureReason::kWrongSessionImpactPerApp,
+                              feature_config);
+            }
+            break;
+          case user_education::FeaturePromoSpecification::PromoSubtype::
+              kActionableAlert:
             // These should not be session limited, and should limit other IPH.
             if (is_session_limited || !limits_other_iph) {
               MaybeAddFailure(failures, exceptions, feature,
@@ -534,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(BrowserUserEducationServiceBrowserTest, AutoConfigure) {
   EXPECT_EQ(
       feature_engagement::EventConfig(
           "WebUiHelpBubbleTest_trigger",
-          feature_engagement::Comparator(feature_engagement::LESS_THAN, 3),
+          feature_engagement::Comparator(feature_engagement::LESS_THAN, 5),
           feature_engagement::kMaxStoragePeriod,
           feature_engagement::kMaxStoragePeriod),
       config.trigger);

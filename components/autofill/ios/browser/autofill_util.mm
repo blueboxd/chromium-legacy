@@ -23,6 +23,7 @@
 #import "components/autofill/core/common/field_data_manager.h"
 #import "components/autofill/core/common/form_data.h"
 #import "components/autofill/core/common/form_field_data.h"
+#import "components/autofill/core/common/signatures.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/security/ssl_status.h"
@@ -84,7 +85,7 @@ bool IsContextSecureForWebState(web::WebState* web_state) {
 }
 
 std::unique_ptr<base::Value> ParseJson(NSString* json_string) {
-  absl::optional<base::Value> json_value =
+  std::optional<base::Value> json_value =
       base::JSONReader::Read(base::SysNSStringToUTF8(json_string));
   if (!json_value) {
     return nullptr;
@@ -177,6 +178,27 @@ bool ExtractFormData(const base::Value::Dict& form,
     return false;
   }
 
+  bool include_frame_metadata = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillAcrossIframesIos);
+
+  const url::Origin frame_origin_object =
+      include_frame_metadata ? url::Origin::Create(form_frame_origin)
+                             : url::Origin();
+
+  // Frame ID of the frame containing this form is mandatory when
+  // kAutofillAcrossIframesIos is enabled.
+  std::optional<base::UnguessableToken> host_frame;
+  if (const std::string* frame_id = form.FindString("frame_id")) {
+    form_data->frame_id = *frame_id;
+    if (include_frame_metadata) {
+      host_frame = DeserializeJavaScriptFrameId(*frame_id);
+      if (!host_frame) {
+        return false;
+      }
+      form_data->host_frame = LocalFrameToken(*host_frame);
+    }
+  }
+
   // main_frame_origin is used for logging UKM.
   form_data->main_frame_origin = url::Origin::Create(main_frame_url);
 
@@ -203,12 +225,8 @@ bool ExtractFormData(const base::Value::Dict& form,
   }
   form_data->is_form_tag =
       form.FindBool("is_form_tag").value_or(form_data->is_form_tag);
-  if (const std::string* frame_id = form.FindString("frame_id")) {
-    form_data->frame_id = *frame_id;
-  }
 
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillAcrossIframesIos)) {
+  if (include_frame_metadata) {
     // Child frame tokens, optional.
     if (const base::Value::List* child_frames_list =
             form.FindList("child_frames")) {
@@ -232,9 +250,23 @@ bool ExtractFormData(const base::Value::Dict& form,
     if (field_dict.is_dict() &&
         ExtractFormFieldData(field_dict.GetDict(), field_data_manager,
                              &field_data)) {
+      // Some data is extracted at the form level, but also appears at the
+      // field level. Reuse the extracted values.
+      if (include_frame_metadata) {
+        field_data.host_frame = form_data->host_frame;
+        field_data.host_form_id = form_data->unique_renderer_id;
+        field_data.origin = frame_origin_object;
+      }
       form_data->fields.push_back(std::move(field_data));
     } else {
       return false;
+    }
+  }
+
+  if (include_frame_metadata) {
+    FormSignature form_signature = CalculateFormSignature(*form_data);
+    for (FormFieldData& field : form_data->fields) {
+      field.host_form_signature = form_signature;
     }
   }
   return true;
@@ -277,12 +309,14 @@ bool ExtractFormFieldData(const base::Value::Dict& field,
   }
   field_data->is_autofilled =
       field.FindBool("is_autofilled").value_or(field_data->is_autofilled);
+  field_data->is_user_edited =
+      field.FindBool("is_user_edited").value_or(field_data->is_user_edited);
 
   if (const std::string* autocomplete_attribute =
           field.FindString("autocomplete_attribute")) {
     field_data->autocomplete_attribute = *autocomplete_attribute;
   }
-  if (absl::optional<int> max_length = field.FindInt("max_length")) {
+  if (std::optional<int> max_length = field.FindInt("max_length")) {
     field_data->max_length = *max_length;
   }
   field_data->parsed_autocomplete =
@@ -313,7 +347,7 @@ bool ExtractFormFieldData(const base::Value::Dict& field,
 
   // RoleAttribute::kOther is the default value. The only other value as of this
   // writing is RoleAttribute::kPresentation.
-  absl::optional<int> role = field.FindInt("role");
+  std::optional<int> role = field.FindInt("role");
   if (role &&
       *role == static_cast<int>(FormFieldData::RoleAttribute::kPresentation)) {
     field_data->role = FormFieldData::RoleAttribute::kPresentation;

@@ -38,7 +38,7 @@ class EnclaveWebSocketClient : public network::mojom::WebSocketHandshakeClient,
 
   EnclaveWebSocketClient(
       const GURL& service_url,
-      const std::string& username,
+      std::string access_token,
       raw_ptr<network::mojom::NetworkContext> network_context,
       OnResponseCallback on_reponse);
   ~EnclaveWebSocketClient() override;
@@ -88,9 +88,9 @@ class EnclaveWebSocketClient : public network::mojom::WebSocketHandshakeClient,
   void ClosePipe(SocketStatus status);
 
   State state_;
-  GURL service_url_;
-  std::string username_;
-  raw_ptr<network::mojom::NetworkContext> network_context_;
+  const GURL service_url_;
+  const std::string access_token_;
+  const raw_ptr<network::mojom::NetworkContext> network_context_;
   OnResponseCallback on_response_;
 
   // pending_read_data_ contains a partial message that is being reassembled.

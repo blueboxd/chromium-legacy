@@ -92,6 +92,8 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver,
 
   bool HasNoRenderFrame() const override { return false; }
 
+  bool IsMainFrame() const override { return true; }
+
  private:
   FakePageTimingSender::PageTimingValidator validator_;
   mutable mojom::PageLoadTimingPtr fake_timing_;
@@ -99,7 +101,7 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver,
       mojom::SoftNavigationMetrics::New(
           blink::kSoftNavigationCountDefaultValue,
           base::Milliseconds(0),
-          base::EmptyString(),
+          std::string(),
           mojom::LargestContentfulPaintTiming::New());
 };
 
@@ -122,7 +124,7 @@ TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
   observer.ExpectPageLoadTiming(timing);
   observer.ExpectSoftNavigationMetrics();
 
-  observer.DidStartNavigation(GURL(), absl::nullopt);
+  observer.DidStartNavigation(GURL(), std::nullopt);
   observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
@@ -147,7 +149,7 @@ TEST_F(MetricsRenderFrameObserverTest,
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
   observer.ExpectSoftNavigationMetrics();
-  observer.DidStartNavigation(GURL(), absl::nullopt);
+  observer.DidStartNavigation(GURL(), std::nullopt);
   observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(ui::PAGE_TRANSITION_LINK);
 
@@ -168,7 +170,7 @@ TEST_F(MetricsRenderFrameObserverTest, SingleCpuMetric) {
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
   observer.ExpectSoftNavigationMetrics();
-  observer.DidStartNavigation(GURL(), absl::nullopt);
+  observer.DidStartNavigation(GURL(), std::nullopt);
   observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(ui::PAGE_TRANSITION_LINK);
 
@@ -191,12 +193,12 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   mojom::SoftNavigationMetricsPtr soft_navigation_metrics =
       mojom::SoftNavigationMetrics::New(
           blink::kSoftNavigationCountDefaultValue, base::Milliseconds(0),
-          base::EmptyString(), mojom::LargestContentfulPaintTiming::New());
+          std::string(), mojom::LargestContentfulPaintTiming::New());
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
   observer.ExpectSoftNavigationMetrics(*soft_navigation_metrics);
 
-  observer.DidStartNavigation(GURL(), absl::nullopt);
+  observer.DidStartNavigation(GURL(), std::nullopt);
   observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
@@ -281,7 +283,7 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
   observer.ExpectSoftNavigationMetrics();
-  observer.DidStartNavigation(GURL(), absl::nullopt);
+  observer.DidStartNavigation(GURL(), std::nullopt);
   observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
@@ -309,7 +311,7 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
 
   observer.ExpectPageLoadTiming(timing_2);
   observer.ExpectSoftNavigationMetrics();
-  observer.DidStartNavigation(GURL(), absl::nullopt);
+  observer.DidStartNavigation(GURL(), std::nullopt);
   observer.ReadyToCommitNavigation(nullptr);
   observer.DidCommitProvisionalLoad(ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();

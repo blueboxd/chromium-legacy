@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_run_loop_timeout.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/fuzzing/in_process_fuzzer.h"
 #include "chrome/test/fuzzing/in_process_fuzzer_buildflags.h"
@@ -40,10 +41,7 @@ InProcessFuzzer::GetChromiumCommandLineArguments() {
 }
 
 void InProcessFuzzer::SetUp() {
-  absl::optional<base::test::ScopedRunLoopTimeout> scoped_timeout;
-  if (options_.run_loop_timeout) {
-    scoped_timeout.emplace(FROM_HERE, *options_.run_loop_timeout);
-  }
+  std::optional<base::test::ScopedRunLoopTimeout> scoped_timeout;
 
   switch (options_.run_loop_timeout_behavior) {
     case RunLoopTimeoutBehavior::kContinue:
@@ -54,6 +52,10 @@ void InProcessFuzzer::SetUp() {
       break;
     case RunLoopTimeoutBehavior::kDefault:
       break;
+  }
+
+  if (options_.run_loop_timeout) {
+    scoped_timeout.emplace(FROM_HERE, *options_.run_loop_timeout);
   }
 
   // Note that browser tests are being launched by the `SetUp` method.
@@ -215,6 +217,11 @@ int main(int argc, char** argv) {
     chromium_arguments.push_back(FILE_PATH_LITERAL("--no-zygote"));
     chromium_arguments.push_back(FILE_PATH_LITERAL("--disable-gpu"));
     base::CommandLine::ForCurrentProcess()->InitFromArgv(chromium_arguments);
+
+    // Various bits of setup are done by base::TestSuite::Initialize.
+    // As we're not a functional test suite, most of those things are not
+    // necessary, but at least this is:
+    TestTimeouts::Initialize();
   }
 
   FuzzTestLauncherDelegate* fuzzer_launcher_delegate =

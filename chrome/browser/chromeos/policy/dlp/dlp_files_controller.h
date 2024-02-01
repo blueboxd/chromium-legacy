@@ -94,7 +94,7 @@ class DlpFilesController {
 
     void Completed(base::File::Error result);
 
-    const raw_ref<const storage::FileSystemURL, ExperimentalAsh> root_;
+    const raw_ref<const storage::FileSystemURL> root_;
     FileURLsCallback callback_;
     std::vector<storage::FileSystemURL> files_urls_;
 
@@ -125,7 +125,7 @@ class DlpFilesController {
    private:
     // Counts the number of |roots| processed.
     uint counter_ = 0;
-    raw_ptr<storage::FileSystemContext, DanglingUntriaged | ExperimentalAsh>
+    raw_ptr<storage::FileSystemContext, DanglingUntriaged>
         file_system_context_ = nullptr;
     const std::vector<storage::FileSystemURL> roots_;
     FolderRecursionDelegate::FileURLsCallback callback_;
@@ -167,14 +167,17 @@ class DlpFilesController {
   explicit DlpFilesController(const DlpRulesManager& rules_manager);
 
   // Maps |file_path| to data_controls::Component if possible.
-  virtual absl::optional<data_controls::Component> MapFilePathToPolicyComponent(
+  virtual std::optional<data_controls::Component> MapFilePathToPolicyComponent(
       Profile* profile,
       const base::FilePath& file_path) = 0;
 
   // Shows DLP block desktop notification.
-  virtual void ShowDlpBlockedFiles(absl::optional<uint64_t> task_id,
+  virtual void ShowDlpBlockedFiles(std::optional<uint64_t> task_id,
                                    std::vector<base::FilePath> blocked_files,
                                    dlp::FileAction action) = 0;
+
+  // Returns true if `file_path` is in My Files directory.
+  virtual bool IsInLocalFileSystem(const base::FilePath& file_path) = 0;
 
   // Checks whether pasting or dropping the given `files` to `destination` is
   // allowed by constructing a CheckFilesTransfer request that is forwarded  to
@@ -193,8 +196,7 @@ class DlpFilesController {
   // TODO(b/284122497): Remove testing friend.
   FRIEND_TEST_ALL_PREFIXES(DlpFilesControllerComponentsTest, TestConvert);
 
-  const raw_ref<const DlpRulesManager, DanglingUntriaged | ExperimentalAsh>
-      rules_manager_;
+  const raw_ref<const DlpRulesManager, DanglingUntriaged> rules_manager_;
 
   base::WeakPtrFactory<DlpFilesController> weak_ptr_factory_{this};
 };

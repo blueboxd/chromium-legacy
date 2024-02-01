@@ -13,6 +13,7 @@
 #include "content/browser/preloading/prerender/prerender_features.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host.h"
+#include "content/browser/preloading/prerender/prerender_metrics.h"
 #include "content/browser/preloading/speculation_rules/speculation_host_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -188,7 +189,7 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
       const GURL& url,
       PreloadingTriggerType trigger_type,
       const std::string& embedder_histogram_suffix,
-      absl::optional<blink::mojom::SpeculationEagerness> eagerness,
+      std::optional<blink::mojom::SpeculationEagerness> eagerness,
       RenderFrameHostImpl* rfh) {
     switch (trigger_type) {
       case PreloadingTriggerType::kSpeculationRule:
@@ -201,23 +202,23 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
             contents()->GetWeakPtr(), rfh->GetFrameToken(),
             rfh->GetFrameTreeNodeId(), rfh->GetPageUkmSourceId(),
             ui::PAGE_TRANSITION_LINK,
-            /*url_match_predicate=*/absl::nullopt,
-            /*prerender_navigation_handle_callback=*/absl::nullopt);
+            /*url_match_predicate=*/std::nullopt,
+            /*prerender_navigation_handle_callback=*/std::nullopt);
       case PreloadingTriggerType::kEmbedder:
         return PrerenderAttributes(
             url, trigger_type, embedder_histogram_suffix,
-            /*target_hint=*/absl::nullopt, Referrer(),
-            /*eagerness=*/absl::nullopt, /*initiator_origin=*/absl::nullopt,
+            /*target_hint=*/std::nullopt, Referrer(),
+            /*eagerness=*/std::nullopt, /*initiator_origin=*/std::nullopt,
             /*initiator_process_id=*/ChildProcessHost::kInvalidUniqueID,
             contents()->GetWeakPtr(),
-            /*initiator_frame_token=*/absl::nullopt,
+            /*initiator_frame_token=*/std::nullopt,
             /*initiator_frame_tree_node_id=*/
             RenderFrameHost::kNoFrameTreeNodeId,
             /*initiator_ukm_id=*/ukm::kInvalidSourceId,
             ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-            /*url_match_predicate=*/absl::nullopt,
-            /*prerender_navigation_handle_callback=*/absl::nullopt);
+            /*url_match_predicate=*/std::nullopt,
+            /*prerender_navigation_handle_callback=*/std::nullopt);
     }
   }
 
@@ -313,7 +314,7 @@ TEST_F(PrerenderHostRegistryTest, CreateAndStartHost_Embedder_DirectURLInput) {
   const int prerender_frame_tree_node_id =
       registry().CreateAndStartHost(GeneratePrerenderAttributes(
           kPrerenderingUrl, PreloadingTriggerType::kEmbedder, "DirectURLInput",
-          absl::nullopt, contents()->GetPrimaryMainFrame()));
+          std::nullopt, contents()->GetPrimaryMainFrame()));
   ASSERT_NE(prerender_frame_tree_node_id, kNoFrameTreeNodeId);
   PrerenderHost* prerender_host =
       registry().FindHostByUrlForTesting(kPrerenderingUrl);
@@ -659,7 +660,7 @@ class PrerenderHostRegistryNewLimitAndSchedulerTest
         case PrerenderLimitGroup::kEmbedder:
           return GeneratePrerenderAttributes(
               prerendering_url, PreloadingTriggerType::kEmbedder,
-              embedder_histogram_suffix, absl::nullopt, nullptr);
+              embedder_histogram_suffix, std::nullopt, nullptr);
       }
     }();
 
@@ -1032,7 +1033,7 @@ TEST_F(PrerenderHostRegistryTest,
   const int prerender_frame_tree_node_id =
       registry().CreateAndStartHost(GeneratePrerenderAttributes(
           kPrerenderingUrl, PreloadingTriggerType::kEmbedder, "DirectURLInput",
-          absl::nullopt, initiator_rfh));
+          std::nullopt, initiator_rfh));
   EXPECT_EQ(prerender_frame_tree_node_id, RenderFrameHost::kNoFrameTreeNodeId);
   PrerenderHost* prerender_host =
       registry().FindNonReservedHostById(prerender_frame_tree_node_id);
@@ -1299,6 +1300,41 @@ TEST_F(PrerenderHostRegistryTest,
 }
 
 // End replication state matching tests ------------
+
+TEST_F(PrerenderHostRegistryTest, OneTaskToDeleteAllHosts) {
+  std::vector<int> frame_tree_node_ids;
+  std::vector<std::unique_ptr<test::PrerenderHostObserver>>
+      prerender_host_observers;
+
+  for (int i = 0; i < 2; i++) {
+    const GURL prerendering_url("https://example.com/next" +
+                                base::NumberToString(i));
+    int frame_tree_node_id =
+        registry().CreateAndStartHost(GeneratePrerenderAttributes(
+            prerendering_url, PreloadingTriggerType::kSpeculationRule, "",
+            blink::mojom::SpeculationEagerness::kEager,
+            contents()->GetPrimaryMainFrame()));
+
+    prerender_host_observers.emplace_back(
+        std::make_unique<test::PrerenderHostObserver>(*contents(),
+                                                      frame_tree_node_id));
+    frame_tree_node_ids.push_back(frame_tree_node_id);
+  }
+  int pending_task_before_posting_abandon_task =
+      task_environment()->GetPendingMainThreadTaskCount();
+  registry().CancelHosts(
+      frame_tree_node_ids,
+      PrerenderCancellationReason(PrerenderFinalStatus::kDestroyed));
+  int pending_task_after_posting_abandon_task =
+      task_environment()->GetPendingMainThreadTaskCount();
+  // Only one task was posted.
+  EXPECT_EQ(pending_task_before_posting_abandon_task + 1,
+            pending_task_after_posting_abandon_task);
+  for (auto& observer : prerender_host_observers) {
+    // All PrerenderHosts were deleted, so it should not timeout.
+    observer->WaitForDestroyed();
+  }
+}
 
 TEST_F(PrerenderHostRegistryTest, DisallowPageHavingEffectiveUrl_TriggerUrl) {
   const GURL original_url = contents()->GetLastCommittedURL();

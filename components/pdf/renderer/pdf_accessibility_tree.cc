@@ -44,6 +44,7 @@
 #include "ui/gfx/geometry/transform.h"
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "base/containers/contains.h"
 #include "base/metrics/metrics_hashes.h"
 #include "components/language/core/common/language_util.h"  // nogncheck
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -62,14 +63,18 @@ using PdfOcrRequest = PdfAccessibilityTree::PdfOcrRequest;
 
 PdfOcrRequest::PdfOcrRequest(const ui::AXNodeID& image_node_id,
                              const chrome_pdf::AccessibilityImageInfo& image,
+                             const ui::AXNodeID& root_node_id,
                              const ui::AXNodeID& parent_node_id,
                              const ui::AXNodeID& page_node_id,
                              uint32_t page_index)
     : image_node_id(image_node_id),
       image(image),
+      root_node_id(root_node_id),
       parent_node_id(parent_node_id),
       page_node_id(page_node_id),
       page_index(page_index) {}
+
+PdfOcrRequest::PdfOcrRequest(const PdfOcrRequest& other) = default;
 
 //
 // PdfOcrService
@@ -80,11 +85,13 @@ using PdfOcrService = PdfAccessibilityTree::PdfOcrService;
 PdfOcrService::PdfOcrService(
     chrome_pdf::PdfAccessibilityImageFetcher* image_fetcher,
     content::RenderFrame& render_frame,
+    ui::AXNodeID root_node_id,
     uint32_t page_count,
     OnOcrDataReceivedCallback callback)
     : image_fetcher_(image_fetcher),
       pages_per_batch_(ComputePagesPerBatch(page_count)),
       remaining_page_count_(page_count),
+      root_node_id_(root_node_id),
       on_ocr_data_received_callback_(std::move(callback)) {
   CHECK(features::IsPdfOcrEnabled());
   render_frame.GetBrowserInterfaceBroker()->GetInterface(
@@ -95,10 +102,26 @@ PdfOcrService::~PdfOcrService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void PdfOcrService::SetPageCount(uint32_t page_count) {
+void PdfOcrService::ResetService(ui::AXNodeID root_node_id,
+                                 uint32_t page_count) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   CHECK_GT(page_count, 0u);
   pages_per_batch_ = ComputePagesPerBatch(page_count);
   remaining_page_count_ = page_count;
+  root_node_id_ = root_node_id;
+
+  if (!is_ocr_in_progress_) {
+    return;
+  }
+
+  batch_requests_.clear();
+  batch_tree_updates_.clear();
+  while (!all_requests_.empty()) {
+    all_requests_.pop();
+  }
+
+  is_ocr_in_progress_ = false;
 }
 
 // static
@@ -178,6 +201,12 @@ void PdfOcrService::ReceiveOcrResultsForImage(
 
   base::UmaHistogramEnumeration("Accessibility.PdfOcr.PDFImages",
                                 PdfOcrRequestStatus::kPerformed);
+
+  // Ignore the result if the tree has changed.
+  if (request.root_node_id != root_node_id_) {
+    VLOG(1) << "Tree update for stale tree ignored.";
+    return;
+  }
 
   const bool is_last_on_page = request.is_last_on_page;
   batch_requests_.push_back(std::move(request));
@@ -550,9 +579,25 @@ void UpdateStatusNodeLiveRegionAttributes(ui::AXNodeData* node,
   }
 }
 
-// TODO(crbug.com/1442928): Need to test this status node with screen readers
-// on other desktop platforms, such as Windows, macOS, and Linux, as well as in
-// the embedded PDF case.
+std::unique_ptr<ui::AXNodeData> CreateStatusNodeStaticText(
+    content::RenderAccessibility* render_accessibility,
+    ui::AXNodeData* parent_node) {
+  // Creates a static text node for the status node to make it look like a
+  // rendered text.
+  std::unique_ptr<ui::AXNodeData> node =
+      CreateNode(ax::mojom::Role::kStaticText,
+                 ax::mojom::Restriction::kReadOnly, render_accessibility);
+  node->relative_bounds = parent_node->relative_bounds;
+  node->AddStringAttribute(ax::mojom::StringAttribute::kName, std::string());
+
+  // The static text node will be added as the first node to its parent node as
+  // the parent node will contain only this static text node.
+  CHECK(parent_node->child_ids.empty());
+  parent_node->child_ids.push_back(node->id);
+  VLOG(2) << "Creating a static text for OCR status node.";
+  return node;
+}
+
 std::unique_ptr<ui::AXNodeData> CreateStatusNode(
     content::RenderAccessibility* render_accessibility,
     ui::AXNodeData* parent_node) {
@@ -1419,8 +1464,8 @@ class PdfAccessibilityTreeBuilder {
       para_node->child_ids.push_back(image_node->id);
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
       if (!has_accessible_text_ && ocr_available) {
-        ocr_requests.emplace(image_node->id, (*images_)[i], para_node->id,
-                             page_node_->id, page_index_);
+        ocr_requests.emplace(image_node->id, (*images_)[i], root_node_->id,
+                             para_node->id, page_node_->id, page_index_);
       }
 #endif
     }
@@ -1737,11 +1782,6 @@ void PdfAccessibilityTree::DoSetAccessibilityDocInfo(
 
   ClearAccessibilityNodes();
   page_count_ = doc_info.page_count;
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  if (ocr_service_) {
-    ocr_service_->SetPageCount(page_count_);
-  }
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   doc_node_ =
       CreateNode(ax::mojom::Role::kPdfRoot, ax::mojom::Restriction::kReadOnly,
@@ -1762,6 +1802,9 @@ void PdfAccessibilityTree::DoSetAccessibilityDocInfo(
   // navigating the PDF accessibility tree.
   banner_node_ = CreateBannerNode(render_accessibility, doc_node_.get());
   status_node_ = CreateStatusNode(render_accessibility, banner_node_.get());
+  status_node_text_ =
+      CreateStatusNodeStaticText(render_accessibility, status_node_.get());
+
   SetStatusMessage(IDS_PDF_LOADING_TO_A11Y_TREE);
 
   // Create a PDF accessibility tree with the status node first to notify users
@@ -1775,10 +1818,17 @@ void PdfAccessibilityTree::DoSetAccessibilityDocInfo(
   tree_data_.tree_id = render_accessibility->GetTreeIDForPluginHost();
   tree_data_.focus_id = doc_node_->id;
   update.root_id = doc_node_->id;
-  update.nodes = {*doc_node_, *banner_node_, *status_node_};
+  update.nodes = {*doc_node_, *banner_node_, *status_node_, *status_node_text_};
   if (!tree_.Unserialize(update)) {
     LOG(FATAL) << tree_.error();
   }
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  if (ocr_service_) {
+    ocr_service_->ResetService(doc_node_->id, page_count_);
+  }
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+
   render_accessibility->SetPluginTreeSource(this);
 }
 
@@ -1823,6 +1873,7 @@ void PdfAccessibilityTree::DoSetAccessibilityPageInfo(
       tree_.Destroy();
       banner_node_.reset();
       status_node_.reset();
+      status_node_text_.reset();
     }
     return;
   }
@@ -1910,6 +1961,7 @@ void PdfAccessibilityTree::UnserializeNodes() {
   update.root_id = doc_node_->id;
   update.nodes.push_back(*doc_node_);
   update.nodes.push_back(*status_node_);
+  update.nodes.push_back(*status_node_text_);
   for (const auto& node : nodes_)
     update.nodes.push_back(std::move(*node));
 
@@ -1929,6 +1981,9 @@ void PdfAccessibilityTree::UnserializeNodes() {
 
     base::UmaHistogramBoolean("Accessibility.PDF.HasAccessibleText",
                               did_get_a_text_run_);
+    base::UmaHistogramBoolean(
+        "Accessibility.PDF.OpenedWithScreenReader",
+        render_accessibility->GetAXMode().has_mode(ui::AXMode::kScreenReader));
     if (!did_get_a_text_run_) {
       base::UmaHistogramCounts1000(
           "Accessibility.PdfOcr.InaccessiblePdfPageCount", page_count_);
@@ -1974,7 +2029,6 @@ void PdfAccessibilityTree::AddPostamblePageIfNeeded(
     update.nodes = {*doc_node_};
     if (!tree_.Unserialize(update)) {
       LOG(FATAL) << tree_.error();
-      return;
     }
 
     if (ocr_service_->AreAllPagesOcred()) {
@@ -2071,6 +2125,7 @@ void PdfAccessibilityTree::SetOcrCompleteStatus() {
   ui::AXTreeUpdate update;
   update.root_id = doc_node_->id;
   update.nodes.push_back(*status_node_);
+  update.nodes.push_back(*status_node_text_);
 
   if (!tree_.Unserialize(update)) {
     LOG(FATAL) << tree_.error();
@@ -2081,9 +2136,11 @@ void PdfAccessibilityTree::SetOcrCompleteStatus() {
 
 void PdfAccessibilityTree::SetStatusMessage(int message_id) {
   CHECK(status_node_);
+  CHECK(status_node_text_);
   const std::string message = l10n_util::GetStringUTF8(message_id);
   VLOG(2) << "Setting the status node with message: " << message;
   status_node_->SetNameChecked(message);
+  status_node_text_->SetNameChecked(message);
 }
 
 void PdfAccessibilityTree::ResetStatusNodeAttributes() {
@@ -2094,17 +2151,20 @@ void PdfAccessibilityTree::ResetStatusNodeAttributes() {
   }
 
   CHECK(status_node_);
+  CHECK(status_node_text_);
   // Clear out its live region and name attributes as it is no longer necessary
   // to keep the status node in this case.
   UpdateStatusNodeLiveRegionAttributes(status_node_.get(),
                                        AttributeUpdateType::kRemove);
   status_node_->RemoveStringAttribute(ax::mojom::StringAttribute::kName);
+  status_node_text_->RemoveStringAttribute(ax::mojom::StringAttribute::kName);
 
   ui::AXTreeUpdate update;
   update.root_id = doc_node_->id;
   // `status_node_` has been either cleared out or set with a new message, so
   // add it to `ui::AXTreeUpdate`.
   update.nodes.push_back(*status_node_);
+  update.nodes.push_back(*status_node_text_);
   if (!tree_.Unserialize(update)) {
     LOG(FATAL) << tree_.error();
   }
@@ -2350,8 +2410,7 @@ void PdfAccessibilityTree::OnOcrDataReceived(
   }
 
   // `nodes_` will be empty once they are unserialized to `tree_`.
-  bool did_unserialize_once = nodes_.empty();
-
+  bool unserialized_node_exist = !nodes_.empty();
   CHECK(doc_node_);
   CHECK_GT(ocr_requests.size(), 0u);
   CHECK_EQ(ocr_requests.size(), tree_updates.size());
@@ -2391,7 +2450,7 @@ void PdfAccessibilityTree::OnOcrDataReceived(
     CHECK(!image_bounds.IsEmpty());
 
 #if DCHECK_IS_ON()
-    if (!did_unserialize_once) {
+    if (unserialized_node_exist) {
       DCHECK(ranges::find_if(
                  nodes_,
                  [&ocr_request](const std::unique_ptr<ui::AXNodeData>& node) {
@@ -2437,7 +2496,7 @@ void PdfAccessibilityTree::OnOcrDataReceived(
     }
     RecordMostDetectedLanguageInOcrData(detected_language_count_map);
 
-    if (!did_unserialize_once) {
+    if (unserialized_node_exist) {
       // `nodes_` have not been unserialized yet, so update `nodes_` directly
       // and return. `nodes_` will be unserialized in `UnserializeNodes()`
       // later.
@@ -2449,23 +2508,13 @@ void PdfAccessibilityTree::OnOcrDataReceived(
           nodes_, [&ocr_request](const std::unique_ptr<ui::AXNodeData>& node) {
             return node->id == ocr_request.image_node_id;
           });
-      // If tree gets updated while OCR was running, the image node or parent
-      // node do not exist anymore and the result cannot be applied.
-      // TODO(crbug.com/1508404): Try canceling pending OCR requests if tree is
-      // updated.
-      if (num_erased != 1) {
-        VLOG(1) << "Ignoring OCR results as image node is removed.";
-        continue;
-      }
+      CHECK_EQ(num_erased, 1);
 
       const auto parent_node_iter = ranges::find_if(
           nodes_, [&ocr_request](const std::unique_ptr<ui::AXNodeData>& node) {
             return node->id == ocr_request.parent_node_id;
           });
-      if (parent_node_iter == ranges::end(nodes_)) {
-        VLOG(1) << "Ignoring OCR results as parent node is removed.";
-        continue;
-      }
+      CHECK(parent_node_iter != ranges::end(nodes_));
       num_erased = base::Erase((*parent_node_iter)->child_ids,
                                ocr_request.image_node_id);
       CHECK_EQ(num_erased, 1);
@@ -2478,19 +2527,11 @@ void PdfAccessibilityTree::OnOcrDataReceived(
     // `UnserializeNodes()`. Otherwise, it may try updating an `AXNodeData` that
     // does not exist in `tree_` yet, which will lead to an error.
     ui::AXNode* parent_node = tree_.GetFromId(ocr_request.parent_node_id);
-    if (!parent_node) {
-      VLOG(1) << "Ignoring OCR results as parent node is removed.";
-      continue;
-    }
-
+    CHECK(parent_node);
     ui::AXNodeData parent_node_data = parent_node->data();
     int num_erased =
         base::Erase(parent_node_data.child_ids, ocr_request.image_node_id);
-    if (num_erased != 1) {
-      VLOG(1) << "Ignoring OCR results as image node is removed.";
-      continue;
-    }
-
+    CHECK_EQ(num_erased, 1);
     parent_node_data.child_ids.push_back(extracted_text_root_node_id);
     tree_update.root_id = doc_node_->id;
     tree_update.nodes.insert(tree_update.nodes.begin(),
@@ -2500,7 +2541,7 @@ void PdfAccessibilityTree::OnOcrDataReceived(
     }
   }
 
-  if (did_unserialize_once) {
+  if (!unserialized_node_exist) {
     // PDF accessibility tree is available now, so it may be necessary to add a
     // postamble page after the last OCRed page.
     AddPostamblePageIfNeeded(ocr_requests.back().page_node_id);
@@ -2520,8 +2561,11 @@ void PdfAccessibilityTree::OnOcrDataReceived(
 
 void PdfAccessibilityTree::CreateOcrService() {
   VLOG(2) << "Creating OCR service.";
+  // If `doc_node_` is not created yet, root id should be sent to `ocr_service_`
+  // when its created.
+  auto root_id = doc_node_ ? doc_node_->id : ui::kInvalidAXNodeID;
   ocr_service_ = std::make_unique<PdfOcrService>(
-      image_fetcher_, *render_frame_, page_count_,
+      image_fetcher_, *render_frame_, root_id, page_count_,
       base::BindRepeating(&PdfAccessibilityTree::OnOcrDataReceived,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -2569,11 +2613,11 @@ void PdfAccessibilityTree::HandleAction(
   action_handler_->HandleAccessibilityAction(action_data);
 }
 
-absl::optional<PdfAccessibilityTree::AnnotationInfo>
+std::optional<PdfAccessibilityTree::AnnotationInfo>
 PdfAccessibilityTree::GetPdfAnnotationInfoFromAXNode(int32_t ax_node_id) const {
   auto iter = node_id_to_annotation_info_.find(ax_node_id);
   if (iter == node_id_to_annotation_info_.end())
-    return absl::nullopt;
+    return std::nullopt;
 
   return AnnotationInfo(iter->second.page_index, iter->second.annotation_index);
 }

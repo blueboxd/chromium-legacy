@@ -7,6 +7,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 
+import androidx.annotation.Nullable;
+
 import org.jni_zero.CalledByNative;
 
 import org.chromium.base.supplier.ObservableSupplier;
@@ -15,6 +17,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.components.browser_ui.settings.SettingsLauncher.SettingsFragment;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
@@ -28,8 +31,11 @@ public class PasswordCheckupLauncher {
     }
 
     @CalledByNative
-    private static void launchCheckupOnDevice(
-            WindowAndroid windowAndroid, @PasswordCheckReferrer int passwordCheckReferrer) {
+    static void launchCheckupOnDevice(
+            WindowAndroid windowAndroid,
+            @PasswordCheckReferrer int passwordCheckReferrer,
+            @Nullable String accountEmail) {
+        assert accountEmail == null || !accountEmail.isEmpty();
         if (windowAndroid.getContext().get() == null) return; // Window not available yet/anymore.
 
         if (PasswordManagerHelper.canUseUpm()) {
@@ -37,7 +43,8 @@ public class PasswordCheckupLauncher {
                     windowAndroid.getContext().get(),
                     passwordCheckReferrer,
                     SyncServiceFactory.get(),
-                    getModalDialogManagerSupplier(windowAndroid));
+                    getModalDialogManagerSupplier(windowAndroid),
+                    accountEmail);
             return;
         }
 
@@ -51,6 +58,14 @@ public class PasswordCheckupLauncher {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(checkupUrl));
         intent.setPackage(activity.getPackageName());
         activity.startActivity(intent);
+    }
+
+    @CalledByNative
+    static void launchSafetyCheck(WindowAndroid windowAndroid) {
+        if (windowAndroid.getContext().get() == null) return; // Window not available yet/anymore.
+        (new SettingsLauncherImpl())
+                .launchSettingsActivity(
+                        windowAndroid.getContext().get(), SettingsFragment.SAFETY_CHECK);
     }
 
     private static boolean tryLaunchingNativePasswordCheckup(Activity activity) {

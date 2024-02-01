@@ -217,7 +217,7 @@ struct SourceDestinationTestParam {
 
   std::pair<VolumeInfo, VolumeInfo> source_destination_pair;
   const char* settings_value;
-  raw_ptr<AnalysisSettings, ExperimentalAsh> expected_settings;
+  raw_ptr<AnalysisSettings> expected_settings;
 };
 
 constexpr char kNormalSourceDestinationSettings[] = R"({
@@ -553,14 +553,14 @@ constexpr char
 })";
 
 constexpr VolumeInfo kRemovableVolumeInfo{
-    file_manager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION, absl::nullopt,
+    file_manager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION, std::nullopt,
     "REMOVABLE"};
 constexpr VolumeInfo kProvidedVolumeInfo{file_manager::VOLUME_TYPE_PROVIDED,
-                                         absl::nullopt, "PROVIDED"};
+                                         std::nullopt, "PROVIDED"};
 constexpr VolumeInfo kMyFilesVolumeInfo{
-    file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY, absl::nullopt, "MY_FILES"};
+    file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY, std::nullopt, "MY_FILES"};
 constexpr VolumeInfo kDriveVolumeInfo{file_manager::VOLUME_TYPE_GOOGLE_DRIVE,
-                                      absl::nullopt, "GOOGLE_DRIVE"};
+                                      std::nullopt, "GOOGLE_DRIVE"};
 
 constexpr std::initializer_list<VolumeInfo> kVolumeInfos{
     kRemovableVolumeInfo, kProvidedVolumeInfo, kMyFilesVolumeInfo,

@@ -133,7 +133,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   void InitModalType(ui::ModalType modal_type) override;
   void FlashFrame(bool flash_frame) override;
   bool IsAnimatingClosed() const override;
-  bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;
   bool ShouldUpdateWindowTransparency() const override;
   bool ShouldUseDesktopNativeCursorManager() const override;
@@ -161,7 +160,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   absl::optional<gfx::Size> GetMinimumSizeForWindow() override;
   absl::optional<gfx::Size> GetMaximumSizeForWindow() override;
   SkPath GetWindowMaskForWindowShapeInPixels() override;
-  absl::optional<ui::MenuType> GetMenuType() override;
   absl::optional<ui::OwnedWindowAnchor> GetOwnedWindowAnchorAndRectInDIP()
       override;
   gfx::Rect ConvertRectToPixels(const gfx::Rect& rect_in_dip) const override;

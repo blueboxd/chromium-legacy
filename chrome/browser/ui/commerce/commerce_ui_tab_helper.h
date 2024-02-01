@@ -7,7 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observation.h"
+#include "chrome/browser/ui/commerce/price_tracking_page_action_controller.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/commerce/price_insights_icon_view.h"
 #include "components/commerce/core/shopping_service.h"
@@ -39,33 +39,11 @@ class View;
 
 namespace commerce {
 
-struct CommerceSubscription;
-
-// The possible ways a suggested save location can be handled. These must be
-// kept in sync with the values in enums.xml.
-enum class PageActionIconInteractionState {
-  // The icon was shown and the user clicked it.
-  kClicked = 0,
-
-  // The icon was shown and expanded before the user clicked on it.
-  kClickedExpanded = 1,
-
-  // The icon was shown but the user did not interact with it.
-  kNotClicked = 2,
-
-  // The icon was shown and expanded but the user did not interact with it.
-  kNotClickedExpanded = 3,
-
-  // This enum must be last and is only used for histograms.
-  kMaxValue = kNotClickedExpanded
-};
-
 // This tab helper is used to update and maintain the state of UI for commerce
 // features.
 class CommerceUiTabHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<CommerceUiTabHelper>,
-      public SubscriptionsObserver {
+      public content::WebContentsUserData<CommerceUiTabHelper> {
  public:
   ~CommerceUiTabHelper() override;
   CommerceUiTabHelper(const CommerceUiTabHelper& other) = delete;
@@ -99,17 +77,6 @@ class CommerceUiTabHelper
       content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
-  // SubscriptionsObserver
-  void OnSubscribe(const CommerceSubscription& subscription,
-                   bool succeeded) override;
-
-  void OnUnsubscribe(const CommerceSubscription& subscription,
-                     bool succeeded) override;
-
-  // Update this tab helper (and associated observers) to use a different
-  // shopping service for the sake of testing.
-  void SetShoppingServiceForTesting(ShoppingService* shopping_service);
-
   // Update this tab helper to use the specified image fetcher in tests.
   void SetImageFetcherForTesting(image_fetcher::ImageFetcher* image_fetcher);
 
@@ -133,6 +100,11 @@ class CommerceUiTabHelper
   // A notification that the price tracking icon was clicked.
   void OnPriceTrackingIconClicked();
 
+  PriceTrackingPageActionController* GetPriceTrackingControllerForTesting();
+
+  void SetPriceTrackingControllerForTesting(
+      std::unique_ptr<PriceTrackingPageActionController> controller);
+
  protected:
   CommerceUiTabHelper(content::WebContents* contents,
                           ShoppingService* shopping_service,
@@ -152,28 +124,15 @@ class CommerceUiTabHelper
   void HandleProductInfoResponse(const GURL& url,
                                  const std::optional<const ProductInfo>& info);
 
-  void MaybeDoProductImageFetch(const std::optional<ProductInfo>& info);
-
   void HandlePriceInsightsInfoResponse(
       const GURL& url,
       const std::optional<PriceInsightsInfo>& info);
 
   void HandleDiscountsResponse(const DiscountsMap& map);
 
-  void HandleImageFetcherResponse(
-      const GURL image_url,
-      const gfx::Image& image,
-      const image_fetcher::RequestMetadata& request_metadata);
-
   void UpdatePriceTrackingIconView();
 
   void UpdatePriceInsightsIconView();
-
-  // Update the flag tracking the price tracking state of the product from
-  // subscriptions.
-  void UpdatePriceTrackingStateFromSubscriptions();
-
-  void HandleSubscriptionChange(const CommerceSubscription& sub);
 
   void TriggerUpdateForIconView();
 
@@ -202,29 +161,13 @@ class CommerceUiTabHelper
 
   void RecordPriceInsightsIconMetrics(bool from_icon_use);
 
-  // Record the interaction state with the price tracking icon for a page.
-  // |from_icon_use| indicates an interaction to track the product since
-  // clicking the icon a second time does not immediately untrack the product.
-  void RecordPriceTrackingIconMetrics(bool from_icon_use);
-
   // The shopping service is tied to the lifetime of the browser context
   // which will always outlive this tab helper.
   raw_ptr<ShoppingService, DanglingUntriaged> shopping_service_;
   raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
   raw_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
-  // The URL of the last product image that was fetched.
-  GURL last_fetched_image_url_;
-
-  // The last image that was fetched. See |last_image_fetched_url_| for the
-  // URL that was used.
-  gfx::Image last_fetched_image_;
-
-  // Whether the product shown on the current page is tracked by the user.
-  bool is_cluster_id_tracked_by_user_{false};
-
-  // The cluster ID for the current page, if applicable.
-  std::optional<uint64_t> cluster_id_for_page_;
+  std::unique_ptr<PriceTrackingPageActionController> price_tracking_controller_;
 
   // The product info available for the current page if available.
   std::optional<ProductInfo> product_info_for_page_;
@@ -236,8 +179,6 @@ class CommerceUiTabHelper
   // the current page load.
   bool got_discounts_response_for_page_{false};
   bool got_insights_response_for_page_{false};
-  bool got_product_response_for_page_{false};
-  bool got_initial_subscription_status_for_page_{false};
   bool page_has_discounts_{false};
 
   // Page action icon uses that have already been recorded for the current page.
@@ -273,10 +214,6 @@ class CommerceUiTabHelper
   // The price insights icon label type for the current page load.
   PriceInsightsIconView::PriceInsightsIconLabelType price_insights_label_type_ =
       PriceInsightsIconView::PriceInsightsIconLabelType::kNone;
-
-  // Automatically remove this observer from its host when destroyed.
-  base::ScopedObservation<ShoppingService, SubscriptionsObserver>
-      scoped_observation_{this};
 
   base::WeakPtrFactory<CommerceUiTabHelper> weak_ptr_factory_{this};
 

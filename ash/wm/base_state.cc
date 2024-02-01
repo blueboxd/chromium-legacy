@@ -122,7 +122,7 @@ void BaseState::CycleSnap(WindowState* window_state, WMEventType event) {
     const bool is_desired_primary_snapped =
         desired_snap_state == WindowStateType::kPrimarySnapped;
     if (shell->overview_controller()->InOverviewSession() &&
-        !window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
+        !window_util::IsInFasterSplitScreenSetupSession(window)) {
       // |window| must already be in split view, and so we do not need to check
       // |SplitViewController::CanSnapWindow|, although in general it is more
       // restrictive than |WindowState::CanSnap|.
@@ -215,7 +215,7 @@ void BaseState::HandleWindowSnapping(
          event_type == WM_EVENT_SNAP_SECONDARY);
   DCHECK(window_state->CanSnap());
 
-  window_state->set_bounds_changed_by_user(true);
+  window_state->SetBoundsChangedByUser(true);
   aura::Window* window = window_state->window();
   // `SplitViewController` will decide if the window needs to be snapped in
   // split view.

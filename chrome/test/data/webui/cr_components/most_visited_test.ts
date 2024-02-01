@@ -1067,6 +1067,10 @@ function createDragAndDropSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     }));
     await flushTasks();
     const reorderCalled = handler.whenCalled('reorderMostVisitedTile');
+    document.dispatchEvent(new DragEvent('drop', {
+      clientX: secondRect.x + 1,
+      clientY: secondRect.y + 1,
+    }));
     document.dispatchEvent(new DragEvent('dragend', {
       clientX: secondRect.x + 1,
       clientY: secondRect.y + 1,
@@ -1096,6 +1100,10 @@ function createDragAndDropSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     }));
     await flushTasks();
     const reorderCalled = handler.whenCalled('reorderMostVisitedTile');
+    document.dispatchEvent(new DragEvent('drop', {
+      clientX: firstRect.x + 1,
+      clientY: firstRect.y + 1,
+    }));
     document.dispatchEvent(new DragEvent('dragend', {
       clientX: firstRect.x + 1,
       clientY: firstRect.y + 1,
@@ -1122,6 +1130,10 @@ function createDragAndDropSuite(singleRow: boolean, reflowOnOverflow: boolean) {
     first.dispatchEvent(new DragEvent('dragstart', {
       clientX: firstRect.x + firstRect.width / 2,
       clientY: firstRect.y + firstRect.height / 2,
+    }));
+    document.dispatchEvent(new DragEvent('drop', {
+      clientX: secondRect.x + 1,
+      clientY: secondRect.y + 1,
     }));
     document.dispatchEvent(new DragEvent('dragend', {
       clientX: secondRect.x + 1,
@@ -1209,6 +1221,7 @@ suite('Prerendering', () => {
   suiteSetup(() => {
     loadTimeData.overrideValues({
       prerenderEnabled: true,
+      preconnectStartTimeThreshold: 0,
       prerenderStartTimeThreshold: 0,
     });
   });
@@ -1217,11 +1230,28 @@ suite('Prerendering', () => {
     setUpTest(/*singleRow=*/ false, /*reflowOnOverflow=*/ false);
   });
 
+  test('preconnect', async () => {
+    // Arrange.
+    await addTiles(1);
+
+    // Act.
+    const tileLink = queryTiles()[0]!.querySelector('a')!;
+    // Prevent triggering a navigation, which would break the test.
+    tileLink.href = '#';
+    // Simulate a mousedown event.
+    const mouseEvent = document.createEvent('MouseEvents');
+    mouseEvent.initEvent('mouseenter', true, true);
+    tileLink.dispatchEvent(mouseEvent);
+
+    // Make sure preconnect has been triggered.
+    await handler.whenCalled('preconnectMostVisitedTile');
+  });
+
   test('onMouseHover Trigger', async () => {
     // Arrange.
     await addTiles(1);
 
-    // // Act.
+    // Act.
     const tileLink = queryTiles()[0]!.querySelector('a')!;
     // Prevent triggering a navigation, which would break the test.
     tileLink.href = '#';
@@ -1230,7 +1260,7 @@ suite('Prerendering', () => {
     mouseEvent.initEvent('mouseenter', true, true);
     tileLink.dispatchEvent(mouseEvent);
 
-    // Make sure Prerendering has been triggered
+    // Make sure Prerendering has been triggered.
     await handler.whenCalled('prerenderMostVisitedTile');
   });
 
@@ -1238,7 +1268,7 @@ suite('Prerendering', () => {
     // Arrange.
     await addTiles(1);
 
-    // // Act.
+    // Act.
     const tileLink = queryTiles()[0]!.querySelector('a')!;
     // Prevent triggering a navigation, which would break the test.
     tileLink.href = '#';
@@ -1247,7 +1277,7 @@ suite('Prerendering', () => {
     mouseEvent.initEvent('mousedown', true, true);
     tileLink.dispatchEvent(mouseEvent);
 
-    // Make sure Prerendering has been triggered
+    // Make sure Prerendering has been triggered.
     await handler.whenCalled('prerenderMostVisitedTile');
   });
 
@@ -1255,7 +1285,7 @@ suite('Prerendering', () => {
     // Arrange.
     await addTiles(1);
 
-    // // Act.
+    // Act.
     const tileLink = queryTiles()[0]!.querySelector('a')!;
     // Prevent triggering a navigation, which would break the test.
     tileLink.href = '#';

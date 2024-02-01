@@ -587,7 +587,7 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
   }
 
   // Log browser cold start for default browser promo experiment stats.
-  if (scenes.count != 0 && scenes[0].appState.mainBrowserState) {
+  if (scenes.count != 0) {
     LogBrowserLaunched(startupInformation.isColdStart);
   }
 
@@ -765,11 +765,15 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
 }
 
 + (void)recordStartupTabCount:(int)tabCount {
+  // TODO(crbug.com/1519707): Evaluate and remove old histogram.
   base::UmaHistogramCounts100("Tabs.CountAtStartup", tabCount);
+  base::UmaHistogramCounts1M("Tabs.CountAtStartup2", tabCount);
 }
 
 + (void)recordResumeTabCount:(int)tabCount {
+  // TODO(crbug.com/1519707): Evaluate and remove old histogram.
   base::UmaHistogramCounts100("Tabs.CountAtResume", tabCount);
+  base::UmaHistogramCounts1M("Tabs.CountAtResume2", tabCount);
 }
 
 + (void)recordStartupNTPTabCount:(int)tabCount {

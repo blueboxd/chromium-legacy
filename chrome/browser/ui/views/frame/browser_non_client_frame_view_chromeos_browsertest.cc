@@ -70,11 +70,11 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
-#include "chrome/browser/ui/ash/window_pin_util.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/chromeos/window_pin_util.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -177,7 +177,7 @@ class BrowserNonClientFrameViewChromeOSTestApi {
   }
 
  private:
-  const raw_ptr<BrowserNonClientFrameViewChromeOS, ExperimentalAsh> frame_view_;
+  const raw_ptr<BrowserNonClientFrameViewChromeOS> frame_view_;
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -764,18 +764,17 @@ class WebAppNonClientFrameViewAshTest
 
   static SkColor GetThemeColor() { return SK_ColorBLUE; }
 
-  raw_ptr<Browser, DanglingUntriaged | ExperimentalAsh> app_browser_ = nullptr;
-  raw_ptr<BrowserView, DanglingUntriaged | ExperimentalAsh> browser_view_ =
+  raw_ptr<Browser, DanglingUntriaged> app_browser_ = nullptr;
+  raw_ptr<BrowserView, DanglingUntriaged> browser_view_ = nullptr;
+  raw_ptr<chromeos::DefaultFrameHeader, DanglingUntriaged> frame_header_ =
       nullptr;
-  raw_ptr<chromeos::DefaultFrameHeader, DanglingUntriaged | ExperimentalAsh>
-      frame_header_ = nullptr;
-  raw_ptr<WebAppFrameToolbarView, DanglingUntriaged | ExperimentalAsh>
-      web_app_frame_toolbar_ = nullptr;
-  raw_ptr<const std::vector<ContentSettingImageView*>,
-          DanglingUntriaged | ExperimentalAsh>
+  raw_ptr<WebAppFrameToolbarView, DanglingUntriaged> web_app_frame_toolbar_ =
+      nullptr;
+  raw_ptr<
+      const std::vector<raw_ptr<ContentSettingImageView, VectorExperimental>>,
+      DanglingUntriaged>
       content_setting_views_ = nullptr;
-  raw_ptr<AppMenuButton, DanglingUntriaged | ExperimentalAsh>
-      web_app_menu_button_ = nullptr;
+  raw_ptr<AppMenuButton, DanglingUntriaged> web_app_menu_button_ = nullptr;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     TopChromeMdParamTest<InProcessBrowserTest>::SetUpCommandLine(command_line);
@@ -863,7 +862,7 @@ class WebAppNonClientFrameViewAshTest
 
     return *base::ranges::find(*content_setting_views_,
                                ContentSettingImageModel::ImageType::GEOLOCATION,
-                               &ContentSettingImageView::GetTypeForTesting);
+                               &ContentSettingImageView::GetType);
   }
 
   void SimulateClickOnView(views::View* view) {
@@ -1128,12 +1127,13 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
 // Tests that a web app's content settings icons can be interacted with.
 IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, ContentSettingIcons) {
   SetUpWebApp();
-  for (auto* view : *content_setting_views_)
+  for (ContentSettingImageView* view : *content_setting_views_) {
     EXPECT_FALSE(view->GetVisible());
+  }
 
   ContentSettingImageView* geolocation_icon = GrantGeolocationPermission();
 
-  for (auto* view : *content_setting_views_) {
+  for (ContentSettingImageView* view : *content_setting_views_) {
     bool is_geolocation_icon = view == geolocation_icon;
     EXPECT_EQ(is_geolocation_icon, view->GetVisible());
   }
@@ -1297,6 +1297,13 @@ constexpr char kPreventCloseEnabledForCalculator[] = R"([
   }
 ])";
 
+constexpr char kCalculatorForceInstalled[] = R"([
+  {
+    "url": "https://calculator.apps.chrome/",
+    "default_launch_container": "window"
+  }
+])";
+
 }  // namespace
 
 class PreventCloseBrowserNonClientFrameViewChromeOSTest
@@ -1346,7 +1353,9 @@ class PreventCloseBrowserNonClientFrameViewChromeOSTest
 IN_PROC_BROWSER_TEST_F(PreventCloseBrowserNonClientFrameViewChromeOSTest,
                        CloseButtonIsDisabled) {
   InstallPWA(GURL(kCalculatorAppUrl), web_app::kCalculatorAppId);
-  SetWebAppSettings(kPreventCloseEnabledForCalculator);
+  SetPoliciesAndWaitUntilInstalled(web_app::kCalculatorAppId,
+                                   kPreventCloseEnabledForCalculator,
+                                   kCalculatorForceInstalled);
 
   Browser* const browser =
       LaunchPWA(web_app::kCalculatorAppId, /*launch_in_window=*/true);
@@ -1365,7 +1374,7 @@ IN_PROC_BROWSER_TEST_F(PreventCloseBrowserNonClientFrameViewChromeOSTest,
           return update.AllowClose().has_value() && update.AllowClose().value();
         }));
     ClearWebAppSettings();
-    waiter.Wait();
+    waiter.Await();
   }
 
   {
@@ -1555,8 +1564,8 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
   // Float the window; the title bar is visible.
   ui::test::EventGenerator event_generator(
       widget->GetNativeWindow()->GetRootWindow());
-  event_generator.PressAndReleaseKey(ui::VKEY_F,
-                                     ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  event_generator.PressAndReleaseKeyAndModifierKeys(
+      ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
   EXPECT_FALSE(immersive_controller->IsEnabled());
 }
@@ -1606,8 +1615,8 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
   // Float a window. Immersive mode is disabled so its title bar is visible.
   ui::test::EventGenerator event_generator(
       widget2->GetNativeWindow()->GetRootWindow());
-  event_generator.PressAndReleaseKey(ui::VKEY_F,
-                                     ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  event_generator.PressAndReleaseKeyAndModifierKeys(
+      ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   EXPECT_TRUE(frame_view2->caption_button_container()->GetVisible());
   EXPECT_FALSE(immersive_controller->IsEnabled());
 }
@@ -1627,11 +1636,13 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
   // Pressing accelerator once should show the multitask menu.
   ui::test::EventGenerator event_generator(
       browser_view->GetWidget()->GetNativeWindow()->GetRootWindow());
-  event_generator.PressAndReleaseKey(ui::VKEY_Z, ui::EF_COMMAND_DOWN);
+  event_generator.PressAndReleaseKeyAndModifierKeys(ui::VKEY_Z,
+                                                    ui::EF_COMMAND_DOWN);
   ASSERT_TRUE(size_button->IsMultitaskMenuShown());
 
   // Pressing accelerator a second time should close the menu.
-  event_generator.PressAndReleaseKey(ui::VKEY_Z, ui::EF_COMMAND_DOWN);
+  event_generator.PressAndReleaseKeyAndModifierKeys(ui::VKEY_Z,
+                                                    ui::EF_COMMAND_DOWN);
   ASSERT_FALSE(size_button->IsMultitaskMenuShown());
 }
 

@@ -11,7 +11,6 @@
 #include "base/containers/intrusive_heap.h"
 #include "base/dcheck_is_on.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_token.h"
 #include "base/task/common/checked_lock.h"
@@ -35,8 +34,27 @@ enum class TaskSourceExecutionMode {
 };
 
 struct BASE_EXPORT ExecutionEnvironment {
-  SequenceToken token;
-  raw_ptr<SequenceLocalStorageMap> sequence_local_storage;
+  ExecutionEnvironment(SequenceToken token) : token(token) {}
+
+  ExecutionEnvironment(SequenceToken token,
+                       SequenceLocalStorageMap* sequence_local_storage,
+                       SingleThreadTaskRunner* single_thread_task_runner)
+      : token(token),
+        sequence_local_storage(sequence_local_storage),
+        single_thread_task_runner(single_thread_task_runner) {}
+
+  ExecutionEnvironment(SequenceToken token,
+                       SequenceLocalStorageMap* sequence_local_storage,
+                       SequencedTaskRunner* sequenced_task_runner)
+      : token(token),
+        sequence_local_storage(sequence_local_storage),
+        sequenced_task_runner(sequenced_task_runner) {}
+  ~ExecutionEnvironment();
+
+  const SequenceToken token;
+  const raw_ptr<SequenceLocalStorageMap> sequence_local_storage;
+  const raw_ptr<SingleThreadTaskRunner> single_thread_task_runner;
+  const raw_ptr<SequencedTaskRunner> sequenced_task_runner;
 };
 
 // A TaskSource is a virtual class that provides a series of Tasks that must be
@@ -131,18 +149,11 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
    private:
     friend class TaskSource;
 
-    // This field is not a raw_ptr<> because it was filtered by the rewriter
-    // for: #union
-    RAW_PTR_EXCLUSION TaskSource* task_source_;
+    raw_ptr<TaskSource> task_source_;
   };
 
   // |traits| is metadata that applies to all Tasks in the TaskSource.
-  // |task_runner| is a reference to the TaskRunner feeding this TaskSource.
-  // |task_runner| can be nullptr only for tasks with no TaskRunner, in which
-  // case |execution_mode| must be kParallel. Otherwise, |execution_mode| is the
-  // execution mode of |task_runner|.
   TaskSource(const TaskTraits& traits,
-             TaskRunner* task_runner,
              TaskSourceExecutionMode execution_mode);
   TaskSource(const TaskSource&) = delete;
   TaskSource& operator=(const TaskSource&) = delete;
@@ -201,12 +212,6 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // Transaction because it is never mutated.
   ThreadPolicy thread_policy() const { return traits_.thread_policy(); }
 
-  // A reference to TaskRunner is only retained between
-  // PushImmediateTask()/PushDelayedTask() and when DidProcessTask() returns
-  // false, guaranteeing it is safe to dereference this pointer. Otherwise, the
-  // caller should guarantee such TaskRunner still exists before dereferencing.
-  TaskRunner* task_runner() const { return task_runner_; }
-
   TaskSourceExecutionMode execution_mode() const { return execution_mode_; }
 
   void ClearForTesting();
@@ -252,15 +257,6 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // The TaskSource's position in its current DelayedPriorityQueue. Access is
   // protected by the DelayedPriorityQueue's lock.
   HeapHandle delayed_pq_heap_handle_;
-
-  // A pointer to the TaskRunner that posts to this TaskSource, if any. The
-  // derived class is responsible for calling AddRef() when a TaskSource from
-  // which no Task is executing becomes non-empty and Release() when
-  // it becomes empty again (e.g. when DidProcessTask() returns false).
-  //
-  // In practise, this pointer is going to become dangling. See task_runner()
-  // comment.
-  raw_ptr<TaskRunner, DisableDanglingPtrDetection> task_runner_;
 
   TaskSourceExecutionMode execution_mode_;
 };
@@ -343,9 +339,7 @@ class BASE_EXPORT RegisteredTaskSource {
 #endif  // DCHECK_IS_ON()
 
   scoped_refptr<TaskSource> task_source_;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #union
-  RAW_PTR_EXCLUSION TaskTracker* task_tracker_ = nullptr;
+  raw_ptr<TaskTracker> task_tracker_ = nullptr;
 };
 
 // A pair of Transaction and RegisteredTaskSource. Useful to carry a

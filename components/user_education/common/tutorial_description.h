@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_USER_EDUCATION_COMMON_TUTORIAL_DESCRIPTION_H_
 #define COMPONENTS_USER_EDUCATION_COMMON_TUTORIAL_DESCRIPTION_H_
 
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_education/common/help_bubble_params.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/interaction_sequence.h"
@@ -120,6 +120,20 @@ std::unique_ptr<TutorialHistograms> MakeTutorialHistograms(int max_steps) {
       max_steps);
 }
 
+// A class that manages a temporary state associated with the tutorial.
+// A new object via the temporary setup callback when a new tutorial is started
+// and maintained through the lifetime of the tutorial.
+class ScopedTutorialState {
+ public:
+  explicit ScopedTutorialState(ui::ElementContext context);
+  virtual ~ScopedTutorialState();
+
+  ui::ElementContext context() const { return context_; }
+
+ private:
+  const ui::ElementContext context_;
+};
+
 // A Struct that provides all of the data necessary to construct a Tutorial.
 // A Tutorial Description is a list of Steps for a tutorial. Each step has info
 // for constructing the InteractionSequence::Step from the
@@ -130,6 +144,10 @@ struct TutorialDescription {
                                    ui::TrackedElement*)>;
   using NextButtonCallback =
       base::RepeatingCallback<void(ui::TrackedElement* current_anchor)>;
+
+  using TemporaryStateCallback =
+      base::RepeatingCallback<std::unique_ptr<ScopedTutorialState>(
+          ui::ElementContext)>;
 
   TutorialDescription();
   TutorialDescription(TutorialDescription&& other) noexcept;
@@ -189,10 +207,10 @@ struct TutorialDescription {
     int title_text_id() const { return title_text_id_; }
     int body_text_id() const { return body_text_id_; }
     HelpBubbleArrow arrow() const { return arrow_; }
-    absl::optional<bool> must_remain_visible() const {
+    std::optional<bool> must_remain_visible() const {
       return must_remain_visible_;
     }
-    absl::optional<bool> must_be_visible() const { return must_be_visible_; }
+    std::optional<bool> must_be_visible() const { return must_be_visible_; }
     bool transition_only_on_event() const { return transition_only_on_event_; }
     const NameElementsCallback& name_elements_callback() const {
       return name_elements_callback_;
@@ -243,12 +261,12 @@ struct TutorialDescription {
     // steps on the same element. if left empty the interaction sequence will
     // decide what its value should be based on the generated
     // InteractionSequence::StepBuilder
-    absl::optional<bool> must_remain_visible_ = absl::nullopt;
+    std::optional<bool> must_remain_visible_ = std::nullopt;
 
     // If set, determines whether the element in question must be visible at the
     // start of the step. If left empty the interaction sequence will choose a
     // reasonable default.
-    absl::optional<bool> must_be_visible_;
+    std::optional<bool> must_be_visible_;
 
     // Should the step only be completed when an event like shown or hidden only
     // happens during current step. for more information on the implementation
@@ -523,12 +541,17 @@ struct TutorialDescription {
     WaitForAnyOf& Or(ElementSpecifier element, bool wait_for_event = false);
   };
 
-  // the list of TutorialDescription steps
+  // The list of TutorialDescription steps.
   std::vector<Step> steps;
 
   // The histogram data to use. Use MakeTutorialHistograms() above to create a
   // value to use, if you want to record specific histograms for this tutorial.
   std::unique_ptr<TutorialHistograms> histograms;
+
+  // The callback for the tutorial which returns a scoped object which
+  // manages temporary state that is maintained through the lifetime of the
+  // tutorial.
+  TemporaryStateCallback temporary_state_callback;
 
   // The ability for the tutorial to be restarted. In some cases tutorials can
   // leave the UI in a state where it can not re-run the tutorial. In these

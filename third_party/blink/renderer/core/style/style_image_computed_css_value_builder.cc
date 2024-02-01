@@ -20,8 +20,7 @@ namespace {
 
 const CSSPrimitiveValue* ComputeResolution(
     const CSSPrimitiveValue& resolution) {
-  if (RuntimeEnabledFeatures::CSSImageSetEnabled() &&
-      resolution.IsResolution()) {
+  if (resolution.IsResolution()) {
     return CSSNumericLiteralValue::Create(
         resolution.ComputeDotsPerPixel(),
         CSSPrimitiveValue::UnitType::kDotsPerPixel);
@@ -61,10 +60,15 @@ CSSValue* StyleImageComputedCSSValueBuilder::Build(CSSValue* value) const {
     return BuildImageSet(*image_set_value);
   }
   if (auto* image_crossfade = DynamicTo<cssvalue::CSSCrossfadeValue>(value)) {
+    HeapVector<std::pair<Member<CSSValue>, Member<CSSPrimitiveValue>>>
+        images_and_percentages;
+    for (const auto& [image, percentage] :
+         image_crossfade->GetImagesAndPercentages()) {
+      images_and_percentages.emplace_back(CrossfadeArgument(image), percentage);
+    }
     return MakeGarbageCollected<cssvalue::CSSCrossfadeValue>(
-        CrossfadeArgument(&image_crossfade->From()),
-        CrossfadeArgument(&image_crossfade->To()),
-        &image_crossfade->Percentage());
+        image_crossfade->IsPrefixedVariant(),
+        std::move(images_and_percentages));
   }
   if (IsA<CSSPaintValue>(value)) {
     return value;

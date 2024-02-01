@@ -49,6 +49,7 @@
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
@@ -366,9 +367,6 @@ class CORE_EXPORT WebLocalFrameImpl final
           session_storage_area) override;
   void AddHitTestOnTouchStartCallback(
       base::RepeatingCallback<void(const WebHitTestResult&)> callback) override;
-  void SetResourceCacheRemote(
-      CrossVariantMojoRemote<mojom::blink::ResourceCacheInterfaceBase> remote)
-      override;
   void BlockParserForTesting() override;
   void ResumeParserForTesting() override;
   void FlushInputForTesting(base::OnceClosure done_callback) override;

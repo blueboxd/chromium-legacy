@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_COMMAND_SCHEDULER_H_
 
 #include <memory>
+#include <optional>
+#include <type_traits>
+#include <utility>
 
 #include "base/containers/flat_map.h"
 #include "base/functional/callback_forward.h"
@@ -16,24 +19,24 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/version.h"
-#include "chrome/browser/web_applications/commands/compute_app_size_command.h"
 #include "chrome/browser/web_applications/commands/external_app_resolution_command.h"
 #include "chrome/browser/web_applications/commands/fetch_installability_for_chrome_management.h"
+#include "chrome/browser/web_applications/commands/internal/callback_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_check_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_finalize_command.h"
 #include "chrome/browser/web_applications/commands/navigate_and_trigger_install_dialog_command.h"
 #include "chrome/browser/web_applications/commands/uninstall_all_user_installed_web_apps_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/isolated_web_apps/check_isolated_web_app_bundle_installability_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_prepare_and_store_update_command.h"
 #include "chrome/browser/web_applications/jobs/uninstall/uninstall_job.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/common/web_app_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 class Profile;
@@ -52,15 +55,17 @@ class ScopedProfileKeepAlive;
 
 namespace web_app {
 
-struct IsolatedWebAppApplyUpdateCommandError;
 class IsolatedWebAppUrlInfo;
 class SignedWebBundleMetadata;
 class WebApp;
-struct WebAppInstallInfo;
 class WebAppProvider;
 enum class ApiApprovalState;
+enum class IsolatedInstallabilityCheckResult;
+struct ComputedAppSize;
+struct IsolatedWebAppApplyUpdateCommandError;
 struct IsolationData;
 struct SynchronizeOsOptions;
+struct WebAppInstallInfo;
 
 // The command scheduler is the main API to access the web app system. The
 // scheduler internally ensures:
@@ -70,6 +75,9 @@ struct SynchronizeOsOptions;
 //   implemented using `WebAppCommand`s) to prevent race conditions while
 //   reading/writing from the various data storage of the system.
 // * Operations have the necessary dependencies from the WebAppProvider system.
+//
+// Note: When adding new commands to this scheduler, please avoid including them
+// in this file, and instead forward declare needed types above.
 class WebAppCommandScheduler {
  public:
   using ManifestWriteCallback =
@@ -131,7 +139,7 @@ class WebAppCommandScheduler {
   // Install web apps managed by `ExternallyInstalledAppManager`.
   void InstallExternallyManagedApp(
       const ExternalInstallOptions& external_install_options,
-      absl::optional<webapps::AppId> installed_placeholder_app_id,
+      std::optional<webapps::AppId> installed_placeholder_app_id,
       ExternalAppResolutionCommand::InstalledCallback installed_callback,
       const base::Location& location = FROM_HERE);
 
@@ -182,7 +190,7 @@ class WebAppCommandScheduler {
   virtual void InstallIsolatedWebApp(
       const IsolatedWebAppUrlInfo& url_info,
       const IsolatedWebAppLocation& location,
-      const absl::optional<base::Version>& expected_version,
+      const std::optional<base::Version>& expected_version,
       std::unique_ptr<ScopedKeepAlive> optional_keep_alive,
       std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive,
       InstallIsolatedWebAppCallback callback,
@@ -221,9 +229,8 @@ class WebAppCommandScheduler {
   // check the installability of the bundle.
   virtual void CheckIsolatedWebAppBundleInstallability(
       const SignedWebBundleMetadata& bundle_metadata,
-      base::OnceCallback<void(CheckIsolatedWebAppBundleInstallabilityCommand::
-                                  InstallabilityCheckResult,
-                              absl::optional<base::Version>)> callback,
+      base::OnceCallback<void(IsolatedInstallabilityCheckResult,
+                              std::optional<base::Version>)> callback,
       const base::Location& call_location = FROM_HERE);
 
   // Computes the browsing data size of all installed Isolated Web Apps.
@@ -237,7 +244,7 @@ class WebAppCommandScheduler {
       const IsolatedWebAppUrlInfo& url_info,
       const std::string& partition_name,
       bool in_memory,
-      base::OnceCallback<void(absl::optional<content::StoragePartitionConfig>)>
+      base::OnceCallback<void(std::optional<content::StoragePartitionConfig>)>
           callback,
       const base::Location& location = FROM_HERE);
 
@@ -256,7 +263,7 @@ class WebAppCommandScheduler {
   // TODO(crbug.com/1434692): There could potentially be multiple app matches
   // for `install_source` and `install_url` when `app_id` is not provided,
   // handle this case better than "first matching".
-  virtual void RemoveInstallUrl(absl::optional<webapps::AppId> app_id,
+  virtual void RemoveInstallUrl(std::optional<webapps::AppId> app_id,
                                 WebAppManagement::Type install_source,
                                 const GURL& install_url,
                                 webapps::WebappUninstallSource uninstall_source,
@@ -323,39 +330,61 @@ class WebAppCommandScheduler {
   // Schedules a command that calculates the app and data size of a web app.
   void ComputeAppSize(
       const webapps::AppId& app_id,
-      base::OnceCallback<void(absl::optional<ComputeAppSizeCommand::Size>)>
-          callback);
+      base::OnceCallback<void(std::optional<ComputedAppSize>)> callback);
 
-  // Schedules provided callback after `lock` is granted. The callback can
-  // access web app resources through the `lock`. The `operation_name` is
-  // used describe this operation in the WebAppCommandManager log, surfaced
-  // in chrome://web-app-internals for debugging purposes. If the system is
-  // shutting down, or has already shut down, then the callback will not be
-  // called & will simply be destroyed.
+  // The command callback type for `ScheduleCallback*`.
+  // - `lock`: This provides access to read & write parts of the WebAppProvider
+  //   system. See WebAppCommand for information on locks, and you can find them
+  //   in chrome/browser/ewb_applications/locks.
+  // - `debug_value`: This can be populated with helpful debugging information,
+  //   and will visible in production in chrome://web-app-internals.
+  template <typename LockType, typename ReturnType>
+  using CallbackCommand =
+      base::OnceCallback<ReturnType(LockType& lock,
+                                    base::Value::Dict& debug_value)>;
+  // `ScheduleCallback*` methods provide convenient way to do operations
+  // on the WebAppProvider system that don't require any async work, but still
+  // have all of the safety guarantees of commands. All require a:
+  // - A command callback to do the operation with the lock.
+  // - A completion callback that is called after the command callback is
+  //   complete (and accepts the command return value as an argument).
+  // The completion callback is guaranteed to be called, even on system
+  // shutdown.
+  //
+  // `ScheduleCallback` is the equivalent of base::PostTaskAndReply for the
+  // command system.
+  template <typename LockType>
+  void ScheduleCallback(const std::string& operation_name,
+                        LockType::LockDescription lock_description,
+                        CallbackCommand<LockType, void> callback,
+                        base::OnceClosure on_complete,
+                        const base::Location& location = FROM_HERE) {
+    provider_->command_manager().ScheduleCommand(
+        std::make_unique<internal::CallbackCommand<LockType>>(
+            operation_name, std::move(lock_description), std::move(callback),
+            std::move(on_complete)),
+        location);
+  }
+
+  // `ScheduleCallbackWithResult` is the equivalent of
+  // base::PostTaskAndReplyWithResult for the command system.
   template <typename LockType,
-            typename DescriptionType = typename LockType::LockDescription>
-  void ScheduleCallbackWithLock(
+            typename CompletionCallbackArg,
+            typename CallbackReturnValue = std::decay_t<CompletionCallbackArg>>
+  void ScheduleCallbackWithResult(
       const std::string& operation_name,
-      std::unique_ptr<DescriptionType> lock_description,
-      base::OnceCallback<void(LockType& lock)> callback,
-      const base::Location& location = FROM_HERE);
-  // Same as above, with the following diffences:
-  // - The callback now returns a debug value that is included in
-  //   WebAppCommandManager logs, viewable from chrome://web-app-internals.
-  // - An `on_complete` callback argument allows callers to specify a callback
-  //   to be called after the command has completed. This is because it can no
-  //   longer be simply chained on the command callback with `.Then`, as the
-  //   command callback now returns a value.
-  // Note: The `on_complete` callback will be called if the system has already
-  // been shut down.
-  template <typename LockType,
-            typename DescriptionType = typename LockType::LockDescription>
-  void ScheduleCallbackWithLock(
-      const std::string& operation_name,
-      std::unique_ptr<DescriptionType> lock_description,
-      base::OnceCallback<base::Value(LockType& lock)> callback,
-      const base::Location& location = FROM_HERE,
-      base::OnceClosure on_complete = base::DoNothing());
+      LockType::LockDescription lock_description,
+      CallbackCommand<LockType, CallbackReturnValue> callback,
+      base::OnceCallback<void(CompletionCallbackArg)> on_complete,
+      CallbackReturnValue arg_for_shutdown,
+      const base::Location& location = FROM_HERE) {
+    provider_->command_manager().ScheduleCommand(
+        std::make_unique<internal::CallbackCommandWithResult<
+            LockType, CompletionCallbackArg>>(
+            operation_name, std::move(lock_description), std::move(callback),
+            std::move(on_complete), std::move(arg_for_shutdown)),
+        location);
+  }
 
   // Schedules to clear the browsing data for web app, given the inclusive time
   // range.
@@ -369,9 +398,9 @@ class WebAppCommandScheduler {
   void LaunchApp(const webapps::AppId& app_id,
                  const base::CommandLine& command_line,
                  const base::FilePath& current_directory,
-                 const absl::optional<GURL>& url_handler_launch_url,
-                 const absl::optional<GURL>& protocol_handler_launch_url,
-                 const absl::optional<GURL>& file_launch_url,
+                 const std::optional<GURL>& url_handler_launch_url,
+                 const std::optional<GURL>& protocol_handler_launch_url,
+                 const std::optional<GURL>& file_launch_url,
                  const std::vector<base::FilePath>& launch_files,
                  LaunchWebAppCallback callback,
                  const base::Location& location = FROM_HERE);
@@ -400,7 +429,7 @@ class WebAppCommandScheduler {
   void SynchronizeOsIntegration(
       const webapps::AppId& app_id,
       base::OnceClosure synchronize_callback,
-      absl::optional<SynchronizeOsOptions> synchronize_options = absl::nullopt,
+      std::optional<SynchronizeOsOptions> synchronize_options = std::nullopt,
       const base::Location& location = FROM_HERE);
 
   // Finds web apps that share the same install URLs (possibly across different

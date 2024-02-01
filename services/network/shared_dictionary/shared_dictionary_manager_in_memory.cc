@@ -30,17 +30,14 @@ class DictionaryReference {
   ~DictionaryReference() = default;
 
   raw_ptr<SharedDictionaryStorageInMemory> storage() const { return storage_; }
-  const raw_ptr<const SharedDictionaryStorageInMemory::DictionaryInfo,
-                DanglingUntriaged>
-  dict() const {
+  const raw_ptr<const SharedDictionaryStorageInMemory::DictionaryInfo> dict()
+      const {
     return dict_;
   }
 
  private:
   raw_ptr<SharedDictionaryStorageInMemory> storage_;
-  raw_ptr<const SharedDictionaryStorageInMemory::DictionaryInfo,
-          DanglingUntriaged>
-      dict_;
+  raw_ptr<const SharedDictionaryStorageInMemory::DictionaryInfo> dict_;
 };
 
 struct LastUsedTimeLess {
@@ -134,12 +131,12 @@ void SharedDictionaryManagerInMemory::MaybeRunCacheEvictionPerSite(
 }
 
 void SharedDictionaryManagerInMemory::MaybeRunCacheEviction() {
-  RunCacheEvictionImpl(absl::nullopt, cache_max_size_, cache_max_size_ * 0.9,
+  RunCacheEvictionImpl(std::nullopt, cache_max_size_, cache_max_size_ * 0.9,
                        cache_max_count_, cache_max_count_ * 0.9);
 }
 
 void SharedDictionaryManagerInMemory::RunCacheEvictionImpl(
-    absl::optional<net::SchemefulSite> top_frame_site,
+    std::optional<net::SchemefulSite> top_frame_site,
     uint64_t max_size,
     uint64_t size_low_watermark,
     uint64_t max_count,
@@ -198,6 +195,7 @@ void SharedDictionaryManagerInMemory::RunCacheEvictionImpl(
       break;
     }
   }
+  dictionaries.clear();  // Unneeded, and may ref. about-to-be-deleted things.
   for (auto& candidate : eviction_candidates) {
     candidate.storage()->DeleteDictionary(candidate.host(), candidate.match());
   }

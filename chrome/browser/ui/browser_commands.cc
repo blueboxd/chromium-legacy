@@ -164,6 +164,7 @@
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/cookies/cookie_util.h"
+#include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -187,6 +188,11 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "chrome/browser/pdf/pdf_extension_util.h"
+#include "pdf/pdf_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -1452,7 +1458,7 @@ void SaveCreditCard(Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents();
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
-  controller->ReshowBubble();
+  controller->ReshowBubble(/*is_user_gesture=*/true);
 }
 
 void SaveIban(Browser* browser) {
@@ -1515,7 +1521,10 @@ void ShowVirtualCardEnrollBubble(Browser* browser) {
 void StartTabOrganizationRequest(Browser* browser) {
   TabOrganizationService* service =
       TabOrganizationServiceFactory::GetForProfile(browser->profile());
-  service->StartRequest(browser);
+  UMA_HISTOGRAM_BOOLEAN("Tab.Organization.AllEntrypoints.Clicked", true);
+  UMA_HISTOGRAM_BOOLEAN("Tab.Organization.ThreeDotMenu.Clicked", true);
+
+  service->RestartSessionAndShowUI(browser);
 }
 
 void ShowTranslateBubble(Browser* browser) {
@@ -1632,6 +1641,14 @@ void SavePage(Browser* browser) {
   DCHECK(current_tab);
   if (current_tab->GetContentsMimeType() == "application/pdf") {
     base::RecordAction(UserMetricsAction("PDF.SavePage"));
+#if BUILDFLAG(ENABLE_PDF)
+    // The PDF viewer may handle the event by itself.
+    if (base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif) &&
+        pdf_extension_util::MaybeDispatchSaveEvent(
+            current_tab->GetPrimaryMainFrame())) {
+      return;
+    }
+#endif  // BUILDFLAG(ENABLE_PDF)
   }
   current_tab->OnSavePage();
 }
@@ -1754,7 +1771,8 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
 }
 
 void ShowTabSearch(Browser* browser) {
-  browser->window()->CreateTabSearchBubble();
+  const int tab_search_tab_index = 0;
+  browser->window()->CreateTabSearchBubble(tab_search_tab_index);
 }
 
 void CloseTabSearch(Browser* browser) {

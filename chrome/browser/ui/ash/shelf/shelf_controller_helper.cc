@@ -15,9 +15,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/app_service/metrics/shortcut_metrics.h"
 #include "chrome/browser/apps/app_service/package_id_util.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_app_service.h"
 #include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
@@ -37,8 +39,10 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
@@ -338,6 +342,37 @@ bool ShelfControllerHelper::IsAppServiceShortcut(Profile* profile,
              ->HasShortcut(apps::ShortcutId(id));
 }
 
+// static
+std::u16string ShelfControllerHelper::GetAppServiceShortcutAccessibleLabel(
+    Profile* profile,
+    const apps::ShortcutId& shortcut_id) {
+  apps::ShortcutRegistryCache* cache =
+      apps::AppServiceProxyFactory::GetForProfile(profile)
+          ->ShortcutRegistryCache();
+  std::string shortcut_name =
+      cache->GetShortcut(shortcut_id)->name.value_or("");
+  std::string host_app_id = cache->GetShortcutHostAppId(shortcut_id);
+  std::u16string host_app_name;
+  // TODO(b/312103925): Currently app service does not publish the ash Chrome
+  // Browser full name as "Google Chrome", and we don't want to affect other
+  // usages without auditing. Therefore we hardcoded the full name here (similar
+  // to the shelf tooltip for Chrome Browser). Will clean this up after auditing
+  // all use cases and fix the issue in the upstream.
+  if (host_app_id == app_constants::kChromeAppId) {
+    host_app_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  } else {
+    apps::AppServiceProxyFactory::GetForProfile(profile)
+        ->AppRegistryCache()
+        .ForOneApp(host_app_id,
+                   [&host_app_name](const apps::AppUpdate& update) {
+                     host_app_name = base::UTF8ToUTF16(update.Name());
+                   });
+  }
+  return l10n_util::GetStringFUTF16(IDS_APP_SHORTCUT_ACCESSIBILITY_LABEL,
+                                    base::UTF8ToUTF16(shortcut_name),
+                                    host_app_name);
+}
+
 bool ShelfControllerHelper::IsValidIDForCurrentUser(
     const std::string& app_id) const {
   if (IsValidIDForArcApp(app_id))
@@ -397,7 +432,14 @@ void ShelfControllerHelper::LaunchApp(const ash::ShelfID& id,
 
   // Launch the shortcut if the shelf item is a shortcut to an app.
   if (IsAppServiceShortcut(profile_, app_id)) {
+    apps::RecordShortcutLaunchSource(apps::ShortcutActionSource::kShelf);
     proxy->LaunchShortcut(apps::ShortcutId(app_id), display_id);
+    return;
+  }
+
+  // Handle user selects promise app from Shelf
+  if (IsPromiseApp(profile_, app_id)) {
+    proxy->PromiseAppService()->UpdateInstallPriority(app_id);
     return;
   }
 

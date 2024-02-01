@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <UIKit/UIKit.h>
+
 #import <memory>
 #import <vector>
-
-#import <UIKit/UIKit.h>
 
 #import "base/apple/foundation_util.h"
 #import "base/ios/ios_util.h"
@@ -20,7 +20,7 @@
 #import "components/autofill/core/browser/metrics/autofill_metrics.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/browser/test_autofill_manager_waiter.h"
-#import "components/autofill/core/browser/webdata/autocomplete_entry.h"
+#import "components/autofill/core/browser/webdata/autocomplete/autocomplete_entry.h"
 #import "components/autofill/core/common/autofill_clock.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
@@ -154,7 +154,7 @@ using ::testing::AssertionSuccess;
 // FAIL if a field with the supplied `name` and `fieldType` is not present on
 // the `form`.
 void CheckField(const FormStructure& form,
-                ServerFieldType fieldType,
+                FieldType fieldType,
                 const char* name) {
   for (const auto& field : form) {
     if (field->heuristic_type() == fieldType) {
@@ -338,8 +338,7 @@ void AutofillControllerTest::SetUp() {
       browser_state_.get(), web_state(), infobar_manager, autofill_agent_);
 
   autofill_client_->GetPersonalDataManager()
-      ->personal_data_manager_cleaner_for_testing()
-      ->alternative_state_name_map_updater_for_testing()
+      ->get_alternative_state_name_map_updater_for_testing()
       ->set_local_state_for_testing(local_state_.Get());
 
   std::string locale("en");

@@ -10,6 +10,7 @@
 #include "components/enterprise/data_controls/verdict.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/clipboard_types.h"
 
 namespace base {
 template <typename T>
@@ -25,12 +26,10 @@ class RulesService : public KeyedService {
   ~RulesService() override;
 
   Verdict GetPrintVerdict(const GURL& printed_page_url) const;
-
-  // TODO(b/307291932): Once crrev.com/c/5054488 lands, implement this method.
-  // Verdict GetPasteVerdict(
-  //     const content::ClipboardEndpoint& source,
-  //     const content::ClipboardEndpoint& destination,
-  //     const content::ClipboardMetadata& metadata);
+  Verdict GetPasteVerdict(const content::ClipboardEndpoint& source,
+                          const content::ClipboardEndpoint& destination,
+                          const content::ClipboardMetadata& metadata) const;
+  Verdict GetCopyToOSClipboardVerdict(const GURL& source) const;
 
  protected:
   friend class RulesServiceFactory;
@@ -38,7 +37,9 @@ class RulesService : public KeyedService {
   explicit RulesService(content::BrowserContext* browser_context);
 
  private:
-  // Initialized with the profile passed in the constructor.
+  // `profile_` and `rules_manager_` are initialized with the browser_context
+  // passed in the constructor.
+  const raw_ptr<Profile> profile_ = nullptr;
   ChromeDlpRulesManager rules_manager_;
 };
 

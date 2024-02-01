@@ -73,6 +73,7 @@ void SurfaceTextureGLOwner::ReleaseResources() {
 
   // Make sure that the SurfaceTexture isn't using the GL objects.
   surface_texture_ = nullptr;
+  last_coded_size_for_memory_dumps_.reset();
 }
 
 void SurfaceTextureGLOwner::SetFrameAvailableCallback(
@@ -108,22 +109,18 @@ void SurfaceTextureGLOwner::UpdateTexImage() {
     // UpdateTexImage might change gl binding and we never should alter gl
     // binding without updating state tracking, which we can't do here, so
     // restore previous after we done.
-    // NOTE: We pass `restore_prev_even_if_invalid=true` to maintain behavior
-    // from when this class was using a custom implementation rather than the
-    // common utility.
-    // TODO(crbug.com/1367187): Eliminate this behavior with a Finch
-    // killswitch.
-    gl::ScopedRestoreTexture scoped_restore_texture(
-        gl::g_current_gl_context, GL_TEXTURE_EXTERNAL_OES,
-        /*restore_prev_even_if_invalid=*/true);
+    gl::ScopedRestoreTexture scoped_restore_texture(gl::g_current_gl_context,
+                                                    GL_TEXTURE_EXTERNAL_OES);
     surface_texture_->UpdateTexImage();
   }
 }
 
 void SurfaceTextureGLOwner::ReleaseBackBuffers() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (surface_texture_)
+  if (surface_texture_) {
     surface_texture_->ReleaseBackBuffers();
+  }
+  last_coded_size_for_memory_dumps_.reset();
 }
 
 gl::GLContext* SurfaceTextureGLOwner::GetContext() const {
@@ -187,6 +184,8 @@ bool SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
 
     base::debug::DumpWithoutCrashing();
   }
+
+  last_coded_size_for_memory_dumps_ = *coded_size;
 
   return true;
 }
@@ -290,6 +289,37 @@ bool SurfaceTextureGLOwner::DecomposeTransform(float mtx[16],
     if (visible_rect->x() >= 0 && visible_rect->y() >= 0) {
       break;
     }
+  }
+  return true;
+}
+
+bool SurfaceTextureGLOwner::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  auto dump_name =
+      base::StringPrintf("gpu/media_texture_owner_%d", tracing_id());
+
+  // We don't know the exact format of the image so we use NV12 as approximation
+  // as the most popular format.
+  constexpr auto format = viz::MultiPlaneFormat::kNV12;
+  size_t total_size = 0;
+
+  if (last_coded_size_for_memory_dumps_) {
+    total_size =
+        format.EstimatedSizeInBytes(last_coded_size_for_memory_dumps_.value());
+  }
+
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  total_size);
+
+  if (args.level_of_detail !=
+      base::trace_event::MemoryDumpLevelOfDetail::kBackground) {
+    dump->AddString(
+        "dimensions", "",
+        last_coded_size_for_memory_dumps_.value_or(gfx::Size()).ToString());
   }
   return true;
 }

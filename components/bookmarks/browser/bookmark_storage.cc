@@ -51,8 +51,7 @@ BookmarkStorage::BookmarkStorage(BookmarkModel* model,
       last_scheduled_save_(base::TimeTicks::Now()) {}
 
 BookmarkStorage::~BookmarkStorage() {
-  if (writer_.HasPendingWrite())
-    writer_.DoScheduledWrite();
+  SaveNowIfScheduled();
 }
 
 void BookmarkStorage::ScheduleSave() {
@@ -72,17 +71,6 @@ void BookmarkStorage::ScheduleSave() {
   last_scheduled_save_ = base::TimeTicks::Now();
 }
 
-void BookmarkStorage::BookmarkModelDeleted() {
-  // We need to save now as otherwise by the time SerializeData() is invoked
-  // the model is gone.
-  if (writer_.HasPendingWrite()) {
-    writer_.DoScheduledWrite();
-    DCHECK(!writer_.HasPendingWrite());
-  }
-
-  model_ = nullptr;
-}
-
 base::ImportantFileWriter::BackgroundDataProducerCallback
 BookmarkStorage::GetSerializedDataProducerForBackgroundSequence() {
   BookmarkCodec codec;
@@ -90,12 +78,12 @@ BookmarkStorage::GetSerializedDataProducerForBackgroundSequence() {
       codec.Encode(model_, model_->client()->EncodeBookmarkSyncMetadata()));
 
   return base::BindOnce(
-      [](base::Value value) -> absl::optional<std::string> {
+      [](base::Value value) -> std::optional<std::string> {
         // This runs on the background sequence.
         std::string output;
         if (!base::JSONWriter::WriteWithOptions(
                 value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &output)) {
-          return absl::nullopt;
+          return std::nullopt;
         }
         return output;
       },
@@ -104,6 +92,16 @@ BookmarkStorage::GetSerializedDataProducerForBackgroundSequence() {
 
 bool BookmarkStorage::HasScheduledSaveForTesting() const {
   return writer_.HasPendingWrite();
+}
+
+void BookmarkStorage::SaveNowIfScheduledForTesting() {
+  SaveNowIfScheduled();
+}
+
+void BookmarkStorage::SaveNowIfScheduled() {
+  if (writer_.HasPendingWrite()) {
+    writer_.DoScheduledWrite();
+  }
 }
 
 }  // namespace bookmarks

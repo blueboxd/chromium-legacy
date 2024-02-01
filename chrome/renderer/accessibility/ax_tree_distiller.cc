@@ -104,10 +104,8 @@ void AddContentNodesToVector(const ui::AXNode* node,
 }  // namespace
 
 AXTreeDistiller::AXTreeDistiller(
-    content::RenderFrame* render_frame,
     OnAXTreeDistilledCallback on_ax_tree_distilled_callback)
-    : render_frame_(render_frame),
-      on_ax_tree_distilled_callback_(on_ax_tree_distilled_callback) {
+    : on_ax_tree_distilled_callback_(on_ax_tree_distilled_callback) {
   // TODO(crbug.com/1450930): Use a global ukm recorder instance instead.
   mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;
   content::RenderThread::Get()->BindHostReceiver(
@@ -120,9 +118,7 @@ AXTreeDistiller::~AXTreeDistiller() = default;
 void AXTreeDistiller::Distill(const ui::AXTree& tree,
                               const ui::AXTreeUpdate& snapshot,
                               const ukm::SourceId ukm_source_id) {
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   base::TimeTicks start_time = base::TimeTicks::Now();
-#endif
 
   std::vector<ui::AXNodeID> content_node_ids;
   if (features::IsReadAnythingWithAlgorithmEnabled()) {
@@ -133,14 +129,12 @@ void AXTreeDistiller::Distill(const ui::AXTree& tree,
   // If Read Anything with Screen 2x is enabled and the main content extractor
   // is bound, kick off Screen 2x run, which distills the AXTree in the
   // utility process using ML.
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (features::IsReadAnythingWithScreen2xEnabled() &&
       main_content_extractor_.is_bound()) {
     DistillViaScreen2x(tree, snapshot, ukm_source_id, start_time,
                        &content_node_ids);
     return;
   }
-#endif
 
   // Ensure we still callback if Screen2x is not available.
   on_ax_tree_distilled_callback_.Run(tree.GetAXTreeID(), content_node_ids);
@@ -180,7 +174,6 @@ void AXTreeDistiller::RecordRulesMetrics(ukm::SourceId ukm_source_id,
   }
 }
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 void AXTreeDistiller::DistillViaScreen2x(
     const ui::AXTree& tree,
     const ui::AXTreeUpdate& snapshot,
@@ -217,11 +210,11 @@ void AXTreeDistiller::ProcessScreen2xResult(
   // the selected nodes.
 }
 
-void AXTreeDistiller::ScreenAIServiceReady() {
-  if (main_content_extractor_.is_bound()) {
+void AXTreeDistiller::ScreenAIServiceReady(content::RenderFrame* render_frame) {
+  if (main_content_extractor_.is_bound() || !render_frame) {
     return;
   }
-  render_frame_->GetBrowserInterfaceBroker()->GetInterface(
+  render_frame->GetBrowserInterfaceBroker()->GetInterface(
       main_content_extractor_.BindNewPipeAndPassReceiver());
   main_content_extractor_.set_disconnect_handler(
       base::BindOnce(&AXTreeDistiller::OnMainContentExtractorDisconnected,
@@ -252,4 +245,3 @@ void AXTreeDistiller::RecordMergedMetrics(ukm::SourceId ukm_source_id,
         .Record(ukm_recorder_.get());
   }
 }
-#endif

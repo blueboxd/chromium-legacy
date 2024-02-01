@@ -73,7 +73,7 @@ class OfflineContentAggregator : public OfflineContentProvider,
   void RemoveItem(const ContentId& id) override;
   void CancelDownload(const ContentId& id) override;
   void PauseDownload(const ContentId& id) override;
-  void ResumeDownload(const ContentId& id, bool has_user_gesture) override;
+  void ResumeDownload(const ContentId& id) override;
   void GetItemById(const ContentId& id, SingleItemCallback callback) override;
   void GetAllItems(MultipleItemCallback callback) override;
   void GetVisualsForItem(const ContentId& id,
@@ -90,13 +90,13 @@ class OfflineContentAggregator : public OfflineContentProvider,
   void OnItemsAdded(const OfflineItemList& items) override;
   void OnItemRemoved(const ContentId& id) override;
   void OnItemUpdated(const OfflineItem& item,
-                     const absl::optional<UpdateDelta>& update_delta) override;
+                     const std::optional<UpdateDelta>& update_delta) override;
   void OnContentProviderGoingDown() override;
 
   void OnGetAllItemsDone(OfflineContentProvider* provider,
                          const OfflineItemList& items);
   void OnGetItemByIdDone(SingleItemCallback callback,
-                         const absl::optional<OfflineItem>& item);
+                         const std::optional<OfflineItem>& item);
 
   // Stores a map of name_space -> OfflineContentProvider.  These
   // OfflineContentProviders are all aggregated by this class and exposed to the

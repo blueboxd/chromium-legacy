@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -250,8 +251,8 @@ class SkottieWrapperImpl : public SkottieWrapper {
                 base::BindRepeating(
                     &SkottieWrapperImpl::RunCurrentFrameDataCallback,
                     base::Unretained(this)),
-                base::StringPiece(reinterpret_cast<const char*>(data.data()),
-                                  data.size()))) {}
+                std::string_view(reinterpret_cast<const char*>(data.data()),
+                                 data.size()))) {}
 
   SkottieWrapperImpl(const SkottieWrapperImpl&) = delete;
   SkottieWrapperImpl& operator=(const SkottieWrapperImpl&) = delete;
@@ -327,7 +328,7 @@ class SkottieWrapperImpl : public SkottieWrapper {
 
   base::span<const uint8_t> raw_data() const override {
     DCHECK(raw_data_.size());
-    return base::as_bytes(base::make_span(raw_data_.data(), raw_data_.size()));
+    return raw_data_;
   }
 
   uint32_t id() const override { return id_; }

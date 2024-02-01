@@ -303,7 +303,24 @@ class CORE_EXPORT OutOfFlowLayoutPart {
       bool outer_context_has_fixedpos_container = false,
       HeapVector<MulticolChildInfo>* multicol_children = nullptr);
 
-  NodeInfo SetupNodeInfo(const LogicalOofPositionedNode& oof_node);
+  void CreateAnchorEvaluator(
+      absl::optional<AnchorEvaluatorImpl>& anchor_evaluator_storage,
+      const ContainingBlockInfo& container_info,
+      const PhysicalSize& available_size,
+      WritingDirectionMode self_writing_direction,
+      const ScopedCSSName* default_anchor_specifier,
+      const LayoutBox& candidate_layout_box,
+      const LogicalAnchorQueryMap* anchor_queries,
+      const LayoutObject* implicit_anchor);
+
+  const ContainingBlockInfo ApplyInsetArea(
+      const InsetArea& inset_area,
+      const ContainingBlockInfo& container_info,
+      const LogicalOofPositionedNode& candidate,
+      const LogicalAnchorQueryMap* anchor_queries);
+
+  NodeInfo SetupNodeInfo(const LogicalOofPositionedNode& oof_node,
+                         const LogicalAnchorQueryMap* anchor_queries);
 
   const LayoutResult* LayoutOOFNode(
       NodeToLayout& oof_node_to_layout,
@@ -322,6 +339,7 @@ class CORE_EXPORT OutOfFlowLayoutPart {
   absl::optional<OffsetInfo> TryCalculateOffset(
       const NodeInfo& node_info,
       const ComputedStyle& style,
+      AnchorEvaluatorImpl*,
       const LogicalAnchorQueryMap* anchor_queries,
       const LayoutObject* implicit_anchor,
       bool try_fit_available_space,

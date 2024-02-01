@@ -27,7 +27,7 @@ class CPUMeasurementDelegateImpl final : public CPUMeasurementDelegate {
   explicit CPUMeasurementDelegateImpl(const ProcessNode* process_node);
   ~CPUMeasurementDelegateImpl() final = default;
 
-  base::TimeDelta GetCumulativeCPUUsage() final;
+  std::optional<base::TimeDelta> GetCumulativeCPUUsage() final;
 
  private:
   std::unique_ptr<base::ProcessMetrics> process_metrics_;
@@ -44,8 +44,19 @@ CPUMeasurementDelegateImpl::CPUMeasurementDelegateImpl(
 #endif
 }
 
-base::TimeDelta CPUMeasurementDelegateImpl::GetCumulativeCPUUsage() {
-  return process_metrics_->GetCumulativeCPUUsage();
+std::optional<base::TimeDelta>
+CPUMeasurementDelegateImpl::GetCumulativeCPUUsage() {
+  base::TimeDelta cpu_usage;
+#if BUILDFLAG(IS_WIN)
+  cpu_usage = process_metrics_->GetPreciseCumulativeCPUUsage();
+#else
+  cpu_usage = process_metrics_->GetCumulativeCPUUsage();
+#endif
+  // Most platforms return a zero TimeDelta on error, Linux returns a negative.
+  if (!cpu_usage.is_positive()) {
+    return std::nullopt;
+  }
+  return cpu_usage;
 }
 
 // The default production factory for CPUMeasurementDelegateImpl objects.
@@ -89,7 +100,7 @@ CPUMeasurementDelegateFactoryImpl::CreateDelegateForProcess(
 // static
 void CPUMeasurementDelegate::SetDelegateFactoryForTesting(Graph* graph,
                                                           Factory* factory) {
-  auto* scheduler = QueryScheduler::GetFromGraph(graph);
+  auto* scheduler = internal::QueryScheduler::GetFromGraph(graph);
   CHECK(scheduler);
   scheduler
       ->GetCPUMonitorForTesting()                      // IN-TEST

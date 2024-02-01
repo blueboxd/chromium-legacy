@@ -25,7 +25,6 @@
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
-#include "content/browser/indexed_db/indexed_db_client_state_checker_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
@@ -64,20 +63,22 @@ base::FilePath CreateAndReturnTempDir(base::ScopedTempDir* temp_dir) {
 class LevelDBLock {
  public:
   LevelDBLock() = default;
-  LevelDBLock(leveldb::Env* env, leveldb::FileLock* lock)
-      : env_(env), lock_(lock) {}
+  LevelDBLock(leveldb::Env* env, std::unique_ptr<leveldb::FileLock> lock)
+      : env_(env), lock_(std::move(lock)) {}
 
   LevelDBLock(const LevelDBLock&) = delete;
   LevelDBLock& operator=(const LevelDBLock&) = delete;
 
   ~LevelDBLock() {
-    if (env_)
-      env_->UnlockFile(lock_);
+    if (env_) {
+      // The call to UnlockFile assumes ownership of the lock.
+      env_->UnlockFile(lock_.release());
+    }
   }
 
  private:
   raw_ptr<leveldb::Env> env_ = nullptr;
-  raw_ptr<leveldb::FileLock, DanglingUntriaged> lock_ = nullptr;
+  std::unique_ptr<leveldb::FileLock> lock_;
 };
 
 std::unique_ptr<LevelDBLock> LockForTesting(const base::FilePath& file_name) {
@@ -88,7 +89,8 @@ std::unique_ptr<LevelDBLock> LockForTesting(const base::FilePath& file_name) {
   if (!status.ok())
     return nullptr;
   DCHECK(lock);
-  return std::make_unique<LevelDBLock>(env, lock);
+  return std::make_unique<LevelDBLock>(
+      env, std::unique_ptr<leveldb::FileLock>(lock));
 }
 
 }  // namespace
@@ -531,7 +533,8 @@ TEST_P(IndexedDBTestFirstOrThirdParty, ForceCloseOpenDatabasesOnCommitFailure) {
             factory->GetBucketContextForTesting(bucket_info->id)
                 ->delegate()
                 .on_fatal_error.Run(
-                    leveldb::Status::NotSupported("operation not supported"));
+                    leveldb::Status::NotSupported("operation not supported"),
+                    {});
           },
           context()->GetIDBFactory(), &bucket_info),
       &bucket_info);

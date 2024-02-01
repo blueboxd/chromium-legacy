@@ -39,6 +39,11 @@ extern const char kMediaBackgrounded[];
 // The user opened the Global Media Controls dialog.
 extern const char kGlobalMediaControlsOpened[];
 
+// A side panel has been pinned.
+extern const char kSidePanelPinned[];
+// A side panel has been opened from the app menu.
+extern const char kSidePanelFromMenuShown[];
+
 // The side search panel was automatically triggered.
 extern const char kSideSearchAutoTriggered[];
 // The side search panel was opened by the user.
@@ -71,7 +76,7 @@ extern const char kFocusHelpBubbleAcceleratorPromoRead[];
 extern const char kBatterySaverDialogShown[];
 
 // The user has opened the high efficiency page action chip
-extern const char kHighEfficiencyDialogShown[];
+extern const char kMemorySaverDialogShown[];
 
 // Extensions menu is opened when any extension has access to the current site.
 extern const char kExtensionsMenuOpenedWhileExtensionHasAccess[];
@@ -195,6 +200,9 @@ extern const char kDefaultBrowserVideoPromoConditionsMet[];
 // The user has triggered the Lens button in the Omnibox keyboard.
 extern const char kLensButtonKeyboardUsed[];
 
+// The omnibox position choice promo has been shown.
+extern const char kOmniboxPositionPromoShown[];
+
 // The user has triggered Parcel Tracking.
 extern const char kParcelTrackingTriggered[];
 
@@ -208,6 +216,18 @@ extern const char kIOSMultiGestureRefreshUsed[];
 
 // The user has used the pull-to-refresh feature in iOS.
 extern const char kIOSPullToRefreshUsed[];
+
+// The user has tapped "incognito" on the page control in the tab grid.
+extern const char kIOSIncognitoPageControlTapped[];
+
+// The user has swiped left from regular tab grid to the incognito tab grid.
+extern const char kIOSSwipeLeftForIncognitoUsed[];
+
+// The user has tapped the toolbar backward/forward button to navigate on a tab.
+extern const char kIOSBackForwardButtonTapped[];
+
+// The user has swiped from the edge to navigate backward or forward on a tab.
+extern const char kIOSSwipeBackForwardUsed[];
 
 // The user has met a condition that makes the Enhanced Safe Browsing
 // inline and blue-dot promos eligible to be displayed.

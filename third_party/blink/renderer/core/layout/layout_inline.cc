@@ -268,29 +268,24 @@ PhysicalRect LayoutInline::LocalCaretRect(
   if (extra_width_to_end_of_line)
     *extra_width_to_end_of_line = LayoutUnit();
 
-  LayoutUnit inline_size = RuntimeEnabledFeatures::EmptyCaretInVerticalEnabled()
-                               ? BorderAndPaddingLogicalWidth()
-                               : BorderAndPaddingWidth();
-  DeprecatedLayoutRect caret_rect =
-      LocalCaretRectForEmptyElement(inline_size, LayoutUnit());
+  LogicalRect logical_caret_rect = LocalCaretRectForEmptyElement(
+      BorderAndPaddingLogicalWidth(), LayoutUnit());
 
   if (IsInLayoutNGInlineFormattingContext()) {
     InlineCursor cursor;
     cursor.MoveTo(*this);
     if (cursor) {
-      if (RuntimeEnabledFeatures::EmptyCaretInVerticalEnabled()) {
-        caret_rect = WritingModeConverter(
-                         {StyleRef().GetWritingMode(), TextDirection::kLtr},
-                         cursor.CurrentItem()->Size())
-                         .ToPhysical(LogicalRect(caret_rect))
-                         .ToLayoutRect();
-      }
-      caret_rect.MoveBy(
-          cursor.Current().OffsetInContainerFragment().ToLayoutPoint());
+      PhysicalRect caret_rect =
+          WritingModeConverter(
+              {StyleRef().GetWritingMode(), TextDirection::kLtr},
+              cursor.CurrentItem()->Size())
+              .ToPhysical(logical_caret_rect);
+      caret_rect.Move(cursor.Current().OffsetInContainerFragment());
+      return caret_rect;
     }
   }
 
-  return PhysicalRect(caret_rect);
+  return PhysicalRect(logical_caret_rect.ToLayoutRect());
 }
 
 void LayoutInline::AddChild(LayoutObject* new_child,
@@ -963,21 +958,16 @@ void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
 void LayoutInline::InvalidateDisplayItemClients(
     PaintInvalidationReason invalidation_reason) const {
   NOT_DESTROYED();
-  ObjectPaintInvalidator paint_invalidator(*this);
+  LayoutBoxModelObject::InvalidateDisplayItemClients(invalidation_reason);
 
-  if (IsInLayoutNGInlineFormattingContext()) {
-    if (!ShouldCreateBoxFragment())
-      return;
 #if DCHECK_IS_ON()
+  if (IsInLayoutNGInlineFormattingContext()) {
     InlineCursor cursor;
-    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
       DCHECK_EQ(cursor.Current().GetDisplayItemClient(), this);
-#endif
-    paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);
-    return;
+    }
   }
-
-  paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);
+#endif
 }
 
 PhysicalRect LayoutInline::DebugRect() const {

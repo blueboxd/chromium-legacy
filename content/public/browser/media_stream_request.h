@@ -31,8 +31,8 @@ struct CONTENT_EXPORT MediaStreamRequest {
                      const url::Origin& url_origin,
                      bool user_gesture,
                      blink::MediaStreamRequestType request_type,
-                     const std::string& requested_audio_device_id,
-                     const std::string& requested_video_device_id,
+                     const std::vector<std::string>& requested_audio_device_ids,
+                     const std::vector<std::string>& requested_video_device_ids,
                      blink::mojom::MediaStreamType audio_type,
                      blink::mojom::MediaStreamType video_type,
                      bool disable_local_echo,
@@ -73,8 +73,8 @@ struct CONTENT_EXPORT MediaStreamRequest {
   blink::MediaStreamRequestType request_type;
 
   // Stores the requested raw device id for physical audio or video devices.
-  std::string requested_audio_device_id;
-  std::string requested_video_device_id;
+  std::vector<std::string> requested_audio_device_ids;
+  std::vector<std::string> requested_video_device_ids;
 
   // Flag to indicate if the request contains audio.
   blink::mojom::MediaStreamType audio_type;
@@ -162,7 +162,7 @@ class MediaStreamUI {
   //   but the cropped-to region ended up having zero pixels.
   // * Nullopt indicates that cropping stopped.
   virtual void OnRegionCaptureRectChanged(
-      const absl::optional<gfx::Rect>& region_capture_rect) {}
+      const std::optional<gfx::Rect>& region_capture_rect) {}
 
 #if !BUILDFLAG(IS_ANDROID)
   // Focuses the display surface represented by |media_id|.

@@ -67,8 +67,7 @@ class TestPdfOcrHandler : public PdfOcrHandler {
   using PdfOcrHandler::set_web_ui;
 
  private:
-  raw_ptr<TestScreenAIInstallState, ExperimentalAsh>
-      test_screen_ai_install_state_ = nullptr;
+  raw_ptr<TestScreenAIInstallState> test_screen_ai_install_state_ = nullptr;
 };
 
 }  // namespace
@@ -130,7 +129,7 @@ class PdfOcrHandlerTest : public testing::Test {
   }
 
   void SimulateSetState(screen_ai::ScreenAIInstallState::State state) {
-    test_screen_ai_install_state_->SetState(state);
+    test_screen_ai_install_state_->SetStateForTesting(state);
   }
 
   content::TestWebUI* test_web_ui() const { return test_web_ui_.get(); }

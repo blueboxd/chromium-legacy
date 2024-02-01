@@ -7,8 +7,10 @@
 #include <inttypes.h>
 
 #include <algorithm>
+#include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -21,7 +23,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
@@ -37,7 +38,6 @@
 #include "components/services/storage/public/cpp/constants.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "storage/common/database/database_identifier.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -65,7 +65,7 @@ namespace {
 // Temporary alias as this code moves incrementally into the storage namespace.
 using StorageAreaImpl = StorageAreaImpl;
 
-constexpr base::StringPiece kVersionKey = "VERSION";
+constexpr std::string_view kVersionKey = "VERSION";
 const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
 const int64_t kMinSchemaVersion = 1;
 const int64_t kCurrentLocalStorageSchemaVersion = 1;
@@ -97,11 +97,11 @@ DomStorageDatabase::Key CreateMetaDataKey(
   return key;
 }
 
-absl::optional<blink::StorageKey> ExtractStorageKeyFromMetaDataKey(
+std::optional<blink::StorageKey> ExtractStorageKeyFromMetaDataKey(
     const DomStorageDatabase::Key& key) {
   DCHECK_GT(key.size(), std::size(kMetaPrefix));
-  const base::StringPiece key_string(reinterpret_cast<const char*>(key.data()),
-                                     key.size());
+  const std::string_view key_string(reinterpret_cast<const char*>(key.data()),
+                                    key.size());
   return blink::StorageKey::DeserializeForLocalStorage(
       key_string.substr(std::size(kMetaPrefix)));
 }
@@ -711,7 +711,7 @@ void LocalStorageImpl::OnGotMetaData(
   std::vector<mojom::StorageUsageInfoPtr> result;
   std::set<blink::StorageKey> storage_keys;
   for (const auto& row : data) {
-    absl::optional<blink::StorageKey> storage_key =
+    std::optional<blink::StorageKey> storage_key =
         ExtractStorageKeyFromMetaDataKey(row.key);
     if (!storage_key) {
       // TODO(mek): Deal with database corruption.

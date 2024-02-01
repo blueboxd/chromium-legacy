@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -43,7 +44,9 @@ public class PlusAddressCreationBottomSheetContent implements BottomSheetContent
             String proposedPlusAddressPlaceholder,
             String plusAddressModalOkText,
             String plusAddressModalCancelText,
-            GURL manageUrl) {
+            String errorReportInstruction,
+            GURL manageUrl,
+            GURL errorReportUrl) {
         View layout =
                 LayoutInflater.from(activity)
                         .inflate(R.layout.plus_address_creation_prompt, /* root= */ null);
@@ -58,11 +61,14 @@ public class PlusAddressCreationBottomSheetContent implements BottomSheetContent
         TextView modalTitleView = mContentView.findViewById(R.id.plus_address_notice_title);
         modalTitleView.setText(modalTitle);
 
+        ImageView logoView = (ImageView) mContentView.findViewById(R.id.plus_address_logo);
+        logoView.setImageResource(R.drawable.plus_addresses_logo);
+
         NoUnderlineClickableSpan settingsLink =
                 new NoUnderlineClickableSpan(
                         activity,
                         v -> {
-                            mDelegate.openManagementPage(manageUrl);
+                            mDelegate.openUrl(manageUrl);
                         });
         TextAppearanceSpan boldText =
                 new TextAppearanceSpan(activity, R.style.TextAppearance_TextMediumThick_Secondary);
@@ -80,6 +86,22 @@ public class PlusAddressCreationBottomSheetContent implements BottomSheetContent
 
         TextView proposedPlusAddressView = mContentView.findViewById(R.id.proposed_plus_address);
         proposedPlusAddressView.setText(proposedPlusAddressPlaceholder);
+
+        NoUnderlineClickableSpan errorReportLink =
+                new NoUnderlineClickableSpan(
+                        activity,
+                        v -> {
+                            mDelegate.openUrl(errorReportUrl);
+                        });
+        SpannableString errorReportString =
+                SpanApplier.applySpans(
+                        errorReportInstruction,
+                        new SpanApplier.SpanInfo("<link>", "</link>", errorReportLink));
+        TextViewWithClickableSpans plusAddressErrorReportView =
+                mContentView.findViewById(R.id.plus_address_modal_error_report);
+        plusAddressErrorReportView.setText(errorReportString);
+        plusAddressErrorReportView.setMovementMethod(LinkMovementMethod.getInstance());
+        plusAddressErrorReportView.setVisibility(View.GONE);
 
         Button plusAddressConfirmButton =
                 mContentView.findViewById(R.id.plus_address_confirm_button);
@@ -106,9 +128,13 @@ public class PlusAddressCreationBottomSheetContent implements BottomSheetContent
         }
     }
 
-    public void showError(String errorMessage) {
+    public void showError() {
         TextView proposedPlusAddressView = mContentView.findViewById(R.id.proposed_plus_address);
-        proposedPlusAddressView.setText(errorMessage);
+        proposedPlusAddressView.setVisibility(View.GONE);
+        TextViewWithClickableSpans plusAddressErrorReportView =
+                mContentView.findViewById(R.id.plus_address_modal_error_report);
+        plusAddressErrorReportView.setVisibility(View.VISIBLE);
+
         // Disable Confirm button if attempts to Confirm() fail.
         Button plusAddressConfirmButton =
                 mContentView.findViewById(R.id.plus_address_confirm_button);

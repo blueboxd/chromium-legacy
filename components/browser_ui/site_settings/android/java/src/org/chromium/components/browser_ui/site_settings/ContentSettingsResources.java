@@ -81,13 +81,13 @@ public class ContentSettingsResources {
 
         private int getEnabledSummary() {
             return mEnabledSummary == 0
-                    ? getCategorySummary(mDefaultEnabledValue)
+                    ? getCategorySummary(mDefaultEnabledValue, /* isOneTime= */ false)
                     : mEnabledSummary;
         }
 
         private int getDisabledSummary() {
             return mDisabledSummary == 0
-                    ? getCategorySummary(mDefaultDisabledValue)
+                    ? getCategorySummary(mDefaultDisabledValue, /* isOneTime= */ false)
                     : mDisabledSummary;
         }
 
@@ -451,14 +451,14 @@ public class ContentSettingsResources {
      *
      * @param context The Context for this drawable.
      * @param contentSettingsType The ContentSettingsType for this drawable. Returns null if the
-     *         resource for this type cannot be found.
+     *     resource for this type cannot be found.
      * @param value The ContentSettingValues for this drawable. If ContentSettingValues.BLOCK, the
-     *         returned icon will have a strike through it.
+     *     returned icon will have a strike through it.
      * @return A grey 24dp {@link Drawable} for this content setting.
      */
     public static Drawable getContentSettingsIcon(
             Context context,
-            @ContentSettingsType int contentSettingsType,
+            @ContentSettingsType.EnumType int contentSettingsType,
             @ContentSettingValues @Nullable Integer value,
             SiteSettingsDelegate delegate) {
         Drawable icon =
@@ -474,15 +474,15 @@ public class ContentSettingsResources {
      *
      * @param context The Context for this drawable.
      * @param contentSettingsType The ContentSettingsType for this drawable. Returns null if the
-     *         resource for this type cannot be found.
+     *     resource for this type cannot be found.
      * @param value The ContentSettingValues for this drawable. If ContentSettingValues.BLOCK, the
-     *         returned icon will have a strike through it.
+     *     returned icon will have a strike through it.
      * @param isIncognito Whether this icon should use the incognito color scheme.
      * @return A blue 24dp {@link Drawable} for this content setting.
      */
     public static Drawable getIconForOmnibox(
             Context context,
-            @ContentSettingsType int contentSettingsType,
+            @ContentSettingsType.EnumType int contentSettingsType,
             @ContentSettingValues @Nullable Integer value,
             boolean isIncognito) {
         int color =
@@ -574,11 +574,11 @@ public class ContentSettingsResources {
     }
 
     /**
-     * Returns the resource id of the title (short version), shown on the Site Settings page
-     * and in the global toggle at the top of a Website Settings page for a content type.
+     * Returns the resource id of the title (short version), shown on the Site Settings page and in
+     * the global toggle at the top of a Website Settings page for a content type.
      */
     public static int getTitle(
-            @ContentSettingsType int contentType, SiteSettingsDelegate delegate) {
+            @ContentSettingsType.EnumType int contentType, SiteSettingsDelegate delegate) {
         return getResourceItem(contentType, delegate).getTitle();
     }
 
@@ -602,12 +602,16 @@ public class ContentSettingsResources {
 
     /**
      * Returns the string resource id for a given ContentSetting to show with a permission category.
+     *
      * @param value The ContentSetting for which we want the resource.
+     * @param isOneTime Whether the content setting value has a OneTime session model.
      */
-    public static int getCategorySummary(@ContentSettingValues int value) {
+    public static int getCategorySummary(@ContentSettingValues int value, boolean isOneTime) {
         switch (value) {
             case ContentSettingValues.ALLOW:
-                return R.string.website_settings_category_allowed;
+                return isOneTime
+                        ? R.string.website_settings_category_allowed_this_time
+                        : R.string.website_settings_category_allowed;
             case ContentSettingValues.BLOCK:
                 return R.string.website_settings_category_blocked;
             case ContentSettingValues.ASK:
@@ -618,25 +622,14 @@ public class ContentSettingsResources {
     }
 
     /**
-     * Returns the string resource id for a content type to show with a permission category.
-     * @param enabled Whether the content type is enabled.
-     */
-    public static int getCategorySummary(int contentType, boolean enabled) {
-        return getCategorySummary(
-                enabled
-                        ? getDefaultEnabledValue(contentType)
-                        : getDefaultDisabledValue(contentType));
-    }
-
-    /**
-     * Returns the string resource id for a given ContentSetting to show
-     * with a particular website.
+     * Returns the string resource id for a given ContentSetting to show with a particular website.
+     *
      * @param value The ContentSetting for which we want the resource.
      * @param contentSettingsType The ContentSettingsType for this string resource id.
      */
     public static int getSiteSummary(
             @ContentSettingValues @Nullable Integer value,
-            @ContentSettingsType int contentSettingsType) {
+            @ContentSettingsType.EnumType int contentSettingsType) {
         switch (value) {
             case ContentSettingValues.ALLOW:
                 return contentSettingsType == ContentSettingsType.REQUEST_DESKTOP_SITE

@@ -67,7 +67,7 @@ void BindRawPtrParam() {
   // `raw_ptr` is not intended to be used as a function param type, so trying to
   // bind to a function with a `raw_ptr<T>` param should error out.
   raw_ptr<int> ptr = new int(3);
-  base::BindOnce([](raw_ptr<int> ptr) {}, ptr);  // expected-error@*:* {{base::Bind() target functor has a parameter of type raw_ptr<T>.}}
+  base::BindOnce([](raw_ptr<int> ptr) {}, ptr);  // expected-error@*:* {{Use T* or T& instead of raw_ptr<T> for function parameters, unless you must mark the parameter as MayBeDangling<T>.}}
 }
 
 void PointerArithmetic() {
@@ -100,6 +100,7 @@ void PointerArithmeticDisabled() {
   ptr_a2 = ptr_a1 - 1;                 // expected-error@*:* {{cannot decrement raw_ptr unless AllowPtrArithmetic trait is present.}}
   raw_ptr<TypeB> ptr_b1 = new TypeB();
   raw_ptr<TypeB> ptr_b2 = 1 + ptr_b1;  // expected-error@*:* {{cannot increment raw_ptr unless AllowPtrArithmetic trait is present.}}
+  ptr_b2 - ptr_b1;                     // expected-error@*:* {{cannot subtract raw_ptrs unless AllowPtrArithmetic trait is present.}}
 }
 
 void Indexing() {
@@ -129,6 +130,20 @@ void CrossKindConversionFromDummy() {
   DanglingPtrA ptr_a3(ptr_a1);              // expected-error@*:* {{static assertion failed due to requirement 'Traits == (raw_ptr<(anonymous namespace)::TypeA, partition_alloc::internal::RawPtrTraits::kDummyForTest>::Traits | RawPtrTraits::kMayDangle)'}}
   DanglingPtrA ptr_a4 = std::move(ptr_a1);  // expected-error {{no viable conversion from '__libcpp_remove_reference_t<raw_ptr<TypeA, partition_alloc::internal::RawPtrTraits::kDummyForTest> &>' (aka 'base::raw_ptr<(anonymous namespace)::TypeA, partition_alloc::internal::RawPtrTraits::kDummyForTest>') to 'DanglingPtrA' (aka 'raw_ptr<TypeA, base::RawPtrTraits::kMayDangle>')}}
   DanglingPtrB ptr_b2(std::move(ptr_b1));   // expected-error@*:* {{static assertion failed due to requirement 'Traits == (raw_ptr<(anonymous namespace)::TypeB, partition_alloc::internal::RawPtrTraits::kDummyForTest>::Traits | RawPtrTraits::kMayDangle)'}}
+}
+
+void CantStorePointerObtainedFromEphemeralRawAddr() {
+   int v = 123;
+   raw_ptr<int> ptr = &v;
+   int** wont_work = &ptr.AsEphemeralRawAddr();  // expected-error {{temporary whose address is used as value of local variable 'wont_work' will be destroyed at the end of the full-expression}}
+   *wont_work = nullptr;
+}
+
+void CantStoreReferenceObtainedFromEphemeralRawAddr() {
+   int v = 123;
+   raw_ptr<int> ptr = &v;
+   int*& wont_work = ptr.AsEphemeralRawAddr();  // expected-error {{temporary bound to local reference 'wont_work' will be destroyed at the end of the full-expression}}
+   wont_work = nullptr;
 }
 
 }  // namespace

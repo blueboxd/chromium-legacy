@@ -6,6 +6,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -88,17 +89,13 @@ TEST_F(AutofillFieldTest, IsFieldFillable) {
 
 // Parameters for `PrecedenceOverAutocompleteTest`
 struct PrecedenceOverAutocompleteParams {
-  // These values are used to parameterize feature
-  // 'kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete'.
-  const features::PrecedenceOverAutocompleteScope heuristic_precedence_scope;
-  const features::PrecedenceOverAutocompleteScope server_precedence_scope;
   // These values denote what type the field was viewed by html, server and
   // heuristic prediction.
   const HtmlFieldType html_field_type;
-  const ServerFieldType server_type;
-  const ServerFieldType heuristic_type;
+  const FieldType server_type;
+  const FieldType heuristic_type;
   // This value denotes what `ComputedType` should return as field type.
-  const ServerFieldType expected_result;
+  const FieldType expected_result;
 };
 
 class PrecedenceOverAutocompleteTest
@@ -107,20 +104,13 @@ class PrecedenceOverAutocompleteTest
 
  public:
   PrecedenceOverAutocompleteTest() {
-    PrecedenceOverAutocompleteParams test_case = GetParam();
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        features::kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete,
-        {{features::kAutofillHeuristicPrecedenceScopeOverAutocomplete.name,
-          features::kAutofillHeuristicPrecedenceScopeOverAutocomplete.GetName(
-              test_case.heuristic_precedence_scope)},
-         {features::kAutofillServerPrecedenceScopeOverAutocomplete.name,
-          features::kAutofillServerPrecedenceScopeOverAutocomplete.GetName(
-              test_case.server_precedence_scope)}});
+    scoped_feature_list.InitAndEnableFeature(
+        features::kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete);
   }
 };
 
-// Tests the correctness of the feature giving StreetName or HouseNumber
-// predictions, by heuristic or server, precedence over autocomplete.
+// Tests giving StreetName or HouseNumber predictions, by heuristic or server,
+// precedence over HtmlFieldType::kAddressLine(1|2) autocomplete prediction.
 TEST_P(PrecedenceOverAutocompleteTest, PrecedenceOverAutocompleteParams) {
   PrecedenceOverAutocompleteParams test_case = GetParam();
   AutofillField field;
@@ -137,151 +127,31 @@ INSTANTIATE_TEST_SUITE_P(
     PrecedenceOverAutocompleteTest,
     testing::Values(
         PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kAddressLine1And2,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kNone,
-            .html_field_type = HtmlFieldType::kAddressLine1,
-            .server_type = ADDRESS_HOME_HOUSE_NUMBER,
-            .heuristic_type = ADDRESS_HOME_STREET_NAME,
-            .expected_result = ADDRESS_HOME_STREET_NAME},
-
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kAddressLine1And2,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kNone,
-            .html_field_type = HtmlFieldType::kAddressLine2,
-            .server_type = ADDRESS_HOME_LINE2,
-            .heuristic_type = ADDRESS_HOME_HOUSE_NUMBER,
-            .expected_result = ADDRESS_HOME_HOUSE_NUMBER},
-
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kAddressLine1And2,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kNone,
-            .html_field_type = HtmlFieldType::kGivenName,
-            .server_type = ADDRESS_HOME_STREET_NAME,
-            .heuristic_type = ADDRESS_HOME_HOUSE_NUMBER,
-            .expected_result = NAME_FIRST},
-
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kRecognized,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kNone,
-            .html_field_type = HtmlFieldType::kGivenName,
-            .server_type = NAME_FIRST,
-            .heuristic_type = ADDRESS_HOME_HOUSE_NUMBER,
-            .expected_result = ADDRESS_HOME_HOUSE_NUMBER},
-
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kSpecified,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kNone,
-            .html_field_type = HtmlFieldType::kUnrecognized,
-            .server_type = UNKNOWN_TYPE,
-            .heuristic_type = ADDRESS_HOME_STREET_NAME,
-            .expected_result = ADDRESS_HOME_STREET_NAME},
-
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kAddressLine1And2,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kAddressLine1And2,
             .html_field_type = HtmlFieldType::kAddressLine2,
             .server_type = ADDRESS_HOME_STREET_NAME,
             .heuristic_type = ADDRESS_HOME_LINE2,
             .expected_result = ADDRESS_HOME_STREET_NAME},
 
         PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kAddressLine1And2,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kAddressLine1And2,
-            .html_field_type = HtmlFieldType::kGivenName,
-            .server_type = ADDRESS_HOME_STREET_NAME,
-            .heuristic_type = ADDRESS_HOME_HOUSE_NUMBER,
-            .expected_result = NAME_FIRST},
-
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kRecognized,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kAddressLine1And2,
-            .html_field_type = HtmlFieldType::kGivenName,
-            .server_type = ADDRESS_HOME_STREET_NAME,
+            .html_field_type = HtmlFieldType::kAddressLine1,
+            .server_type = ADDRESS_HOME_LINE1,
             .heuristic_type = ADDRESS_HOME_HOUSE_NUMBER,
             .expected_result = ADDRESS_HOME_HOUSE_NUMBER},
 
         PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kSpecified,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kAddressLine1And2,
-            .html_field_type = HtmlFieldType::kUnrecognized,
-            .server_type = ADDRESS_HOME_HOUSE_NUMBER,
-            .heuristic_type = ADDRESS_HOME_STREET_NAME,
-            .expected_result = ADDRESS_HOME_STREET_NAME},
-
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kRecognized,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kRecognized,
             .html_field_type = HtmlFieldType::kGivenName,
             .server_type = ADDRESS_HOME_STREET_NAME,
             .heuristic_type = ADDRESS_HOME_HOUSE_NUMBER,
-            .expected_result = ADDRESS_HOME_HOUSE_NUMBER},
+            .expected_result = NAME_FIRST}));
 
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kRecognized,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kRecognized,
-            .html_field_type = HtmlFieldType::kGivenName,
-            .server_type = ADDRESS_HOME_STREET_NAME,
-            .heuristic_type = NAME_FIRST,
-            .expected_result = ADDRESS_HOME_STREET_NAME},
-
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kSpecified,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kRecognized,
-            .html_field_type = HtmlFieldType::kGivenName,
-            .server_type = ADDRESS_HOME_STREET_NAME,
-            .heuristic_type = NAME_FIRST,
-            .expected_result = ADDRESS_HOME_STREET_NAME},
-
-        PrecedenceOverAutocompleteParams{
-            .heuristic_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kSpecified,
-            .server_precedence_scope =
-                features::PrecedenceOverAutocompleteScope::kSpecified,
-            .html_field_type = HtmlFieldType::kUnrecognized,
-            .server_type = ADDRESS_HOME_STREET_NAME,
-            .heuristic_type = NAME_FIRST,
-            .expected_result = ADDRESS_HOME_STREET_NAME}));
-
-// Tests for type predictions of ac=unrecognized fields when
-// `kAutofillPredictionsForAutocompleteUnrecognized` is enabled:
-// By default, address Autofill suppresses type predictions for ac=unrecognized
-// fields. Consequently, no suggestions are shown for such fields and the fields
-// cannot be filled.
-// With `kAutofillPredictionsForAutocompleteUnrecognized`, predictions are no
-// longer suppressed. Suggestions for ac=unrecognized fields remain suppressed
-// and the fields are not filled.
-// `AutofillField::ShouldSuppressSuggestionsAndFillingByDefault()` indicates
-// that the field should receive special treatment in the suggestion and filling
-// logic.
+// Tests ensuring that ac=unrecognized fields receive predictions.
+// For such fields, suggestions and filling is suppressed, which is indicated by
+// a function `AutofillField::ShouldSuppressSuggestionsAndFillingByDefault()`.
 // Every test specifies the predicted type for a field and what the expected
 // return value of the aforementioned function is.
 struct AutocompleteUnrecognizedTypeTestCase {
   // Either server or heuristic type - this doesn't matter for these tests.
-  ServerFieldType predicted_type;
+  FieldType predicted_type;
   // If the predicted type should be treated as a server overwrite. Server
   // overwrites already take precedence over ac=unrecognized.
   bool is_server_overwrite = false;
@@ -290,14 +160,7 @@ struct AutocompleteUnrecognizedTypeTestCase {
 };
 
 class AutocompleteUnrecognizedTypeTest
-    : public testing::TestWithParam<AutocompleteUnrecognizedTypeTestCase> {
- public:
-  AutocompleteUnrecognizedTypeTest()
-      : feature_(features::kAutofillPredictionsForAutocompleteUnrecognized) {}
-
- private:
-  base::test::ScopedFeatureList feature_;
-};
+    : public testing::TestWithParam<AutocompleteUnrecognizedTypeTestCase> {};
 
 TEST_P(AutocompleteUnrecognizedTypeTest, TypePredictions) {
   // Create a field with ac=unrecognized and the specified predicted type.
@@ -337,10 +200,10 @@ struct AutofillLocalHeuristicsOverridesParams {
   // These values denote what type the field was classified as html, server and
   // heuristic prediction.
   const HtmlFieldType html_field_type;
-  const ServerFieldType server_type;
-  const ServerFieldType heuristic_type;
+  const FieldType server_type;
+  const FieldType heuristic_type;
   // This value denotes what `ComputedType` should return as field type.
-  const ServerFieldType expected_result;
+  const FieldType expected_result;
 };
 
 class AutofillLocalHeuristicsOverridesTest
@@ -446,6 +309,57 @@ INSTANTIATE_TEST_SUITE_P(
             .server_type = ADDRESS_HOME_CITY,
             .heuristic_type = ADDRESS_HOME_APT_NUM,
             .expected_result = ADDRESS_HOME_CITY}));
+
+// Tests that consecutive identical events are not added twice to the event log.
+TEST(AutofillFieldLogEventTypeTest, AppendLogEventIfNotRepeated) {
+  // The following three FieldLogEventTypes are arbitrary besides being of
+  // distinct types.
+  AutofillField::FieldLogEventType a = AskForValuesToFillFieldLogEvent{
+      .has_suggestion = OptionalBoolean::kFalse,
+      .suggestion_is_shown = OptionalBoolean::kFalse};
+  AutofillField::FieldLogEventType a2 = AskForValuesToFillFieldLogEvent{
+      .has_suggestion = OptionalBoolean::kTrue,
+      .suggestion_is_shown = OptionalBoolean::kTrue};
+  AutofillField::FieldLogEventType b =
+      TriggerFillFieldLogEvent{.data_type = FillDataType::kUndefined,
+                               .associated_country_code = "DE",
+                               .timestamp = AutofillClock::Now()};
+  AutofillField::FieldLogEventType c = FillFieldLogEvent{
+      .fill_event_id = absl::get<TriggerFillFieldLogEvent>(b).fill_event_id,
+      .had_value_before_filling = OptionalBoolean::kTrue,
+      .autofill_skipped_status =
+          FieldFillingSkipReason::kAutofilledFieldsNotRefill,
+      .was_autofilled_before_security_policy = OptionalBoolean::kTrue,
+      .had_value_after_filling = OptionalBoolean::kTrue};
+
+  AutofillField f;
+  EXPECT_TRUE(f.field_log_events().empty());
+
+  f.AppendLogEventIfNotRepeated(a);
+  EXPECT_EQ(f.field_log_events().size(), 1u);
+  f.AppendLogEventIfNotRepeated(a);
+  EXPECT_EQ(f.field_log_events().size(), 1u);
+
+  f.AppendLogEventIfNotRepeated(a2);
+  EXPECT_EQ(f.field_log_events().size(), 2u);
+  f.AppendLogEventIfNotRepeated(a2);
+  EXPECT_EQ(f.field_log_events().size(), 2u);
+
+  f.AppendLogEventIfNotRepeated(b);
+  EXPECT_EQ(f.field_log_events().size(), 3u);
+  f.AppendLogEventIfNotRepeated(b);
+  EXPECT_EQ(f.field_log_events().size(), 3u);
+
+  f.AppendLogEventIfNotRepeated(c);
+  EXPECT_EQ(f.field_log_events().size(), 4u);
+  f.AppendLogEventIfNotRepeated(c);
+  EXPECT_EQ(f.field_log_events().size(), 4u);
+
+  f.AppendLogEventIfNotRepeated(a);
+  EXPECT_EQ(f.field_log_events().size(), 5u);
+  f.AppendLogEventIfNotRepeated(a);
+  EXPECT_EQ(f.field_log_events().size(), 5u);
+}
 
 }  // namespace
 }  // namespace autofill

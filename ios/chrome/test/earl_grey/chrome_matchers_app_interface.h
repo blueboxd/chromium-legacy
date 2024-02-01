@@ -524,6 +524,9 @@
 // be used to validate that the tab grid normal mode is active.
 + (id<GREYMatcher>)tabGridNormalModePageControl;
 
+// Returns the GREYMatcher for the Inactive Tabs button of the tab grid.
++ (id<GREYMatcher>)tabGridInactiveTabsButton;
+
 // Returns the GREYMatcher for the background of the tab grid.
 + (id<GREYMatcher>)tabGridBackground;
 
@@ -693,9 +696,6 @@
 
 // Returns a matcher for the a password in the manual fallback list.
 + (id<GREYMatcher>)manualFallbackPasswordButtonMatcher;
-
-// Returns a matcher for the PasswordTableView window.
-+ (id<GREYMatcher>)manualFallbackPasswordTableViewWindowMatcher;
 
 // Returns a matcher for the profiles icon in the keyboard accessory bar.
 + (id<GREYMatcher>)manualFallbackProfilesIconMatcher;

@@ -10,6 +10,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
@@ -51,6 +52,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -70,7 +72,6 @@ import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -146,7 +147,7 @@ public class PriceAlertsMessageCardTest {
         assertTrue(isPriceAlertsMessageCardEnabled());
 
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
     }
 
@@ -199,7 +200,7 @@ public class PriceAlertsMessageCardTest {
         assertNull(mPriceDropNotificationManager.getNotificationChannel());
 
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
 
         onView(
@@ -228,7 +229,7 @@ public class PriceAlertsMessageCardTest {
         mMockNotificationManager.setNotificationsEnabled(false);
 
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
 
         onView(
@@ -256,7 +257,7 @@ public class PriceAlertsMessageCardTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
 
         onView(allOf(withId(R.id.close_button), withParent(withId(R.id.large_message_card_view))))
@@ -277,7 +278,7 @@ public class PriceAlertsMessageCardTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
 
         RecyclerView.ViewHolder viewHolder =
@@ -288,7 +289,8 @@ public class PriceAlertsMessageCardTest {
         onView(
                         allOf(
                                 withId(R.id.tab_list_recycler_view),
-                                withParent(withId(TabUiTestHelper.getTabSwitcherParentId(cta)))))
+                                isDescendantOfA(
+                                        withId(TabUiTestHelper.getTabSwitcherAncestorId(cta)))))
                 .perform(
                         RecyclerViewActions.actionOnItemAtPosition(
                                 1, getSwipeToDismissAction(true)));
@@ -307,11 +309,12 @@ public class PriceAlertsMessageCardTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
 
         closeFirstTabInTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(() -> !TabSwitcherCoordinator.hasAppendedMessagesForTesting());
+        CriteriaHelper.pollUiThread(
+                () -> !TabSwitcherMessageManager.hasAppendedMessagesForTesting());
         verifyTabSwitcherCardCount(cta, 0);
         onView(withId(R.id.large_message_card_item)).check(doesNotExist());
 
@@ -320,7 +323,7 @@ public class PriceAlertsMessageCardTest {
                 InstrumentationRegistry.getInstrumentation(), cta, false, true);
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 1);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
     }
 
@@ -333,7 +336,7 @@ public class PriceAlertsMessageCardTest {
 
         for (int i = 0; i < 10; i++) {
             enterTabSwitcher(cta);
-            CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+            CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
             onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
             assertTrue(isPriceAlertsMessageCardEnabled());
             clickFirstCardFromTabSwitcher(cta);
@@ -358,7 +361,7 @@ public class PriceAlertsMessageCardTest {
         mMockNotificationManager.setNotificationsEnabled(true);
 
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
 
         mRenderTestRule.render(
@@ -376,7 +379,7 @@ public class PriceAlertsMessageCardTest {
         mMockNotificationManager.setNotificationsEnabled(false);
 
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
 
         mRenderTestRule.render(
@@ -396,7 +399,7 @@ public class PriceAlertsMessageCardTest {
 
         ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
 
         mRenderTestRule.render(
@@ -415,7 +418,7 @@ public class PriceAlertsMessageCardTest {
 
         ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
         enterTabSwitcher(cta);
-        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        CriteriaHelper.pollUiThread(TabSwitcherMessageManager::hasAppendedMessagesForTesting);
         onView(withId(R.id.large_message_card_item)).check(matches(isDisplayed()));
 
         mRenderTestRule.render(

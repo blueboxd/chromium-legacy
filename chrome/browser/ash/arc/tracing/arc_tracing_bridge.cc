@@ -103,7 +103,7 @@ class ArcTracingDataSource
   friend class base::NoDestructor<ArcTracingDataSource>;
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   using DataSourceProxy =
-      tracing::PerfettoTracedProcess::DataSourceProxy<CastDataSource>;
+      tracing::PerfettoTracedProcess::DataSourceProxy<ArcTracingDataSource>;
   using SystemTraceWriter =
       tracing::SystemTraceWriter<std::string, DataSourceProxy>;
 #else
@@ -118,7 +118,7 @@ class ArcTracingDataSource
     tracing::PerfettoTracedProcess::Get()->AddDataSource(this);
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     perfetto::DataSourceDescriptor dsd;
-    dsd.set_name(mojom::kArcTraceDataSourceName);
+    dsd.set_name(tracing::mojom::kArcTraceDataSourceName);
     DataSourceProxy::Register(dsd, this);
 #endif
   }
@@ -273,8 +273,7 @@ class ArcTracingDataSource
   base::OnceClosure stop_complete_callback_;
   // Parent class's |producer_| member is only valid on the perfetto sequence,
   // we need to track it ourselves for access from the UI thread.
-  raw_ptr<tracing::PerfettoProducer, ExperimentalAsh> producer_on_ui_thread_ =
-      nullptr;
+  raw_ptr<tracing::PerfettoProducer> producer_on_ui_thread_ = nullptr;
   perfetto::DataSourceConfig data_source_config_;
   std::unique_ptr<SystemTraceWriter> trace_writer_;
 };

@@ -16,12 +16,15 @@
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 // TODO(crbug.com/1402146): Allow web apps to depend on app service.
+#include <optional>
+
 #include "chrome/browser/apps/app_service/app_service_proxy.h"  // nogncheck
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"  // nogncheck
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"  // nogncheck
@@ -36,7 +39,6 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
@@ -131,17 +133,18 @@ void PersistStateFromPrefsToWebAppDb(PrefService* pref_service,
     }
   }
   for (const webapps::AppId& app_id : experiment_overrides) {
-    provider.scheduler().ScheduleCallbackWithLock(
+    provider.scheduler().ScheduleCallback(
         "PreinstalledWebAppWindowExperiment:PersistStateFromPrefsToWebAppDb",
-        std::make_unique<AppLockDescription>(app_id),
+        AppLockDescription(app_id),
         base::BindOnce(
             [](webapps::AppId app_id, mojom::UserDisplayMode display_mode,
-               AppLock& lock) {
+               AppLock& lock, base::Value::Dict& debug_value) {
               lock.sync_bridge().SetAppUserDisplayMode(
                   app_id, display_mode,
                   /*is_user_action=*/false);
             },
-            app_id, *opt_display_mode));
+            app_id, *opt_display_mode),
+        base::DoNothing());
   }
 }
 
@@ -182,7 +185,7 @@ void PreinstalledWebAppWindowExperiment::CheckEligible() {
   }
 
   // Use eligible pref to know if we need to do first time setup.
-  absl::optional<bool> eligible_pref =
+  std::optional<bool> eligible_pref =
       utils::GetEligibilityPref(profile_->GetPrefs());
   if (!eligible_pref.has_value()) {
     FirstTimeSetup();
@@ -310,7 +313,7 @@ void PreinstalledWebAppWindowExperiment::OnWebAppUserDisplayModeChanged(
     return;
   }
 
-  absl::optional<apps::DefaultAppName> app_name =
+  std::optional<apps::DefaultAppName> app_name =
       apps::PreinstalledWebAppIdToName(app_id);
   if (!app_name.has_value()) {
     LOG(WARNING) << "Unknown preinstalled app " << app->untranslated_name()
@@ -340,7 +343,7 @@ void PreinstalledWebAppWindowExperiment::OnPreferredAppChanged(
     return;
   }
 
-  absl::optional<apps::DefaultAppName> app_name =
+  std::optional<apps::DefaultAppName> app_name =
       apps::PreinstalledWebAppIdToName(app_id);
   if (!app_name.has_value()) {
     LOG(WARNING) << "Unknown default app " << app->untranslated_name() << " ID "

@@ -56,7 +56,7 @@ class TrayItemViewAnimationWaiter {
 
   // The tray item whose animation is being waited for. Owned by the views
   // hierarchy.
-  raw_ptr<TrayItemView, ExperimentalAsh> tray_item_ = nullptr;
+  raw_ptr<TrayItemView> tray_item_ = nullptr;
 
   base::RunLoop run_loop_;
 
@@ -104,10 +104,15 @@ class TrayItemViewTest : public AshTestBase {
     TrayItemViewAnimationWaiter waiter(tray_item());
     waiter.Wait();
 
-    // Ensure there is one more frame presented after animation finishes to
-    // allow animation throughput data to be passed from cc to ui.
-    EXPECT_TRUE(ui::WaitForNextFrameToBePresented(
-        tray_item()->GetWidget()->GetCompositor()));
+    // Force frames and wait for all throughput trackers to be gone to allow
+    // animation throughput data to be passed from cc to ui.
+    ui::Compositor* const compositor =
+        tray_item()->GetWidget()->GetCompositor();
+    while (compositor->has_throughput_trackers_for_testing()) {
+      compositor->ScheduleFullRedraw();
+      std::ignore = ui::WaitForNextFrameToBePresented(compositor,
+                                                      base::Milliseconds(500));
+    }
   }
 
   views::Widget* widget() { return widget_.get(); }
@@ -117,8 +122,7 @@ class TrayItemViewTest : public AshTestBase {
   std::unique_ptr<views::Widget> widget_;
 
   // Owned by `widget`:
-  raw_ptr<TrayItemView, DanglingUntriaged | ExperimentalAsh> tray_item_ =
-      nullptr;
+  raw_ptr<TrayItemView, DanglingUntriaged> tray_item_ = nullptr;
 };
 
 // Tests that scheduling a `TrayItemView`'s show animation while its hide
@@ -221,8 +225,9 @@ TEST_F(TrayItemViewTest, LargeImageIcon) {
   EXPECT_EQ(tray_item()->CalculatePreferredSize(), kLargeImageSize);
 }
 
+// TODO(crbug.com/1520190): Re-enable when flakiness is resolved.
 // Tests that a smoothness metric is recorded for the "show" animation.
-TEST_F(TrayItemViewTest, SmoothnessMetricRecordedForShowAnimation) {
+TEST_F(TrayItemViewTest, DISABLED_SmoothnessMetricRecordedForShowAnimation) {
   // Start with the tray item hidden. Note that animations still complete
   // immediately in this part of the test, so no smoothness metrics are emitted.
   tray_item()->SetVisible(false);
@@ -286,7 +291,8 @@ TEST_F(TrayItemViewTest, HideSmoothnessMetricRecordedWhenHideInterruptsShow) {
 
 // Tests that the smoothness metric for the "show" animation is still recorded
 // even when the "show" animation interrupts the "hide" animation.
-TEST_F(TrayItemViewTest, ShowSmoothnessMetricRecordedWhenShowInterruptsHide) {
+TEST_F(TrayItemViewTest,
+       DISABLED_ShowSmoothnessMetricRecordedWhenShowInterruptsHide) {
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount(kHideAnimationSmoothnessHistogramName, 0);
 

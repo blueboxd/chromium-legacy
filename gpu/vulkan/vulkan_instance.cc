@@ -188,7 +188,7 @@ bool VulkanInstance::CreateInstance(
   VkResult result =
       vkCreateInstance(&instance_create_info, nullptr, &owned_vk_instance_);
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkCreateInstance() failed: " << result;
+    LOG(ERROR) << "vkCreateInstance() failed: " << result;
     return false;
   }
   vk_instance_ = owned_vk_instance_;
@@ -216,7 +216,7 @@ bool VulkanInstance::CreateInstance(
                                             nullptr, &error_callback_);
     if (VK_SUCCESS != result) {
       error_callback_ = VK_NULL_HANDLE;
-      DLOG(ERROR) << "vkCreateDebugReportCallbackEXT(ERROR) failed: " << result;
+      LOG(ERROR) << "vkCreateDebugReportCallbackEXT(ERROR) failed: " << result;
       return false;
     }
 
@@ -227,7 +227,7 @@ bool VulkanInstance::CreateInstance(
                                             nullptr, &warning_callback_);
     if (VK_SUCCESS != result) {
       warning_callback_ = VK_NULL_HANDLE;
-      DLOG(ERROR) << "vkCreateDebugReportCallbackEXT(WARN) failed: " << result;
+      LOG(ERROR) << "vkCreateDebugReportCallbackEXT(WARN) failed: " << result;
       return false;
     }
   }
@@ -256,10 +256,28 @@ bool VulkanInstance::InitializeFromANGLE(
   vulkan_info_.used_api_version = api_version;
 
   auto extensions = gl::QueryVkInstanceExtensionsFromANGLE();
-  DCHECK(!extensions.empty());
 
   for (const auto& extension : extensions)
     vulkan_info_.enabled_instance_extensions.push_back(extension.data());
+
+#if DCHECK_IS_ON()
+  for (const char* required_extension_name : required_extensions) {
+    bool found = false;
+    for (const char* enabled_extension :
+         vulkan_info_.enabled_instance_extensions) {
+      if (strcmp(required_extension_name, enabled_extension) == 0) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      DLOG(ERROR) << "Required extension " << required_extension_name
+                  << " missing from enumerated Vulkan extensions. "
+                     "vkCreateInstance will may fail but could succeed if "
+                     "extension has been promoted to core.";
+    }
+  }
+#endif
 
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
@@ -282,7 +300,7 @@ bool VulkanInstance::CollectBasicInfo(
     const std::vector<const char*>& required_layers) {
   VkResult result = vkEnumerateInstanceVersion(&vulkan_info_.api_version);
   if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "vkEnumerateInstanceVersion() failed: " << result;
+    LOG(ERROR) << "vkEnumerateInstanceVersion() failed: " << result;
     return false;
   }
 
@@ -305,8 +323,8 @@ bool VulkanInstance::CollectBasicInfo(
     result = vkEnumerateInstanceExtensionProperties(
         layer_name, &num_instance_exts, nullptr);
     if (VK_SUCCESS != result) {
-      DLOG(ERROR) << "vkEnumerateInstanceExtensionProperties(" << layer_name
-                  << ") failed: " << result;
+      LOG(ERROR) << "vkEnumerateInstanceExtensionProperties(" << layer_name
+                 << ") failed: " << result;
       return false;
     }
 
@@ -318,8 +336,8 @@ bool VulkanInstance::CollectBasicInfo(
         layer_name, &num_instance_exts,
         &vulkan_info_.instance_extensions.data()[previous_extension_count]);
     if (VK_SUCCESS != result) {
-      DLOG(ERROR) << "vkEnumerateInstanceExtensionProperties(" << layer_name
-                  << ") failed: " << result;
+      LOG(ERROR) << "vkEnumerateInstanceExtensionProperties(" << layer_name
+                 << ") failed: " << result;
       return false;
     }
   }
@@ -337,8 +355,7 @@ bool VulkanInstance::CollectBasicInfo(
   uint32_t num_instance_layers = 0;
   result = vkEnumerateInstanceLayerProperties(&num_instance_layers, nullptr);
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkEnumerateInstanceLayerProperties(NULL) failed: "
-                << result;
+    LOG(ERROR) << "vkEnumerateInstanceLayerProperties(NULL) failed: " << result;
     return false;
   }
 
@@ -346,7 +363,7 @@ bool VulkanInstance::CollectBasicInfo(
   result = vkEnumerateInstanceLayerProperties(
       &num_instance_layers, vulkan_info_.instance_layers.data());
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkEnumerateInstanceLayerProperties() failed: " << result;
+    LOG(ERROR) << "vkEnumerateInstanceLayerProperties() failed: " << result;
     return false;
   }
 
@@ -359,12 +376,12 @@ bool VulkanInstance::CollectDeviceInfo(VkPhysicalDevice physical_device) {
     uint32_t count = 0;
     VkResult result = vkEnumeratePhysicalDevices(vk_instance_, &count, nullptr);
     if (result != VK_SUCCESS) {
-      DLOG(ERROR) << "vkEnumeratePhysicalDevices failed: " << result;
+      LOG(ERROR) << "vkEnumeratePhysicalDevices failed: " << result;
       return false;
     }
 
     if (!count) {
-      DLOG(ERROR) << "vkEnumeratePhysicalDevices returns zero device.";
+      LOG(ERROR) << "vkEnumeratePhysicalDevices returns zero device.";
       return false;
     }
 
@@ -372,7 +389,7 @@ bool VulkanInstance::CollectDeviceInfo(VkPhysicalDevice physical_device) {
     result = vkEnumeratePhysicalDevices(vk_instance_, &count,
                                         physical_devices.data());
     if (VK_SUCCESS != result) {
-      DLOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << result;
+      LOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << result;
       return false;
     }
   } else {
@@ -390,13 +407,13 @@ bool VulkanInstance::CollectDeviceInfo(VkPhysicalDevice physical_device) {
     uint32_t count = 0;
     VkResult result = vkEnumerateDeviceExtensionProperties(
         device, nullptr /* pLayerName */, &count, nullptr);
-    DLOG_IF(ERROR, result != VK_SUCCESS)
+    LOG_IF(ERROR, result != VK_SUCCESS)
         << "vkEnumerateDeviceExtensionProperties failed: " << result;
 
     info.extensions.resize(count);
     result = vkEnumerateDeviceExtensionProperties(
         device, nullptr /* pLayerName */, &count, info.extensions.data());
-    DLOG_IF(ERROR, result != VK_SUCCESS)
+    LOG_IF(ERROR, result != VK_SUCCESS)
         << "vkEnumerateDeviceExtensionProperties failed: " << result;
 
     // The API version of the VkInstance might be different than the supported

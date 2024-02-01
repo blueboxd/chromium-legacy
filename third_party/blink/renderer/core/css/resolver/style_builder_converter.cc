@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/css/css_color_mix_value.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_dynamic_range_limit_mix_value.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_font_feature_value.h"
 #include "third_party/blink/renderer/core/css/css_font_style_range_value.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_light_dark_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -103,7 +105,7 @@ static Length ConvertGridTrackBreadth(const StyleResolverState& state,
   // Fractional unit.
   auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
   if (primitive_value && primitive_value->IsFlex()) {
-    return Length::Flex(primitive_value->GetDoubleValue());
+    return Length::Flex(primitive_value->GetFloatValue());
   }
 
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
@@ -170,6 +172,19 @@ DynamicRangeLimit StyleBuilderConverter::ConvertDynamicRangeLimit(
 
 DynamicRangeLimit StyleBuilderConverterBase::ConvertDynamicRangeLimit(
     const CSSValue& value) {
+  if (auto* mix_value =
+          DynamicTo<cssvalue::CSSDynamicRangeLimitMixValue>(value)) {
+    const DynamicRangeLimit limit1 =
+        ConvertDynamicRangeLimit(mix_value->Limit1());
+    const DynamicRangeLimit limit2 =
+        ConvertDynamicRangeLimit(mix_value->Limit2());
+    const float fraction = 0.01f * mix_value->Percentage().GetFloatValue();
+    return DynamicRangeLimit(
+        /*standard_mix=*/(1 - fraction) * limit1.standard_mix +
+            fraction * limit2.standard_mix,
+        /*constrained_high_mix=*/(1 - fraction) * limit1.constrained_high_mix +
+            fraction * limit2.constrained_high_mix);
+  }
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     switch (identifier_value->GetValueID()) {
       case CSSValueID::kHigh:
@@ -2230,11 +2245,25 @@ AtomicString StyleBuilderConverter::ConvertViewTransitionName(
   return AtomicString();
 }
 
+Vector<AtomicString> StyleBuilderConverter::ConvertViewTransitionClass(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  Vector<AtomicString> result;
+  if (auto* id = DynamicTo<CSSIdentifierValue>(value);
+      id && id->GetValueID() == CSSValueID::kNone) {
+    return result;
+  }
+  for (const Member<const CSSValue>& class_name : To<CSSValueList>(value)) {
+    result.push_back(To<CSSCustomIdentValue>(*class_name).Value());
+  }
+  CHECK(!result.empty());
+  return result;
+}
+
 StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
                                                     const CSSValue& value,
                                                     bool for_visited_link) {
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value) {
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     CSSValueID value_id = identifier_value->GetValueID();
     if (value_id == CSSValueID::kCurrentcolor) {
       return StyleColor::CurrentColor();
@@ -2246,9 +2275,8 @@ StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
               for_visited_link),
           value_id);
     }
-  }
-
-  if (auto* color_mix_value = DynamicTo<cssvalue::CSSColorMixValue>(value)) {
+  } else if (auto* color_mix_value =
+                 DynamicTo<cssvalue::CSSColorMixValue>(value)) {
     const StyleColor c1 = StyleBuilderConverter::ConvertStyleColor(
         state, color_mix_value->Color1(), for_visited_link);
     const StyleColor c2 = StyleBuilderConverter::ConvertStyleColor(
@@ -2263,6 +2291,12 @@ StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
       return StyleColor(
           StyleColor::UnresolvedColorMix(color_mix_value, c1, c2));
     }
+  } else if (auto* light_dark_value = DynamicTo<CSSLightDarkValuePair>(value)) {
+    const CSSValue& color_value = state.StyleBuilder().UsedColorScheme() ==
+                                          mojom::blink::ColorScheme::kLight
+                                      ? light_dark_value->First()
+                                      : light_dark_value->Second();
+    return ConvertStyleColor(state, color_value, for_visited_link);
   }
 
   return StyleColor(state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
@@ -2550,14 +2584,17 @@ scoped_refptr<ScaleTransformOperation> StyleBuilderConverter::ConvertScale(
 
   const auto& list = To<CSSValueList>(value);
   DCHECK_LE(list.length(), 3u);
-  double sx = To<CSSPrimitiveValue>(list.Item(0)).GetDoubleValue();
+  double sx = To<CSSPrimitiveValue>(list.Item(0))
+                  .ComputeNumber(state.CssToLengthConversionData());
   double sy = sx;
   double sz = 1;
   if (list.length() >= 2) {
-    sy = To<CSSPrimitiveValue>(list.Item(1)).GetDoubleValue();
+    sy = To<CSSPrimitiveValue>(list.Item(1))
+             .ComputeNumber(state.CssToLengthConversionData());
   }
   if (list.length() == 3) {
-    sz = To<CSSPrimitiveValue>(list.Item(2)).GetDoubleValue();
+    sz = To<CSSPrimitiveValue>(list.Item(2))
+             .ComputeNumber(state.CssToLengthConversionData());
   }
 
   return ScaleTransformOperation::Create(sx, sy, sz,

@@ -31,16 +31,17 @@ class MEDIA_GPU_EXPORT BaseQueue {
   BaseQueue& operator=(const BaseQueue&);
   virtual ~BaseQueue() = 0;
 
-  virtual bool PrepareBuffers() = 0;
+  virtual bool PrepareBuffers(size_t num_buffers) = 0;
   bool DeallocateBuffers();
   bool StartStreaming();
   bool StopStreaming();
+  uint32_t FreeBufferCount() const { return free_buffer_indices_.size(); }
 
  protected:
-  bool AllocateBuffers(uint32_t num_planes);
+  bool AllocateBuffers(uint32_t num_planes, size_t num_buffers);
   virtual std::string Description() = 0;
   void ReturnBuffer(uint32_t index);
-  absl::optional<uint32_t> GetFreeBufferIndex();
+  std::optional<uint32_t> GetFreeBufferIndex();
 
   scoped_refptr<StatelessDevice> device_;
   const BufferType buffer_type_;
@@ -52,9 +53,6 @@ class MEDIA_GPU_EXPORT BaseQueue {
   // will be used more often than if it was a ring buffer. Using a set
   // enforces the elements be unique.
   std::set<uint32_t> free_buffer_indices_;
-
- private:
-  virtual uint32_t BufferMinimumCount() = 0;
 };
 
 class MEDIA_GPU_EXPORT InputQueue : public BaseQueue {
@@ -68,14 +66,16 @@ class MEDIA_GPU_EXPORT InputQueue : public BaseQueue {
   bool SubmitCompressedFrameData(void* ctrls,
                                  const void* data,
                                  size_t length,
-                                 uint32_t frame_id);
-  bool PrepareBuffers() override;
-  void Reclaim();
+                                 uint64_t frame_id);
+  bool PrepareBuffers(size_t num_buffers) override;
+
+  // Add buffers that have been dequeued into the list of buffers available
+  // to be used again.
+  void Reclaim(Buffer& buffer);
 
  private:
   bool SetupFormat(const gfx::Size resolution);
   std::string Description() override;
-  uint32_t BufferMinimumCount() override;
 
   VideoCodec codec_;
 };
@@ -94,20 +94,11 @@ class MEDIA_GPU_EXPORT OutputQueue : public BaseQueue {
   bool NegotiateFormat();
 
   // Allocate and prepare the buffers that will store the decoded raw frames.
-  bool PrepareBuffers() override;
-
-  // Return the video frame that corresponds to a buffer index. The buffer
-  // index is tracked as it moves through the queue. When it is completed
-  // processing the corresponding video frame can be retrieved.
-  scoped_refptr<VideoFrame> DecodedFrameByIndex(uint32_t index);
+  bool PrepareBuffers(size_t num_buffers) override;
 
   // After a buffer has been used it needs to be returned to the pool of
-  // available buffers.
-  bool QueueBufferByIndex(uint32_t index);
-
-  // Retrieved the index of a buffer given a |frame_id|. Raw frame buffers have
-  // the |frame_id| from the compressed frame copied into their structure.
-  absl::optional<uint32_t> UseDequeuedBuffer(uint64_t frame_id);
+  // available buffers. The client tracks using buffers using |frame_id|.
+  bool QueueBufferByFrameID(uint64_t frame_id);
 
   // Return the raw frame format chosen by |NegotiateFormat|
   Fourcc GetQueueFormat() const { return buffer_format_.fourcc; }
@@ -115,17 +106,20 @@ class MEDIA_GPU_EXPORT OutputQueue : public BaseQueue {
   // Return the resolution of the raw frames.
   gfx::Size GetVideoResolution() const { return buffer_format_.resolution; }
 
-  // Removes the raw frame from the queue of the driver and prepares it for
-  // usage.
-  bool DequeueBuffer();
+  // Record buffers that have finished decoded and have been dequeued so that
+  // they can later be referenced.
+  void RegisterDequeuedBuffer(Buffer& buffer);
+
+  // Retrieve a |VideoFrame| by |frame_id| that has already been decoded and
+  // dequeued. Returns |nullptr| if there isn't a corresponding frame that has
+  // been dequeued yet.
+  scoped_refptr<VideoFrame> GetVideoFrame(uint64_t frame_id);
 
  private:
   // Create |VideoFrame| by exporting the dmabuf backing the buffer.
-  scoped_refptr<VideoFrame> CreateVideoFrame(uint32_t index);
+  scoped_refptr<VideoFrame> CreateVideoFrame(const Buffer& buffer);
 
   std::string Description() override;
-
-  uint32_t BufferMinimumCount() override;
 
   BufferFormat buffer_format_;
 

@@ -36,11 +36,11 @@ std::vector<std::string> GetComponents(const std::string& file_system_id) {
 }
 
 std::string GenerateRandomId() {
-  char rand_bytes[kRandomIdBytes];
-  base::RandBytes(rand_bytes, sizeof(rand_bytes));
+  uint8_t rand_bytes[kRandomIdBytes];
+  base::RandBytes(rand_bytes);
   // Encoding to hex ensure that there are no non-alpha characters in the id
   // (i.e. no @ delimiters).
-  return base::HexEncode(rand_bytes, sizeof(rand_bytes));
+  return base::HexEncode(rand_bytes);
 }
 
 }  // namespace.
@@ -80,7 +80,7 @@ bool IsKerberosChromadFileSystemId(const std::string& file_system_id) {
   return components.size() >= 3 && components[2] == kKerberosSymbol;
 }
 
-absl::optional<std::string> GetUserFromFileSystemId(
+std::optional<std::string> GetUserFromFileSystemId(
     const std::string& file_system_id) {
   const std::vector<std::string> components = GetComponents(file_system_id);
   if (components.size() < 3 ||

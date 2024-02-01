@@ -8,6 +8,7 @@
 
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/cxx20_erase.h"
@@ -26,7 +27,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/script_injection_tracker.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/mojom/run_location.mojom-shared.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -60,12 +60,13 @@ bool AreScriptsUnique(const UserScriptList& scripts) {
 #endif  // DCHECK_IS_ON()
 
 // Helper function to parse greasesmonkey headers
-bool GetDeclarationValue(const base::StringPiece& line,
-                         const base::StringPiece& prefix,
+bool GetDeclarationValue(std::string_view line,
+                         std::string_view prefix,
                          std::string* value) {
-  base::StringPiece::size_type index = line.find(prefix);
-  if (index == base::StringPiece::npos)
+  std::string_view::size_type index = line.find(prefix);
+  if (index == std::string_view::npos) {
     return false;
+  }
 
   std::string temp(line.data() + index + prefix.length(),
                    line.length() - index - prefix.length());
@@ -93,28 +94,28 @@ bool CanExecuteScriptEverywhere(BrowserContext* browser_context,
 }  // namespace
 
 // static
-bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
+bool UserScriptLoader::ParseMetadataHeader(std::string_view script_text,
                                            UserScript* script) {
   // http://wiki.greasespot.net/Metadata_block
-  base::StringPiece line;
+  std::string_view line;
   size_t line_start = 0;
   size_t line_end = line_start;
   bool in_metadata = false;
 
-  static const base::StringPiece kUserScriptBegin("// ==UserScript==");
-  static const base::StringPiece kUserScriptEng("// ==/UserScript==");
-  static const base::StringPiece kNamespaceDeclaration("// @namespace");
-  static const base::StringPiece kNameDeclaration("// @name");
-  static const base::StringPiece kVersionDeclaration("// @version");
-  static const base::StringPiece kDescriptionDeclaration("// @description");
-  static const base::StringPiece kIncludeDeclaration("// @include");
-  static const base::StringPiece kExcludeDeclaration("// @exclude");
-  static const base::StringPiece kMatchDeclaration("// @match");
-  static const base::StringPiece kExcludeMatchDeclaration("// @exclude_match");
-  static const base::StringPiece kRunAtDeclaration("// @run-at");
-  static const base::StringPiece kRunAtDocumentStartValue("document-start");
-  static const base::StringPiece kRunAtDocumentEndValue("document-end");
-  static const base::StringPiece kRunAtDocumentIdleValue("document-idle");
+  static const std::string_view kUserScriptBegin("// ==UserScript==");
+  static const std::string_view kUserScriptEng("// ==/UserScript==");
+  static const std::string_view kNamespaceDeclaration("// @namespace");
+  static const std::string_view kNameDeclaration("// @name");
+  static const std::string_view kVersionDeclaration("// @version");
+  static const std::string_view kDescriptionDeclaration("// @description");
+  static const std::string_view kIncludeDeclaration("// @include");
+  static const std::string_view kExcludeDeclaration("// @exclude");
+  static const std::string_view kMatchDeclaration("// @match");
+  static const std::string_view kExcludeMatchDeclaration("// @exclude_match");
+  static const std::string_view kRunAtDeclaration("// @run-at");
+  static const std::string_view kRunAtDocumentStartValue("document-start");
+  static const std::string_view kRunAtDocumentEndValue("document-end");
+  static const std::string_view kRunAtDocumentIdleValue("document-idle");
 
   while (line_start < script_text.length()) {
     line_end = script_text.find('\n', line_start);
@@ -123,8 +124,8 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
     if (line_end == std::string::npos)
       line_end = script_text.length() - 1;
 
-    line = base::StringPiece(script_text.data() + line_start,
-                             line_end - line_start);
+    line = std::string_view(script_text.data() + line_start,
+                            line_end - line_start);
 
     if (!in_metadata) {
       if (base::StartsWith(line, kUserScriptBegin))
@@ -360,12 +361,12 @@ base::ReadOnlySharedMemoryRegion UserScriptLoader::Serialize(
     // allocating a new string.
     for (const std::unique_ptr<UserScript::Content>& js_file :
          script->js_scripts()) {
-      base::StringPiece contents = js_file->GetContent();
+      std::string_view contents = js_file->GetContent();
       pickle.WriteData(contents.data(), contents.length());
     }
     for (const std::unique_ptr<UserScript::Content>& css_file :
          script->css_scripts()) {
-      base::StringPiece contents = css_file->GetContent();
+      std::string_view contents = css_file->GetContent();
       pickle.WriteData(contents.data(), contents.length());
     }
   }
@@ -505,10 +506,28 @@ UserScriptLoader::SendUpdateResult UserScriptLoader::SendUpdate(
     std::string owner_host;
     bool found_owner = WebViewRendererState::GetInstance()->GetOwnerInfo(
         process->GetID(), /*owner_process_id=*/nullptr, &owner_host);
-
     DCHECK(found_owner);
-    if (owner_host != host_id().id) {
-      return SendUpdateResult::kNoActionTaken;
+
+    // Keep this check in sync with the approach and formatting in:
+    // - UserScriptLoader's HostID, created in |GenerateHostIDFromEmbedder()|
+    // - ScriptContextSet's HostID, created in |ScriptContextSet::Register()|
+    // - GuestView's owner host, set in |GuestViewBase::SetOwnerHost()|
+    switch (host_id().type) {
+      case mojom::HostID::HostType::kExtensions:
+      case mojom::HostID::HostType::kWebUi:
+      case mojom::HostID::HostType::kControlledFrameEmbedder:
+        // For extensions, |owner_host| will be the extension ID.
+        // For WebUI, |owner_host| will be the full owning RFH's URL spec,
+        // including trailing slash.
+        // For Controlled Frame embedders, |owner_host| will be a serialized
+        // form of the embedder's origin, using scheme, host, port [if
+        // applicable] tuple in origin form. No trailing slash.
+        // TODO(crbug.com/1517391): Use an actual Origin object in the
+        // Controlled Frame comparison rather than a serialized Origin.
+        if (owner_host != host_id().id) {
+          return SendUpdateResult::kNoActionTaken;
+        }
+        break;
     }
   }
 

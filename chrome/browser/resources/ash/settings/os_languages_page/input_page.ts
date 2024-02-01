@@ -19,11 +19,10 @@ import './add_input_methods_dialog.js';
 import './add_spellcheck_languages_dialog.js';
 import './os_edit_dictionary_page.js';
 import '../keyboard_shortcut_banner/keyboard_shortcut_banner.js';
-import '/shared/settings/controls/settings_toggle_button.js';
+import '../controls/settings_toggle_button.js';
 import '../settings_shared.css.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 
-import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -35,6 +34,7 @@ import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/po
 import {castExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
 import {RouteOriginMixin} from '../common/route_origin_mixin.js';
+import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {Route, Router, routes} from '../router.js';
@@ -651,7 +651,13 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
     const status = this.languageHelper.getImeLanguagePackStatus(imeId);
     switch (status) {
       case chrome.inputMethodPrivate.LanguagePackStatus.ERROR_NEEDS_REBOOT:
-        return this.i18n('inputMethodLanguagePacksNeedsRebootError');
+      // We currently have a string - `inputMethodLanguagePacksNeedsRebootError`
+      // in WebUI,
+      // `IDS_OS_SETTINGS_INPUT_METHOD_LANGUAGE_PACKS_NEEDS_REBOOT_ERROR` in the
+      // GRD file - to special case the `ERROR_NEEDS_REBOOT` case. However, the
+      // string is not finalised, and therefore should not be shown to the user.
+      // TODO: b/315725816 - Either finalise the string and add it here, or
+      // remove the string altogether.
       case chrome.inputMethodPrivate.LanguagePackStatus.ERROR_OTHER:
         return this.i18n('inputMethodLanguagePacksGeneralError');
       default:

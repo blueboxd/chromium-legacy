@@ -19,6 +19,7 @@
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_module_util.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_signals.h"
+#include "chrome/browser/new_tab_page/modules/test_support.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_context.h"
@@ -37,6 +38,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+using ntp::MockHistoryService;
 
 class MockCartService : public CartService {
  public:
@@ -84,7 +87,8 @@ class HistoryClustersModuleServiceTest : public testing::Test {
         std::make_unique<HistoryClustersModuleService>(
             test_history_clusters_service_.get(), mock_cart_service_.get(),
             template_url_service_.get(),
-            /*optimization_guide_keyed_service=*/nullptr);
+            /*optimization_guide_keyed_service=*/nullptr,
+            /*segmentation_platform_service=*/nullptr);
   }
 
   history_clusters::TestHistoryClustersService&

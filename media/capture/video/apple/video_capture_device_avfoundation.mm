@@ -83,6 +83,12 @@ BASE_FEATURE(kConfigureCaptureBeforeStart,
              "ConfigureCaptureBeforeStart",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Allow disabling optimizations (https://crbug.com/1143477,
+// https://crbug.com/959962) because of flickering (https://crbug.com/1515598).
+BASE_FEATURE(kOverrideCameraIOSurfaceColorSpace,
+             "OverrideCameraIOSurfaceColorSpace",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 AVCaptureDeviceFormat* FindBestCaptureFormat(
     NSArray<AVCaptureDeviceFormat*>* formats,
     int width,
@@ -230,9 +236,8 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 
   // For testing.
   base::RepeatingCallback<void()> _onPhotoOutputStopped;
-  bool _forceLegacyStillImageApi;
-  absl::optional<bool> _isPortraitEffectSupportedForTesting;
-  absl::optional<bool> _isPortraitEffectActiveForTesting;
+  std::optional<bool> _isPortraitEffectSupportedForTesting;
+  std::optional<bool> _isPortraitEffectActiveForTesting;
 
   scoped_refptr<base::SingleThreadTaskRunner> _mainThreadTaskRunner;
 }
@@ -1023,7 +1028,8 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
   // https://crbug.com/1143477 (CPU usage parsing ICC profile)
   // https://crbug.com/959962 (ignoring color space)
   gfx::ColorSpace overriddenColorSpace = colorSpace;
-  if (colorSpace == kColorSpaceRec709Apple) {
+  if (colorSpace == kColorSpaceRec709Apple &&
+      base::FeatureList::IsEnabled(media::kOverrideCameraIOSurfaceColorSpace)) {
     overriddenColorSpace = gfx::ColorSpace(
         gfx::ColorSpace::PrimaryID::BT709, gfx::ColorSpace::TransferID::SRGB,
         gfx::ColorSpace::MatrixID::BT709, gfx::ColorSpace::RangeID::LIMITED);

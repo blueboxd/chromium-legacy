@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <optional>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -36,7 +37,6 @@
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -241,8 +241,8 @@ void FrameSinkVideoCapturerImpl::SetResolvedTarget(
     return;
   }
 
-  TRACE_EVENT_INSTANT2(
-      "gpu.capture", "SetResolvedTarget", TRACE_EVENT_SCOPE_THREAD, "current",
+  TRACE_EVENT_INSTANT(
+      "gpu.capture", "SetResolvedTarget", "current",
       resolved_target_ ? resolved_target_->GetFrameSinkId().ToString() : "None",
       "new", target ? target->GetFrameSinkId().ToString() : "None");
 
@@ -289,8 +289,7 @@ void FrameSinkVideoCapturerImpl::SetFormat(media::VideoPixelFormat format) {
     // Don't tolerate changing to NV12 mid-capture:
     CHECK(format != media::PIXEL_FORMAT_NV12 || !video_capture_started_);
 
-    TRACE_EVENT_INSTANT1("gpu.capture", "SetFormat", TRACE_EVENT_SCOPE_THREAD,
-                         "format", format);
+    TRACE_EVENT_INSTANT("gpu.capture", "SetFormat", "format", format);
 
     MarkFrame(nullptr);
 
@@ -323,9 +322,8 @@ void FrameSinkVideoCapturerImpl::SetMinCapturePeriod(
     }
   }
 
-  TRACE_EVENT_INSTANT1("gpu.capture", "SetMinCapturePeriod",
-                       TRACE_EVENT_SCOPE_THREAD, "min_capture_period",
-                       min_capture_period);
+  TRACE_EVENT_INSTANT("gpu.capture", "SetMinCapturePeriod",
+                      "min_capture_period", min_capture_period);
 
   oracle_->SetMinCapturePeriod(min_capture_period);
   if (refresh_frame_retry_timer_->IsRunning()) {
@@ -339,9 +337,8 @@ void FrameSinkVideoCapturerImpl::SetMinSizeChangePeriod(
     base::TimeDelta min_period) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  TRACE_EVENT_INSTANT1("gpu.capture", "SetMinSizeChangePeriod",
-                       TRACE_EVENT_SCOPE_THREAD, "min_size_change_period",
-                       min_period);
+  TRACE_EVENT_INSTANT("gpu.capture", "SetMinSizeChangePeriod",
+                      "min_size_change_period", min_period);
 
   oracle_->SetMinSizeChangePeriod(min_period);
 }
@@ -351,9 +348,8 @@ void FrameSinkVideoCapturerImpl::SetResolutionConstraints(
     const gfx::Size& max_size,
     bool use_fixed_aspect_ratio) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TRACE_EVENT_INSTANT2("gpu.capture", "SetResolutionConstraints",
-                       TRACE_EVENT_SCOPE_THREAD, "min_size",
-                       min_size.ToString(), "max_size", max_size.ToString());
+  TRACE_EVENT_INSTANT("gpu.capture", "SetResolutionConstraints", "min_size",
+                      min_size.ToString(), "max_size", max_size.ToString());
 
   if (min_size.width() <= 0 || min_size.height() <= 0 ||
       max_size.width() > media::limits::kMaxDimension ||
@@ -372,15 +368,14 @@ void FrameSinkVideoCapturerImpl::SetResolutionConstraints(
 }
 
 void FrameSinkVideoCapturerImpl::SetAutoThrottlingEnabled(bool enabled) {
-  TRACE_EVENT_INSTANT1("gpu.capture", "SetAutoThrottlingEnabled",
-                       TRACE_EVENT_SCOPE_THREAD, "autothrottling_enabled",
-                       enabled);
+  TRACE_EVENT_INSTANT("gpu.capture", "SetAutoThrottlingEnabled",
+                      "autothrottling_enabled", enabled);
 
   oracle_->SetAutoThrottlingEnabled(enabled);
 }
 
 void FrameSinkVideoCapturerImpl::ChangeTarget(
-    const absl::optional<VideoCaptureTarget>& target,
+    const std::optional<VideoCaptureTarget>& target,
     uint32_t sub_capture_target_version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(sub_capture_target_version, sub_capture_target_version_);
@@ -571,9 +566,8 @@ void FrameSinkVideoCapturerImpl::RefreshInternal(
 
   // Detect whether the source size changed before attempting capture.
   DCHECK(target_);
-  const absl::optional<CapturableFrameSink::RegionProperties>
-      region_properties =
-          resolved_target_->GetRequestRegionProperties(target_->sub_target);
+  const std::optional<CapturableFrameSink::RegionProperties> region_properties =
+      resolved_target_->GetRequestRegionProperties(target_->sub_target);
   if (!region_properties) {
     MaybeInformConsumerOfEmptyRegion();
     // If the capture region is empty, it means one of two things: the first
@@ -610,9 +604,8 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(
   DCHECK(resolved_target_);
   DCHECK(target_);
 
-  const absl::optional<CapturableFrameSink::RegionProperties>
-      region_properties =
-          resolved_target_->GetRequestRegionProperties(target_->sub_target);
+  const std::optional<CapturableFrameSink::RegionProperties> region_properties =
+      resolved_target_->GetRequestRegionProperties(target_->sub_target);
   if (!region_properties) {
     MaybeInformConsumerOfEmptyRegion();
     return;
@@ -702,9 +695,8 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     // was not running.
     refresh_frame_retry_timer_->Stop();
   } else {
-    TRACE_EVENT_INSTANT1("gpu.capture", "FpsRateLimited",
-                         TRACE_EVENT_SCOPE_THREAD, "trigger",
-                         VideoCaptureOracle::EventAsString(event));
+    TRACE_EVENT_INSTANT("gpu.capture", "FpsRateLimited", "trigger",
+                        VideoCaptureOracle::EventAsString(event));
 
     // Whether the oracle rejected a compositor update or a refresh event,
     // the consumer needs to be provided an update in the near future.
@@ -717,20 +709,18 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // period of time where the capture target is known but the |consumer_| has
   // not yet been provided in the call to Start().
   if (!consumer_) {
-    TRACE_EVENT_INSTANT1("gpu.capture", "NoConsumer", TRACE_EVENT_SCOPE_THREAD,
-                         "trigger", VideoCaptureOracle::EventAsString(event));
+    TRACE_EVENT_INSTANT("gpu.capture", "NoConsumer", "trigger",
+                        VideoCaptureOracle::EventAsString(event));
     return;
   }
 
-  const absl::optional<CapturableFrameSink::RegionProperties>
-      region_properties =
-          resolved_target_->GetRequestRegionProperties(target_->sub_target);
+  const std::optional<CapturableFrameSink::RegionProperties> region_properties =
+      resolved_target_->GetRequestRegionProperties(target_->sub_target);
   if (!region_properties) {
     // We should have valid properties even if there is no sub target. There is
     // nothing to capture right now.
-    TRACE_EVENT_INSTANT1("gpu.capture", "NoRegionProperties",
-                         TRACE_EVENT_SCOPE_THREAD, "trigger",
-                         VideoCaptureOracle::EventAsString(event));
+    TRACE_EVENT_INSTANT("gpu.capture", "NoRegionProperties", "trigger",
+                        VideoCaptureOracle::EventAsString(event));
     return;
   }
 
@@ -748,11 +738,11 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // region from the last aggregated surface.
   if (!gfx::Rect(region_properties->root_render_pass_size)
            .Contains(render_pass_in_root_space)) {
-    TRACE_EVENT_INSTANT2("gpu.capture", "DroppingFrameWithUncontainedRegion",
-                         TRACE_EVENT_SCOPE_THREAD, "root_render_pass_size",
-                         region_properties->root_render_pass_size.ToString(),
-                         "render_pass_subrect_in_root_space",
-                         render_pass_in_root_space.ToString());
+    TRACE_EVENT_INSTANT("gpu.capture", "DroppingFrameWithUncontainedRegion",
+                        "root_render_pass_size",
+                        region_properties->root_render_pass_size.ToString(),
+                        "render_pass_subrect_in_root_space",
+                        render_pass_in_root_space.ToString());
     MaybeScheduleRefreshFrame();
     return;
   }
@@ -780,15 +770,14 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   const bool can_resurrect_content = CanResurrectFrame(capture_size);
   scoped_refptr<VideoFrame> frame;
   if (can_resurrect_content) {
-    TRACE_EVENT_INSTANT0("gpu.capture", "UsingResurrectedFrame",
-                         TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT("gpu.capture", "UsingResurrectedFrame");
     frame = ResurrectFrame();
   } else {
-    TRACE_EVENT_INSTANT2("gpu.capture", "ReservingVideoFrame",
-                         TRACE_EVENT_SCOPE_THREAD, "root_render_pass_size",
-                         region_properties->root_render_pass_size.ToString(),
-                         "render_pass_subrect",
-                         region_properties->render_pass_subrect.ToString());
+    TRACE_EVENT_INSTANT("gpu.capture", "ReservingVideoFrame",
+                        "root_render_pass_size",
+                        region_properties->root_render_pass_size.ToString(),
+                        "render_pass_subrect",
+                        region_properties->render_pass_subrect.ToString());
     auto reserve_start_time = base::TimeTicks::Now();
 
     frame = frame_pool_->ReserveVideoFrame(pixel_format_, capture_size);
@@ -811,10 +800,10 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // Do not proceed if the pool did not provide a frame: This indicates the
   // pipeline is full.
   if (!frame) {
-    TRACE_EVENT_INSTANT2(
-        "gpu.capture", "PipelineLimited", TRACE_EVENT_SCOPE_THREAD, "trigger",
-        VideoCaptureOracle::EventAsString(event), "atten_util_percent",
-        base::saturated_cast<int>(utilization * 100.0f + 0.5f));
+    TRACE_EVENT_INSTANT("gpu.capture", "PipelineLimited", "trigger",
+                        VideoCaptureOracle::EventAsString(event),
+                        "atten_util_percent",
+                        base::saturated_cast<int>(utilization * 100.0f + 0.5f));
     oracle_->RecordWillNotCapture(utilization);
     if (next_capture_frame_number_ == 0) {
       // The pool was unable to provide a buffer for the very first capture, and
@@ -838,11 +827,10 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // Record a trace event if the capture pipeline is redlining, but capture will
   // still proceed.
   if (utilization >= 1.0) {
-    TRACE_EVENT_INSTANT2(
-        "gpu.capture", "NearlyPipelineLimited", TRACE_EVENT_SCOPE_THREAD,
-        "trigger", VideoCaptureOracle::EventAsString(event),
-        "atten_util_percent",
-        base::saturated_cast<int>(utilization * 100.0f + 0.5f));
+    TRACE_EVENT_INSTANT("gpu.capture", "NearlyPipelineLimited", "trigger",
+                        VideoCaptureOracle::EventAsString(event),
+                        "atten_util_percent",
+                        base::saturated_cast<int>(utilization * 100.0f + 0.5f));
   }
 
   // At this point, the capture is going to proceed. Populate the VideoFrame's
@@ -888,19 +876,17 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // know would not require letterboxing).
   const gfx::Rect content_rect =
       GetContentRectangle(frame->visible_rect(), source_size, pixel_format_);
-  TRACE_EVENT_INSTANT2("gpu.capture", "ContentRectDeterminedForCapture",
-                       TRACE_EVENT_SCOPE_THREAD, "content_rect",
-                       content_rect.ToString(), "source_size",
-                       source_size.ToString());
+  TRACE_EVENT_INSTANT("gpu.capture", "ContentRectDeterminedForCapture",
+                      "content_rect", content_rect.ToString(), "source_size",
+                      source_size.ToString());
 
   // Note: The following is used by
   // chrome/browser/media/cast_mirroring_performance_browsertest.cc, in
   // addition to the usual runtime tracing
-  // TODO(https://crbug.com/1322573): change to _NESTABLE_ variant of the macro
-  // once the bug is fixed.
-  TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", oracle_frame_number,
-                           "frame_number", capture_frame_number, "trigger",
-                           VideoCaptureOracle::EventAsString(event));
+  TRACE_EVENT_BEGIN("gpu.capture", "Capture",
+                    perfetto::Track(oracle_frame_number), "frame_number",
+                    capture_frame_number, "trigger",
+                    VideoCaptureOracle::EventAsString(event));
 
   // Determine what rectangular region has changed since the last captured
   // frame.
@@ -1014,7 +1000,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
           mojom::BufferFormatPreference::kPreferGpuMemoryBuffer &&
       pixel_format_ == media::PIXEL_FORMAT_NV12;
 
-  absl::optional<BlitRequest> blit_request;
+  std::optional<BlitRequest> blit_request;
   if (use_nv12_with_textures) {
     TRACE_EVENT("gpu.capture", "PopulateBlitRequest");
 
@@ -1047,7 +1033,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
         media::VideoPixelFormat::PIXEL_FORMAT_NV12};
 
     for (const VideoCaptureOverlay* overlay : GetOverlaysInOrder()) {
-      absl::optional<VideoCaptureOverlay::BlendInformation> blend_information =
+      std::optional<VideoCaptureOverlay::BlendInformation> blend_information =
           overlay->CalculateBlendInformation(frame_properties);
       if (!blend_information)
         continue;
@@ -1280,8 +1266,8 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
           GetOverlaysInOrder(), frame_properties);
 
       if (overlay_renderer) {
-        TRACE_EVENT1("gpu.capture", "BlendVideoCaptureOverlays",
-                     "frame_properties", frame_properties.ToString());
+        TRACE_EVENT("gpu.capture", "BlendVideoCaptureOverlays",
+                    "frame_properties", frame_properties.ToString());
         std::move(overlay_renderer).Run(frame.get());
       }
     }
@@ -1374,11 +1360,8 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
     // Note: The following is used by
     // chrome/browser/media/cast_mirroring_performance_browsertest.cc, in
     // addition to the usual runtime tracing
-    // TODO(https://crbug.com/1322573): change to _NESTABLE_ variant of the
-    // macro once the bug is fixed.
-    TRACE_EVENT_ASYNC_END1("gpu.capture", "Capture", oracle_frame_number,
-                           "success", false);
-
+    TRACE_EVENT_END("gpu.capture", perfetto::Track(oracle_frame_number));
+    TRACE_EVENT_INSTANT("gpu.capture", "CaptureEnd", "success", false);
     MaybeScheduleRefreshFrame();
     return;
   }
@@ -1392,11 +1375,9 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   // Note: The following is used by
   // chrome/browser/media/cast_mirroring_performance_browsertest.cc, in
   // addition to the usual runtime tracing
-  // TODO(https://crbug.com/1322573): change to _NESTABLE_ variant of the macro
-  // once the bug is fixed.
-  TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", oracle_frame_number,
-                         "success", true, "time_delta",
-                         frame->timestamp().InMicroseconds());
+  TRACE_EVENT_END("gpu.capture", perfetto::Track(oracle_frame_number),
+                  "success", true, "time_delta",
+                  frame->timestamp().InMicroseconds());
 
   // Clone a handle to the shared memory backing the populated video frame, to
   // send to the consumer.

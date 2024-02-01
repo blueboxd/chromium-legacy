@@ -613,8 +613,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void UpdateStyleForNonEligibleContainer(Element& container);
   // Updates the style of `element`, and descendants if needed.
   // The provided `try_set` represents the declaration block from a @try rule.
-  void UpdateStyleForPositionFallback(Element& element,
-                                      const CSSPropertyValueSet* try_set);
+  void UpdateStyleForOutOfFlow(Element& element,
+                               const CSSPropertyValueSet* try_set);
   StyleRulePositionFallback* GetPositionFallbackRule(const ScopedCSSName&);
   void RecalcStyle();
 
@@ -622,6 +622,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void RebuildLayoutTree(Element* size_container = nullptr);
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
   bool InDOMRemoval() const { return in_dom_removal_; }
+  bool InDetachLayoutTree() const { return in_detach_scope_; }
   bool InContainerQueryStyleRecalc() const {
     return in_container_query_style_recalc_;
   }
@@ -833,7 +834,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void RecalcStyle(StyleRecalcChange, const StyleRecalcContext&);
   void RecalcStyleForContainer(Element& container, StyleRecalcChange change);
-  void RecalcHighlightStylesForContainer(Element& container);
+  bool RecalcHighlightStylesForContainer(Element& container);
   void RecalcPositionFallbackStyleForPseudoElement(
       PseudoElement& pseudo_element,
       const StyleRecalcChange,

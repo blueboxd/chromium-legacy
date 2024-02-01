@@ -6,13 +6,13 @@
 
 #include <queue>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/public/cpp/accelerators.h"
-#include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/screen_backlight.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -35,6 +35,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
@@ -196,6 +197,10 @@ void LoggedInSpokenFeedbackTest::SendStickyKeyCommand() {
 
 void LoggedInSpokenFeedbackTest::SendMouseMoveTo(const gfx::Point& location) {
   event_generator_->MoveMouseTo(location.x(), location.y());
+}
+
+void LoggedInSpokenFeedbackTest::SetMouseSourceDeviceId(int id) {
+  event_generator_->set_mouse_source_device_id(id);
 }
 
 bool LoggedInSpokenFeedbackTest::PerformAcceleratorAction(
@@ -381,6 +386,23 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeEscapeWithGesture) {
   sm_.ExpectSpeech("Escape");
   sm_.ExpectSpeech("Stopping Learn Mode");
 
+  sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, OpenLogPage) {
+  // Enabling earcon logging should not crash ChromeVox at startup
+  // (see b/318531241).
+  AccessibilityManager::Get()->profile()->GetPrefs()->SetBoolean(
+      prefs::kAccessibilityChromeVoxEnableEarconLogging, true);
+  EnableChromeVox();
+  StablizeChromeVoxState();
+
+  // Open the log page.
+  sm_.Call([this]() {
+    SendKeyPressWithSearch(ui::VKEY_O);
+    SendKeyPress(ui::VKEY_W);
+  });
+  sm_.ExpectSpeech("chromevox-log");
   sm_.Replay();
 }
 
@@ -682,6 +704,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_OpenContextMenu) {
 // Verifies that speaking text under mouse works for Shelf button and voice
 // announcements should not be stacked when mouse goes over many Shelf buttons
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
+  SetMouseSourceDeviceId(1);
   // Add the ShelfItem to the ShelfModel after enabling the ChromeVox. Because
   // when an extension is enabled, the ShelfItems which are not recorded as
   // pinned apps in user preference will be removed.
@@ -726,6 +749,38 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
 
   sm_.ExpectSpeechPattern("MockApp*");
   sm_.ExpectSpeech("Button");
+
+  sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderSynthesizedMouse) {
+  EnableChromeVox();
+
+  AutomationTestUtils test_utils(extension_misc::kChromeVoxExtensionId);
+  sm_.Call([&test_utils]() {
+    test_utils.SetUpTestSupport();
+    // Enable the function of speaking text under mouse.
+    EventRewriterController::Get()->SetSendMouseEvents(true);
+  });
+
+  sm_.Call([this]() {
+    NavigateToUrl(GURL(R"(data:text/html;charset=utf-8,
+            <button id="b1" autofocus>First</button>
+            <button id="b2">Second</button>
+            <button id="b3">Third</button>
+        )"));
+  });
+  sm_.ExpectSpeech("First");
+  sm_.Call([this, &test_utils]() {
+    gfx::Rect b2_bounds = test_utils.GetNodeBoundsInRoot("Second", "button");
+    SendMouseMoveTo(b2_bounds.CenterPoint());
+  });
+  sm_.ExpectSpeech("Second");
+  sm_.Call([this, &test_utils]() {
+    gfx::Rect b3_bounds = test_utils.GetNodeBoundsInRoot("Third", "button");
+    SendMouseMoveTo(b3_bounds.CenterPoint());
+  });
+  sm_.ExpectSpeech("Third");
 
   sm_.Replay();
 }
@@ -941,6 +996,38 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
   sm_.ExpectSpeech("Quick Settings");
 
   sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenSettingsFromPanel) {
+  EnableChromeVox();
+
+  AutomationTestUtils test_utils(extension_misc::kChromeVoxExtensionId);
+  sm_.Call([&test_utils]() { test_utils.SetUpTestSupport(); });
+
+  base::RunLoop waiter;
+  AccessibilityManager::Get()->SetOpenSettingsSubpageObserverForTest(
+      base::BindLambdaForTesting([&waiter]() { waiter.Quit(); }));
+
+  // Find the settings button in the panel.
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_OEM_PERIOD); });
+  sm_.ExpectSpeech("Search the menus");
+  sm_.Call([this]() {
+    SendKeyPress(ui::VKEY_TAB);
+    SendKeyPress(ui::VKEY_TAB);
+  });
+  sm_.ExpectSpeech("ChromeVox Menus collapse");
+  sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
+  sm_.ExpectSpeech("ChromeVox Options");
+
+  // TODO(b/316916793): We cannot click this button with ChromeVox directly, so
+  // using test utils for now.
+  sm_.Call(
+      [&test_utils]() { test_utils.DoDefault("ChromeVox Options", "button"); });
+
+  sm_.Replay();
+
+  // We should have tried to open the settings subpage.
+  waiter.Run();
 }
 
 // Fails on ASAN. See http://crbug.com/776308 . (Note MAYBE_ doesn't work well
@@ -2298,9 +2385,7 @@ class ShortcutsAppSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
  public:
   ShortcutsAppSpokenFeedbackTest() {
     scoped_feature_list_.InitWithFeatures(
-        {::features::kShortcutCustomizationApp,
-         features::kOnlyShowNewShortcutsApp},
-        {});
+        {::features::kShortcutCustomizationApp}, {});
   }
   ShortcutsAppSpokenFeedbackTest(const ShortcutsAppSpokenFeedbackTest&) =
       delete;
@@ -2379,6 +2464,7 @@ IN_PROC_BROWSER_TEST_F(SpokenFeedbackWithCandidateWindowTest,
   candidate_window.set_page_size(2);
   candidate_window.mutable_candidates()->clear();
   candidate_window.set_orientation(ui::CandidateWindow::VERTICAL);
+  candidate_window.set_is_user_selecting(true);
   for (size_t i = 0; i < 2; ++i) {
     ui::CandidateWindow::Entry entry;
     entry.value = u"value " + base::NumberToString16(i);

@@ -25,6 +25,10 @@ BASE_FEATURE(kSafetyCheckUnusedSitePermissions,
              "SafetyCheckUnusedSitePermissions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSafetyCheckUnusedSitePermissionsForSupportedChooserPermissions,
+             "SafetyCheckUnusedSitePermissionsForSupportedChooserPermissions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kActiveContentSettingExpiry,
              "ActiveContentSettingExpiry",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -74,6 +78,10 @@ BASE_FEATURE(kImprovedSemanticsActivityIndicators,
              "ImprovedSemanticsActivityIndicators",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kLeftHandSideActivityIndicators,
+             "LeftHandSideActivityIndicators",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kTrackingProtection3pcd,
              "TrackingProtection3pcd",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -92,6 +100,7 @@ BASE_FEATURE(kContentSettingsPartitioning,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 const char kMetadataGrantsThresholdName[] = "MetadataGrantsThreshold";
+const char kUseTestMetadataName[] = "UseTestMetadata";
 
 BASE_FEATURE(kHostIndexedMetadataGrants,
              "HostIndexedMetadataGrants",
@@ -99,6 +108,12 @@ BASE_FEATURE(kHostIndexedMetadataGrants,
 
 const base::FeatureParam<int> kMetadataGrantsThreshold{
     &kHostIndexedMetadataGrants, kMetadataGrantsThresholdName, 1};
+const base::FeatureParam<int> kUseTestMetadata{&kHostIndexedMetadataGrants,
+                                               kUseTestMetadataName, 0};
+
+BASE_FEATURE(kIndexedHostContentSettingsMap,
+             "IndexedHostContentSettingsMap",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace content_settings

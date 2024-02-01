@@ -184,6 +184,13 @@ namespace {
 static const char kPasswordBreachEntryTrigger[] = "PASSWORD_ENTRY";
 #endif
 
+#if BUILDFLAG(IS_ANDROID)
+// TODO(crbug.com/1513384): Get rid of DeprecatedGetOriginAsURL().
+url::Origin URLToOrigin(GURL url) {
+  return url::Origin::Create(url.DeprecatedGetOriginAsURL());
+}
+#endif
+
 const syncer::SyncService* GetSyncServiceForProfile(Profile* profile) {
   if (SyncServiceFactory::HasSyncService(profile))
     return SyncServiceFactory::GetForProfile(profile);
@@ -372,7 +379,7 @@ void ChromePasswordManagerClient::FocusedInputChanged(
 
   PasswordGenerationController::GetOrCreate(web_contents())
       ->FocusedInputChanged(focused_field_type,
-                            base::AsWeakPtr(content_driver));
+                            content_driver->AsWeakPtrImpl());
 #endif  // BUILDFLAG(IS_ANDROID)
 }
 
@@ -434,7 +441,7 @@ bool ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
           GetWebAuthnCredManDelegateForDriver(driver),
           std::make_unique<password_manager::PasswordCredentialFillerImpl>(
               driver->AsWeakPtr(), submission_readiness_params),
-          base::AsWeakPtr(content_driver), is_webauthn_form)) {
+          content_driver->AsWeakPtrImpl(), is_webauthn_form)) {
     return true;
   }
   auto* webauthn_delegate = GetWebAuthnCredentialsDelegateForDriver(driver);
@@ -455,12 +462,11 @@ bool ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
               should_show_hybrid_option));
   return GetOrCreateTouchToFillController()->Show(
       credential_cache_
-          .GetCredentialStore(url::Origin::Create(
-              driver->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
+          .GetCredentialStore(URLToOrigin(driver->GetLastCommittedURL()))
           .GetCredentials(),
       passkeys, std::move(ttf_controller_autofill_delegate),
       GetWebAuthnCredManDelegateForDriver(driver),
-      base::AsWeakPtr(content_driver));
+      content_driver->AsWeakPtrImpl());
 }
 #endif
 
@@ -499,7 +505,7 @@ void ChromePasswordManagerClient::GeneratePassword(
   // ContentPasswordManagerDriver that holds the connection.
   content_driver->GeneratePassword(base::BindOnce(
       &ChromePasswordManagerClient::GenerationResultAvailable,
-      base::Unretained(this), type, base::AsWeakPtr(content_driver)));
+      base::Unretained(this), type, content_driver->AsWeakPtrImpl()));
 }
 
 void ChromePasswordManagerClient::NotifyUserAutoSignin(
@@ -575,7 +581,8 @@ void ChromePasswordManagerClient::ResetSubmissionTrackingAfterTouchToFill() {
 
 void ChromePasswordManagerClient::UpdateCredentialCache(
     const url::Origin& origin,
-    const std::vector<const PasswordForm*>& best_matches,
+    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
+        best_matches,
     bool is_blocklisted) {
 #if BUILDFLAG(IS_ANDROID)
   credential_cache_.SaveCredentialsAndBlocklistedForOrigin(
@@ -600,9 +607,11 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 }
 
 void ChromePasswordManagerClient::PasswordWasAutofilled(
-    const std::vector<const PasswordForm*>& best_matches,
+    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>&
+        best_matches,
     const url::Origin& origin,
-    const std::vector<const PasswordForm*>* federated_matches,
+    const std::vector<raw_ptr<const PasswordForm, VectorExperimental>>*
+        federated_matches,
     bool was_autofilled_on_pageload) {
 #if !BUILDFLAG(IS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
@@ -1027,6 +1036,23 @@ ChromePasswordManagerClient::GetWebAuthnCredManDelegateForDriver(
   return webauthn::WebAuthnCredManDelegateFactory::GetFactory(web_contents())
       ->GetRequestDelegate(frame_host);
 }
+
+void ChromePasswordManagerClient::MarkSharedCredentialsAsNotified(
+    const GURL& url) {
+  for (const PasswordForm& form :
+       credential_cache_.GetCredentialStore(URLToOrigin(url))
+           .GetUnnotifiedSharedCredentials()) {
+    // Make a non-const copy so we can modify it.
+    password_manager::PasswordForm updatedForm = form;
+    updatedForm.sharing_notification_displayed = true;
+    if (updatedForm.IsUsingAccountStore()) {
+      GetAccountPasswordStore()->UpdateLogin(std::move(updatedForm));
+    } else {
+      GetProfilePasswordStore()->UpdateLogin(std::move(updatedForm));
+    }
+  }
+}
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 version_info::Channel ChromePasswordManagerClient::GetChannel() const {
@@ -1074,7 +1100,7 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
            .GetCredentials()
            .empty();
   generation_controller->OnAutomaticGenerationAvailable(
-      base::AsWeakPtr(driver), ui_data, has_saved_credentials,
+      driver->AsWeakPtrImpl(), ui_data, has_saved_credentials,
       element_bounds_in_screen_space);
   // Trigger password suggestions. This is a fallback case if the field was
   // wrongly classified as new password field.
@@ -1592,8 +1618,8 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   gfx::RectF element_bounds_in_screen_space =
       GetBoundsInScreenSpace(element_bounds_in_top_frame_space);
   password_manager_.SetGenerationElementAndTypeForForm(
-      driver, ui_data.form_data.unique_renderer_id,
-      ui_data.generation_element_id, type);
+      driver, ui_data.form_data.renderer_id, ui_data.generation_element_id,
+      type);
 
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data,

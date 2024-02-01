@@ -6,6 +6,7 @@
 #define CC_PAINT_PAINT_OP_WRITER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/bits.h"
 #include "base/memory/aligned_memory.h"
@@ -147,6 +148,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   static size_t SerializedSize(const SkFlattenable* flattenable);
   static size_t SerializedSize(const SkColorSpace* color_space);
   static size_t SerializedSize(const gfx::HDRMetadata& hdr_metadata);
+  static size_t SerializedSize(const SkGainmapInfo& gainmap_info);
   static size_t SerializedSize(const ColorFilter* filter);
   static size_t SerializedSize(const PaintFilter* filter);
 
@@ -329,6 +331,12 @@ class CC_PAINT_EXPORT PaintOpWriter {
     DidWrite(total_size);
   }
 
+  template <typename T>
+  void Write(const std::vector<T>& vec) {
+    WriteSize(vec.size());
+    WriteData(vec.size() * sizeof(T), vec.data());
+  }
+
  private:
   template <typename T>
   void WriteSimple(const T& val) {
@@ -448,18 +456,6 @@ constexpr size_t PaintOpWriter::SerializedSizeSimple() {
 template <>
 constexpr size_t PaintOpWriter::SerializedSizeSimple<size_t>() {
   return base::bits::AlignUp(2 * sizeof(uint32_t), kDefaultAlignment);
-}
-
-template <>
-constexpr size_t PaintOpWriter::SerializedSize<SkGainmapInfo>() {
-  return SerializedSizeSimple<SkColor4f>() +  // fGainmapRatioMin
-         SerializedSizeSimple<SkColor4f>() +  // fGainmapRatioMax
-         SerializedSizeSimple<SkColor4f>() +  // fGainmapGamma
-         SerializedSizeSimple<SkColor4f>() +  // fEpsilonSdr
-         SerializedSizeSimple<SkColor4f>() +  // fEpsilonHdr
-         SerializedSizeSimple<SkScalar>() +   // fDisplayRatioSdr
-         SerializedSizeSimple<SkScalar>() +   // fDisplayRatioHdr
-         SerializedSizeSimple<uint32_t>();    // fBaseImageType
 }
 
 template <typename T>

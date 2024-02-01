@@ -100,6 +100,7 @@ class CorsURLLoaderSharedDictionaryTest : public CorsURLLoaderTestBase {
     extra_headers.emplace_back(
         network::shared_dictionary::kUseAsDictionaryHeaderName,
         "match=\"/path*\"");
+    extra_headers.emplace_back("cache-control", "max-age=2592000");
     NotifyLoaderClientOnReceiveResponse(extra_headers,
                                         std::move(consumer_handle_));
   }
@@ -116,7 +117,7 @@ class CorsURLLoaderSharedDictionaryTest : public CorsURLLoaderTestBase {
       bool expect_exists,
       const GURL& dictionary_url = GURL("https://origin.test/test")) {
     ASSERT_TRUE(isolation_info_.frame_origin());
-    absl::optional<net::SharedDictionaryIsolationKey> isolation_key =
+    std::optional<net::SharedDictionaryIsolationKey> isolation_key =
         net::SharedDictionaryIsolationKey::MaybeCreate(isolation_info_);
     ASSERT_TRUE(isolation_key);
     scoped_refptr<SharedDictionaryStorage> storage =

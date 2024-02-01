@@ -9,6 +9,7 @@
 #include <optional>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
@@ -79,8 +80,9 @@ class TouchInjector : public ui::EventRewriter {
   //   ]
   // }
   void ParseActions(const base::Value::Dict& root);
-  // Update the flags after loading data finished.
-  void UpdateFlags();
+  // Update the flags after loading data finished. `is_o4c` is true if the game
+  // is optimized for ChromeOS.
+  void UpdateFlags(bool is_o4c);
   // Notify the EventRewriter whether the text input is focused or not.
   void NotifyTextInputState(bool active);
   // Register the EventRewriter.
@@ -114,6 +116,8 @@ class TouchInjector : public ui::EventRewriter {
     return menu_entry_location_;
   }
 
+  void MaybeBindDefaultInputElement(Action* action);
+
   // Update `content_bounds_f_` and touch positions for each `actions_` for
   // different reasons.
   void UpdatePositionsForRegister();
@@ -132,7 +136,6 @@ class TouchInjector : public ui::EventRewriter {
   // Create a new action with guidance from the reference action, and delete
   // the reference action.
   void ChangeActionType(Action* reference_action, ActionType action_type);
-  void ChangeActionName(Action* action, int index);
   void RemoveActionNewState(Action* action);
 
   void AddObserver(TouchInjectorObserver* observer);
@@ -275,7 +278,6 @@ class TouchInjector : public ui::EventRewriter {
   void NotifyActionRemoved(Action& action);
   void NotifyActionTypeChanged(Action* action, Action* new_action);
   void NotifyActionInputBindingUpdated(const Action& action);
-  void NotifyActionNameUpdated(const Action& action);
   void NotifyContentBoundsSizeChanged();
   void NotifyActionNewStateRemoved(Action& action);
 

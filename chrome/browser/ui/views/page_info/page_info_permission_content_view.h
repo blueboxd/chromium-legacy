@@ -7,10 +7,11 @@
 
 #include "base/memory/raw_ptr.h"
 #include "components/page_info/page_info_ui.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
-#include "chrome/browser/ui/views/media_preview/media_coordinator.h"
+#include "chrome/browser/ui/views/media_preview/active_devices_media_coordinator.h"
 #endif
 
 class ChromePageInfoUiDelegate;
@@ -35,10 +36,13 @@ class ToggleButton;
 // | Manage button                                                 |
 // *---------------------------------------------------------------*
 class PageInfoPermissionContentView : public views::View, public PageInfoUI {
+  METADATA_HEADER(PageInfoPermissionContentView, views::View)
+
  public:
   PageInfoPermissionContentView(PageInfo* presenter,
                                 ChromePageInfoUiDelegate* ui_delegate,
-                                ContentSettingsType type);
+                                ContentSettingsType type,
+                                content::WebContents* web_contents);
   ~PageInfoPermissionContentView() override;
 
   // PageInfoUI implementations.
@@ -54,7 +58,7 @@ class PageInfoPermissionContentView : public views::View, public PageInfoUI {
   void PermissionChanged();
 
   // Adds Media (Camera or Mic) live preview feeds.
-  void MaybeAddMediaPreview();
+  void MaybeAddMediaPreview(content::WebContents* web_contents);
 
   raw_ptr<PageInfo> presenter_ = nullptr;
   ContentSettingsType type_;
@@ -68,7 +72,8 @@ class PageInfoPermissionContentView : public views::View, public PageInfoUI {
   raw_ptr<views::Checkbox> remember_setting_ = nullptr;
 
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
-  std::optional<MediaCoordinator> media_preview_coordinator_;
+  std::optional<ActiveDevicesMediaCoordinator>
+      active_devices_media_preview_coordinator_;
 #endif
 };
 

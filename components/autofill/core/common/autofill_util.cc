@@ -8,23 +8,24 @@
 
 #include <algorithm>
 #include <numeric>
-#include <string_view>
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/i18n/rtl.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/unique_ids.h"
 
 namespace autofill {
 
@@ -54,14 +55,6 @@ struct Compare : base::CaseInsensitiveCompareASCII<Char> {
 bool IsShowAutofillSignaturesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kShowAutofillSignatures);
-}
-
-bool IsKeyboardAccessoryEnabled() {
-#if BUILDFLAG(IS_ANDROID)
-  return true;
-#else  // !BUILDFLAG(IS_ANDROID)
-  return false;
-#endif
 }
 
 bool IsPrefixOfEmailEndingWithAtSign(const std::u16string& full_string,
@@ -116,7 +109,7 @@ void SetCheckStatus(FormFieldData* form_field_data,
 }
 
 std::vector<std::string> LowercaseAndTokenizeAttributeString(
-    base::StringPiece attribute) {
+    std::string_view attribute) {
   return base::SplitString(base::ToLowerASCII(attribute),
                            base::kWhitespaceASCII, base::TRIM_WHITESPACE,
                            base::SPLIT_WANT_NONEMPTY);
@@ -176,12 +169,12 @@ SubmissionIndicatorEvent ToSubmissionIndicatorEvent(SubmissionSource source) {
       return SubmissionIndicatorEvent::XHR_SUCCEEDED;
     case SubmissionSource::FRAME_DETACHED:
       return SubmissionIndicatorEvent::FRAME_DETACHED;
-    case SubmissionSource::DOM_MUTATION_AFTER_XHR:
-      return SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
     case SubmissionSource::PROBABLY_FORM_SUBMITTED:
       return SubmissionIndicatorEvent::PROBABLE_FORM_SUBMISSION;
     case SubmissionSource::FORM_SUBMISSION:
       return SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+    case SubmissionSource::DOM_MUTATION_AFTER_AUTOFILL:
+      return SubmissionIndicatorEvent::DOM_MUTATION_AFTER_AUTOFILL;
   }
 
   NOTREACHED();
@@ -200,7 +193,8 @@ GURL StripAuthAndParams(const GURL& gurl) {
 bool IsAutofillManuallyTriggered(
     AutofillSuggestionTriggerSource trigger_source) {
   return IsAddressAutofillManuallyTriggered(trigger_source) ||
-         IsPaymentsAutofillManuallyTriggered(trigger_source);
+         IsPaymentsAutofillManuallyTriggered(trigger_source) ||
+         IsPasswordsAutofillManuallyTriggered(trigger_source);
 }
 
 bool IsAddressAutofillManuallyTriggered(
@@ -213,6 +207,45 @@ bool IsPaymentsAutofillManuallyTriggered(
     AutofillSuggestionTriggerSource trigger_source) {
   return trigger_source ==
          AutofillSuggestionTriggerSource::kManualFallbackPayments;
+}
+
+bool IsPasswordsAutofillManuallyTriggered(
+    AutofillSuggestionTriggerSource trigger_source) {
+  return trigger_source ==
+         AutofillSuggestionTriggerSource::kManualFallbackPasswords;
+}
+
+void DumpWithoutCrashingForDuplicateIds(const FormData& form) {
+  SCOPED_CRASH_KEY_STRING64("AFCrash", "URL", form.url.possibly_invalid_spec());
+  SCOPED_CRASH_KEY_NUMBER("AFCrash", "IDs",
+                          base::MakeFlatSet<FieldGlobalId>(
+                              form.fields, {}, &FormFieldData::global_id)
+                              .size());
+  SCOPED_CRASH_KEY_NUMBER("AFCrash", "FIELDs", form.fields.size());
+  SCOPED_CRASH_KEY_NUMBER("AFCrash", "FRAMEs",
+                          base::MakeFlatSet<LocalFrameToken>(
+                              form.fields, {}, &FormFieldData::host_frame)
+                              .size());
+
+  std::map<FieldGlobalId, std::vector<LocalFrameToken>> id_to_fields;
+  for (const FormFieldData& field : form.fields) {
+    id_to_fields[field.global_id()].push_back(field.host_frame);
+  }
+  size_t same_frame = 0;
+  size_t diff_frame = 0;
+  for (auto& [field_id, duplicate_fields] : id_to_fields) {
+    if (duplicate_fields.size() > 1) {
+      ++(base::ranges::all_of(duplicate_fields,
+                              [&duplicate_fields](LocalFrameToken token) {
+                                return token == duplicate_fields.front();
+                              })
+             ? same_frame
+             : diff_frame);
+    }
+  }
+  SCOPED_CRASH_KEY_NUMBER("AFCrash", "SameFrameDuplicateIDs", same_frame);
+  SCOPED_CRASH_KEY_NUMBER("AFCrash", "DiffFrameDuplicateIDs", diff_frame);
+  base::debug::DumpWithoutCrashing();
 }
 
 }  // namespace autofill

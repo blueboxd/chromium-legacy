@@ -10,7 +10,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
@@ -26,6 +25,7 @@
 #include "components/drive/file_errors.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Profile;
 
@@ -42,6 +42,8 @@ FORWARD_DECLARE_TEST(OneDriveTest,
 FORWARD_DECLARE_TEST(OneDriveTest, FailToOpenFileFromODFSOtherAccessError);
 FORWARD_DECLARE_TEST(OneDriveTest, OpenFileFromAndroidOneDriveViaODFS);
 FORWARD_DECLARE_TEST(OneDriveTest,
+                     OpenFileFromAndroidOneDriveViaODFSDiffCaseEmail);
+FORWARD_DECLARE_TEST(OneDriveTest,
                      FailToOpenFileFromAndroidOneDriveViaODFSDiffEmail);
 FORWARD_DECLARE_TEST(OneDriveTest, FailToOpenFileFromAndroidOneDriveNotOnODFS);
 FORWARD_DECLARE_TEST(
@@ -52,10 +54,7 @@ FORWARD_DECLARE_TEST(
 namespace ash::cloud_upload {
 
 struct ODFSFileSystemAndPath {
-  // This field is not a raw_ptr<> because it was filtered by the rewriter
-  // for: #union
-  RAW_PTR_EXCLUSION file_system_provider::ProvidedFileSystemInterface*
-      file_system;
+  raw_ptr<file_system_provider::ProvidedFileSystemInterface> file_system;
   base::FilePath file_path_within_odfs;
 };
 
@@ -70,6 +69,21 @@ constexpr char kUserActionConfirmOrUploadToGoogleDrive[] =
     "confirm-or-upload-google-drive";
 constexpr char kUserActionConfirmOrUploadToOneDrive[] =
     "confirm-or-upload-onedrive";
+
+// Options for which sub-page/flow we want to show.
+enum class DialogPage {
+  // The user can choose between apps for handling office files.
+  kFileHandlerDialog,
+  // Set up OneDrive (multi-page).
+  kOneDriveSetup,
+  // Confirm that the user wants to move the file to OneDrive.
+  kMoveConfirmationOneDrive,
+  // Confirm that the user wants to move the file to Google Drive.
+  kMoveConfirmationGoogleDrive,
+
+  // A separate dialog when we're only connecting OneDrive by itself.
+  kConnectToOneDrive,
+};
 
 class CloudUploadDialog;
 
@@ -92,7 +106,6 @@ class CloudOpenTask : public BrowserListObserver,
   static bool Execute(Profile* profile,
                       const std::vector<storage::FileSystemURL>& file_urls,
                       const CloudProvider cloud_provider,
-                      gfx::NativeWindow modal_parent,
                       std::unique_ptr<CloudOpenMetrics> cloud_open_metrics);
 
   // Set the local tasks that are passed to the File Handler dialog. Normally
@@ -130,6 +143,8 @@ class CloudOpenTask : public BrowserListObserver,
   FRIEND_TEST_ALL_PREFIXES(::file_manager::file_tasks::OneDriveTest,
                            OpenFileFromAndroidOneDriveViaODFS);
   FRIEND_TEST_ALL_PREFIXES(::file_manager::file_tasks::OneDriveTest,
+                           OpenFileFromAndroidOneDriveViaODFSDiffCaseEmail);
+  FRIEND_TEST_ALL_PREFIXES(::file_manager::file_tasks::OneDriveTest,
                            FailToOpenFileFromAndroidOneDriveViaODFSDiffEmail);
   FRIEND_TEST_ALL_PREFIXES(::file_manager::file_tasks::OneDriveTest,
                            FailToOpenFileFromAndroidOneDriveNotOnODFS);
@@ -144,13 +159,13 @@ class CloudOpenTask : public BrowserListObserver,
   CloudOpenTask(Profile* profile,
                 std::vector<storage::FileSystemURL> file_urls,
                 const CloudProvider cloud_provider,
-                gfx::NativeWindow modal_parent,
                 std::unique_ptr<CloudOpenMetrics> cloud_open_metrics);
 
   ~CloudOpenTask() override;
 
   // See the .cc implementation for comments on private methods.
   bool ExecuteInternal();
+  bool MaybeRunFixupFlow();
   void OpenOrMoveFiles();
   void OpenAlreadyHostedDriveUrls();
   void OnGoogleDriveGetMetadata(drive::FileError error,
@@ -186,10 +201,9 @@ class CloudOpenTask : public BrowserListObserver,
   void LogOneDriveOpenResultUMA(OfficeTaskResult success_task_result,
                                 OfficeOneDriveOpenErrors open_result);
 
-  bool InitAndShowDialog(mojom::DialogPage dialog_page);
-  mojom::DialogArgsPtr CreateDialogArgs(mojom::DialogPage dialog_page);
+  bool InitAndShowDialog(DialogPage dialog_page);
+  mojom::DialogArgsPtr CreateDialogArgs(DialogPage dialog_page);
   void ShowDialog(mojom::DialogArgsPtr args,
-                  const mojom::DialogPage dialog_page,
                   std::unique_ptr<::file_manager::file_tasks::ResultingTasks>
                       resulting_tasks);
   void SetTaskArgs(mojom::DialogArgsPtr& args,
@@ -216,14 +230,13 @@ class CloudOpenTask : public BrowserListObserver,
       std::unique_ptr<std::vector<std::string>> mime_types);
   void RecordUploadLatencyUMA();
 
-  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_;
+  raw_ptr<Profile, DanglingUntriaged> profile_;
   std::vector<storage::FileSystemURL> file_urls_;
   CloudProvider cloud_provider_;
-  gfx::NativeWindow modal_parent_;
   std::unique_ptr<CloudOpenMetrics> cloud_open_metrics_;
   std::vector<::file_manager::file_tasks::TaskDescriptor> local_tasks_;
   size_t pending_uploads_ = 0;
-  raw_ptr<CloudUploadDialog, ExperimentalAsh> pending_dialog_ = nullptr;
+  raw_ptr<CloudUploadDialog> pending_dialog_ = nullptr;
   base::ElapsedTimer upload_timer_;
   int64_t upload_total_size_ = 0;
   bool has_upload_errors_ = false;
@@ -282,7 +295,6 @@ class CloudUploadDialog : public SystemWebDialogDelegate {
 
   CloudUploadDialog(mojom::DialogArgsPtr args,
                     UploadRequestCallback callback,
-                    const mojom::DialogPage dialog_page,
                     bool office_move_confirmation_shown);
 
   void OnDialogShown(content::WebUI* webui) override;
@@ -304,9 +316,10 @@ class CloudUploadDialog : public SystemWebDialogDelegate {
 
   mojom::DialogArgsPtr dialog_args_;
   UploadRequestCallback callback_;
-  mojom::DialogPage dialog_page_;
-  size_t num_local_tasks_;
   bool office_move_confirmation_shown_;
+
+  // Only relevant for `mojom::DialogPage::kFileHandlerDialog`.
+  bool is_microsoft_office_or_google_workspace_disabled_by_policy_ = false;
 };
 
 }  // namespace ash::cloud_upload

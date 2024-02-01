@@ -105,7 +105,7 @@ void ProfileImportProcess::DetermineProfileImportType() {
           form_source_url_);
 
   int number_of_unchanged_profiles = 0;
-  absl::optional<AutofillProfile> migration_candidate;
+  std::optional<AutofillProfile> migration_candidate;
 
   // We don't offer an import if `observed_profile_` is a duplicate of an
   // existing profile.
@@ -276,7 +276,7 @@ void ProfileImportProcess::DetermineSourceOfImportCandidate() {
 }
 
 void ProfileImportProcess::MaybeSetMigrationCandidate(
-    absl::optional<AutofillProfile>& migration_candidate,
+    std::optional<AutofillProfile>& migration_candidate,
     const AutofillProfile& profile) const {
   // Basic checks: No migration candidate was selected yet, prompts can be shown
   // (i.e. not only silent updates) and the `profile` is not stored in the
@@ -388,7 +388,7 @@ void ProfileImportProcess::AcceptWithoutEdits() {
 
 void ProfileImportProcess::AcceptWithEdits(AutofillProfile edited_profile) {
   SetUserDecision(UserDecision::kEditAccepted,
-                  absl::make_optional(edited_profile));
+                  std::make_optional(edited_profile));
 }
 
 void ProfileImportProcess::Declined() {
@@ -458,14 +458,9 @@ void ProfileImportProcess::CollectMetrics(ukm::UkmRecorder* ukm_recorder,
   // decision.
   if (import_type_ == AutofillProfileImportType::kNewProfile) {
     autofill_metrics::LogNewProfileImportDecision(user_decision_);
-    autofill_metrics::LogNewProfileNumberOfAutocompleteUnrecognizedFields(
-        import_metadata_.num_autocomplete_unrecognized_fields);
-
     LogUkmMetrics(num_edited_fields);
   } else if (is_confirmable_update()) {
     autofill_metrics::LogProfileUpdateImportDecision(user_decision_);
-    autofill_metrics::LogProfileUpdateNumberOfAutocompleteUnrecognizedFields(
-        import_metadata_.num_autocomplete_unrecognized_fields);
 
     DCHECK(merge_candidate_.has_value() && import_candidate_.has_value());
     // For all update prompts, log the field types and total number of fields

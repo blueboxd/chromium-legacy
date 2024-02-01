@@ -57,10 +57,12 @@ class CC_EXPORT PictureLayerTilingSet {
 
   const PictureLayerTilingClient* client() const { return client_; }
 
-  void CleanUpTilings(float min_acceptable_high_res_scale_key,
-                      float max_acceptable_high_res_scale_key,
-                      const std::vector<PictureLayerTiling*>& needed_tilings,
-                      PictureLayerTilingSet* twin_set);
+  void CleanUpTilings(
+      float min_acceptable_high_res_scale_key,
+      float max_acceptable_high_res_scale_key,
+      const std::vector<raw_ptr<PictureLayerTiling, VectorExperimental>>&
+          needed_tilings,
+      PictureLayerTilingSet* twin_set);
   void RemoveNonIdealTilings();
 
   // This function is called on the active tree during activation.
@@ -212,9 +214,9 @@ class CC_EXPORT PictureLayerTilingSet {
       ~AutoClear() { *state_to_clear_ = StateSinceLastTilePriorityUpdate(); }
 
      private:
-      // Not a raw_ptr<...> for performance reasons: on-stack pointer +
-      // based on analysis of sampling profiler data
-      // (cc::PictureLayerTilingSet::UpdateTilePriorities -> creates AutoClear
+      // RAW_PTR_EXCLUSION: Performance reasons: on-stack pointer + based on
+      // analysis of sampling profiler data
+      // (PictureLayerTilingSet::UpdateTilePriorities -> creates AutoClear
       // on stack).
       RAW_PTR_EXCLUSION StateSinceLastTilePriorityUpdate* state_to_clear_;
     };

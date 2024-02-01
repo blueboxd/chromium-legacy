@@ -36,12 +36,14 @@
 #include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/buildflags.h"
+#include "ui/views/controls/button/label_button_image_container.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/views_test_utils.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view_test_api.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget_utils.h"
 
 namespace views {
@@ -63,7 +65,7 @@ class TestLabelButton : public LabelButton {
   void SetMultiLine(bool multi_line) { label()->SetMultiLine(multi_line); }
 
   using LabelButton::GetVisualState;
-  using LabelButton::image;
+  using LabelButton::image_container_view;
   using LabelButton::label;
   using LabelButton::OnThemeChanged;
 };
@@ -168,7 +170,7 @@ TEST_F(LabelButtonTest, Init) {
   EXPECT_FALSE(button()->GetIsDefault());
   EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
 
-  EXPECT_EQ(button()->image()->parent(), button());
+  EXPECT_EQ(button()->image_container_view()->parent(), button());
   EXPECT_EQ(button()->label()->parent(), button());
 }
 
@@ -454,12 +456,12 @@ TEST_F(LabelButtonTest, ImageAlignmentWithMultilineLabel) {
 
   button()->SetBoundsRect(gfx::Rect(button()->GetPreferredSize()));
   views::test::RunScheduledLayout(button());
-  int y_origin_centered = button()->image()->origin().y();
+  int y_origin_centered = button()->image_container_view()->origin().y();
 
   button()->SetBoundsRect(gfx::Rect(button()->GetPreferredSize()));
   button()->SetImageCentered(false);
   views::test::RunScheduledLayout(button());
-  int y_origin_not_centered = button()->image()->origin().y();
+  int y_origin_not_centered = button()->image_container_view()->origin().y();
 
   EXPECT_LT(y_origin_not_centered, y_origin_centered);
 }
@@ -493,12 +495,12 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   button_size.Enlarge(50, 0);
   button()->SetSize(button_size);
   views::test::RunScheduledLayout(button());
-  EXPECT_LT(button()->image()->bounds().right(),
+  EXPECT_LT(button()->image_container_view()->bounds().right(),
             button()->label()->bounds().x());
   int left_align_label_midpoint = button()->label()->bounds().CenterPoint().x();
   button()->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   views::test::RunScheduledLayout(button());
-  EXPECT_LT(button()->image()->bounds().right(),
+  EXPECT_LT(button()->image_container_view()->bounds().right(),
             button()->label()->bounds().x());
   int center_align_label_midpoint =
       button()->label()->bounds().CenterPoint().x();
@@ -506,7 +508,7 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   button()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   views::test::RunScheduledLayout(button());
   EXPECT_LT(button()->label()->bounds().right(),
-            button()->image()->bounds().x());
+            button()->image_container_view()->bounds().x());
 
   button()->SetText(std::u16string());
   EXPECT_LT(button()->GetPreferredSize().width(), text_width + image_size);
@@ -566,9 +568,10 @@ TEST_F(LabelButtonTest, LabelWrapAndImageAlignment) {
             font_list.GetHeight() * 2 + button_insets.height());
 
   // The image should be centered on the first line of the multi-line label
-  EXPECT_EQ(button()->image()->y(),
-            (font_list.GetHeight() - button()->image()->height()) / 2 +
-                button_insets.top());
+  EXPECT_EQ(
+      button()->image_container_view()->y(),
+      (font_list.GetHeight() - button()->image_container_view()->height()) / 2 +
+          button_insets.top());
 }
 
 // This test was added because GetHeightForWidth and GetPreferredSize were
@@ -786,13 +789,16 @@ TEST_F(LabelButtonTest, ImageOrLabelGetClipped) {
   views::test::RunScheduledLayout(button());
 
   // Ensure that content (image and label) doesn't get clipped by the border.
-  EXPECT_GE(button()->image()->height(), image_size);
+  EXPECT_GE(button()->image_container_view()->height(), image_size);
   EXPECT_GE(button()->label()->height(), image_size);
 }
 
 TEST_F(LabelButtonTest, UpdateImageAfterSettingImageModel) {
   auto is_showing_image = [&](const gfx::ImageSkia& image) {
-    return button()->image()->GetImage().BackedBySameObjectAs(image);
+    const auto* image_view =
+        AsViewClass<ImageView>(button()->image_container_view());
+    CHECK(image_view);
+    return image_view->GetImage().BackedBySameObjectAs(image);
   };
 
   auto normal_image = gfx::test::CreateImageSkia(/*size=*/16);

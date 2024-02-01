@@ -294,7 +294,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View {
                                        /*send_native_event=*/true);
     }
 
-    Layout();
+    DeprecatedLayoutImmediately();
   }
 
   // views::View:
@@ -339,10 +339,10 @@ class LoginAuthUserView::ChallengeResponseView : public views::View {
 
   base::RepeatingClosure on_start_tap_;
   State state_ = State::kInitial;
-  raw_ptr<ArrowButtonView, ExperimentalAsh> arrow_button_ = nullptr;
-  raw_ptr<NonAccessibleView, ExperimentalAsh> arrow_to_icon_spacer_ = nullptr;
-  raw_ptr<views::ImageView, ExperimentalAsh> icon_ = nullptr;
-  raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
+  raw_ptr<ArrowButtonView> arrow_button_ = nullptr;
+  raw_ptr<NonAccessibleView> arrow_to_icon_spacer_ = nullptr;
+  raw_ptr<views::ImageView> icon_ = nullptr;
+  raw_ptr<views::Label> label_ = nullptr;
   base::OneShotTimer reset_state_timer_;
 };
 
@@ -490,7 +490,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   DCHECK(callbacks.on_tap);
   DCHECK(callbacks.on_remove);
   DCHECK(callbacks.on_auth_factor_is_hiding_password_changed);
-  DCHECK_NE(user.basic_user_info.type, user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  DCHECK_NE(user.basic_user_info.type, user_manager::UserType::kPublicAccount);
   if (Shell::Get()->login_screen_controller()->IsAuthenticating()) {
     // TODO(b/276246832): We should avoid re-layouting during Authentication.
     LOG(WARNING)
@@ -885,9 +885,8 @@ void LoginAuthUserView::ApplyAnimationPostLayout(bool animate) {
       pin_bounds.set_y(previous_state_->pin_start_in_screen.y() -
                        pin_end_in_screen.y());
 
-      // Since PIN is disabled, the previous Layout() hid the PIN keyboard.
-      // We need to redisplay it where it used to be.
-      // pin_view_->SetVisible(true);
+      // Since PIN is disabled, the previous layout hid the PIN keyboard. We
+      // need to redisplay it where it used to be.
       pin_view_->SetBoundsRect(pin_bounds);
     }
 
@@ -1312,7 +1311,7 @@ void LoginAuthUserView::OnSwitchButtonClicked() {
                           : InputFieldMode::PIN_WITH_TOGGLE;
   SetAuthMethods(auth_methods_, auth_metadata_);
   // Layout and animate.
-  Layout();
+  DeprecatedLayoutImmediately();
   ApplyAnimationPostLayout(/*animate*/ true);
 }
 

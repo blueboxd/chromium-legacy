@@ -110,7 +110,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
     kPinLocked = 0,
     kPukLocked = 1,
     kUnlocked = 2,
-    kMaxValue = kUnlocked
+    kCarrierLocked = 3,
+    kMaxValue = kCarrierLocked
   };
 
   // Records the result of pin operations performed.
@@ -285,7 +286,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
     kCellularInhibitFailure = 7,
     kESimProfileIssue = 8,
     kCellularOutOfCredits = 9,
-    kSimLocked = 10,
+    kSimPinPukLocked = 10,
     kConnectFailed = 11,
     kNotConnected = 12,
     kActivateFailed = 13,
@@ -293,7 +294,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
     kErrorCellularDeviceBusy = 15,
     kErrorConnectTimeout = 16,
     kConnectableCellularTimeout = 17,
-    kMaxValue = kConnectableCellularTimeout,
+    kSimCarrierLocked = 18,
+    kMaxValue = kSimCarrierLocked,
   };
 
   // Result of state changes to a cellular network triggered by any connection
@@ -317,9 +319,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
     kTooManySTAs = 13,
     kBadPassphrase = 14,
     kBadWepKey = 15,
-    kErrorSimLocked = 16,
+    kErrorSimPinPukLocked = 16,
     kErrorNotRegistered = 17,
-    kMaxValue = kErrorNotRegistered,
+    kErrorSimCarrierLocked = 18,
+    kMaxValue = kErrorSimCarrierLocked,
   };
 
   // Convert shill error name string to SimPinOperationResult enum.
@@ -422,19 +425,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
   // Tracks whether cellular device is available or not.
   bool is_cellular_available_ = false;
 
-  raw_ptr<NetworkStateHandler, ExperimentalAsh> network_state_handler_ =
-      nullptr;
+  raw_ptr<NetworkStateHandler> network_state_handler_ = nullptr;
   base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
-  raw_ptr<ManagedNetworkConfigurationHandler, ExperimentalAsh>
+  raw_ptr<ManagedNetworkConfigurationHandler>
       managed_network_configuration_handler_ = nullptr;
 
-  raw_ptr<NetworkConnectionHandler, ExperimentalAsh>
-      network_connection_handler_ = nullptr;
+  raw_ptr<NetworkConnectionHandler> network_connection_handler_ = nullptr;
 
-  raw_ptr<CellularESimProfileHandler, ExperimentalAsh>
-      cellular_esim_profile_handler_ = nullptr;
+  raw_ptr<CellularESimProfileHandler> cellular_esim_profile_handler_ = nullptr;
 
   // A timer to wait for cellular initialization. This is useful
   // to avoid tracking intermediate states when cellular network is

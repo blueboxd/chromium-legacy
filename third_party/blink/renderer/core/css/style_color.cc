@@ -175,6 +175,9 @@ StyleColor& StyleColor::operator=(const StyleColor& other) {
               *other.color_or_unresolved_color_mix_.unresolved_color_mix));
     }
   } else {
+    if (IsUnresolvedColorMixFunction()) {
+      color_or_unresolved_color_mix_.unresolved_color_mix.reset();
+    }
     color_or_unresolved_color_mix_.color =
         other.color_or_unresolved_color_mix_.color;
   }
@@ -264,7 +267,11 @@ Color StyleColor::ColorFromKeyword(CSSValueID keyword,
       return Color::FromRGBA32(named_color->argb_value);
     }
   }
-  return LayoutTheme::GetTheme().SystemColor(keyword, color_scheme);
+
+  // TODO(samomekarajr): Pass in the actual color provider from the Page via the
+  // Document.
+  return LayoutTheme::GetTheme().SystemColor(keyword, color_scheme,
+                                             /*color_provider=*/nullptr);
 }
 
 bool StyleColor::IsColorKeyword(CSSValueID id) {

@@ -149,6 +149,7 @@ set(ABSL_INTERNAL_DLL_FILES
   "hash/internal/low_level_hash.cc"
   "log/absl_check.h"
   "log/absl_log.h"
+  "log/absl_vlog_is_on.h"
   "log/check.h"
   "log/die_if_null.cc"
   "log/die_if_null.h"
@@ -179,6 +180,8 @@ set(ABSL_INTERNAL_DLL_FILES
   "log/internal/proto.cc"
   "log/internal/strip.h"
   "log/internal/structured.h"
+  "log/internal/vlog_config.cc"
+  "log/internal/vlog_config.h"
   "log/internal/voidify.h"
   "log/initialize.cc"
   "log/initialize.h"
@@ -190,6 +193,7 @@ set(ABSL_INTERNAL_DLL_FILES
   "log/log_sink_registry.h"
   "log/log_streamer.h"
   "log/structured.h"
+  "log/vlog_is_on.h"
   "memory/memory.h"
   "meta/type_traits.h"
   "numeric/bits.h"
@@ -306,6 +310,7 @@ set(ABSL_INTERNAL_DLL_FILES
   "strings/internal/string_constant.h"
   "strings/internal/stringify_sink.h"
   "strings/internal/stringify_sink.cc"
+  "strings/internal/has_absl_stringify.h"
   "strings/has_absl_stringify.h"
   "strings/has_ostream_operator.h"
   "strings/match.cc"
@@ -621,17 +626,32 @@ include(CheckCXXSourceCompiles)
 check_cxx_source_compiles(
   [==[
 #ifdef _MSC_VER
-#  if _MSVC_LANG < 201700L
+#  if _MSVC_LANG < 201703L
 #    error "The compiler defaults or is configured for C++ < 17"
 #  endif
-#elif __cplusplus < 201700L
+#elif __cplusplus < 201703L
 #  error "The compiler defaults or is configured for C++ < 17"
 #endif
 int main() { return 0; }
 ]==]
   ABSL_INTERNAL_AT_LEAST_CXX17)
 
-if(ABSL_INTERNAL_AT_LEAST_CXX17)
+check_cxx_source_compiles(
+  [==[
+#ifdef _MSC_VER
+#  if _MSVC_LANG < 202002L
+#    error "The compiler defaults or is configured for C++ < 20"
+#  endif
+#elif __cplusplus < 202002L
+#  error "The compiler defaults or is configured for C++ < 20"
+#endif
+int main() { return 0; }
+]==]
+  ABSL_INTERNAL_AT_LEAST_CXX20)
+
+if(ABSL_INTERNAL_AT_LEAST_CXX20)
+  set(ABSL_INTERNAL_CXX_STD_FEATURE cxx_std_20)
+elseif(ABSL_INTERNAL_AT_LEAST_CXX17)
   set(ABSL_INTERNAL_CXX_STD_FEATURE cxx_std_17)
 else()
   set(ABSL_INTERNAL_CXX_STD_FEATURE cxx_std_14)
@@ -801,8 +821,8 @@ Cflags: -I\${includedir}${PC_CFLAGS}\n")
 
   if(ABSL_PROPAGATE_CXX_STD)
     # Abseil libraries require C++14 as the current minimum standard. When
-    # compiled with C++17 (either because it is the compiler's default or
-    # explicitly requested), then Abseil requires C++17.
+    # compiled with a higher minimum (either because it is the compiler's
+    # default or explicitly requested), then Abseil requires that standard.
     target_compile_features(${_dll} PUBLIC ${ABSL_INTERNAL_CXX_STD_FEATURE})
   endif()
 

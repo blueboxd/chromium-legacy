@@ -46,7 +46,7 @@ std::unique_ptr<ImageProcessor> CreateVaapiImageProcessorWithInputCandidates(
     ImageProcessor::ErrorCB error_cb) {
   std::vector<Fourcc> vpp_supported_formats =
       VaapiWrapper::GetVppSupportedFormats();
-  absl::optional<PixelLayoutCandidate> chosen_input_candidate;
+  std::optional<PixelLayoutCandidate> chosen_input_candidate;
   for (const auto& input_candidate : input_candidates) {
     if (base::Contains(vpp_supported_formats, input_candidate.fourcc) &&
         VaapiWrapper::IsVppResolutionAllowed(input_candidate.size)) {
@@ -106,7 +106,7 @@ std::unique_ptr<ImageProcessor> CreateV4L2ImageProcessorWithInputCandidates(
   }
 
   const auto output_fourcc = out_format_picker.Run(
-      /*candidates=*/supported_fourccs, /*preferred_fourcc=*/absl::nullopt);
+      /*candidates=*/supported_fourccs, /*preferred_fourcc=*/std::nullopt);
   if (!output_fourcc) {
 #if DCHECK_IS_ON()
     std::string output_fourccs_string;
@@ -190,7 +190,7 @@ std::unique_ptr<ImageProcessor> CreateLibYUVImageProcessorWithInputCandidates(
           matched_candidate.fourcc);
 
   auto output_format =
-      out_format_picker.Run(supported_output_formats, absl::nullopt);
+      out_format_picker.Run(supported_output_formats, std::nullopt);
 
   if (!output_format)
     return nullptr;
@@ -274,6 +274,14 @@ ImageProcessorFactory::CreateWithInputCandidates(
       base::BindRepeating(&LibYUVImageProcessorBackend::Create)
     };
 
+#if defined(ARCH_CPU_ARM_FAMILY)
+    if (base::FeatureList::IsEnabled(media::kUseGLForScaling)) {
+      create_funcs.insert(
+          create_funcs.begin(),
+          base::BindRepeating(&GLImageProcessorBackend::Create));
+    }
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
+
     for (auto& create_func : create_funcs) {
       std::unique_ptr<ImageProcessor> image_processor = ImageProcessor::Create(
           std::move(create_func), input_config, output_config,
@@ -293,7 +301,9 @@ ImageProcessorFactory::CreateWithInputCandidates(
     return processor;
 #elif BUILDFLAG(USE_V4L2_CODEC)
 #if defined(ARCH_CPU_ARM_FAMILY)
-  if (base::FeatureList::IsEnabled(media::kPreferGLImageProcessor)) {
+
+  if (base::FeatureList::IsEnabled(media::kPreferGLImageProcessor) ||
+      base::FeatureList::IsEnabled(media::kUseGLForScaling)) {
     auto processor = CreateGLImageProcessorWithInputCandidates(
         input_candidates, input_visible_rect, output_size, client_task_runner,
         out_format_picker, error_cb);

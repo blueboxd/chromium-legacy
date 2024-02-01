@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from mojom.generate import module
+from mojom.generate import compatibility_checker
 from mojom_parser_test_case import MojomParserTestCase
 
 
@@ -21,11 +22,14 @@ class VersionCompatibilityTest(MojomParserTestCase):
     self.assertEqual(set(old.keys()), set(new.keys()),
                      'Old and new test mojoms should use the same type names.')
 
-    checker = module.BackwardCompatibilityChecker()
+    checker = compatibility_checker.BackwardCompatibilityChecker()
     compatibility_map = {}
     for name in old:
-      compatibility_map[name] = checker.IsBackwardCompatible(
-          new[name], old[name])
+      try:
+        compatibility_map[name] = checker.IsBackwardCompatible(
+            new[name], old[name])
+      except compatibility_checker.CompatibilityError:
+        compatibility_map[name] = False
     return compatibility_map
 
   def assertBackwardCompatible(self, old_mojom, new_mojom):

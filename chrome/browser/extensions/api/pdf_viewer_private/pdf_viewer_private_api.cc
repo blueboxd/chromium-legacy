@@ -60,8 +60,7 @@ base::WeakPtr<StreamContainer> GetStreamContainer(
   }
 
   auto* pdf_viewer_stream_manager =
-      pdf::PdfViewerStreamManager::FromWebContents(
-          content::WebContents::FromRenderFrameHost(embedder_host));
+      pdf::PdfViewerStreamManager::FromRenderFrameHost(embedder_host);
   if (!pdf_viewer_stream_manager) {
     return nullptr;
   }
@@ -100,7 +99,7 @@ PdfViewerPrivateIsAllowedLocalFileAccessFunction::
 
 ExtensionFunction::ResponseAction
 PdfViewerPrivateIsAllowedLocalFileAccessFunction::Run() {
-  absl::optional<IsAllowedLocalFileAccess::Params> params =
+  std::optional<IsAllowedLocalFileAccess::Params> params =
       IsAllowedLocalFileAccess::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -143,7 +142,7 @@ PdfViewerPrivateSetPdfOcrPrefFunction::
     ~PdfViewerPrivateSetPdfOcrPrefFunction() = default;
 
 ExtensionFunction::ResponseAction PdfViewerPrivateSetPdfOcrPrefFunction::Run() {
-  absl::optional<SetPdfOcrPref::Params> params =
+  std::optional<SetPdfOcrPref::Params> params =
       SetPdfOcrPref::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -171,7 +170,7 @@ PdfViewerPrivateSetPdfPluginAttributesFunction::
 
 ExtensionFunction::ResponseAction
 PdfViewerPrivateSetPdfPluginAttributesFunction::Run() {
-  absl::optional<SetPdfPluginAttributes::Params> params =
+  std::optional<SetPdfPluginAttributes::Params> params =
       SetPdfPluginAttributes::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 

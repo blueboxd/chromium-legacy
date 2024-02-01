@@ -4,6 +4,8 @@
 
 module compose.mojom;
 
+import "components/compose/core/browser/compose_enums.mojom";
+
 // Interface for setting up connection to allow calls between the compose dialog
 // web page and native code.
 interface ComposeSessionPageHandlerFactory {
@@ -28,37 +30,6 @@ enum Length {
   kLonger,
 };
 
-// Status code used in compose responses.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. Keep in sync with
-// ComposeResponseStatus in src/tools/metrics/histograms/enums.xml.
-enum ComposeStatus {
-  kOk = 0,
-  // Generic error, not specified.
-  kError = 1,
-  // Request was unable to be processed.
-  kNotSuccessful = 2,
-  // Server may have not responded.
-  kTryAgain = 3,
-  // Server is likely overloaded, cannot handle a response right now.
-  kTryAgainLater = 4,
-  // If the feature is somehow disabled.
-  kMisconfiguration = 5,
-  // If permission is denied (e.g. user is not logged in.)
-  kPermissionDenied = 6,
-};
-
-// Whether the user has consented to page content sharing and acknowledged this
-// consent in compose.
-enum ConsentState {
-  // Consent has not been given
-  kUnset,
-  // Consent has been given but not acknowledged in compose
-  kExternalConsented,
-  // Consent has been given and acknowledged in compose
-  kConsented,
-};
-
 // Configuration parameters used in rewrite requests, specifying how the
 // response should be changed.
 union StyleModifiers {
@@ -73,6 +44,14 @@ struct ComposeResponse {
   string result;
   // Whether undo is possible to a prior state before this response.
   bool undo_available;
+  // Whether the response was generated on-device.
+  bool on_device_evaluation_used;
+};
+
+// An intermediate compose response, which is available before the final
+// response is complete.
+struct PartialComposeResponse {
+  string result;
 };
 
 // Snapshot of state that can describe current state or be used to
@@ -107,23 +86,28 @@ struct ConfigurableParams {
 // Information needed by the WebUI to show a new or restored
 // compose dialog.
 struct OpenMetadata {
-  ConsentState consent_state;
+  bool fre_complete;
+  bool msbb_state;
   // Renderer provided text selection.
   string initial_input;
+  // Whether or not the user selected text when opening the dialog.
+  bool text_selected;
   ComposeState compose_state;
   ConfigurableParams configurable_params;
 };
 
 // The trigger for dismissing the compose dialog.
 enum CloseReason {
-  // The X button on the upper-right of the consent/disclaimer dialog.
-  kConsentCloseButton,
-  // The page content consent was declined.
-  kPageContentConsentDeclined,
+  // The X button on the upper-right of the FRE dialog.
+  kFirstRunCloseButton,
   // The X button on the upper-right of the main app dialog.
   kCloseButton,
   // The Insert button of the dialog.
   kInsertButton,
+  // The MSBB dialog was shown and dismissed.
+  kMSBBCloseButton,
+  // The main app dialog lost focus.
+  kLostFocus,
 };
 
 //TODO(b/311697865) move this to a common location.
@@ -178,13 +162,16 @@ interface ComposeSessionPageHandler {
   // Buganizer.
   OpenBugReportingLink();
 
+  // Asks the Browser to open a new tab navigated to the Compose Learn More
+  // page.
+  OpenComposeLearnMorePage();
+
   // Asks the Browser to open a new tab navigated to the Dogfood feedback
   // survey.
   OpenFeedbackSurveyLink();
 
-  // Asks the Browser to open a new tab navigated to the Compose-related Chrome
-  // settings page.
-  OpenComposeSettings();
+  // Asks the Browser to open a new tab navigated to the sign in page.
+  OpenSignInPage();
 
   // Asks the native handler to store the user feedback supplied by the user.
   SetUserFeedback(UserFeedback feedback);
@@ -197,10 +184,11 @@ interface ComposeClientPageHandler {
   // Asks the receiver to close the compose dialog. `reason` describes
   // the user action that triggered the close.
   CloseUI(CloseReason reason);
-  // Notifies the browser that the page content consent was approved.
-  ApproveConsent();
-  // Notifies the browser that the page content disclaimer was acknowledged.
-  AcknowledgeConsentDisclaimer();
+  // Notifies the browser that the FRE was completed.
+  CompleteFirstRun();
+  // Asks the Browser to open a new tab navigated to the Compose-related Chrome
+  // settings page.
+  OpenComposeSettings();
 };
 
 // Interface for calls from the Browser process into Compose dialog JS.
@@ -210,4 +198,8 @@ interface ComposeDialog {
   // WebUI, this is an event rather than a callback on the original `Compose`
   // call above.
   ResponseReceived(ComposeResponse response);
+
+  // Called when a compose request is not yet fulfilled, but a partial response
+  // is available.
+  PartialResponseReceived(PartialComposeResponse partial_response);
 };

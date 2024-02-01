@@ -51,9 +51,9 @@ class CheckboxTargeter : public views::ViewTargeterDelegate {
 
 class SuppressBubbleSettingRow : public views::View,
                                  public views::ViewTargeterDelegate {
- public:
-  METADATA_HEADER(SuppressBubbleSettingRow);
+  METADATA_HEADER(SuppressBubbleSettingRow, views::View)
 
+ public:
   SuppressBubbleSettingRow(
       base::WeakPtr<Browser> browser,
       bool should_show_settings_link,
@@ -163,7 +163,6 @@ class SuppressBubbleSettingRow : public views::View,
 
   void SettingsLinkClicked() {
     if (bubble_controller_ && browser_) {
-      bubble_controller_->RecordDownloadBubbleInteraction();
       chrome::ShowSettingsSubPage(browser_.get(), chrome::kDownloadsSubPage);
     }
   }
@@ -176,7 +175,7 @@ class SuppressBubbleSettingRow : public views::View,
   raw_ptr<views::StyledLabel> settings_text_ = nullptr;
 };
 
-BEGIN_METADATA(SuppressBubbleSettingRow, views::View)
+BEGIN_METADATA(SuppressBubbleSettingRow)
 END_METADATA
 
 bool ShouldShowSuppressSetting(Profile* profile, int impressions) {
@@ -258,6 +257,10 @@ base::StringPiece DownloadBubblePartialView::GetVisibleTimeHistogramName()
   return kPartialBubbleVisibleHistogramName;
 }
 
+bool DownloadBubblePartialView::IsPartialView() const {
+  return true;
+}
+
 void DownloadBubblePartialView::AddedToWidget() {
   auto* focus_manager = GetFocusManager();
   if (focus_manager) {
@@ -302,5 +305,5 @@ void DownloadBubblePartialView::OnMouseEntered(const ui::MouseEvent& event) {
   OnInteracted();
 }
 
-BEGIN_METADATA(DownloadBubblePartialView, DownloadBubblePrimaryView)
+BEGIN_METADATA(DownloadBubblePartialView)
 END_METADATA

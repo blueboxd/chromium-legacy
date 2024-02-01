@@ -20,7 +20,6 @@
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -450,9 +449,7 @@ class StaticSocketDataProvider : public SocketDataProvider {
   void Reset() override;
 
   StaticSocketDataHelper helper_;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #union
-  RAW_PTR_EXCLUSION SocketDataPrinter* printer_ = nullptr;
+  raw_ptr<SocketDataPrinter> printer_ = nullptr;
   bool paused_ = false;
 };
 
@@ -501,9 +498,11 @@ struct SSLSocketDataProvider {
   std::vector<uint8_t> ech_retry_configs;
 
   absl::optional<NextProtoVector> next_protos_expected_in_ssl_config;
+  absl::optional<SSLConfig::ApplicationSettings> expected_application_settings;
 
   uint16_t expected_ssl_version_min;
   uint16_t expected_ssl_version_max;
+  absl::optional<bool> expected_early_data_enabled;
   absl::optional<bool> expected_send_client_cert;
   scoped_refptr<X509Certificate> expected_client_cert;
   absl::optional<HostPortPair> expected_host_and_port;
@@ -1060,7 +1059,8 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
 
 class TestSocketRequest : public TestCompletionCallbackBase {
  public:
-  TestSocketRequest(std::vector<TestSocketRequest*>* request_order,
+  TestSocketRequest(std::vector<raw_ptr<TestSocketRequest, VectorExperimental>>*
+                        request_order,
                     size_t* completion_count);
 
   TestSocketRequest(const TestSocketRequest&) = delete;
@@ -1079,7 +1079,8 @@ class TestSocketRequest : public TestCompletionCallbackBase {
   void OnComplete(int result);
 
   ClientSocketHandle handle_;
-  raw_ptr<std::vector<TestSocketRequest*>> request_order_;
+  raw_ptr<std::vector<raw_ptr<TestSocketRequest, VectorExperimental>>>
+      request_order_;
   raw_ptr<size_t> completion_count_;
 };
 
@@ -1147,7 +1148,7 @@ class ClientSocketPoolTest {
 
  private:
   std::vector<std::unique_ptr<TestSocketRequest>> requests_;
-  std::vector<TestSocketRequest*> request_order_;
+  std::vector<raw_ptr<TestSocketRequest, VectorExperimental>> request_order_;
   size_t completion_count_ = 0;
 };
 

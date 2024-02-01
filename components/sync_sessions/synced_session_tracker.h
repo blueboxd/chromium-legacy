@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -22,7 +23,6 @@
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/tab_node_pool.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sync_sessions {
 
@@ -54,14 +54,14 @@ class SyncedSessionTracker {
   // Returns vector with all sessions we're tracking. SyncedSession ownership
   // remains within the SyncedSessionTracker. Lookup parameter is used to decide
   // which tabs should be included.
-  std::vector<const SyncedSession*> LookupAllSessions(
-      SessionLookup lookup) const;
+  std::vector<raw_ptr<const SyncedSession, VectorExperimental>>
+  LookupAllSessions(SessionLookup lookup) const;
 
   // Returns all foreign sessions we're tracking (skips the local session
   // object). SyncedSession ownership remains within the SyncedSessionTracker.
   // Lookup parameter is used to decide which foreign tabs should be include.
-  std::vector<const SyncedSession*> LookupAllForeignSessions(
-      SessionLookup lookup) const;
+  std::vector<raw_ptr<const SyncedSession, VectorExperimental>>
+  LookupAllForeignSessions(SessionLookup lookup) const;
 
   // Returns the tab node ids (see GetTab) for all the tabs* associated with the
   // session having tag |session_tag|.
@@ -80,7 +80,7 @@ class SyncedSessionTracker {
   const sessions::SessionTab* LookupSessionTab(const std::string& session_tag,
                                                SessionID tab_id) const;
 
-  absl::optional<sync_pb::SyncEnums::BrowserType> LookupWindowType(
+  std::optional<sync_pb::SyncEnums::BrowserType> LookupWindowType(
       const std::string& session_tag,
       SessionID window_id) const;
 
@@ -268,7 +268,7 @@ class SyncedSessionTracker {
   // Creates tracked session if it wasn't known previously. Never returns null.
   TrackedSession* GetTrackedSession(const std::string& session_tag);
 
-  std::vector<const SyncedSession*> LookupSessions(
+  std::vector<raw_ptr<const SyncedSession, VectorExperimental>> LookupSessions(
       SessionLookup lookup,
       bool exclude_local_session) const;
 

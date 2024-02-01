@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray.h"
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/ash_element_identifiers.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/tray_background_view_catalog.h"
@@ -19,7 +19,7 @@
 #include "ash/system/channel_indicator/channel_indicator_utils.h"
 #include "ash/system/hotspot/hotspot_tray_view.h"
 #include "ash/system/human_presence/snooping_protection_view.h"
-#include "ash/system/message_center/ash_message_popup_collection.h"
+#include "ash/system/notification_center/ash_message_popup_collection.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_tray_view.h"
@@ -433,7 +433,7 @@ std::u16string UnifiedSystemTray::GetAccessibleNameForTray() {
   status.push_back(channel_indicator_view_ &&
                            channel_indicator_view_->GetVisible()
                        ? channel_indicator_view_->GetAccessibleNameString()
-                       : base::EmptyString16());
+                       : std::u16string());
 
   std::u16string network_string, hotspot_string;
   if (network_tray_view_->GetVisible()) {
@@ -454,15 +454,15 @@ std::u16string UnifiedSystemTray::GetAccessibleNameForTray() {
 
   status.push_back(managed_device_view_->GetVisible()
                        ? managed_device_view_->image_view()->GetTooltipText()
-                       : base::EmptyString16());
+                       : std::u16string());
 
   status.push_back(ime_mode_view_->GetVisible()
                        ? ime_mode_view_->label()->GetAccessibleNameString()
-                       : base::EmptyString16());
+                       : std::u16string());
   status.push_back(
       current_locale_view_->GetVisible()
           ? current_locale_view_->label()->GetAccessibleNameString()
-          : base::EmptyString16());
+          : std::u16string());
 
   return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION,
                                     status, nullptr);

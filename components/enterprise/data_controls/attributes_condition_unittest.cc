@@ -47,6 +47,10 @@ TEST(AttributesConditionTest, InvalidSourceInputs) {
       SourceAttributesCondition::Create(CreateDict(R"({"incognito": "str"})")));
   ASSERT_FALSE(
       SourceAttributesCondition::Create(CreateDict(R"({"incognito": 1234})")));
+  ASSERT_FALSE(SourceAttributesCondition::Create(
+      CreateDict(R"({"os_clipboard": "str"})")));
+  ASSERT_FALSE(SourceAttributesCondition::Create(
+      CreateDict(R"({"os_clipboard": 1234})")));
 #if BUILDFLAG(IS_CHROMEOS)
   ASSERT_FALSE(SourceAttributesCondition::Create(
       CreateDict(R"({"urls": "https://foo.com", "components": "ARC"})")));
@@ -109,6 +113,10 @@ TEST(AttributesConditionTest, InvalidDestinationInputs) {
       CreateDict(R"({"incognito": "str"})")));
   ASSERT_FALSE(DestinationAttributesCondition::Create(
       CreateDict(R"({"incognito": 1234})")));
+  ASSERT_FALSE(DestinationAttributesCondition::Create(
+      CreateDict(R"({"os_clipboard": "str"})")));
+  ASSERT_FALSE(DestinationAttributesCondition::Create(
+      CreateDict(R"({"os_clipboard": 1234})")));
 #if BUILDFLAG(IS_CHROMEOS)
   ASSERT_FALSE(DestinationAttributesCondition::Create(
       CreateDict(R"({"urls": "https://foo.com", "components": "ARC"})")));
@@ -301,9 +309,8 @@ TEST(AttributesConditionTest, IncognitoDestination) {
       non_incognito_dst->IsTriggered({.destination = {.incognito = true}}));
   ASSERT_TRUE(
       non_incognito_dst->IsTriggered({.destination = {.incognito = false}}));
-  ASSERT_FALSE(non_incognito_dst->IsTriggered({.source = {.incognito = true}}));
-  ASSERT_FALSE(
-      non_incognito_dst->IsTriggered({.source = {.incognito = false}}));
+  ASSERT_TRUE(non_incognito_dst->IsTriggered({.source = {.incognito = true}}));
+  ASSERT_TRUE(non_incognito_dst->IsTriggered({.source = {.incognito = false}}));
 }
 
 TEST(AttributesConditionTest, IncognitoSource) {
@@ -324,9 +331,9 @@ TEST(AttributesConditionTest, IncognitoSource) {
         "incognito": false,
       })"));
   ASSERT_TRUE(non_incognito_src);
-  ASSERT_FALSE(
+  ASSERT_TRUE(
       non_incognito_src->IsTriggered({.destination = {.incognito = true}}));
-  ASSERT_FALSE(
+  ASSERT_TRUE(
       non_incognito_src->IsTriggered({.destination = {.incognito = false}}));
   ASSERT_FALSE(non_incognito_src->IsTriggered({.source = {.incognito = true}}));
   ASSERT_TRUE(non_incognito_src->IsTriggered({.source = {.incognito = false}}));
@@ -367,7 +374,7 @@ TEST(AttributesConditionTest, URLAndIncognitoDestination) {
       {.destination = {.url = GURL(kGoogleUrl), .incognito = true}}));
   ASSERT_TRUE(url_and_not_incognito->IsTriggered(
       {.destination = {.url = GURL(kGoogleUrl), .incognito = false}}));
-  ASSERT_FALSE(url_and_not_incognito->IsTriggered(
+  ASSERT_TRUE(url_and_not_incognito->IsTriggered(
       {.destination = {.url = GURL(kGoogleUrl)}}));
   ASSERT_FALSE(url_and_not_incognito->IsTriggered(
       {.destination = {.url = GURL(kChromiumUrl), .incognito = true}}));
@@ -414,7 +421,7 @@ TEST(AttributesConditionTest, URLAndIncognitoSource) {
       {.source = {.url = GURL(kGoogleUrl), .incognito = true}}));
   ASSERT_TRUE(url_and_not_incognito->IsTriggered(
       {.source = {.url = GURL(kGoogleUrl), .incognito = false}}));
-  ASSERT_FALSE(url_and_not_incognito->IsTriggered(
+  ASSERT_TRUE(url_and_not_incognito->IsTriggered(
       {.source = {.url = GURL(kGoogleUrl)}}));
   ASSERT_FALSE(url_and_not_incognito->IsTriggered(
       {.source = {.url = GURL(kChromiumUrl), .incognito = true}}));
@@ -462,6 +469,75 @@ TEST(AttributesConditionTest, URLAndNoIncognitoSource) {
   ASSERT_FALSE(any_url->IsTriggered({.source = {.incognito = true}}));
   ASSERT_FALSE(any_url->IsTriggered({.source = {.incognito = false}}));
   ASSERT_FALSE(any_url->IsTriggered({.source = {}}));
+}
+
+TEST(AttributesConditionTest, OsClipboardDestination) {
+  auto os_clipboard_dst = DestinationAttributesCondition::Create(CreateDict(R"(
+      {
+        "os_clipboard": true,
+      })"));
+  ASSERT_TRUE(os_clipboard_dst);
+  ASSERT_TRUE(
+      os_clipboard_dst->IsTriggered({.destination = {.os_clipboard = true}}));
+  ASSERT_FALSE(
+      os_clipboard_dst->IsTriggered({.destination = {.os_clipboard = false}}));
+  ASSERT_FALSE(
+      os_clipboard_dst->IsTriggered({.source = {.os_clipboard = true}}));
+  ASSERT_FALSE(
+      os_clipboard_dst->IsTriggered({.source = {.os_clipboard = false}}));
+
+  auto non_os_clipboard_dst =
+      DestinationAttributesCondition::Create(CreateDict(R"(
+      {
+        "os_clipboard": false,
+      })"));
+  ASSERT_TRUE(non_os_clipboard_dst);
+  ASSERT_FALSE(non_os_clipboard_dst->IsTriggered(
+      {.destination = {.os_clipboard = true}}));
+  ASSERT_TRUE(non_os_clipboard_dst->IsTriggered(
+      {.destination = {.os_clipboard = false}}));
+
+  // Contexts without a specific `destination` are defaulted to a "false" value
+  // for `os_clipboard`, and as such pass the condition of
+  // `non_os_clipboard_dst`.
+  ASSERT_TRUE(
+      non_os_clipboard_dst->IsTriggered({.source = {.os_clipboard = true}}));
+  ASSERT_TRUE(
+      non_os_clipboard_dst->IsTriggered({.source = {.os_clipboard = false}}));
+}
+
+TEST(AttributesConditionTest, OsClipboardSource) {
+  auto os_clipboard_src = SourceAttributesCondition::Create(CreateDict(R"(
+      {
+        "os_clipboard": true,
+      })"));
+  ASSERT_TRUE(os_clipboard_src);
+  ASSERT_FALSE(
+      os_clipboard_src->IsTriggered({.destination = {.os_clipboard = true}}));
+  ASSERT_FALSE(
+      os_clipboard_src->IsTriggered({.destination = {.os_clipboard = false}}));
+  ASSERT_TRUE(
+      os_clipboard_src->IsTriggered({.source = {.os_clipboard = true}}));
+  ASSERT_FALSE(
+      os_clipboard_src->IsTriggered({.source = {.os_clipboard = false}}));
+
+  auto non_os_clipboard_src = SourceAttributesCondition::Create(CreateDict(R"(
+      {
+        "os_clipboard": false,
+      })"));
+  ASSERT_TRUE(non_os_clipboard_src);
+  ASSERT_FALSE(
+      non_os_clipboard_src->IsTriggered({.source = {.os_clipboard = true}}));
+  ASSERT_TRUE(
+      non_os_clipboard_src->IsTriggered({.source = {.os_clipboard = false}}));
+
+  // Contexts without a specific `source` are defaulted to a "false" value
+  // for `os_clipboard`, and as such pass the condition of
+  // `non_os_clipboard_src`.
+  ASSERT_TRUE(non_os_clipboard_src->IsTriggered(
+      {.destination = {.os_clipboard = true}}));
+  ASSERT_TRUE(non_os_clipboard_src->IsTriggered(
+      {.destination = {.os_clipboard = false}}));
 }
 
 }  // namespace data_controls

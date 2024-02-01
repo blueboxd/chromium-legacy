@@ -42,8 +42,6 @@
 #include "net/base/tracing.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/sct_auditing_delegate.h"
 #include "net/cert/sct_status_flags.h"
@@ -93,39 +91,34 @@ MIRACLE_PARAMETER_FOR_INT(GetDefaultOpenSSLBufferSize,
 
 base::Value::Dict NetLogPrivateKeyOperationParams(uint16_t algorithm,
                                                   SSLPrivateKey* key) {
-  base::Value::Dict dict;
-  dict.Set("algorithm",
-           SSL_get_signature_algorithm_name(algorithm, 0 /* exclude curve */));
-  dict.Set("provider", key->GetProviderName());
-  return dict;
+  return base::Value::Dict()
+      .Set("algorithm",
+           SSL_get_signature_algorithm_name(algorithm, 0 /* exclude curve */))
+      .Set("provider", key->GetProviderName());
 }
 
 base::Value::Dict NetLogSSLInfoParams(SSLClientSocketImpl* socket) {
   SSLInfo ssl_info;
-  if (!socket->GetSSLInfo(&ssl_info))
+  if (!socket->GetSSLInfo(&ssl_info)) {
     return base::Value::Dict();
+  }
 
-  base::Value::Dict dict;
   const char* version_str;
   SSLVersionToString(&version_str,
                      SSLConnectionStatusToVersion(ssl_info.connection_status));
-  dict.Set("version", version_str);
-  dict.Set("is_resumed", ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME);
-  dict.Set("cipher_suite",
-           SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
-  dict.Set("key_exchange_group", ssl_info.key_exchange_group);
-  dict.Set("peer_signature_algorithm", ssl_info.peer_signature_algorithm);
-  dict.Set("encrypted_client_hello", ssl_info.encrypted_client_hello);
-
-  dict.Set("next_proto", NextProtoToString(socket->GetNegotiatedProtocol()));
-
-  return dict;
+  return base::Value::Dict()
+      .Set("version", version_str)
+      .Set("is_resumed", ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME)
+      .Set("cipher_suite",
+           SSLConnectionStatusToCipherSuite(ssl_info.connection_status))
+      .Set("key_exchange_group", ssl_info.key_exchange_group)
+      .Set("peer_signature_algorithm", ssl_info.peer_signature_algorithm)
+      .Set("encrypted_client_hello", ssl_info.encrypted_client_hello)
+      .Set("next_proto", NextProtoToString(socket->GetNegotiatedProtocol()));
 }
 
 base::Value::Dict NetLogSSLAlertParams(const void* bytes, size_t len) {
-  base::Value::Dict dict;
-  dict.Set("bytes", NetLogBinaryValue(bytes, len));
-  return dict;
+  return base::Value::Dict().Set("bytes", NetLogBinaryValue(bytes, len));
 }
 
 base::Value::Dict NetLogSSLMessageParams(bool is_write,
@@ -580,7 +573,6 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->public_key_hashes = server_cert_verify_result_.public_key_hashes;
   ssl_info->client_cert_sent = send_client_cert_ && client_cert_.get();
   ssl_info->encrypted_client_hello = SSL_ech_accepted(ssl_.get());
-  ssl_info->pinning_failure_log = pinning_failure_log_;
   ssl_info->ocsp_result = server_cert_verify_result_.ocsp_result;
   ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
   ssl_info->signed_certificate_timestamps = server_cert_verify_result_.scts;
@@ -865,15 +857,18 @@ int SSLClientSocketImpl::Init() {
     std::vector<uint8_t> wire_protos =
         SerializeNextProtos(ssl_config_.alpn_protos);
     SSL_set_alpn_protos(ssl_.get(), wire_protos.data(), wire_protos.size());
-  }
 
-  for (const auto& alps : ssl_config_.application_settings) {
-    const char* proto_string = NextProtoToString(alps.first);
-    const auto& data = alps.second;
-    if (!SSL_add_application_settings(
-            ssl_.get(), reinterpret_cast<const uint8_t*>(proto_string),
-            strlen(proto_string), data.data(), data.size())) {
-      return ERR_UNEXPECTED;
+    for (NextProto proto : ssl_config_.alpn_protos) {
+      auto iter = ssl_config_.application_settings.find(proto);
+      if (iter != ssl_config_.application_settings.end()) {
+        const char* proto_string = NextProtoToString(proto);
+        if (!SSL_add_application_settings(
+                ssl_.get(), reinterpret_cast<const uint8_t*>(proto_string),
+                strlen(proto_string), iter->second.data(),
+                iter->second.size())) {
+          return ERR_UNEXPECTED;
+        }
+      }
     }
   }
 
@@ -899,15 +894,15 @@ int SSLClientSocketImpl::Init() {
         host_and_port_, &client_cert_, &client_private_key_);
   }
 
-  if (context_->config().EncryptedClientHelloEnabled()) {
+  if (context_->config().ech_enabled) {
+    // TODO(https://crbug.com/1509597): Enable this unconditionally.
     SSL_set_enable_ech_grease(ssl_.get(), 1);
   }
   if (!ssl_config_.ech_config_list.empty()) {
-    DCHECK(context_->config().EncryptedClientHelloEnabled());
+    DCHECK(context_->config().ech_enabled);
     net_log_.AddEvent(NetLogEventType::SSL_ECH_CONFIG_LIST, [&] {
-      base::Value::Dict dict;
-      dict.Set("bytes", NetLogBinaryValue(ssl_config_.ech_config_list));
-      return dict;
+      return base::Value::Dict().Set(
+          "bytes", NetLogBinaryValue(ssl_config_.ech_config_list));
     });
     if (!SSL_set1_ech_config_list(ssl_.get(),
                                   ssl_config_.ech_config_list.data(),
@@ -1137,9 +1132,8 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
   }
 
   net_log_.AddEvent(NetLogEventType::SSL_CERTIFICATES_RECEIVED, [&] {
-    base::Value::Dict dict;
-    dict.Set("certificates", NetLogX509CertificateList(server_cert_.get()));
-    return dict;
+    return base::Value::Dict().Set(
+        "certificates", NetLogX509CertificateList(server_cert_.get()));
   });
 
   // If the certificate is bad and has been previously accepted, use
@@ -1245,14 +1239,11 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
   // If the connection was good, check HPKP and CT status simultaneously,
   // but prefer to treat the HPKP error as more serious, if there was one.
   if (result == OK) {
-    int ct_result = CheckCTCompliance();
+    int ct_result = CheckCTRequirements();
     TransportSecurityState::PKPStatus pin_validity =
         context_->transport_security_state()->CheckPublicKeyPins(
             host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
-            server_cert_verify_result_.public_key_hashes, server_cert_.get(),
-            server_cert_verify_result_.verified_cert.get(),
-            TransportSecurityState::ENABLE_PIN_REPORTS,
-             ssl_config_.network_anonymization_key, &pinning_failure_log_);
+            server_cert_verify_result_.public_key_hashes);
     switch (pin_validity) {
       case TransportSecurityState::PKPStatus::VIOLATED:
         server_cert_verify_result_.cert_status |=
@@ -1296,23 +1287,12 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
   return ssl_verify_invalid;
 }
 
-int SSLClientSocketImpl::CheckCTCompliance() {
-  ct::SCTList verified_scts;
-  for (const auto& sct_and_status : server_cert_verify_result_.scts) {
-    if (sct_and_status.status == ct::SCT_STATUS_OK)
-      verified_scts.push_back(sct_and_status.sct);
-  }
-  server_cert_verify_result_.policy_compliance =
-      context_->ct_policy_enforcer()->CheckCompliance(
-          server_cert_verify_result_.verified_cert.get(), verified_scts,
-          net_log_);
-
+int SSLClientSocketImpl::CheckCTRequirements() {
   TransportSecurityState::CTRequirementsStatus ct_requirement_status =
       context_->transport_security_state()->CheckCTRequirements(
           host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
           server_cert_verify_result_.public_key_hashes,
-          server_cert_verify_result_.verified_cert.get(), server_cert_.get(),
-          server_cert_verify_result_.scts,
+          server_cert_verify_result_.verified_cert.get(),
           server_cert_verify_result_.policy_compliance);
 
   if (context_->sct_auditing_delegate()) {

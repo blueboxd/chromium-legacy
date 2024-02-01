@@ -16,10 +16,12 @@
 <translation id="1075811647922107217">Sidestørrelse</translation>
 <translation id="1082009148392559545">Downloader pauseskærmen</translation>
 <translation id="1094693127011229778">IP-adresse er ikke tilgængelig</translation>
+<translation id="1116694919640316211">Om</translation>
 <translation id="1118572504348554005">Vi deler muligvis feedback, der indsendes via denne formular, med vores partnere for at finde og rette fejl samt løse andre problemer, du rapporterer til os. Medtag ikke følsomme oplysninger som f.eks. adgangskoder.</translation>
 <translation id="1119447706177454957">Intern fejl</translation>
 <translation id="1124772482545689468">Bruger</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
+<translation id="1134416403025830762">gange</translation>
 <translation id="1145018782460575098">Vinduet Opdater firmware for eksterne enheder er åbent. <ph name="NUM_UPDATES" /> opdateringer er tilgængelige.</translation>
 <translation id="1145516343487477149">Find artikler i Hjælp og svar på almindelige spørgsmål om Chromebook</translation>
 <translation id="1154390310959620237">Du kan kun tilpasse 5 genveje. Du skal slette en genvej for at tilføje en ny.</translation>
@@ -42,6 +44,7 @@
 <translation id="1264369926465113395">Se Chromebooks nye digitale magasin til indholdsskabere</translation>
 <translation id="1270369111467284986">Der blev muligvis registreret en loginportal</translation>
 <translation id="1290331692326790741">Svagt signal</translation>
+<translation id="1300115153046603471">APN er typestandard og <ph name="ATTACH" />.</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Opdaterer (<ph name="PERCENTAGE_VALUE" /> % gennemført)</translation>
 <translation id="1309341072016605398"><ph name="MINUTES" /> minutter</translation>
@@ -54,7 +57,8 @@
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Tilpas til scanningsområdet</translation>
 <translation id="1367951781824006909">Vælg en fil</translation>
-<translation id="1387854245479784695">Dette er den samlede værdi for alle kerner</translation>
+<translation id="1371650399987522809">Feedback til baggrunde, der er baseret på Googles AI</translation>
+<translation id="1387854245479784695">Dette er den aggregerede værdi for alle kerner</translation>
 <translation id="1394661041439318933">Enheden har <ph name="BATTERY_PERCENTAGE" /> % batteri i etuiet.</translation>
 <translation id="1397738625398125236">Gatewayen kan pinges</translation>
 <translation id="1398634363027580500">Meget høj HTTPS-forsinkelse</translation>
@@ -81,18 +85,20 @@
 <translation id="1515129336378114413">browserens startside</translation>
 <translation id="1526389707933164996">Pauseskærmanimation</translation>
 <translation id="152892567002884378">Lydstyrke op</translation>
-<translation id="1539242642795599947">APN-typen er: standard og tilknyttet.</translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="155865706765934889">Touchplade</translation>
 <translation id="1561927818299383735">farve på baggrundslys</translation>
 <translation id="1565038567006703504"><ph name="DEVICE_NAME" /> kan ikke opdateres</translation>
+<translation id="1566493343215789965">dividere</translation>
 <translation id="1567064801249837505">Album</translation>
 <translation id="1572585716423026576">Angiv som baggrund</translation>
 <translation id="1578784163189013834">Vælg baggrund til Pauseskærm</translation>
 <translation id="160633243685262989">Forhåndsvisning</translation>
 <translation id="1611649489706141841">videresend</translation>
 <translation id="1615335640928990664">Dataforbrug siden <ph name="FRIENDLY_DATE" /></translation>
+<translation id="1615576200479539465">Genererer billeder...</translation>
 <translation id="1621067168122174824">Kør opladningstest</translation>
+<translation id="1626590945318984973">Genvejen er ikke tilgængelig. Tryk en ny genvej uden at bruge funktions- og <ph name="META_KEY" />-tasterne.</translation>
 <translation id="1639239467298939599">Indlæser</translation>
 <translation id="1641857168437328880">Dokumentindføring (én side)</translation>
 <translation id="1643449475550628585">Skift baggrundsbillede dagligt</translation>
@@ -143,7 +149,6 @@
 <translation id="188114911237521550">Deaktiver mørk tilstand</translation>
 <translation id="1885577615937958993">spol frem i mediet</translation>
 <translation id="1887850431809612466">Hardwarerevision</translation>
-<translation id="1897672602657312171">En genvej uden søgetast kan skabe problemer i forbindelse med genvejen for nogle apps. Tryk på denne genvej igen for at fortsætte med at bruge den, eller tryk på en ny genvej ved hjælp af søgetasten.</translation>
 <translation id="1904932688895783618">Her er nogle andre nyttige ressourcer:</translation>
 <translation id="1905710495812624430">Det maksimale antal forsøg er overskredet.</translation>
 <translation id="1908234395526491708">Mislykkede UDP-anmodninger</translation>
@@ -175,7 +180,6 @@
 <translation id="2152882202543497059"><ph name="NUMBER" /> billeder</translation>
 <translation id="2157660087437850958">emojivælger</translation>
 <translation id="2157959690810728433">SAT I KØ</translation>
-<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{Din administrator har indstillet <ph name="APP_NAME_1" /> til at starte automatisk, hver gang du logger ind.}=2{Din administrator har indstillet <ph name="APP_NAME_1" /> og <ph name="APP_NAME_2" /> til at starte automatisk, hver gang du logger ind.}=3{Din administrator har indstillet <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> og <ph name="APP_NAME_3" /> til at starte automatisk, hver gang du logger ind.}one{Din administrator har indstillet <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> og # anden app til at starte automatisk, hver gang du logger ind.}other{Din administrator har indstillet <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> og # andre apps til at starte automatisk, hver gang du logger ind.}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Prøv igen</translation>
 <translation id="215916044711630446">Knappen Tilføj APN er nu deaktiveret</translation>
 <translation id="2161394479394250669">Annuller udskriftsjob</translation>
@@ -185,6 +189,7 @@
 <translation id="2189104374785738357">Rediger APN-oplysninger</translation>
 <translation id="2209788852729124853">Nulstil trafiktællere</translation>
 <translation id="2212733584906323460">Navneløsning</translation>
+<translation id="2215920961700443347">Intet internet. Opret forbindelse til internettet, og prøv igen.</translation>
 <translation id="2217935453350629363">Nuværende hastighed</translation>
 <translation id="2224337661447660594">Der er ingen internetforbindelse</translation>
 <translation id="222447520299472966">Der skal vælges mindst ét album i kunstgalleriet</translation>
@@ -218,6 +223,7 @@
 <translation id="2421798028054665193">Billede <ph name="CURRENT_PAGE" /> af <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Nøjagtighed af flydende komma</translation>
 <translation id="2448312741937722512">Type</translation>
+<translation id="2465272316171730950">Vi har ikke kapaciteten lige nu. Prøv igen om lidt.</translation>
 <translation id="248546197012830854">Enheden er offline. Opret forbindelse til et Wi-Fi-netværk for at se hjælpeindhold.</translation>
 <translation id="2491955442992294626">Taster testes ikke, når du bruger et andet vindue</translation>
 <translation id="2493126929778606526">Dine bedste billeder udvælges automatisk</translation>
@@ -225,7 +231,6 @@
 <translation id="2505327257735685095">Opdater det aktuelle baggrundsbillede</translation>
 <translation id="2512979179176933762">se vinduer</translation>
 <translation id="2513396635448525189">Loginbillede</translation>
-<translation id="2515109918609218604">Genvejen er ikke tilgængelig. Tryk på en ny genvej uden at bruge funktions- og søgetasterne.</translation>
 <translation id="2517472476991765520">Scan</translation>
 <translation id="2521835766824839541">forrige nummer</translation>
 <translation id="2526590354069164005">Skrivebord</translation>
@@ -241,6 +246,7 @@
 <translation id="2638662041295312666">Loginbillede</translation>
 <translation id="2640549051766135490">Albummet <ph name="TITLE" /> <ph name="DESC" /> er valgt</translation>
 <translation id="2652403576514495859">aktivér eller deaktiver diktering</translation>
+<translation id="2656001153562991489">Eksklusivt til Chromebook Plus</translation>
 <translation id="267442004702508783">opdater</translation>
 <translation id="268270014981824665">nedtoning af tastaturlys</translation>
 <translation id="2712812801627182647">TLS-godkendelsesnøgle</translation>
@@ -263,6 +269,7 @@
 <translation id="2878387241690264070">Batteriet blev afladet <ph name="RATE" /> på <ph name="NUM_SECONDS" /> sekunder.</translation>
 <translation id="2880569433548999039">Pauseskærmen Flow med skyer</translation>
 <translation id="2926057806159140518">Angiv dit brugernavn og din adgangskode, eller scan din QR-kode</translation>
+<translation id="2938573842839598578">Se et omtrentligt resultat ved at <ph name="OPERATOR_TEXT" /> værdien <ph name="CATEGORY_TEXT" /> med <ph name="CONVERSION_RATE" /></translation>
 <translation id="2940811910881150316">Enheden kan ikke testes. Åbn skærmen igen for at teste den.</translation>
 <translation id="2941112035454246133">Lav</translation>
 <translation id="3008341117444806826">OPDATER</translation>
@@ -311,7 +318,7 @@
 <translation id="3340978935015468852">indstillinger</translation>
 <translation id="3359218928534347896">slå mikrofonen til/fra</translation>
 <translation id="3360306038446926262">Windows</translation>
-<translation id="3368922792935385530">Tilsluttet</translation>
+<translation id="3368922792935385530">Forbundet</translation>
 <translation id="3369013195428705271">Er du sikker på, at du vil rydde hele udskriftshistorikken? Dine igangværende udskriftsjobs ryddes ikke.</translation>
 <translation id="3373141842870501561">Baggrunden Flow med Jorden</translation>
 <translation id="337375748120863155">Oplysninger relateret til det, du har markeret. Brug venstre- eller højrepil for at få adgang til indstillingerne.</translation>
@@ -335,6 +342,7 @@
 <translation id="3517001332549868749">ChromeOS-opdatering</translation>
 <translation id="3527036260304016759">Handlingen mislykkedes – Ukendt fejl</translation>
 <translation id="3532980081107202182">Ca. <ph name="MIN_REMAINING" /> minutter tilbage</translation>
+<translation id="3547264467365135390">Formel</translation>
 <translation id="3557205324756024651">Lokal identitet (valgfrit)</translation>
 <translation id="3565064564551103223">Tilladte IP'er</translation>
 <translation id="3569407787324516067">Pauseskærm</translation>
@@ -373,11 +381,13 @@
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3858860766373142691">Navn</translation>
 <translation id="3862598938296403232">Du skal angive en beskrivelse</translation>
+<translation id="386280020966669610">Lad mig inspirere</translation>
 <translation id="3865289341173661845">Indholdet i Hjælp er ikke tilgængeligt.</translation>
 <translation id="3865414814144988605">Opløsning</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="387301095347517405">Antal gange dit batteri har gennemgået en fuld opladningscyklus</translation>
 <translation id="3885327323343477505">Skift pauseskærm</translation>
+<translation id="3892148308691398805">Kopiér tekst</translation>
 <translation id="391412459402535266">Enheden kan ikke testes. Skift til computertilstand for at teste den.</translation>
 <translation id="3916998944874125962">tag et screenshot</translation>
 <translation id="3923184630988645767">Dataforbrug</translation>
@@ -400,17 +410,18 @@
 <translation id="4046123991198612571">Næste nummer</translation>
 <translation id="404928562651467259">ADVARSEL</translation>
 <translation id="4054683689023980771">Downloader billedet</translation>
-<translation id="4060260348856573701">Nyt adgangspunkt</translation>
+<translation id="4060260348856573701">Nyt APN</translation>
 <translation id="4093865285251893588">Profilbillede</translation>
 <translation id="409427325554347132">Gem testoplysninger</translation>
+<translation id="409469431304488632">Eksperiment</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">Vælg albummet <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB-touchplade</translation>
 <translation id="4113067922640381334">Du har nu adgang til nye <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />baggrunde<ph name="END_LINK_WALLPAPER_SUBPAGE" /></translation>
 <translation id="4117637339509843559">Mørk tilstand</translation>
 <translation id="4130035430755296270">Bliv ved med at holde markøren over menuen for at se flere layoutmuligheder</translation>
+<translation id="4130750466177569591">Jeg accepterer</translation>
 <translation id="4131410914670010031">Sort/hvid</translation>
-<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> blev startet automatisk}one{# app blev startet automatisk}other{# apps blev startet automatisk}}</translation>
 <translation id="4145784616224233563">HTTP-firewall</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
 <translation id="4150201353443180367">Skærm</translation>
@@ -422,7 +433,6 @@
 <translation id="4171077696775491955">lysstyrke ned</translation>
 <translation id="4176463684765177261">Deaktiveret</translation>
 <translation id="4176659219503619100">Kontrolpanel</translation>
-<translation id="4185315616950253617">Genvejen med taster i øverste række skal indeholde søgetasten.</translation>
 <translation id="420283545744377356">Deaktiver Pauseskærm</translation>
 <translation id="4213104098953699324">USB-tastatur</translation>
 <translation id="4227825898293920515">Adgangskoden udløber om <ph name="TIME" /></translation>
@@ -438,17 +448,21 @@
 <translation id="4289849978083912975">Slide show</translation>
 <translation id="4297501883039923494">Stoppet – Ukendt fejl</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> billeder</translation>
+<translation id="4310735698903592804">Nyeste baggrunde fra Googles AI</translation>
 <translation id="4333390807948134856">Du har trykket på tasten <ph name="KEY_NAME" /></translation>
 <translation id="4354430579665871434">tast</translation>
 <translation id="4361257691546579041">APN-typen er: standard.</translation>
 <translation id="437294888293595148">Nulstil alle genveje</translation>
+<translation id="4376423484621194274">Din administrator tillader ikke lukning af <ph name="APP_NAME" /></translation>
 <translation id="4378373042927530923">Kørte ikke</translation>
 <translation id="4378551569595875038">Tilslutter...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4394049700291259645">Deaktiver</translation>
 <translation id="439429847087949098">Genstarter <ph name="DEVICE_NAME" /></translation>
 <translation id="4395835743215824109">tilpas tastatur</translation>
+<translation id="4403262788869804671">En genvej uden <ph name="META_KEY" />-tasten kan skabe problemer i forbindelse med genveje i visse apps. Tryk på denne genvej igen for at fortsætte med at bruge den, eller tryk en ny genvej ved hjælp af <ph name="KEY" />-tasten.</translation>
 <translation id="4415951057168511744">Aktuel avatar</translation>
+<translation id="4417830657741848074">Din administrator har konfigureret visse apps til at starte automatisk. Nogle af disse apps kan ikke lukkes.</translation>
 <translation id="4422041425070339732">pil ned</translation>
 <translation id="4425149324548788773">Mit drev</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" /> er deaktiveret</translation>
@@ -461,6 +475,7 @@
 <translation id="4469288414739283461">Pauseskærmen Flow med Jorden</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Kunne ikke pinge gatewayen for det netværk, der ikke er angivet som standardnetværk</translation>
+<translation id="4500722292849917410">Genvejen er ikke tilgængelig. Tryk en ny genvej ved hjælp af en ændringstast (Ctrl, Alt, Shift eller <ph name="META_KEY" />).</translation>
 <translation id="4500966230243561393">Grænsefladefarve</translation>
 <translation id="4503223151711056411">Venstrepil</translation>
 <translation id="4507392511610824664">lysstyrke op</translation>
@@ -508,6 +523,7 @@
 <translation id="4832079907277790330">Vælg mappe i appen Filer...</translation>
 <translation id="4835901797422965222">Ingen aktive netværk</translation>
 <translation id="4839698083503556542">Lav din egen film</translation>
+<translation id="48409034532829769">Din administrator har konfigureret "<ph name="APP_NAME" />" til at starte automatisk. Denne app kan ikke lukkes.</translation>
 <translation id="484462545196658690">Automatisk</translation>
 <translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> er valgt. Tryk på Enter for at vælge <ph name="TOPIC_SOURCE" />-album</translation>
 <translation id="484790837831576105">(Android) DNS-oversættelse</translation>
@@ -523,7 +539,7 @@
 <translation id="4891842000192098784">Stress</translation>
 <translation id="4897058166682006107">Enheden har <ph name="BATTERY_PERCENTAGE" /> % batteri på venstre øretelefon.</translation>
 <translation id="4905998861748258752">Aktivér funktionen for at vælge en pauseskærm</translation>
-<translation id="4910858703033903787">Typer af adgangspunkt</translation>
+<translation id="4910858703033903787">APN-typer</translation>
 <translation id="4917385247580444890">Stærk</translation>
 <translation id="4917889632206600977">Stoppet – Papirbakken er tom</translation>
 <translation id="491791267030419270">Tips til at skrive feedback</translation>
@@ -534,6 +550,7 @@
 <translation id="4969079779290789265">Opdel</translation>
 <translation id="4972592110715526173">ændring af tilstand</translation>
 <translation id="498186245079027698">Tjek scanneren, og prøv igen. Sørg for, at der er nok lokal lagerplads til at gemme de scannede filer.</translation>
+<translation id="4982627662315910959">Genvejen er ikke tilgængelig. Tryk en ny genvej ved hjælp af Shift og 1 anden ændringstast (Ctrl, Alt eller <ph name="META_KEY" />).</translation>
 <translation id="4985509611418653372">Kør</translation>
 <translation id="4987769320337599931">Firewall</translation>
 <translation id="4988526792673242964">Sider</translation>
@@ -550,6 +567,7 @@
 <translation id="5088172560898466307">Serverens hostname</translation>
 <translation id="5089810972385038852">Stat</translation>
 <translation id="5090362543162270857">IPsec (IKEv2)</translation>
+<translation id="5108781503443873320">Lignende:</translation>
 <translation id="5137451382116112100">Fuld</translation>
 <translation id="5142961317498132443">Godkendelse</translation>
 <translation id="5145081769226915336">Vil du aktivere mørk tilstand automatisk?</translation>
@@ -566,6 +584,7 @@
 <translation id="5227902338748591677">Tidsplan for Mørkt tema</translation>
 <translation id="5229344016299762883">Afslut fuld skærm</translation>
 <translation id="5234764350956374838">Luk</translation>
+<translation id="5244638145904800454">{NUM_ROOL_APPS,plural,offset:1 =1{Din administrator har konfigureret "<ph name="APP_NAME" />" til at starte automatisk, hver gang du logger ind.}=2{Din administrator har konfigureret "<ph name="APP_NAME" />" og 1 anden app til at starte automatisk, hver gang du logger ind.}one{Din administrator har konfigureret "<ph name="APP_NAME" />" og # anden app til at starte automatisk, hver gang du logger ind.}other{Din administrator har konfigureret "<ph name="APP_NAME" />" og # andre apps til at starte automatisk, hver gang du logger ind.}}</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="5257811368506016604">Aktivér tilstanden med lyse farver</translation>
 <translation id="5264277876637023664">Kør CPU-test</translation>
@@ -611,7 +630,6 @@
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Scan igen</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5584044598279886848">Dette APN kan ikke deaktiveres eller fjernes. Sørg for, at tilknyttede APN'er, som er aktiveret, deaktiveres eller fjernes.</translation>
 <translation id="5600027863942488546">Du har testet tasten <ph name="KEY_NAME" /></translation>
 <translation id="5620281292257375798">Kun internt</translation>
 <translation id="5649768706273821470">Lyt</translation>
@@ -642,6 +660,7 @@
 <translation id="5843706793424741864">Fahrenheit</translation>
 <translation id="584953448295717128">APN registreres automatisk.</translation>
 <translation id="5849570051105887917">Kode til udbyder til hjem</translation>
+<translation id="5856267793478861942"><ph name="ATTACH" /> (<ph name="IA" />)</translation>
 <translation id="5859603669299126575">Album i kunstgalleri</translation>
 <translation id="5859969039821714932">Genvejen er ikke tilgængelig. Tryk på en ny genvej uden <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Fra</translation>
@@ -651,18 +670,18 @@
 <translation id="5895138241574237353">Genstart</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="5903200662178656908">Enheden er en kombination af et tastatur og en mus</translation>
-<translation id="5904994456462260490">Tilføj et nyt adgangspunkt</translation>
+<translation id="5904994456462260490">Tilføj et nyt APN</translation>
 <translation id="5907649332524363701">farve på taster</translation>
 <translation id="5916084858004523819">Forbudt</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Din fil blev scannet og er gemt i <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}one{Din fil blev scannet og er gemt i <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Dine filer blev scannet og er gemt i <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Filen blev ikke fundet</translation>
+<translation id="593880865674747800">Opret flere i denne stil</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="594552776027197022">Generér vilkårligt nøglepar</translation>
 <translation id="5946538341867151940">Du har ikke oprettet forbindelse endnu. Hvis dit mobilselskab anbefaler et tilpasset APN, skal du angive APN-oplysningerne ved at vælge "+ Nyt adgangspunkt"</translation>
 <translation id="5972388717451707488">Opdater maskine</translation>
 <translation id="5984145644188835034">Standardbaggrund</translation>
-<translation id="6001235009374883388">APN-typen er: tilknyttet.</translation>
 <translation id="6017514345406065928">Grøn</translation>
 <translation id="6019566113895157499">Key Shortcuts</translation>
 <translation id="6034694447310538551">Aktivér automatisk månedlig nulstilling</translation>
@@ -680,6 +699,7 @@
 <translation id="6104112872696127344">Scanningen blev annulleret</translation>
 <translation id="6106186594183574873">Angiv din gamle adgangskode for at afslutte</translation>
 <translation id="6108689792487843350">Denne gateway kan ikke nås</translation>
+<translation id="6108952804512516814">Opret ved hjælp af AI</translation>
 <translation id="6112878310391905610">Denne indstilling administreres af dine administratorer</translation>
 <translation id="6113701710518389813">Pil op</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, +<ph name="NUMBER" /> flere album</translation>
@@ -693,6 +713,7 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Batterikapaciteten falder løbende, når enheden er i brug</translation>
 <translation id="6191293864534840972">Ugyldige navneservere</translation>
+<translation id="6196607555925437199">Genskab</translation>
 <translation id="6205145102504628069">Flow med skyer</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">Der er ingen tilgængelige scannere</translation>
@@ -747,6 +768,7 @@
 <translation id="6526200165918397681">Match baggrund</translation>
 <translation id="6527081081771465939">Ukendt Wi-Fi-sikkerhedsprotokol</translation>
 <translation id="6535178685492749208">Du er offline. Din feedback sendes senere.</translation>
+<translation id="6557784757915238407">APN er <ph name="ATTACH" />.</translation>
 <translation id="65587193855025101">Flatbed</translation>
 <translation id="6560196641871357166">Farverig</translation>
 <translation id="6564646048574748301">Handlingen mislykkedes – Ingen forbindelse til printer</translation>
@@ -806,6 +828,7 @@
 <translation id="7059230779847288458">Oplader, fuldt opladet om <ph name="TIME_VALUE" /></translation>
 <translation id="7066538517128343186">nøglen <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Gør enheden klar</translation>
+<translation id="7076851914315147928">Vælg en baggrund</translation>
 <translation id="708426984172631313">STOPPET</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Handlingen mislykkedes – Godkendelse mislykkedes</translation>
@@ -829,12 +852,13 @@
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="7180865173735832675">Tilpas</translation>
 <translation id="7184043045742675738">Klik på en tast for at tilpasse din knap. Juster tasten med musen eller piletasterne.</translation>
+<translation id="7206979415662233817">Servicevilkår</translation>
 <translation id="7212547870105584639">Administrer indstillinger for APN-netværk. APN'er opretter forbindelse mellem et mobilnetværk og internettet. <ph name="BEGIN_LINK_LEARN_MORE" />Få flere oplysninger<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7212734716605298123">Opdateringer af firmware på eksterne enheder</translation>
 <translation id="7216409898977639127">Mobilselskab</translation>
 <translation id="725133483556299729">Vælg mailadresse</translation>
 <translation id="7271040990581020067">Scanneren bruges i øjeblikket. Prøv igen senere.</translation>
-<translation id="7273347807225967898">Genvejen er ikke tilgængelig. Tryk en ny genvej ved hjælp af en ændringstast (Ctrl, Alt, Shift, søgetasten eller applisten).</translation>
+<translation id="7271932918253517778">Genvejen med taster i øverste række skal indeholde <ph name="META_KEY" />-tasten.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">Feel the breeze</translation>
 <translation id="7287310195820267359">Samlinger med baggrunde</translation>
@@ -847,6 +871,10 @@
 <translation id="7311368985037279727">tastaturfarve</translation>
 <translation id="7317831949569936035">Skoleindskrivning</translation>
 <translation id="7319430975418800333">A3</translation>
+<translation id="7331297744262591636">Du skal være mindst 18 år gammel, og du skal acceptere, at din brug af AI-baggrunde er underlagt <ph name="GOOGLE_TERMS_OF_SERVICE_LINK" />Googles servicevilkår<ph name="END_LINK_GOOGLE_TERMS_OF_SERVICE" /> og <ph name="BEGIN_LINK_GEN_AI_TERMS_OF_SERVICE" />Yderligere servicevilkår for generativ AI<ph name="END_LINK_GEN_AI_TERMS_OF_SERVICE" />.
+          <ph name="LINE_BREAK" />
+          <ph name="LINE_BREAK" />
+          Du kan kun oprette baggrunde med AI til personlig og ikke-kommerciel brug. Når du får hjælp til baggrunde, sendes teksten til Googles AI-servere for at generere forslag til baggrunde i overensstemmelse med <ph name="BEGIN_LINK_GOOGLE_PRIVACY_POLICY" />Googles privatlivspolitik<ph name="END_LINK_GOOGLE_PRIVACY_POLICY" />. <ph name="BEGIN_LINK_LEARN_MORE" />Få flere oplysninger<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Tryk på søgetasten og mellemrumstasten for at se resultater i Google Søgning.</translation>
 <translation id="7343649194310845056">Netværksenheder</translation>
 <translation id="7353413232959255829">Søgeresultat <ph name="LIST_POSITION" /> af <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Tryk på Enter for at gå til genvejen.</translation>
@@ -859,6 +887,7 @@
 <translation id="741244894080940828">konvertering</translation>
 <translation id="7415801143053185905">Meget stor HTTP-forsinkelse</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
+<translation id="7438298994385592770">Dette APN kan ikke deaktiveres eller fjernes. Sørg for, at <ph name="ATTACH" /> APN'er, som er aktiveret, deaktiveres eller fjernes.</translation>
 <translation id="7458970041932198923">Opret forbindelse til et netværk, og genindlæs siden for at se og angive avatarer.</translation>
 <translation id="7469648432129124067">En portal blev registreret</translation>
 <translation id="7481312909269577407">Frem</translation>
@@ -869,7 +898,9 @@
 <translation id="7502658306369382406">IPv6-adresse</translation>
 <translation id="7513770521371759388">nederst</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7525067979554623046">Opret</translation>
 <translation id="7528507600602050979">Indholdet i Hjælp er ikke tilgængeligt</translation>
+<translation id="753556296624075801">Leveret af Google</translation>
 <translation id="7535791657097741517">Aktivér Lyst tema</translation>
 <translation id="7550715992156305117">Diagnostikrutiner</translation>
 <translation id="7551123448725492271">Enheden er en lydenhed.</translation>
@@ -908,16 +939,18 @@
 <translation id="7799817062559422778">Lys tilstand</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7805768142964895445">Status</translation>
+<translation id="7819831665603418705">Brug en skabelon</translation>
 <translation id="7819857487979277519">PSK (WPA eller RSN)</translation>
 <translation id="7841134249932030522">Aktivér mørk tilstand</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="7850847810298646851">Baggrund fra Googles AI</translation>
 <translation id="7856267634822906833">Bluetooth-touchskærm</translation>
 <translation id="7869143217755017858">Deaktiver mørk tilstand</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Udbydertype</translation>
 <translation id="7882501334836096755">Offentlig nøgle</translation>
 <translation id="7903695460270716054">Vælg udvalgte illustrationer og billeder</translation>
-<translation id="7915220255123750251">Administrer indstillinger for netværksadgangspunkter. Adgangspunkter opretter forbindelse mellem et mobilnetværk og internettet.</translation>
+<translation id="7915220255123750251">Administrer netværksindstillinger for APN. APN opretter forbindelse mellem et mobilnetværk og internettet.</translation>
 <translation id="7936303884198020182">Der blev ikke fundet nogen navneservere</translation>
 <translation id="7942349550061667556">Rød</translation>
 <translation id="7943235353293548836">Fast keepalive-interval</translation>
@@ -928,6 +961,7 @@
 <translation id="7971535376154084247">Generelle styringselementer</translation>
 <translation id="7977800524392185497">Gå til Indstillinger for at oprette forbindelse til et <ph name="NETWORK_NAME" />-netværk</translation>
 <translation id="7978412674231730200">Privat nøgle</translation>
+<translation id="7983597390787556680">{NUM_ROOL_APPS,plural, =1{"<ph name="APP_NAME_1" />" blev startet automatisk}one{# app blev startet automatisk}other{# apps blev startet automatisk}}</translation>
 <translation id="7994702968232966508">EAP-metode</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8017679124341497925">Genvejen blev redigeret</translation>
@@ -944,7 +978,6 @@
 <translation id="808894953321890993">Skift adgangskode</translation>
 <translation id="8094062939584182041">Giv Google tilladelse til at kontakte dig via mail vedrørende dette problem</translation>
 <translation id="8104083085214006426">Du bruger et åbent og usikkert netværk</translation>
-<translation id="8111706652656628199">Genvejen er ikke tilgængelig. Tryk en ny genvej ved hjælp af Shift og 1 anden ændringstast (Ctrl, Alt, søgetasten eller applisten).</translation>
 <translation id="811820734797650957">(Android) Gatewayen kan pinges</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8132480444149501833">Anmod om trafiktællere</translation>
@@ -953,13 +986,13 @@
 <translation id="8151185429379586178">Udviklerværktøjer</translation>
 <translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183974620058026102">Vedhæft</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8208861521865154048">Fordele</translation>
 <translation id="8226628635270268143">Vælg dine foretrukne billeder og album</translation>
 <translation id="8227119283605456246">Vedhæft fil</translation>
 <translation id="8230672074305416752">Kunne ikke pinge standardnetværkets gateway</translation>
 <translation id="8246209727385807362">Ukendt mobilselskab</translation>
+<translation id="8261506727792406068">Slet</translation>
 <translation id="8262870577632766028">1 time</translation>
 <translation id="827422111966801947">Indigoblå</translation>
 <translation id="8286154143153872371">Opret forbindelse til et netværk, og genindlæs siden for at se baggrunden.</translation>
@@ -970,6 +1003,7 @@
 <translation id="8318753676953949627">Der er ingen billeder</translation>
 <translation id="8329018942023753850">appen Lommeregner</translation>
 <translation id="8336739000755212683">Skift kontobillede på enheden</translation>
+<translation id="8339024191194156249">Få flere oplysninger om automatisk opstart</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> eller <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Udskriftsjobs</translation>
 <translation id="8349826889576450703">appliste</translation>
@@ -998,7 +1032,7 @@
 <translation id="8498220429738806196">Trafiktællere</translation>
 <translation id="8503813439785031346">Brugernavn</translation>
 <translation id="8503836310948963452">Det tager kun et par minutter mere...</translation>
-<translation id="8508640263392900755">Oplysninger om adgangspunkt</translation>
+<translation id="8508640263392900755">Oplysninger om APN</translation>
 <translation id="8522687886059337719">Du har nu adgang til nye <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />baggrunde<ph name="END_LINK_WALLPAPER_SUBPAGE" /> og <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />pauseskærme<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
@@ -1101,7 +1135,7 @@
 <translation id="917720651393141712">Test</translation>
 <translation id="9188992814426075118">Dit tastatur kan automatisk tilpasses din baggrund</translation>
 <translation id="9189000703457422362">Der kan ikke oprettes forbindelse til dette netværk via automatisk registrerede APN'er. Kontakt dit mobilselskab for at få flere oplysninger.</translation>
-<translation id="9193744392140377127">Adgangspunkt*</translation>
+<translation id="9193744392140377127">APN*</translation>
 <translation id="9204237731135241582">Gateway kan ikke kontaktes fra Android-apps</translation>
 <translation id="9211490828691860325">Alle skriveborde</translation>
 <translation id="932327136139879170">Start</translation>

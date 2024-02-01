@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 
 #include <cinttypes>
-#include "base/memory/raw_ptr.h"
+
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
@@ -15,7 +15,7 @@
 namespace blink {
 
 struct SameSizeAsDisplayItem {
-  raw_ptr<void, ExperimentalRenderer> pointer;
+  uintptr_t pointer_as_id;
   gfx::Rect rect;
   uint32_t i1;
   uint32_t i2;
@@ -214,10 +214,9 @@ void DisplayItem::PropertiesAsJSON(JSONObject& json,
                                    const PaintArtifact& paint_artifact,
                                    bool client_known_to_be_alive) const {
   json.SetString("id", IdAsString(paint_artifact));
-  if (IsSubsequenceTombstone())
+  if (IsSubsequenceTombstone()) {
     return;
-
-  json.SetString("clientDebugName", paint_artifact.ClientDebugName(client_id_));
+  }
   if (client_known_to_be_alive) {
     json.SetString("invalidation", PaintInvalidationReasonToString(
                                        GetPaintInvalidationReason()));

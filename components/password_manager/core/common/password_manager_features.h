@@ -25,10 +25,12 @@ BASE_DECLARE_FEATURE(kForceInitialSyncWhenDecryptionFails);
 BASE_DECLARE_FEATURE(kForgotPasswordFormSupport);
 #if BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kIOSPasswordBottomSheet);
+BASE_DECLARE_FEATURE(kIOSPasswordBottomSheetAutofocus);
 BASE_DECLARE_FEATURE(kIOSPasswordSettingsBulkUploadLocalPasswords);
 #endif  // IS_IOS
 BASE_DECLARE_FEATURE(kPasswordIssuesInSpecificsMetadata);
 BASE_DECLARE_FEATURE(kSendPasswords);
+BASE_DECLARE_FEATURE(kShadowDomSupport);
 BASE_DECLARE_FEATURE(kPasswordChangeWellKnown);
 BASE_DECLARE_FEATURE(kPasswordReuseDetectionEnabled);
 BASE_DECLARE_FEATURE(kRecoverFromNeverSaveAndroid);

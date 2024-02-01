@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_FWUPD_FIRMWARE_UPDATE_MANAGER_H_
 #define CHROMEOS_ASH_COMPONENTS_FWUPD_FIRMWARE_UPDATE_MANAGER_H_
 
+#include <optional>
 #include <string>
 
 #include "ash/webui/firmware_update_ui/mojom/firmware_update.mojom.h"
@@ -22,6 +23,7 @@
 #include "chromeos/ash/components/dbus/fwupd/fwupd_client.h"
 #include "chromeos/ash/components/dbus/fwupd/fwupd_device.h"
 #include "chromeos/ash/components/dbus/fwupd/fwupd_properties.h"
+#include "chromeos/ash/components/dbus/fwupd/fwupd_request.h"
 #include "chromeos/ash/components/dbus/fwupd/fwupd_update.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -34,6 +36,29 @@ class SimpleURLLoader;
 }  // namespace network
 
 namespace ash {
+
+// State of the fwupd daemon. Enum defined here:
+// https://github.com/fwupd/fwupd/blob/4389f9f913588edae7243a8dbed88ce3788c8bc2/libfwupd/fwupd-enums.h
+// Keep in sync with corresponding enum in tools/metrics/histograms/enums.xml.
+enum class FwupdStatus {
+  kUnknown,
+  kIdle,
+  kLoading,
+  kDecompressing,
+  kDeviceRestart,
+  kDeviceWrite,
+  kDeviceVerify,
+  kScheduling,
+  kDownloading,
+  kDeviceRead,
+  kDeviceErase,
+  kWaitingForAuth,
+  kDeviceBusy,
+  kShutdown,
+  kWaitingForUser,
+  kMaxValue = kWaitingForUser,
+};
+
 // FirmwareUpdateManager contains all logic that runs the firmware update SWA.
 class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_FWUPD) FirmwareUpdateManager
     : public FwupdClient::Observer,
@@ -74,6 +99,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_FWUPD) FirmwareUpdateManager
   void BeginUpdate(const std::string& device_id,
                    const base::FilePath& filepath) override;
 
+  void AddDeviceRequestObserver(
+      mojo::PendingRemote<firmware_update::mojom::DeviceRequestObserver>
+          observer) override;
+
   void AddUpdateProgressObserver(
       mojo::PendingRemote<firmware_update::mojom::UpdateProgressObserver>
           observer) override;
@@ -88,6 +117,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_FWUPD) FirmwareUpdateManager
   // When the fwupd DBus client gets a response with devices from fwupd,
   // it calls this function and passes the response.
   void OnDeviceListResponse(FwupdDeviceList* devices) override;
+
+  void OnDeviceRequestResponse(FwupdRequest request) override;
 
   // When the fwupd DBus client gets a response with updates from fwupd,
   // it calls this function and passes the response.
@@ -213,6 +244,16 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_FWUPD) FirmwareUpdateManager
   // The device update that is currently inflight.
   firmware_update::mojom::FirmwareUpdatePtr inflight_update_;
 
+  // The most recent FwupdStatus, used for the purpose of recording metrics.
+  FwupdStatus last_fwupd_status_ = FwupdStatus::kUnknown;
+
+  // The most recent DeviceRequest, used for the purpose of recording metrics.
+  firmware_update::mojom::DeviceRequestPtr last_device_request_ = nullptr;
+
+  // Timestamp of when the last device request began. Used to calculate a
+  // duration for metrics.
+  std::optional<base::Time> last_request_started_timestamp_;
+
   // Used to show the firmware update notification and to determine which
   // metric to fire (Startup/Refresh).
   bool is_first_response_ = true;
@@ -227,6 +268,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_FWUPD) FirmwareUpdateManager
   // list of firmware updates.
   mojo::RemoteSet<firmware_update::mojom::UpdateObserver>
       update_list_observers_;
+
+  // Remote for tracking observer that will be notified of incoming
+  // DeviceRequests.
+  mojo::Remote<firmware_update::mojom::DeviceRequestObserver>
+      device_request_observer_;
 
   // Remote for tracking observer that will be notified of changes to
   // the in-progress update.

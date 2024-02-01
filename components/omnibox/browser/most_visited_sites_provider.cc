@@ -151,7 +151,7 @@ bool BuildTileSuggest(AutocompleteProvider* provider,
     }
   } else {
     AutocompleteMatch match =
-        BuildMatch(provider, client, std::u16string(), GURL::EmptyGURL(),
+        BuildMatch(provider, client, std::u16string(), GURL(),
                    kMostVisitedTilesAggregateRelevance,
                    AutocompleteMatchType::TILE_NAVSUGGEST);
 
@@ -254,8 +254,9 @@ bool MostVisitedSitesProvider::AllowMostVisitedSitesSuggestions(
   const auto page_class = input.current_page_classification();
   const auto input_type = input.type();
 
-  if (input.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT)
+  if (!input.IsZeroSuggest()) {
     return false;
+  }
 
   if (client_->IsOffTheRecord())
     return false;

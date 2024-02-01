@@ -260,7 +260,7 @@ void ProfilePickerTurnSyncOnDelegate::ShowManagedUserNotice(
   // Unretained as the delegate lives until `sync_confirmation_callback_` gets
   // called and thus always outlives the notice screen.
   if (controller_) {
-    controller_->SwitchToEnterpriseProfileWelcome(
+    controller_->SwitchToManagedUserProfileNotice(
         type, base::BindOnce(
                   &ProfilePickerTurnSyncOnDelegate::OnManagedUserNoticeClosed,
                   base::Unretained(this), type));
@@ -284,6 +284,12 @@ void ProfilePickerTurnSyncOnDelegate::OnManagedUserNoticeClosed(
     ManagedUserProfileNoticeUI::ScreenType type,
     signin::SigninChoice choice) {
   if (choice == signin::SIGNIN_CHOICE_CANCEL) {
+    // Enforce that the account declined the enterprise management. This value
+    // could have been set as a result of
+    // `ProfilePickerTurnSyncOnDelegate::ShowEnterpriseAccountConfirmation()`
+    // continuing by default prior in the flow.
+    signin::ClearProfileWithManagedAccounts(profile_);
+
     HandleCancelSigninChoice(ProfileMetrics::ProfileSignedInFlowOutcome::
                                  kAbortedOnEnterpriseWelcome);
     return;

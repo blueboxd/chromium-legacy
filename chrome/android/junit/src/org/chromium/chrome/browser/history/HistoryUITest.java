@@ -53,6 +53,9 @@ import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Promise;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
@@ -72,9 +75,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.widget.DateDividedAdapter;
 import org.chromium.components.browser_ui.widget.MoreProgressButton;
@@ -99,7 +99,7 @@ import java.util.Date;
 @DisableFeatures({
     ChromeFeatureList.HISTORY_JOURNEYS,
     ChromeFeatureList.RENAME_JOURNEYS,
-    ChromeFeatureList.BACK_GESTURE_REFACTOR_ACTIVITY,
+    ChromeFeatureList.APP_SPECIFIC_HISTORY
 })
 public class HistoryUITest {
     private static final int PAGE_INCREMENT = 2;
@@ -180,7 +180,9 @@ public class HistoryUITest {
                         /* Supplier<Tab>= */ null,
                         false,
                         null,
-                        mHistoryProvider);
+                        mHistoryProvider,
+                        null,
+                        true);
         mHistoryClustersCoordinator = mHistoryManager.getHistoryClustersCoordinatorForTests();
         mAdapter = mHistoryManager.getContentManagerForTests().getAdapter();
         mRecyclerView = mHistoryManager.getContentManagerForTests().getRecyclerView();
@@ -201,21 +203,11 @@ public class HistoryUITest {
 
         Assert.assertEquals(expectedItemCount, mAdapter.getItemCount());
 
-        // Some individual tests may override to enable this feature which is disabled by
-        // the class by default.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.BACK_GESTURE_REFACTOR_ACTIVITY)) {
-            BackPressHelper.create(
-                    mLifecycleOwner,
-                    mOnBackPressedDispatcher,
-                    mHistoryManager,
-                    SecondaryActivity.HISTORY);
-        } else {
-            BackPressHelper.create(
-                    mLifecycleOwner,
-                    mOnBackPressedDispatcher,
-                    mHistoryManager::onBackPressed,
-                    SecondaryActivity.HISTORY);
-        }
+        BackPressHelper.create(
+                mLifecycleOwner,
+                mOnBackPressedDispatcher,
+                mHistoryManager,
+                SecondaryActivity.HISTORY);
     }
 
     @Test
@@ -458,7 +450,6 @@ public class HistoryUITest {
 
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR_ACTIVITY)
     public void testSearchViewDismissedByBackPress() {
         final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
         View toolbarShadow = mHistoryManager.getSelectableListLayout().getToolbarShadowForTests();
@@ -494,13 +485,6 @@ public class HistoryUITest {
         Assert.assertEquals(View.GONE, toolbarShadow.getVisibility());
         Assert.assertEquals(View.GONE, toolbarSearchView.getVisibility());
         backPressRecorder2.assertExpected();
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR_ACTIVITY)
-    public void testSearchViewDismissedByBackPress_Refactored() {
-        testSearchViewDismissedByBackPress();
     }
 
     @Test
@@ -854,7 +838,9 @@ public class HistoryUITest {
                         /* Supplier<Tab>= */ null,
                         false,
                         null,
-                        mHistoryProvider);
+                        mHistoryProvider,
+                        null,
+                        false);
 
         Assert.assertNull(mHistoryManager.getView().findViewById(R.id.history_toggle_tab_layout));
         Assert.assertNull(

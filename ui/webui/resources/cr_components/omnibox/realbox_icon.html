@@ -36,15 +36,13 @@
     width: 24px;
   }
 
-  /* TODO(niharm): Change hex codes to use color tokens when theming is
-  implemented. */
   /* If icon is for a pedal or AiS, and it is not in the search box, apply background. */
   :host([has-icon-container-background]:not([in-searchbox])) #container {
-    background-color: #D3E3FD;
+    background-color: var(--color-realbox-answer-icon-background);
   }
 
-  :host([is-weather-answer]) #container {
-    background-color: var(--color-realbox-background);
+  :host([is-weather-answer]:not([in-searchbox])) #container {
+    background-color: var(--color-realbox-results-background);
   }
 
   #image {
@@ -103,16 +101,14 @@
     background-size: 24px;
   }
 
-  :host([in-searchbox][mask-image*='//resources/images/icon_search.svg']) #icon {
-    -webkit-mask-size: 20px;  /* Loupe in realbox is larger than in matches. */
-  }
-
-  :host([in-searchbox][mask-image*='//resources/cr_components/omnibox/icons/search_cr23.svg']) #icon {
-    -webkit-mask-size: 20px;  /* Loupe in realbox is larger than in matches. */
+  /* All icons in the searchbox should be 20px large. */
+  :host([in-searchbox]) #icon {
+    -webkit-mask-size: 20px;
+    background-size: 20px;
   }
 
   :host([has-icon-container-background]:not([in-searchbox])) #icon {
-    background-color: #041E49;
+    background-color: var(--color-realbox-answer-icon-foreground);
   }
 
 </style>

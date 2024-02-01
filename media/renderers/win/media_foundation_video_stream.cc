@@ -159,10 +159,6 @@ bool GetDolbyVisionConfigurations(
     case VideoCodecProfile::DOLBYVISION_PROFILE0:
       DLOG(ERROR) << __func__ << ": Profile 0 unsupported by Media Foundation";
       return false;
-    case VideoCodecProfile::DOLBYVISION_PROFILE4:
-      dolby_vision_profile = L"dvhe.04";
-      dolby_vision_configuration_nalu_type = 62;
-      break;
     case VideoCodecProfile::DOLBYVISION_PROFILE5:
       dolby_vision_profile = L"dvhe.05";
       dolby_vision_configuration_nalu_type = 62;
@@ -286,12 +282,6 @@ HRESULT GetVideoType(const VideoDecoderConfig& config,
                                 max_frame_average_luminance_level));
     }
   }
-  base::UmaHistogramEnumeration(
-      "Media.MediaFoundation.VideoColorSpace.TransferID",
-      config.color_space_info().transfer);
-  base::UmaHistogramEnumeration(
-      "Media.MediaFoundation.VideoColorSpace.PrimaryID",
-      config.color_space_info().primaries);
 
 #if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
   if (config.codec() == VideoCodec::kDolbyVision) {

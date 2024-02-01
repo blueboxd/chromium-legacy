@@ -49,7 +49,6 @@
 #include "chromeos/ash/services/auth_factor_config/in_process_instances.h"
 #include "chromeos/ash/services/cellular_setup/cellular_setup_impl.h"
 #include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -71,7 +70,7 @@
 
 namespace {
 
-class AppManagementDelegate : public AppManagementPageHandler::Delegate {
+class AppManagementDelegate : public AppManagementPageHandlerBase::Delegate {
  public:
   AppManagementDelegate() = default;
   ~AppManagementDelegate() override = default;
@@ -132,6 +131,11 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
                                IDR_NEARBY_SHARE_INTERNAL_ICONS_M_JS);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
+  // To use lottie, the worker-src CSP needs to be updated for the web ui that
+  // is using it. Since as of now there are only a couple of webuis using
+  // lottie animations, this update has to be performed manually. As the usage
+  // increases, set this as the default so manual override is no longer
+  // required.
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc,
       "worker-src blob: chrome://resources 'self';");
@@ -323,11 +327,6 @@ void OSSettingsUI::BindInterface(
 
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<color_change_listener::mojom::PageHandler> receiver) {
-  if (!chromeos::features::IsJellyEnabled()) {
-    mojo::ReportBadMessage(
-        "Jelly not enabled: OSSettingsUI should not listen to color changes.");
-    return;
-  }
   color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
       web_ui()->GetWebContents(), std::move(receiver));
 }

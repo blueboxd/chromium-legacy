@@ -110,7 +110,9 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
 
   // This should not be called on a disabled list view as list_type_ will be
   // reset.
-  SearchResultListType list_type_for_test() { return list_type_.value(); }
+  const std::optional<SearchResultListType>& list_type_for_test() const {
+    return list_type_;
+  }
 
   views::Label* title_label_for_test() { return title_label_; }
 
@@ -146,15 +148,15 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   bool FilterSearchResultsByCategory(const SearchResult::Category& category,
                                      const SearchResult& result) const;
 
-  raw_ptr<views::View, ExperimentalAsh> results_container_;
+  raw_ptr<views::View> results_container_;
 
-  std::vector<SearchResultView*> search_result_views_;  // Not owned.
+  std::vector<raw_ptr<SearchResultView, VectorExperimental>>
+      search_result_views_;  // Not owned.
 
   // The SearchResultListViewType dictates what kinds of results will be shown.
   std::optional<SearchResultListType> list_type_ =
       SearchResultListType::kBestMatch;
-  raw_ptr<views::Label, ExperimentalAsh> title_label_ =
-      nullptr;  // Owned by view hierarchy.
+  raw_ptr<views::Label> title_label_ = nullptr;  // Owned by view hierarchy.
 
   // The search result list view's location in the
   // productivity_launcher_search_view_'s list of 'search_result_list_view_'.

@@ -231,7 +231,7 @@ class VIEWS_EXPORT Textfield : public View,
   void SetMinimumWidthInChars(int minimum_width);
 
   // Gets/Sets the text to display when empty.
-  std::u16string GetPlaceholderText() const;
+  const std::u16string& GetPlaceholderText() const;
   void SetPlaceholderText(const std::u16string& text);
 
   void set_placeholder_text_color(SkColor color) {
@@ -540,6 +540,9 @@ class VIEWS_EXPORT Textfield : public View,
 
   // A callback function to periodically update the cursor node_data.
   void UpdateCursorVisibility();
+
+  // Returns true if a context menu for this view is showing.
+  bool IsMenuShowing() const;
 
  private:
   friend class TextfieldTestApi;
@@ -902,6 +905,7 @@ VIEW_BUILDER_PROPERTY(SkColor, BackgroundColor)
 VIEW_BUILDER_PROPERTY(TextfieldController*, Controller)
 VIEW_BUILDER_PROPERTY(bool, CursorEnabled)
 VIEW_BUILDER_PROPERTY(int, DefaultWidthInChars)
+VIEW_BUILDER_PROPERTY(gfx::FontList, FontList)
 VIEW_BUILDER_PROPERTY(gfx::HorizontalAlignment, HorizontalAlignment)
 VIEW_BUILDER_PROPERTY(bool, Invalid)
 VIEW_BUILDER_PROPERTY(int, MinimumWidthInChars)

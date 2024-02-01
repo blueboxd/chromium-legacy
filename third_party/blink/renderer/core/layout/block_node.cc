@@ -780,9 +780,7 @@ void BlockNode::FinishLayout(
   // Computing MinMax after layout. Do not modify the |LayoutObject| tree, paint
   // properties, and other global states.
   if (DisableLayoutSideEffectsScope::IsDisabled()) {
-    if (RuntimeEnabledFeatures::LayoutNewMeasureCacheEnabled()) {
-      box_->AddMeasureLayoutResult(layout_result);
-    }
+    box_->AddMeasureLayoutResult(layout_result);
     return;
   }
 
@@ -1061,10 +1059,15 @@ LayoutInputNode BlockNode::NextSibling() const {
   // inline-level floats and/or OOF-positioned nodes as block-level), we need
   // to skip them and clear layout.
   while (next_sibling && next_sibling->IsInline()) {
+#if DCHECK_IS_ON()
+    if (!next_sibling->IsText()) {
+      next_sibling->ShowLayoutTreeForThis();
+    }
+    DCHECK(next_sibling->IsText());
+#endif
     // TODO(layout-dev): Clearing needs-layout within this accessor is an
     // unexpected side-effect. There may be additional invalidations that need
     // to be performed.
-    DCHECK(next_sibling->IsText());
     next_sibling->ClearNeedsLayout();
     next_sibling = next_sibling->NextSibling();
   }

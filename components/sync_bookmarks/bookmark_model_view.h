@@ -43,10 +43,20 @@ class BookmarkModelView {
   virtual const bookmarks::BookmarkNode* other_node() const = 0;
   virtual const bookmarks::BookmarkNode* mobile_node() const = 0;
 
+  // Ensures that bookmark_bar_node(), other_node() and mobile_node() return
+  // non-null. This is always the case for local-or-syncable permanent folders,
+  // and the function a no-op, but for account permanent folders it is necessary
+  // to create them explicitly.
+  virtual void EnsurePermanentNodesExist() = 0;
+
   // Deletes all nodes that would return true for IsNodeSyncable(). Permanent
   // folders may or may not be deleted depending on precise mapping (only
   // account permanent folders can be deleted).
   virtual void RemoveAllSyncableNodes() = 0;
+
+  // Uses `uuid` to find a node that is relevant in the context of this view.
+  virtual const bookmarks::BookmarkNode* GetNodeByUuid(
+      const base::Uuid& uuid) const = 0;
 
   // See bookmarks::BookmarkModel for documentation, as all functions below
   // mimic the same API.
@@ -65,22 +75,21 @@ class BookmarkModelView {
   void SetTitle(const bookmarks::BookmarkNode* node,
                 const std::u16string& title);
   void SetURL(const bookmarks::BookmarkNode* node, const GURL& url);
-  const bookmarks::BookmarkNode* GetNodeByUuid(const base::Uuid& uuid) const;
   const bookmarks::BookmarkNode* AddFolder(
       const bookmarks::BookmarkNode* parent,
       size_t index,
       const std::u16string& title,
       const bookmarks::BookmarkNode::MetaInfoMap* meta_info,
-      absl::optional<base::Time> creation_time,
-      absl::optional<base::Uuid> uuid);
+      std::optional<base::Time> creation_time,
+      std::optional<base::Uuid> uuid);
   const bookmarks::BookmarkNode* AddURL(
       const bookmarks::BookmarkNode* parent,
       size_t index,
       const std::u16string& title,
       const GURL& url,
       const bookmarks::BookmarkNode::MetaInfoMap* meta_info,
-      absl::optional<base::Time> creation_time,
-      absl::optional<base::Uuid> uuid);
+      std::optional<base::Time> creation_time,
+      std::optional<base::Uuid> uuid);
   void ReorderChildren(
       const bookmarks::BookmarkNode* parent,
       const std::vector<const bookmarks::BookmarkNode*>& ordered_nodes);
@@ -118,7 +127,10 @@ class BookmarkModelViewUsingLocalOrSyncableNodes : public BookmarkModelView {
   const bookmarks::BookmarkNode* bookmark_bar_node() const override;
   const bookmarks::BookmarkNode* other_node() const override;
   const bookmarks::BookmarkNode* mobile_node() const override;
+  void EnsurePermanentNodesExist() override;
   void RemoveAllSyncableNodes() override;
+  const bookmarks::BookmarkNode* GetNodeByUuid(
+      const base::Uuid& uuid) const override;
 };
 
 class BookmarkModelViewUsingAccountNodes : public BookmarkModelView {
@@ -133,7 +145,10 @@ class BookmarkModelViewUsingAccountNodes : public BookmarkModelView {
   const bookmarks::BookmarkNode* bookmark_bar_node() const override;
   const bookmarks::BookmarkNode* other_node() const override;
   const bookmarks::BookmarkNode* mobile_node() const override;
+  void EnsurePermanentNodesExist() override;
   void RemoveAllSyncableNodes() override;
+  const bookmarks::BookmarkNode* GetNodeByUuid(
+      const base::Uuid& uuid) const override;
 };
 
 }  // namespace sync_bookmarks

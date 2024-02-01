@@ -10,6 +10,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -53,7 +54,6 @@
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
@@ -117,10 +117,6 @@ FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, Doom);
 
 FORWARD_DECLARE_TEST(ServiceWorkerRegistryTest, ScriptResponseTime);
 
-namespace service_worker_registration_unittest {
-class ServiceWorkerActivationTest;
-}  // namespace service_worker_registration_unittest
-
 namespace service_worker_main_resource_loader_unittest {
 class ServiceWorkerMainResourceLoaderTest;
 }  // namespace service_worker_main_resource_loader_unittest
@@ -178,7 +174,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
     // effective security of these responses is equivalent to that of the
     // service worker.
     scoped_refptr<net::HttpResponseHeaders> headers;
-    absl::optional<net::SSLInfo> ssl_info;
+    std::optional<net::SSLInfo> ssl_info;
   };
 
   class Observer {
@@ -281,7 +277,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Returns true on setup success.
   // Otherwise, setup error, and subsequent `router_evaluator()` will return
-  // `absl::nullopt`.
+  // `std::nullopt`.
   bool SetupRouterEvaluator(const blink::ServiceWorkerRouterRules& rules);
   const ServiceWorkerRouterEvaluator* router_evaluator() const {
     return router_evaluator_.get();
@@ -726,7 +722,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>&
           resources);
 
-  absl::optional<std::string> sha256_script_checksum() {
+  std::optional<std::string> sha256_script_checksum() {
     return sha256_script_checksum_;
   }
 
@@ -737,6 +733,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Check if the static router API is enabled. It checks if the feature flag is
   // enabled or having a valid trial token.
   bool IsStaticRouterEnabled();
+
+  // Check if the static router should be evaluated.
+  bool NeedRouterEvaluate() const;
 
   // Timeout for a request to be handled.
   static constexpr base::TimeDelta kRequestTimeout = base::Minutes(5);
@@ -836,6 +835,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerBrowserTest,
                            WarmUpAndStartServiceWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerBrowserTest, WarmUpWorkerAndTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerBrowserTest, WarmUpWorkerTwice);
 
   // Contains timeout info for InflightRequest.
   struct InflightRequestTimeoutInfo {
@@ -1053,7 +1053,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // "classic" or "module". Unless stated otherwise, it is "classic".
   // https://w3c.github.io/ServiceWorker/#dfn-type
   const blink::mojom::ScriptType script_type_;
-  absl::optional<FetchHandlerType> fetch_handler_type_;
+  std::optional<FetchHandlerType> fetch_handler_type_;
 
   FetchHandlerBypassOption fetch_handler_bypass_option_ =
       FetchHandlerBypassOption::kDefault;
@@ -1223,6 +1223,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool is_update_scheduled_ = false;
   bool in_dtor_ = false;
 
+  // If true, warms up service worker after service worker is stopped.
+  // (https://crbug.com/1431792).
+  bool will_warm_up_on_stopped_ = false;
+
   // Populated via network::mojom::URLResponseHead of the main script.
   std::unique_ptr<MainScriptResponse> main_script_response_;
 
@@ -1251,6 +1255,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerPingController ping_controller_;
 
   bool stop_when_devtools_detached_ = false;
+
+  bool is_stopping_warmed_up_worker_ = false;
 
   // This is the set of features that were used up until installation of this
   // version completed, or used during the lifetime of |this|.
@@ -1298,7 +1304,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // service worker starts with an existing version. But the field will be set
   // after the worker has started when there is a change in the script and new
   // version is created.
-  absl::optional<std::string> sha256_script_checksum_;
+  std::optional<std::string> sha256_script_checksum_;
 
   using RouterRegistrationMethod = blink::mojom::RouterRegistrationMethod;
   RouterRegistrationMethod router_registration_method_ =

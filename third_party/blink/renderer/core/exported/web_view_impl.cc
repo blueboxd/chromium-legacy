@@ -1148,6 +1148,8 @@ void WebViewImpl::Close() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   receiver_.reset();
 
+  dev_tools_emulator_->Shutdown();
+
   // Initiate shutdown for the entire frameset.  This will cause a lot of
   // notifications to be sent. This will detach all frames in this WebView's
   // frame tree.
@@ -1422,6 +1424,10 @@ void WebViewImpl::SetScreenOrientationOverrideForTesting(
 
 void WebViewImpl::SetWindowRectSynchronouslyForTesting(
     const gfx::Rect& new_window_rect) {
+  // We need to call UpdateScreenRects to ensure the 'move' event is enqueued.
+  // TODO(jfernandez): Ideally updating the window rect should do that
+  // automatically.
+  web_widget_->UpdateScreenRects(new_window_rect, new_window_rect);
   web_widget_->SetWindowRectSynchronouslyForTesting(new_window_rect);
 }
 
@@ -1556,8 +1562,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   settings->SetHideScrollbars(prefs.hide_scrollbars);
 
-  RuntimeEnabledFeatures::SetWebKitScrollbarStylingEnabled(
-      prefs.enable_webkit_scrollbar_styling);
+  settings->SetPrefersDefaultScrollbarStyles(
+      prefs.prefers_default_scrollbar_styles);
 
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   RuntimeEnabledFeatures::SetAccelerated2dCanvasEnabled(
@@ -1705,8 +1711,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
       WebString::FromASCII(prefs.default_video_poster_url.spec()));
   settings->SetSupportDeprecatedTargetDensityDPI(
       prefs.support_deprecated_target_density_dpi);
-  settings->SetUseLegacyBackgroundSizeShorthandBehavior(
-      prefs.use_legacy_background_size_shorthand_behavior);
   settings->SetWideViewportQuirkEnabled(prefs.wide_viewport_quirk);
   settings->SetUseWideViewport(prefs.use_wide_viewport);
   settings->SetForceZeroLayoutHeight(prefs.force_zero_layout_height);
@@ -2781,19 +2785,12 @@ void WebViewImpl::SetIgnoreViewportTagScaleLimits(bool ignore) {
   PageScaleConstraints constraints =
       GetPageScaleConstraintsSet().UserAgentConstraints();
   if (ignore) {
-    // Don't ignore the minimum limits in touchless mode to prevent wide
-    // loading elements from causing us to zoom pages out beyond their layout
-    // which is fairly common.
-    if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-      constraints.minimum_scale =
-          GetPageScaleConstraintsSet().DefaultConstraints().minimum_scale;
-    }
+    constraints.minimum_scale =
+        GetPageScaleConstraintsSet().DefaultConstraints().minimum_scale;
     constraints.maximum_scale =
         GetPageScaleConstraintsSet().DefaultConstraints().maximum_scale;
   } else {
-    if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-      constraints.minimum_scale = -1;
-    }
+    constraints.minimum_scale = -1;
     constraints.maximum_scale = -1;
   }
   GetPage()->SetUserAgentPageScaleConstraints(constraints);
@@ -3063,6 +3060,21 @@ void WebViewImpl::SendWindowRectToMainFrameHost(
 void WebViewImpl::DidAccessInitialMainDocument() {
   DCHECK(local_main_frame_host_remote_);
   local_main_frame_host_remote_->DidAccessInitialMainDocument();
+}
+
+void WebViewImpl::Minimize() {
+  DCHECK(local_main_frame_host_remote_);
+  local_main_frame_host_remote_->Minimize();
+}
+
+void WebViewImpl::Maximize() {
+  DCHECK(local_main_frame_host_remote_);
+  local_main_frame_host_remote_->Maximize();
+}
+
+void WebViewImpl::Restore() {
+  DCHECK(local_main_frame_host_remote_);
+  local_main_frame_host_remote_->Restore();
 }
 
 void WebViewImpl::SetResizable(bool resizable) {
@@ -3986,6 +3998,27 @@ const SessionStorageNamespaceId& WebViewImpl::GetSessionStorageNamespaceId() {
 
 bool WebViewImpl::IsFencedFrameRoot() const {
   return GetPage()->IsMainFrameFencedFrameRoot();
+}
+
+void WebViewImpl::SetSupportsAppRegion(bool supports_app_region) {
+  supports_app_region_ = supports_app_region;
+  if (!MainFrameImpl() || !MainFrameImpl()->GetFrame()) {
+    return;
+  }
+
+  LocalFrame* local_frame = MainFrameImpl()->GetFrame();
+
+  if (supports_app_region_) {
+    local_frame->View()->UpdateDocumentAnnotatedRegions();
+  } else {
+    local_frame->GetDocument()->SetAnnotatedRegions(
+        Vector<AnnotatedRegionValue>());
+    local_frame->Client()->AnnotatedRegionsChanged();
+  }
+}
+
+bool WebViewImpl::SupportsAppRegion() {
+  return supports_app_region_;
 }
 
 void WebViewImpl::MojoDisconnected() {

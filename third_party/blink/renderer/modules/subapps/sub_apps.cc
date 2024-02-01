@@ -139,7 +139,7 @@ ScriptPromise SubApps::add(
   // [SecureContext] from the IDL ensures this.
   DCHECK(ExecutionContext::From(script_state)->IsSecureContext());
 
-  if (!CheckPreconditionsMaybeThrow(exception_state)) {
+  if (!CheckPreconditionsMaybeThrow(script_state, exception_state)) {
     return ScriptPromise();
   }
 
@@ -187,18 +187,20 @@ ScriptPromise SubApps::add(
             for (const auto& add_result : results_mojo) {
               if (add_result->result_code ==
                   SubAppsServiceResultCode::kFailure) {
-                return resolver->Reject(
-                    AddResultsFromMojo(std::move(results_mojo)));
+                return resolver
+                    ->Reject<IDLRecord<IDLString, V8SubAppsResultCode>>(
+                        AddResultsFromMojo(std::move(results_mojo)));
               }
             }
-            resolver->Resolve(AddResultsFromMojo(std::move(results_mojo)));
+            resolver->Resolve<IDLRecord<IDLString, V8SubAppsResultCode>>(
+                AddResultsFromMojo(std::move(results_mojo)));
           })));
   return resolver->Promise();
 }
 
 ScriptPromise SubApps::list(ScriptState* script_state,
                             ExceptionState& exception_state) {
-  if (!CheckPreconditionsMaybeThrow(exception_state)) {
+  if (!CheckPreconditionsMaybeThrow(script_state, exception_state)) {
     return ScriptPromise();
   }
 
@@ -206,7 +208,7 @@ ScriptPromise SubApps::list(ScriptState* script_state,
   GetService()->List(resolver->WrapCallbackInScriptScope(WTF::BindOnce(
       [](ScriptPromiseResolver* resolver, SubAppsServiceListResultPtr result) {
         if (result->result_code == SubAppsServiceResultCode::kSuccess) {
-          resolver->Resolve(
+          resolver->Resolve<IDLRecord<IDLString, SubAppsListResult>>(
               ListResultsFromMojo(std::move(result->sub_apps_list)));
         } else {
           resolver->Reject(V8ThrowDOMException::CreateOrDie(
@@ -223,7 +225,7 @@ ScriptPromise SubApps::list(ScriptState* script_state,
 ScriptPromise SubApps::remove(ScriptState* script_state,
                               const Vector<String>& manifest_id_paths,
                               ExceptionState& exception_state) {
-  if (!CheckPreconditionsMaybeThrow(exception_state)) {
+  if (!CheckPreconditionsMaybeThrow(script_state, exception_state)) {
     return ScriptPromise();
   }
 
@@ -246,16 +248,28 @@ ScriptPromise SubApps::remove(ScriptState* script_state,
             for (const auto& remove_result : results_mojo) {
               if (remove_result->result_code ==
                   SubAppsServiceResultCode::kFailure) {
-                return resolver->Reject(
-                    RemoveResultsFromMojo(std::move(results_mojo)));
+                return resolver
+                    ->Reject<IDLRecord<IDLString, V8SubAppsResultCode>>(
+                        RemoveResultsFromMojo(std::move(results_mojo)));
               }
             }
-            resolver->Resolve(RemoveResultsFromMojo(std::move(results_mojo)));
+            resolver->Resolve<IDLRecord<IDLString, V8SubAppsResultCode>>(
+                RemoveResultsFromMojo(std::move(results_mojo)));
           })));
   return resolver->Promise();
 }
 
-bool SubApps::CheckPreconditionsMaybeThrow(ExceptionState& exception_state) {
+bool SubApps::CheckPreconditionsMaybeThrow(ScriptState* script_state,
+                                           ExceptionState& exception_state) {
+  if (!ExecutionContext::From(script_state)
+           ->IsFeatureEnabled(
+               mojom::blink::PermissionsPolicyFeature::kSubApps)) {
+    exception_state.ThrowSecurityError(
+        "The executing top-level browsing context is not granted the "
+        "\"sub-apps\" permissions policy.");
+    return false;
+  }
+
   Navigator* const navigator = GetSupplementable();
 
   if (!navigator->DomWindow()) {

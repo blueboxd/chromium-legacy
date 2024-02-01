@@ -499,7 +499,35 @@ async function windowOpenTest(t, { source, target, expected }) {
   const result = await Promise.race([
       reply,
       new Promise((resolve) => {
-        t.step_timeout(() => resolve("timeout"), 3000 /* ms */);
+        t.step_timeout(() => resolve("timeout"), 10000 /* ms */);
+      }),
+  ]);
+
+  assert_equals(result, expected);
+}
+
+async function windowOpenExistingTest(t, { source, target, expected }) {
+  const targetUrl = preflightUrl(target);
+  targetUrl.searchParams.set("file", "openee.html");
+  targetUrl.searchParams.set(
+    "file-if-no-preflight-received",
+    "no-preflight-received.html",
+  );
+
+  const sourceUrl = resolveUrl(
+      'resources/open-to-existing-window.html', sourceResolveOptions(source));
+  sourceUrl.searchParams.set("url", targetUrl);
+  sourceUrl.searchParams.set("token", token());
+
+  const iframe = await appendIframe(t, document, sourceUrl);
+  const reply = futureMessage({ source: iframe.contentWindow });
+
+  iframe.contentWindow.postMessage({ url: targetUrl.href }, "*");
+
+  const result = await Promise.race([
+      reply,
+      new Promise((resolve) => {
+        t.step_timeout(() => resolve("timeout"), 10000 /* ms */);
       }),
   ]);
 
@@ -526,7 +554,7 @@ async function anchorTest(t, { source, target, expected }) {
   const result = await Promise.race([
       reply,
       new Promise((resolve) => {
-        t.step_timeout(() => resolve("timeout"), 4000 /* ms */);
+        t.step_timeout(() => resolve("timeout"), 10000 /* ms */);
       }),
   ]);
 

@@ -56,7 +56,7 @@ class SyncEngine : public ModelTypeConfigurer {
 
     ~InitParams();
 
-    raw_ptr<SyncEngineHost, AcrossTasksDanglingUntriaged> host = nullptr;
+    raw_ptr<SyncEngineHost> host = nullptr;
     std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy;
     scoped_refptr<ExtensionsActivity> extensions_activity;
     GURL service_url;
@@ -66,7 +66,7 @@ class SyncEngine : public ModelTypeConfigurer {
     bool enable_local_sync_backend = false;
     base::FilePath local_sync_backend_folder;
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
-    bool sync_poll_immediately_on_every_startup;
+    bool sync_poll_immediately_on_every_startup = false;
   };
 
   SyncEngine();

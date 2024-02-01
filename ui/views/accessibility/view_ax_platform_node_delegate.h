@@ -74,6 +74,7 @@ class VIEWS_EXPORT ViewAXPlatformNodeDelegate
   std::wstring ComputeListItemNameFromContent() const override;
   // Also in |ViewAccessibility|.
   bool IsChildOfLeaf() const override;
+  const ui::AXSelection GetUnignoredSelection() const override;
   ui::AXNodePosition::AXPositionInstance CreatePositionAt(
       int offset,
       ax::mojom::TextAffinity affinity =
@@ -136,6 +137,8 @@ class VIEWS_EXPORT ViewAXPlatformNodeDelegate
   AtomicViewAXTreeManager* GetAtomicViewAXTreeManagerForTesting()
       const override;
 
+  virtual gfx::Point ScreenToDIPPoint(const gfx::Point& screen_point) const;
+
  protected:
   explicit ViewAXPlatformNodeDelegate(View* view);
 
@@ -158,13 +161,14 @@ class VIEWS_EXPORT ViewAXPlatformNodeDelegate
 
   struct ChildWidgetsResult final {
     ChildWidgetsResult();
-    ChildWidgetsResult(std::vector<Widget*> child_widgets,
-                       bool is_tab_modal_showing);
+    ChildWidgetsResult(
+        std::vector<raw_ptr<Widget, VectorExperimental>> child_widgets,
+        bool is_tab_modal_showing);
     ChildWidgetsResult(const ChildWidgetsResult& other);
     virtual ~ChildWidgetsResult();
     ChildWidgetsResult& operator=(const ChildWidgetsResult& other);
 
-    std::vector<Widget*> child_widgets;
+    std::vector<raw_ptr<Widget, VectorExperimental>> child_widgets;
 
     // When the focus is within a child widget, |child_widgets| contains only
     // that widget. Otherwise, |child_widgets| contains all child widgets.
@@ -178,7 +182,8 @@ class VIEWS_EXPORT ViewAXPlatformNodeDelegate
 
   // Uses Views::GetViewsInGroup to find nearby Views in the same group.
   // Searches from the View's parent to include siblings within that group.
-  void GetViewsInGroupForSet(std::vector<View*>* views_in_group) const;
+  void GetViewsInGroupForSet(
+      std::vector<raw_ptr<View, VectorExperimental>>* views_in_group) const;
 
   // If this delegate is attached to the root view, returns all the child
   // widgets of this view's owning widget.

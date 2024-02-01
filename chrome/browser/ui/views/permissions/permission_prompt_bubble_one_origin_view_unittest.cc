@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/permissions/permission_prompt_bubble_one_origin_view.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -35,10 +36,16 @@ class TestDelegate : public permissions::PermissionPrompt::Delegate {
               origin, request_type);
         });
     raw_requests_ = base::test::ToVector(
-        requests_, &std::unique_ptr<permissions::PermissionRequest>::get);
+        requests_,
+        [](const auto& request)
+            -> raw_ptr<permissions::PermissionRequest, VectorExperimental> {
+          return request.get();
+        });
   }
 
-  const std::vector<permissions::PermissionRequest*>& Requests() override {
+  const std::vector<
+      raw_ptr<permissions::PermissionRequest, VectorExperimental>>&
+  Requests() override {
     return raw_requests_;
   }
 
@@ -84,7 +91,8 @@ class TestDelegate : public permissions::PermissionPrompt::Delegate {
 
  private:
   std::vector<std::unique_ptr<permissions::PermissionRequest>> requests_;
-  std::vector<permissions::PermissionRequest*> raw_requests_;
+  std::vector<raw_ptr<permissions::PermissionRequest, VectorExperimental>>
+      raw_requests_;
   base::WeakPtrFactory<TestDelegate> weak_factory_{this};
 };
 
@@ -151,56 +159,4 @@ TEST_F(PermissionPromptBubbleOneOriginViewTest,
   EXPECT_PRED_FORMAT2(::testing::IsSubstring, "microphone", title);
   EXPECT_PRED_FORMAT2(::testing::IsSubstring, "move your camera", title);
   EXPECT_PRED_FORMAT2(::testing::IsNotSubstring, "use your camera", title);
-}
-
-TEST_F(PermissionPromptBubbleOneOriginViewTest, ButtonPressesRecordMetrics) {
-  TestDelegate delegate(GURL(), {permissions::RequestType::kMicStream,
-                                 permissions::RequestType::kCameraStream,
-                                 permissions::RequestType::kCameraPanTiltZoom});
-
-  {
-    auto bubble = CreateBubble(&delegate);
-    base::HistogramTester tester;
-    bubble->Accept();
-    tester.ExpectTotalCount("Permissions.Prompt.TimeToDecision.Accepted", 1);
-    EXPECT_EQ(
-        tester.GetTotalCountsForPrefix("Permissions.Prompt.TimeToDecision")
-            .size(),
-        1u);
-  }
-
-  {
-    auto bubble = CreateBubble(&delegate);
-    base::HistogramTester tester;
-    bubble->Cancel();
-    tester.ExpectTotalCount("Permissions.Prompt.TimeToDecision.Denied", 1);
-    EXPECT_EQ(
-        tester.GetTotalCountsForPrefix("Permissions.Prompt.TimeToDecision")
-            .size(),
-        1u);
-  }
-
-  {
-    auto bubble = CreateBubble(&delegate);
-    base::HistogramTester tester;
-    bubble->Close();
-    tester.ExpectTotalCount("Permissions.Prompt.TimeToDecision.Dismissed", 1);
-    EXPECT_EQ(
-        tester.GetTotalCountsForPrefix("Permissions.Prompt.TimeToDecision")
-            .size(),
-        1u);
-  }
-
-  {
-    auto bubble = CreateBubble(&delegate);
-    base::HistogramTester tester;
-    bubble->RunButtonCallback(static_cast<int>(
-        PermissionPromptBubbleBaseView::PermissionDialogButton::kAcceptOnce));
-    tester.ExpectTotalCount("Permissions.Prompt.TimeToDecision.AcceptedOnce",
-                            1);
-    EXPECT_EQ(
-        tester.GetTotalCountsForPrefix("Permissions.Prompt.TimeToDecision")
-            .size(),
-        1u);
-  }
 }

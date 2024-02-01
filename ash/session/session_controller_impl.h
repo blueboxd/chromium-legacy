@@ -153,8 +153,6 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   void HideLockScreen();
 
   // Requests signing out all users, ending the current session.
-  // NOTE: This should only be called from LockStateController, other callers
-  // should use LockStateController::RequestSignOut() instead.
   void RequestSignOut();
 
   // Requests a system restart to apply an OS update.
@@ -289,7 +287,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   void RemoveScopedScreenLockBlocker();
 
   // Client interface to session manager code (chrome).
-  raw_ptr<SessionControllerClient, ExperimentalAsh> client_ = nullptr;
+  raw_ptr<SessionControllerClient> client_ = nullptr;
 
   // Cached session info.
   bool can_lock_ = false;
@@ -343,7 +341,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
 
   bool signin_screen_prefs_obtained_ = false;
 
-  raw_ptr<PrefService, ExperimentalAsh> last_active_user_prefs_ = nullptr;
+  raw_ptr<PrefService> last_active_user_prefs_ = nullptr;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 

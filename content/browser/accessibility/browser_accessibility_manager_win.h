@@ -12,9 +12,11 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/content_export.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/display/win/screen_win.h"
 
 namespace content {
 
@@ -42,7 +44,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   static bool IsUiaActiveTextPositionChangedEventSupported();
 
   // Get the closest containing HWND.
-  HWND GetParentHWND();
+  HWND GetParentHWND() const;
 
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;
@@ -64,6 +66,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
                                     BrowserAccessibility* node);
   void FireUiaActiveTextPositionChangedEvent(BrowserAccessibility* node);
 
+  gfx::Rect GetViewBoundsInScreenCoordinates() const override;
+
   // Do event pre-processing
   void BeforeAccessibilityEvents() override;
 
@@ -80,8 +84,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
  private:
   struct SelectionEvents {
-    std::vector<BrowserAccessibility*> added;
-    std::vector<BrowserAccessibility*> removed;
+    std::vector<raw_ptr<BrowserAccessibility, VectorExperimental>> added;
+    std::vector<raw_ptr<BrowserAccessibility, VectorExperimental>> removed;
     SelectionEvents();
     ~SelectionEvents();
   };

@@ -7,6 +7,7 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/browser/autofill_test_utils.h"
+#import "components/autofill/core/common/autofill_features.h"
 #import "components/password_manager/core/browser/features/password_features.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/sync/service/sync_prefs.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_app_interface.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_app_interface.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -22,8 +24,9 @@
 #import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/earl_grey/matchers.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "net/test/embedded_test_server/default_handlers.h"
+#import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 constexpr char kFormUsername[] = "un";
@@ -80,14 +83,14 @@ constexpr char kFormZip[] = "form_zip";
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(
+      autofill::features::test::kAutofillServerCommunication);
+
   if ([self isRunningTest:@selector(testFillPasswordFieldsOnForm)] ||
       [self isRunningTest:@selector(testFillFieldOnFormWithSingleUsername)] ||
       [self isRunningTest:@selector(testFillFieldOnFormWithSinglePassword)]) {
     config.features_disabled.push_back(
         password_manager::features::kIOSPasswordBottomSheet);
-  }
-  if ([self isRunningTest:@selector(testFillCreditCardFieldsOnForm)]) {
-    config.features_disabled.push_back(kIOSPaymentsBottomSheet);
   }
   if ([self isRunningTest:@selector(testFillFieldOnFormWithSingleUsername)] ||
       [self isRunningTest:@selector(testFillFieldOnFormWithSinglePassword)]) {
@@ -96,6 +99,9 @@ constexpr char kFormZip[] = "form_zip";
   } else {
     config.features_disabled.push_back(
         password_manager::features::kIOSPasswordSignInUff);
+  }
+  if ([self isRunningTest:@selector(testOpenExpandedView)]) {
+    config.features_enabled.push_back(kIOSKeyboardAccessoryUpgrade);
   }
   return config;
 }
@@ -205,6 +211,12 @@ constexpr char kFormZip[] = "form_zip";
   [self verifyFieldWithIdHasBeenFilled:kFormZip value:zip];
 }
 
+// Matcher for the bottom sheet's "Use Keyboard" button.
+id<GREYMatcher> PaymentsBottomSheetUseKeyboardButton() {
+  return chrome_test_util::ButtonWithAccessibilityLabelId(
+      IDS_IOS_PAYMENT_BOTTOM_SHEET_USE_KEYBOARD);
+}
+
 #pragma mark - Tests
 
 // Tests that tapping on a password related field opens the keyboard accessory
@@ -301,10 +313,24 @@ constexpr char kFormZip[] = "form_zip";
 // accessory with the proper suggestion visible and that tapping on that
 // suggestion properly fills the related fields on the form.
 - (void)testFillCreditCardFieldsOnForm {
+  [AutofillAppInterface setUpMockReauthenticationModule];
+  [AutofillAppInterface mockReauthenticationModuleCanAttempt:YES];
+  [AutofillAppInterface mockReauthenticationModuleExpectedResult:
+                            ReauthenticationResult::kSuccess];
+
   [self loadPaymentsPage];
 
+  // Tap a credit card field to open the bottom sheet.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormCardName)];
+
+  id<GREYMatcher> useKeyboardButton = PaymentsBottomSheetUseKeyboardButton();
+
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:useKeyboardButton];
+
+  // Dismiss the bottom sheet and open the keyboard.
+  [[EarlGrey selectElementWithMatcher:useKeyboardButton]
+      performAction:grey_tap()];
 
   autofill::CreditCard card = autofill::test::GetCreditCard();
 
@@ -317,6 +343,8 @@ constexpr char kFormZip[] = "form_zip";
 
   // Verify that the page is filled properly.
   [self verifyCreditCardInfosHaveBeenFilled:card];
+
+  [AutofillAppInterface clearMockReauthenticationModule];
 }
 
 // Tests that tapping on an address related field opens the keyboard
@@ -339,6 +367,35 @@ constexpr char kFormZip[] = "form_zip";
 
   // Verify that the page is filled properly.
   [self verifyAddressInfosHaveBeenFilled:profile];
+}
+
+// Tests that the manual fill button opens the password expanded view.
+- (void)testOpenExpandedView {
+  // The expanded view UI is not available on tablets.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Test not support on iPad");
+  }
+
+  [self loadLoginPage];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElementWithId(kFormPassword)];
+
+  id<GREYMatcher> manual_fill_button = grey_accessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_AUTOFILL_DATA));
+
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:manual_fill_button];
+
+  [[EarlGrey selectElementWithMatcher:manual_fill_button]
+      performAction:grey_tap()];
+
+  id<GREYMatcher> select_password = grey_text(l10n_util::GetNSString(
+      IDS_IOS_MANUAL_FALLBACK_SELECT_PASSWORD_WITH_DOTS));
+
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:select_password];
+
+  [[EarlGrey selectElementWithMatcher:select_password]
+      performAction:grey_tap()];
 }
 
 @end

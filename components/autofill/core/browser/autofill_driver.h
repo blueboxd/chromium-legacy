@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -53,14 +54,14 @@ class AutofillDriver {
   virtual LocalFrameToken GetFrameToken() const = 0;
 
   // Resolves a FrameToken `query` from the perspective of `this` to the
-  // globally unique LocalFrameToken. Returns `absl::nullopt` if `query` is a
+  // globally unique LocalFrameToken. Returns `std::nullopt` if `query` is a
   // RemoteFrameToken that cannot be resolved from the perspective of `this`.
   //
   // This function should not be cached: a later Resolve() call may map the same
   // RemoteFrameToken to another LocalFrameToken.
   //
   // See the documentation of LocalFrameToken and RemoteFrameToken for details.
-  virtual absl::optional<LocalFrameToken> Resolve(FrameToken query) = 0;
+  virtual std::optional<LocalFrameToken> Resolve(FrameToken query) = 0;
 
   // Returns the AutofillDriver of the parent frame, if such a frame and driver
   // exist, and nullptr otherwise.
@@ -152,13 +153,16 @@ class AutofillDriver {
   // `triggered_origin` is the origin of the field that triggered the filling
   // operation currently being filled or undone.
   //
+  // Returns the FieldGlobalIds that were safe to modify according to Autofill's
+  // security policy. This is a subset of the FieldGlobalIds of `form.fields`.
+  //
   // This method is a no-op if the renderer is not currently available.
-  virtual std::vector<FieldGlobalId> ApplyFormAction(
+  virtual base::flat_set<FieldGlobalId> ApplyFormAction(
       mojom::ActionType action_type,
       mojom::ActionPersistence action_persistence,
       const FormData& form,
       const url::Origin& triggered_origin,
-      const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) = 0;
+      const base::flat_map<FieldGlobalId, FieldType>& field_type_map) = 0;
 
   // Tells the renderer to set the node text.
   virtual void ApplyFieldAction(mojom::ActionPersistence action_persistence,
@@ -173,7 +177,7 @@ class AutofillDriver {
   // method is a no-op if the renderer is not available or the appropriate
   // command-line flag is not set.
   virtual void SendAutofillTypePredictionsToRenderer(
-      const std::vector<FormStructure*>& forms) = 0;
+      const std::vector<raw_ptr<FormStructure, VectorExperimental>>& forms) = 0;
 
   // Tells the renderer to accept data list suggestions for |value|.
   virtual void RendererShouldAcceptDataListSuggestion(
@@ -201,11 +205,6 @@ class AutofillDriver {
   virtual void PopupHidden() = 0;
 
   virtual net::IsolationInfo IsolationInfo() = 0;
-
-  // Tells the renderer about the form fields that are eligible for triggering
-  // manual filling on form interaction.
-  virtual void SendFieldsEligibleForManualFillingToRenderer(
-      const std::vector<FieldGlobalId>& fields) = 0;
 
   // Query's the DOM for four digit combinations that could potentially be of a
   // card number.

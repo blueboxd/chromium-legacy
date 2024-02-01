@@ -57,10 +57,12 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   void SetSearchEngineIsGoogle(bool is_google) override;
   void RecalculateWouldTriggerLauncherSearchIph() override;
   void PublishSearchResults(
-      const std::vector<ChromeSearchResult*>& results,
+      const std::vector<raw_ptr<ChromeSearchResult, VectorExperimental>>&
+          results,
       const std::vector<ash::AppListSearchResultCategory>& categories) override;
   void ClearSearchResults() override;
-  std::vector<ChromeSearchResult*> GetPublishedSearchResultsForTest() override;
+  std::vector<raw_ptr<ChromeSearchResult, VectorExperimental>>
+  GetPublishedSearchResultsForTest() override;
   void SetAccessibleName(const std::string& id,
                          const std::string& name) override;
 
@@ -213,13 +215,11 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   void OnFeatureEngagementTrackerInitialized(bool success);
 
   // Indicates the profile that the model updater is associated with.
-  const raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
+  const raw_ptr<Profile> profile_ = nullptr;
 
   // Provides the access to the methods for ordering app list items.
-  const raw_ptr<app_list::reorder::AppListReorderDelegate, ExperimentalAsh>
-      order_delegate_;
-  const raw_ptr<app_list::AppListSyncModelSanitizer, ExperimentalAsh>
-      sync_model_sanitizer_;
+  const raw_ptr<app_list::reorder::AppListReorderDelegate> order_delegate_;
+  const raw_ptr<app_list::AppListSyncModelSanitizer> sync_model_sanitizer_;
 
   // A helper class to manage app list items. It never talks to ash.
   std::unique_ptr<ChromeAppListItemManager> item_manager_;
@@ -231,7 +231,8 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   bool is_active_ = false;
 
   // The most recently list of search results.
-  std::vector<ChromeSearchResult*> published_results_;
+  std::vector<raw_ptr<ChromeSearchResult, VectorExperimental>>
+      published_results_;
   base::ObserverList<AppListModelUpdaterObserver> observers_;
   bool search_engine_is_google_ = false;
 

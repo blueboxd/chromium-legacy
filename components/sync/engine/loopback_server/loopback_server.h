@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -22,7 +23,6 @@
 #include "components/sync/engine/loopback_server/loopback_server_entity.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "net/http/http_status_code.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sync_pb {
 class LoopbackServerProto;
@@ -45,8 +45,7 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
 
     // Called after the server has processed a successful commit. The types
     // updated as part of the commit are passed in |committed_model_types|.
-    virtual void OnCommit(const std::string& committer_invalidator_client_id,
-                          syncer::ModelTypeSet committed_model_types) = 0;
+    virtual void OnCommit(syncer::ModelTypeSet committed_model_types) = 0;
 
     // Called when a page URL is committed to ModelType::HISTORY.
     virtual void OnHistoryCommit(const std::string& url) = 0;
@@ -100,8 +99,10 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
       base::RepeatingCallback<sync_pb::CommitResponse::ResponseType(
           const LoopbackServerEntity& entity)>;
 
+  void FlushToDisk();
+
   // ImportantFileWriter::DataSerializer:
-  absl::optional<std::string> SerializeData() override;
+  std::optional<std::string> SerializeData() override;
 
   // Gets LoopbackServer ready for syncing.
   void Init();
@@ -242,7 +243,7 @@ class LoopbackServer : public base::ImportantFileWriter::DataSerializer {
 
   ModelTypeSet throttled_types_;
 
-  absl::optional<sync_pb::ChipBag> bag_of_chips_;
+  std::optional<sync_pb::ChipBag> bag_of_chips_;
 
   std::map<ModelType, int> migration_versions_;
 

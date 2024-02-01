@@ -4,6 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import './strings.m.js';
+import './tab_organization_not_started_image.js';
 import './tab_organization_shared_style.css.js';
 
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
@@ -11,7 +12,8 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './tab_organization_not_started.html.js';
-import {AccountInfo, SyncInfo, TabSearchSyncBrowserProxy, TabSearchSyncBrowserProxyImpl} from './tab_search_sync_browser_proxy.js';
+import type {AccountInfo, SyncInfo, TabSearchSyncBrowserProxy} from './tab_search_sync_browser_proxy.js';
+import {TabSearchSyncBrowserProxyImpl} from './tab_search_sync_browser_proxy.js';
 
 enum SyncState {
   SIGNED_OUT,
@@ -22,6 +24,12 @@ enum SyncState {
 }
 
 const TabOrganizationNotStartedElementBase = WebUiListenerMixin(PolymerElement);
+
+export interface TabOrganizationNotStartedElement {
+  $: {
+    header: HTMLElement,
+  };
+}
 
 // Not started state for the tab organization UI.
 export class TabOrganizationNotStartedElement extends
@@ -59,14 +67,17 @@ export class TabOrganizationNotStartedElement extends
     this.addWebUiListener('sync-info-changed', this.setSync_.bind(this));
   }
 
+  announceHeader() {
+    this.$.header.textContent = '';
+    this.$.header.textContent = this.getTitle_();
+  }
+
   private setAccount_(account: AccountInfo) {
     this.account_ = account;
   }
 
   private setSync_(sync: SyncInfo) {
     this.sync_ = sync;
-    this.dispatchEvent(
-        new CustomEvent('sync-change', {bubbles: true, composed: true}));
   }
 
   private getSyncState_(): SyncState {
@@ -120,6 +131,25 @@ export class TabOrganizationNotStartedElement extends
   private getAccountImageSrc_(image: string|null): string {
     // image can be undefined if the account has not set an avatar photo.
     return image || 'chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE';
+  }
+
+  private getButtonAriaLabel_(): string {
+    switch (this.getSyncState_()) {
+      case SyncState.SIGNED_OUT:
+      case SyncState.UNSYNCED:
+        return loadTimeData.getString('notStartedButtonUnsyncedAriaLabel');
+      case SyncState.SYNC_PAUSED:
+        return loadTimeData.getString('notStartedButtonSyncPausedAriaLabel');
+      case SyncState.UNSYNCED_HISTORY:
+        return loadTimeData.getString(
+            'notStartedButtonUnsyncedHistoryAriaLabel');
+      case SyncState.SYNCED:
+        if (this.showFre) {
+          return loadTimeData.getString('notStartedButtonFREAriaLabel');
+        } else {
+          return loadTimeData.getString('notStartedButtonAriaLabel');
+        }
+    }
   }
 
   private getButtonText_(): string {

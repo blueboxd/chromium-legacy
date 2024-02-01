@@ -26,6 +26,8 @@ suite('<customize-button-select>', () => {
       return;
     }
     select.remove();
+    showKeyCombinationDialogEventCount = 0;
+    buttonRemappingChangedEventCount = 0;
     await flushTasks();
   });
 
@@ -95,7 +97,7 @@ suite('<customize-button-select>', () => {
     assertEquals(getSelectedValue(), 'key combination');
     assertTrue(select.get('remappedToKeyCombination_'));
     assertEquals(select.get('label_'), 'Key combination');
-    assertDeepEquals(select.get('inputKeys_'), ['Ctrl', '+', 'z']);
+    assertDeepEquals(select.get('inputKeys_'), ['ctrl', '+', 'z']);
 
     // Switch to another button remapping.
     select.set(
@@ -107,7 +109,7 @@ suite('<customize-button-select>', () => {
     assertEquals(getSelectedValue(), 'key combination');
     assertTrue(select.get('remappedToKeyCombination_'));
     assertEquals(select.get('label_'), 'Key combination');
-    assertDeepEquals(select.get('inputKeys_'), ['Ctrl', '+', 'v']);
+    assertDeepEquals(select.get('inputKeys_'), ['ctrl', '+', 'v']);
   });
 
   test('update dropdown will sent events', async () => {
@@ -196,6 +198,7 @@ suite('<customize-button-select>', () => {
   test('select react to key event', async () => {
     await initializeSelect();
     assertFalse(select.get('shouldShowDropdownMenu_'));
+    assertEquals(buttonRemappingChangedEventCount, 0);
 
     const enterEvent = new KeyboardEvent(
         'keydown', {cancelable: true, key: 'Enter', keyCode: 13});
@@ -203,5 +206,25 @@ suite('<customize-button-select>', () => {
 
     await flushTasks();
     assertTrue(select.get('shouldShowDropdownMenu_'));
+
+    // Value of "no remapping" should be selected and highlighted.
+    assertEquals(select.get('selectedValue'), 'none');
+    assertEquals(select.get('highlightedValue_'), 'none');
+    select.dispatchEvent(new KeyboardEvent(
+        'keydown',
+        {key: 'ArrowDown', keyCode: 40},
+        ));
+
+    // Value of kBrightnessDown should be highlighted.
+    assertEquals(select.get('selectedValue'), 'none');
+    assertEquals(select.get('highlightedValue_'), 'acceleratorAction0');
+
+    select.dispatchEvent(new KeyboardEvent(
+        'keydown', {cancelable: true, key: 'Enter', keyCode: 13}));
+
+    // Value of kBrightnessDown should be selected.
+    assertEquals(select.get('selectedValue'), 'acceleratorAction0');
+    assertEquals(buttonRemappingChangedEventCount, 1);
+    assertFalse(select.get('shouldShowDropdownMenu_'));
   });
 });

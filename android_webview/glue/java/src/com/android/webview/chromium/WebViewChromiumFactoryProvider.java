@@ -56,10 +56,10 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
+import org.chromium.base.version_info.VersionConstants;
 import org.chromium.build.BuildConfig;
 import org.chromium.build.NativeLibraries;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
-import org.chromium.components.version_info.VersionConstants;
 import org.chromium.content_public.browser.LGEmailActionModeWorkaround;
 
 import java.io.File;
@@ -382,13 +382,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             }
 
             String webViewPackageName = AwBrowserProcess.getWebViewPackageName();
-            long developerModeStart = SystemClock.elapsedRealtime();
             boolean isDeveloperModeEnabled =
                     DeveloperModeUtils.isDeveloperModeEnabled(webViewPackageName);
-            long developerModeEnd = SystemClock.elapsedRealtime();
-            RecordHistogram.recordTimesHistogram(
-                    "Android.WebView.DevUi.DeveloperModeBlockingTime",
-                    developerModeEnd - developerModeStart);
             RecordHistogram.recordBooleanHistogram(
                     "Android.WebView.DevUi.DeveloperModeEnabled", isDeveloperModeEnabled);
             Map<String, Boolean> flagOverrides = null;

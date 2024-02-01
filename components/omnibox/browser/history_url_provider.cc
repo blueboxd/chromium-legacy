@@ -424,9 +424,10 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // Cancel any in-progress query.
   Stop(true, false);
 
-  if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
-      (input.type() == metrics::OmniboxInputType::EMPTY))
+  if (input.IsZeroSuggest() ||
+      (input.type() == metrics::OmniboxInputType::EMPTY)) {
     return;
+  }
 
   // Remove the keyword from input if we're in keyword mode for a starter pack
   // engine.
@@ -1182,7 +1183,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   // Populate scoring signals for machine learning model training and scoring.
   if (populate_scoring_signals &&
       AutocompleteScoringSignalsAnnotator::IsEligibleMatch(match)) {
-    match.scoring_signals = absl::make_optional<ScoringSignals>();
+    match.scoring_signals = std::make_optional<ScoringSignals>();
     match.scoring_signals->set_typed_count(info.typed_count());
     match.scoring_signals->set_visit_count(info.visit_count());
     match.scoring_signals->set_elapsed_time_last_visit_secs(

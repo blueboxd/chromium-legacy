@@ -13,7 +13,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
+#include "ui/events/ash/event_rewriter_utils.h"
 #include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/ash/mojom/extended_fkeys_modifier.mojom-shared.h"
 #include "ui/events/ash/mojom/modifier_key.mojom-shared.h"
@@ -87,8 +89,8 @@ class EventRewriterAsh : public EventRewriter {
     virtual bool RewriteModifierKeys() = 0;
 
     // Suppresses all modifier key rewrites and makes |RewriteModifierKeys|
-    // always return false if |should_supress| is true.
-    virtual void SuppressModifierKeyRewrites(bool should_supress) = 0;
+    // always return false if |should_suppress| is true.
+    virtual void SuppressModifierKeyRewrites(bool should_suppress) = 0;
 
     // Returns whether or not Meta + Top Row Keys should be rewritten. Should
     // return correctly with respect to the values set in
@@ -105,7 +107,7 @@ class EventRewriterAsh : public EventRewriter {
     // |modifier_key|.
     // TODO(dpad): Remove |pref_name| once fully transitioned to per-device
     // settings.
-    virtual absl::optional<mojom::ModifierKey> GetKeyboardRemappedModifierValue(
+    virtual std::optional<mojom::ModifierKey> GetKeyboardRemappedModifierValue(
         int device_id,
         mojom::ModifierKey modifier_key,
         const std::string& pref_name) const = 0;
@@ -153,20 +155,20 @@ class EventRewriterAsh : public EventRewriter {
                                            bool alt_based) = 0;
 
     // Returns the modifier (Alt/Search) that must be pressed when remapping
-    // an event to right click for `device_id` or `absl::nullopt` if settings
+    // an event to right click for `device_id` or `std::nullopt` if settings
     // for the device are unable to be retrieved. If the return value is
-    // `SimulateRightClickModifier::kNone` or `absl::nullopt`, the event
+    // `SimulateRightClickModifier::kNone` or `std::nullopt`, the event
     // will not be rewritten to a right click.
-    virtual absl::optional<ui::mojom::SimulateRightClickModifier>
+    virtual std::optional<ui::mojom::SimulateRightClickModifier>
     GetRemapRightClickModifier(int device_id) = 0;
 
     // Returns whether the Alt or Search based shortcut variant must be used
     // to perform a Six Pack (PageUp, PageDown, Home, End, Insert, Delete) key
     // action for `device_id`. The key event will not be rewritten if the
-    // return value is either absl::nullopt (settings for `device_id`
+    // return value is either std::nullopt (settings for `device_id`
     // weren't found) or the key is mapped to `SixPackShortcutModifier::kNone`.
     // `key_code` is used to look up the correct modifier for the Six Pack key.
-    virtual absl::optional<ui::mojom::SixPackShortcutModifier>
+    virtual std::optional<ui::mojom::SixPackShortcutModifier>
     GetShortcutModifierForSixPackKey(int device_id,
                                      ui::KeyboardCode key_code) = 0;
 
@@ -194,9 +196,9 @@ class EventRewriterAsh : public EventRewriter {
     // `ui::KeyboardCode::VKEY_F11` or `ui::KeyboardCode::VKEY_F12` and is used
     // used to determine if the setting for F11 or F12 should be retrieved for
     // the keyboard with the given `device_id`. The key event will not be
-    // rewritten if the return value is either absl::nullopt (settings for
+    // rewritten if the return value is either std::nullopt (settings for
     // `device_id` weren't found) or if an invalid `key_code` was passed in.
-    virtual absl::optional<ui::mojom::ExtendedFkeysModifier>
+    virtual std::optional<ui::mojom::ExtendedFkeysModifier>
     GetExtendedFkeySetting(int device_id, ui::KeyboardCode key_code) = 0;
   };
 
@@ -376,7 +378,9 @@ class EventRewriterAsh : public EventRewriter {
   // used to interpret modifiers on pointer events.
   int last_keyboard_device_id_;
 
-  const raw_ptr<Delegate, DanglingUntriaged | ExperimentalAsh> delegate_;
+  const raw_ptr<Delegate, DanglingUntriaged> delegate_;
+
+  base::flat_map<internal::PhysicalKey, MutableKeyState> pressed_physical_keys_;
 
   // For each pair, the first element is the rewritten key state and the second
   // one is the original key state. If no key event rewriting happens, the first
@@ -385,7 +389,7 @@ class EventRewriterAsh : public EventRewriter {
 
   // The sticky keys controller is not owned here;
   // at time of writing it is a singleton in ash::Shell.
-  const raw_ptr<EventRewriter, ExperimentalAsh> sticky_keys_controller_;
+  const raw_ptr<EventRewriter> sticky_keys_controller_;
 
   // Some drallion devices have digital privacy screens and a corresponding
   // privacy screen toggle key in the top row.
@@ -419,9 +423,8 @@ class EventRewriterAsh : public EventRewriter {
   // latches. See b/216049965 for more details.
   base::flat_map<DomCode, ui::EventFlags> previous_non_modifier_latches_;
 
-  const raw_ptr<KeyboardCapability, DanglingUntriaged | ExperimentalAsh>
-      keyboard_capability_;
-  const raw_ptr<ash::input_method::ImeKeyboard, ExperimentalAsh> ime_keyboard_;
+  const raw_ptr<KeyboardCapability, DanglingUntriaged> keyboard_capability_;
+  const raw_ptr<ash::input_method::ImeKeyboard> ime_keyboard_;
 
   // True if alt + key and mouse event remapping is allowed. In some scenario,
   // such as clicking a button in the Alt-Tab UI, this remapping undesirably

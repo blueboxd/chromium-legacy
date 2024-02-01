@@ -16,12 +16,13 @@
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
+#import "ios/chrome/browser/policy/model/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
-#import "ios/chrome/browser/web/features.h"
+#import "ios/chrome/browser/web/model/features.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case_app_interface.h"
 #import "ios/chrome/test/earl_grey/scoped_allow_crash_on_startup.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
@@ -227,6 +228,8 @@ void ResetAuthentication() {
     [ChromeEarlGrey openNewTab];
   }
   _executedTestMethodSetUp = YES;
+
+  [ChromeTestCaseAppInterface blockSigninIPH];
 }
 
 // Tear down called once per test, to close all tabs and menus, and clear the
@@ -353,6 +356,10 @@ void ResetAuthentication() {
   // where data may be sent to real servers.
   // Remove all identities in FakeChromeIdentityService.
   [ChromeEarlGrey signOutAndClearIdentities];
+  // Make sure any data on the fake sync server is cleared between tests, or
+  // when explicitly resetting app data. This should happen after signout (to
+  // avoid lots of "data was deleted" invalidations arriving on the client).
+  [ChromeEarlGrey clearFakeSyncServerData];
   [ChromeEarlGrey tearDownFakeSyncServer];
   // Switch from FakeChromeIdentityService to ChromeIdentityServiceImpl.
   TearDownMockAuthentication();

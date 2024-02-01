@@ -106,10 +106,11 @@ void NudgeTracker::RecordInitialSyncDone(ModelTypeSet types) {
   }
 }
 
-base::TimeDelta NudgeTracker::RecordLocalChange(ModelType type) {
+base::TimeDelta NudgeTracker::RecordLocalChange(ModelType type,
+                                                bool is_single_client) {
   DCHECK(base::Contains(type_trackers_, type));
   type_trackers_[type]->RecordLocalChange();
-  return type_trackers_[type]->GetLocalChangeNudgeDelay();
+  return type_trackers_[type]->GetLocalChangeNudgeDelay(is_single_client);
 }
 
 base::TimeDelta NudgeTracker::RecordLocalRefreshRequest(ModelTypeSet types) {
@@ -332,9 +333,9 @@ void NudgeTracker::SetLocalChangeDelayIgnoringMinForTest(
 }
 
 void NudgeTracker::SetQuotaParamsForExtensionTypes(
-    absl::optional<int> max_tokens,
-    absl::optional<base::TimeDelta> refill_interval,
-    absl::optional<base::TimeDelta> depleted_quota_nudge_delay) {
+    std::optional<int> max_tokens,
+    std::optional<base::TimeDelta> refill_interval,
+    std::optional<base::TimeDelta> depleted_quota_nudge_delay) {
   for (const auto& [type, tracker] : type_trackers_) {
     tracker->SetQuotaParamsIfExtensionType(max_tokens, refill_interval,
                                            depleted_quota_nudge_delay);

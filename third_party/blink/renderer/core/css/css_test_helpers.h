@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
@@ -99,7 +100,19 @@ CSSSelectorList* ParseSelectorList(const String&);
 // (for kNesting), or the :scope pseudo-class (for kScope).
 CSSSelectorList* ParseSelectorList(const String&,
                                    CSSNestingType,
-                                   const StyleRule* parent_rule_for_nesting);
+                                   const StyleRule* parent_rule_for_nesting,
+                                   bool is_within_scope);
+
+// Make the incoming StyleRule carry the specified signal.
+StyleRule* MakeSignalingRule(StyleRule&&, CSSSelector::Signal);
+
+// Make the incoming StyleRule invisible. (See CSSSelector::IsInvisible).
+StyleRule* MakeInvisibleRule(StyleRule&&);
+
+StyleRule* ParseSignalingRule(Document& document,
+                              String text,
+                              CSSSelector::Signal);
+StyleRule* ParseInvisibleRule(Document& document, String text);
 
 }  // namespace css_test_helpers
 }  // namespace blink

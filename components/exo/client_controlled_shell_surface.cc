@@ -141,7 +141,7 @@ class ClientControlledStateDelegate
   }
 
  private:
-  raw_ptr<ClientControlledShellSurface, ExperimentalAsh> shell_surface_;
+  raw_ptr<ClientControlledShellSurface> shell_surface_;
 };
 
 // A WindowStateDelegate that implements ToggleFullscreen behavior for
@@ -221,10 +221,8 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
   }
 
  private:
-  raw_ptr<ClientControlledShellSurface, ExperimentalAsh> shell_surface_;
-  raw_ptr<ash::ClientControlledState::Delegate,
-          DanglingUntriaged | ExperimentalAsh>
-      delegate_;
+  raw_ptr<ClientControlledShellSurface> shell_surface_;
+  raw_ptr<ash::ClientControlledState::Delegate, DanglingUntriaged> delegate_;
 };
 
 bool IsPinned(const ash::WindowState* window_state) {
@@ -281,15 +279,17 @@ class EventTargetingBlocker : aura::WindowObserver {
     window->AddObserver(this);
     event_targeting_blocker_map_[window] =
         std::make_unique<aura::ScopedWindowEventTargetingBlocker>(window);
-    for (auto* child : window->children())
+    for (aura::Window* child : window->children()) {
       Register(child);
+    }
   }
 
   void Unregister(aura::Window* window) {
     window->RemoveObserver(this);
     event_targeting_blocker_map_.erase(window);
-    for (auto* child : window->children())
+    for (aura::Window* child : window->children()) {
       Unregister(child);
+    }
   }
 
   void OnWindowDestroying(aura::Window* window) override {
@@ -301,7 +301,7 @@ class EventTargetingBlocker : aura::WindowObserver {
   std::map<aura::Window*,
            std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>>
       event_targeting_blocker_map_;
-  raw_ptr<aura::Window, ExperimentalAsh> window_ = nullptr;
+  raw_ptr<aura::Window> window_ = nullptr;
 };
 
 }  // namespace
@@ -319,7 +319,7 @@ class ClientControlledShellSurface::ScopedSetBoundsLocally {
   ~ScopedSetBoundsLocally() { state_->set_bounds_locally(false); }
 
  private:
-  const raw_ptr<ash::ClientControlledState, ExperimentalAsh> state_;
+  const raw_ptr<ash::ClientControlledState> state_;
 };
 
 class ClientControlledShellSurface::ScopedLockedToRoot {
@@ -335,7 +335,7 @@ class ClientControlledShellSurface::ScopedLockedToRoot {
   ~ScopedLockedToRoot() { window_->ClearProperty(ash::kLockedToRootKey); }
 
  private:
-  const raw_ptr<aura::Window, ExperimentalAsh> window_;
+  const raw_ptr<aura::Window> window_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -473,7 +473,7 @@ void ClientControlledShellSurface::SetShadowBounds(const gfx::Rect& bounds) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetShadowBounds", "bounds",
                bounds.ToString());
   auto shadow_bounds =
-      bounds.IsEmpty() ? absl::nullopt : absl::make_optional(bounds);
+      bounds.IsEmpty() ? std::nullopt : std::make_optional(bounds);
   if (shadow_bounds_ != shadow_bounds) {
     shadow_bounds_ = shadow_bounds;
     shadow_bounds_changed_ = true;
@@ -774,6 +774,59 @@ void ClientControlledShellSurface::SetFloatToLocation(
   pending_window_state_ = chromeos::WindowStateType::kFloated;
 }
 
+void ClientControlledShellSurface::OnDidProcessDisplayChanges(
+    const DisplayConfigurationChange& configuration_change) {
+  ShellSurfaceBase::OnDidProcessDisplayChanges(configuration_change);
+
+  if (!widget_) {
+    return;
+  }
+
+  // The PIP window bounds is adjusted in Ash when the screen is rotated, but
+  // Android has an obsolete bounds for a while and applies it incorrectly.
+  // We need to ignore those bounds change until the states are completely
+  // synced on both sides.
+  const bool any_displays_rotated = base::ranges::any_of(
+      configuration_change.display_metrics_changes,
+      [](const DisplayManagerObserver::DisplayMetricsChange& change) {
+        return change.changed_metrics &
+               display::DisplayObserver::DISPLAY_METRIC_ROTATION;
+      });
+  if (GetWindowState()->IsPip() && any_displays_rotated) {
+    gfx::Rect bounds_after_rotation =
+        ash::PipPositioner::GetSnapFractionAppliedBounds(GetWindowState());
+    display_rotating_with_pip_ =
+        bounds_after_rotation !=
+        GetWindowState()->window()->GetBoundsInScreen();
+  }
+
+  // Early return if no display changes are relevant to the shell surface's host
+  // display.
+  const auto host_display_change = base::ranges::find(
+      configuration_change.display_metrics_changes, output_display_id(),
+      [](const DisplayManagerObserver::DisplayMetricsChange& change) {
+        return change.display->id();
+      });
+  if (host_display_change ==
+      configuration_change.display_metrics_changes.end()) {
+    return;
+  }
+
+  uint32_t changed_metrics = host_display_change->changed_metrics;
+  if (!display::Screen::GetScreen()->InTabletMode() || !widget_->IsActive() ||
+      !(changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)) {
+    return;
+  }
+
+  Orientation target_orientation =
+      SizeToOrientation(host_display_change->display->size());
+  if (orientation_ == target_orientation) {
+    return;
+  }
+  expected_orientation_ = target_orientation;
+  EnsureCompositorIsLockedForOrientationChange();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 void ClientControlledShellSurface::OnWindowDestroying(aura::Window* window) {
@@ -865,47 +918,6 @@ void ClientControlledShellSurface::OnDeviceScaleFactorChanged(float old_dsf,
   views::View::OnDeviceScaleFactorChanged(old_dsf, new_dsf);
 
   UpdateFrameWidth();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// display::DisplayObserver overrides:
-
-void ClientControlledShellSurface::OnDisplayMetricsChanged(
-    const display::Display& new_display,
-    uint32_t changed_metrics) {
-  SurfaceTreeHost::OnDisplayMetricsChanged(new_display, changed_metrics);
-
-  if (!widget_)
-    return;
-
-  // The PIP window bounds is adjusted in Ash when the screen is rotated, but
-  // Android has an obsolete bounds for a while and applies it incorrectly.
-  // We need to ignore those bounds change until the states are completely
-  // synced on both sides.
-  if (GetWindowState()->IsPip() && changed_metrics & DISPLAY_METRIC_ROTATION) {
-    gfx::Rect bounds_after_rotation =
-        ash::PipPositioner::GetSnapFractionAppliedBounds(GetWindowState());
-    display_rotating_with_pip_ =
-        bounds_after_rotation !=
-        GetWindowState()->window()->GetBoundsInScreen();
-  }
-
-  const display::Screen* screen = display::Screen::GetScreen();
-  display::Display current_display =
-      screen->GetDisplayNearestWindow(widget_->GetNativeWindow());
-  if (current_display.id() != new_display.id())
-    return;
-
-  if (!screen->InTabletMode() || !widget_->IsActive() ||
-      !(changed_metrics & DISPLAY_METRIC_ROTATION)) {
-    return;
-  }
-
-  Orientation target_orientation = SizeToOrientation(new_display.size());
-  if (orientation_ == target_orientation)
-    return;
-  expected_orientation_ = target_orientation;
-  EnsureCompositorIsLockedForOrientationChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1128,8 +1140,7 @@ float ClientControlledShellSurface::GetScaleFactor() const {
   return GetScale();
 }
 
-absl::optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()
-    const {
+std::optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds() const {
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   if (frame_view->GetFrameEnabled() && !frame_view->GetFrameOverlapped()) {
     gfx::Rect visible_bounds = GetVisibleBounds();

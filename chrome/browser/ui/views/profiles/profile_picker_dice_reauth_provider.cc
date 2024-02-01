@@ -13,9 +13,11 @@
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/force_signin_verifier.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
+#include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -34,6 +36,36 @@ GURL GetLoadingScreenURL() {
   return url.Resolve(chrome::kChromeUISyncConfirmationLoadingPath);
 }
 
+GURL GetReauthURL(const std::string& email_to_reauth, GURL continue_url) {
+  // By default `kForceSigninReauthInProfilePickerUseAddSession` is false.
+  // This param will only be used as a fallback in case /AccountChooser (result
+  // of `signin::GetChromeReauthURL()`) does not always return a valid refresh
+  // token, which would cause the reauth to hang. As of now, extensive manual
+  // testing did not show any regression with this usage.
+  // /AddSession (result of `signin::GetAddAccountURLForDice()`) guarantees a
+  // refresh token, however it's UI is less accurate for a reauth.
+  return kForceSigninReauthInProfilePickerUseAddSession.Get()
+             // /AddSession (fallback)
+             ? signin::GetAddAccountURLForDice(email_to_reauth, continue_url)
+             // /AccountChooser (default)
+             : signin::GetChromeReauthURL(
+                   {.email = email_to_reauth, .continue_url = continue_url});
+}
+
+ReauthUIError ComputeReauthUIError(ProfilePickerReauthResult result) {
+  switch (result) {
+    case ProfilePickerReauthResult::kSuccess:
+    case ProfilePickerReauthResult::kSuccessTokenAlreadyValid:
+      return ReauthUIError::kNone;
+    case ProfilePickerReauthResult::kErrorUsedNewEmail:
+    case ProfilePickerReauthResult::kErrorUsedOtherSignedInEmail:
+      return ReauthUIError::kWrongAccount;
+    case ProfilePickerReauthResult::kTimeoutForceSigninVerifierCheck:
+    case ProfilePickerReauthResult::kTimeoutSigninError:
+      return ReauthUIError::kTimeout;
+  }
+}
+
 }  // namespace
 
 ProfilePickerDiceReauthProvider::ProfilePickerDiceReauthProvider(
@@ -41,7 +73,7 @@ ProfilePickerDiceReauthProvider::ProfilePickerDiceReauthProvider(
     Profile* profile,
     const std::string& gaia_id_to_reauth,
     const std::string& email_to_reauth,
-    base::OnceCallback<void(bool)> on_reauth_completed)
+    base::OnceCallback<void(bool, ReauthUIError)> on_reauth_completed)
     : host_(*host),
       profile_(*profile),
       identity_manager_(*IdentityManagerFactory::GetForProfile(profile)),
@@ -122,9 +154,8 @@ void ProfilePickerDiceReauthProvider::ShowReauth() {
   // Show the back button, the reactions are handled by the host itself.
   // Use the continue_url to know that the user finalized the reauth flow, in
   // case no refresh token were generated.
-  GURL reauth_url = signin::GetChromeReauthURL(
-      {.email = email_to_reauth_,
-       .continue_url = GaiaUrls::GetInstance()->blank_page_url()});
+  GURL reauth_url =
+      GetReauthURL(email_to_reauth_, GaiaUrls::GetInstance()->blank_page_url());
   host_->ShowScreen(
       contents_.get(), reauth_url,
       base::BindOnce(&ProfilePickerWebContentsHost::SetNativeToolbarVisible,
@@ -232,5 +263,6 @@ void ProfilePickerDiceReauthProvider::Finish(bool success,
   // Hide the toolbar in case it was visible after showing the reauth page.
   host_->SetNativeToolbarVisible(false);
 
-  std::move(on_reauth_completed_).Run(success);
+  ReauthUIError error = ComputeReauthUIError(result);
+  std::move(on_reauth_completed_).Run(success, error);
 }

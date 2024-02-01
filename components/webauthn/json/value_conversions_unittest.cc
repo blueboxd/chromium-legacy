@@ -5,6 +5,7 @@
 #include "components/webauthn/json/value_conversions.h"
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -24,7 +25,6 @@
 #include "device/fido/public_key_credential_user_entity.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 
 namespace webauthn {
@@ -102,7 +102,7 @@ TEST(WebAuthenticationJSONConversionTest,
      PublicKeyCredentialCreationOptionsToValue) {
   // Exercise all supported fields.
   auto prf_values = blink::mojom::PRFValues::New(
-      absl::nullopt, std::vector<uint8_t>({1, 2, 3, 4}),
+      std::nullopt, std::vector<uint8_t>({1, 2, 3, 4}),
       std::vector<uint8_t>{5, 6, 7, 8});
   auto options = PublicKeyCredentialCreationOptions::New(
       device::PublicKeyCredentialRpEntity(kRpId, kRpName),
@@ -114,6 +114,7 @@ TEST(WebAuthenticationJSONConversionTest,
           device::AuthenticatorAttachment::kPlatform,
           device::ResidentKeyRequirement::kRequired,
           device::UserVerificationRequirement::kRequired),
+      /*hints=*/std::vector<blink::mojom::Hint>(),
       device::AttestationConveyancePreference::kDirect,
       /*hmac_create_secret=*/true,
       /*prf_enable=*/true,
@@ -147,7 +148,7 @@ TEST(WebAuthenticationJSONConversionTest,
      PublicKeyCredentialRequestOptionsToValue) {
   std::vector<blink::mojom::PRFValuesPtr> prf_values;
   prf_values.emplace_back(blink::mojom::PRFValues::New(
-      absl::nullopt, std::vector<uint8_t>({1, 2, 3, 4}), absl::nullopt));
+      std::nullopt, std::vector<uint8_t>({1, 2, 3, 4}), std::nullopt));
   prf_values.emplace_back(blink::mojom::PRFValues::New(
       std::vector<uint8_t>({1, 2, 3}), std::vector<uint8_t>({4, 5, 6}),
       std::vector<uint8_t>({7, 8, 9})));
@@ -155,7 +156,9 @@ TEST(WebAuthenticationJSONConversionTest,
   // Exercise all supported fields.
   auto options = PublicKeyCredentialRequestOptions::New(
       /*is_conditional=*/false, kChallenge, kTimeout, kRpId,
-      GetCredentialList(), device::UserVerificationRequirement::kRequired,
+      GetCredentialList(),
+      /*hints=*/std::vector<blink::mojom::Hint>(),
+      device::UserVerificationRequirement::kRequired,
       AuthenticationExtensionsClientInputs::New(
           kAppId,
           std::vector<device::CableDiscoveryData>{
@@ -288,7 +291,7 @@ TEST(WebAuthenticationJSONConversionTest,
   }
 
   auto prf_values = blink::mojom::PRFValues::New(
-      absl::nullopt,
+      std::nullopt,
       std::vector<uint8_t>({
           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -581,7 +584,7 @@ TEST(WebAuthenticationJSONConversionTest,
           /*echo_appid_extension=*/true, /*appid_extension=*/true,
 #if BUILDFLAG(IS_ANDROID)
           /*echo_user_verification_methods=*/false,
-          /*user_verification_methods=*/absl::nullopt,
+          /*user_verification_methods=*/std::nullopt,
 #endif
           /*echo_prf=*/true, /*prf_results=*/nullptr,
           /*prf_not_evaluated=*/false,

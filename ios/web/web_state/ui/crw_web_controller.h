@@ -142,8 +142,7 @@ class WebStateImpl;
 // if `URL` matches the current page's URL. This method creates a new navigation
 // entry if `URL` differs from the current page's URL.
 - (void)loadSimulatedRequest:(const GURL&)URL
-          responseHTMLString:(NSString*)responseHTMLString
-    API_AVAILABLE(ios(15.0));
+          responseHTMLString:(NSString*)responseHTMLString;
 
 // Loads the web content from the data you provide as if the data were the
 // response to the request. This method does not create a new navigation entry
@@ -151,7 +150,7 @@ class WebStateImpl;
 // entry if `URL` differs from the current page's URL.
 - (void)loadSimulatedRequest:(const GURL&)URL
                 responseData:(NSData*)responseData
-                    MIMEType:(NSString*)MIMEType API_AVAILABLE(ios(15.0));
+                    MIMEType:(NSString*)MIMEType;
 
 // Stops loading the page.
 - (void)stopLoading;
@@ -211,22 +210,21 @@ class WebStateImpl;
 
 // Gets and sets the web state's state of a permission; for example, the one to
 // use the camera on the device. Only works on iOS 15+.
-- (web::PermissionState)stateForPermission:(web::Permission)permission
-    API_AVAILABLE(ios(15.0));
+- (web::PermissionState)stateForPermission:(web::Permission)permission;
 - (void)setState:(web::PermissionState)state
     forPermission:(web::Permission)permission;
 
 // Gets a mapping of all permissions and their states. Only works on iOS 15+.
 - (NSDictionary<NSNumber*, NSNumber*>*)statesForAllPermissions;
 
-// Downloads the file from the `request` at `destination` path.
+// Downloads the current page as a file at `destination` path.
 // `completion_handler` is used to retrieve the created CRWWebViewDownload, so
 // the caller can manage the launched download.
-- (void)downloadCurrentPageWithRequest:(NSURLRequest*)request
-                       destinationPath:(NSString*)destination
-                              delegate:(id<CRWWebViewDownloadDelegate>)delegate
-                               handler:
-                                   (void (^)(id<CRWWebViewDownload>))handler;
+- (void)downloadCurrentPageToDestinationPath:(NSString*)destination
+                                    delegate:
+                                        (id<CRWWebViewDownloadDelegate>)delegate
+                                     handler:(void (^)(id<CRWWebViewDownload>))
+                                                 handler;
 
 // Returns whether the Find interaction is supported and can be enabled.
 - (BOOL)findInteractionSupported;

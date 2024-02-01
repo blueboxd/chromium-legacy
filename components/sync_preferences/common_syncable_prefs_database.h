@@ -13,8 +13,9 @@
 namespace sync_preferences {
 
 // Should be used by tests.
-extern const char kSyncablePrefForTesting[];
-extern const char kSyncableMergeableDictPrefForTesting[];
+inline constexpr char kSyncablePrefForTesting[] = "syncable-test-preference";
+inline constexpr char kSyncableMergeableDictPrefForTesting[] =
+    "syncable-mergeable-dict-test-preference";
 
 // This class provides an implementation for SyncablePrefsDatabase for common
 // syncable preferences, i.e. preferences which are shared between all
@@ -23,7 +24,7 @@ class CommonSyncablePrefsDatabase : public SyncablePrefsDatabase {
  public:
   // Returns the metadata associated to the pref or null if `pref_name` is not
   // syncable.
-  absl::optional<SyncablePrefMetadata> GetSyncablePrefMetadata(
+  std::optional<SyncablePrefMetadata> GetSyncablePrefMetadata(
       const std::string& pref_name) const override;
 
   std::map<base::StringPiece, SyncablePrefMetadata> GetAllSyncablePrefsForTest()

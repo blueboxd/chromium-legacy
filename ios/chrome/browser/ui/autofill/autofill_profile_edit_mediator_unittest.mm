@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_profile_edit_mediator.h"
 
+#import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/autofill/core/browser/autofill_test_utils.h"
@@ -36,7 +37,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface FakeAutofillProfileEditConsumer
     : NSObject <AutofillProfileEditConsumer>
 // If YES, denote that the particular field requires a value.
-@property(nonatomic, assign) BOOL nameRequired;
 @property(nonatomic, assign) BOOL line1Required;
 @property(nonatomic, assign) BOOL cityRequired;
 @property(nonatomic, assign) BOOL stateRequired;
@@ -109,8 +109,7 @@ class AutofillProfileEditMediatorTest : public PlatformTest {
             chrome_browser_state_.get());
     personal_data_manager_->SetSyncServiceForTest(nullptr);
 
-    personal_data_manager_->personal_data_manager_cleaner_for_testing()
-        ->alternative_state_name_map_updater_for_testing()
+    personal_data_manager_->get_alternative_state_name_map_updater_for_testing()
         ->set_local_state_for_testing(local_state_.Get());
 
     fake_autofill_profile_edit_mediator_delegate_ =
@@ -151,7 +150,7 @@ class AutofillProfileEditMediatorTest : public PlatformTest {
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  autofill::PersonalDataManager* personal_data_manager_;
+  raw_ptr<autofill::PersonalDataManager> personal_data_manager_;
   autofill::CountryComboboxModel country_model_;
 };
 

@@ -15,10 +15,10 @@
 #include "base/threading/thread_checker.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/browser/host_indexed_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/cookie_settings_base.h"
 #include "components/content_settings/core/common/features.h"
+#include "components/content_settings/core/common/host_indexed_content_settings.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/privacy_sandbox/tracking_protection_settings.h"
@@ -158,16 +158,17 @@ class CookieSettings
     if (base::FeatureList::IsEnabled(features::kHostIndexedMetadataGrants) &&
         std::cmp_greater_equal(settings.size(),
                                features::kMetadataGrantsThreshold.Get())) {
-      indexed_settings_for_3pcd_metadata_grants_ = ToHostIndexedMap(settings);
+      indexed_settings_for_3pcd_metadata_grants_ =
+          HostIndexedContentSettings(settings);
       // TODO(b/314800700): clear settings_for_3pcd_metadata_grants_ since we
       // only need one copy.
     } else {
       // only need one list.
-      indexed_settings_for_3pcd_metadata_grants_.clear();
+      indexed_settings_for_3pcd_metadata_grants_.Clear();
     }
   }
 
-  ContentSettingsForOneType GetTpcdMetadataGrantsForTesting() {
+  ContentSettingsForOneType GetTpcdMetadataGrants() {
     base::AutoLock lock(tpcd_lock_);
     return settings_for_3pcd_metadata_grants_;
   }
@@ -260,7 +261,7 @@ class CookieSettings
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
-      content_settings::SettingInfo* info = nullptr) const override;
+      content_settings::SettingInfo* info) const override;
   bool IsThirdPartyCookiesAllowedScheme(
       const std::string& scheme) const override;
   bool IsStorageAccessApiEnabled() const override;
@@ -285,7 +286,7 @@ class CookieSettings
   const scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>
       content_settings_observation_{this};
-  PrefChangeRegistrar pref_change_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   const bool is_incognito_;
   const char* extension_scheme_;  // Weak.
 
@@ -301,7 +302,6 @@ class CookieSettings
   ContentSettingsForOneType settings_for_3pcd_metadata_grants_
       GUARDED_BY(tpcd_lock_);
 
-  // Map indexed by a setting's primary_pattern host.
   HostIndexedContentSettings indexed_settings_for_3pcd_metadata_grants_
       GUARDED_BY(tpcd_lock_);
 

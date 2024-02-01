@@ -34,11 +34,11 @@ bool IsBrowserTestModeEnabled() {
 // Returns the channel if this is a Chrome release, otherwise returns nullopt. A
 // build is considered to be a Chrome release if it's official and has Chrome
 // branding.
-absl::optional<version_info::Channel> GetReleaseChannel() {
+std::optional<version_info::Channel> GetReleaseChannel() {
 #if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return chrome::GetChannel();
 #else
-  return absl::nullopt;
+  return std::nullopt;
 #endif
 }
 
@@ -152,6 +152,12 @@ void ThreadProfilerConfiguration::AppendCommandLineSwitchForChildProcess(
     child_process_command_line->AppendSwitchASCII(
         switches::kStartStackProfiler,
         switches::kStartStackProfilerBrowserTest);
+#if BUILDFLAG(IS_ANDROID)
+  } else if (IsJavaNameHashingEnabled()) {
+    child_process_command_line->AppendSwitchASCII(
+        switches::kStartStackProfiler,
+        switches::kStartStackProfilerWithJavaNameHashing);
+#endif  // BUILDFLAG(IS_ANDROID)
   } else {
     child_process_command_line->AppendSwitch(switches::kStartStackProfiler);
   }
@@ -159,16 +165,14 @@ void ThreadProfilerConfiguration::AppendCommandLineSwitchForChildProcess(
 
 #if BUILDFLAG(IS_ANDROID)
 bool ThreadProfilerConfiguration::IsJavaNameHashingEnabled() const {
-  // For now, this is only enabled in the browser process, to verify that
-  // the java name hashing is working correctly.
-  //
-  // TODO(crbug.com/1475718): enable this in the other processes too.
   if (const auto* config =
           absl::get_if<BrowserProcessConfiguration>(&configuration_)) {
     return config->variation_group == kProfileEnabledWithJavaNameHashing;
   }
 
-  return false;
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->GetSwitchValueASCII(switches::kStartStackProfiler) ==
+         switches::kStartStackProfilerWithJavaNameHashing;
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -181,7 +185,7 @@ ThreadProfilerConfiguration::ThreadProfilerConfiguration()
 
 // static
 bool ThreadProfilerConfiguration::EnableForVariationGroup(
-    absl::optional<VariationGroup> variation_group) {
+    std::optional<VariationGroup> variation_group) {
   // Enable if assigned to a variation group, and the group is one of the groups
   // that are to be enabled.
   return variation_group.has_value() &&
@@ -229,27 +233,27 @@ ThreadProfilerConfiguration::GenerateBrowserProcessConfiguration(
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableStackProfiler))
-    return {absl::nullopt, absl::nullopt};
+    return {std::nullopt, std::nullopt};
 
-  const absl::optional<version_info::Channel> release_channel =
+  const std::optional<version_info::Channel> release_channel =
       GetReleaseChannel();
 
   if (!platform_configuration.IsSupported(release_channel))
-    return {absl::nullopt, absl::nullopt};
+    return {std::nullopt, std::nullopt};
 
-  // We pass `version_info::Channel::UNKNOWN` instead of `absl::nullopt` here
+  // We pass `version_info::Channel::UNKNOWN` instead of `std::nullopt` here
   // because `AreUnwindPrerequisitesAvailable` accounts for official build
   // status internally.
   if (!AreUnwindPrerequisitesAvailable(
           release_channel.value_or(version_info::Channel::UNKNOWN))) {
-    return {kProfileDisabledModuleNotInstalled, absl::nullopt};
+    return {kProfileDisabledModuleNotInstalled, std::nullopt};
   }
 
   ThreadProfilerPlatformConfiguration::RelativePopulations
       relative_populations =
           platform_configuration.GetEnableRates(release_channel);
 
-  const absl::optional<metrics::CallStackProfileParams::Process>
+  const std::optional<metrics::CallStackProfileParams::Process>
       process_type_to_sample = platform_configuration.ChooseEnabledProcess();
 
 #if BUILDFLAG(IS_ANDROID)

@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "build/branding_buildflags.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 // Trigger identifiers currently used; duplicates not allowed.
 extern const char kHatsSurveyTriggerAutofillAddress[];
+extern const char kHatsSurveyTriggerAutofillAddressUserPerception[];
 extern const char kHatsSurveyTriggerAutofillCard[];
 extern const char kHatsSurveyTriggerAutofillPassword[];
 extern const char kHatsSurveyTriggerDevToolsIssuesCOEP[];
@@ -20,6 +22,10 @@ extern const char kHatsSurveyTriggerDevToolsIssuesMixedContent[];
 extern const char kHatsSurveyTriggerDevToolsIssuesCookiesSameSite[];
 extern const char kHatsSurveyTriggerDevToolsIssuesHeavyAd[];
 extern const char kHatsSurveyTriggerDevToolsIssuesCSP[];
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+extern const char kHatsSurveyTriggerGetMostChrome[];
+#endif
+extern const char kHatsSurveyTriggerExtensions[];
 extern const char kHatsSurveyTriggerM1AdPrivacyPage[];
 extern const char kHatsSurveyTriggerM1TopicsSubpage[];
 extern const char kHatsSurveyTriggerM1FledgeSubpage[];
@@ -28,10 +34,9 @@ extern const char kHatsSurveyTriggerNtpModules[];
 extern const char kHatsSurveyTriggerNtpPhotosModuleOptOut[];
 extern const char kHatsSurveyTriggerPerformanceControlsPerformance[];
 extern const char kHatsSurveyTriggerPerformanceControlsBatteryPerformance[];
-extern const char kHatsSurveyTriggerPerformanceControlsHighEfficiencyOptOut[];
+extern const char kHatsSurveyTriggerPerformanceControlsMemorySaverOptOut[];
 extern const char kHatsSurveyTriggerPerformanceControlsBatterySaverOptOut[];
 extern const char kHatsSurveyTriggerPrivacyGuide[];
-extern const char kHatsSurveyTriggerPrivacySandbox[];
 extern const char kHatsSurveyTriggerRedWarning[];
 extern const char kHatsSurveyTriggerSettings[];
 extern const char kHatsSurveyTriggerSettingsPrivacy[];
@@ -63,6 +68,7 @@ extern const char kHatsSurveyTriggerTrustSafetyV2PrivacySandbox4NoticeOk[];
 extern const char
     kHatsSurveyTriggerTrustSafetyV2PrivacySandbox4NoticeSettings[];
 extern const char kHatsSurveyTriggerTrustSafetyV2SafeBrowsingInterstitial[];
+extern const char kHatsSurveyTriggerWallpaperSearch[];
 extern const char kHatsSurveyTriggerWhatsNew[];
 #else
 extern const char kHatsSurveyTriggerAndroidStartupSurvey[];

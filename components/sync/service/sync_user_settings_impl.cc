@@ -323,7 +323,7 @@ bool SyncUserSettingsImpl::IsUsingExplicitPassphrase() const {
   // TODO(crbug.com/1466401): Either make this method return a Tribool, so the
   // "unknown" case is properly communicated, or just remove it altogether
   // (callers can always use the global IsExplicitPassphrase() helper).
-  absl::optional<PassphraseType> type = GetPassphraseType();
+  std::optional<PassphraseType> type = GetPassphraseType();
   if (!type.has_value()) {
     return false;
   }
@@ -334,7 +334,7 @@ base::Time SyncUserSettingsImpl::GetExplicitPassphraseTime() const {
   return crypto_->GetExplicitPassphraseTime();
 }
 
-absl::optional<PassphraseType> SyncUserSettingsImpl::GetPassphraseType() const {
+std::optional<PassphraseType> SyncUserSettingsImpl::GetPassphraseType() const {
   return crypto_->GetPassphraseType();
 }
 
@@ -354,13 +354,14 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
   return crypto_->SetDecryptionPassphrase(passphrase);
 }
 
-void SyncUserSettingsImpl::SetDecryptionNigoriKey(
+void SyncUserSettingsImpl::SetExplicitPassphraseDecryptionNigoriKey(
     std::unique_ptr<Nigori> nigori) {
-  return crypto_->SetDecryptionNigoriKey(std::move(nigori));
+  return crypto_->SetExplicitPassphraseDecryptionNigoriKey(std::move(nigori));
 }
 
-std::unique_ptr<Nigori> SyncUserSettingsImpl::GetDecryptionNigoriKey() const {
-  return crypto_->GetDecryptionNigoriKey();
+std::unique_ptr<Nigori>
+SyncUserSettingsImpl::GetExplicitPassphraseDecryptionNigoriKey() const {
+  return crypto_->GetExplicitPassphraseDecryptionNigoriKey();
 }
 
 ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
@@ -375,7 +376,7 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
   // though they're technically not registered.
   types.PutAll(ControlTypes());
 
-  static_assert(47 == GetNumModelTypes(),
+  static_assert(49 == GetNumModelTypes(),
                 "If adding a new sync data type, update the list below below if"
                 " you want to disable the new data type for local sync.");
   if (prefs_->IsLocalSyncEnabled()) {
@@ -389,6 +390,7 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
     types.Remove(SECURITY_EVENTS);
     types.Remove(SEGMENTATION);
     types.Remove(SEND_TAB_TO_SELF);
+    types.Remove(SHARED_TAB_GROUP_DATA);
     types.Remove(SHARING_MESSAGE);
     types.Remove(USER_CONSENTS);
     types.Remove(USER_EVENTS);
@@ -406,6 +408,44 @@ bool SyncUserSettingsImpl::IsEncryptedDatatypeEnabled() const {
   const ModelTypeSet encrypted_types = GetEncryptedDataTypes();
   DCHECK(encrypted_types.HasAll(AlwaysEncryptedUserTypes()));
   return !Intersection(preferred_types, encrypted_types).Empty();
+}
+
+std::string SyncUserSettingsImpl::GetEncryptionBootstrapToken() const {
+  if (base::FeatureList::IsEnabled(kSyncRememberCustomPassphraseAfterSignout)) {
+    switch (delegate_->GetSyncAccountStateForPrefs()) {
+      case SyncPrefs::SyncAccountState::kSyncing:
+        return prefs_->GetEncryptionBootstrapToken();
+      case SyncPrefs::SyncAccountState::kNotSignedIn:
+        return std::string();
+      case SyncPrefs::SyncAccountState::kSignedInNotSyncing:
+        signin::GaiaIdHash gaia_id_hash = signin::GaiaIdHash::FromGaiaId(
+            delegate_->GetSyncAccountInfoForPrefs().gaia);
+        return prefs_->GetEncryptionBootstrapTokenForAccount(gaia_id_hash);
+    }
+  }
+  return prefs_->GetEncryptionBootstrapToken();
+}
+
+void SyncUserSettingsImpl::SetEncryptionBootstrapToken(
+    const std::string& token) {
+  if (base::FeatureList::IsEnabled(kSyncRememberCustomPassphraseAfterSignout)) {
+    switch (delegate_->GetSyncAccountStateForPrefs()) {
+      case SyncPrefs::SyncAccountState::kSyncing:
+        prefs_->SetEncryptionBootstrapToken(token);
+        return;
+      case SyncPrefs::SyncAccountState::kNotSignedIn:
+        // TODO(crbug.com/1505100): Convert to NOTREACHED_NORETURN.
+        DUMP_WILL_BE_NOTREACHED_NORETURN()
+            << "Must not set passphrase while signed out";
+        return;
+      case SyncPrefs::SyncAccountState::kSignedInNotSyncing:
+        signin::GaiaIdHash gaia_id_hash = signin::GaiaIdHash::FromGaiaId(
+            delegate_->GetSyncAccountInfoForPrefs().gaia);
+        prefs_->SetEncryptionBootstrapTokenForAccount(token, gaia_id_hash);
+        return;
+    }
+  }
+  prefs_->SetEncryptionBootstrapToken(token);
 }
 
 }  // namespace syncer

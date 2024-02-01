@@ -6,6 +6,7 @@
 #define COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_SCORING_MODEL_SERVICE_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
@@ -15,14 +16,13 @@
 #include "components/omnibox/browser/autocomplete_scoring_model_executor.h"
 #include "components/omnibox/browser/autocomplete_scoring_model_handler.h"
 #include "components/optimization_guide/core/optimization_guide_model_provider.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 // Autocomplete scoring service using machine learning models via
 // OptimizationGuide's model handler.
 class AutocompleteScoringModelService : public KeyedService {
  public:
-  using Result = std::tuple<absl::optional<float>, std::string>;
+  using Result = std::optional<float>;
   using ModelOutput = AutocompleteScoringModelExecutor::ModelOutput;
   using ScoringSignals =
       ::metrics::OmniboxEventProto::Suggestion::ScoringSignals;
@@ -48,18 +48,11 @@ class AutocompleteScoringModelService : public KeyedService {
   // Returns an empty vector if model is not available or the input signals are
   // invalid.
   virtual std::vector<Result> BatchScoreAutocompleteUrlMatchesSync(
-      const std::vector<const ScoringSignals*>& batch_scoring_signals,
-      const std::vector<std::string>& stripped_destination_urls);
+      const std::vector<const ScoringSignals*>& batch_scoring_signals);
 
  private:
   // Returns whether the scoring model is enabled and loaded.
   bool UrlScoringModelAvailable();
-
-  // Extracts model output values and associates them with the stripped
-  // destination urls.
-  std::vector<Result> GetBatchResultFromModelOutput(
-      const std::vector<std::string>& stripped_destination_urls,
-      const std::vector<absl::optional<ModelOutput>>& batch_model_output);
 
   scoped_refptr<base::SequencedTaskRunner> model_executor_task_runner_;
 

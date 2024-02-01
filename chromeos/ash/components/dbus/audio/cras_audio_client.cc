@@ -523,7 +523,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
                                  cras::kSetGlobalOutputChannelRemix);
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(channels);
-    writer.AppendArrayOfDoubles(mixer.data(), mixer.size());
+    writer.AppendArrayOfDoubles(mixer);
     cras_proxy_->CallMethod(&method_call,
                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                             base::DoNothing());
@@ -1313,7 +1313,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     std::move(callback).Run(num_stream_ignore_ui_gains);
   }
 
-  raw_ptr<dbus::ObjectProxy, ExperimentalAsh> cras_proxy_ = nullptr;
+  raw_ptr<dbus::ObjectProxy> cras_proxy_ = nullptr;
   base::ObserverList<Observer>::Unchecked observers_;
 
   // Note: This should remain the last member so it'll be destroyed and

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -13,6 +14,7 @@
 #include "base/task/common/scoped_defer_task_posting.h"
 #include "base/task/common/task_annotator.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -43,6 +45,14 @@ using QueueTraits = MainThreadTaskQueue::QueueTraits;
 using perfetto::protos::pbzero::RendererMainThreadTaskExecution;
 
 namespace {
+
+// When enabled, the main thread's type is reduced from `kCompositing` to
+// `kDefault` when WebRTC is in use within the renderer. This is a simple
+// workaround meant to be merged to higher channels while we're working on a
+// more refined solution. See crbug.com/1513904.
+BASE_FEATURE(kRendererMainIsDefaultThreadTypeForWebRTC,
+             "RendererMainIsNormalThreadTypeForWebRTC",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 const char* VisibilityStateToString(bool is_visible) {
   if (is_visible) {
@@ -93,6 +103,19 @@ void UpdatePriority(MainThreadTaskQueue* task_queue) {
   FrameSchedulerImpl* frame_scheduler = task_queue->GetFrameScheduler();
   DCHECK(frame_scheduler);
   task_queue->SetQueuePriority(frame_scheduler->ComputePriority(task_queue));
+}
+
+TaskPriority GetLowPriorityAsyncScriptTaskPriority() {
+  switch (
+      features::kLowPriorityAsyncScriptExecutionLowerTaskPriorityParam.Get()) {
+    case features::AsyncScriptPrioritisationType::kHigh:
+      return TaskPriority::kHighPriority;
+    case features::AsyncScriptPrioritisationType::kLow:
+      return TaskPriority::kLowPriority;
+    case features::AsyncScriptPrioritisationType::kBestEffort:
+      return TaskPriority::kBestEffortPriority;
+  }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace
@@ -177,6 +200,8 @@ FrameSchedulerImpl::FrameSchedulerImpl(
       subresource_loading_pause_count_(0u),
       back_forward_cache_disabling_feature_tracker_(&tracing_controller_,
                                                     main_thread_scheduler_),
+      low_priority_async_script_task_priority_(
+          GetLowPriorityAsyncScriptTaskPriority()),
       page_frozen_for_tracing_(
           parent_page_scheduler_ ? parent_page_scheduler_->IsFrozen() : true,
           "FrameScheduler.PageFrozen",
@@ -438,7 +463,7 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
       return IsInflightNetworkRequestBackForwardCacheSupportEnabled()
                  ? UnfreezableLoadingTaskQueueTraits()
                  : LoadingTaskQueueTraits();
-    case TaskType::kNetworkingUnfreezableImageLoading: {
+    case TaskType::kNetworkingUnfreezableRenderBlockingLoading: {
       QueueTraits queue_traits =
           IsInflightNetworkRequestBackForwardCacheSupportEnabled()
               ? UnfreezableLoadingTaskQueueTraits()
@@ -451,7 +476,7 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
       return LoadingControlTaskQueueTraits();
     case TaskType::kLowPriorityScriptExecution:
       return LoadingTaskQueueTraits().SetPrioritisationType(
-          QueueTraits::PrioritisationType::kBestEffort);
+          QueueTraits::PrioritisationType::kAsyncScript);
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -479,6 +504,7 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     case TaskType::kPermission:
     case TaskType::kWakeLock:
     case TaskType::kStorage:
+    case TaskType::kClipboard:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
       return DeferrableTaskQueueTraits();
     case TaskType::kFileReading:
@@ -682,6 +708,13 @@ void FrameSchedulerImpl::OnStartedUsingNonStickyFeature(
   }
   if (policy.disable_align_wake_ups) {
     DisableAlignWakeUpsForProcess();
+  }
+
+  if (feature == SchedulingPolicy::Feature::kWebRTC &&
+      base::FeatureList::IsEnabled(kRendererMainIsDefaultThreadTypeForWebRTC) &&
+      base::PlatformThread::GetCurrentThreadType() ==
+          base::ThreadType::kCompositing) {
+    base::PlatformThread::SetCurrentThreadType(base::ThreadType::kDefault);
   }
 }
 
@@ -950,8 +983,6 @@ bool FrameSchedulerImpl::IsOrdinary() const {
 bool FrameSchedulerImpl::ShouldThrottleTaskQueues() const {
   DCHECK(parent_page_scheduler_);
 
-  if (parent_page_scheduler_->ThrottleForegroundTimers())
-    return true;
   if (parent_page_scheduler_->ThrottleUnimportantFrameTimers() &&
       IsCrossOriginToNearestMainFrame() && frame_visible_ &&
       !IsVisibleAreaLarge() && !HadUserActivation()) {
@@ -1060,6 +1091,11 @@ TaskPriority FrameSchedulerImpl::ComputePriority(
     return parent_page_scheduler_->IsPageVisible()
                ? TaskPriority::kExtremelyHighPriority
                : TaskPriority::kNormalPriority;
+  }
+
+  if (task_queue->GetPrioritisationType() ==
+      MainThreadTaskQueue::QueueTraits::PrioritisationType::kAsyncScript) {
+    return low_priority_async_script_task_priority_;
   }
 
   return TaskPriority::kNormalPriority;

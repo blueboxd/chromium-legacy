@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/constants/ash_features.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
@@ -241,13 +243,13 @@ void ArcSelectFilesHandler::SelectFiles(
   }
 }
 
-void ArcSelectFilesHandler::FileSelected(const base::FilePath& path,
+void ArcSelectFilesHandler::FileSelected(const ui::SelectedFileInfo& file,
                                          int index,
                                          void* params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(callback_);
 
-  const std::string& activity = ConvertFilePathToAndroidActivity(path);
+  const std::string& activity = ConvertFilePathToAndroidActivity(file.path());
   if (!activity.empty()) {
     // The user selected an Android picker activity instead of a file.
     mojom::SelectFilesResultPtr result = mojom::SelectFilesResult::New();
@@ -256,13 +258,11 @@ void ArcSelectFilesHandler::FileSelected(const base::FilePath& path,
     return;
   }
 
-  std::vector<base::FilePath> files;
-  files.push_back(path);
-  FilesSelectedInternal(files, params);
+  FilesSelectedInternal({file}, params);
 }
 
 void ArcSelectFilesHandler::MultiFilesSelected(
-    const std::vector<base::FilePath>& files,
+    const std::vector<ui::SelectedFileInfo>& files,
     void* params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   FilesSelectedInternal(files, params);
@@ -276,7 +276,7 @@ void ArcSelectFilesHandler::FileSelectionCanceled(void* params) {
 }
 
 void ArcSelectFilesHandler::FilesSelectedInternal(
-    const std::vector<base::FilePath>& files,
+    const std::vector<ui::SelectedFileInfo>& files,
     void* params) {
   DCHECK(callback_);
 
@@ -284,10 +284,10 @@ void ArcSelectFilesHandler::FilesSelectedInternal(
       file_manager::util::GetFileManagerFileSystemContext(profile_);
 
   std::vector<storage::FileSystemURL> file_system_urls;
-  for (const base::FilePath& file_path : files) {
+  for (const auto& file : files) {
     GURL gurl;
     file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
-        profile_, file_path, file_manager::util::GetFileManagerURL(), &gurl);
+        profile_, file.path(), file_manager::util::GetFileManagerURL(), &gurl);
     file_system_urls.push_back(
         file_system_context->CrackURLInFirstPartyContext(gurl));
   }
@@ -302,6 +302,8 @@ void ArcSelectFilesHandler::OnFileSelectorEvent(
     mojom::FileSystemHost::OnFileSelectorEventCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  bool isFilesNewDirectoryTreeOn =
+      base::FeatureList::IsEnabled(ash::features::kFilesNewDirectoryTree);
   std::string quotedClickTargetName =
       base::GetQuotedJSONString(event->click_target->name.c_str());
   std::string script;
@@ -313,7 +315,9 @@ void ArcSelectFilesHandler::OnFileSelectorEvent(
       script = kScriptClickCancel;
       break;
     case mojom::FileSelectorEventType::CLICK_DIRECTORY:
-      script = base::StringPrintf(kScriptClickDirectory,
+      script = base::StringPrintf(isFilesNewDirectoryTreeOn
+                                      ? kScriptClickDirectoryForNewTree
+                                      : kScriptClickDirectory,
                                   quotedClickTargetName.c_str());
       break;
     case mojom::FileSelectorEventType::CLICK_FILE:
@@ -331,8 +335,11 @@ void ArcSelectFilesHandler::GetFileSelectorElements(
     mojom::FileSystemHost::GetFileSelectorElementsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  bool isFilesNewDirectoryTreeOn =
+      base::FeatureList::IsEnabled(ash::features::kFilesNewDirectoryTree);
   dialog_holder_->ExecuteJavaScript(
-      kScriptGetElements,
+      isFilesNewDirectoryTreeOn ? kScriptGetElementsForNewTree
+                                : kScriptGetElements,
       base::BindOnce(&OnGetElementsScriptResults, std::move(callback)));
 }
 

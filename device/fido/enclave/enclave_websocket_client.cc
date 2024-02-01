@@ -9,10 +9,15 @@
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace device::enclave {
 namespace {
+
+// WebSockets can negotiate an application-level protocol. In the case of
+// enclave communication, that must be this value:
+constexpr char kEnclaveWebSocketProtocol[] = "cloudauthenticator";
 
 constexpr size_t kMaxIncomingMessageSize = 1 << 20;
 
@@ -70,12 +75,12 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 
 EnclaveWebSocketClient::EnclaveWebSocketClient(
     const GURL& service_url,
-    const std::string& username,
+    std::string access_token,
     raw_ptr<network::mojom::NetworkContext> network_context,
     OnResponseCallback on_response)
     : state_(State::kInitialized),
       service_url_(service_url),
-      username_(username),
+      access_token_(std::move(access_token)),
       network_context_(network_context),
       on_response_(std::move(on_response)),
       readable_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {}
@@ -112,15 +117,15 @@ void EnclaveWebSocketClient::Connect() {
 
   state_ = State::kConnecting;
 
-  GURL socket_url;
-  GURL::Replacements replacement;
-  replacement.SetPathStr(username_);
-  socket_url = service_url_.ReplaceComponents(replacement);
+  std::vector<network::mojom::HttpHeaderPtr> additional_headers;
+  additional_headers.emplace_back(network::mojom::HttpHeader::New(
+      net::HttpRequestHeaders::kAuthorization, "Bearer " + access_token_));
+
   network_context_->CreateWebSocket(
-      socket_url, {}, net::SiteForCookies(), /*has_storage_access=*/false,
-      net::IsolationInfo(),
-      /*additional_headers=*/{}, network::mojom::kBrowserProcessId,
-      url::Origin::Create(socket_url),
+      service_url_, {kEnclaveWebSocketProtocol}, net::SiteForCookies(),
+      /*has_storage_access=*/false, net::IsolationInfo(),
+      std::move(additional_headers), network::mojom::kBrowserProcessId,
+      url::Origin::Create(service_url_),
       network::mojom::kWebSocketOptionBlockAllCookies,
       net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
       std::move(handshake_remote),
@@ -279,13 +284,19 @@ void EnclaveWebSocketClient::ReadFromDataPipe(MojoResult,
 }
 
 void EnclaveWebSocketClient::ProcessCompletedResponse() {
-  on_response_.Run(SocketStatus::kOk, pending_read_data_);
+  std::vector<uint8_t> pending_read_data;
+  pending_read_data.swap(pending_read_data_);
   pending_read_data_index_ = 0;
   pending_read_finished_ = false;
-  pending_read_data_.clear();
+
+  on_response_.Run(SocketStatus::kOk, std::move(pending_read_data));
+  // `this` may have been deleted at this point.
 }
 
 void EnclaveWebSocketClient::ClosePipe(SocketStatus status) {
+  if (state_ == State::kDisconnected) {
+    return;
+  }
   state_ = State::kDisconnected;
   client_receiver_.reset();
   pending_write_data_ = absl::nullopt;
@@ -293,6 +304,7 @@ void EnclaveWebSocketClient::ClosePipe(SocketStatus status) {
   pending_read_finished_ = false;
   pending_read_data_.clear();
   on_response_.Run(status, std::vector<uint8_t>());
+  // `this` may have been deleted at this point.
 }
 
 void EnclaveWebSocketClient::OnMojoPipeDisconnect() {

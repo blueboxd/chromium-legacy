@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BAD_MESSAGE_H_
 
 #include "base/debug/crash_logging.h"
+#include "content/common/buildflags.h"
 
 namespace content {
 class BrowserMessageFilter;
@@ -334,9 +335,15 @@ enum BadMessageReason {
   MSDH_EXCLUDE_MONITORS_BUT_PREFERRED_MONITOR_REQUESTED = 307,
   PSI_REGISTER_PERMISSION_ELEMENT_WITHOUT_FEATURE = 308,
   OBSOLETE_RFH_RECEIVED_INVALID_AD_AUCTION_HEADERS_ATTRIBUTE = 309,
-  MSDH_SEND_WHEEL_BUT_CSC_FEATURE_DISABLED = 310,
+  OBSOLETE_MSDH_SEND_WHEEL_BUT_CSC_FEATURE_DISABLED = 310,
   MSDH_SEND_WHEEL_INVALID_ACTION = 311,
-  MSDH_GET_ZOOM_LEVEL_BUT_CSC_FEATURE_DISABLED = 312,
+  OBSOLETE_MSDH_GET_ZOOM_LEVEL_BUT_CSC_FEATURE_DISABLED = 312,
+  RFH_FENCED_DOCUMENT_DATA_NOT_FOUND = 313,
+  OBSOLETE_MSDH_SET_ZOOM_LEVEL_BUT_CSC_FEATURE_DISABLED = 314,
+  MSDH_SET_ZOOM_LEVEL_INVALID_LEVEL = 315,
+  SSHO_RECEIVED_SHARED_STORAGE_WRITE_HEADER_FROM_UNTRUSTWORTHY_ORIGIN = 316,
+  SSHO_RECEIVED_SHARED_STORAGE_WRITE_HEADER_FROM_OPAQUE_ORIGIN = 317,
+  SSHO_RECEIVED_SHARED_STORAGE_WRITE_HEADER_WITH_PERMISSION_DISABLED = 318,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
@@ -353,10 +360,12 @@ void ReceivedBadMessage(RenderProcessHost* host, BadMessageReason reason);
 // Equivalent to the above, but callable from any thread.
 void ReceivedBadMessage(int render_process_id, BadMessageReason reason);
 
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
 // Called when a browser message filter receives a bad IPC message from a
 // renderer or other child process. Logs the event, records a histogram metric
 // for the |reason|, and terminates the process for |filter|.
 void ReceivedBadMessage(BrowserMessageFilter* filter, BadMessageReason reason);
+#endif
 
 // Site isolation. These keys help debug renderer kills such as
 // https://crbug.com/773140.

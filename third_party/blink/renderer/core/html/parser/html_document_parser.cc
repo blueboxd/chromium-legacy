@@ -29,9 +29,11 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
+#include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/types/optional_util.h"
@@ -66,6 +68,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/html_parser_script_runner.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -78,6 +81,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -99,6 +103,8 @@ enum class FeatureResetMode {
   kUseCached,
   kResetForTesting,
 };
+
+const char kHistogramScanAndPreloadTime[] = "Blink.ScanAndPreloadTime2";
 
 bool ThreadedPreloadScannerEnabled(
     FeatureResetMode reset_mode = FeatureResetMode::kUseCached) {
@@ -249,6 +255,29 @@ base::TimeDelta GetTimedBudget(int times_yielded) {
   return kLongParserBudgetValue;
 }
 
+// TODO(crbug.com/1519635): This is a temporary class that will be removed after
+// investigation for TopChrome.TabSearch is done. ScopedHistogramTimer is a
+// class that will record the time taken from when the class is created to when
+// it is destroyed. This is intended to be used when the parser finishes calls
+// NotifyScriptLoaded. This is only for url: "chrome://tab-search.top-chrome/".
+class ScopedHistogramTimer {
+ public:
+  ScopedHistogramTimer(base::TimeTicks start_time) : constructed_(start_time) {}
+
+  ~ScopedHistogramTimer() {
+    base::TimeDelta elapsed = base::TimeTicks::Now() - constructed_;
+    UMA_HISTOGRAM_TIMES("Blink.NotifyScriptLoaded.TabSearch", elapsed);
+  }
+
+  static bool ShouldCreateScopedTabSearchTimer(const KURL& url) {
+    return (!url.IsEmpty() && url.IsValid() &&
+            url.GetString() == "chrome://tab-search.top-chrome/");
+  }
+
+ private:
+  base::TimeTicks constructed_;
+};
+
 class EndIfDelayedForbiddenScope {
   STACK_ALLOCATED();
 
@@ -329,6 +358,37 @@ HTMLDocumentParserState::HTMLDocumentParserState(
       preload_processing_mode_(GetPreloadProcessingMode()),
       budget_(budget) {}
 
+// Wrap pending preloads in a thread safe and ref-counted object since the
+// vector is added to from a background thread and taken from from the main
+// thread.
+class HTMLDocumentParser::PendingPreloads
+    : public ThreadSafeRefCounted<PendingPreloads> {
+ public:
+  PendingPreloads() = default;
+
+  Vector<std::unique_ptr<PendingPreloadData>> Take() {
+    base::AutoLock auto_lock(lock_);
+    return std::move(preloads_);
+  }
+
+  // Returns the number of items pending preload after `preload_data` has been
+  // added.
+  size_t Add(std::unique_ptr<PendingPreloadData> preload_data) {
+    base::AutoLock auto_lock(lock_);
+    preloads_.push_back(std::move(preload_data));
+    return preloads_.size();
+  }
+
+  bool IsEmpty() {
+    base::AutoLock auto_lock(lock_);
+    return preloads_.empty();
+  }
+
+ private:
+  base::Lock lock_;
+  Vector<std::unique_ptr<PendingPreloadData>> preloads_ GUARDED_BY(lock_);
+};
+
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document,
                                        ParserSynchronizationPolicy sync_policy,
                                        ParserPrefetchPolicy prefetch_policy)
@@ -392,6 +452,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
            document.Url().IsLocalFile())
               ? kInfiniteTokenizationBudget
               : kDefaultMaxTokenizationBudget)),
+      pending_preloads_(base::MakeRefCounted<PendingPreloads>()),
       scheduler_(sync_policy == kAllowDeferredParsing
                      ? Thread::Current()->Scheduler()
                      : nullptr) {
@@ -477,6 +538,7 @@ void HTMLDocumentParser::StopParsing() {
 void HTMLDocumentParser::PrepareToStopParsing() {
   TRACE_EVENT1("blink", "HTMLDocumentParser::PrepareToStopParsing", "parser",
                (void*)this);
+  base::ElapsedTimer timer;
   DCHECK(!HasInsertionPoint());
 
   // If we've already been detached, e.g. in
@@ -521,6 +583,12 @@ void HTMLDocumentParser::PrepareToStopParsing() {
   GetDocument()->OnPrepareToStopParsing();
 
   AttemptToRunDeferredScriptsAndEnd();
+
+  base::UmaHistogramTimes("Blink.PrepareToStopParsingTime", timer.Elapsed());
+  if (metrics_reporter_) {
+    metrics_reporter_->AddPrepareToStopParsingTime(
+        timer.Elapsed().InMicroseconds());
+  }
 }
 
 bool HTMLDocumentParser::IsParsingFragment() const {
@@ -650,6 +718,7 @@ bool HTMLDocumentParser::PumpTokenizer() {
                        "should_complete", should_run_until_completion,
                        "bytes_queued", starting_bytes);
   }
+  base::ElapsedTimer pump_tokenizer_timer;
 
   // We tell the InspectorInstrumentation about every pump, even if we end up
   // pumping nothing.  It can filter out empty pumps itself.
@@ -756,6 +825,13 @@ bool HTMLDocumentParser::PumpTokenizer() {
       if (should_yield)
         break;
     }
+  }
+
+  base::UmaHistogramTimes("Blink.PumpTokenizerTime",
+                          pump_tokenizer_timer.Elapsed());
+  if (metrics_reporter_) {
+    metrics_reporter_->AddPumpTokenizerTime(
+        pump_tokenizer_timer.Elapsed().InMicroseconds());
   }
 
   if (is_tracing) {
@@ -1164,6 +1240,14 @@ void HTMLDocumentParser::NotifyScriptLoaded() {
   scheduler::CooperativeSchedulingManager::AllowedStackScope
       allowed_stack_scope(scheduler::CooperativeSchedulingManager::Instance());
 
+  // TODO(crbug.com/1519635): Remove timer after investigation of Tab search
+  // WebUI startup time is complete.
+  std::optional<ScopedHistogramTimer> tab_search_histogram_timer;
+  if (!IsDetached() && ScopedHistogramTimer::ShouldCreateScopedTabSearchTimer(
+                           GetDocument()->Url())) {
+    tab_search_histogram_timer.emplace(base::TimeTicks::Now());
+  }
+
   if (IsStopped()) {
     return;
   }
@@ -1346,12 +1430,36 @@ std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::CreatePreloadScanner(
 
 void HTMLDocumentParser::ScanAndPreload(HTMLPreloadScanner* scanner) {
   TRACE_EVENT0("blink", "HTMLDocumentParser::ScanAndPreload");
-  DCHECK(preloader_);
-  base::ElapsedTimer timer;
-  ProcessPreloadData(scanner->Scan(GetDocument()->ValidBaseElementURL()));
+  CHECK(preloader_);
+  base::ElapsedTimer timer_before_scan;
+  std::unique_ptr<PendingPreloadData> preload_data =
+      scanner->Scan(GetDocument()->ValidBaseElementURL());
+  const base::TimeDelta scan_time = timer_before_scan.Elapsed();
+  base::UmaHistogramMicrosecondsTimes(
+      base::StrCat(
+          {kHistogramScanAndPreloadTime, ".Scan", GetPreloadHistogramSuffix()}),
+      scan_time);
+  base::ElapsedTimer timer_after_scan;
+  ProcessPreloadData(std::move(preload_data));
+  const base::TimeDelta scan_and_preload_time = timer_before_scan.Elapsed();
+  const base::TimeDelta preload_time = timer_after_scan.Elapsed();
+  base::UmaHistogramMicrosecondsTimes(
+      base::StrCat({kHistogramScanAndPreloadTime, GetPreloadHistogramSuffix()}),
+      scan_and_preload_time);
+  // Keep old histogram until next expiry date.
   base::UmaHistogramTimes(
       base::StrCat({"Blink.ScanAndPreloadTime", GetPreloadHistogramSuffix()}),
-      timer.Elapsed());
+      scan_and_preload_time);
+  base::UmaHistogramMicrosecondsTimes(
+      base::StrCat({kHistogramScanAndPreloadTime, ".Preload",
+                    GetPreloadHistogramSuffix()}),
+      preload_time);
+  if (metrics_reporter_) {
+    metrics_reporter_->AddScanTime(scan_time.InMicroseconds());
+    metrics_reporter_->AddScanAndPreloadTime(
+        scan_and_preload_time.InMicroseconds());
+    metrics_reporter_->AddPreloadTime(preload_time.InMicroseconds());
+  }
 }
 
 void HTMLDocumentParser::ProcessPreloadData(
@@ -1403,6 +1511,9 @@ void HTMLDocumentParser::ProcessPreloadData(
   task_runner_state_->SetSeenCSPMetaTag(preload_data->has_csp_meta_tag);
   for (auto& request : preload_data->requests) {
     queued_preloads_.push_back(std::move(request));
+    if (metrics_reporter_) {
+      metrics_reporter_->IncrementPreloadRequestCount();
+    }
   }
 
   if (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) &&
@@ -1446,6 +1557,10 @@ void HTMLDocumentParser::FetchQueuedPreloads() {
     base::UmaHistogramTimes(base::StrCat({"Blink.FetchQueuedPreloadsTime",
                                           GetPreloadHistogramSuffix()}),
                             timer.Elapsed());
+    if (metrics_reporter_) {
+      metrics_reporter_->AddFetchQueuedPreloadsTime(
+          timer.Elapsed().InMicroseconds());
+    }
   }
 }
 
@@ -1484,7 +1599,7 @@ void HTMLDocumentParser::ScanInBackground(const String& source) {
           this, options_, GetPreloadScannerThread()->GetTaskRunner(),
           CrossThreadBindRepeating(
               &HTMLDocumentParser::AddPreloadDataOnBackgroundThread,
-              WrapCrossThreadWeakPersistent(this),
+              MakeCrossThreadWeakHandle(this), this->pending_preloads_,
               GetDocument()->GetTaskRunner(TaskType::kInternalLoading)));
 
       background_scan_fn_ = CrossThreadBindRepeating(
@@ -1521,29 +1636,27 @@ void HTMLDocumentParser::ScanInBackground(const String& source) {
 
 // static
 void HTMLDocumentParser::AddPreloadDataOnBackgroundThread(
-    CrossThreadWeakPersistent<HTMLDocumentParser> weak_parser,
+    CrossThreadWeakHandle<HTMLDocumentParser> parser_handle,
+    scoped_refptr<PendingPreloads> pending_preloads,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     std::unique_ptr<PendingPreloadData> preload_data) {
   DCHECK(!IsMainThread());
-  auto parser = weak_parser.Lock();
-  if (!parser)
-    return;
 
-  bool should_post_task = false;
-  {
-    base::AutoLock lock(parser->pending_preload_lock_);
-    // Only post a task if the preload data is empty. Otherwise, a task has
-    // already been posted and will consume the new data.
-    should_post_task = parser->pending_preload_data_.empty();
-    parser->pending_preload_data_.push_back(std::move(preload_data));
-  }
+  size_t num_pending_preloads = pending_preloads->Add(std::move(preload_data));
 
-  if (should_post_task) {
+  // Only post a task if the preload data was empty before we added this data.
+  // Otherwise, a task has already been posted and will consume the new data.
+  if (num_pending_preloads == 1) {
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
-        CrossThreadBindOnce(&HTMLDocumentParser::FlushPendingPreloads,
-                            std::move(parser)));
+        CrossThreadBindOnce(
+            &HTMLDocumentParser::FlushPendingPreloads,
+            MakeUnwrappingCrossThreadWeakHandle(std::move(parser_handle))));
   }
+}
+
+bool HTMLDocumentParser::HasPendingPreloads() {
+  return pending_preloads_->IsEmpty();
 }
 
 void HTMLDocumentParser::FlushPendingPreloads() {
@@ -1555,15 +1668,11 @@ void HTMLDocumentParser::FlushPendingPreloads() {
     return;
 
   // Do this in a loop in case more preloads are added in the background.
-  while (HasPendingPreloads()) {
-    Vector<std::unique_ptr<PendingPreloadData>> preload_data;
-    {
-      base::AutoLock lock(pending_preload_lock_);
-      preload_data = std::move(pending_preload_data_);
-    }
-
-    for (auto& preload : preload_data)
+  Vector<std::unique_ptr<PendingPreloadData>> preload_data;
+  while (!(preload_data = pending_preloads_->Take()).empty()) {
+    for (auto& preload : preload_data) {
       ProcessPreloadData(std::move(preload));
+    }
   }
 }
 

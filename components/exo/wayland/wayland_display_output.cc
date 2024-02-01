@@ -137,5 +137,24 @@ wl_resource* WaylandDisplayOutput::GetOutputResourceForClient(
   return iter->second;
 }
 
+void WaylandDisplayOutput::SendDisplayMetricsChanges(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  CHECK_EQ(display.id(), id_);
+  for (auto& pair : output_ids_) {
+    if (auto* handler = GetUserDataAs<WaylandDisplayHandler>(pair.second)) {
+      handler->SendDisplayMetricsChanges(display, changed_metrics);
+    }
+  }
+}
+
+void WaylandDisplayOutput::SendOutputActivated() {
+  for (auto& pair : output_ids_) {
+    auto* handler = GetUserDataAs<WaylandDisplayHandler>(pair.second);
+    CHECK(handler);
+    handler->SendDisplayActivated();
+  }
+}
+
 }  // namespace wayland
 }  // namespace exo

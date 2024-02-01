@@ -142,9 +142,7 @@ void OnPrinterAuthenticated(
 
     // If the printer is autoconf compatible or has a valid PPD reference then
     // continue with normal setup.
-    if (printer.ppd_reference().autoconf ||
-        !printer.ppd_reference().effective_make_and_model.empty() ||
-        !printer.ppd_reference().user_supplied_ppd_url.empty()) {
+    if (printer.ppd_reference().IsFilled()) {
       SetUpPrinter(printers_manager, printer, std::move(callback));
       return;
     }
@@ -348,18 +346,21 @@ void LocalPrinterAsh::NotifyPrintJobUpdate(base::WeakPtr<ash::CupsPrintJob> job,
   }
   const auto& printer_id = job->printer().id();
   const auto& job_id = job->job_id();
+  auto update = mojom::PrintJobUpdate::New();
+  update->status = status;
+  update->pages_printed = job->printed_page_number();
   for (auto& remote : print_job_remotes_) {
-    remote->OnPrintJobUpdate(printer_id, job_id, status);
+    remote->OnPrintJobUpdate(printer_id, job_id, update.Clone());
   }
   switch (job->source()) {
     case mojom::PrintJob::Source::kExtension:
       for (auto& remote : extension_print_job_remotes_) {
-        remote->OnPrintJobUpdate(printer_id, job_id, status);
+        remote->OnPrintJobUpdate(printer_id, job_id, update.Clone());
       }
       break;
     case mojom::PrintJob::Source::kIsolatedWebApp:
       for (auto& remote : iwa_print_job_remotes_) {
-        remote->OnPrintJobUpdate(printer_id, job_id, status);
+        remote->OnPrintJobUpdate(printer_id, job_id, update.Clone());
       }
       break;
     default:

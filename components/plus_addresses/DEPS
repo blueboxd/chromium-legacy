@@ -1,7 +1,9 @@
 include_rules = [
+  "+components/autofill/core/browser/autofill_plus_address_delegate.h",
   "+components/keyed_service/core",
   "+components/signin/public",
   "+components/prefs",
+  "+components/vector_icons",
   "+google_apis",
   "+net/base",
   "+services/data_decoder",

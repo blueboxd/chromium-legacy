@@ -19,8 +19,6 @@ this build script on Mac:
 3. sudo xcode-select --switch /Applications/Xcode.app
 """
 
-from __future__ import print_function
-
 import argparse
 import glob
 import io
@@ -86,7 +84,7 @@ def GetWinSDKDir():
     return win_sdk_dir
 
   # Don't let vs_toolchain overwrite our environment.
-  environ_bak = os.environ
+  environ_bak = dict(os.environ)
 
   sys.path.append(os.path.join(CHROMIUM_DIR, 'build'))
   import vs_toolchain
@@ -102,7 +100,8 @@ def GetWinSDKDir():
       vs_path = os.environ['GYP_MSVS_OVERRIDE_PATH']
     dia_path = os.path.join(vs_path, 'DIA SDK', 'bin', 'amd64')
 
-  os.environ = environ_bak
+  os.environ.clear()
+  os.environ.update(environ_bak)
   return win_sdk_dir
 
 
@@ -162,9 +161,10 @@ def CheckoutGitRepo(name, git_url, commit, dir):
   # Try updating the current repo if it exists and has no local diff.
   if os.path.isdir(dir):
     os.chdir(dir)
-    # git diff-index --quiet returns success when there is no diff.
+    # git diff-index --exit-code returns 0 when there is no diff.
     # Also check that the first commit is reachable.
-    if (RunCommand(['git', 'diff-index', '--quiet', 'HEAD'], fail_hard=False)
+    if (RunCommand(['git', 'diff-index', '--exit-code', 'HEAD'],
+                   fail_hard=False)
         and RunCommand(['git', 'fetch'], fail_hard=False)
         and RunCommand(['git', 'checkout', commit], fail_hard=False)
         and RunCommand(['git', 'clean', '-f'], fail_hard=False)):
@@ -576,7 +576,7 @@ def VerifyZStdSupport():
     print('OK')
 
 
-def DownloadDebianSysroot(platform_name):
+def DownloadDebianSysroot(platform_name, skip_download):
   # Download sysroots. This uses basically Chromium's sysroots, but with
   # minor changes:
   # - glibc version bumped to 2.18 to make __cxa_thread_atexit_impl
@@ -602,7 +602,8 @@ def DownloadDebianSysroot(platform_name):
   output = os.path.join(LLVM_BUILD_TOOLS_DIR, toolchain_name)
   U = toolchain_bucket + hashes[platform_name] + '/' + toolchain_name + \
       '.tar.xz'
-  DownloadAndUnpack(U, output)
+  if not skip_download:
+    DownloadAndUnpack(U, output)
 
   return output
 
@@ -699,9 +700,8 @@ def main():
                       type=gn_arg,
                       nargs='?',
                       const=True,
-                      help='build the Fuchsia runtimes (linux and mac only)',
-                      default=sys.platform.startswith('linux')
-                      or sys.platform.startswith('darwin'))
+                      help='build the Fuchsia runtimes (linux only)',
+                      default=sys.platform.startswith('linux'))
   parser.add_argument('--without-android', action='store_false',
                       help='don\'t build Android ASan runtime (linux only)',
                       dest='with_android')
@@ -720,6 +720,11 @@ def main():
   args = parser.parse_args()
 
   global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
+
+  # TODO(crbug.com/1517549): Remove in next Clang roll.
+  if args.llvm_force_head_revision:
+    global RELEASE_VERSION
+    RELEASE_VERSION = '19'
 
   if (args.pgo or args.thinlto) and not args.bootstrap:
     print('--pgo/--thinlto requires --bootstrap')
@@ -848,8 +853,7 @@ def main():
   if sys.platform == 'darwin':
     isysroot = subprocess.check_output(['xcrun', '--show-sdk-path'],
                                        universal_newlines=True).rstrip()
-  else:
-    base_cmake_args += ['-DLLVM_ENABLE_UNWIND_TABLES=OFF']
+  base_cmake_args += ['-DLLVM_ENABLE_UNWIND_TABLES=OFF']
 
   # See https://crbug.com/1302636#c49 - #c56 -- intercepting crypt_r() does not
   # work with the sysroot for not fully understood reasons. Disable it.
@@ -874,7 +878,8 @@ def main():
     cc = args.host_cc
     cxx = args.host_cxx
   else:
-    DownloadPinnedClang()
+    if not args.skip_checkout:
+      DownloadPinnedClang()
     if sys.platform == 'win32':
       cc = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang-cl.exe')
       cxx = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang-cl.exe')
@@ -892,10 +897,10 @@ def main():
       base_cmake_args += [ '-DLLVM_STATIC_LINK_CXX_STDLIB=ON' ]
 
   if sys.platform.startswith('linux'):
-    sysroot_amd64 = DownloadDebianSysroot('amd64')
-    sysroot_i386 = DownloadDebianSysroot('i386')
-    sysroot_arm = DownloadDebianSysroot('arm')
-    sysroot_arm64 = DownloadDebianSysroot('arm64')
+    sysroot_amd64 = DownloadDebianSysroot('amd64', args.skip_checkout)
+    sysroot_i386 = DownloadDebianSysroot('i386', args.skip_checkout)
+    sysroot_arm = DownloadDebianSysroot('arm', args.skip_checkout)
+    sysroot_arm64 = DownloadDebianSysroot('arm64', args.skip_checkout)
 
     # Add the sysroot to base_cmake_args.
     if platform.machine() == 'aarch64':
@@ -1283,10 +1288,8 @@ def main():
       target_triple = target_arch
       if target_arch == 'arm':
         target_triple = 'armv7'
-      api_level = '19'
-      if target_arch == 'aarch64' or target_arch == 'x86_64':
-        api_level = '21'
-      elif target_arch == 'riscv64':
+      api_level = '21'
+      if target_arch == 'riscv64':
         api_level = '35'
         toolchain_dir = ANDROID_NDK_CANARY_TOOLCHAIN_DIR
       target_triple += '-linux-android' + api_level

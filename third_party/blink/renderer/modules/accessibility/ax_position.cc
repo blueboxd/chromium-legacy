@@ -190,7 +190,7 @@ const AXPosition AXPosition::FromPosition(
   const Position& parent_anchored_position = position.ToOffsetInAnchor();
   const Node* container_node = parent_anchored_position.AnchorNode();
   DCHECK(container_node);
-  const AXObject* container = ax_object_cache_impl->GetOrCreate(container_node);
+  const AXObject* container = ax_object_cache_impl->Get(container_node);
   if (!container)
     return {};
 
@@ -310,8 +310,7 @@ const AXPosition AXPosition::FromPosition(
         container->ChildCountIncludingIgnored();
 
     } else {
-      const AXObject* ax_child =
-          ax_object_cache_impl->GetOrCreate(node_after_position);
+      const AXObject* ax_child = ax_object_cache_impl->Get(node_after_position);
       // |ax_child| might be nullptr because not all DOM nodes can have AX
       // objects. For example, the "head" element has no corresponding AX
       // object.
@@ -454,12 +453,13 @@ int AXPosition::MaxTextOffset() const {
   if (!is_atomic_inline_level && !layout_object->IsText())
     return container_object_->ComputedName().length();
 
-  // TODO(crbug.com/1149171): NGInlineOffsetMappingBuilder does not properly
+  // TODO(crbug.com/1149171): OffsetMappingBuilder does not properly
   // compute offset mappings for empty LayoutText objects. Other text objects
   // (such as some list markers) are not affected.
   if (const LayoutText* layout_text = DynamicTo<LayoutText>(layout_object)) {
-    if (layout_text->GetText().empty())
+    if (layout_text->HasEmptyText()) {
       return container_object_->ComputedName().length();
+    }
   }
 
   LayoutBlockFlow* formatting_context =
@@ -812,8 +812,7 @@ const AXPosition AXPosition::AsValidDOMPosition(
     return {};
 
   auto& ax_object_cache_impl = container->AXObjectCache();
-  const AXObject* new_container =
-      ax_object_cache_impl.GetOrCreate(container_node);
+  const AXObject* new_container = ax_object_cache_impl.Get(container_node);
   DCHECK(new_container);
   if (!new_container)
     return {};
@@ -1070,8 +1069,7 @@ const AXObject* AXPosition::FindNeighboringUnignoredObject(
       const Node* next_node = &child_node;
       while ((next_node = NodeTraversal::NextIncludingPseudo(*next_node,
                                                              container_node))) {
-        const AXObject* next_object =
-            ax_object_cache_impl->GetOrCreate(next_node);
+        const AXObject* next_object = ax_object_cache_impl->Get(next_node);
         if (next_object && next_object->AccessibilityIsIncludedInTree())
           return next_object;
       }
@@ -1089,7 +1087,7 @@ const AXObject* AXPosition::FindNeighboringUnignoredObject(
                   *previous_node, container_node)) &&
              previous_node != container_node) {
         const AXObject* previous_object =
-            ax_object_cache_impl->GetOrCreate(previous_node);
+            ax_object_cache_impl->Get(previous_node);
         if (previous_object && previous_object->AccessibilityIsIncludedInTree())
           return previous_object;
       }

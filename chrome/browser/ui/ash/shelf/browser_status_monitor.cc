@@ -6,10 +6,13 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_ash.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/shelf/app_service/app_service_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
@@ -39,7 +42,7 @@ bool IsAppBrowser(const Browser* browser) {
 }
 
 Browser* GetBrowserWithTabStripModel(TabStripModel* tab_strip_model) {
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     if (browser->tab_strip_model() == tab_strip_model)
       return browser;
   }
@@ -68,7 +71,7 @@ class BrowserStatusMonitor::LocalWebContentsObserver
   }
 
  private:
-  raw_ptr<BrowserStatusMonitor, ExperimentalAsh> monitor_;
+  raw_ptr<BrowserStatusMonitor> monitor_;
 };
 
 BrowserStatusMonitor::BrowserStatusMonitor(
@@ -89,8 +92,9 @@ BrowserStatusMonitor::~BrowserStatusMonitor() {
   BrowserList::RemoveObserver(this);
 
   // Simulate OnBrowserRemoved() for all Browsers.
-  for (auto* browser : *BrowserList::GetInstance())
+  for (Browser* browser : *BrowserList::GetInstance()) {
     OnBrowserRemoved(browser);
+  }
 }
 
 void BrowserStatusMonitor::Initialize() {
@@ -98,8 +102,9 @@ void BrowserStatusMonitor::Initialize() {
   initialized_ = true;
 
   // Simulate OnBrowserAdded() for all existing Browsers.
-  for (auto* browser : *BrowserList::GetInstance())
+  for (Browser* browser : *BrowserList::GetInstance()) {
     OnBrowserAdded(browser);
+  }
 
   // BrowserList::AddObserver() comes before BrowserTabStripTracker::Init() to
   // ensure that OnBrowserAdded() is always invoked before
@@ -192,6 +197,15 @@ void BrowserStatusMonitor::OnBrowserAdded(Browser* browser) {
     if (IsAppBrowser(browser) &&
         multi_user_util::IsProfileFromActiveUser(browser->profile())) {
       AddAppBrowserToShelf(browser);
+      if (!ash::features::IsStandaloneWindowMigrationUxEnabled()) {
+        return;
+      }
+      std::string app_id =
+          web_app::GetAppIdFromApplicationName(browser->app_name());
+      if (app_id.empty()) {
+        return;
+      }
+      MaybeShowStandaloneMigrationNudge(app_id, browser->profile());
     }
   }
 }

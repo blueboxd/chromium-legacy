@@ -30,11 +30,13 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_constants.h"
 #include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
+#include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
@@ -150,7 +152,8 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewGrid* overview_grid,
   }
 
   // Add the margins overview mode adds around the window's contents.
-  scaled_size.Enlarge(kDraggingEnlargeDp, kDraggingEnlargeDp + kHeaderHeightDp);
+  scaled_size.Enlarge(kDraggingEnlargeDp,
+                      kDraggingEnlargeDp + kWindowMiniViewHeaderHeight);
   return scaled_size;
 }
 
@@ -227,7 +230,7 @@ class OverviewItemMoveHelper : public aura::WindowObserver {
   }
 
  private:
-  const raw_ptr<aura::Window, ExperimentalAsh> window_;
+  const raw_ptr<aura::Window> window_;
   const gfx::RectF target_item_bounds_;
 };
 
@@ -398,8 +401,9 @@ void OverviewWindowDragController::StartNormalDragMode(
     // bottom-edge of the desks bar (may be different edges if we are dragging
     // from different directions).
     gfx::SizeF item_no_header_size = original_scaled_size_;
-    item_no_header_size.Enlarge(float{-kDraggingEnlargeDp},
-                                float{-kDraggingEnlargeDp - kHeaderHeightDp});
+    item_no_header_size.Enlarge(
+        float{-kDraggingEnlargeDp},
+        float{-kDraggingEnlargeDp - kWindowMiniViewHeaderHeight});
 
     // We must update the desks bar widget bounds before we cache its bounds
     // below, in case it needs to be pushed down due to splitview indicators.
@@ -478,13 +482,13 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   } else if (auto* split_view_overview_session =
                  RootWindowController::ForWindow(item_->GetWindow())
                      ->split_view_overview_session();
-             split_view_overview_session &&
-             split_view_overview_session->auto_snap_controller()) {
+             split_view_overview_session) {
     // If `SplitViewOverviewSession` is active, let it handle the autosnap.
     overview_session_->SelectWindow(event_source_item_);
     item_ = nullptr;
     event_source_item_ = nullptr;
-  } else if (split_view_controller->CanSnapWindow(item_->GetWindow())) {
+  } else if (split_view_controller->CanSnapWindow(
+                 item_->GetWindow(), chromeos::kDefaultSnapRatio)) {
     SnapWindow(split_view_controller,
                split_state == SplitViewController::State::kPrimarySnapped
                    ? SnapPosition::kSecondary
@@ -933,10 +937,14 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
 
 aura::Window* OverviewWindowDragController::GetRootWindowBeingDraggedIn()
     const {
-  return is_touch_dragging_
-             ? item_->root_window()
-             : Shell::GetRootWindowForDisplayId(
-                   Shell::Get()->cursor_manager()->GetDisplay().id());
+  if (is_touch_dragging_) {
+    return item_->root_window();
+  }
+
+  auto* screen = display::Screen::GetScreen();
+  CHECK(screen);
+  auto display = screen->GetDisplayNearestPoint(screen->GetCursorScreenPoint());
+  return Shell::GetRootWindowForDisplayId(display.id());
 }
 
 SnapPosition OverviewWindowDragController::GetSnapPosition(
@@ -954,8 +962,10 @@ SnapPosition OverviewWindowDragController::GetSnapPosition(
   aura::Window* root_window = GetRootWindowBeingDraggedIn();
   SplitViewController* split_view_controller =
       SplitViewController::Get(root_window);
-  if (!split_view_controller->CanSnapWindow(item_->GetWindow()))
+  if (!split_view_controller->CanSnapWindow(item_->GetWindow(),
+                                            chromeos::kDefaultSnapRatio)) {
     return SnapPosition::kNone;
+  }
   if (split_view_controller->InSplitViewMode()) {
     // If we're trying to snap to a position that already has a snapped window:
     aura::Window* default_snapped_window =

@@ -186,13 +186,12 @@ void AuctionWorkletServiceImpl::LoadBidderWorklet(
     mojo::PendingRemote<auction_worklet::mojom::AuctionNetworkEventsHandler>
         auction_network_events_handler,
     const GURL& script_source_url,
-    const absl::optional<GURL>& wasm_helper_url,
-    const absl::optional<GURL>& trusted_bidding_signals_url,
+    const std::optional<GURL>& wasm_helper_url,
+    const std::optional<GURL>& trusted_bidding_signals_url,
     const std::string& trusted_bidding_signals_slot_size_param,
     const url::Origin& top_window_origin,
     mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state,
-    bool has_experiment_group_id,
-    uint16_t experiment_group_id) {
+    std::optional<uint16_t> experiment_group_id) {
   auto bidder_worklet = std::make_unique<BidderWorklet>(
       auction_bidder_v8_helper_holder_->V8Helper(),
       std::move(shared_storage_host_remote), pause_for_debugger_on_start,
@@ -200,9 +199,7 @@ void AuctionWorkletServiceImpl::LoadBidderWorklet(
       std::move(auction_network_events_handler), script_source_url,
       wasm_helper_url, trusted_bidding_signals_url,
       trusted_bidding_signals_slot_size_param, top_window_origin,
-      std::move(permissions_policy_state),
-      has_experiment_group_id ? absl::make_optional(experiment_group_id)
-                              : absl::nullopt);
+      std::move(permissions_policy_state), experiment_group_id);
   auto* bidder_worklet_ptr = bidder_worklet.get();
 
   mojo::ReceiverId receiver_id = bidder_worklets_.Add(
@@ -223,20 +220,17 @@ void AuctionWorkletServiceImpl::LoadSellerWorklet(
     mojo::PendingRemote<auction_worklet::mojom::AuctionNetworkEventsHandler>
         auction_network_events_handler,
     const GURL& decision_logic_url,
-    const absl::optional<GURL>& trusted_scoring_signals_url,
+    const std::optional<GURL>& trusted_scoring_signals_url,
     const url::Origin& top_window_origin,
     mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state,
-    bool has_experiment_group_id,
-    uint16_t experiment_group_id) {
+    std::optional<uint16_t> experiment_group_id) {
   auto seller_worklet = std::make_unique<SellerWorklet>(
       auction_seller_v8_helper_holder_->V8Helper(),
       std::move(shared_storage_host_remote), pause_for_debugger_on_start,
       std::move(pending_url_loader_factory),
       std::move(auction_network_events_handler), decision_logic_url,
       trusted_scoring_signals_url, top_window_origin,
-      std::move(permissions_policy_state),
-      has_experiment_group_id ? absl::make_optional(experiment_group_id)
-                              : absl::nullopt);
+      std::move(permissions_policy_state), experiment_group_id);
   auto* seller_worklet_ptr = seller_worklet.get();
 
   mojo::ReceiverId receiver_id = seller_worklets_.Add(

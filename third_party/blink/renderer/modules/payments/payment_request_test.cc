@@ -27,8 +27,7 @@ namespace blink {
 namespace {
 
 TEST(PaymentRequestTest, NoExceptionWithValidData) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
@@ -38,8 +37,7 @@ TEST(PaymentRequestTest, NoExceptionWithValidData) {
 }
 
 TEST(PaymentRequestTest, SupportedMethodListRequired) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentRequest::Create(
       scope.GetExecutionContext(), HeapVector<Member<PaymentMethodData>>(),
@@ -51,8 +49,7 @@ TEST(PaymentRequestTest, SupportedMethodListRequired) {
 }
 
 TEST(PaymentRequestTest, NullShippingOptionWhenNoOptionsAvailable) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -67,8 +64,7 @@ TEST(PaymentRequestTest, NullShippingOptionWhenNoOptionsAvailable) {
 }
 
 TEST(PaymentRequestTest, NullShippingOptionWhenMultipleOptionsAvailable) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -87,8 +83,7 @@ TEST(PaymentRequestTest, NullShippingOptionWhenMultipleOptionsAvailable) {
 }
 
 TEST(PaymentRequestTest, DontSelectSingleAvailableShippingOptionByDefault) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -105,8 +100,7 @@ TEST(PaymentRequestTest, DontSelectSingleAvailableShippingOptionByDefault) {
 
 TEST(PaymentRequestTest,
      DontSelectSingleAvailableShippingOptionWhenShippingNotRequested) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -124,8 +118,7 @@ TEST(PaymentRequestTest,
 
 TEST(PaymentRequestTest,
      DontSelectSingleUnselectedShippingOptionWhenShippingRequested) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -143,8 +136,7 @@ TEST(PaymentRequestTest,
 
 TEST(PaymentRequestTest,
      SelectSingleSelectedShippingOptionWhenShippingRequested) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -165,8 +157,7 @@ TEST(PaymentRequestTest,
 
 TEST(PaymentRequestTest,
      SelectOnlySelectedShippingOptionWhenShippingRequested) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -189,8 +180,7 @@ TEST(PaymentRequestTest,
 
 TEST(PaymentRequestTest,
      SelectLastSelectedShippingOptionWhenShippingRequested) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -213,8 +203,7 @@ TEST(PaymentRequestTest,
 }
 
 TEST(PaymentRequestTest, NullShippingTypeWhenRequestShippingIsFalse) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -230,8 +219,7 @@ TEST(PaymentRequestTest, NullShippingTypeWhenRequestShippingIsFalse) {
 
 TEST(PaymentRequestTest,
      DefaultShippingTypeWhenRequestShippingIsTrueWithNoSpecificType) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -246,8 +234,7 @@ TEST(PaymentRequestTest,
 }
 
 TEST(PaymentRequestTest, DeliveryShippingTypeWhenShippingTypeIsDelivery) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -263,8 +250,7 @@ TEST(PaymentRequestTest, DeliveryShippingTypeWhenShippingTypeIsDelivery) {
 }
 
 TEST(PaymentRequestTest, PickupShippingTypeWhenShippingTypeIsPickup) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -280,8 +266,7 @@ TEST(PaymentRequestTest, PickupShippingTypeWhenShippingTypeIsPickup) {
 }
 
 TEST(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddress) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -298,8 +283,7 @@ TEST(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddress) {
 }
 
 TEST(PaymentRequestTest, OnShippingOptionChange) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -316,8 +300,7 @@ TEST(PaymentRequestTest, OnShippingOptionChange) {
 }
 
 TEST(PaymentRequestTest, CannotCallShowTwice) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -335,8 +318,7 @@ TEST(PaymentRequestTest, CannotCallShowTwice) {
 }
 
 TEST(PaymentRequestTest, CannotShowAfterAborted) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -359,8 +341,7 @@ TEST(PaymentRequestTest, CannotShowAfterAborted) {
 }
 
 TEST(PaymentRequestTest, CannotShowWithoutUserActivation) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   ScopedPaymentRequestAllowOneActivationlessShowForTest
       scoped_activationless_show_enabled(false);
   PaymentRequestV8TestingScope scope;
@@ -381,8 +362,7 @@ TEST(PaymentRequestTest, CannotShowWithoutUserActivation) {
 }
 
 TEST(PaymentRequestTest, ShowConsumesUserActivation) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   ScopedPaymentRequestAllowOneActivationlessShowForTest
       scoped_activationless_show_enabled(false);
   PaymentRequestV8TestingScope scope;
@@ -401,8 +381,7 @@ TEST(PaymentRequestTest, ShowConsumesUserActivation) {
 }
 
 TEST(PaymentRequestTest, PaymentRequestActivationlessShowEnabled) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   ScopedPaymentRequestAllowOneActivationlessShowForTest
       scoped_activationless_show_enabled(true);
   PaymentRequestV8TestingScope scope;
@@ -426,8 +405,7 @@ TEST(PaymentRequestTest, PaymentRequestActivationlessShowEnabled) {
 }
 
 TEST(PaymentRequestTest, RejectShowPromiseOnErrorPaymentMethodNotSupported) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -450,8 +428,7 @@ TEST(PaymentRequestTest, RejectShowPromiseOnErrorPaymentMethodNotSupported) {
 }
 
 TEST(PaymentRequestTest, RejectShowPromiseOnErrorCancelled) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -473,8 +450,7 @@ TEST(PaymentRequestTest, RejectShowPromiseOnErrorCancelled) {
 }
 
 TEST(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -496,8 +472,7 @@ TEST(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure) {
 }
 
 TEST(PaymentRequestTest, IgnoreUpdatePaymentDetailsAfterShowPromiseResolved) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -512,12 +487,32 @@ TEST(PaymentRequestTest, IgnoreUpdatePaymentDetailsAfterShowPromiseResolved) {
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
   request->OnUpdatePaymentDetails(
-      ScriptValue::From(scope.GetScriptState(), "foo"));
+      ScriptValue(scope.GetScriptState()->GetIsolate(),
+                  V8String(scope.GetScriptState()->GetIsolate(), "foo")));
 }
 
 TEST(PaymentRequestTest, RejectShowPromiseOnNonPaymentDetailsUpdate) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
+  PaymentRequestV8TestingScope scope;
+  MockFunctionScope funcs(scope.GetScriptState());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
+
+  LocalFrame::NotifyUserActivation(
+      &scope.GetFrame(), mojom::UserActivationNotificationType::kTest);
+  request->show(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
+
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
+  request->OnUpdatePaymentDetails(ScriptValue(
+      scope.GetScriptState()->GetIsolate(),
+      V8String(scope.GetScriptState()->GetIsolate(), "NotPaymentDetails")));
+}
+
+TEST(PaymentRequestTest, RejectShowPromiseOnInvalidPaymentDetailsUpdate) {
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -532,36 +527,15 @@ TEST(PaymentRequestTest, RejectShowPromiseOnNonPaymentDetailsUpdate) {
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnShippingAddressChange(BuildPaymentAddressForTest());
   request->OnUpdatePaymentDetails(
-      ScriptValue::From(scope.GetScriptState(), "NotPaymentDetails"));
-}
-
-TEST(PaymentRequestTest, RejectShowPromiseOnInvalidPaymentDetailsUpdate) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
-  PaymentRequestV8TestingScope scope;
-  MockFunctionScope funcs(scope.GetScriptState());
-  PaymentRequest* request = PaymentRequest::Create(
-      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
-      BuildPaymentDetailsInitForTest(), ASSERT_NO_EXCEPTION);
-
-  LocalFrame::NotifyUserActivation(
-      &scope.GetFrame(), mojom::UserActivationNotificationType::kTest);
-  request->show(scope.GetScriptState(), ASSERT_NO_EXCEPTION)
-      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
-
-  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
-      ->OnShippingAddressChange(BuildPaymentAddressForTest());
-  request->OnUpdatePaymentDetails(ScriptValue::From(
-      scope.GetScriptState(),
-      FromJSONString(scope.GetScriptState()->GetIsolate(),
-                     scope.GetScriptState()->GetContext(), "{\"total\": {}}",
-                     ASSERT_NO_EXCEPTION)));
+      ScriptValue(scope.GetScriptState()->GetIsolate(),
+                  FromJSONString(scope.GetScriptState()->GetIsolate(),
+                                 scope.GetScriptState()->GetContext(),
+                                 "{\"total\": {}}", ASSERT_NO_EXCEPTION)));
 }
 
 TEST(PaymentRequestTest,
      ClearShippingOptionOnPaymentDetailsUpdateWithoutShippingOptions) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
@@ -586,8 +560,8 @@ TEST(PaymentRequestTest,
       "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": "
       "\"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": "
       "\"5.00\"}, \"selected\": true}]}";
-  request->OnUpdatePaymentDetails(ScriptValue::From(
-      scope.GetScriptState(),
+  request->OnUpdatePaymentDetails(ScriptValue(
+      scope.GetScriptState()->GetIsolate(),
       FromJSONString(scope.GetScriptState()->GetIsolate(),
                      scope.GetScriptState()->GetContext(),
                      detail_with_shipping_options, ASSERT_NO_EXCEPTION)));
@@ -598,8 +572,8 @@ TEST(PaymentRequestTest,
       "{\"total\": {\"label\": \"Total\", \"amount\": {\"currency\": \"USD\", "
       "\"value\": \"5.00\"}}}";
 
-  request->OnUpdatePaymentDetails(ScriptValue::From(
-      scope.GetScriptState(),
+  request->OnUpdatePaymentDetails(ScriptValue(
+      scope.GetScriptState()->GetIsolate(),
       FromJSONString(scope.GetScriptState()->GetIsolate(),
                      scope.GetScriptState()->GetContext(),
                      detail_without_shipping_options, ASSERT_NO_EXCEPTION)));
@@ -610,8 +584,7 @@ TEST(PaymentRequestTest,
 TEST(
     PaymentRequestTest,
     ClearShippingOptionOnPaymentDetailsUpdateWithMultipleUnselectedShippingOptions) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentOptions* options = PaymentOptions::Create();
@@ -633,17 +606,16 @@ TEST(
       "\"USD\", \"value\": \"50.00\"}}]}";
 
   request->OnUpdatePaymentDetails(
-      ScriptValue::From(scope.GetScriptState(),
-                        FromJSONString(scope.GetScriptState()->GetIsolate(),
-                                       scope.GetScriptState()->GetContext(),
-                                       detail, ASSERT_NO_EXCEPTION)));
+      ScriptValue(scope.GetScriptState()->GetIsolate(),
+                  FromJSONString(scope.GetScriptState()->GetIsolate(),
+                                 scope.GetScriptState()->GetContext(), detail,
+                                 ASSERT_NO_EXCEPTION)));
 
   EXPECT_TRUE(request->shippingOption().IsNull());
 }
 
 TEST(PaymentRequestTest, UseTheSelectedShippingOptionFromPaymentDetailsUpdate) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentOptions* options = PaymentOptions::Create();
@@ -667,17 +639,16 @@ TEST(PaymentRequestTest, UseTheSelectedShippingOptionFromPaymentDetailsUpdate) {
       "\"USD\", \"value\": \"50.00\"}, \"selected\": true}]}";
 
   request->OnUpdatePaymentDetails(
-      ScriptValue::From(scope.GetScriptState(),
-                        FromJSONString(scope.GetScriptState()->GetIsolate(),
-                                       scope.GetScriptState()->GetContext(),
-                                       detail, ASSERT_NO_EXCEPTION)));
+      ScriptValue(scope.GetScriptState()->GetIsolate(),
+                  FromJSONString(scope.GetScriptState()->GetIsolate(),
+                                 scope.GetScriptState()->GetContext(), detail,
+                                 ASSERT_NO_EXCEPTION)));
 
   EXPECT_EQ("fast", request->shippingOption());
 }
 
 TEST(PaymentRequestTest, NoExceptionWithErrorMessageInUpdate) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentRequest* request = PaymentRequest::Create(
@@ -693,17 +664,16 @@ TEST(PaymentRequestTest, NoExceptionWithErrorMessageInUpdate) {
       "\"value\": \"5.00\"}},"
       "\"error\": \"This is an error message.\"}";
 
-  request->OnUpdatePaymentDetails(ScriptValue::From(
-      scope.GetScriptState(),
-      FromJSONString(scope.GetScriptState()->GetIsolate(),
-                     scope.GetScriptState()->GetContext(),
-                     detail_with_error_msg, ASSERT_NO_EXCEPTION)));
+  request->OnUpdatePaymentDetails(
+      ScriptValue(scope.GetScriptState()->GetIsolate(),
+                  FromJSONString(scope.GetScriptState()->GetIsolate(),
+                                 scope.GetScriptState()->GetContext(),
+                                 detail_with_error_msg, ASSERT_NO_EXCEPTION)));
 }
 
 TEST(PaymentRequestTest,
      ShouldResolveWithExceptionIfIDsOfShippingOptionsAreDuplicated) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   MockFunctionScope funcs(scope.GetScriptState());
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
@@ -724,8 +694,7 @@ TEST(PaymentRequestTest,
 }
 
 TEST(PaymentRequestTest, DetailsIdIsSet) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
   details->setTotal(BuildPaymentItemForTest());
@@ -756,8 +725,7 @@ class PageDeleter final : public NativeEventListener {
 };
 
 TEST(PaymentRequestTest, NoCrashWhenPaymentMethodChangeEventDestroysContext) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   PageDeleter* page_deleter = MakeGarbageCollected<PageDeleter>();
   LocalFrame& frame = page_deleter->page()->GetFrame();
   auto* isolate = ToIsolate(&frame);
@@ -786,8 +754,7 @@ TEST(PaymentRequestTest, NoCrashWhenPaymentMethodChangeEventDestroysContext) {
 }
 
 TEST(PaymentRequestTest, SPCActivationlessShowEnabled) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   ScopedSecurePaymentConfirmationAllowOneActivationlessShowForTest
       scoped_activationless_show_enabled(true);
 
@@ -815,8 +782,7 @@ TEST(PaymentRequestTest, SPCActivationlessShowEnabled) {
 }
 
 TEST(PaymentRequestTest, SPCActivationlessShowDisabled) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   ScopedSecurePaymentConfirmationAllowOneActivationlessShowForTest
       scoped_activationless_show_enabled(false);
 
@@ -841,8 +807,7 @@ TEST(PaymentRequestTest, SPCActivationlessShowDisabled) {
 }
 
 TEST(PaymentRequestTest, SPCActivationlessNotConsumedWithActivation) {
-  test::TaskEnvironment task_environment{
-      test::TaskEnvironment::RealMainThreadScheduler()};
+  test::TaskEnvironment task_environment;
   ScopedSecurePaymentConfirmationAllowOneActivationlessShowForTest
       scoped_activationless_show_enabled(true);
 

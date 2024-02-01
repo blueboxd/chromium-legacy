@@ -30,17 +30,16 @@ class FontList;
 
 namespace views {
 class AXVirtualView;
-class ImageView;
-}
+}  // namespace views
 
 // View used to draw a bubble, containing an icon and a label. We use this as a
 // base for the classes that handle the location icon (including the EV bubble),
 // tab-to-search UI, and content settings.
 class IconLabelBubbleView : public views::InkDropObserver,
                             public views::LabelButton {
- public:
-  METADATA_HEADER(IconLabelBubbleView);
+  METADATA_HEADER(IconLabelBubbleView, views::LabelButton)
 
+ public:
   static constexpr int kTrailingPaddingPreMd = 2;
 
   class Delegate {
@@ -63,8 +62,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   // A view that draws the separator.
   class SeparatorView : public views::View {
+    METADATA_HEADER(SeparatorView, views::View)
+
    public:
-    METADATA_HEADER(SeparatorView);
     explicit SeparatorView(IconLabelBubbleView* owner);
     SeparatorView(const SeparatorView&) = delete;
     SeparatorView& operator=(const SeparatorView&) = delete;
@@ -104,8 +104,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
                 const std::u16string& accessible_name);
   void SetFontList(const gfx::FontList& font_list);
 
-  const views::ImageView* GetImageView() const { return image(); }
-  views::ImageView* GetImageView() { return image(); }
+  const views::View* GetImageContainerView() const {
+    return image_container_view();
+  }
+  views::View* GetImageContainerView() { return image_container_view(); }
 
   // Exposed for testing.
   views::View* separator_view() const { return separator_view_; }
@@ -127,6 +129,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
  protected:
   static constexpr int kOpenTimeMS = 150;
+
+  virtual SkColor GetBackgroundColor() const;
 
   // Gets the color for displaying text and/or icons.
   virtual SkColor GetForegroundColor() const;
@@ -229,6 +233,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // to the suggestion text, like in the SelectedKeywordView.
   virtual int GetExtraInternalSpacing() const;
 
+  std::optional<ui::ColorId> GetCustomBackgroundColorId();
+  std::optional<ui::ColorId> GetCustomForegroundColorId();
+
+  void SetCustomBackgroundColorId(const ui::ColorId color_id);
+  void SetCustomForegroundColorId(const ui::ColorId color_id);
+
   // Slide animation for label.
   gfx::SlideAnimation slide_animation_{this};
 
@@ -298,6 +308,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
       ui::TouchUiController::Get()->RegisterCallback(
           base::BindRepeating(&IconLabelBubbleView::OnTouchUiChanged,
                               base::Unretained(this)));
+
+  std::optional<ui::ColorId> background_color_id_;
+  std::optional<ui::ColorId> foreground_color_id_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ICON_LABEL_BUBBLE_VIEW_H_

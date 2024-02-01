@@ -90,14 +90,14 @@ class PopupPixelTest : public UiBrowserTest,
     }
 
     auto* test_info = testing::UnitTest::GetInstance()->current_test_info();
-    return VerifyPixelUi(widget, test_info->test_case_name(),
+    return VerifyPixelUi(widget, test_info->test_suite_name(),
                          test_info->name()) != ui::test::ActionResult::kFailed;
   }
 
   void WaitForUserDismissal() override {}
 
   void TearDownOnMainThread() override {
-    EXPECT_CALL(controller_, ViewDestroyed());
+    EXPECT_CALL(controller_, ViewDestroyed);
     view_ = nullptr;
     UiBrowserTest::TearDownOnMainThread();
   }

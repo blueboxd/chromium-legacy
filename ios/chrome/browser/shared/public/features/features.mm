@@ -20,26 +20,6 @@ bool IsFeedBackgroundRefreshEnabledOnly() {
   return base::FeatureList::IsEnabled(kEnableFeedBackgroundRefresh);
 }
 
-// Whether feed is refreshed in the background soon after the app is
-// backgrounded. This only checks if the feature is enabled, not if the
-// capability was enabled at startup.
-bool IsFeedAppCloseBackgroundRefreshEnabledOnly() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kEnableFeedInvisibleForegroundRefresh,
-      kEnableFeedAppCloseBackgroundRefresh,
-      /*default=*/false);
-}
-
-// Returns the override value from the Foreground Refresh section of Feed
-// Refresh Settings in Experimental Settings in the Settings App.
-bool IsFeedOverrideForegroundDefaultsEnabled() {
-  if (GetChannel() == version_info::Channel::STABLE) {
-    return false;
-  }
-  return [[NSUserDefaults standardUserDefaults]
-      boolForKey:@"FeedOverrideForegroundDefaultsEnabled"];
-}
-
 }  // namespace
 
 BASE_FEATURE(kIOSKeyboardAccessoryUpgrade,
@@ -48,7 +28,7 @@ BASE_FEATURE(kIOSKeyboardAccessoryUpgrade,
 
 BASE_FEATURE(kIOSPaymentsBottomSheet,
              "IOSPaymentsBottomSheet",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTestFeature, "TestFeature", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -59,6 +39,10 @@ BASE_FEATURE(kSafetyCheckMagicStack,
 BASE_FEATURE(kSharedHighlightingIOS,
              "SharedHighlightingIOS",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kShareInWebContextMenuIOS,
+             "ShareInWebContextMenuIOS",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished.
@@ -78,6 +62,12 @@ BASE_FEATURE(kIOSBrowserEditMenuMetrics,
              "IOSBrowserEditMenuMetrics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const char kIOSDockingPromoExperimentType[] = "IOSDockingPromoExperimentType";
+
+BASE_FEATURE(kIOSDockingPromo,
+             "IOSDockingPromo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kNonModalDefaultBrowserPromoCooldownRefactor,
              "NonModalDefaultBrowserPromoCooldownRefactor",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -86,22 +76,6 @@ constexpr base::FeatureParam<int>
     kNonModalDefaultBrowserPromoCooldownRefactorParam{
         &kNonModalDefaultBrowserPromoCooldownRefactor,
         /*name=*/"cooldown-days", /*default_value=*/14};
-
-BASE_FEATURE(kDefaultBrowserGenericTailoredPromoTrain,
-             "DefaultBrowserGenericTailoredPromoTrain",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-constexpr base::FeatureParam<DefaultBrowserPromoGenericTailoredArm>::Option
-    kDefaultBrowserPromoGenericTailoredArmOptions[] = {
-        {DefaultBrowserPromoGenericTailoredArm::kOnlyGeneric, "only-generic"},
-        {DefaultBrowserPromoGenericTailoredArm::kOnlyTailored,
-         "only-tailored"}};
-
-const base::FeatureParam<DefaultBrowserPromoGenericTailoredArm>
-    kDefaultBrowserPromoGenericTailoredParam{
-        &kDefaultBrowserGenericTailoredPromoTrain, "experiment-arm",
-        DefaultBrowserPromoGenericTailoredArm::kOnlyGeneric,
-        &kDefaultBrowserPromoGenericTailoredArmOptions};
 
 BASE_FEATURE(kDefaultBrowserVideoPromo,
              "DefaultBrowserVideoPromo",
@@ -162,14 +136,6 @@ BASE_FEATURE(kEnableTraitCollectionWorkAround,
              "EnableTraitCollectionWorkAround",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableUIButtonConfiguration,
-             "EnableUIButtonConfiguration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsUIButtonConfigurationEnabled() {
-  return base::FeatureList::IsEnabled(kEnableUIButtonConfiguration);
-}
-
 BASE_FEATURE(kRemoveExcessNTPs,
              "RemoveExcessNTPs",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -178,9 +144,9 @@ BASE_FEATURE(kEnableShortenedPasswordAutoFillInstruction,
              "EnableShortenedPasswordAutoFillInstruction",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableExpKitAppleCalendar,
-             "EnableExpKitAppleCalendar",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kEnableStartupImprovements,
+             "EnableStartupImprovements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTCRexKillSwitch,
              "kTCRexKillSwitch",
@@ -192,6 +158,22 @@ BASE_FEATURE(kTabGridNewTransitions,
 
 bool IsNewTabGridTransitionsEnabled() {
   return base::FeatureList::IsEnabled(kTabGridNewTransitions);
+}
+
+BASE_FEATURE(kContextualPanelForceShowEntrypoint,
+             "ContextualPanelForceShowEntrypoint",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsContextualPanelForceShowEntrypointEnabled() {
+  return base::FeatureList::IsEnabled(kContextualPanelForceShowEntrypoint);
+}
+
+BASE_FEATURE(kContextualPanel,
+             "ContextualPanel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsContextualPanelEnabled() {
+  return base::FeatureList::IsEnabled(kContextualPanel);
 }
 
 BASE_FEATURE(kNonModalDefaultBrowserPromoImpressionLimit,
@@ -231,10 +213,6 @@ BASE_FEATURE(kNewNTPOmniboxLayout,
              "kNewNTPOmniboxLayout",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kBottomOmniboxSteadyState,
-             "BottomOmniboxSteadyState",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 const char kBottomOmniboxDefaultSettingParam[] =
     "BottomOmniboxDefaultSettingParam";
 const char kBottomOmniboxDefaultSettingParamTop[] = "Top";
@@ -245,21 +223,11 @@ BASE_FEATURE(kBottomOmniboxDefaultSetting,
              "BottomOmniboxDefaultSetting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kBottomOmniboxDeviceSwitcherResults,
-             "BottomOmniboxDeviceSwitcherResults",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 bool IsBottomOmniboxSteadyStateEnabled() {
   // Bottom omnibox is only available on phones.
-  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE) {
-    return false;
-  }
-  return base::FeatureList::IsEnabled(kBottomOmniboxSteadyState);
-}
-
-bool IsBottomOmniboxDeviceSwitcherResultsEnabled() {
-  return IsBottomOmniboxSteadyStateEnabled() &&
-         base::FeatureList::IsEnabled(kBottomOmniboxDeviceSwitcherResults);
+  // TODO(crbug.com/1508532): Cleanup usage of this function as the feature flag
+  // is now enabled by default.
+  return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
 }
 
 BASE_FEATURE(kBottomOmniboxPromoFRE,
@@ -299,6 +267,10 @@ const char kBottomOmniboxPromoDefaultPositionParam[] =
 const char kBottomOmniboxPromoDefaultPositionParamTop[] = "Top";
 const char kBottomOmniboxPromoDefaultPositionParamBottom[] = "Bottom";
 
+BASE_FEATURE(kBottomOmniboxPromoRegionFilter,
+             "BottomOmniboxPromoRegionFilter",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -321,6 +293,10 @@ BASE_FEATURE(kDynamicThemeColor,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kDynamicBackgroundColor,
              "DynamicBackgroundColor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTabGridAlwaysBounce,
+             "TabGridAlwaysBounce",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabGridCompositionalLayout,
@@ -363,6 +339,10 @@ BASE_FEATURE(kEnableReviewAccountSettingsPromo,
              "EnableReviewAccountSettingsPromo",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kLinkAccountSettingsToPrivacyFooter,
+             "LinkAccountSettingsToPrivacyFooter",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kEnableWebChannels,
              "EnableWebChannels",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -371,24 +351,12 @@ BASE_FEATURE(kEnableFeedBackgroundRefresh,
              "EnableFeedBackgroundRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableFeedInvisibleForegroundRefresh,
-             "EnableFeedInvisibleForegroundRefresh",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCreateDiscoverFeedServiceEarly,
              "CreateDiscoverFeedServiceEarly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableFeedAblation,
              "EnableFeedAblation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnableFeedExperimentTagging,
-             "EnableFeedExperimentTagging",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kFeedDisableHotStartRefresh,
-             "FeedDisableHotStartRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableFollowUIUpdate,
@@ -447,26 +415,19 @@ const char kBackgroundRefreshIntervalInSeconds[] =
     "BackgroundRefreshIntervalInSeconds";
 const char kBackgroundRefreshMaxAgeInSeconds[] =
     "BackgroundRefreshMaxAgeInSeconds";
-const char kEnableFeedSessionCloseForegroundRefresh[] =
-    "EnableFeedSessionCloseForegroundRefresh";
-const char kEnableFeedAppCloseForegroundRefresh[] =
-    "EnableFeedAppCloseForegroundRefresh";
-const char kEnableFeedAppCloseBackgroundRefresh[] =
-    "EnableFeedAppCloseBackgroundRefresh";
-const char kFeedRefreshEngagementCriteriaType[] =
-    "FeedRefreshEngagementCriteriaType";
-const char kAppCloseBackgroundRefreshIntervalInSeconds[] =
-    "AppCloseBackgroundRefreshIntervalInSeconds";
-const char kFeedRefreshTimerTimeoutInSeconds[] =
-    "FeedRefreshTimerTimeoutInSeconds";
-const char kFeedSeenRefreshThresholdInSeconds[] =
-    "FeedSeenRefreshThresholdInSeconds";
-const char kFeedUnseenRefreshThresholdInSeconds[] =
-    "FeedUnseenRefreshThresholdInSeconds";
-const char kEnableFeedUseInteractivityInvalidationForForegroundRefreshes[] =
-    "EnableFeedUseInteractivityInvalidationForForegroundRefreshes";
 const char kIOSHideFeedWithSearchChoiceTargeted[] =
     "IOSHideFeedWithSearchChoiceTargeted";
+
+bool IsDockingPromoEnabled() {
+  return base::FeatureList::IsEnabled(kIOSDockingPromo);
+}
+
+DockingPromoDisplayTriggerArm DockingPromoExperimentTypeEnabled() {
+  return static_cast<DockingPromoDisplayTriggerArm>(
+      base::GetFieldTrialParamByFeatureAsInt(
+          kIOSDockingPromo, kIOSDockingPromoExperimentType,
+          /*default_value=*/(int)DockingPromoDisplayTriggerArm::kAfterFRE));
+}
 
 bool IsWebChannelsEnabled() {
   std::string launched_countries[5] = {"AU", "GB", "NZ", "US", "ZA"};
@@ -499,10 +460,8 @@ bool IsFeedBackgroundRefreshCapabilityEnabled() {
 
 void SaveFeedBackgroundRefreshCapabilityEnabledForNextColdStart() {
   DCHECK(base::FeatureList::GetInstance());
-  BOOL enabled = IsFeedBackgroundRefreshEnabledOnly() ||
-                 IsFeedAppCloseBackgroundRefreshEnabledOnly();
   [[NSUserDefaults standardUserDefaults]
-      setBool:enabled
+      setBool:IsFeedBackgroundRefreshEnabledOnly()
        forKey:kEnableFeedBackgroundRefreshCapabilityForNextColdStart];
 }
 
@@ -589,96 +548,6 @@ double GetBackgroundRefreshMaxAgeInSeconds() {
       /*default=*/0);
 }
 
-bool IsFeedInvisibleForegroundRefreshEnabled() {
-  return base::FeatureList::IsEnabled(kEnableFeedInvisibleForegroundRefresh);
-}
-
-bool IsFeedSessionCloseForegroundRefreshEnabled() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kEnableFeedInvisibleForegroundRefresh,
-      kEnableFeedSessionCloseForegroundRefresh,
-      /*default=*/false);
-}
-
-bool IsFeedAppCloseForegroundRefreshEnabled() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kEnableFeedInvisibleForegroundRefresh,
-      kEnableFeedAppCloseForegroundRefresh,
-      /*default=*/true);
-}
-
-bool IsFeedAppCloseBackgroundRefreshEnabled() {
-  return IsFeedBackgroundRefreshCapabilityEnabled() &&
-         IsFeedAppCloseBackgroundRefreshEnabledOnly();
-}
-
-FeedRefreshEngagementCriteriaType GetFeedRefreshEngagementCriteriaType() {
-  return (FeedRefreshEngagementCriteriaType)
-      base::GetFieldTrialParamByFeatureAsInt(
-          kEnableFeedInvisibleForegroundRefresh,
-          kFeedRefreshEngagementCriteriaType,
-          /*default_value=*/
-          (int)FeedRefreshEngagementCriteriaType::kSimpleEngagement);
-}
-
-double GetAppCloseBackgroundRefreshIntervalInSeconds() {
-  double override_value = [[NSUserDefaults standardUserDefaults]
-      doubleForKey:@"AppCloseBackgroundRefreshIntervalInSeconds"];
-  if (override_value > 0.0) {
-    return override_value;
-  }
-  return base::GetFieldTrialParamByFeatureAsDouble(
-      kEnableFeedInvisibleForegroundRefresh,
-      kAppCloseBackgroundRefreshIntervalInSeconds,
-      /*default=*/base::Minutes(5).InSecondsF());
-}
-
-double GetFeedRefreshTimerTimeoutInSeconds() {
-  double override_value = [[NSUserDefaults standardUserDefaults]
-      doubleForKey:@"FeedRefreshTimerTimeoutInSeconds"];
-  if (override_value > 0.0) {
-    return override_value;
-  }
-  return base::GetFieldTrialParamByFeatureAsDouble(
-      kEnableFeedInvisibleForegroundRefresh, kFeedRefreshTimerTimeoutInSeconds,
-      /*default=*/base::Minutes(5).InSecondsF());
-}
-
-double GetFeedSeenRefreshThresholdInSeconds() {
-  double override_value = [[NSUserDefaults standardUserDefaults]
-      doubleForKey:@"FeedSeenRefreshThresholdInSeconds"];
-  if (override_value > 0.0) {
-    return override_value;
-  }
-  return base::GetFieldTrialParamByFeatureAsDouble(
-      kEnableFeedInvisibleForegroundRefresh, kFeedSeenRefreshThresholdInSeconds,
-      /*default=*/base::Hours(1).InSecondsF());
-}
-
-double GetFeedUnseenRefreshThresholdInSeconds() {
-  double override_value = [[NSUserDefaults standardUserDefaults]
-      doubleForKey:@"FeedUnseenRefreshThresholdInSeconds"];
-  if (override_value > 0.0) {
-    return override_value;
-  }
-  return base::GetFieldTrialParamByFeatureAsDouble(
-      kEnableFeedInvisibleForegroundRefresh,
-      kFeedUnseenRefreshThresholdInSeconds,
-      /*default=*/base::Hours(6).InSecondsF());
-}
-
-bool IsFeedUseInteractivityInvalidationForForegroundRefreshesEnabled() {
-  if (IsFeedOverrideForegroundDefaultsEnabled()) {
-    return [[NSUserDefaults standardUserDefaults]
-        doubleForKey:
-            @"FeedUseInteractivityInvalidationForForegroundRefreshesEnabled"];
-  }
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kEnableFeedInvisibleForegroundRefresh,
-      kEnableFeedUseInteractivityInvalidationForForegroundRefreshes,
-      /*default=*/false);
-}
-
 bool IsIOSHideFeedWithSearchChoiceTargeted() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kIOSHideFeedWithSearchChoice, kIOSHideFeedWithSearchChoiceTargeted,
@@ -689,15 +558,12 @@ bool IsFeedAblationEnabled() {
   return base::FeatureList::IsEnabled(kEnableFeedAblation);
 }
 
-bool IsFeedExperimentTaggingEnabled() {
-  return base::FeatureList::IsEnabled(kEnableFeedExperimentTagging);
-}
-
-bool IsFeedHotStartRefreshDisabled() {
-  return base::FeatureList::IsEnabled(kFeedDisableHotStartRefresh);
-}
-
 bool IsFollowUIUpdateEnabled() {
+  std::string launched_countries[1] = {"US"};
+  if (base::Contains(launched_countries,
+                     country_codes::GetCurrentCountryCode())) {
+    return true;
+  }
   return base::FeatureList::IsEnabled(kEnableFollowUIUpdate);
 }
 
@@ -725,6 +591,11 @@ bool IsContentPushNotificationsSetUpListEnabled() {
           NotificationsExperimentTypeSetUpListsEnabled);
 }
 
+bool IsContentPushNotificationsProvisionalEnabled() {
+  return (ContentNotificationsExperimentTypeEnabled() ==
+          NotificationsExperimentTypeProvisional);
+}
+
 bool IsIOSLargeFakeboxEnabled() {
   return base::FeatureList::IsEnabled(kIOSLargeFakebox);
 }
@@ -734,7 +605,8 @@ bool IsIOSHideFeedWithSearchChoiceEnabled() {
 }
 
 bool IsKeyboardAccessoryUpgradeEnabled() {
-  return base::FeatureList::IsEnabled(kIOSKeyboardAccessoryUpgrade);
+  return base::FeatureList::IsEnabled(kIOSKeyboardAccessoryUpgrade) &&
+         ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET;
 }
 
 // Feature disabled by default.
@@ -775,7 +647,8 @@ bool IsMagicStackEnabled() {
 }
 
 bool IsFeedContainmentEnabled() {
-  return base::FeatureList::IsEnabled(kEnableFeedContainment);
+  return IsMagicStackEnabled() &&
+         base::FeatureList::IsEnabled(kEnableFeedContainment);
 }
 
 int HomeModuleMinimumPadding() {
@@ -827,4 +700,18 @@ int TimeUntilShowingCompactedSetUpList() {
 
 bool IsExternalActionSchemeHandlingEnabled() {
   return base::FeatureList::IsEnabled(kIOSExternalActionURLs);
+}
+
+BASE_FEATURE(kInactiveNavigationAfterAppLaunchKillSwitch,
+             "kInactiveNavigationAfterAppLaunchKillSwitch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIOSTipsNotifications,
+             "IOSTipsNotifications",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kIOSTipsNotificationsTriggerTimeParam[] = "trigger_time";
+
+bool IsIOSTipsNotificationsEnabled() {
+  return base::FeatureList::IsEnabled(kIOSTipsNotifications);
 }

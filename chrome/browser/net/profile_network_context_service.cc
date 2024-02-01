@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/sct_reporting_service.h"
 #include "chrome/browser/ssl/sct_reporting_service_factory.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -76,10 +78,15 @@
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/cert_verifier_service.mojom.h"
 #include "services/network/public/mojom/first_party_sets_access_delegate.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/features.h"
+
+#if BUILDFLAG(CHROME_CERTIFICATE_POLICIES_SUPPORTED)
+#include "net/cert/asn1_util.h"
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/certificate_provider/certificate_provider.h"
@@ -88,6 +95,7 @@
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "net/cert/x509_util.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -151,9 +159,23 @@ cert_verifier::mojom::AdditionalCertificatesPtr GetAdditionalCertificates(
     const base::FilePath& storage_partition_path) {
   auto additional_certificates =
       cert_verifier::mojom::AdditionalCertificates::New();
+  net::CertificateList all_certificates;
+  net::CertificateList trust_anchors;
   policy_cert_service->GetPolicyCertificatesForStoragePartition(
-      storage_partition_path, &(additional_certificates->all_certificates),
-      &(additional_certificates->trust_anchors));
+      storage_partition_path, &all_certificates, &trust_anchors);
+
+  for (const auto& cert : all_certificates) {
+    base::span<const uint8_t> cert_bytes =
+        net::x509_util::CryptoBufferAsSpan(cert->cert_buffer());
+    additional_certificates->all_certificates.push_back(
+        std::vector<uint8_t>(cert_bytes.begin(), cert_bytes.end()));
+  }
+  for (const auto& cert : trust_anchors) {
+    base::span<const uint8_t> cert_bytes =
+        net::x509_util::CryptoBufferAsSpan(cert->cert_buffer());
+    additional_certificates->trust_anchors.push_back(
+        std::vector<uint8_t>(cert_bytes.begin(), cert_bytes.end()));
+  }
   return additional_certificates;
 }
 #endif  // defined (OS_CHROMEOS)
@@ -208,29 +230,11 @@ void UpdateAntiAbuseSettings(Profile* profile) {
       });
 }
 
-// `kPermissionStorageAccessAPI` enables feature: Storage Access API with
-// Prompts (https://chromestatus.com/feature/5085655327047680). StorageAccessAPI
-// is considered enabled when either feature is enabled (by different field
-// trial studies).
-bool StorageAccessAPIEnabled() {
-  return base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) ||
-         base::FeatureList::IsEnabled(
-             permissions::features::kPermissionStorageAccessAPI);
-}
-
-// TODO(crbug.com/1385156): Separate the two flags entirely.
-bool TopLevelStorageAccessAPIEnabled() {
-  return base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) &&
-         base::FeatureList::IsEnabled(
-             blink::features::kStorageAccessAPIForOriginExtension);
-}
-
 bool IsContentSettingsTypeEnabled(ContentSettingsType type) {
   switch (type) {
     case ContentSettingsType::STORAGE_ACCESS:
-      return StorageAccessAPIEnabled();
     case ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS:
-      return TopLevelStorageAccessAPIEnabled();
+      return true;
     default:
       return content_settings::CookieSettings::GetContentSettingsTypes()
           .contains(type);
@@ -295,6 +299,21 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       certificate_transparency::prefs::kCTExcludedLegacySPKIs,
       base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
                           base::Unretained(this)));
+#if BUILDFLAG(CHROME_CERTIFICATE_POLICIES_SUPPORTED)
+  // When any of the following Certificate preferences change, we schedule an
+  // update to aggregate the actual update using a |cert_policy_update_timer_|.
+  base::RepeatingClosure schedule_update_cert_policy = base::BindRepeating(
+      &ProfileNetworkContextService::ScheduleUpdateCertificatePolicy,
+      base::Unretained(this));
+  pref_change_registrar_.Add(prefs::kCACertificates,
+                             schedule_update_cert_policy);
+  pref_change_registrar_.Add(prefs::kCADistrustedCertificates,
+                             schedule_update_cert_policy);
+  pref_change_registrar_.Add(prefs::kCAHintCertificates,
+                             schedule_update_cert_policy);
+  pref_change_registrar_.Add(prefs::kCAPlatformIntegrationEnabled,
+                             schedule_update_cert_policy);
+#endif
 
   pref_change_registrar_.Add(
       prefs::kGloballyScopeHTTPAuthCacheEnabled,
@@ -365,6 +384,13 @@ void ProfileNetworkContextService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kGloballyScopeHTTPAuthCacheEnabled,
                                 false);
   registry->RegisterListPref(prefs::kHSTSPolicyBypassList);
+#if BUILDFLAG(CHROME_CERTIFICATE_POLICIES_SUPPORTED)
+  registry->RegisterListPref(prefs::kCACertificates);
+  registry->RegisterListPref(prefs::kCADistrustedCertificates);
+  registry->RegisterListPref(prefs::kCAHintCertificates);
+  // Include user added platform certs by default.
+  registry->RegisterBooleanPref(prefs::kCAPlatformIntegrationEnabled, true);
+#endif
 }
 
 // static
@@ -513,6 +539,79 @@ void ProfileNetworkContextService::ScheduleUpdateCTPolicy() {
   ct_policy_update_timer_.Start(FROM_HERE, base::Seconds(0), this,
                                 &ProfileNetworkContextService::UpdateCTPolicy);
 }
+
+#if BUILDFLAG(CHROME_CERTIFICATE_POLICIES_SUPPORTED)
+cert_verifier::mojom::AdditionalCertificatesPtr
+ProfileNetworkContextService::GetCertificatePolicy() {
+  std::vector<std::vector<uint8_t>> additional_untrusted_certificates;
+  std::vector<std::vector<uint8_t>> additional_trust_anchors;
+  std::vector<std::vector<uint8_t>>
+      additional_trust_anchors_enforced_constraints;
+  std::vector<std::vector<uint8_t>> additional_distrusted_spkis;
+  auto* prefs = profile_->GetPrefs();
+
+  for (const base::Value& cert_b64 :
+       prefs->GetList(prefs::kCAHintCertificates)) {
+    absl::optional<std::vector<uint8_t>> decoded_opt =
+        base::Base64Decode(cert_b64.GetString());
+
+    if (decoded_opt.has_value()) {
+      additional_untrusted_certificates.push_back(std::move(*decoded_opt));
+    }
+  }
+
+  for (const base::Value& cert_b64 : prefs->GetList(prefs::kCACertificates)) {
+    absl::optional<std::vector<uint8_t>> decoded_opt =
+        base::Base64Decode(cert_b64.GetString());
+
+    if (decoded_opt.has_value()) {
+      additional_trust_anchors_enforced_constraints.push_back(
+          std::move(*decoded_opt));
+    }
+  }
+
+  for (const base::Value& cert_b64 :
+       prefs->GetList(prefs::kCADistrustedCertificates)) {
+    std::string decoded;
+    if (!base::Base64Decode(cert_b64.GetString(), &decoded)) {
+      continue;
+    }
+    base::StringPiece spki_piece;
+    bool success = net::asn1::ExtractSPKIFromDERCert(decoded, &spki_piece);
+    if (success) {
+      additional_distrusted_spkis.push_back(
+          std::vector<uint8_t>(spki_piece.begin(), spki_piece.end()));
+    }
+  }
+
+  bool include_system_trust_store =
+      prefs->GetBoolean(prefs::kCAPlatformIntegrationEnabled);
+
+  return cert_verifier::mojom::AdditionalCertificates::New(
+      std::move(additional_untrusted_certificates),
+      std::move(additional_trust_anchors),
+      std::move(additional_trust_anchors_enforced_constraints),
+      std::move(additional_distrusted_spkis), include_system_trust_store);
+}
+
+void ProfileNetworkContextService::UpdateCertificatePolicy() {
+  std::vector<cert_verifier::mojom::CertVerifierServiceUpdater*> updaters;
+  profile_->ForEachLoadedStoragePartition(
+      [&](content::StoragePartition* storage_partition) {
+        updaters.push_back(storage_partition->GetCertVerifierServiceUpdater());
+      });
+
+  for (auto* updater : updaters) {
+    updater->UpdateAdditionalCertificates(GetCertificatePolicy());
+  }
+}
+
+void ProfileNetworkContextService::ScheduleUpdateCertificatePolicy() {
+  cert_policy_update_timer_.Start(
+      FROM_HERE, base::Seconds(0), this,
+      &ProfileNetworkContextService::UpdateCertificatePolicy);
+}
+#endif
 
 bool ProfileNetworkContextService::ShouldSplitAuthCacheByNetworkIsolationKey()
     const {
@@ -853,6 +952,14 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     // network service.
     network_context_params->enable_locking_cookie_database =
         base::FeatureList::IsEnabled(features::kLockProfileCookieDatabase);
+
+    if (base::FeatureList::IsEnabled(
+            features::kUseOsCryptAsyncForCookieEncryption)) {
+      g_browser_process->system_network_context_manager()
+          ->AddCookieEncryptionManagerToNetworkContextParams(
+              network_context_params);
+    }
+
 #endif  // BUILDFLAG(IS_WIN)
     network_context_params->file_paths->trust_token_database_name =
         base::FilePath(chrome::kTrustTokenFilename);
@@ -959,6 +1066,17 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   }
 #endif
 
+#if BUILDFLAG(CHROME_CERTIFICATE_POLICIES_SUPPORTED)
+  // TODO(crbug.com/1477317): check to see if IsManaged() ensures the pref isn't
+  // set in user profiles, or if that does something else. If that's true, add
+  // an isManaged() check here.
+  // TODO(crbug.com/1477317): when adding ChromeOS support for these policies
+  // figure out how to integrate in the ChromeOS enterprise policy support with
+  // these policies.
+  cert_verifier_creation_params->initial_additional_certificates =
+      GetCertificatePolicy();
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS)
   // Disable idle sockets close on memory pressure if configured by finch or
   // about://flags.
@@ -1007,12 +1125,14 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
       profile_->GetPrefs()->GetBoolean(
           prefs::kAccessControlAllowMethodsInCORSPreflightSpecConformant);
 
-  IpProtectionConfigProvider* ip_protection_auth_token_getter =
+  IpProtectionConfigProvider* ipp_config_provider =
       IpProtectionConfigProvider::Get(profile_);
-  if (ip_protection_auth_token_getter) {
-    ip_protection_auth_token_getter->AddReceiver(
+  if (ipp_config_provider) {
+    ipp_config_provider->AddNetworkService(
         network_context_params->ip_protection_config_getter
-            .InitWithNewPipeAndPassReceiver());
+            .InitWithNewPipeAndPassReceiver(),
+        network_context_params->ip_protection_proxy_delegate
+            .InitWithNewPipeAndPassRemote());
   }
 
   network_context_params->afp_block_list_experiment_enabled =

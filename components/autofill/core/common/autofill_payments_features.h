@@ -19,12 +19,15 @@ BASE_DECLARE_FEATURE(kAutofillEnableCardArtServerSideStretching);
 BASE_DECLARE_FEATURE(kAutofillEnableCardBenefits);
 BASE_DECLARE_FEATURE(kAutofillEnableCardProductName);
 BASE_DECLARE_FEATURE(kAutofillEnableCvcStorageAndFilling);
-BASE_DECLARE_FEATURE(kAutofillEnableEmailOtpForVcnYellowPath);
 BASE_DECLARE_FEATURE(kAutofillEnableFIDOProgressDialog);
 BASE_DECLARE_FEATURE(kAutofillEnableFpanRiskBasedAuthentication);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_DECLARE_FEATURE(kAutofillEnableIbanAndroidBottomSheet);
+#endif
+
 BASE_DECLARE_FEATURE(kAutofillEnableManualFallbackForVirtualCards);
 BASE_DECLARE_FEATURE(kAutofillEnableMerchantDomainInUnmaskCardRequest);
-BASE_DECLARE_FEATURE(kAutofillEnableMerchantOptOutClientSideUrlFiltering);
 BASE_DECLARE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnDesktop);
 BASE_DECLARE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnClank);
 BASE_DECLARE_FEATURE(kAutofillEnableNewCardArtAndNetworkImages);
@@ -33,6 +36,7 @@ BASE_DECLARE_FEATURE(kAutofillEnableOffersInClankKeyboardAccessory);
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kAutofillEnablePaymentsAndroidBottomSheet);
+BASE_DECLARE_FEATURE(kAutofillEnablePaymentsAndroidBottomSheetAccountEmail);
 #endif
 
 BASE_DECLARE_FEATURE(kAutofillEnablePaymentsMandatoryReauth);
@@ -43,10 +47,10 @@ BASE_DECLARE_FEATURE(kAutofillEnableServerIban);
 BASE_DECLARE_FEATURE(kAutofillEnableStickyManualFallbackForCards);
 BASE_DECLARE_FEATURE(kAutofillEnableUpdateVirtualCardEnrollment);
 BASE_DECLARE_FEATURE(kAutofillEnableUserAvatarInSaveCardFooter);
+BASE_DECLARE_FEATURE(kAutofillEnableVcn3dsAuthentication);
 BASE_DECLARE_FEATURE(kAutofillEnableVcnEnrollLoadingAndConfirmation);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardEnrollMetricsLogger);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardMetadata);
-BASE_DECLARE_FEATURE(kAutofillMoveLegalTermsAndIconForNewCardEnrollment);
 BASE_DECLARE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields);
 BASE_DECLARE_FEATURE(kAutofillSuggestServerCardInsteadOfLocalCard);
 BASE_DECLARE_FEATURE(kAutofillUpdateChromeSettingsLinkToGPayWeb);
@@ -55,11 +59,6 @@ BASE_DECLARE_FEATURE(kAutofillUpstream);
 #if BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kAutofillUseTwoDotsForLastFourDigits);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCards);
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-BASE_DECLARE_FEATURE(kEnablePixDetection);
-BASE_DECLARE_FEATURE(kEnablePixPayments);
 #endif
 
 // Return whether a [No thanks] button and new messaging is shown in the save

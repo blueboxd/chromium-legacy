@@ -123,8 +123,8 @@ namespace {
 constexpr int kDefaultTotalBufferSize = 10 * 1000 * 1000;    // 10 MB
 constexpr int kDefaultResourceBufferSize = 5 * 1000 * 1000;  // 5 MB
 #else
-constexpr int kDefaultTotalBufferSize = 100 * 1000 * 1000;    // 100 MB
-constexpr int kDefaultResourceBufferSize = 10 * 1000 * 1000;  // 10 MB
+constexpr int kDefaultTotalBufferSize = 200 * 1000 * 1000;    // 200 MB
+constexpr int kDefaultResourceBufferSize = 20 * 1000 * 1000;  // 20 MB
 #endif
 
 // Pattern may contain stars ('*') which match to any (possibly empty) string.
@@ -1027,12 +1027,18 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
       break;
   }
 
-  // Use mime type from cached resource in case the one in response is empty
-  // or the response is a 304 Not Modified.
+  // Use mime type and charset from cached resource in case the one in response
+  // is empty or the response is a 304 Not Modified.
   String mime_type = response.MimeType();
-  if (cached_resource &&
-      (mime_type.empty() || response.HttpStatusCode() == 304))
-    mime_type = cached_resource->GetResponse().MimeType();
+  String charset = response.TextEncodingName();
+  if (cached_resource) {
+    if (mime_type.empty() || response.HttpStatusCode() == 304) {
+      mime_type = cached_resource->GetResponse().MimeType();
+    }
+    if (charset.empty() || response.HttpStatusCode() == 304) {
+      charset = cached_resource->GetResponse().TextEncodingName();
+    }
+  }
 
   if (is_empty)
     *is_empty = !status && mime_type.empty() && !headers_map.size();
@@ -1044,6 +1050,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
           .setStatusText(status_text)
           .setHeaders(BuildObjectForHeaders(headers_map))
           .setMimeType(mime_type)
+          .setCharset(charset)
           .setConnectionReused(response.ConnectionReused())
           .setConnectionId(response.ConnectionID())
           .setEncodedDataLength(encoded_data_length)
@@ -1659,6 +1666,8 @@ void InspectorNetworkAgent::DidFailLoading(
         request_id, base::TimeTicks::Now().since_origin().InSecondsF(), 0);
     return;
   }
+
+  resources_data_->ClearData(request_id);
 
   bool canceled = error.IsCancellation();
 

@@ -93,7 +93,7 @@ enum class SettingsVisibleFieldTypeForMetrics {
   kState = 7,
   kStreetAddress = 8,
   kDependentLocality = 9,
-  kHonorificPrefix = 10,
+  // kHonorificPrefix = 10,  // Deprecated in M123.
   kCompany = 11,
   kMaxValue = kCompany
 };
@@ -101,7 +101,7 @@ enum class SettingsVisibleFieldTypeForMetrics {
 // Converts a server field type that can be edited in the settings to an enum
 // used for metrics.
 SettingsVisibleFieldTypeForMetrics ConvertSettingsVisibleFieldTypeForMetrics(
-    ServerFieldType field_type);
+    FieldType field_type);
 
 }  // namespace autofill::autofill_metrics
 

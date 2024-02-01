@@ -21,7 +21,6 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/address_rewriter.h"
 #include "components/autofill/core/browser/geo/alternative_state_name_map.h"
-#include "components/autofill/core/browser/metrics/converge_to_extreme_length_address_metrics.h"
 #include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
@@ -31,31 +30,6 @@ std::u16string AddressComponentWithRewriter::GetValueForComparison(
     const AddressComponent& other) const {
   return NormalizeAndRewrite(GetCommonCountry(other), value,
                              /*keep_white_space=*/true);
-}
-
-FeatureGuardedAddressComponent::FeatureGuardedAddressComponent(
-    raw_ptr<const base::Feature> feature,
-    ServerFieldType storage_type,
-    SubcomponentsList children,
-    unsigned int merge_mode)
-    : AddressComponent(storage_type, std::move(children), merge_mode),
-      feature_(feature) {}
-
-void FeatureGuardedAddressComponent::SetValue(std::u16string value,
-                                              VerificationStatus status) {
-  if (!base::FeatureList::IsEnabled(*feature_)) {
-    return;
-  }
-  AddressComponent::SetValue(value, status);
-}
-
-void FeatureGuardedAddressComponent::GetTypes(
-    bool storable_only,
-    ServerFieldTypeSet* supported_types) const {
-  if (!base::FeatureList::IsEnabled(*feature_)) {
-    return;
-  }
-  AddressComponent::GetTypes(storable_only, supported_types);
 }
 
 StreetNameNode::StreetNameNode(SubcomponentsList children)
@@ -177,12 +151,8 @@ bool StreetAddressNode::HasNewerValuePrecedenceInMerging(
     }
     // Otherwise, prefer the longer or shorter street address depending on the
     // feature `kAutofillConvergeToExtremeLengthStreetAddress` parameterization.
-    const bool has_newer_value_precedence =
-        features::kAutofillConvergeToLonger.Get() ? old_length < new_length
-                                                  : old_length > new_length;
-    autofill_metrics::LogAddressUpdateLengthConvergenceStatus(
-        has_newer_value_precedence);
-    return has_newer_value_precedence;
+    return features::kAutofillConvergeToLonger.Get() ? old_length < new_length
+                                                     : old_length > new_length;
   }
   return false;
 }
@@ -221,13 +191,13 @@ bool StreetAddressNode::IsValueValid() const {
 }
 
 std::u16string StreetAddressNode::GetValueForOtherSupportedType(
-    ServerFieldType field_type) const {
+    FieldType field_type) const {
   // It is assumed below that field_type is an address line type.
   CHECK(IsSupportedType(field_type));
   return GetAddressLine(field_type);
 }
 
-std::u16string StreetAddressNode::GetAddressLine(ServerFieldType type) const {
+std::u16string StreetAddressNode::GetAddressLine(FieldType type) const {
   const size_t line_index = AddressLineIndex(type);
   return address_lines_.size() > line_index ? address_lines_.at(line_index)
                                             : std::u16string();
@@ -235,7 +205,7 @@ std::u16string StreetAddressNode::GetAddressLine(ServerFieldType type) const {
 
 // Implements support for setting the value of the individual address lines.
 void StreetAddressNode::SetValueForOtherSupportedType(
-    ServerFieldType field_type,
+    FieldType field_type,
     const std::u16string& value,
     const VerificationStatus& status) {
   CHECK(IsSupportedType(field_type));
@@ -263,9 +233,8 @@ void StreetAddressNode::PostAssignSanitization() {
   CalculateAddressLines();
 }
 
-const ServerFieldTypeSet StreetAddressNode::GetAdditionalSupportedFieldTypes()
-    const {
-  constexpr ServerFieldTypeSet additional_supported_field_types{
+const FieldTypeSet StreetAddressNode::GetAdditionalSupportedFieldTypes() const {
+  constexpr FieldTypeSet additional_supported_field_types{
       ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2, ADDRESS_HOME_LINE3};
   return additional_supported_field_types;
 }
@@ -309,20 +278,20 @@ StateNode::StateNode(SubcomponentsList children)
 
 StateNode::~StateNode() = default;
 
-absl::optional<std::u16string> StateNode::GetCanonicalizedValue() const {
+std::optional<std::u16string> StateNode::GetCanonicalizedValue() const {
   std::string country_code =
       base::UTF16ToUTF8(GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY));
 
   if (country_code.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
-  absl::optional<AlternativeStateNameMap::CanonicalStateName>
+  std::optional<AlternativeStateNameMap::CanonicalStateName>
       canonicalized_state_name = AlternativeStateNameMap::GetCanonicalStateName(
           country_code, GetValue());
 
   if (!canonicalized_state_name.has_value()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return canonicalized_state_name.value().value();
@@ -476,7 +445,7 @@ void AddressNode::MigrateLegacyStructure() {
   // Otherwise set the status of the subcomponents to observed if they already
   // have a value assigned. Note, those are all the tokens that are already
   // present in the unstructured address representation.
-  for (auto& component : Subcomponents()) {
+  for (AddressComponent* component : Subcomponents()) {
     if (!component->GetValue().empty() &&
         component->GetVerificationStatus() == VerificationStatus::kNoStatus) {
       component->SetValue(component->GetValue(), VerificationStatus::kObserved);

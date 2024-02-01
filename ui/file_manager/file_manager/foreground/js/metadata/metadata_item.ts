@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import type {ExifEntry} from '../../../externs/exif_entry.js';
-
-import type {ExifTag} from './exif_constants.js';
+import type {ExifEntry, ExifTag} from './exif_constants.js';
 
 export interface ImageTransformation {
   scaleX: number;
@@ -248,6 +246,7 @@ export class ParserMetadata {
     exif?: Record<ExifTag, ExifEntry>,
     gps?: Record<ExifTag, ExifEntry>,
   };
+  fileSize?: number;
   height?: number;
   width?: number;
   duration?: number;

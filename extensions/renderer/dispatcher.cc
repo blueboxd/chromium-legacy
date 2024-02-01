@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -21,7 +22,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -34,14 +34,12 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_features.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/behavior_feature.h"
@@ -53,10 +51,12 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/mojom/host_id.mojom.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
+#include "extensions/common/utils/extension_utils.h"
 #include "extensions/grit/extensions_renderer_resources.h"
 #include "extensions/renderer/api/app_window_custom_bindings.h"
 #include "extensions/renderer/api/automation/automation_internal_custom_bindings.h"
@@ -292,9 +292,6 @@ Dispatcher::Dispatcher(
       std::make_unique<ScriptInjectionManager>(user_script_set_manager_.get());
   user_script_set_manager_observation_.Observe(user_script_set_manager_.get());
   PopulateSourceMap();
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  WakeEventPage::Get()->Init(RenderThread::Get());
-#endif
   // Ideally this should be done after checking
   // ExtensionAPIEnabledInExtensionServiceWorkers(), but the Dispatcher is
   // created so early that sending an IPC from browser/ process to synchronize
@@ -391,8 +388,9 @@ void Dispatcher::DidCreateScriptContext(
 
   // Initialize origin permissions for content scripts, which can't be
   // initialized in |ActivateExtension|.
-  if (context->context_type() == Feature::CONTENT_SCRIPT_CONTEXT)
+  if (context->context_type() == mojom::ContextType::kContentScript) {
     InitOriginPermissions(context->extension());
+  }
 
   context->SetModuleSystem(
       std::make_unique<ModuleSystem>(context, &source_map_));
@@ -416,44 +414,44 @@ void Dispatcher::DidCreateScriptContext(
 
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
   switch (context->context_type()) {
-    case Feature::UNSPECIFIED_CONTEXT:
+    case mojom::ContextType::kUnspecified:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Unspecified",
                           elapsed);
       break;
-    case Feature::BLESSED_EXTENSION_CONTEXT:
+    case mojom::ContextType::kPrivilegedExtension:
       // For service workers this is handled in
       // WillEvaluateServiceWorkerOnWorkerThread().
       DCHECK(!context->IsForServiceWorker());
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Blessed", elapsed);
       break;
-    case Feature::UNBLESSED_EXTENSION_CONTEXT:
+    case mojom::ContextType::kUnprivilegedExtension:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Unblessed",
                           elapsed);
       break;
-    case Feature::CONTENT_SCRIPT_CONTEXT:
+    case mojom::ContextType::kContentScript:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_ContentScript",
                           elapsed);
       break;
-    case Feature::WEB_PAGE_CONTEXT:
+    case mojom::ContextType::kWebPage:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_WebPage", elapsed);
       break;
-    case Feature::BLESSED_WEB_PAGE_CONTEXT:
+    case mojom::ContextType::kPrivilegedWebPage:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_BlessedWebPage",
                           elapsed);
       break;
-    case Feature::WEBUI_CONTEXT:
+    case mojom::ContextType::kWebUi:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_WebUI", elapsed);
       break;
-    case Feature::WEBUI_UNTRUSTED_CONTEXT:
+    case mojom::ContextType::kUntrustedWebUi:
       // Extension APIs in untrusted WebUIs are temporary so don't bother
       // recording metrics for them.
       break;
-    case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
+    case mojom::ContextType::kLockscreenExtension:
       UMA_HISTOGRAM_TIMES(
           "Extensions.DidCreateScriptContext_LockScreenExtension", elapsed);
       break;
-    case Feature::OFFSCREEN_EXTENSION_CONTEXT:
-    case Feature::USER_SCRIPT_CONTEXT:
+    case mojom::ContextType::kOffscreenExtension:
+    case mojom::ContextType::kUserScript:
       // We don't really care about offscreen extension context or user script
       // context initialization time at the moment. Offscreen extension context
       // initialization is a strict subset (and very similar to) blessed
@@ -549,8 +547,9 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
   // by extensions minimal bindings, just as we might want to give them to
   // service workers that aren't registered by extensions.
   ScriptContext* context = new ScriptContext(
-      v8_context, nullptr, extension, Feature::BLESSED_EXTENSION_CONTEXT,
-      extension, Feature::BLESSED_EXTENSION_CONTEXT);
+      v8_context, nullptr, GenerateHostIdFromExtensionId(extension->id()),
+      extension, mojom::ContextType::kPrivilegedExtension, extension,
+      mojom::ContextType::kPrivilegedExtension);
   context->set_url(script_url);
   context->set_service_worker_scope(service_worker_scope);
   context->set_service_worker_version_id(service_worker_version_id);
@@ -603,7 +602,7 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
   v8::Isolate* isolate = context->isolate();
 
   // Fetch the source code for service_worker_bindings.js.
-  base::StringPiece script_resource =
+  std::string_view script_resource =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_SERVICE_WORKER_BINDINGS_JS);
   v8::Local<v8::String> script =
@@ -679,16 +678,11 @@ void Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
 
   const int thread_id = content::WorkerThread::GetCurrentId();
   CHECK_NE(thread_id, kMainThreadId);
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  WorkerThreadDispatcher::Get()->DidStartContext(service_worker_scope,
-                                                 service_worker_version_id);
-#else
   auto* service_worker_data = WorkerThreadDispatcher::GetServiceWorkerData();
   service_worker_data->GetServiceWorkerHost()->DidStartServiceWorkerContext(
       service_worker_data->context()->GetExtensionID(),
       *service_worker_data->activation_sequence(), service_worker_scope,
       service_worker_version_id, thread_id);
-#endif
 }
 
 void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
@@ -711,15 +705,10 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
         service_worker_data->bindings_system();
     if (worker_bindings_system) {
       worker_bindings_system->WillReleaseScriptContext(script_context);
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-      WorkerThreadDispatcher::Get()->DidStopContext(service_worker_scope,
-                                                    service_worker_version_id);
-#else
       service_worker_data->GetServiceWorkerHost()->DidStopServiceWorkerContext(
           script_context->GetExtensionID(),
           *service_worker_data->activation_sequence(), service_worker_scope,
           service_worker_version_id, thread_id);
-#endif
     }
     // Note: we have to remove the context (and thus perform invalidation on
     // the native handlers) prior to removing the worker data, which destroys
@@ -814,12 +803,12 @@ void Dispatcher::RunScriptsAtDocumentIdle(content::RenderFrame* render_frame) {
 }
 
 void Dispatcher::DispatchEventHelper(
-    const std::string& extension_id,
+    const mojom::HostID& host_id,
     const std::string& event_name,
     const base::Value::List& event_args,
     mojom::EventFilteringInfoPtr filtering_info) const {
   script_context_set_->ForEach(
-      extension_id, nullptr,
+      host_id, nullptr,
       base::BindRepeating(
           &NativeExtensionBindingsSystem::DispatchEventInContext,
           base::Unretained(bindings_system_.get()), event_name,
@@ -832,7 +821,7 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderFrame* render_frame,
                                           const std::string& function_name,
                                           const base::Value::List& args) {
   script_context_set_->ForEach(
-      extension_id, render_frame,
+      GenerateHostIdFromExtensionId(extension_id), render_frame,
       base::BindRepeating(&CallModuleMethod, module_name, function_name,
                           &args));
 }
@@ -1014,23 +1003,6 @@ void Dispatcher::RegisterNativeHandlers(
                                 context, bindings_system));
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
-  if (WorkerThreadDispatcher::Get()->OnControlMessageReceived(message))
-    return true;
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(Dispatcher, message)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnDeliverMessage)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect, OnDispatchOnConnect)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect, OnDispatchOnDisconnect)
-  IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-#endif
-
 void Dispatcher::RegisterMojoInterfaces(
     blink::AssociatedInterfaceRegistry* associated_interfaces) {
   // This base::Unretained() is safe, because:
@@ -1198,7 +1170,7 @@ void Dispatcher::UnloadExtension(const std::string& extension_id) {
   // to clear out context-specific data, and then remove the contexts
   // themselves.
   script_context_set_->ForEach(
-      extension_id, nullptr,
+      GenerateHostIdFromExtensionId(extension_id), nullptr,
       base::BindRepeating(
           &NativeExtensionBindingsSystem::WillReleaseScriptContext,
           base::Unretained(bindings_system_.get())));
@@ -1233,14 +1205,14 @@ void Dispatcher::SuspendExtension(
   // the browser know when we are starting and stopping the event dispatch, so
   // that it still considers the extension idle despite any activity the suspend
   // event creates.
-  DispatchEventHelper(extension_id, kOnSuspendEvent, base::Value::List(),
-                      nullptr);
+  DispatchEventHelper(GenerateHostIdFromExtensionId(extension_id),
+                      kOnSuspendEvent, base::Value::List(), nullptr);
   std::move(callback).Run();
 }
 
 void Dispatcher::CancelSuspendExtension(const std::string& extension_id) {
-  DispatchEventHelper(extension_id, kOnSuspendCanceledEvent,
-                      base::Value::List(), nullptr);
+  DispatchEventHelper(GenerateHostIdFromExtensionId(extension_id),
+                      kOnSuspendCanceledEvent, base::Value::List(), nullptr);
 }
 
 void Dispatcher::SetSystemFont(const std::string& font_family,
@@ -1340,45 +1312,16 @@ void Dispatcher::WatchPages(const std::vector<std::string>& css_selectors) {
   content_watcher_->OnWatchPages(css_selectors);
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-void Dispatcher::OnDeliverMessage(int worker_thread_id,
-                                  const PortId& target_port_id,
-                                  const Message& message) {
-  DCHECK_EQ(kMainThreadId, worker_thread_id);
-  bindings_system_->messaging_service()->DeliverMessage(
-      script_context_set_.get(), target_port_id, message,
-      nullptr);  // All render frames.
-}
-
-void Dispatcher::OnDispatchOnConnect(
-    int worker_thread_id,
-    const ExtensionMsg_OnConnectData& connect_data) {
-  DCHECK_EQ(kMainThreadId, worker_thread_id);
-  DCHECK(!connect_data.target_port_id.is_opener);
-
-  bindings_system_->messaging_service()->DispatchOnConnect(
-      script_context_set_.get(), connect_data.target_port_id,
-      connect_data.channel_type, connect_data.channel_name,
-      connect_data.tab_source, connect_data.external_connection_info, {}, {},
-      nullptr, base::DoNothing());  // All render frames.
-}
-
-void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
-                                        const PortId& port_id,
-                                        const std::string& error_message) {
-  DCHECK_EQ(kMainThreadId, worker_thread_id);
-  bindings_system_->messaging_service()->DispatchOnDisconnect(
-      script_context_set_.get(), port_id, error_message,
-      nullptr);  // All render frames.
-}
-#endif
-
 void Dispatcher::DispatchEvent(mojom::DispatchEventParamsPtr params,
                                base::Value::List event_args,
                                DispatchEventCallback callback) {
   CHECK_EQ(params->worker_thread_id, kMainThreadId);
-  content::RenderFrame* background_frame =
-      ExtensionFrameHelper::GetBackgroundPageFrame(params->extension_id);
+  CHECK(params->host_id);
+  content::RenderFrame* background_frame = nullptr;
+  if (params->host_id->type == mojom::HostID::HostType::kExtensions) {
+    background_frame = ExtensionFrameHelper::GetBackgroundPageFrame(
+        GenerateExtensionIdFromHostId(*params->host_id));
+  }
   ScriptContext* background_context = nullptr;
   if (background_frame) {
     background_context =
@@ -1403,22 +1346,8 @@ void Dispatcher::DispatchEvent(mojom::DispatchEventParamsPtr params,
         blink::mojom::UserActivationNotificationType::kExtensionEvent);
   }
 
-  DispatchEventHelper(params->extension_id, params->event_name, event_args,
+  DispatchEventHelper(*params->host_id, params->event_name, event_args,
                       std::move(params->filtering_info));
-
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  if (background_frame) {
-    // Tell the browser process when an event has been dispatched with a lazy
-    // background page active.
-    const Extension* extension =
-        RendererExtensionRegistry::Get()->GetByID(params->extension_id);
-    if (extension && BackgroundInfo::HasLazyBackgroundPage(extension)) {
-      background_frame->Send(new ExtensionHostMsg_EventAck(
-          background_frame->GetRoutingID(), params->event_id,
-          event_has_listener_in_background_context));
-    }
-  }
-#endif
   std::move(callback).Run(event_has_listener_in_background_context);
 }
 
@@ -1604,7 +1533,7 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   // to use GuestViews, but we don't define the error-providing elements in this
   // case.
   const bool is_platform_app =
-      context->context_type() == Feature::BLESSED_EXTENSION_CONTEXT &&
+      context->context_type() == mojom::ContextType::kPrivilegedExtension &&
       !context->IsForServiceWorker() && context->extension() &&
       context->extension()->is_platform_app();
   const bool app_view_permission_exists = is_platform_app;

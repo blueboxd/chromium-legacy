@@ -40,8 +40,6 @@ void AdAuctionURLLoaderInterceptor::WillStartRequest(
   // request may arrive before the commit confirmation is received (i.e.
   // NavigationRequest::DidCommitNavigation()), or after the document is
   // destroyed. We consider those cases to be ineligible for ad auction headers.
-  //
-  // TODO(yaoxia): measure how often this happens.
   RenderFrameHostImpl* request_initiator_frame =
       static_cast<RenderFrameHostImpl*>(document_.AsRenderFrameHostIfValid());
   if (!request_initiator_frame) {
@@ -70,11 +68,11 @@ void AdAuctionURLLoaderInterceptor::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr& head) {
   ad_auction_headers_eligible_ = false;
-  RemoveAdAuctionResponseHeaders(*head->headers);
+  RemoveAdAuctionResponseHeaders(head->headers);
 }
 
 void AdAuctionURLLoaderInterceptor::WillFollowRedirect(
-    const absl::optional<GURL>& new_url,
+    const std::optional<GURL>& new_url,
     std::vector<std::string>& removed_headers,
     net::HttpRequestHeaders& modified_headers) {
   CHECK(!ad_auction_headers_eligible_);
@@ -87,9 +85,9 @@ void AdAuctionURLLoaderInterceptor::OnReceiveResponse(
       document_.AsRenderFrameHostIfValid();
   if (ad_auction_headers_eligible_ && request_initiator_frame) {
     ProcessAdAuctionResponseHeaders(
-        request_origin_, request_initiator_frame->GetPage(), *head->headers);
+        request_origin_, request_initiator_frame->GetPage(), head->headers);
   } else {
-    RemoveAdAuctionResponseHeaders(*head->headers);
+    RemoveAdAuctionResponseHeaders(head->headers);
   }
 }
 

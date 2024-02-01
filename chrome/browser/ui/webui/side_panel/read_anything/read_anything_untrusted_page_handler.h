@@ -5,26 +5,28 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIDE_PANEL_READ_ANYTHING_READ_ANYTHING_UNTRUSTED_PAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SIDE_PANEL_READ_ANYTHING_READ_ANYTHING_UNTRUSTED_PAGE_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/side_panel/read_anything/read_anything_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_model.h"
+#include "chrome/browser/ui/views/side_panel/read_anything/read_anything_side_panel_controller.h"
 #include "chrome/common/accessibility/read_anything.mojom.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-#include "chrome/browser/screen_ai/screen_ai_install_state.h"
-#endif
+namespace content {
+class ScopedAccessibilityMode;
+}
 
 class ReadAnythingUntrustedPageHandler;
 
@@ -38,7 +40,8 @@ class ReadAnythingWebContentsObserver : public content::WebContentsObserver {
  public:
   ReadAnythingWebContentsObserver(
       base::SafeRef<ReadAnythingUntrustedPageHandler> page_handler,
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      ui::AXMode accessibility_mode);
   ReadAnythingWebContentsObserver(const ReadAnythingWebContentsObserver&) =
       delete;
   ReadAnythingWebContentsObserver& operator=(
@@ -54,6 +57,11 @@ class ReadAnythingWebContentsObserver : public content::WebContentsObserver {
   // completely contained by page_handler_. See
   // ReadAnythingUntrustedPageHandler's destructor.
   base::SafeRef<ReadAnythingUntrustedPageHandler> page_handler_;
+
+ private:
+  // Enables the kReadAnythingAXMode accessibility mode flags for the
+  // WebContents.
+  std::unique_ptr<content::ScopedAccessibilityMode> scoped_accessibility_mode_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,9 +77,7 @@ class ReadAnythingUntrustedPageHandler
       public read_anything::mojom::UntrustedPageHandler,
       public ReadAnythingModel::Observer,
       public ReadAnythingCoordinator::Observer,
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-      public screen_ai::ScreenAIInstallState::Observer,
-#endif
+      public ReadAnythingSidePanelController::Observer,
       public TabStripModelObserver {
  public:
   ReadAnythingUntrustedPageHandler(
@@ -101,6 +107,7 @@ class ReadAnythingUntrustedPageHandler
       read_anything::mojom::LetterSpacing letter_spacing) override;
   void OnFontChange(const std::string& font) override;
   void OnFontSizeChange(double font_size) override;
+  void OnLinksEnabledChanged(bool enabled) override;
   void OnColorChange(read_anything::mojom::Colors color) override;
   void OnSpeechRateChange(double rate) override;
   void OnVoiceChange(const std::string& voice,
@@ -121,6 +128,7 @@ class ReadAnythingUntrustedPageHandler
   void OnReadAnythingThemeChanged(
       const std::string& font_name,
       double font_scale,
+      bool links_enabled,
       ui::ColorId foreground_color_id,
       ui::ColorId background_color_id,
       ui::ColorId separator_color_id,
@@ -134,6 +142,8 @@ class ReadAnythingUntrustedPageHandler
   void Activate(bool active) override;
   void OnCoordinatorDestroyed() override;
   void SetDefaultLanguageCode(const std::string& code) override;
+  // ReadAnythingSidePanelController::Observer:
+  void OnSidePanelControllerDestroyed() override;
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
@@ -158,7 +168,13 @@ class ReadAnythingUntrustedPageHandler
   // Logs the current visual settings values.
   void LogTextStyle();
 
+  // Adds this as an observer of the ReadAnythingSidePanelController tied to a
+  // WebContents.
+  void ObserveWebContentsSidePanelController(
+      content::WebContents* web_contents);
+
   raw_ptr<ReadAnythingCoordinator> coordinator_;
+  raw_ptr<ReadAnythingTabHelper> tab_helper_;
   const base::WeakPtr<Browser> browser_;
   const raw_ptr<content::WebUI> web_ui_;
   const std::map<std::string, ReadAnythingFont> font_map_ = {
@@ -190,16 +206,7 @@ class ReadAnythingUntrustedPageHandler
                           ui::AXActionHandlerObserver>
       ax_action_handler_observer_{this};
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  // screen_ai::ScreenAIInstallState::Observer:
-  void StateChanged(screen_ai::ScreenAIInstallState::State state) override;
-
-  // Observes the install state of ScreenAI. When ScreenAI is ready, notifies
-  // the WebUI.
-  base::ScopedObservation<screen_ai::ScreenAIInstallState,
-                          screen_ai::ScreenAIInstallState::Observer>
-      component_ready_observer_{this};
-#endif
+  void OnScreenAIServiceInitialized(bool successful);
 
   base::WeakPtrFactory<ReadAnythingUntrustedPageHandler> weak_factory_{this};
 };

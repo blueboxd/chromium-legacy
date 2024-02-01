@@ -42,10 +42,6 @@ BASE_FEATURE(kUseLoadSimulatedRequestForOfflinePage,
              "UseLoadSimulatedRequestForErrorPageNavigation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnablePhoneNumbers,
-             "EnablePhoneNumbersExperience",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableMeasurements,
              "EnableMeasurementsExperience",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -59,10 +55,6 @@ const char kOneTapForMapsConsentModeIPHParam[] = "iph";
 const char kOneTapForMapsConsentModeIPHForcedParam[] = "iphforced";
 BASE_FEATURE(kOneTapForMaps,
              "EnableOneTapForMaps",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kUseAnnotationsForLanguageDetection,
-             "UseAnnotationsForLanguageDetection",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kScrollViewProxyScrollEnabledWorkaround,
@@ -86,20 +78,21 @@ BASE_FEATURE(kSmoothScrollingDefault,
 #endif
 );
 
-BASE_FEATURE(kEnableSessionSerializationOptimizations,
-             "EnableSessionSerializationOptimizations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // This feature will always be disabled and will only be enabled by tests.
 BASE_FEATURE(kForceSynthesizedRestoreSession,
              "ForceSynthesizedRestoreSession",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRemoveOldWebStateRestoration,
+             "RemoveOldWebStateRestoration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableViewportIntents,
+             "EnableViewportIntents",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool IsLoadSimulatedRequestAPIEnabled() {
-  if (@available(iOS 15, *)) {
-    return base::FeatureList::IsEnabled(kUseLoadSimulatedRequestForOfflinePage);
-  }
-  return false;
+  return base::FeatureList::IsEnabled(kUseLoadSimulatedRequestForOfflinePage);
 }
 
 bool IsWebInspectorSupportEnabled() {
@@ -107,10 +100,6 @@ bool IsWebInspectorSupportEnabled() {
     return base::FeatureList::IsEnabled(kEnableWebInspector);
   }
   return false;
-}
-
-bool UseSessionSerializationOptimizations() {
-  return base::FeatureList::IsEnabled(kEnableSessionSerializationOptimizations);
 }
 
 }  // namespace features

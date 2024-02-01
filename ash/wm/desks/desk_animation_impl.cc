@@ -78,7 +78,7 @@ DeskActivationAnimation::DeskActivationAnimation(DesksController* controller,
       source == DesksSwitchSource::kDeskSwitchTouchpad) {
     type = DeskSwitchAnimationType::kContinuousAnimation;
   }
-  for (auto* root : Shell::GetAllRootWindows()) {
+  for (aura::Window* root : Shell::GetAllRootWindows()) {
     desk_switch_animators_.emplace_back(
         std::make_unique<RootWindowDeskSwitchAnimator>(
             root, type, starting_desk_index, ending_desk_index, this,
@@ -226,7 +226,7 @@ bool DeskActivationAnimation::EndSwipeAnimation() {
   throughput_tracker_ = desks_util::GetSelectedCompositorForPerformanceMetrics()
                             ->RequestNewThroughputTracker();
   throughput_tracker_->Start(
-      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+      metrics_util::ForSmoothnessV3(base::BindRepeating([](int smoothness) {
         UMA_HISTOGRAM_PERCENTAGE(kDeskEndGestureSmoothnessHistogramName,
                                  smoothness);
       })));
@@ -290,7 +290,7 @@ DeskActivationAnimation::GetLatencyReportCallback() const {
 
 metrics_util::ReportCallback
 DeskActivationAnimation::GetSmoothnessReportCallback() const {
-  return metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+  return metrics_util::ForSmoothnessV3(base::BindRepeating([](int smoothness) {
     UMA_HISTOGRAM_PERCENTAGE(kDeskActivationSmoothnessHistogramName,
                              smoothness);
   }));
@@ -329,7 +329,7 @@ DeskRemovalAnimation::DeskRemovalAnimation(DesksController* controller,
   DCHECK_EQ(controller_->active_desk(),
             controller_->desks()[desk_to_remove_index_].get());
 
-  for (auto* root : Shell::GetAllRootWindows()) {
+  for (aura::Window* root : Shell::GetAllRootWindows()) {
     auto animator = std::make_unique<RootWindowDeskSwitchAnimator>(
         root, DeskSwitchAnimationType::kQuickAnimation, desk_to_remove_index_,
         desk_to_activate_index, this,
@@ -386,7 +386,7 @@ DeskRemovalAnimation::GetLatencyReportCallback() const {
 
 metrics_util::ReportCallback DeskRemovalAnimation::GetSmoothnessReportCallback()
     const {
-  return ash::metrics_util::ForSmoothness(
+  return ash::metrics_util::ForSmoothnessV3(
       base::BindRepeating([](int smoothness) {
         UMA_HISTOGRAM_PERCENTAGE(kDeskRemovalSmoothnessHistogramName,
                                  smoothness);

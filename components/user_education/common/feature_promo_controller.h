@@ -28,6 +28,7 @@
 #include "components/user_education/common/feature_promo_specification.h"
 #include "components/user_education/common/help_bubble.h"
 #include "components/user_education/common/help_bubble_params.h"
+#include "components/user_education/common/product_messaging_controller.h"
 #include "components/user_education/common/tutorial_identifier.h"
 
 namespace ui {
@@ -74,7 +75,7 @@ struct FeaturePromoParams;
 class FeaturePromoController {
  public:
   using BubbleCloseCallback = base::OnceClosure;
-  using StartupPromoCallback =
+  using QueuedPromoCallback =
       base::OnceCallback<void(const base::Feature& iph_feature,
                               FeaturePromoResult promo_result)>;
 
@@ -187,6 +188,11 @@ class FeaturePromoController {
 
   // Called when FeaturePromoHandle is destroyed to finish the promo.
   virtual void FinishContinuedPromo(const base::Feature& iph_feature) = 0;
+
+  // Records when and why an IPH was not shown.
+  virtual void RecordPromoNotShown(
+      const char* feature_name,
+      FeaturePromoResult::Failure failure) const = 0;
 };
 
 // Manages display of in-product help promos. All IPH displays in Top
@@ -201,7 +207,8 @@ class FeaturePromoControllerCommon : public FeaturePromoController {
       HelpBubbleFactoryRegistry* help_bubble_registry,
       FeaturePromoStorageService* storage_service,
       FeaturePromoSessionPolicy* session_policy,
-      TutorialService* tutorial_service);
+      TutorialService* tutorial_service,
+      ProductMessagingController* messaging_controller);
   ~FeaturePromoControllerCommon() override;
 
   // Only for security or privacy critical promos. Immediately shows a
@@ -342,6 +349,13 @@ class FeaturePromoControllerCommon : public FeaturePromoController {
 
  private:
   struct ShowPromoBubbleParams;
+  struct QueuedPromoData;
+
+  // Note: this data structure is inefficient for lookups, but given that only a
+  // small number of promos should be queued at any given point, it's probably
+  // still faster than some kind of linked map implementation would be.
+  using QueuedPromos =
+      std::list<std::pair<const base::Feature*, QueuedPromoData>>;
 
   bool EndPromo(const base::Feature& iph_feature,
                 FeaturePromoClosedReason close_reason);
@@ -366,8 +380,30 @@ class FeaturePromoControllerCommon : public FeaturePromoController {
 
   // Handles firing async promos.
   void OnFeatureEngagementTrackerInitialized(
-      FeaturePromoParams params,
       bool tracker_initialized_successfully);
+
+  // Registers with the ProductMessagingController if not already registered.
+  void MaybeRequestMessagePriority();
+
+  // Handles coordination with the product messaging system.
+  void OnMessagePriority(RequiredNoticePriorityHandle notice_handle);
+
+  // Returns the next-highest-priority queued promo, or `queued_promos_.end()`
+  // if one is not present.
+  QueuedPromos::iterator GetNextQueuedPromo();
+
+  // Possibly fires a queued promo based on certain conditions.
+  void MaybeShowQueuedPromo();
+
+  // Returns whether `iph_feature` is queued to be shown.
+  bool IsPromoQueued(const base::Feature& iph_feature) const;
+
+  // Returns an iterator into the queued promo list matching `iph_feature`, or
+  // `queued_promos_.end()` if not found.
+  QueuedPromos::iterator FindQueuedPromo(const base::Feature& iph_feature);
+
+  // Fails and clears all queued promos.
+  void FailQueuedPromos();
 
   // Performs common logic for determining if a feature promo for `iph_feature`
   // could be shown right now.
@@ -444,7 +480,11 @@ class FeaturePromoControllerCommon : public FeaturePromoController {
       bool custom_action_is_default,
       int custom_action_dismiss_string_id);
 
-  const base::Feature* GetCurrentPromoFeature() const override;
+  // Records when and why an IPH was not shown.
+  void RecordPromoNotShown(const char* feature_name,
+                           FeaturePromoResult::Failure failure) const final;
+
+  const base::Feature* GetCurrentPromoFeature() const final;
 
   // Whether the IPH Demo Mode flag has been set at startup.
   const bool in_iph_demo_mode_;
@@ -478,9 +518,13 @@ class FeaturePromoControllerCommon : public FeaturePromoController {
   const raw_ptr<FeaturePromoStorageService> storage_service_;
   const raw_ptr<FeaturePromoSessionPolicy> session_policy_;
   const raw_ptr<TutorialService> tutorial_service_;
+  const raw_ptr<ProductMessagingController> messaging_controller_;
 
-  // Tracks pending startup promos that have not been canceled.
-  std::map<const base::Feature*, StartupPromoCallback> startup_promos_;
+  // Tracks pending promos that have been queued (e.g. for startup).
+  QueuedPromos queued_promos_;
+
+  // Tracks whether this controller has messaging priority.
+  RequiredNoticePriorityHandle messaging_priority_handle_;
 
   base::WeakPtrFactory<FeaturePromoControllerCommon> weak_ptr_factory_{this};
 
@@ -508,7 +552,7 @@ struct FeaturePromoParams {
   raw_ref<const base::Feature> feature;
 
   // Used for startup promos; will be called when the promo actually shows.
-  FeaturePromoController::StartupPromoCallback startup_callback;
+  FeaturePromoController::QueuedPromoCallback queued_promo_callback;
 
   // If a bubble was shown and `close_callback` is provided, it will be called
   // when the bubble closes. The callback must remain valid as long as the

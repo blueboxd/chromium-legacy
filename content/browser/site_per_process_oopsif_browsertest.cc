@@ -97,7 +97,7 @@ class BaseUrlInheritanceIframeTest
 
 // A test to make sure that restoring a session history entry that was saved
 // with an about:blank subframe never results in an initiator_base_url of
-// an empty string. absl::nullopt is expected instead of an empty GURL with
+// an empty string. std::nullopt is expected instead of an empty GURL with
 // legacy base url behavior, or the non-empty initiator base url in the
 // new base url inheritance mode. This test runs in both modes.
 IN_PROC_BROWSER_TEST_P(BaseUrlInheritanceIframeTest,
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_P(BaseUrlInheritanceIframeTest,
   } else {
     // Make sure the about:blank child has nullopt, and not an empty string, for
     // the initiator_base_url.
-    EXPECT_EQ(absl::nullopt,
+    EXPECT_EQ(std::nullopt,
               exploded_page_state.top.children[0].initiator_base_url_string);
   }
 }
@@ -194,8 +194,8 @@ IN_PROC_BROWSER_TEST_F(BaseUrlLegacyBehaviorIframeTest,
 
   // Restore the altered entry in a new tab and verify the frame loads without
   // hitting any CHECKs.
-  Shell* new_shell = Shell::CreateNewWindow(
-      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  Shell* new_shell = Shell::CreateNewWindow(controller.GetBrowserContext(),
+                                            GURL(), nullptr, gfx::Size());
   FrameTreeNode* new_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
           ->GetPrimaryFrameTree()

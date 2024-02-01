@@ -4,6 +4,7 @@
 
 #import "components/password_manager/ios/ios_password_manager_driver.h"
 
+#import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/password_manager/core/browser/password_manager.h"
@@ -40,10 +41,8 @@ using testing::Return;
 
 @implementation URLGetter
 
-GURL test_url = GURL::EmptyGURL();
-
 - (const GURL&)lastCommittedURL {
-  return test_url;
+  return GURL::EmptyGURL();
 }
 
 @end
@@ -67,12 +66,11 @@ class IOSPasswordManagerDriverTest : public PlatformTest {
     web_state_.SetWebFramesManager(content_world,
                                    std::move(web_frames_manager));
 
-    auto web_frame =
-        web::FakeWebFrame::Create(SysNSStringToUTF8(@"main-frame"),
-                                  /*is_main_frame=*/true, GURL::EmptyGURL());
+    auto web_frame = web::FakeWebFrame::Create(SysNSStringToUTF8(@"main-frame"),
+                                               /*is_main_frame=*/true, GURL());
     auto web_frame2 =
         web::FakeWebFrame::Create(SysNSStringToUTF8(@"frame"),
-                                  /*is_main_frame=*/false, GURL::EmptyGURL());
+                                  /*is_main_frame=*/false, GURL());
     web::WebFrame* frame = web_frame.get();
     web::WebFrame* frame2 = web_frame2.get();
     web_frames_manager_->AddWebFrame(std::move(web_frame));
@@ -90,10 +88,10 @@ class IOSPasswordManagerDriverTest : public PlatformTest {
   }
 
  protected:
-  web::FakeWebFramesManager* web_frames_manager_;
+  raw_ptr<web::FakeWebFramesManager> web_frames_manager_;
   web::FakeWebState web_state_;
-  IOSPasswordManagerDriver* driver_;
-  IOSPasswordManagerDriver* driver2_;
+  raw_ptr<IOSPasswordManagerDriver> driver_;
+  raw_ptr<IOSPasswordManagerDriver> driver2_;
   id password_controller_;
   testing::StrictMock<MockPasswordManagerClient> password_manager_client_;
   PasswordManager password_manager_ =
@@ -140,8 +138,7 @@ TEST_F(IOSPasswordManagerDriverTest, InformNoSavedCredentials) {
 TEST_F(IOSPasswordManagerDriverTest, FormEligibleForGenerationFound) {
   autofill::PasswordFormGenerationData form;
 
-  EXPECT_CALL(password_manager_client_,
-              IsSavingAndFillingEnabled(GURL::EmptyGURL()))
+  EXPECT_CALL(password_manager_client_, IsSavingAndFillingEnabled(GURL()))
       .WillOnce(Return(true));
   EXPECT_CALL(*password_manager_client_.GetPasswordFeatureManager(),
               IsGenerationEnabled())

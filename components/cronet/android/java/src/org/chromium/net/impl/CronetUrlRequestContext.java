@@ -222,7 +222,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                     getCronetSource());
         } catch (RuntimeException e) {
             // Handle any issue gracefully, we should never crash due failures while logging.
-            Log.e(LOG_TAG, "Error while trying to log CronetEngine creation: ", e);
+            Log.i(LOG_TAG, "Error while trying to log CronetEngine creation: ", e);
         }
 
         // Init native Chromium URLRequestContext on init thread.
@@ -230,7 +230,6 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                 new Runnable() {
                     @Override
                     public void run() {
-                        CronetLibraryLoader.ensureInitializedOnInitThread();
                         synchronized (mLock) {
                             // mUrlRequestContextAdapter is guaranteed to exist until
                             // initialization on init and network threads completes and
@@ -516,6 +515,14 @@ public class CronetUrlRequestContext extends CronetEngineBase {
         synchronized (mLock) {
             mIsStoppingNetLog = false;
             mIsLogging = false;
+        }
+    }
+
+    public void flushWritePropertiesForTesting() {
+        synchronized (mLock) {
+            CronetUrlRequestContextJni.get()
+                    .flushWritePropertiesForTesting( // IN-TEST
+                            mUrlRequestContextAdapter, CronetUrlRequestContext.this);
         }
     }
 
@@ -951,6 +958,10 @@ public class CronetUrlRequestContext extends CronetEngineBase {
 
         @NativeClassQualifiedName("CronetContextAdapter")
         void stopNetLog(long nativePtr, CronetUrlRequestContext caller);
+
+        @NativeClassQualifiedName("CronetContextAdapter")
+        void flushWritePropertiesForTesting( // IN-TEST
+                long nativePtr, CronetUrlRequestContext caller);
 
         @NativeClassQualifiedName("CronetContextAdapter")
         void initRequestContextOnInitThread(long nativePtr, CronetUrlRequestContext caller);

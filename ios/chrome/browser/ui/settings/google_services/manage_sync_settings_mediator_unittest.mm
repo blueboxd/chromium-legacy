@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/apple/foundation_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/signin/public/identity_manager/account_info.h"
@@ -124,6 +125,9 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     account_info.email = base::SysNSStringToUTF8(fakeSystemIdentity_.userEmail);
     ON_CALL(*sync_service_mock_, GetAccountInfo())
         .WillByDefault(Return(account_info));
+    ON_CALL(*sync_service_mock_->GetMockUserSettings(),
+            IsCustomPassphraseAllowed())
+        .WillByDefault(Return(true));
   }
 
   void SimulateFirstSetupSyncOff() {
@@ -137,6 +141,9 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     account_info.email = base::SysNSStringToUTF8(fakeSystemIdentity_.userEmail);
     ON_CALL(*sync_service_mock_, GetAccountInfo())
         .WillByDefault(Return(account_info));
+    ON_CALL(*sync_service_mock_->GetMockUserSettings(),
+            IsCustomPassphraseAllowed())
+        .WillByDefault(Return(true));
   }
 
   void SimulateFirstSetupSyncOffWithSignedInAccount() {
@@ -159,7 +166,7 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
   // Needed for the initialization of authentication service.
   IOSChromeScopedTestingLocalState local_state_;
 
-  syncer::MockSyncService* sync_service_mock_;
+  raw_ptr<syncer::MockSyncService> sync_service_mock_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
 
   ManageSyncSettingsMediator* mediator_ = nullptr;
@@ -236,6 +243,28 @@ TEST_F(ManageSyncSettingsMediatorTest, SyncServiceEnabledWithEncryption) {
 
   EXPECT_FALSE([mediator_.consumer.tableViewModel
       hasSectionForSectionIdentifier:SyncErrorsSectionIdentifier]);
+}
+
+// Tests that encryption is not accessible when disabled by user settings.
+TEST_F(ManageSyncSettingsMediatorTest,
+       SyncServiceEnabledWithEncryptionDisabledByUserSettings) {
+  CreateManageSyncSettingsMediator(SyncSettingsAccountState::kSyncing);
+  SimulateFirstSetupSyncOnWithConsentEnabled();
+
+  ON_CALL(*sync_service_mock_->GetMockUserSettings(),
+          IsCustomPassphraseAllowed())
+      .WillByDefault(Return(false));
+
+  [mediator_ manageSyncSettingsTableViewControllerLoadModel:mediator_.consumer];
+
+  NSArray* advanced_settings_items = [mediator_.consumer.tableViewModel
+      itemsInSectionWithIdentifier:SyncSettingsSectionIdentifier::
+                                       AdvancedSettingsSectionIdentifier];
+  ASSERT_EQ(3UL, advanced_settings_items.count);
+
+  TableViewImageItem* encryption_item = advanced_settings_items[0];
+  EXPECT_EQ(encryption_item.type, SyncSettingsItemType::EncryptionItemType);
+  EXPECT_FALSE(encryption_item.enabled);
 }
 
 // Tests that "Turn off Sync" is hidden when Sync is disabled.

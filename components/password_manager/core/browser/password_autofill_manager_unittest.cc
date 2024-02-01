@@ -61,6 +61,8 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
+#include "components/webauthn/android/cred_man_support.h"
+#include "components/webauthn/android/webauthn_cred_man_delegate.h"
 #elif BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -74,7 +76,7 @@ const char16_t kAliceUsername[] = u"alice";
 const char16_t kAlicePassword[] = u"password";
 const char16_t kAliceAccountStoredPassword[] = u"account-stored-password";
 
-using autofill::PopupType;
+using autofill::FillingProduct;
 using autofill::Suggestion;
 using autofill::SuggestionVectorIconsAre;
 using autofill::SuggestionVectorIdsAre;
@@ -101,8 +103,9 @@ using UkmEntry = ukm::builders::PageWithPassword;
 
 namespace autofill {
 class AutofillPopupDelegate;
-class PrefService;
 }
+
+class PrefService;
 
 namespace password_manager {
 
@@ -227,7 +230,7 @@ class MockAutofillClient : public autofill::TestAutofillClient {
   MOCK_METHOD(void,
               UpdatePopup,
               (const std::vector<autofill::Suggestion>&,
-               PopupType,
+               FillingProduct,
                autofill::AutofillSuggestionTriggerSource),
               (override));
   MOCK_METHOD(void,
@@ -355,16 +358,6 @@ class PasswordAutofillManagerTest : public testing::Test {
 
   std::u16string GetManagePasswordsTitle() {
     return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS);
-  }
-
-  Suggestion::Icon GetManagePasswordsIcon() {
-    // The "Manage passwords" entry only has an icon if
-    // kEnablePasswordsAccountStorage is enabled.
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kEnablePasswordsAccountStorage)) {
-      return Suggestion::Icon::kSettings;
-    }
-    return Suggestion::Icon::kNoIcon;
   }
 
   void ExpectAndAllowAuthentication(
@@ -692,7 +685,7 @@ TEST_F(PasswordAutofillManagerTest,
                       autofill::PopupItemId::kPasswordEntry,
                       autofill::PopupItemId::kAllSavedPasswordsEntry,
                       autofill::PopupItemId::kPasswordAccountStorageOptIn),
-                  PopupType::kPasswords,
+                  FillingProduct::kPassword,
                   autofill::AutofillSuggestionTriggerSource::kPasswordManager))
       .WillOnce(testing::SaveArg<0>(&suggestions));
   EXPECT_CALL(client, TriggerReauthForPrimaryAccount);
@@ -729,7 +722,7 @@ TEST_F(PasswordAutofillManagerTest,
               autofill::PopupItemId::kPasswordEntry,
               autofill::PopupItemId::kAllSavedPasswordsEntry,
               autofill::PopupItemId::kPasswordAccountStorageOptInAndGenerate),
-          PopupType::kPasswords,
+          FillingProduct::kPassword,
           autofill::AutofillSuggestionTriggerSource::kPasswordManager))
       .WillOnce(testing::SaveArg<0>(&suggestions));
   EXPECT_CALL(client, TriggerReauthForPrimaryAccount);
@@ -806,7 +799,7 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndFillUpdatesPopup) {
                 autofill::PopupItemId::kPasswordEntry,
                 autofill::PopupItemId::kAllSavedPasswordsEntry,
                 autofill::PopupItemId::kPasswordAccountStorageOptIn),
-            PopupType::kPasswords,
+            FillingProduct::kPassword,
             autofill::AutofillSuggestionTriggerSource::kPasswordManager))
         .WillOnce(testing::SaveArg<0>(&suggestions));
   });
@@ -859,7 +852,7 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndGenerateUpdatesPopup) {
                 autofill::PopupItemId::kPasswordEntry,
                 autofill::PopupItemId::kAllSavedPasswordsEntry,
                 autofill::PopupItemId::kPasswordAccountStorageOptInAndGenerate),
-            PopupType::kPasswords,
+            FillingProduct::kPassword,
             autofill::AutofillSuggestionTriggerSource::kPasswordManager))
         .WillOnce(testing::SaveArg<0>(&suggestions));
   });
@@ -974,7 +967,7 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullOptInMayShowEmptyState) {
       autofill_client,
       UpdatePopup(SuggestionVectorIdsAre(
                       autofill::PopupItemId::kPasswordAccountStorageEmpty),
-                  PopupType::kPasswords,
+                  FillingProduct::kPassword,
                   autofill::AutofillSuggestionTriggerSource::kPasswordManager));
 
   password_autofill_manager_->DeleteFillData();
@@ -1017,7 +1010,7 @@ TEST_F(PasswordAutofillManagerTest,
                       autofill::PopupItemId::kSeparator,
 #endif
                       autofill::PopupItemId::kAllSavedPasswordsEntry),
-                  PopupType::kPasswords,
+                  FillingProduct::kPassword,
                   autofill::AutofillSuggestionTriggerSource::kPasswordManager));
 
   password_autofill_manager_->DeleteFillData();
@@ -1302,7 +1295,7 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
   const auto& entries = autofill_client.GetTestUkmRecorder()->GetEntriesByName(
       UkmEntry::kEntryName);
   EXPECT_EQ(1u, entries.size());
-  for (const auto* entry : entries) {
+  for (const ukm::mojom::UkmEntry* entry : entries) {
     EXPECT_EQ(expected_source_id, entry->source_id);
     ukm::TestUkmRecorder::ExpectEntryMetric(
         entry, UkmEntry::kPageLevelUserActionName,
@@ -1392,8 +1385,7 @@ TEST_F(PasswordAutofillManagerTest,
 #if !BUILDFLAG(IS_ANDROID)
                                Suggestion::Icon::kNoIcon,
 #endif
-
-                               GetManagePasswordsIcon()));
+                               Suggestion::Icon::kSettings));
   EXPECT_THAT(
       open_args.suggestions,
       SuggestionVectorMainTextsAre(
@@ -1451,7 +1443,7 @@ TEST_F(PasswordAutofillManagerTest,
 #if !BUILDFLAG(IS_ANDROID)
                                        Suggestion::Icon::kNoIcon,
 #endif
-                                       GetManagePasswordsIcon()));
+                                       Suggestion::Icon::kSettings));
 
   EXPECT_THAT(open_args.suggestions,
               SuggestionVectorMainTextsAre(
@@ -2006,6 +1998,10 @@ TEST_F(PasswordAutofillManagerTest, MetricsRecordedForBiometricAuth) {
 #endif
 
 TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSuggestions) {
+#if BUILDFLAG(IS_ANDROID)
+  webauthn::WebAuthnCredManDelegate::override_cred_man_support_for_testing(
+      webauthn::CredManSupport::DISABLED);
+#endif  // BUILDFLAG(IS_ANDROID)
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
   MockWebAuthnCredentialsDelegate webauthn_credentials_delegate;

@@ -217,7 +217,7 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
       download::DownloadItem* download,
       ClientSafeBrowsingReportRequest::ReportType report_type,
       bool did_proceed,
-      absl::optional<bool> show_download_in_folder) override {
+      std::optional<bool> show_download_in_folder) override {
     auto report = std::make_unique<ClientSafeBrowsingReportRequest>();
     report->set_type(report_type);
     report->set_download_verdict(
@@ -245,8 +245,7 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
     test_url_loader_factory_map_[profile] =
         std::make_unique<network::TestURLLoaderFactory>();
     test_shared_loader_factory_map_[profile] =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            test_url_loader_factory_map_[profile].get());
+        test_url_loader_factory_map_[profile]->GetSafeWeakWrapper();
   }
 
   int download_report_count() { return download_report_count_; }
@@ -321,28 +320,6 @@ class DownloadProtectionServiceTestBase
 
     in_process_utility_thread_helper_ =
         std::make_unique<content::InProcessUtilityThreadHelper>();
-
-    // Use TestPasswordStore to remove a possible race. Normally the
-    // PasswordStore does its database manipulation on the DB thread, which
-    // creates a possible race during navigation. Specifically the
-    // PasswordManager will ignore any forms in a page if the load from the
-    // PasswordStore has not completed. ChromePasswordProtectionService uses
-    // PasswordStore.
-    ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
-        profile(),
-        base::BindRepeating(
-            &password_manager::BuildPasswordStore<
-                content::BrowserContext, password_manager::TestPasswordStore>));
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kEnablePasswordsAccountStorage)) {
-      AccountPasswordStoreFactory::GetInstance()->SetTestingFactory(
-          profile(),
-          base::BindRepeating(
-              &password_manager::BuildPasswordStoreWithArgs<
-                  content::BrowserContext, password_manager::TestPasswordStore,
-                  password_manager::IsAccountStore>,
-              password_manager::IsAccountStore(true)));
-    }
 
     // Start real threads for the IO and File threads so that the DCHECKs
     // to test that we're on the correct thread work.
@@ -455,6 +432,28 @@ class DownloadProtectionServiceTestBase
             GetIdentityTestEnvironmentFactories();
     factories.emplace_back(HistoryServiceFactory::GetInstance(),
                            HistoryServiceFactory::GetDefaultFactory());
+    // Use TestPasswordStore to remove a possible race. Normally the
+    // PasswordStore does its database manipulation on the DB thread, which
+    // creates a possible race during navigation. Specifically the
+    // PasswordManager will ignore any forms in a page if the load from the
+    // PasswordStore has not completed. ChromePasswordProtectionService uses
+    // PasswordStore.
+    factories.emplace_back(
+        ProfilePasswordStoreFactory::GetInstance(),
+        base::BindRepeating(
+            &password_manager::BuildPasswordStore<
+                content::BrowserContext, password_manager::TestPasswordStore>));
+    // It's fine to override unconditionally, GetForProfile() will still return
+    // null if account storage is disabled.
+    // TODO(crbug.com/1516660): Remove the comment above when the account store
+    // is always non-null.
+    factories.emplace_back(
+        AccountPasswordStoreFactory::GetInstance(),
+        base::BindRepeating(
+            &password_manager::BuildPasswordStoreWithArgs<
+                content::BrowserContext, password_manager::TestPasswordStore,
+                password_manager::IsAccountStore>,
+            password_manager::IsAccountStore(true)));
     return factories;
   }
 
@@ -536,6 +535,20 @@ class DownloadProtectionServiceTestBase
 
   void ClearClientDownloadRequest() { last_client_download_request_.reset(); }
 
+  void PrepareSuccessResponseForProfile(Profile* profile,
+                                        ClientDownloadResponse::Verdict verdict,
+                                        bool upload_requested,
+                                        bool request_deep_scan) {
+    ClientDownloadResponse response;
+    response.set_verdict(verdict);
+    response.set_upload(upload_requested);
+    response.set_request_deep_scan(request_deep_scan);
+    response.set_token("response_token");
+    sb_service_->GetTestURLLoaderFactory(profile)->AddResponse(
+        PPAPIDownloadRequest::GetDownloadRequestUrl().spec(),
+        response.SerializeAsString());
+  }
+
   void PrepareResponse(ClientDownloadResponse::Verdict verdict,
                        net::HttpStatusCode response_code,
                        int net_error,
@@ -549,14 +562,8 @@ class DownloadProtectionServiceTestBase
           network::URLLoaderCompletionStatus(net_error));
       return;
     }
-    ClientDownloadResponse response;
-    response.set_verdict(verdict);
-    response.set_upload(upload_requested);
-    response.set_request_deep_scan(request_deep_scan);
-    response.set_token("response_token");
-    sb_service_->GetTestURLLoaderFactory(profile())->AddResponse(
-        PPAPIDownloadRequest::GetDownloadRequestUrl().spec(),
-        response.SerializeAsString());
+    PrepareSuccessResponseForProfile(profile(), verdict, upload_requested,
+                                     request_deep_scan);
   }
 
   void PrepareBasicDownloadItem(
@@ -2894,7 +2901,7 @@ TEST_F(DownloadProtectionServiceTest,
       .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED));
   auto validate_report_contents = [this, token](bool show_download_in_folder) {
     ClientSafeBrowsingReportRequest expected_report;
-    expected_report.set_url(GURL::EmptyGURL().spec());
+    expected_report.set_url(std::string());
     expected_report.set_type(
         ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_OPENED);
     expected_report.set_download_verdict(ClientDownloadResponse::DANGEROUS);
@@ -3023,7 +3030,7 @@ TEST_F(DownloadProtectionServiceTest,
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
       profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
-      {} /* expected_scan_id */);
+      {} /* expected_scan_id */, absl::nullopt /* content_transfer_reason */);
 
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(1, sb_service_->download_report_count());
@@ -3141,7 +3148,7 @@ TEST_F(DownloadProtectionServiceTest,
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
       profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
-      {} /* expected_scan_id */);
+      {} /* expected_scan_id */, absl::nullopt /* content_transfer_method */);
 
   download_service_->ReportDelayedBypassEvent(
       &item, download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING);
@@ -3205,7 +3212,7 @@ TEST_F(DownloadProtectionServiceTest,
           safe_browsing::EventResult::BYPASSED),  // expected_result
       "",                                         // expected_username
       profile()->GetPath().AsUTF8Unsafe(),        // expected_profile_identifier
-      {} /* expected_scan_id */);
+      {} /* expected_scan_id */, absl::nullopt /* content_transfer_method */);
 
   download_service_->ReportDelayedBypassEvent(
       &item, download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK);
@@ -3236,7 +3243,7 @@ TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {
   const auto captured_args =
       std::move(event_observer.PassEventArgs().GetList()[0].GetDict());
   EXPECT_EQ("http://example.com/a.exe", *captured_args.FindString("url"));
-  EXPECT_EQ(base::HexEncode(hash.data(), hash.size()),
+  EXPECT_EQ(base::HexEncode(hash),
             *captured_args.FindString("downloadDigestSha256"));
   EXPECT_EQ(target_path.MaybeAsASCII(), *captured_args.FindString("fileName"));
 
@@ -4821,6 +4828,49 @@ TEST_F(DownloadProtectionServiceTest, ESBRequestScanFalseWhenTooLarge) {
       base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
                           base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
+  EXPECT_TRUE(IsResult(DownloadCheckResult::UNCOMMON));
+}
+
+TEST_F(DownloadProtectionServiceTest, ESBRequestScanFalseWhenIncognito) {
+  Profile* incognito_profile =
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  sb_service_->CreateTestURLLoaderFactoryForProfile(incognito_profile);
+  PrepareSuccessResponseForProfile(
+      incognito_profile, ClientDownloadResponse::UNCOMMON,
+      /*upload_requested=*/true, /*request_deep_scan=*/true);
+
+  NiceMockDownloadItem item;
+  content::DownloadItemUtils::AttachInfoForTesting(&item, incognito_profile,
+                                                   nullptr);
+  PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
+                           "http://www.google.com/",              // referrer
+                           FILE_PATH_LITERAL("a.tmp"),            // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));           // final_path
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+      .Times(1);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadAllowlistUrl(_, _))
+      .WillRepeatedly(
+          [](const GURL& url, base::OnceCallback<void(bool)> callback) {
+            std::move(callback).Run(false);
+          });
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+  // Testing Scenario with request_deep_scan response is true and
+  // user is enrolled in the Enhanced Protection Program, but the download
+  // happens in the incognito profile.
+  safe_browsing::SetEnhancedProtectionPrefForTests(profile()->GetPrefs(),
+                                                   /*value*/ true);
+
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  // Not PROMPT_FOR_SCANNING because it is from incognito profile.
   EXPECT_TRUE(IsResult(DownloadCheckResult::UNCOMMON));
 }
 

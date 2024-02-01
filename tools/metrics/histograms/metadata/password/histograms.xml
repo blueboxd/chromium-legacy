@@ -140,7 +140,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="KeyboardAccessory.AccessoryActionImpression"
-    enum="AccessoryAction" expires_after="2024-05-12">
+    enum="AccessoryAction" expires_after="2024-07-14">
   <owner>fhorschig@chromium.org</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -150,7 +150,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.AccessoryActionSelected"
-    enum="AccessoryAction" expires_after="2024-05-12">
+    enum="AccessoryAction" expires_after="2024-07-14">
   <owner>fhorschig@chromium.org</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -160,7 +160,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.AccessorySheetSuggestionsSelected"
-    enum="AccessorySuggestionType" expires_after="2024-05-12">
+    enum="AccessorySuggestionType" expires_after="2024-07-14">
   <owner>fhorschig@chromium.org</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -170,7 +170,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.AccessorySheetTriggered"
-    enum="AccessorySheetTrigger" expires_after="2024-05-12">
+    enum="AccessorySheetTrigger" expires_after="2024-07-14">
   <owner>fhorschig@chromium.org</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -181,7 +181,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.AccessoryToggleClicked"
-    enum="AccessoryToggleType" expires_after="2024-05-12">
+    enum="AccessoryToggleType" expires_after="2024-07-14">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -192,7 +192,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.AccessoryToggleImpression"
-    enum="AccessoryToggleType" expires_after="2024-05-12">
+    enum="AccessoryToggleType" expires_after="2024-07-14">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -202,7 +202,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.DisabledSavingAccessoryImpressions"
-    enum="BooleanShown" expires_after="2024-01-07">
+    enum="BooleanShown" expires_after="2024-04-07">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -215,7 +215,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="KeyboardAccessory.GenerationDialogChoice.{GenerationType}"
-    enum="GenerationDialogChoice" expires_after="M124">
+    enum="GenerationDialogChoice" expires_after="2024-06-09">
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -240,7 +240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordBubble.BiometricAuthenticationPromo.AcceptClicked"
-    enum="BooleanSuccess" expires_after="2024-05-19">
+    enum="BooleanSuccess" expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -260,7 +260,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordBubble.CompromisedBubble.Type"
-    enum="PasswordBubbleFollowupType" expires_after="2024-03-03">
+    enum="PasswordBubbleFollowupType" expires_after="2024-08-31">
   <owner>vasilii@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -269,8 +269,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordBubble.DefaultStoreChangedBubble.ContinueButtonInBubbleClicked"
+    enum="BooleanYesNo" expires_after="M133">
+  <owner>sygiet@google.com</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Whether the user clicked &quot;Got it&quot; in the DefaultStoreChanged
+    bubble
+  </summary>
+</histogram>
+
 <histogram name="PasswordBubble.DisplayDisposition"
-    enum="PasswordBubbleDisplayDisposition" expires_after="2024-05-19">
+    enum="PasswordBubbleDisplayDisposition" expires_after="2024-07-21">
   <owner>vasilii@chromium.org</owner>
   <summary>
     When the password management bubble opened, what state was it in?
@@ -291,7 +302,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PasswordGeneration.EditsInGeneratedPassword.AlteredLengthIncreased"
     enum="GeneratedPasswordAlteredLengthIncreased" expires_after="2024-05-26">
-  <owner>kolos@chromium.org</owner>
+  <owner>kazinova@google.com</owner>
   <owner>shaikhitdin@google.com</owner>
   <summary>
     Measures difference in length between generated password and submitted
@@ -301,8 +312,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordGeneration.EditsInGeneratedPassword.AttributesMask"
-    enum="EditsInGeneratedPasswordMask" expires_after="2024-05-26">
-  <owner>kolos@chromium.org</owner>
+    enum="EditsInGeneratedPasswordMask" expires_after="2024-07-28">
+  <owner>kazinova@google.com</owner>
   <owner>shaikhitdin@google.com</owner>
   <summary>
     Measures types of user editing of generated passwords. Mask tracks if there
@@ -313,7 +324,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordGeneration.EditsInGeneratedPassword.{CharacterClass}"
     enum="CharacterClassPresenceChange" expires_after="2024-04-28">
-  <owner>kolos@chromium.org</owner>
+  <owner>kazinova@google.com</owner>
   <owner>shaikhitdin@google.com</owner>
   <summary>
     Measures difference in {CharacterClass} between generated password and
@@ -330,9 +341,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordGeneration.Event" enum="PasswordGenerationEvent"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
-  <owner>kolos@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
     Measures the frequency of various password generation events.
@@ -347,8 +357,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordGeneration.GeneratedPasswordWasEdited"
-    enum="BooleanGeneratedPasswordWasEdited" expires_after="2024-03-17">
-  <owner>kolos@chromium.org</owner>
+    enum="BooleanGeneratedPasswordWasEdited" expires_after="2024-08-31">
+  <owner>kazinova@google.com</owner>
+  <owner>shaikhitdin@google.com</owner>
   <summary>
     Measures the frequency of user editing of generated passwords. Uploaded once
     per generated password save. Applicable to automatic and manual generations.
@@ -356,7 +367,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordGeneration.PopupShown"
-    enum="PasswordGenerationPopupShown" expires_after="2024-05-19">
+    enum="PasswordGenerationPopupShown" expires_after="2024-07-28">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>Records an entry if (and only if) a popup was shown.</summary>
@@ -375,9 +386,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordGeneration.SubmissionEvent"
-    enum="PasswordSubmissionEvent" expires_after="2024-04-28">
+    enum="PasswordSubmissionEvent" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
-  <owner>kolos@chromium.org</owner>
+  <owner>shaikhitdin@google.com</owner>
   <summary>
     Measures the frequency of submission events for generated passwords. This is
     similar to PasswordManager.ActionsTakenWithPsl but only tracks events which
@@ -386,7 +397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordGeneration.UserDecision"
-    enum="PasswordGenerationUserEvent" expires_after="2024-05-19">
+    enum="PasswordGenerationUserEvent" expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -404,7 +415,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AbleToSavePasswordsOnSuccessfulLogin"
-    enum="BooleanSuccess" expires_after="2024-05-19">
+    enum="BooleanSuccess" expires_after="2024-07-21">
   <owner>vasilii@chromium.org</owner>
   <owner>src/components/password_manager/OWNERS</owner>
   <summary>
@@ -415,7 +426,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AcceptedSaveUpdateSubmissionIndicatorEvent"
-    enum="SubmissionIndicatorEvent" expires_after="2024-02-04">
+    enum="SubmissionIndicatorEvent" expires_after="2024-08-15">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -426,7 +437,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccessPasswordInSettings"
-    enum="AccessPasswordInSettingsEvent" expires_after="2024-05-19">
+    enum="AccessPasswordInSettingsEvent" expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -434,9 +445,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.AccountSettings.Launch.Success"
+    enum="BooleanSuccess" expires_after="M126">
+  <owner>derinel@google.com</owner>
+  <owner>fhorschig@chromium.org</owner>
+  <summary>
+    Records whether Account Settings activity could be started successfully.
+    This is recorded right after starting the activity. It is recorded for
+    non-syncing users when they select &quot;Manage passkeys&quot; item in Touch
+    To Fill bottom sheet.
+  </summary>
+</histogram>
+
 <histogram
     name="PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted2"
-    enum="PasswordManager.MoveToAccountStoreTrigger" expires_after="2024-04-28">
+    enum="PasswordManager.MoveToAccountStoreTrigger" expires_after="2024-06-30">
   <owner>treib@chromium.org</owner>
   <owner>victorvianna@google.com</owner>
   <owner>mamir@chromium.org</owner>
@@ -450,7 +473,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountStorage.MoveToAccountStoreFlowOffered"
-    enum="PasswordManager.MoveToAccountStoreTrigger" expires_after="2024-04-28">
+    enum="PasswordManager.MoveToAccountStoreTrigger" expires_after="2024-06-30">
   <owner>treib@chromium.org</owner>
   <owner>victorvianna@google.com</owner>
   <owner>mamir@chromium.org</owner>
@@ -462,7 +485,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn"
-    units="accounts" expires_after="2024-05-26">
+    units="accounts" expires_after="2024-07-28">
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -473,7 +496,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountStorage.NumOptedInAccountsAfterOptOut"
-    units="accounts" expires_after="2023-12-24">
+    units="accounts" expires_after="2024-06-24">
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -485,7 +508,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.AccountStorage.UnsyncedPasswordsFoundDuringSignOut"
-    units="passwords" expires_after="2024-04-28">
+    units="passwords" expires_after="2024-06-30">
   <owner>treib@chromium.org</owner>
   <owner>victorvianna@google.com</owner>
   <owner>mamir@chromium.org</owner>
@@ -529,7 +552,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.AccountStorageUserStateDuration{UserSyncingType}"
-    units="ms" expires_after="2024-04-28">
+    units="ms" expires_after="2024-06-30">
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -564,7 +587,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountStoreBlocklistedEntriesAfterOptIn"
-    units="credentials" expires_after="2024-02-20">
+    units="credentials" expires_after="2024-08-20">
   <owner>treib@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -574,7 +597,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountStoreCredentialsAfterOptIn"
-    units="credentials" expires_after="2024-02-20">
+    units="credentials" expires_after="2024-06-09">
   <owner>treib@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -584,7 +607,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountStoreVsProfileStore4.{DifferenceType}"
-    units="accounts" expires_after="2024-04-28">
+    units="accounts" expires_after="2024-06-30">
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -622,7 +645,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AddCredentialFromSettings.UserAction2"
-    enum="AddCredentialFromSettingsUserInteractions" expires_after="2024-04-28">
+    enum="AddCredentialFromSettingsUserInteractions" expires_after="2024-06-30">
   <owner>vidhanj@google.com</owner>
   <summary>
     Records the user actions performed when a new credential is added from
@@ -631,7 +654,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationBackend.FetchSize" units="facets"
-    expires_after="2024-05-12">
+    expires_after="2024-07-14">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -642,7 +665,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationBackend.FirstFetchDelay" units="ms"
-    expires_after="2024-05-12">
+    expires_after="2024-07-14">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -653,7 +676,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationBackend.SubsequentFetchDelay"
-    units="ms" expires_after="2024-05-12">
+    units="ms" expires_after="2024-07-14">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -665,7 +688,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationDatabase.DatabaseSize" units="KB"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -675,7 +698,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationDatabase.Error"
-    enum="SqliteLoggedResultCode" expires_after="2024-05-19">
+    enum="SqliteLoggedResultCode" expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -684,7 +707,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationDatabase.StoreResult"
-    enum="StoreAffiliationResult" expires_after="2024-05-05">
+    enum="StoreAffiliationResult" expires_after="2024-07-07">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>The result of AffiliationDatabase::Store call.</summary>
@@ -712,7 +735,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationFetcher.FetchHttpResponseCode"
-    enum="HttpResponseCode" expires_after="2024-05-12">
+    enum="HttpResponseCode" expires_after="2024-07-14">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -723,7 +746,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationFetcher.FetchResult"
-    enum="AffiliationFetchResult" expires_after="2024-05-12">
+    enum="AffiliationFetchResult" expires_after="2024-07-14">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -733,7 +756,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationFetcher.FetchTime.{Status}"
-    units="ms" expires_after="2024-05-05">
+    units="ms" expires_after="2024-07-07">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -762,7 +785,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AffiliationService.GetChangePasswordUsage"
-    enum="GetChangePasswordUrlMetric" expires_after="2024-05-05">
+    enum="GetChangePasswordUrlMetric" expires_after="2024-07-07">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -771,7 +794,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ApplySyncChanges.AddLoginSyncError"
-    enum="PasswordAddLoginSyncError" expires_after="2024-04-12">
+    enum="PasswordAddLoginSyncError" expires_after="2024-06-16">
   <owner>mamir@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -794,7 +817,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ApplySyncChangesState"
-    enum="PasswordApplyIncrementalSyncChangesState" expires_after="2024-03-05">
+    enum="PasswordApplyIncrementalSyncChangesState" expires_after="2024-07-05">
   <owner>mamir@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -806,9 +829,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AutomaticChange.AcceptanceWithoutAutoButton"
-    enum="PasswordCheckResolutionAction" expires_after="2024-01-07">
-  <owner>kolos@chromium.org</owner>
-  <owner>battre@chromium.org</owner>
+    enum="PasswordCheckResolutionAction" expires_after="2024-07-15">
+  <owner>ioanap@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
   <summary>
     Resolution action to fix a compromised credential when there is no
     &quot;Change password automatically&quot; button. Starting with M110, no
@@ -827,7 +850,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BiometricAuthBeforeFillingEnabled2"
-    enum="BooleanEnabled" expires_after="2024-04-28">
+    enum="BooleanEnabled" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -850,7 +873,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BiometricAuthPwdFill.CanAuthenticate"
-    enum="BiometricsAvailability" expires_after="2024-05-26">
+    enum="BiometricsAvailability" expires_after="2024-07-28">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -860,7 +883,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BiometricAvailabilityWin"
-    enum="BiometricAuthenticationStatusWin" expires_after="2024-05-19">
+    enum="BiometricAuthenticationStatusWin" expires_after="2024-07-21">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -894,7 +917,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.CheckedCredentials"
-    units="credentials" expires_after="2024-05-19">
+    units="credentials" expires_after="2024-07-21">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -948,7 +971,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.LeaksFound" units="credentials"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -960,7 +983,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.PasswordCheckReferrer"
-    enum="PasswordCheckReferrer" expires_after="2024-05-19">
+    enum="PasswordCheckReferrer" expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -970,7 +993,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.PasswordCheckReferrerAndroid2"
-    enum="PasswordCheckReferrerAndroid" expires_after="2024-05-19">
+    enum="PasswordCheckReferrerAndroid" expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -983,7 +1006,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.Time" units="ms"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -1002,7 +1025,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.UserAction"
-    enum="PasswordCheckInteraction" expires_after="2024-04-28">
+    enum="PasswordCheckInteraction" expires_after="2024-06-30">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1027,7 +1050,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.UserAction.IOS{Context}"
-    enum="PasswordCheckInteractionIOS" expires_after="2024-04-28">
+    enum="PasswordCheckInteractionIOS" expires_after="2024-06-30">
   <owner>eic@google.com</owner>
   <owner>noemies@google.com</owner>
   <summary>
@@ -1049,14 +1072,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.BulkCheck.UserActionAndroid"
-    enum="PasswordCheckUIUserActionAndroid" expires_after="2024-05-19">
+    enum="PasswordCheckUIUserActionAndroid" expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschigg@chromium.org</owner>
   <summary>User actions performed on the Password Check settings view.</summary>
 </histogram>
 
 <histogram name="PasswordManager.CanUseBiometricsMac" enum="BooleanSuccess"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>vsemeniuk@google.com</owner>
   <owner>kazinova@google.com</owner>
   <owner>sygiet@google.com</owner>
@@ -1067,7 +1090,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.CompromisedCredentials3.{Issue}"
-    units="credentials" expires_after="2024-04-28">
+    units="credentials" expires_after="2024-06-30">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -1080,7 +1103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.CredentialEditError"
-    enum="CredentialEditError" expires_after="2024-05-19">
+    enum="CredentialEditError" expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -1090,7 +1113,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.CredentialEntryActions.{CredentialEntryType}"
-    enum="CredentialEntryAction" expires_after="2024-05-26">
+    enum="CredentialEntryAction" expires_after="2024-07-28">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -1106,7 +1129,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.CredentialManager.{ProfileType}.GetIntent.APIError"
-    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-05-05">
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-07-07">
   <owner>ioanap@chromium.org</owner>
   <owner>izuzic@google.com</owner>
   <summary>
@@ -1120,7 +1143,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.CredentialManager.{ProfileType}.GetIntent.APIError.ConnectionResultCode"
-    enum="PasswordStoreAndroidBackendConnectionResultCode" expires_after="M123">
+    enum="PasswordStoreAndroidBackendConnectionResultCode"
+    expires_after="2024-05-05">
   <owner>ioanap@chromium.org</owner>
   <owner>izuzic@google.com</owner>
   <summary>
@@ -1134,7 +1158,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.CredentialManager.{ProfileType}.GetIntent.Error"
-    enum="CredentialManagerError" expires_after="2024-05-05">
+    enum="CredentialManagerError" expires_after="2024-07-07">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -1148,7 +1172,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.CredentialManager.{ProfileType}.GetIntent.Latency"
-    units="ms" expires_after="M123">
+    units="ms" expires_after="2024-05-05">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -1163,7 +1187,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.CredentialManager.{ProfileType}.GetIntent.Success"
-    enum="BooleanSuccess" expires_after="M123">
+    enum="BooleanSuccess" expires_after="2024-05-05">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -1176,7 +1200,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.CredentialManager.{ProfileType}.Launch.Success"
-    enum="BooleanSuccess" expires_after="M123">
+    enum="BooleanSuccess" expires_after="2024-05-05">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -1190,7 +1214,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.CredentialsCountFromAccountStoreAfterUnlock"
-    units="credentials" expires_after="2024-05-26">
+    units="credentials" expires_after="2024-07-28">
   <owner>fhorschig@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -1202,7 +1226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.CredentialsWithDuplicates3" units="units"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1216,7 +1240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.CredentialsWithMismatchedDuplicates3"
-    units="units" expires_after="2024-04-28">
+    units="units" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1230,7 +1254,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.CredMan.PasswordFormSubmissionTriggered"
-    enum="Boolean" expires_after="2024-05-12">
+    enum="Boolean" expires_after="2024-07-14">
   <owner>derinel@google.com</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -1243,7 +1267,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.DefaultPasswordStoreSet"
-    enum="PasswordManager.Store" expires_after="2024-04-28">
+    enum="PasswordManager.Store" expires_after="2024-06-30">
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -1253,23 +1277,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.DeleteUndecryptableLoginsReturnValue"
-    enum="DeleteCorruptedPasswordsResult" expires_after="2024-04-28">
+    enum="DeleteCorruptedPasswordsResult" expires_after="2024-06-30">
   <owner>vasilii@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
     Records the return value of the DeleteUndecryptableLogins method in the
     LoginDatabase class. Called for sync user and for each profile when merging
     logins from Sync and local database.
-  </summary>
-</histogram>
-
-<histogram name="PasswordManager.DropdownShown.OffTheRecord" units="units"
-    expires_after="2024-02-11">
-  <owner>rhalavati@chromium.org</owner>
-  <owner>chrome-privacy-core@google.com</owner>
-  <summary>
-    Records availability of password manager suggestions in regular and
-    off-the-record modes.
   </summary>
 </histogram>
 
@@ -1287,7 +1301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.EditsInSaveBubble"
-    enum="PasswordManagerEditsInSaveBubbleEnum" expires_after="2024-05-12">
+    enum="PasswordManagerEditsInSaveBubbleEnum" expires_after="2024-07-14">
   <owner>vasilii@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -1298,7 +1312,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.EnableState" enum="PasswordManagerEnableState"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>markusheintz@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -1309,7 +1323,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ErrorMessageDismissalReason"
-    enum="MessageDismissReason" expires_after="2024-04-28">
+    enum="MessageDismissReason" expires_after="2024-06-30">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -1321,7 +1335,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ErrorMessageDisplayReason"
-    enum="PasswordStoreBackendErrorType" expires_after="2023-12-24">
+    enum="PasswordStoreBackendErrorType" expires_after="2024-06-30">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -1332,8 +1346,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.FieldNameCollisionInVotes" enum="Boolean"
-    expires_after="2024-05-19">
-  <owner>kolos@chromium.org</owner>
+    expires_after="2024-07-21">
+  <owner>kazinova@google.com</owner>
   <owner>khamutov@google.com</owner>
   <summary>
     Measures whether a password vote had a field name collision, i.e. multiple
@@ -1352,7 +1366,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.FillingAssistance"
-    enum="PasswordManagerFillingAssistance" expires_after="2024-05-12">
+    enum="PasswordManagerFillingAssistance" expires_after="2024-07-14">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -1391,7 +1405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.FillingSource"
-    enum="PasswordManagerFillingSource" expires_after="2024-04-28">
+    enum="PasswordManagerFillingSource" expires_after="2024-06-30">
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <summary>
@@ -1414,7 +1428,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.FillSuggestionsIncludeAndroidAppCredentials"
-    enum="PasswordManagerOfferedAndroidCredentials" expires_after="2024-05-05">
+    enum="PasswordManagerOfferedAndroidCredentials" expires_after="2024-07-07">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1424,7 +1438,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.FirstRendererFillingResult"
-    enum="PasswordManagerFirstRendererFillingResult" expires_after="2024-05-26">
+    enum="PasswordManagerFirstRendererFillingResult" expires_after="2024-07-28">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -1437,7 +1451,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.FirstWaitForUsernameReason"
-    enum="PasswordManagerFirstWaitForUsernameReason" expires_after="2024-05-19">
+    enum="PasswordManagerFirstWaitForUsernameReason" expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -1450,7 +1464,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.FormVisited.PerProfileType"
-    enum="BrowserProfileType" expires_after="2024-05-19">
+    enum="BrowserProfileType" expires_after="2024-07-21">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -1460,9 +1474,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.GeneratedFormHasNoFormManager"
-    enum="BooleanFormManager" expires_after="2024-03-31">
+    enum="BooleanFormManager" expires_after="2024-07-28">
   <owner>kazinova@google.com</owner>
-  <owner>kolos@chromium.org</owner>
+  <owner>shaikhitdin@google.com</owner>
   <summary>
     When the generation state of a password was changed, records whether an
     existing form corresponding to the password was found.
@@ -1471,7 +1485,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.GetLogins.GroupedMatchesStatus"
     enum="PasswordManager.GroupedPasswordFetchResult"
-    expires_after="2024-05-26">
+    expires_after="2024-07-28">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -1482,7 +1496,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.HttpCredentials2"
-    enum="PasswordManagerHttpCredentialType" expires_after="2024-05-19">
+    enum="PasswordManagerHttpCredentialType" expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1516,7 +1530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Import.DesktopInteractions"
-    enum="PasswordsImportDesktopInteractions" expires_after="2024-04-28">
+    enum="PasswordsImportDesktopInteractions" expires_after="2024-06-30">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1525,8 +1539,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.Import.FileDeletionSelected" units="Boolean"
-    expires_after="2024-04-28">
+<histogram name="PasswordManager.Import.FileDeletionSelected" enum="Boolean"
+    expires_after="2024-06-30">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1535,8 +1549,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.Import.Only{ErrorType}" units="Boolean"
-    expires_after="2024-04-28">
+<histogram name="PasswordManager.Import.Only{ErrorType}" enum="Boolean"
+    expires_after="2024-06-30">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1551,7 +1565,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Import.PerFile.ConflictsResolved"
-    units="saved credentials" expires_after="2024-04-28">
+    units="saved credentials" expires_after="2024-06-30">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1563,7 +1577,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Import.PerFile.Notes.{Type}" units="units"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1588,7 +1602,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Import.PerFile.{ErrorType}" units="units"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1615,7 +1629,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportDuration" units="ms"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1628,7 +1642,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportedPasswordsPerUserInCSV" units="units"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>vasilii@chromium.org</owner>
   <owner>src/components/password_manager/OWNERS</owner>
   <summary>
@@ -1638,7 +1652,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportEntryStatus"
-    enum="PasswordManagerImportEntryStatus" expires_after="2024-05-19">
+    enum="PasswordManagerImportEntryStatus" expires_after="2024-07-21">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1650,7 +1664,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportFileSize" units="bytes"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1661,7 +1675,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportResultsStatus2"
-    enum="PasswordManagerImportResultsStatus" expires_after="2024-04-28">
+    enum="PasswordManagerImportResultsStatus" expires_after="2024-06-30">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1683,12 +1697,33 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.iOS.InfoBar.PasswordSave" enum="Boolean"
-    expires_after="2024-05-12">
+    expires_after="2024-07-14">
   <owner>djean@chromium.org</owner>
   <owner>sczs@google.com</owner>
   <summary>
     This metric counts how many times the Save Password infobar is shown.
   </summary>
+</histogram>
+
+<histogram name="PasswordManager.iOS.InfoBar.{Type}Duration.{Moment}"
+    units="ms" expires_after="2024-06-12">
+  <owner>vincb@google.com</owner>
+  <owner>eic@google.com</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    Records the duration of the password save/update infobar that is presented
+    after using new credentials. Recorded when the password infobar banner is
+    dismissed.
+  </summary>
+  <token key="Type">
+    <variant name="Save" summary="the save infobar"/>
+    <variant name="Update" summary="the update infobar"/>
+  </token>
+  <token key="Moment">
+    <variant name="All" summary="all moments"/>
+    <variant name="OnDeletion" summary="when deleting the infobar delegate"/>
+    <variant name="OnDismiss" summary="when dismissing the infobar"/>
+  </token>
 </histogram>
 
 <histogram name="PasswordManager.iOS.ReauthenticationUI.Event"
@@ -1714,7 +1749,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.IsPasswordProtected2" enum="Boolean"
-    expires_after="2024-05-05">
+    expires_after="2024-07-07">
   <owner>skrakowi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1728,7 +1763,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.IsSyncPasswordHashSaved"
-    enum="IsSyncPasswordHashSaved" expires_after="2024-04-28">
+    enum="IsSyncPasswordHashSaved" expires_after="2024-06-30">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1737,20 +1772,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="PasswordManager.IsSyncPasswordHashSavedForAdvancedProtectionUser"
-    enum="IsSyncPasswordHashSaved" expires_after="2024-02-04">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    This metric is recorded shortly after Chrome Startup, only for Advanced
-    Protection users. This is a subset of
-    PasswordManager.IsSyncPasswordHashSaved.
-  </summary>
-</histogram>
-
 <histogram name="PasswordManager.ItemSelected.OffTheRecord" units="units"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>arabm@chromium.org</owner>
   <owner>chrome-privacy-team@google.com</owner>
   <summary>
@@ -1777,7 +1800,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.LeakDetection.DialogDismissalReason"
-    enum="PasswordLeakDetectionDialogDismissalReason" expires_after="M124">
+    enum="PasswordLeakDetectionDialogDismissalReason" expires_after="M127">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1787,7 +1810,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.LeakDetection.Error"
-    enum="PasswordLeakDetectionError" expires_after="M124">
+    enum="PasswordLeakDetectionError" expires_after="M127">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1806,7 +1829,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.LeakDetection.LookupSingleLeakResponseResult"
-    enum="PasswordLeakLookupResponseResult" expires_after="M124">
+    enum="PasswordLeakLookupResponseResult" expires_after="M127">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1826,7 +1849,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.LeakDetection.ObtainAccessTokenTime"
-    units="ms" expires_after="2024-05-05">
+    units="ms" expires_after="2024-07-07">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1866,7 +1889,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.LoginDatabase.DeleteFromKeychain"
-    enum="ErrSecOSStatus" expires_after="2024-05-19">
+    enum="ErrSecOSStatus" expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1876,7 +1899,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.LoginDatabaseInit2"
-    enum="LoginDatabaseInitError" expires_after="2024-04-28">
+    enum="LoginDatabaseInitError" expires_after="2024-06-30">
   <owner>vasilii@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -1886,7 +1909,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ManagePasswordsReferrer"
-    enum="ManagePasswordsReferrer" expires_after="2024-05-19">
+    enum="ManagePasswordsReferrer" expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1897,7 +1920,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MatchedFormType"
-    enum="PasswordManagerMatchedFormType" expires_after="2024-05-19">
+    enum="PasswordManagerMatchedFormType" expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1908,7 +1931,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MediationOptional"
-    enum="CredentialManagerGetResult" expires_after="2024-03-17">
+    enum="CredentialManagerGetResult" expires_after="2024-07-14">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1918,7 +1941,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MediationRequired"
-    enum="CredentialManagerGetResult" expires_after="2024-02-04">
+    enum="CredentialManagerGetResult" expires_after="2024-08-15">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1929,7 +1952,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MediationSilent"
-    enum="CredentialManagerGetResult" expires_after="2024-04-28">
+    enum="CredentialManagerGetResult" expires_after="2024-07-28">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1939,7 +1962,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MergeSyncData.AddLoginSyncError"
-    enum="PasswordAddLoginSyncError" expires_after="2024-04-28">
+    enum="PasswordAddLoginSyncError" expires_after="2024-06-30">
   <owner>mamir@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -1950,7 +1973,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MergeSyncData.UpdateLoginSyncError"
-    enum="PasswordUpdateLoginSyncError" expires_after="2024-04-28">
+    enum="PasswordUpdateLoginSyncError" expires_after="2024-06-30">
   <owner>mamir@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -1963,7 +1986,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.MigrationToOSCrypt.{Store}DeletedPasswordCount"
-    units="count" expires_after="2024-05-19">
+    units="count" expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1998,7 +2021,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.MigrationToOSCrypt.{Store}MigratedPasswordCount"
-    units="count" expires_after="2024-05-19">
+    units="count" expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2009,7 +2032,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MigrationToOSCrypt.{Store}SuccessLatency"
-    units="ms" expires_after="2024-05-12">
+    units="ms" expires_after="2024-07-14">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2020,7 +2043,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MigrationToOSCrypt{StoreType}"
-    enum="MigrationToOSCryptEnum" expires_after="2024-05-05">
+    enum="MigrationToOSCryptEnum" expires_after="2024-07-07">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2048,9 +2071,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.NewlySavedPasswordHasEmptyUsername.{PasswordType}"
-    enum="Boolean" expires_after="2024-04-28">
+    enum="Boolean" expires_after="2024-06-30">
   <owner>khamutov@google.com</owner>
-  <owner>kolos@chromium.org</owner>
+  <owner>kazinova@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
     Whether a newly saved password has an empty username. Recorded right before
@@ -2060,10 +2083,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.NewlySavedPasswordIsGenerated"
-    enum="BooleanNewlySavedPasswordIsGenerated" expires_after="2024-05-12">
+    enum="BooleanNewlySavedPasswordIsGenerated" expires_after="2024-07-14">
   <owner>nepper@chromium.org</owner>
   <owner>battre@chromium.org</owner>
-  <owner>kolos@chromium.org</owner>
+  <owner>kazinova@google.org</owner>
   <summary>
     For a newly saved password, whether the password was generated by Chrome or
     typed manually by the user.
@@ -2071,7 +2094,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.NonSyncPasswordHashChange"
-    enum="GaiaPasswordHashChange" expires_after="2024-04-28">
+    enum="GaiaPasswordHashChange" expires_after="2024-06-30">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2082,7 +2105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.OpenedAsShortcut" enum="Boolean"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -2092,7 +2115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.OutdatedGMSDialogDismissalReason"
-    enum="OutdatedGMSDialogDismissalReason" expires_after="M123">
+    enum="OutdatedGMSDialogDismissalReason" expires_after="2024-06-16">
   <owner>ioanap@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -2105,8 +2128,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ParserDetectedOtpFieldWithRegex"
-    enum="Boolean" expires_after="2024-05-12">
-  <owner>kolos@chromium.org</owner>
+    enum="Boolean" expires_after="2024-07-14">
+  <owner>kazinova@google.com</owner>
   <owner>shaikhitdin@google.com</owner>
   <summary>
     Reports whether the form parser has detected an OTP field with regex.
@@ -2116,7 +2139,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordCheckup.Launch.Success"
-    enum="BooleanSuccess" expires_after="2024-04-28">
+    enum="BooleanSuccess" expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -2129,7 +2152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordCheckup.{Operation}.APIError"
-    enum="PasswordStoreAndroidBackendAPIError" expires_after="M123">
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>izuzic@google.com</owner>
   <summary>
@@ -2142,7 +2165,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordCheckup.{Operation}.Error"
-    enum="CredentialManagerError" expires_after="M123">
+    enum="CredentialManagerError" expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>izuzic@google.com</owner>
   <owner>vsemeniuk@google.com</owner>
@@ -2157,7 +2180,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordCheckup.{Operation}.ErrorLatency"
-    units="ms" expires_after="M123">
+    units="ms" expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>izuzic@google.com</owner>
   <summary>
@@ -2171,7 +2194,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordCheckup.{Operation}.Latency"
-    units="ms" expires_after="2024-04-28">
+    units="ms" expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>izuzic@google.com</owner>
   <summary>
@@ -2184,7 +2207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordCheckup.{Operation}.Success"
-    enum="BooleanSuccess" expires_after="2024-04-28">
+    enum="BooleanSuccess" expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>izuzic@google.com</owner>
   <summary>
@@ -2195,7 +2218,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordDropdownItemSelected"
-    enum="PasswordDropdownSelectedOption" expires_after="2024-05-19">
+    enum="PasswordDropdownSelectedOption" expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2204,7 +2227,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordDropdownShown"
-    enum="PasswordDropdownState" expires_after="2024-04-28">
+    enum="PasswordDropdownState" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>Logs the state of the password dropdown when it's shown.</summary>
@@ -2225,7 +2248,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordManagementBubble.UserAction"
-    enum="PasswordManagementBubbleInteractions" expires_after="2024-05-26">
+    enum="PasswordManagementBubbleInteractions" expires_after="2024-07-28">
   <owner>mamir@chromium.org</owner>
   <owner>rgod@google.com</owner>
   <summary>
@@ -2236,7 +2259,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordMigrationWarning.EmptySheetTrigger2"
-    enum="PasswordMigrationWarningTriggers" expires_after="2024-01-29">
+    enum="PasswordMigrationWarningTriggers" expires_after="2024-03-29">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2249,7 +2272,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordMigrationWarning.Export.Event"
-    enum="PasswordExportEvent" expires_after="2024-04-19">
+    enum="PasswordExportEvent" expires_after="2024-06-23">
   <owner>ioanap@chromium.org</owner>
   <owner>atsvirchkova@google.com</owner>
   <summary>
@@ -2260,7 +2283,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordMigrationWarning.Export.Result2"
-    enum="HistogramExportResult" expires_after="2024-04-28">
+    enum="HistogramExportResult" expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>atsvirchkova@google.com</owner>
   <summary>
@@ -2308,7 +2331,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordNoteActionInSettings2"
-    enum="PasswordNoteAction" expires_after="2024-04-28">
+    enum="PasswordNoteAction" expires_after="2024-06-30">
   <owner>derinel@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -2321,7 +2344,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordNotesMigrationToOSCrypt.{Store}DeletedNotesCount"
-    units="count" expires_after="2024-05-19">
+    units="count" expires_after="2024-07-21">
   <owner>rgod@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2345,7 +2368,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordNotesMigrationToOSCrypt.{Store}MigratedNotesCount"
-    units="count" expires_after="2024-05-19">
+    units="count" expires_after="2024-07-21">
   <owner>rgod@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2356,7 +2379,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordNotesMigrationToOSCrypt{StoreType}"
-    enum="PasswordNotesMigrationToOSCryptEnum" expires_after="2024-05-19">
+    enum="PasswordNotesMigrationToOSCryptEnum" expires_after="2024-07-21">
   <owner>rgod@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2371,7 +2394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordReuse.NumberOfMatches"
-    units="credentials" expires_after="2024-04-28">
+    units="credentials" expires_after="2024-06-30">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2387,7 +2410,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordReuse.PasswordFieldDetected"
-    enum="PasswordReusePasswordFieldDetected" expires_after="2024-04-28">
+    enum="PasswordReusePasswordFieldDetected" expires_after="2024-06-30">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2401,7 +2424,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordReuse.TotalPasswords"
-    units="credentials" expires_after="2024-05-19">
+    units="credentials" expires_after="2024-07-21">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2419,7 +2442,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordSavingDisabledDueToGMSCoreError"
-    enum="BooleanEnabled" expires_after="2024-05-26">
+    enum="BooleanEnabled" expires_after="2024-07-28">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2431,7 +2454,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordSettings.{Function}.{Setting}.APIError1"
-    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-04-28">
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-06-30">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2449,7 +2472,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordSettings.{Function}.{Setting}.ErrorCode"
-    enum="PasswordStoreAndroidBackendError" expires_after="M123">
+    enum="PasswordStoreAndroidBackendError" expires_after="2024-06-30">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2464,7 +2487,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordSettings.{Function}.{Setting}.ErrorLatency"
-    units="ms" expires_after="2024-04-28">
+    units="ms" expires_after="2024-06-30">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2477,7 +2500,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordSettings.{Function}.{Setting}.Latency"
-    units="ms" expires_after="2024-04-28">
+    units="ms" expires_after="2024-06-30">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2503,7 +2526,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordsGrouping.Time" units="ms"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2514,7 +2537,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.PasswordSharingDesktop.UserAction"
     enum="PasswordManager.PasswordSharingDesktopActions"
-    expires_after="2024-03-01">
+    expires_after="2024-06-23">
   <owner>natiahlyi@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <owner>rgod@google.com</owner>
@@ -2526,7 +2549,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.PasswordSharingIOS.UserAction"
     enum="PasswordManager.PasswordSharingIOSUserAction"
-    expires_after="2024-03-01">
+    expires_after="2024-06-09">
   <owner>rgod@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -2569,7 +2592,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStore.OnLoginsRetained"
-    enum="LoginsChangedTrigger" expires_after="M125">
+    enum="LoginsChangedTrigger" expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -2597,7 +2620,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStore.TimesReenrolledInUPM"
-    units="Times" expires_after="2024-04-28">
+    units="Times" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2611,7 +2634,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordStore.WasEnrolledInUPMWhenBackendWasCreated"
-    enum="Boolean" expires_after="2024-04-28">
+    enum="Boolean" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
@@ -2626,7 +2649,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordStoreAndroidBackend.Retry{Operation}.APIError"
-    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-05-05">
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-07-07">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2657,7 +2680,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordStoreAndroidBackend.Retry{Operation}.Attempt"
-    units="Times" expires_after="M120">
+    units="Times" expires_after="2024-07-07">
   <owner>izuzic@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2665,7 +2688,8 @@ chromium-metrics-reviews@google.com.
     error and a retry for the {Operation} operation is about to be scheduled.
     This is recorded after the asynchronous call comes back with an error and it
     is checked that operation could be retried. This is only recorded for GMS
-    API errors on Android.
+    API errors on Android. Note: This histogram expired after M120. Data might
+    be incomplete before M122, Jan 4 2023.
   </summary>
   <token key="Operation">
     <variant name=""/>
@@ -2689,7 +2713,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordStoreAndroidBackend{Function}.APIError"
-    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-04-28">
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-06-30">
   <owner>maxan@chromium.org</owner>
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
@@ -2717,7 +2741,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PasswordManager.PasswordStoreAndroidBackend{Function}.ConnectionResultCode"
     enum="PasswordStoreAndroidBackendConnectionResultCode"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2743,7 +2767,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordStoreAndroidBackend{Function}.ErrorCode"
-    enum="PasswordStoreAndroidBackendError" expires_after="2024-04-28">
+    enum="PasswordStoreAndroidBackendError" expires_after="2024-06-30">
   <owner>maxan@chromium.org</owner>
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
@@ -2783,7 +2807,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStoreProxyBackend.{Function}.Fallback"
-    enum="Boolean" expires_after="2024-04-28">
+    enum="Boolean" expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2796,7 +2820,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStore{Backend}.{Function}"
-    enum="PasswordStoreAndroidBackendRequestStatus" expires_after="2024-04-28">
+    enum="PasswordStoreAndroidBackendRequestStatus" expires_after="2024-06-30">
   <owner>maxan@chromium.org</owner>
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
@@ -2816,7 +2840,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStore{Backend}.{Function}.Latency"
-    units="ms" expires_after="2024-04-28">
+    units="ms" expires_after="2024-06-30">
   <owner>maxan@chromium.org</owner>
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
@@ -2834,7 +2858,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordStore{Backend}.{Function}.Success"
-    enum="BooleanSuccess" expires_after="2024-04-28">
+    enum="BooleanSuccess" expires_after="2024-06-30">
   <owner>maxan@chromium.org</owner>
   <owner>ioanap@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
@@ -2853,7 +2877,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordSyncState3" enum="PasswordSyncState"
-    expires_after="2024-05-05">
+    expires_after="2024-07-07">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2864,7 +2888,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PasswordViewPage.UserActions"
-    enum="PasswordViewPageInteractions" expires_after="2024-04-28">
+    enum="PasswordViewPageInteractions" expires_after="2024-06-30">
   <owner>derinel@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -2874,7 +2898,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PrefilledUsernameFillOutcome"
-    enum="PrefilledUsernameFillOutcome" expires_after="2024-04-28">
+    enum="PrefilledUsernameFillOutcome" expires_after="2024-06-30">
   <owner>khamutov@google.com</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -2891,7 +2915,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PasswordManager.ProcessIncomingPasswordSharingInvitationResult"
     enum="PasswordManager.ProcessIncomingPasswordSharingInvitationResult"
-    expires_after="2024-05-04">
+    expires_after="2024-07-07">
   <owner>mamir@chromium.org</owner>
   <owner>rushans@google.com</owner>
   <component>UI&gt;Browser&gt;Passwords</component>
@@ -2904,7 +2928,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ProfileStore.TotalAccountsBeforeInitialSync"
-    units="accounts" expires_after="M123">
+    units="accounts" expires_after="M130">
   <owner>vasilii@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -2914,7 +2938,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PromoCard.ActionButtonClicked"
-    enum="PasswordManagerPromoCard" expires_after="2024-04-28">
+    enum="PasswordManagerPromoCard" expires_after="2024-07-07">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -2934,7 +2958,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.PromoCard.Shown"
-    enum="PasswordManagerPromoCard" expires_after="2024-04-28">
+    enum="PasswordManagerPromoCard" expires_after="2024-07-07">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -2944,7 +2968,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ProvisionalSaveFailure2"
-    enum="ProvisionalSaveFailure" expires_after="2024-05-05">
+    enum="ProvisionalSaveFailure" expires_after="2024-07-07">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2974,7 +2998,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.RequirementsSpecFetcher.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2024-02-20">
+    enum="NetErrorCodes" expires_after="2024-08-31">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -2993,7 +3017,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.RequirementsSpecFetcher.Result"
-    enum="PasswordRequirementsFetcherResult" expires_after="2024-02-15">
+    enum="PasswordRequirementsFetcherResult" expires_after="2024-08-15">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -3002,7 +3026,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ReuseCheck.CheckedPasswords" units="passwords"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3013,7 +3037,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ReuseCheck.ReusedPasswords" units="passwords"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3024,7 +3048,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ReuseCheck.Time" units="ms"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3034,7 +3058,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ReusedPasswordType" enum="ReusedPasswordType"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3046,7 +3070,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.SavedGaiaPasswordHashCount2{SyncConsentStatus}"
-    units="count" expires_after="2024-05-05">
+    units="count" expires_after="2024-07-21">
   <owner>vsemeniuk@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3065,7 +3089,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SaveUIDismissalReason{UserSyncingType}"
-    enum="PasswordManagerUIDismissalReason" expires_after="2024-04-28">
+    enum="PasswordManagerUIDismissalReason" expires_after="2024-06-30">
   <owner>vasilii@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
@@ -3108,7 +3132,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SavingOnUsernameFirstFlow"
-    enum="SavingOnUsernameFirstFlow" expires_after="2024-04-28">
+    enum="SavingOnUsernameFirstFlow" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3154,7 +3178,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Settings.ToggleOfferToSavePasswords"
-    enum="BooleanEnabled" expires_after="2024-04-28">
+    enum="BooleanEnabled" expires_after="2024-06-30">
   <owner>ioanap@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -3166,7 +3190,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.SharedPasswordsNotificationBubble.UserAction"
     enum="PasswordManager.SharedPasswordsNotificationInteractions"
-    expires_after="2024-03-01">
+    expires_after="2024-09-01">
   <owner>mamir@chromium.org</owner>
   <owner>rgod@google.com</owner>
   <summary>
@@ -3179,7 +3203,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ShortcutMetric"
-    enum="PasswordManagerShortcutMetric" expires_after="2024-04-28">
+    enum="PasswordManagerShortcutMetric" expires_after="2024-06-30">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -3191,7 +3215,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.SingleUsername.ForgotPasswordServerPredictionUsed"
-    enum="Boolean" expires_after="2024-04-28">
+    enum="Boolean" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>shaikhitdin@google.com</owner>
   <summary>
@@ -3202,7 +3226,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.SingleUsername.PasswordFormHadUsernameField"
     enum="PasswordFormHadUsernameField" expires_after="2024-06-02">
-  <owner>kolos@chromium.org</owner>
+  <owner>kazinova@google.com</owner>
   <owner>shaikhitdin@google.com</owner>
   <summary>
     Single username vote is sent after user is signed in (i.e. entered password
@@ -3222,9 +3246,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SingleUsername.VoteDataAvailability"
-    enum="SingleUsernameVoteDataAvailability" expires_after="2024-04-28">
+    enum="SingleUsernameVoteDataAvailability" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
-  <owner>kolos@chromium.org</owner>
   <owner>shaikhitdin@google.com</owner>
   <summary>
     This metric records whether username first and forgot password form voting
@@ -3267,7 +3290,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SubmittedFormFrame2"
-    enum="SubmittedPasswordFormFrame" expires_after="2024-05-19">
+    enum="SubmittedPasswordFormFrame" expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3278,7 +3301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SubmittedFormType2" enum="PasswordFormType2"
-    expires_after="M125">
+    expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>shaikhitdin@google.com</owner>
   <owner>chrome-password-manager-metrics-alerts@google.com</owner>
@@ -3290,9 +3313,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SuccessfulLoginHappened"
-    enum="BooleanSuccessfulLoginHappenedOnHttps" expires_after="2024-05-19">
+    enum="BooleanSuccessfulLoginHappenedOnHttps" expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
-  <owner>kolos@chromium.org</owner>
+  <owner>shaikhitdin@google.com</owner>
   <summary>
     For a successful login, whether the origin is HTTPS or HTTP. A succesful
     login is detected by local heuristics. The heuristics can misclassify
@@ -3312,7 +3335,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.SyncControllerDelegateNotifiesCredentialManager.APIErrorCode"
-    enum="CredentialManagerAPIError" expires_after="2024-05-26">
+    enum="CredentialManagerAPIError" expires_after="2024-07-28">
   <owner>kazinova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -3324,7 +3347,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.SyncControllerDelegateNotifiesCredentialManager.ErrorCode"
-    enum="PasswordStoreAndroidBackendError" expires_after="2024-05-26">
+    enum="PasswordStoreAndroidBackendError" expires_after="2024-07-28">
   <owner>kazinova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -3338,7 +3361,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.SyncControllerDelegateNotifiesCredentialManager.Success"
-    enum="Boolean" expires_after="2024-05-26">
+    enum="Boolean" expires_after="2024-07-28">
   <owner>kazinova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -3349,7 +3372,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SyncingAccountState3"
-    enum="PasswordManagerSyncingAccountState" expires_after="2024-04-28">
+    enum="PasswordManagerSyncingAccountState" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <owner>chrome-password-manager-metrics-alerts@google.com</owner>
@@ -3361,7 +3384,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SyncMetadataReadError2"
-    enum="PasswordSyncMetadataReadError" expires_after="2024-04-28">
+    enum="PasswordSyncMetadataReadError" expires_after="2024-06-30">
   <owner>mamir@chromium.org</owner>
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -3372,7 +3395,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.SyncPasswordHashChange"
-    enum="GaiaPasswordHashChange" expires_after="2024-04-28">
+    enum="GaiaPasswordHashChange" expires_after="2024-06-30">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3382,7 +3405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.TimeBetweenStoreAndServer" units="ms"
-    expires_after="2024-05-05">
+    expires_after="2024-07-07">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -3393,10 +3416,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.TouchToFill.CredentialIndex" units="index"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
-  <owner>kolos@chromium.org</owner>
   <summary>
     The index of a selected credential in the Touch To Fill sheet. Only recorded
     when the sheet showed at least two entries.
@@ -3404,10 +3426,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.TouchToFill.DismissalReason"
-    enum="BottomSheet.StateChangeReason" expires_after="2024-05-19">
+    enum="BottomSheet.StateChangeReason" expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
-  <owner>kolos@chromium.org</owner>
   <summary>
     The reason why a user dismissed the Touch To Fill sheet. Recorded once for
     each dismissal.
@@ -3415,10 +3436,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.TouchToFill.Outcome"
-    enum="TouchToFill.Outcome" expires_after="2024-05-19">
+    enum="TouchToFill.Outcome" expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
-  <owner>kolos@chromium.org</owner>
   <summary>
     The final outcome that closes the Touch To Fill sheet (e.g. credentials
     filling, settings opened, failed reauth, sheet dismissal). Recorded once for
@@ -3456,8 +3476,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.TouchToFill.SubmissionReadiness"
-    enum="TouchToFill.SubmissionReadiness" expires_after="2024-05-19">
-  <owner>kolos@chromium.org</owner>
+    enum="TouchToFill.SubmissionReadiness" expires_after="2024-07-21">
+  <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
     A given form's state (e.g. there are empty fields in the form, or there are
@@ -3468,10 +3488,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.TouchToFill.SuccessfulSubmissionWasObserved"
-    enum="Boolean" expires_after="2024-05-19">
+    enum="Boolean" expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
-  <owner>kolos@chromium.org</owner>
   <summary>
     Measures whether a credential filling by Touch To Fill leads to a successful
     submission or not (submission failed, or the submission could not be
@@ -3488,10 +3507,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.TouchToFill.TimeToSuccessfulLogin" units="ms"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
-  <owner>kolos@chromium.org</owner>
   <summary>
     The time in milliseconds between filling by the Touch To Fill and a
     successful submission (To ensure filling and submitting correspond to each
@@ -3504,7 +3522,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.UI.OpenedPasswordDetailsWhileSearching"
-    enum="BooleanSuccess" expires_after="M125">
+    enum="BooleanSuccess" expires_after="2024-06-30">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3514,7 +3532,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.UIDismissalReason"
-    enum="PasswordManagerUIDismissalReason" expires_after="2024-04-28">
+    enum="PasswordManagerUIDismissalReason" expires_after="2024-06-30">
   <owner>vasilii@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -3524,7 +3542,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.UnenrolledFromUPMDueToErrors" enum="Boolean"
-    expires_after="2024-05-26">
+    expires_after="2024-07-28">
   <owner>kazinova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
@@ -3536,7 +3554,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.UnifiedPasswordManager.ActiveStatus2"
-    enum="UnifiedPasswordManagerActiveStatus" expires_after="M123">
+    enum="UnifiedPasswordManagerActiveStatus" expires_after="M129">
   <owner>kazinova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
@@ -3552,7 +3570,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.UnifiedPasswordManager.WasMigrationDone"
-    enum="BooleanSuccess" expires_after="2024-05-26">
+    enum="BooleanSuccess" expires_after="2024-07-28">
   <owner>vsemeniuk@google.com</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -3564,7 +3582,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.UnifiedPasswordManager.{UPMMigrationType}.Latency"
-    units="ms" expires_after="2024-05-05">
+    units="ms" expires_after="2024-07-07">
   <owner>vsemeniuk@google.com</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -3576,7 +3594,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.UnifiedPasswordManager.{UPMMigrationType}.Success"
-    enum="BooleanSuccess" expires_after="2024-05-05">
+    enum="BooleanSuccess" expires_after="2024-07-07">
   <owner>vsemeniuk@google.com</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -3587,13 +3605,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.UpdateUIDismissalReason"
-    enum="PasswordManagerUIDismissalReason" expires_after="2024-05-19">
+    enum="PasswordManagerUIDismissalReason" expires_after="2024-07-21">
   <owner>vasilii@chromium.org</owner>
   <summary>Why was the update password UI (bubble or infobar) closed?</summary>
 </histogram>
 
 <histogram name="PasswordManager.UPMUnenrollmentReason"
-    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-05-19">
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="2024-07-21">
   <owner>ioanap@chromium.org</owner>
   <owner>izuzic@google.com</owner>
   <summary>
@@ -3615,9 +3633,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.UsernameDetectionMethod"
-    enum="UsernameDetectionMethod" expires_after="2024-04-28">
+    enum="UsernameDetectionMethod" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
-  <owner>kolos@chromium.org</owner>
+  <owner>shaikhitdin@google.com</owner>
   <summary>
     Measures what method was used for username field detection in the renderer
     code. The metric may be recorded several times for page visit because it is
@@ -3630,7 +3648,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.WeakCheck.CheckedPasswords" units="passwords"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3649,7 +3667,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.WeakCheck.SingleCheckTime" units="ms"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>jkeitel@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3659,14 +3677,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.WeakCheck.Time" units="ms"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>The time it took to complete the passwords weak check.</summary>
 </histogram>
 
 <histogram name="PasswordManager.WeakCheck.WeakPasswords" units="passwords"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3675,8 +3693,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.WellKnownChangePasswordResult"
-    enum="WellKnownChangePasswordResult" expires_after="2024-04-28">
-  <owner>kolos@chromium.org</owner>
+    enum="WellKnownChangePasswordResult" expires_after="2024-06-30">
+  <owner>kazinova@google.com</owner>
   <owner>jkeitel@google.com</owner>
   <summary>
     The type of change password URL opened after requesting, for example,
@@ -3686,7 +3704,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.{Function}.TimeSinceInit" units="units"
-    expires_after="M125">
+    expires_after="2024-06-30">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3703,7 +3721,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.{Location}.AuthenticationResult"
-    enum="BooleanSuccess" expires_after="2024-04-28">
+    enum="BooleanSuccess" expires_after="2024-06-30">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -3718,7 +3736,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.{Location}.AuthenticationTime" units="ms"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>vsemeniuk@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>Records the time it takes user to authenticate {Location}.</summary>
@@ -3734,7 +3752,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.{Store}BlacklistedSitesHiRes3{CustomPassphraseStatus}"
-    units="sites" expires_after="2024-04-28">
+    units="sites" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
@@ -3749,7 +3767,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.{Store}InaccessiblePasswords3"
-    units="saved passwords" expires_after="2024-04-28">
+    units="saved passwords" expires_after="2024-06-30">
   <owner>derinel@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
@@ -3765,7 +3783,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.{Store}LoginDatabaseEncryptionStatus"
-    enum="LoginDatabaseEncryptionStatus" expires_after="2024-04-28">
+    enum="LoginDatabaseEncryptionStatus" expires_after="2024-06-30">
   <owner>derinel@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -3805,7 +3823,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.{Store}TimesPasswordUsed3.{PasswordType}{CustomPassphraseStatus}"
-    units="PasswordUses" expires_after="2024-04-28">
+    units="PasswordUses" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
@@ -3823,7 +3841,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.{Store}TotalAccountsHiRes3.WithScheme{Scheme}"
-    units="accounts" expires_after="2024-04-28">
+    units="accounts" expires_after="2024-06-30">
   <owner>battre@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
   <owner>treib@chromium.org</owner>
@@ -3840,7 +3858,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.{Store}{Metric3}.{PasswordType}{CustomPassphraseStatus}"
-    units="units" expires_after="2024-04-28">
+    units="units" expires_after="2024-06-30">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
@@ -3884,7 +3902,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordProtection.InterstitialAction"
-    enum="PasswordProtectionWarningAction" expires_after="2024-04-28">
+    enum="PasswordProtectionWarningAction" expires_after="2024-06-30">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3896,7 +3914,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordProtection.ModalWarningDialogAction"
-    enum="PasswordProtectionWarningAction" expires_after="2024-05-19">
+    enum="PasswordProtectionWarningAction" expires_after="2024-07-21">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3930,7 +3948,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="PasswordProtection.PasswordAlertModeOutcome"
-    enum="PasswordProtectionRequestOutcome" expires_after="2024-01-14">
+    enum="PasswordProtectionRequestOutcome" expires_after="2025-01-22">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3942,7 +3960,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordProtection.PasswordProtectionResponseOrErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-03-17">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-06-23">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3966,7 +3984,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordProtection.RequestNetworkDuration" units="ms"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3976,7 +3994,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="PasswordProtection.RequestOutcome"
-    enum="PasswordProtectionRequestOutcome" expires_after="2024-05-12">
+    enum="PasswordProtectionRequestOutcome" expires_after="2024-07-14">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3998,7 +4016,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordProtection.RequestWithToken.{TriggerType}"
-    enum="BooleanSent" expires_after="2024-05-05">
+    enum="BooleanSent" expires_after="2024-07-07">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -4032,7 +4050,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordProtection.Verdict" enum="PasswordProtectionVerdict"
-    expires_after="2024-05-12">
+    expires_after="2024-07-14">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>

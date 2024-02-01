@@ -64,11 +64,6 @@ void LayoutTextCombine::AssertStyleIsValid(const ComputedStyle& style) {
 #endif
 }
 
-bool LayoutTextCombine::IsOfType(LayoutObjectType type) const {
-  NOT_DESTROYED();
-  return type == kLayoutObjectTextCombine || LayoutNGBlockFlow::IsOfType(type);
-}
-
 float LayoutTextCombine::DesiredWidth() const {
   DCHECK_EQ(StyleRef().GetFont().GetFontDescription().Orientation(),
             FontOrientation::kHorizontal);
@@ -157,7 +152,8 @@ PhysicalRect LayoutTextCombine::ComputeTextBoundsRectForHitTest(
 }
 
 void LayoutTextCombine::ResetLayout() {
-  compressed_font_.reset();
+  compressed_font_ = Font();
+  has_compressed_font_ = false;
   scale_x_.reset();
 }
 
@@ -272,16 +268,17 @@ gfx::Rect LayoutTextCombine::VisualRectForPaint(
 void LayoutTextCombine::SetScaleX(float new_scale_x) {
   DCHECK_GT(new_scale_x, 0.0f);
   DCHECK(!scale_x_.has_value());
-  DCHECK(!compressed_font_.has_value());
+  DCHECK(!has_compressed_font_);
   // Note: Even if rounding, e.g. LayoutUnit::FromFloatRound(), we still have
   // gap between painted characters in text-combine-upright-value-all-002.html
   scale_x_ = new_scale_x;
 }
 
 void LayoutTextCombine::SetCompressedFont(const Font& font) {
-  DCHECK(!compressed_font_.has_value());
+  DCHECK(!has_compressed_font_);
   DCHECK(!scale_x_.has_value());
   compressed_font_ = font;
+  has_compressed_font_ = true;
 }
 
 bool LayoutTextCombine::UsingSyntheticOblique() const {

@@ -105,27 +105,21 @@ class ChromeUserEducationDelegateTest : public BrowserWithTestWindowTest {
     delegate_ = std::make_unique<ChromeUserEducationDelegate>();
   }
 
-  TestingProfile* CreateProfile() override {
-    constexpr char kUserEmail[] = "user@test";
-    const AccountId kUserAccountId(AccountId::FromUserEmail(kUserEmail));
-
+  // TODO(crbug.com/1494005): merge into BrowserWithTestWindowTest.
+  void LogIn(const std::string& email) override {
+    const AccountId account_id = AccountId::FromUserEmail(email);
     // Register user.
-    user_manager_->AddUser(kUserAccountId);
-    user_manager_->LoginUser(kUserAccountId);
+    user_manager_->AddUser(account_id);
+    user_manager_->LoginUser(account_id);
 
     // Activate session.
     auto* client = ash_test_helper()->test_session_controller_client();
-    client->AddUserSession(kUserEmail);
-    client->SwitchActiveUser(kUserAccountId);
-
-    // Create profile.
-    return profile_manager()->CreateTestingProfile(kUserEmail,
-                                                   GetTestingFactories());
+    client->AddUserSession(email);
+    client->SwitchActiveUser(account_id);
   }
 
   // User management.
-  const raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
-      user_manager_;
+  const raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged> user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 
   // The delegate instance under test.

@@ -63,7 +63,7 @@ base::Value::Dict GetMetadata(HostContentSettingsMap* settings_map,
 }
 
 bool WasEntryPointAlreadyAnimated(const base::Value::Dict& metadata) {
-  absl::optional<bool> entry_point_animated =
+  std::optional<bool> entry_point_animated =
       metadata.FindBool(kEntryPointAnimatedKey);
   return entry_point_animated.has_value() && entry_point_animated.value();
 }
@@ -134,7 +134,7 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
   DCHECK(web_contents);
   if (!tab_observer_ || GetWebContents() != web_contents) {
     tab_observer_ = std::make_unique<TabObserver>(this, web_contents);
-    ResetInitialCookieControlsStatus();
+    SetUserChangedCookieBlockingForSite(false);
   }
   auto status = GetStatus(web_contents);
   int third_party_allowed_sites = GetAllowedThirdPartyCookiesSitesCount();
@@ -142,10 +142,13 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
   int bounce_count = GetStatefulBounceCount();
 
   for (auto& observer : observers_) {
-    observer.OnStatusChanged(status.status, status.enforcement,
+    observer.OnStatusChanged(status.status, status.controls_visible,
+                             status.protections_on, status.enforcement,
                              status.blocking_status, status.expiration);
     observer.OnSitesCountChanged(third_party_allowed_sites,
                                  third_party_blocked_sites);
+    observer.OnUserBypassIconStatusChanged(
+        status.controls_visible, status.protections_on, status.blocking_status);
     observer.OnBreakageConfidenceLevelChanged(GetConfidenceLevel(
         status.status, status.enforcement, third_party_allowed_sites,
         third_party_blocked_sites, bounce_count));
@@ -156,15 +159,21 @@ CookieControlsController::Status CookieControlsController::GetStatus(
     content::WebContents* web_contents) {
   if (!cookie_settings_->ShouldBlockThirdPartyCookies()) {
     return {CookieControlsStatus::kDisabled,
+            /*controls_visible=*/false,
+            /*protections_on=*/false,
             CookieControlsEnforcement::kNoEnforcement,
-            CookieBlocking3pcdStatus::kNotIn3pcd, base::Time()};
+            CookieBlocking3pcdStatus::kNotIn3pcd,
+            base::Time()};
   }
   const GURL& url = web_contents->GetLastCommittedURL();
   if (url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(kExtensionScheme)) {
     return {CookieControlsStatus::kDisabled,
+            /*controls_visible=*/false,
+            /*protections_on=*/false,
             CookieControlsEnforcement::kNoEnforcement,
-            CookieBlocking3pcdStatus::kNotIn3pcd, base::Time()};
+            CookieBlocking3pcdStatus::kNotIn3pcd,
+            base::Time()};
   }
 
   SettingInfo info;
@@ -205,7 +214,12 @@ CookieControlsController::Status CookieControlsController::GetStatus(
             : CookieBlocking3pcdStatus::kLimited;
   }
   CookieControlsEnforcement enforcement;
-  if (info.source == SETTING_SOURCE_POLICY) {
+  bool controls_visible = true;
+  if (info.source == SETTING_SOURCE_TPCD_GRANT &&
+      blocking_status == CookieBlocking3pcdStatus::kLimited) {
+    controls_visible = false;
+    enforcement = CookieControlsEnforcement::kEnforcedByTpcdGrant;
+  } else if (info.source == SETTING_SOURCE_POLICY) {
     enforcement = CookieControlsEnforcement::kEnforcedByPolicy;
   } else if (info.source == SETTING_SOURCE_EXTENSION) {
     enforcement = CookieControlsEnforcement::kEnforcedByExtension;
@@ -214,13 +228,15 @@ CookieControlsController::Status CookieControlsController::GetStatus(
     // If the exception cannot be reset in-context because of the nature of the
     // setting, display as managed by setting.
     enforcement = CookieControlsEnforcement::kEnforcedByCookieSetting;
-  } else if (info.source == SETTING_SOURCE_TPCD_GRANT &&
-             blocking_status == CookieBlocking3pcdStatus::kLimited) {
-    enforcement = CookieControlsEnforcement::kEnforcedByTpcdGrant;
   } else {
     enforcement = CookieControlsEnforcement::kNoEnforcement;
   }
-  return {status, enforcement, blocking_status, info.metadata.expiration()};
+  return {status,
+          /*controls_visible=*/controls_visible,
+          /*protections_on=*/!is_allowed,
+          enforcement,
+          blocking_status,
+          info.metadata.expiration()};
 }
 
 CookieControlsBreakageConfidenceLevel
@@ -243,6 +259,15 @@ CookieControlsController::GetConfidenceLevel(
     case CookieControlsStatus::kEnabled:
       // Check other conditions to determine the level.
       break;
+  }
+
+  // 3PCD prevents SameSite=None cookies from being sent when the top-level
+  // document is sandboxed without `allow-origin`. For instance when loaded
+  // with: `Content-Security-Policy: sandbox`. In that case, we render the UI to
+  // allow the user to opt into sending SameSite=None cookies again in those
+  // contexts.
+  if (HasOriginSandboxedTopLevelDocument()) {
+    return CookieControlsBreakageConfidenceLevel::kMedium;
   }
 
   // If no 3P sites have attempted to access site data, nor were any stateful
@@ -299,6 +324,11 @@ CookieControlsController::GetConfidenceLevel(
   return CookieControlsBreakageConfidenceLevel::kMedium;
 }
 
+bool CookieControlsController::HasOriginSandboxedTopLevelDocument() const {
+  return GetWebContents()->GetPrimaryMainFrame()->IsSandboxed(
+      network::mojom::WebSandboxFlags::kOrigin);
+}
+
 void CookieControlsController::OnCookieBlockingEnabledForSite(
     bool block_third_party_cookies) {
   const GURL& url = GetWebContents()->GetLastCommittedURL();
@@ -340,10 +370,13 @@ bool CookieControlsController::FirstPartyCookiesBlocked() {
 }
 
 bool CookieControlsController::HasUserChangedCookieBlockingForSite() {
-  auto current_status = GetStatus(GetWebContents());
-  return current_status.status != initial_page_cookie_controls_status_ &&
-         current_status.enforcement ==
-             CookieControlsEnforcement::kNoEnforcement;
+  return user_changed_cookie_blocking_;
+}
+
+void CookieControlsController::SetUserChangedCookieBlockingForSite(
+    bool changed) {
+  // Avoid a toggle back and forth being marked as "changed".
+  user_changed_cookie_blocking_ = changed && !user_changed_cookie_blocking_;
 }
 
 CookieControlsBreakageConfidenceLevel
@@ -464,7 +497,7 @@ void CookieControlsController::OnPageReloadDetected(int recent_reloads_count) {
     waiting_for_page_load_finish_ = true;
   }
 
-  ResetInitialCookieControlsStatus();
+  SetUserChangedCookieBlockingForSite(false);
 
   // Cache whether the expiration has expired since last visit before updating
   // the last visited metadata.
@@ -591,13 +624,6 @@ void CookieControlsController::RecordActivationMetrics() {
       .Record(ukm::UkmRecorder::Get());
 
   // TODO(crbug.com/1446230): Add metrics, related to repeated activations.
-}
-
-void CookieControlsController::ResetInitialCookieControlsStatus() {
-  auto status = GetStatus(GetWebContents());
-  initial_page_cookie_controls_status_ = status.status;
-  CHECK(initial_page_cookie_controls_status_ !=
-        CookieControlsStatus::kUninitialized);
 }
 
 CookieControlsController::TabObserver::TabObserver(

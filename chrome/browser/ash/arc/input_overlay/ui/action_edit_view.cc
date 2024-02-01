@@ -60,9 +60,8 @@ ActionEditView::ActionEditView(DisplayOverlayController* controller,
       views::CreateEmptyBorder(gfx::Insets::VH(14, kHorizontalInsets)));
   container->SetBackground(views::CreateThemedRoundedRectBackground(
       cros_tokens::kCrosSysSystemOnBase,
-      /*top_radius=*/kCornerRadius,
-      /*bottom_radius=*/for_editing_list ? kCornerRadius : 0.0f,
-      /*for_border_thickness=*/0));
+      /*top_radius=*/for_editing_list ? kCornerRadius : 0.0f,
+      /*bottom_radius=*/kCornerRadius));
   const int padding_width = for_editing_list
                                 ? kNameTagAndLabelsPaddingForEditingList
                                 : kNameTagAndLabelsPaddingForButtonOptionsMenu;
@@ -94,11 +93,12 @@ ActionEditView::ActionEditView(DisplayOverlayController* controller,
 
   // Set highlight path.
   views::HighlightPathGenerator::Install(
-      this, std::make_unique<views::RoundRectHighlightPathGenerator>(
-                gfx::Insets(), for_editing_list
-                                   ? gfx::RoundedCornersF(kCornerRadius)
-                                   : gfx::RoundedCornersF(
-                                         kCornerRadius, kCornerRadius, 0, 0)));
+      this,
+      std::make_unique<views::RoundRectHighlightPathGenerator>(
+          gfx::Insets(), for_editing_list
+                             ? gfx::RoundedCornersF(kCornerRadius)
+                             : gfx::RoundedCornersF(0.0f, 0.0f, kCornerRadius,
+                                                    kCornerRadius)));
 }
 
 ActionEditView::~ActionEditView() = default;
@@ -106,8 +106,6 @@ ActionEditView::~ActionEditView() = default;
 void ActionEditView::RemoveNewState() {
   labels_view_->RemoveNewState();
 }
-
-void ActionEditView::OnActionNameUpdated() {}
 
 void ActionEditView::OnActionInputBindingUpdated() {
   labels_view_->OnActionInputBindingUpdated();

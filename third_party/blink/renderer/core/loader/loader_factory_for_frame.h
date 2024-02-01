@@ -37,25 +37,31 @@ class CORE_EXPORT LoaderFactoryForFrame final
 
   // LoaderFactory implementations
   std::unique_ptr<URLLoader> CreateURLLoader(
-      const ResourceRequest&,
+      const network::ResourceRequest&,
       const ResourceLoaderOptions&,
       scoped_refptr<base::SingleThreadTaskRunner>,
       scoped_refptr<base::SingleThreadTaskRunner>,
-      BackForwardCacheLoaderHelper*) override;
+      BackForwardCacheLoaderHelper*,
+      const absl::optional<base::UnguessableToken>&
+          service_worker_race_network_request_token,
+      bool is_from_origin_dirty_style_sheet) override;
   CodeCacheHost* GetCodeCacheHost() override;
 
  private:
   void IssueKeepAliveHandleIfRequested(
-      const ResourceRequest& request,
+      const network::ResourceRequest& network_request,
       mojom::blink::LocalFrameHost& local_frame_host,
       mojo::PendingReceiver<mojom::blink::KeepAliveHandle> pending_receiver);
   scoped_refptr<BackgroundCodeCacheHost> GetBackgroundCodeCacheHost();
+
+  URLLoaderThrottleProvider* GetURLLoaderThrottleProvider();
+  Vector<std::unique_ptr<URLLoaderThrottle>> CreateThrottles(
+      const network::ResourceRequest&);
 
   const Member<DocumentLoader> document_loader_;
   const Member<LocalDOMWindow> window_;
   const Member<PrefetchedSignedExchangeManager>
       prefetched_signed_exchange_manager_;
-  std::unique_ptr<WebURLLoaderThrottleProviderForFrame> throttle_provider_;
   HeapMojoRemote<mojom::blink::KeepAliveHandleFactory>
       keep_alive_handle_factory_;
   scoped_refptr<BackgroundCodeCacheHost> background_code_cache_host_;

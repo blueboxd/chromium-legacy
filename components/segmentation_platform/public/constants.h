@@ -22,10 +22,6 @@ const char kAdaptiveToolbarUmaName[] = "AdaptiveToolbar";
 const char kChromeStartAndroidV2SegmentationKey[] = "chrome_start_android_v2";
 const char kChromeStartAndroidV2UmaName[] = "ChromeStartAndroidV2";
 
-// The key is used to decide whether to show query tiles.
-const char kQueryTilesSegmentationKey[] = "query_tiles";
-const char kQueryTilesUmaName[] = "QueryTiles";
-
 // The key is used to decide whether a user has low user engagement with chrome.
 // This is a generic model that can be used by multiple features targeting
 // low-engaged users. Typically low engaged users are active in chrome below a
@@ -98,6 +94,9 @@ const char kTabResumptionClassifierUmaName[] = "TabResumptionClassifier";
 
 const char kIosModuleRankerKey[] = "ios_module_ranker";
 const char kIosModuleRankerUmaName[] = "IosModuleRanker";
+
+const char kAndroidHomeModuleRankerKey[] = "android_home_module_ranker";
+const char kAndroidHomeModuleRankerUmaName[] = "AndroidHomeModuleRanker";
 
 // This key is used to decide what modules a user should see on their Desktop
 // New Tab Page.
@@ -197,6 +196,10 @@ const char kDeviceTierSegmentLabelHigh[] = "High";
 const char kTabletProductivityUserModelLabelNone[] = "None";
 const char kTabletProductivityUserModelLabelMedium[] = "Medium";
 const char kTabletProductivityUserModelLabelHigh[] = "High";
+
+// Labels for Android Home modules for ranking.
+const char kSingleTab[] = "SingleTab";
+const char kPriceChange[] = "PriceChange";
 
 // Labels for IOS modules for ranking.
 const char kMostVisitedTiles[] = "MostVisitedTiles";

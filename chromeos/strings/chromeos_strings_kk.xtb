@@ -16,10 +16,12 @@
 <translation id="1075811647922107217">Бет өлшемі</translation>
 <translation id="1082009148392559545">Скринсейверді жүктеп алу</translation>
 <translation id="1094693127011229778">IP мекенжайы жоқ.</translation>
+<translation id="1116694919640316211">Мәлімет</translation>
 <translation id="1118572504348554005">Қателерді және сіз бізге хабарлаған басқа мәселелерді шешу үшін осы үлгі арқылы жіберілген пікірді серіктестерімізбен бөлісуіміз мүмкін. Құпия сөздер сияқты құпия ақпаратты қоспаңыз.</translation>
 <translation id="1119447706177454957">Ішкі қате</translation>
 <translation id="1124772482545689468">Пайдаланушы</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
+<translation id="1134416403025830762">көбейтіңіз</translation>
 <translation id="1145018782460575098">Сыртқы құрылғылардың микробағдарламасын жаңарту терезесі ашық. <ph name="NUM_UPDATES" /> жаңа нұсқа бар.</translation>
 <translation id="1145516343487477149">Chromebook бойынша жиі қойылатын сұрақтарға жауаптар мен анықтамалық мақалаларды табыңыз.</translation>
 <translation id="1154390310959620237">Тек 5 пернелер тіркесімін бейімдей аласыз. Жаңа пернелер тіркесімін қосу үшін ағымдағы тіркесімді жойыңыз.</translation>
@@ -42,6 +44,7 @@
 <translation id="1264369926465113395">Chromebook құрылғысының авторларға арналған жаңа цифрлық журналын қараңыз.</translation>
 <translation id="1270369111467284986">Адаптивті портал болуы мүмкін.</translation>
 <translation id="1290331692326790741">Әлсіз сигнал</translation>
+<translation id="1300115153046603471">APN түрі — әдепкі және <ph name="ATTACH" />.</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Жаңартылуда (<ph name="PERCENTAGE_VALUE" />% орындалды)</translation>
 <translation id="1309341072016605398"><ph name="MINUTES" /> минут</translation>
@@ -54,6 +57,7 @@
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Сканерлеу аймағына сәйкестендіру</translation>
 <translation id="1367951781824006909">Файлды таңдау</translation>
+<translation id="1371650399987522809">Google AI технологиясына негізделген тұсқағазға қатысты пікір</translation>
 <translation id="1387854245479784695">Бұл – барлық ядролар жинағы.</translation>
 <translation id="1394661041439318933">Қаптың батарея деңгейі: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1397738625398125236">Шлюздің байланысын тексеруге болады</translation>
@@ -81,18 +85,20 @@
 <translation id="1515129336378114413">браузердің негізгі экраны</translation>
 <translation id="1526389707933164996">Скринсейвер анимациясы</translation>
 <translation id="152892567002884378">Дыбысты арттыру</translation>
-<translation id="1539242642795599947">APN әдепкі және тіркеуге арналған.</translation>
 <translation id="1555130319947370107">Көк</translation>
 <translation id="155865706765934889">Сенсорлық тақта</translation>
 <translation id="1561927818299383735">жарық түсі</translation>
 <translation id="1565038567006703504"><ph name="DEVICE_NAME" /> жаңарту мүмкін емес.</translation>
+<translation id="1566493343215789965">бөліңіз</translation>
 <translation id="1567064801249837505">Aльбомдар</translation>
 <translation id="1572585716423026576">Тұсқағаз етіп орнату</translation>
 <translation id="1578784163189013834">Скринсейвер фонын таңдау</translation>
 <translation id="160633243685262989">Кескінді алдын ала көру</translation>
 <translation id="1611649489706141841">алға</translation>
 <translation id="1615335640928990664"><ph name="FRIENDLY_DATE" /> бергі дерек трафигі</translation>
+<translation id="1615576200479539465">Суреттер жасалып жатыр...</translation>
 <translation id="1621067168122174824">Заряд тексерісін іске қосу</translation>
+<translation id="1626590945318984973">Пернелер тіркесімі қолжетімді емес. Функциялық және <ph name="META_KEY" /> пернелерін пайдаланбай, жаңа пернелер тіркесімін басыңыз.</translation>
 <translation id="1639239467298939599">Жүктелуде</translation>
 <translation id="1641857168437328880">Құжат беруші (бір жақты)</translation>
 <translation id="1643449475550628585">Тұсқағаз суретін күн сайын өзгерту</translation>
@@ -143,7 +149,6 @@
 <translation id="188114911237521550">Қараңғы режимді өшіру</translation>
 <translation id="1885577615937958993">мультимeдианы жылдам алға айналдыру</translation>
 <translation id="1887850431809612466">Жабдық нұсқасы</translation>
-<translation id="1897672602657312171">Іздеу пернесі жоқ жылдам пәрмен кейбір қолданбаның жылдам пәрменіне қайшы келуі мүмкін. Оны пайдалануды жалғастыру үшін осы жылдам пәрменді қайта басыңыз немесе іздеу пернесін пайдаланып жаңа жылдам пәрменді басыңыз.</translation>
 <translation id="1904932688895783618">Басқа да пайдалы ресурстар:</translation>
 <translation id="1905710495812624430">Максималды рұқсат етілетін әрекеттер шегінен асып кетті.</translation>
 <translation id="1908234395526491708">UDP сұрауының ақаулары</translation>
@@ -166,7 +171,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Қосымша параметрлер</translation>
 <translation id="2085089206770112532">Дисплей жарықтығын азайту</translation>
-<translation id="2102231663024125441">Мәтінді өзгерту</translation>
+<translation id="2102231663024125441">Мәтін өңдеу</translation>
 <translation id="2105810540595158374">Бұл — ойын контроллері.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, <ph name="MILESTONE_VERSION" />-нұсқа</translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" />/<ph name="TOTAL_MEMORY" /> ГБ қолжетімді.</translation>
@@ -175,7 +180,6 @@
 <translation id="2152882202543497059"><ph name="NUMBER" /> фотосурет</translation>
 <translation id="2157660087437850958">эмоджи таңдағыш</translation>
 <translation id="2157959690810728433">КЕЗЕКТЕ</translation>
-<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{Әкімшіңіз сіз аккаунтқа кірген сайын <ph name="APP_NAME_1" /> қолданбасын автоматты түрде іске қосылатындай етіп орнатты.}=2{Әкімшіңіз сіз аккаунтқа кірген сайын <ph name="APP_NAME_1" /> және <ph name="APP_NAME_2" /> қолданбаларын автоматты түрде іске қосылатындай етіп орнатты.}=3{Әкімшіңіз сіз аккаунтқа кірген сайын <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> және <ph name="APP_NAME_3" /> қолданбаларын автоматты түрде іске қосылатындай етіп орнатты.}other{Әкімшіңіз сіз аккаунтқа кірген сайын <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> қолданбаларын және тағы # қолданбаны автоматты түрде іске қосылатындай етіп орнатты.}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Қайталау</translation>
 <translation id="215916044711630446">APN қосу түймесі өшірілді.</translation>
 <translation id="2161394479394250669">Баспа жұмысынан бас тарту</translation>
@@ -185,6 +189,7 @@
 <translation id="2189104374785738357">APN мәліметтерін өзгерту</translation>
 <translation id="2209788852729124853">Трафик есептегіштерін нөлдеу</translation>
 <translation id="2212733584906323460">Атаулар ажыратымдылығы</translation>
+<translation id="2215920961700443347">Интернет жоқ. Интернетке қосылып, әрекетті қайталап көріңіз.</translation>
 <translation id="2217935453350629363">Қазіргі жылдамдық</translation>
 <translation id="2224337661447660594">Интернет жоқ</translation>
 <translation id="222447520299472966">Кемінде бір Өнер галереясы альбомын таңдау қажет.</translation>
@@ -218,6 +223,7 @@
 <translation id="2421798028054665193"><ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /> сурет</translation>
 <translation id="2446553403094072641">Жылжымалы үтір дәлдігі</translation>
 <translation id="2448312741937722512">Түрі</translation>
+<translation id="2465272316171730950">Бос ресурстар жоқ. Біраз уақыттан кейін қайтып оралыңыз.</translation>
 <translation id="248546197012830854">Құрылғы офлайн режимде. Анықтамалық контентті көру үшін Wi-Fi желісіне қосылыңыз.</translation>
 <translation id="2491955442992294626">Басқа терезе ашық тұрған кезде, пернетақта тексерілмейді.</translation>
 <translation id="2493126929778606526">Сіздің ең әдемі фотосуреттеріңіз автоматты түрде таңдалады</translation>
@@ -225,7 +231,6 @@
 <translation id="2505327257735685095">Ағымдағы тұсқағаз суретін жаңарту</translation>
 <translation id="2512979179176933762">терезелерді көрсету</translation>
 <translation id="2513396635448525189">Кіру суреті</translation>
-<translation id="2515109918609218604">Пернелер тіркесімі қолжетімді емес. Функциялық және іздеу пернелерін пайдаланбай, жаңа пернелер тіркесімін басыңыз.</translation>
 <translation id="2517472476991765520">Іздеу</translation>
 <translation id="2521835766824839541">алдыңғы трек</translation>
 <translation id="2526590354069164005">Жұмыс үстелі</translation>
@@ -241,6 +246,7 @@
 <translation id="2638662041295312666">Кіру суреті</translation>
 <translation id="2640549051766135490">"<ph name="TITLE" />" (<ph name="DESC" />) альбомы таңдалды.</translation>
 <translation id="2652403576514495859">мәтінді дауыспен енгізуді қосу немесе ауыстыру</translation>
+<translation id="2656001153562991489">Chromebook Plus-қа арналған</translation>
 <translation id="267442004702508783">жаңарту</translation>
 <translation id="268270014981824665">пернетақтаны күңгірттеу</translation>
 <translation id="2712812801627182647">TLS аутентификация кілті</translation>
@@ -263,6 +269,7 @@
 <translation id="2878387241690264070">Заряд <ph name="NUM_SECONDS" /> секундта <ph name="RATE" /> азайды.</translation>
 <translation id="2880569433548999039">Бұлттар қозғалысы бейнеленген скринсейвер</translation>
 <translation id="2926057806159140518">Пайдаланушы аты мен құпия сөзді енгізіңіз немесе QR кодын сканерлеңіз.</translation>
+<translation id="2938573842839598578">Нәтижені шамамен есептеу үшін <ph name="CATEGORY_TEXT" /> санын <ph name="CONVERSION_RATE" /> мәніне <ph name="OPERATOR_TEXT" />.</translation>
 <translation id="2940811910881150316">Құрылғыны сынау мүмкін емес. Сынау үшін қақпақты қайта ашыңыз.</translation>
 <translation id="2941112035454246133">Төмен</translation>
 <translation id="3008341117444806826">ЖАҢАРТУ</translation>
@@ -335,6 +342,7 @@
 <translation id="3517001332549868749">Chrome OS жаңарту</translation>
 <translation id="3527036260304016759">Сәтсіз: белгісіз қате шықты</translation>
 <translation id="3532980081107202182">Шамамен <ph name="MIN_REMAINING" /> минут қалды.</translation>
+<translation id="3547264467365135390">Формула</translation>
 <translation id="3557205324756024651">Жергілікті идентификация (қосымша)</translation>
 <translation id="3565064564551103223">Рұқсат етілген IP мекенжайлары</translation>
 <translation id="3569407787324516067">Скринсейвер</translation>
@@ -373,11 +381,13 @@
 <translation id="385051799172605136">Артқа</translation>
 <translation id="3858860766373142691">Аты</translation>
 <translation id="3862598938296403232">Сипаттама қосу керек.</translation>
+<translation id="386280020966669610">Маған шабыт керек</translation>
 <translation id="3865289341173661845">Анықтамалық контент қолжетімсіз.</translation>
 <translation id="3865414814144988605">Ажыратымдылық</translation>
 <translation id="3866249974567520381">Сипаттама</translation>
 <translation id="387301095347517405">Батареяңыздың толық зарядтау циклінен өту саны</translation>
 <translation id="3885327323343477505">Скринсейверді өзгерту</translation>
+<translation id="3892148308691398805">Мәтінді көшіру</translation>
 <translation id="391412459402535266">Құрылғыны сынау мүмкін емес. Сынау үшін ноутбук режиміне ауысыңыз.</translation>
 <translation id="3916998944874125962">скриншот түсіру</translation>
 <translation id="3923184630988645767">Деректер трафигі</translation>
@@ -403,14 +413,15 @@
 <translation id="4060260348856573701">Жаңа APN</translation>
 <translation id="4093865285251893588">Профиль суреті</translation>
 <translation id="409427325554347132">Сынақ мәліметтерін сақтау</translation>
+<translation id="409469431304488632">Эксперименттік</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">"<ph name="TITLE" />" альбомын таңдаңыз (<ph name="DESC" />).</translation>
 <translation id="4111761024568264522">USB сенсорлық тақтасы</translation>
 <translation id="4113067922640381334">Енді жаңа <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />тұсқағаздар<ph name="END_LINK_WALLPAPER_SUBPAGE" /> пайдалана алатын боласыз</translation>
 <translation id="4117637339509843559">Қараңғы режим</translation>
 <translation id="4130035430755296270">Тағы басқа формат опцияларын көру үшін курсорды апарыңыз.</translation>
+<translation id="4130750466177569591">Мен келісемін</translation>
 <translation id="4131410914670010031">Қара мен ақ</translation>
-<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> автоматты түрде іске қосылды}other{# қолданба автоматты түрде іске қосылды}}</translation>
 <translation id="4145784616224233563">HTTP брандмауэрі</translation>
 <translation id="4147897805161313378">Google Photos</translation>
 <translation id="4150201353443180367">Дисплей</translation>
@@ -422,7 +433,6 @@
 <translation id="4171077696775491955">жарықтық деңгейін төмендету</translation>
 <translation id="4176463684765177261">Өшірілген</translation>
 <translation id="4176659219503619100">Басқару панелі</translation>
-<translation id="4185315616950253617">Жоғарғы жол пернелері бар пернелер тіркесімі іздеу пернесін қамтуы керек.</translation>
 <translation id="420283545744377356">Скринсейверді өшіру</translation>
 <translation id="4213104098953699324">USB пернетақтасы</translation>
 <translation id="4227825898293920515">Құпия сөздің мерзімі <ph name="TIME" /> өткен соң аяқталады.</translation>
@@ -438,17 +448,21 @@
 <translation id="4289849978083912975">Слайдшоу</translation>
 <translation id="4297501883039923494">Тоқтатылды: белгісіз қате</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> сурет</translation>
+<translation id="4310735698903592804">Google AI жасаған соңғы тұсқағаздар</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> пернесі басылды.</translation>
 <translation id="4354430579665871434">перне</translation>
 <translation id="4361257691546579041">APN әдепкі.</translation>
 <translation id="437294888293595148">Барлық таңбашаны қайта орнату</translation>
+<translation id="4376423484621194274">Әкімшіңіз <ph name="APP_NAME" /> қолданбасын жабуға рұқсат бермейді</translation>
 <translation id="4378373042927530923">Іске қосылмаған</translation>
 <translation id="4378551569595875038">Қосылуда…</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4394049700291259645">Өшіру</translation>
 <translation id="439429847087949098"><ph name="DEVICE_NAME" /> қайта қосылуда</translation>
 <translation id="4395835743215824109">пернетақтаны бейімдеу</translation>
+<translation id="4403262788869804671"><ph name="META_KEY" /> пернесі жоқ пернелер тіркесімі кейбір қолданбаның пернелер тіркесіміне қайшы келуі мүмкін. Осы пернелер тіркесімін пайдалануды жалғастыру үшін қайта басыңыз немесе <ph name="KEY" /> пернесін пайдаланып, жаңа пернелер тіркесімін басыңыз.</translation>
 <translation id="4415951057168511744">Қазіргі аватар</translation>
+<translation id="4417830657741848074">Әкімшіңіз кейбір қолданбаларды автоматты түрде іске қосылатындай етіп орнатты. Бұл қолданбалардың кейбіреуін жабу мүмкін емес.</translation>
 <translation id="4422041425070339732">төмен жақ көрсеткісі</translation>
 <translation id="4425149324548788773">Менің Drive дискім</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" /> өшірулі</translation>
@@ -461,6 +475,7 @@
 <translation id="4469288414739283461">Жер қозғалысы бейнеленген скринсейвер</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Әдепкі емес желі шлюзінің байланысы тексерілмеді.</translation>
+<translation id="4500722292849917410">Пернелер тіркесімі қолжетімді емес. Өзгерткіш пернені (ctrl, alt, shift немесе <ph name="META_KEY" />) пайдаланып, жаңа тіркесімді басыңыз.</translation>
 <translation id="4500966230243561393">Интерфейс түсі</translation>
 <translation id="4503223151711056411">Сол бағыт пернесі</translation>
 <translation id="4507392511610824664">жарықтық деңгейін арттыру</translation>
@@ -508,6 +523,7 @@
 <translation id="4832079907277790330">Files қолданбасында қалта таңдау...</translation>
 <translation id="4835901797422965222">Ешқандай белсенді желі жоқ.</translation>
 <translation id="4839698083503556542">Жеке фильміңізді түсіріңіз</translation>
+<translation id="48409034532829769">Әкімшіңіз "<ph name="APP_NAME" />" қолданбасын автоматты түрде іске қосылатындай етіп орнатты. Бұл қолданбаны жабу мүмкін емес.</translation>
 <translation id="484462545196658690">Авто</translation>
 <translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> таңдалды, <ph name="TOPIC_SOURCE" /> альбомдарын таңдау үшін Enter пернесін басыңыз.</translation>
 <translation id="484790837831576105">DNS ажыратымдылығы (Android)</translation>
@@ -534,6 +550,7 @@
 <translation id="4969079779290789265">Бөлу</translation>
 <translation id="4972592110715526173">режимді өзгерту</translation>
 <translation id="498186245079027698">Сканерді тексеріп, әрекетті қайталаңыз. Сканерленген файлдарды сақтайтын орынның жеткілікті екенін тексеріңіз.</translation>
+<translation id="4982627662315910959">Пернелер тіркесімі қолжетімді емес. Shift пен 1 өзгерткіш пернені (ctrl, alt немесе <ph name="META_KEY" />) пайдаланып, жаңа пернелер тіркесімін басыңыз.</translation>
 <translation id="4985509611418653372">Іске қосу</translation>
 <translation id="4987769320337599931">Брандмауэр</translation>
 <translation id="4988526792673242964">Беттер</translation>
@@ -550,6 +567,7 @@
 <translation id="5088172560898466307">Сервер хостының атауы</translation>
 <translation id="5089810972385038852">Штат</translation>
 <translation id="5090362543162270857">IPsec (IKEv2)</translation>
+<translation id="5108781503443873320">Ұқсас:</translation>
 <translation id="5137451382116112100">Толық</translation>
 <translation id="5142961317498132443">Аутентификация</translation>
 <translation id="5145081769226915336">Қараңғы режимді автоматты түрде қосу қажет пе?</translation>
@@ -566,6 +584,7 @@
 <translation id="5227902338748591677">Қараңғы режим кестесі</translation>
 <translation id="5229344016299762883">Толық күйден шығу</translation>
 <translation id="5234764350956374838">Жабу</translation>
+<translation id="5244638145904800454">{NUM_ROOL_APPS,plural,offset:1 =1{Сіз аккаунтқа кірген сайын, әкімші "<ph name="APP_NAME" />" қолданбасын автоматты түрде іске қосылатын етіп орнатты.}=2{Сіз аккаунтқа кірген сайын, әкімші "<ph name="APP_NAME" />" және тағы 1 қолданбаны автоматты түрде іске қосылатын етіп орнатты.}other{Сіз аккаунтқа кірген сайын, әкімші "<ph name="APP_NAME" />" және тағы # қолданбаны автоматты түрде іске қосылатын етіп орнатты.}}</translation>
 <translation id="5252456968953390977">Роуминг</translation>
 <translation id="5257811368506016604">Ашық түс режимін қосу</translation>
 <translation id="5264277876637023664">Орталық процессор тексерісін іске қосу</translation>
@@ -611,7 +630,6 @@
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Қайта сканерлеу</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5584044598279886848">Бұл APN атын өшіру немесе жою мүмкін емес. Қосылған әрі тіркелген APN аттарының өшірілгеніне немесе жойылғанына көз жеткізіңіз.</translation>
 <translation id="5600027863942488546"><ph name="KEY_NAME" /> пернесі тексерілді.</translation>
 <translation id="5620281292257375798">Тек ішкі қолданысқа арналған</translation>
 <translation id="5649768706273821470">Тыңдау</translation>
@@ -642,6 +660,7 @@
 <translation id="5843706793424741864">Фаренгейт</translation>
 <translation id="584953448295717128">APN автоматты түрде анықталады.</translation>
 <translation id="5849570051105887917">Жергілікті провайдер коды</translation>
+<translation id="5856267793478861942"><ph name="ATTACH" /> (<ph name="IA" />)</translation>
 <translation id="5859603669299126575">Өнер галереясы альбомы</translation>
 <translation id="5859969039821714932">Пернелер тіркесімі қолжетімді емес. <ph name="KEY" /> пернесін қоспай, қайтадан басып көріңіз.</translation>
 <translation id="5860033963881614850">Өшірулі</translation>
@@ -657,12 +676,12 @@
 <translation id="5916664084637901428">Қосулы</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Файлыңыз сканерленді және <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> қалтасына сақталды.}other{Файлдарыңыз сканерленді және <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> қалтасына сақталды.}}</translation>
 <translation id="5931523347251946569">Файл табылмады.</translation>
+<translation id="593880865674747800">Осындай стильдегі көбірек тұсқағаз жасау</translation>
 <translation id="5939518447894949180">Қалпына келтіру</translation>
 <translation id="594552776027197022">Кездейсоқ кілттер жұбын жасау</translation>
 <translation id="5946538341867151940">Сіз әлі қосылмағансыз. Мобильдік оператор басқа APN ұсынса, "+ Жаңа APN" опциясын таңдау арқылы APN туралы ақпаратты енгізіңіз.</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Әдепкі тұсқағаз</translation>
-<translation id="6001235009374883388">APN тіркеуге арналған.</translation>
 <translation id="6017514345406065928">Жасыл</translation>
 <translation id="6019566113895157499">Key Shortcuts</translation>
 <translation id="6034694447310538551">Ай сайын автоматты түрде бастапқы күйге қайтаруды қосу</translation>
@@ -680,6 +699,7 @@
 <translation id="6104112872696127344">Сканерлеу тоқтатылды.</translation>
 <translation id="6106186594183574873">Аяқтау үшін ескі құпия сөзді енгізіңіз.</translation>
 <translation id="6108689792487843350">Шлюзбен байланыс орнату мүмкін емес.</translation>
+<translation id="6108952804512516814">AI көмегімен жасау</translation>
 <translation id="6112878310391905610">Бұл параметрді әкімшілеріңіз басқарады.</translation>
 <translation id="6113701710518389813">Жоғары бағыт пернесі</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, +<ph name="NUMBER" /> альбом</translation>
@@ -693,6 +713,7 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Пайдаланған сайын, батарея сыйымдылығы азая береді.</translation>
 <translation id="6191293864534840972">Атау серверлері форматы дұрыс емес.</translation>
+<translation id="6196607555925437199">Қайта жасау</translation>
 <translation id="6205145102504628069">Бұлт ағыны</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">Сканерлер жоқ</translation>
@@ -747,6 +768,7 @@
 <translation id="6526200165918397681">Матч тұсқағазы</translation>
 <translation id="6527081081771465939">WiFi қауіпсіздік протоколы белгісіз.</translation>
 <translation id="6535178685492749208">Офлайн режимдесіз. Пікір кейінірек жіберіледі.</translation>
+<translation id="6557784757915238407">APN түрі — <ph name="ATTACH" />.</translation>
 <translation id="65587193855025101">Планшет</translation>
 <translation id="6560196641871357166">Қанық</translation>
 <translation id="6564646048574748301">Сәтсіз: принтер қолжетімді емес</translation>
@@ -806,6 +828,7 @@
 <translation id="7059230779847288458">Зарядталуда, толғанға дейінгі уақыт: <ph name="TIME_VALUE" /></translation>
 <translation id="7066538517128343186"><ph name="KEY" /> кілті</translation>
 <translation id="7068619307603204412">Құрылғыңызды дайындаңыз</translation>
+<translation id="7076851914315147928">Тұсқағаз таңдау</translation>
 <translation id="708426984172631313">ТОҚТАТЫЛДЫ</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Орындалмады – авторизация жасалмады</translation>
@@ -829,12 +852,13 @@
 <translation id="7180611975245234373">Жаңарту</translation>
 <translation id="7180865173735832675">Реттеу</translation>
 <translation id="7184043045742675738">Түймені бейімдеу үшін кез келген пернені басыңыз. Тінтуір немесе бағыт пернелері көмегімен перне орнын өзгертіңіз.</translation>
+<translation id="7206979415662233817">Қызмет көрсету шарттары</translation>
 <translation id="7212547870105584639">Желінің APN параметрлерін басқаруға арналған. APN аттары ұялы желі мен интернет арасында байланыс орнатады. <ph name="BEGIN_LINK_LEARN_MORE" />Толық ақпарат<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7212734716605298123">Сыртқы құрылғыларға арналған микробағдарламаның жаңа нұсқалары</translation>
 <translation id="7216409898977639127">Ұялы байланыс провайдері</translation>
 <translation id="725133483556299729">Электрондық поштаны таңдау</translation>
 <translation id="7271040990581020067">Сканер пайдаланылуда. Кейінірек қайталап көріңіз.</translation>
-<translation id="7273347807225967898">Пернелер тіркесімі қолжетімді емес. Өзгерткіш пернені (ctrl, alt, shift, іздеу немесе іске қосу тақтасы пернесін) пайдаланып жаңа пернелер тіркесімін басыңыз.</translation>
+<translation id="7271932918253517778">Жоғарғы жол пернелері бар пернелер тіркесімі <ph name="META_KEY" /> пернесін қамтуы керек.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">Самал жел</translation>
 <translation id="7287310195820267359">Тұсқағаз жинақтары</translation>
@@ -847,6 +871,10 @@
 <translation id="7311368985037279727">пернетақта түсі</translation>
 <translation id="7317831949569936035">Мектепке тіркелу</translation>
 <translation id="7319430975418800333">A3</translation>
+<translation id="7331297744262591636">18 жастан асқан болуыңыз керек. Сондай-ақ AI тұсқағаздарын пайдаланған кезіңізде, <ph name="GOOGLE_TERMS_OF_SERVICE_LINK" />Google Қызмет көрсету шарттары<ph name="END_LINK_GOOGLE_TERMS_OF_SERVICE" /> және <ph name="BEGIN_LINK_GEN_AI_TERMS_OF_SERVICE" />Жасампаз жасанды интеллектіге қатысты қосымша қызмет көрсету шарттары<ph name="END_LINK_GEN_AI_TERMS_OF_SERVICE" /> қолданылатынына келісім беруіңіз қажет.
+          <ph name="LINE_BREAK" />
+          <ph name="LINE_BREAK" />
+          Тұсқағаздарды AI технологиясымен тек коммерциялық емес жеке мақсатта жасай аласыз. Тұсқағазға қатысты көмек алған кезіңізде, тұсқағаз ұсыныстарын жасау үшін мәтін Google AI серверлеріне <ph name="BEGIN_LINK_GOOGLE_PRIVACY_POLICY" />Google Құпиялық саясатына<ph name="END_LINK_GOOGLE_PRIVACY_POLICY" /> сәйкес жіберіледі. <ph name="BEGIN_LINK_LEARN_MORE" />Толық ақпарат<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Нәтижені Google Search-тен көру үшін іздеу және бос орын пернелерін бірге басыңыз.</translation>
 <translation id="7343649194310845056">Желілік құрылғылар</translation>
 <translation id="7353413232959255829"><ph name="LIST_POSITION" />/<ph name="LIST_SIZE" /> іздеу нәтижесі: <ph name="SEARCH_RESULT_TEXT" />. Таңбашаға өту үшін Enter пернесін басыңыз.</translation>
@@ -859,6 +887,7 @@
 <translation id="741244894080940828">түрлендіру</translation>
 <translation id="7415801143053185905">HTTP кідірісі өте жоғары.</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
+<translation id="7438298994385592770">Бұл APN атын өшіру немесе жою мүмкін емес. Қосылған <ph name="ATTACH" /> APN аттарының өшірілгеніне немесе жойылғанына көз жеткізіңіз.</translation>
 <translation id="7458970041932198923">Аватарларды көру және орнату үшін желіге қосылып, бетті қайта жүктеңіз.</translation>
 <translation id="7469648432129124067">Портал анықталды.</translation>
 <translation id="7481312909269577407">Басқаға жіберу</translation>
@@ -869,7 +898,9 @@
 <translation id="7502658306369382406">IPv6 мекенжайы</translation>
 <translation id="7513770521371759388">төменгі жақ</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7525067979554623046">Жасау</translation>
 <translation id="7528507600602050979">Анықтамалық контент қолжетімсіз</translation>
+<translation id="753556296624075801">Google ұсынған</translation>
 <translation id="7535791657097741517">Жарық режимді қосу</translation>
 <translation id="7550715992156305117">Диагностикалық режим</translation>
 <translation id="7551123448725492271">Бұл — аудио құрылғы.</translation>
@@ -908,9 +939,11 @@
 <translation id="7799817062559422778">Жарық режим</translation>
 <translation id="780301667611848630">Жоқ, рақмет</translation>
 <translation id="7805768142964895445">Күйі</translation>
+<translation id="7819831665603418705">Үлгіні қолдану</translation>
 <translation id="7819857487979277519">PSK (WPA немесе RSN)</translation>
 <translation id="7841134249932030522">Қараңғы режимді қосу</translation>
 <translation id="7846634333498149051">Пернетақта</translation>
+<translation id="7850847810298646851">Google AI жасаған тұсқағаз</translation>
 <translation id="7856267634822906833">Bluetooth сенсорлық экраны</translation>
 <translation id="7869143217755017858">Қараңғы режимді өшіру</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -928,6 +961,7 @@
 <translation id="7971535376154084247">Жалпы басқару элементтері</translation>
 <translation id="7977800524392185497"><ph name="NETWORK_NAME" /> желісіне қосылу үшін "Параметрлер" бетіне өтіңіз.</translation>
 <translation id="7978412674231730200">Жеке кілт</translation>
+<translation id="7983597390787556680">{NUM_ROOL_APPS,plural, =1{"<ph name="APP_NAME_1" />" автоматты түрде іске қосылды}other{# қолданба автоматты түрде іске қосылды}}</translation>
 <translation id="7994702968232966508">EAP әдісі</translation>
 <translation id="8004582292198964060">Браузер</translation>
 <translation id="8017679124341497925">Таңбаша өзгерді</translation>
@@ -944,7 +978,6 @@
 <translation id="808894953321890993">Кұпия сөзді өзгерту</translation>
 <translation id="8094062939584182041">Google-ға осы мәселе туралы электрондық хат жіберуге рұқсат ету</translation>
 <translation id="8104083085214006426">Ашық әрі қауіпті желіні қолданып жатырсыз.</translation>
-<translation id="8111706652656628199">Пернелер тіркесімі қолжетімді емес. Shift пен 1 өзгерткіш пернені (ctrl, alt, іздеу немесе іске қосу тақтасы пернесін) пайдаланып жаңа тіркесімді басыңыз.</translation>
 <translation id="811820734797650957">Шлюз байланысы тексеріледі (Android)</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8132480444149501833">Трафик есептегіштерін сұрау</translation>
@@ -953,13 +986,13 @@
 <translation id="8151185429379586178">Әзірлеуші құралдары</translation>
 <translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183974620058026102">Тіркеу</translation>
 <translation id="8206859287963243715">Ұялы</translation>
 <translation id="8208861521865154048">Бонустар</translation>
 <translation id="8226628635270268143">Өзіңізге ұнайтын фотосуреттер мен альбомдарды таңдау</translation>
 <translation id="8227119283605456246">Файл тіркеу</translation>
 <translation id="8230672074305416752">Әдепкі желі шлюзінің байланысы тексерілмеді.</translation>
 <translation id="8246209727385807362">Белгісіз оператор</translation>
+<translation id="8261506727792406068">Жою</translation>
 <translation id="8262870577632766028">1 сағат</translation>
 <translation id="827422111966801947">Индиго</translation>
 <translation id="8286154143153872371">Тұсқағазды көру үшін желіге қосылып, бетті қайта жүктеңіз.</translation>
@@ -970,6 +1003,7 @@
 <translation id="8318753676953949627">Кескіндер жоқ.</translation>
 <translation id="8329018942023753850">calculator қолданбасы</translation>
 <translation id="8336739000755212683">Құрылғыда аккаунт суретін өзгерту</translation>
+<translation id="8339024191194156249">Автоматты түрде іске қосу туралы толық ақпарат</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> немесе <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Баспа жұмыстары</translation>
 <translation id="8349826889576450703">қосқыш</translation>

@@ -11,12 +11,14 @@ source_set("signout_action_sheet") {
   ]
   deps = [
     "//base",
+    "//components/browser_sync",
     "//components/signin/public/base",
     "//components/strings",
     "//components/sync/base:features",
     "//components/sync/service",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/model/browser",
+    "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/signin/model",
     "//ios/chrome/browser/signin/model:constants",
@@ -38,7 +40,7 @@ source_set("unit_tests") {
     "//components/prefs",
     "//components/signin/public/base",
     "//components/sync:test_support",
-    "//ios/chrome/browser/policy:policy_util",
+    "//ios/chrome/browser/policy/model:policy_util",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",

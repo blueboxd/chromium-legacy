@@ -16,10 +16,10 @@
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/components/ui_util/dynamic_type_util.h"
 #import "ui/base/device_form_factor.h"
@@ -154,6 +154,7 @@ namespace content_suggestions {
 
 const CGFloat kHintTextScale = 0.15;
 const CGFloat kReturnToRecentTabSectionBottomMargin = 25;
+const CGFloat kModuleWidth = 0.92;
 
 CGFloat DoodleHeight(BOOL logo_is_showing,
                      BOOL doodle_is_showing,
@@ -327,14 +328,10 @@ void ConfigureVoiceSearchButton(UIButton* voice_search_button,
 void ConfigureLensButtonAppearance(UIButton* lens_button, BOOL use_new_badge) {
   lens_button.translatesAutoresizingMaskIntoConstraints = NO;
 
-  if (IsUIButtonConfigurationEnabled()) {
-    UIButtonConfiguration* buttonConfig =
-        [UIButtonConfiguration plainButtonConfiguration];
-    buttonConfig.contentInsets = NSDirectionalEdgeInsetsMake(0, 0, 0, 0);
-    lens_button.configuration = buttonConfig;
-  } else {
-    SetAdjustsImageWhenHighlighted(lens_button, NO);
-  }
+  UIButtonConfiguration* buttonConfig =
+      [UIButtonConfiguration plainButtonConfiguration];
+  buttonConfig.contentInsets = NSDirectionalEdgeInsetsMake(0, 0, 0, 0);
+  lens_button.configuration = buttonConfig;
   lens_button.accessibilityLabel = l10n_util::GetNSString(IDS_IOS_ACCNAME_LENS);
   lens_button.accessibilityIdentifier = @"Lens";
 
@@ -381,6 +378,15 @@ UIColor* SearchHintLabelColor() {
     return [UIColor colorNamed:@"fake_omnibox_placeholder_color"];
   }
   return [UIColor colorNamed:kTextfieldPlaceholderColor];
+}
+
+int SetUpListTitleStringID() {
+  return IsIOSTipsNotificationsEnabled() ? IDS_IOS_SET_UP_LIST_TIPS_TITLE
+                                         : IDS_IOS_SET_UP_LIST_TITLE;
+}
+
+NSString* SetUpListTitleString() {
+  return l10n_util::GetNSString(SetUpListTitleStringID());
 }
 
 }  // namespace content_suggestions

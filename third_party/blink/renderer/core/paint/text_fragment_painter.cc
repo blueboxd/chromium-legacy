@@ -327,13 +327,13 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
       DynamicTo<LayoutSVGInlineText>(layout_object);
   float scaling_factor = 1.0f;
   if (UNLIKELY(svg_inline_text)) {
-    DCHECK_EQ(text_item.Type(), FragmentItem::kSvgText);
+    DCHECK(text_item.IsSvgText());
     scaling_factor = svg_inline_text->ScalingFactor();
     DCHECK_NE(scaling_factor, 0.0f);
     visual_rect = gfx::ToEnclosingRect(
         svg_inline_text->Parent()->VisualRectInLocalSVGCoordinates());
   } else {
-    DCHECK_NE(text_item.Type(), FragmentItem::kSvgText);
+    DCHECK(!text_item.IsSvgText());
     PhysicalRect ink_overflow = text_item.SelfInkOverflowRect();
     ink_overflow.Move(physical_box.offset);
     visual_rect = ToEnclosingRect(ink_overflow);
@@ -395,10 +395,9 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   // Set our font.
-  const Font& font =
-      UNLIKELY(text_combine && text_combine->UsesCompressedFont())
-          ? text_combine->CompressedFont()
-          : text_item.ScaledFont();
+  const Font& font = UNLIKELY(text_combine && text_combine->CompressedFont())
+                         ? *text_combine->CompressedFont()
+                         : text_item.ScaledFont();
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
 
@@ -414,14 +413,14 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
           : physical_box.offset.top + ascent};
 
   TextPainter text_painter(context, font, visual_rect, text_origin,
-                           inline_context_, is_horizontal);
-  TextDecorationPainter decoration_painter(text_painter, text_item, paint_info,
-                                           style, text_style, rotated_box,
-                                           selection);
-  HighlightPainter highlight_painter(
-      fragment_paint_info, text_painter, decoration_painter, paint_info,
-      cursor_, *cursor_.CurrentItem(), rotation, physical_box.offset, style,
-      text_style, selection, is_printing);
+                           is_horizontal);
+  TextDecorationPainter decoration_painter(text_painter, inline_context_,
+                                           paint_info, style, text_style,
+                                           rotated_box, selection);
+  HighlightPainter highlight_painter(fragment_paint_info, text_painter,
+                                     decoration_painter, paint_info, cursor_,
+                                     text_item, rotation, physical_box.offset,
+                                     style, text_style, selection, is_printing);
   if (paint_info.phase == PaintPhase::kForeground) {
     if (auto* mf_checker = MobileFriendlinessChecker::From(document)) {
       if (auto* text = DynamicTo<LayoutText>(*layout_object)) {
@@ -507,14 +506,14 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   switch (highlight_case) {
     case HighlightPainter::kNoHighlights:
       // Fast path: just paint the text, including its decorations.
-      decoration_painter.Begin(TextDecorationPainter::kOriginating);
+      decoration_painter.Begin(text_item, TextDecorationPainter::kOriginating);
       decoration_painter.PaintExceptLineThrough(fragment_paint_info);
       text_painter.Paint(fragment_paint_info, text_style, node_id,
                          auto_dark_mode);
       decoration_painter.PaintOnlyLineThrough();
       break;
     case HighlightPainter::kFastSpellingGrammar:
-      decoration_painter.Begin(TextDecorationPainter::kOriginating);
+      decoration_painter.Begin(text_item, TextDecorationPainter::kOriginating);
       decoration_painter.PaintExceptLineThrough(fragment_paint_info);
       text_painter.Paint(fragment_paint_info, text_style, node_id,
                          auto_dark_mode);
@@ -561,7 +560,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
             auto_dark_mode);
         break;
       case HighlightPainter::kSelectionOnly:
-        decoration_painter.Begin(TextDecorationPainter::kSelection);
+        decoration_painter.Begin(text_item, TextDecorationPainter::kSelection);
         decoration_painter.PaintExceptLineThrough(fragment_paint_info);
         highlight_painter.Selection()->PaintSelectedText(
             text_painter, fragment_paint_info, text_style, node_id,

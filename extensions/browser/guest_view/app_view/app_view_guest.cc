@@ -25,7 +25,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/app_runtime.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -205,7 +204,8 @@ void AppViewGuest::CreateWebContents(std::unique_ptr<GuestViewBase> owned_this,
     return;
   }
 
-  const LazyContextId context_id(browser_context(), guest_extension->id());
+  const auto context_id =
+      LazyContextId::ForExtension(browser_context(), guest_extension);
   LazyContextTaskQueue* queue = context_id.GetTaskQueue();
   if (queue->ShouldEnqueueTask(browser_context(), guest_extension)) {
     queue->AddPendingTask(

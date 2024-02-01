@@ -19,6 +19,7 @@ import org.chromium.base.test.transit.TransitStation;
 import org.chromium.base.test.transit.Trip;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.hub.PaneId;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 /**
@@ -53,10 +54,10 @@ public abstract class BasePageStation extends TransitStation {
                 menu, (e) -> onView(TAB_SWITCHER_BUTTON).perform(longClick()));
     }
 
-    public AppMenuFacility openAppMenu() {
+    public PageAppMenuFacility openAppMenu() {
         recheckEnterConditions();
 
-        AppMenuFacility menu = new AppMenuFacility(this, mChromeTabbedActivityTestRule);
+        PageAppMenuFacility menu = new PageAppMenuFacility(this, mChromeTabbedActivityTestRule);
 
         // TODO(crbug.com/1489724): Put a real trigger, the app menu doesn't currently show on the
         // screen.
@@ -64,19 +65,33 @@ public abstract class BasePageStation extends TransitStation {
     }
 
     /** Opens the tab switcher by pressing the toolbar tab switcher button. */
-    public TabSwitcherStation openTabSwitcher() {
+    public <T extends TabSwitcherStation> T openTabSwitcher(Class<T> expectedDestination) {
         recheckEnterConditions();
 
-        TabSwitcherStation destination = new TabSwitcherStation(mChromeTabbedActivityTestRule);
+        T destination;
+        if (mIncognito) {
+            destination =
+                    expectedDestination.cast(
+                            new IncognitoTabSwitcherStation(mChromeTabbedActivityTestRule));
+        } else {
+            destination =
+                    expectedDestination.cast(
+                            new RegularTabSwitcherStation(mChromeTabbedActivityTestRule));
+        }
         return Trip.travelSync(
                 this, destination, (e) -> onView(TAB_SWITCHER_BUTTON).perform(click()));
     }
 
     /** Opens the hub by pressing the toolbar tab switcher button. */
-    public HubStation openHub() {
+    public <T extends HubBaseStation> T openHub(Class<T> expectedDestination) {
         recheckEnterConditions();
 
-        HubStation destination = new HubStation(mChromeTabbedActivityTestRule);
+        T destination =
+                expectedDestination.cast(
+                        HubStationUtils.createHubStation(
+                                mIncognito ? PaneId.INCOGNITO_TAB_SWITCHER : PaneId.TAB_SWITCHER,
+                                mChromeTabbedActivityTestRule));
+
         return Trip.travelSync(
                 this, destination, (e) -> onView(TAB_SWITCHER_BUTTON).perform(click()));
     }

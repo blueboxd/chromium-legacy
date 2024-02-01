@@ -5,20 +5,22 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CORE_OPTIMIZATION_GUIDE_FEATURES_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_OPTIMIZATION_GUIDE_FEATURES_H_
 
+#include <optional>
 #include <string>
 #include <utility>
 
 #include "base/component_export.h"
+#include "base/containers/enum_set.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
+#include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/page_content_annotation_type.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "net/nqe/effective_connection_type.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace optimization_guide {
@@ -73,8 +75,6 @@ BASE_DECLARE_FEATURE(kRemotePageMetadata);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kOptimizationHintsComponent);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-BASE_DECLARE_FEATURE(kOptimizationGuideInstallWideModelStore);
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kExtractRelatedSearchesFromPrefetchedZPSResponse);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kPageContentAnnotationsPersistSalientImageMetadata);
@@ -94,6 +94,13 @@ COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kModelQualityLogging);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kLogOnDeviceMetricsOnStartup);
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+BASE_DECLARE_FEATURE(kTextSafetyClassifier);
+
+typedef base::EnumSet<proto::RequestContext,
+                      proto::RequestContext_MIN,
+                      proto::RequestContext_MAX>
+    RequestContextSet;
 
 // Enables use of task runner with trait CONTINUE_ON_SHUTDOWN for page content
 // annotations on-device models.
@@ -286,15 +293,9 @@ COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
     proto::OptimizationTarget optimization_target);
 
-// Returns whether personalized metadata should be enabled for
-// |request_context|.
+// Returns requests contexts for which personalized metadata should be enabled.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool ShouldEnablePersonalizedMetadata(proto::RequestContext request_context);
-
-// Returns true if the allowed contexts contains |request_context|
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool IsAllowedContextForPersonalizedMetadata(
-    proto::RequestContext request_context);
+RequestContextSet GetAllowedContextsForPersonalizedMetadata();
 
 // Returns the minimum random delay before starting to fetch for prediction
 // models and host model features.
@@ -320,12 +321,6 @@ base::TimeDelta PredictionModelFetchStartupDelay();
 // refresh models.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 base::TimeDelta PredictionModelFetchInterval();
-
-// Returns whether to enable fetching the model again when a new optimization
-// target observer registration happens, after the initial model fetch is
-// completed.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool IsPredictionModelNewRegistrationFetchEnabled();
 
 // Returns the time to wait for starting a model fetch when a new optimization
 // target observer registration happens, after the initial model fetch is
@@ -448,7 +443,7 @@ size_t MaxVisitAnnotationCacheSize();
 // Returns the number of threads to use for model inference on the given
 // optimization target.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-absl::optional<int> OverrideNumThreadsForOptTarget(
+std::optional<int> OverrideNumThreadsForOptTarget(
     proto::OptimizationTarget opt_target);
 
 // Whether XNNPACK should be used with TFLite, on platforms where it is
@@ -459,11 +454,6 @@ bool TFLiteXNNPACKDelegateEnabled();
 // Whether to check the pref for whether a previous component version failed.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool ShouldCheckFailedComponentVersionPref();
-
-// Returns whether the feature for new model store that is tied with Chrome
-// installation and shares the models across user profiles, is enabled.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool IsInstallWideModelStoreEnabled();
 
 // Whether to persist salient image metadata for each visit.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
@@ -535,9 +525,71 @@ base::TimeDelta GetOnDeviceModelTimeForInitialResponse();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool GetOnDeviceFallbackToServerOnDisconnect();
 
-// Whether any features are enabled that allow launching the on-device service.
+// Returns whether the performance class is compatible with executing the
+// on-device model. Used to determine whether or not to fetch the on-device
+// model.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool IsPerformanceClassCompatibleWithOnDeviceModel(
+    OnDeviceModelPerformanceClass performance_class);
+
+// Whether any features are enabled that allow launching the on-device
+// service.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool CanLaunchOnDeviceModelService();
+
+// Whether on-device execution is enabled.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool IsOnDeviceExecutionEnabled();
+
+// The on-device model is fetched when the device is considered eligible for
+// on-device execution. When the device stops being eligible, the model is
+// retained for this amount of time. This protects the user from repeatedly
+// downloading the model in the event eligibility fluctuates. for on-device
+// evaluation
+// See on_device_model_component.cc for how eligibility is computed.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+base::TimeDelta GetOnDeviceModelRetentionTime();
+
+// Whether there is enough free disk space to allow on-device model
+// installation.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool IsFreeDiskSpaceSufficientForOnDeviceModelInstall(
+    int64_t free_disk_space_bytes);
+
+// Whether there is too little disk space to retain the on-device model
+// installation.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool IsFreeDiskSpaceTooLowForOnDeviceModelInstall(
+    int64_t free_disk_space_bytes);
+
+// Returns true if unsafe content should be removed.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool GetOnDeviceModelRetractUnsafeContent();
+
+// Returns true if the safety model must be used.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool GetOnDeviceModelMustUseSafetyModel();
+
+// Whether we should initiate download of the text safety classifier model.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool ShouldDownloadTextSafetyClassifierModel();
+
+// Number of tokens between each text safety update.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+uint32_t GetOnDeviceModelTextSafetyTokenInterval();
+
+// These params configure the repetition checker. See HasRepeatingSuffix() in
+// repetition_checker.h for explanation. A value of 2 for num repeats and 16 for
+// min repeat chars would mean we will halt a response once it repeats at least
+// 16 chars 2 times at the end of the response.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+int GetOnDeviceModelNumRepeats();
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+int GetOnDeviceModelMinRepeatChars();
+
+// Whether the response should be retracted if repeats are detected.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool GetOnDeviceModelRetractRepeats();
 
 }  // namespace features
 }  // namespace optimization_guide

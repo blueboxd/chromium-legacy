@@ -24,8 +24,7 @@
 #include "extensions/browser/extension_system.h"
 #include "storage/browser/file_system/external_mount_points.h"
 
-namespace ash {
-namespace file_system_provider {
+namespace ash::file_system_provider {
 
 const char kPrefKeyFileSystemId[] = "file-system-id";
 const char kPrefKeyDisplayName[] = "display-name";
@@ -45,8 +44,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 Registry::Registry(Profile* profile) : profile_(profile) {
 }
 
-Registry::~Registry() {
-}
+Registry::~Registry() = default;
 
 void Registry::RememberFileSystem(
     const ProvidedFileSystemInfo& file_system_info,
@@ -262,5 +260,4 @@ void Registry::UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
   watcher_value->Set(kPrefKeyWatcherLastTag, watcher.last_tag);
 }
 
-}  // namespace file_system_provider
-}  // namespace ash
+}  // namespace ash::file_system_provider

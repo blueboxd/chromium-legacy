@@ -84,6 +84,23 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
           return loadTimeData.getBoolean('useClickableSyncInfoDesc');
         },
       },
+
+      /**
+       * Reflects CanShowHistorySyncOptInsWithoutMinorModeRestrictions
+       * capability value.
+       *
+       * True iff the value of the capability was determined to be true before
+       * this screen was requested.
+       * False otherwise, ie.: the value of the capability was false or it was
+       * impossible to read its value before deadline.
+       *
+       */
+      unrestrictedMode_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('unrestrictedMode');
+        },
+      },
     };
   }
 
@@ -95,6 +112,7 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
   private syncConfirmationBrowserProxy_: SyncConfirmationBrowserProxy =
       SyncConfirmationBrowserProxyImpl.getInstance();
   private useClickableSyncInfoDesc_: boolean;
+  private unrestrictedMode_: boolean;
 
 
   override connectedCallback() {
@@ -103,6 +121,11 @@ export class SyncConfirmationAppElement extends SyncConfirmationAppElementBase {
     this.addWebUiListener(
         'account-info-changed', this.handleAccountInfoChanged_.bind(this));
     this.syncConfirmationBrowserProxy_.requestAccountInfo();
+
+    if (this.unrestrictedMode_) {
+      this.shadowRoot!.querySelector('#confirmButton')!.classList.add(
+          'action-button');
+    }
   }
 
   private onConfirm_(e: Event) {

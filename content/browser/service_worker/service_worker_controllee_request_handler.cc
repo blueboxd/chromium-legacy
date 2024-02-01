@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 
+#include <optional>
 #include <set>
 #include <utility>
 
@@ -34,7 +35,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/service_worker/service_worker_loader_helpers.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -292,7 +292,7 @@ void ServiceWorkerControlleeRequestHandler::InitializeContainerHost(
                               tentative_resource_request.trusted_params
                                   ? tentative_resource_request.trusted_params
                                         ->isolation_info.top_frame_origin()
-                                  : absl::nullopt,
+                                  : std::nullopt,
                               storage_key_);
 }
 
@@ -525,6 +525,13 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
     container_host_->AddServiceWorkerToUpdate(active_version);
   }
 
+  // If the router evaluation is needed, always forward to the service worker.
+  // Because the router evaluation is done in ServiceWorkerMainResourceLoader.
+  if (active_version->NeedRouterEvaluate()) {
+    CreateLoaderAndStartRequest(std::move(find_registration_start_time));
+    return;
+  }
+
   switch (active_version->EffectiveFetchHandlerType()) {
     case ServiceWorkerVersion::FetchHandlerType::kNoHandler: {
       RecordSkipReason(FetchHandlerSkipReason::kNoFetchHandler);
@@ -648,11 +655,15 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
 
   // Finally, we want to forward to the service worker! Make a
   // ServiceWorkerMainResourceLoader which does that work.
+  CreateLoaderAndStartRequest(std::move(find_registration_start_time));
+}
+
+void ServiceWorkerControlleeRequestHandler::CreateLoaderAndStartRequest(
+    base::TimeTicks find_registration_start_time) {
   loader_wrapper_ = std::make_unique<ServiceWorkerMainResourceLoaderWrapper>(
       std::make_unique<ServiceWorkerMainResourceLoader>(
           std::move(fallback_callback_), container_host_, frame_tree_node_id_,
           std::move(find_registration_start_time)));
-
   std::move(loader_callback_)
       .Run(base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
           base::BindOnce(&ServiceWorkerMainResourceLoader::StartRequest,

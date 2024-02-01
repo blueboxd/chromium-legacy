@@ -64,11 +64,13 @@ class VIEWS_EXPORT DesktopWindowTreeHostLacros
   void OnWindowStateChanged(
       ui::PlatformWindowState old_window_show_state,
       ui::PlatformWindowState new_window_show_state) override;
-  void OnImmersiveModeChanged(bool enabled) override;
+  void OnFullscreenTypeChanged(ui::PlatformFullscreenType old_type,
+                               ui::PlatformFullscreenType new_type) override;
   void OnOverviewModeChanged(bool in_overview) override;
   void OnTooltipShownOnServer(const std::u16string& text,
                               const gfx::Rect& bounds) override;
   void OnTooltipHiddenOnServer() override;
+  void OnBoundsChanged(const BoundsChange& change) override;
 
   // DesktopWindowTreeHostPlatform overrides:
   void AddAdditionalInitProperties(
@@ -85,12 +87,18 @@ class VIEWS_EXPORT DesktopWindowTreeHostLacros
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
 
+  // DesktopWindowTreeHost:
+  void OnWidgetInitDone() override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformImplTestWithTouch,
                            HitTest);
 
   void CreateNonClientEventFilter();
   void DestroyNonClientEventFilter();
+
+  // Sets hints for the WM/compositor that reflect the rounded corners.
+  void UpdateWindowHints();
 
   // A handler for events intended for non client area.
   // A posthandler for events intended for non client area. Handles events if no

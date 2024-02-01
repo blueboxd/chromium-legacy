@@ -40,6 +40,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -261,6 +262,8 @@ Server::Server(Display* display,
 
   wl_display_.reset(wl_display_create());
   SetSecurityDelegate(wl_display_.get(), security_delegate_.get());
+  display_manager_observation_.Observe(ash::Shell::Get()->display_manager());
+  ash::Shell::Get()->AddShellObserver(this);
 
   client_tracker_ = std::make_unique<ClientTracker>(wl_display_.get());
 }
@@ -286,12 +289,14 @@ void Server::Initialize() {
   // events immediately after an output is bound to the client and before the
   // data in these events might be needed by the client.
   wl_global_create(wl_display_.get(), &zaura_output_manager_interface,
-                   kZAuraOutputManagerVersion, this, bind_aura_output_manager);
+                   kZAuraOutputManagerVersion, nullptr,
+                   bind_aura_output_manager);
   wl_global_create(wl_display_.get(), &wl_subcompositor_interface,
                    /*version=*/1, display_, bind_subcompositor);
-  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
-    OnDisplayAdded(display);
-  }
+  OnDidProcessDisplayChanges(
+      {ash::Shell::Get()->display_manager()->active_display_list(),
+       Displays(),
+       {}});
   wl_global_create(wl_display_.get(), &zcr_vsync_feedback_v1_interface,
                    /*version=*/1, display_, bind_vsync_feedback);
 
@@ -316,7 +321,7 @@ void Server::Initialize() {
   wl_global_create(wl_display_.get(), &wp_presentation_interface, /*version=*/1,
                    display_, bind_presentation);
   wl_global_create(wl_display_.get(), &zcr_secure_output_v1_interface,
-                   /*version=*/1, display_, bind_secure_output);
+                   /*version=*/1, nullptr, bind_secure_output);
   wl_global_create(wl_display_.get(), &zcr_alpha_compositing_v1_interface,
                    /*version=*/1, display_, bind_alpha_compositing);
   wl_global_create(wl_display_.get(), &zcr_stylus_v2_interface,
@@ -381,7 +386,7 @@ void Server::Initialize() {
   wl_global_create(wl_display_.get(), &zcr_extended_drag_v1_interface,
                    /*version=*/1, display_, bind_extended_drag);
   wl_global_create(wl_display_.get(), &zxdg_output_manager_v1_interface,
-                   /*version=*/3, display_, bind_zxdg_output_manager);
+                   /*version=*/3, nullptr, bind_zxdg_output_manager);
   wl_global_create(wl_display_.get(), &zwp_idle_inhibit_manager_v1_interface,
                    /*version=*/1, display_, bind_zwp_idle_inhibit_manager);
 
@@ -429,6 +434,7 @@ void Server::Finalize(StartCallback callback, bool success) {
 }
 
 Server::~Server() {
+  ash::Shell::Get()->RemoveShellObserver(this);
   RemoveSecurityDelegate(wl_display_.get());
   // TODO(https://crbug.com/1124106): Investigate if we can eliminate Shutdown
   // methods.
@@ -495,33 +501,72 @@ void Server::Dispatch(base::TimeDelta timeout) {
 }
 
 void Server::Flush() {
-  wl_display_flush_clients(wl_display_.get());
+  // TODO(crbug.com/1508130): This should be updated to use
+  // wl_display_flush_clients() after an upstream libwayland fix has landed to
+  // address crashes during client-disconnect.
+  wl_client* client = nullptr;
+  wl_list* all_clients = wl_display_get_client_list(wl_display_.get());
+  wl_client_for_each(client, all_clients) {
+    if (!IsClientDestroyed(client)) {
+      wl_client_flush(client);
+    }
+  }
 }
 
-void Server::OnDisplayAdded(const display::Display& new_display) {
-  auto output = std::make_unique<WaylandDisplayOutput>(new_display.id());
-  output->set_global(wl_global_create(wl_display_.get(), &wl_output_interface,
-                                      kWlOutputVersion, output.get(),
-                                      bind_output));
-  DCHECK_EQ(outputs_.count(new_display.id()), 0u);
-  outputs_.insert(std::make_pair(new_display.id(), std::move(output)));
+void Server::OnDidProcessDisplayChanges(
+    const DisplayConfigurationChange& configuration_change) {
+  // Process added displays before removed displays to ensure exo does not leave
+  // clients in a temporary state where no outputs are present.
+  for (const display::Display& added_display :
+       configuration_change.added_displays) {
+    auto output = std::make_unique<WaylandDisplayOutput>(added_display.id());
+    output->set_global(wl_global_create(wl_display_.get(), &wl_output_interface,
+                                        kWlOutputVersion, output.get(),
+                                        bind_output));
+    CHECK_EQ(outputs_.count(added_display.id()), 0u);
+    outputs_.insert(std::make_pair(added_display.id(), std::move(output)));
+  }
+
+  for (const display::Display& removed_display :
+       configuration_change.removed_displays) {
+    // There should always be at least one display tracked by Exo.
+    CHECK(outputs_.size() > 1);
+    CHECK_EQ(outputs_.count(removed_display.id()), 1u);
+    std::unique_ptr<WaylandDisplayOutput> output =
+        std::move(outputs_[removed_display.id()]);
+    outputs_.erase(removed_display.id());
+    output.release()->OnDisplayRemoved();
+  }
+
+  for (const auto& change : configuration_change.display_metrics_changes) {
+    if (auto* wayland_display_output =
+            GetWaylandDisplayOutput(change.display->id())) {
+      wayland_display_output->SendDisplayMetricsChanges(change.display.get(),
+                                                        change.changed_metrics);
+    }
+  }
+
+  // Flush updated outputs to clients immediately.
+  // TODO(crbug.com/1502682): Exo should be updated to automatically flush
+  // buffers at the end of task processing if necessary.
+  Flush();
 }
 
-void Server::OnDisplayRemoved(const display::Display& old_display) {
-  DCHECK_EQ(outputs_.count(old_display.id()), 1u);
-  std::unique_ptr<WaylandDisplayOutput> output =
-      std::move(outputs_[old_display.id()]);
-  outputs_.erase(old_display.id());
-  output.release()->OnDisplayRemoved();
+void Server::OnDisplayForNewWindowsChanged() {
+  const int64_t active_display_id =
+      display::Screen::GetScreen()->GetDisplayForNewWindows().id();
+  auto output_pair = outputs_.find(active_display_id);
+  CHECK(output_pair != outputs_.end());
+  output_pair->second->SendOutputActivated();
 }
 
 wl_resource* Server::GetOutputResource(wl_client* client, int64_t display_id) {
-  DCHECK_NE(display_id, display::kInvalidDisplayId);
-  auto iter = outputs_.find(display_id);
-  if (iter == outputs_.end()) {
-    return nullptr;
-  }
-  return iter->second.get()->GetOutputResourceForClient(client);
+  CHECK_NE(display_id, display::kInvalidDisplayId);
+  WaylandDisplayOutput* wayland_display_output =
+      GetWaylandDisplayOutput(display_id);
+  return wayland_display_output
+             ? wayland_display_output->GetOutputResourceForClient(client)
+             : nullptr;
 }
 
 bool Server::IsClientDestroyed(wl_client* client) const {
@@ -531,6 +576,12 @@ bool Server::IsClientDestroyed(wl_client* client) const {
 void Server::AddWaylandOutput(int64_t id,
                               std::unique_ptr<WaylandDisplayOutput> output) {
   outputs_.insert(std::make_pair(id, std::move(output)));
+}
+
+WaylandDisplayOutput* Server::GetWaylandDisplayOutput(int64_t display_id) {
+  CHECK_NE(display_id, display::kInvalidDisplayId);
+  auto iter = outputs_.find(display_id);
+  return iter == outputs_.end() ? nullptr : iter->second.get();
 }
 
 }  // namespace wayland

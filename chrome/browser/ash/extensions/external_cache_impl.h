@@ -105,6 +105,8 @@ class ExternalCacheImpl : public ExternalCache,
   bool IsExtensionPending(const extensions::ExtensionId& id) override;
   bool GetExtensionExistingVersion(const extensions::ExtensionId& id,
                                    std::string* version) override;
+  RequestRollbackResult RequestRollback(
+      const extensions::ExtensionId& id) override;
 
   void set_flush_on_put(bool flush_on_put) { flush_on_put_ = flush_on_put; }
 
@@ -153,7 +155,7 @@ class ExternalCacheImpl : public ExternalCache,
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // Delegate that would like to get notifications about cache updates.
-  raw_ptr<ExternalCacheDelegate, ExperimentalAsh> delegate_;
+  raw_ptr<ExternalCacheDelegate> delegate_;
 
   // Updates needs to be check for the extensions with external_crx too.
   bool always_check_updates_;

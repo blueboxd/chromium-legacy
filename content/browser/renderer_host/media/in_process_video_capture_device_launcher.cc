@@ -39,12 +39,12 @@
 #if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 #if defined(USE_AURA)
 #include "content/browser/media/capture/aura_window_video_capture_device.h"
 #endif  // defined(USE_AURA)
 #include "content/browser/media/capture/desktop_capture_device.h"
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_MAC)
 #include "content/browser/media/capture/desktop_capture_device_mac.h"
 #include "content/browser/media/capture/screen_capture_kit_device_mac.h"
@@ -204,11 +204,11 @@ DesktopCaptureImplementation CreatePlatformDependentVideoCaptureDevice(
       return kDesktopCaptureDeviceMac;
   }
 #endif  // BUILDFLAG(IS_MAC)
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   if ((device_out = DesktopCaptureDevice::Create(desktop_id))) {
     return kLegacyDesktopCaptureDevice;
   }
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   return kNoImplementation;
 }
 #endif  // BUILDFLAG(ENABLE_SCREEN_CAPTURE)
@@ -418,7 +418,7 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return std::make_unique<media::VideoCaptureDeviceClient>(
-      requested_buffer_type, std::move(receiver), std::move(buffer_pool),
+      std::move(receiver), std::move(buffer_pool),
       base::BindRepeating(
           &CreateGpuJpegDecoder,
           base::BindRepeating(&media::VideoFrameReceiver::OnFrameReadyInBuffer,
@@ -427,7 +427,7 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
                               receiver_on_io_thread)));
 #else
   return std::make_unique<media::VideoCaptureDeviceClient>(
-      requested_buffer_type, std::move(receiver), std::move(buffer_pool),
+      std::move(receiver), std::move(buffer_pool),
       mojo::PendingRemote<video_capture::mojom::VideoEffectsManager>{});
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
@@ -479,7 +479,6 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDeviceCaptureOnDeviceThread(
     const media::VideoCaptureParams& params,
     std::unique_ptr<media::VideoCaptureDeviceClient> device_client,
     ReceiveDeviceCallback result_callback) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(device_task_runner_->BelongsToCurrentThread());
   DCHECK(video_capture_system_);
 
@@ -502,7 +501,6 @@ void InProcessVideoCaptureDeviceLauncher::DoStartTabCaptureOnDeviceThread(
     const media::VideoCaptureParams& params,
     std::unique_ptr<media::VideoFrameReceiver> receiver,
     ReceiveDeviceCallback result_callback) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(device_task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<WebContentsVideoCaptureDevice> video_capture_device =
@@ -521,7 +519,6 @@ void InProcessVideoCaptureDeviceLauncher::
         const media::VideoCaptureParams& params,
         std::unique_ptr<media::VideoFrameReceiver> receiver,
         ReceiveDeviceCallback result_callback) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(device_task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<FrameSinkVideoCaptureDevice> video_capture_device;
@@ -546,7 +543,6 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread(
     const media::VideoCaptureParams& params,
     std::unique_ptr<media::VideoCaptureDeviceClient> device_client,
     ReceiveDeviceCallback result_callback) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(device_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_id.is_null());
 
@@ -569,7 +565,6 @@ void InProcessVideoCaptureDeviceLauncher::
         const media::VideoCaptureParams& params,
         std::unique_ptr<media::VideoFrameReceiver> receiver,
         ReceiveDeviceCallback result_callback) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(device_task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<VideoCaptureDeviceProxyLacros> video_capture_device =

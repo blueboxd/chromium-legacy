@@ -79,7 +79,7 @@ class AugmentedSurface : public SurfaceObserver {
     surface_->SetViewport(gfx::SizeF(width, height));
   }
 
-  void SetBackgroundColor(absl::optional<SkColor4f> background_color) {
+  void SetBackgroundColor(std::optional<SkColor4f> background_color) {
     surface_->SetBackgroundColor(background_color);
   }
 
@@ -88,7 +88,7 @@ class AugmentedSurface : public SurfaceObserver {
   }
 
   void SetClipRect(float x, float y, float width, float height) {
-    absl::optional<gfx::RectF> clip_rect;
+    std::optional<gfx::RectF> clip_rect;
     if (width >= 0 && height >= 0) {
       clip_rect = gfx::RectF(x, y, width, height);
     }
@@ -102,7 +102,7 @@ class AugmentedSurface : public SurfaceObserver {
   }
 
  private:
-  raw_ptr<Surface, ExperimentalAsh> surface_;
+  raw_ptr<Surface> surface_;
 };
 
 void augmented_surface_destroy(wl_client* client, wl_resource* resource) {
@@ -150,7 +150,7 @@ void augmented_surface_set_rounded_corners_bounds_DEPRECATED(
 void augmented_surface_set_background_color(wl_client* client,
                                             wl_resource* resource,
                                             wl_array* color_data) {
-  absl::optional<SkColor4f> sk_color;
+  std::optional<SkColor4f> sk_color;
   // Empty data means no color.
   if (color_data->size) {
     float* data = reinterpret_cast<float*>(color_data->data);
@@ -251,7 +251,7 @@ class AugmentedSubSurface : public SubSurfaceObserver {
   }
 
   void SetClipRect(float x, float y, float width, float height) {
-    absl::optional<gfx::RectF> clip_rect;
+    std::optional<gfx::RectF> clip_rect;
     if (x >= 0 && y >= 0 && width >= 0 && height >= 0) {
       clip_rect = gfx::RectF(x, y, width, height);
     }
@@ -270,7 +270,7 @@ class AugmentedSubSurface : public SubSurfaceObserver {
   }
 
  private:
-  raw_ptr<SubSurface, ExperimentalAsh> sub_surface_;
+  raw_ptr<SubSurface> sub_surface_;
 };
 
 void augmented_sub_surface_destroy(wl_client* client, wl_resource* resource) {

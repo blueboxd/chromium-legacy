@@ -29,6 +29,7 @@
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -167,7 +168,8 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
   SendConfigRequestAndWaitForResponse(
       const char* test_data,
       net::HttpStatusCode http_status = net::HTTP_OK,
-      const std::string& mime_type = "application/json") {
+      const std::string& mime_type = "application/json",
+      blink::mojom::RpMode rp_mode = blink::mojom::RpMode::kWidget) {
     GURL config_url(kTestConfigUrl);
     AddResponse(config_url, http_status, mime_type, test_data);
 
@@ -183,7 +185,8 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
         });
 
     std::unique_ptr<IdpNetworkRequestManager> manager = CreateTestManager();
-    manager->FetchConfig(GURL(kTestConfigUrl), kTestIdpBrandIconIdealSize,
+    manager->FetchConfig(GURL(kTestConfigUrl), rp_mode,
+                         kTestIdpBrandIconIdealSize,
                          kTestIdpBrandIconMinimumSize, std::move(callback));
     run_loop.Run();
 
@@ -236,8 +239,8 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
         });
     auto record_error_metrics_callback = base::BindLambdaForTesting(
         [&](TokenResponseType token_response_type,
-            absl::optional<ErrorDialogType> error_dialog_type,
-            absl::optional<ErrorUrlType> error_url_type) {
+            std::optional<ErrorDialogType> error_dialog_type,
+            std::optional<ErrorUrlType> error_url_type) {
           token_response_type_ = token_response_type;
           error_dialog_type_ = error_dialog_type;
           error_url_type_ = error_url_type;
@@ -280,10 +283,10 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
 
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
   TokenResponseType token_response_type() { return token_response_type_; }
-  absl::optional<ErrorDialogType> error_dialog_type() {
+  std::optional<ErrorDialogType> error_dialog_type() {
     return error_dialog_type_;
   }
-  absl::optional<ErrorUrlType> error_url_type() { return error_url_type_; }
+  std::optional<ErrorUrlType> error_url_type() { return error_url_type_; }
 
  private:
   base::test::TaskEnvironment task_environment_;
@@ -291,8 +294,8 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder;
   base::HistogramTester histogram_tester_;
   TokenResponseType token_response_type_;
-  absl::optional<ErrorDialogType> error_dialog_type_;
-  absl::optional<ErrorUrlType> error_url_type_;
+  std::optional<ErrorDialogType> error_dialog_type_;
+  std::optional<ErrorUrlType> error_url_type_;
 };
 
 TEST_F(IdpNetworkRequestManagerTest, ParseAccountEmpty) {
@@ -579,8 +582,8 @@ TEST_F(IdpNetworkRequestManagerTest, ComputeWellKnownUrl) {
                 GURL("https://www.google.com:8000/test/"))
                 ->spec());
 
-  EXPECT_EQ(absl::nullopt, IdpNetworkRequestManager::ComputeWellKnownUrl(
-                               GURL("https://192.101.0.1/test/")));
+  EXPECT_EQ(std::nullopt, IdpNetworkRequestManager::ComputeWellKnownUrl(
+                              GURL("https://192.101.0.1/test/")));
 }
 
 // Test that IdpNetworkRequestManager::FetchWellKnown() fails when the
@@ -706,7 +709,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseConfigBrandingInvalidColor) {
 
   EXPECT_EQ(ParseStatus::kSuccess, fetch_status.parse_status);
   EXPECT_EQ(net::HTTP_OK, fetch_status.response_code);
-  EXPECT_EQ(absl::nullopt, idp_metadata.brand_background_color);
+  EXPECT_EQ(std::nullopt, idp_metadata.brand_background_color);
 }
 
 TEST_F(IdpNetworkRequestManagerTest,
@@ -726,7 +729,7 @@ TEST_F(IdpNetworkRequestManagerTest,
   EXPECT_EQ(ParseStatus::kSuccess, fetch_status.parse_status);
   EXPECT_EQ(net::HTTP_OK, fetch_status.response_code);
   EXPECT_EQ(SkColorSetRGB(0, 0, 0), idp_metadata.brand_background_color);
-  EXPECT_EQ(absl::nullopt, idp_metadata.brand_text_color);
+  EXPECT_EQ(std::nullopt, idp_metadata.brand_text_color);
 }
 
 TEST_F(IdpNetworkRequestManagerTest,
@@ -744,8 +747,8 @@ TEST_F(IdpNetworkRequestManagerTest,
 
   EXPECT_EQ(ParseStatus::kSuccess, fetch_status.parse_status);
   EXPECT_EQ(net::HTTP_OK, fetch_status.response_code);
-  EXPECT_EQ(absl::nullopt, idp_metadata.brand_background_color);
-  EXPECT_EQ(absl::nullopt, idp_metadata.brand_text_color);
+  EXPECT_EQ(std::nullopt, idp_metadata.brand_background_color);
+  EXPECT_EQ(std::nullopt, idp_metadata.brand_text_color);
 }
 
 TEST_F(IdpNetworkRequestManagerTest, ParseConfigBrandingSelectBestSize) {
@@ -839,30 +842,114 @@ TEST_F(IdpNetworkRequestManagerTest, ParseConfigBrandingMinSize) {
   }
 }
 
-TEST_F(IdpNetworkRequestManagerTest, ParseConfigSupportsAddAccount) {
+TEST_F(IdpNetworkRequestManagerTest,
+       ParseConfigSupportsOtherAccountButtonMode) {
   base::test::ScopedFeatureList list;
   list.InitAndEnableFeature(features::kFedCmAddAccount);
 
   const char test_json[] = R"({
-  "supports_add_account": true
+  "modes": {
+    "button": {
+      "supports_use_other_account": true
+    }
+  }
   })";
 
   FetchStatus fetch_status;
   IdentityProviderMetadata idp_metadata;
-  std::tie(fetch_status, idp_metadata) =
-      SendConfigRequestAndWaitForResponse(test_json);
+  std::tie(fetch_status, idp_metadata) = SendConfigRequestAndWaitForResponse(
+      test_json, net::HTTP_OK, "application/json",
+      blink::mojom::RpMode::kButton);
 
   EXPECT_EQ(ParseStatus::kSuccess, fetch_status.parse_status);
   EXPECT_EQ(net::HTTP_OK, fetch_status.response_code);
   EXPECT_EQ(true, idp_metadata.supports_add_account);
 }
 
-TEST_F(IdpNetworkRequestManagerTest, ParseConfigAddAccountDisabled) {
+TEST_F(IdpNetworkRequestManagerTest,
+       ParseConfigSupportsOtherAccountWidgetMode) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmAddAccount);
+
+  const char test_json[] = R"({
+  "modes": {
+    "widget": {
+      "supports_use_other_account": true
+    }
+  }
+  })";
+
+  FetchStatus fetch_status;
+  IdentityProviderMetadata idp_metadata;
+  std::tie(fetch_status, idp_metadata) = SendConfigRequestAndWaitForResponse(
+      test_json, net::HTTP_OK, "application/json",
+      blink::mojom::RpMode::kWidget);
+
+  EXPECT_EQ(ParseStatus::kSuccess, fetch_status.parse_status);
+  EXPECT_EQ(net::HTTP_OK, fetch_status.response_code);
+  EXPECT_EQ(true, idp_metadata.supports_add_account);
+}
+
+TEST_F(IdpNetworkRequestManagerTest,
+       ParseConfigSupportsOtherAccountDifferentMode) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmAddAccount);
+
+  const char test_json[] = R"({
+  "modes": {
+    "button": {
+      "supports_use_other_account": true
+    }
+  }
+  })";
+
+  FetchStatus fetch_status;
+  IdentityProviderMetadata idp_metadata;
+  std::tie(fetch_status, idp_metadata) = SendConfigRequestAndWaitForResponse(
+      test_json, net::HTTP_OK, "application/json",
+      blink::mojom::RpMode::kWidget);
+
+  EXPECT_EQ(ParseStatus::kSuccess, fetch_status.parse_status);
+  EXPECT_EQ(net::HTTP_OK, fetch_status.response_code);
+  EXPECT_EQ(false, idp_metadata.supports_add_account);
+}
+
+TEST_F(IdpNetworkRequestManagerTest, ParseConfigSupportsOtherAccountBothModes) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmAddAccount);
+
+  const char test_json[] = R"({
+  "modes": {
+    "button": {
+      "supports_use_other_account": false
+    },
+    "widget": {
+      "supports_use_other_account": true
+    }
+  }
+  })";
+
+  FetchStatus fetch_status;
+  IdentityProviderMetadata idp_metadata;
+  std::tie(fetch_status, idp_metadata) = SendConfigRequestAndWaitForResponse(
+      test_json, net::HTTP_OK, "application/json",
+      blink::mojom::RpMode::kButton);
+
+  EXPECT_EQ(ParseStatus::kSuccess, fetch_status.parse_status);
+  EXPECT_EQ(net::HTTP_OK, fetch_status.response_code);
+  EXPECT_EQ(false, idp_metadata.supports_add_account);
+}
+
+TEST_F(IdpNetworkRequestManagerTest, ParseConfigUseOtherAccountDisabled) {
   base::test::ScopedFeatureList list;
   list.InitAndDisableFeature(features::kFedCmAddAccount);
 
   const char test_json[] = R"({
-  "supports_add_account": true
+  "modes": {
+    "widget": {
+      "supports_use_other_account": true
+    }
+  }
   })";
 
   FetchStatus fetch_status;
@@ -875,7 +962,8 @@ TEST_F(IdpNetworkRequestManagerTest, ParseConfigAddAccountDisabled) {
   EXPECT_EQ(false, idp_metadata.supports_add_account);
 }
 
-TEST_F(IdpNetworkRequestManagerTest, ParseConfigSupportsAddAccountMissing) {
+TEST_F(IdpNetworkRequestManagerTest,
+       ParseConfigSupportsUseOtherAccountMissing) {
   const char test_json[] = R"({
   })";
 
@@ -1475,7 +1563,8 @@ TEST_F(IdpNetworkRequestManagerTest,
             token_response_type());
   EXPECT_TRUE(error_dialog_type());
   EXPECT_EQ(ErrorDialogType::kInvalidRequestWithoutUrl, *error_dialog_type());
-  EXPECT_FALSE(error_url_type());
+  ASSERT_TRUE(error_url_type());
+  EXPECT_EQ(ErrorUrlType::kCrossSite, *error_url_type());
 }
 
 TEST_F(IdpNetworkRequestManagerTest, IdAssertionRequestErrorWithEmptyUrl) {
@@ -1502,7 +1591,7 @@ TEST_F(IdpNetworkRequestManagerTest, IdAssertionRequestErrorWithEmptyUrl) {
   EXPECT_FALSE(error_url_type());
 }
 
-TEST_F(IdpNetworkRequestManagerTest, IdAssertionRequestServerError) {
+TEST_F(IdpNetworkRequestManagerTest, IdAssertionResponse200NonParsable) {
   base::test::ScopedFeatureList list;
   list.InitAndEnableFeature(features::kFedCmError);
 
@@ -1510,6 +1599,26 @@ TEST_F(IdpNetworkRequestManagerTest, IdAssertionRequestServerError) {
   TokenResult token_result;
   std::tie(fetch_status, token_result) = SendTokenRequestAndWaitForResponse(
       "account", "request", net::HTTP_OK, "application/json", R"({}})");
+
+  EXPECT_TRUE(token_result.error);
+  EXPECT_EQ("", token_result.error->code);
+  EXPECT_EQ(GURL(), token_result.error->url);
+  EXPECT_EQ(TokenResponseType::kTokenNotReceivedAndErrorNotReceived,
+            token_response_type());
+  EXPECT_TRUE(error_dialog_type());
+  EXPECT_EQ(ErrorDialogType::kGenericEmptyWithoutUrl, *error_dialog_type());
+  EXPECT_FALSE(error_url_type());
+}
+
+TEST_F(IdpNetworkRequestManagerTest, IdAssertionResponse500NonParsable) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmError);
+
+  FetchStatus fetch_status;
+  TokenResult token_result;
+  std::tie(fetch_status, token_result) = SendTokenRequestAndWaitForResponse(
+      "account", "request", net::HTTP_INTERNAL_SERVER_ERROR, "application/json",
+      R"({}})");
 
   EXPECT_TRUE(token_result.error);
   EXPECT_EQ("server_error", token_result.error->code);
@@ -1607,7 +1716,7 @@ TEST_F(IdpNetworkRequestManagerTest, DisconnectRequest) {
 
   base::RunLoop run_loop;
   FetchStatus disconnect_response;
-  absl::optional<std::string> disconnect_account_id;
+  std::optional<std::string> disconnect_account_id;
   auto callback = base::BindLambdaForTesting(
       [&](FetchStatus response, const std::string& account_id) {
         disconnect_response = response;

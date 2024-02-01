@@ -5,6 +5,7 @@
 #include "ui/views/animation/bounds_animator.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/memory/raw_ptr.h"
@@ -147,9 +148,8 @@ class BoundsAnimatorTest : public testing::Test {
   BoundsAnimatorTest()
       : task_environment_(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
-        child_(new TestView()) {
-    parent_.AddChildView(child_.get());
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {
+    parent_.AddChildView(std::make_unique<TestView>());
     RecreateAnimator(/*use_transforms=*/false);
   }
 
@@ -157,7 +157,9 @@ class BoundsAnimatorTest : public testing::Test {
   BoundsAnimatorTest& operator=(const BoundsAnimatorTest&) = delete;
 
   TestView* parent() { return &parent_; }
-  TestView* child() { return child_; }
+  TestView* child() {
+    return static_cast<TestView*>(parent_.children()[0].get());
+  }
   BoundsAnimator* animator() { return animator_.get(); }
 
  protected:
@@ -171,6 +173,7 @@ class BoundsAnimatorTest : public testing::Test {
   // created.
   int GetRepaintTimeFromBoundsAnimation(const gfx::Rect& target_bounds,
                                         bool use_long_duration) {
+    base::RunLoop loop;
     child()->set_repaint_count(0);
 
     const base::TimeDelta animation_duration =
@@ -178,8 +181,9 @@ class BoundsAnimatorTest : public testing::Test {
     animator()->SetAnimationDuration(animation_duration);
 
     animator()->AnimateViewTo(child(), target_bounds);
-    animator()->SetAnimationDelegate(child(),
-                                     std::make_unique<TestAnimationDelegate>());
+    animator()->SetAnimationDelegate(
+        child(),
+        std::make_unique<TestAnimationDelegate>(loop.QuitWhenIdleClosure()));
 
     // The animator should be animating now.
     EXPECT_TRUE(animator()->IsAnimating());
@@ -189,7 +193,7 @@ class BoundsAnimatorTest : public testing::Test {
     // done.
     if (use_long_duration)
       task_environment_.FastForwardBy(animation_duration);
-    base::RunLoop().Run();
+    loop.Run();
 
     // Make sure the bounds match of the view that was animated match and the
     // layer is destroyed.
@@ -206,18 +210,19 @@ class BoundsAnimatorTest : public testing::Test {
 
  private:
   TestView parent_;
-  raw_ptr<TestView, DanglingUntriaged> child_;  // Owned by |parent_|.
   std::unique_ptr<BoundsAnimator> animator_;
 };
 
 // Checks animate view to.
 TEST_F(BoundsAnimatorTest, AnimateViewTo) {
+  base::RunLoop loop;
   gfx::Rect initial_bounds(0, 0, 10, 10);
   child()->SetBoundsRect(initial_bounds);
   gfx::Rect target_bounds(10, 10, 20, 20);
   animator()->AnimateViewTo(child(), target_bounds);
-  animator()->SetAnimationDelegate(child(),
-                                   std::make_unique<TestAnimationDelegate>());
+  animator()->SetAnimationDelegate(
+      child(),
+      std::make_unique<TestAnimationDelegate>(loop.QuitWhenIdleClosure()));
 
   // The animator should be animating now.
   EXPECT_TRUE(animator()->IsAnimating());
@@ -225,7 +230,7 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
 
   // Run the message loop; the delegate exits the loop when the animation is
   // done.
-  base::RunLoop().Run();
+  loop.Run();
 
   // Make sure the bounds match of the view that was animated match.
   EXPECT_EQ(target_bounds, child()->bounds());
@@ -248,9 +253,9 @@ TEST_F(BoundsAnimatorTest, DeleteWhileAnimating) {
   EXPECT_TRUE(animator()->IsAnimating(child()));
 
   // Make sure that animation is removed upon deletion.
-  delete child();
-  EXPECT_FALSE(animator()->GetAnimationForView(child()));
-  EXPECT_FALSE(animator()->IsAnimating(child()));
+  std::unique_ptr<View> child_owning = parent()->RemoveChildViewT(child());
+  EXPECT_FALSE(animator()->GetAnimationForView(child_owning.get()));
+  EXPECT_FALSE(animator()->IsAnimating(child_owning.get()));
 }
 
 // Make sure an AnimationDelegate is deleted when canceled.
@@ -416,6 +421,7 @@ TEST_F(BoundsAnimatorTest, NoTransformForScalingAnimation) {
 // Tests that the transforms option does not crash when a view's bounds start
 // off empty.
 TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewToEmptySrc) {
+  base::RunLoop loop;
   RecreateAnimator(/*use_transforms=*/true);
 
   gfx::Rect initial_bounds(0, 0, 0, 0);
@@ -424,8 +430,9 @@ TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewToEmptySrc) {
 
   child()->set_repaint_count(0);
   animator()->AnimateViewTo(child(), target_bounds);
-  animator()->SetAnimationDelegate(child(),
-                                   std::make_unique<TestAnimationDelegate>());
+  animator()->SetAnimationDelegate(
+      child(),
+      std::make_unique<TestAnimationDelegate>(loop.QuitWhenIdleClosure()));
 
   // The animator should be animating now.
   EXPECT_TRUE(animator()->IsAnimating());
@@ -433,7 +440,7 @@ TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewToEmptySrc) {
 
   // Run the message loop; the delegate exits the loop when the animation is
   // done.
-  base::RunLoop().Run();
+  loop.Run();
   EXPECT_EQ(target_bounds, child()->bounds());
 }
 

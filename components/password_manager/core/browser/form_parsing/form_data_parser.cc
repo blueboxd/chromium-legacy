@@ -27,6 +27,7 @@
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -348,7 +349,7 @@ bool IsFieldInSignificantFields(const SignificantFields& significant_fields,
 bool DoesPredictionCorrespondToField(
     const FormFieldData& field,
     const PasswordFieldPrediction& prediction) {
-  return field.unique_renderer_id == prediction.renderer_id;
+  return field.renderer_id == prediction.renderer_id;
 }
 
 // Returns the first element of |fields| which corresponds to |prediction|, or
@@ -412,7 +413,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
   for (const PasswordFieldPrediction& prediction : predictions.fields) {
     ProcessedField* processed_field = nullptr;
 
-    CredentialFieldType field_type = DeriveFromServerFieldType(prediction.type);
+    CredentialFieldType field_type = DeriveFromFieldType(prediction.type);
     bool is_password_prediction = IsPasswordPrediction(field_type);
     if (mode == FormDataParser::Mode::kSaving && is_password_prediction &&
         !base::FeatureList::IsEnabled(
@@ -438,12 +439,10 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         if (processed_field) {
           result->username = processed_field->field;
           result->is_single_username = true;
-          result->ClearAllPasswordFields();
           base::UmaHistogramBoolean(
               "PasswordManager.SingleUsername."
               "ForgotPasswordServerPredictionUsed",
               prediction.type == autofill::SINGLE_USERNAME_FORGOT_PASSWORD);
-          return;
         }
         break;
       case CredentialFieldType::kCurrentPassword:
@@ -486,6 +485,20 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         break;
       case CredentialFieldType::kNone:
         break;
+    }
+  }
+
+  if (result->is_single_username) {
+    if (mode == FormDataParser::Mode::kSaving &&
+        (result->password || result->new_password)) {
+      // Contradicting predictions were received: the form was predicted to be
+      // both a single username form and a password form. Prioritize saving
+      // the password.
+      result->username = nullptr;
+      result->is_single_username = false;
+    } else {
+      result->ClearAllPasswordFields();
+      return;
     }
   }
 
@@ -711,8 +724,7 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
   // Step 5: remove the field parsed as username, if needed.
   if (username && username->IsPasswordInputElement()) {
     base::EraseIf(filtered, [username](const ProcessedField* processed_field) {
-      return processed_field->field->unique_renderer_id ==
-             username->unique_renderer_id;
+      return processed_field->field->renderer_id == username->renderer_id;
     });
   }
 
@@ -791,10 +803,10 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
   return focusable_username ? focusable_username : username;
 }
 
-// A helper to return a |field|'s unique_renderer_id or
+// A helper to return a |field|'s renderer_id or
 // a null renderer ID if |field| is null.
 autofill::FieldRendererId ExtractUniqueId(const FormFieldData* field) {
-  return field ? field->unique_renderer_id : autofill::FieldRendererId();
+  return field ? field->renderer_id : autofill::FieldRendererId();
 }
 
 // Tries to find the username and password fields in |processed_fields| based
@@ -864,7 +876,7 @@ void ParseUsingBaseHeuristics(
     for (auto it = processed_fields.begin(); it != processed_fields.end();
          ++it) {
       if ((it->is_password || it->is_predicted_as_password) &&
-          base::Contains(password_ids, it->field->unique_renderer_id)) {
+          base::Contains(password_ids, it->field->renderer_id)) {
         first_relevant_password = it;
         break;
       }
@@ -897,14 +909,14 @@ void SetFields(const SignificantFields& significant_fields,
     password_form->username_element = significant_fields.username->name;
     password_form->username_value = GetFieldValue(*significant_fields.username);
     password_form->username_element_renderer_id =
-        significant_fields.username->unique_renderer_id;
+        significant_fields.username->renderer_id;
   }
 
   if (significant_fields.password) {
     password_form->password_element = significant_fields.password->name;
     password_form->password_value = GetFieldValue(*significant_fields.password);
     password_form->password_element_renderer_id =
-        significant_fields.password->unique_renderer_id;
+        significant_fields.password->renderer_id;
   }
 
   if (significant_fields.new_password) {
@@ -912,7 +924,7 @@ void SetFields(const SignificantFields& significant_fields,
     password_form->new_password_value =
         GetFieldValue(*significant_fields.new_password);
     password_form->new_password_element_renderer_id =
-        significant_fields.new_password->unique_renderer_id;
+        significant_fields.new_password->renderer_id;
   }
 
   if (significant_fields.confirmation_password) {
@@ -922,7 +934,7 @@ void SetFields(const SignificantFields& significant_fields,
     password_form->confirmation_password_element =
         significant_fields.confirmation_password->name;
     password_form->confirmation_password_element_renderer_id =
-        significant_fields.confirmation_password->unique_renderer_id;
+        significant_fields.confirmation_password->renderer_id;
   }
 }
 
@@ -974,7 +986,7 @@ std::vector<ProcessedField> ProcessFields(
       if (insertion.second) {
         // There was no such element in |seen_values|.
         all_alternative_fields->emplace_back(
-            AlternativeElement::Value(field_value), field.unique_renderer_id,
+            AlternativeElement::Value(field_value), field.renderer_id,
             AlternativeElement::Name(field.name));
       }
     }
@@ -1010,7 +1022,7 @@ bool GetMayUsePrefilledPlaceholder(
     return false;
 
   autofill::FieldRendererId username_id =
-      significant_fields.username->unique_renderer_id;
+      significant_fields.username->renderer_id;
   for (const PasswordFieldPrediction& prediction : form_predictions->fields) {
     if (prediction.renderer_id == username_id)
       return prediction.may_use_prefilled_placeholder;
@@ -1069,6 +1081,10 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   // Set data related to specific fields.
   SetFields(significant_fields, result.get());
   return result;
+}
+
+bool FieldValueIsTooShortForSaving(const FormFieldData* field) {
+  return field && GetFieldValue(*field).size() <= 1;
 }
 
 }  // namespace
@@ -1196,6 +1212,15 @@ FormDataParser::ParseAndReturnUsernameDetection(
   base::UmaHistogramEnumeration("PasswordManager.UsernameDetectionMethod",
                                 method);
 
+  // OTPs and PIN codes are usually split across several 1-digit fields.
+  // Don't automatically show Save/Update prompt in such case.
+  if (mode == Mode::kSaving &&
+      ((!significant_fields.new_password &&
+        FieldValueIsTooShortForSaving(significant_fields.password)) ||
+       FieldValueIsTooShortForSaving(significant_fields.new_password))) {
+    significant_fields.is_fallback = true;
+  }
+
   return {
       AssemblePasswordForm(form_data, significant_fields,
                            std::move(all_alternative_passwords),
@@ -1229,7 +1254,7 @@ const FormFieldData* FindUsernameInPredictions(
     auto iter = base::ranges::find_if(
         processed_fields, [&](const ProcessedField& processed_field) {
           return !IsNotUsernameField(processed_field) &&
-                 (processed_field.field->unique_renderer_id == predicted_id) &&
+                 (processed_field.field->renderer_id == predicted_id) &&
                  MatchesInteractability(processed_field, username_max);
         });
     if (iter != processed_fields.end()) {

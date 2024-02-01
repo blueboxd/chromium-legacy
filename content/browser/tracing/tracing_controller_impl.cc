@@ -5,7 +5,9 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 
 #include <inttypes.h>
+
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -32,6 +34,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "components/variations/active_field_trials.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
@@ -52,7 +55,6 @@
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/perfetto/include/perfetto/protozero/message.h"
 #include "third_party/perfetto/protos/perfetto/trace/extension_descriptor.pbzero.h"
@@ -225,6 +227,9 @@ void TracingControllerImpl::AddAgents() {
     metadata_source->AddGeneratorFunction(
         base::BindRepeating(&TracingDelegate::GenerateMetadataDict,
                             base::Unretained(delegate_.get())));
+    metadata_source->AddGeneratorFunction(base::BindRepeating(
+        &TracingControllerImpl::GenerateMetadataPacketFieldTrials,
+        base::Unretained(this)));
   }
   metadata_source->AddGeneratorFunction(base::BindRepeating(
       &TracingControllerImpl::GenerateMetadataPacket, base::Unretained(this)));
@@ -232,6 +237,23 @@ void TracingControllerImpl::AddAgents() {
   tracing::PerfettoTracedProcess::Get()->AddDataSource(
       tracing::JavaHeapProfiler::GetInstance());
 #endif
+}
+
+void TracingControllerImpl::GenerateMetadataPacketFieldTrials(
+    perfetto::protos::pbzero::ChromeMetadataPacket* metadata_proto,
+    bool privacy_filtering_enabled) {
+  // Do not include low anonymity field trials, to prevent them from being
+  // included in chrometto reports.
+  std::vector<variations::ActiveGroupId> active_group_ids;
+  variations::GetFieldTrialActiveGroupIds(base::StringPiece(),
+                                          &active_group_ids);
+
+  for (const auto& active_group_id : active_group_ids) {
+    perfetto::protos::pbzero::ChromeMetadataPacket::FinchHash* finch_hash =
+        metadata_proto->add_field_trial_hashes();
+    finch_hash->set_name(active_group_id.name);
+    finch_hash->set_group(active_group_id.group);
+  }
 }
 
 void TracingControllerImpl::ConnectToServiceIfNeeded() {
@@ -260,8 +282,7 @@ void TracingControllerImpl::GenerateMetadataPacket(
 }
 
 // Can be called on any thread.
-absl::optional<base::Value::Dict>
-TracingControllerImpl::GenerateMetadataDict() {
+std::optional<base::Value::Dict> TracingControllerImpl::GenerateMetadataDict() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto metadata_dict =
@@ -276,7 +297,7 @@ TracingControllerImpl::GenerateMetadataDict() {
   // obtained from process maps since library can be mapped from apk directly.
   // This is not added as part of memory-infra os dumps since it is special case
   // only for chrome library.
-  absl::optional<base::StringPiece> soname =
+  std::optional<base::StringPiece> soname =
       base::debug::ReadElfLibraryName(&__ehdr_start);
   if (soname)
     metadata_dict.Set("chrome-library-name", *soname);
@@ -577,7 +598,7 @@ void TracingControllerImpl::OnReadBuffersComplete() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void TracingControllerImpl::OnMachineStatisticsLoaded() {
-  if (const absl::optional<base::StringPiece> hardware_class =
+  if (const std::optional<base::StringPiece> hardware_class =
           ash::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
               ash::system::kHardwareClassKey)) {
     hardware_class_ = std::string(hardware_class.value());

@@ -89,20 +89,6 @@ export class SearchEngineChoiceAppElement extends
         value: '',
       },
 
-      withMarketingSnippets_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('withMarketingSnippets');
-        },
-      },
-
-      withForcedScroll_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('withForcedScroll');
-        },
-      },
-
       actionButtonText_: {
         type: String,
         computed: 'getActionButtonText_(hasUserScrolledToTheBottom_)',
@@ -120,9 +106,7 @@ export class SearchEngineChoiceAppElement extends
   private fakeOmniboxText_: string;
   private fakeOmniboxIconPath_: string;
   private pageHandler_: PageHandlerRemote;
-  private withMarketingSnippets_: boolean;
   private hasUserScrolledToTheBottom_: boolean;
-  private withForcedScroll_: boolean;
   private actionButtonText_: string;
 
   constructor() {
@@ -144,24 +128,23 @@ export class SearchEngineChoiceAppElement extends
         searchEngine.iconPath =
             getFaviconForPageURL(searchEngine?.url!, false, '', 24);
       } else {
-        searchEngine.iconPath = 'url(' + searchEngine.iconPath + ')';
+        searchEngine.iconPath = 'image-set(url(' + searchEngine.iconPath +
+            ') 1x, url(' + searchEngine.iconPath + '@2x) 2x)';
       }
     });
 
     afterNextRender(this, () => {
-      if (this.withForcedScroll_) {
-        // If the choice list and the page don't contain a scrollbar then the
-        // user is already at the bottom.
-        this.hasUserScrolledToTheBottom_ =
-            !this.isChoiceListScrollable_() && !this.isPageScrollable_();
+      // If the choice list and the page don't contain a scrollbar then the
+      // user is already at the bottom.
+      this.hasUserScrolledToTheBottom_ =
+          !this.isChoiceListScrollable_() && !this.isPageScrollable_();
 
-        if (this.isChoiceListScrollable_()) {
-          this.$.choiceList.addEventListener(
-              'scroll', this.onChoiceListScroll_.bind(this));
-        }
-        if (this.isPageScrollable_()) {
-          document.addEventListener('scroll', this.onPageScroll_.bind(this));
-        }
+      if (this.isChoiceListScrollable_()) {
+        this.$.choiceList.addEventListener(
+            'scroll', this.onChoiceListScroll_.bind(this));
+      }
+      if (this.isPageScrollable_()) {
+        document.addEventListener('scroll', this.onPageScroll_.bind(this));
       }
 
       this.pageHandler_.displayDialog();
@@ -173,10 +156,6 @@ export class SearchEngineChoiceAppElement extends
     this.pageHandler_.handleLearnMoreLinkClicked();
   }
 
-  private needsScrollToTheBottom_() {
-    return this.withForcedScroll_ && !this.hasUserScrolledToTheBottom_;
-  }
-
   private needsUserChoice_() {
     return parseInt(this.selectedChoice_) === -1;
   }
@@ -184,21 +163,28 @@ export class SearchEngineChoiceAppElement extends
   // The action button will be disabled if the user scrolls to the bottom of
   // the list without making a search engine choice.
   private computeActionButtonDisabled_() {
-    return !this.needsScrollToTheBottom_() && this.needsUserChoice_();
+    return this.hasUserScrolledToTheBottom_ && this.needsUserChoice_();
   }
 
   private onActionButtonClicked_() {
-    if (this.needsScrollToTheBottom_()) {
-      if (this.isChoiceListScrollable_()) {
-        const choiceList = this.$.choiceList;
-        choiceList.scrollTo({top: choiceList.scrollHeight, behavior: 'smooth'});
-      } else if (this.isPageScrollable_()) {
-        window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-      }
+    if (this.hasUserScrolledToTheBottom_) {
+      this.pageHandler_.handleSearchEngineChoiceSelected(
+          parseInt(this.selectedChoice_));
       return;
     }
-    this.pageHandler_.handleSearchEngineChoiceSelected(
-        parseInt(this.selectedChoice_));
+
+    if (this.isChoiceListScrollable_()) {
+      const choiceList = this.$.choiceList;
+      choiceList.scrollTo({top: choiceList.scrollHeight, behavior: 'smooth'});
+    } else if (this.isPageScrollable_()) {
+      window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
+    }
+  }
+
+  private onChevronClicked_(chevronExpanded: boolean) {
+    if (chevronExpanded) {
+      chrome.metricsPrivate.recordUserAction('ExpandSearchEngineDescription');
+    }
   }
 
   private onInfoDialogButtonClicked_() {
@@ -310,7 +296,8 @@ export class SearchEngineChoiceAppElement extends
 
   private getActionButtonText_() {
     return this.i18n(
-        this.needsScrollToTheBottom_() ? 'moreButtonText' : 'submitButtonText');
+        this.hasUserScrolledToTheBottom_ ? 'submitButtonText' :
+                                           'moreButtonText');
   }
 }
 

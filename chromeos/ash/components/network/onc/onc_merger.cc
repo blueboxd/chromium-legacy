@@ -8,6 +8,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -100,7 +101,7 @@ base::Value::Dict GetEditableFlags(const base::Value::Dict& policy) {
 // If `dict` doesn't have key `key` yet, set it to `value`.
 template <typename ValueType>
 void SetIfNotSet(base::Value::Dict& dict,
-                 base::StringPiece key,
+                 std::string_view key,
                  ValueType value) {
   if (dict.Find(key)) {
     return;
@@ -197,11 +198,11 @@ class MergeListOfDictionaries {
 class MergeSettingsAndPolicies : public MergeListOfDictionaries {
  public:
   struct ValueParams {
-    raw_ptr<const base::Value, ExperimentalAsh> user_policy;
-    raw_ptr<const base::Value, ExperimentalAsh> device_policy;
-    raw_ptr<const base::Value, ExperimentalAsh> user_setting;
-    raw_ptr<const base::Value, ExperimentalAsh> shared_setting;
-    raw_ptr<const base::Value, ExperimentalAsh> active_setting;
+    raw_ptr<const base::Value> user_policy;
+    raw_ptr<const base::Value> device_policy;
+    raw_ptr<const base::Value> user_setting;
+    raw_ptr<const base::Value> shared_setting;
+    raw_ptr<const base::Value> active_setting;
     bool user_editable;
     bool device_editable;
   };
@@ -538,7 +539,7 @@ class MergeToAugmented : public MergeToEffective {
   }
 
  private:
-  raw_ptr<const chromeos::onc::OncValueSignature, ExperimentalAsh> signature_;
+  raw_ptr<const chromeos::onc::OncValueSignature> signature_;
 };
 
 }  // namespace

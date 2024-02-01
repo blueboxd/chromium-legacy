@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/types/pass_key.h"
 #include "content/browser/webid/flags.h"
+#include "content/browser/webid/webid_utils.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -14,6 +15,28 @@
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+FedCmRequesterFrameType ComputeRequesterFrameType(const RenderFrameHost& rfh,
+                                                  url::Origin requester,
+                                                  url::Origin embedder) {
+  // Since FedCM methods are not supported in FencedFrames, we can know whether
+  // this is a main frame by calling GetParent().
+  if (!rfh.GetParent()) {
+    return FedCmRequesterFrameType::kMainFrame;
+  }
+  std::string requester_str =
+      webid::FormatUrlWithDomain(requester.GetURL(), /*for_display=*/false);
+  std::string embedder_str = webid::FormatUrlWithDomain(embedder.GetURL(),
+                                                        /*for_display=*/false);
+  if (requester_str == embedder_str) {
+    return FedCmRequesterFrameType::kSameSiteIframe;
+  }
+  return FedCmRequesterFrameType::kCrossSiteIframe;
+}
+
+}  // namespace
 
 FedCmMetrics::FedCmMetrics(const GURL& provider,
                            ukm::SourceId page_source_id,
@@ -211,7 +234,7 @@ void FedCmMetrics::RecordSignInStateMatchStatus(
 }
 
 void FedCmMetrics::RecordIdpSigninMatchStatus(
-    absl::optional<bool> idp_signin_status,
+    std::optional<bool> idp_signin_status,
     IdpNetworkRequestManager::ParseStatus accounts_endpoint_status) {
   if (is_disabled_)
     return;
@@ -270,12 +293,12 @@ void FedCmMetrics::RecordWebContentsVisibilityUponReadyToShowDialog(
 }
 
 void FedCmMetrics::RecordAutoReauthnMetrics(
-    absl::optional<bool> has_single_returning_account,
+    std::optional<bool> has_single_returning_account,
     const IdentityRequestAccount* auto_signin_account,
     bool auto_reauthn_success,
     bool is_auto_reauthn_setting_blocked,
     bool is_auto_reauthn_embargoed,
-    absl::optional<base::TimeDelta> time_from_embargo,
+    std::optional<base::TimeDelta> time_from_embargo,
     bool requires_user_mediation) {
   NumAccounts num_returning_accounts = NumAccounts::kZero;
   if (has_single_returning_account.has_value()) {
@@ -343,10 +366,22 @@ void FedCmMetrics::RecordAccountsDialogShown() {
   base::UmaHistogramBoolean("Blink.FedCm.AccountsDialogShown", true);
 }
 
-void FedCmMetrics::RecordMismatchDialogShown() {
+void FedCmMetrics::RecordMismatchDialogShown(bool has_shown_mismatch,
+                                             bool has_hints) {
   if (is_disabled_) {
     return;
   }
+
+  MismatchDialogType type;
+  if (!has_shown_mismatch) {
+    type = has_hints ? MismatchDialogType::kFirstWithHints
+                     : MismatchDialogType::kFirstWithoutHints;
+  } else {
+    type = has_hints ? MismatchDialogType::kRepeatedWithHints
+                     : MismatchDialogType::kRepeatedWithoutHints;
+  }
+  base::UmaHistogramEnumeration("Blink.FedCm.MismatchDialogType", type);
+
   auto RecordUkm = [&](auto& ukm_builder) {
     ukm_builder.SetMismatchDialogShown(true);
     ukm_builder.SetFedCmSessionID(session_id_);
@@ -395,12 +430,25 @@ void FedCmMetrics::RecordNumRequestsPerDocument(const int num_requests) {
                               num_requests);
 }
 
-void FedCmMetrics::RecordDisconnectStatus(FedCmDisconnectStatus status) {
+void FedCmMetrics::RecordDisconnectMetrics(
+    FedCmDisconnectStatus status,
+    std::optional<base::TimeDelta> duration,
+    const RenderFrameHost& rfh,
+    url::Origin requester,
+    url::Origin embedder) {
   if (is_disabled_) {
     return;
   }
+  FedCmRequesterFrameType requester_frame_type =
+      ComputeRequesterFrameType(rfh, requester, embedder);
   auto RecordUkm = [&](auto& ukm_builder) {
     ukm_builder.SetStatus_Disconnect(static_cast<int>(status));
+    ukm_builder.SetDisconnect_FrameType(static_cast<int>(requester_frame_type));
+    if (duration) {
+      ukm_builder.SetTiming_Disconnect(
+          ukm::GetSemanticBucketMinForDurationTiming(
+              duration->InMilliseconds()));
+    }
     ukm_builder.SetFedCmSessionID(session_id_);
     ukm_builder.Record(ukm::UkmRecorder::Get());
   };
@@ -411,6 +459,11 @@ void FedCmMetrics::RecordDisconnectStatus(FedCmDisconnectStatus status) {
   RecordUkm(fedcm_idp_builder);
 
   base::UmaHistogramEnumeration("Blink.FedCm.Status.Disconnect", status);
+  base::UmaHistogramEnumeration("Blink.FedCm.Disconnect.FrameType",
+                                requester_frame_type);
+  if (duration) {
+    base::UmaHistogramMediumTimes("Blink.FedCm.Timing.Disconnect", *duration);
+  }
 }
 
 void FedCmMetrics::RecordErrorDialogResult(FedCmErrorDialogResult result) {
@@ -488,9 +541,12 @@ void FedCmMetrics::RecordErrorUrlTypeMetrics(
 }
 
 void RecordPreventSilentAccess(RenderFrameHost& rfh,
-                               PreventSilentAccessFrameType frame_type) {
+                               url::Origin requester,
+                               url::Origin embedder) {
+  FedCmRequesterFrameType requester_frame_type =
+      ComputeRequesterFrameType(rfh, requester, embedder);
   base::UmaHistogramEnumeration("Blink.FedCm.PreventSilentAccessFrameType",
-                                frame_type);
+                                requester_frame_type);
 
   // Ensure the lifecycle state as GetPageUkmSourceId doesn't support the
   // prerendering page. As FederatedAithRequest runs behind the
@@ -499,7 +555,8 @@ void RecordPreventSilentAccess(RenderFrameHost& rfh,
   CHECK(
       !rfh.IsInLifecycleState(RenderFrameHost::LifecycleState::kPrerendering));
   ukm::builders::Blink_FedCm ukm_builder(rfh.GetPageUkmSourceId());
-  ukm_builder.SetPreventSilentAccessFrameType(static_cast<int>(frame_type));
+  ukm_builder.SetPreventSilentAccessFrameType(
+      static_cast<int>(requester_frame_type));
   ukm_builder.Record(ukm::UkmRecorder::Get());
 }
 
@@ -535,6 +592,12 @@ void RecordAccountsResponseInvalidReason(
 void RecordSetLoginStatusIgnoredReason(
     FedCmSetLoginStatusIgnoredReason reason) {
   base::UmaHistogramEnumeration("Blink.FedCm.SetLoginStatusIgnored", reason);
+}
+
+void RecordLifecycleStateFailureReason(
+    FedCmLifecycleStateFailureReason reason) {
+  base::UmaHistogramEnumeration("Blink.FedCm.LifecycleStateFailureReason",
+                                reason);
 }
 
 }  // namespace content

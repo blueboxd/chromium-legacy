@@ -15,11 +15,24 @@
 
 namespace auction_worklet {
 
+class AuctionV8Logger;
+
 class CONTENT_EXPORT InterestGroupLazyFiller : public LazyFiller {
  public:
-  explicit InterestGroupLazyFiller(AuctionV8Helper* v8_helper);
+  // `v8_helper` and `v8_logger` must outlive `this`.
+  InterestGroupLazyFiller(AuctionV8Helper* v8_helper,
+                          AuctionV8Logger* v8_logger);
 
-  void ReInitialize(const mojom::BidderWorkletNonSharedParams*
+  // All arguments must remain valid until Reset() is invoked.
+  // `bidding_logic_url` and `bidder_worklet_non_shared_params` must not be
+  // null.
+  //
+  // May be invoked multiple times on the same object, but Reset() must be
+  // invoked between calls.
+  void ReInitialize(const GURL* bidding_logic_url,
+                    const GURL* bidding_wasm_helper_url,
+                    const GURL* trusted_bidding_signals_url,
+                    const mojom::BidderWorkletNonSharedParams*
                         bidder_worklet_non_shared_params);
 
   bool FillInObject(v8::Local<v8::Object> object) override;
@@ -29,15 +42,66 @@ class CONTENT_EXPORT InterestGroupLazyFiller : public LazyFiller {
   static void HandleUserBiddingSignals(
       v8::Local<v8::Name> name,
       const v8::PropertyCallbackInfo<v8::Value>& info);
+
+  static void HandleBiddingLogicUrl(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+  // Handles "biddingLogicUrl", which is deprecated.
+  // TODO(https://crbug.com/1441988): Remove this method.
+  static void HandleDeprecatedBiddingLogicUrl(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+
+  static void HandleBiddingWasmHelperUrl(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+  // Handles "BiddingWasmHelperUrl", which is deprecated.
+  // TODO(https://crbug.com/1441988): Remove this method.
+  static void HandleDeprecatedBiddingWasmHelperUrl(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+
+  static void HandleUpdateUrl(v8::Local<v8::Name> name,
+                              const v8::PropertyCallbackInfo<v8::Value>& info);
+  // Handles "updateUrl", which is deprecated.
+  // TODO(https://crbug.com/1441988): Remove this method.
+  static void HandleDeprecatedUpdateUrl(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+  // Handles "dailyUpdateUrl", which is deprecated.
+  // TODO(https://crbug.com/1420080): Remove this method.
+  static void HandleDeprecatedDailyUpdateUrl(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+
+  static void HandleTrustedBiddingSignalsUrl(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+  // Handles "trustedBiddingSignalsUrl", which is deprecated.
+  // TODO(https://crbug.com/1441988): Remove this method.
+  static void HandleDeprecatedTrustedBiddingSignalsUrl(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
+
   static void HandleTrustedBiddingSignalsKeys(
       v8::Local<v8::Name> name,
       const v8::PropertyCallbackInfo<v8::Value>& info);
   static void HandlePriorityVector(
       v8::Local<v8::Name> name,
       const v8::PropertyCallbackInfo<v8::Value>& info);
+  // TODO(https://crbug.com/1517121): This field is deprecated in favor of
+  // "enableBiddingSignalsPrioritization". Remove this function when it's
+  // safe to remove the field.
+  static void HandleUseBiddingSignalsPrioritization(
+      v8::Local<v8::Name> name,
+      const v8::PropertyCallbackInfo<v8::Value>& info);
 
+  raw_ptr<const GURL> bidding_logic_url_ = nullptr;
+  raw_ptr<const GURL> bidding_wasm_helper_url_ = nullptr;
+  raw_ptr<const GURL> trusted_bidding_signals_url_ = nullptr;
   raw_ptr<const mojom::BidderWorkletNonSharedParams>
       bidder_worklet_non_shared_params_ = nullptr;
+  const raw_ptr<AuctionV8Logger> v8_logger_;
 };
 
 // TODO(crbug.com/1451034): Clean up support for deprecated seconds-based

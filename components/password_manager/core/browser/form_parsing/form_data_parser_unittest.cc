@@ -180,8 +180,8 @@ void CheckField(const std::vector<FormFieldData>& fields,
     return;
   }
 
-  auto field_it = base::ranges::find(fields, renderer_id,
-                                     &FormFieldData::unique_renderer_id);
+  auto field_it =
+      base::ranges::find(fields, renderer_id, &FormFieldData::renderer_id);
   ASSERT_TRUE(field_it != fields.end())
       << "Could not find a field with renderer ID " << renderer_id;
 
@@ -203,7 +203,7 @@ testing::Message DescribeFormData(const FormData& form_data) {
     result << "type="
            << autofill::FormControlTypeToString(field.form_control_type)
            << ", name=" << field.name << ", value=" << field.value
-           << ", unique id=" << field.unique_renderer_id.value() << "\n";
+           << ", unique id=" << field.renderer_id.value() << "\n";
   }
   return result;
 }
@@ -251,7 +251,7 @@ FormFieldData CreateField(FormControlType type, std::u16string value) {
   FormFieldData field;
   field.form_control_type = type;
   field.value = std::move(value);
-  field.unique_renderer_id = autofill::test::MakeFieldRendererId();
+  field.renderer_id = autofill::test::MakeFieldRendererId();
   return field;
 }
 
@@ -291,7 +291,7 @@ class FormParserTest : public testing::Test {
     for (const FieldDataDescription& field_description : test_case.fields) {
       FormFieldData field;
       const autofill::FieldRendererId renderer_id = GetUniqueId();
-      field.unique_renderer_id = renderer_id;
+      field.renderer_id = renderer_id;
       field.id_attribute = StampUniqueSuffix(u"html_id");
       if (field_description.name == kNonimportantValue) {
         field.name = StampUniqueSuffix(u"html_name");
@@ -334,7 +334,7 @@ class FormParserTest : public testing::Test {
             static_cast<size_t>(field_description.predicted_username);
         if (form_data.username_predictions.size() <= index)
           form_data.username_predictions.resize(index + 1);
-        form_data.username_predictions[index] = field.unique_renderer_id;
+        form_data.username_predictions[index] = field.renderer_id;
       }
     }
     // Fill unused ranks in predictions with fresh IDs to check that those are
@@ -1305,6 +1305,34 @@ TEST_F(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
   });
 }
 
+// Checks that passwords of length one can only be saved on manual fallback.
+TEST_F(FormParserTest, PasswordsWithLengthOneAreSavedOnlyOnManualFallback) {
+  base::test::ScopedFeatureList feature_list(
+      password_manager::features::kUseServerPredictionsOnSaveParsing);
+  CheckTestData({{
+      .description_for_logging =
+          "Passwords of length 1 can be saved only on manual fallback.",
+      .fields =
+          {
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .value = u"1",
+               .form_control_type = FormControlType::kInputPassword,
+               .prediction = {.type = autofill::PASSWORD}},
+              {.role = ElementRole::NEW_PASSWORD,
+               .value = u"2",
+               .form_control_type = FormControlType::kInputPassword,
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+              {.role = ElementRole::CONFIRMATION_PASSWORD,
+               .value = u"3",
+               .form_control_type = FormControlType::kInputPassword,
+               .prediction = {.type = autofill::CONFIRMATION_PASSWORD}},
+              {.value = u"4",
+               .form_control_type = FormControlType::kInputPassword},
+          },
+      .fallback_only = true,
+  }});
+}
+
 TEST_F(FormParserTest, InferConfirmationPasswordField) {
   CheckTestData({
       {
@@ -1598,15 +1626,15 @@ TEST_F(FormParserTest, Interactability) {
 
 TEST_F(FormParserTest, AllAlternativePasswords) {
   const AlternativeElementVector kPasswords = {
-      {AlternativeElement::Value(u"a"), autofill::FieldRendererId(10),
+      {AlternativeElement::Value(u"password1"), autofill::FieldRendererId(10),
        AlternativeElement::Name(u"p1")},
-      {AlternativeElement::Value(u"b"), autofill::FieldRendererId(22),
+      {AlternativeElement::Value(u"password2"), autofill::FieldRendererId(22),
        AlternativeElement::Name(u"p3")},
   };
   const AlternativeElementVector kUsernames = {
-      {AlternativeElement::Value(u"b"), autofill::FieldRendererId(12),
+      {AlternativeElement::Value(u"username1"), autofill::FieldRendererId(12),
        AlternativeElement::Name(u"chosen")},
-      {AlternativeElement::Value(u"a"), autofill::FieldRendererId(17),
+      {AlternativeElement::Value(u"username2"), autofill::FieldRendererId(17),
        AlternativeElement::Name(u"first")},
   };
   CheckTestData({
@@ -1616,27 +1644,27 @@ TEST_F(FormParserTest, AllAlternativePasswords) {
                                      "value",
           .fields =
               {
-                  {.value = u"a",
-                   .name = u"p1",
+                  {.value = kPasswords[0].value,
+                   .name = kPasswords[0].name,
                    .form_control_type = FormControlType::kInputPassword},
                   {.role = ElementRole::USERNAME,
                    .autocomplete_attribute = "username",
-                   .value = u"b",
-                   .name = u"chosen",
+                   .value = kUsernames[0].value,
+                   .name = kUsernames[0].name,
                    .form_control_type = FormControlType::kInputText},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .autocomplete_attribute = "current-password",
-                   .value = u"a",
+                   .value = kPasswords[0].value,
                    .form_control_type = FormControlType::kInputPassword},
-                  {.value = u"a",
-                   .name = u"first",
+                  {.value = kUsernames[1].value,
+                   .name = kUsernames[1].name,
                    .form_control_type = FormControlType::kInputText},
-                  {.value = u"a",
+                  {.value = kUsernames[1].value,
                    .form_control_type = FormControlType::kInputText},
-                  {.value = u"b",
-                   .name = u"p3",
+                  {.value = kPasswords[1].value,
+                   .name = kPasswords[1].name,
                    .form_control_type = FormControlType::kInputPassword},
-                  {.value = u"b",
+                  {.value = kPasswords[1].value,
                    .form_control_type = FormControlType::kInputPassword},
               },
           .number_of_all_alternative_passwords = 2,
@@ -2940,6 +2968,9 @@ TEST_F(FormParserTest, ContradictingPasswordPredictionAndAutocomplete) {
 }
 
 TEST_F(FormParserTest, SingleUsernamePrediction) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      password_manager::features::kUseServerPredictionsOnSaveParsing);
   CheckTestData({
       {
           .description_for_logging = "1 field",
@@ -2960,6 +2991,30 @@ TEST_F(FormParserTest, SingleUsernamePrediction) {
                   {.form_control_type = FormControlType::kInputPassword,
                    .prediction = {.type = autofill::PASSWORD}},
               },
+      },
+  });
+}
+
+// Password predictions should have priority over single username predictions
+// when the form is parsed for saving to avoid losing the password.
+TEST_F(FormParserTest, BothSingleUsernameAndPasswordPredictions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kUseServerPredictionsOnSaveParsing);
+  CheckTestData({
+      {
+          .description_for_logging =
+              "Form with both SINGLE_USERNAME and PASSWORD predictions.",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = FormControlType::kInputText,
+                   .prediction = {.type = autofill::SINGLE_USERNAME}},
+                  {.role_saving = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = FormControlType::kInputPassword,
+                   .prediction = {.type = autofill::PASSWORD}},
+              },
+          .fallback_only = false,
       },
   });
 }
@@ -3023,8 +3078,8 @@ TEST_F(FormParserTest, FindUsernameInPredictions_SkipPrediction) {
   // Add predictions for "email" and "id" fields. The "email" is in
   // front of "id", indicating "email" is more reliable.
   const std::vector<autofill::FieldRendererId> predictions = {
-      form_data.fields[1].unique_renderer_id,  // email
-      form_data.fields[2].unique_renderer_id,  // id
+      form_data.fields[1].renderer_id,  // email
+      form_data.fields[2].renderer_id,  // id
   };
 
   // Now search the username field. The username field is supposed to
@@ -3352,7 +3407,7 @@ TEST_F(FormParserTest, BaseHeuristicsFindUsernameFieldWithStoredUsername) {
   EXPECT_EQ(password_form->username_value, kUsername);
   EXPECT_TRUE(password_form->HasUsernameElement());
   EXPECT_EQ(password_form->username_element_renderer_id,
-            form_data.fields[0].unique_renderer_id);
+            form_data.fields[0].renderer_id);
 }
 
 }  // namespace

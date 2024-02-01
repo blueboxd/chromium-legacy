@@ -20,9 +20,7 @@
 #include "storage/browser/file_system/async_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
-namespace file_system_provider {
-namespace operations {
+namespace ash::file_system_provider::operations {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
@@ -38,8 +36,8 @@ const char kActionId[] = "SHARE";
 
 class FileSystemProviderOperationsExecuteActionTest : public testing::Test {
  protected:
-  FileSystemProviderOperationsExecuteActionTest() {}
-  ~FileSystemProviderOperationsExecuteActionTest() override {}
+  FileSystemProviderOperationsExecuteActionTest() = default;
+  ~FileSystemProviderOperationsExecuteActionTest() override = default;
 
   void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
@@ -131,6 +129,4 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, OnError) {
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, callback_log[0]);
 }
 
-}  // namespace operations
-}  // namespace file_system_provider
-}  // namespace ash
+}  // namespace ash::file_system_provider::operations

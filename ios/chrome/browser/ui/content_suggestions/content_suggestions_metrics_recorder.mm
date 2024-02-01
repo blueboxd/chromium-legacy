@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 
 #import "base/apple/foundation_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -31,7 +32,7 @@ const float kMaxModuleEngagementIndex = 50;
 }
 
 @implementation ContentSuggestionsMetricsRecorder {
-  PrefService* _localState;
+  raw_ptr<PrefService> _localState;
 }
 
 - (instancetype)initWithLocalState:(PrefService*)localState {
@@ -113,8 +114,10 @@ const float kMaxModuleEngagementIndex = 50;
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kSetUpListNotifications:
     case ContentSuggestionsModuleType::kCompactedSetUpList:
     case ContentSuggestionsModuleType::kSetUpListAllSet:
+    case ContentSuggestionsModuleType::kPlaceholder:
       break;
   }
   UMA_HISTOGRAM_ENUMERATION(kMagicStackTopModuleImpressionHistogram, type);
@@ -156,11 +159,14 @@ const float kMaxModuleEngagementIndex = 50;
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kSetUpListNotifications:
     case ContentSuggestionsModuleType::kCompactedSetUpList:
     case ContentSuggestionsModuleType::kSetUpListAllSet:
       UMA_HISTOGRAM_EXACT_LINEAR(
           kMagicStackModuleEngagementSetUpListIndexHistogram, index,
           kMaxModuleEngagementIndex);
+      break;
+    case ContentSuggestionsModuleType::kPlaceholder:
       break;
   }
 }
@@ -214,8 +220,7 @@ const float kMaxModuleEngagementIndex = 50;
 }
 
 - (void)recordMostVisitedTileOpened:(ContentSuggestionsMostVisitedItem*)item
-                            atIndex:(NSInteger)index
-                           webState:(web::WebState*)webState {
+                            atIndex:(NSInteger)index {
   base::RecordAction(base::UserMetricsAction(kMostVisitedAction));
 
   ntp_tiles::metrics::RecordTileClick(ntp_tiles::NTPTileImpression(
@@ -223,8 +228,8 @@ const float kMaxModuleEngagementIndex = 50;
       [self getVisualTypeFromAttributes:item.attributes],
       [self getIconTypeFromAttributes:item.attributes], item.URL));
 
-  new_tab_page_uma::RecordAction(
-      false, webState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
+  new_tab_page_uma::RecordNTPAction(
+      false, true, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
 }
 
 - (void)recordMostVisitedTileRemoved {
@@ -241,6 +246,15 @@ const float kMaxModuleEngagementIndex = 50;
 
 - (void)recordSetUpListItemSelected:(SetUpListItemType)type {
   set_up_list_metrics::RecordItemSelected(type);
+}
+
+- (void)recordContentNotificationSnackbarEvent:
+    (ContentNotificationSnackbarEvent)event {
+  UMA_HISTOGRAM_ENUMERATION(kContentNotificationSnackbarEventHistogram, event);
+  if (event == ContentNotificationSnackbarEvent::kActionButtonTapped) {
+    base::RecordAction(
+        base::UserMetricsAction(kContentNotificationSnackbarAction));
+  }
 }
 
 #pragma mark - Private

@@ -60,8 +60,11 @@ void WaitForNetworkChange() {
 class QuicConnectionMigrationTest : public ContentBrowserTest {
  public:
   QuicConnectionMigrationTest() {
-    feature_list_.InitAndEnableFeature(
-        net::features::kMigrateSessionsOnNetworkChangeV2);
+    feature_list_.InitWithFeatures(
+        // Enabled features
+        {net::features::kQuicMigrationIgnoreDisconnectSignalDuringProbing},
+        // Disabled features
+        {});
   }
   ~QuicConnectionMigrationTest() override = default;
 
@@ -90,7 +93,8 @@ class QuicConnectionMigrationTest : public ContentBrowserTest {
                                     "QUIC/Enabled");
     command_line->AppendSwitchASCII(
         switches::kForceFieldTrialParams,
-        "QUIC.Enabled:migrate_sessions_on_network_change_v2/true");
+        "QUIC.Enabled:migrate_sessions_on_network_change_v2/true/"
+        "retry_without_alt_svc_on_quic_errors/false");
     mock_cert_verifier_.SetUpCommandLine(command_line);
 
     ASSERT_TRUE(net::QuicSimpleTestServer::Start());
@@ -202,9 +206,11 @@ IN_PROC_BROWSER_TEST_F(QuicConnectionMigrationTest,
   net::android::SetWifiEnabledForTesting(false);
   WaitForNetworkChange();
 
+  // The subresource fetch should fail because the server closed the connection
+  // and retry is disabled.
   EvalJsResult result = ResolveDelayedResponse();
-  EXPECT_TRUE(result.error.empty())
-      << "Delayed response got error: '" << result.error << "'";
+  EXPECT_FALSE(result.error.empty());
+  EXPECT_EQ(histograms.GetTotalSum("Net.QuicProtocolError.RetryStatus"), 0);
 
   FetchHistogramsFromChildProcesses();
   ASSERT_EQ(histograms.GetBucketCount(

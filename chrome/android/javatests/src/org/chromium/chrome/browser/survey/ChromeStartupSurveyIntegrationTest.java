@@ -15,12 +15,12 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.Features;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.hats.TestSurveyUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
@@ -43,8 +43,7 @@ import java.util.List;
 })
 @Features.EnableFeatures({
     ChromeFeatureList.ANDROID_HATS_REFACTOR + "<Study",
-    ChromeFeatureList.CHROME_SURVEY_NEXT_ANDROID + "<Study",
-    ChromeFeatureList.MESSAGES_FOR_ANDROID_INFRASTRUCTURE + "<Study"
+    ChromeFeatureList.CHROME_SURVEY_NEXT_ANDROID + "<Study"
 })
 @Batch(Batch.PER_CLASS)
 public class ChromeStartupSurveyIntegrationTest {

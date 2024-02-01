@@ -180,33 +180,34 @@ chromium-metrics-reviews@google.com.
   <int value="126" label="WindowMinimize"/>
   <int value="127" label="MinimizeTopWindowOnBack"/>
   <int value="128" label="VolumeMuteToggle"/>
-  <int value="129" label="DebugClearUseKMeansPref"/>
-  <int value="130" label="DebugKeyboardBacklightToggle"/>
-  <int value="131" label="DebugMicrophoneMuteToggle"/>
-  <int value="132" label="DebugPrintLayerHierarchy"/>
-  <int value="133" label="DebugPrintViewHierarchy"/>
-  <int value="134" label="DebugPrintWindowHierarchy"/>
-  <int value="135" label="DebugShowInformedRestore"/>
-  <int value="136" label="DebugShowToast"/>
-  <int value="137" label="DebugShowSystemNudge"/>
-  <int value="138" label="DebugSystemUiStyleViewer"/>
-  <int value="139" label="DebugToggleDarkMode"/>
-  <int value="140" label="DebugToggleDynamicColor"/>
-  <int value="141" label="DebugTogglePowerButtonMenu"/>
-  <int value="142" label="DebugToggleShowDebugBorders"/>
-  <int value="143" label="DebugToggleShowFpsCounter"/>
-  <int value="144" label="DebugToggleShowPaintRects"/>
-  <int value="145" label="DebugToggleTouchPad"/>
-  <int value="146" label="DebugToggleTouchScreen"/>
-  <int value="147" label="DebugToggleTabletMode"/>
-  <int value="148" label="DebugToggleVideoConferenceCameraTrayIcon"/>
-  <int value="149" label="DebugToggleWallpaperMode"/>
-  <int value="150" label="DebugTriggerCrash"/>
-  <int value="151" label="DebugToggleHudDisplay"/>
-  <int value="152" label="DebugToggleVirtualTrackpad"/>
-  <int value="153" label="DevAddRemoveDisplay"/>
-  <int value="154" label="DevToggleAppList"/>
-  <int value="155" label="DevToggleUnifiedDesktop"/>
+  <int value="9000" label="DebugClearUseKMeansPref"/>
+  <int value="9001" label="DebugKeyboardBacklightToggle"/>
+  <int value="9002" label="DebugMicrophoneMuteToggle"/>
+  <int value="9003" label="DebugPrintLayerHierarchy"/>
+  <int value="9004" label="DebugPrintViewHierarchy"/>
+  <int value="9005" label="DebugPrintWindowHierarchy"/>
+  <int value="9006" label="DebugShowInformedRestore"/>
+  <int value="9007" label="DebugShowToast"/>
+  <int value="9008" label="DebugShowSystemNudge"/>
+  <int value="9009" label="DebugSystemUiStyleViewer"/>
+  <int value="9010" label="DebugToggleDarkMode"/>
+  <int value="9011" label="DebugToggleDynamicColor"/>
+  <int value="9012" label="DebugTogglePowerButtonMenu"/>
+  <int value="9013" label="DebugToggleShowDebugBorders"/>
+  <int value="9014" label="DebugToggleShowFpsCounter"/>
+  <int value="9015" label="DebugToggleShowPaintRects"/>
+  <int value="9016" label="DebugToggleTouchPad"/>
+  <int value="9017" label="DebugToggleTouchScreen"/>
+  <int value="9018" label="DebugToggleTabletMode"/>
+  <int value="9019" label="DebugToggleVideoConferenceCameraTrayIcon"/>
+  <int value="9020" label="DebugToggleWallpaperMode"/>
+  <int value="9021" label="DebugTriggerCrash"/>
+  <int value="9022" label="DebugToggleHudDisplay"/>
+  <int value="9023" label="DebugToggleVirtualTrackpad"/>
+  <int value="9024" label="DevAddRemoveDisplay"/>
+  <int value="9025" label="DevToggleAppList"/>
+  <int value="9026" label="DevToggleUnifiedDesktop"/>
+  <int value="9027" label="DebugToggleFocusModeState"/>
 </enum>
 
 <enum name="ArcIntentHandlerDestinationPlatform">
@@ -325,6 +326,7 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="kWorkerCreated"/>
   <int value="6" label="kWorkerDeserialized"/>
   <int value="7" label="kWorkerDeserializationFailed"/>
+  <int value="8" label="kSuccessfullySubscribedToInvalidationTopic"/>
 </enum>
 
 <enum name="CertProvisioningWorkerState">
@@ -802,14 +804,6 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="Side"/>
 </enum>
 
-<enum name="DetailedViewSection">
-  <int value="0" label="WiFi section shown"/>
-  <int value="1" label="Mobile section shown"/>
-  <int value="2" label="Ethernet section shown"/>
-  <int value="3" label="Detailed view shown"/>
-  <int value="4" label="Tether Hosts section shown"/>
-</enum>
-
 <enum name="DeviceSettingsStaticShortcutAction">
   <int value="0" label="Disable"/>
   <int value="1" label="Copy"/>
@@ -831,8 +825,8 @@ chromium-metrics-reviews@google.com.
 <enum name="ExtendedFkeysModifier">
   <int value="0" label="Disabled"/>
   <int value="1" label="Alt"/>
-  <int value="3" label="Shift"/>
-  <int value="4" label="CtrlShift"/>
+  <int value="2" label="Shift"/>
+  <int value="3" label="CtrlShift"/>
 </enum>
 
 <enum name="FeatureUsageEvent">
@@ -846,6 +840,33 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="Feature is accessible to user. Recorded periodically."/>
 </enum>
 
+<enum name="FirmwareUpdateDeviceRequestID">
+  <int value="0" label="DoNotPowerOff"/>
+  <int value="1" label="ReplugInstall"/>
+  <int value="2" label="InsertUSBCable"/>
+  <int value="3" label="RemoveUSBCable"/>
+  <int value="4" label="PressUnlock"/>
+  <int value="5" label="RemoveReplug"/>
+</enum>
+
+<enum name="FirmwareUpdateFwupdStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Idle"/>
+  <int value="2" label="Loading"/>
+  <int value="3" label="Decompressing"/>
+  <int value="4" label="DeviceRestart"/>
+  <int value="5" label="DeviceWrite"/>
+  <int value="6" label="DeviceVerify"/>
+  <int value="7" label="Scheduling"/>
+  <int value="8" label="Downloading"/>
+  <int value="9" label="DeviceRead"/>
+  <int value="10" label="DeviceErase"/>
+  <int value="11" label="WaitingForAuth"/>
+  <int value="12" label="DeviceBusy"/>
+  <int value="13" label="Shutdown"/>
+  <int value="14" label="WaitingForUser"/>
+</enum>
+
 <enum name="FirmwareUpdateInstallResult">
   <int value="0" label="Success"/>
   <int value="1" label="InstallFailed"/>
@@ -853,6 +874,12 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="InvalidDestinationFile"/>
   <int value="4" label="InvalidFileDescriptor"/>
   <int value="5" label="FailedToDownloadToFile"/>
+</enum>
+
+<enum name="GeolocationAccessLevel">
+  <int value="0" label="Blocked for all"/>
+  <int value="1" label="Allowed"/>
+  <int value="2" label="Only allowed for system services"/>
 </enum>
 
 <enum name="HardwareVerifierQualificationStatus">
@@ -1093,13 +1120,6 @@ chromeos/ash/components/language/language_packs/language_pack_manager.h -->
   <int value="9" label="Backspace"/>
   <int value="10" label="Escape"/>
   <int value="11" label="Assistant"/>
-</enum>
-
-<enum name="NetworkRowClickedAction">
-  <int value="0" label="Connect to Network"/>
-  <int value="1" label="Open Network settings page"/>
-  <int value="2" label="Open SIM unlock dialog"/>
-  <int value="3" label="Open portal signin"/>
 </enum>
 
 <enum name="OwnerKeyUmaEvent">

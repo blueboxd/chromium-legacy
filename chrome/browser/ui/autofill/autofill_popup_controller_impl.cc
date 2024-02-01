@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/check_deref.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
@@ -24,10 +25,14 @@
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
+#include "chrome/browser/ui/autofill/next_idle_time_ticks.h"
+#include "components/autofill/content/browser/scoped_autofill_managers_observation.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -72,7 +77,7 @@ static constexpr base::TimeDelta kIgnoreEarlyClicksOnPopupDuration =
 bool CanAccept(PopupItemId id) {
   return id != PopupItemId::kSeparator &&
          id != PopupItemId::kInsecureContextPaymentDisabledMessage &&
-         id != PopupItemId::kMixedFormMessage && id != PopupItemId::kTitle;
+         id != PopupItemId::kMixedFormMessage;
 }
 
 }  // namespace
@@ -95,8 +100,9 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
     return previous;
   }
 
-  if (previous)
+  if (previous) {
     previous->Hide(PopupHidingReason::kViewDestroyed);
+  }
 #if BUILDFLAG(IS_ANDROID)
   AutofillPopupControllerImpl* controller = new AutofillPopupControllerImpl(
       delegate, web_contents, container_view, element_bounds, text_direction,
@@ -137,9 +143,48 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
   CHECK(picture_in_picture_window_manager);
   picture_in_picture_window_observation_.Observe(
       picture_in_picture_window_manager);
+#if !BUILDFLAG(IS_ANDROID)
+  // There may not always be a ZoomController, e.g., in tests.
+  if (auto* zoom_controller =
+          zoom::ZoomController::FromWebContents(web_contents)) {
+    zoom_observation_.Observe(zoom_controller);
+  }
+#endif
 }
 
 AutofillPopupControllerImpl::~AutofillPopupControllerImpl() = default;
+
+void AutofillPopupControllerImpl::WebContentsDestroyed() {
+  Hide(PopupHidingReason::kTabGone);
+}
+
+void AutofillPopupControllerImpl::OnWebContentsLostFocus(
+    content::RenderWidgetHost* render_widget_host) {
+  Hide(PopupHidingReason::kFocusChanged);
+}
+
+void AutofillPopupControllerImpl::PrimaryMainFrameWasResized(
+    bool width_changed) {
+#if BUILDFLAG(IS_ANDROID)
+  // Ignore virtual keyboard showing and hiding a strip of suggestions.
+  if (!width_changed) {
+    return;
+  }
+#endif
+  Hide(PopupHidingReason::kWidgetChanged);
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+void AutofillPopupControllerImpl::OnZoomControllerDestroyed(
+    zoom::ZoomController* source) {
+  zoom_observation_.Reset();
+}
+
+void AutofillPopupControllerImpl::OnZoomChanged(
+    const zoom::ZoomController::ZoomChangedEventData& data) {
+  Hide(PopupHidingReason::kContentAreaMoved);
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 void AutofillPopupControllerImpl::RenderFrameDeleted(
     content::RenderFrameHost* rfh) {
@@ -148,17 +193,15 @@ void AutofillPopupControllerImpl::RenderFrameDeleted(
   // actually be shown by the AutofillExternalDelegate of an ancestor frame,
   // which is not notified about `rfh`'s destruction and therefore won't close
   // the popup.
-  if (key_press_observer_.handler &&
-      key_press_observer_.rfh == rfh->GetGlobalId()) {
+  if (key_press_observer_.IsObserving(rfh->GetGlobalId())) {
     Hide(PopupHidingReason::kRendererEvent);
   }
 }
 
 void AutofillPopupControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (key_press_observer_.handler &&
-      key_press_observer_.rfh ==
-          navigation_handle->GetPreviousRenderFrameHostId() &&
+  if (key_press_observer_.IsObserving(
+          navigation_handle->GetPreviousRenderFrameHostId()) &&
       !navigation_handle->IsSameDocument()) {
     Hide(PopupHidingReason::kNavigation);
   }
@@ -171,11 +214,27 @@ void AutofillPopupControllerImpl::OnVisibilityChanged(
   }
 }
 
+void AutofillPopupControllerImpl::OnBeforeTextFieldDidChange(
+    AutofillManager& manager,
+    FormGlobalId form,
+    FieldGlobalId field) {
+  // This method is only called for popups with a Compose entry. In this case,
+  // an edit on a field should lead to the popup hiding.
+  Hide(PopupHidingReason::kFieldValueChanged);
+}
+
 void AutofillPopupControllerImpl::Show(
     std::vector<Suggestion> suggestions,
     AutofillSuggestionTriggerSource trigger_source,
     AutoselectFirstSuggestion autoselect_first_suggestion) {
-  if (IsMouseLocked()) {
+  // Autofill popups should only be shown in focused windows because on Windows
+  // the popup may overlap the focused window (see crbug.com/1239760).
+  if (auto* rwhv = web_contents()->GetRenderWidgetHostView();
+      !rwhv || !rwhv->HasFocus()) {
+    return;
+  }
+
+  if (IsPointerLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
   }
@@ -221,20 +280,30 @@ void AutofillPopupControllerImpl::Show(
     // event when suggestions changed.
     FireControlsChangedEvent(true);
   }
-  time_view_shown_ = base::TimeTicks::Now();
+
+  time_view_shown_ = base::FeatureList::IsEnabled(
+                         features::kAutofillPopupImprovedTimingChecksV2)
+                         ? NextIdleTimeTicks::CaptureNextIdleTimeTicksWithDelay(
+                               kIgnoreEarlyClicksOnPopupDuration)
+                         : NextIdleTimeTicks::CaptureNextIdleTimeTicks();
 
   if (IsRootPopup()) {
-    key_press_observer_.rfh = rfh->GetGlobalId();
-    key_press_observer_.handler = base::BindRepeating(
-        // Cannot bind HandleKeyPressEvent() directly because of its
-        // return value.
-        [](base::WeakPtr<AutofillPopupControllerImpl> weak_this,
-           const content::NativeWebKeyboardEvent& event) {
-          return weak_this && weak_this->HandleKeyPressEvent(event);
-        },
-        GetWeakPtr());
-    rfh->GetRenderWidgetHost()->AddKeyPressEventCallback(
-        key_press_observer_.handler);
+    // We may already be observing from a previous `Show` call.
+    // TODO(crbug.com/1513659): Consider not to recycle views or controllers
+    // and only permit a single call to `Show`.
+    key_press_observer_.Reset();
+    key_press_observer_.Observe(rfh);
+
+    // It suffices if the root popup observes changes in form elements.
+    // Currently, this is only relevant for Compose.
+    if (suggestions_.size() == 1 &&
+        suggestions_[0].popup_item_id == PopupItemId::kCompose) {
+      autofill_managers_observation_.Reset();
+      autofill_managers_observation_.Observe(
+          web_contents(),
+          ScopedAutofillManagersObservation::InitializationPolicy::
+              kObservePreexistingManagers);
+    }
 
     delegate_->OnPopupShown();
   }
@@ -315,13 +384,8 @@ void AutofillPopupControllerImpl::Hide(PopupHidingReason reason) {
     delegate_->ClearPreviewedForm();
     delegate_->OnPopupHidden();
   }
-  if (key_press_observer_.handler) {
-    if (auto* rfh = content::RenderFrameHost::FromID(key_press_observer_.rfh)) {
-      rfh->GetRenderWidgetHost()->RemoveKeyPressEventCallback(
-          key_press_observer_.handler);
-    }
-    key_press_observer_ = {};
-  }
+  key_press_observer_.Reset();
+  autofill_managers_observation_.Reset();
   AutofillMetrics::LogAutofillPopupHidingReason(reason);
   HideViewAndDie();
 }
@@ -360,9 +424,11 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index,
                                                    base::TimeTicks event_time) {
   // Ignore clicks immediately after the popup was shown. This is to prevent
   // users accidentally accepting suggestions (crbug.com/1279268).
-  CHECK(!time_view_shown_.is_null());
+  if (time_view_shown_.value().is_null()) {
+    return;
+  }
   CHECK(!event_time.is_null());
-  const base::TimeDelta time_elapsed = event_time - time_view_shown_;
+  const base::TimeDelta time_elapsed = event_time - time_view_shown_.value();
   if ((time_elapsed < kIgnoreEarlyClicksOnPopupDuration) &&
       !disable_threshold_for_testing_) {
     base::UmaHistogramCustomTimes(
@@ -380,7 +446,7 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index,
     return;
   }
 
-  if (IsMouseLocked()) {
+  if (IsPointerLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
   }
@@ -598,7 +664,7 @@ bool AutofillPopupControllerImpl::GetRemovalConfirmationText(
 bool AutofillPopupControllerImpl::RemoveSuggestion(
     int list_index,
     AutofillMetrics::SingleEntryRemovalMethod removal_method) {
-  if (IsMouseLocked()) {
+  if (IsPointerLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return false;
   }
@@ -614,20 +680,42 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(
     return false;
   }
 
-  PopupItemId suggestion_type = suggestions_[list_index].popup_item_id;
-  if (!delegate_->RemoveSuggestion(
-          suggestions_[list_index].main_text.value,
-          suggestions_[list_index].popup_item_id,
-          suggestions_[list_index].GetPayload<Suggestion::BackendId>())) {
+  if (!delegate_->RemoveSuggestion(suggestions_[list_index])) {
     return false;
   }
-  if (suggestion_type == PopupItemId::kAutocompleteEntry) {
-    AutofillMetrics::OnAutocompleteSuggestionDeleted(removal_method);
-    if (view_) {
-      view_->AxAnnounce(l10n_util::GetStringFUTF16(
-          IDS_AUTOFILL_AUTOCOMPLETE_ENTRY_DELETED_A11Y_HINT,
-          suggestions_[list_index].main_text.value));
-    }
+  PopupItemId suggestion_type = suggestions_[list_index].popup_item_id;
+  switch (GetFillingProductFromPopupItemId(suggestion_type)) {
+    case FillingProduct::kAddress:
+      switch (removal_method) {
+        case AutofillMetrics::SingleEntryRemovalMethod::
+            kKeyboardShiftDeletePressed:
+          AutofillMetrics::LogDeleteAddressProfileFromPopup();
+          break;
+        case AutofillMetrics::SingleEntryRemovalMethod::kKeyboardAccessory:
+          AutofillMetrics::LogDeleteAddressProfileFromKeyboardAccessory();
+          break;
+        case AutofillMetrics::SingleEntryRemovalMethod::kDeleteButtonClicked:
+          NOTREACHED_NORETURN();
+      }
+      break;
+    case FillingProduct::kAutocomplete:
+      AutofillMetrics::OnAutocompleteSuggestionDeleted(removal_method);
+      if (view_) {
+        view_->AxAnnounce(l10n_util::GetStringFUTF16(
+            IDS_AUTOFILL_AUTOCOMPLETE_ENTRY_DELETED_A11Y_HINT,
+            suggestions_[list_index].main_text.value));
+      }
+      break;
+    case FillingProduct::kCreditCard:
+      // TODO(1509457): Add metrics for credit cards.
+      break;
+    case FillingProduct::kNone:
+    case FillingProduct::kMerchantPromoCode:
+    case FillingProduct::kIban:
+    case FillingProduct::kPassword:
+    case FillingProduct::kCompose:
+    case FillingProduct::kPlusAddresses:
+      break;
   }
 
   // Remove the deleted element.
@@ -645,29 +733,32 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(
   return true;
 }
 
-void AutofillPopupControllerImpl::SelectSuggestion(
-    std::optional<size_t> index) {
-  if (IsMouseLocked()) {
+void AutofillPopupControllerImpl::SelectSuggestion(int index) {
+  CHECK_LT(index, static_cast<int>(suggestions_.size()));
+
+  if (IsPointerLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
   }
 
-  if (index) {
-    DCHECK_LT(*index, suggestions_.size());
-    if (!CanAccept(GetSuggestionAt(*index).popup_item_id)) {
-      index = std::nullopt;
-    }
+  if (!CanAccept(GetSuggestionAt(index).popup_item_id)) {
+    UnselectSuggestion();
+    return;
   }
 
-  if (index) {
-    delegate_->DidSelectSuggestion(GetSuggestionAt(*index));
-  } else {
-    delegate_->ClearPreviewedForm();
-  }
+  delegate_->DidSelectSuggestion(GetSuggestionAt(index));
+}
+
+void AutofillPopupControllerImpl::UnselectSuggestion() {
+  delegate_->ClearPreviewedForm();
 }
 
 PopupType AutofillPopupControllerImpl::GetPopupType() const {
   return delegate_->GetPopupType();
+}
+
+FillingProduct AutofillPopupControllerImpl::GetMainFillingProduct() const {
+  return delegate_->GetMainFillingProduct();
 }
 
 std::optional<AutofillClient::PopupScreenLocation>
@@ -738,11 +829,11 @@ void AutofillPopupControllerImpl::HideViewAndDie() {
                      self_deletion_weak_ptr_factory_.GetWeakPtr()));
 }
 
-bool AutofillPopupControllerImpl::IsMouseLocked() const {
+bool AutofillPopupControllerImpl::IsPointerLocked() const {
   content::RenderFrameHost* rfh;
   content::RenderWidgetHostView* rwhv;
   return web_contents() && (rfh = web_contents()->GetFocusedFrame()) &&
-         (rwhv = rfh->GetView()) && rwhv->IsMouseLocked();
+         (rwhv = rfh->GetView()) && rwhv->IsPointerLocked();
 }
 
 base::WeakPtr<AutofillPopupView>
@@ -822,6 +913,41 @@ AutofillPopupControllerImpl::GetRootAXPlatformNodeForWebContents() {
 
   // NativeViewAccessible corresponds to an AXPlatformNode.
   return ui::AXPlatformNode::FromNativeViewAccessible(native_view_accessible);
+}
+
+AutofillPopupControllerImpl::KeyPressObserver::KeyPressObserver(
+    AutofillPopupControllerImpl* observer)
+    : observer_(CHECK_DEREF(observer)) {}
+
+AutofillPopupControllerImpl::KeyPressObserver::~KeyPressObserver() {
+  Reset();
+}
+
+bool AutofillPopupControllerImpl::KeyPressObserver::IsObserving(
+    content::GlobalRenderFrameHostId rfh) const {
+  return handler_ && rfh_ == rfh;
+}
+
+void AutofillPopupControllerImpl::KeyPressObserver::Observe(
+    content::RenderFrameHost* rfh) {
+  rfh_ = rfh->GetGlobalId();
+  handler_ = base::BindRepeating(
+      // Cannot bind HandleKeyPressEvent() directly because of its
+      // return value.
+      [](base::WeakPtr<AutofillPopupControllerImpl> weak_this,
+         const content::NativeWebKeyboardEvent& event) {
+        return weak_this && weak_this->HandleKeyPressEvent(event);
+      },
+      observer_->GetWeakPtr());
+  rfh->GetRenderWidgetHost()->AddKeyPressEventCallback(handler_);
+}
+
+void AutofillPopupControllerImpl::KeyPressObserver::Reset() {
+  if (auto* rfh = content::RenderFrameHost::FromID(rfh_)) {
+    rfh->GetRenderWidgetHost()->RemoveKeyPressEventCallback(handler_);
+  }
+  rfh_ = {};
+  handler_ = content::RenderWidgetHost::KeyPressEventCallback();
 }
 
 }  // namespace autofill

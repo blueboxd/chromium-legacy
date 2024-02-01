@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -20,8 +21,6 @@
 #include "components/mirroring/service/fake_video_capture_host.h"
 #include "components/mirroring/service/mirror_settings.h"
 #include "components/mirroring/service/mirroring_features.h"
-#include "components/mirroring/service/receiver_response.h"
-#include "components/mirroring/service/value_util.h"
 #include "media/base/media_switches.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/net_utility.h"
@@ -115,7 +114,7 @@ class MockRemotingSource : public media::mojom::RemotingSource {
   base::WeakPtrFactory<MockRemotingSource> weak_factory_{this};
 };
 
-Json::Value ParseAsJsoncppValue(absl::string_view document) {
+Json::Value ParseAsJsoncppValue(std::string_view document) {
   Json::CharReaderBuilder builder;
   Json::CharReaderBuilder::strictMode(&builder.settings_);
   EXPECT_FALSE(document.empty());
@@ -591,7 +590,7 @@ class OpenscreenSessionHostTest : public mojom::ResourceProvider,
   std::unique_ptr<openscreen::cast::Answer> answer_;
 
   int next_receiver_ssrc_{35336};
-  absl::optional<openscreen::cast::SenderMessage> last_sent_offer_;
+  std::optional<openscreen::cast::SenderMessage> last_sent_offer_;
 };
 
 TEST_F(OpenscreenSessionHostTest, AudioOnlyMirroring) {

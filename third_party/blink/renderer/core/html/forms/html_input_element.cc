@@ -37,6 +37,7 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_focus_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_selection_mode.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -90,7 +91,6 @@
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -420,12 +420,12 @@ void HTMLInputElement::InitializeTypeInParsing() {
   }
 }
 
-void HTMLInputElement::UpdateType() {
+void HTMLInputElement::UpdateType(const AtomicString& type_attribute_value) {
   DCHECK(input_type_);
   DCHECK(input_type_view_);
 
   const AtomicString& new_type_name =
-      InputType::NormalizeTypeName(FastGetAttribute(html_names::kTypeAttr));
+      InputType::NormalizeTypeName(type_attribute_value);
   if (input_type_->FormControlTypeAsString() == new_type_name) {
     return;
   }
@@ -616,7 +616,7 @@ void HTMLInputElement::SubtreeHasChanged() {
   input_type_view_->SubtreeHasChanged();
   // When typing in an input field, childrenChanged is not called, so we need to
   // force the directionality check.
-  CalculateAndAdjustAutoDirectionality(this);
+  CalculateAndAdjustAutoDirectionality();
 }
 
 FormControlType HTMLInputElement::FormControlType() const {
@@ -831,7 +831,9 @@ void HTMLInputElement::ParseAttribute(
         autocomplete_ = kOn;
     }
   } else if (name == html_names::kTypeAttr) {
-    UpdateType();
+    if (params.old_value != value) {
+      UpdateType(value);
+    }
   } else if (name == html_names::kValueAttr) {
     // We only need to setChanged if the form is looking at the default value
     // right now.
@@ -1350,7 +1352,8 @@ ScriptValue HTMLInputElement::valueAsDate(ScriptState* script_state) const {
     return ScriptValue::CreateNull(isolate);
   return ScriptValue(
       isolate,
-      ToV8(base::Time::FromMillisecondsSinceUnixEpoch(date), script_state));
+      ToV8Traits<IDLNullable<IDLDate>>::ToV8(
+          script_state, base::Time::FromMillisecondsSinceUnixEpoch(date)));
 }
 
 void HTMLInputElement::setValueAsDate(ScriptState* script_state,
@@ -2267,8 +2270,14 @@ void HTMLInputElement::SetFilesFromPaths(const Vector<String>& paths) {
 void HTMLInputElement::ChildrenChanged(const ChildrenChange& change) {
   // Some input types only need shadow roots to hide any children that may
   // have been appended by script. For such types, shadow roots are lazily
-  // created when children are added for the first time.
-  EnsureUserAgentShadowRoot();
+  // created when children are added for the first time. For the case of
+  // `kFinishedBuildingDocumentFragmentTree` this function may be called
+  // when the HTMLInputElement has no children.
+  if (change.type !=
+          ChildrenChangeType::kFinishedBuildingDocumentFragmentTree ||
+      HasChildren()) {
+    EnsureUserAgentShadowRoot();
+  }
   ContainerNode::ChildrenChanged(change);
 }
 

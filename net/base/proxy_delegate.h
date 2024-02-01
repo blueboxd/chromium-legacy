@@ -20,6 +20,7 @@ namespace net {
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class ProxyInfo;
+class ProxyResolutionService;
 
 // Delegate for setting up a connection.
 class NET_EXPORT ProxyDelegate {
@@ -66,20 +67,10 @@ class NET_EXPORT ProxyDelegate {
       size_t chain_index,
       const HttpResponseHeaders& response_headers) = 0;
 
-  void OnBeforeTunnelRequestServerOnly(const ProxyChain& proxy_chain,
-                                       size_t proxy_chain_index,
-                                       HttpRequestHeaders* extra_headers) {
-    DCHECK(!proxy_chain.is_direct());
-    OnBeforeTunnelRequest(proxy_chain, proxy_chain_index, extra_headers);
-  }
-
-  Error OnTunnelHeadersReceivedServerOnly(
-      const ProxyChain& proxy_chain,
-      size_t proxy_chain_index,
-      const HttpResponseHeaders& response_headers) {
-    return OnTunnelHeadersReceived(proxy_chain, proxy_chain_index,
-                                   response_headers);
-  }
+  // Associates a `ProxyResolutionService` with this `ProxyDelegate`.
+  // `proxy_resolution_service` must outlive `this`.
+  virtual void SetProxyResolutionService(
+      ProxyResolutionService* proxy_resolution_service) = 0;
 };
 
 }  // namespace net

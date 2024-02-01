@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
+import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/ash/common/cr_elements/cr_auto_img/cr_auto_img.js';
 import './strings.m.js';
 
-import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import {CrButtonElement} from 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
@@ -78,7 +78,7 @@ class AppInstallDialogElement extends HTMLElement {
     const installButton = this.$<CrButtonElement>('.install-button')!;
     assert(installButton);
     installButton.addEventListener(
-        'click', this.onInstallButtonClick.bind(this));
+        'click', this.onInstallButtonClick.bind(this), {once: true});
   }
 
   private onCancelButtonClick(): void {
@@ -100,16 +100,24 @@ class AppInstallDialogElement extends HTMLElement {
       new Promise(resolve => setTimeout(resolve, 2000)),
     ]);
 
+    installButton.disabled = false;
     if (install_result) {
       // TODO(crbug.com/1488697): Localize string.
       installButton.textContent = 'Open app';
       installButton.classList.replace('installing', 'installed');
+      installButton.addEventListener(
+          'click', this.onOpenAppButtonClick.bind(this));
     } else {
-      // TODO(crbug.com/1488697): Proper error display.
+      // TODO(crbug.com/1488697): Proper error display and/or allow install to
+      // be attempted again.
       installButton.textContent = loadTimeData.getString('install');
       installButton.classList.replace('installing', 'install');
-      installButton.disabled = false;
     }
+  }
+
+  private async onOpenAppButtonClick() {
+    this.proxy.handler.launchApp();
+    this.proxy.handler.closeDialog();
   }
 }
 

@@ -20,11 +20,10 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
-#include "chrome/browser/ui/views/dropdown_bar_host.h"
-#include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/views/permissions/chip/permission_dashboard_controller.h"
 #include "chrome/browser/ui/views/permissions/chip_controller.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/security_state/core/security_state.h"
@@ -48,6 +47,7 @@ class OmniboxPopupView;
 class OmniboxViewViews;
 class PageActionIconController;
 class PageActionIconContainerView;
+class PermissionDashboardView;
 class Profile;
 class SelectedKeywordView;
 
@@ -69,7 +69,6 @@ class LocationBarView : public LocationBar,
                         public views::View,
                         public views::DragController,
                         public views::AnimationDelegateViews,
-                        public DropdownBarHostDelegate,
                         public IconLabelBubbleView::Delegate,
                         public LocationIconView::Delegate,
                         public ContentSettingImageView::Delegate,
@@ -77,9 +76,9 @@ class LocationBarView : public LocationBar,
                         public device::GeolocationManager::PermissionObserver,
 #endif
                         public PageActionIconView::Delegate {
- public:
-  METADATA_HEADER(LocationBarView);
+  METADATA_HEADER(LocationBarView, views::View)
 
+ public:
   class Delegate {
    public:
     // Should return the current web contents.
@@ -171,11 +170,13 @@ class LocationBarView : public LocationBar,
   // accessibility.
   bool ActivateFirstInactiveBubbleForAccessibility();
 
-  // Adds chip into the LocationBarView in the first position.
-  void CreateChip();
+  // Controls the chip in the LocationBarView.
+  ChipController* GetChipController();
 
-  // Controls the chip in the LocationBarView
-  ChipController* chip_controller() { return chip_controller_.get(); }
+  // Controls the permission dashboard in the LocationBarView.
+  PermissionDashboardController* permission_dashboard_controller() {
+    return permission_dashboard_controller_.get();
+  }
 
   IntentChipButton* intent_chip() { return intent_chip_; }
 
@@ -241,7 +242,8 @@ class LocationBarView : public LocationBar,
       security_state::SecurityLevel security_level) const override;
   ui::ImageModel GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
-  std::vector<ContentSettingImageView*>& GetContentSettingViewsForTest() {
+  std::vector<raw_ptr<ContentSettingImageView, VectorExperimental>>&
+  GetContentSettingViewsForTest() {
     return content_setting_views_;
   }
 
@@ -261,7 +263,8 @@ class LocationBarView : public LocationBar,
                            OmniboxViewViewsSize);
   FRIEND_TEST_ALL_PREFIXES(TouchLocationBarViewBrowserTest,
                            IMEInlineAutocompletePosition);
-  using ContentSettingViews = std::vector<ContentSettingImageView*>;
+  using ContentSettingViews =
+      std::vector<raw_ptr<ContentSettingImageView, VectorExperimental>>;
 
 #if BUILDFLAG(IS_MAC)
   // Manage a subscription to GeolocationManager, which may
@@ -362,9 +365,6 @@ class LocationBarView : public LocationBar,
   void AnimationCanceled(const gfx::Animation* animation) override;
   void OnChildViewRemoved(View* observed_view, View* child) override;
 
-  // DropdownBarHostDelegate:
-  void FocusAndSelectAll() override;
-
   void OnTouchUiChanged();
 
   // Determines whether the location icon should be overridden while a chip is
@@ -410,6 +410,10 @@ class LocationBarView : public LocationBar,
   // A controller for a view that contains a chip button which is used for
   // permission information and requests.
   std::unique_ptr<ChipController> chip_controller_ = nullptr;
+
+  std::unique_ptr<PermissionDashboardController>
+      permission_dashboard_controller_;
+  raw_ptr<PermissionDashboardView> permission_dashboard_view_;
 
   // An icon to the left of the edit field: the HTTPS lock, blank page icon,
   // search icon, EV HTTPS bubble, etc.

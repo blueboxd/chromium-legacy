@@ -433,6 +433,23 @@ class HttpsUpgradesBrowserTest
         expected_reasons.typically_secure_user);
   }
 
+  // Verifies that an HFM interstitial is shown only if the HFM-pref is enabled.
+  void ExpectInterstitialOnlyIfPrefIsSet(content::WebContents* contents) {
+    if (IsHttpsFirstModePrefEnabled()) {
+      EXPECT_TRUE(
+          chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+              contents));
+      EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+          contents->GetPrimaryMainFrame(),
+          "You are seeing this warning because this site does not support "
+          "HTTPS."));
+    } else {
+      EXPECT_FALSE(
+          chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+              contents));
+    }
+  }
+
   net::EmbeddedTestServer* http_server() { return &http_server_; }
   net::EmbeddedTestServer* https_server() { return &https_server_; }
   base::HistogramTester* histograms() { return &histograms_; }
@@ -1346,6 +1363,74 @@ IN_PROC_BROWSER_TEST_P(
   CheckInterstitialReasonHistogram(expected_reasons);
 }
 
+// Checks that navigation to a non-unique hostname counts as a fallback event
+// for the Typically Secure User heuristic and does not auto-enable HFM even if
+// all other conditions are satisfied.
+IN_PROC_BROWSER_TEST_P(
+    HttpsUpgradesBrowserTest,
+    UrlWithHttpScheme_NonUniqueHostname_ShouldNotInterstitial_TypicallySecureUser) {
+  // HFM-for-Typically-Secure-Users is not enabled in Incognito.
+  if (IsIncognito()) {
+    return;
+  }
+  base::SimpleTestClock clock;
+  clock.SetNow(base::Time::NowFromSystemTime());
+
+  // Disable the testing port configuration, as this test doesn't use the
+  // EmbeddedTestServer.
+  HttpsUpgradesInterceptor::SetHttpsPortForTesting(0);
+  HttpsUpgradesInterceptor::SetHttpPortForTesting(0);
+  auto url_loader_interceptor = MakeInterceptorForSiteEngagementHeuristic();
+
+  // Prepare the profile so that HFM can be automatically enabled:
+  content::WebContents* contents =
+      GetBrowser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  SetSiteEngagementScore(GURL("https://google.com:12345"), 90);
+  profile->SetCreationTimeForTesting(clock.Now() - base::Days(30));
+  HttpsFirstModeService* hfm_service =
+      HttpsFirstModeServiceFactory::GetForProfile(profile);
+  hfm_service->SetClockForTesting(&clock);
+  // Also do lots of navigations.
+  for (size_t i = 0; i < 1500; i++) {
+    hfm_service->IncrementRecentNavigationCount();
+  }
+  clock.Advance(base::Days(15));
+
+  // Navigate to an HTTP URL. This will start Typically Secure observation.
+  GURL http_url("http://bad-https.com/simple.html");
+  content::NavigateToURLBlockUntilNavigationsComplete(
+      contents, http_url, /*number_of_navigations=*/1);
+  ExpectInterstitialOnlyIfPrefIsSet(contents);
+
+  // Advance the clock and navigate to an HTTP URL again. This will drop the
+  // first fallback event.
+  clock.Advance(base::Days(35));
+  content::NavigateToURLBlockUntilNavigationsComplete(
+      contents, http_url, /*number_of_navigations=*/1);
+  ExpectInterstitialOnlyIfPrefIsSet(contents);
+
+  // Then, navigate to a non-unique hostname. This will also show an
+  // interstitial iff HFM pref is enabled. It'll also record a fallback entry
+  // which will disable typically secure since we now have two fallbacks in
+  // a short time.
+  GURL url("http://test/simple.html");
+  content::NavigateToURLBlockUntilNavigationsComplete(
+      contents, url, /*number_of_navigations=*/1);
+  ExpectInterstitialOnlyIfPrefIsSet(contents);
+
+  // Advance the clock and try auto-enabling HFM.
+  clock.Advance(base::Days(1));
+  hfm_service->CheckUserIsTypicallySecureAndMaybeEnableHttpsFirstMode();
+
+  // The interstitial should only be displayed if HFM is enabled by the pref
+  // and not by the Typically Secure User heuristic.
+  content::NavigateToURLBlockUntilNavigationsComplete(
+      contents, http_url, /*number_of_navigations=*/1);
+  EXPECT_EQ(http_url, contents->GetLastCommittedURL());
+  ExpectInterstitialOnlyIfPrefIsSet(contents);
+}
+
 // Regression test for crbug.com/1441276. Sequence of events:
 // 1. Loads http://example.com. This gets upgraded to https://example.com.
 // 2. https://example.com has an iframe for https://nonexistentsite.com. It
@@ -2257,9 +2342,9 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest, AllowlistEntryExpires) {
         contents->GetPrimaryMainFrame()->GetStoragePartition()));
   }
 
-  // Simulate the clock advancing by eight days, which is past the expiration
+  // Simulate the clock advancing by 16 days, which is past the expiration
   // point.
-  clock_ptr->Advance(base::Days(8));
+  clock_ptr->Advance(base::Days(16));
 
   // The host should no longer be allowlisted, and the interstitial should
   // trigger again.
@@ -2319,17 +2404,17 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest, RevisitingBumpsExpiration) {
   EXPECT_TRUE(state->IsHttpAllowedForHost(
       http_url.host(), contents->GetPrimaryMainFrame()->GetStoragePartition()));
 
-  // Simulate the clock advancing by five days.
-  clock_ptr->Advance(base::Days(5));
+  // Simulate the clock advancing by ten days.
+  clock_ptr->Advance(base::Days(10));
 
   // Navigate to the host again; this will reset the allowlist expiration to
   // now + 7 days.
   EXPECT_TRUE(content::NavigateToURL(contents, http_url));
 
-  // Simulate the clock advancing another five days. This will be _after_ the
+  // Simulate the clock advancing another ten days. This will be _after_ the
   // initial expiration date of the allowlist entry, but _before_ the bumped
   // expiration date from the second navigation.
-  clock_ptr->Advance(base::Days(5));
+  clock_ptr->Advance(base::Days(10));
   EXPECT_TRUE(state->IsHttpAllowedForHost(
       http_url.host(), contents->GetPrimaryMainFrame()->GetStoragePartition()));
   EXPECT_TRUE(content::NavigateToURL(contents, http_url));

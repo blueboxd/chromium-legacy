@@ -19,7 +19,7 @@ class VideoStreamView : public views::View {
   METADATA_HEADER(VideoStreamView, views::View)
 
  public:
-  explicit VideoStreamView(float default_aspect_ratio);
+  VideoStreamView();
   VideoStreamView(const VideoStreamView&) = delete;
   VideoStreamView& operator=(const VideoStreamView&) = delete;
   ~VideoStreamView() override;
@@ -37,7 +37,6 @@ class VideoStreamView : public views::View {
   void OnPaint(gfx::Canvas* canvas) override;
   int GetHeightForWidth(int w) const override;
   gfx::Size CalculatePreferredSize() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
   float current_aspect_ratio_;

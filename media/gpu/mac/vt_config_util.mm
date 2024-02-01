@@ -156,7 +156,7 @@ CFStringRef GetMatrix(media::VideoColorSpace::MatrixID matrix_id) {
 
 void SetContentLightLevelInfo(
     NSMutableDictionary<NSString*, id>* extensions,
-    const absl::optional<gfx::HDRMetadata>& hdr_metadata) {
+    const std::optional<gfx::HDRMetadata>& hdr_metadata) {
   if (@available(macos 10.13, *)) {
     SetDictionaryValue(
         extensions, kCMFormatDescriptionExtension_ContentLightLevelInfo,
@@ -170,12 +170,12 @@ void SetContentLightLevelInfo(
 
 void SetColorVolumeMetadata(
     NSMutableDictionary<NSString*, id>* extensions,
-    const absl::optional<gfx::HDRMetadata>& hdr_metadata) {
+    const std::optional<gfx::HDRMetadata>& hdr_metadata) {
   if (@available(macos 10.13, *)) {
-  SetDictionaryValue(
-      extensions, kCMFormatDescriptionExtension_MasteringDisplayColorVolume,
-      base::apple::CFToNSPtrCast(
-          gfx::GenerateMasteringDisplayColorVolume(hdr_metadata).get()));
+    SetDictionaryValue(
+        extensions, kCMFormatDescriptionExtension_MasteringDisplayColorVolume,
+        base::apple::CFToNSPtrCast(
+            gfx::GenerateMasteringDisplayColorVolume(hdr_metadata).get()));
   } else {
     DLOG(WARNING) << "kCMFormatDescriptionExtension_"
                      "MasteringDisplayColorVolume unsupported prior to 10.13";
@@ -244,8 +244,8 @@ base::apple::ScopedCFTypeRef<CFDictionaryRef> CreateFormatExtensions(
     VideoCodecProfile profile,
     int bit_depth,
     const VideoColorSpace& color_space,
-    absl::optional<gfx::HDRMetadata> hdr_metadata,
-    absl::optional<base::span<const uint8_t>> csd_box) {
+    std::optional<gfx::HDRMetadata> hdr_metadata,
+    std::optional<base::span<const uint8_t>> csd_box) {
   NSMutableDictionary* extensions = [[NSMutableDictionary alloc] init];
 
   SetDictionaryValue(extensions, kCMFormatDescriptionExtension_FormatName,

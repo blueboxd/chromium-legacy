@@ -7,6 +7,7 @@
 #import <cmath>
 
 #import "base/ios/device_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
@@ -30,7 +31,10 @@ using base::UserMetricsAction;
 
 namespace {
 // Spacing between cards.
-const CGFloat kCardHorizontalSpacing = 30;
+const CGFloat kCardHorizontalSpacing = 16;
+
+// Corner radius of cards.
+const CGFloat kCardCornerRadius = 32;
 
 // Portion of the screen an edge card can be dragged.
 const CGFloat kEdgeCardDragPercentage = 0.35;
@@ -68,7 +72,7 @@ const CGFloat kResizeFactor = 4;
   CGPoint _currentPoint;
 
   // WebStateList provided from the initializer.
-  WebStateList* _webStateList;
+  raw_ptr<WebStateList> _webStateList;
 }
 
 @synthesize backgroundTopConstraint = _backgroundTopConstraint;
@@ -103,8 +107,12 @@ const CGFloat kResizeFactor = 4;
 
     _rightCard =
         [[SwipeView alloc] initWithFrame:CGRectZero topMargin:topMargin];
+    _rightCard.layer.cornerRadius = kCardCornerRadius;
+    _rightCard.layer.masksToBounds = YES;
     _leftCard =
         [[SwipeView alloc] initWithFrame:CGRectZero topMargin:topMargin];
+    _leftCard.layer.cornerRadius = kCardCornerRadius;
+    _leftCard.layer.masksToBounds = YES;
     [_rightCard setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_leftCard setTranslatesAutoresizingMaskIntoConstraints:NO];
     [self addSubview:_rightCard];

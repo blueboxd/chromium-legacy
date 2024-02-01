@@ -150,7 +150,7 @@ class DragDropOperation::IconSurface final : public SurfaceTreeHost,
     operation_->OnDragIconCaptured(scoped_bitmap.GetOutScopedBitmap());
   }
 
-  const raw_ptr<DragDropOperation, ExperimentalAsh> operation_;
+  const raw_ptr<DragDropOperation> operation_;
   base::WeakPtrFactory<IconSurface> weak_ptr_factory_{this};
 };
 
@@ -462,7 +462,7 @@ void DragDropOperation::OnDragActionsChanged(int actions) {
   if (dnd_action != DndAction::kNone)
     source_->get()->Target(mime_type_);
   else
-    source_->get()->Target(absl::nullopt);
+    source_->get()->Target(std::nullopt);
 
   source_->get()->Action(dnd_action);
 }

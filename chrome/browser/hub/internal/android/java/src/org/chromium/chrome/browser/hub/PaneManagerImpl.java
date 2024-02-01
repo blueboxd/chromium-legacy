@@ -45,6 +45,12 @@ public class PaneManagerImpl implements PaneManager {
     public void destroy() {
         mHubVisibilitySupplier.removeObserver(mHubVisibilityObserver);
         mPaneTransitionHelper.destroy();
+        for (LazyOneshotSupplier<Pane> paneSupplier : mPanes.values()) {
+            if (paneSupplier == null || !paneSupplier.hasValue()) continue;
+
+            Pane pane = paneSupplier.get();
+            if (pane != null) pane.destroy();
+        }
     }
 
     @Override
@@ -60,15 +66,17 @@ public class PaneManagerImpl implements PaneManager {
     @Override
     public boolean focusPane(@PaneId int paneId) {
         Pane nextPane = getPaneForId(paneId);
-        if (nextPane == null) return false;
+        if (nextPane == null || !nextPane.getReferenceButtonDataSupplier().hasValue()) {
+            return false;
+        }
 
         Pane previousPane = mCurrentPaneSupplierImpl.get();
         if (nextPane == previousPane) return true;
 
+        mCurrentPaneSupplierImpl.set(nextPane);
         if (isHubVisible()) {
             mPaneTransitionHelper.processTransition(nextPane.getPaneId(), LoadHint.HOT);
         }
-        mCurrentPaneSupplierImpl.set(nextPane);
 
         if (previousPane != null && isHubVisible()) {
             mPaneTransitionHelper.queueTransition(previousPane.getPaneId(), LoadHint.WARM);

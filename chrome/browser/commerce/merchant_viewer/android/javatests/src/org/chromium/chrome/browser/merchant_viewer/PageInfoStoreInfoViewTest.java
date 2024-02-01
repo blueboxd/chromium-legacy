@@ -36,6 +36,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -51,12 +52,10 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.commerce.core.ShoppingService.MerchantInfo;
 import org.chromium.components.commerce.core.ShoppingService.MerchantInfoCallback;
 import org.chromium.components.page_info.PageInfoController;
-import org.chromium.components.page_info.PageInfoFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
@@ -65,10 +64,7 @@ import java.io.IOException;
 
 /** Tests for PageInfoStoreInfo view. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@EnableFeatures({
-    PageInfoFeatures.PAGE_INFO_STORE_INFO_NAME,
-    ChromeFeatureList.COMMERCE_MERCHANT_VIEWER
-})
+@EnableFeatures({ChromeFeatureList.COMMERCE_MERCHANT_VIEWER})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
 @Batch(Batch.PER_CLASS)

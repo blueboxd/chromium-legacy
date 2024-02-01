@@ -22,6 +22,7 @@ namespace mojom {
 class AuctionSharedStorageHost;
 }  // namespace mojom
 
+class AuctionV8Logger;
 class ForDebuggingOnlyBindings;
 class PrivateAggregationBindings;
 class SharedStorageBindings;
@@ -178,6 +179,10 @@ class CONTENT_EXPORT ContextRecycler {
   const raw_ptr<AuctionV8Helper> v8_helper_;
   v8::Global<v8::Context> context_;
 
+  // Must be after `v8_helper` and `context_`, but before lazy bindings, which
+  // may use it.
+  std::unique_ptr<AuctionV8Logger> v8_logger_;
+
   std::unique_ptr<ForDebuggingOnlyBindings> for_debugging_only_bindings_;
   std::unique_ptr<PrivateAggregationBindings> private_aggregation_bindings_;
   std::unique_ptr<SharedStorageBindings> shared_storage_bindings_;
@@ -190,7 +195,7 @@ class CONTENT_EXPORT ContextRecycler {
       set_priority_signals_override_bindings_;
 
   // everything here is owned by one of the unique_ptr's above.
-  std::vector<Bindings*> bindings_list_;
+  std::vector<raw_ptr<Bindings, VectorExperimental>> bindings_list_;
 
   std::unique_ptr<InterestGroupLazyFiller> interest_group_lazy_filler_;
   std::unique_ptr<BiddingBrowserSignalsLazyFiller>

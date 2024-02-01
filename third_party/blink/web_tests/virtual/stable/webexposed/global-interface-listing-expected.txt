@@ -995,16 +995,6 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
-interface CloseWatcher : EventTarget
-    attribute @@toStringTag
-    getter oncancel
-    getter onclose
-    method close
-    method constructor
-    method destroy
-    method requestClose
-    setter oncancel
-    setter onclose
 interface Comment : CharacterData
     attribute @@toStringTag
     method constructor
@@ -3570,6 +3560,7 @@ interface HTMLHtmlElement : HTMLElement
     setter version
 interface HTMLIFrameElement : HTMLElement
     attribute @@toStringTag
+    getter adAuctionHeaders
     getter align
     getter allow
     getter allowFullscreen
@@ -3595,6 +3586,7 @@ interface HTMLIFrameElement : HTMLElement
     getter width
     method constructor
     method getSVGDocument
+    setter adAuctionHeaders
     setter align
     setter allow
     setter allowFullscreen
@@ -4362,7 +4354,6 @@ interface HTMLTableSectionElement : HTMLElement
 interface HTMLTemplateElement : HTMLElement
     attribute @@toStringTag
     getter content
-    getter shadowRoot
     getter shadowRootMode
     method constructor
     setter shadowRootMode
@@ -4689,6 +4680,7 @@ interface IIRFilterNode : AudioNode
     method constructor
     method getFrequencyResponse
 interface IdentityCredential : Credential
+    static method disconnect
     attribute @@toStringTag
     getter isAutoSelected
     getter token
@@ -5521,12 +5513,14 @@ interface MessageEvent : Event
     method initMessageEvent
 interface MessagePort : EventTarget
     attribute @@toStringTag
+    getter onclose
     getter onmessage
     getter onmessageerror
     method close
     method constructor
     method postMessage
     method start
+    setter onclose
     setter onmessage
     setter onmessageerror
 interface MimeType
@@ -5728,6 +5722,7 @@ interface Navigator
     getter serial
     getter serviceWorker
     getter storage
+    getter storageBuckets
     getter usb
     getter userActivation
     getter userAgent
@@ -6213,6 +6208,15 @@ interface PerformanceEventTiming : PerformanceEntry
     getter target
     method constructor
     method toJSON
+interface PerformanceLongAnimationFrameTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter blockingDuration
+    getter firstUIEventTimestamp
+    getter renderStart
+    getter scripts
+    getter styleAndLayoutStart
+    method constructor
+    method toJSON
 interface PerformanceLongTaskTiming : PerformanceEntry
     attribute @@toStringTag
     getter attribution
@@ -6292,6 +6296,18 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter serverTiming
     getter transferSize
     getter workerStart
+    method constructor
+    method toJSON
+interface PerformanceScriptTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter executionStart
+    getter forcedStyleAndLayoutDuration
+    getter invoker
+    getter invokerType
+    getter pauseDuration
+    getter sourceLocation
+    getter window
+    getter windowAttribution
     method constructor
     method toJSON
 interface PerformanceServerTiming
@@ -8444,6 +8460,24 @@ interface Storage
     method key
     method removeItem
     method setItem
+interface StorageBucket
+    attribute @@toStringTag
+    getter caches
+    getter indexedDB
+    getter name
+    method constructor
+    method estimate
+    method expires
+    method getDirectory
+    method persist
+    method persisted
+    method setExpires
+interface StorageBucketManager
+    attribute @@toStringTag
+    method constructor
+    method delete
+    method keys
+    method open
 interface StorageEvent : Event
     attribute @@toStringTag
     getter key
@@ -9681,6 +9715,7 @@ interface WebGL2RenderingContext
     attribute ZERO
     getter canvas
     getter drawingBufferColorSpace
+    getter drawingBufferFormat
     getter drawingBufferHeight
     getter drawingBufferWidth
     getter unpackColorSpace
@@ -9761,6 +9796,7 @@ interface WebGL2RenderingContext
     method drawElements
     method drawElementsInstanced
     method drawRangeElements
+    method drawingBufferStorage
     method enable
     method enableVertexAttribArray
     method endQuery
@@ -10121,8 +10157,10 @@ interface WebGLRenderingContext
     attribute RGB
     attribute RGB565
     attribute RGB5_A1
+    attribute RGB8
     attribute RGBA
     attribute RGBA4
+    attribute RGBA8
     attribute SAMPLER_2D
     attribute SAMPLER_CUBE
     attribute SAMPLES
@@ -10237,6 +10275,7 @@ interface WebGLRenderingContext
     attribute ZERO
     getter canvas
     getter drawingBufferColorSpace
+    getter drawingBufferFormat
     getter drawingBufferHeight
     getter drawingBufferWidth
     getter unpackColorSpace
@@ -10287,6 +10326,7 @@ interface WebGLRenderingContext
     method disableVertexAttribArray
     method drawArrays
     method drawElements
+    method drawingBufferStorage
     method enable
     method enableVertexAttribArray
     method finish

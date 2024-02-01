@@ -52,6 +52,8 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
 
   // LayoutManager:
   gfx::Size GetPreferredSize(const View* host) const override;
+  gfx::Size GetPreferredSize(const View* host,
+                             const SizeBounds& available_size) const override;
   gfx::Size GetMinimumSize(const View* host) const override;
   int GetPreferredHeightForWidth(const View* host, int width) const override;
   SizeBounds GetAvailableSize(const View* host,
@@ -68,7 +70,8 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   LayoutManagerBase();
 
   // LayoutManager:
-  std::vector<View*> GetChildViewsInPaintOrder(const View* host) const override;
+  std::vector<raw_ptr<View, VectorExperimental>> GetChildViewsInPaintOrder(
+      const View* host) const override;
 
   // Direct cache control for subclasses that want to override default caching
   // behavior. Use at your own risk.
@@ -180,7 +183,6 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // layout.
   struct ChildInfo {
     bool can_be_visible = true;
-    bool ignored = false;
   };
 
   // LayoutManager:
@@ -236,8 +238,8 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
 };
 
 // Provides methods for doing additional, manual manipulation of a
-// `LayoutManagerBase` and its managed Views inside its host View's `Layout()`
-// method, ideally before `LayoutManager::Layout()` is invoked.
+// `LayoutManagerBase` and its managed Views inside its host View's
+// layout implementation, ideally before `LayoutManager::Layout()` is invoked.
 //
 // In most cases, the layout manager should do all of the layout. However, in
 // some cases, specific children of the host may be explicitly manipulated; for
@@ -248,7 +250,7 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
 // such as `View::SetVisible()` and
 // `LayoutManagerBase::SetChildIncludedInLayout()`, cause cascades of layout
 // invalidation up the Views tree, so are not appropriate to be used inside of a
-// `Layout()` method. In the case that manual layout manipulation is required
+// `Layout()` override. In the case that manual layout manipulation is required
 // alongside the use of a layout manager, a `ManualLayoutUtil` should be used
 // instead of callin those other methods directly.
 //
@@ -261,7 +263,7 @@ class VIEWS_EXPORT ManualLayoutUtil {
   ManualLayoutUtil(const ManualLayoutUtil&) = delete;
   void operator=(const ManualLayoutUtil&) = delete;
 
-  // Includes, or exlcudes and hides, `child_view`.
+  // Includes, or excludes and hides, `child_view`.
   //
   // Example:
   // ```
@@ -272,11 +274,11 @@ class VIEWS_EXPORT ManualLayoutUtil {
   //    layout_util.SetViewHidden(foo_button_, !foo_enabled);
   //
   //    // Do the standard Views layout, which invokes the layout manager.
-  //    View::Layout();
+  //    LayoutSuperclass<View>(this);
   //  }
   // ```
   //
-  // Note that if instead the code had read,
+  // Note that if instead the code had read
   // `foo_button_.SetVisible(foo_enabled)`, the current view and every view up
   // the hierarchy would be invalidated, which could result in a layout loop.
   void SetViewHidden(View* child_view, bool hidden);

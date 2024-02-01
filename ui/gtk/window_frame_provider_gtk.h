@@ -7,14 +7,18 @@
 
 #include "base/containers/flat_map.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/glib/scoped_gsignal.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/linux/window_frame_provider.h"
+
+typedef struct _GtkParamSpec GtkParamSpec;
+typedef struct _GtkSettings GtkSettings;
 
 namespace gtk {
 
 class WindowFrameProviderGtk : public ui::WindowFrameProvider {
  public:
-  explicit WindowFrameProviderGtk(bool solid_frame);
+  WindowFrameProviderGtk(bool solid_frame, bool tiled);
 
   WindowFrameProviderGtk(const WindowFrameProviderGtk&) = delete;
   WindowFrameProviderGtk& operator=(const WindowFrameProviderGtk&) = delete;
@@ -29,7 +33,7 @@ class WindowFrameProviderGtk : public ui::WindowFrameProvider {
                         const gfx::Rect& rect,
                         int top_area_height,
                         bool focused,
-                        ui::WindowTiledEdges tiled_edges) override;
+                        const gfx::Insets& input_insets) override;
 
  private:
   // Data and metrics that depend on the scale.
@@ -61,9 +65,11 @@ class WindowFrameProviderGtk : public ui::WindowFrameProvider {
 
   int BitmapSizePx(const Asset& asset) const;
 
+  void OnThemeChanged(GtkSettings* settings, GtkParamSpec* param);
+
   // Input parameters used for drawing.
   const bool solid_frame_;
-  std::string theme_name_;
+  const bool tiled_;
 
   // Scale-independent metric calculated based on the bitmaps.
   gfx::Insets frame_thickness_dip_;
@@ -72,6 +78,10 @@ class WindowFrameProviderGtk : public ui::WindowFrameProvider {
 
   // Cached bitmaps and metrics.  The scale is rounded to percent.
   base::flat_map<int, Asset> assets_;
+
+  // These signals invalidate the cache on change.
+  ScopedGSignal theme_name_signal_;
+  ScopedGSignal prefer_dark_signal_;
 };
 
 }  // namespace gtk

@@ -43,6 +43,8 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/media/media_foundation_service_monitor.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "gpu/config/gpu_info.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "media/base/win/mf_feature_checks.h"
 #endif  // BUILDFLAG(IS_WIN)
@@ -1181,6 +1183,18 @@ class MediaFoundationEncryptedMediaTest : public EncryptedMediaTestBase {
         switches::kUseGpuInTests);
     bool disable_gpu = base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableGpu);
+
+    const auto& gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
+    const auto& active_gpu = gpu_info.active_gpu();
+    LOG(INFO) << "active_gpu.vendor_id=" << active_gpu.vendor_id;
+    LOG(INFO) << "active_gpu.device_id=" << active_gpu.device_id;
+    LOG(INFO) << "active_gpu.driver_version=" << active_gpu.driver_version;
+    LOG(INFO) << "gpu_info.gl_vendor=" << gpu_info.gl_vendor;
+    LOG(INFO) << "gpu_info.gl_renderer=" << gpu_info.gl_renderer;
+    LOG(INFO) << "switches::kDisableGpuDriverBugWorkarounds="
+              << base::CommandLine::ForCurrentProcess()->HasSwitch(
+                     switches::kDisableGpuDriverBugWorkarounds);
+
     bool is_playback_supported =
         is_mediafoundation_encrypted_playback_supported && use_gpu_in_tests &&
         !disable_gpu;
@@ -1231,7 +1245,7 @@ class MediaFoundationEncryptedMediaTest : public EncryptedMediaTestBase {
 IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
                        Playback_ClearLeadEncryptedCencVideo_Success) {
   if (!IsMediaFoundationEncryptedPlaybackSupported()) {
-    GTEST_SKIP();
+    GTEST_SKIP() << "MediaFoundationEncryptedPlayback not supported on device.";
   }
 
   TestMediaFoundationPlayback("bear-640x360-v_frag-cenc.mp4");  // H.264
@@ -1240,7 +1254,7 @@ IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
 IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
                        Playback_ClearLeadEncryptedCbcsVideo_Success) {
   if (!IsMediaFoundationEncryptedPlaybackSupported()) {
-    GTEST_SKIP();
+    GTEST_SKIP() << "MediaFoundationEncryptedPlayback not supported on device.";
   }
 
   TestMediaFoundationPlayback("bear-640x360-v_frag-cbcs.mp4");  // H.264
@@ -1249,7 +1263,7 @@ IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
 IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
                        Playback_EncryptedCencVideoAudio_Success) {
   if (!IsMediaFoundationEncryptedPlaybackSupported()) {
-    GTEST_SKIP();
+    GTEST_SKIP() << "MediaFoundationEncryptedPlayback not supported on device.";
   }
 
   TestMediaFoundationMultipleFilePlayback(
@@ -1260,7 +1274,7 @@ IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
 IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
                        Playback_EncryptedCencAudio_Success) {
   if (!IsMediaFoundationEncryptedPlaybackSupported()) {
-    GTEST_SKIP();
+    GTEST_SKIP() << "MediaFoundationEncryptedPlayback not supported on device.";
   }
 
   std::string expected_title = media::kEndedTitle;
@@ -1287,7 +1301,7 @@ IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
 IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
                        Playback_EncryptedAv1CencAudio_MediaTypeUnsupported) {
   if (!IsMediaFoundationEncryptedPlaybackSupported()) {
-    GTEST_SKIP();
+    GTEST_SKIP() << "MediaFoundationEncryptedPlayback not supported on device.";
   }
 
   // MediaFoundation Clear Key Key System doesn't support AV1 videos
@@ -1302,7 +1316,7 @@ IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
 IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
                        FallbackTest_KeySystemNotSupported) {
   if (!IsMediaFoundationEncryptedPlaybackSupported()) {
-    GTEST_SKIP();
+    GTEST_SKIP() << "MediaFoundationEncryptedPlayback not supported on device.";
   }
 
   // MediaFoundationServiceMonitor gets lazily initialized in

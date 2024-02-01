@@ -99,17 +99,11 @@ class TestClipboard : public Clipboard {
       const ObjectMap& objects,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) override;
-  void WriteText(const char* text_data, size_t text_len) override;
-  void WriteHTML(const char* markup_data,
-                 size_t markup_len,
-                 const char* url_data,
-                 size_t url_len) override;
-  void WriteUnsanitizedHTML(const char* markup_data,
-                            size_t markup_len,
-                            const char* url_data,
-                            size_t url_len) override;
-  void WriteSvg(const char* markup_data, size_t markup_len) override;
-  void WriteRTF(const char* rtf_data, size_t data_len) override;
+  void WriteText(base::StringPiece text) override;
+  void WriteHTML(base::StringPiece markup,
+                 absl::optional<base::StringPiece> source_url) override;
+  void WriteSvg(base::StringPiece markup) override;
+  void WriteRTF(base::StringPiece rtf) override;
   void WriteFilenames(std::vector<ui::FileInfo> filenames) override;
   void WriteBookmark(const char* title_data,
                      size_t title_len,

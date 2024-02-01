@@ -259,7 +259,7 @@ class HomeButton::ButtonImageView : public views::View {
                     : cros_tokens::kCrosSysSystemOnBase;
   }
 
-  const raw_ptr<HomeButtonController, ExperimentalAsh> button_controller_;
+  const raw_ptr<HomeButtonController> button_controller_;
 
   bool toggled_ = false;
 };
@@ -360,7 +360,7 @@ gfx::Size HomeButton::CalculatePreferredSize() const {
 }
 
 void HomeButton::Layout() {
-  ShelfControlButton::Layout();
+  LayoutSuperclass<ShelfControlButton>(this);
 
   button_image_view_->SetBoundsRect(
       gfx::Rect(ShelfControlButton::CalculatePreferredSize()));
@@ -679,7 +679,7 @@ void HomeButton::CreateNudgeLabel() {
                                           *nudge_label_);
   }
   expandable_container_->SetVisible(false);
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void HomeButton::CreateQuickAppButton() {

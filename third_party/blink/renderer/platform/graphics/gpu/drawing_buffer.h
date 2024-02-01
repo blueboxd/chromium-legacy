@@ -67,10 +67,6 @@ namespace cc {
 class Layer;
 }
 
-namespace gfx {
-class GpuMemoryBuffer;
-}
-
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -428,9 +424,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
                 SkAlphaType alpha_type,
                 GLenum texture_target,
                 GLuint texture_id,
-                std::unique_ptr<gfx::GpuMemoryBuffer>,
                 bool is_overlay_candidate,
-                gpu::Mailbox mailbox);
+                scoped_refptr<gpu::ClientSharedImage> shared_image);
     ColorBuffer(const ColorBuffer&) = delete;
     ColorBuffer& operator=(const ColorBuffer&) = delete;
     ~ColorBuffer();
@@ -449,11 +444,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     const SkAlphaType alpha_type;
     const GLenum texture_target;
     const GLuint texture_id;
-    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
     const bool is_overlay_candidate;
 
-    // The mailbox used to send this buffer to the compositor.
-    gpu::Mailbox mailbox;
+    // The shared image used to send this buffer to the compositor.
+    scoped_refptr<gpu::ClientSharedImage> shared_image;
 
     // The sync token for when this buffer was sent to the compositor.
     gpu::SyncToken produce_sync_token;

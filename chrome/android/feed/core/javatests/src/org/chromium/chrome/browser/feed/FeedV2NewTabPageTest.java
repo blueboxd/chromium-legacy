@@ -67,6 +67,7 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.feed.sections.SectionHeaderListProperties;
@@ -82,12 +83,12 @@ import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
@@ -216,8 +217,14 @@ public class FeedV2NewTabPageTest {
         FeatureList.TestValues testValuesOverride = new FeatureList.TestValues();
         testValuesOverride.addFeatureFlagOverride(
                 ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID, mEnableScrollableMVT);
-        testValuesOverride.addFeatureFlagOverride(
-                ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID, mEnableScrollableMVT);
+        if (!ChromeFeatureList.sSurfacePolish.isEnabled()) {
+            testValuesOverride.addFeatureFlagOverride(
+                    ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID,
+                    mEnableScrollableMVT);
+        } else {
+            StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.setForTesting(
+                    mEnableScrollableMVT);
+        }
         FeatureList.setTestValues(testValuesOverride);
 
         mActivityTestRule.startMainActivityWithURL("about:blank");
@@ -349,7 +356,10 @@ public class FeedV2NewTabPageTest {
     public void testSignInPromoWhenDefaultAccountCanNotOfferExtendedSyncPromos() {
         final AccountCapabilitiesBuilder capabilitiesBuilder = new AccountCapabilitiesBuilder();
         mAccountManagerTestRule.addAccount(
-                "test@gmail.com", capabilitiesBuilder.setCanOfferExtendedSyncPromos(false).build());
+                "test@gmail.com",
+                capabilitiesBuilder
+                        .setCanShowHistorySyncOptInsWithoutMinorModeRestrictions(false)
+                        .build());
         mIsCachePopulatedInAccountManagerFacade = true;
 
         openNewTabPage();
@@ -429,8 +439,8 @@ public class FeedV2NewTabPageTest {
                 recyclerView,
                 "feedContent_landscape"
                         + (mEnableScrollableMVT
-                                ? "_with_scrollable_mvt"
-                                : "_with_non_scrollable_mvt"));
+                                ? "_with_scrollable_mvt_v2"
+                                : "_with_non_scrollable_mvt_v2"));
     }
 
     @Test

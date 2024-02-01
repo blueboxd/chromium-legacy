@@ -10,6 +10,7 @@
 #import "base/auto_reset.h"
 #import "base/check_op.h"
 #import "base/containers/adapters.h"
+#import "base/memory/raw_ptr.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller_source_from_web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/removing_indexes.h"
@@ -71,7 +72,9 @@ class WebStateList::DetachParams {
   bool is_closing() const { return is_closing_; }
   bool is_user_action() const { return is_user_action_; }
 
-  web::WebState* SelectOldActiveWebState(
+  // Returns what is considered the previous active web state during a Detach
+  // event.
+  web::WebState* DetermineOldActiveWebState(
       bool is_active_web_state_detached,
       web::WebState* detached_web_state,
       web::WebState* current_active_web_state) const;
@@ -85,7 +88,7 @@ class WebStateList::DetachParams {
   const bool is_closing_;
   const bool is_user_action_;
   const bool should_use_old_active_web_state_;
-  web::WebState* old_active_web_state_;
+  raw_ptr<web::WebState> old_active_web_state_;
 };
 
 WebStateList::DetachParams::DetachParams(bool is_closing,
@@ -120,7 +123,7 @@ WebStateList::DetachParams::ClosingWithUpdateActiveWebState(
                                     old_active_web_state);
 }
 
-web::WebState* WebStateList::DetachParams::SelectOldActiveWebState(
+web::WebState* WebStateList::DetachParams::DetermineOldActiveWebState(
     bool is_active_web_state_detached,
     web::WebState* detached_web_state,
     web::WebState* current_active_web_state) const {
@@ -407,22 +410,23 @@ int WebStateList::InsertWebStateImpl(int index,
     opener = WebStateOpener(GetActiveWebState());
   }
 
-  const OrderController::ItemGroup group =
-      pinned ? OrderController::ItemGroup::kPinned
-             : OrderController::ItemGroup::kRegular;
+  const OrderController::Range range{
+      .begin = pinned ? 0 : pinned_tabs_count_,
+      .end = pinned ? pinned_tabs_count_ : count(),
+  };
 
   const OrderControllerSourceFromWebStateList source(*this);
   const OrderController order_controller(source);
   if (forced && index != WebStateList::kInvalidIndex) {
     index = order_controller.DetermineInsertionIndex(
-        OrderController::InsertionParams::ForceIndex(index, group));
+        OrderController::InsertionParams::ForceIndex(index, range));
   } else if (opener.opener) {
     const int opener_index = GetIndexOfWebState(opener.opener);
     index = order_controller.DetermineInsertionIndex(
-        OrderController::InsertionParams::WithOpener(opener_index, group));
+        OrderController::InsertionParams::WithOpener(opener_index, range));
   } else {
     index = order_controller.DetermineInsertionIndex(
-        OrderController::InsertionParams::Automatic(group));
+        OrderController::InsertionParams::Automatic(range));
   }
 
   DCHECK(ContainsIndex(index) || index == count());
@@ -576,12 +580,12 @@ std::unique_ptr<web::WebState> WebStateList::DetachWebStateAtImpl(
   const WebStateListChangeDetach detach_change(web_state, params.is_closing(),
                                                params.is_user_action());
   {
-    // A new active WebState is null because WebStateList is not updated at this
+    // new_active_web_state is null because WebStateList is not updated at this
     // point and the new active WebState is not determined yet.
     const WebStateListStatus status = {
         .index = index,
         .pinned_state_change = false,
-        .old_active_web_state = params.SelectOldActiveWebState(
+        .old_active_web_state = params.DetermineOldActiveWebState(
             is_active_web_state_detached, web_state, nullptr),
         .new_active_web_state = nullptr};
     for (auto& observer : observers_) {
@@ -615,7 +619,7 @@ std::unique_ptr<web::WebState> WebStateList::DetachWebStateAtImpl(
   const WebStateListStatus status = {
       .index = index,
       .pinned_state_change = false,
-      .old_active_web_state = params.SelectOldActiveWebState(
+      .old_active_web_state = params.DetermineOldActiveWebState(
           is_active_web_state_detached, web_state, GetActiveWebState()),
       .new_active_web_state = GetActiveWebState()};
   for (auto& observer : observers_) {
@@ -655,6 +659,12 @@ void WebStateList::CloseAllWebStatesAfterIndexImpl(int start_index,
         active_index_, RemovingIndexes(std::move(removing_indexes)));
   }
 
+  // Detach all web states in a first pass, before destroying them at once
+  // later. This avoids odd side effects as a result of WebStateImpl's
+  // destructor notifying observers, including slowness during shutdown due to
+  // quadratic behavior if observers iterate the WebStateList.
+  std::vector<std::unique_ptr<web::WebState>> detached_web_states;
+
   const bool is_user_action = IsClosingFlagSet(close_flags, CLOSE_USER_ACTION);
   if (new_active_index != active_index_) {
     web::WebState* old_active_web_state = GetActiveWebState();
@@ -662,17 +672,17 @@ void WebStateList::CloseAllWebStatesAfterIndexImpl(int start_index,
 
     // Notify the event to the observers that a WebState is detached and an
     // active WebState is updated as well.
-    std::unique_ptr<web::WebState> detached_web_state = DetachWebStateAtImpl(
+    detached_web_states.push_back(DetachWebStateAtImpl(
         count() - 1, DetachParams::ClosingWithUpdateActiveWebState(
-                         is_user_action, old_active_web_state));
-    // Dropping detached_web_state will destroy it.
+                         is_user_action, old_active_web_state)));
   }
 
   while (count() > start_index) {
-    std::unique_ptr<web::WebState> detached_web_state = DetachWebStateAtImpl(
-        count() - 1, DetachParams::Closing(is_user_action));
-    // Dropping detached_web_state will destroy it.
+    detached_web_states.push_back(DetachWebStateAtImpl(
+        count() - 1, DetachParams::Closing(is_user_action)));
   }
+
+  // Dropping detached_web_states destroys all instances.
 }
 
 void WebStateList::ActivateWebStateAtImpl(int index) {

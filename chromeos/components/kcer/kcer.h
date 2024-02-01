@@ -41,6 +41,8 @@ using Pkcs12Blob =
     base::StrongAlias<class TypeTagPkcs12Blob, std::vector<uint8_t>>;
 using DataToSign =
     base::StrongAlias<class TypeTagDataToSign, std::vector<uint8_t>>;
+// Digest of the DataToSign. If the signing algorithm expects a prefix (such as
+// DigestInfo for RSA), it is already prepended for this type.
 using DigestWithPrefix =
     base::StrongAlias<class TypeTagDigestWithPrefix, std::vector<uint8_t>>;
 
@@ -76,6 +78,15 @@ enum class COMPONENT_EXPORT(KCER) Error {
   kFailedToListKeys = 27,
   kFailedToRemovePrivateKey = 28,
   kFailedToRemovePublicKey = 29,
+  kFailedToRemoveObjects = 30,
+  kFailedToCreateSpki = 31,
+  kFailedToGetPkcs11Id = 32,
+  kFailedToSearchForObjects = 33,
+  kPkcs11SessionFailure = 34,
+  kBadKeyParams = 35,
+  kUnexpectedFindResult = 36,
+  kFailedToDecodeKeyAttributes = 37,
+  kFailedToRetrieveMechanismList = 38,
 };
 
 // Handles for tokens on ChromeOS.
@@ -168,9 +179,6 @@ struct COMPONENT_EXPORT(KCER) KeyInfo {
   KeyType key_type;
   std::vector<SigningScheme> supported_signing_schemes;
   std::optional<std::string> nickname;
-  // Custom ChromeOS attributes.
-  std::optional<chaps::KeyPermissions> key_permissions;
-  std::optional<std::string> cert_provisioning_profile_id;
 };
 
 class COMPONENT_EXPORT(KCER) Cert : public base::RefCountedThreadSafe<Cert> {
@@ -226,6 +234,9 @@ class COMPONENT_EXPORT(KCER) PrivateKeyHandle {
   const std::optional<Token>& GetTokenInternal() const { return token_; }
   const Pkcs11Id& GetPkcs11IdInternal() const { return pkcs11_id_; }
   const PublicKeySpki& GetSpkiInternal() const { return pub_key_spki_; }
+  void SetPkcs11IdInternal(Pkcs11Id pkcs11_id) {
+    pkcs11_id_ = std::move(pkcs11_id);
+  }
 
  private:
   // Depending on how PrivateKeyHandle is constructed, some member variables
@@ -273,6 +284,10 @@ class COMPONENT_EXPORT(KCER) Kcer {
       base::OnceCallback<void(base::expected<TokenInfo, Error>)>;
   using GetKeyInfoCallback =
       base::OnceCallback<void(base::expected<KeyInfo, Error>)>;
+  using GetKeyPermissionsCallback = base::OnceCallback<void(
+      base::expected<std::optional<chaps::KeyPermissions>, Error>)>;
+  using GetCertProvisioningProfileIdCallback = base::OnceCallback<void(
+      base::expected<std::optional<std::string>, Error>)>;
 
   Kcer() = default;
   virtual ~Kcer() = default;
@@ -410,6 +425,15 @@ class COMPONENT_EXPORT(KCER) Kcer {
   // success, an error otherwise.
   virtual void GetKeyInfo(PrivateKeyHandle key,
                           GetKeyInfoCallback callback) = 0;
+  // Retrieves key permissions for the `key` (see key_permissions.proto).
+  virtual void GetKeyPermissions(PrivateKeyHandle key,
+                                 GetKeyPermissionsCallback callback) = 0;
+  // Retrieves "certificate provisioning profile id" for the `key` (i.e.
+  // "cert_profile_id" from RequiredClientCertificateForUser.yaml and
+  // RequiredClientCertificateForDevice.yaml).
+  virtual void GetCertProvisioningProfileId(
+      PrivateKeyHandle key,
+      GetCertProvisioningProfileIdCallback callback) = 0;
 
   // Sets the `nickname` on the `key`. (Not to be confused with the nickname of
   // the certificate.) Returns an error on failure.

@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -558,11 +559,11 @@ const cc::FilterOperations* DirectRenderer::BackdropFiltersForPass(
   return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
 }
 
-const absl::optional<gfx::RRectF> DirectRenderer::BackdropFilterBoundsForPass(
+const std::optional<gfx::RRectF> DirectRenderer::BackdropFilterBoundsForPass(
     AggregatedRenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filter_bounds_.find(render_pass_id);
   return it == render_pass_backdrop_filter_bounds_.end()
-             ? absl::optional<gfx::RRectF>()
+             ? std::optional<gfx::RRectF>()
              : it->second;
 }
 
@@ -996,7 +997,20 @@ gfx::Size DirectRenderer::CalculateTextureSizeForRenderPass(
     constexpr int multiple = 64;
     width = cc::MathUtil::CheckedRoundUp(width, multiple);
     height = cc::MathUtil::CheckedRoundUp(height, multiple);
+
+    // There are no guarantees that max texture size is a multiple of 64 so
+    // clamp the rounded up dimensions to avoid ending up with dimensions
+    // larger than max texture size. Note: Software surfaces and some
+    // test only surfaces does not have max_texture_size set so assume that
+    // we don't have to clamp the dimensions when max texture size is zero.
+    const int max_texture_size =
+        output_surface_->capabilities().max_texture_size;
+    if (max_texture_size > 0) {
+      width = std::min(max_texture_size, width);
+      height = std::min(max_texture_size, height);
+    }
   }
+
   return gfx::Size(width, height);
 }
 
@@ -1073,28 +1087,11 @@ bool DirectRenderer::HasAllocatedResourcesForTesting(
 }
 
 bool DirectRenderer::ShouldApplyRoundedCorner(const DrawQuad* quad) const {
-  const SharedQuadState* sqs = quad->shared_quad_state;
-  const gfx::MaskFilterInfo& mask_filter_info = sqs->mask_filter_info;
-
-  // There is no rounded corner set.
-  if (!mask_filter_info.HasRoundedCorners())
-    return false;
-
-  const gfx::RRectF& rounded_corner_bounds =
-      mask_filter_info.rounded_corner_bounds();
-
   const gfx::RectF target_quad = cc::MathUtil::MapClippedRect(
-      sqs->quad_to_target_transform, gfx::RectF(quad->visible_rect));
+      quad->shared_quad_state->quad_to_target_transform,
+      gfx::RectF(quad->visible_rect));
 
-  const gfx::RRectF::Corner corners[] = {
-      gfx::RRectF::Corner::kUpperLeft, gfx::RRectF::Corner::kUpperRight,
-      gfx::RRectF::Corner::kLowerRight, gfx::RRectF::Corner::kLowerLeft};
-  for (auto c : corners) {
-    if (rounded_corner_bounds.CornerBoundingRect(c).Intersects(target_quad)) {
-      return true;
-    }
-  }
-  return false;
+  return QuadRoundedCornersBoundsIntersects(quad, target_quad);
 }
 
 float DirectRenderer::CurrentFrameSDRWhiteLevel() const {
@@ -1113,14 +1110,7 @@ gfx::ColorSpace DirectRenderer::RootRenderPassColorSpace() const {
       current_frame()->display_color_spaces.GetOutputColorSpace(
           current_frame()->root_render_pass->content_color_usage,
           current_frame()->root_render_pass->has_transparent_background);
-
-  if (root_color_space.IsAffectedBySDRWhiteLevel()) {
-    auto sk_color_space =
-        root_color_space.ToSkColorSpace(CurrentFrameSDRWhiteLevel());
-    root_color_space = gfx::ColorSpace(*sk_color_space, /*is_hdr=*/true);
-  }
-
-  return root_color_space;
+  return root_color_space.GetWithSdrWhiteLevel(CurrentFrameSDRWhiteLevel());
 }
 
 gfx::ColorSpace DirectRenderer::RenderPassColorSpace(
@@ -1128,9 +1118,11 @@ gfx::ColorSpace DirectRenderer::RenderPassColorSpace(
   if (render_pass == current_frame()->root_render_pass) {
     return RootRenderPassColorSpace();
   }
-  return current_frame()->display_color_spaces.GetCompositingColorSpace(
-      render_pass->has_transparent_background,
-      render_pass->content_color_usage);
+  return current_frame()
+      ->display_color_spaces
+      .GetCompositingColorSpace(render_pass->has_transparent_background,
+                                render_pass->content_color_usage)
+      .GetWithSdrWhiteLevel(CurrentFrameSDRWhiteLevel());
 }
 
 gfx::ColorSpace DirectRenderer::CurrentRenderPassColorSpace() const {

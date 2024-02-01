@@ -40,6 +40,7 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -57,7 +58,6 @@ import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -184,7 +184,6 @@ public class ToolbarTest {
 
     @Test
     @MediumTest
-    @EnableFeatures(ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT)
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     public void testNtpOmniboxFocusAndUnfocusWithHardwareKeyboardConnected() {
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
@@ -221,7 +220,6 @@ public class ToolbarTest {
 
     @Test
     @MediumTest
-    @EnableFeatures(ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT)
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     public void testMaybeShowUrlBarFocusIfHardwareKeyboardAvailable_newTabFromTabSwitcher() {
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();

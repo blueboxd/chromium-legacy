@@ -20,6 +20,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/power_monitor/power_monitor_buildflags.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -95,6 +96,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/metrics/key_credential_manager_support_reporter_win.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/installer/util/taskbar_util.h"
 #endif  // BUILDFLAG(IS_WIN)
@@ -125,7 +127,7 @@ constexpr char kEnableBenchmarkingPrefId[] = "enable_benchmarking_countdown";
 void RecordMemoryMetrics();
 
 // Gets the delay for logging memory related metrics for testing.
-absl::optional<base::TimeDelta> GetDelayForNextMemoryLogTest() {
+std::optional<base::TimeDelta> GetDelayForNextMemoryLogTest() {
   int test_delay_in_minutes;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -135,7 +137,7 @@ absl::optional<base::TimeDelta> GetDelayForNextMemoryLogTest() {
                         &test_delay_in_minutes)) {
     return base::Minutes(test_delay_in_minutes);
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 // Records memory metrics after a delay.
@@ -831,6 +833,7 @@ void RecordStartupMetrics() {
                             IsParallelDllLoadingEnabled());
   RecordAppCompatMetrics();
   crypto::MaybeMeasureTpmOperations();
+  key_credential_manager_support::ReportKeyCredentialManagerSupport();
 #endif  // BUILDFLAG(IS_WIN)
 
   // Record whether Chrome is the default browser or not.
@@ -1075,10 +1078,6 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
                              base::BindOnce(&RecordLinuxDistro));
 #endif
 
-#if BUILDFLAG(IS_MAC)
-  RecordMacMetrics();
-#endif  // BUILDFLAG(IS_MAC)
-
 #if BUILDFLAG(IS_WIN)
   // RecordStartupMetrics calls into shell_integration::GetDefaultBrowser(),
   // which requires a COM thread on Windows.
@@ -1128,7 +1127,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   // The TabStatsTracker always exists (except during unit tests), while the
   // BatteryStateSampler only exists on platform where a BatteryLevelProvider
   // implementation exists.
-  if (metrics::TabStatsTracker::GetInstance() &&
+  if (metrics::TabStatsTracker::HasInstance() &&
       base::BatteryStateSampler::Get()) {
     battery_discharge_reporter_ = std::make_unique<BatteryDischargeReporter>(
         base::BatteryStateSampler::Get());
@@ -1170,10 +1169,17 @@ void ChromeBrowserMainExtraPartsMetrics::PreMainMessageLoopRun() {
   }
 }
 
-void ChromeBrowserMainExtraPartsMetrics::PostMainMessageLoopRun() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  profile_manager_observation_.Reset();
-#endif
+void ChromeBrowserMainExtraPartsMetrics::PostDestroyThreads() {
+#if !BUILDFLAG(IS_ANDROID)
+  if (metrics::TabStatsTracker::HasInstance()) {
+    // responsiveness::Watcher currently outlives TabStatsTracker and
+    // RemoveObserver is never called (see UsageScenarioTracker). This should be
+    // considered/addressed if refining Watcher's lifetime or migrating
+    // TabStatsTracker away from global state, as this could lead to a dangling
+    // pointer or similar.
+    metrics::TabStatsTracker::ClearInstance();
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 void ChromeBrowserMainExtraPartsMetrics::RegisterPrefs(
@@ -1189,10 +1195,14 @@ void ChromeBrowserMainExtraPartsMetrics::HandleEnableBenchmarkingCountdown(
   std::set<std::string> flags = storage->GetFlags();
 
   // The implicit assumption here is that chrome://flags are stored in
-  // flags_ui::PrefServiceFlagsStorage and the string matches the command line
-  // flag. If the flag is not found (which should be the case for almost all
-  // users) then this method short-circuits and does nothing.
-  if (flags.find(variations::switches::kEnableBenchmarking) == flags.end()) {
+  // flags_ui::PrefServiceFlagsStorage and the multi-value switch has format
+  // enable-benchmarking@<n>.
+  std::string prefix =
+      base::StrCat({variations::switches::kEnableBenchmarking, "@"});
+  auto it = std::find_if(
+      flags.begin(), flags.end(),
+      [&prefix](std::string flag) { return base::StartsWith(flag, prefix); });
+  if (it == flags.end()) {
     return;
   }
 
@@ -1203,7 +1213,7 @@ void ChromeBrowserMainExtraPartsMetrics::HandleEnableBenchmarkingCountdown(
     pref_service->ClearPref(kEnableBenchmarkingPrefId);
 
     // Clear the flag storage.
-    flags.erase(variations::switches::kEnableBenchmarking);
+    flags.erase(it);
     storage->SetFlags(std::move(flags));
   } else {
     pref_service->SetInteger(kEnableBenchmarkingPrefId, countdown);
@@ -1212,16 +1222,23 @@ void ChromeBrowserMainExtraPartsMetrics::HandleEnableBenchmarkingCountdown(
 
 void ChromeBrowserMainExtraPartsMetrics::
     HandleEnableBenchmarkingCountdownAsync() {
-  // On ChromeOS we must wait until post-login to be able to accurately assess
-  // whether the enable-benchmarking flag has been enabled. This logic assumes
-  // that it always runs pre-login.
+  Profile* profile = nullptr;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  profile_manager_observation_.Observe(g_browser_process->profile_manager());
-#else
-  about_flags::GetStorage(/*profile=*/nullptr,
+  // This logic is subtle. There are two ways for ash-chrome PostBrowserStart to
+  // be called on ChromeOS. The first is when the device first shows the login
+  // screen. In this case the profile is the login profile. The second is after
+  // the user logs in. If any flags have been changed from the login profile's
+  // flags, then all of ash is restarted. We only care about invoking this logic
+  // in the second case. Thus we check if IsUserLoggedIn() to guard the logic.
+  if (!user_manager::UserManager::IsInitialized() ||
+      !user_manager::UserManager::Get()->IsUserLoggedIn()) {
+    return;
+  }
+  profile = g_browser_process->profile_manager()->GetPrimaryUserProfile();
+#endif
+  about_flags::GetStorage(profile,
                           base::BindOnce(&HandleEnableBenchmarkingCountdown,
                                          g_browser_process->local_state()));
-#endif
 }
 
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayAdded(
@@ -1251,23 +1268,6 @@ void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {
                                 display_count_);
   }
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-void ChromeBrowserMainExtraPartsMetrics::OnProfileAdded(Profile* profile) {
-  // This may be called with the login profile which is a side effect when
-  // ash-chrome restarts during login. We only want to trigger the
-  // HandleEnableBenchmarkingCountdown logic for the primary profile.
-
-  if (!user_manager::UserManager::Get()->IsPrimaryUser(
-          ash::BrowserContextHelper::Get()->GetUserByBrowserContext(profile))) {
-    return;
-  }
-
-  about_flags::GetStorage(profile,
-                          base::BindOnce(&HandleEnableBenchmarkingCountdown,
-                                         g_browser_process->local_state()));
-}
-#endif
 
 namespace chrome {
 

@@ -15,6 +15,19 @@
 
 namespace gpu {
 
+SharedImageInterface::SwapChainSharedImages::SwapChainSharedImages(
+    scoped_refptr<gpu::ClientSharedImage> front_buffer,
+    scoped_refptr<gpu::ClientSharedImage> back_buffer)
+    : front_buffer(std::move(front_buffer)),
+      back_buffer(std::move(back_buffer)) {}
+SharedImageInterface::SwapChainSharedImages::SwapChainSharedImages(
+    const SwapChainSharedImages& shared_images) = default;
+SharedImageInterface::SwapChainSharedImages::~SwapChainSharedImages() = default;
+
+SharedImageInterface::SharedImageInterface()
+    : holder_(base::MakeRefCounted<SharedImageInterfaceHolder>(this)) {}
+SharedImageInterface::~SharedImageInterface() = default;
+
 scoped_refptr<ClientSharedImage> SharedImageInterface::CreateSharedImage(
     viz::SharedImageFormat format,
     const gfx::Size& size,
@@ -26,7 +39,7 @@ scoped_refptr<ClientSharedImage> SharedImageInterface::CreateSharedImage(
     gpu::SurfaceHandle surface_handle,
     gfx::BufferUsage buffer_usage) {
   NOTREACHED();
-  return base::MakeRefCounted<ClientSharedImage>(Mailbox());
+  return nullptr;
 }
 
 uint32_t SharedImageInterface::UsageForMailbox(const Mailbox& mailbox) {
@@ -44,6 +57,23 @@ void SharedImageInterface::CopyToGpuMemoryBuffer(const SyncToken& sync_token,
   NOTREACHED();
 }
 
+void SharedImageInterface::Release() const {
+  bool should_destroy = false;
+
+  {
+    base::AutoLock auto_lock(holder_->lock_);
+    if (base::subtle::RefCountedThreadSafeBase::Release()) {
+      ANALYZER_SKIP_THIS_PATH();
+      holder_->OnDestroy();
+      should_destroy = true;
+    }
+  }
+
+  if (should_destroy) {
+    delete this;
+  }
+}
+
 #if BUILDFLAG(IS_WIN)
 void SharedImageInterface::UpdateSharedImage(
     const SyncToken& sync_token,
@@ -52,5 +82,32 @@ void SharedImageInterface::UpdateSharedImage(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 #endif  // BUILDFLAG(IS_WIN)
+
+SharedImageInterface::SharedImageMapping::SharedImageMapping() = default;
+SharedImageInterface::SharedImageMapping::SharedImageMapping(
+    SharedImageInterface::SharedImageMapping&& mapped) = default;
+SharedImageInterface::SharedImageMapping::SharedImageMapping(
+    scoped_refptr<ClientSharedImage> shared_image,
+    base::WritableSharedMemoryMapping mapping)
+    : shared_image(std::move(shared_image)), mapping(std::move(mapping)) {}
+SharedImageInterface::SharedImageMapping&
+SharedImageInterface::SharedImageMapping::operator=(
+    SharedImageInterface::SharedImageMapping&& mapped) = default;
+SharedImageInterface::SharedImageMapping::~SharedImageMapping() = default;
+
+SharedImageInterfaceHolder::SharedImageInterfaceHolder(
+    SharedImageInterface* sii)
+    : sii_(sii) {}
+SharedImageInterfaceHolder::~SharedImageInterfaceHolder() = default;
+
+scoped_refptr<SharedImageInterface> SharedImageInterfaceHolder::Get() {
+  base::AutoLock auto_lock(lock_);
+  return scoped_refptr<SharedImageInterface>(sii_);
+}
+
+void SharedImageInterfaceHolder::OnDestroy() {
+  lock_.AssertAcquired();
+  sii_ = nullptr;
+}
 
 }  // namespace gpu

@@ -683,6 +683,10 @@ id<GREYMatcher> TabGridNormalModePageControl() {
   return [ChromeMatchersAppInterface tabGridNormalModePageControl];
 }
 
+id<GREYMatcher> TabGridInactiveTabsButton() {
+  return [ChromeMatchersAppInterface tabGridInactiveTabsButton];
+}
+
 id<GREYMatcher> TabGridBackground() {
   return [ChromeMatchersAppInterface tabGridBackground];
 }
@@ -890,11 +894,6 @@ id<GREYMatcher> ManualFallbackOtherPasswordsDismissMatcher() {
 
 id<GREYMatcher> ManualFallbackPasswordButtonMatcher() {
   return [ChromeMatchersAppInterface manualFallbackPasswordButtonMatcher];
-}
-
-id<GREYMatcher> ManualFallbackPasswordTableViewWindowMatcher() {
-  return
-      [ChromeMatchersAppInterface manualFallbackPasswordTableViewWindowMatcher];
 }
 
 id<GREYMatcher> ManualFallbackProfilesIconMatcher() {

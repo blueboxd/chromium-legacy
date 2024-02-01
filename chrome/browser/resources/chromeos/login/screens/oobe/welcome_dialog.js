@@ -36,7 +36,6 @@ const OobeWelcomeDialogBase =
  * @typedef {{
  *   title:  HTMLAnchorElement,
  *   chromeVoxHint:  OobeModalDialog,
- *   quickStartWelcomeEntryPoint:  QuickStartEntryPoint,
  *   welcomeAnimation:  OobeCrLottie,
  * }}
  */
@@ -216,7 +215,8 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
   /**
    * @suppress {missingProperties}
    */
-  attached() {
+  connectedCallback() {
+    super.connectedCallback();
     // Allow opening advanced options only if it is a meet device or device
     // requisition is configurable.
     if (this.isMeet_ || this.isDeviceRequisitionConfigurable_) {
@@ -335,10 +335,6 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
    */
   showAnimationSlot() {
     return !this.isBootAnimation_;
-  }
-
-  onShowQuickStartBluetoothDialog_() {
-    this.$.quickStartWelcomeEntryPoint.showQuickStartBluetoothDialog();
   }
 }
 

@@ -9,7 +9,7 @@
 #import "base/strings/string_number_conversions.h"
 #import "components/google/core/common/google_util.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/passwords/model/password_checkup_metrics.h"
 #import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -420,7 +420,6 @@ void SetUpTrailingIconAndAccessoryType(
   [self updatePasswordCheckupTimestampDetailText];
 }
 
-// TODO(crbug.com/1453276): Make the coordinator present the alert instead.
 - (void)showErrorDialogWithMessage:(NSString*)message {
   NSString* title = l10n_util::GetNSString(
       IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_ERROR_DIALOG_TITLE);
@@ -433,8 +432,6 @@ void SetUpTrailingIconAndAccessoryType(
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
                                style:UIAlertActionStyleDefault
                              handler:nil];
-  // TODO(crbug.com/1453276): Once fixed, setting the accessibilityIdentifier
-  // will no longer be neeeded since it will be handled by the AlertCoordinator.
   okAction.accessibilityIdentifier =
       [l10n_util::GetNSString(IDS_OK) stringByAppendingString:@"AlertAction"];
   [alert addAction:okAction];

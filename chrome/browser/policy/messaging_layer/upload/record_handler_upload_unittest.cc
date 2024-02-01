@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/messaging_layer/upload/record_handler_impl.h"
-
+#include <optional>
 #include <string_view>
 
 #include "base/memory/scoped_refptr.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/policy/messaging_layer/public/report_client_test_util.h"
 #include "chrome/browser/policy/messaging_layer/upload/file_upload_job.h"
 #include "chrome/browser/policy/messaging_layer/upload/file_upload_job_test_util.h"
+#include "chrome/browser/policy/messaging_layer/upload/record_handler_impl.h"
 #include "chrome/browser/policy/messaging_layer/upload/record_upload_request_builder.h"
 #include "chrome/browser/policy/messaging_layer/upload/server_uploader.h"
 #include "chrome/browser/policy/messaging_layer/util/reporting_server_connector.h"
@@ -36,7 +36,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::testing::_;
 using ::testing::AllOf;
@@ -105,6 +104,50 @@ MATCHER_P(ResponseEquals,
 
 class MockFileUploadDelegate : public FileUploadJob::Delegate {
  public:
+  // Forwarder to `MockFileUploadDelegate` that allows to repeatedly construct
+  // its instances and then forward the mocked calls to the single instance of
+  // `MockFileUploadDelegate`.
+  class Forwarder : public FileUploadJob::Delegate {
+   public:
+    explicit Forwarder(MockFileUploadDelegate* actual_mock)
+        : actual_mock_(actual_mock) {}
+
+    void DoInitiate(
+        std::string_view origin_path,
+        std::string_view upload_parameters,
+        base::OnceCallback<void(
+            StatusOr<std::pair<int64_t /*total*/,
+                               std::string /*session_token*/>>)> cb) override {
+      actual_mock_->DoInitiate(origin_path, upload_parameters, std::move(cb));
+    }
+
+    void DoNextStep(
+        int64_t total,
+        int64_t uploaded,
+        std::string_view session_token,
+        ScopedReservation scoped_reservation,
+        base::OnceCallback<void(
+            StatusOr<std::pair<int64_t /*uploaded*/,
+                               std::string /*session_token*/>>)> cb) override {
+      actual_mock_->DoNextStep(total, uploaded, session_token,
+                               std::move(scoped_reservation), std::move(cb));
+    }
+
+    void DoFinalize(
+        std::string_view session_token,
+        base::OnceCallback<void(StatusOr<std::string /*access_parameters*/>)>
+            cb) override {
+      actual_mock_->DoFinalize(session_token, std::move(cb));
+    }
+
+    void DoDeleteFile(std::string_view origin_path) override {
+      actual_mock_->DoDeleteFile(origin_path);
+    }
+
+   private:
+    raw_ptr<MockFileUploadDelegate> actual_mock_;
+  };
+
   MOCK_METHOD(void,
               DoInitiate,
               (std::string_view origin_path,
@@ -146,10 +189,16 @@ class RecordHandlerUploadTest : public ::testing::Test {
     test_storage_ = base::MakeRefCounted<test::TestStorageModule>();
     test_reporting_ = ReportingClient::TestEnvironment::CreateWithStorageModule(
         test_storage_);
-    auto delegate = std::make_unique<MockFileUploadDelegate>();
-    delegate_ = delegate.get();
+
     handler_ = std::make_unique<RecordHandlerImpl>(
-        base::SequencedTaskRunner::GetCurrentDefault(), std::move(delegate));
+        base::SequencedTaskRunner::GetCurrentDefault(),
+        base::BindRepeating(
+            [](RecordHandlerUploadTest* self)
+                -> std::unique_ptr<FileUploadJob::Delegate> {
+              return std::make_unique<MockFileUploadDelegate::Forwarder>(
+                  &self->mock_delegate_);
+            },
+            base::Unretained(this)));
 
     memory_resource_ =
         base::MakeRefCounted<ResourceManager>(4u * 1024LLu * 1024LLu);  // 4 MiB
@@ -177,7 +226,6 @@ class RecordHandlerUploadTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    delegate_ = nullptr;
     handler_.reset();
     test_storage_.reset();
     test_reporting_.reset();
@@ -204,7 +252,7 @@ class RecordHandlerUploadTest : public ::testing::Test {
   scoped_refptr<test::TestStorageModule> test_storage_;
   std::unique_ptr<ReportingClient::TestEnvironment> test_reporting_;
 
-  raw_ptr<MockFileUploadDelegate> delegate_;
+  MockFileUploadDelegate mock_delegate_;
 
   std::unique_ptr<RecordHandlerImpl> handler_;
 
@@ -220,7 +268,7 @@ class RecordHandlerUploadTest : public ::testing::Test {
 EncryptedRecord ComposeEncryptedRecord(
     std::string_view data,
     UploadSettings upload_settings,
-    absl::optional<UploadTracker> upload_tracker) {
+    std::optional<UploadTracker> upload_tracker) {
   static constexpr int64_t kGenerationId = 1234;
   EncryptedRecord encrypted_record;
   encrypted_record.set_encrypted_wrapped_record(data.data(), data.size());
@@ -314,7 +362,7 @@ UploadTracker ComposeDoneTracker(int64_t total) {
 
 TEST_F(RecordHandlerUploadTest, SuccessfulInitiation) {
   EncryptedRecord init_encrypted_record = ComposeEncryptedRecord(
-      "Init Upload Record", ComposeUploadSettings(), absl::nullopt);
+      "Init Upload Record", ComposeUploadSettings(), std::nullopt);
   ScopedReservation record_reservation(init_encrypted_record.ByteSizeLong(),
                                        memory_resource_);
   const SuccessfulUploadResponse expected_response{
@@ -324,7 +372,8 @@ TEST_F(RecordHandlerUploadTest, SuccessfulInitiation) {
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
-  EXPECT_CALL(*delegate_, DoInitiate(StrEq(kUploadFileName), Not(IsEmpty()), _))
+  EXPECT_CALL(mock_delegate_,
+              DoInitiate(StrEq(kUploadFileName), Not(IsEmpty()), _))
       .WillOnce(Invoke(
           [](std::string_view origin_path, std::string_view upload_parameters,
              base::OnceCallback<void(
@@ -332,8 +381,8 @@ TEST_F(RecordHandlerUploadTest, SuccessfulInitiation) {
                                     std::string /*session_token*/>>)> cb) {
             std::move(cb).Run(std::make_pair(300L, kSessionToken));
           }));
-  EXPECT_CALL(*delegate_, DoNextStep).Times(0);
-  EXPECT_CALL(*delegate_, DoFinalize).Times(0);
+  EXPECT_CALL(mock_delegate_, DoNextStep).Times(0);
+  EXPECT_CALL(mock_delegate_, DoFinalize).Times(0);
 
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
@@ -372,8 +421,8 @@ TEST_F(RecordHandlerUploadTest, SuccessfulNextStep) {
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
-  EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_,
+  EXPECT_CALL(mock_delegate_, DoInitiate).Times(0);
+  EXPECT_CALL(mock_delegate_,
               DoNextStep(Eq(300L), Eq(100L), StrEq(kSessionToken), _, _))
       .WillOnce(
           [](int64_t total, int64_t uploaded, std::string_view session_token,
@@ -384,7 +433,7 @@ TEST_F(RecordHandlerUploadTest, SuccessfulNextStep) {
             std::move(cb).Run(
                 std::make_pair(uploaded + 100L, std::string(session_token)));
           });
-  EXPECT_CALL(*delegate_, DoFinalize).Times(0);
+  EXPECT_CALL(mock_delegate_, DoFinalize).Times(0);
 
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
@@ -422,16 +471,16 @@ TEST_F(RecordHandlerUploadTest, SuccessfulFinalize) {
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
-  EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_, DoNextStep).Times(0);
-  EXPECT_CALL(*delegate_, DoFinalize(StrEq(kSessionToken), _))
+  EXPECT_CALL(mock_delegate_, DoInitiate).Times(0);
+  EXPECT_CALL(mock_delegate_, DoNextStep).Times(0);
+  EXPECT_CALL(mock_delegate_, DoFinalize(StrEq(kSessionToken), _))
       .WillOnce(
           Invoke([](std::string_view session_token,
                     base::OnceCallback<void(
                         StatusOr<std::string /*access_parameters*/>)> cb) {
             std::move(cb).Run(kAccessParameters);
           }));
-  EXPECT_CALL(*delegate_, DoDeleteFile(StrEq(kUploadFileName))).Times(1);
+  EXPECT_CALL(mock_delegate_, DoDeleteFile(StrEq(kUploadFileName))).Times(1);
 
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
@@ -469,9 +518,9 @@ TEST_F(RecordHandlerUploadTest, AlreadyFinalized) {
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
-  EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_, DoNextStep).Times(0);
-  EXPECT_CALL(*delegate_, DoFinalize).Times(0);
+  EXPECT_CALL(mock_delegate_, DoInitiate).Times(0);
+  EXPECT_CALL(mock_delegate_, DoNextStep).Times(0);
+  EXPECT_CALL(mock_delegate_, DoFinalize).Times(0);
 
   EXPECT_CALL(*test_storage_, AddRecord).Times(0);
 
@@ -498,8 +547,8 @@ TEST_F(RecordHandlerUploadTest, FailedProcessing) {
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
-  EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_,
+  EXPECT_CALL(mock_delegate_, DoInitiate).Times(0);
+  EXPECT_CALL(mock_delegate_,
               DoNextStep(Eq(300L), Eq(100L), StrEq(kSessionToken), _, _))
       .WillOnce(
           [](int64_t total, int64_t uploaded, std::string_view session_token,
@@ -510,8 +559,8 @@ TEST_F(RecordHandlerUploadTest, FailedProcessing) {
             std::move(cb).Run(
                 base::unexpected(Status(error::CANCELLED, "Failure by test")));
           });
-  EXPECT_CALL(*delegate_, DoFinalize).Times(0);
-  EXPECT_CALL(*delegate_, DoDeleteFile(StrEq(kUploadFileName))).Times(1);
+  EXPECT_CALL(mock_delegate_, DoFinalize).Times(0);
+  EXPECT_CALL(mock_delegate_, DoDeleteFile(StrEq(kUploadFileName))).Times(1);
 
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
@@ -540,12 +589,13 @@ TEST_F(RecordHandlerUploadTest, RepeatedInitiationAttempts) {
   static constexpr int64_t kNumTestRecords = 10;
 
   EncryptedRecord init_encrypted_record = ComposeEncryptedRecord(
-      "Init Upload Record", ComposeUploadSettings(), absl::nullopt);
+      "Init Upload Record", ComposeUploadSettings(), std::nullopt);
   SuccessfulUploadResponse expected_response{
       .sequence_information = init_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*delegate_, DoInitiate(StrEq(kUploadFileName), Not(IsEmpty()), _))
+  EXPECT_CALL(mock_delegate_,
+              DoInitiate(StrEq(kUploadFileName), Not(IsEmpty()), _))
       .WillOnce(Invoke(
           [](std::string_view origin_path, std::string_view upload_parameters,
              base::OnceCallback<void(
@@ -553,8 +603,8 @@ TEST_F(RecordHandlerUploadTest, RepeatedInitiationAttempts) {
                                     std::string /*session_token*/>>)> cb) {
             std::move(cb).Run(std::make_pair(300L, kSessionToken));
           }));
-  EXPECT_CALL(*delegate_, DoNextStep).Times(0);
-  EXPECT_CALL(*delegate_, DoFinalize).Times(0);
+  EXPECT_CALL(mock_delegate_, DoNextStep).Times(0);
+  EXPECT_CALL(mock_delegate_, DoFinalize).Times(0);
 
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
@@ -592,13 +642,14 @@ TEST_F(RecordHandlerUploadTest, RepeatedInitiationAttempts) {
 TEST_F(RecordHandlerUploadTest, InitiationFailureTriggersRetry) {
   EncryptedRecord init_encrypted_record = ComposeEncryptedRecord(
       "Init Upload Record", ComposeUploadSettings(/*retry_count=*/2),
-      absl::nullopt);
+      std::nullopt);
   const SuccessfulUploadResponse expected_response{
       .sequence_information = init_encrypted_record.sequence_information(),
       .force_confirm = false};
 
   // Simulate delegate failure initiating the job.
-  EXPECT_CALL(*delegate_, DoInitiate(StrEq(kUploadFileName), Not(IsEmpty()), _))
+  EXPECT_CALL(mock_delegate_,
+              DoInitiate(StrEq(kUploadFileName), Not(IsEmpty()), _))
       .WillOnce(Invoke(
           [](std::string_view origin_path, std::string_view upload_parameters,
              base::OnceCallback<void(
@@ -607,8 +658,8 @@ TEST_F(RecordHandlerUploadTest, InitiationFailureTriggersRetry) {
             std::move(cb).Run(
                 base::unexpected(Status(error::CANCELLED, "Failure by test")));
           }));
-  EXPECT_CALL(*delegate_, DoNextStep).Times(0);
-  EXPECT_CALL(*delegate_, DoFinalize).Times(0);
+  EXPECT_CALL(mock_delegate_, DoNextStep).Times(0);
+  EXPECT_CALL(mock_delegate_, DoFinalize).Times(0);
 
   // Record retry event and then original with status.
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
@@ -638,7 +689,7 @@ TEST_F(RecordHandlerUploadTest, InitiationFailureTriggersRetry) {
       }));
 
   // Original file to not be deleted!
-  EXPECT_CALL(*delegate_, DoDeleteFile).Times(0);
+  EXPECT_CALL(mock_delegate_, DoDeleteFile).Times(0);
 
   {
     ScopedReservation record_reservation(init_encrypted_record.ByteSizeLong(),
@@ -666,9 +717,9 @@ TEST_F(RecordHandlerUploadTest, RepeatedNextStepAttempts) {
       .sequence_information = next_step_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*delegate_, DoInitiate).Times(0);
+  EXPECT_CALL(mock_delegate_, DoInitiate).Times(0);
   // Simulate delegate failure making the next step of the job,
-  EXPECT_CALL(*delegate_,
+  EXPECT_CALL(mock_delegate_,
               DoNextStep(Eq(300L), Eq(100L), StrEq(kSessionToken), _, _))
       .WillOnce(
           [](int64_t total, int64_t uploaded, std::string_view session_token,
@@ -679,7 +730,7 @@ TEST_F(RecordHandlerUploadTest, RepeatedNextStepAttempts) {
             std::move(cb).Run(
                 std::make_pair(uploaded + 100L, std::string(session_token)));
           });
-  EXPECT_CALL(*delegate_, DoFinalize).Times(0);
+  EXPECT_CALL(mock_delegate_, DoFinalize).Times(0);
 
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
@@ -725,8 +776,8 @@ TEST_F(RecordHandlerUploadTest, NextStepFailureTriggersRetry) {
       .sequence_information = next_step_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_,
+  EXPECT_CALL(mock_delegate_, DoInitiate).Times(0);
+  EXPECT_CALL(mock_delegate_,
               DoNextStep(Eq(300L), Eq(100L), StrEq(kSessionToken), _, _))
       .WillOnce(
           [](int64_t total, int64_t uploaded, std::string_view session_token,
@@ -737,7 +788,7 @@ TEST_F(RecordHandlerUploadTest, NextStepFailureTriggersRetry) {
             std::move(cb).Run(
                 base::unexpected(Status(error::CANCELLED, "Failure by test")));
           });
-  EXPECT_CALL(*delegate_, DoFinalize).Times(0);
+  EXPECT_CALL(mock_delegate_, DoFinalize).Times(0);
 
   // Record retry event and then original with status.
   EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
@@ -767,7 +818,7 @@ TEST_F(RecordHandlerUploadTest, NextStepFailureTriggersRetry) {
       }));
 
   // Original file to not be deleted!
-  EXPECT_CALL(*delegate_, DoDeleteFile).Times(0);
+  EXPECT_CALL(mock_delegate_, DoDeleteFile).Times(0);
 
   {
     ScopedReservation record_reservation(
@@ -795,9 +846,9 @@ TEST_F(RecordHandlerUploadTest, RepeatedFinalizeAttempts) {
       .sequence_information = fin_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_, DoNextStep).Times(0);
-  EXPECT_CALL(*delegate_, DoFinalize(StrEq(kSessionToken), _))
+  EXPECT_CALL(mock_delegate_, DoInitiate).Times(0);
+  EXPECT_CALL(mock_delegate_, DoNextStep).Times(0);
+  EXPECT_CALL(mock_delegate_, DoFinalize(StrEq(kSessionToken), _))
       .WillOnce(
           Invoke([](std::string_view session_token,
                     base::OnceCallback<void(
@@ -821,7 +872,7 @@ TEST_F(RecordHandlerUploadTest, RepeatedFinalizeAttempts) {
       }));
 
   // Original file to be deleted only once!
-  EXPECT_CALL(*delegate_, DoDeleteFile(StrEq(kUploadFileName))).Times(1);
+  EXPECT_CALL(mock_delegate_, DoDeleteFile(StrEq(kUploadFileName))).Times(1);
 
   for (size_t i = 0; i < kNumTestRecords; ++i) {
     ScopedReservation record_reservation(fin_encrypted_record.ByteSizeLong(),
@@ -850,10 +901,10 @@ TEST_F(RecordHandlerUploadTest, FinalizeFailureTriggersRetry) {
       .sequence_information = fin_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*delegate_, DoInitiate).Times(0);
-  EXPECT_CALL(*delegate_, DoNextStep).Times(0);
+  EXPECT_CALL(mock_delegate_, DoInitiate).Times(0);
+  EXPECT_CALL(mock_delegate_, DoNextStep).Times(0);
   // Simulate delegate failure finalizing the job.
-  EXPECT_CALL(*delegate_, DoFinalize(StrEq(kSessionToken), _))
+  EXPECT_CALL(mock_delegate_, DoFinalize(StrEq(kSessionToken), _))
       .WillOnce(
           Invoke([](std::string_view session_token,
                     base::OnceCallback<void(
@@ -890,7 +941,7 @@ TEST_F(RecordHandlerUploadTest, FinalizeFailureTriggersRetry) {
       }));
 
   // Original file to not be deleted!
-  EXPECT_CALL(*delegate_, DoDeleteFile).Times(0);
+  EXPECT_CALL(mock_delegate_, DoDeleteFile).Times(0);
 
   {
     ScopedReservation record_reservation(fin_encrypted_record.ByteSizeLong(),

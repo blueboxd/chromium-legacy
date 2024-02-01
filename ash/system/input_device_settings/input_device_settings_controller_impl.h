@@ -25,6 +25,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/keyboard_device.h"
 
@@ -37,6 +38,7 @@ namespace ash {
 // Controller to manage input device settings.
 class ASH_EXPORT InputDeviceSettingsControllerImpl
     : public InputDeviceSettingsController,
+      public input_method::InputMethodManager::Observer,
       public SessionObserver {
  public:
   explicit InputDeviceSettingsControllerImpl(PrefService* local_state);
@@ -89,8 +91,9 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
                             const mojom::Button& button) override;
   void OnGraphicsTabletButtonPressed(DeviceId device_id,
                                      const mojom::Button& button) override;
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
+  void AddObserver(InputDeviceSettingsController::Observer* observer) override;
+  void RemoveObserver(
+      InputDeviceSettingsController::Observer* observer) override;
 
   void OnKeyboardListUpdated(std::vector<ui::KeyboardDevice> keyboards_to_add,
                              std::vector<DeviceId> keyboard_ids_to_remove);
@@ -109,6 +112,11 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
+
+  // input_method::InputMethodManager::Observer:
+  void InputMethodChanged(input_method::InputMethodManager* manager,
+                          Profile* profile,
+                          bool show_message) override;
 
  private:
   void Init();
@@ -190,18 +198,24 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void RefreshCachedKeyboardSettings();
   void RefreshCachedTouchpadSettings();
 
-  // Get the mouse customization restriction. There are three different cases:
-  // 1. If the mouse is customizable and there is no duplicate ids in the
-  // keyboards, return kAllowCustomizations.
-  // 2. If the mouse is customizable but there exists
-  // duplicate ids in the keyboards, return kDisableKeyEventRewrites.
-  // 3. If the mouse is not customizable, return kDisallowCustomizations.
+  // Get the mouse customization restriction based on the mouse metadata. Return
+  // kDisableKeyEventRewrites by default if there is no mouse metadata.
   mojom::CustomizationRestriction GetMouseCustomizationRestriction(
       const ui::InputDevice& mouse);
 
-  // Update the restriction for currently connected mice once a keyboard with
-  // the same id connects to disable the key event rewrite for the mice.
-  void ApplyCustomizationRestrictionFromKeyboard(DeviceId keyboard_id);
+  // Get the graphics tablet customization restriction based on the graphics
+  // tablet metadata. Return kAllowCustomizations by default if there is no
+  // graphics tablet metadata.
+  mojom::CustomizationRestriction GetGraphicsTabletCustomizationRestriction(
+      const ui::InputDevice& graphics_tablet);
+
+  // Refreshes the key display values within the button remappings to match the
+  // current input method.
+  void RefreshKeyDisplay();
+
+  // Get the mouse button config based on the mouse metadata. Return
+  // kDefault by default if there is no mouse metadata.
+  mojom::MouseButtonConfig GetMouseButtonConfig(const ui::InputDevice& mouse);
 
   mojom::Mouse* FindMouse(DeviceId id);
   mojom::Touchpad* FindTouchpad(DeviceId id);
@@ -209,7 +223,7 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   mojom::GraphicsTablet* FindGraphicsTablet(DeviceId id);
   mojom::PointingStick* FindPointingStick(DeviceId id);
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<InputDeviceSettingsController::Observer> observers_;
 
   std::unique_ptr<InputDeviceSettingsPolicyHandler> policy_handler_;
 

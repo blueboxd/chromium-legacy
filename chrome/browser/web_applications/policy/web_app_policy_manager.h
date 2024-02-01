@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_POLICY_WEB_APP_POLICY_MANAGER_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -19,7 +20,6 @@
 #include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/render_frame_host.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -116,7 +116,7 @@ class WebAppPolicyManager {
       bool allow_close_and_relaunch = false);
 
  private:
-  friend class WebAppPolicyManagerTest;
+  friend class WebAppPolicyManagerTestBase;
 
   struct WebAppSetting {
     bool Parse(const base::Value::Dict& dict, bool for_default_settings);
@@ -136,16 +136,13 @@ class WebAppPolicyManager {
     void SetName(const std::string& utf8_name);
     void SetIcon(const GURL& icon_gurl);
 
-    absl::optional<std::u16string> name;
-    absl::optional<std::vector<blink::Manifest::ImageResource>> icons;
+    std::optional<std::u16string> name;
+    std::optional<std::vector<blink::Manifest::ImageResource>> icons;
   };
 
   void InitChangeRegistrarAndRefreshPolicy(bool enable_pwa_support);
 
   void RefreshPolicyInstalledApps(bool allow_close_and_relaunch = false);
-#if BUILDFLAG(IS_CHROMEOS)
-  void RefreshPolicyInstalledIsolatedWebApps();
-#endif
   void ParsePolicySettings();
   void RefreshPolicySettings();
   void OnAppsSynchronized(
@@ -225,9 +222,6 @@ class WebAppPolicyManager {
 
   base::OnceClosure policy_settings_and_force_installs_applied_;
 
-#if BUILDFLAG(IS_CHROMEOS)
-  std::unique_ptr<IsolatedWebAppPolicyManager> iwa_policy_manager_;
-#endif
 
   base::WeakPtrFactory<WebAppPolicyManager> weak_ptr_factory_{this};
 };

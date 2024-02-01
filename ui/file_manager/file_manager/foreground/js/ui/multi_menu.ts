@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {EventTracker} from 'chrome://resources/js/event_tracker.js';
-
-import {decorate} from '../../../common/js/cr_ui.js';
-
 import {Menu} from './menu.js';
-import {MenuItem, MenuItemActivationEvent} from './menu_item.js';
+import {MenuItem, type MenuItemActivationEvent} from './menu_item.js';
 
 /**
  * Creates a menu that supports sub-menus.
@@ -52,23 +48,14 @@ export class MultiMenu extends Menu {
    */
   private menuEndGap_: number = 0;
 
-  private showingEvents_: EventTracker|null = null;
-
   /**
-   * Initializes the multi menu.
-   * @param element Element to be decorated.
-   * @return Decorated element.
+   * AbortController allows for global aborting of all event listeners and thus
+   * their removal from the DOM.
    */
-  static override decorate(element: HTMLElement): MultiMenu {
-    // Decorate the menu as a single level menu.
-    decorate(element, MultiMenu);
-    return element as MultiMenu;
-  }
+  private abortController_: AbortController|null = null;
 
-  override decorate() {
-    super.decorate();
-    // Event tracker for the sub-menu specific listeners.
-    this.showingEvents_ = new EventTracker();
+  override initialize() {
+    super.initialize();
     this.currentMenu = this;
     this.menuEndGap_ = 18;  // padding on cr.menu + 2px
   }
@@ -121,20 +108,21 @@ export class MultiMenu extends Menu {
                 if (subMenu.hidden) {
                   break;
                 }
-                if (this.subMenuOnLeft && key == 'ArrowLeft') {
+                if (this.subMenuOnLeft && key === 'ArrowLeft') {
                   this.moveSelectionToSubMenu_(subMenu);
                 } else if (
-                    this.subMenuOnLeft === false && key == 'ArrowRight') {
+                    this.subMenuOnLeft === false && key === 'ArrowRight') {
                   this.moveSelectionToSubMenu_(subMenu);
                 }
               }
             } else {
               const subMenu = this.currentMenu;
               // We only move off the sub-menu if we're on the top item
-              if (subMenu.selectedIndex == 0) {
-                if (this.subMenuOnLeft && key == 'ArrowRight') {
+              if (subMenu.selectedIndex === 0) {
+                if (this.subMenuOnLeft && key === 'ArrowRight') {
                   this.moveSelectionToTopMenu_(subMenu);
-                } else if (this.subMenuOnLeft === false && key == 'ArrowLeft') {
+                } else if (
+                    this.subMenuOnLeft === false && key === 'ArrowLeft') {
                   this.moveSelectionToTopMenu_(subMenu);
                 }
               }
@@ -346,33 +334,26 @@ export class MultiMenu extends Menu {
       if (subMenuId) {
         const subMenu = document.querySelector(subMenuId);
         if (subMenu) {
-          const self = this.asEventListener();
-          this.showingEvents_!.add(subMenu, 'activate', self);
+          subMenu.addEventListener(
+              'activate', this, {signal: this.abortController_?.signal});
         }
       }
     });
-  }
-
-  // TODO: Split the handleEvent() in multiple methods to remove this cast.
-  asEventListener(): EventListener {
-    return this as unknown as EventListener;
   }
 
   override show(mouseDownPos?: {x: number, y: number}) {
     super.show(mouseDownPos);
     // When the menu is shown we steal all keyboard events.
     const doc = this.ownerDocument;
-    const showingEvents = this.showingEvents_!;
-    // TODO: Split the handleEvent() in multiple methods to remove the cast
-    // below.
-    const self = this as unknown as EventListener;
+    this.abortController_ = new AbortController();
+    const signal = this.abortController_.signal;
     if (doc) {
-      showingEvents.add(doc, 'keydown', self, true);
+      doc.addEventListener('keydown', this, {capture: true, signal});
     }
-    showingEvents.add(this, 'activate', self, true);
+    this.addEventListener('activate', this, {capture: true, signal});
     // Handle mouse-over to trigger sub menu opening on hover.
-    showingEvents.add(this, 'mouseover', self);
-    showingEvents.add(this, 'mouseout', self);
+    this.addEventListener('mouseover', this, {signal});
+    this.addEventListener('mouseout', this, {signal});
     this.addSubMenuListeners();
   }
 
@@ -396,7 +377,7 @@ export class MultiMenu extends Menu {
   }
 
   override hide() {
-    this.showingEvents_!.removeAll();
+    this.abortController_?.abort();
     // Hide any visible sub-menus first
     this.hideSubMenu_();
     super.hide();

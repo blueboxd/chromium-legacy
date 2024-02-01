@@ -44,7 +44,7 @@
         "port_name": "win-win11",
         "specifiers": ["Win11", "Release"]
     },
-    "fuchsia-x64-rel": {
+    "fuchsia-x64-cast-receiver-rel": {
         "main": "tryserver.chromium.linux",
         "port_name": "fuchsia",
         "specifiers": ["Fuchsia", "Release"],
@@ -54,15 +54,6 @@
         },
         "is_try_builder": true,
         "is_cq_builder": true
-    },
-    "linux-wpt-chromium-rel": {
-        "main": "tryserver.blink",
-        "port_name": "chrome",
-        "specifiers": ["Chrome", "Release"],
-        "is_try_builder": true,
-        "steps": {
-            "chrome_wpt_tests (with patch)": {}
-        }
     },
     "linux-blink-rel": {
         "main": "tryserver.blink",
@@ -159,6 +150,20 @@
         "steps": {
             "blink_web_tests (with patch)": {},
             "blink_wpt_tests (with patch)": {}
+        },
+        "is_try_builder": true
+    },
+    "mac13.arm64-skia-alt-blink-rel": {
+        "main": "tryserver.blink",
+        "port_name": "mac-mac13-arm64",
+        "specifiers": ["Mac13-arm64", "Release"],
+        "steps": {
+            "graphite_enabled_blink_web_tests (with patch)": {
+                "flag_specific": "enable-skia-graphite"
+            },
+            "graphite_enabled_blink_wpt_tests (with patch)": {
+                "flag_specific": "enable-skia-graphite"
+            }
         },
         "is_try_builder": true
     },

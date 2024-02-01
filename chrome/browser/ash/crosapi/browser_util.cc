@@ -54,6 +54,15 @@ using user_manager::UserManager;
 using version_info::Channel;
 
 namespace crosapi::browser_util {
+
+BASE_FEATURE(kLacrosLaunchAtLoginScreen,
+             "LacrosLaunchAtLoginScreen",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kLacrosForkZygotesAtLoginScreen,
+             "LacrosForkZygotesAtLoginScreen",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 namespace {
 
 // At session start the value for LacrosAvailability logic is applied and the
@@ -196,31 +205,37 @@ bool IsLacrosEnabledInternal(const User* user,
   return false;
 }
 
-// Returns the string value for the kLacrosStabilitySwitch if present.
-std::optional<std::string> GetLacrosStabilitySwitchValue() {
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  return cmdline->HasSwitch(browser_util::kLacrosStabilitySwitch)
-             ? std::optional<std::string>(cmdline->GetSwitchValueASCII(
-                   browser_util::kLacrosStabilitySwitch))
-             : std::nullopt;
-}
+}  // namespace
+
+constexpr char kLacrosStabilitySwitch[] = "lacros-stability";
+constexpr char kLacrosStabilityChannelCanary[] = "canary";
+constexpr char kLacrosStabilityChannelDev[] = "dev";
+constexpr char kLacrosStabilityChannelBeta[] = "beta";
+constexpr char kLacrosStabilityChannelStable[] = "stable";
+
+namespace {
 
 // Resolves the Lacros stateful channel in the following order:
 //   1. From the kLacrosStabilitySwitch command line flag if present.
 //   2. From the current ash channel.
 Channel GetStatefulLacrosChannel() {
-  static const auto kStabilitySwitchToChannelMap =
+  static constexpr auto kStabilitySwitchToChannelMap =
       base::MakeFixedFlatMap<base::StringPiece, Channel>({
-          {browser_util::kLacrosStabilityChannelCanary, Channel::CANARY},
-          {browser_util::kLacrosStabilityChannelDev, Channel::DEV},
-          {browser_util::kLacrosStabilityChannelBeta, Channel::BETA},
-          {browser_util::kLacrosStabilityChannelStable, Channel::STABLE},
+          {kLacrosStabilityChannelCanary, Channel::CANARY},
+          {kLacrosStabilityChannelDev, Channel::DEV},
+          {kLacrosStabilityChannelBeta, Channel::BETA},
+          {kLacrosStabilityChannelStable, Channel::STABLE},
       });
-  auto stability_switch_value = GetLacrosStabilitySwitchValue();
-  return stability_switch_value && base::Contains(kStabilitySwitchToChannelMap,
-                                                  *stability_switch_value)
-             ? kStabilitySwitchToChannelMap.at(*stability_switch_value)
-             : chrome::GetChannel();
+  std::string stability_switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kLacrosStabilitySwitch);
+  if (!stability_switch_value.empty()) {
+    if (auto* it = kStabilitySwitchToChannelMap.find(stability_switch_value);
+        it != kStabilitySwitchToChannelMap.end()) {
+      return it->second;
+    }
+  }
+  return chrome::GetChannel();
 }
 
 }  // namespace
@@ -237,12 +252,6 @@ const ComponentInfo kLacrosDogfoodStableInfo = {
     "lacros-dogfood-stable", "ehpjbaiafkpkmhjocnenjbbhmecnfcjb"};
 
 const Channel kLacrosDefaultChannel = Channel::DEV;
-
-const char kLacrosStabilitySwitch[] = "lacros-stability";
-const char kLacrosStabilityChannelCanary[] = "canary";
-const char kLacrosStabilityChannelDev[] = "dev";
-const char kLacrosStabilityChannelBeta[] = "beta";
-const char kLacrosStabilityChannelStable[] = "stable";
 
 const char kLacrosSelectionSwitch[] = "lacros-selection";
 const char kLacrosSelectionRootfs[] = "rootfs";
@@ -313,7 +322,7 @@ bool IsProfileMigrationEnabled(const user_manager::User* user,
                                PolicyInitState policy_init_state) {
   return !base::FeatureList::IsEnabled(ash::standalone_browser::features::
                                            kLacrosProfileMigrationForceOff) &&
-         !IsAshWebBrowserEnabledForMigration(user, policy_init_state);
+         IsLacrosEnabledForMigration(user, policy_init_state);
 }
 
 bool IsProfileMigrationAvailable() {
@@ -337,11 +346,6 @@ bool IsAshWebBrowserEnabled() {
   return !IsLacrosEnabled();
 }
 
-bool IsAshWebBrowserEnabledForMigration(const user_manager::User* user,
-                                        PolicyInitState policy_init_state) {
-  return !IsLacrosEnabledForMigration(user, policy_init_state);
-}
-
 bool IsLacrosOnlyBrowserAllowed() {
   if (!ash::standalone_browser::BrowserSupport::IsInitializedForPrimaryUser()) {
     // This function must be called only after user session starts.
@@ -356,6 +360,9 @@ bool IsLacrosOnlyBrowserAllowed() {
 
 bool IsLacrosOnlyFlagAllowed() {
   return IsLacrosOnlyBrowserAllowed() &&
+         // Hide lacros_only flag for guest sessions as they do always start
+         // with a fresh and anonymous profile, hence ignoring this setting.
+         !UserManager::Get()->IsLoggedInAsGuest() &&
          (GetCachedLacrosAvailability() == LacrosAvailability::kUserChoice);
 }
 
@@ -559,8 +566,9 @@ std::optional<LacrosSelection> DetermineLacrosSelection() {
 
 ComponentInfo GetLacrosComponentInfoForChannel(version_info::Channel channel) {
   // We default to the Dev component for UNKNOWN channels.
+  // TODO(crbug.com/1513684): Convert to MakeFixedFlatMap().
   static const auto kChannelToComponentInfoMap =
-      base::MakeFixedFlatMap<Channel, const ComponentInfo*>({
+      base::MakeFixedFlatMapNonConsteval<Channel, const ComponentInfo*>({
           {Channel::UNKNOWN, &kLacrosDogfoodDevInfo},
           {Channel::CANARY, &kLacrosDogfoodCanaryInfo},
           {Channel::DEV, &kLacrosDogfoodDevInfo},

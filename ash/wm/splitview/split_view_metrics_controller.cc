@@ -20,6 +20,7 @@
 #include "base/check_op.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
@@ -106,7 +107,7 @@ bool InTabletMode() {
 }
 
 bool TopTwoVisibleWindowsBothSnapped(
-    const std::vector<aura::Window*>& windows) {
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows) {
   int windows_size = windows.size();
   if (windows_size < 2)
     return false;
@@ -117,7 +118,7 @@ bool TopTwoVisibleWindowsBothSnapped(
   if (!top_snap_window_state->IsSnapped())
     return false;
 
-  for (auto* window : base::Reversed(windows)) {
+  for (aura::Window* window : base::Reversed(windows)) {
     // Skip the top one.
     if (window == windows.back())
       continue;
@@ -148,16 +149,6 @@ SplitViewMetricsController::DeviceOrientation GetDeviceOrientation(
   return display.is_landscape()
              ? SplitViewMetricsController::DeviceOrientation::kLandscape
              : SplitViewMetricsController::DeviceOrientation::kPortrait;
-}
-
-chromeos::WindowStateType GetOppositeSnapType(aura::Window* window) {
-  CHECK(window);
-  WindowState* window_state = WindowState::Get(window);
-  CHECK(window_state->IsSnapped());
-  return window_state->GetStateType() ==
-                 chromeos::WindowStateType::kPrimarySnapped
-             ? chromeos::WindowStateType::kSecondarySnapped
-             : chromeos::WindowStateType::kPrimarySnapped;
 }
 
 }  // namespace
@@ -579,7 +570,7 @@ void SplitViewMetricsController::InitObservedWindowsOnActiveDesk() {
       current_desk_
           ->GetDeskContainerForRoot(split_view_controller_->root_window())
           ->children();
-  for (auto* window : windows) {
+  for (aura::Window* window : windows) {
     if (!CanIncludeWindowInMruList(window))
       continue;
     AddObservedWindow(window);
@@ -630,7 +621,7 @@ bool SplitViewMetricsController::
     return false;
 
   return TopTwoVisibleWindowsBothSnapped(
-      std::vector<aura::Window*>(begin_iter, iter));
+      std::vector<raw_ptr<aura::Window, VectorExperimental>>(begin_iter, iter));
 }
 
 void SplitViewMetricsController::RecordSnapTwoWindowsDuration(
@@ -679,7 +670,7 @@ void SplitViewMetricsController::MaybeStartOrEndRecordSnapTwoWindowsDuration(
     if (first_snapped_window_ && !first_snapped_time_.is_null() &&
         window_state->window() != first_snapped_window_ &&
         window_state->GetStateType() ==
-            GetOppositeSnapType(first_snapped_window_)) {
+            window_util::GetOppositeSnapType(first_snapped_window_)) {
       // If this is a different window that got snapped on the opposite side,
       // record the duration since `first_snapped_time_`.
       RecordSnapTwoWindowsDuration(base::TimeTicks::Now() -
@@ -732,7 +723,7 @@ void SplitViewMetricsController::MaybeStartOrEndRecordCloseTwoWindowsDuration(
     }
     // If `window` has the opposite state type of `first_closed_state_type_`,
     // record the duration.
-    if (GetOppositeSnapType(window) == first_closed_state_type_ &&
+    if (window_util::GetOppositeSnapType(window) == first_closed_state_type_ &&
         !first_closed_time_.is_null()) {
       RecordCloseTwoWindowsDuration(base::TimeTicks::Now() -
                                     first_closed_time_);

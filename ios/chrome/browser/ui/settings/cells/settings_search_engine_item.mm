@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,27 +10,35 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/legacy_chrome_table_view_styler.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#import "url/gurl.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
-#pragma mark - SearchEngineItem
+namespace {
 
-@interface SettingsSearchEngineItem ()
+// Favicon container size (vertical and horizontal).
+constexpr CGFloat kFaviconContainerSize = 32.;
+// Favicon container corner radius.
+constexpr CGFloat kFaviconContainerCornerRadius = 7.;
+// Favicon container border width.
+constexpr CGFloat kFaviconContainerBorderWidth = 1.5;
 
-// Redefined as read write.
-@property(nonatomic, readwrite, copy) NSString* uniqueIdentifier;
-
-@end
+}  // namespace
 
 @implementation SettingsSearchEngineItem
+
+@synthesize enabled = _enabled;
+@synthesize text = _text;
+@synthesize detailText = _detailText;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-      self.cellClass = TableViewURLCell.class;
-      _enabled = YES;
+    self.cellClass = SettingsSearchEngineCell.class;
+    _enabled = YES;
   }
   return self;
 }
@@ -38,15 +46,12 @@
 - (void)configureCell:(TableViewCell*)tableCell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
-
-  self.uniqueIdentifier = base::SysUTF8ToNSString(self.URL.host());
-
-  TableViewURLCell* cell =
-      base::apple::ObjCCastStrict<TableViewURLCell>(tableCell);
-  cell.titleLabel.text = self.text;
-  cell.URLLabel.text = self.detailText;
-  cell.cellUniqueIdentifier = self.uniqueIdentifier;
+  SettingsSearchEngineCell* cell =
+      base::apple::ObjCCastStrict<SettingsSearchEngineCell>(tableCell);
+  cell.textLabel.text = self.text;
+  cell.detailTextLabel.text = self.detailText;
   cell.accessibilityTraits |= UIAccessibilityTraitButton;
+  [cell.faviconView configureWithAttributes:self.faviconAttributes];
   if (self.enabled) {
     cell.contentView.alpha = 1.0;
     cell.userInteractionEnabled = YES;
@@ -56,20 +61,139 @@
     cell.userInteractionEnabled = NO;
     cell.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
-
   if (styler.cellTitleColor) {
-    cell.titleLabel.textColor = styler.cellTitleColor;
+    cell.textLabel.textColor = styler.cellTitleColor;
   }
-
-  cell.URLLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
-
-  [cell configureUILayout];
+  cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
 }
 
-- (BOOL)isEqual:(SettingsSearchEngineItem*)otherItem {
-  return (self.text == otherItem.text) &&
-         (self.detailText == otherItem.detailText) &&
-         (self.URL == otherItem.URL);
+@end
+
+@implementation SettingsSearchEngineCell {
+  UIView* _faviconContainer;
+}
+
+@synthesize faviconView = _faviconView;
+@synthesize textLabel = _textLabel;
+@synthesize detailTextLabel = _detailTextLabel;
+@synthesize imageView = _imageView;
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+  if (self) {
+    self.isAccessibilityElement = YES;
+    UIView* contentView = self.contentView;
+    // Add favicon container.
+    _faviconContainer = [[UIView alloc] init];
+    _faviconContainer.translatesAutoresizingMaskIntoConstraints = NO;
+    _faviconContainer.layer.borderWidth = kFaviconContainerBorderWidth;
+    _faviconContainer.layer.cornerRadius = kFaviconContainerCornerRadius;
+    _faviconContainer.layer.masksToBounds = YES;
+    _faviconContainer.layer.borderColor =
+        [UIColor colorNamed:kSeparatorColor].CGColor;
+    [contentView addSubview:_faviconContainer];
+    // Add favicon view.
+    _faviconView = [[FaviconView alloc] init];
+    _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
+    _faviconView.tintColor = [UIColor colorNamed:kTextPrimaryColor];
+    [_faviconView setContentHuggingPriority:UILayoutPriorityRequired
+                                    forAxis:UILayoutConstraintAxisHorizontal];
+    [_faviconView
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
+    [_faviconContainer addSubview:_faviconView];
+    // Stack.
+    UIStackView* textStackView = [[UIStackView alloc] init];
+    textStackView.axis = UILayoutConstraintAxisVertical;
+    textStackView.translatesAutoresizingMaskIntoConstraints = NO;
+    [contentView addSubview:textStackView];
+    // Add text label.
+    _textLabel = [[UILabel alloc] init];
+    _textLabel.numberOfLines = 0;
+    _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _textLabel.adjustsFontForContentSizeCategory = YES;
+    _textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
+    [textStackView addArrangedSubview:_textLabel];
+    // Add detail text label.
+    _detailTextLabel = [[UILabel alloc] init];
+    _detailTextLabel.numberOfLines = 0;
+    _detailTextLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    _detailTextLabel.adjustsFontForContentSizeCategory = YES;
+    [textStackView addArrangedSubview:_detailTextLabel];
+    AddSameCenterConstraints(_faviconContainer, _faviconView);
+    AddSameCenterYConstraint(_faviconContainer, contentView);
+    AddSameCenterYConstraint(textStackView, contentView);
+    [NSLayoutConstraint activateConstraints:@[
+      [_faviconView.widthAnchor
+          constraintEqualToConstant:kFaviconImageViewSize],
+      [_faviconView.heightAnchor
+          constraintEqualToConstant:kFaviconImageViewSize],
+      [_faviconContainer.widthAnchor
+          constraintEqualToConstant:kFaviconContainerSize],
+      [_faviconContainer.heightAnchor
+          constraintEqualToConstant:kFaviconContainerSize],
+      [_faviconContainer.leadingAnchor
+          constraintEqualToAnchor:contentView.leadingAnchor
+                         constant:kTableViewHorizontalSpacing],
+      [_faviconContainer.topAnchor
+          constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
+                                      constant:kTableViewVerticalSpacing],
+      [_faviconContainer.bottomAnchor
+          constraintLessThanOrEqualToAnchor:contentView.bottomAnchor
+                                   constant:-kTableViewVerticalSpacing],
+      [_faviconContainer.trailingAnchor
+          constraintEqualToAnchor:textStackView.leadingAnchor
+                         constant:-kTableViewSubViewHorizontalSpacing],
+      [textStackView.topAnchor
+          constraintEqualToAnchor:contentView.topAnchor
+                         constant:kTableViewTwoLabelsCellVerticalSpacing],
+      [textStackView.bottomAnchor
+          constraintEqualToAnchor:contentView.bottomAnchor
+                         constant:-kTableViewTwoLabelsCellVerticalSpacing],
+      [textStackView.trailingAnchor
+          constraintEqualToAnchor:contentView.trailingAnchor],
+    ]];
+    [self resetColors];
+  }
+  return self;
+}
+
+#pragma mark - UITableViewCell
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  _textLabel.text = nil;
+  _detailTextLabel.text = nil;
+  [_faviconView configureWithAttributes:nil];
+}
+
+#pragma mark - UITraitEnvironment
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self resetColors];
+}
+
+#pragma mark - UIAccessibility
+
+- (NSString*)accessibilityLabel {
+  CHECK_GT(self.textLabel.text.length, 0ul);
+  if (self.detailTextLabel.text.length == 0) {
+    return self.textLabel.text;
+  }
+  return [NSString stringWithFormat:@"%@, %@", self.textLabel.text,
+                                    self.detailTextLabel.text];
+}
+
+#pragma mark - Private
+
+// Updates the colors in the cell.
+- (void)resetColors {
+  _faviconContainer.layer.borderColor =
+      [UIColor colorNamed:kSeparatorColor].CGColor;
 }
 
 @end

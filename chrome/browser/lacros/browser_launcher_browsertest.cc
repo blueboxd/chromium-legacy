@@ -89,7 +89,7 @@ class BrowserLauncherTest : public InProcessBrowserTest {
     browser_service()->NewWindow(
         incognito, should_trigger_session_restore,
         display::Screen::GetScreen()->GetDisplayForNewWindows().id(),
-        /*profile_id=*/absl::nullopt, new_window_future.GetCallback());
+        /*profile_id=*/std::nullopt, new_window_future.GetCallback());
     ASSERT_TRUE(new_window_future.Wait())
         << "NewWindow did not trigger the callback.";
   }
@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(BrowserLauncherTest,
             tab_strip->GetWebContentsAt(0)->GetLastCommittedURL().path());
 
   Browser* app_browser = nullptr;
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     if (browser->type() != Browser::Type::TYPE_APP)
       continue;
     EXPECT_FALSE(app_browser);
@@ -642,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(BrowserLauncherTest,
 
   // Launch the browser.
   base::test::TestFuture<crosapi::mojom::CreationResult> launch_future;
-  browser_service()->Launch(0, /*profile_id=*/absl::nullopt,
+  browser_service()->Launch(0, /*profile_id=*/std::nullopt,
                             launch_future.GetCallback());
   ASSERT_TRUE(launch_future.Wait()) << "Launch did not trigger the callback.";
 
@@ -770,7 +770,7 @@ IN_PROC_BROWSER_TEST_F(BrowserLauncherTest,
   // Launch the browser. A browser window for each last profile should be
   // restored.
   base::test::TestFuture<crosapi::mojom::CreationResult> launch_future;
-  browser_service()->Launch(0, /*profile_id=*/absl::nullopt,
+  browser_service()->Launch(0, /*profile_id=*/std::nullopt,
                             launch_future.GetCallback());
   ASSERT_TRUE(launch_future.Wait()) << "Launch did not trigger the callback.";
 

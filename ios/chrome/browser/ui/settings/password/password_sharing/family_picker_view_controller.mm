@@ -16,6 +16,7 @@
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -54,7 +55,7 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
 
   UITableView* tableView = self.tableView;
   tableView.allowsMultipleSelection = YES;
-  tableView.accessibilityIdentifier = kFamilyPickerTableViewId;
+  tableView.accessibilityIdentifier = kFamilyPickerTableViewID;
 
   [self loadModel];
 }
@@ -72,18 +73,13 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
   }
 }
 
-- (void)viewDidDisappear:(BOOL)animated {
-  [self.delegate familyPickerWasDismissed:self];
-  [super viewDidDisappear:animated];
-}
-
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   if (_recipients[indexPath.row].isEligible) {
     [tableView cellForRowAtIndexPath:indexPath].accessoryView =
-        [[UIImageView alloc] initWithImage:[self checkmarkCircleIcon]];
+        [self checkmarkCircleIcon];
     [self setShareButtonStatus];
   }
 }
@@ -92,7 +88,7 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
     didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
   if (_recipients[indexPath.row].isEligible) {
     [tableView cellForRowAtIndexPath:indexPath].accessoryView =
-        [[UIImageView alloc] initWithImage:[self circleIcon]];
+        [self circleIcon];
     [self setShareButtonStatus];
   }
 }
@@ -124,10 +120,9 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
   cell.accessibilityIdentifier = _recipients[indexPath.row].email;
   if (_recipients[indexPath.row].isEligible) {
     cell.accessoryView =
-        [[UIImageView alloc] initWithImage:[tableView.indexPathsForSelectedRows
-                                               containsObject:indexPath]
-                                               ? [self checkmarkCircleIcon]
-                                               : [self circleIcon]];
+        [tableView.indexPathsForSelectedRows containsObject:indexPath]
+            ? [self checkmarkCircleIcon]
+            : [self circleIcon];
   } else {
     UIButton* infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
     [infoButton setImage:[self infoCircleIcon] forState:UIControlStateNormal];
@@ -135,9 +130,18 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
                    action:@selector(infoButtonTapped:)
          forControlEvents:UIControlEventTouchUpInside];
     infoButton.accessibilityIdentifier =
-        [NSString stringWithFormat:@"%@ %@", kFamilyPickerInfoButtonId,
+        [NSString stringWithFormat:@"%@ %@", kFamilyPickerInfoButtonID,
                                    _recipients[indexPath.row].email];
+    infoButton.accessibilityLabel = [NSString
+        stringWithFormat:@"%@, %@", _recipients[indexPath.row].fullName,
+                         l10n_util::GetNSString(
+                             IDS_IOS_INFO_BUTTON_ACCESSIBILITY_HINT)];
     cell.accessoryView = infoButton;
+
+    // Make the cell a non-accessible element to make the info button accessible
+    // to VoiceOver.
+    cell.isAccessibilityElement = NO;
+    infoButton.isAccessibilityElement = YES;
   }
 
   return cell;
@@ -178,7 +182,9 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
   item.detailText = recipient.email;
   item.image = CircularImageFromImage(recipient.profileImage,
                                       kAccountProfilePhotoDimension);
+  item.accessibilityTraits = UIAccessibilityTraitButton;
   if (!recipient.isEligible) {
+    item.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
     item.textColor = [UIColor colorNamed:kTextTertiaryColor];
     item.detailTextColor = [UIColor colorNamed:kTextTertiaryColor];
     item.imageViewAlpha = 0.4f;
@@ -197,7 +203,7 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
              target:self
              action:@selector(backButtonTapped)];
   navigationItem.leftBarButtonItem.accessibilityIdentifier =
-      kFamilyPickerBackButtonId;
+      kFamilyPickerBackButtonID;
 }
 
 - (void)setupLeftCancelButton {
@@ -207,7 +213,7 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
                            target:self
                            action:@selector(cancelButtonTapped)];
   navigationItem.leftBarButtonItem.accessibilityIdentifier =
-      kFamilyPickerCancelButtonId;
+      kFamilyPickerCancelButtonID;
 }
 
 #pragma mark - PopoverLabelViewControllerDelegate
@@ -219,14 +225,19 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
 #pragma mark - Private
 
 // Creates accessory view for a cell with selected sharing recipient.
-- (UIImage*)checkmarkCircleIcon {
-  return DefaultSymbolWithPointSize(kCheckmarkCircleFillSymbol,
-                                    kAccessorySymbolSize);
+- (UIImageView*)checkmarkCircleIcon {
+  return [[UIImageView alloc]
+      initWithImage:DefaultSymbolWithPointSize(kCheckmarkCircleFillSymbol,
+                                               kAccessorySymbolSize)];
 }
 
 // Creates accessory view for a cell with unselected sharing recipient.
-- (UIImage*)circleIcon {
-  return DefaultSymbolWithPointSize(kCircleSymbol, kAccessorySymbolSize);
+- (UIImageView*)circleIcon {
+  UIImageView* circleIcon = [[UIImageView alloc]
+      initWithImage:DefaultSymbolWithPointSize(kCircleSymbol,
+                                               kAccessorySymbolSize)];
+  circleIcon.tintColor = [UIColor colorNamed:kGrey300Color];
+  return circleIcon;
 }
 
 // Creates accessory view for a cell with ineligible sharing recipient.
@@ -320,7 +331,7 @@ NSArray<RecipientInfoForIOSDisplay*>* _recipients;
              target:self
              action:@selector(shareButtonTapped)];
   shareButton.enabled = NO;
-  shareButton.accessibilityIdentifier = kFamilyPickerShareButtonId;
+  shareButton.accessibilityIdentifier = kFamilyPickerShareButtonID;
   return shareButton;
 }
 

@@ -26,7 +26,7 @@
 #import "ios/chrome/browser/intents/intent_type.h"
 #import "ios/chrome/browser/intents/intents_constants.h"
 #import "ios/chrome/browser/metrics/model/first_user_action_recorder.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/connection_information.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_controller.h"
@@ -45,7 +45,7 @@
 #import "ios/chrome/common/intents/OpenInChromeIncognitoIntent.h"
 #import "ios/chrome/common/intents/OpenInChromeIntent.h"
 #import "ios/chrome/common/intents/SearchInChromeIntent.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "ui/base/page_transition_types.h"
 
 using base::UserMetricsAction;

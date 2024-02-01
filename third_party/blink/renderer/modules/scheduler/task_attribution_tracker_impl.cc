@@ -39,6 +39,8 @@ perfetto::protos::pbzero::BlinkTaskScope::TaskScopeType ToProtoEnum(
       return ProtoType::TASK_SCOPE_SCHEDULER_POST_TASK;
     case TaskAttributionTracker::TaskScopeType::kRequestIdleCallback:
       return ProtoType::TASK_SCOPE_REQUEST_IDLE_CALLBACK;
+    case TaskAttributionTracker::TaskScopeType::kXMLHttpRequest:
+      return ProtoType::TASK_SCOPE_XML_HTTP_REQUEST;
   }
 }
 
@@ -182,23 +184,6 @@ ScriptWrappableTaskState*
 TaskAttributionTrackerImpl::GetCurrentTaskContinuationData(
     ScriptState* script_state) const {
   return ScriptWrappableTaskState::GetCurrent(script_state);
-}
-
-TaskAttributionTracker::Observer*
-TaskAttributionTrackerImpl::GetObserverForTaskDisposal(TaskAttributionId id) {
-  auto it = task_id_observers_.find(id.value());
-  if (it == task_id_observers_.end()) {
-    return nullptr;
-  }
-  auto* observer = it->value.Get();
-  task_id_observers_.erase(it);
-  return observer;
-}
-
-void TaskAttributionTrackerImpl::SetObserverForTaskDisposal(
-    TaskAttributionId id,
-    Observer* observer) {
-  task_id_observers_.insert(id.value(), observer);
 }
 
 // TaskScope's implementation

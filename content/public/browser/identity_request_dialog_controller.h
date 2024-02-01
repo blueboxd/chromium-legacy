@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_IDENTITY_REQUEST_DIALOG_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_IDENTITY_REQUEST_DIALOG_CONTROLLER_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/federated_identity_modal_dialog_view_delegate.h"
 #include "content/public/browser/identity_request_account.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -39,8 +39,8 @@ struct CONTENT_EXPORT IdentityProviderMetadata {
   IdentityProviderMetadata(const IdentityProviderMetadata& other);
   ~IdentityProviderMetadata();
 
-  absl::optional<SkColor> brand_text_color;
-  absl::optional<SkColor> brand_background_color;
+  std::optional<SkColor> brand_text_color;
+  std::optional<SkColor> brand_background_color;
   GURL brand_icon_url;
   GURL idp_login_url;
   // The URL of the configuration endpoint. This is stored in
@@ -56,8 +56,9 @@ struct CONTENT_EXPORT IdentityProviderData {
                        const std::vector<IdentityRequestAccount>& accounts,
                        const IdentityProviderMetadata& idp_metadata,
                        const ClientMetadata& client_metadata,
-                       const blink::mojom::RpContext& rp_context,
-                       const bool request_permission);
+                       blink::mojom::RpContext rp_context,
+                       bool request_permission,
+                       bool has_login_status_mismatch);
   IdentityProviderData(const IdentityProviderData& other);
   ~IdentityProviderData();
 
@@ -69,6 +70,9 @@ struct CONTENT_EXPORT IdentityProviderData {
   // Whether the dialog should ask for the user's permission to share
   // the id/email/name/picture permission or not.
   bool request_permission;
+  // Whether there was some login status API mismatch when fetching the IDP's
+  // accounts.
+  bool has_login_status_mismatch;
 };
 
 // IdentityRequestDialogController is in interface for control of the UI
@@ -90,6 +94,11 @@ class CONTENT_EXPORT IdentityRequestDialogController {
     kMaxValue = kMoreDetailsButton,
   };
 
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.webid
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: IdentityRequestDialogLinkType
+  enum class LinkType { PRIVACY_POLICY, TERMS_OF_SERVICE };
+
   using AccountSelectionCallback =
       base::OnceCallback<void(const GURL& idp_config_url,
                               const std::string& /*account_id*/,
@@ -98,7 +107,9 @@ class CONTENT_EXPORT IdentityRequestDialogController {
 
   using DismissCallback =
       base::OnceCallback<void(DismissReason dismiss_reason)>;
-  using LoginToIdPCallback = base::OnceCallback<void(GURL /*idp_login_url*/)>;
+  using LoginToIdPCallback =
+      base::OnceCallback<void(const GURL& /*idp_config_url*/,
+                              GURL /*idp_login_url*/)>;
   using MoreDetailsCallback = base::OnceCallback<void()>;
 
   IdentityRequestDialogController() = default;
@@ -126,9 +137,10 @@ class CONTENT_EXPORT IdentityRequestDialogController {
   // |sign_in_mode| represents whether this is an auto re-authn flow.
   virtual void ShowAccountsDialog(
       const std::string& top_frame_for_display,
-      const absl::optional<std::string>& iframe_for_display,
+      const std::optional<std::string>& iframe_for_display,
       const std::vector<IdentityProviderData>& identity_provider_data,
       IdentityRequestAccount::SignInMode sign_in_mode,
+      blink::mojom::RpMode rp_mode,
       bool show_auto_reauthn_checkbox,
       AccountSelectionCallback on_selected,
       LoginToIdPCallback on_add_account,
@@ -139,9 +151,10 @@ class CONTENT_EXPORT IdentityRequestDialogController {
   // signed in but not respond with any user account during browser fetches.
   virtual void ShowFailureDialog(
       const std::string& top_frame_for_display,
-      const absl::optional<std::string>& iframe_for_display,
+      const std::optional<std::string>& iframe_for_display,
       const std::string& idp_for_display,
-      const blink::mojom::RpContext& rp_context,
+      blink::mojom::RpContext rp_context,
+      blink::mojom::RpMode rp_mode,
       const IdentityProviderMetadata& idp_metadata,
       DismissCallback dismiss_callback,
       LoginToIdPCallback login_callback);
@@ -149,20 +162,24 @@ class CONTENT_EXPORT IdentityRequestDialogController {
   // Shows an error UI when the user's sign-in attempt failed.
   virtual void ShowErrorDialog(
       const std::string& top_frame_for_display,
-      const absl::optional<std::string>& iframe_for_display,
+      const std::optional<std::string>& iframe_for_display,
       const std::string& idp_for_display,
-      const blink::mojom::RpContext& rp_context,
+      blink::mojom::RpContext rp_context,
+      blink::mojom::RpMode rp_mode,
       const IdentityProviderMetadata& idp_metadata,
-      const absl::optional<IdentityCredentialTokenError>& error,
+      const std::optional<IdentityCredentialTokenError>& error,
       DismissCallback dismiss_callback,
       MoreDetailsCallback more_details_callback);
 
   // Only to be called after a dialog is shown.
   virtual std::string GetTitle() const;
-  virtual absl::optional<std::string> GetSubtitle() const;
+  virtual std::optional<std::string> GetSubtitle() const;
 
   // Show dialog notifying user that IdP sign-in failed.
   virtual void ShowIdpSigninFailureDialog(base::OnceClosure dismiss_callback);
+
+  // Open a popup or similar that shows the specified URL.
+  virtual void ShowUrl(LinkType type, const GURL& url);
 
   // Show a modal dialog that loads content from the IdP.
   virtual WebContents* ShowModalDialog(const GURL& url,

@@ -4,11 +4,11 @@
 
 #include "chromeos/ash/services/ime/ime_shared_library_wrapper.h"
 
-#include "ash/constants/ash_features.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/system/sys_info.h"
 #include "chromeos/ash/services/ime/constants.h"
 
 namespace ash {
@@ -18,37 +18,35 @@ namespace {
 
 const char kCrosImeDecoderLib[] = "libimedecoder.so";
 
-// TODO(b/161491092): Add test image path based on value of
-// "CHROMEOS_RELEASE_TRACK" from `base::SysInfo::GetLsbReleaseValue`.
-// Returns ImeDecoderLib path based on the run time env.
 base::FilePath GetImeDecoderLibPath() {
 #if defined(__x86_64__) || defined(__aarch64__)
   base::FilePath lib_path("/usr/lib64");
 #else
   base::FilePath lib_path("/usr/lib");
 #endif
-  lib_path = lib_path.Append(kCrosImeDecoderLib);
-  return lib_path;
+  return lib_path.Append(kCrosImeDecoderLib);
 }
 
 // Simple bridge between logging in the loaded shared library and logging in
 // Chrome.
+// Severity comes from the LogSeverity enum in absl logging.
 void ImeLoggerBridge(int severity, const char* message) {
   switch (severity) {
-    case logging::LOG_INFO:
-      // TODO(b/162375823): VLOG_IF(INFO, is_debug_version).
+    case logging::LOGGING_INFO:
+      // Silently ignore.
       break;
-    case logging::LOG_WARNING:
+    case logging::LOGGING_WARNING:
       LOG(WARNING) << message;
       break;
-    case logging::LOG_ERROR:
+    case logging::LOGGING_ERROR:
       LOG(ERROR) << message;
       break;
-    case logging::LOG_FATAL:
+    case logging::LOGGING_FATAL:
       LOG(FATAL) << message;
-      break;
     default:
-      break;
+      // There's no LOGGING_VERBOSE level in absl logging. Nothing should reach
+      // here.
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -67,8 +65,9 @@ ImeSharedLibraryWrapperImpl::MaybeLoadThenReturnEntryPoints() {
   // Add dlopen flags (RTLD_LAZY | RTLD_NODELETE) later.
   base::ScopedNativeLibrary library = base::ScopedNativeLibrary(path);
   if (!library.is_valid()) {
-    LOG(ERROR) << "Failed to load decoder shared library from: " << path
-               << ", error: " << library.GetError()->ToString();
+    LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "Failed to load decoder shared library from: " << path
+        << ", error: " << library.GetError()->ToString();
     return std::nullopt;
   }
 
@@ -77,30 +76,32 @@ ImeSharedLibraryWrapperImpl::MaybeLoadThenReturnEntryPoints() {
           library.GetFunctionPointer(kInitProtoModeFnName)),
       .close_proto_mode = reinterpret_cast<CloseProtoModeFn>(
           library.GetFunctionPointer(kCloseProtoModeFnName)),
-      .supports = reinterpret_cast<ImeDecoderSupportsFn>(
+      .proto_mode_supports = reinterpret_cast<ImeDecoderSupportsFn>(
           library.GetFunctionPointer(kImeDecoderSupportsFnName)),
-      .activate_ime = reinterpret_cast<ImeDecoderActivateImeFn>(
+      .proto_mode_activate_ime = reinterpret_cast<ImeDecoderActivateImeFn>(
           library.GetFunctionPointer(kImeDecoderActivateImeFnName)),
-      .process = reinterpret_cast<ImeDecoderProcessFn>(
+      .proto_mode_process = reinterpret_cast<ImeDecoderProcessFn>(
           library.GetFunctionPointer(kImeDecoderProcessFnName)),
       .init_mojo_mode = reinterpret_cast<InitMojoModeFn>(
           library.GetFunctionPointer(kInitMojoModeFnName)),
       .close_mojo_mode = reinterpret_cast<CloseMojoModeFn>(
           library.GetFunctionPointer(kCloseMojoModeFnName)),
-      .initialize_connection_factory =
+      .mojo_mode_initialize_connection_factory =
           reinterpret_cast<InitializeConnectionFactoryFn>(
               library.GetFunctionPointer(kInitializeConnectionFactoryFnName)),
-      .is_input_method_connected = reinterpret_cast<IsInputMethodConnectedFn>(
-          library.GetFunctionPointer(kIsInputMethodConnectedFnName)),
+      .mojo_mode_is_input_method_connected =
+          reinterpret_cast<IsInputMethodConnectedFn>(
+              library.GetFunctionPointer(kIsInputMethodConnectedFnName)),
   };
 
   // Checking if entry_points are loaded.
   if (!entry_points.init_proto_mode || !entry_points.close_proto_mode ||
-      !entry_points.supports || !entry_points.activate_ime ||
-      !entry_points.process || !entry_points.init_mojo_mode ||
+      !entry_points.proto_mode_supports ||
+      !entry_points.proto_mode_activate_ime ||
+      !entry_points.proto_mode_process || !entry_points.init_mojo_mode ||
       !entry_points.close_mojo_mode ||
-      !entry_points.is_input_method_connected ||
-      !entry_points.initialize_connection_factory) {
+      !entry_points.mojo_mode_is_input_method_connected ||
+      !entry_points.mojo_mode_initialize_connection_factory) {
     return std::nullopt;
   }
 

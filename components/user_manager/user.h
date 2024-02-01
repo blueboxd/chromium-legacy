@@ -11,6 +11,7 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_info.h"
@@ -82,8 +83,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Returns true if user represents any type of the kiosk.
   static bool TypeIsKiosk(UserType user_type);
 
-  explicit User(const AccountId& account_id);
-
   User(const User&) = delete;
   User& operator=(const User&) = delete;
 
@@ -97,13 +96,13 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   const AccountId& GetAccountId() const override;
 
   // Returns the user type.
-  virtual UserType GetType() const = 0;
+  UserType GetType() const { return type_; }
 
   // Will LOG(FATAL) unless overridden.
-  virtual void UpdateType(UserType user_type);
+  void UpdateType(UserType new_type);
 
   // Returns true if user has gaia account. True for users of types
-  // USER_TYPE_REGULAR and USER_TYPE_CHILD.
+  // UserType::kRegular and UserType::kChild.
   virtual bool HasGaiaAccount() const;
 
   // Returns true if it's Active Directory user.
@@ -111,9 +110,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // Returns true if user is child.
   virtual bool IsChild() const;
-
-  // True if user image can be synced.
-  virtual bool CanSyncImage() const;
 
   // The displayed (non-canonical) user email.
   virtual std::string display_email() const;
@@ -214,7 +210,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   }
 
   static User* CreateRegularUserForTesting(const AccountId& account_id) {
-    User* user = CreateRegularUser(account_id, USER_TYPE_REGULAR);
+    User* user = CreateRegularUser(account_id, UserType::kRegular);
     user->SetImage(std::unique_ptr<UserImage>(new UserImage), 0);
     return user;
   }
@@ -245,6 +241,8 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   static User* CreateWebKioskAppUser(const AccountId& web_kiosk_account_id);
   static User* CreatePublicAccountUser(const AccountId& account_id,
                                        bool is_using_saml = false);
+
+  User(const AccountId& account_id, UserType type);
 
   const std::string* GetAccountLocale() const { return account_locale_.get(); }
 
@@ -304,6 +302,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
  private:
   AccountId account_id_;
+  UserType type_;
   std::u16string display_name_;
   std::u16string given_name_;
   // User email for display, which may include capitals and non-significant
@@ -351,7 +350,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   raw_ptr<PrefService> profile_prefs_ = nullptr;
 
   // True if the user is affiliated to the device.
-  absl::optional<bool> is_affiliated_;
+  std::optional<bool> is_affiliated_;
 
   std::vector<base::OnceClosure> on_profile_created_observers_;
   std::vector<base::OnceCallback<void(bool is_affiliated)>>
@@ -359,7 +358,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 };
 
 // List of known users.
-using UserList = std::vector<User*>;
+using UserList = std::vector<raw_ptr<User, VectorExperimental>>;
 
 }  // namespace user_manager
 

@@ -195,7 +195,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
 
   ErrorEvent* event = ErrorEvent::Create(
       ToCoreStringWithNullCheck(isolate, message->Get()), std::move(location),
-      ScriptValue::From(script_state, data), &script_state->World());
+      ScriptValue(isolate, data), &script_state->World());
 
   String message_for_console = ExtractMessageForConsole(isolate, data);
   if (!message_for_console.empty())
@@ -207,13 +207,16 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
 void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
                                            v8::Local<v8::Value> data) {
   v8::Isolate* isolate = message->GetIsolate();
-
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+  CHECK(!v8_context.IsEmpty());
   // During the frame teardown, there may not be a valid context.
-  ScriptState* script_state = ScriptState::Current(isolate);
+  auto* script_state = ScriptState::From(v8_context);
+  CHECK(script_state);
   if (!script_state->ContextIsValid())
     return;
 
   ExecutionContext* context = ExecutionContext::From(script_state);
+  CHECK(context);
 
   UseCounter::Count(context, WebFeature::kUnhandledExceptionCountInWorker);
   base::UmaHistogramBoolean("V8.UnhandledExceptionCountInWorker", true);
@@ -232,7 +235,7 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
 
   ErrorEvent* event = ErrorEvent::Create(
       ToCoreStringWithNullCheck(isolate, message->Get()), std::move(location),
-      ScriptValue::From(script_state, data), &script_state->World());
+      ScriptValue(isolate, data), &script_state->World());
 
   const auto sanitize_script_errors = message->IsSharedCrossOrigin()
                                           ? SanitizeScriptErrors::kDoNotSanitize
@@ -469,23 +472,34 @@ V8Initializer::CodeGenerationCheckCallbackInMainThread(
   return {true, std::move(stringified_source)};
 }
 
-bool V8Initializer::WasmCodeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context,
-                                                 v8::Local<v8::String> source) {
-  if (ExecutionContext* execution_context = ToExecutionContext(context)) {
-    if (ContentSecurityPolicy* policy =
-            execution_context->GetContentSecurityPolicy()) {
-      v8::String::Value source_str(context->GetIsolate(), source);
-      UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
-      size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,
-                            static_cast<size_t>(source_str.length()));
-      memcpy(snippet, *source_str, len * sizeof(UChar));
-      snippet[len] = 0;
-      return policy->AllowWasmCodeGeneration(
-          ReportingDisposition::kReport,
-          ContentSecurityPolicy::kWillThrowException, snippet);
-    }
+bool V8Initializer::WasmCodeGenerationCheckCallbackInMainThread(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::String> source) {
+  ExecutionContext* execution_context = ToExecutionContext(context);
+  if (!execution_context) {
+    return false;
   }
-  return false;
+  ContentSecurityPolicy* policy = execution_context->GetContentSecurityPolicy();
+  if (!policy) {
+    return false;
+  }
+  v8::String::Value source_str(context->GetIsolate(), source);
+  UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
+  size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,
+                        static_cast<size_t>(source_str.length()));
+  memcpy(snippet, *source_str, len * sizeof(UChar));
+  snippet[len] = 0;
+  if (!policy->AllowWasmCodeGeneration(
+          ReportingDisposition::kReport,
+          ContentSecurityPolicy::kWillThrowException, snippet)) {
+    return false;
+  }
+
+  // Set a crash key so we know if a crash report could have been caused by
+  // Wasm.
+  static crash_reporter::CrashKeyString<1> has_wasm_key("has-wasm");
+  has_wasm_key.Set("1");
+  return true;
 }
 
 void V8Initializer::WasmAsyncResolvePromiseCallback(
@@ -584,14 +598,6 @@ bool WasmInstanceOverride(const v8::FunctionCallbackInfo<v8::Value>& args) {
     return true;
   }
   return false;
-}
-
-bool WasmGCEnabledCallback(v8::Local<v8::Context> context) {
-  ExecutionContext* execution_context = ToExecutionContext(context);
-  if (!execution_context) {
-    return false;
-  }
-  return RuntimeEnabledFeatures::WebAssemblyGCEnabled(execution_context);
 }
 
 bool WasmJSStringBuiltinsEnabledCallback(v8::Local<v8::Context> context) {
@@ -751,7 +757,6 @@ void V8Initializer::InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
-  isolate->SetWasmGCEnabledCallback(WasmGCEnabledCallback);
   isolate->SetWasmImportedStringsEnabledCallback(
       WasmJSStringBuiltinsEnabledCallback);
   isolate->SetSharedArrayBufferConstructorEnabledCallback(

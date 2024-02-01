@@ -7,9 +7,12 @@
 
 #include <string>
 
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 
 namespace autofill {
 
@@ -23,31 +26,57 @@ struct Suggestion;
 // IBANs.
 class IbanAccessManager {
  public:
-  class Accessor {
-   public:
-    virtual ~Accessor() = default;
-    virtual void OnIbanFetched(const std::u16string& value) = 0;
-  };
+  // Callback to notify the caller of the access manager when fetching the value
+  // of an IBAN has finished.
+  using OnIbanFetchedCallback =
+      base::OnceCallback<void(const std::u16string& value)>;
 
   explicit IbanAccessManager(AutofillClient* client);
   IbanAccessManager(const IbanAccessManager&) = delete;
   IbanAccessManager& operator=(const IbanAccessManager&) = delete;
-  ~IbanAccessManager();
+  virtual ~IbanAccessManager();
 
   // Returns the full IBAN value corresponding to the input `suggestion`.
-  // As this may require a network round-trip for server IBANs, the value
-  // is returned via a call to `Accessor::OnIbanFetched` which may occur
-  // asynchronously to this method.
-  // If the IBAN value cannot be extracted, the accessor will never be called.
-  void FetchValue(const Suggestion& suggestion,
-                  base::WeakPtr<Accessor> accessor);
+  // As this may require a network round-trip for server IBANs,
+  //`on_iban_fetched` is run once the value is fetched. For local IBANs, value
+  // will be filled immediately.
+  virtual void FetchValue(const Suggestion& suggestion,
+                          OnIbanFetchedCallback on_iban_fetched);
+
+  void StartDeviceAuthenticationForFillingForTesting(
+      OnIbanFetchedCallback on_iban_fetched,
+      const std::u16string& value) {
+    StartDeviceAuthenticationForFilling(std::move(on_iban_fetched), value);
+  }
 
  private:
   // Called when an UnmaskIban call is completed. The full IBAN value will be
   // returned via `value`.
-  void OnUnmaskResponseReceived(base::WeakPtr<Accessor> accessor,
+  void OnUnmaskResponseReceived(OnIbanFetchedCallback on_iban_fetched,
+                                base::TimeTicks unmask_request_timestamp,
                                 AutofillClient::PaymentsRpcResult result,
                                 const std::u16string& value);
+
+  void OnServerIbanUnmaskCancelled();
+
+  // Starts the device authentication flow during a payments autofill form fill.
+  // `OnDeviceAuthenticationResponseForFilling()` will be invoked when the
+  // response is received from the device authentication.
+  // `value` is the full IBAN value that needs to be filled. This function
+  // should only be called on platforms where DeviceAuthenticator is present.
+  void StartDeviceAuthenticationForFilling(
+      OnIbanFetchedCallback on_iban_fetched,
+      const std::u16string& value);
+
+  // Callback function invoked when we receive a response from a mandatory
+  // re-auth authentication in a flow where we might fill the full IBAN value
+  // after the response. If it is successful, we will fill `value` into the
+  // form, otherwise we will handle the error. `successful_auth` is true
+  // if the authentication was successful, false otherwise.
+  void OnDeviceAuthenticationResponseForFilling(
+      OnIbanFetchedCallback on_iban_fetched,
+      const std::u16string& value,
+      bool successful_auth);
 
   // The associated autofill client.
   const raw_ptr<AutofillClient> client_;

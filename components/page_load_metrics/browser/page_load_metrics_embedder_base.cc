@@ -38,13 +38,13 @@ void PageLoadMetricsEmbedderBase::RegisterObservers(PageLoadTracker* tracker) {
   // orders fail.
   //
   // TODO(b:302999778): Reenable it.
-  if (!tracker->GetWebContents()->GetDelegate() ||
-      !tracker->GetWebContents()->GetDelegate()->IsInPreviewMode()) {
+  if (!tracker->GetWebContents()->IsInPreviewMode()) {
     tracker->AddObserver(std::make_unique<AssertPageLoadMetricsObserver>());
   }
 #endif
 
-  if (!IsNoStatePrefetch(web_contents()) && !IsSidePanel(web_contents())) {
+  if (!IsNoStatePrefetch(web_contents()) && !IsSidePanel(web_contents()) &&
+      !IsNonTabWebUI()) {
     tracker->AddObserver(
         std::make_unique<BackForwardCachePageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<UmaPageLoadMetricsObserver>());

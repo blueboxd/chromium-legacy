@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/span.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
@@ -72,7 +73,8 @@ struct CodecInfo {
     HISTOGRAM_DTSXP2,
     HISTOGRAM_DTSE,
     HISTOGRAM_AC4,
-    HISTOGRAM_MAX = HISTOGRAM_AC4  // Must be equal to largest logged entry.
+    HISTOGRAM_IAMF,
+    HISTOGRAM_MAX = HISTOGRAM_IAMF  // Must be equal to largest logged entry.
   };
 
   const char* pattern;
@@ -296,6 +298,12 @@ static const CodecInfo kMPEG4FLACCodecInfo = {"flac", CodecInfo::AUDIO, nullptr,
                                               CodecInfo::HISTOGRAM_FLAC};
 static const CodecInfo kMPEG4FLACCodecInfo2 = {
     "fLaC", CodecInfo::AUDIO, nullptr, CodecInfo::HISTOGRAM_FLAC};
+#if BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
+static const CodecInfo kIAMFCodecInfo1 = {"iamf", CodecInfo::AUDIO, nullptr,
+                                          CodecInfo::HISTOGRAM_IAMF};
+static const CodecInfo kIAMFCodecInfo2 = {"iamf.*", CodecInfo::AUDIO, nullptr,
+                                          CodecInfo::HISTOGRAM_IAMF};
+#endif  // BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
 
 static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
                                                    &kMPEG4FLACCodecInfo2,
@@ -327,6 +335,10 @@ static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
 #if BUILDFLAG(ENABLE_AV1_DECODER)
                                                    &kAV1CodecInfo,
 #endif
+#if BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
+                                                   &kIAMFCodecInfo1,
+                                                   &kIAMFCodecInfo2,
+#endif  // BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
                                                    nullptr};
 
 static const CodecInfo* const kAudioMP4Codecs[] = {&kMPEG4FLACCodecInfo,
@@ -368,6 +380,10 @@ static const CodecInfo* const kAudioMP4Codecs[] = {&kMPEG4FLACCodecInfo,
                                                    &kDTSECodecInfo3,
 #endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
+                                                   &kIAMFCodecInfo1,
+                                                   &kIAMFCodecInfo2,
+#endif  // BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
                                                    nullptr};
 
 static StreamParser* BuildMP4Parser(base::span<const std::string> codecs,
@@ -383,6 +399,11 @@ static StreamParser* BuildMP4Parser(base::span<const std::string> codecs,
   // with a "dfLa" FLACSpecificBox. We still need to tell our parser to
   // conditionally expect a FLAC stream, hence |has_flac|.
   bool has_flac = false;
+
+  // Like FLAC, IAMF v1.0.0
+  // (https://aomediacodec.github.io/iamf/v1.0.0.html#isobmff) does not define
+  // an encapsulation using MP4AudioSampleEntry with objectTypeIndication.
+  bool has_iamf = false;
 
   for (const auto& codec_id : codecs) {
     if (base::MatchPattern(codec_id, kMPEG4FLACCodecInfo.pattern) ||
@@ -448,11 +469,16 @@ static StreamParser* BuildMP4Parser(base::span<const std::string> codecs,
       audio_object_types.insert(mp4::kDTSE);
 #endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
+    } else if (base::MatchPattern(codec_id, kIAMFCodecInfo1.pattern) ||
+               base::MatchPattern(codec_id, kIAMFCodecInfo2.pattern)) {
+      has_iamf = true;
+#endif  //  BUILDFLAG(ENABLE_PLATFORM_IAMF_AUDIO)
     }
   }
 
   return new mp4::MP4StreamParser(audio_object_types, has_sbr, has_flac,
-                                  has_dv);
+                                  has_iamf, has_dv);
 }
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 static const CodecInfo kADTSCodecInfo = {nullptr, CodecInfo::AUDIO, nullptr,
@@ -515,6 +541,18 @@ static const SupportedTypeInfo kSupportedTypeInfo[] = {
 #endif
 #endif
 };
+
+std::unique_ptr<StreamParser> StreamParserFactory::CreateHLSProbeParser(
+    std::string_view mime,
+    base::span<const std::string> codecs) {
+  for (const auto& type_info : kSupportedTypeInfo) {
+    if (type_info.type == mime) {
+      NullMediaLog log;
+      return base::WrapUnique((*type_info.factory_function)(codecs, &log));
+    }
+  }
+  return nullptr;
+}
 
 // Verify that |codec_info| is supported on this platform.
 //

@@ -1894,9 +1894,6 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoSpatialNavigationFocus:
       DCHECK(is_ua_rule_);
       return MatchesSpatialNavigationFocusPseudoClass(element);
-    case CSSSelector::kPseudoSpatialNavigationInterest:
-      DCHECK(is_ua_rule_);
-      return MatchesSpatialNavigationInterestPseudoClass(element);
     case CSSSelector::kPseudoHasDatalist:
       DCHECK(is_ua_rule_);
       return MatchesHasDatalistPseudoClass(element);
@@ -1924,9 +1921,15 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         return false;
       }
       return !element.GetDocument().GetPage()->GetFocusController().IsActive();
-    case CSSSelector::kPseudoState: {
+    case CSSSelector::kPseudoStateDeprecatedSyntax: {
+      CHECK(RuntimeEnabledFeatures::CSSCustomStateDeprecatedSyntaxEnabled());
       return element.DidAttachInternals() &&
              element.EnsureElementInternals().HasState(selector.Value());
+    }
+    case CSSSelector::kPseudoState: {
+      CHECK(RuntimeEnabledFeatures::CSSCustomStateNewSyntaxEnabled());
+      return element.DidAttachInternals() &&
+             element.EnsureElementInternals().HasState(selector.Argument());
     }
     case CSSSelector::kPseudoHorizontal:
     case CSSSelector::kPseudoVertical:
@@ -2096,9 +2099,6 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoDetailsContent:
       return MatchesUAShadowElement(element,
                                     shadow_element_names::kIdDetailsContent);
-    case CSSSelector::kPseudoDetailsSummary:
-      return MatchesUAShadowElement(element,
-                                    shadow_element_names::kIdDetailsSummary);
     case CSSSelector::kPseudoWebKitCustomElement:
       return MatchesUAShadowElement(element, selector.Value());
     case CSSSelector::kPseudoBlinkInternalElement:
@@ -2133,17 +2133,34 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       }
       return false;
     }
+    case CSSSelector::kPseudoViewTransition:
     case CSSSelector::kPseudoViewTransitionGroup:
     case CSSSelector::kPseudoViewTransitionImagePair:
     case CSSSelector::kPseudoViewTransitionOld:
     case CSSSelector::kPseudoViewTransitionNew: {
-      if (CSSSelector::GetPseudoId(selector.GetPseudoType()) !=
-          context.pseudo_id) {
+      const PseudoId selector_pseudo_id =
+          CSSSelector::GetPseudoId(selector.GetPseudoType());
+      if (element.IsDocumentElement() && context.pseudo_id == kPseudoIdNone) {
+        // We don't strictly need to use dynamic_pseudo since we don't rely on
+        // SetHasPseudoElementStyle but we need to return a match to invalidate
+        // the originating element and set dynamic_pseudo to avoid collecting
+        // it as a matched rule in ElementRuleCollector.
+        result.dynamic_pseudo = selector_pseudo_id;
+        return true;
+      }
+
+      if (selector_pseudo_id != context.pseudo_id) {
         return false;
       }
       result.dynamic_pseudo = context.pseudo_id;
-      return selector.Argument() == CSSSelector::UniversalSelectorAtom() ||
-             selector.Argument() == pseudo_argument_;
+      if (selector_pseudo_id == kPseudoIdViewTransition) {
+        return true;
+      }
+
+      CHECK(!selector.IdentList().empty());
+      const AtomicString& name_or_wildcard = selector.IdentList()[0];
+      return name_or_wildcard == CSSSelector::UniversalSelectorAtom() ||
+             name_or_wildcard == pseudo_argument_;
     }
     case CSSSelector::kPseudoScrollbarButton:
     case CSSSelector::kPseudoScrollbarCorner:
@@ -2385,25 +2402,6 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
 
   return (always_show_focus || is_text_input || !last_focus_from_mouse ||
           had_keyboard_event);
-}
-
-// static
-bool SelectorChecker::MatchesSpatialNavigationInterestPseudoClass(
-    const Element& element) {
-  if (!IsSpatialNavigationEnabled(element.GetDocument().GetFrame())) {
-    return false;
-  }
-
-  if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-    return false;
-  }
-
-  DCHECK(element.GetDocument().GetPage());
-  Element* interested_element = element.GetDocument()
-                                    .GetPage()
-                                    ->GetSpatialNavigationController()
-                                    .GetInterestedElement();
-  return interested_element && *interested_element == element;
 }
 
 namespace {

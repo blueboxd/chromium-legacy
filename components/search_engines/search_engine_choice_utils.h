@@ -5,17 +5,15 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_SEARCH_ENGINE_CHOICE_UTILS_H_
 #define COMPONENTS_SEARCH_ENGINES_SEARCH_ENGINE_CHOICE_UTILS_H_
 
+#include <string>
+
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
+#include "components/search_engines/choice_made_location.h"
 #include "components/search_engines/search_engine_type.h"
-
-namespace policy {
-class PolicyService;
-}
 
 class PrefService;
 struct TemplateURLData;
-class TemplateURLService;
 
 namespace search_engines {
 
@@ -85,16 +83,6 @@ enum class SearchEngineChoiceScreenEvents {
   kMaxValue = kProfileCreationLearnMoreDisplayed,
 };
 
-// Profile properties that need to be passed to
-// `ShouldShowChoiceScreen`. This is due to the fact that
-// the 'Profile' class is different between platforms.
-// TODO(b/312115939): Rename `is_regular_profile` to something like
-// `is_eligible_profile`.
-struct ProfileProperties {
-  bool is_regular_profile = false;
-  raw_ptr<PrefService> pref_service;
-};
-
 enum class ChoicePromo {
   // Any path of getting the choice screen.
   kAny = 0,
@@ -102,23 +90,6 @@ enum class ChoicePromo {
   kDialog = 1,
   // Showing to new users in the First Run Experience.
   kFre = 2,
-};
-
-//  The location from which the default search engine was set.
-//  These values are persisted to logs. Entries should not be renumbered and
-//  numeric values should never be reused.
-//  Must be kept in sync with the ChoiceMadeLocation enum in
-//  search_engines_browser_proxy.ts
-enum class ChoiceMadeLocation {
-  // `chrome://settings/search`
-  kSearchSettings = 0,
-  // `chrome://settings/searchEngines`
-  // This value is also used for the settings pages on mobile.
-  kSearchEngineSettings = 1,
-  // The search engine choice dialog for existing users or the profile picker
-  // for new users.
-  kChoiceScreen = 2,
-  kMaxValue = kChoiceScreen,
 };
 
 // The cause for wiping the search engine choice preferences. Only used for
@@ -159,58 +130,13 @@ enum class RepromptResult {
 };
 
 // Whether the choice screen flag is generally enabled for the specific flow.
+// TODO(b/318824817): To be removed post-launch.
 bool IsChoiceScreenFlagEnabled(ChoicePromo promo);
-
-// Returns which version of the settings screen for the default search engine
-// setting should be shown.
-// TODO(b/306367986): Restrict this function to iOS.
-bool ShouldShowUpdatedSettings(PrefService& profile_prefs);
-
-// Returns whether the search engine choice screen can be displayed or not based
-// on device policies and profile properties.
-// TODO(b/306367986): Restrict this function to iOS.
-bool ShouldShowChoiceScreen(const policy::PolicyService& policy_service,
-                            const ProfileProperties& profile_properties,
-                            TemplateURLService* template_url_service);
-
-// Returns the choice screen eligibility condition most relevant for the profile
-// associated with `profile_prefs` and `template_url_service`.
-// Only checks dynamic conditions, that can change from one call to the other
-// during a profile's lifetime. Should be checked right before showing a choice
-// screen.
-SearchEngineChoiceScreenConditions GetDynamicChoiceScreenConditions(
-    const PrefService& profile_prefs,
-    const TemplateURLService& template_url_service);
-
-// Returns the choice screen eligibility condition most relevant for the profile
-// described by `profile_properties`.
-// Only checks static conditions, such that if a non-eligible condition is
-// returned, it would take at least a restart for the state to change. So this
-// state can be checked and cached ahead of showing a choice screen.
-SearchEngineChoiceScreenConditions GetStaticChoiceScreenConditions(
-    const policy::PolicyService& policy_service,
-    const ProfileProperties& profile_properties,
-    const TemplateURLService& template_url_service);
-
-// Returns the country ID to use in the context of any search engine choice
-// logic. If `profile_prefs` are null, returns
-// `country_codes::GetCurrentCountryID()`. Can be overridden using
-// `switches::kSearchEngineChoiceCountry`. See `//components/country_codes` for
-// the Country ID format.
-int GetSearchEngineChoiceCountryId(PrefService* profile_prefs);
 
 // Returns whether the provided `country_id` is eligible for the EEA default
 // search engine choice prompt.
 // See `//components/country_codes` for the Country ID format.
 bool IsEeaChoiceCountry(int country_id);
-
-// Records that the choice was made by settings the timestamp if applicable.
-// Records the location from which the choice was made and the search engine
-// that was chosen.
-// The function should be called after the default search engine has been set.
-void RecordChoiceMade(PrefService* profile_prefs,
-                      ChoiceMadeLocation choice_location,
-                      TemplateURLService* template_url_service);
 
 // Records the specified choice screen condition at profile initialization.
 void RecordChoiceScreenProfileInitCondition(
@@ -239,12 +165,15 @@ int GetMarketingSnippetResourceId(const std::u16string& engine_keyword);
 // engine didn't provide its own.
 std::u16string GetMarketingSnippetString(
     const TemplateURLData& template_url_data);
-#endif
 
-// Checks if the search engine choice should be prompted again, based on
-// experiment parameters. If a reprompt is needed, some preferences related to
-// the choice are cleared, which triggers a reprompt on the next page load.
-void PreprocessPrefsForReprompt(PrefService& profile_prefs);
+// Returns the resource ID for the icon associated with `engine_keyword`, or -1
+// if not found. All search engines prepopulated in EEA countries are guaranteed
+// to have an icon.
+// The function definition is generated by `generate_search_engine_icons.py`in
+// `generated_search_engine_resource_ids.cc`.
+int GetIconResourceId(const std::u16string& engine_keyword);
+
+#endif
 
 }  // namespace search_engines
 

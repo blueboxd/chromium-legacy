@@ -104,6 +104,11 @@ void LogSaveCardPromptOfferMetric(
                                       ".WithSameLastFourButDifferentExpiration",
                                   metric);
   }
+  if (options.card_save_type ==
+      AutofillClient::CardSaveType::kCardSaveWithCvc) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".SavingWithCvc", metric);
+  }
 
   if (security_level != security_state::SecurityLevel::SECURITY_LEVEL_COUNT) {
     base::UmaHistogramEnumeration(
@@ -151,6 +156,11 @@ void LogSaveCardPromptResultMetric(
                                       ".WithSameLastFourButDifferentExpiration",
                                   metric);
   }
+  if (options.card_save_type ==
+      AutofillClient::CardSaveType::kCardSaveWithCvc) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".SavingWithCvc", metric);
+  }
 
   if (security_level != security_state::SecurityLevel::SECURITY_LEVEL_COUNT) {
     base::UmaHistogramEnumeration(
@@ -182,6 +192,15 @@ void LogSaveCvcPromptResultMetric(SaveCardPromptResult metric,
 
   base::UmaHistogramEnumeration(
       base::StrCat({base_histogram_name, destination, show}), metric);
+}
+
+void LogCvcInfoBarMetric(AutofillMetrics::InfoBarMetric metric,
+                         bool is_uploading) {
+  CHECK_LT(metric, AutofillMetrics::InfoBarMetric::NUM_INFO_BAR_METRICS);
+  base::UmaHistogramEnumeration(
+      base::StrCat(
+          {"Autofill.CvcInfoBar", is_uploading ? ".Upload" : ".Local"}),
+      metric, AutofillMetrics::InfoBarMetric::NUM_INFO_BAR_METRICS);
 }
 
 void LogSaveCardRequestExpirationDateReasonMetric(

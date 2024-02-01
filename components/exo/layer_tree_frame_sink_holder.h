@@ -6,6 +6,7 @@
 #define COMPONENTS_EXO_LAYER_TREE_FRAME_SINK_HOLDER_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
@@ -17,7 +18,6 @@
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace viz {
 struct FrameTimingDetails;
@@ -92,7 +92,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
 
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(viz::BeginFrameSource* source) override;
-  absl::optional<viz::HitTestRegionList> BuildHitTestData() override;
+  std::optional<viz::HitTestRegionList> BuildHitTestData() override;
   void ReclaimResources(std::vector<viz::ReturnedResource> resources) override;
   void SetTreeActivationCallback(base::RepeatingClosure callback) override {}
   void DidReceiveCompositorFrameAck() override;
@@ -152,14 +152,14 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   // submit an unsolicited frame.
   bool UnsolicitedFrameAllowed() const;
 
-  raw_ptr<SurfaceTreeHost, ExperimentalAsh> surface_tree_host_;
+  raw_ptr<SurfaceTreeHost> surface_tree_host_;
   std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink> frame_sink_;
 
   FrameSinkResourceManager resource_manager_;
 
   std::vector<viz::ResourceId> last_frame_resources_;
 
-  absl::optional<viz::CompositorFrame> cached_frame_;
+  std::optional<viz::CompositorFrame> cached_frame_;
 
   // Resources that are submitted and still in use by the remote side.
   std::set<viz::ResourceId> in_use_resources_;
@@ -167,10 +167,9 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   bool is_lost_ = false;
   bool delete_pending_ = false;
 
-  raw_ptr<WMHelper::LifetimeManager, ExperimentalAsh> lifetime_manager_ =
-      nullptr;
+  raw_ptr<WMHelper::LifetimeManager> lifetime_manager_ = nullptr;
 
-  raw_ptr<viz::BeginFrameSource, ExperimentalAsh> begin_frame_source_ = nullptr;
+  raw_ptr<viz::BeginFrameSource> begin_frame_source_ = nullptr;
   bool observing_begin_frame_source_ = false;
 
   base::queue<PendingBeginFrame> pending_begin_frames_;
@@ -188,7 +187,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   const bool reactive_frame_submission_ = false;
 
   // Set if `reactive_frame_submission_` is enabled.
-  absl::optional<FrameTimingHistory> frame_timing_history_;
+  std::optional<FrameTimingHistory> frame_timing_history_;
 };
 
 }  // namespace exo

@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -247,7 +248,8 @@ class WebTransportTest : public ::testing::Test {
     handshake_client->OnConnectionEstablished(
         std::move(web_transport_to_pass),
         client_remote.InitWithNewPipeAndPassReceiver(),
-        network::mojom::blink::HttpResponseHeaders::New());
+        network::mojom::blink::HttpResponseHeaders::New(),
+        network::mojom::blink::WebTransportStats::New());
     client_remote_.Bind(std::move(client_remote));
   }
 
@@ -332,6 +334,7 @@ class WebTransportTest : public ::testing::Test {
       pending_unidirectional_accept_callbacks_;
   WTF::Deque<AcceptBidirectionalStreamCallback>
       pending_bidirectional_accept_callbacks_;
+  test::TaskEnvironment task_environment_;
   WebTransportConnector connector_;
   std::unique_ptr<MockWebTransport> mock_web_transport_;
   mojo::Remote<network::mojom::blink::WebTransportClient> client_remote_;
@@ -1938,7 +1941,8 @@ TEST_F(WebTransportTest, OnClosed) {
   ScriptPromiseTester tester(script_state, web_transport->closed());
 
   web_transport->OnClosed(
-      network::mojom::blink::WebTransportCloseInfo::New(99, "reason"));
+      network::mojom::blink::WebTransportCloseInfo::New(99, "reason"),
+      network::mojom::blink::WebTransportStats::New());
 
   tester.WaitUntilSettled();
 
@@ -1964,7 +1968,8 @@ TEST_F(WebTransportTest, OnClosedWithNull) {
   auto* script_state = scope.GetScriptState();
   ScriptPromiseTester tester(script_state, web_transport->closed());
 
-  web_transport->OnClosed(nullptr);
+  web_transport->OnClosed(nullptr,
+                          network::mojom::blink::WebTransportStats::New());
 
   tester.WaitUntilSettled();
 

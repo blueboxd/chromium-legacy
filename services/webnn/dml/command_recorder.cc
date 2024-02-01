@@ -108,13 +108,29 @@ HRESULT CommandRecorder::Open() {
     // It's safe to reset the command list while it is still being executed.
     RETURN_IF_FAILED(command_list_->Reset(command_allocator_.Get(), nullptr));
   }
+  command_resources_.clear();
   is_open_ = true;
   return S_OK;
 }
 
 HRESULT CommandRecorder::CloseAndExecute() {
+  RETURN_IF_FAILED(Close());
+  RETURN_IF_FAILED(Execute());
+  return S_OK;
+}
+
+HRESULT CommandRecorder::Close() {
   CHECK(is_open_);
   RETURN_IF_FAILED(command_list_->Close());
+  is_open_ = false;
+  return S_OK;
+}
+
+// `command_resources_` will be cleared in the `Open()` method when the command
+// list completes the previous execution and opens again. And the
+// `CommandRecorder` destructor will also clear it.
+HRESULT CommandRecorder::Execute() {
+  CHECK(!is_open_);
   RETURN_IF_FAILED(command_queue_->ExecuteCommandList(command_list_.Get()));
   last_submitted_fence_value_ = command_queue_->GetLastFenceValue();
 
@@ -126,11 +142,8 @@ HRESULT CommandRecorder::CloseAndExecute() {
   // command queue. The command queue would keep these resources alive until the
   // GPU work has been done.
   for (auto& resource : command_resources_) {
-    command_queue_->ReferenceUntilCompleted(std::move(resource));
+    command_queue_->ReferenceUntilCompleted(resource);
   }
-  command_resources_.clear();
-
-  is_open_ = false;
   return S_OK;
 }
 
@@ -157,8 +170,8 @@ void CommandRecorder::CopyBufferRegion(ComPtr<ID3D12Resource> dst_buffer,
 
 HRESULT CommandRecorder::InitializeOperator(
     IDMLCompiledOperator* compiled_operator,
-    const absl::optional<DML_BINDING_DESC>& input_array_binding,
-    const absl::optional<DML_BINDING_DESC>& persistent_resource_binding) {
+    const std::optional<DML_BINDING_DESC>& input_array_binding,
+    const std::optional<DML_BINDING_DESC>& persistent_resource_binding) {
   TRACE_EVENT0("gpu", "dml::CommandRecorder::InitializeOperator");
   CHECK(is_open_);
   CHECK(compiled_operator);
@@ -257,6 +270,9 @@ HRESULT CommandRecorder::InitializeOperator(
     command_resources_.push_back(persistent_resource);
   }
 
+  // DirectML may remove the device if invalid bindings are provided.
+  RETURN_IF_FAILED(dml_device_->GetDeviceRemovedReason());
+
   command_recorder_->RecordDispatch(command_list_.Get(), initializer.Get(),
                                     binding_table.Get());
 
@@ -285,8 +301,8 @@ HRESULT CommandRecorder::ExecuteOperator(
     ComPtr<ID3D12DescriptorHeap> descriptor_heap,
     base::span<const DML_BINDING_DESC> input_bindings,
     base::span<const DML_BINDING_DESC> output_bindings,
-    const absl::optional<DML_BINDING_DESC>& persistent_resource_binding,
-    const absl::optional<DML_BINDING_DESC>& temporary_resource_binding) {
+    const std::optional<DML_BINDING_DESC>& persistent_resource_binding,
+    const std::optional<DML_BINDING_DESC>& temporary_resource_binding) {
   TRACE_EVENT0("gpu", "dml::CommandRecorder::ExecuteOperator");
   CHECK(is_open_);
   CHECK(compiled_operator);
@@ -346,21 +362,24 @@ HRESULT CommandRecorder::ExecuteOperator(
     command_resources_.push_back(persistent_resource);
   }
 
-  // Bind the input resources.
-  binding_table->BindInputs(base::checked_cast<uint32_t>(input_bindings.size()),
-                            input_bindings.data());
+  // Bind the input resources if needed.
+  if (input_bindings.size() > 0) {
+    binding_table->BindInputs(
+        base::checked_cast<uint32_t>(input_bindings.size()),
+        input_bindings.data());
 
-  // The input resources should be kept alive until the operator has been
-  // executed on the GPU.
-  for (size_t i = 0; i < input_bindings.size(); ++i) {
-    // Skip binding type `DML_BINDING_TYPE_NONE` for graph constant which is
-    // already bound during operator initialization.
-    if (input_bindings[i].Type == DML_BINDING_TYPE_BUFFER) {
-      ID3D12Resource* input_resource =
-          static_cast<const DML_BUFFER_BINDING*>(input_bindings[i].Desc)
-              ->Buffer;
-      CHECK_NE(input_resource, nullptr);
-      command_resources_.push_back(input_resource);
+    // The input resources should be kept alive until the operator has been
+    // executed on the GPU.
+    for (size_t i = 0; i < input_bindings.size(); ++i) {
+      // Skip binding type `DML_BINDING_TYPE_NONE` for graph constant which is
+      // already bound during operator initialization.
+      if (input_bindings[i].Type == DML_BINDING_TYPE_BUFFER) {
+        ID3D12Resource* input_resource =
+            static_cast<const DML_BUFFER_BINDING*>(input_bindings[i].Desc)
+                ->Buffer;
+        CHECK_NE(input_resource, nullptr);
+        command_resources_.push_back(input_resource);
+      }
     }
   }
 
@@ -368,6 +387,9 @@ HRESULT CommandRecorder::ExecuteOperator(
   binding_table->BindOutputs(
       base::checked_cast<uint32_t>(output_bindings.size()),
       output_bindings.data());
+
+  // DirectML may remove the device if invalid bindings are provided.
+  RETURN_IF_FAILED(dml_device_->GetDeviceRemovedReason());
 
   // The output resources should be kept alive until the operator has been
   // executed on the GPU.

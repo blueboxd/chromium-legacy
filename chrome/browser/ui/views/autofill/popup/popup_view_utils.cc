@@ -259,11 +259,15 @@ bool CanShowDropdownHere(int item_height,
 // Keep in sync with TryToCloseAllPrompts() from autofill_uitest.cc.
 bool BoundsOverlapWithAnyOpenPrompt(const gfx::Rect& screen_bounds,
                                     content::WebContents* web_contents) {
-  gfx::NativeView top_level_view =
-      platform_util::GetViewForWindow(web_contents->GetTopLevelNativeWindow());
-  if (!top_level_view) {
+  gfx::NativeWindow top_level_window = web_contents->GetTopLevelNativeWindow();
+  // `top_level_window` can be `nullptr` if `web_contents` is not attached to
+  // a window, e.g. in unit test runs.
+  if (!top_level_window) {
     return false;
   }
+  gfx::NativeView top_level_view =
+      platform_util::GetViewForWindow(top_level_window);
+
   // We generally want to ensure that no prompt overlaps with |screen_bounds|.
   // It is possible, however, that a <datalist> is part of a prompt (e.g. an
   // extension popup can render a <datalist>). Therefore, we exclude the widget
@@ -533,57 +537,6 @@ BubbleBorder::Arrow GetOptimalPopupPlacement(
   return arrow;
 }
 
-int GetMainTextStyleForPopupItemId(PopupItemId popup_item_id) {
-  switch (popup_item_id) {
-    case PopupItemId::kFillFullAddress:
-    case PopupItemId::kFillFullName:
-      return views::style::TextStyle::STYLE_SECONDARY;
-    case PopupItemId::kAccountStoragePasswordEntry:
-    case PopupItemId::kAccountStorageUsernameEntry:
-    case PopupItemId::kAddressEntry:
-    case PopupItemId::kAddressFieldByFieldFilling:
-    case PopupItemId::kAllSavedPasswordsEntry:
-    case PopupItemId::kAutocompleteEntry:
-    case PopupItemId::kAutofillOptions:
-    case PopupItemId::kClearForm:
-    case PopupItemId::kCompose:
-    case PopupItemId::kCreateNewPlusAddress:
-    case PopupItemId::kCreditCardEntry:
-    case PopupItemId::kCreditCardFieldByFieldFilling:
-    case PopupItemId::kDatalistEntry:
-    case PopupItemId::kDeleteAddressProfile:
-    case PopupItemId::kDevtoolsTestAddressEntry:
-    case PopupItemId::kDevtoolsTestAddresses:
-    case PopupItemId::kEditAddressProfile:
-    case PopupItemId::kFillEverythingFromAddressProfile:
-    case PopupItemId::kFillExistingPlusAddress:
-    case PopupItemId::kFillFullEmail:
-    case PopupItemId::kFillFullPhoneNumber:
-    case PopupItemId::kAddressEntryNotSelectable:
-    case PopupItemId::kPaymentsEntryNotSelectable:
-    case PopupItemId::kGeneratePasswordEntry:
-    case PopupItemId::kIbanEntry:
-    case PopupItemId::kInsecureContextPaymentDisabledMessage:
-    case PopupItemId::kMerchantPromoCodeEntry:
-    case PopupItemId::kMixedFormMessage:
-    case PopupItemId::kPasswordAccountStorageEmpty:
-    case PopupItemId::kPasswordAccountStorageOptIn:
-    case PopupItemId::kPasswordAccountStorageOptInAndGenerate:
-    case PopupItemId::kPasswordAccountStorageReSignin:
-    case PopupItemId::kPasswordEntry:
-    case PopupItemId::kScanCreditCard:
-    case PopupItemId::kSeePromoCodeDetails:
-    case PopupItemId::kSeparator:
-    case PopupItemId::kShowAccountCards:
-    case PopupItemId::kTitle:
-    case PopupItemId::kUsernameEntry:
-    case PopupItemId::kVirtualCreditCardEntry:
-    case PopupItemId::kWebauthnCredential:
-    case PopupItemId::kWebauthnSignInWithAnotherDevice:
-      return views::style::TextStyle::STYLE_PRIMARY;
-  }
-}
-
 bool IsFooterPopupItemId(PopupItemId popup_item_id) {
   switch (popup_item_id) {
     case PopupItemId::kScanCreditCard:
@@ -612,8 +565,6 @@ bool IsFooterPopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kDatalistEntry:
     case PopupItemId::kDevtoolsTestAddressEntry:
     case PopupItemId::kDevtoolsTestAddresses:
-    case PopupItemId::kAddressEntryNotSelectable:
-    case PopupItemId::kPaymentsEntryNotSelectable:
     case PopupItemId::kFillExistingPlusAddress:
     case PopupItemId::kFillFullAddress:
     case PopupItemId::kFillFullName:
@@ -626,7 +577,6 @@ bool IsFooterPopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kMixedFormMessage:
     case PopupItemId::kPasswordEntry:
     case PopupItemId::kSeparator:
-    case PopupItemId::kTitle:
     case PopupItemId::kUsernameEntry:
     case PopupItemId::kVirtualCreditCardEntry:
     case PopupItemId::kWebauthnCredential:
@@ -645,8 +595,7 @@ bool IsExpandablePopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kFillFullName:
     case PopupItemId::kFillFullEmail:
     case PopupItemId::kFillFullPhoneNumber:
-    case PopupItemId::kAddressEntryNotSelectable:
-    case PopupItemId::kPaymentsEntryNotSelectable:
+    case PopupItemId::kCreditCardEntry:
       return true;
     case PopupItemId::kAccountStoragePasswordEntry:
     case PopupItemId::kAccountStorageUsernameEntry:
@@ -656,7 +605,6 @@ bool IsExpandablePopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kClearForm:
     case PopupItemId::kCompose:
     case PopupItemId::kCreateNewPlusAddress:
-    case PopupItemId::kCreditCardEntry:
     case PopupItemId::kDatalistEntry:
     case PopupItemId::kDevtoolsTestAddressEntry:
     case PopupItemId::kDeleteAddressProfile:
@@ -677,7 +625,6 @@ bool IsExpandablePopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kSeePromoCodeDetails:
     case PopupItemId::kSeparator:
     case PopupItemId::kShowAccountCards:
-    case PopupItemId::kTitle:
     case PopupItemId::kUsernameEntry:
     case PopupItemId::kVirtualCreditCardEntry:
     case PopupItemId::kWebauthnCredential:
@@ -691,6 +638,18 @@ bool ShouldApplyNewAutofillPopupStyle() {
              features::kAutofillShowAutocompleteDeleteButton) ||
          base::FeatureList::IsEnabled(
              features::kAutofillGranularFillingAvailable);
+}
+
+views::style::TextStyle GetPrimaryTextStyle() {
+  return ShouldApplyNewAutofillPopupStyle()
+             ? views::style::TextStyle::STYLE_BODY_3_MEDIUM
+             : views::style::TextStyle::STYLE_PRIMARY;
+}
+
+views::style::TextStyle GetSecondaryTextStyle() {
+  return ShouldApplyNewAutofillPopupStyle()
+             ? views::style::TextStyle::STYLE_BODY_4
+             : views::style::TextStyle::STYLE_SECONDARY;
 }
 
 }  // namespace autofill

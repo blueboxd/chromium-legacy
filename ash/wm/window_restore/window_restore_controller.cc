@@ -21,7 +21,6 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_positioning_utils.h"
-#include "ash/wm/window_restore/informed_restore_dialog.h"
 #include "ash/wm/window_restore/window_restore_util.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -30,6 +29,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_properties.h"
@@ -50,10 +50,6 @@ WindowRestoreController* g_instance = nullptr;
 // Callback for testing which is run when `SaveWindowImpl()` triggers a write to
 // file.
 WindowRestoreController::SaveWindowCallback g_save_window_callback_for_testing;
-
-// Temporary test widget brought up by a debug accelerator that hosts the
-// informed restore dialog.
-views::Widget* g_test_informed_restore_dialog_widget = nullptr;
 
 // The list of possible app window parents.
 constexpr ShellWindowId kAppParentContainers[19] = {
@@ -198,7 +194,7 @@ bool WindowRestoreController::CanActivateRestoredWindow(
 
   // Only the topmost unminimize restored window can be activated.
   auto siblings = desk_container->children();
-  for (auto* const sibling : base::Reversed(siblings)) {
+  for (aura::Window* const sibling : base::Reversed(siblings)) {
     if (WindowState::Get(sibling)->IsMinimized())
       continue;
 
@@ -218,7 +214,7 @@ bool WindowRestoreController::CanActivateAppList(const aura::Window* window) {
   if (!app_list_controller || app_list_controller->GetWindow() != window)
     return true;
 
-  for (auto* root_window : Shell::GetAllRootWindows()) {
+  for (aura::Window* root_window : Shell::GetAllRootWindows()) {
     auto active_desk_children =
         desks_util::GetActiveDeskContainerForRoot(root_window)->children();
 
@@ -240,10 +236,10 @@ bool WindowRestoreController::CanActivateAppList(const aura::Window* window) {
 }
 
 // static
-std::vector<aura::Window*>::const_iterator
+std::vector<raw_ptr<aura::Window, VectorExperimental>>::const_iterator
 WindowRestoreController::GetWindowToInsertBefore(
     aura::Window* window,
-    const std::vector<aura::Window*>& windows) {
+    const std::vector<raw_ptr<aura::Window, VectorExperimental>>& windows) {
   const int32_t* activation_index =
       window->GetProperty(app_restore::kActivationIndexKey);
   DCHECK(activation_index);
@@ -502,24 +498,17 @@ bool WindowRestoreController::IsRestoringWindow(aura::Window* window) const {
   return windows_observation_.IsObservingSource(window);
 }
 
-void WindowRestoreController::MaybeStartInformedRestore() {
-  if (!features::ArePostLoginGlanceablesEnabled()) {
+void WindowRestoreController::MaybeStartPineOverviewSession() {
+  CHECK(features::IsForestFeatureEnabled());
+
+  OverviewController* overview_controller = OverviewController::Get();
+  if (overview_controller->InOverviewSession()) {
     return;
   }
 
-  // TODO(sammiequon|zxdan): Need to check "Ask every time" preference, the pref
-  // needs to be moved to ash_pref_names.h.
-
-  if (g_test_informed_restore_dialog_widget) {
-    return;
-  }
-
-  auto widget = InformedRestoreDialog::Create(Shell::GetPrimaryRootWindow());
-  g_test_informed_restore_dialog_widget = widget.release();
-  g_test_informed_restore_dialog_widget->widget_delegate()
-      ->RegisterWindowClosingCallback(base::BindOnce(
-          []() { g_test_informed_restore_dialog_widget = nullptr; }));
-  g_test_informed_restore_dialog_widget->Show();
+  // TODO(sammiequon): Add a new start action for this type of overview session.
+  overview_controller->StartOverview(OverviewStartAction::kAccelerator,
+                                     OverviewEnterExitType::kPine);
 }
 
 void WindowRestoreController::SaveWindowImpl(
@@ -561,7 +550,7 @@ void WindowRestoreController::SaveWindowImpl(
   }
   std::unique_ptr<app_restore::WindowInfo> window_info = BuildWindowInfo(
       window, activation_index, /*for_saved_desks=*/false, mru_windows);
-  full_restore::SaveWindowInfo(*window_info);
+  ::full_restore::SaveWindowInfo(*window_info);
 
   if (g_save_window_callback_for_testing)
     g_save_window_callback_for_testing.Run(*window_info);

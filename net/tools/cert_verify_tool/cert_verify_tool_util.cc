@@ -45,7 +45,7 @@ void ExtractCertificatesFromData(const std::string& data_string,
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> pkcs7_cert_buffers;
   if (net::x509_util::CreateCertBuffersFromPKCS7Bytes(
-          base::as_bytes(base::make_span(data_string)), &pkcs7_cert_buffers)) {
+          base::as_byte_span(data_string), &pkcs7_cert_buffers)) {
     int n = 0;
     for (const auto& cert_buffer : pkcs7_cert_buffers) {
       CertInput cert;
@@ -122,7 +122,7 @@ void PrintCertError(const std::string& error, const CertInput& cert) {
 std::string FingerPrintCryptoBuffer(const CRYPTO_BUFFER* cert_handle) {
   net::SHA256HashValue hash =
       net::X509Certificate::CalculateFingerprint256(cert_handle);
-  return base::HexEncode(hash.data, std::size(hash.data));
+  return base::HexEncode(hash.data);
 }
 
 std::string SubjectFromX509Certificate(const net::X509Certificate* cert) {

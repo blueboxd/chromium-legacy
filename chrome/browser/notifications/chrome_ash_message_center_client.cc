@@ -55,7 +55,7 @@ class NotifierComparator {
   }
 
  private:
-  raw_ptr<icu::Collator, ExperimentalAsh> collator_;
+  raw_ptr<icu::Collator> collator_;
 };
 
 // This delegate forwards NotificationDelegate methods to their equivalent in
@@ -76,8 +76,8 @@ class ForwardingNotificationDelegate
     delegate_->HandleNotificationClosed(notification_id_, by_user);
   }
 
-  void Click(const absl::optional<int>& button_index,
-             const absl::optional<std::u16string>& reply) override {
+  void Click(const std::optional<int>& button_index,
+             const std::optional<std::u16string>& reply) override {
     if (button_index) {
       delegate_->HandleNotificationButtonClicked(notification_id_,
                                                  *button_index, reply);
@@ -100,7 +100,7 @@ class ForwardingNotificationDelegate
   // The ID of the notification.
   const std::string notification_id_;
 
-  raw_ptr<NotificationPlatformBridgeDelegate, ExperimentalAsh> delegate_;
+  raw_ptr<NotificationPlatformBridgeDelegate> delegate_;
 };
 
 }  // namespace

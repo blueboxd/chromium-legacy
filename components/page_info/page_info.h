@@ -201,7 +201,7 @@ class PageInfo : private content_settings::CookieControlsObserver {
     bool is_one_time = false;
     // Only set for settings that can have multiple permissions for different
     // embedded origins.
-    absl::optional<url::Origin> requesting_origin;
+    std::optional<url::Origin> requesting_origin;
     // When the permission was used.
     base::Time last_used;
     // Whether the permission is in use.
@@ -254,7 +254,7 @@ class PageInfo : private content_settings::CookieControlsObserver {
   // This method is called when ever a permission setting is changed.
   void OnSitePermissionChanged(ContentSettingsType type,
                                ContentSetting value,
-                               absl::optional<url::Origin> requesting_origin,
+                               std::optional<url::Origin> requesting_origin,
                                bool is_one_time);
 
   // This method is called whenever access to an object is revoked.
@@ -353,7 +353,11 @@ class PageInfo : private content_settings::CookieControlsObserver {
                            ShowInfoBarWhenBlockingThirdPartyCookies);
 
   // CookieControlsObserver:
+  // TODO(b/317975095): Remove `status` in favor of `control_visible` and
+  // `protections_on`.
   void OnStatusChanged(CookieControlsStatus status,
+                       bool controls_visible,
+                       bool protections_on,
                        CookieControlsEnforcement enforcement,
                        CookieBlocking3pcdStatus blocking_status,
                        base::Time expiration) override;
@@ -447,7 +451,7 @@ class PageInfo : private content_settings::CookieControlsObserver {
   // specific data (local stored objects like cookies), site-specific
   // permissions (location, pop-up, plugin, etc. permissions) and site-specific
   // information (identity, connection status, etc.).
-  raw_ptr<PageInfoUI, DanglingUntriaged> ui_ = nullptr;
+  raw_ptr<PageInfoUI> ui_ = nullptr;
 
   // A web contents getter used to retrieve the associated WebContents object.
   base::WeakPtr<content::WebContents> web_contents_;
@@ -538,7 +542,8 @@ class PageInfo : private content_settings::CookieControlsObserver {
                           content_settings::CookieControlsObserver>
       observation_{this};
 
-  CookieControlsStatus status_ = CookieControlsStatus::kUninitialized;
+  bool protections_on_ = true;
+  bool controls_visible_ = true;
 
   CookieControlsEnforcement enforcement_ =
       CookieControlsEnforcement::kNoEnforcement;
@@ -552,10 +557,10 @@ class PageInfo : private content_settings::CookieControlsObserver {
       CookieControlsBreakageConfidenceLevel::kUninitialized;
 
   // The number of third-party sites blocked from accessing storage.
-  absl::optional<int> blocked_third_party_sites_count_;
+  std::optional<int> blocked_third_party_sites_count_;
 
   // The number of third-party sites allowed to access storage.
-  absl::optional<int> allowed_third_party_sites_count_;
+  std::optional<int> allowed_third_party_sites_count_;
 
   bool is_subscribed_to_permission_change_for_testing = false;
 

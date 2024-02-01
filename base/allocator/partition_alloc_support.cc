@@ -4,6 +4,7 @@
 
 #include "base/allocator/partition_alloc_support.h"
 
+#include <base/ranges/algorithm.h>
 #include <array>
 #include <cinttypes>
 #include <cstdint>
@@ -22,6 +23,7 @@
 #include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/src/partition_alloc/partition_lock.h"
 #include "base/allocator/partition_allocator/src/partition_alloc/partition_root.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/pointers/instance_tracer.h"
 #include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr.h"
 #include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim.h"
 #include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
@@ -42,6 +44,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/pending_task.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -72,9 +75,36 @@
 #include "base/allocator/partition_allocator/src/partition_alloc/memory_reclaimer.h"
 #endif
 
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(HAS_MEMORY_TAGGING)
+#include <sys/system_properties.h>
+#endif
+
 namespace base::allocator {
 
 namespace {
+
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(HAS_MEMORY_TAGGING)
+enum class BootloaderOverride {
+  kDefault,
+  kForceOn,
+  kForceOff,
+};
+
+BootloaderOverride GetBootloaderOverride() {
+  char bootloader_override_str[PROP_VALUE_MAX];
+  __system_property_get(
+      "persist.device_config.runtime_native_boot.bootloader_override",
+      bootloader_override_str);
+
+  if (strcmp(bootloader_override_str, "force_on") == 0) {
+    return BootloaderOverride::kForceOn;
+  }
+  if (strcmp(bootloader_override_str, "force_off") == 0) {
+    return BootloaderOverride::kForceOff;
+  }
+  return BootloaderOverride::kDefault;
+}
+#endif
 
 // When under this experiment avoid running periodic purging or reclaim for the
 // first minute after the first attempt. This is based on the insight that
@@ -322,16 +352,60 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
   trials.emplace(base::features::kRendererLiveBRPSyntheticTrialName, "Control");
 #endif
 
-#if PA_CONFIG(HAS_MEMORY_TAGGING)
+#if BUILDFLAG(HAS_MEMORY_TAGGING)
   if (base::FeatureList::IsEnabled(
           base::features::kPartitionAllocMemoryTagging)) {
-    if (base::CPU::GetInstanceNoAllocation().has_mte()) {
+    bool has_mte = base::CPU::GetInstanceNoAllocation().has_mte();
+    if (has_mte) {
       trials.emplace("MemoryTaggingDogfood", "Enabled");
     } else {
       trials.emplace("MemoryTaggingDogfood", "Disabled");
     }
+#if BUILDFLAG(IS_ANDROID)
+    BootloaderOverride bootloader_override = GetBootloaderOverride();
+    partition_alloc::TagViolationReportingMode reporting_mode =
+        partition_alloc::TagViolationReportingMode::kUndefined;
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+    reporting_mode = allocator_shim::internal::PartitionAllocMalloc::Allocator()
+                         ->memory_tagging_reporting_mode();
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+    switch (bootloader_override) {
+      case BootloaderOverride::kDefault:
+        trials.emplace("MemoryTaggingBootloaderOverride", "Default");
+        break;
+      case BootloaderOverride::kForceOn:
+        if (has_mte) {
+          switch (reporting_mode) {
+            case partition_alloc::TagViolationReportingMode::kAsynchronous:
+              trials.emplace("MemoryTaggingBootloaderOverride", "ForceOnAsync");
+              break;
+            case partition_alloc::TagViolationReportingMode::kSynchronous:
+              // This should not happen unless user forces it.
+              trials.emplace("MemoryTaggingBootloaderOverride", "ForceOnSync");
+              break;
+            default:
+              // This should not happen unless user forces it.
+              trials.emplace("MemoryTaggingBootloaderOverride",
+                             "ForceOnDisabled");
+          }
+        } else {
+          // This should not happen unless user forces it.
+          trials.emplace("MemoryTaggingBootloaderOverride",
+                         "ForceOnWithoutMte");
+        }
+        break;
+      case BootloaderOverride::kForceOff:
+        if (!has_mte) {
+          trials.emplace("MemoryTaggingBootloaderOverride", "ForceOff");
+        } else {
+          // This should not happen unless user forces it.
+          trials.emplace("MemoryTaggingBootloaderOverride", "ForceOffWithMte");
+        }
+        break;
+    }
+#endif  // BUILDFLAG(IS_ANDROID)
   }
-#endif
+#endif  // BUILDFLAG(HAS_MEMORY_TAGGING)
 
   return trials;
 }
@@ -396,36 +470,30 @@ std::string ExtractDanglingPtrSignature(std::string stacktrace) {
       stacktrace, "\r\n", KEEP_WHITESPACE, SPLIT_WANT_NONEMPTY);
 
   // We are looking for the callers of the function releasing the raw_ptr and
-  // freeing memory:
-  const StringPiece callees[] = {
-      // Common signatures
-      "internal::PartitionFree",
-      "base::(anonymous namespace)::FreeFn",
+  // freeing memory. This lists potential matching patterns. A pattern is a list
+  // of substrings that are all required to match.
+  const std::vector<StringPiece> callee_patterns[] = {
+      // Common signature patters:
+      {"internal::PartitionFree"},
+      {"base::", "::FreeFn"},
+      {"internal::RawPtrBackupRefImpl", "::ReleaseInternal"},
 
-      // Linux signatures
-      "internal::RawPtrBackupRefImpl<>::ReleaseInternal()",
-      "base::RefCountedThreadSafe<>::Release()",
+      // Linux specific:
+      {"base::RefCountedThreadSafe<>::Release"},
 
-      // Windows signatures
-      "internal::RawPtrBackupRefImpl<0,0>::ReleaseInternal",
-      "internal::RawPtrBackupRefImpl<0,1>::ReleaseInternal",
-      "_free_base",
-
-      // Mac signatures
-      "internal::RawPtrBackupRefImpl<false, false>::ReleaseInternal",
-      "internal::RawPtrBackupRefImpl<false, true>::ReleaseInternal",
-
-      // ChromeOS signatures
-      "base::allocator::dispatcher::internal::DispatcherImpl<>::FreeFn()",
+      // Windows specific:
+      {"_free_base"},
 
       // Task traces are prefixed with "Task trace:" in
       // |TaskTrace::OutputToStream|
-      "Task trace:",
+      {"Task trace:"},
   };
   size_t caller_index = 0;
   for (size_t i = 0; i < lines.size(); ++i) {
-    for (const auto& callee : callees) {
-      if (lines[i].find(callee) != StringPiece::npos) {
+    for (const auto& patterns : callee_patterns) {
+      if (ranges::all_of(patterns, [&](const StringPiece& pattern) {
+            return lines[i].find(pattern) != StringPiece::npos;
+          })) {
         caller_index = i + 1;
       }
     }
@@ -600,6 +668,21 @@ void CheckDanglingRawPtrBufferEmpty() {
                   "Memory was released on:\n"
                << entry->task_trace << "\n"
                << entry->stack_trace << "\n";
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_INSTANCE_TRACER)
+    std::vector<std::array<const void*, 32>> stack_traces =
+        internal::InstanceTracer::GetStackTracesForDanglingRefs(entry->id);
+    for (const auto& raw_stack_trace : stack_traces) {
+      LOG(ERROR) << "Dangling reference from:\n";
+      LOG(ERROR) << debug::StackTrace(raw_stack_trace.data(),
+                                      raw_stack_trace.size() -
+                                          static_cast<size_t>(ranges::count(
+                                              raw_stack_trace, nullptr)))
+                 << "\n";
+    }
+#else
+    LOG(ERROR) << "Building with enable_backup_ref_ptr_instance_tracer will "
+                  "print out stack traces of any live but dangling references.";
+#endif
   }
   CHECK(!errors);
 #endif
@@ -854,11 +937,8 @@ PartitionAllocSupport::GetBrpConfiguration(const std::string& process_type) {
   CHECK(base::FeatureList::GetInstance());
 
   bool enable_brp = false;
-  bool enable_brp_for_ash = false;
-  bool split_main_partition = false;
-  bool use_dedicated_aligned_partition = false;
+  bool ref_count_in_same_slot = false;
   bool process_affected_by_brp_flag = false;
-  size_t ref_count_size = 0;
 
 #if (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&  \
      BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)) || \
@@ -900,68 +980,21 @@ PartitionAllocSupport::GetBrpConfiguration(const std::string& process_type) {
         // Do nothing. Equivalent to !IsEnabled(kPartitionAllocBackupRefPtr).
         break;
 
+      case base::features::BackupRefPtrMode::kEnabledInSameSlotMode:
+        ref_count_in_same_slot = true;
+        ABSL_FALLTHROUGH_INTENDED;
       case base::features::BackupRefPtrMode::kEnabled:
         enable_brp = true;
-        split_main_partition = true;
-#if !BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-        // AlignedAlloc relies on natural alignment offered by the allocator
-        // (see the comment inside PartitionRoot::AlignedAllocFlags). Any extras
-        // in front of the allocation will mess up that alignment. Such extras
-        // are used when BackupRefPtr is on, in which case, we need a separate
-        // partition, dedicated to handle only aligned allocations, where those
-        // extras are disabled. However, if the "previous slot" variant is used,
-        // no dedicated partition is needed, as the extras won't interfere with
-        // the alignment requirements.
-        use_dedicated_aligned_partition = true;
-#endif
         break;
-
-      case base::features::BackupRefPtrMode::kDisabledButSplitPartitions2Way:
-        split_main_partition = true;
-        break;
-
-      case base::features::BackupRefPtrMode::kDisabledButSplitPartitions3Way:
-        split_main_partition = true;
-        use_dedicated_aligned_partition = true;
-        break;
-    }
-
-    if (enable_brp) {
-      switch (base::features::kBackupRefPtrRefCountSizeParam.Get()) {
-        case base::features::BackupRefPtrRefCountSize::kNatural:
-          ref_count_size = 0;
-          break;
-        case base::features::BackupRefPtrRefCountSize::k4B:
-          ref_count_size = 4;
-          break;
-        case base::features::BackupRefPtrRefCountSize::k8B:
-          ref_count_size = 8;
-          break;
-        case base::features::BackupRefPtrRefCountSize::k16B:
-          ref_count_size = 16;
-          break;
-      }
     }
   }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
         // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
-  // Enabling BRP for Ash makes sense only when BRP is enabled. If it wasn't,
-  // there would be no BRP pool, thus BRP would be equally inactive for Ash
-  // pointers.
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-  enable_brp_for_ash =
-      enable_brp && base::FeatureList::IsEnabled(
-                        base::features::kPartitionAllocBackupRefPtrForAsh);
-#endif
-
   return {
       enable_brp,
-      enable_brp_for_ash,
-      split_main_partition,
-      use_dedicated_aligned_partition,
+      ref_count_in_same_slot,
       process_affected_by_brp_flag,
-      ref_count_size,
   };
 }
 
@@ -1036,7 +1069,6 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
   {
     base::AutoLock scoped_lock(lock_);
     // Avoid initializing more than once.
-    // TODO(bartekn): See if can be converted to (D)CHECK.
     if (called_after_feature_list_init_) {
       DCHECK_EQ(established_process_type_, process_type)
           << "ReconfigureAfterFeatureListInit was already called for process '"
@@ -1064,12 +1096,6 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
   DCHECK_NE(process_type, switches::kZygoteProcess);
   [[maybe_unused]] BrpConfiguration brp_config =
       GetBrpConfiguration(process_type);
-
-  if (brp_config.enable_brp_for_ash) {
-    // This must be enabled before the BRP partition is created. See
-    // RawPtrBackupRefImpl::UseBrp().
-    base::RawPtrGlobalSettings::EnableExperimentalAsh();
-  }
 
 #if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
   if (brp_config.process_affected_by_brp_flag) {
@@ -1101,6 +1127,8 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
       break;
   }
 
+  const bool scheduler_loop_quarantine = base::FeatureList::IsEnabled(
+      base::features::kPartitionAllocSchedulerLoopQuarantine);
   const size_t scheduler_loop_quarantine_capacity_in_bytes =
       static_cast<size_t>(
           base::features::kPartitionAllocSchedulerLoopQuarantineCapacity.Get());
@@ -1111,7 +1139,7 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
   partition_alloc::TagViolationReportingMode memory_tagging_reporting_mode =
       partition_alloc::TagViolationReportingMode::kUndefined;
 
-#if PA_CONFIG(HAS_MEMORY_TAGGING)
+#if BUILDFLAG(HAS_MEMORY_TAGGING)
   // ShouldEnableMemoryTagging() checks kKillPartitionAllocMemoryTagging but
   // check here too to wrap the GetMemoryTaggingModeForCurrentThread() call.
   if (!base::FeatureList::IsEnabled(
@@ -1158,7 +1186,7 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
 #endif  // BUILDFLAG(IS_ANDROID)
     }
   }
-#endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
+#endif  // BUILDFLAG(HAS_MEMORY_TAGGING)
 
   if (enable_memory_tagging) {
     CHECK((memory_tagging_reporting_mode ==
@@ -1172,15 +1200,15 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
            partition_alloc::TagViolationReportingMode::kDisabled));
   }
 
+  // Set ref-count mode before we create any roots that have BRP enabled.
+  partition_alloc::PartitionRoot::SetBrpRefCountInSameSlot(
+      brp_config.ref_count_in_same_slot);
+
   allocator_shim::ConfigurePartitions(
       allocator_shim::EnableBrp(brp_config.enable_brp),
       allocator_shim::EnableMemoryTagging(enable_memory_tagging),
-      memory_tagging_reporting_mode,
-      allocator_shim::SplitMainPartition(brp_config.split_main_partition ||
-                                         enable_memory_tagging),
-      allocator_shim::UseDedicatedAlignedPartition(
-          brp_config.use_dedicated_aligned_partition),
-      brp_config.ref_count_size, bucket_distribution,
+      memory_tagging_reporting_mode, bucket_distribution,
+      allocator_shim::SchedulerLoopQuarantine(scheduler_loop_quarantine),
       scheduler_loop_quarantine_capacity_in_bytes,
       allocator_shim::ZappingByFreeFlags(zapping_by_free_flags));
 
@@ -1250,8 +1278,6 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
   if (base::FeatureList::IsEnabled(
           base::features::kPartitionAllocLargeEmptySlotSpanRing)) {
     allocator_shim::internal::PartitionAllocMalloc::Allocator()
-        ->EnableLargeEmptySlotSpanRing();
-    allocator_shim::internal::PartitionAllocMalloc::AlignedAllocator()
         ->EnableLargeEmptySlotSpanRing();
   }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)

@@ -174,7 +174,7 @@ const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
      /*platforms_size=*/10,
      /*form_factors=*/{},
      /*form_factors_size=*/0,
-     /*is_low_end_device=*/absl::nullopt,
+     /*is_low_end_device=*/std::nullopt,
      /*min_os_version=*/nullptr,
      /*params=*/array_kFieldTrialConfig_params_0,
      /*params_size=*/1,
@@ -314,11 +314,14 @@ std::unique_ptr<ClientFilterableState> CreateDummyClientFilterableState() {
   return client_state;
 }
 
+// Constructs mocked EntropyProviders.
 MockEntropyProviders::MockEntropyProviders(
     MockEntropyProviders::Results results,
     uint32_t low_entropy_domain)
     : EntropyProviders(results.high_entropy.has_value() ? "client_id" : "",
-                       {0, low_entropy_domain}),
+                       {0, low_entropy_domain},
+                       // Use a non-empty value for test coverage.
+                       "limited_entropy_randomization_source"),
       low_provider_(results.low_entropy),
       high_provider_(results.high_entropy.value_or(0)) {}
 

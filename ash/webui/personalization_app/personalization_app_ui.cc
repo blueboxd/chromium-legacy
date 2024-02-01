@@ -13,13 +13,14 @@
 #include "ash/rgb_keyboard/rgb_keyboard_manager.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_constants.h"
+#include "ash/webui/common/mojom/sea_pen.mojom.h"
+#include "ash/webui/common/sea_pen_provider.h"
+#include "ash/webui/common/sea_pen_resources.h"
 #include "ash/webui/common/trusted_types_util.h"
 #include "ash/webui/grit/ash_personalization_app_resources.h"
 #include "ash/webui/grit/ash_personalization_app_resources_map.h"
-#include "ash/webui/personalization_app/mojom/sea_pen.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_ambient_provider.h"
 #include "ash/webui/personalization_app/personalization_app_keyboard_backlight_provider.h"
-#include "ash/webui/personalization_app/personalization_app_sea_pen_provider.h"
 #include "ash/webui/personalization_app/personalization_app_theme_provider.h"
 #include "ash/webui/personalization_app/personalization_app_user_provider.h"
 #include "ash/webui/personalization_app/personalization_app_wallpaper_provider.h"
@@ -154,6 +155,18 @@ void AddStrings(content::WebUIDataSource* source) {
       {"ariaLabelEnableAutoColorMode",
        IDS_PERSONALIZATION_APP_ARIA_LABEL_ENABLE_AUTO_COLOR_MODE},
       {"tooltipAutoColorMode", IDS_PERSONALIZATION_APP_TOOLTIP_AUTO_COLOR_MODE},
+      {"geolocationWarningTextForWallpaper",
+       IDS_PERSONALIZATION_APP_THEME_GEOLOCATION_WARNING_TEXT_FOR_WALLPAPER},
+      {"geolocationWarningTextForWeather",
+       IDS_PERSONALIZATION_APP_THEME_GEOLOCATION_WARNING_TEXT_FOR_WEATHER},
+      {"systemGeolocationDialogTitle",
+       IDS_PERSONALIZATION_APP_GEOLOCATION_DIALOG_TITLE},
+      {"systemGeolocationDialogBody",
+       IDS_PERSONALIZATION_APP_GEOLOCATION_DIALOG_BODY},
+      {"systemGeolocationDialogConfirmButton",
+       IDS_PERSONALIZATION_APP_GEOLOCATION_DIALOG_CONFIRM_BUTTON},
+      {"systemGeolocationDialogCancelButton",
+       IDS_PERSONALIZATION_APP_GEOLOCATION_DIALOG_CANCEL_BUTTON},
 
       // User/avatar related strings.
       {"avatarLabel", IDS_PERSONALIZATION_APP_AVATAR_LABEL},
@@ -349,6 +362,8 @@ void AddStrings(content::WebUIDataSource* source) {
 
   source->AddLocalizedStrings(kLocalizedStrings);
 
+  ::ash::common::AddSeaPenStrings(source);
+
   source->AddString("googlePhotosURL", GetGooglePhotosURL());
 
   source->AddString("timeOfDayWallpaperCollectionId",
@@ -356,6 +371,9 @@ void AddStrings(content::WebUIDataSource* source) {
 
   source->AddString("timeOfDayBannerImageUrl",
                     GetAmbientBackendController()->GetPromoBannerUrl());
+
+  source->AddString("systemGeolocationDialogLearnMoreUrl",
+                    kPrivacyHubGeolocationLearnMoreUrl);
 
   // Product name does not need to be translated.
   auto product_name =
@@ -400,7 +418,7 @@ PersonalizationAppUI::PersonalizationAppUI(
     std::unique_ptr<PersonalizationAppAmbientProvider> ambient_provider,
     std::unique_ptr<PersonalizationAppKeyboardBacklightProvider>
         keyboard_backlight_provider,
-    std::unique_ptr<PersonalizationAppSeaPenProvider> sea_pen_provider,
+    std::unique_ptr<::ash::common::SeaPenProvider> sea_pen_provider,
     std::unique_ptr<PersonalizationAppThemeProvider> theme_provider,
     std::unique_ptr<PersonalizationAppUserProvider> user_provider,
     std::unique_ptr<PersonalizationAppWallpaperProvider> wallpaper_provider)
@@ -516,11 +534,14 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
   source->AddBoolean("isTimeOfDayWallpaperForcedAutoScheduleEnabled",
                      features::IsTimeOfDayWallpaperForcedAutoScheduleEnabled());
 
-  source->AddBoolean(
-      "isSeaPenEnabled",
-      features::IsSeaPenEnabled() && manta::features::IsMantaServiceEnabled());
+  source->AddBoolean("isCrosPrivacyHubLocationEnabled",
+                     features::IsCrosPrivacyHubLocationEnabled());
+
+  source->AddBoolean("isSeaPenEnabled",
+                     ::ash::features::IsSeaPenEnabled() &&
+                         manta::features::IsMantaServiceEnabled());
   source->AddBoolean("isSeaPenTextInputEnabled",
-                     features::IsSeaPenTextInputEnabled() &&
+                     ::ash::features::IsSeaPenTextInputEnabled() &&
                          manta::features::IsMantaServiceEnabled());
 }
 

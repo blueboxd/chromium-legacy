@@ -29,6 +29,34 @@ using ::chromeos::settings::mojom::Setting;
 using ::chromeos::settings::mojom::Subpage;
 }  // namespace mojom
 
+namespace {
+const std::vector<SearchConcept>& GetResetSearchConcept() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_RESET,
+       mojom::kResetSectionPath,
+       mojom::SearchResultIcon::kReset,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kReset}},
+  });
+
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetRevampResetSearchConcept() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_RESET,
+       mojom::kSystemPreferencesSectionPath,
+       mojom::SearchResultIcon::kReset,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kPowerwash}},
+  });
+
+  return *tags;
+}
+}  // namespace
+
 ResetSection::ResetSection(Profile* profile,
                            SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry),
@@ -36,7 +64,13 @@ ResetSection::ResetSection(Profile* profile,
           ash::features::IsOsSettingsRevampWayfindingEnabled()) {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   if (IsPowerwashAllowed()) {
-    updater.AddSearchTags(GetSearchConcepts());
+    if (isRevampWayfindingEnabled_) {
+      updater.AddSearchTags(GetRevampResetSearchConcept());
+    } else {
+      updater.AddSearchTags(GetResetSearchConcept());
+    }
+
+    updater.AddSearchTags(GetPowerwashSearchConcept());
   }
 }
 
@@ -67,10 +101,20 @@ void ResetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"powerwashDialogESimWarningCheckbox",
        IDS_SETTINGS_FACTORY_RESET_ESIM_WARNING_CHECKBOX_LABEL},
       {"powerwashContinue", IDS_SETTINGS_FACTORY_CONTINUE_BUTTON_LABEL},
+      {"sanitizeTitle", IDS_OS_SETTINGS_SANITIZE},
+      {"sanitizeDialogTitle", IDS_OS_SETTINGS_SANITIZE_HEADING},
+      {"sanitizeFeedback", IDS_OS_SETTINGS_SANITIZE_FEEDBACK},
+      {"sanitizeDialogButton", IDS_OS_SETTINGS_SANITIZE},
+      {"sanitizeButton", IDS_OS_SETTINGS_SANITIZE},
+      {"sanitizeShortDescription", IDS_OS_SETTINGS_SANITIZE_SHORT_DESCRIPTION},
+      {"sanitizeDescription", IDS_OS_SETTINGS_SANITIZE_DESCRIPTION},
+      {"sanitizeDialogExplanation", IDS_OS_SETTINGS_SANITIZE_WARNING},
+      {"sanitizeLearnMoreUrl", IDS_SANITIZE_HELP_URL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddBoolean("allowPowerwash", IsPowerwashAllowed());
+  html_source->AddBoolean("allowSanitize", IsSanitizeAllowed());
 
   html_source->AddBoolean(
       "showResetProfileBanner",
@@ -116,19 +160,13 @@ bool ResetSection::LogMetric(mojom::Setting setting, base::Value& value) const {
 
 void ResetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kPowerwash);
+  generator->RegisterTopLevelSetting(mojom::Setting::kSanitizeCrosSettings);
 }
 
-const std::vector<SearchConcept>& ResetSection::GetSearchConcepts() {
-  const mojom::Section section = GetSection();
+const std::vector<SearchConcept>& ResetSection::GetPowerwashSearchConcept() {
   const char* section_path = GetSectionPath();
 
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_RESET,
-       section_path,
-       mojom::SearchResultIcon::kReset,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSection,
-       {.section = section}},
       {IDS_OS_SETTINGS_TAG_RESET_POWERWASH,
        section_path,
        mojom::SearchResultIcon::kReset,

@@ -12,6 +12,10 @@ namespace blink {
 // static
 String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
   switch (kind) {
+    case MLOperator::OperatorKind::kArgMin:
+      return "argMin";
+    case MLOperator::OperatorKind::kArgMax:
+      return "argMax";
     case MLOperator::OperatorKind::kBatchNormalization:
       return "batchNormalization";
     case MLOperator::OperatorKind::kCast:
@@ -42,8 +46,12 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "equal";
     case MLOperator::OperatorKind::kGreater:
       return "greater";
+    case MLOperator::OperatorKind::kGreaterOrEqual:
+      return "greaterOrEqual";
     case MLOperator::OperatorKind::kLesser:
       return "lesser";
+    case MLOperator::OperatorKind::kLesserOrEqual:
+      return "lesserOrEqual";
     case MLOperator::OperatorKind::kAbs:
       return "abs";
     case MLOperator::OperatorKind::kCeil:
@@ -88,6 +96,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "gather";
     case MLOperator::OperatorKind::kGemm:
       return "gemm";
+    case MLOperator::OperatorKind::kHardSigmoid:
+      return "hardSigmoid";
     case MLOperator::OperatorKind::kHardSwish:
       return "hardSwish";
     case MLOperator::OperatorKind::kAveragePool2d:
@@ -134,6 +144,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "slice";
     case MLOperator::OperatorKind::kSoftmax:
       return "softmax";
+    case MLOperator::OperatorKind::kSoftplus:
+      return "softplus";
     case MLOperator::OperatorKind::kSplit:
       return "split";
     case MLOperator::OperatorKind::kTanh:
@@ -143,6 +155,7 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
     case MLOperator::OperatorKind::kWhere:
       return "where";
   }
+  NOTREACHED_NORETURN();
 }
 
 MLOperator::MLOperator(MLGraphBuilder* builder,

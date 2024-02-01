@@ -99,8 +99,6 @@ using content::RenderFrame;
 // Any text beyond this point will be clipped.
 static const size_t kMaxIndexChars = 65535;
 
-// Constants for UMA statistic collection.
-static const char kTranslateCaptureText[] = "Translate.CaptureText";
 
 // For a page that auto-refreshes, we still show the bubble, if
 // the refresh delay is less than this value (in seconds).
@@ -576,6 +574,10 @@ void ChromeRenderFrameObserver::LoadBlockedPlugins(
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
+void ChromeRenderFrameObserver::SetSupportsAppRegion(bool supports_app_region) {
+  render_frame()->GetWebView()->SetSupportsAppRegion(supports_app_region);
+}
+
 void ChromeRenderFrameObserver::SetClientSidePhishingDetection() {
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   phishing_classifier_ = safe_browsing::PhishingClassifierDelegate::Create(
@@ -677,7 +679,6 @@ void ChromeRenderFrameObserver::CapturePageText(
 
   std::u16string contents;
   {
-    SCOPED_UMA_HISTOGRAM_TIMER(kTranslateCaptureText);
     TRACE_EVENT0("renderer", "ChromeRenderFrameObserver::CapturePageText");
 
     contents = WebFrameContentDumper::DumpFrameTreeAsText(

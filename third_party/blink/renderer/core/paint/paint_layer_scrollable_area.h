@@ -420,7 +420,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // coordinates, clipped by the parent's client rect.
   PhysicalRect ScrollIntoView(
       const PhysicalRect&,
-      const PhysicalBoxStrut& scroll_margin,
       const mojom::blink::ScrollIntoViewParamsPtr&) override;
 
   // Returns true if the scrollable area is user-scrollable and it does
@@ -607,6 +606,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void StopApplyingScrollStart() final;
   bool IsApplyingScrollStart() const final;
 
+  gfx::Size PixelSnappedBorderBoxSize() const;
+
  private:
   bool NeedsHypotheticalScrollbarThickness(ScrollbarOrientation) const;
   int ComputeHypotheticalScrollbarThickness(
@@ -679,8 +680,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   gfx::Rect CornerRect() const;
 
   void ScrollControlWasSetNeedsPaintInvalidation() override;
-
-  gfx::Size PixelSnappedBorderBoxSize() const;
 
   void InvalidatePaintOfScrollbarIfNeeded(const PaintInvalidatorContext&,
                                           bool needs_paint_invalidation,

@@ -240,7 +240,6 @@ base::FilePath GetPrimaryDisplayCardPath() {
   }
 
   LOG(FATAL) << "Failed to open primary graphics device.";
-  return base::FilePath();  // Not reached.
 }
 
 }  // namespace
@@ -268,7 +267,6 @@ DrmDisplayHostManager::DrmDisplayHostManager(
                                         /*is_primary_device=*/true);
     if (!primary_drm_device_) {
       LOG(FATAL) << "Failed to open primary graphics card";
-      return;
     }
     host_properties->supports_overlays = primary_drm_device_->is_atomic();
     drm_devices_[primary_graphics_card_path_] =
@@ -677,7 +675,7 @@ void DrmDisplayHostManager::GpuShouldDisplayEventTriggerConfiguration(
 
 void DrmDisplayHostManager::RunUpdateDisplaysCallback(
     display::GetDisplaysCallback callback) const {
-  std::vector<display::DisplaySnapshot*> snapshots;
+  std::vector<raw_ptr<display::DisplaySnapshot, VectorExperimental>> snapshots;
   for (const auto& display : displays_)
     snapshots.push_back(display->snapshot());
 

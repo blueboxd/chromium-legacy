@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/system/sys_info.h"
@@ -31,6 +32,7 @@
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
+#include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/field_trial_register.h"
 #include "components/segmentation_platform/public/input_context.h"
 #include "components/segmentation_platform/public/input_delegate.h"
@@ -58,7 +60,6 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
           std::make_unique<FieldTrialRecorder>(field_trial_register_.get())),
       profile_prefs_(init_params->profile_prefs.get()),
       creation_time_(clock_->Now()) {
-  stats::BackgroundUmaRecorder::GetInstance().Initialize();
   base::UmaHistogramMediumTimes(
       "SegmentationPlatform.Init.ProcessCreationToServiceCreationLatency",
       base::SysInfo::Uptime());
@@ -149,6 +150,7 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
 
 SegmentationPlatformServiceImpl::~SegmentationPlatformServiceImpl() {
   signal_handler_.TearDown();
+  ClearAllUserData();
 }
 
 void SegmentationPlatformServiceImpl::GetSelectedSegment(
@@ -203,7 +205,12 @@ ServiceProxy* SegmentationPlatformServiceImpl::GetServiceProxy() {
 }
 
 DatabaseClient* SegmentationPlatformServiceImpl::GetDatabaseClient() {
-  return database_client_.get();
+  if (base::FeatureList::IsEnabled(features::kSegmentationPlatformUkmEngine)) {
+    return database_client_.get();
+  } else {
+    // The database is not created when the feature is disabled.
+    return nullptr;
+  }
 }
 
 bool SegmentationPlatformServiceImpl::IsPlatformInitialized() {
@@ -228,7 +235,9 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
 
   signal_handler_.OnSignalListUpdated();
 
-  std::vector<ModelExecutionSchedulerImpl::Observer*> observers;
+  std::vector<
+      raw_ptr<ModelExecutionSchedulerImpl::Observer, VectorExperimental>>
+      observers;
   for (auto& key_and_selector : segment_selectors_)
     observers.push_back(key_and_selector.second.get());
   observers.push_back(proxy_.get());
@@ -272,7 +281,7 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
 
 void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
     proto::SegmentInfo segment_info,
-    absl::optional<int64_t> old_model_version) {
+    std::optional<int64_t> old_model_version) {
   CHECK(IsPlatformInitialized());
   if (!segment_info.has_model_metadata()) {
     signal_handler_.OnSignalListUpdated();

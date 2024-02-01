@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_JOBS_UNINSTALL_REMOVE_INSTALL_URL_JOB_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
@@ -17,7 +18,6 @@
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "components/webapps/common/web_app_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -31,25 +31,26 @@ class RemoveInstallUrlJob : public UninstallJob {
  public:
   RemoveInstallUrlJob(webapps::WebappUninstallSource uninstall_source,
                       Profile& profile,
-                      absl::optional<webapps::AppId> app_id,
+                      base::Value::Dict& debug_value,
+                      std::optional<webapps::AppId> app_id,
                       WebAppManagement::Type install_source,
                       GURL install_url);
   ~RemoveInstallUrlJob() override;
 
   // UninstallJob:
   void Start(AllAppsLock& lock, Callback callback) override;
-  base::Value ToDebugValue() const override;
   webapps::WebappUninstallSource uninstall_source() const override;
 
  private:
   void CompleteAndSelfDestruct(webapps::UninstallResultCode code);
 
-  webapps::WebappUninstallSource uninstall_source_;
+  const webapps::WebappUninstallSource uninstall_source_;
   // `this` must be owned by `profile_`.
-  raw_ref<Profile> profile_;
-  absl::optional<webapps::AppId> app_id_;
-  WebAppManagement::Type install_source_;
-  GURL install_url_;
+  const raw_ref<Profile> profile_;
+  const raw_ref<base::Value::Dict> debug_value_;
+  const std::optional<webapps::AppId> app_id_;
+  const WebAppManagement::Type install_source_;
+  const GURL install_url_;
 
   // `this` must be started and run within the scope of a WebAppCommand's
   // AllAppsLock.
@@ -57,7 +58,6 @@ class RemoveInstallUrlJob : public UninstallJob {
   Callback callback_;
 
   std::unique_ptr<RemoveInstallSourceJob> sub_job_;
-  base::Value completed_sub_job_debug_value_;
 
   base::WeakPtrFactory<RemoveInstallUrlJob> weak_ptr_factory_{this};
 };

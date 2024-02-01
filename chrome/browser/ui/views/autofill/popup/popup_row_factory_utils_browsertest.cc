@@ -36,6 +36,13 @@ Suggestion CreatePasswordSuggestion(const std::u16string& main_text) {
   return suggestion;
 }
 
+Suggestion CreateSuggestionWithChildren(const std::u16string& main_text,
+                                        std::vector<Suggestion> children) {
+  Suggestion suggestion(main_text, PopupItemId::kAddressEntry);
+  suggestion.children = std::move(children);
+  return suggestion;
+}
+
 // Suggestion main text (Suggestion::main_text) is used for the test and
 // screenshot names, avoid special symbols and keep them unique.
 const Suggestion kSuggestions[] = {
@@ -44,6 +51,11 @@ const Suggestion kSuggestions[] = {
                "label",
                Suggestion::Icon::kLocation,
                PopupItemId::kAddressEntry),
+    Suggestion("Fill_Full_Email_entry",
+               "Minor text",
+               "label",
+               Suggestion::Icon::kNoIcon,
+               PopupItemId::kFillFullEmail),
     CreatePasswordSuggestion(u"Password_entry"),
     Suggestion("Autofill_options",
                "Minor text",
@@ -64,8 +76,11 @@ const Suggestion kSuggestions[] = {
                "label",
                Suggestion::Icon::kGlobe,
                PopupItemId::kSeePromoCodeDetails),
-
 };
+const Suggestion kExpandableSuggestions[] = {CreateSuggestionWithChildren(
+    u"Address_entry",
+    {Suggestion(u"Username", PopupItemId::kUsernameEntry)})};
+
 }  // namespace
 
 // TODO(crbug.com/1491373): Add tests for RTL and dark mode.
@@ -75,6 +90,20 @@ using TestParams =
 class CreatePopupRowViewTest
     : public UiBrowserTest,
       public ::testing::WithParamInterface<TestParams> {
+ public:
+  static std::string GetTestName(
+      const testing::TestParamInfo<TestParams>& info) {
+    const std::string suggestion_part =
+        base::UTF16ToUTF8(std::get<Suggestion>(info.param).main_text.value);
+    const auto selection =
+        std::get<std::optional<PopupRowView::CellType>>(info.param);
+    const std::string selection_part =
+        !selection.has_value()                          ? "NotSelected"
+        : selection == PopupRowView::CellType::kContent ? "ContentSelected"
+                                                        : "ControlSelected";
+    return suggestion_part + "_" + selection_part;
+  }
+
  protected:
   MockAutofillPopupController& controller() { return controller_; }
 
@@ -116,7 +145,7 @@ class CreatePopupRowViewTest
     }
 
     auto* test_info = testing::UnitTest::GetInstance()->current_test_info();
-    return VerifyPixelUi(widget_.get(), test_info->test_case_name(),
+    return VerifyPixelUi(widget_.get(), test_info->test_suite_name(),
                          test_info->name()) != ui::test::ActionResult::kFailed;
   }
 
@@ -151,23 +180,24 @@ IN_PROC_BROWSER_TEST_P(CreatePopupRowViewTest, SuggestionRowUiTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    All,
+    Suggestions,
     CreatePopupRowViewTest,
     ::testing::Combine(::testing::ValuesIn(kSuggestions),
                        ::testing::ValuesIn({
                            std::optional<PopupRowView::CellType>(),
                            std::optional(PopupRowView::CellType::kContent),
                        })),
-    [](const testing::TestParamInfo<TestParams>& info) {
-      std::string suggestion_part =
-          base::UTF16ToUTF8(std::get<Suggestion>(info.param).main_text.value);
-      auto selection =
-          std::get<std::optional<PopupRowView::CellType>>(info.param);
-      std::string selection_part =
-          !selection.has_value()                          ? "NotSelected"
-          : selection == PopupRowView::CellType::kContent ? "ContentSelected"
-                                                          : "ControlSelected";
-      return suggestion_part + "_" + selection_part;
-    });
+    CreatePopupRowViewTest::GetTestName);
+
+INSTANTIATE_TEST_SUITE_P(
+    ExpandableSuggestions,
+    CreatePopupRowViewTest,
+    ::testing::Combine(::testing::ValuesIn(kExpandableSuggestions),
+                       ::testing::ValuesIn({
+                           std::optional<PopupRowView::CellType>(),
+                           std::optional(PopupRowView::CellType::kContent),
+                           std::optional(PopupRowView::CellType::kControl),
+                       })),
+    CreatePopupRowViewTest::GetTestName);
 
 }  // namespace autofill

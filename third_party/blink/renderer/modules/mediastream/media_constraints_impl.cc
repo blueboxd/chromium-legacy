@@ -567,6 +567,11 @@ bool ValidateAndCopyConstraintSet(
                           constraint_buffer.goog_noise_suppression);
   }
 
+  if (constraints_in->hasVoiceIsolation()) {
+    CopyBooleanConstraint(constraints_in->voiceIsolation(), naked_treatment,
+                          constraint_buffer.voice_isolation);
+  }
+
   if (constraints_in->hasLatency()) {
     CopyDoubleConstraint(constraints_in->latency(), naked_treatment,
                          constraint_buffer.latency);
@@ -616,6 +621,16 @@ bool ValidateAndCopyConstraintSet(
   if (constraints_in->hasBackgroundBlur()) {
     CopyBooleanConstraint(constraints_in->backgroundBlur(), naked_treatment,
                           constraint_buffer.background_blur);
+  }
+
+  if (constraints_in->hasEyeGazeCorrection()) {
+    CopyBooleanConstraint(constraints_in->eyeGazeCorrection(), naked_treatment,
+                          constraint_buffer.eye_gaze_correction);
+  }
+
+  if (constraints_in->hasFaceFraming()) {
+    CopyBooleanConstraint(constraints_in->faceFraming(), naked_treatment,
+                          constraint_buffer.face_framing);
   }
 
   if (constraints_in->hasDisplaySurface()) {
@@ -819,6 +834,10 @@ void ConvertConstraintSet(const MediaTrackConstraintSetPlatform& input,
     output->setNoiseSuppression(
         ConvertBoolean(input.goog_noise_suppression, naked_treatment));
   }
+  if (!input.voice_isolation.IsUnconstrained()) {
+    output->setVoiceIsolation(
+        ConvertBoolean(input.voice_isolation, naked_treatment));
+  }
   if (!input.latency.IsUnconstrained())
     output->setLatency(ConvertDouble(input.latency, naked_treatment));
   if (!input.channel_count.IsUnconstrained())
@@ -839,6 +858,13 @@ void ConvertConstraintSet(const MediaTrackConstraintSetPlatform& input,
   if (!input.background_blur.IsUnconstrained()) {
     output->setBackgroundBlur(
         ConvertBoolean(input.background_blur, naked_treatment));
+  }
+  if (!input.eye_gaze_correction.IsUnconstrained()) {
+    output->setEyeGazeCorrection(
+        ConvertBoolean(input.eye_gaze_correction, naked_treatment));
+  }
+  if (!input.face_framing.IsUnconstrained()) {
+    output->setFaceFraming(ConvertBoolean(input.face_framing, naked_treatment));
   }
   if (!input.suppress_local_audio_playback.IsUnconstrained()) {
     output->setSuppressLocalAudioPlayback(

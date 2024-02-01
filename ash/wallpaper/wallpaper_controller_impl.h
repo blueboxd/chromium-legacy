@@ -299,11 +299,21 @@ class ASH_EXPORT WallpaperControllerImpl
                               const gfx::ImageSkia& image) override;
   void SetSeaPenWallpaper(const AccountId& account_id,
                           const SeaPenImage& sea_pen_image,
+                          const std::string& query_info,
                           SetWallpaperCallback callback) override;
 
   void SetSeaPenWallpaperFromFile(const AccountId& account_id,
                                   const base::FilePath& file_path,
                                   SetWallpaperCallback callback) override;
+
+  void GetSeaPenMetadata(const AccountId& account_id,
+                         const base::FilePath& file_path,
+                         GetSeaPenMetadataCallback callback) override;
+
+  void DeleteRecentSeaPenImage(
+      const AccountId& account_id,
+      const base::FilePath& file_path,
+      DeleteRecentSeaPenImageCallback callback) override;
 
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
@@ -758,8 +768,7 @@ class ASH_EXPORT WallpaperControllerImpl
   WallpaperMode wallpaper_mode_ = WALLPAPER_NONE;
 
   // Client interface in chrome browser.
-  raw_ptr<WallpaperControllerClient, ExperimentalAsh>
-      wallpaper_controller_client_ = nullptr;
+  raw_ptr<WallpaperControllerClient> wallpaper_controller_client_ = nullptr;
 
   base::ObserverList<WallpaperControllerObserver>::Unchecked observers_;
 

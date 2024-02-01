@@ -358,6 +358,8 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   new_info.set_vsync_rate_min(GetVSyncRateMin(snapshot, mode_info));
   new_info.set_variable_refresh_rate_state(
       snapshot->variable_refresh_rate_state());
+  new_info.set_connection_type(snapshot->type());
+  new_info.set_physical_size(snapshot->physical_size());
 
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
@@ -378,7 +380,7 @@ void DisplayChangeObserver::UpdateInternalDisplay(
     const DisplayConfigurator::DisplayStateList& display_states) {
   bool force_first_display_internal = ForceFirstDisplayInternal();
 
-  for (auto* state : display_states) {
+  for (display::DisplaySnapshot* state : display_states) {
     if (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL ||
         (force_first_display_internal &&
          (!HasInternalDisplay() || IsInternalDisplayId(state->display_id())))) {

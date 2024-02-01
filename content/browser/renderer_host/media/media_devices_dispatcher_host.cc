@@ -33,6 +33,7 @@
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
@@ -42,13 +43,6 @@
 #endif
 
 using blink::mojom::MediaDeviceType;
-
-namespace features {
-// When enabled, MediaDevicesDispatcherHost does not block back/forward cache.
-BASE_FEATURE(kEnableBackForwardCacheForPagesWithMediaDevicesDispatcherHost,
-             "EnableBackForwardCacheForPagesWithMediaDevicesDispatcherHost",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-}  // namespace features
 
 namespace content {
 
@@ -101,9 +95,8 @@ void MediaDevicesDispatcherHost::Create(
                        if (!render_frame_host)
                          return;
 
-                       if (!base::FeatureList::IsEnabled(
-                               features::
-                                   kEnableBackForwardCacheForPagesWithMediaDevicesDispatcherHost)) {
+                       if (!blink::features::
+                               IsAllowBFCacheWhenClosedMediaStreamTrackEnabled()) {
                          BackForwardCache::DisableForRenderFrameHost(
                              render_frame_host,
                              BackForwardCacheDisable::DisabledReason(
@@ -320,7 +313,7 @@ void MediaDevicesDispatcherHost::SetCaptureHandleConfig(
           render_frame_host_id_, std::move(config)));
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 void MediaDevicesDispatcherHost::CloseFocusWindowOfOpportunity(
     const std::string& label) {
   media_stream_manager_->SetCapturedDisplaySurfaceFocus(
@@ -430,7 +423,7 @@ void MediaDevicesDispatcherHost::GetVideoInputDeviceFormatsWithRawId(
     bool try_in_use_first,
     GetVideoInputDeviceFormatsCallback client_callback,
     std::unique_ptr<ScopedMediaStreamTrace> scoped_trace,
-    const absl::optional<std::string>& raw_id) {
+    const std::optional<std::string>& raw_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (scoped_trace)
     scoped_trace->AddStep(__func__);
@@ -504,7 +497,7 @@ void MediaDevicesDispatcherHost::GotAudioInputEnumeration(
 
 void MediaDevicesDispatcherHost::GotAudioInputParameters(
     size_t index,
-    const absl::optional<media::AudioParameters>& parameters) {
+    const std::optional<media::AudioParameters>& parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(pending_audio_input_capabilities_requests_.size(), 0U);
   DCHECK_GT(current_audio_input_capabilities_.size(), index);

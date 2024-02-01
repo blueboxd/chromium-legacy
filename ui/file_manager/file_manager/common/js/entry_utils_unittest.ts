@@ -5,7 +5,7 @@
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
 import {fakeMyFilesVolumeId, MockVolumeManager} from '../../background/js/mock_volume_manager.js';
-import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {FilesAppEntry} from '../../common/js/files_app_entry_types.js';
 import {convertEntryToFileData} from '../../state/ducks/all_entries.js';
 import {setUpFileManagerOnWindow} from '../../state/for_tests.js';
 
@@ -103,9 +103,7 @@ export function testIsDescendantEntry() {
   const downloadsVolumeInfo = volumeManager.volumeInfoList.item(1);
   const mockFs = downloadsVolumeInfo.fileSystem as MockFileSystem;
   mockFs.populate(['/folder1/']);
-  // @ts-ignore: error TS2339: Property 'entries' does not exist on type
-  // 'FileSystem'.
-  const folder1 = downloadsVolumeInfo.fileSystem.entries['/folder1'];
+  const folder1 = mockFs.entries['/folder1']!;
 
   const volumeEntry = new VolumeEntry(downloadsVolumeInfo);
   volumeEntry.addEntry(fakeEntry);

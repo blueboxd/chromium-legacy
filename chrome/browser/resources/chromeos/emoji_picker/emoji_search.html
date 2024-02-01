@@ -2,7 +2,7 @@
   :host {
     --emoji-picker-search-margins: 14px;
     --emoji-picker-search-height: 40px;
-    --emoji-picker-top-bar-bottom-padding: 16px;
+    --emoji-picker-top-bar-bottom-padding: 10px;
     --search-content-width:
       calc(var(--emoji-picker-width) - 2*var(--emoji-picker-side-padding));
     display: flex;
@@ -13,13 +13,8 @@
 
   :host([gif-support]) {
     --emoji-picker-search-height: 36px;
-    --emoji-picker-top-bar-bottom-padding: 20px;
     --search-content-width:
       calc(var(--emoji-picker-width) - 2*var(--emoji-picker-search-side-padding));
-  }
-
-  :host([jelly-support]) {
-    --emoji-picker-top-bar-bottom-padding: 10px;
   }
 
   cr-search-field {
@@ -48,12 +43,8 @@
     height: var(--emoji-picker-search-height);
   }
 
-  cr-search-field.jelly {
+  cr-search-field {
     border-radius: 8px;
-  }
-
-  cr-search-field:not(.jelly) {
-      border-radius: 40px;
   }
 
   cr-search-field:focus-within {
@@ -116,11 +107,7 @@
 
   #searchShadow {
     background-color: var(--emoji-picker-container-color);
-    /*
-     * TODO(b/263055563): Remove --cr-elevation reference once jelly is fully
-     * launched.
-     */
-    box-shadow: var(--cros-elevation-2-shadow, --cr-elevation-2);
+    box-shadow: var(--cros-elevation-2-shadow);
     display: flex;
     margin-bottom: 7px;
     margin-inline-end: calc(0px - var(--emoji-picker-side-padding));
@@ -130,7 +117,6 @@
     padding-inline-start: var(--emoji-picker-side-padding);
     position: sticky;
     top:0;
-    width: var(--emoji-picker-width);
   }
 
   :host([gif-support]) #searchShadow {
@@ -150,6 +136,8 @@
      */
     margin-top: -6px;
     padding-top: 6px;
+    /* Specify the width of results container */
+    width: calc(var(--emoji-picker-width) - 4px - var(--emoji-picker-side-padding));
   }
 
   #no-emoji-image {
@@ -183,11 +171,16 @@
   #search-results {
     width: var(--search-content-width);
   }
+
+  seal-app {
+    width: var(--search-content-width);
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
 </style>
 
 <div id="searchShadow">
   <cr-search-field id="search"
-    class$="[[computeCrSearchFieldClass(jellySupport)]]"
     label="[[getSearchPlaceholderLabel(gifSupport)]]"
     autofocus="true">
   </cr-search-field>
@@ -209,15 +202,34 @@
     <div class="sr-only" role="heading" aria-level="1">
       Emoji Search Results
     </div>
-    <div id="search-results">
-      <template is="dom-repeat" items="[[searchResults]]">
-        <emoji-group data="[[item.emoji]]" category$="[[item.category]]" gif-support$="[[gifSupport]]" jelly-support$="[[jellySupport]]">
-        </emoji-group>
-      </template>
+
+    <template is="dom-if" if="[[sealMode]]">
+      <seal-app
+        query="[[getSearchQuery()]]"
+        on-seal-app-query-change="onSealQueryChange"
+        on-seal-app-image-click="onSealImageClick"
+      >
+      </seal-app>
+    </template>
+
+    <!-- Do not show regular search results in seal mode -->
+    <template is="dom-if" if="[[!sealMode]]">
+      <div id="search-results">
+
+        <template is="dom-repeat" items="[[searchResults]]">
+          <emoji-group data="[[item.emoji]]" category$="[[item.category]]"
+            gif-support$="[[gifSupport]]" global-tone="[[globalTone]]"
+            global-gender="[[globalGender]]"
+            use-grouped-preference="[[useGroupedPreference]">
+          </emoji-group>
+        </template>
     </div>
-    <div class="no-result">
-      <template is="dom-if" if="[[noResults(status, searchResults)]]">
-        <template is="dom-if" if="[[jellySupport]]">
+    </template>
+
+    <!-- No results / error for seal mode is rendered by <seal-app /> -->
+    <template is="dom-if" if="[[!sealMode]]">
+      <div class="no-result">
+        <template is="dom-if" if="[[noResults(status, searchResults)]]">
           <svg id="no-emoji-image" xmlns="http://www.w3.org/2000/svg" width="224" height="168" viewBox="0 0 224 168" fill="none">
             <path d="M183 71.5103C183 70.6172 183.782 69.9474 184.675 70.0032C192.21 70.8405 198.071 77.2038 198.071 84.9068C198.071 92.6656 192.266 99.0289 184.731 99.8662C183.838 99.9778 183.056 99.2522 183.056 98.3591L183 71.5103Z" fill="var(--cros-sys-illo-secondary)" />
             <path d="M123.572 74.0606C121.841 74.7862 120.167 75.7351 118.548 76.6282C116.259 77.8562 113.58 78.1353 111.124 77.4097C109.729 77.019 108.389 76.5166 106.938 76.2375C101.97 75.3444 97.1704 78.9168 97.0024 84.0521C96.8904 88.6292 100.742 92.704 105.375 92.4807C107.496 92.3691 109.561 91.5318 111.627 91.2527C113.915 90.9736 116.148 91.3643 118.101 92.5365C119.776 93.5413 121.339 94.7134 123.125 95.5507C124.856 96.3322 126.753 96.6671 128.707 96.5555C134.456 96.1647 139.145 91.5876 139.647 85.8383C140.261 78.9726 134.959 73.1675 128.205 73C126.586 73.0558 125.023 73.4466 123.572 74.0606Z" stroke="var(--cros-sys-illo-secondary)" stroke-width="1.65922" stroke-miterlimit="10" />
@@ -227,23 +239,21 @@
             <path d="M19.9036 93.8184L5 118.825" stroke="var(--cros-sys-illo-color1)" stroke-width="5.94044" stroke-miterlimit="10" />
             <path d="M170.717 88.1871L164.187 94.7179C162.68 96.225 160.168 96.225 158.661 94.7179L152.13 88.1871C150.623 86.68 150.623 84.1682 152.13 82.6611L158.661 76.1303C160.168 74.6232 162.68 74.6232 164.187 76.1303L170.717 82.6611C172.225 84.1682 172.225 86.6242 170.717 88.1871Z" fill="var(--cros-sys-illo-color1)" />
           </svg>
+          No result found
         </template>
-        <template is="dom-if" if="[[!jellySupport]]">
-          <picture>
-            <source srcset="no_results_dark.svg"
-                media="(prefers-color-scheme: dark)">
-            <img src="no_results.svg" id="no-emoji-image">
-          </picture>
+
+        <template is="dom-if" if="[[isGifInErrorState(status, searchResults)]]">
+          <emoji-error
+            status="[[status]]"
+            error-message="[[errorMessage]]">
+          </emoji-error>
         </template>
-        No result found
-      </template>
-      <template is="dom-if" if="[[isGifInErrorState(status, searchResults)]]">
-        <emoji-error
-          status="[[status]]"
-          error-message="[[errorMessage]]"
-          jelly-support$="[[jellySupport]]">
-        </emoji-error>
-      </template>
     </div>
+    </template>
   </div>
+</template>
+
+<template is="dom-if" if="[[sealSupport]]">
+  <seal-snackbar on-seal-snackbar-confirm="onSealToastConfirmed">
+  </seal-snackbar>
 </template>

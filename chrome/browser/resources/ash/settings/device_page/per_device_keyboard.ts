@@ -13,9 +13,9 @@ import '../settings_shared.css.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
-import '/shared/settings/controls/settings_radio_group.js';
-import '/shared/settings/controls/settings_slider.js';
-import '/shared/settings/controls/settings_toggle_button.js';
+import '../controls/settings_radio_group.js';
+import '../controls/settings_slider.js';
+import '../controls/settings_toggle_button.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
@@ -108,6 +108,7 @@ export class SettingsPerDeviceKeyboardElement extends
         value: () => {
           return isRevampWayfindingEnabled();
         },
+        readOnly: true,
       },
 
       /**
@@ -122,7 +123,7 @@ export class SettingsPerDeviceKeyboardElement extends
   protected shouldShowDiacriticSetting: boolean =
       loadTimeData.getBoolean('allowDiacriticsOnPhysicalKeyboardLongpress');
   private prefs: chrome.settingsPrivate.PrefObject;
-  private isRevampWayfindingEnabled_: boolean;
+  private readonly isRevampWayfindingEnabled_: boolean;
   private autoRepeatDelays: number[];
   private autoRepeatIntervals: number[];
   private browserProxy: DevicePageBrowserProxy =

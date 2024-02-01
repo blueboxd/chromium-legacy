@@ -124,6 +124,7 @@ class ProgressWnd : public CompleteWnd, public AppInstallProgress {
   FRIEND_TEST_ALL_PREFIXES(ProgressWndTest, OnWaitingRetryDownload);
   FRIEND_TEST_ALL_PREFIXES(ProgressWndTest, OnPause);
   FRIEND_TEST_ALL_PREFIXES(ProgressWndTest, OnComplete);
+  FRIEND_TEST_ALL_PREFIXES(ProgressWndTest, LaunchCmdLine);
 
   enum class States {
     STATE_INIT = 0,
@@ -187,8 +188,6 @@ class ProgressWnd : public CompleteWnd, public AppInstallProgress {
   // Returns true if this window is closed.
   bool MaybeCloseWindow() override;
 
-  HRESULT LaunchCmdLine(const AppCompletionInfo& app_info);
-  bool LaunchCmdLines(const ObserverCompletionInfo& info);
   HRESULT ChangeControlState();
   HRESULT SetMarqueeMode(bool is_marquee);
 

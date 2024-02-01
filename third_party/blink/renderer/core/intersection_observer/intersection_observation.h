@@ -55,8 +55,6 @@ class CORE_EXPORT IntersectionObservation final
     // If this bit is set, we only process intersection observations that
     // require post-layout delivery.
     kPostLayoutDeliveryOnly = 1 << 6,
-    // If this is set, the overflow clip edge is used.
-    kUseOverflowClipEdge = 1 << 7,
   };
 
   IntersectionObservation(IntersectionObserver&, Element&);
@@ -74,8 +72,7 @@ class CORE_EXPORT IntersectionObservation final
   void TakeRecords(HeapVector<Member<IntersectionObserverEntry>>&);
   void Disconnect();
   void InvalidateCachedRects() { cached_rects_.valid = false; }
-  // Returns true if cached rects have been invalidated since the last update.
-  bool InvalidateCachedRectsIfNeeded();
+  void InvalidateCachedRectsIfPaintPropertiesChanged();
 
   void Trace(Visitor*) const;
 
@@ -89,7 +86,7 @@ class CORE_EXPORT IntersectionObservation final
   // generate a notification and schedule it for delivery.
   void ProcessIntersectionGeometry(const IntersectionGeometry& geometry,
                                    DOMHighResTimeStamp timestamp);
-  bool NeedsInvalidateCachedRects() const;
+  bool PaintPropertiesChanged() const;
 
   Member<IntersectionObserver> observer_;
   WeakMember<Element> target_;

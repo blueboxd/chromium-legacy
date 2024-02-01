@@ -28,7 +28,6 @@
 #include "base/ranges/algorithm.h"
 #include "chromeos/ash/components/phonehub/notification.h"
 #include "chromeos/ash/components/phonehub/phone_hub_manager.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -67,9 +66,6 @@ constexpr int kContentTextLabelExtraMargin = 6;
 constexpr auto kContentTextLabelInsetsDip =
     gfx::Insets::TLBR(0, kContentTextLabelExtraMargin, 0, 4);
 
-// Typography.
-constexpr int kHeaderTextFontSizeDip = 15;
-
 // Max number of apps can be shown with more apps button
 constexpr int kMaxAppsWithMoreAppsButton = 5;
 
@@ -92,7 +88,7 @@ void LayoutAppButtonsView(views::View* buttons_view) {
   views::View::Views visible_children;
   base::ranges::copy_if(
       buttons_view->children(), std::back_inserter(visible_children),
-      [](const auto* v) {
+      [](const views::View* v) {
         return v->GetVisible() && (v->GetPreferredSize().width() > 0);
       });
   if (visible_children.empty()) {
@@ -100,7 +96,7 @@ void LayoutAppButtonsView(views::View* buttons_view) {
   }
   const int visible_child_width =
       std::accumulate(visible_children.cbegin(), visible_children.cend(), 0,
-                      [](int width, const auto* v) {
+                      [](int width, const views::View* v) {
                         return width + v->GetPreferredSize().width();
                       });
 
@@ -116,7 +112,7 @@ void LayoutAppButtonsView(views::View* buttons_view) {
   int child_x = child_area.x() + kRecentAppButtonsViewHorizontalPadding;
   int child_y = child_area.y() + kRecentAppButtonsViewTopPadding +
                 kRecentAppButtonFocusPadding.bottom();
-  for (auto* child : visible_children) {
+  for (views::View* child : visible_children) {
     // Most recent apps be added to the left and shift right as the other apps
     // are streamed.
     int width = child->GetPreferredSize().width();
@@ -142,19 +138,11 @@ PhoneHubRecentAppsView::HeaderView::HeaderView(
   label->SetVerticalAlignment(gfx::VerticalAlignment::ALIGN_MIDDLE);
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
+  // TODO(b/322067753): Replace usage of |AshColorProvider| with |cros_tokens|.
   label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorPrimary));
-
-  if (chromeos::features::IsJellyrollEnabled()) {
-    TypographyProvider::Get()->StyleLabel(ash::TypographyToken::kCrosButton1,
-                                          *label);
-  } else {
-    label->SetFontList(
-        label->font_list()
-            .DeriveWithSizeDelta(kHeaderTextFontSizeDip -
-                                 label->font_list().GetFontSize())
-            .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-  }
+  TypographyProvider::Get()->StyleLabel(ash::TypographyToken::kCrosButton1,
+                                        *label);
   label->SetLineHeight(kHeaderLabelLineHeight);
 
   if (features::IsEcheNetworkConnectionStateEnabled()) {
@@ -199,12 +187,11 @@ class PhoneHubRecentAppsView::PlaceholderView : public views::Label {
     SetMultiLine(true);
     SetBorder(views::CreateEmptyBorder(kContentTextLabelInsetsDip));
 
-    if (chromeos::features::IsJellyrollEnabled()) {
-      TypographyProvider::Get()->StyleLabel(ash::TypographyToken::kCrosBody2,
-                                            *this);
-    }
+    TypographyProvider::Get()->StyleLabel(ash::TypographyToken::kCrosBody2,
+                                          *this);
     SetLineHeight(kContentLabelLineHeightDip);
   }
+
   ~PlaceholderView() override = default;
   PlaceholderView(PlaceholderView&) = delete;
   PlaceholderView operator=(PlaceholderView&) = delete;
@@ -300,7 +287,7 @@ gfx::Size PhoneHubRecentAppsView::RecentAppButtonsView::CalculatePreferredSize()
 
 void PhoneHubRecentAppsView::RecentAppButtonsView::Layout() {
   if (features::IsEcheLauncherIconsInMoreAppsButtonEnabled()) {
-    views::View::Layout();
+    LayoutSuperclass<views::View>(this);
     return;
   }
   LayoutAppButtonsView(this);
@@ -348,7 +335,7 @@ gfx::Size PhoneHubRecentAppsView::LoadingView::CalculatePreferredSize() const {
 
 void PhoneHubRecentAppsView::LoadingView::Layout() {
   if (features::IsEcheLauncherIconsInMoreAppsButtonEnabled()) {
-    views::View::Layout();
+    LayoutSuperclass<views::View>(this);
     return;
   }
   LayoutAppButtonsView(this);
@@ -563,6 +550,7 @@ std::unique_ptr<views::View> PhoneHubRecentAppsView::GenerateMoreAppsButton() {
   auto more_apps_button = std::make_unique<views::ImageButton>(
       base::BindRepeating(&PhoneHubRecentAppsView::SwitchToFullAppsList,
                           base::Unretained(this)));
+  // TODO(b/322067753): Replace usage of |AshColorProvider| with |cros_tokens|.
   gfx::ImageSkia image = gfx::CreateVectorIcon(
       kPhoneHubFullAppsListIcon,
       AshColorProvider::Get()->GetContentLayerColor(
@@ -571,10 +559,8 @@ std::unique_ptr<views::View> PhoneHubRecentAppsView::GenerateMoreAppsButton() {
       views::Button::STATE_NORMAL,
       ui::ImageModel::FromImageSkia(
           gfx::ImageSkiaOperations::ExtractSubset(image, kMoreAppsButtonArea)));
-  more_apps_button->SetBackground(views::CreateRoundedRectBackground(
-      AshColorProvider::Get()->GetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive),
-      kMoreAppsButtonRadius));
+  more_apps_button->SetBackground(views::CreateThemedRoundedRectBackground(
+      kColorAshControlBackgroundColorInactive, kMoreAppsButtonRadius));
   more_apps_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_FULL_APPS_LIST_BUTTON_TITLE));
 

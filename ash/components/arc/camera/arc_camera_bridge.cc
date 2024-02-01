@@ -91,7 +91,7 @@ class ArcCameraBridge::PendingStartCameraServiceResult {
     owner_->pending_start_camera_service_results_.erase(this);
   }
 
-  const raw_ptr<ArcCameraBridge, ExperimentalAsh> owner_;
+  const raw_ptr<ArcCameraBridge> owner_;
   mojo::Remote<mojom::CameraService> service_;
   ArcCameraBridge::StartCameraServiceCallback callback_;
   base::WeakPtrFactory<PendingStartCameraServiceResult> weak_ptr_factory_{this};
@@ -120,9 +120,9 @@ ArcCameraBridge::~ArcCameraBridge() {
 }
 
 void ArcCameraBridge::StartCameraService(StartCameraServiceCallback callback) {
-  char random_bytes[16];
-  crypto::RandBytes(random_bytes, 16);
-  std::string token = base::HexEncode(random_bytes, 16);
+  uint8_t random_bytes[16];
+  crypto::RandBytes(random_bytes);
+  std::string token = base::HexEncode(random_bytes);
 
   mojo::OutgoingInvitation invitation;
   mojo::PlatformChannel channel;

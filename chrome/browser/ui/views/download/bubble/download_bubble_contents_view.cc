@@ -42,7 +42,10 @@ DownloadBubbleContentsView::DownloadBubbleContentsView(
     bool primary_view_is_partial_view,
     std::unique_ptr<DownloadBubbleContentsViewInfo> info,
     views::BubbleDialogDelegate* bubble_delegate)
-    : info_(std::move(info)), bubble_controller_(bubble_controller) {
+    : info_(std::move(info)),
+      bubble_controller_(bubble_controller),
+      navigation_handler_(navigation_handler),
+      bubble_delegate_(bubble_delegate) {
   SetProperty(views::kElementIdentifierKey, kToolbarDownloadBubbleElementId);
   CHECK(!info_->row_list_view_info().rows().empty());
   SetLayoutManager(std::make_unique<views::FlexLayout>())
@@ -73,6 +76,9 @@ DownloadBubbleContentsView::DownloadBubbleContentsView(
 }
 
 DownloadBubbleContentsView::~DownloadBubbleContentsView() {
+  if (VisiblePage() == Page::kSecurity) {
+    security_view_->MaybeLogDismiss();
+  }
   security_view_->Reset();
   // In order to ensure that `info_` is valid for the entire lifetime of the
   // child views, we delete the child views here rather than in `~View()`.
@@ -91,6 +97,9 @@ DownloadBubbleRowView* DownloadBubbleContentsView::ShowPrimaryPage(
   CHECK(!id || *id != ContentId());
   security_view_->SetVisible(false);
   security_view_->Reset();
+  // Reset fixed width, which could be previously set by the security
+  // view.
+  bubble_delegate_->set_fixed_width(0);
   page_ = Page::kPrimary;
   primary_view_->SetVisible(true);
   if (!id) {
@@ -108,7 +117,6 @@ void DownloadBubbleContentsView::ShowSecurityPage(const ContentId& id) {
   primary_view_->SetVisible(false);
   page_ = Page::kSecurity;
   InitializeSecurityView(id);
-  security_view_->UpdateAccessibilityTextAndFocus();
   security_view_->SetVisible(true);
 }
 
@@ -138,6 +146,11 @@ void DownloadBubbleContentsView::ProcessSecuritySubpageButtonPress(
     return;
   }
   if (DownloadUIModel* model = GetDownloadModel(id); model) {
+    // Calling this before because ProcessDownloadButtonPress may cause
+    // the model item to be deleted during its call.
+    if (navigation_handler_) {
+      navigation_handler_->OnSecurityDialogButtonPress(*model, command);
+    }
     bubble_controller_->ProcessDownloadButtonPress(model->GetWeakPtr(), command,
                                                    /*is_main_view=*/false);
   }
@@ -243,5 +256,5 @@ DownloadUIModel* DownloadBubbleContentsView::GetDownloadModel(
   return nullptr;
 }
 
-BEGIN_METADATA(DownloadBubbleContentsView, views::View)
+BEGIN_METADATA(DownloadBubbleContentsView)
 END_METADATA

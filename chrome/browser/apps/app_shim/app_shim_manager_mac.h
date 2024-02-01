@@ -62,7 +62,8 @@ class AppShimManager
       public AvatarMenuObserver,
       public ProfileManagerObserver,
       public ProfileObserver,
-      public mac_notifications::mojom::MacNotificationProvider {
+      public mac_notifications::mojom::MacNotificationProvider,
+      public mac_notifications::mojom::MacNotificationActionHandler {
  public:
   class Delegate {
    public:
@@ -234,8 +235,8 @@ class AppShimManager
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* menu) override;
 
-  static base::apple::ScopedCFTypeRef<SecRequirementRef>
-      BuildAppShimRequirementFromFrameworkRequirementString(CFStringRef);
+  static base::apple::ScopedCFTypeRef<CFStringRef>
+      BuildAppShimRequirementStringFromFrameworkRequirementString(CFStringRef);
 
   class AppShimObserver {
    public:
@@ -249,6 +250,9 @@ class AppShimManager
   void SetAppShimObserverForTesting(AppShimObserver* observer) {
     app_shim_observer_ = observer;
   }
+
+  // Simulates a launch as triggered by an app shim for the specific `app_id`.
+  void LoadAndLaunchAppForTesting(const webapps::AppId& app_id);
 
  protected:
   typedef std::set<Browser*> BrowserSet;
@@ -430,6 +434,10 @@ class AppShimManager
           mac_notifications::mojom::MacNotificationActionHandler> handler)
       override;
 
+  // mac_notifications::mojom::MacNotificationActionHandler:
+  void OnNotificationAction(
+      mac_notifications::mojom::NotificationActionInfoPtr info) override;
+
   std::unique_ptr<Delegate> delegate_;
 
   // Weak, reset during OnProfileManagerDestroying.
@@ -447,6 +455,13 @@ class AppShimManager
   // always expects to get a connected MacNotificationProvider remote.
   mojo::ReceiverSet<mac_notifications::mojom::MacNotificationProvider>
       dummy_notification_provider_receivers_;
+
+  // Notification actions from all app shims are routed through these receivers
+  // and this class to make sure notification actions can be handled even if the
+  // browser process has never tried to connect to the notification service
+  // in an app shim.
+  mojo::ReceiverSet<mac_notifications::mojom::MacNotificationActionHandler>
+      notification_action_handler_receivers_;
 
   raw_ptr<AppShimObserver> app_shim_observer_ = nullptr;
 

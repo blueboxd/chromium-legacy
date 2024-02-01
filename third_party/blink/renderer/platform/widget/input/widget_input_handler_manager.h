@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
-#include "third_party/blink/public/mojom/input/input_handler.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/widget/input/input_handler_proxy.h"
@@ -167,7 +166,6 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
   using ElementAtPointCallback = base::OnceCallback<void(cc::ElementId)>;
   void FindScrollTargetOnMainThread(const gfx::PointF& point,
                                     ElementAtPointCallback callback);
-  void SendDroppedPointerDownCounts();
 
   void ClearClient();
 
@@ -238,8 +236,7 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
       std::unique_ptr<WebCoalescedInputEvent> event,
       std::unique_ptr<InputHandlerProxy::DidOverscrollParams> overscroll_params,
       const WebInputEventAttribution& attribution,
-      std::unique_ptr<cc::EventMetrics> metrics,
-      mojom::blink::ScrollResultDataPtr scroll_result_data);
+      std::unique_ptr<cc::EventMetrics> metrics);
 
   // Similar to the above; this is used by the main thread input handler to
   // communicate back the result of handling the event. Note: this may be
@@ -272,6 +269,8 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
   void HandleInputEventWithLatencyOnInputHandlingThread(
       std::unique_ptr<WebCoalescedInputEvent>);
 
+  void SendDroppedPointerDownCounts();
+
   // The kInputBlocking task runner is for tasks which are on the critical path
   // of showing the effect of an already-received input event, and should be
   // prioritized above handling new input.
@@ -284,7 +283,11 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
 
   void LogInputTimingUMA();
 
-  void RecordMetricsForDroppedEventsBeforePaint(const base::TimeTicks&);
+  // Records event UMA using the given `first_paint_time`.  If no paint occurred
+  // before this method is called, `first_paint_time` must be passed as
+  // `TimeTicks` zero.
+  void RecordEventMetricsForPaintTiming(
+      const base::TimeTicks& first_paint_time);
 
   // Helpers for FlushEventQueuesForTesting.
   void FlushCompositorQueueForTesting();
@@ -388,6 +391,11 @@ class PLATFORM_EXPORT WidgetInputHandlerManager final
 
   // Timer for count dropped events.
   std::unique_ptr<base::OneShotTimer> dropped_event_counts_timer_;
+
+  // Timer to detect if first visibly non-empty paint happened after an
+  // acceptable maximum delay.  This timer is allocated and run on the main
+  // thread.
+  std::unique_ptr<base::OneShotTimer> first_paint_max_delay_timer_;
 
   unsigned dropped_pointer_down_ = 0;
 

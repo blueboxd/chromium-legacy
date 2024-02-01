@@ -18,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_util.h"
 #include "ash/test/view_drawn_waiter.h"
+#include "base/containers/adapters.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/scoped_observation.h"
@@ -125,37 +126,6 @@ class ClipboardDataWaiter : public ui::ClipboardObserver {
   // for: #addr-of, #constexpr-ctor-field-initializer
   RAW_PTR_EXCLUSION const ui::ClipboardData* clipboard_data_ = nullptr;
   std::unique_ptr<base::RunLoop> run_loop_;
-};
-
-// The helper class to wait for the observed view's bounds update.
-class ViewBoundsWaiter : public views::ViewObserver {
- public:
-  explicit ViewBoundsWaiter(views::View* observed_view)
-      : observed_view_(observed_view) {
-    observed_view_->AddObserver(this);
-  }
-
-  ViewBoundsWaiter(const ViewBoundsWaiter&) = delete;
-  ViewBoundsWaiter& operator=(const ViewBoundsWaiter&) = delete;
-  ~ViewBoundsWaiter() override { observed_view_->RemoveObserver(this); }
-
-  void WaitForMeaningfulBounds() {
-    // No-op if `observed_view_` already has meaningful bounds.
-    if (!observed_view_->bounds().IsEmpty())
-      return;
-
-    run_loop_.Run();
-  }
-
- private:
-  // views::ViewObserver:
-  void OnViewBoundsChanged(views::View* observed_view) override {
-    EXPECT_FALSE(observed_view->bounds().IsEmpty());
-    run_loop_.Quit();
-  }
-
-  const raw_ptr<views::View, ExperimentalAsh> observed_view_;
-  base::RunLoop run_loop_;
 };
 
 // Helpers ---------------------------------------------------------------------
@@ -290,11 +260,11 @@ class ClipboardHistoryBrowserTest : public ash::LoginManagerTest {
   }
 
   void Press(ui::KeyboardCode key, int modifiers = ui::EF_NONE) {
-    event_generator_->PressKey(key, modifiers);
+    event_generator_->PressKeyAndModifierKeys(key, modifiers);
   }
 
   void Release(ui::KeyboardCode key, int modifiers = ui::EF_NONE) {
-    event_generator_->ReleaseKey(key, modifiers);
+    event_generator_->ReleaseKeyAndModifierKeys(key, modifiers);
   }
 
   void PressAndRelease(ui::KeyboardCode key, int modifiers = ui::EF_NONE) {
@@ -361,8 +331,8 @@ class ClipboardHistoryBrowserTest : public ash::LoginManagerTest {
 
     // Wait until `delete_button` has meaningful bounds. Note that the bounds
     // are set by the layout manager asynchronously.
-    ViewBoundsWaiter waiter(delete_button);
-    waiter.WaitForMeaningfulBounds();
+    ui_test_utils::ViewBoundsWaiter delete_button_waiter(delete_button);
+    delete_button_waiter.WaitForNonEmptyBounds();
 
     EXPECT_TRUE(delete_button->GetVisible());
     EXPECT_TRUE(item_view->IsSelected());
@@ -387,8 +357,7 @@ class ClipboardHistoryBrowserTest : public ash::LoginManagerTest {
     {
       ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
       scw.WriteText(base::UTF8ToUTF16(text));
-      scw.WriteHTML(base::UTF8ToUTF16(html), /*source_url=*/"",
-                    ui::ClipboardContentType::kSanitized);
+      scw.WriteHTML(base::UTF8ToUTF16(html), /*source_url=*/"");
     }
 
     // ClipboardHistory will post a task to process clipboard data in order to
@@ -819,8 +788,7 @@ class ClipboardHistoryPasteTypeBrowserTest
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  raw_ptr<content::WebContents, DanglingUntriaged | ExperimentalAsh>
-      web_contents_ = nullptr;
+  raw_ptr<content::WebContents, DanglingUntriaged> web_contents_ = nullptr;
   int paste_num_ = 1;
 };
 
@@ -1197,7 +1165,7 @@ class ClipboardHistoryTextfieldBrowserTestBase
   }
 
   std::unique_ptr<views::Widget> widget_;
-  raw_ptr<views::Textfield, ExperimentalAsh> textfield_ = nullptr;
+  raw_ptr<views::Textfield> textfield_ = nullptr;
 };
 
 class ClipboardHistoryTextfieldBrowserTest
@@ -1933,7 +1901,8 @@ IN_PROC_BROWSER_TEST_P(ClipboardHistoryUrlTitleFetcherBrowserTest, UrlTitles) {
 
   // Show the clipboard history menu and verify that the unvisited URL's item
   // has no title label.
-  event_generator.PressAndReleaseKey(ui::VKEY_V, ui::EF_COMMAND_DOWN);
+  event_generator.PressAndReleaseKeyAndModifierKeys(ui::VKEY_V,
+                                                    ui::EF_COMMAND_DOWN);
   EXPECT_FALSE(GetMenuItemViewForClipboardHistoryItemAtIndex(0u)->GetViewByID(
       ash::clipboard_history_util::kSecondaryDisplayTextLabelID));
   event_generator.PressAndReleaseKey(ui::VKEY_ESCAPE);
@@ -1947,7 +1916,8 @@ IN_PROC_BROWSER_TEST_P(ClipboardHistoryUrlTitleFetcherBrowserTest, UrlTitles) {
 
   // Show the clipboard history menu and verify that the visited URL's item has
   // a title label iff the clipboard history URL titles feature is enabled.
-  event_generator.PressAndReleaseKey(ui::VKEY_V, ui::EF_COMMAND_DOWN);
+  event_generator.PressAndReleaseKeyAndModifierKeys(ui::VKEY_V,
+                                                    ui::EF_COMMAND_DOWN);
   EXPECT_EQ(!!GetMenuItemViewForClipboardHistoryItemAtIndex(0u)->GetViewByID(
                 ash::clipboard_history_util::kSecondaryDisplayTextLabelID),
             IsClipboardHistoryUrlTitlesEnabled());

@@ -46,6 +46,7 @@
 <translation id="3067436040345934772">Deslocar para a direita</translation>
 <translation id="3081586908890909590">Mudar para gravar vídeo</translation>
 <translation id="313467653172006084">30 FPS</translation>
+<translation id="3158534262962737808">Aderir a "<ph name="WIFINAME" />"</translation>
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="3240426699337459095">Link copiado</translation>
 <translation id="3354465018370944241">Definições de fotos</translation>
@@ -78,12 +79,14 @@
 <translation id="4705093842003735294">Resolução total</translation>
 <translation id="4864143361253542638">Lista de páginas digitalizadas</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="4892746741161549733">Copiar endereço do link <ph name="URL" /></translation>
 <translation id="491895758387112773">Gravação de vídeo multistream</translation>
 <translation id="495170559598752135">Ações</translation>
 <translation id="4984613436295737187">Quad HD (1440p)</translation>
 <translation id="5034763830503483128">Formato da foto</translation>
 <translation id="5057360777601936059">De momento, a câmara não está disponível.
         Verifique se a câmara está ligada corretamente.</translation>
+<translation id="5157591164390831335">URL detetado.</translation>
 <translation id="5163387177077603948">A mover para a direita</translation>
 <translation id="5235304959032763950">16 por 9</translation>
 <translation id="5266635337630551423">Canto superior esquerdo do documento</translation>
@@ -110,6 +113,7 @@
 <translation id="6353688143752491039">Obrigado por fornecer feedback acerca da app Câmara.
 
 Se o seu feedback for acerca da qualidade de imagem ou vídeo, anexe uma foto ou um vídeo de exemplo e descreva o problema. (Por exemplo, a foto está demasiado escura ou o objeto não está focado.)</translation>
+<translation id="6519884562954018934">Aderir a <ph name="WIFINAME" /></translation>
 <translation id="6527303717912515753">Partilhar</translation>
 <translation id="6617916774429601017">Mostrar todas as resoluções</translation>
 <translation id="6631515515009660915">Espelho desativado</translation>
@@ -129,6 +133,7 @@ Se o seu feedback for acerca da qualidade de imagem ou vídeo, anexe uma foto ou
 <translation id="7450541714075000668">Texto copiado</translation>
 <translation id="7488619942230388918">Gravar vídeo GIF</translation>
 <translation id="7557677699350329807">Mudar para a câmara seguinte</translation>
+<translation id="7562584071994185503">Copiar texto <ph name="TEXT" /></translation>
 <translation id="7607002721634913082">Em pausa</translation>
 <translation id="7608223098072244877">4 por 4</translation>
 <translation id="761421184377987513">A mover para o canto inferior esquerdo</translation>
@@ -141,6 +146,7 @@ Se o seu feedback for acerca da qualidade de imagem ou vídeo, anexe uma foto ou
 <translation id="7726641833034062494">Gravar vídeo normal</translation>
 <translation id="7748344063862150053">Canto superior direito do documento</translation>
 <translation id="7933675232020478311">A mover para o canto inferior direito</translation>
+<translation id="7983668134180549431">Texto detetado.</translation>
 <translation id="8079255378695216066">Não é possível iniciar a gravação</translation>
 <translation id="8120146556401698679">Deslocar, inclinar, zoom</translation>
 <translation id="8131740175452115882">Confirmar</translation>
@@ -150,16 +156,17 @@ Se o seu feedback for acerca da qualidade de imagem ou vídeo, anexe uma foto ou
 <translation id="8346544573713510785">Escalar os frames pela HAL da Câmara</translation>
 <translation id="8425673304802773841">Inclinar para baixo</translation>
 <translation id="8428213095426709021">Definições</translation>
+<translation id="8609951387004618906">Abrir <ph name="URL" /></translation>
 <translation id="8629662593426079630">360p</translation>
 <translation id="8711011893539266636">Ative/desative o som do microfone. O botão Desativar som está ativado</translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8732462232047530626">Pré-visualizar metadados</translation>
+<translation id="874854738381978209">Rede Wi-Fi detetada.</translation>
 <translation id="8815966864175525708">Mudar para tirar foto de retrato</translation>
 <translation id="8828441885228359828">Retomar gravação</translation>
 <translation id="8870695351537079478">Não é possível iniciar a gravação.</translation>
 <translation id="8880167521484863515">4 por 3</translation>
 <translation id="8903921497873541725">Ampliar</translation>
-<translation id="8926890870105777777">Ligar-se à rede "<ph name="WIFINAME" />"</translation>
 <translation id="9045010116236796332">Posicione todas as margens do documento dentro da moldura</translation>
 <translation id="9045155556724273246">10 segundos</translation>
 <translation id="906331135292332864">A processar a imagem…</translation>

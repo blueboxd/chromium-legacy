@@ -1,3 +1,4 @@
+*AndroidHomeModuleRankerTest.*
 *BackgroundRecorderTest.*
 *CachedResultProviderTest.*
 *CachedResultWriterTest.*
@@ -38,7 +39,6 @@
 *PostProcessorTest.*
 *PowerUserModelTest.*
 *PrefsMigratorTest.*
-*QueryTilesModelTest.*
 *RequestDispatcherTest.*
 *RequestHandlerTest.*
 *ResultMigrationUtilsTest.*

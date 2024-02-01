@@ -286,8 +286,7 @@ void AbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
   }
   // TODO(layout-dev): Add support for IndividualCharacterRanges to
   // ShapeResultView to avoid the copy below.
-  scoped_refptr<ShapeResult> shape_result =
-      shape_result_view->CreateShapeResult();
+  ShapeResult* shape_result = shape_result_view->CreateShapeResult();
   Vector<CharacterRange> ranges;
   shape_result->IndividualCharacterRanges(&ranges);
   widths.reserve(ranges.size());
@@ -500,7 +499,7 @@ String AbstractInlineTextBox::GetText() const {
   // first letter is excluded from the accessibility tree, so we need to prepend
   // its text here.
   if (LayoutText* first_letter = GetFirstLetterPseudoLayoutText())
-    result = first_letter->GetText().SimplifyWhiteSpace() + result;
+    result = first_letter->TransformedText().SimplifyWhiteSpace() + result;
 
   return result;
 }

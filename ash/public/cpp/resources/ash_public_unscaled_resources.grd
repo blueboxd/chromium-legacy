@@ -29,9 +29,6 @@
       <include name="IDR_SETTINGS_RGB_KEYBOARD_RAINBOW_COLOR_48_PNG" file="unscaled_resources/rgb_keyboard_rainbow_color_48.png" type="BINDATA" />
       <!-- Accessibility animations -->
       <include name="IDR_DICTATION_BUBBLE_ANIMATION" file="unscaled_resources/dictation_bubble_animation.json" type="BINDATA"/>
-      <!-- CBX notification images -->
-      <include name="IDR_UPDATE_CHROME_DARK" file="unscaled_resources/update_chrome_dark.png" type="BINDATA" />
-      <include name="IDR_UPDATE_CHROME_LIGHT" file="unscaled_resources/update_chrome_light.png" type="BINDATA" />
       <!-- System tray Cast images -->
       <include name="IDR_TRAY_CAST_ZERO_STATE_DARK" file="unscaled_resources/tray_cast_zero_state_dark.png" type="BINDATA" />
       <include name="IDR_TRAY_CAST_ZERO_STATE_LIGHT" file="unscaled_resources/tray_cast_zero_state_light.png" type="BINDATA" />
@@ -54,6 +51,9 @@
       <structure type="lottie" name="IDR_SCREEN_CAPTURE_EDUCATION_NUDGE_IMAGE" file="unscaled_resources/screen_capture_education_nudge.json" compress="gzip" />
       <!-- Game Dashboard Controls Setup Nudge -->
       <structure type="lottie" name="IDR_GAME_DASHBOARD_CONTROLS_SETUP_NUDGE" file="unscaled_resources/game_dashboard_controls_setup_nudge.json" compress="gzip" />
+      <!-- Clipboard Nudge -->
+      <structure type="lottie" name="IDR_CLIPBOARD_NUDGE_COPIED_IMAGE" file="unscaled_resources/clipboard_nudge_copied.json" compress="gzip" />
+      <structure type="lottie" name="IDR_CLIPBOARD_NUDGE_SELECT_IMAGE" file="unscaled_resources/clipboard_nudge_select.json" compress="gzip" />
     </structures>
   </release>
 </grit>

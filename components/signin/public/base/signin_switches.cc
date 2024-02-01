@@ -72,6 +72,15 @@ BASE_FEATURE(kForceStartupSigninPromo,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+#if BUILDFLAG(IS_ANDROID)
+// Flag guarding the restoration of the signed-in only account instead of
+// the syncing one and the restoration of account settings after device
+// restore.
+BASE_FEATURE(kRestoreSignedInAccountAndSettingsFromBackup,
+             "RestoreSignedInAccountAndSettingsFromBackup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 // Enables a new version of the sync confirmation UI.
 BASE_FEATURE(kTangibleSync,
              "TangibleSync",
@@ -84,23 +93,22 @@ BASE_FEATURE(kTangibleSync,
 
 );
 
+#if BUILDFLAG(IS_ANDROID)
 // Enables the search engine choice feature for existing users.
+// TODO(b/316859558): Not used for shipping purposes, remove this feature.
 BASE_FEATURE(kSearchEngineChoice,
              "SearchEngineChoice",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-const base::FeatureParam<bool> kWithSearchEngineMarketingSnippets{
-    &kSearchEngineChoice, "with-marketing-snippets", /*default_value=*/true};
-
-const base::FeatureParam<bool> kWithForcedScrollEnabled{
-    &kSearchEngineChoice, "with-forced-scroll", /*default_value=*/true};
-
-// Enables the search engine choice feature in the FRE.
-BASE_FEATURE(kSearchEngineChoiceFre,
-             "SearchEngineChoiceFre",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kUnoDesktop, "UnoDesktop", base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+BASE_FEATURE(kMinorModeRestrictionsForHistorySyncOptIn,
+             "MinorModeRestrictionsForHistorySyncOptIn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 #if BUILDFLAG(IS_IOS)
 BASE_FEATURE(kRemoveSignedInAccountsDialog,

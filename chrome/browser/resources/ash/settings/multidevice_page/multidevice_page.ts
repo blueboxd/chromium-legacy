@@ -10,7 +10,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '/nearby/nearby-share-internal-icons.m.js';
 // </if>
 
-import '/shared/settings/controls/password_prompt_dialog.js';
+import '../common/password_prompt_dialog/password_prompt_dialog.js';
 import '../settings_shared.css.js';
 import '../nearby_share_page/nearby_share_subpage.js';
 import '../os_settings_page/os_settings_animated_pages.js';
@@ -263,9 +263,7 @@ export class SettingsMultidevicePageElement extends
   }
 
   private getLabelText_(): string {
-    if (this.isRevampWayfindingEnabled_ &&
-        this.pageContentData.mode ===
-            MultiDeviceSettingsMode.HOST_SET_VERIFIED) {
+    if (this.isRevampWayfindingEnabled_) {
       return this.i18n('multideviceSetupItemHeading');
     }
 
@@ -569,12 +567,8 @@ export class SettingsMultidevicePageElement extends
     return this.pageContentData.isNearbyShareDisallowedByPolicy;
   }
 
-  private getNearbyShareDescription_(
-      state: boolean, visibility: Visibility|undefined): string|undefined {
-    if (!state) {
-      return this.i18n('nearbyShareDescriptionOff');
-    }
-
+  private getNearbyShareDescription_(visibility: Visibility|undefined): string
+      |undefined {
     if (visibility === undefined) {
       return this.i18n('nearbyShareDescriptionHidden');
     }
@@ -592,11 +586,6 @@ export class SettingsMultidevicePageElement extends
       default:
         assertNotReached();
     }
-  }
-
-  private getOnOffString_(state: boolean, onstr: string, offstr: string):
-      string {
-    return state ? onstr : offstr;
   }
 
   private showNearbyShareToggle_(isOnboardingComplete: boolean): boolean {

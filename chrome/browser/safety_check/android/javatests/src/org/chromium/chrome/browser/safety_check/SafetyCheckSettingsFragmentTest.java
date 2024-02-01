@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.safety_check;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
@@ -21,30 +19,43 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DoNotBatch;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridgeJni;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.sync.SyncService;
+import org.chromium.components.sync.UserSelectableType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Tests {@link SafetyCheckSettingsFragment} together with {@link SafetyCheckViewBinder}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@DoNotBatch(
+        reason =
+                "The activity should be restarted for each test to not share saved user preferences"
+                        + " between tests.")
 public class SafetyCheckSettingsFragmentTest {
-    private static final String PASSWORDS = "passwords";
+    private static final String TEST_EMAIL_ADDRESS = "test@example.com";
+    private static final String PASSWORDS_LOCAL = "passwords_local";
+    private static final String PASSWORDS_ACCOUNT = "passwords_account";
     private static final String SAFE_BROWSING = "safe_browsing";
     private static final String UPDATES = "updates";
     private static final long S_TO_MS = 1000;
@@ -56,32 +67,23 @@ public class SafetyCheckSettingsFragmentTest {
     public SettingsActivityTestRule<SafetyCheckSettingsFragment> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(SafetyCheckSettingsFragment.class);
 
-    @Rule public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
-
-    @Mock private SafetyCheckBridge mSafetyCheckBridge;
+    @Rule public JniMocker mJniMocker = new JniMocker();
 
     @Mock private PasswordCheck mPasswordCheck;
+    @Mock protected SyncService mSyncService;
+    @Mock protected PasswordManagerUtilBridge.Natives mPasswordManagerUtilBridgeNativeMock;
 
-    private PropertyModel mModel;
-    private SafetyCheckSettingsFragment mFragment;
+    protected PropertyModel mSafetyCheckModel;
+    private PropertyModel mPasswordCheckPreferenceLocalModel;
+    protected SafetyCheckSettingsFragment mFragment;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
-        // Make the passwords initial status return immediately to avoid spinning animation.
-        when(mPasswordCheck.getSavedPasswordsCount()).thenReturn(0);
-        when(mPasswordCheck.getCompromisedCredentialsCount()).thenReturn(0);
-        doAnswer(
-                        invocation -> {
-                            PasswordCheck.Observer observer =
-                                    (PasswordCheck.Observer) (invocation.getArguments()[0]);
-                            observer.onCompromisedCredentialsFetchCompleted();
-                            observer.onSavedPasswordsFetchCompleted();
-                            return null;
-                        })
-                .when(mPasswordCheck)
-                .addObserver(any(SafetyCheckMediator.class), eq(true));
+        SyncServiceFactory.setInstanceForTesting(mSyncService);
+        mJniMocker.mock(
+                PasswordManagerUtilBridgeJni.TEST_HOOKS, mPasswordManagerUtilBridgeNativeMock);
     }
 
     @Test
@@ -120,12 +122,19 @@ public class SafetyCheckSettingsFragmentTest {
                 SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + 315 * DAY_TO_MS));
     }
 
-    private void createFragmentAndModel() {
+    protected void createFragmentAndModel() {
         mSettingsActivityTestRule.startSettingsActivity();
         mFragment = (SafetyCheckSettingsFragment) mSettingsActivityTestRule.getFragment();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    mModel = SafetyCheckCoordinator.createModelAndMcp(mFragment);
+                    mSafetyCheckModel =
+                            SafetyCheckCoordinator.createSafetyCheckModelAndBind(mFragment);
+                    mPasswordCheckPreferenceLocalModel =
+                            SafetyCheckCoordinator.createPasswordCheckPreferenceModelAndBind(
+                                    mFragment,
+                                    mSafetyCheckModel,
+                                    SafetyCheckViewBinder.PASSWORDS_KEY_LOCAL,
+                                    "Passwords");
                 });
     }
 
@@ -135,42 +144,121 @@ public class SafetyCheckSettingsFragmentTest {
         mFragment = (SafetyCheckSettingsFragment) mSettingsActivityTestRule.getFragment();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    mModel = SafetyCheckCoordinator.createModelAndMcp(mFragment);
+                    mSafetyCheckModel =
+                            SafetyCheckCoordinator.createSafetyCheckModelAndBind(mFragment);
+                    mPasswordCheckPreferenceLocalModel =
+                            SafetyCheckCoordinator.createPasswordCheckPreferenceModelAndBind(
+                                    mFragment,
+                                    mSafetyCheckModel,
+                                    SafetyCheckViewBinder.PASSWORDS_KEY_LOCAL,
+                                    "Passwords");
                 });
     }
 
-    @Test
-    @MediumTest
-    public void testNullStateDisplayedCorrectly() {
+    private void configureMockSyncService(boolean isSyncFeatureEnabled) {
+        when(mSyncService.isSyncFeatureEnabled()).thenReturn(isSyncFeatureEnabled);
+        when(mSyncService.getSelectedTypes())
+                .thenReturn(CollectionUtil.newHashSet(UserSelectableType.PASSWORDS));
+        when(mSyncService.getAccountInfo())
+                .thenReturn(CoreAccountInfo.createFromEmailAndGaiaId(TEST_EMAIL_ADDRESS, "0"));
+    }
+
+    private void configurePasswordManagerUtilBridge(boolean usesSplitStores) {
+        when(mPasswordManagerUtilBridgeNativeMock.usesSplitStoresAndUPMForLocal(any()))
+                .thenReturn(usesSplitStores);
+    }
+
+    private void verifyNullStateDisplayedCorrectly(boolean isSyncEnabled, boolean usesSplitStores) {
+        configureMockSyncService(isSyncEnabled);
+        configurePasswordManagerUtilBridge(usesSplitStores);
         createFragmentAndModel();
-        Preference passwords = mFragment.findPreference(PASSWORDS);
+        // Binds the account model.
+        SafetyCheckCoordinator.createPasswordCheckPreferenceModelAndBind(
+                mFragment,
+                mSafetyCheckModel,
+                SafetyCheckViewBinder.PASSWORDS_KEY_ACCOUNT,
+                "Passwords for test account");
+
+        Preference passwordsLocal = mFragment.findPreference(PASSWORDS_LOCAL);
+        Preference passwordsAccount = mFragment.findPreference(PASSWORDS_ACCOUNT);
         Preference safeBrowsing = mFragment.findPreference(SAFE_BROWSING);
         Preference updates = mFragment.findPreference(UPDATES);
 
-        assertEquals("", passwords.getSummary());
+        assertEquals(!isSyncEnabled || usesSplitStores, passwordsLocal.isVisible());
+        assertEquals(isSyncEnabled, passwordsAccount.isVisible());
+        assertEquals("", passwordsLocal.getSummary());
+        assertEquals("", passwordsAccount.getSummary());
         assertEquals("", safeBrowsing.getSummary());
         assertEquals("", updates.getSummary());
     }
 
     @Test
     @MediumTest
+    public void testNullStateDisplayedCorrectlySyncOffNoUsingSplitStores() {
+        verifyNullStateDisplayedCorrectly(/* isSyncEnabled= */ false, /* usesSplitStores= */ false);
+    }
+
+    @Test
+    @MediumTest
+    public void testNullStateDisplayedCorrectlySyncOffUsingSplitStores() {
+        verifyNullStateDisplayedCorrectly(/* isSyncEnabled= */ false, /* usesSplitStores= */ true);
+    }
+
+    @Test
+    @MediumTest
+    public void testNullStateDisplayedCorrectlySyncOnNoUsingSplitStores() {
+        verifyNullStateDisplayedCorrectly(/* isSyncEnabled= */ true, /* usesSplitStores= */ false);
+    }
+
+    @Test
+    @MediumTest
+    public void testNullStateDisplayedCorrectlySyncOnUsingSplitStores() {
+        verifyNullStateDisplayedCorrectly(true, true);
+    }
+
+    @Test
+    @MediumTest
+    public void testPasswordsCheckTitlesAreCorrect() {
+        configureMockSyncService(true);
+        configurePasswordManagerUtilBridge(true);
+        mSettingsActivityTestRule.startSettingsActivity();
+        mFragment = (SafetyCheckSettingsFragment) mSettingsActivityTestRule.getFragment();
+
+        Preference passwordsLocal = mFragment.findPreference(PASSWORDS_LOCAL);
+        Preference passwordsAccount = mFragment.findPreference(PASSWORDS_ACCOUNT);
+
+        assertEquals(
+                passwordsLocal.getTitle(),
+                mFragment.getString(R.string.safety_check_passwords_title));
+        assertEquals(
+                passwordsAccount.getTitle(),
+                mFragment.getString(
+                        R.string.safety_check_passwords_account_title, TEST_EMAIL_ADDRESS));
+    }
+
+    @Test
+    @MediumTest
     public void testStateChangeDisplayedCorrectly() {
         createFragmentAndModel();
-        Preference passwords = mFragment.findPreference(PASSWORDS);
+
+        Preference passwordsLocal = mFragment.findPreference(PASSWORDS_LOCAL);
         Preference safeBrowsing = mFragment.findPreference(SAFE_BROWSING);
         Preference updates = mFragment.findPreference(UPDATES);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Passwords state remains unchanged.
                     // Safe browsing is in "checking".
-                    mModel.set(
+                    mSafetyCheckModel.set(
                             SafetyCheckProperties.SAFE_BROWSING_STATE, SafeBrowsingState.CHECKING);
                     // Updates goes through "checking" and ends up in "outdated".
-                    mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.CHECKING);
-                    mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.OUTDATED);
+                    mSafetyCheckModel.set(
+                            SafetyCheckProperties.UPDATES_STATE, UpdatesState.CHECKING);
+                    mSafetyCheckModel.set(
+                            SafetyCheckProperties.UPDATES_STATE, UpdatesState.OUTDATED);
                 });
 
-        assertEquals("", passwords.getSummary());
+        assertEquals(true, passwordsLocal.isVisible());
+        assertEquals("", passwordsLocal.getSummary());
         assertEquals("", safeBrowsing.getSummary());
         assertEquals(
                 ApplicationProvider.getApplicationContext()
@@ -182,27 +270,27 @@ public class SafetyCheckSettingsFragmentTest {
     @MediumTest
     public void testSafetyCheckElementsOnClick() {
         createFragmentAndModel();
-        CallbackHelper passwordsClicked = new CallbackHelper();
+        CallbackHelper passwordsLocalClicked = new CallbackHelper();
         CallbackHelper safeBrowsingClicked = new CallbackHelper();
         CallbackHelper updatesClicked = new CallbackHelper();
         // Set the listeners
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    mModel.set(
-                            SafetyCheckProperties.PASSWORDS_CLICK_LISTENER,
+                    mPasswordCheckPreferenceLocalModel.set(
+                            PasswordsCheckPreferenceProperties.PASSWORDS_CLICK_LISTENER,
                             (Preference.OnPreferenceClickListener)
                                     (p) -> {
-                                        passwordsClicked.notifyCalled();
+                                        passwordsLocalClicked.notifyCalled();
                                         return true;
                                     });
-                    mModel.set(
+                    mSafetyCheckModel.set(
                             SafetyCheckProperties.SAFE_BROWSING_CLICK_LISTENER,
                             (Preference.OnPreferenceClickListener)
                                     (p) -> {
                                         safeBrowsingClicked.notifyCalled();
                                         return true;
                                     });
-                    mModel.set(
+                    mSafetyCheckModel.set(
                             SafetyCheckProperties.UPDATES_CLICK_LISTENER,
                             (Preference.OnPreferenceClickListener)
                                     (p) -> {
@@ -210,26 +298,27 @@ public class SafetyCheckSettingsFragmentTest {
                                         return true;
                                     });
                 });
-        Preference passwords = mFragment.findPreference(PASSWORDS);
+        Preference passwordsLocal = mFragment.findPreference(PASSWORDS_LOCAL);
         Preference safeBrowsing = mFragment.findPreference(SAFE_BROWSING);
         Preference updates = mFragment.findPreference(UPDATES);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    // Passwords state remains unchanged, should be clickable.
-                    passwords.performClick();
+                    // If local password storage is available, should be clickable.
+                    passwordsLocal.performClick();
                     // Safe browsing is in "checking", the element deactivates, not clickable.
-                    mModel.set(
+                    mSafetyCheckModel.set(
                             SafetyCheckProperties.SAFE_BROWSING_STATE, SafeBrowsingState.CHECKING);
                     safeBrowsing.performClick();
                     // Updates goes through "checking" and ends up in "outdated".
                     // Checking: the element deactivates, clicks are not handled.
-                    mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.CHECKING);
+                    mSafetyCheckModel.set(
+                            SafetyCheckProperties.UPDATES_STATE, UpdatesState.CHECKING);
                     // Final state: the element is reactivated and should handle clicks.
-                    mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.OUTDATED);
+                    mSafetyCheckModel.set(
+                            SafetyCheckProperties.UPDATES_STATE, UpdatesState.OUTDATED);
                     updates.performClick();
                 });
-        // Passwords and updates should get clicked, SB element is inactive.
-        assertEquals(1, passwordsClicked.getCallCount());
+        assertEquals(1, passwordsLocalClicked.getCallCount());
         assertEquals(0, safeBrowsingClicked.getCallCount());
         assertEquals(1, updatesClicked.getCallCount());
     }

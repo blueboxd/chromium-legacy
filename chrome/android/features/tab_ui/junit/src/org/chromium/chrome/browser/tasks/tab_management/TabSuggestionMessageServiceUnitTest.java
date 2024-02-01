@@ -13,14 +13,12 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED;
 import static org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback.TabSuggestionResponse.DISMISSED;
 import static org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback.TabSuggestionResponse.NOT_CONSIDERED;
 
 import android.content.Context;
-import android.view.View;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,8 +40,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabListEditorAction.ActionDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabContext;
@@ -81,16 +77,14 @@ public class TabSuggestionMessageServiceUnitTest {
     @Mock public Profile.Natives mMockProfileNatives;
 
     Context mContext;
-    @Mock TabModelSelector mTabModelSelector;
+    @Mock Profile mProfile;
     @Mock TabModel mTabModel;
-    @Mock TabModelFilterProvider mTabModelFilterProvider;
     @Mock TabGroupModelFilter mTabGroupModelFilter;
     @Mock TabListEditorCoordinator.TabListEditorController mTabListEditorController;
     @Mock Callback<TabSuggestionFeedback> mTabSuggestionFeedbackCallback;
     @Mock MessageService.MessageObserver mMessageObserver;
     @Mock SelectionDelegate<Integer> mSelectionDelegate;
     @Mock ActionDelegate mActionDelegate;
-    @Mock View mCustomCardView;
 
     @Captor ArgumentCaptor<TabSuggestionFeedback> mTabSuggestionFeedbackCallbackArgumentCaptor;
 
@@ -108,12 +102,6 @@ public class TabSuggestionMessageServiceUnitTest {
         mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, TAB2_ROOT_ID, "");
         mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_ROOT_ID, "");
 
-        // Set up TabModelSelector.
-        doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
-        doReturn(mTab1).when(mTabModelSelector).getTabById(TAB1_ID);
-        doReturn(mTab2).when(mTabModelSelector).getTabById(TAB2_ID);
-        doReturn(mTab3).when(mTabModelSelector).getTabById(TAB3_ID);
-
         // Set up TabModel.
         doReturn(3).when(mTabModel).getCount();
         doReturn(mTab1).when(mTabModel).getTabAt(POSITION1);
@@ -121,8 +109,6 @@ public class TabSuggestionMessageServiceUnitTest {
         doReturn(mTab3).when(mTabModel).getTabAt(POSITION3);
 
         // Set up TabModelFilter.
-        doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
-        doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
         doReturn(mTabModel).when(mTabGroupModelFilter).getTabModel();
 
         // Set up MessageService.MessageObserver
@@ -132,9 +118,9 @@ public class TabSuggestionMessageServiceUnitTest {
         mMessageService =
                 new TabSuggestionMessageService(
                         mContext,
-                        mTabModelSelector,
-                        () -> mTabListEditorController,
-                        mCustomCardView);
+                        mProfile,
+                        () -> mTabGroupModelFilter,
+                        () -> mTabListEditorController);
         mMessageService.addObserver(mMessageObserver);
     }
 
@@ -165,7 +151,7 @@ public class TabSuggestionMessageServiceUnitTest {
         TabSuggestion tabSuggestion =
                 prepareTabSuggestion(suggestedTabs, TabSuggestion.TabSuggestionAction.CLOSE);
 
-        assertEquals(3, mTabModelSelector.getCurrentModel().getCount());
+        assertEquals(3, mTabModel.getCount());
 
         LinkedHashSet<Integer> tabSet = new LinkedHashSet<>();
         tabSet.add(TAB1_ID);
@@ -243,7 +229,6 @@ public class TabSuggestionMessageServiceUnitTest {
         TabSuggestion tabSuggestion =
                 prepareTabSuggestion(
                         Arrays.asList(mTab1, mTab2), TabSuggestion.TabSuggestionAction.CLOSE);
-        when(mTabModelSelector.getModel(false)).thenReturn(mTabModel);
         mMessageService.onNewSuggestion(
                 Arrays.asList(tabSuggestion), mTabSuggestionFeedbackCallback);
         inOrder.verify(mMessageObserver).messageReady(anyInt(), any());

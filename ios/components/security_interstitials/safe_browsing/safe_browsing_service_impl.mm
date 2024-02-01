@@ -176,16 +176,16 @@ SafeBrowsingServiceImpl::CreateUrlChecker(
       /*render_frame_token=*/std::nullopt,
       /*frame_tree_node_id=*/
       security_interstitials::UnsafeResource::kNoFrameTreeNodeId,
-      can_perform_full_url_lookup, can_url_realtime_check_subresource_url,
+      /*navigation_id=*/std::nullopt, can_perform_full_url_lookup,
+      can_url_realtime_check_subresource_url,
       /*can_check_db=*/true, /*can_check_high_confidence_allowlist=*/true,
       /*url_lookup_service_metric_suffix=*/"",
       /*last_committed_url=*/web_state->GetLastCommittedURL(),
       web::GetUIThreadTaskRunner({}),
       url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr,
-      /*webui_delegate=*/nullptr,
       hash_real_time_service ? hash_real_time_service->GetWeakPtr() : nullptr,
-      /*mechanism_experimenter=*/nullptr,
-      /*is_mechanism_experiment_allowed=*/false, hash_real_time_selection);
+      hash_real_time_selection,
+      /*is_async_check=*/false);
 }
 
 bool SafeBrowsingServiceImpl::CanCheckUrl(const GURL& url) const {
@@ -325,8 +325,7 @@ void SafeBrowsingServiceImpl::IOThreadEnabler::SetUpURLRequestContext(
           cookie_util::CookieStoreConfig(
               cookie_file_path,
               cookie_util::CookieStoreConfig::RESTORED_SESSION_COOKIES,
-              cookie_util::CookieStoreConfig::COOKIE_MONSTER,
-              /*crypto_delegate=*/nullptr),
+              cookie_util::CookieStoreConfig::COOKIE_MONSTER),
           /*system_cookie_store=*/nullptr, net::NetLog::Get());
 
   builder.SetCookieStore(std::move(cookie_store));

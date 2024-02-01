@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownScrollListener;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -48,13 +49,14 @@ import org.chromium.ui.util.ColorUtils;
 /**
  * Maintains the status bar color for a {@link Window}.
  *
- * TODO(crbug.com/1450945): Prevent initialization of StatusBarColorController for automotive.
+ * <p>TODO(crbug.com/1450945): Prevent initialization of StatusBarColorController for automotive.
  */
 public class StatusBarColorController
         implements DestroyObserver,
                 TopToolbarCoordinator.UrlExpansionObserver,
                 StatusIndicatorCoordinator.StatusIndicatorObserver,
                 UrlFocusChangeListener,
+                OmniboxSuggestionsDropdownScrollListener,
                 TopToolbarCoordinator.ToolbarColorObserver {
     public static final @ColorInt int UNDEFINED_STATUS_BAR_COLOR = Color.TRANSPARENT;
     public static final @ColorInt int DEFAULT_STATUS_BAR_COLOR = Color.argb(0x01, 0, 0, 0);
@@ -87,6 +89,9 @@ public class StatusBarColorController
     private final @ColorInt int mStandardDefaultThemeColor;
     private final @ColorInt int mIncognitoDefaultThemeColor;
     private final @ColorInt int mActiveOmniboxDefaultColor;
+    private final @ColorInt int mIncognitoActiveOmniboxColor;
+    private final @ColorInt int mStandardScrolledOmniboxColor;
+    private final @ColorInt int mIncognitoScrolledOmniboxColor;
     private final boolean mIsSurfacePolishEnabled;
     private final @ColorInt int mPolishedHomeSurfaceBgColor;
     private boolean mToolbarColorChanged;
@@ -98,6 +103,7 @@ public class StatusBarColorController
     private boolean mIsInOverviewMode;
     private boolean mIsIncognito;
     private boolean mIsOmniboxFocused;
+    private boolean mAreSuggestionsScrolled;
 
     private @ColorInt int mScrimColor = ScrimProperties.INVALID_COLOR;
     private float mStatusBarScrimFraction;
@@ -114,7 +120,7 @@ public class StatusBarColorController
     private final LayoutStateObserver mLayoutStateObserver =
             new LayoutStateObserver() {
                 @Override
-                public void onStartedShowing(int layoutType) {
+                public void onStartedShowing(@LayoutType int layoutType) {
                     if (layoutType != LayoutType.TAB_SWITCHER
                             && layoutType != LayoutType.START_SURFACE) {
                         return;
@@ -127,7 +133,7 @@ public class StatusBarColorController
                 }
 
                 @Override
-                public void onFinishedHiding(int layoutType) {
+                public void onFinishedHiding(@LayoutType int layoutType) {
                     if (layoutType != LayoutType.TAB_SWITCHER
                             && layoutType != LayoutType.START_SURFACE) {
                         return;
@@ -176,11 +182,21 @@ public class StatusBarColorController
         mStatusIndicatorColor = UNDEFINED_STATUS_BAR_COLOR;
         if (OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
                 && OmniboxFeatures.shouldShowActiveColorOnOmnibox()) {
+            // TODO(crbug.com/1521964): Share code with LocationBarCoordinator's constructor.
             mActiveOmniboxDefaultColor =
                     ChromeColors.getSurfaceColor(
                             context, R.dimen.omnibox_suggestion_dropdown_bg_elevation);
+            mIncognitoActiveOmniboxColor = context.getColor(R.color.omnibox_dropdown_bg_incognito);
+            // TODO(crbug.com/1521964): Share code with ToolbarPhone#getToolbarDefaultColor().
+            mStandardScrolledOmniboxColor =
+                    ChromeColors.getSurfaceColor(context, R.dimen.toolbar_text_box_elevation);
+            mIncognitoScrolledOmniboxColor =
+                    context.getColor(R.color.default_bg_color_dark_elev_2_baseline);
         } else {
             mActiveOmniboxDefaultColor = mStandardDefaultThemeColor;
+            mIncognitoActiveOmniboxColor = mIncognitoPrimaryBgColor;
+            mStandardScrolledOmniboxColor = mStandardDefaultThemeColor;
+            mIncognitoScrolledOmniboxColor = mIncognitoPrimaryBgColor;
         }
 
         mStatusBarColorTabObserver =
@@ -191,7 +207,7 @@ public class StatusBarColorController
                     }
 
                     @Override
-                    public void onDidChangeThemeColor(Tab tab, int color) {
+                    public void onDidChangeThemeColor(Tab tab, @ColorInt int color) {
                         updateStatusBarColor();
                     }
 
@@ -355,7 +371,7 @@ public class StatusBarColorController
 
     // TopToolbarCoordinator.ToolbarColorObserver implementation.
     @Override
-    public void onToolbarColorChanged(int color) {
+    public void onToolbarColorChanged(@ColorInt int color) {
         if (!OmniboxFeatures.shouldMatchToolbarAndStatusBarColor()) {
             return;
         }
@@ -385,6 +401,18 @@ public class StatusBarColorController
         updateStatusBarColor();
     }
 
+    @Override
+    public void onSuggestionDropdownScroll() {
+        mAreSuggestionsScrolled = true;
+        updateStatusBarColor();
+    }
+
+    @Override
+    public void onSuggestionDropdownOverscrolledToTop() {
+        mAreSuggestionsScrolled = false;
+        updateStatusBarColor();
+    }
+
     /**
      * Update the scrim color on the status bar.
      * @param scrimColor The scrim color int.
@@ -396,7 +424,7 @@ public class StatusBarColorController
     /**
      * @return The current scrim color for the status bar.
      */
-    public int getScrimColorForTesting() {
+    public @ColorInt int getScrimColorForTesting() {
         return mScrimColor;
     }
 
@@ -426,6 +454,7 @@ public class StatusBarColorController
     /** Calculate and update the status bar's color. */
     public void updateStatusBarColor() {
         mStatusBarColorWithoutStatusIndicator = calculateBaseStatusBarColor();
+        @ColorInt
         int statusBarColor = applyStatusBarIndicatorColor(mStatusBarColorWithoutStatusIndicator);
         statusBarColor = applyCurrentScrimToColor(statusBarColor);
         setStatusBarColor(mWindow, statusBarColor);
@@ -441,7 +470,8 @@ public class StatusBarColorController
 
     private @ColorInt int calculateBaseStatusBarColor() {
         // Return overridden status bar color from StatusBarColorProvider if specified.
-        final int baseStatusBarColor = mStatusBarColorProvider.getBaseStatusBarColor(mCurrentTab);
+        @ColorInt
+        int baseStatusBarColor = mStatusBarColorProvider.getBaseStatusBarColor(mCurrentTab);
         if (baseStatusBarColor == DEFAULT_STATUS_BAR_COLOR) {
             return calculateDefaultStatusBarColor();
         }
@@ -502,10 +532,15 @@ public class StatusBarColorController
 
     /** Calculates the default status bar color based on the incognito state. */
     private @ColorInt int calculateDefaultStatusBarColor() {
-        if (mIsOmniboxFocused) {
-            return mIsIncognito ? mIncognitoPrimaryBgColor : mActiveOmniboxDefaultColor;
+        if (!mIsOmniboxFocused) {
+            return mIsIncognito ? mIncognitoDefaultThemeColor : mStandardDefaultThemeColor;
         }
-        return mIsIncognito ? mIncognitoDefaultThemeColor : mStandardDefaultThemeColor;
+
+        if (mAreSuggestionsScrolled) {
+            return mIsIncognito ? mIncognitoScrolledOmniboxColor : mStandardScrolledOmniboxColor;
+        } else {
+            return mIsIncognito ? mIncognitoActiveOmniboxColor : mActiveOmniboxDefaultColor;
+        }
     }
 
     /**
@@ -548,10 +583,7 @@ public class StatusBarColorController
             mScrimColor = context.getColor(R.color.default_scrim_color);
         }
         // Apply a color overlay if the scrim is showing.
-        float scrimColorAlpha = (mScrimColor >>> 24) / 255f;
-        int scrimColorOpaque = mScrimColor | 0xFF000000;
-        return ColorUtils.getColorWithOverlay(
-                color, scrimColorOpaque, mStatusBarScrimFraction * scrimColorAlpha);
+        return ColorUtils.overlayColor(color, mScrimColor, mStatusBarScrimFraction);
     }
 
     /**

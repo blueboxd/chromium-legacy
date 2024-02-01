@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -211,18 +212,30 @@ bool SyncServiceImplHarness::SignInPrimaryAccount(
 
   switch (signin_type_) {
     case SigninType::UI_SIGNIN: {
-      return signin_delegate_->SigninUI(profile_, username_, password_,
-                                        consent_level);
+      if (!signin_delegate_->SigninUI(profile_, username_, password_,
+                                      consent_level)) {
+        return false;
+      }
+      break;
     }
 
     case SigninType::FAKE_SIGNIN: {
       signin_delegate_->SigninFake(profile_, username_, consent_level);
-      return true;
+
+      // TODO(b/1523197): The below checks should also be satisfied for the
+      // above case.
+      signin::IdentityManager* identity_manager =
+          IdentityManagerFactory::GetForProfile(profile_);
+      CHECK(identity_manager->HasPrimaryAccount(consent_level));
+      CHECK(identity_manager->HasPrimaryAccountWithRefreshToken(consent_level));
+      CHECK(!service()->GetAccountInfo().IsEmpty());
+
+      break;
     }
   }
 
-  NOTREACHED();
-  return false;
+
+  return true;
 }
 
 void SyncServiceImplHarness::ResetSyncForPrimaryAccount() {
@@ -344,7 +357,7 @@ bool SyncServiceImplHarness::AwaitQuiescence(
     return true;
   }
 
-  std::vector<SyncServiceImpl*> services;
+  std::vector<raw_ptr<SyncServiceImpl, VectorExperimental>> services;
   for (SyncServiceImplHarness* harness : clients) {
     services.push_back(harness->service());
   }

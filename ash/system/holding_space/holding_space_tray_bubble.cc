@@ -112,8 +112,8 @@ class HoldingSpaceTrayBubbleEventHandler : public ui::EventHandler {
       event->StopPropagation();
   }
 
-  const raw_ptr<HoldingSpaceTrayBubble, ExperimentalAsh> bubble_;
-  const raw_ptr<HoldingSpaceViewDelegate, ExperimentalAsh> delegate_;
+  const raw_ptr<HoldingSpaceTrayBubble> bubble_;
+  const raw_ptr<HoldingSpaceViewDelegate> delegate_;
 };
 
 // ChildBubbleContainerLayout --------------------------------------------------
@@ -193,7 +193,7 @@ class ChildBubbleContainerLayout {
       child_layout.child_view->SetBoundsRect(child_layout.bounds);
   }
 
-  const raw_ptr<views::View, ExperimentalAsh> host_;
+  const raw_ptr<views::View> host_;
   const int child_spacing_;
 
   // Maximum height restriction for the layout. If zero, it is assumed that
@@ -344,7 +344,7 @@ class HoldingSpaceTrayBubble::ChildBubbleContainer
     layout_animation_throughput_tracker_ =
         GetWidget()->GetCompositor()->RequestNewThroughputTracker();
     layout_animation_throughput_tracker_->Start(
-        metrics_util::ForSmoothness(base::BindRepeating(
+        metrics_util::ForSmoothnessV3(base::BindRepeating(
             holding_space_metrics::RecordBubbleResizeAnimationSmoothness)));
     layout_animation_->Show();
   }

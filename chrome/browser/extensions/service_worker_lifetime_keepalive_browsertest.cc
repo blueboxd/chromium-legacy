@@ -9,10 +9,16 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/test/test_browser_closed_waiter.h"
+#include "chrome/test/base/profile_destruction_waiter.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
@@ -52,6 +58,35 @@ constexpr char kPersistentPortConnectedMessage[] = "Persistent port connected";
 constexpr char kPersistentPortDisconnectedMessage[] =
     "Persistent port disconnected";
 #endif
+
+// Gets a keepalive matcher that enforces the extra data field.
+testing::Matcher<ProcessManager::ServiceWorkerKeepaliveData>
+GetKeepaliveMatcher(const WorkerId& worker_id,
+                    Activity::Type type,
+                    const std::string& activity_extra_data) {
+  return testing::AllOf(
+      testing::Field("worker_id",
+                     &ProcessManager::ServiceWorkerKeepaliveData::worker_id,
+                     worker_id),
+      testing::Field("activity_type",
+                     &ProcessManager::ServiceWorkerKeepaliveData::activity_type,
+                     type),
+      testing::Field("extra_data",
+                     &ProcessManager::ServiceWorkerKeepaliveData::extra_data,
+                     activity_extra_data));
+}
+
+// Gets a keepalive matcher enforcing only the worker ID and activity type.
+testing::Matcher<ProcessManager::ServiceWorkerKeepaliveData>
+GetKeepaliveMatcher(const WorkerId& worker_id, Activity::Type type) {
+  return testing::AllOf(
+      testing::Field("worker_id",
+                     &ProcessManager::ServiceWorkerKeepaliveData::worker_id,
+                     worker_id),
+      testing::Field("activity_type",
+                     &ProcessManager::ServiceWorkerKeepaliveData::activity_type,
+                     type));
+}
 
 }  // namespace
 
@@ -111,7 +146,7 @@ class TestServiceWorkerContextObserver
     if (running_version_id_ == version_id) {
       stopped_run_loop_.Quit();
     }
-    running_version_id_ = absl::nullopt;
+    running_version_id_ = std::nullopt;
   }
 
   void OnDestruct(content::ServiceWorkerContext* context) override {
@@ -121,7 +156,7 @@ class TestServiceWorkerContextObserver
 
   base::RunLoop stopped_run_loop_;
   base::RunLoop started_run_loop_;
-  absl::optional<int64_t> running_version_id_;
+  std::optional<int64_t> running_version_id_;
   base::ScopedObservation<content::ServiceWorkerContext,
                           content::ServiceWorkerContextObserver>
       scoped_observation_{this};
@@ -667,20 +702,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
                     ->GetServiceWorkerKeepaliveDataForRecords(extension->id())
                     .size());
 
-  auto get_keepalive_matcher = [](const WorkerId& worker_id,
-                                  Activity::Type type,
-                                  const std::string& activity_extra_data) {
-    return testing::AllOf(
-        testing::Field(&ProcessManager::ServiceWorkerKeepaliveData::worker_id,
-                       worker_id),
-        testing::Field(
-            &ProcessManager::ServiceWorkerKeepaliveData::activity_type, type),
-        testing::Field(&ProcessManager::ServiceWorkerKeepaliveData::extra_data,
-                       activity_extra_data));
-  };
-
   // Create a single keepalive.
-  absl::optional<ServiceWorkerKeepalive> function_keepalive(
+  std::optional<ServiceWorkerKeepalive> function_keepalive(
       ServiceWorkerKeepalive(
           profile(), worker_id,
           content::ServiceWorkerExternalRequestTimeoutType::kDefault,
@@ -689,11 +712,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   // There should be one keepalive for the extension.
   EXPECT_THAT(
       process_manager->GetServiceWorkerKeepaliveDataForRecords(extension->id()),
-      testing::UnorderedElementsAre(get_keepalive_matcher(
+      testing::UnorderedElementsAre(GetKeepaliveMatcher(
           worker_id, Activity::API_FUNCTION, "alarms.create")));
 
   // Create a second keepalive (an event-related one).
-  absl::optional<ServiceWorkerKeepalive> event_keepalive(ServiceWorkerKeepalive(
+  std::optional<ServiceWorkerKeepalive> event_keepalive(ServiceWorkerKeepalive(
       profile(), worker_id,
       content::ServiceWorkerExternalRequestTimeoutType::kDefault,
       Activity::EVENT, "alarms.onAlarm"));
@@ -702,22 +725,283 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   EXPECT_THAT(
       process_manager->GetServiceWorkerKeepaliveDataForRecords(extension->id()),
       testing::UnorderedElementsAre(
-          get_keepalive_matcher(worker_id, Activity::API_FUNCTION,
-                                "alarms.create"),
-          get_keepalive_matcher(worker_id, Activity::EVENT, "alarms.onAlarm")));
+          GetKeepaliveMatcher(worker_id, Activity::API_FUNCTION,
+                              "alarms.create"),
+          GetKeepaliveMatcher(worker_id, Activity::EVENT, "alarms.onAlarm")));
 
   // Reset the first. There should now be only the second keepalive.
   function_keepalive.reset();
   EXPECT_THAT(
       process_manager->GetServiceWorkerKeepaliveDataForRecords(extension->id()),
       testing::UnorderedElementsAre(
-          get_keepalive_matcher(worker_id, Activity::EVENT, "alarms.onAlarm")));
+          GetKeepaliveMatcher(worker_id, Activity::EVENT, "alarms.onAlarm")));
 
   // Reset the second, and the keepalive count should go to zero.
   event_keepalive.reset();
   EXPECT_EQ(0u, process_manager
                     ->GetServiceWorkerKeepaliveDataForRecords(extension->id())
                     .size());
+}
+
+// Tests shutting down the associated browser context while the extension has
+// an active keepalive from a message pipe behaves appropriately.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
+                       ShutdownWithActiveMessagePipe) {
+  // Load an extension with incognito split mode and a content script that
+  // runs on example.com.
+  // The split mode incognito is important so that we can fully shut down a
+  // browser context with separately-tracked keepalives.
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Test",
+           "manifest_version": 3,
+           "version": "0.1",
+           "incognito": "split",
+           "background": {"service_worker": "background.js"},
+           "content_scripts": [
+             {
+               "js": ["content_script.js"],
+               "matches": ["*://example.com/*"],
+               "run_at": "document_end"
+             }
+           ]
+         })";
+  static constexpr char kBackgroundJs[] = R"(// Intentionally blank.)";
+  // The content script adds a listener for a new message and then
+  // (asynchronously) signals success.
+  // See keepalive comments below for why this is async.
+  // NOTE: We're careful not to have the port be garbage collected by storing
+  // it on `self`; otherwise this could close the message pipe.
+  static constexpr char kContentScriptJs[] =
+      R"(chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+           self.reply = reply;
+           setTimeout(() => { chrome.test.sendScriptResult('success'); }, 0);
+           // Indicates async response, keeping the message pipe open.
+           return true;
+         });
+         chrome.test.sendMessage('content script ready');)";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
+  test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScriptJs);
+
+  const Extension* extension =
+      LoadExtension(test_dir.UnpackedPath(), {.allow_in_incognito = true});
+  ASSERT_TRUE(extension);
+
+  // Open example.com/simple.html in an incognito window. The content script
+  // will inject.
+  ExtensionTestMessageListener content_script_listener("content script ready");
+  Browser* incognito_browser = OpenURLOffTheRecord(
+      profile(), embedded_test_server()->GetURL("example.com", "/simple.html"));
+  ASSERT_TRUE(content_script_listener.WaitUntilSatisfied());
+  content::WebContents* incognito_tab =
+      incognito_browser->tab_strip_model()->GetActiveWebContents();
+  int tab_id = ExtensionTabUtil::GetTabId(incognito_tab);
+
+  // Send a message to the incognito tab from the incognito service worker.
+  // This will open a message pipe. Since the content script never responds,
+  // the message pipe will remain open.
+  static constexpr char kOpenMessagePipe[] =
+      R"((async () => {
+           // Note: Pass a callback to signal a reply is expected.
+           chrome.tabs.sendMessage(%d, 'hello', () => {});
+         })();)";
+
+  Profile* incognito_profile = incognito_browser->profile();
+  base::Value script_result = BackgroundScriptExecutor::ExecuteScript(
+      incognito_profile, extension->id(),
+      base::StringPrintf(kOpenMessagePipe, tab_id),
+      BackgroundScriptExecutor::ResultCapture::kSendScriptResult);
+  EXPECT_EQ("success", script_result);
+
+  ProcessManager* incognito_process_manager =
+      ProcessManager::Get(incognito_profile);
+
+  // Grab the active worker for the incognito context.
+  std::vector<WorkerId> worker_ids =
+      incognito_process_manager->GetServiceWorkersForExtension(extension->id());
+  ASSERT_EQ(1u, worker_ids.size());
+  WorkerId worker_id = worker_ids[0];
+
+  // Verify the service worker currently has a keepalive for the message
+  // port.
+  // The keepalive flow is as follows:
+  // * Service worker opens a message pipe. New Activity::MESSAGE_PORT
+  //   keepalive from the worker context.
+  // * Message pipe is opened in the tab. New Activity::MESSAGE_PORT
+  //   keepalive from the tab context.
+  // * Message is sent to the tab. New Activity::MESSAGE keepalive from
+  //   the tab context.
+  // * The message is ack'd from the tab. Activity::MESSAGE keepalive
+  //   from the tab context is removed. Since we signal success in the
+  //   tab asynchronously, the keepalive is guaranteed to have resolved.
+  //   (Otherwise, it could potentially be racy).
+  // Thus, at the end, we have two remaining keepalives.
+  // TODO(crbug.com/1514471): Ideally, there would only be one -- we shouldn't
+  // add keepalives for the service worker due to a tab's message port.
+
+  EXPECT_THAT(
+      incognito_process_manager->GetServiceWorkerKeepaliveDataForRecords(
+          extension->id()),
+      testing::UnorderedElementsAre(
+          GetKeepaliveMatcher(worker_id, Activity::MESSAGE_PORT),
+          GetKeepaliveMatcher(worker_id, Activity::MESSAGE_PORT)));
+
+  // Close the incognito browser while the message channel is still open. Since
+  // this is the only browser window for the incognito context, this also
+  // results in the browser context being invalidated.
+  ProfileDestructionWaiter profile_destruction_waiter(incognito_profile);
+  TestBrowserClosedWaiter browser_closed_waiter(incognito_browser);
+  incognito_browser->window()->Close();
+  ASSERT_TRUE(browser_closed_waiter.WaitUntilClosed());
+  profile_destruction_waiter.Wait();
+  // Note: `ProfileDestructionWaiter` only waits for the profile to signal it
+  // *will* be destroyed. Spin once to finish the job.
+  base::RunLoop().RunUntilIdle();
+  // Verify the profile is destroyed.
+  EXPECT_FALSE(
+      g_browser_process->profile_manager()->IsValidProfile(incognito_profile));
+  // The test succeeds if there are no crashes. There's nothing left to verify
+  // for keepalives, since the profile is gone.
+}
+
+// Tests that we can safely shut down a BrowserContext when an extension has
+// an active message port to another extension, where each are running in
+// split incognito mode.
+// Regression test for https://crbug.com/1476316.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
+                       ShutdownWithActiveMessagePipe_BetweenExtensions) {
+  // A split-mode extension. This will have a separate process for the on- and
+  // off-the-record profiles.
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Test",
+           "manifest_version": 3,
+           "version": "0.1",
+           "incognito": "split",
+           "background": {"service_worker": "background.js"}
+         })";
+  // A background page that knows how to open a message pipe to another
+  // extension.
+  static constexpr char kOpenerBackgroundJs[] =
+      R"(async function openMessagePipe(listenerId) {
+           // Note: Pass a callback to signal a reply is expected.
+           chrome.runtime.sendMessage(listenerId, 'hello', () => {});
+         })";
+  // The listener extension will listen for an external message (from the
+  // opener mode extension). We save the `sendReply` callback so it's not
+  // garbage collected and keeps the message pipe open, and then asynchronously
+  // respond that the message was received. The asynchronous response is
+  // important in order to ensure the message being received from this
+  // extension is properly ack'd.
+  static constexpr char kListenerBackgroundJs[] =
+      R"(chrome.runtime.onMessageExternal.addListener(
+             (msg, sender, sendReply) => {
+               self.sendReply = sendReply;
+               setTimeout(() => { chrome.test.sendScriptResult('success'); });
+               return true;
+             });)";
+
+  TestExtensionDir opener_extension_dir;
+  opener_extension_dir.WriteManifest(kManifest);
+  opener_extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                                 kOpenerBackgroundJs);
+
+  TestExtensionDir listener_extension_dir;
+  listener_extension_dir.WriteManifest(kManifest);
+  listener_extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                                   kListenerBackgroundJs);
+
+  const Extension* opener_extension = LoadExtension(
+      opener_extension_dir.UnpackedPath(), {.allow_in_incognito = true});
+  ASSERT_TRUE(opener_extension);
+  const Extension* listener_extension = LoadExtension(
+      listener_extension_dir.UnpackedPath(), {.allow_in_incognito = true});
+  ASSERT_TRUE(listener_extension);
+
+  // Open a new tab in incognito. This spawns the new process for the split mode
+  // extensions.
+  Browser* incognito_browser = OpenURLOffTheRecord(
+      profile(), embedded_test_server()->GetURL("example.com", "/simple.html"));
+
+  // Send a message from one extension to the other, opening a message pipe.
+  // Since the listener extension never responds, the message pipe will
+  // remain open. The listener then sends the script result 'success' when it
+  // receives the message.
+  static constexpr char kOpenMessagePipe[] = R"(openMessagePipe('%s');)";
+  Profile* incognito_profile = incognito_browser->profile();
+  base::Value script_result = BackgroundScriptExecutor::ExecuteScript(
+      incognito_profile, opener_extension->id(),
+      base::StringPrintf(kOpenMessagePipe, listener_extension->id().c_str()),
+      BackgroundScriptExecutor::ResultCapture::kSendScriptResult);
+  EXPECT_EQ("success", script_result);
+
+  ProcessManager* incognito_process_manager =
+      ProcessManager::Get(incognito_profile);
+
+  // Grab each extension's active worker.
+  std::vector<WorkerId> opener_worker_ids =
+      incognito_process_manager->GetServiceWorkersForExtension(
+          opener_extension->id());
+  ASSERT_EQ(1u, opener_worker_ids.size());
+  WorkerId opener_worker_id = opener_worker_ids[0];
+
+  std::vector<WorkerId> listener_worker_ids =
+      incognito_process_manager->GetServiceWorkersForExtension(
+          listener_extension->id());
+  ASSERT_EQ(1u, listener_worker_ids.size());
+  WorkerId listener_worker_id = listener_worker_ids[0];
+
+  // Verify the service workers currently have a keepalive for the message
+  // port.
+  // The keepalive flow is as follows:
+  // * Open a new message port. Add keepalives for both extensions with
+  //   Activity::MESSAGE_PORT.
+  // * Message is sent to the listener extension. New Activity::MESSAGE
+  //   keepalive is added for the sender extension.
+  // * The message is ack'd from the listener extension's process.
+  //   Activity::MESSAGE keepalive is removed for the sender extension.
+  //   Since we signal success in the listener asynchronously, the keepalive is
+  //   guaranteed to have resolved. (Otherwise, it could potentially be racy).
+  // * Send chrome.test.sendScriptResult() from the listener extension.
+  //   Add and remove Activity::API_FUNCTION keepalives.
+  // Thus, at the end, the remaining keepalives are one MESSAGE_PORT keepalive
+  // for each extension.
+  EXPECT_THAT(
+      incognito_process_manager->GetServiceWorkerKeepaliveDataForRecords(
+          opener_extension->id()),
+      testing::UnorderedElementsAre(
+          GetKeepaliveMatcher(opener_worker_id, Activity::MESSAGE_PORT)));
+  EXPECT_THAT(
+      incognito_process_manager->GetServiceWorkerKeepaliveDataForRecords(
+          listener_extension->id()),
+      testing::UnorderedElementsAre(
+          GetKeepaliveMatcher(listener_worker_id, Activity::MESSAGE_PORT)));
+
+  // Close the incognito browser while the message channel is still open. Since
+  // this is the only browser window for the incognito context, this also
+  // results in the browser context being invalidated.
+  // As part of this, the keepalives are removed for the extensions, which
+  // can trigger an attempted removal of an external request from the
+  // service worker layer. Since the context is being shut down, this can
+  // fail with `content::ServiceWorkerExternalRequestResult::kNullContext`. This
+  // is fine, since the whole context is going away.
+  // See https://crbug.com/1476316.
+  ProfileDestructionWaiter profile_destruction_waiter(incognito_profile);
+  TestBrowserClosedWaiter browser_closed_waiter(incognito_browser);
+  incognito_browser->window()->Close();
+  ASSERT_TRUE(browser_closed_waiter.WaitUntilClosed());
+  profile_destruction_waiter.Wait();
+  // Note: `ProfileDestructionWaiter` only waits for the profile to signal it
+  // *will* be destroyed. Spin once to finish the job.
+  base::RunLoop().RunUntilIdle();
+  // Verify the profile is destroyed.
+  EXPECT_FALSE(
+      g_browser_process->profile_manager()->IsValidProfile(incognito_profile));
+  // The test succeeds if there are no crashes. There's nothing left to verify
+  // for keepalives, since the profile is gone.
 }
 
 }  // namespace extensions

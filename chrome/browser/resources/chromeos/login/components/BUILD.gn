@@ -6,13 +6,15 @@ import("//chrome/test/base/ash/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/html_to_wrapper.gni")
+import("../login.gni")
 
 group("web_components") {
   public_deps = [
+    ":copy_ts",
+    ":generate_web_component_html_wrapper_files",
     ":html_wrapper_files",
     ":web_components_local",
     "./behaviors:copy_js",
-    "./buttons:copy_js",
     "./buttons:web_components",
     "./common_styles:css_wrapper_files",
     "./dialogs:web_components",
@@ -20,10 +22,18 @@ group("web_components") {
   ]
 }
 
+html_to_wrapper("generate_web_component_html_wrapper_files") {
+  in_files = rebase_path(components_html_files, "./components", ".")
+}
+
+copy("copy_ts") {
+  sources = rebase_path(components_ts_files, "./components", ".")
+  outputs = [ "$target_gen_dir/{{source_file_part}}" ]
+}
+
 group("closure_compile") {
   deps = [
     "behaviors:closure_compile",
-    "buttons:closure_compile",
     "common_styles:closure_compile",
     "dialogs:closure_compile",
     "oobe_vars:closure_compile",
@@ -31,18 +41,12 @@ group("closure_compile") {
     # Local targets
     ":api_keys_notice",
     ":display_manager_types",
-    ":gaia_button",
-    ":gaia_dialog",
-    ":gaia_header",
-    ":gaia_input_form",
     ":hd_iron_icon",
     ":keyboard_utils",
     ":keyboard_utils_oobe",
     ":long_touch_detector",
-    ":network_select_login",
     ":notification_card",
     ":oobe_a11y_option",
-    ":oobe_apps_list",
     ":oobe_carousel",
     ":oobe_cr_lottie",
     ":oobe_display_size_selector",
@@ -60,7 +64,6 @@ group("closure_compile") {
     ":quick_start_pin",
     ":security_token_pin",
     ":throbber_notice",
-    ":web_view_helper",
     ":web_view_loader",
   ]
 }
@@ -80,48 +83,6 @@ js_library("display_manager_types") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/display_manager_types.js" ]
   deps = []
   extra_deps = [ ":copy_js" ]
-}
-
-js_library("gaia_button") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/gaia_button.js" ]
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-  externs_list =
-      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
-  extra_deps = [ ":web_components" ]
-}
-
-js_library("gaia_dialog") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/gaia_dialog.js" ]
-  deps = [
-    ":oobe_types",
-    "./behaviors:oobe_dialog_host_behavior",
-    "./behaviors:oobe_i18n_behavior",
-    "./buttons:oobe_back_button",
-    "./buttons:oobe_text_button",
-    "./dialogs:oobe_content_dialog",
-    "//ash/webui/common/resources:cr.m",
-    "//ash/webui/common/resources:load_time_data.m",
-    "//chrome/browser/resources/gaia_auth_host:authenticator",
-  ]
-  extra_deps = [ ":web_components" ]
-}
-
-js_library("gaia_header") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/gaia_header.js" ]
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-  extra_deps = [ ":web_components" ]
-}
-
-js_library("gaia_input_form") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/gaia_input_form.js" ]
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-  extra_deps = [ ":web_components" ]
 }
 
 js_library("hd_iron_icon") {
@@ -145,18 +106,6 @@ js_library("long_touch_detector") {
   extra_deps = [ ":copy_js" ]
 }
 
-js_library("network_select_login") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/network_select_login.js" ]
-  deps = [
-    "../:cr_ui",
-    "//ash/webui/common/resources:assert",
-    "//ash/webui/common/resources/network:network_select",
-    "//ash/webui/common/resources/network:onc_mojo",
-    "//chromeos/services/network_config/public/mojom:mojom_webui_js",
-  ]
-  extra_deps = [ ":web_components" ]
-}
-
 js_library("notification_card") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/notification_card.js" ]
   deps = []
@@ -165,12 +114,6 @@ js_library("notification_card") {
 
 js_library("oobe_a11y_option") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_a11y_option.js" ]
-  deps = []
-  extra_deps = [ ":web_components" ]
-}
-
-js_library("oobe_apps_list") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_apps_list.js" ]
   deps = []
   extra_deps = [ ":web_components" ]
 }
@@ -288,7 +231,6 @@ js_library("quick_start_entry_point") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/quick_start_entry_point.js" ]
   deps = [
     "./behaviors:oobe_i18n_behavior",
-    "./buttons:oobe_icon_button",
     "./dialogs:oobe_modal_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -317,12 +259,6 @@ js_library("throbber_notice") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("web_view_helper") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/web_view_helper.js" ]
-  deps = []
-  extra_deps = [ ":copy_js" ]
-}
-
 js_library("web_view_loader") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/web_view_loader.js" ]
   deps = []
@@ -338,7 +274,6 @@ copy("copy_js") {
     "oobe_select.js",
     "oobe_types.js",
     "qr_code_canvas.js",
-    "web_view_helper.js",
     "web_view_loader.js",
   ]
   outputs = [ "$target_gen_dir/{{source_file_part}}" ]
@@ -346,25 +281,19 @@ copy("copy_js") {
 
 html_to_wrapper("html_wrapper_files") {
   in_files = [
-    "oobe_icons.html",
-    "oobe_illo_icons.html",
-    "oobe_network_icons.html",
-  ]
+               "oobe_icons.html",
+               "oobe_illo_icons.html",
+               "oobe_network_icons.html",
+             ] + rebase_path(components_html_files, "./components", ".")
   use_js = true
 }
 
 html_to_js("web_components_local") {
   js_files = [
     "api_keys_notice.js",
-    "gaia_button.js",
-    "gaia_dialog.js",
-    "gaia_header.js",
-    "gaia_input_form.js",
     "hd_iron_icon.js",
-    "network_select_login.js",
     "notification_card.js",
     "oobe_a11y_option.js",
-    "oobe_apps_list.js",
     "oobe_carousel.js",
     "oobe_cr_lottie.js",
     "oobe_display_size_selector.js",

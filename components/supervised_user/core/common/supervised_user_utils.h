@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SUPERVISED_USER_CORE_COMMON_SUPERVISED_USER_UTILS_H_
 #define COMPONENTS_SUPERVISED_USER_CORE_COMMON_SUPERVISED_USER_UTILS_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,10 @@
 
 class GURL;
 class PrefService;
+
+namespace signin {
+class IdentityManager;
+}
 
 namespace supervised_user {
 
@@ -83,13 +88,15 @@ GURL NormalizeUrl(const GURL& url);
 // Check if web filtering prefs are set to default values.
 bool AreWebFilterPrefsDefault(const PrefService& pref_service);
 
-// Categorizes the account into a FamilyLink supervision type to segment the
-// Chrome user population.
-// `primary_accounts` should contain only primary accounts, possibly sourced
-// from multiple Chrome profiles. In the case of multiple accounts, the function
-// emits a single record to signal the multi-profile state.
+// Gets the supervision status of the given account, suitable for passing in to
+// EmitLogSegmentHistogram.
+std::optional<LogSegment> SupervisionStatusForUser(
+    const signin::IdentityManager* identity_manager);
+
+// Emits a single merged FamilyLink supervision metric, from a list of
+// zero or more individual profile/account values.
 // Returns true if one or more histograms were emitted.
-bool EmitLogSegmentHistogram(const std::vector<AccountInfo>& primary_accounts);
+bool EmitLogSegmentHistogram(const std::vector<LogSegment>& log_segments);
 }  // namespace supervised_user
 
 #endif  // COMPONENTS_SUPERVISED_USER_CORE_COMMON_SUPERVISED_USER_UTILS_H_

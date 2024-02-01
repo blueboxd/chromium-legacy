@@ -133,7 +133,7 @@ class StyleEngineTest : public PageTestBase {
 
   String GetListMarkerText(LayoutObject* list_item) {
     LayoutObject* marker = ListMarker::MarkerFromListItem(list_item);
-    return ListMarker::Get(marker)->GetTextChild(*marker).GetText();
+    return ListMarker::Get(marker)->GetTextChild(*marker).TransformedText();
   }
 
   size_t FillOrClipPathCacheSize() {
@@ -911,7 +911,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
 
   shadow_root.setInnerHTML("<div></div><div></div><div></div>");
   UpdateAllLifecyclePhases();
@@ -962,7 +962,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
 
   shadow_root.setInnerHTML("<slot name=other></slot><slot></slot>");
   UpdateAllLifecyclePhases();
@@ -987,7 +987,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
 
   shadow_root.setInnerHTML("<div></div><div class=a></div><div></div>");
   UpdateAllLifecyclePhases();
@@ -1296,7 +1296,7 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
 
   UpdateAllLifecyclePhases();
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
 
   shadow_root.setInnerHTML("<style>span { color: green }</style>");
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
@@ -2570,7 +2570,7 @@ TEST_F(StyleEngineTest, ShadowRootStyleRecalcCrash) {
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
 
   shadow_root.setInnerHTML(R"HTML(
     <span id=span></span>
@@ -2600,7 +2600,7 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTreeCrash) {
 
   GetDocument()
       .getElementById(AtomicString("host"))
-      ->AttachShadowRootInternal(ShadowRootType::kOpen);
+      ->AttachShadowRootForTesting(ShadowRootType::kOpen);
   UpdateAllLifecyclePhases();
   GetDocument().body()->EnsureComputedStyle();
   GetDocument()
@@ -2910,8 +2910,10 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
 
   color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
   UpdateAllLifecyclePhases();
+  mojom::blink::ColorScheme color_scheme = mojom::blink::ColorScheme::kLight;
   Color system_background_color = LayoutTheme::GetTheme().SystemColor(
-      CSSValueID::kCanvas, mojom::blink::ColorScheme::kLight);
+      CSSValueID::kCanvas, color_scheme,
+      GetDocument().GetColorProviderForPainting(color_scheme));
 
   EXPECT_EQ(system_background_color,
             GetDocument().View()->BaseBackgroundColor());
@@ -3095,7 +3097,7 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTree) {
   auto* inner = GetDocument().getElementById(AtomicString("inner"));
   auto* innermost = GetDocument().getElementById(AtomicString("innermost"));
 
-  host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(host->GetComputedStyle());
@@ -3164,9 +3166,9 @@ TEST_F(StyleEngineTest, MoveSlottedOutsideFlatTree) {
   auto* span = host1->firstChild();
 
   ShadowRoot& shadow_root =
-      host1->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host1->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML("<slot></slot>");
-  host2->AttachShadowRootInternal(ShadowRootType::kOpen);
+  host2->AttachShadowRootForTesting(ShadowRootType::kOpen);
 
   UpdateAllLifecyclePhases();
 
@@ -3183,7 +3185,7 @@ TEST_F(StyleEngineTest, StyleRecalcRootInShadowTree) {
   )HTML");
   Element* host = GetDocument().getElementById(AtomicString("host"));
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML("<div><span></span></div>");
   UpdateAllLifecyclePhases();
 
@@ -3205,7 +3207,7 @@ TEST_F(StyleEngineTest, StyleRecalcRootOutsideFlatTree) {
   auto* ensured = GetDocument().getElementById(AtomicString("ensured"));
   auto* span = To<Element>(ensured->firstChild());
 
-  host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  host->AttachShadowRootForTesting(ShadowRootType::kOpen);
 
   UpdateAllLifecyclePhases();
 
@@ -3234,7 +3236,7 @@ TEST_F(StyleEngineTest, RemoveStyleRecalcRootFromFlatTree) {
   auto* span = To<Element>(host->firstChild());
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML("<div><slot></slot></div>");
 
   UpdateAllLifecyclePhases();
@@ -3268,7 +3270,7 @@ TEST_F(StyleEngineTest, SlottedWithEnsuredStyleOutsideFlatTree) {
   auto* span = To<Element>(host->firstChild());
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML(R"HTML(
     <div><slot name="default"></slot></div>
   )HTML");
@@ -3303,7 +3305,7 @@ TEST_F(StyleEngineTest, ForceReattachRecalcRootAttachShadow) {
 
   // Attaching the shadow root will call FlatTreePositionChanged() on the span
   // child of the host. The style recalc root should still be #reattach.
-  host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   EXPECT_EQ(reattach, GetStyleRecalcRoot());
 }
 
@@ -3812,8 +3814,6 @@ TEST_F(StyleEngineTest, InternalForcedProperties) {
 }
 
 TEST_F(StyleEngineTest, HasViewportUnitFlags) {
-  ScopedCSSViewportUnits4ForTest flag(true);
-
   struct {
     const char* value;
     bool has_static;
@@ -3882,8 +3882,6 @@ TEST_F(StyleEngineTest, HasViewportUnitFlags) {
 }
 
 TEST_F(StyleEngineTest, DynamicViewportUnitInvalidation) {
-  ScopedCSSViewportUnits4ForTest flag(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
   <style>
     #target_px { width: 1px; }
@@ -3933,8 +3931,6 @@ TEST_F(StyleEngineTest, DynamicViewportUnitInvalidation) {
 }
 
 TEST_F(StyleEngineTest, DynamicViewportUnitsInMediaQuery) {
-  ScopedCSSViewportUnits4ForTest flag(true);
-
   // Changes in the dynamic viewport should not affect NeedsActiveStyleUpdate
   // when we don't use dynamic viewport units.
   {
@@ -4096,8 +4092,6 @@ class TestMediaQueryListListener : public MediaQueryListListener {
 }  // namespace
 
 TEST_F(StyleEngineTest, DynamicViewportUnitsInMediaQueryMatcher) {
-  ScopedCSSViewportUnits4ForTest flag(true);
-
   auto& matcher = GetDocument().GetMediaQueryMatcher();
   auto* listener = MakeGarbageCollected<TestMediaQueryListListener>();
   matcher.AddViewportListener(listener);
@@ -4557,41 +4551,13 @@ TEST_F(StyleEngineContainerQueryTest,
   // do a layout upgrade for elements that are 1) in display:none, and 2)
   // inside a container query container.
   //
-  // See implementation of `NodeLayoutUpgrade::ShouldUpgrade` for more
+  // See implementation of `ElementLayoutUpgrade::ShouldUpgrade` for more
   // information.
-  GetDocument().UpdateStyleAndLayoutTreeForNode(a, DocumentUpdateReason::kTest);
+  GetDocument().UpdateStyleAndLayoutTreeForElement(a,
+                                                   DocumentUpdateReason::kTest);
   EXPECT_FALSE(GetStyleEngine().StyleAffectedByLayout());
   EXPECT_FALSE(GetDocument().View()->NeedsLayout());
   EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*a));
-}
-
-TEST_F(StyleEngineTest, CSSViewportUnits4RuntimeFlag) {
-  Vector<String> units = {"vi",  "vb",    "svi",   "svb",   "svw",
-                          "svh", "svmin", "svmax", "lvi",   "lvb",
-                          "lvw", "lvh",   "lvmin", "lvmax", "dvi",
-                          "dvb", "dvw",   "dvh",   "dvmin", "dvmax"};
-
-  for (const String& unit : units) {
-    String css = "top: 1" + unit;
-    SCOPED_TRACE(testing::Message() << unit);
-
-    {
-      ScopedCSSViewportUnits4ForTest flag(false);
-      const CSSPropertyValueSet* set =
-          css_test_helpers::ParseDeclarationBlock(css);
-      ASSERT_TRUE(set);
-      EXPECT_EQ(0u, set->PropertyCount());
-    }
-
-    {
-      ScopedCSSViewportUnits4ForTest flag(true);
-      const CSSPropertyValueSet* set =
-          css_test_helpers::ParseDeclarationBlock(css);
-      ASSERT_TRUE(set);
-      EXPECT_EQ(1u, set->PropertyCount());
-      EXPECT_TRUE(set->HasProperty(CSSPropertyID::kTop));
-    }
-  }
 }
 
 TEST_F(StyleEngineTest, VideoControlsReject) {
@@ -4637,7 +4603,7 @@ TEST_F(StyleEngineTest, FastRejectForHostChild) {
   Element* host = GetDocument().getElementById(AtomicString("host"));
   ASSERT_TRUE(host);
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML(R"HTML(
     <slot></slot>
   )HTML");
@@ -4672,7 +4638,7 @@ TEST_F(StyleEngineTest, RejectSlottedSelector) {
   Element* host = GetDocument().getElementById(AtomicString("host"));
   ASSERT_TRUE(host);
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML(R"HTML(
     <style>
       .notfound ::slotted(span) {
@@ -4899,7 +4865,7 @@ TEST_F(StyleEngineTest, NonDirtyStyleRecalcRoot) {
   auto* slotted = GetDocument().getElementById(AtomicString("slotted"));
 
   ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+      host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   shadow_root.setInnerHTML("<slot></slot>");
   UpdateAllLifecyclePhases();
 
@@ -5088,31 +5054,37 @@ TEST_F(StyleEngineTest, SystemFontsObeyDefaultFontSize) {
 
   // Now test degenerate cases
   GetDocument().GetSettings()->SetDefaultFontSize(-1);
+  GetDocument().GetStyleResolver().InvalidateMatchedPropertiesCache();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(1, body->GetComputedStyle()->FontSize());
   EXPECT_EQ(1, input->GetComputedStyle()->FontSize());
 
   GetDocument().GetSettings()->SetDefaultFontSize(0);
+  GetDocument().GetStyleResolver().InvalidateMatchedPropertiesCache();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(1, body->GetComputedStyle()->FontSize());
   EXPECT_EQ(13, input->GetComputedStyle()->FontSize());
 
   GetDocument().GetSettings()->SetDefaultFontSize(1);
+  GetDocument().GetStyleResolver().InvalidateMatchedPropertiesCache();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(1, body->GetComputedStyle()->FontSize());
   EXPECT_EQ(1, input->GetComputedStyle()->FontSize());
 
   GetDocument().GetSettings()->SetDefaultFontSize(2);
+  GetDocument().GetStyleResolver().InvalidateMatchedPropertiesCache();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(2, body->GetComputedStyle()->FontSize());
   EXPECT_EQ(2, input->GetComputedStyle()->FontSize());
 
   GetDocument().GetSettings()->SetDefaultFontSize(3);
+  GetDocument().GetStyleResolver().InvalidateMatchedPropertiesCache();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(3, body->GetComputedStyle()->FontSize());
   EXPECT_EQ(0, input->GetComputedStyle()->FontSize());
 
   GetDocument().GetSettings()->SetDefaultFontSize(12345);
+  GetDocument().GetStyleResolver().InvalidateMatchedPropertiesCache();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(10000, body->GetComputedStyle()->FontSize());
   EXPECT_EQ(10000, input->GetComputedStyle()->FontSize());
@@ -5340,7 +5312,7 @@ TEST_F(StyleEngineTest, NonSlottedStyleDirty) {
   GetDocument().body()->setInnerHTML("<div id=host></div>");
   auto* host = GetDocument().getElementById(AtomicString("host"));
   ASSERT_TRUE(host);
-  host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  host->AttachShadowRootForTesting(ShadowRootType::kOpen);
   UpdateAllLifecyclePhases();
 
   // Add a child element to a shadow host with no slots. The inserted element is
@@ -7032,7 +7004,15 @@ TEST_F(StyleEngineTest, UseCountCSSDeclarationAfterNestedRule) {
 }
 
 TEST_F(StyleEngineTest, EnsureAppRegionTriggersRelayout) {
-  GetDocument().body()->setInnerHTML(R"HTML(
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view_impl = web_view_helper.Initialize();
+  web_view_impl->SetSupportsAppRegion(true);
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      DocumentUpdateReason::kTest);
+
+  Document* document =
+      To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();
+  document->body()->setInnerHTML(R"HTML(
     <head>
     <style>
       .drag {
@@ -7048,31 +7028,64 @@ TEST_F(StyleEngineTest, EnsureAppRegionTriggersRelayout) {
     </body>
   )HTML");
 
-  Element* drag_element =
-      GetDocument().getElementById(AtomicString("drag-region"));
+  Element* drag_element = document->getElementById(AtomicString("drag-region"));
 
-  auto regions = GetDocument().AnnotatedRegions();
+  auto regions = document->AnnotatedRegions();
   auto* it =
       std::find_if(regions.begin(), regions.end(),
                    [](blink::AnnotatedRegionValue s) { return s.draggable; });
   EXPECT_EQ(it, regions.end()) << "There should be no drag regions";
 
   drag_element->classList().Add(AtomicString("drag"));
-  UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      DocumentUpdateReason::kTest);
 
-  regions = GetDocument().AnnotatedRegions();
+  regions = document->AnnotatedRegions();
   it = std::find_if(regions.begin(), regions.end(),
                     [](blink::AnnotatedRegionValue s) { return s.draggable; });
   EXPECT_NE(it, regions.end()) << "There should be one drag region";
 
   drag_element->classList().Add(AtomicString("no-drag"));
-  UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      DocumentUpdateReason::kTest);
 
-  regions = GetDocument().AnnotatedRegions();
+  regions = document->AnnotatedRegions();
   it = std::find_if(regions.begin(), regions.end(),
                     [](blink::AnnotatedRegionValue s) { return s.draggable; });
 
   EXPECT_EQ(it, regions.end()) << "There should be no drag regions";
+}
+
+TEST_F(StyleEngineTest, ForcedColorsLightDark) {
+  ScopedForcedColorsForTest scoped_feature(true);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      :root { color-scheme: light only; }
+      #light-dark {
+        color: light-dark(GrayText, red);
+      }
+      #reference {
+        color: GrayText;
+      }
+    </style>
+    <div id="light-dark"></div>
+    <div id="reference"></div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  const ComputedStyle& light_dark =
+      GetDocument()
+          .getElementById(AtomicString("light-dark"))
+          ->ComputedStyleRef();
+  const ComputedStyle& reference =
+      GetDocument()
+          .getElementById(AtomicString("reference"))
+          ->ComputedStyleRef();
+
+  EXPECT_EQ(light_dark.VisitedDependentColor(GetCSSPropertyColor()),
+            reference.VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 }  // namespace blink

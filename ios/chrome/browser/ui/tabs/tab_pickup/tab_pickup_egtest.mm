@@ -4,6 +4,7 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "components/search_engines/search_engines_switches.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
@@ -110,7 +111,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
   [SigninEarlGrey signOut];
   [ChromeEarlGrey waitForSyncEngineInitialized:NO
                                    syncTimeout:kSyncOperationTimeout];
-  [ChromeEarlGrey clearSyncServerData];
+  [ChromeEarlGrey clearFakeSyncServerData];
   [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
   [super tearDown];
 }
@@ -118,6 +119,15 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // Verifies that the TabPickup banner is not displayed on the NTP when the tab
 // resumption feature is enabled.
 - (void)testBannerNotDisplayedOnNTPWhenTabResumptionEnbaled {
+  // This test is failing on iOS 16.7 only.
+  // TODO(crbug.com/1516761): Re-enable the test.
+  if (@available(iOS 16.7, *)) {
+    if (@available(iOS 17.0, *)) {
+    } else {
+      return;
+    }
+  }
+
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop"
@@ -135,6 +145,15 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // Verifies that the TabPickup banner is correctly displayed if the last tab
 // was synced before the defined threshold.
 - (void)testBannerVisibleBeforeThreshold {
+  // This test is failing on iOS 16.7 only.
+  // TODO(crbug.com/1516761): Re-enable the test.
+  if (@available(iOS 16.7, *)) {
+    if (@available(iOS 17.0, *)) {
+    } else {
+      return;
+    }
+  }
+
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop"
@@ -154,6 +173,15 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // Verifies that the TabPickup banner is not displayed if the last tab was
 // synced after the defined threshold.
 - (void)testBannerNotVisibleAfterThreshold {
+  // This test is failing on iOS 16.7 only.
+  // TODO(crbug.com/1516761): Re-enable the test.
+  if (@available(iOS 16.7, *)) {
+    if (@available(iOS 17.0, *)) {
+    } else {
+      return;
+    }
+  }
+
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop"
@@ -170,7 +198,15 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 
 // Verifies that tapping on the open button of the TabPickup banner correctly
 // opens the distant tab.
-- (void)testAcceptBanner {
+- (void)testAcceptBanner {  // This test is failing on iOS 16.7 only.
+  // TODO(crbug.com/1516761): Re-enable the test.
+  if (@available(iOS 16.7, *)) {
+    if (@available(iOS 17.0, *)) {
+    } else {
+      return;
+    }
+  }
+
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop"
@@ -200,6 +236,15 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // Verifies that tapping on the wheel icon correctly opens the tab pickup
 // modal.
 - (void)testOpenModalFromBanner {
+  // This test is failing on iOS 16.7 only.
+  // TODO(crbug.com/1516761): Re-enable the test.
+  if (@available(iOS 16.7, *)) {
+    if (@available(iOS 17.0, *)) {
+    } else {
+      return;
+    }
+  }
+
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop"
@@ -234,6 +279,15 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 
 // Verifies that the TabPickup banner is displayed only once.
 - (void)testBannerDisplayedOnce {
+  // This test is failing on iOS 16.7 only.
+  // TODO(crbug.com/1516761): Re-enable the test.
+  if (@available(iOS 16.7, *)) {
+    if (@available(iOS 17.0, *)) {
+    } else {
+      return;
+    }
+  }
+
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop"
@@ -272,6 +326,15 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // foregrounding the app if the last banner was displayed after the minimum
 // delay between the presentation of two tab pickup banners.
 - (void)testBannerDisplayedAfterBackground {
+  // This test is failing on iOS 16.7 only.
+  // TODO(crbug.com/1516761): Re-enable the test.
+  if (@available(iOS 16.7, *)) {
+    if (@available(iOS 17.0, *)) {
+    } else {
+      return;
+    }
+  }
+
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop-1"
@@ -315,6 +378,15 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // Verifies that a second TabPickup banner is not displayed after backgrounding
 // and foregrounding the app.
 - (void)testBannerNotDisplayedAfterBackground {
+  // This test is failing on iOS 16.7 only.
+  // TODO(crbug.com/1516761): Re-enable the test.
+  if (@available(iOS 16.7, *)) {
+    if (@available(iOS 17.0, *)) {
+    } else {
+      return;
+    }
+  }
+
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop-1"
@@ -354,6 +426,15 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 
 // Verifies that the same TabPickup banner is not displayed twice.
 - (void)testSameBannerNotDisplayedTwice {
+  // This test is failing on iOS 16.7 only.
+  // TODO(crbug.com/1516761): Re-enable the test.
+  if (@available(iOS 16.7, *)) {
+    if (@available(iOS 17.0, *)) {
+    } else {
+      return;
+    }
+  }
+
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop-1"

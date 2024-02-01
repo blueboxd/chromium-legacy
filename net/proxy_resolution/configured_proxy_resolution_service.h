@@ -226,6 +226,13 @@ class NET_EXPORT ConfiguredProxyResolutionService
       const std::string& pac_string,
       const NetworkTrafficAnnotationTag& traffic_annotation);
 
+  // This method is used by tests to create a ConfiguredProxyResolutionService
+  // that returns a proxy fallback list (|proxy_chain|) for every URL.
+  static std::unique_ptr<ConfiguredProxyResolutionService>
+  CreateFixedFromProxyChainsForTest(
+      const std::vector<ProxyChain>& proxy_chains,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
+
   // This method should only be used by unit tests.
   void set_stall_proxy_auto_config_delay(base::TimeDelta delay) {
     stall_proxy_auto_config_delay_ = delay;
@@ -405,7 +412,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
 
   THREAD_CHECKER(thread_checker_);
 
-  raw_ptr<ProxyDelegate, DanglingUntriaged> proxy_delegate_ = nullptr;
+  raw_ptr<ProxyDelegate> proxy_delegate_ = nullptr;
 
   // Flag used by |SetReady()| to check if |this| has been deleted by a
   // synchronous callback.

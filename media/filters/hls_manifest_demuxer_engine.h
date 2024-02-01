@@ -5,6 +5,7 @@
 #ifndef MEDIA_FILTERS_HLS_MANIFEST_DEMUXER_ENGINE_H_
 #define MEDIA_FILTERS_HLS_MANIFEST_DEMUXER_ENGINE_H_
 
+#include <optional>
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
@@ -23,7 +24,6 @@
 #include "media/formats/hls/media_playlist.h"
 #include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/rendition_manager.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -54,10 +54,11 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
   void Stop() override;
 
   // HlsRenditionHost implementation.
-  void ReadFromUrl(GURL uri,
-                   bool read_chunked,
-                   absl::optional<hls::types::ByteRange> range,
-                   HlsDataSourceProvider::ReadCb cb) override;
+  void ReadManifest(const GURL& uri, HlsDataSourceProvider::ReadCb cb) override;
+  void ReadMediaSegment(const hls::MediaSegment& segment,
+                        bool read_chunked,
+                        bool include_init,
+                        HlsDataSourceProvider::ReadCb cb) override;
   void ReadStream(std::unique_ptr<HlsDataSourceStream> stream,
                   HlsDataSourceProvider::ReadCb cb) override;
   void UpdateNetworkSpeed(uint64_t bps) override;
@@ -100,6 +101,10 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
   // completed.
   void FinishInitialization(PipelineStatusCallback cb, PipelineStatus status);
   void OnAdaptationComplete(PipelineStatus status);
+
+  // Helper for OnTimeUpdate/CheckState which helps record tracing macros.
+  void FinishTimeUpdate(ManifestDemuxer::DelayCallback cb,
+                        base::TimeDelta delay_time);
 
   // Calls Rendition::CheckState and binds OnStateChecked to it's closure arg,
   // and records the timetick when the state checking happened.
@@ -238,7 +243,7 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
 
   // When renditions are added, this ensures that they are all of the same
   // liveness, and allows access to the liveness check later.
-  absl::optional<bool> is_seekable_ = absl::nullopt;
+  std::optional<bool> is_seekable_ = std::nullopt;
 
   // Ensure that safe member fields are only accessed on the media sequence.
   SEQUENCE_CHECKER(media_sequence_checker_);

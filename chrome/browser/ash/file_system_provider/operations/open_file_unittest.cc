@@ -21,9 +21,7 @@
 #include "storage/browser/file_system/async_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
-namespace file_system_provider {
-namespace operations {
+namespace ash::file_system_provider::operations {
 namespace {
 
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
@@ -43,7 +41,7 @@ class CallbackLogger {
     Event(const Event&) = delete;
     Event& operator=(const Event&) = delete;
 
-    virtual ~Event() {}
+    virtual ~Event() = default;
 
     int file_handle() { return file_handle_; }
     base::File::Error result() { return result_; }
@@ -53,12 +51,12 @@ class CallbackLogger {
     base::File::Error result_;
   };
 
-  CallbackLogger() {}
+  CallbackLogger() = default;
 
   CallbackLogger(const CallbackLogger&) = delete;
   CallbackLogger& operator=(const CallbackLogger&) = delete;
 
-  virtual ~CallbackLogger() {}
+  virtual ~CallbackLogger() = default;
 
   void OnOpenFile(int file_handle, base::File::Error result) {
     events_.push_back(std::make_unique<Event>(file_handle, result));
@@ -74,8 +72,8 @@ class CallbackLogger {
 
 class FileSystemProviderOperationsOpenFileTest : public testing::Test {
  protected:
-  FileSystemProviderOperationsOpenFileTest() {}
-  ~FileSystemProviderOperationsOpenFileTest() override {}
+  FileSystemProviderOperationsOpenFileTest() = default;
+  ~FileSystemProviderOperationsOpenFileTest() override = default;
 
   void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
@@ -200,6 +198,4 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, OnError) {
   ASSERT_EQ(0, event->file_handle());
 }
 
-}  // namespace operations
-}  // namespace file_system_provider
-}  // namespace ash
+}  // namespace ash::file_system_provider::operations

@@ -18,6 +18,7 @@
 #include "chrome/grit/compose_resources_map.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/compose/core/browser/compose_features.h"
+#include "components/compose/core/browser/config.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -38,18 +39,26 @@ ComposeUI::ComposeUI(content::WebUI* web_ui)
   // Localized strings.
   static constexpr webui::LocalizedString kStrings[] = {
       {"close", IDS_CLOSE},
-      {"consentTitle", IDS_COMPOSE_CONSENT_TITLE},
-      {"consentMainTop", IDS_COMPOSE_CONSENT_MAIN_TOP},
-      {"consentMainBottom", IDS_COMPOSE_CONSENT_MAIN_BOTTOM},
-      {"consentNoButton", IDS_COMPOSE_CONSENT_NO_BUTTON},
-      {"consentYesButton", IDS_COMPOSE_CONSENT_YES_BUTTON},
+      {"freMsbbTitle", IDS_COMPOSE_FRE_MSBB_TITLE},
+      {"freMsbbMain", IDS_COMPOSE_FRE_MSBB_MAIN},
+      {"freMsbbSettingsButton", IDS_COMPOSE_FRE_MSBB_SETTINGS_BUTTON},
+      {"firstRunTitle", IDS_COMPOSE_FRE_TITLE},
+      {"firstRunMainTop", IDS_COMPOSE_FRE_MAIN_TOP},
+      {"firstRunMainMid", IDS_COMPOSE_FRE_MAIN_MID},
+      {"firstRunMainBottom", IDS_COMPOSE_EXPERIMENTAL_DISCLAIMER_FOOTER},
+      {"firstRunOkButton", IDS_COMPOSE_FRE_OK_BUTTON},
       {"dialogTitle", IDS_COMPOSE_DIALOG_TITLE},
-      {"disclaimerLetsGoButton", IDS_COMPOSE_DISCLAIMER_BUTTON},
-      {"inputPlaceholder", IDS_COMPOSE_INPUT_PLACEHOLDER},
-      {"inputFooter", IDS_COMPOSE_FOOTER_FISHFOOD},
+      {"inputPlaceholderTitle", IDS_COMPOSE_INPUT_PLACEHOLDER_TITLE},
+      {"inputPlaceholderLine1", IDS_COMPOSE_INPUT_PLACEHOLDER_LINE_1},
+      {"inputPlaceholderLine2", IDS_COMPOSE_INPUT_PLACEHOLDER_LINE_2},
+      {"inputPlaceholderLine3", IDS_COMPOSE_INPUT_PLACEHOLDER_LINE_3},
+      {"inputFooter", IDS_COMPOSE_INPUT_FOOTER},
       {"submitButton", IDS_COMPOSE_SUBMIT_BUTTON},
-      {"resultFooter", IDS_COMPOSE_FOOTER_FISHFOOD},
+      {"onDeviceUsedFooter", IDS_COMPOSE_FOOTER_FISHFOOD_ON_DEVICE_USED},
+      {"resultFooter", IDS_COMPOSE_EXPERIMENTAL_DISCLAIMER_FOOTER},
+      {"dogfoodFooter", IDS_COMPOSE_FOOTER_FISHFOOD},
       {"insertButton", IDS_COMPOSE_INSERT_BUTTON},
+      {"replaceButton", IDS_COMPOSE_REPLACE_BUTTON},
       {"lengthMenuTitle", IDS_COMPOSE_MENU_LENGTH_TITLE},
       {"shorterOption", IDS_COMPOSE_MENU_SHORTER_OPTION},
       {"longerOption", IDS_COMPOSE_MENU_LONGER_OPTION},
@@ -60,21 +69,37 @@ ComposeUI::ComposeUI(content::WebUI* web_ui)
       {"errorTooLong", IDS_COMPOSE_ERROR_TOO_LONG},
       {"errorTryAgain", IDS_COMPOSE_ERROR_TRY_AGAIN},
       {"errorTryAgainLater", IDS_COMPOSE_ERROR_TRY_AGAIN_LATER},
-      {"errorRequestNotSuccessful", IDS_COMPOSE_ERROR_REQUEST_NOT_SUCCESSFUL},
-      {"errorPermissionDenied", IDS_COMPOSE_ERROR_REQUEST_NOT_SUCCESSFUL},
-      {"errorGeneric", IDS_COMPOSE_ERROR_GENERIC},
+      {"errorFiltered", IDS_COMPOSE_ERROR_FILTERED},
+      {"errorUnsupportedLanguage", IDS_COMPOSE_ERROR_UNSUPPORTED_LANGUAGE},
+      {"errorPermissionDenied", IDS_COMPOSE_ERROR_PERMISSION_DENIED},
+      {"errorRequestThrottled", IDS_COMPOSE_ERROR_REQUEST_THROTTLED},
+      {"errorOffline", IDS_COMPOSE_ERROR_OFFLINE},
       {"editButton", IDS_COMPOSE_EDIT},
       {"editCancelButton", IDS_CANCEL},
       {"editUpdateButton", IDS_COMPOSE_EDIT_UPDATE_BUTTON},
       {"undo", IDS_COMPOSE_UNDO},
       {"resubmit", IDS_COMPOSE_RESUBMIT},
-      {"thumbsDown", IDS_THUMBS_DOWN},
-      {"thumbsUp", IDS_THUMBS_UP},
+      {"thumbsDown", IDS_COMPOSE_THUMBS_DOWN},
+      {"thumbsUp", IDS_COMPOSE_THUMBS_UP},
+      {"savedText", IDS_COMPOSE_SUGGESTION_SAVED_TEXT},
+      {"savedLabel", IDS_COMPOSE_SUGGESTION_SAVED_LABEL},
   };
   source->AddLocalizedStrings(kStrings);
   source->AddBoolean("enableAnimations",
                      base::FeatureList::IsEnabled(
                          compose::features::kEnableComposeWebUIAnimations));
+  source->AddBoolean(
+      "enableOnDeviceDogfoodFooter",
+      base::FeatureList::IsEnabled(
+          compose::features::kEnableComposeOnDeviceDogfoodFooter));
+  source->AddBoolean(
+      "enableSavedStateNotification",
+      base::FeatureList::IsEnabled(
+          compose::features::kEnableComposeSavedStateNotification));
+
+  const compose::Config& config = compose::GetComposeConfig();
+  source->AddInteger("savedStateTimeoutInMilliseconds",
+                     config.saved_state_timeout_milliseconds);
 }
 
 ComposeUI::~ComposeUI() = default;

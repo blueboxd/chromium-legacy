@@ -21,7 +21,7 @@
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1384959399684842514">Nedlastingen er satt på pause</translation>
 <translation id="1415402041810619267">Nettadressen er avkortet</translation>
-<translation id="1426410128494586442">Ja</translation>
+<translation id="1434873037477293673">kort med avslag</translation>
 <translation id="1448064542941920355">Zoom ut</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> nettsted}other{<ph name="SITE_COUNT" /> nettsteder}}</translation>
 <translation id="1510341833810331442">Nettsteder har ikke lov til å lagre data på enheten din</translation>
@@ -66,6 +66,7 @@
 <translation id="2228071138934252756">For å gi <ph name="APP_NAME" /> tilgang til kameraet må du også slå på kameraet i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="2235344399760031203">Informasjonskapsler fra tredjeparter er blokkert</translation>
 <translation id="2238944249568001759">Foreslåtte søk basert på den siste fanen din</translation>
+<translation id="2241587408274973373">Kort på Ny fane-siden</translation>
 <translation id="2241634353105152135">Bare én gang</translation>
 <translation id="2253414712144136228">Fjern <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2253989982043948086">{NUM_SELECTED,plural, =1{1 nettsted er blokkert}other{# nettsteder er blokkert}}</translation>
@@ -108,6 +109,7 @@
 <translation id="2750481671343847896">Nettsteder kan vise påloggingsforespørsler fra identitetstjenester.</translation>
 <translation id="2790501146643349491">Når dette er på, kan nylig lukkede nettsteder fullføre sending og mottak av data. Når dette er av, kan ikke nylig lukkede nettsteder fullføre sending eller mottak av data.</translation>
 <translation id="2822354292072154809">Er du sikker på at du vil tilbakestille alle nettstedstillatelser for <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2836978798613876756"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="2850913818900871965">Be om mobilvisning</translation>
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2874939134665556319">Forrige spor</translation>
@@ -148,6 +150,7 @@
 <translation id="3448554387819310837">Når dette er på, kan nettsteder be om å få bruke kameraet ditt. Når dette er av, kan ikke nettsteder bruke kameraet ditt.</translation>
 <translation id="3465378418721443318">{DAYS,plural, =1{Chrome begynner å blokkere informasjonskapsler igjen i morgen}other{# dager til Chrome begynner å blokkere informasjonskapsler igjen}}</translation>
 <translation id="3521663503435878242">Nettsteder under <ph name="DOMAIN" /></translation>
+<translation id="3536227077203206203">Tillatt denne gangen</translation>
 <translation id="3538390592868664640">Blokkér nettsteder fra å lage 3D-kart av omgivelsene dine eller spore kameraposisjonen</translation>
 <translation id="3544058026430919413">Bedrifter kan definere grupper av nettsteder som kan bruke informasjonskapsler for å dele aktiviteten din i gruppen. Dette er av i Inkognito.</translation>
 <translation id="3551268116566418498">Vil du avslutte Inkognitomodus?</translation>
@@ -189,6 +192,7 @@
 <translation id="4169549551965910670">Koblet til en USB-enhet</translation>
 <translation id="4194328954146351878">Spør før nettsteder får lov til å se og endre informasjon på NFC-enheter (anbefales)</translation>
 <translation id="4200726100658658164">Åpne posisjonsinnstillingene</translation>
+<translation id="4212246570487010370">Fortsett å surfe</translation>
 <translation id="4226663524361240545">Varsler kan gjøre at enheten vibrerer</translation>
 <translation id="4259722352634471385">Nettadressen er blokkert: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Tillatt</translation>
@@ -238,6 +242,7 @@
 <translation id="5099358668261120049">Dette sletter alle data og informasjonskapsler som er lagret av <ph name="ORIGIN" /> eller den tilhørende appen på startskjermen.</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
+<translation id="5139253256813381453">{PRICE_DROP_COUNT,plural, =1{Avslag på de åpne fanene dine}other{Avslag på de åpne fanene dine}}</translation>
 <translation id="5186036860380548585">Alternativet finner du nesten øverst på skjermen</translation>
 <translation id="5197729504361054390">Kontaktene du velger, deles med <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Sist besøkt i dag</translation>
@@ -277,6 +282,7 @@
 <translation id="5706552988683188916">Dette medfører sletting av informasjonskapsler og andre nettstedsdata for <ph name="WEBSITE" /></translation>
 <translation id="5723967018671998714">Informasjonskapsler fra tredjeparter er blokkert i inkognitomodus</translation>
 <translation id="5740126560802162366">Nettsteder kan lagre data på enheten din</translation>
+<translation id="5749158352074143502">Fortsett med denne fanen</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> er blokkert</translation>
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5844448279347999754">Når dette er på, kan nettsteder be om å få se tekst og bilder som er lagret på utklippstavlen. Når dette er av, kan ikke nettsteder se tekst eller bilder som er lagret på utklippstavlen.</translation>
@@ -325,6 +331,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Blokkér nettsteder fra å bruke virtuell virkelighet-enheten din og -dataene dine</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
+<translation id="6452138246455930388">Avslag på den åpne fanen din, fra <ph name="OLD_PRICE" /> til <ph name="NEW_PRICE" />, <ph name="PRODUCT_NAME" />, <ph name="DOMAIN_NAME" /></translation>
 <translation id="6500423977866688905">Når vinduet er smalt, kan du be om mobilvisning</translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="652937045869844725">Prøv å tillate informasjonskapsler fra tredjeparter. Det innebærer mindre beskyttelse, men øker sannsynligheten for at nettstedsfunksjoner virker som de skal</translation>
@@ -344,10 +351,12 @@
 <translation id="6746124502594467657">Flytt ned</translation>
 <translation id="6749077623962119521">Vil du tilbakestille tillatelser?</translation>
 <translation id="6766622839693428701">Sveip ned for å lukke.</translation>
+<translation id="6785959295338971061"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> fra <ph name="FROM_DEVICE" /></translation>
 <translation id="6787751205395685251">Velg et alternativ for <ph name="SITE_NAME" /></translation>
 <translation id="6790428901817661496">Spill av</translation>
 <translation id="6818926723028410516">Velg elementer</translation>
 <translation id="6864395892908308021">Denne enheten kan ikke lese NFC</translation>
+<translation id="6867014948848323204">Fra <ph name="FROM_DEVICE" /></translation>
 <translation id="6912998170423641340">Blokkér nettsteder fra å få tilgang til tekst og bilder fra utklippstavlen</translation>
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6950072572526089586">Nettsteder du besøker, kan lagre informasjon om hva du gjør, slik at nettstedene fungerer som forventet – for eksempel for å holde deg pålogget eller for å lagre varer i handlekurven din. Ofte lagrer nettsteder denne informasjonen midlertidig på enheten din.</translation>
@@ -364,6 +373,7 @@
 <translation id="7141896414559753902">Blokkér nettsteder fra å vise forgrunnsvinduer og viderekoblinger (anbefales)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
+<translation id="7180865173735832675">Tilpass</translation>
 <translation id="7188508872042490670">Nettstedsdata på enheten</translation>
 <translation id="7201549776650881587">Denne handlingen sletter alle data og informasjonskapsler som er lagret av alle nettstedene under <ph name="ORIGIN" /> eller den tilhørende appen på startskjermen</translation>
 <translation id="7203150201908454328">Utvidet</translation>
@@ -395,6 +405,7 @@
 <translation id="7667547420449112975">Trollmannen fra Oz</translation>
 <translation id="7684642910516280563">Ikke la et nettsted bruke informasjonskapsler fra tredjeparter</translation>
 <translation id="7719367874908701697">Sidezoom</translation>
+<translation id="7770832849480336015">Skjul «<ph name="TITLE_OF_MODULE" />»</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7791543448312431591">Legg til</translation>
 <translation id="780301667611848630">Nei takk</translation>
@@ -412,6 +423,7 @@
 <translation id="7990211076305263060">Når dette er på, kan nettsteder be om å få bruke mikrofonen din. Når dette er av, kan ikke nettsteder bruke mikrofonen din.</translation>
 <translation id="8007176423574883786">Slått av for denne enheten</translation>
 <translation id="802154636333426148">Nedlastingen mislyktes</translation>
+<translation id="8024161440284949905">Fortsett med disse fanene</translation>
 <translation id="8042586301629853791">Sorter etter:</translation>
 <translation id="8067883171444229417">Spill av videoen</translation>
 <translation id="8068648041423924542">Kan ikke velge sertifikat.</translation>

@@ -23,6 +23,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/media_log.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/v4l2/v4l2_framerate_control.h"
 #include "media/gpu/v4l2/v4l2_queue.h"
 #include "media/gpu/v4l2/v4l2_utils.h"
 #include "media/video/h264_parser.h"
@@ -225,11 +226,11 @@ class H264FrameReassembler {
     // Size in bytes of the NALU under analysis.
     off_t nalu_size;
   };
-  // Parses |data| and returns either absl::nullopt, if parsing |data| fails, or
+  // Parses |data| and returns either std::nullopt, if parsing |data| fails, or
   // a FrameBoundaryInfo describing the first |nalu_size| bytes of |data|.
   //
   // It is assumed that |data| contains an integer number of NALUs.
-  absl::optional<struct FrameBoundaryInfo> FindH264FrameBoundary(
+  std::optional<struct FrameBoundaryInfo> FindH264FrameBoundary(
       const uint8_t* const data,
       size_t size);
 
@@ -255,7 +256,7 @@ std::unique_ptr<VideoDecoderMixin> V4L2StatefulVideoDecoder::Create(
 }
 
 // static
-absl::optional<SupportedVideoDecoderConfigs>
+std::optional<SupportedVideoDecoderConfigs>
 V4L2StatefulVideoDecoder::GetSupportedConfigs() {
   SupportedVideoDecoderConfigs supported_media_configs;
 
@@ -263,7 +264,7 @@ V4L2StatefulVideoDecoder::GetSupportedConfigs() {
   base::ScopedFD device_fd(HANDLE_EINTR(
       open(kVideoDeviceDriverPath, O_RDWR | O_NONBLOCK | O_CLOEXEC)));
   if (!device_fd.is_valid()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::vector<uint32_t> v4l2_codecs = EnumerateSupportedPixFmts(
@@ -368,18 +369,23 @@ void V4L2StatefulVideoDecoder::Initialize(const VideoDecoderConfig& config,
     DVLOGF_IF(1, is_mtk8173_) << "This is an MTK8173 device (Hana, Oak)";
   }
 
-  // If we've been Initialize()d before, destroy state members.
   if (IsInitialized()) {
-    // Invalidate pointers from and cancel all hypothetical in-flight requests
-    // to the WaitOnceForEvents() routine.
-    weak_ptr_factory_for_events_.InvalidateWeakPtrs();
-    weak_ptr_factory_for_frame_pool_.InvalidateWeakPtrs();
-    cancelable_task_tracker_.TryCancelAll();
-
-    // This will also Deallocate() all buffers and issue a VIDIOC_STREAMOFF.
-    OUTPUT_queue_.reset();
-    CAPTURE_queue_.reset();
+    // Almost always we'll be here when the MSE feeding the HTML <video> changes
+    // tracks; this is implemented via a flush (a Decode() call with an
+    // end_of_stream() DecoderBuffer) and then this very Initialize() call.
+    // Technically, a V4L2 Memory-to-Memory stateful decoder can start decoding
+    // after a flush ("Drain" in the V4L2 documentation) via either a START
+    // command or sending a VIDIOC_STREAMOFF - VIDIOC_STREAMON to either queue
+    // [1]. The START command is what we issue when seeing the LAST dequeued
+    // CAPTURE buffer, but this is not enough for Hana MTK8173, so we do a full
+    // Reset() (see crbug.com/270039 for historical context). [1]
+    // https://www.kernel.org/doc/html/v5.15/userspace-api/media/v4l/dev-decoder.html#drain
+    Reset(base::DoNothing());
   }
+
+  framerate_control_ = std::make_unique<V4L2FrameRateControl>(
+      base::BindRepeating(&HandledIoctl, device_fd_.get()),
+      base::SequencedTaskRunner::GetCurrentDefault());
 
   // At this point we initialize the |OUTPUT_queue_| only, following
   // instructions in e.g. [1]. The decoded video frames queue configuration
@@ -454,7 +460,7 @@ void V4L2StatefulVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                       DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsInitialized()) << "V4L2StatefulVideoDecoder must be Initialize()d";
-  DVLOGF(3) << buffer->AsHumanReadableString(/*verbose=*/false);
+  VLOGF(3) << buffer->AsHumanReadableString(/*verbose=*/false);
 
   if (buffer->end_of_stream()) {
     if (!event_task_runner_) {
@@ -546,6 +552,7 @@ void V4L2StatefulVideoDecoder::Reset(base::OnceClosure closure) {
   // Invalidate pointers from and cancel all hypothetical in-flight requests
   // to the WaitOnceForEvents() routine.
   weak_ptr_factory_for_events_.InvalidateWeakPtrs();
+  weak_ptr_factory_for_CAPTURE_availability_.InvalidateWeakPtrs();
   cancelable_task_tracker_.TryCancelAll();
 
   if (h264_frame_reassembler_) {
@@ -645,7 +652,7 @@ V4L2StatefulVideoDecoder::V4L2StatefulVideoDecoder(
                         std::move(task_runner),
                         std::move(client)),
       weak_ptr_factory_for_events_(this),
-      weak_ptr_factory_for_frame_pool_(this) {
+      weak_ptr_factory_for_CAPTURE_availability_(this) {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(1);
@@ -656,7 +663,7 @@ V4L2StatefulVideoDecoder::~V4L2StatefulVideoDecoder() {
   DVLOGF(1);
 
   weak_ptr_factory_for_events_.InvalidateWeakPtrs();
-  weak_ptr_factory_for_frame_pool_.InvalidateWeakPtrs();
+  weak_ptr_factory_for_CAPTURE_availability_.InvalidateWeakPtrs();
   cancelable_task_tracker_.TryCancelAll();  // Not needed, but good explicit.
 
   if (wake_event_.is_valid()) {
@@ -710,7 +717,7 @@ bool V4L2StatefulVideoDecoder::InitializeCAPTUREQueue() {
   // size of the video, e.g. a 1080p sequence could have 1920x1080 "natural" or
   // |visible_rect|, but |coded_size| of 1920x1088 because of codec block
   // alignment of 16 samples.
-  absl::optional<gfx::Rect> visible_rect = CAPTURE_queue_->GetVisibleRect();
+  std::optional<gfx::Rect> visible_rect = CAPTURE_queue_->GetVisibleRect();
   if (!visible_rect) {
     return false;
   }
@@ -725,9 +732,9 @@ bool V4L2StatefulVideoDecoder::InitializeCAPTUREQueue() {
       client_->PickDecoderOutputFormat(
           candidates, *visible_rect,
           aspect_ratio_.GetNaturalSize(*visible_rect),
-          /*output_size=*/absl::nullopt, num_codec_reference_frames,
+          /*output_size=*/std::nullopt, num_codec_reference_frames,
           /*use_protected=*/false, /*need_aux_frame_pool=*/false,
-          /*allocator=*/absl::nullopt);
+          /*allocator=*/std::nullopt);
   if (!status_or_output_format.has_value()) {
     return false;
   }
@@ -753,7 +760,7 @@ bool V4L2StatefulVideoDecoder::InitializeCAPTUREQueue() {
                                       : VIDEO_MAX_FRAME;
 
   if (!use_v4l2_allocated_buffers) {
-    absl::optional<GpuBufferLayout> layout =
+    std::optional<GpuBufferLayout> layout =
         client_->GetVideoFramePool()->GetGpuBufferLayout();
     if (!layout.has_value()) {
       return false;
@@ -939,6 +946,7 @@ void V4L2StatefulVideoDecoder::TryAndDequeueCAPTUREQueueBuffers() {
       if (flush_cb_) {
         std::move(flush_cb_).Run(DecoderStatus::Codes::kOk);
       }
+      return;
     } else if (!dequeued_buffer->IsError()) {
       // IsError() doesn't flag a fatal error, but more a discard-this-buffer
       // marker. This is seen -seldom- from venus driver (QC) when entering a
@@ -968,14 +976,26 @@ void V4L2StatefulVideoDecoder::TryAndDequeueCAPTUREQueueBuffers() {
         // |wrapped_frame| is destroyed, allowing -maybe- for it to get back to
         // |CAPTURE_queue_|s free buffers.
         wrapped_frame->AddDestructionObserver(
-            base::BindPostTaskToCurrentDefault(
-                base::BindOnce([](scoped_refptr<V4L2ReadableBuffer> buffer) {},
-                               std::move(dequeued_buffer))));
+            base::BindPostTaskToCurrentDefault(base::BindOnce(
+                [](scoped_refptr<V4L2ReadableBuffer> buffer,
+                   base::WeakPtr<V4L2StatefulVideoDecoder> weak_this) {
+                  // See also TryAndEnqueueCAPTUREQueueBuffers(), V4L2Queue is
+                  // funny: We need to "enqueue" released buffers in the driver
+                  // in order to use them (otherwise they would stay as "free").
+                  if (weak_this) {
+                    weak_this->TryAndEnqueueCAPTUREQueueBuffers();
+                    weak_this->PrintAndTraceQueueStates(FROM_HERE);
+                  }
+                },
+                std::move(dequeued_buffer),
+                weak_ptr_factory_for_CAPTURE_availability_.GetWeakPtr())));
         CHECK(wrapped_frame);
         VLOGF(3) << wrapped_frame->AsHumanReadableString();
         output_cb_.Run(std::move(wrapped_frame));
       } else {
+        DCHECK_EQ(queue_type, V4L2_MEMORY_DMABUF);
         VLOGF(3) << video_frame->AsHumanReadableString();
+        framerate_control_->AttachToVideoFrame(video_frame);
         output_cb_.Run(std::move(video_frame));
       }
 
@@ -1032,7 +1052,7 @@ void V4L2StatefulVideoDecoder::TryAndEnqueueCAPTUREQueueBuffers() {
             base::SequencedTaskRunner::GetCurrentDefault(), FROM_HERE,
             base::BindOnce(
                 &V4L2StatefulVideoDecoder::TryAndEnqueueCAPTUREQueueBuffers,
-                weak_ptr_factory_for_frame_pool_.GetWeakPtr())));
+                weak_ptr_factory_for_CAPTURE_availability_.GetWeakPtr())));
         return;
       }
       auto video_frame = client_->GetVideoFramePool()->GetFrame();
@@ -1077,7 +1097,7 @@ bool V4L2StatefulVideoDecoder::TryAndEnqueueOUTPUTQueueBuffers() {
     return false;
   }
 
-  for (absl::optional<V4L2WritableBufferRef> v4l2_buffer =
+  for (std::optional<V4L2WritableBufferRef> v4l2_buffer =
            OUTPUT_queue_->GetFreeBuffer();
        v4l2_buffer && !decoder_buffer_and_callbacks_.empty();
        v4l2_buffer = OUTPUT_queue_->GetFreeBuffer()) {
@@ -1166,7 +1186,7 @@ H264FrameReassembler::Process(scoped_refptr<DecoderBuffer> buffer,
         base::checked_cast<size_t>(nalu_info->nalu_size);
 
     if (nalu_info->is_start_of_new_frame && HasFragments()) {
-      VLOGF(3) << frame_fragments_.size()
+      VLOGF(4) << frame_fragments_.size()
                << " currently stored frame fragment(s) can be reassembled.";
       whole_frames.emplace_back(std::make_pair(
           ReassembleFragments(frame_fragments_), base::DoNothing()));
@@ -1177,15 +1197,17 @@ H264FrameReassembler::Process(scoped_refptr<DecoderBuffer> buffer,
       whole_frames.emplace_back(std::make_pair(
           DecoderBuffer::CopyFrom(buffer_pointer, found_nalu_size),
           base::DoNothing()));
+      whole_frames.back().first->set_timestamp(buffer->timestamp());
 
       buffer_pointer += found_nalu_size;
       remaining_buffer_size -= found_nalu_size;
       continue;
     }
 
-    VLOGF(3) << "This was a frame fragment; storing it for later reassembly.";
+    VLOGF(4) << "This was a frame fragment; storing it for later reassembly.";
     frame_fragments_.emplace_back(
         DecoderBuffer::CopyFrom(buffer_pointer, found_nalu_size));
+    frame_fragments_.back()->set_timestamp(buffer->timestamp());
 
     buffer_pointer += found_nalu_size;
     remaining_buffer_size -= found_nalu_size;
@@ -1206,7 +1228,7 @@ H264FrameReassembler::Process(scoped_refptr<DecoderBuffer> buffer,
   return whole_frames;
 }
 
-absl::optional<struct H264FrameReassembler::FrameBoundaryInfo>
+std::optional<struct H264FrameReassembler::FrameBoundaryInfo>
 H264FrameReassembler::FindH264FrameBoundary(const uint8_t* const data,
                                             size_t data_size) {
   h264_parser_.SetStream(data, data_size);
@@ -1216,7 +1238,7 @@ H264FrameReassembler::FindH264FrameBoundary(const uint8_t* const data,
     if (result == H264Parser::kInvalidStream ||
         result == H264Parser::kUnsupportedStream) {
       LOG(ERROR) << "Could not parse bitstream.";
-      return absl::nullopt;
+      return std::nullopt;
     }
     if (result == H264Parser::kEOStream) {
       NOTREACHED_NORETURN()
@@ -1248,7 +1270,7 @@ H264FrameReassembler::FindH264FrameBoundary(const uint8_t* const data,
         result = h264_parser_.ParseSPS(&sps_id_);
         if (result != H264Parser::kOk) {
           LOG(ERROR) << "Could not parse SPS header.";
-          return absl::nullopt;
+          return std::nullopt;
         }
         previous_slice_header_.reset();
         return FrameBoundaryInfo{.is_whole_frame = true,
@@ -1258,7 +1280,7 @@ H264FrameReassembler::FindH264FrameBoundary(const uint8_t* const data,
         result = h264_parser_.ParsePPS(&pps_id_);
         if (result != H264Parser::kOk) {
           LOG(ERROR) << "Could not parse PPS header.";
-          return absl::nullopt;
+          return std::nullopt;
         }
         previous_slice_header_.reset();
         return FrameBoundaryInfo{.is_whole_frame = true,

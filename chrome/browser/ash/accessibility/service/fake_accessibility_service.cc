@@ -52,13 +52,14 @@ void FakeAccessibilityService::BindAnotherAutomation() {
   mojo::PendingAssociatedRemote<ax::mojom::Automation> automation_remote;
   automation_receivers_.Add(
       this, automation_remote.InitWithNewEndpointAndPassReceiver());
+  accessibility_service_client_remote_->BindAutomation(
+      std::move(automation_remote));
+}
 
+void FakeAccessibilityService::BindAnotherAutomationClient() {
   mojo::PendingReceiver<ax::mojom::AutomationClient> automation_client_receiver;
   automation_client_remotes_.Add(
       automation_client_receiver.InitWithNewPipeAndPassRemote());
-
-  accessibility_service_client_remote_->BindAutomation(
-      std::move(automation_remote), std::move(automation_client_receiver));
 }
 
 void FakeAccessibilityService::BindAnotherSpeechRecognition() {
@@ -273,6 +274,13 @@ void FakeAccessibilityService::
   for (auto& ui_client : ui_remotes_) {
     ui_client->SendSyntheticKeyEventForShortcutOrNavigation(
         mojo::Clone(key_event));
+  }
+}
+
+void FakeAccessibilityService::RequestSendSyntheticMouseEvent(
+    ax::mojom::SyntheticMouseEventPtr mouse_event) {
+  for (auto& ui_client : ui_remotes_) {
+    ui_client->SendSyntheticMouseEvent(mojo::Clone(mouse_event));
   }
 }
 

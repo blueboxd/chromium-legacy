@@ -16,7 +16,6 @@
 #include "base/threading/thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cookies/cookie_setting_override.h"
 #include "net/dns/mock_host_resolver.h"
@@ -78,7 +77,6 @@ std::unique_ptr<URLRequestContextBuilder> CreateTestURLRequestContextBuilder() {
       ConfiguredProxyResolutionService::CreateDirect());
   builder->SetCertVerifier(
       CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));
-  builder->set_ct_policy_enforcer(std::make_unique<DefaultCTPolicyEnforcer>());
   builder->set_ssl_config_service(std::make_unique<SSLConfigServiceDefaults>());
   builder->SetHttpAuthHandlerFactory(HttpAuthHandlerFactory::CreateDefault());
   builder->SetHttpServerProperties(std::make_unique<HttpServerProperties>());
@@ -136,21 +134,18 @@ TestDelegate::TestDelegate()
 TestDelegate::~TestDelegate() = default;
 
 void TestDelegate::RunUntilComplete() {
-  use_legacy_on_complete_ = false;
   base::RunLoop run_loop;
   on_complete_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
 void TestDelegate::RunUntilRedirect() {
-  use_legacy_on_complete_ = false;
   base::RunLoop run_loop;
   on_redirect_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
 void TestDelegate::RunUntilAuthRequired() {
-  use_legacy_on_complete_ = false;
   base::RunLoop run_loop;
   on_auth_required_ = run_loop.QuitClosure();
   run_loop.Run();
@@ -243,11 +238,11 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
   // It doesn't make sense for the request to have IO pending at this point.
   DCHECK_NE(bytes_read, ERR_IO_PENDING);
 
-  // If you've reached this, you've either called "RunUntilComplete" or are
-  // using legacy "QuitCurrent*Deprecated". If this DCHECK fails, that probably
-  // means you've run "RunUntilRedirect" or "RunUntilAuthRequired" and haven't
+  // If you've reached this, you've either called "RunUntilComplete"
+  // If this DCHECK fails, that probably  means you've run
+  // "RunUntilRedirect" or "RunUntilAuthRequired" and haven't
   // redirected/auth-challenged
-  DCHECK(on_complete_ || use_legacy_on_complete_);
+  DCHECK(on_complete_);
 
   // If the request was cancelled in a redirect, it should not signal
   // OnReadCompleted. Note that |cancel_in_rs_| may be true due to
@@ -268,9 +263,6 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
       request_status_ = request->Cancel();
       // If bytes_read is 0, won't get a notification on cancelation.
       if (bytes_read == 0) {
-        if (use_legacy_on_complete_)
-          base::RunLoop::QuitCurrentWhenIdleDeprecated();
-        else
           std::move(on_complete_).Run();
       }
       return;
@@ -295,10 +287,7 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
 
 void TestDelegate::OnResponseCompleted(URLRequest* request) {
   response_completed_ = true;
-  if (use_legacy_on_complete_)
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  else
-    std::move(on_complete_).Run();
+  std::move(on_complete_).Run();
 }
 
 TestNetworkDelegate::TestNetworkDelegate() = default;

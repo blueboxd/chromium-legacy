@@ -53,7 +53,6 @@ class TabbedNavigationBarColorController {
 
     private @ColorInt int mNavigationBarColor;
     private boolean mForceDarkNavigationBarColor;
-    private boolean mOverviewModeHiding;
     private boolean mIsInFullscreen;
     private float mNavigationBarScrimFraction;
 
@@ -143,20 +142,13 @@ class TabbedNavigationBarColorController {
                         LayoutType.TAB_SWITCHER,
                         new LayoutStateObserver() {
                             @Override
-                            public void onStartedShowing(int layoutType) {
-                                mOverviewModeHiding = false;
+                            public void onStartedShowing(@LayoutType int layoutType) {
                                 updateNavigationBarColor();
                             }
 
                             @Override
-                            public void onStartedHiding(int layoutType) {
-                                mOverviewModeHiding = true;
+                            public void onStartedHiding(@LayoutType int layoutType) {
                                 updateNavigationBarColor();
-                            }
-
-                            @Override
-                            public void onFinishedHiding(int layoutType) {
-                                mOverviewModeHiding = false;
                             }
                         });
         mLayoutManager.addObserver(mLayoutStateObserver);
@@ -227,10 +219,6 @@ class TabbedNavigationBarColorController {
     }
 
     private @ColorInt int applyCurrentScrimToColor(@ColorInt int color) {
-        // Apply a color overlay.
-        float scrimColorAlpha = (mDefaultScrimColor >>> 24) / 255f;
-        int scrimColorOpaque = mDefaultScrimColor & 0xFF000000;
-        return ColorUtils.getColorWithOverlay(
-                color, scrimColorOpaque, mNavigationBarScrimFraction * scrimColorAlpha, true);
+        return ColorUtils.overlayColor(color, mDefaultScrimColor, mNavigationBarScrimFraction);
     }
 }

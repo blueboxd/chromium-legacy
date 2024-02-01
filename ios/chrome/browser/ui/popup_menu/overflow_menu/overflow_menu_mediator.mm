@@ -38,11 +38,12 @@
 #import "ios/chrome/browser/follow/model/follow_tab_helper.h"
 #import "ios/chrome/browser/follow/model/follow_util.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
+#import "ios/chrome/browser/iph_for_new_chrome_user/model/tab_based_iph_browser_agent.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_presenter_observer_bridge.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_request.h"
-#import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/browser_policy_connector_ios.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/reading_list/model/offline_url_utils.h"
 #import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -54,7 +55,6 @@
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
-#import "ios/chrome/browser/shared/public/commands/help_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/overflow_menu_customization_commands.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
@@ -84,6 +84,7 @@
 #import "ios/chrome/browser/web/model/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/model/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/window_activities/model/window_activity_helpers.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/common/user_agent.h"
@@ -243,6 +244,11 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
     if (self.readingListDestination.badge != BadgeTypeNone) {
       _engagementTracker->Dismissed(
           feature_engagement::kIPHBadgedReadingListFeature);
+    }
+
+    if (self.whatsNewDestination.badge != BadgeTypeNone) {
+      _engagementTracker->Dismissed(
+          feature_engagement::kIPHWhatsNewUpdatedFeature);
     }
 
     _engagementTracker = nullptr;
@@ -683,8 +689,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
 - (OverflowMenuAction*)newFollowAction {
   return [self
-      createOverflowMenuActionWithName:l10n_util::GetNSStringF(
-                                           IDS_IOS_TOOLS_MENU_FOLLOW, u"")
+      createOverflowMenuActionWithName:l10n_util::GetNSString(
+                                           IDS_IOS_TOOLS_MENU_CUSTOMIZE_FOLLOW)
                             actionType:overflow_menu::ActionType::Follow
                             symbolName:kPlusSymbol
                           systemSymbol:YES
@@ -1675,6 +1681,10 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
   self.webContentAreaShowingOverlay = NO;
 }
 
+- (void)overlayPresenterDestroyed:(OverlayPresenter*)presenter {
+  self.webContentAreaOverlayPresenter = nullptr;
+}
+
 #pragma mark - OverflowMenuDestinationProvider
 
 - (OverflowMenuDestination*)destinationForDestinationType:
@@ -1710,7 +1720,10 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
       }
       return self.settingsDestination;
     case overflow_menu::Destination::WhatsNew:
-      if (!WasWhatsNewUsed()) {
+      // Set the new label badge.
+      if (!WasWhatsNewUsed() && self.engagementTracker &&
+          self.engagementTracker->ShouldTriggerHelpUI(
+              feature_engagement::kIPHWhatsNewUpdatedFeature)) {
         // Highlight What's New with a badge if it was never used before.
         self.whatsNewDestination.badge = BadgeTypeNew;
       }
@@ -1759,10 +1772,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
   if (_engagementTracker) {
     _engagementTracker->NotifyEvent(
         feature_engagement::events::kBlueDotPromoOverflowMenuDismissed);
-  }
-
-  if (!WasWhatsNewUsed()) {
-    SetWhatsNewUsed(self.promosManager);
   }
 }
 
@@ -1888,7 +1897,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 // Dismisses the menu and reloads the current page.
 - (void)reload {
   RecordAction(UserMetricsAction("MobileMenuReload"));
-  [self.helpHandler notifyMultiGestureRefreshAndShowHelpBubbleIfEligible];
+  self.tabBasedIPHBrowserAgent->NotifyMultiGestureRefreshEvent();
   [self dismissMenu];
   self.navigationAgent->Reload();
 }
@@ -1931,7 +1940,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 - (void)openClearBrowsingData {
   RecordAction(UserMetricsAction("MobileMenuClearBrowsingData"));
   [self dismissMenu];
-  [self.applicationHandler showClearBrowsingDataSettings];
+  [self.settingsHandler showClearBrowsingDataSettings];
 }
 
 // Follows the website corresponding to `webPage` and dismisses the menu.
@@ -2109,7 +2118,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
       "PasswordManager.ManagePasswordsReferrer",
       password_manager::ManagePasswordsReferrer::kChromeMenuItem);
   [self dismissMenu];
-  [self.applicationHandler
+  [self.settingsHandler
       showSavedPasswordsSettingsFromViewController:self.baseViewController
                                   showCancelButton:NO];
 }
@@ -2148,14 +2157,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
 // Dismisses the menu and opens What's New.
 - (void)openWhatsNew {
-  if (!WasWhatsNewUsed()) {
-    SetWhatsNewUsed(self.promosManager);
-  }
-
-  if (self.engagementTracker) {
-    self.engagementTracker->NotifyEvent(
-        feature_engagement::events::kViewedWhatsNew);
-  }
   [self dismissMenu];
   [self.browserCoordinatorHandler showWhatsNew];
 }

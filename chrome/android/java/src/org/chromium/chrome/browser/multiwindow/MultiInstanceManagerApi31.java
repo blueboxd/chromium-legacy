@@ -9,6 +9,8 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -28,12 +30,15 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
 import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
+import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils.InstanceAllocationType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -220,7 +225,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
 
     @Override
     public List<InstanceInfo> getInstanceInfo() {
-        removeInvalidInstanceData();
+        removeInvalidInstanceData(/* cleanupApplicationStatus= */ false);
         List<InstanceInfo> result = new ArrayList<>();
         SparseBooleanArray visibleTasks = MultiWindowUtils.getVisibleTasks();
         int currentItemPos = -1;
@@ -275,7 +280,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
 
     @Override
     public Pair<Integer, Integer> allocInstanceId(int windowId, int taskId, boolean preferNew) {
-        removeInvalidInstanceData();
+        removeInvalidInstanceData(/* cleanupApplicationStatus= */ true);
 
         int instanceId = getInstanceByTask(taskId);
 
@@ -471,17 +476,34 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
         ChromeSharedPreferences.getInstance().writeInt(taskMapKey(instanceId), taskId);
     }
 
-    private void removeInvalidInstanceData() {
+    private void removeInvalidInstanceData(boolean cleanupApplicationStatus) {
         // Remove tasks that do not exist any more from the task map
-        Set<Integer> validTasks = getAllChromeTasks();
+        ActivityManager activityManager =
+                (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
+        List<AppTask> allTasks = activityManager.getAppTasks();
+        Set<Integer> validTasks = getAllChromeTasks(allTasks);
         Map<String, Integer> taskMap =
                 ChromeSharedPreferences.getInstance()
                         .readIntsWithPrefix(ChromePreferenceKeys.MULTI_INSTANCE_TASK_MAP);
         List<String> tasksRemoved = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : taskMap.entrySet()) {
             if (!validTasks.contains(entry.getValue())) {
+                checkInvalidTaskNotInAllTasks(allTasks, entry.getValue());
                 tasksRemoved.add(entry.getKey() + " - " + entry.getValue());
                 ChromeSharedPreferences.getInstance().removeKey(entry.getKey());
+                if (ChromeFeatureList.sMultiInstanceApplicationStatusCleanup.isEnabled()
+                        && cleanupApplicationStatus) {
+                    boolean foundTasks = ApplicationStatus.cleanupInvalidTask(entry.getValue());
+                    if (foundTasks) {
+                        if (BuildConfig.ENABLE_ASSERTS) {
+                            String logMessage =
+                                    "This is not a crash. Found tracked ApplicationStatus for Task "
+                                            + " that no longer exists in #getAppTasks().";
+                            ChromePureJavaExceptionReporter.reportJavaException(
+                                    new Throwable(logMessage));
+                        }
+                    }
+                }
             }
         }
 
@@ -510,17 +532,37 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    protected Set<Integer> getAllChromeTasks() {
+    protected Set<Integer> getAllChromeTasks(List<AppTask> allTasks) {
         Set<Integer> results = new HashSet<>();
-        ActivityManager activityManager =
-                (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
-        for (AppTask task : activityManager.getAppTasks()) {
+        for (AppTask task : allTasks) {
             String baseActivity = MultiWindowUtils.getActivityNameFromTask(task);
             if (!TextUtils.equals(baseActivity, ChromeTabbedActivity.class.getName())) continue;
             ActivityManager.RecentTaskInfo info = AndroidTaskUtils.getTaskInfoFromTask(task);
             if (info != null) results.add(info.id);
         }
         return results;
+    }
+
+    private void checkInvalidTaskNotInAllTasks(List<AppTask> allTasks, int removedTaskId) {
+        if (!BuildConfig.ENABLE_ASSERTS || VERSION.SDK_INT < VERSION_CODES.Q) return;
+
+        for (AppTask task : allTasks) {
+            ActivityManager.RecentTaskInfo info = AndroidTaskUtils.getTaskInfoFromTask(task);
+            if (info != null && (info.id == removedTaskId || info.taskId == removedTaskId)) {
+                String message =
+                        "Removed instance data for Task still available in all app tasks. " + info;
+                Log.i(TAG_MULTI_INSTANCE, message);
+                if (info != null && info.isRunning) {
+                    String crashMessage =
+                            "This is not a crash. Removed instance data for running Task still"
+                                    + " available in all app tasks. "
+                                    + info;
+                    ChromePureJavaExceptionReporter.reportJavaException(
+                            new Throwable(crashMessage));
+                }
+                break;
+            }
+        }
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -789,7 +831,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
         if (mTabModelObserver != null) mTabModelObserver.destroy();
         // This handles a case where an instance is deleted within Chrome but not through
         // Window manager UI, and the task is removed by system. See https://crbug.com/1241719.
-        removeInvalidInstanceData();
+        removeInvalidInstanceData(/* cleanupApplicationStatus= */ false);
         if (mInstanceId != INVALID_INSTANCE_ID) {
             ApplicationStatus.unregisterActivityStateListener(this);
         }

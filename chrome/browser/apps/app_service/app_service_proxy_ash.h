@@ -411,6 +411,9 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   // AppService stops the running app and applies the paused app icon effect.
   void OnPauseDialogClosed(apps::AppType app_type, const std::string& app_id);
 
+  bool ShouldExcludeBrowserTabApps(bool exclude_browser_tab_apps,
+                                   WindowMode window_mode) override;
+
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
   void OnAppRegistryCacheWillBeDestroyed(
@@ -450,6 +453,9 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                                     WindowInfoPtr window_info,
                                     LaunchCallback callback,
                                     bool is_allowed);
+
+  // Launches apps saved in `launch_requests_` for `app_type`.
+  void LaunchFromPendingRequests(AppType app_type);
 
   bool ShouldReadIcons(AppType app_type) override;
 
@@ -550,7 +556,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
 
   std::unique_ptr<apps::AppStorage> app_storage_;
 
-  raw_ptr<SubscriberCrosapi, ExperimentalAsh> crosapi_subscriber_ = nullptr;
+  raw_ptr<SubscriberCrosapi> crosapi_subscriber_ = nullptr;
 
   std::unique_ptr<PublisherHost> publisher_host_;
 

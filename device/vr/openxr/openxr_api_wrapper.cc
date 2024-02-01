@@ -7,9 +7,11 @@
 #include <stdint.h>
 #include <algorithm>
 #include <array>
+#include <cmath>
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -172,7 +174,7 @@ OpenXrApiWrapper::~OpenXrApiWrapper() {
 void OpenXrApiWrapper::Reset() {
   SetXrSessionState(XR_SESSION_STATE_UNKNOWN);
   anchor_manager_.reset();
-  unbounded_space_type_ = XR_REFERENCE_SPACE_TYPE_MAX_ENUM;
+  unbounded_space_provider_.reset();
   unbounded_space_ = XR_NULL_HANDLE;
   local_space_ = XR_NULL_HANDLE;
   stage_space_ = XR_NULL_HANDLE;
@@ -295,6 +297,11 @@ bool OpenXrApiWrapper::HasColorSwapChain() const {
 }
 
 bool OpenXrApiWrapper::HasSpace(XrReferenceSpaceType type) const {
+  if (unbounded_space_provider_ &&
+      unbounded_space_provider_->GetType() == type) {
+    return unbounded_space_ != XR_NULL_HANDLE;
+  }
+
   switch (type) {
     case XR_REFERENCE_SPACE_TYPE_LOCAL:
       return local_space_ != XR_NULL_HANDLE;
@@ -302,8 +309,6 @@ bool OpenXrApiWrapper::HasSpace(XrReferenceSpaceType type) const {
       return view_space_ != XR_NULL_HANDLE;
     case XR_REFERENCE_SPACE_TYPE_STAGE:
       return stage_space_ != XR_NULL_HANDLE;
-    case XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT:
-      return unbounded_space_ != XR_NULL_HANDLE;
     default:
       NOTREACHED();
       return false;
@@ -512,10 +517,10 @@ XrResult OpenXrApiWrapper::InitSession(
   CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
   UpdateStageBounds();
 
-  if (extension_helper.ExtensionEnumeration()->ExtensionSupported(
-          XR_MSFT_UNBOUNDED_REFERENCE_SPACE_EXTENSION_NAME)) {
+  unbounded_space_provider_ = extension_helper.CreateUnboundedSpaceProvider();
+  if (unbounded_space_provider_) {
     RETURN_IF_XR_FAILED(
-        CreateSpace(XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT, &unbounded_space_));
+        unbounded_space_provider_->CreateSpace(session_, &unbounded_space_));
   }
 
   EnsureEventPolling();
@@ -583,9 +588,8 @@ bool OpenXrApiWrapper::RecomputeSwapchainSizeAndViewports() {
   uint32_t total_width = 0;
   uint32_t total_height = 0;
   for (const auto& view_properties : primary_view_config_.Properties()) {
-    total_width += view_properties.recommendedImageRectWidth;
-    total_height =
-        std::max(total_height, view_properties.recommendedImageRectHeight);
+    total_width += view_properties.Width();
+    total_height = std::max(total_height, view_properties.Height());
   }
   primary_view_config_.SetViewport(0, 0, total_width, total_height);
 
@@ -597,9 +601,8 @@ bool OpenXrApiWrapper::RecomputeSwapchainSizeAndViewports() {
         uint32_t view_width = 0;
         uint32_t view_height = 0;
         for (const auto& view_properties : view_config.Properties()) {
-          view_width += view_properties.recommendedImageRectWidth;
-          view_height =
-              std::max(view_height, view_properties.recommendedImageRectHeight);
+          view_width += view_properties.Width();
+          view_height = std::max(view_height, view_properties.Height());
         }
         view_config.SetViewport(total_width, 0, view_width, view_height);
         total_width += view_width;
@@ -993,10 +996,9 @@ mojom::XRViewPtr OpenXrApiWrapper::CreateView(
   view->field_of_view->left_degrees = gfx::RadToDeg(-xr_view.fov.angleLeft);
   view->field_of_view->right_degrees = gfx::RadToDeg(xr_view.fov.angleRight);
 
-  view->viewport = gfx::Rect(
-      x_offset, 0,
-      view_config.Properties()[view_index].recommendedImageRectWidth,
-      view_config.Properties()[view_index].recommendedImageRectHeight);
+  view->viewport =
+      gfx::Rect(x_offset, 0, view_config.Properties()[view_index].Width(),
+                view_config.Properties()[view_index].Height());
 
   view->is_first_person_observer =
       view_config.Type() ==
@@ -1017,7 +1019,7 @@ std::vector<mojom::XRViewPtr> OpenXrApiWrapper::GetViews() const {
   for (size_t i = 0; i < primary_view_config_.Views().size(); i++) {
     views.emplace_back(
         CreateView(primary_view_config_, i, GetEyeFromIndex(i), x_offset));
-    x_offset += primary_view_config_.Properties()[i].recommendedImageRectWidth;
+    x_offset += primary_view_config_.Properties()[i].Width();
   }
 
   if (base::Contains(enabled_features_,
@@ -1029,7 +1031,7 @@ std::vector<mojom::XRViewPtr> OpenXrApiWrapper::GetViews() const {
         for (size_t i = 0; i < view_config.Views().size(); i++) {
           views.emplace_back(
               CreateView(view_config, i, mojom::XREye::kNone, x_offset));
-          x_offset += view_config.Properties()[i].recommendedImageRectWidth;
+          x_offset += view_config.Properties()[i].Width();
         }
       }
     }
@@ -1041,7 +1043,7 @@ std::vector<mojom::XRViewPtr> OpenXrApiWrapper::GetViews() const {
 std::vector<mojom::XRViewPtr> OpenXrApiWrapper::GetDefaultViews() const {
   DCHECK(IsInitialized());
 
-  std::vector<XrViewConfigurationView> view_properties =
+  const std::vector<OpenXrViewProperties>& view_properties =
       primary_view_config_.Properties();
   CHECK_EQ(view_properties.size(), kNumPrimaryViews);
 
@@ -1053,12 +1055,11 @@ std::vector<mojom::XRViewPtr> OpenXrApiWrapper::GetDefaultViews() const {
     mojom::XRView* view = views[i].get();
 
     view->eye = GetEyeFromIndex(i);
-    view->viewport =
-        gfx::Rect(x_offset, 0, view_properties[i].recommendedImageRectWidth,
-                  view_properties[i].recommendedImageRectHeight);
+    view->viewport = gfx::Rect(x_offset, 0, view_properties[i].Width(),
+                               view_properties[i].Height());
     view->field_of_view = mojom::VRFieldOfView::New(45.0f, 45.0f, 45.0f, 45.0f);
 
-    x_offset += view_properties[i].recommendedImageRectWidth;
+    x_offset += view_properties[i].Width();
   }
 
   return views;
@@ -1201,12 +1202,17 @@ XrResult OpenXrApiWrapper::ProcessEvents() {
           reinterpret_cast<XrEventDataReferenceSpaceChangePending*>(
               &event_data);
       DCHECK(reference_space_change_pending->session == session_);
-      // TODO(crbug.com/1015049)
+      // TODO(https://crbug.com/1015049)
       // Currently WMR only throw reference space change event for stage.
       // Other runtimes may decide to do it differently.
       if (reference_space_change_pending->referenceSpaceType ==
           XR_REFERENCE_SPACE_TYPE_STAGE) {
         UpdateStageBounds();
+      } else if (unbounded_space_provider_ &&
+                 reference_space_change_pending->referenceSpaceType ==
+                     unbounded_space_provider_->GetType()) {
+        // TODO(https://crbug.com/1015049): Properly handle unbounded reference
+        // space change events.
       }
     } else if (event_data.type ==
                XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED) {
@@ -1246,10 +1252,10 @@ uint32_t OpenXrApiWrapper::GetRecommendedSwapchainSampleCount() const {
 
   return base::ranges::min_element(
              primary_view_config_.Properties(), {},
-             [](const XrViewConfigurationView& view) {
-               return view.recommendedSwapchainSampleCount;
+             [](const OpenXrViewProperties& view) {
+               return view.RecommendedSwapchainSampleCount();
              })
-      ->recommendedSwapchainSampleCount;
+      ->RecommendedSwapchainSampleCount();
 }
 
 bool OpenXrApiWrapper::CanEnableAntiAliasing() const {
@@ -1309,6 +1315,20 @@ bool OpenXrApiWrapper::GetStageParameters(
       local_from_stage_location.pose.position.z;
 
   local_from_stage = gfx::Transform::Compose(local_from_stage_decomp);
+
+  // TODO(https://crbug.com/1522245): Check for crash dumps.
+  std::array<float, 16> transform_data;
+  local_from_stage.GetColMajorF(transform_data.data());
+  bool contains_nan = base::ranges::any_of(
+      transform_data, [](const float f) { return std::isnan(f); });
+
+  if (contains_nan) {
+    // It's unclear if this could be tripping on every frame, but reporting once
+    // per day per user (the default throttling) should be sufficient for future
+    // investigation.
+    base::debug::DumpWithoutCrashing();
+    return false;
+  }
   return true;
 }
 

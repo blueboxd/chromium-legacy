@@ -45,6 +45,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/data_sharing/data_sharing_service_factory.h"
 #include "chrome/browser/device_api/managed_configuration_api_factory.h"
 #include "chrome/browser/device_reauth/chrome_device_authenticator_factory.h"
 #include "chrome/browser/dips/dips_cleanup_service_factory.h"
@@ -140,7 +141,6 @@
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/reading_list/reading_list_model_factory.h"
 #include "chrome/browser/reduce_accept_language/reduce_accept_language_factory.h"
-#include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service_factory.h"
 #include "chrome/browser/safe_browsing/chrome_ping_manager_factory.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
@@ -190,7 +190,7 @@
 #include "chrome/browser/ui/media_router/cast_notification_controller_lacros_factory.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
-#include "chrome/browser/ui/toolbar/pinned_toolbar_actions_model_factory.h"
+#include "chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
@@ -201,6 +201,7 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_reader_registry_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/browser/webauthn/enclave_manager_factory.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_auto_reauthn_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_permission_context_factory.h"
@@ -211,11 +212,12 @@
 #include "components/captive_portal/core/buildflags.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/proto/persisted_state_db_content.pb.h"
+#include "components/enterprise/buildflags/buildflags.h"
 #include "components/enterprise/content/clipboard_restriction_service.h"
 #include "components/media_effects/media_effects_service_factory.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_controller_emitter.h"
-#include "components/optimization_guide/core/optimization_guide_switches.h"
+#include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/content/browser/password_requirements_service_factory.h"
@@ -226,7 +228,6 @@
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
-#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -244,9 +245,10 @@
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/thin_webview/chrome_thin_webview_initializer.h"
 #include "chrome/browser/android/webapk/webapk_install_service_factory.h"
+#include "chrome/browser/android/webapk/webapk_sync_service_factory.h"
 #include "chrome/browser/commerce/merchant_viewer/merchant_viewer_data_manager_factory.h"
-#include "chrome/browser/content_creation/notes/internal/note_service_factory.h"
 #include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher_factory.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #include "chrome/browser/search_resumption/start_suggest_service_factory.h"
 #include "chrome/browser/signin/signin_manager_android_factory.h"
@@ -269,8 +271,8 @@
 #include "chrome/browser/new_tab_page/modules/recipes/recipes_service_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
 #include "chrome/browser/profile_resetter/reset_report_uploader_factory.h"
-#include "chrome/browser/profiles/profile_theme_update_service_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service_factory.h"
 #include "chrome/browser/storage/storage_notification_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
@@ -292,9 +294,8 @@
 #include "chrome/browser/ash/file_manager/cloud_upload_prefs_watcher.h"
 #include "chrome/browser/ash/input_method/editor_mediator_factory.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_notification_manager_factory.h"
-#include "chrome/browser/ash/system_extensions/api/window_management/cros_window_management_context_factory.h"
-#include "chrome/browser/ash/system_extensions/system_extensions_provider_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
+#include "chrome/browser/push_notification/push_notification_service_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
@@ -307,10 +308,14 @@
 #include "chrome/browser/chromeos/enterprise/cloud_storage/one_drive_pref_observer.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_download_observer_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
-#include "chrome/browser/policy/messaging_layer/util/manual_test_heartbeat_event_factory.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/policy/networking/user_network_configuration_updater_factory.h"
+#include "chrome/browser/smart_card/smart_card_permission_context_factory.h"
 #include "chromeos/constants/chromeos_features.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+#include "chrome/browser/policy/messaging_layer/util/manual_test_heartbeat_event_factory.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -380,10 +385,12 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/chromeos/extensions/login_screen/login/cleanup/cleanup_manager_lacros_factory.h"
+#include "chrome/browser/chromeos/kcer/kcer_factory_lacros.h"
 #include "chrome/browser/chromeos/reporting/metric_reporting_manager_lacros_factory.h"
 #include "chrome/browser/chromeos/reporting/metric_reporting_manager_lacros_shutdown_notifier_factory.h"
 #include "chrome/browser/lacros/account_manager/profile_account_manager_factory.h"
 #include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
+#include "chrome/browser/lacros/file_change_service_bridge_factory.h"
 #include "chrome/browser/lacros/remote_apps/remote_apps_proxy_lacros_factory.h"
 #include "chrome/browser/speech/tts_client_factory_lacros.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
@@ -417,8 +424,8 @@
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
 #include "chrome/browser/enterprise/connectors/analysis/local_binary_upload_service_factory.h"
 #include "chrome/browser/enterprise/signals/signals_aggregator_factory.h"
+#include "chrome/browser/enterprise/signin/profile_token_web_signin_interceptor_factory.h"
 #include "chrome/browser/policy/cloud/profile_token_policy_web_signin_service_factory.h"
-#include "chrome/browser/signin/profile_token_web_signin_interceptor_factory.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -430,7 +437,7 @@
 #include "chrome/browser/plugins/plugin_info_host_impl.h"
 #endif
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) || !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/profiles/profile_statistics_factory.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
@@ -501,6 +508,10 @@
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 #endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+
+#if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+#include "chrome/browser/enterprise/data_controls/rules_service.h"
+#endif
 
 namespace chrome {
 
@@ -590,14 +601,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   if (chromeos::features::IsOrcaEnabled()) {
     ash::input_method::EditorMediatorFactory::GetInstance();
   }
-  // The 2 factories below could not be added to the ash list as they need to
-  // declare dependencies.
-  // TODO: fix the dependency with
-  // 'chrome/browser/ash/browser_context_keyed_service_factories.cc'
-  if (base::FeatureList::IsEnabled(ash::features::kSystemExtensions)) {
-    ash::CrosWindowManagementContextFactory::GetInstance();
-    ash::SystemExtensionsProviderFactory::GetInstance();
-  }
 #endif
   AutocompleteClassifierFactory::GetInstance();
   AutocompleteControllerEmitter::EnsureFactoryBuilt();
@@ -671,9 +674,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   CertDbInitializerFactory::GetInstance();
 #endif
-#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
-  CertificateReportingServiceFactory::GetInstance();
-#endif
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   ChildAccountServiceFactory::GetInstance();
 #endif
@@ -725,9 +725,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   commerce::ShoppingServiceFactory::GetInstance();
   ConsentAuditorFactory::GetInstance();
-#if BUILDFLAG(IS_ANDROID)
-  content_creation::NoteServiceFactory::GetInstance();
-#endif
   ContentIndexProviderFactory::GetInstance();
   CookieControlsServiceFactory::GetInstance();
   CookieSettingsFactory::GetInstance();
@@ -740,6 +737,10 @@ void ChromeBrowserMainExtraPartsProfiles::
     CrosAppsKeyEventHandlerFactory::GetInstance();
   }
 #endif
+#if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+  data_controls::RulesServiceFactory::GetInstance();
+#endif
+  data_sharing::DataSharingServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   DevToolsAndroidBridge::Factory::GetInstance();
 #endif
@@ -758,6 +759,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   DownloadCoreServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   DriveServiceFactory::GetInstance();
+  EnclaveManagerFactory::GetInstance();
 #endif
   enterprise::ProfileIdServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -811,6 +813,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   feedback::FeedbackUploaderFactoryChrome::GetInstance();
 #endif
   FieldInfoManagerFactory::GetInstance();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  FileChangeServiceBridgeFactory::GetInstance();
+#endif
   FileSystemAccessPermissionContextFactory::GetInstance();
   FindBarStateFactory::GetInstance();
   first_party_sets::FirstPartySetsPolicyServiceFactory::GetInstance();
@@ -849,6 +854,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   JumpListFactory::GetInstance();
 #endif
   KAnonymityServiceFactory::GetInstance();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  kcer::KcerFactoryLacros::EnsureFactoryBuilt();
+#endif
   LanguageModelManagerFactory::GetInstance();
 #if BUILDFLAG(IS_ANDROID)
   LevelDBPersistedTabDataStorageAndroidFactory::GetInstance();
@@ -913,6 +921,13 @@ void ChromeBrowserMainExtraPartsProfiles::
   PreloadingModelKeyedServiceFactory::GetInstance();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   NearbySharingServiceFactory::GetInstance();
+  if (base::FeatureList::IsEnabled(ash::features::kNearbyPresence)) {
+    // PushNotificationService is only enabled for ash for MVP. As more features
+    // are added to use the PushNotificationService, this can be reevaluated and
+    // expanded to enable building the PushNotificationService for all Chrome
+    // Desktop builds.
+    push_notification::PushNotificationServiceFactory::GetInstance();
+  }
 #endif
   NotificationDisplayServiceFactory::GetInstance();
   NotificationMetricsLoggerFactory::GetInstance();
@@ -950,7 +965,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   }
 #endif
   OpenerHeuristicServiceFactory::GetInstance();
-  if (optimization_guide::switches::ShouldValidateModel()) {
+  if (optimization_guide::ShouldStartModelValidator()) {
     optimization_guide::ModelValidatorKeyedServiceFactory::GetInstance();
   }
   OptimizationGuideKeyedServiceFactory::GetInstance();
@@ -982,7 +997,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !BUILDFLAG(IS_ANDROID)
   PhotosServiceFactory::GetInstance();
   PinnedTabServiceFactory::GetInstance();
-  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+  if (features::IsSidePanelPinningEnabled()) {
     PinnedToolbarActionsModelFactory::GetInstance();
   }
 #endif
@@ -1044,9 +1059,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
   ProfileStatisticsFactory::GetInstance();
 #endif
-#if !BUILDFLAG(IS_ANDROID)
-  ProfileThemeUpdateServiceFactory::GetInstance();
-#endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   ProfileTokenWebSigninInterceptorFactory::GetInstance();
 #endif
@@ -1065,7 +1077,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   ReduceAcceptLanguageFactory::GetInstance();
   RendererUpdaterFactory::GetInstance();
-#if BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
   reporting::ManualTestHeartbeatEventFactory::GetInstance();
 #endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -1108,11 +1120,12 @@ void ChromeBrowserMainExtraPartsProfiles::
   }
 #endif
   SCTReportingServiceFactory::GetInstance();
+  search_engines::SearchEngineChoiceServiceFactory::GetInstance();
 #if BUILDFLAG(IS_ANDROID)
   search_resumption_module::StartSuggestServiceFactory::GetInstance();
 #endif
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
-  SearchEngineChoiceServiceFactory::GetInstance();
+#if !BUILDFLAG(IS_ANDROID)
+  SearchEngineChoiceDialogServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(IS_ANDROID)
   SearchPermissionsService::Factory::GetInstance();
@@ -1159,6 +1172,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   if (site_engagement::SiteEngagementService::IsEnabled()) {
     site_engagement::SiteEngagementServiceFactory::GetInstance();
   }
+#if BUILDFLAG(IS_CHROMEOS)
+  SmartCardPermissionContextFactory::GetInstance();
+#endif
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   SpeechRecognitionClientBrowserInterfaceFactory::EnsureFactoryBuilt();
 #endif
@@ -1202,7 +1218,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   TopSitesFactory::GetInstance();
   tpcd::experiment::EligibilityServiceFactory::GetInstance();
   tpcd::metadata::UpdaterServiceFactory::GetInstance();
-  tpcd::support::TpcdSupportServiceFactory::GetInstance();
+  tpcd::trial::TpcdTrialServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   TrackingProtectionNoticeFactory::GetInstance();
 #endif
@@ -1245,6 +1261,10 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if BUILDFLAG(IS_ANDROID)
   WebApkInstallServiceFactory::GetInstance();
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kWebApkBackupAndRestoreBackend)) {
+    webapk::WebApkSyncServiceFactory::GetInstance();
+  }
 #endif
   WebDataServiceFactory::GetInstance();
   webrtc_event_logging::WebRtcEventLogManagerKeyedServiceFactory::GetInstance();

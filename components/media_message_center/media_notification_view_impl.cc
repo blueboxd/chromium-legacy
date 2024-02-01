@@ -5,6 +5,7 @@
 #include "components/media_message_center/media_notification_view_impl.h"
 
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/media_message_center/media_notification_background_ash_impl.h"
 #include "components/media_message_center/media_notification_background_impl.h"
@@ -100,7 +101,7 @@ MediaNotificationViewImpl::MediaNotificationViewImpl(
     const std::u16string& default_app_name,
     int notification_width,
     bool should_show_icon,
-    absl::optional<NotificationTheme> theme)
+    std::optional<NotificationTheme> theme)
     : container_(container),
       item_(std::move(item)),
       default_app_name_(default_app_name),
@@ -297,7 +298,7 @@ void MediaNotificationViewImpl::SetExpanded(bool expanded) {
   UpdateViewForExpandedState();
 
   PreferredSizeChanged();
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 
@@ -320,7 +321,7 @@ void MediaNotificationViewImpl::SetForcedExpandedState(
     if (!forced_expanded_state_.has_value()) {
       return;
     }
-    forced_expanded_state_ = absl::nullopt;
+    forced_expanded_state_ = std::nullopt;
   }
 
   if (header_row_) {
@@ -368,7 +369,7 @@ void MediaNotificationViewImpl::UpdateWithMediaSessionInfo(
   container_->OnMediaSessionInfoChanged(session_info);
 
   PreferredSizeChanged();
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 
@@ -410,7 +411,7 @@ void MediaNotificationViewImpl::UpdateWithMediaMetadata(
 
   MaybeShowOrHideArtistLabel();
   PreferredSizeChanged();
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 
@@ -424,7 +425,7 @@ void MediaNotificationViewImpl::UpdateWithMediaActions(
   UpdateViewForExpandedState();
 
   PreferredSizeChanged();
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 
@@ -443,7 +444,7 @@ void MediaNotificationViewImpl::UpdateWithMediaArtwork(
 
   MaybeShowOrHideArtistLabel();
   PreferredSizeChanged();
-  Layout();
+  DeprecatedLayoutImmediately();
   SchedulePaint();
 }
 
@@ -497,7 +498,7 @@ void MediaNotificationViewImpl::UpdateActionButtonsVisibility() {
       GetTopVisibleActions(enabled_actions_, ignored_actions,
                            GetMaxNumActions(GetActuallyExpanded()));
 
-  for (auto* view : GetButtons()) {
+  for (views::View* view : GetButtons()) {
     views::Button* action_button = views::Button::AsButton(view);
     bool should_show =
         base::Contains(visible_actions, GetActionFromButtonTag(*action_button));
@@ -571,7 +572,7 @@ void MediaNotificationViewImpl::UpdateViewForExpandedState() {
         ->SetFlexForView(title_artist_row_, 1);
   }
 
-  main_row_->Layout();
+  main_row_->DeprecatedLayoutImmediately();
 
   if (GetMediaNotificationBackground()->UpdateArtworkMaxWidthPct(
           expanded ? kMediaImageMaxWidthExpandedPct : kMediaImageMaxWidthPct)) {
@@ -785,7 +786,8 @@ void MediaNotificationViewImpl::MaybeShowOrHideArtistLabel() {
   artist_label_->SetVisible(!artist_label_->GetText().empty() || has_artwork_);
 }
 
-std::vector<views::View*> MediaNotificationViewImpl::GetButtons() {
+std::vector<raw_ptr<views::View, VectorExperimental>>
+MediaNotificationViewImpl::GetButtons() {
   auto buttons = button_row_->children();
   buttons.insert(buttons.cbegin(),
                  playback_button_container_->children().cbegin(),

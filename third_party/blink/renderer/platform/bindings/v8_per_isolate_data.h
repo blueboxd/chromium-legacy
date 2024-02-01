@@ -123,7 +123,6 @@ class PLATFORM_EXPORT V8PerIsolateData final {
 
   static void WillBeDestroyed(v8::Isolate*);
   static void Destroy(v8::Isolate*);
-  static v8::Isolate* MainThreadIsolate();
 
   static void EnableIdleTasks(v8::Isolate*,
                               std::unique_ptr<gin::V8IdleTaskRunner>);
@@ -262,7 +261,6 @@ class PLATFORM_EXPORT V8PerIsolateData final {
 
   bool is_handling_recursion_level_error_ = false;
 
-  Vector<base::OnceClosure> end_of_scope_tasks_;
   std::unique_ptr<ThreadDebugger> thread_debugger_;
   Persistent<GarbageCollectedData> profiler_group_;
   Persistent<GarbageCollectedData> canvas_resource_tracker_;

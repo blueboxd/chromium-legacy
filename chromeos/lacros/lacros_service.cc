@@ -31,12 +31,14 @@
 #include "chromeos/crosapi/mojom/browser_version.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "chromeos/crosapi/mojom/cert_provisioning.mojom.h"
+#include "chromeos/crosapi/mojom/chaps_service.mojom.h"
 #include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "chromeos/crosapi/mojom/content_protection.mojom.h"
 #include "chromeos/crosapi/mojom/cros_display_config.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/debug_interface.mojom.h"
 #include "chromeos/crosapi/mojom/desk.mojom.h"
 #include "chromeos/crosapi/mojom/desk_profiles.mojom.h"
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
@@ -58,6 +60,7 @@
 #include "chromeos/crosapi/mojom/eye_dropper.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/field_trial.mojom.h"
+#include "chromeos/crosapi/mojom/file_change_service_bridge.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_access_cloud_identifier.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
@@ -72,6 +75,7 @@
 #include "chromeos/crosapi/mojom/kerberos_in_browser.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/kiosk_session_service.mojom.h"
+#include "chromeos/crosapi/mojom/lacros_shelf_item_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/launcher_search.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/login.mojom.h"
@@ -86,6 +90,8 @@
 #include "chromeos/crosapi/mojom/network_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
+#include "chromeos/crosapi/mojom/nonclosable_app_toast_service.mojom.h"
+#include "chromeos/crosapi/mojom/one_drive_notification_service.mojom.h"
 #include "chromeos/crosapi/mojom/parent_access.mojom.h"
 #include "chromeos/crosapi/mojom/policy_service.mojom.h"
 #include "chromeos/crosapi/mojom/power.mojom.h"
@@ -104,6 +110,7 @@
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
+#include "chromeos/crosapi/mojom/telemetry_management_service.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/crosapi/mojom/timezone.mojom.h"
 #include "chromeos/crosapi/mojom/trusted_vault.mojom.h"
@@ -298,6 +305,8 @@ LacrosService::LacrosService()
   ConstructRemote<
       crosapi::mojom::CertProvisioning, &Crosapi::BindCertProvisioning,
       Crosapi::MethodMinVersions::kBindCertProvisioningMinVersion>();
+  ConstructRemote<crosapi::mojom::ChapsService, &Crosapi::BindChapsService,
+                  Crosapi::MethodMinVersions::kBindChapsServiceMinVersion>();
   ConstructRemote<crosapi::mojom::Clipboard, &Crosapi::BindClipboard,
                   Crosapi::MethodMinVersions::kBindClipboardMinVersion>();
   ConstructRemote<
@@ -310,6 +319,10 @@ LacrosService::LacrosService()
       crosapi::mojom::CrosDisplayConfigController,
       &Crosapi::BindCrosDisplayConfigController,
       Crosapi::MethodMinVersions::kBindCrosDisplayConfigControllerMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::DebugInterfaceRegisterer,
+      &Crosapi::BindDebugInterfaceRegisterer,
+      Crosapi::MethodMinVersions::kBindDebugInterfaceRegistererMinVersion>();
   ConstructRemote<crosapi::mojom::Desk, &Crosapi::BindDesk,
                   Crosapi::MethodMinVersions::kBindDeskMinVersion>();
   ConstructRemote<
@@ -375,6 +388,10 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::Feedback,
                   &crosapi::mojom::Crosapi::BindFeedback,
                   Crosapi::MethodMinVersions::kBindFeedbackMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::FileChangeServiceBridge,
+      &crosapi::mojom::Crosapi::BindFileChangeServiceBridge,
+      Crosapi::MethodMinVersions::kBindFileChangeServiceBridgeMinVersion>();
   ConstructRemote<crosapi::mojom::FileManager,
                   &crosapi::mojom::Crosapi::BindFileManager,
                   Crosapi::MethodMinVersions::kBindFileManagerMinVersion>();
@@ -441,6 +458,10 @@ LacrosService::LacrosService()
                   &Crosapi::BindDeviceLocalAccountExtensionService,
                   Crosapi::MethodMinVersions::
                       kBindDeviceLocalAccountExtensionServiceMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::LacrosShelfItemTracker,
+      &crosapi::mojom::Crosapi::BindLacrosShelfItemTracker,
+      Crosapi::MethodMinVersions::kBindLacrosShelfItemTrackerMinVersion>();
   ConstructRemote<crosapi::mojom::LocalPrinter,
                   &crosapi::mojom::Crosapi::BindLocalPrinter,
                   Crosapi::MethodMinVersions::kBindLocalPrinterMinVersion>();
@@ -487,8 +508,17 @@ LacrosService::LacrosService()
       crosapi::mojom::NetworkingPrivate, &Crosapi::BindNetworkingPrivate,
       Crosapi::MethodMinVersions::kBindNetworkingPrivateMinVersion>();
 
+  ConstructRemote<
+      crosapi::mojom::OneDriveNotificationService,
+      &crosapi::mojom::Crosapi::BindOneDriveNotificationService,
+      Crosapi::MethodMinVersions::kBindOneDriveNotificationServiceMinVersion>();
+
   ConstructRemote<crosapi::mojom::Prefs, &crosapi::mojom::Crosapi::BindPrefs,
                   Crosapi::MethodMinVersions::kBindPrefsMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::NonclosableAppToastService,
+      &crosapi::mojom::Crosapi::BindNonclosableAppToastService,
+      Crosapi::MethodMinVersions::kBindNonclosableAppToastServiceMinVersion>();
   if (BrowserParamsProxy::Get()->UseCupsForPrinting()) {
     ConstructRemote<
         crosapi::mojom::PrintingMetrics,
@@ -555,6 +585,10 @@ LacrosService::LacrosService()
       crosapi::mojom::TelemetryEventService,
       &Crosapi::BindTelemetryEventService,
       Crosapi::MethodMinVersions::kBindTelemetryEventServiceMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::TelemetryManagementService,
+      &Crosapi::BindTelemetryManagementService,
+      Crosapi::MethodMinVersions::kBindTelemetryManagementServiceMinVersion>();
   ConstructRemote<
       crosapi::mojom::TelemetryProbeService,
       &crosapi::mojom::Crosapi::BindTelemetryProbeService,

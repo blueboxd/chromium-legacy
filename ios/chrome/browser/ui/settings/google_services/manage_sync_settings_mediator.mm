@@ -11,6 +11,7 @@
 #import "base/containers/enum_set.h"
 #import "base/containers/fixed_flat_map.h"
 #import "base/i18n/message_formatter.h"
+#import "base/memory/raw_ptr.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/prefs/pref_service.h"
@@ -25,7 +26,7 @@
 #import "components/sync/service/local_data_description.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
-#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/settings/model/sync/utils/account_error_ui_info.h"
 #import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
@@ -134,19 +135,19 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   // Whether Sync State changes should be currently ignored.
   BOOL _ignoreSyncStateChanges;
   // Sync service.
-  syncer::SyncService* _syncService;
+  raw_ptr<syncer::SyncService> _syncService;
   // Observer for `IdentityManager`.
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
   // Authentication service.
-  AuthenticationService* _authenticationService;
+  raw_ptr<AuthenticationService> _authenticationService;
   // Account manager service to retrieve Chrome identities.
-  ChromeAccountManagerService* _chromeAccountManagerService;
+  raw_ptr<ChromeAccountManagerService> _chromeAccountManagerService;
   // Chrome account manager service observer bridge.
   std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
       _accountAccountManagerServiceObserver;
   // The pref service.
-  PrefService* _prefService;
+  raw_ptr<PrefService> _prefService;
   // Signed-in identity. Note: may be nil while signing out.
   id<SystemIdentity> _signedInIdentity;
 }
@@ -933,6 +934,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     case syncer::UserSelectableType::kExtensions:
     case syncer::UserSelectableType::kApps:
     case syncer::UserSelectableType::kSavedTabGroups:
+    case syncer::UserSelectableType::kSharedTabGroupData:
       NOTREACHED();
       break;
   }
@@ -1014,7 +1016,8 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
                  kNeedsTrustedVaultKeyForPasswords &&
          _syncService->GetUserActionableError() !=
              syncer::SyncService::UserActionableError::
-                 kNeedsTrustedVaultKeyForEverything;
+                 kNeedsTrustedVaultKeyForEverything &&
+         _syncService->GetUserSettings()->IsCustomPassphraseAllowed();
 }
 
 - (NSString*)overrideViewControllerTitle {
@@ -1379,6 +1382,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   item.text = l10n_util::GetNSString(buttonLabelID);
   item.textColor = [UIColor colorNamed:kBlueColor];
   item.accessibilityTraits = UIAccessibilityTraitButton;
+  item.accessibilityIdentifier = kSyncErrorButtonIdentifier;
   return item;
 }
 

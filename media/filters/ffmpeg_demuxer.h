@@ -229,10 +229,11 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   void Seek(base::TimeDelta time, PipelineStatusCallback cb) override;
   bool IsSeekable() const override;
   base::Time GetTimelineOffset() const override;
-  std::vector<DemuxerStream*> GetAllStreams() override;
+  std::vector<raw_ptr<DemuxerStream, VectorExperimental>> GetAllStreams()
+      override;
   base::TimeDelta GetStartTime() const override;
   int64_t GetMemoryUsage() const override;
-  absl::optional<container_names::MediaContainerName> GetContainerForMetrics()
+  std::optional<container_names::MediaContainerName> GetContainerForMetrics()
       const override;
 
   // Calls |encrypted_media_init_data_cb_| with the initialization data
@@ -276,7 +277,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // To allow tests access to privates.
   friend class FFmpegDemuxerTest;
 
-  // Helper for vide and audio track changing.
+  // Helper for video and audio track changing. For the `track_type`, enables
+  // tracks associated with `track_ids` and disables the rest. Fires
+  // `change_completed_cb` when the operation is completed.
   void FindAndEnableProperTracks(const std::vector<MediaTrack::Id>& track_ids,
                                  base::TimeDelta curr_time,
                                  DemuxerStream::Type track_type,

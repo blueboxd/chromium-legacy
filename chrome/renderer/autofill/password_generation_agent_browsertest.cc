@@ -84,9 +84,6 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
  private:
   // mojom::AutofillDriver:
-  void SetFormToBeProbablySubmitted(
-      const absl::optional<FormData>& form) override {}
-
   void FormsSeen(const std::vector<FormData>& updated_forms,
                  const std::vector<FormRendererId>& removed_forms) override {
     forms_seen_run_loop_->Quit();
@@ -279,7 +276,7 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
 
   // Callback for TriggeredGeneratePassword.
   MOCK_METHOD1(TriggeredGeneratePasswordReply,
-               void(const absl::optional<
+               void(const std::optional<
                     autofill::password_generation::PasswordGenerationUIData>&));
 
   FakeContentAutofillDriver fake_autofill_driver_;
@@ -420,10 +417,10 @@ void PasswordGenerationAgentTest::SelectGenerationFallbackAndExpect(
     bool available) {
   if (available) {
     EXPECT_CALL(*this,
-                TriggeredGeneratePasswordReply(testing::Ne(absl::nullopt)));
+                TriggeredGeneratePasswordReply(testing::Ne(std::nullopt)));
   } else {
     EXPECT_CALL(*this,
-                TriggeredGeneratePasswordReply(testing::Eq(absl::nullopt)));
+                TriggeredGeneratePasswordReply(testing::Eq(std::nullopt)));
   }
   password_generation_->TriggeredGeneratePassword(base::BindOnce(
       &PasswordGenerationAgentTest::TriggeredGeneratePasswordReply,

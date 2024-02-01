@@ -206,6 +206,7 @@ bool IsAudioCodecProprietary(AudioCodec codec) {
       return true;
 
     case AudioCodec::kFLAC:
+    case AudioCodec::kIAMF:
     case AudioCodec::kMP3:
     case AudioCodec::kOpus:
     case AudioCodec::kVorbis:
@@ -362,8 +363,12 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
     case VideoCodec::kTheora:
       return IsBuiltInVideoCodec(type.codec);
     case VideoCodec::kH264:
-    case VideoCodec::kVP8:
       return true;
+    case VideoCodec::kVP8:
+      return IsBuiltInVideoCodec(type.codec)
+                 ? true
+                 : GetSupplementalProfileCache()->IsProfileSupported(
+                       type.profile);
     case VideoCodec::kAV1:
       return IsAV1Supported(type);
     case VideoCodec::kVP9:
@@ -408,24 +413,18 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
     case AudioCodec::kGSM_MS:
     case AudioCodec::kALAC:
     case AudioCodec::kMpegHAudio:
-    case AudioCodec::kAC4:
+    case AudioCodec::kIAMF:
     case AudioCodec::kUnknown:
       return false;
     case AudioCodec::kDTS:
     case AudioCodec::kDTSXP2:
     case AudioCodec::kDTSE:
-#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
-      return true;
-#else
-      return false;
-#endif
+      return BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO);
     case AudioCodec::kAC3:
     case AudioCodec::kEAC3:
-#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
-      return true;
-#else
-      return false;
-#endif
+      return BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO);
+    case AudioCodec::kAC4:
+      return BUILDFLAG(ENABLE_PLATFORM_AC4_AUDIO);
   }
 }
 
@@ -433,8 +432,10 @@ bool IsBuiltInVideoCodec(VideoCodec codec) {
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   if (codec == VideoCodec::kTheora)
     return base::FeatureList::IsEnabled(kTheoraVideoCodec);
-  if (codec == VideoCodec::kVP8)
+  if (codec == VideoCodec::kVP8 &&
+      base::FeatureList::IsEnabled(kFFmpegDecodeOpaqueVP8)) {
     return true;
+  }
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (codec == VideoCodec::kH264)
     return true;

@@ -160,7 +160,7 @@ bool IsRangeResponseWithMiddleOfResource(
   return first_byte_position > 0;
 }
 
-bool IsOpaqueResponse(const absl::optional<url::Origin>& request_initiator,
+bool IsOpaqueResponse(const std::optional<url::Origin>& request_initiator,
                       mojom::RequestMode request_mode,
                       const mojom::URLResponseHead& response) {
   // ORB only applies to "no-cors" requests.
@@ -206,16 +206,13 @@ OpaqueResponseBlockingAnalyzer::OpaqueResponseBlockingAnalyzer(
     : per_factory_state_(&state) {}
 
 OpaqueResponseBlockingAnalyzer::~OpaqueResponseBlockingAnalyzer() {
-  base::UmaHistogramEnumeration("SiteIsolation.ORB.BlockingReason",
-                                blocking_decision_reason_);
-
   // TODO(https://crbug.com/1178928): Add UMA tracking the size of ORB state
   // from `per_factory_state_`.
 }
 
 Decision OpaqueResponseBlockingAnalyzer::Init(
     const GURL& request_url,
-    const absl::optional<url::Origin>& request_initiator,
+    const std::optional<url::Origin>& request_initiator,
     mojom::RequestMode request_mode,
     mojom::RequestDestination request_destination_from_renderer,
     const network::mojom::URLResponseHead& response) {
@@ -479,15 +476,6 @@ OpaqueResponseBlockingAnalyzer::ShouldHandleBlockedResponseAs() const {
   }
 
   return BlockedResponseHandling::kEmptyResponse;
-}
-
-void OpaqueResponseBlockingAnalyzer::ReportOrbBlockedAndCorbDidnt() const {
-  // We encountered a scenario where ORB may block more than CORB and therefore
-  // let's log some extra data that may help us understand the kind of
-  // backcompatiblity risk that this scenario represents.
-  base::UmaHistogramEnumeration(
-      "SiteIsolation.ORB.CorbVsOrb.OrbBlockedAndCorbDidnt.Reason",
-      blocking_decision_reason_);
 }
 
 void OpaqueResponseBlockingAnalyzer::StoreAllowedAudioVideoRequest(

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -40,6 +41,7 @@
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom-test-utils.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context.h"
+#include "content/browser/indexed_db/indexed_db_bucket_context_handle.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
@@ -182,7 +184,7 @@ class MockBlobStorageContext : public ::storage::mojom::BlobStorageContext {
   void WriteBlobToFile(mojo::PendingRemote<::blink::mojom::Blob> blob,
                        const base::FilePath& path,
                        bool flush_on_write,
-                       absl::optional<base::Time> last_modified,
+                       std::optional<base::Time> last_modified,
                        WriteBlobToFileCallback callback) override {
     writes_.emplace_back(std::move(blob), path);
 
@@ -2108,7 +2110,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
       indexed_db::PutInt(write_batch.get(), schema_version_key, 3).ok());
   const std::string object_store_data_key =
       ObjectStoreDataKey::Encode(database_id, object_store_id, key3_);
-  base::StringPiece leveldb_key_piece(object_store_data_key);
+  std::string_view leveldb_key_piece(object_store_data_key);
   BlobEntryKey blob_entry_key;
   ASSERT_TRUE(BlobEntryKey::FromObjectStoreDataKey(&leveldb_key_piece,
                                                    &blob_entry_key));
@@ -2118,8 +2120,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
   external_objects()[1].set_blob_number(writes[1].GetBlobNumber());
   external_objects()[2].set_blob_number(writes[2].GetBlobNumber());
   std::string v3_blob_data = EncodeV3BlobInfos(external_objects());
-  write_batch->Put(base::StringPiece(blob_entry_key.Encode()),
-                   base::StringPiece(v3_blob_data));
+  write_batch->Put(std::string_view(blob_entry_key.Encode()),
+                   std::string_view(v3_blob_data));
   ASSERT_TRUE(backing_store()->db()->Write(write_batch.get()).ok());
 
   // The migration code uses the physical files on disk, so those need to be

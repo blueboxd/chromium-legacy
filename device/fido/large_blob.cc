@@ -65,7 +65,7 @@ bool VerifyLargeBlobArrayIntegrity(base::span<const uint8_t> large_blob_array) {
   }
   const size_t trail_offset = large_blob_array.size() - kTruncatedHashBytes;
   std::array<uint8_t, crypto::kSHA256Length> large_blob_hash =
-      crypto::SHA256Hash(large_blob_array.subspan(0, trail_offset));
+      crypto::SHA256Hash(large_blob_array.first(trail_offset));
 
   base::span<const uint8_t> large_blob_trail =
       large_blob_array.subspan(trail_offset);
@@ -269,7 +269,7 @@ absl::optional<cbor::Value::ArrayValue> LargeBlobArrayReader::Materialize() {
   }
 
   base::span<const uint8_t> cbor_bytes =
-      base::make_span(bytes_.data(), bytes_.size() - kTruncatedHashBytes);
+      base::span(bytes_).first(bytes_.size() - kTruncatedHashBytes);
   absl::optional<cbor::Value> cbor = cbor::Reader::Read(cbor_bytes);
   if (!cbor || !cbor->is_array()) {
     return absl::nullopt;
@@ -302,7 +302,7 @@ LargeBlobArrayFragment LargeBlobArrayWriter::Pop(size_t length) {
 
   LargeBlobArrayFragment fragment{
       fido_parsing_utils::Materialize(
-          base::make_span(bytes_.data() + offset_, length)),
+          base::span(bytes_).subspan(offset_, length)),
       offset_};
   offset_ += length;
   return fragment;

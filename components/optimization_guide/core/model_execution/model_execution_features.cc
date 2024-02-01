@@ -25,6 +25,14 @@ BASE_FEATURE(kWallpaperSearchSettingsVisibility,
              "WallpaperSearchSettingsVisibility",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kExperimentalAIIPHPromoRampUp,
+             "ExperimentalAIIPHPromoRampUp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kModelExecutionCapabilityDisable,
+             "ModelExecutionCapabilityDisable",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::Feature* GetFeatureToUseToCheckSettingsVisibility(
     proto::ModelExecutionFeature feature) {
   switch (feature) {
@@ -34,6 +42,7 @@ const base::Feature* GetFeatureToUseToCheckSettingsVisibility(
       return &kTabOrganizationSettingsVisibility;
     case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH:
       return &kWallpaperSearchSettingsVisibility;
+    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST:
     case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED:
       NOTREACHED();
       return nullptr;
@@ -49,6 +58,10 @@ GetAllowedFeaturesForUnsignedUser() {
         static_cast<proto::ModelExecutionFeature>(i);
     if (model_execution_feature ==
         proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED) {
+      continue;
+    }
+    if (model_execution_feature ==
+        proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST) {
       continue;
     }
     const auto* feature =

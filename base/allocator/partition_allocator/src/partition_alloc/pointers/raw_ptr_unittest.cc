@@ -18,15 +18,14 @@
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr_asan_service.h"
+#include "base/metrics/histogram_base.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/memory/dangling_ptr_instrumentation.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "partition_alloc/chromeos_buildflags.h"
 #include "partition_alloc/dangling_raw_ptr_checks.h"
 #include "partition_alloc/partition_alloc-inl.h"
 #include "partition_alloc/partition_alloc.h"
@@ -36,6 +35,7 @@
 #include "partition_alloc/partition_alloc_constants.h"
 #include "partition_alloc/partition_alloc_hooks.h"
 #include "partition_alloc/partition_root.h"
+#include "partition_alloc/pointers/instance_tracer.h"
 #include "partition_alloc/pointers/raw_ptr_counting_impl_for_test.h"
 #include "partition_alloc/pointers/raw_ptr_test_support.h"
 #include "partition_alloc/pointers/raw_ref.h"
@@ -51,15 +51,23 @@
 #endif
 
 using testing::AllOf;
+using testing::Eq;
 using testing::HasSubstr;
+using testing::IsEmpty;
+using testing::Ne;
+using testing::SizeIs;
 using testing::Test;
 
+// The instance tracer has unavoidable per-instance overhead, but when disabled,
+// there should be no size difference between raw_ptr<T> and T*.
+#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_INSTANCE_TRACER)
 static_assert(sizeof(raw_ptr<void>) == sizeof(void*),
               "raw_ptr shouldn't add memory overhead");
 static_assert(sizeof(raw_ptr<int>) == sizeof(int*),
               "raw_ptr shouldn't add memory overhead");
 static_assert(sizeof(raw_ptr<std::string>) == sizeof(std::string*),
               "raw_ptr shouldn't add memory overhead");
+#endif
 
 #if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&                            \
     !BUILDFLAG(USE_ASAN_UNOWNED_PTR) && !BUILDFLAG(USE_HOOKABLE_RAW_PTR) && \
@@ -148,10 +156,12 @@ static_assert([]() constexpr {
     [[maybe_unused]] Int* i2 = r;               // operator T*()
     [[maybe_unused]] IntBase* i3 = r;           // operator Convertible*()
 
-    [[maybe_unused]] Int** i4 = &r.AsEphemeralRawAddr();
-    [[maybe_unused]] Int*& i5 = r.AsEphemeralRawAddr();
+    auto func_taking_ptr_to_ptr = [](Int**) {};
+    auto func_taking_ref_to_ptr = [](Int*&) {};
+    func_taking_ptr_to_ptr(&r.AsEphemeralRawAddr());
+    func_taking_ref_to_ptr(r.AsEphemeralRawAddr());
 
-    Int* array = new Int[3]();
+    Int* array = new Int[4]();
     {
       raw_ptr<Int, base::RawPtrTraits::kAllowPtrArithmetic> ra(array);
       ++ra;      // operator++()
@@ -160,6 +170,33 @@ static_assert([]() constexpr {
       ra--;      // operator--(int)
       ra += 1u;  // operator+=()
       ra -= 1u;  // operator-=()
+      ra = ra + 1;                             // operator+(raw_ptr,int)
+      ra = 1 + ra;                             // operator+(int,raw_ptr)
+      ra = ra - 2;                             // operator-(raw_ptr,int)
+      [[maybe_unused]] ptrdiff_t d = ra - ra;  // operator-(raw_ptr,raw_ptr)
+      d = ra - array;                          // operator-(raw_ptr,T*)
+      d = array - ra;                          // operator-(T*,raw_ptr)
+
+      ra[0] = ra[1];  // operator[]()
+
+      b = ra < ra;      // operator<(raw_ptr,raw_ptr)
+      b = ra < array;   // operator<(raw_ptr,T*)
+      b = array < ra;   // operator<(T*,raw_ptr)
+      b = ra <= ra;     // operator<=(raw_ptr,raw_ptr)
+      b = ra <= array;  // operator<=(raw_ptr,T*)
+      b = array <= ra;  // operator<=(T*,raw_ptr)
+      b = ra > ra;      // operator>(raw_ptr,raw_ptr)
+      b = ra > array;   // operator>(raw_ptr,T*)
+      b = array > ra;   // operator>(T*,raw_ptr)
+      b = ra >= ra;     // operator>=(raw_ptr,raw_ptr)
+      b = ra >= array;  // operator>=(raw_ptr,T*)
+      b = array >= ra;  // operator>=(T*,raw_ptr)
+      b = ra == ra;     // operator==(raw_ptr,raw_ptr)
+      b = ra == array;  // operator==(raw_ptr,T*)
+      b = array == ra;  // operator==(T*,raw_ptr)
+      b = ra != ra;     // operator!=(raw_ptr,raw_ptr)
+      b = ra != array;  // operator!=(raw_ptr,T*)
+      b = array != ra;  // operator!=(T*,raw_ptr)
     }
     delete[] array;
   }
@@ -1569,6 +1606,9 @@ TEST_F(RawPtrTest, EphemeralRawAddrPointerReference) {
   EXPECT_EQ(ptr.get(), &v1);
 }
 
+// InstanceTracer has additional fields, so just skip this test when instance
+// tracing is enabled.
+#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_INSTANCE_TRACER)
 #if defined(COMPILER_GCC) && !defined(__clang__)
 // In GCC this test will optimize the return value of the constructor, so
 // assert fails. Disable optimizations to verify uninitialized attribute works
@@ -1586,6 +1626,7 @@ TEST_F(RawPtrTest, AllowUninitialized) {
 #if defined(COMPILER_GCC) && !defined(__clang__)
 #pragma GCC pop_options
 #endif
+#endif  // !BUILDFLAG(ENABLE_BACKUP_REF_PTR_INSTANCE_TRACER)
 
 }  // namespace
 
@@ -1788,18 +1829,24 @@ void RunBackupRefPtrImplAdvanceTest(
   EXPECT_CHECK_DEATH(--protected_ptr);
 
 #if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
-  // An array type that should be more than a third the size of the available
-  // memory for the allocation such that incrementing a pointer to this type
-  // twice causes it to point to a memory location that is too small to fit a
-  // complete element of this type.
-  typedef int OverThirdArray[200 / sizeof(int)];
-  raw_ptr<OverThirdArray> protected_arr_ptr =
-      reinterpret_cast<OverThirdArray*>(ptr);
+  // An array of a size that doesn't cleanly fit into the allocation. This is to
+  // check that one can't access elements that don't fully fit in the
+  // allocation.
+  const size_t kArraySize = 199;
+  ASSERT_LT(kArraySize, requested_size);
+  ASSERT_NE(requested_size % kArraySize, 0U);
+  typedef char FunkyArray[kArraySize];
+  raw_ptr<FunkyArray, AllowPtrArithmetic> protected_arr_ptr =
+      reinterpret_cast<FunkyArray*>(ptr);
 
-  protected_arr_ptr++;
+  **protected_arr_ptr = 4;
+  protected_arr_ptr += requested_size / kArraySize;
+  EXPECT_CHECK_DEATH(** protected_arr_ptr = 4);
+  protected_arr_ptr--;
   **protected_arr_ptr = 4;
   protected_arr_ptr++;
-  EXPECT_DEATH_IF_SUPPORTED(** protected_arr_ptr = 4, "");
+  EXPECT_CHECK_DEATH(** protected_arr_ptr = 4);
+  protected_arr_ptr = nullptr;
 #endif  // BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
 
   protected_ptr = nullptr;
@@ -1852,12 +1899,13 @@ TEST_F(BackupRefPtrTest, GetDeltaElems) {
   char* ptr1 = static_cast<char*>(allocator_.root()->Alloc(requested_size));
   char* ptr2 = static_cast<char*>(allocator_.root()->Alloc(requested_size));
   ASSERT_LT(ptr1, ptr2);  // There should be a ref-count between slots.
-  raw_ptr<char> protected_ptr1 = ptr1;
-  raw_ptr<char> protected_ptr1_2 = ptr1 + 1;
-  raw_ptr<char> protected_ptr1_3 = ptr1 + requested_size - 1;
-  raw_ptr<char> protected_ptr1_4 = ptr1 + requested_size;
-  raw_ptr<char> protected_ptr2 = ptr2;
-  raw_ptr<char> protected_ptr2_2 = ptr2 + 1;
+  raw_ptr<char, AllowPtrArithmetic> protected_ptr1 = ptr1;
+  raw_ptr<char, AllowPtrArithmetic> protected_ptr1_2 = ptr1 + 1;
+  raw_ptr<char, AllowPtrArithmetic> protected_ptr1_3 =
+      ptr1 + requested_size - 1;
+  raw_ptr<char, AllowPtrArithmetic> protected_ptr1_4 = ptr1 + requested_size;
+  raw_ptr<char, AllowPtrArithmetic> protected_ptr2 = ptr2;
+  raw_ptr<char, AllowPtrArithmetic> protected_ptr2_2 = ptr2 + 1;
 
   EXPECT_EQ(protected_ptr1_2 - protected_ptr1, 1);
   EXPECT_EQ(protected_ptr1 - protected_ptr1_2, -1);
@@ -1893,6 +1941,8 @@ TEST_F(BackupRefPtrTest, GetDeltaElems) {
   allocator_.root()->Free(ptr2);
 }
 
+volatile char g_volatile_char_to_ignore;
+
 TEST_F(BackupRefPtrTest, IndexOperator) {
   size_t requested_size = GetRequestSizeThatFills512BSlot();
   char* ptr = static_cast<char*>(allocator_.root()->Alloc(requested_size));
@@ -1900,10 +1950,11 @@ TEST_F(BackupRefPtrTest, IndexOperator) {
     raw_ptr<char, AllowPtrArithmetic> array = ptr;
     std::ignore = array[0];
     std::ignore = array[requested_size - 1];
-    EXPECT_DEATH_IF_SUPPORTED(std::ignore = array[-1], "");
-    EXPECT_DEATH_IF_SUPPORTED(std::ignore = array[requested_size + 1], "");
+    EXPECT_CHECK_DEATH(std::ignore = array[-1]);
+    EXPECT_CHECK_DEATH(std::ignore = array[requested_size + 1]);
 #if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
-    EXPECT_DEATH_IF_SUPPORTED(std::ignore = array[requested_size], "");
+    EXPECT_DEATH_IF_SUPPORTED(g_volatile_char_to_ignore = array[requested_size],
+                              "");
 #endif
   }
   allocator_.root()->Free(ptr);
@@ -1977,7 +2028,73 @@ TEST_F(BackupRefPtrTest, ReinterpretCast) {
   // been already freed.
   BASE_EXPECT_DEATH(*wrapped_ptr = nullptr, "");
 }
-#endif
+#endif  // PA_CONFIG(REF_COUNT_CHECK_COOKIE)
+
+// Tests that ref-count management is correct, despite `absl::optional` may be
+// using `union` underneath.
+TEST_F(BackupRefPtrTest, WorksWithOptional) {
+  void* ptr = allocator_.root()->Alloc(16);
+  auto* ref_count = allocator_.root()->RefCountPointerFromObjectForTesting(ptr);
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
+
+  absl::optional<raw_ptr<void>> opt = ptr;
+  ASSERT_TRUE(opt.has_value());
+  EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
+
+  opt.reset();
+  ASSERT_TRUE(!opt.has_value());
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
+
+  opt = ptr;
+  ASSERT_TRUE(opt.has_value());
+  EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
+
+  opt = nullptr;
+  ASSERT_TRUE(opt.has_value());
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
+
+  {
+    absl::optional<raw_ptr<void>> opt2 = ptr;
+    ASSERT_TRUE(opt2.has_value());
+    EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
+  }
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
+
+  allocator_.root()->Free(ptr);
+}
+
+// Tests that ref-count management is correct, despite `absl::variant` may be
+// using `union` underneath.
+TEST_F(BackupRefPtrTest, WorksWithVariant) {
+  void* ptr = allocator_.root()->Alloc(16);
+  auto* ref_count = allocator_.root()->RefCountPointerFromObjectForTesting(ptr);
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
+
+  absl::variant<uintptr_t, raw_ptr<void>> vary = ptr;
+  ASSERT_EQ(1u, vary.index());
+  EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
+
+  vary = 42u;
+  ASSERT_EQ(0u, vary.index());
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
+
+  vary = ptr;
+  ASSERT_EQ(1u, vary.index());
+  EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
+
+  vary = nullptr;
+  ASSERT_EQ(1u, vary.index());
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
+
+  {
+    absl::variant<uintptr_t, raw_ptr<void>> vary2 = ptr;
+    ASSERT_EQ(1u, vary2.index());
+    EXPECT_TRUE(ref_count->IsAlive() && !ref_count->IsAliveWithNoKnownRefs());
+  }
+  EXPECT_TRUE(ref_count->IsAliveWithNoKnownRefs());
+
+  allocator_.root()->Free(ptr);
+}
 
 namespace {
 
@@ -2138,22 +2255,18 @@ TEST_F(BackupRefPtrTest, RawPtrDeleteWithoutExtractAsDangling) {
 TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
   size_t requested_size = GetRequestSizeThatFills512BSlot();
   size_t requested_elements = requested_size / sizeof(uint32_t);
+
   uint32_t* ptr =
       reinterpret_cast<uint32_t*>(allocator_.root()->Alloc(requested_size));
   uint32_t* ptr_end = ptr + requested_elements;
 
-  CountingRawPtr<uint32_t> protected_ptr = ptr;
-  CountingRawPtr<uint32_t> protected_ptr_end =
-      protected_ptr + requested_elements;
-
-#if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
-  EXPECT_DEATH_IF_SUPPORTED(*protected_ptr_end = 1, "");
-#endif
+  CountingRawPtr<uint32_t> counting_ptr = ptr;
+  CountingRawPtr<uint32_t> counting_ptr_end = counting_ptr + requested_elements;
 
   RawPtrCountingImpl::ClearCounters();
 
   uint32_t gen_val = 1;
-  std::generate(protected_ptr, protected_ptr_end, [&gen_val]() {
+  std::generate(counting_ptr, counting_ptr_end, [&gen_val]() {
     gen_val ^= gen_val + 1;
     return gen_val;
   });
@@ -2167,9 +2280,9 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
 
   RawPtrCountingImpl::ClearCounters();
 
-  for (CountingRawPtr<uint32_t> protected_ptr_i = protected_ptr;
-       protected_ptr_i < protected_ptr_end; protected_ptr_i++) {
-    *protected_ptr_i ^= *protected_ptr_i + 1;
+  for (CountingRawPtr<uint32_t> counting_ptr_i = counting_ptr;
+       counting_ptr_i < counting_ptr_end; counting_ptr_i++) {
+    *counting_ptr_i ^= *counting_ptr_i + 1;
   }
 
   EXPECT_THAT((CountingRawPtrExpectations{
@@ -2181,9 +2294,9 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
 
   RawPtrCountingImpl::ClearCounters();
 
-  for (CountingRawPtr<uint32_t> protected_ptr_i = protected_ptr;
-       protected_ptr_i < ptr_end; protected_ptr_i++) {
-    *protected_ptr_i ^= *protected_ptr_i + 1;
+  for (CountingRawPtr<uint32_t> counting_ptr_i = counting_ptr;
+       counting_ptr_i < ptr_end; counting_ptr_i++) {
+    *counting_ptr_i ^= *counting_ptr_i + 1;
   }
 
   EXPECT_THAT((CountingRawPtrExpectations{
@@ -2195,7 +2308,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
 
   RawPtrCountingImpl::ClearCounters();
 
-  for (uint32_t* ptr_i = ptr; ptr_i < protected_ptr_end; ptr_i++) {
+  for (uint32_t* ptr_i = ptr; ptr_i < counting_ptr_end; ptr_i++) {
     *ptr_i ^= *ptr_i + 1;
   }
 
@@ -2209,7 +2322,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
   RawPtrCountingImpl::ClearCounters();
 
   size_t iter_cnt = 0;
-  for (uint32_t *ptr_i = protected_ptr, *ptr_i_end = protected_ptr_end;
+  for (uint32_t *ptr_i = counting_ptr, *ptr_i_end = counting_ptr_end;
        ptr_i < ptr_i_end; ptr_i++) {
     *ptr_i ^= *ptr_i + 1;
     iter_cnt++;
@@ -2223,8 +2336,8 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
               }),
               CountersMatch());
 
-  protected_ptr = nullptr;
-  protected_ptr_end = nullptr;
+  counting_ptr = nullptr;
+  counting_ptr_end = nullptr;
   allocator_.root()->Free(ptr);
 }
 
@@ -2232,24 +2345,27 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
 TEST_F(BackupRefPtrTest, Duplicate) {
   size_t requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(512);
   char* ptr = static_cast<char*>(allocator_.root()->Alloc(requested_size));
-  raw_ptr<char> protected_ptr1 = ptr;
+  raw_ptr<char, AllowPtrArithmetic> protected_ptr1 = ptr;
   protected_ptr1 += requested_size;  // Pointer should now be poisoned.
 
   // Duplicating a poisoned pointer should be allowed.
-  raw_ptr<char> protected_ptr2 = protected_ptr1;
+  raw_ptr<char, AllowPtrArithmetic> protected_ptr2 = protected_ptr1;
 
   // The poison bit should be propagated to the duplicate such that the OOB
   // access is disallowed:
   EXPECT_DEATH_IF_SUPPORTED(*protected_ptr2 = ' ', "");
 
   // Assignment from a poisoned pointer should be allowed.
-  raw_ptr<char> protected_ptr3;
+  raw_ptr<char, AllowPtrArithmetic> protected_ptr3;
   protected_ptr3 = protected_ptr1;
 
   // The poison bit should be propagated via the assignment such that the OOB
   // access is disallowed:
   EXPECT_DEATH_IF_SUPPORTED(*protected_ptr3 = ' ', "");
 
+  protected_ptr1 = nullptr;
+  protected_ptr2 = nullptr;
+  protected_ptr3 = nullptr;
   allocator_.root()->Free(ptr);
 }
 #endif  // BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
@@ -2310,25 +2426,16 @@ TEST_F(BackupRefPtrTest, QuarantineHook) {
   partition_alloc::PartitionAllocHooks::SetQuarantineOverrideHook(nullptr);
 }
 
-#if BUILDFLAG(PA_IS_CHROMEOS_ASH)
-TEST_F(BackupRefPtrTest, ExperimentalAsh) {
-  const bool feature_enabled_by_default =
-      BackupRefPtrGlobalSettings::IsExperimentalAshEnabled();
-  if (feature_enabled_by_default) {
-    BackupRefPtrGlobalSettings::DisableExperimentalAshForTest();
-  }
-
+TEST_F(BackupRefPtrTest, RawPtrTraits_DisableBRP) {
   // Allocate a slot so that a slot span doesn't get decommitted from memory,
   // while we allocate/deallocate/access the tested slot below.
   void* sentinel = allocator_.root()->Alloc(sizeof(unsigned int), "");
-
   constexpr uint32_t kQuarantined2Bytes =
       partition_alloc::internal::kQuarantinedByte |
       (partition_alloc::internal::kQuarantinedByte << 8);
   constexpr uint32_t kQuarantined4Bytes =
       kQuarantined2Bytes | (kQuarantined2Bytes << 16);
 
-  // Plain raw_ptr, with BRP for ExperimentalAsh pointer disabled.
   {
     raw_ptr<unsigned int, DanglingUntriaged> ptr = static_cast<unsigned int*>(
         allocator_.root()->Alloc(sizeof(unsigned int), ""));
@@ -2340,10 +2447,9 @@ TEST_F(BackupRefPtrTest, ExperimentalAsh) {
     EXPECT_EQ(kQuarantined4Bytes, *ptr);
 #endif
   }
-  // raw_ptr with ExperimentalAsh, BRP is expected to be off, as it is enabled
-  // independently for these pointers.
+  // raw_ptr with DisableBRP, BRP is expected to be off.
   {
-    raw_ptr<unsigned int, DanglingUntriaged | ExperimentalAsh> ptr =
+    raw_ptr<unsigned int, DanglingUntriaged | RawPtrTraits::kDisableBRP> ptr =
         static_cast<unsigned int*>(
             allocator_.root()->Alloc(sizeof(unsigned int), ""));
     *ptr = 0;
@@ -2353,40 +2459,8 @@ TEST_F(BackupRefPtrTest, ExperimentalAsh) {
     EXPECT_NE(kQuarantined4Bytes, *ptr);
   }
 
-  BackupRefPtrGlobalSettings::EnableExperimentalAsh();
-  // BRP should be on for both types of pointers.
-  {
-    raw_ptr<unsigned int, DanglingUntriaged> ptr = static_cast<unsigned int*>(
-        allocator_.root()->Alloc(sizeof(unsigned int), ""));
-    *ptr = 0;
-    allocator_.root()->Free(ptr);
-#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-    EXPECT_DEATH_IF_SUPPORTED(*ptr = 0, "");
-#else
-    EXPECT_EQ(kQuarantined4Bytes, *ptr);
-#endif
-  }
-  {
-    raw_ptr<unsigned int, DanglingUntriaged | ExperimentalAsh> ptr =
-        static_cast<unsigned int*>(
-            allocator_.root()->Alloc(sizeof(unsigned int), ""));
-    *ptr = 0;
-    allocator_.root()->Free(ptr);
-#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-    EXPECT_DEATH_IF_SUPPORTED(*ptr = 0, "");
-#else
-    EXPECT_EQ(kQuarantined4Bytes, *ptr);
-#endif
-  }
-
   allocator_.root()->Free(sentinel);
-
-  // Restore the feature state to avoid one test to "leak" into the next one.
-  if (!feature_enabled_by_default) {
-    BackupRefPtrGlobalSettings::DisableExperimentalAshForTest();
-  }
 }
-#endif  // BUILDFLAG(PA_IS_CHROMEOS_ASH)
 
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
         // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
@@ -2593,5 +2667,328 @@ TEST(DanglingPtrTest, DetectResetAndDestructor) {
   EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
   EXPECT_EQ(instrumentation->dangling_ptr_released(), 1u);
 }
+
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_INSTANCE_TRACER) && \
+    BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+TEST(RawPtrInstanceTracerTest, CreateAndDestroy) {
+  auto owned = std::make_unique<int>(8);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+
+  {
+    raw_ptr<int> ptr1 = owned.get();
+    const auto stacks =
+        InstanceTracer::GetStackTracesForAddressForTest(owned.get());
+    EXPECT_THAT(stacks, SizeIs(1));
+    {
+      // A second raw_ptr to the same object should result in an additional
+      // stack trace.
+      raw_ptr<int> ptr2 = owned.get();
+      EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                  SizeIs(2));
+    }
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                Eq(stacks));
+  }
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+}
+
+TEST(RawPtrInstanceTracerTest, CopyConstruction) {
+  auto owned = std::make_unique<int>(8);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+  {
+    raw_ptr<int> ptr1 = owned.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+    {
+      // Copying `ptr1` to `ptr2` should result in an additional stack trace.
+      raw_ptr<int> ptr2 = ptr1;
+      EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                  SizeIs(2));
+    }
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+  }
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+}
+
+TEST(RawPtrInstanceTracerTest, CopyAssignment) {
+  auto owned1 = std::make_unique<int>(8);
+  auto owned2 = std::make_unique<int>(9);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+              IsEmpty());
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+              IsEmpty());
+
+  {
+    raw_ptr<int> ptr1 = owned1.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                IsEmpty());
+
+    raw_ptr<int> ptr2 = owned2.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                SizeIs(1));
+
+    ptr2 = ptr1;
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(2));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                IsEmpty());
+  }
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+              IsEmpty());
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+              IsEmpty());
+}
+
+TEST(RawPtrInstanceTracerTest, MoveConstruction) {
+  auto owned = std::make_unique<int>(8);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+  {
+    raw_ptr<int> ptr1 = owned.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+    {
+      // Moving `ptr1` to `ptr2` should not result in an additional stack trace.
+      raw_ptr<int> ptr2 = std::move(ptr1);
+      EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                  SizeIs(1));
+    }
+    // Once `ptr2` goes out of scope, there should be no more traces.
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                IsEmpty());
+  }
+}
+
+TEST(RawPtrInstanceTracerTest, MoveAssignment) {
+  auto owned1 = std::make_unique<int>(8);
+  auto owned2 = std::make_unique<int>(9);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+              IsEmpty());
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+              IsEmpty());
+
+  {
+    raw_ptr<int> ptr1 = owned1.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                IsEmpty());
+
+    raw_ptr<int> ptr2 = owned2.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                SizeIs(1));
+
+    ptr2 = std::move(ptr1);
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                IsEmpty());
+  }
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+              IsEmpty());
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+              IsEmpty());
+}
+
+TEST(RawPtrInstanceTracerTest, SelfCopy) {
+  auto owned = std::make_unique<int>(8);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+
+  {
+    raw_ptr<int> ptr = owned.get();
+    auto& ptr2 = ptr;  // To get around compiler self-assignment warning :)
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+
+    ptr2 = ptr;
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+  }
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+}
+
+TEST(RawPtrInstanceTracerTest, SelfMove) {
+  auto owned = std::make_unique<int>(8);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+
+  {
+    raw_ptr<int> ptr = owned.get();
+    auto& ptr2 = ptr;  // To get around compiler self-assignment warning :)
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+
+    ptr2 = std::move(ptr);
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+  }
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+}
+
+TEST(RawPtrInstanceTracerTest, ConversionCreateAndDestroy) {
+  auto owned = std::make_unique<Derived>(1, 2, 3);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+
+  {
+    raw_ptr<Base1> ptr1 = owned.get();
+    const auto stacks =
+        InstanceTracer::GetStackTracesForAddressForTest(owned.get());
+    EXPECT_THAT(stacks, SizeIs(1));
+    {
+      // A second raw_ptr to the same object should result in an additional
+      // stack trace.
+      raw_ptr<Base2> ptr2 = owned.get();
+      EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                  SizeIs(2));
+    }
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                Eq(stacks));
+  }
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+}
+
+TEST(RawPtrInstanceTracerTest, CopyConversionConstruction) {
+  auto owned = std::make_unique<Derived>(1, 2, 3);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+  {
+    raw_ptr<Derived> ptr1 = owned.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+    {
+      // Copying `ptr1` to `ptr2` should result in an additional stack trace.
+      raw_ptr<Base1> ptr2 = ptr1;
+      EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                  SizeIs(2));
+    }
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+  }
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+}
+
+TEST(RawPtrInstanceTracerTest, CopyConversionAssignment) {
+  auto owned1 = std::make_unique<Derived>(1, 2, 3);
+  auto owned2 = std::make_unique<Derived>(4, 5, 6);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+              IsEmpty());
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+              IsEmpty());
+
+  {
+    raw_ptr<Derived> ptr1 = owned1.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                IsEmpty());
+
+    raw_ptr<Base1> ptr2 = owned2.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                SizeIs(1));
+
+    ptr2 = ptr1;
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(2));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                IsEmpty());
+  }
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+              IsEmpty());
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+              IsEmpty());
+}
+
+TEST(RawPtrInstanceTracerTest, MoveConversionConstruction) {
+  auto owned = std::make_unique<Derived>(1, 2, 3);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+              IsEmpty());
+  {
+    raw_ptr<Derived> ptr1 = owned.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                SizeIs(1));
+    {
+      // Moving `ptr1` to `ptr2` should not result in an additional stack trace.
+      raw_ptr<Base1> ptr2 = std::move(ptr1);
+      EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                  SizeIs(1));
+    }
+    // Once `ptr2` goes out of scope, there should be no more traces.
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned.get()),
+                IsEmpty());
+  }
+}
+
+TEST(RawPtrInstanceTracerTest, MoveConversionAssignment) {
+  auto owned1 = std::make_unique<Derived>(1, 2, 3);
+  auto owned2 = std::make_unique<Derived>(4, 5, 6);
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+              IsEmpty());
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+              IsEmpty());
+
+  {
+    raw_ptr<Derived> ptr1 = owned1.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                IsEmpty());
+
+    raw_ptr<Base1> ptr2 = owned2.get();
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                SizeIs(1));
+
+    ptr2 = std::move(ptr1);
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+                SizeIs(1));
+    EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+                IsEmpty());
+  }
+
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned1.get()),
+              IsEmpty());
+  EXPECT_THAT(InstanceTracer::GetStackTracesForAddressForTest(owned2.get()),
+              IsEmpty());
+}
+#endif
 
 }  // namespace base::internal

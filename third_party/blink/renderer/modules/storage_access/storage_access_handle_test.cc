@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/testing/scoped_mocked_url.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -19,8 +20,18 @@ namespace blink {
 
 namespace {
 
-using TestParams = std::
-    tuple<bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool>;
+using TestParams = std::tuple<bool,
+                              bool,
+                              bool,
+                              bool,
+                              bool,
+                              bool,
+                              bool,
+                              bool,
+                              bool,
+                              bool,
+                              bool,
+                              bool>;
 
 template <size_t N>
 TestParams MakeParamsWithSetBit() {
@@ -34,16 +45,17 @@ TestParams MakeParamsWithSetBit() {
 class StorageAccessHandleTest : public testing::TestWithParam<TestParams> {
  public:
   bool all() { return std::get<0>(GetParam()); }
-  bool sessionStorage() { return std::get<1>(GetParam()); }
-  bool localStorage() { return std::get<2>(GetParam()); }
-  bool indexedDB() { return std::get<3>(GetParam()); }
-  bool locks() { return std::get<4>(GetParam()); }
-  bool caches() { return std::get<5>(GetParam()); }
-  bool getDirectory() { return std::get<6>(GetParam()); }
-  bool estimate() { return std::get<7>(GetParam()); }
-  bool createObjectURL() { return std::get<8>(GetParam()); }
-  bool revokeObjectURL() { return std::get<9>(GetParam()); }
-  bool BroadcastChannel() { return std::get<10>(GetParam()); }
+  bool cookies() { return std::get<1>(GetParam()); }
+  bool sessionStorage() { return std::get<2>(GetParam()); }
+  bool localStorage() { return std::get<3>(GetParam()); }
+  bool indexedDB() { return std::get<4>(GetParam()); }
+  bool locks() { return std::get<5>(GetParam()); }
+  bool caches() { return std::get<6>(GetParam()); }
+  bool getDirectory() { return std::get<7>(GetParam()); }
+  bool estimate() { return std::get<8>(GetParam()); }
+  bool createObjectURL() { return std::get<9>(GetParam()); }
+  bool revokeObjectURL() { return std::get<10>(GetParam()); }
+  bool BroadcastChannel() { return std::get<11>(GetParam()); }
 
   LocalDOMWindow* getLocalDOMWindow() {
     test::ScopedMockedURLLoad scoped_mocked_url_load_root(
@@ -56,6 +68,7 @@ class StorageAccessHandleTest : public testing::TestWithParam<TestParams> {
 
  private:
   static constexpr char kRootString[] = "http://storage/";
+  test::TaskEnvironment task_environment_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
@@ -64,6 +77,7 @@ TEST_P(StorageAccessHandleTest, LoadHandle) {
   StorageAccessTypes* storage_access_types =
       MakeGarbageCollected<StorageAccessTypes>();
   storage_access_types->setAll(all());
+  storage_access_types->setCookies(cookies());
   storage_access_types->setSessionStorage(sessionStorage());
   storage_access_types->setLocalStorage(localStorage());
   storage_access_types->setIndexedDB(indexedDB());
@@ -82,6 +96,11 @@ TEST_P(StorageAccessHandleTest, LoadHandle) {
       window->document()->IsUseCounted(
           WebFeature::kStorageAccessAPI_requestStorageAccess_BeyondCookies_all),
       all());
+  EXPECT_EQ(
+      window->document()->IsUseCounted(
+          WebFeature::
+              kStorageAccessAPI_requestStorageAccess_BeyondCookies_cookies),
+      cookies());
   EXPECT_EQ(
       window->document()->IsUseCounted(
           WebFeature::
@@ -345,26 +364,28 @@ INSTANTIATE_TEST_SUITE_P(
         TestParams(),
         // All:
         MakeParamsWithSetBit<0>(),
-        // Session Storage:
+        // Cookies:
         MakeParamsWithSetBit<1>(),
-        // Local Storage:
+        // Session Storage:
         MakeParamsWithSetBit<2>(),
-        // IndexedDB:
+        // Local Storage:
         MakeParamsWithSetBit<3>(),
-        // Web Locks:
+        // IndexedDB:
         MakeParamsWithSetBit<4>(),
-        // Cache Storage:
+        // Web Locks:
         MakeParamsWithSetBit<5>(),
-        // Origin Private File System:
+        // Cache Storage:
         MakeParamsWithSetBit<6>(),
-        // Quota:
+        // Origin Private File System:
         MakeParamsWithSetBit<7>(),
-        // createObjectURL:
+        // Quota:
         MakeParamsWithSetBit<8>(),
-        // revokeObjectURL:
+        // createObjectURL:
         MakeParamsWithSetBit<9>(),
-        // BroadcastChannel:
+        // revokeObjectURL:
         MakeParamsWithSetBit<10>(),
+        // BroadcastChannel:
+        MakeParamsWithSetBit<11>(),
     }));
 
 }  // namespace blink

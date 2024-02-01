@@ -17,6 +17,7 @@ enum class PromoStyleImageType {
 };
 
 enum class BannerImageSizeType {
+  kShort,
   kStandard,
   kTall,
   kExtraTall,
@@ -52,6 +53,11 @@ enum class BannerImageSizeType {
 // When set to YES, the banner is hidden. Defaults to NO.
 @property(nonatomic, assign) BOOL shouldHideBanner;
 
+// When set to YES, use `PromoStyleBackgroundView` as background. Only available
+// with hidden banner. This value has to be set before the view is loaded.
+// Defaults to NO.
+@property(nonatomic, assign) BOOL usePromoStyleBackground;
+
 // The type of image to display in the header. This value has to be set before
 // the view is loaded. Defaults to kNone.
 // See `headerImage` to set the actual image.
@@ -67,6 +73,29 @@ enum class BannerImageSizeType {
 // Sets the header image accessibility label. Needs to `headerImageType` to not
 // kNone. before.
 @property(nonatomic, copy) NSString* headerAccessibilityLabel;
+
+// When set to YES, the header will be hidden when the content is taller than
+// the scroll view. This can make the content fully visible or require less
+// scrolling when using a smaller form factor device or a larger font size.
+// Once hidden, the header will not reappear. Default to NO.
+@property(nonatomic, assign) BOOL hideHeaderOnTallContent;
+
+// When set to YES, forces UIUserInterfaceStyleLight for the header views. This
+// value has to be set before the view is loaded. Default to NO.
+@property(nonatomic, assign) BOOL headerViewForceStyleLight;
+
+// The top margin percentage of the header view when there is no background.
+// Must be set before the view is loaded. Defaults to
+// `kNoBackgroundHeaderImageTopMarginPercentage`.
+@property(nonatomic, assign) CGFloat noBackgroundHeaderImageTopMarginPercentage;
+
+// The bottom margin of the header image, when the image is not of type kAvatar.
+// Must be set before the view is loaded. Defaults to `kDefaultMargin`.
+@property(nonatomic, assign) CGFloat headerImageBottomMargin;
+
+// The inset of the header image shadow. Must be set before the view is loaded.
+// Defaults to `kHeaderImageShadowShadowInset`.
+@property(nonatomic, assign) CGFloat headerImageShadowInset;
 
 // The label of the headline below the image. Must be set before the view is
 // loaded. This is declared public so the accessibility can be enabled.

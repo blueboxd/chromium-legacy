@@ -21,6 +21,7 @@
 #include "net/base/features.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
+#include "net/base/session_usage.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/asn1_util.h"
 #include "net/dns/public/secure_dns_policy.h"
@@ -135,9 +136,9 @@ class SpdyHttpStreamTest : public testing::TestWithParam<bool>,
         url_(kDefaultUrl),
         host_port_pair_(HostPortPair::FromURL(url_)),
         key_(host_port_pair_,
-             ProxyChain::Direct(),
              PRIVACY_MODE_DISABLED,
-             SpdySessionKey::IsProxySession::kFalse,
+             ProxyChain::Direct(),
+             SessionUsage::kDestination,
              SocketTag(),
              NetworkAnonymizationKey(),
              SecureDnsPolicy::kAllow),

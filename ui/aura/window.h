@@ -150,7 +150,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     kMaxValue = HIDDEN,
   };
 
-  using Windows = std::vector<Window*>;
+  using Windows = std::vector<raw_ptr<Window, VectorExperimental>>;
 
   explicit Window(WindowDelegate* delegate,
                   client::WindowType type = client::WINDOW_TYPE_UNKNOWN);
@@ -463,9 +463,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   std::unique_ptr<ui::Layer> RecreateLayer() override;
   void SetLayer(std::unique_ptr<ui::Layer> layer) override;
 
+  void GetDebugInfo(const aura::Window* active_window,
+                    const aura::Window* focused_window,
+                    const aura::Window* capture_window,
+                    std::ostringstream* out) const;
 #if DCHECK_IS_ON()
   // These methods are useful when debugging.
-  std::string GetDebugInfo() const;
   std::string GetWindowHierarchy(int depth) const;
   void PrintWindowHierarchy(int depth) const;
 #endif

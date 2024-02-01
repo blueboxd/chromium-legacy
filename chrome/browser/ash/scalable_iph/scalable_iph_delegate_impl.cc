@@ -23,7 +23,7 @@
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
-#include "ash/system/message_center/message_view_factory.h"
+#include "ash/system/notification_center/message_view_factory.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/webui/grit/ash_print_management_resources.h"
 #include "ash/webui/settings/public/constants/routes.mojom.h"
@@ -226,8 +226,8 @@ class ScalableIphNotificationDelegate
         action_(action) {}
 
   // message_center::NotificationDelegate:
-  void Click(const absl::optional<int>& button_index,
-             const absl::optional<std::u16string>& reply) override {
+  void Click(const std::optional<int>& button_index,
+             const std::optional<std::u16string>& reply) override {
     if (!button_index.has_value() || button_index.value() != kButtonIndex) {
       return;
     }

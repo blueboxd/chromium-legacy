@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webid/federated_auth_request_impl.h"
-
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <set>
 #include <string>
@@ -19,6 +18,7 @@
 #include "base/test/task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/webid/federated_auth_request_impl.h"
 #include "content/browser/webid/test/federated_auth_request_request_token_callback_helper.h"
 #include "content/browser/webid/test/mock_api_permission_delegate.h"
 #include "content/browser/webid/test/mock_auto_reauthn_permission_delegate.h"
@@ -38,7 +38,6 @@
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -95,6 +94,7 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
   }
 
   void FetchConfig(const GURL& provider,
+                   blink::mojom::RpMode rp_mode,
                    int idp_brand_icon_ideal_size,
                    int idp_brand_icon_minimum_size,
                    FetchConfigCallback callback) override {
@@ -143,7 +143,7 @@ class TestDialogController
   struct State {
     bool did_show_accounts_dialog{false};
     std::string top_frame_for_display;
-    absl::optional<std::string> iframe_for_display;
+    std::optional<std::string> iframe_for_display;
   };
 
   enum class AccountsDialogAction {
@@ -162,9 +162,10 @@ class TestDialogController
 
   void ShowAccountsDialog(
       const std::string& top_frame_for_display,
-      const absl::optional<std::string>& iframe_for_display,
+      const std::optional<std::string>& iframe_for_display,
       const std::vector<IdentityProviderData>& identity_provider_data,
       IdentityRequestAccount::SignInMode sign_in_mode,
+      blink::mojom::RpMode rp_mode,
       bool show_auto_reauthn_checkbox,
       IdentityRequestDialogController::AccountSelectionCallback on_selected,
       IdentityRequestDialogController::LoginToIdPCallback on_add_account,
@@ -224,7 +225,7 @@ class FederatedAuthRequestImplMultipleFramesTest
         std::make_unique<TestFederatedIdentityModalDialogViewDelegate>();
     mock_identity_registry_ = std::make_unique<NiceMock<MockIdentityRegistry>>(
         web_contents(), test_modal_dialog_view_delegate_->GetWeakPtr(),
-        url::Origin::Create(GURL(kIdpUrl)));
+        GURL(kIdpUrl));
 
     static_cast<TestWebContents*>(web_contents())
         ->NavigateAndCommit(GURL(kTopFrameUrl), ui::PAGE_TRANSITION_LINK);
@@ -265,8 +266,6 @@ class FederatedAuthRequestImplMultipleFramesTest
                                                dialog_controller_state));
     federated_auth_request_impl->SetNetworkManagerForTests(
         std::make_unique<TestIdpNetworkRequestManager>());
-    federated_auth_request_impl->SetTokenRequestDelayForTests(
-        base::TimeDelta());
     return federated_auth_request_impl;
   }
 
@@ -375,7 +374,7 @@ TEST_F(FederatedAuthRequestImplMultipleFramesTest, SameOriginIframe) {
   EXPECT_EQ(RequestTokenStatus::kSuccess, iframe_callback_helper.status());
   EXPECT_TRUE(iframe_dialog_state.did_show_accounts_dialog);
   EXPECT_EQ("top-frame.example", iframe_dialog_state.top_frame_for_display);
-  EXPECT_EQ(absl::nullopt, iframe_dialog_state.iframe_for_display);
+  EXPECT_EQ(std::nullopt, iframe_dialog_state.iframe_for_display);
 }
 
 // Test that only top frame URL is available for display when FedCM is called
@@ -401,7 +400,7 @@ TEST_F(FederatedAuthRequestImplMultipleFramesTest, SameSiteIframe) {
   EXPECT_EQ(RequestTokenStatus::kSuccess, iframe_callback_helper.status());
   EXPECT_TRUE(iframe_dialog_state.did_show_accounts_dialog);
   EXPECT_EQ("top-frame.example", iframe_dialog_state.top_frame_for_display);
-  EXPECT_EQ(absl::nullopt, iframe_dialog_state.iframe_for_display);
+  EXPECT_EQ(std::nullopt, iframe_dialog_state.iframe_for_display);
 }
 
 // Test that both top frame and iframe URLs are available for display when FedCM
@@ -467,7 +466,7 @@ TEST_F(FederatedAuthRequestImplMultipleFramesTest,
 
   auto entries = ukm_recorder_->GetEntriesByName(FedCmEntry::kEntryName);
   ASSERT_FALSE(entries.empty());
-  for (const auto* entry : entries) {
+  for (const ukm::mojom::UkmEntry* entry : entries) {
     const int64_t* metric =
         ukm_recorder_->GetEntryMetric(entry, "PreventSilentAccessFrameType");
     EXPECT_FALSE(metric);
@@ -508,13 +507,12 @@ TEST_F(FederatedAuthRequestImplMultipleFramesTest,
   auto entries = ukm_recorder_->GetEntriesByName(FedCmEntry::kEntryName);
   ASSERT_FALSE(entries.empty());
   bool metric_found = false;
-  for (const auto* entry : entries) {
+  for (const ukm::mojom::UkmEntry* entry : entries) {
     const int64_t* metric =
         ukm_recorder_->GetEntryMetric(entry, "PreventSilentAccessFrameType");
     if (metric) {
       metric_found = true;
-      EXPECT_EQ(*metric,
-                static_cast<int>(PreventSilentAccessFrameType::kMainFrame));
+      EXPECT_EQ(*metric, static_cast<int>(FedCmRequesterFrameType::kMainFrame));
     }
   }
   EXPECT_TRUE(metric_found);
@@ -554,13 +552,13 @@ TEST_F(FederatedAuthRequestImplMultipleFramesTest,
   auto entries = ukm_recorder_->GetEntriesByName(FedCmEntry::kEntryName);
   ASSERT_FALSE(entries.empty());
   bool metric_found = false;
-  for (const auto* entry : entries) {
+  for (const ukm::mojom::UkmEntry* entry : entries) {
     const int64_t* metric =
         ukm_recorder_->GetEntryMetric(entry, "PreventSilentAccessFrameType");
     if (metric) {
       metric_found = true;
-      EXPECT_EQ(*metric, static_cast<int>(
-                             PreventSilentAccessFrameType::kSameSiteIframe));
+      EXPECT_EQ(*metric,
+                static_cast<int>(FedCmRequesterFrameType::kSameSiteIframe));
     }
   }
   EXPECT_TRUE(metric_found);
@@ -599,13 +597,13 @@ TEST_F(FederatedAuthRequestImplMultipleFramesTest,
   auto entries = ukm_recorder_->GetEntriesByName(FedCmEntry::kEntryName);
   ASSERT_FALSE(entries.empty());
   bool metric_found = false;
-  for (const auto* entry : entries) {
+  for (const ukm::mojom::UkmEntry* entry : entries) {
     const int64_t* metric =
         ukm_recorder_->GetEntryMetric(entry, "PreventSilentAccessFrameType");
     if (metric) {
       metric_found = true;
-      EXPECT_EQ(*metric, static_cast<int>(
-                             PreventSilentAccessFrameType::kCrossSiteIframe));
+      EXPECT_EQ(*metric,
+                static_cast<int>(FedCmRequesterFrameType::kCrossSiteIframe));
     }
   }
   EXPECT_TRUE(metric_found);

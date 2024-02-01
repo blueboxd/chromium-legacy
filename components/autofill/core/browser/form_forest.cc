@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/form_forest_util_inl.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace autofill::internal {
@@ -54,7 +54,7 @@ FormData* FormForest::GetFormData(FormGlobalId form, FrameData* frame_data) {
     return nullptr;
   }
   auto it = base::ranges::find(frame_data->child_forms, form.renderer_id,
-                               &FormData::unique_renderer_id);
+                               &FormData::renderer_id);
   return it != frame_data->child_forms.end() ? &*it : nullptr;
 }
 
@@ -63,7 +63,7 @@ FormForest::FrameAndForm FormForest::GetRoot(FormGlobalId form) {
     FrameData* frame = GetFrameData(form.frame_token);
     if (!frame->parent_form) {
       auto it = base::ranges::find(frame->child_forms, form.renderer_id,
-                                   &FormData::unique_renderer_id);
+                                   &FormData::renderer_id);
       CHECK(it != frame->child_forms.end());
       return {raw_ref(*frame), raw_ref(*it)};
     }
@@ -91,7 +91,7 @@ void FormForest::EraseReferencesTo(
       }
     }
     if (some_frame->parent_form && Match(*some_frame->parent_form)) {
-      some_frame->parent_form = absl::nullopt;
+      some_frame->parent_form = std::nullopt;
     }
   }
 }
@@ -181,19 +181,19 @@ void FormForest::UpdateTreeOfRendererForm(FormData* form,
     for_each_in_set_difference(
         old_form->child_frames, form->child_frames,
         [this, frame](FrameToken removed_child_token) {
-          absl::optional<LocalFrameToken> local_child =
+          std::optional<LocalFrameToken> local_child =
               frame->driver->Resolve(removed_child_token);
           if (FrameData* child_frame = nullptr;
               local_child && (child_frame = GetFrameData(*local_child))) {
-            child_frame->parent_form = absl::nullopt;
+            child_frame->parent_form = std::nullopt;
           }
         },
         &FrameTokenWithPredecessor::token);
     *old_form = std::move(*form);
     form = old_form;
   } else {
-    DCHECK(!base::Contains(frame->child_forms, form->unique_renderer_id,
-                           &FormData::unique_renderer_id));
+    DCHECK(!base::Contains(frame->child_forms, form->renderer_id,
+                           &FormData::renderer_id));
     form->fields = {};
     child_frames_changed = false;
     frame->child_forms.push_back(std::move(*form));
@@ -433,14 +433,14 @@ void FormForest::UpdateTreeOfRendererForm(FormData* form,
         // If visiting |child_frame|'s field ranges would push us over the
         // kMaxVisits limit, we disconnect the |child_frame| from `n.form` by
         // unsetting FrameData::parent_form.
-        absl::optional<LocalFrameToken> local_child =
+        std::optional<LocalFrameToken> local_child =
             n.frame->driver->Resolve(n.form->child_frames[n.next_frame].token);
         if (FrameData* child_frame = nullptr;
             local_child && (child_frame = GetOrCreateFrameData(*local_child))) {
           num_will_visit += NumChildrenOfFrame(*child_frame);
           if (num_will_visit > kMaxVisits) {
             num_will_visit -= NumChildrenOfFrame(*child_frame);
-            child_frame->parent_form = absl::nullopt;
+            child_frame->parent_form = std::nullopt;
           } else {
             child_frame->parent_form = n.form->global_id();
             for (size_t i = child_frame->child_forms.size(); i > 0; --i) {
@@ -504,12 +504,12 @@ const FormData& FormForest::GetBrowserForm(FormGlobalId renderer_form) const {
 
 FormForest::SecurityOptions::SecurityOptions(
     const url::Origin* triggered_origin,
-    const base::flat_map<FieldGlobalId, ServerFieldType>* field_type_map)
+    const base::flat_map<FieldGlobalId, FieldType>* field_type_map)
     : triggered_origin_(triggered_origin), field_type_map_(field_type_map) {
   CHECK(triggered_origin);
 }
 
-ServerFieldType FormForest::SecurityOptions::GetFieldType(
+FieldType FormForest::SecurityOptions::GetFieldType(
     const FieldGlobalId& field) const {
   if (!field_type_map_) {
     return UNKNOWN_TYPE;
@@ -538,6 +538,7 @@ FormForest::RendererForms FormForest::GetRendererFormsOfBrowserForm(
   // See the function's documentation in the header for details on the security
   // policy |IsSafeToFill|.
   RendererForms result;
+  result.safe_fields.reserve(browser_form.fields.size());
   for (const FormFieldData& browser_field : browser_form.fields) {
     FormGlobalId form_id = browser_field.renderer_form_id();
 
@@ -563,7 +564,7 @@ FormForest::RendererForms FormForest::GetRendererFormsOfBrowserForm(
       // Non-sensitive values may be filled into fields that belong to the
       // main frame's origin. This is independent of the origin of the
       // field that triggered the autofill, |triggered_origin|.
-      auto IsSensitiveFieldType = [](ServerFieldType field_type) {
+      auto IsSensitiveFieldType = [](FieldType field_type) {
         switch (field_type) {
           case CREDIT_CARD_TYPE:
           case CREDIT_CARD_NAME_FULL:
@@ -602,7 +603,7 @@ FormForest::RendererForms FormForest::GetRendererFormsOfBrowserForm(
     if (!IsSafeToFill(renderer_form->fields.back())) {
       renderer_form->fields.back().value.clear();
     } else {
-      result.safe_fields.push_back(browser_field.global_id());
+      result.safe_fields.insert(browser_field.global_id());
     }
   }
   return result;

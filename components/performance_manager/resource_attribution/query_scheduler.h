@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_RESOURCE_ATTRIBUTION_QUERY_SCHEDULER_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_RESOURCE_ATTRIBUTION_QUERY_SCHEDULER_H_
 
-#include <map>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -24,11 +23,12 @@
 #include "components/performance_manager/resource_attribution/memory_measurement_provider.h"
 
 namespace performance_manager::resource_attribution {
-
-namespace internal {
 class ContextCollection;
-struct QueryParams;
 }
+
+namespace performance_manager::resource_attribution::internal {
+
+struct QueryParams;
 
 // QueryScheduler keeps track of all queries for a particular resource type and
 // owns the machinery that performs measurements.
@@ -51,15 +51,15 @@ class QueryScheduler : public GraphRegisteredImpl<QueryScheduler>,
 
   // Adds a scoped query for `query_params`. Increases the query count for all
   // resource types and contexts referenced in `query_params`.
-  void AddScopedQuery(internal::QueryParams* query_params);
+  void AddScopedQuery(QueryParams* query_params);
 
   // Decreases the query count for all resource types and contexts referenced in
   // `query_params` and deletes `query_params`.
-  void RemoveScopedQuery(std::unique_ptr<internal::QueryParams> query_params);
+  void RemoveScopedQuery(std::unique_ptr<QueryParams> query_params);
 
   // Requests the latest results for the given `query_params`, and passes them
   // to `callback`.
-  void RequestResults(const internal::QueryParams& query_params,
+  void RequestResults(const QueryParams& query_params,
                       base::OnceCallback<void(const QueryResultMap&)> callback);
 
   // GraphOwned:
@@ -76,11 +76,6 @@ class QueryScheduler : public GraphRegisteredImpl<QueryScheduler>,
   uint32_t GetQueryCountForTesting(ResourceType resource_type) const;
 
  private:
-  // A map from a ResourceContext to a query result for a single ResourceType.
-  // The public interface uses QueryResultMap, from ResourceContext to a list of
-  // results for several ResourceTypes.
-  using SingleQueryResultMap = std::map<ResourceContext, QueryResult>;
-
   // Increases the CPU query count. `cpu_monitor_` will start monitoring CPU
   // usage when the count > 0.
   void AddCPUQuery();
@@ -95,12 +90,13 @@ class QueryScheduler : public GraphRegisteredImpl<QueryScheduler>,
   // Decreases the memory query count.
   void RemoveMemoryQuery();
 
-  // Invoked from RequestResults when all results are received. `results` will
-  // contain a separate result map for each ResourceType that was requested.
+  // Invoked from RequestResults when all results are received. `all_results`
+  // will contain a separate result map for each ResourceType that was
+  // requested.
   void OnResultsReceived(
-      const internal::ContextCollection& contexts,
+      const ContextCollection& contexts,
       base::OnceCallback<void(const QueryResultMap&)> callback,
-      const std::vector<SingleQueryResultMap>& results);
+      std::vector<QueryResultMap> all_results);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -118,6 +114,6 @@ class QueryScheduler : public GraphRegisteredImpl<QueryScheduler>,
   base::WeakPtrFactory<QueryScheduler> weak_factory_{this};
 };
 
-}  // namespace performance_manager::resource_attribution
+}  // namespace performance_manager::resource_attribution::internal
 
 #endif  // COMPONENTS_PERFORMANCE_MANAGER_RESOURCE_ATTRIBUTION_QUERY_SCHEDULER_H_

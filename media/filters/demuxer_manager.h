@@ -5,6 +5,7 @@
 #ifndef MEDIA_FILTERS_DEMUXER_MANAGER_H_
 #define MEDIA_FILTERS_DEMUXER_MANAGER_H_
 
+#include <optional>
 #include <vector>
 
 #include "base/functional/callback.h"
@@ -20,7 +21,6 @@
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
 #include "media/filters/chunk_demuxer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_HLS_DEMUXER)
@@ -136,25 +136,27 @@ class MEDIA_EXPORT DemuxerManager {
   void DisallowFallback();
 
   // Methods that help manage demuxers
-  absl::optional<double> GetDemuxerDuration();
-  absl::optional<DemuxerType> GetDemuxerType() const;
-  absl::optional<container_names::MediaContainerName> GetContainerForMetrics();
+  std::optional<double> GetDemuxerDuration();
+  std::optional<DemuxerType> GetDemuxerType() const;
+  std::optional<container_names::MediaContainerName> GetContainerForMetrics();
   void RespondToDemuxerMemoryUsageReport(base::OnceCallback<void(int64_t)> cb);
   void DisableDemuxerCanChangeType();
 
   // Returns a forwarded error/success from |on_demuxer_created|, or an error
   // if a demuxer couldn't be created.
-  PipelineStatus CreateDemuxer(bool load_media_source,
-                               DataSource::Preload preload,
-                               bool needs_first_frame,
-                               DemuxerCreatedCB on_demuxer_created);
+  PipelineStatus CreateDemuxer(
+      bool load_media_source,
+      DataSource::Preload preload,
+      bool needs_first_frame,
+      DemuxerCreatedCB on_demuxer_created,
+      base::flat_map<std::string, std::string> headers);
 
 #if BUILDFLAG(IS_ANDROID)
   void SetAllowMediaPlayerRendererCredentials(bool allow);
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // Methods that help manage or access |data_source_|
-  const DataSource* GetDataSourceForTesting() const;
+  DataSource* GetDataSourceForTesting() const;
   void SetDataSource(std::unique_ptr<DataSource> data_source);
   void OnBufferingHaveEnough(bool enough);
   void SetPreload(DataSource::Preload preload);
@@ -167,7 +169,7 @@ class MEDIA_EXPORT DemuxerManager {
   bool HasDataSource() const;
   bool HasDemuxer() const;
   bool HasDemuxerOverride() const;
-  absl::optional<GURL> GetDataSourceUrlAfterRedirects() const;
+  std::optional<GURL> GetDataSourceUrlAfterRedirects() const;
   bool DataSourceFullyBuffered() const;
   bool IsStreaming() const;
   bool PassedDataSourceTimingAllowOriginCheck() const;
@@ -186,7 +188,9 @@ class MEDIA_EXPORT DemuxerManager {
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-  std::unique_ptr<media::Demuxer> CreateMediaUrlDemuxer(bool hls_content);
+  std::unique_ptr<media::Demuxer> CreateMediaUrlDemuxer(
+      bool hls_content, 
+      base::flat_map<std::string, std::string> headers);
 #endif  // BUILDFLAG(IS_ANDROID)
 
   void SetDemuxer(std::unique_ptr<Demuxer> demuxer);

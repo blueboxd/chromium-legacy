@@ -41,6 +41,7 @@
 #include "chrome/updater/cleanup_task.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/find_unregistered_apps_task.h"
 #include "chrome/updater/installer.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/policy/service.h"
@@ -656,6 +657,10 @@ void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
 
   std::vector<base::OnceCallback<void(base::OnceClosure)>> new_tasks;
   new_tasks.push_back(
+      base::BindOnce(&FindUnregisteredAppsTask::Run,
+                     base::MakeRefCounted<FindUnregisteredAppsTask>(
+                         config_, GetUpdaterScope())));
+  new_tasks.push_back(
       base::BindOnce(&RemoveUninstalledAppsTask::Run,
                      base::MakeRefCounted<RemoveUninstalledAppsTask>(
                          config_, GetUpdaterScope())));
@@ -775,6 +780,7 @@ void UpdateServiceImpl::CheckForUpdate(
   if (!config_->GetUpdaterPersistedData()
            ->GetProductVersion(app_id)
            .IsValid()) {
+    VLOG(1) << __func__ << ": App not registered: " << app_id;
     std::move(callback).Run(Result::kInvalidArgument);
     return;
   }

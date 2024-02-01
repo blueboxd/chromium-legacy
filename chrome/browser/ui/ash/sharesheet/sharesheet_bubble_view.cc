@@ -152,7 +152,7 @@ class SharesheetBubbleView::SharesheetParentWidgetObserver
   }
 
  private:
-  raw_ptr<SharesheetBubbleView, ExperimentalAsh> owner_;
+  raw_ptr<SharesheetBubbleView> owner_;
   base::ScopedObservation<views::Widget, views::WidgetObserver> observer_{this};
 };
 
@@ -538,7 +538,7 @@ bool SharesheetBubbleView::OnKeyPressed(const ui::KeyEvent& event) {
 
   const size_t default_views = default_view_->children().size();
   auto* expanded_view_table =
-      show_expanded_view_ ? expanded_view_->children()[1] : nullptr;
+      show_expanded_view_ ? expanded_view_->children()[1].get() : nullptr;
   const size_t targets =
       default_views +
       (show_expanded_view_ ? expanded_view_table->children().size() : 0);
@@ -633,7 +633,7 @@ void SharesheetBubbleView::InitBubble() {
 void SharesheetBubbleView::SetUpAndShowBubble() {
   main_view_->SetFocusBehavior(View::FocusBehavior::NEVER);
   views::BubbleDialogDelegateView::CreateBubble(base::WrapUnique(this));
-  GetWidget()->GetRootView()->Layout();
+  GetWidget()->GetRootView()->DeprecatedLayoutImmediately();
   RecordMimeTypeMetric(intent_);
   ShowWidgetWithAnimateFadeIn();
 

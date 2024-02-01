@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ref.h"
-#include "chrome/browser/favicon/favicon_utils.h"
-#include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
+#include <utility>
 
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/scoped_observation.h"
@@ -15,7 +14,9 @@
 #include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -89,6 +90,42 @@ class BookmarkDragImageSource : public gfx::CanvasImageSource {
         count_(count) {}
 
  private:
+#if !BUILDFLAG(IS_MAC)
+  void DrawCountBubble(const gfx::FontList& font_list,
+                       const gfx::RectF& container_rect,
+                       cc::PaintFlags paint_flags,
+                       gfx::Canvas* canvas) {
+    // Draw bookmark count if more than 1 bookmark is dragged.
+    std::unique_ptr<gfx::RenderText> render_text =
+        gfx::RenderText::CreateRenderText();
+    render_text->SetFontList(font_list);
+    render_text->SetCursorEnabled(false);
+    render_text->SetColor(
+        color_provider_->GetColor(kColorBookmarkDragImageCountForeground));
+    render_text->SetText(base::NumberToString16(count_));
+    render_text->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+
+    // We measure the count text size to determine container width, as the
+    // container is a rounded rect behind the text.
+    int count_width = render_text->GetStringSize().width();
+    int count_container_width =
+        std::max(kCountContainerRadius * 2, count_width + 2 * kCountPadding);
+
+    // Draw the count container.
+    gfx::Rect count_container_rect(
+        container_rect.right() - count_container_width, 0,
+        count_container_width, kCountContainerRadius * 2);
+    paint_flags.setColor(
+        color_provider_->GetColor(kColorBookmarkDragImageCountBackground));
+    canvas->DrawRoundRect(gfx::RectF(count_container_rect),
+                          kCountContainerRadius, paint_flags);
+
+    // Draw the count text.
+    render_text->SetDisplayRect(count_container_rect);
+    render_text->Draw(canvas);
+  }
+#endif  // BUILDFLAG(IS_MAC)
+
   // gfx::CanvasImageSource overrides:
   void Draw(gfx::Canvas* canvas) override {
     cc::PaintFlags paint_flags;

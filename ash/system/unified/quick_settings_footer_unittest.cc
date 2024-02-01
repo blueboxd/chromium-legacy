@@ -75,7 +75,7 @@ class QuickSettingsFooterTest : public NoSessionAshTestBase {
   std::unique_ptr<views::Widget> widget_;
 
   // Owned by `widget_`.
-  raw_ptr<QuickSettingsFooter, DanglingUntriaged | ExperimentalAsh> footer_;
+  raw_ptr<QuickSettingsFooter, DanglingUntriaged> footer_;
 };
 
 // Tests that all buttons are with the correct view id, catalog name and UMA
@@ -212,7 +212,7 @@ TEST_F(QuickSettingsFooterTest, ButtonStatesGuestMode) {
 }
 
 TEST_F(QuickSettingsFooterTest, ButtonStatesPublicAccount) {
-  SimulateUserLogin("foo@example.com", user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  SimulateUserLogin("foo@example.com", user_manager::UserType::kPublicAccount);
   SetUpView();
 
   ASSERT_TRUE(GetSettingsButton());
@@ -264,8 +264,8 @@ TEST_F(QuickSettingsFooterTest, SignOutButtonRecordsUmaAndSignsOut) {
 
 // Settings button is disabled when kSettingsIconDisabled is set.
 TEST_F(QuickSettingsFooterTest, DisableSettingsIconPolicy) {
-  GetSessionControllerClient()->AddUserSession("foo@example.com",
-                                               user_manager::USER_TYPE_REGULAR);
+  GetSessionControllerClient()->AddUserSession(
+      "foo@example.com", user_manager::UserType::kRegular);
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::ACTIVE);
   SetUpView();

@@ -177,7 +177,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // Overridden from SurfaceTreeHost:
   void DidReceiveCompositorFrameAck() override;
 
-  // Overridden from SurfaceDelegate:
+  // ShellSurfaceBase:
   bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override;
@@ -187,6 +187,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   void UnsetPip() override;
   void SetFloatToLocation(
       chromeos::FloatStartLocation float_start_location) override;
+  void OnDidProcessDisplayChanges(
+      const DisplayConfigurationChange& configuration_change) override;
 
   // Overridden from views::WidgetDelegate:
   bool CanMaximize() const override;
@@ -206,10 +208,6 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
-
-  // Overridden from display::DisplayObserver:
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
 
   // Overridden from ui::CompositorLockClient:
   void CompositorLockTimedOut() override;
@@ -259,7 +257,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   gfx::Rect GetVisibleBounds() const override;
   gfx::Rect GetShadowBounds() const override;
   void InitializeWindowState(ash::WindowState* window_state) override;
-  absl::optional<gfx::Rect> GetWidgetBounds() const override;
+  std::optional<gfx::Rect> GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
   bool OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
@@ -308,8 +306,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   Orientation orientation_ = Orientation::LANDSCAPE;
   Orientation expected_orientation_ = Orientation::LANDSCAPE;
 
-  raw_ptr<ash::ClientControlledState, ExperimentalAsh>
-      client_controlled_state_ = nullptr;
+  raw_ptr<ash::ClientControlledState> client_controlled_state_ = nullptr;
 
   chromeos::WindowStateType pending_window_state_ =
       chromeos::WindowStateType::kNormal;

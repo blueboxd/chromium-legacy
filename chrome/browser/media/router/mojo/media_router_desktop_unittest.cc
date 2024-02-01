@@ -121,8 +121,7 @@ std::string RouteMessageToString(const RouteMessagePtr& message) {
     const base::StringPiece src(
         reinterpret_cast<const char*>(message->data.value().data()),
         message->data.value().size());
-    base::Base64Encode(src, &result);
-    result = "binary=" + result;
+    result = "binary=" + base::Base64Encode(src);
   }
   return result;
 }
@@ -261,7 +260,7 @@ TEST_F(MediaRouterDesktopTest, CreateRouteFails) {
                                   kInvalidFrameNodeId, _, _))
       .WillOnce(WithArg<6>(
           Invoke([](mojom::MediaRouteProvider::CreateRouteCallback& cb) {
-            std::move(cb).Run(absl::nullopt, nullptr, std::string(kError),
+            std::move(cb).Run(std::nullopt, nullptr, std::string(kError),
                               mojom::RouteRequestResultCode::TIMED_OUT);
           })));
 
@@ -316,7 +315,7 @@ TEST_F(MediaRouterDesktopTest, JoinRouteTimedOutFails) {
                   kInvalidFrameNodeId, base::Milliseconds(kTimeoutMillis), _))
       .WillOnce(WithArg<5>(
           Invoke([](mojom::MediaRouteProvider::JoinRouteCallback& cb) {
-            std::move(cb).Run(absl::nullopt, nullptr, std::string(kError),
+            std::move(cb).Run(std::nullopt, nullptr, std::string(kError),
                               mojom::RouteRequestResultCode::TIMED_OUT);
           })));
 
@@ -747,13 +746,12 @@ TEST_F(MediaRouterDesktopTest, GetMediaController) {
   UpdateRoutes(mojom::MediaRouteProviderId::CAST, {CreateMediaRoute()});
 
   EXPECT_CALL(mock_cast_provider_,
-              CreateMediaRouteControllerInternal(kRouteId, _, _, _))
+              BindMediaControllerInternal(kRouteId, _, _, _))
       .WillOnce(
           [&](const std::string& route_id,
               mojo::PendingReceiver<mojom::MediaController>& media_controller,
               mojo::PendingRemote<mojom::MediaStatusObserver>& observer,
-              MockMediaRouteProvider::CreateMediaRouteControllerCallback&
-                  callback) {
+              MockMediaRouteProvider::BindMediaControllerCallback& callback) {
             mock_controller.Bind(std::move(media_controller));
             observer_remote_held_by_controller.Bind(std::move(observer));
             std::move(callback).Run(true);
@@ -979,13 +977,14 @@ TEST_F(MediaRouterDesktopTest, GetMirroringMediaControllerHost) {
   local_mirroring_route.set_controller_type(RouteControllerType::kGeneric);
   std::vector<MediaRoute> local_mirroring_routes{local_mirroring_route};
   EXPECT_CALL(mock_cast_provider_,
-              CreateMediaRouteControllerInternal(kRouteId, _, _, _))
+              BindMediaControllerInternal(kRouteId, _, _, _))
       .WillOnce(
           [&](const std::string& route_id,
               mojo::PendingReceiver<mojom::MediaController>& media_controller,
               mojo::PendingRemote<mojom::MediaStatusObserver>& observer,
-              MockMediaRouteProvider::CreateMediaRouteControllerCallback&
-                  callback) { std::move(callback).Run(true); });
+              MockMediaRouteProvider::BindMediaControllerCallback& callback) {
+            std::move(callback).Run(true);
+          });
   UpdateRoutes(mojom::MediaRouteProviderId::CAST, local_mirroring_routes);
   base::RunLoop().RunUntilIdle();
 

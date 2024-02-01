@@ -7,7 +7,8 @@ import {isChromeOS} from 'chrome://resources/js/platform.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {listenOnce} from 'chrome://resources/js/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ChooserType, ContentSetting, ContentSettingsTypes, SiteDetailsElement, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl, WebsiteUsageBrowserProxy, WebsiteUsageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import type {SiteDetailsElement, WebsiteUsageBrowserProxy} from 'chrome://settings/lazy_load.js';
+import {ChooserType, ContentSetting, ContentSettingsTypes, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl, WebsiteUsageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions, Router, routes} from 'chrome://settings/settings.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
@@ -15,7 +16,8 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
-import {createContentSettingTypeToValuePair, createRawChooserException, createRawSiteException, createSiteSettingsPrefs, SiteSettingsPref} from './test_util.js';
+import type {SiteSettingsPref} from './test_util.js';
+import {createContentSettingTypeToValuePair, createRawChooserException, createRawSiteException, createSiteSettingsPrefs} from './test_util.js';
 
 // clang-format on
 
@@ -54,6 +56,7 @@ suite('SiteDetails', function() {
   setup(function() {
     loadTimeData.overrideValues({
       blockMidiByDefault: true,
+      enableWebPrintingContentSetting: true,
     });
     prefs = createSiteSettingsPrefs(
         [],
@@ -68,6 +71,9 @@ suite('SiteDetails', function() {
               })]),
           createContentSettingTypeToValuePair(
               ContentSettingsTypes.JAVASCRIPT,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.JAVASCRIPT_JIT,
               [createRawSiteException('https://foo.com:443')]),
           createContentSettingTypeToValuePair(
               ContentSettingsTypes.SOUND,
@@ -148,6 +154,9 @@ suite('SiteDetails', function() {
               [createRawSiteException('https://foo.com:443')]),
           createContentSettingTypeToValuePair(
               ContentSettingsTypes.VR,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.WEB_PRINTING,
               [createRawSiteException('https://foo.com:443')]),
           createContentSettingTypeToValuePair(
               ContentSettingsTypes.WINDOW_MANAGEMENT,

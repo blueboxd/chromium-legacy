@@ -5,6 +5,7 @@
 #include "extensions/renderer/api/messaging/one_time_message_handler.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -14,6 +15,7 @@
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/mojom/message_port.mojom-shared.h"
 #include "extensions/renderer/api/messaging/message_target.h"
 #include "extensions/renderer/api/messaging/messaging_util.h"
@@ -61,8 +63,8 @@ class OneTimeMessageHandlerTest : public NativeExtensionBindingsSystemUnittest {
     v8::HandleScope handle_scope(isolate());
     v8::Local<v8::Context> context = MainContext();
 
-    script_context_ = CreateScriptContext(context, extension_.get(),
-                                          Feature::BLESSED_EXTENSION_CONTEXT);
+    script_context_ = CreateScriptContext(
+        context, extension_.get(), mojom::ContextType::kPrivilegedExtension);
     script_context_->set_url(extension_->url());
     bindings_system()->UpdateBindingsForContext(script_context_);
   }
@@ -74,7 +76,7 @@ class OneTimeMessageHandlerTest : public NativeExtensionBindingsSystemUnittest {
   bool UseStrictIPCMessageSender() override { return true; }
 
   std::string GetGlobalProperty(v8::Local<v8::Context> context,
-                                base::StringPiece property) {
+                                std::string_view property) {
     return GetStringPropertyFromObject(context->Global(), context, property);
   }
 
@@ -113,13 +115,6 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndDontExpectReply) {
                                      mojom::ChannelType::kSendMessage,
                                      messaging_util::kSendMessageChannel,
                                      testing::_, testing::_))
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-      ;
-  EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true))
-      .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#else
       .WillOnce([&mock_message_port_host](
                     ScriptContext* script_context, const PortId& port_id,
                     const MessageTarget& target,
@@ -135,15 +130,12 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndDontExpectReply) {
   EXPECT_CALL(mock_message_port_host, PostMessage(message));
   EXPECT_CALL(mock_message_port_host, ClosePort(true))
       .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#endif
 
   mojo::PendingAssociatedRemote<mojom::MessagePort> message_port;
   mojo::PendingAssociatedReceiver<mojom::MessagePortHost>
       message_port_host_receiver;
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   messaging_service()->BindPortForTesting(
       script_context(), port_id, message_port, message_port_host_receiver);
-#endif
 
   message_handler()->SendMessage(
       script_context(), port_id, target, mojom::ChannelType::kSendMessage,
@@ -184,11 +176,6 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndExpectCallbackReply) {
                                      mojom::ChannelType::kSendMessage,
                                      messaging_util::kSendMessageChannel,
                                      testing::_, testing::_))
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-      ;
-  EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message))
-      .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#else
       .WillOnce([&mock_message_port_host](
                     ScriptContext* script_context, const PortId& port_id,
                     const MessageTarget& target,
@@ -203,15 +190,12 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndExpectCallbackReply) {
       });
   EXPECT_CALL(mock_message_port_host, PostMessage(message))
       .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#endif
 
   mojo::PendingAssociatedRemote<mojom::MessagePort> message_port;
   mojo::PendingAssociatedReceiver<mojom::MessagePortHost>
       message_port_host_receiver;
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   messaging_service()->BindPortForTesting(
       script_context(), port_id, message_port, message_port_host_receiver);
-#endif
 
   message_handler()->SendMessage(
       script_context(), port_id, target, mojom::ChannelType::kSendMessage,
@@ -231,14 +215,8 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndExpectCallbackReply) {
 
   run_loop = std::make_unique<base::RunLoop>();
   // Deliver the reply; the message port should close.
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(),
-              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true))
-      .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#else
   EXPECT_CALL(mock_message_port_host, ClosePort(true))
       .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#endif
   const Message reply("\"Hi\"", mojom::SerializationFormat::kJson, false);
   message_handler()->DeliverMessage(script_context(), reply, port_id);
   run_loop->Run();
@@ -275,10 +253,6 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndExpectPromiseReply) {
                                      mojom::ChannelType::kSendMessage,
                                      messaging_util::kSendMessageChannel,
                                      testing::_, testing::_))
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-      ;
-  EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message));
-#else
       .WillOnce([&mock_message_port_host](
                     ScriptContext* script_context, const PortId& port_id,
                     const MessageTarget& target,
@@ -292,15 +266,12 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndExpectPromiseReply) {
         mock_message_port_host.BindReceiver(std::move(port_host));
       });
   EXPECT_CALL(mock_message_port_host, PostMessage(message));
-#endif
 
   mojo::PendingAssociatedRemote<mojom::MessagePort> message_port;
   mojo::PendingAssociatedReceiver<mojom::MessagePortHost>
       message_port_host_receiver;
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   messaging_service()->BindPortForTesting(
       script_context(), port_id, message_port, message_port_host_receiver);
-#endif
   v8::Local<v8::Promise> promise = message_handler()->SendMessage(
       script_context(), port_id, target, mojom::ChannelType::kSendMessage,
       message, binding::AsyncResponseType::kPromise, v8::Local<v8::Function>(),
@@ -318,14 +289,8 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndExpectPromiseReply) {
 
   base::RunLoop run_loop;
   // Deliver the reply; the message port should close.
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(),
-              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true))
-      .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#else
   EXPECT_CALL(mock_message_port_host, ClosePort(true))
       .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#endif
   const Message reply("\"Hi\"", mojom::SerializationFormat::kJson, false);
   message_handler()->DeliverMessage(script_context(), reply, port_id);
   run_loop.Run();
@@ -359,11 +324,7 @@ TEST_F(OneTimeMessageHandlerTest, DisconnectOpenerCallback) {
                                      messaging_util::kSendMessageChannel,
                                      testing::_, testing::_));
   MockMessagePortHost mock_message_port_host;
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message));
-#else
   EXPECT_CALL(mock_message_port_host, PostMessage(message));
-#endif
   message_handler()->SendMessage(script_context(), port_id, target,
                                  mojom::ChannelType::kSendMessage, message,
                                  binding::AsyncResponseType::kCallback,
@@ -402,11 +363,7 @@ TEST_F(OneTimeMessageHandlerTest, DisconnectOpenerPromise) {
                                      testing::_, testing::_));
   MockMessagePortHost mock_message_port_host;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(), SendPostMessageToPort(port_id, message));
-#else
   EXPECT_CALL(mock_message_port_host, PostMessage(message));
-#endif
   v8::Local<v8::Promise> promise = message_handler()->SendMessage(
       script_context(), port_id, target, mojom::ChannelType::kSendMessage,
       message, binding::AsyncResponseType::kPromise, v8::Local<v8::Function>(),
@@ -468,25 +425,17 @@ TEST_F(OneTimeMessageHandlerTest, DeliverMessageToReceiverWithNoReply) {
   message_handler()->AddReceiverForTesting(
       script_context(), port_id, sender, messaging_util::kOnMessageEvent,
       message_port_remote, message_port_host_receiver);
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   message_port_remote.EnableUnassociatedUsage();
   message_port_host_receiver.EnableUnassociatedUsage();
   mock_message_port_host.BindReceiver(std::move(message_port_host_receiver));
-#endif
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
 
   EXPECT_EQ("undefined", GetGlobalProperty(context, "eventMessage"));
   EXPECT_EQ("undefined", GetGlobalProperty(context, "eventSender"));
 
   base::RunLoop run_loop;
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(),
-              SendMessageResponsePending(MSG_ROUTING_NONE, port_id))
-      .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#else
   EXPECT_CALL(mock_message_port_host, ResponsePending())
       .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#endif
   const Message message("\"Hi\"", mojom::SerializationFormat::kJson, false);
   message_handler()->DeliverMessage(script_context(), message, port_id);
 
@@ -535,11 +484,9 @@ TEST_F(OneTimeMessageHandlerTest, DeliverMessageToReceiverAndReply) {
   message_handler()->AddReceiverForTesting(
       script_context(), port_id, sender, messaging_util::kOnMessageEvent,
       message_port_remote, message_port_host_receiver);
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   message_port_remote.EnableUnassociatedUsage();
   message_port_host_receiver.EnableUnassociatedUsage();
   mock_message_port_host.BindReceiver(std::move(message_port_host_receiver));
-#endif
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
 
   const Message message("\"Hi\"", mojom::SerializationFormat::kJson, false);
@@ -547,21 +494,11 @@ TEST_F(OneTimeMessageHandlerTest, DeliverMessageToReceiverAndReply) {
   base::RunLoop run_loop;
   // When the listener replies, we should post the reply to the message port and
   // close the channel.
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(
-                  port_id, Message(R"({"data":"hey"})",
-                                   mojom::SerializationFormat::kJson, false)));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true))
-      .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#else
   EXPECT_CALL(mock_message_port_host,
               PostMessage(Message(R"({"data":"hey"})",
                                   mojom::SerializationFormat::kJson, false)));
   EXPECT_CALL(mock_message_port_host, ClosePort(true))
       .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#endif
   message_handler()->DeliverMessage(script_context(), message, port_id);
   run_loop.Run();
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
@@ -599,19 +536,12 @@ TEST_F(OneTimeMessageHandlerTest, TryReplyingMultipleTimes) {
   message_handler()->AddReceiverForTesting(
       script_context(), port_id, sender, messaging_util::kOnMessageEvent,
       message_port_remote, message_port_host_receiver);
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   message_port_remote.EnableUnassociatedUsage();
   message_port_host_receiver.EnableUnassociatedUsage();
   mock_message_port_host.BindReceiver(std::move(message_port_host_receiver));
-#endif
   const Message message("\"Hi\"", mojom::SerializationFormat::kJson, false);
 
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(),
-              SendMessageResponsePending(MSG_ROUTING_NONE, port_id));
-#else
   EXPECT_CALL(mock_message_port_host, ResponsePending());
-#endif
   message_handler()->DeliverMessage(script_context(), message, port_id);
 
   v8::Local<v8::Value> reply =
@@ -623,21 +553,11 @@ TEST_F(OneTimeMessageHandlerTest, TryReplyingMultipleTimes) {
   v8::Local<v8::Value> args[] = {reply_arg};
 
   base::RunLoop run_loop;
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(
-                  port_id,
-                  Message("\"hi\"", mojom::SerializationFormat::kJson, false)));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true))
-      .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#else
   EXPECT_CALL(
       mock_message_port_host,
       PostMessage(Message("\"hi\"", mojom::SerializationFormat::kJson, false)));
   EXPECT_CALL(mock_message_port_host, ClosePort(true))
       .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#endif
   RunFunction(reply.As<v8::Function>(), context, std::size(args), args);
   run_loop.Run();
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
@@ -678,12 +598,10 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInListener) {
       script_context(), original_port_id, sender,
       messaging_util::kOnMessageEvent, message_port_remote,
       message_port_host_receiver);
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   message_port_remote.EnableUnassociatedUsage();
   message_port_host_receiver.EnableUnassociatedUsage();
   original_mock_message_port_host.BindReceiver(
       std::move(message_port_host_receiver));
-#endif
 
   // On delivering the message, we expect the listener to open a new message
   // channel by using sendMessage(). The original message channel will be
@@ -700,15 +618,6 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInListener) {
                                      target, mojom::ChannelType::kSendMessage,
                                      messaging_util::kSendMessageChannel,
                                      testing::_, testing::_))
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-      ;
-  EXPECT_CALL(
-      *ipc_message_sender(),
-      SendPostMessageToPort(listener_created_port_id, listener_sent_message));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendCloseMessagePort(MSG_ROUTING_NONE, original_port_id, false))
-      .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#else
       .WillOnce([&listener_mock_message_port_host](
                     ScriptContext* script_context, const PortId& port_id,
                     const MessageTarget& target,
@@ -725,7 +634,6 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInListener) {
               PostMessage(listener_sent_message));
   EXPECT_CALL(original_mock_message_port_host, ClosePort(false))
       .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#endif
 
   const Message message("\"Hi\"", mojom::SerializationFormat::kJson, false);
   message_handler()->DeliverMessage(script_context(), message,
@@ -766,12 +674,6 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInCallback) {
                                      mojom::ChannelType::kSendMessage,
                                      messaging_util::kSendMessageChannel,
                                      testing::_, testing::_))
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-      ;
-  EXPECT_CALL(*ipc_message_sender(),
-              SendPostMessageToPort(original_port_id, original_message))
-      .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#else
       .WillOnce([&mock_message_port_host](
                     ScriptContext* script_context, const PortId& port_id,
                     const MessageTarget& target,
@@ -786,7 +688,6 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInCallback) {
       });
   EXPECT_CALL(mock_message_port_host, PostMessage(original_message))
       .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#endif
   RunFunctionOnGlobal(send_message, context, 0, nullptr);
   run_loop->Run();
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
@@ -803,17 +704,6 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInCallback) {
                                      mojom::ChannelType::kSendMessage,
                                      messaging_util::kSendMessageChannel,
                                      testing::_, testing::_))
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-      ;
-  EXPECT_CALL(
-      *ipc_message_sender(),
-      SendPostMessageToPort(
-          new_port_id,
-          Message("\"bar\"", mojom::SerializationFormat::kJson, false)));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendCloseMessagePort(MSG_ROUTING_NONE, original_port_id, true))
-      .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#else
       .WillOnce([&mock_message_port_host1](
                     ScriptContext* script_context, const PortId& port_id,
                     const MessageTarget& target,
@@ -831,7 +721,6 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageInCallback) {
                                   false)));
   EXPECT_CALL(mock_message_port_host, ClosePort(true))
       .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#endif
   const Message reply("\"reply\"", mojom::SerializationFormat::kJson, false);
   message_handler()->DeliverMessage(script_context(), reply, original_port_id);
   run_loop->Run();
@@ -867,26 +756,16 @@ TEST_F(OneTimeMessageHandlerTest, ResponseCallbackGarbageCollected) {
   message_handler()->AddReceiverForTesting(
       script_context(), port_id, sender, messaging_util::kOnMessageEvent,
       message_port_remote, message_port_host_receiver);
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   message_port_remote.EnableUnassociatedUsage();
   message_port_host_receiver.EnableUnassociatedUsage();
   mock_message_port_host.BindReceiver(std::move(message_port_host_receiver));
-#endif
 
   const Message message("\"Hi\"", mojom::SerializationFormat::kJson, false);
   base::RunLoop run_loop;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(),
-              SendMessageResponsePending(MSG_ROUTING_NONE, port_id));
-  EXPECT_CALL(*ipc_message_sender(),
-              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, false))
-      .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#else
   EXPECT_CALL(mock_message_port_host, ResponsePending());
   EXPECT_CALL(mock_message_port_host, ClosePort(false))
       .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
-#endif
   message_handler()->DeliverMessage(script_context(), message, port_id);
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
   EXPECT_EQ(
@@ -938,11 +817,9 @@ TEST_F(OneTimeMessageHandlerTest, ChannelClosedIfTrueNotReturned) {
   message_handler()->AddReceiverForTesting(
       script_context(), port_id, sender, messaging_util::kOnMessageEvent,
       message_port_remote, message_port_host_receiver);
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   message_port_remote.EnableUnassociatedUsage();
   message_port_host_receiver.EnableUnassociatedUsage();
   mock_message_port_host.BindReceiver(std::move(message_port_host_receiver));
-#endif
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
 
   TestJSRunner::AllowErrors allow_errors;
@@ -951,14 +828,8 @@ TEST_F(OneTimeMessageHandlerTest, ChannelClosedIfTrueNotReturned) {
   // Dispatch the message. Since none of these listeners return `true`, the port
   // should close.
   const Message message("\"Hi\"", mojom::SerializationFormat::kJson, false);
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(),
-              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, false))
-      .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#else
   EXPECT_CALL(mock_message_port_host, ClosePort(false))
       .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#endif
   message_handler()->DeliverMessage(script_context(), message, port_id);
   run_loop->Run();
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
@@ -975,23 +846,15 @@ TEST_F(OneTimeMessageHandlerTest, ChannelClosedIfTrueNotReturned) {
   message_handler()->AddReceiverForTesting(
       script_context(), port_id, sender, messaging_util::kOnMessageEvent,
       message_port_remote1, message_port_host_receiver1);
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   message_port_remote1.EnableUnassociatedUsage();
   message_port_host_receiver1.EnableUnassociatedUsage();
   mock_message_port_host1.BindReceiver(std::move(message_port_host_receiver1));
-#endif
 
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
 
   run_loop = std::make_unique<base::RunLoop>();
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  EXPECT_CALL(*ipc_message_sender(),
-              SendMessageResponsePending(MSG_ROUTING_NONE, port_id))
-      .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#else
   EXPECT_CALL(mock_message_port_host1, ResponsePending())
       .WillOnce(base::test::RunClosure(run_loop->QuitClosure()));
-#endif
   message_handler()->DeliverMessage(script_context(), message, port_id);
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
   run_loop->Run();

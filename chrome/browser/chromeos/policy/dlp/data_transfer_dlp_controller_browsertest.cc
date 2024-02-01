@@ -35,7 +35,6 @@
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/reporting/client/mock_report_queue.h"
-#include "components/reporting/storage/test_storage_module.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -161,7 +160,7 @@ class FakeDlpController : public DataTransferDlpController,
   }
 
   raw_ptr<FakeClipboardNotifier> helper_ = nullptr;
-  absl::optional<ui::DataTransferEndpoint> blink_data_dst_;
+  std::optional<ui::DataTransferEndpoint> blink_data_dst_;
   bool force_paste_on_warn_ = false;
 
  protected:
@@ -207,9 +206,8 @@ class DataTransferDlpBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    test_reporting_ =
-        ::reporting::ReportingClient::TestEnvironment::CreateWithStorageModule(
-            base::MakeRefCounted<::reporting::test::TestStorageModule>());
+    test_reporting_ = ::reporting::ReportingClient::TestEnvironment::
+        CreateWithStorageModule();
 
     policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
         browser()->profile(),
@@ -246,6 +244,7 @@ class DataTransferDlpBrowserTest : public InProcessBrowserTest {
     reporting_queue_ = nullptr;
     dlp_controller_.reset();
     reporting_manager_.reset();
+    test_reporting_.reset();
   }
 
   void SetupTextfield() {
@@ -407,8 +406,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
             kMailUrl, "*", DlpRulesManager::Restriction::kClipboard, kRuleName1,
             kRuleId1, DlpRulesManager::Level::kWarn),
         run_loop);
-    event_generator_->PressKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
-    event_generator_->ReleaseKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+    event_generator_->PressAndReleaseKeyAndModifierKeys(ui::VKEY_V,
+                                                        ui::EF_CONTROL_DOWN);
 
     EXPECT_EQ("", base::UTF16ToUTF8(textfield_->GetText()));
     ASSERT_TRUE(dlp_controller_->ObserveWidget());
@@ -455,8 +454,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
         std::make_unique<ui::DataTransferEndpoint>((GURL(kMailUrl))));
     textfield_->SetText(std::u16string());
     textfield_->RequestFocus();
-    event_generator_->PressKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
-    event_generator_->ReleaseKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+    event_generator_->PressAndReleaseKeyAndModifierKeys(ui::VKEY_V,
+                                                        ui::EF_CONTROL_DOWN);
     EXPECT_EQ("", base::UTF16ToUTF8(textfield_->GetText()));
     ASSERT_TRUE(dlp_controller_->ObserveWidget());
     widget = helper_.GetWidget()->GetWeakPtr();

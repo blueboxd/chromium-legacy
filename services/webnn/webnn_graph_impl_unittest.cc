@@ -6,14 +6,19 @@
 
 #include <limits>
 
+#include "base/containers/contains.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
+#include "components/ml/webnn/features.mojom-features.h"
 #include "components/ml/webnn/graph_validation_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "services/webnn/public/mojom/webnn_context_provider.mojom.h"
 #include "services/webnn/public/mojom/webnn_graph.mojom.h"
 #include "services/webnn/webnn_context_impl.h"
@@ -51,7 +56,9 @@ class FakeWebNNGraphImpl final : public WebNNGraphImpl {
   // `WebNNGraphImpl::Compute()` function.
   void ComputeImpl(base::flat_map<std::string, mojo_base::BigBuffer> inputs,
                    mojom::WebNNGraph::ComputeCallback callback) override {
-    std::move(callback).Run(mojom::ComputeResult::kOk, absl::nullopt);
+    base::flat_map<std::string, mojo_base::BigBuffer> named_outputs;
+    std::move(callback).Run(
+        mojom::ComputeResult::NewNamedOutputs(std::move(named_outputs)));
   }
 };
 
@@ -99,55 +106,40 @@ bool ValidateInputsForComputing(
   mojo::Remote<mojom::WebNNContextProvider> provider_remote;
   WebNNContextProviderImpl::Create(
       provider_remote.BindNewPipeAndPassReceiver());
-  base::RunLoop run_loop_create_context;
-  bool is_callback_called = false;
+
+  base::test::TestFuture<mojom::CreateContextResultPtr> create_context_future;
+  provider_remote->CreateWebNNContext(mojom::CreateContextOptions::New(),
+                                      create_context_future.GetCallback());
+  mojom::CreateContextResultPtr create_context_result =
+      create_context_future.Take();
   mojo::Remote<mojom::WebNNContext> webnn_context;
-  auto options = mojom::CreateContextOptions::New();
-  provider_remote->CreateWebNNContext(
-      std::move(options),
-      base::BindLambdaForTesting([&](mojom::CreateContextResultPtr result) {
-        ASSERT_TRUE(result->is_context_remote());
-        webnn_context.Bind(std::move(result->get_context_remote()));
-        is_callback_called = true;
-        run_loop_create_context.Quit();
-      }));
-  run_loop_create_context.Run();
-  EXPECT_TRUE(is_callback_called);
+  webnn_context.Bind(std::move(create_context_result->get_context_remote()));
 
   // Creates WebNN Graph mojo interface with the graph information which is
   // validated before compiling.
+  base::test::TestFuture<mojom::CreateGraphResultPtr> create_graph_future;
+  webnn_context->CreateGraph(std::move(graph_info),
+                             create_graph_future.GetCallback());
+  mojom::CreateGraphResultPtr create_graph_result = create_graph_future.Take();
   mojo::Remote<mojom::WebNNGraph> webnn_graph;
-  base::RunLoop run_loop_create_graph;
-  is_callback_called = false;
-  webnn_context->CreateGraph(
-      std::move(graph_info),
-      base::BindLambdaForTesting(
-          [&](mojom::CreateGraphResultPtr create_graph_result) {
-            webnn_graph.Bind(
-                std::move(create_graph_result->get_graph_remote()));
-            is_callback_called = true;
-            run_loop_create_graph.Quit();
-          }));
-  run_loop_create_graph.Run();
-  EXPECT_TRUE(is_callback_called);
+  webnn_graph.Bind(std::move(create_graph_result->get_graph_remote()));
 
   // Validate the inputs in the `Compute` function.
-  base::RunLoop run_loop_compute;
-  is_callback_called = false;
-  bool valid = false;
-  webnn_graph->Compute(
-      std::move(inputs),
-      base::BindLambdaForTesting(
-          [&](mojom::ComputeResult result,
-              absl::optional<base::flat_map<std::string, mojo_base::BigBuffer>>
-                  ouputs) {
-            valid =
-                result == mojom::ComputeResult::kInvalidInputs ? false : true;
-            is_callback_called = true;
-            run_loop_compute.Quit();
-          }));
-  run_loop_compute.Run();
-  EXPECT_TRUE(is_callback_called);
+  bool valid = true;
+  // Set up the error handler for bad mojo messages.
+  mojo::SetDefaultProcessErrorHandler(
+      base::BindLambdaForTesting([&](const std::string& error_message) {
+        EXPECT_EQ(error_message,
+                  "The inputs for computation don't match the built graph's "
+                  "expectation.");
+        valid = false;
+      }));
+
+  base::test::TestFuture<mojom::ComputeResultPtr> compute_future;
+  webnn_graph->Compute(std::move(inputs), compute_future.GetCallback());
+  EXPECT_TRUE(compute_future.Wait());
+
+  mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   return valid;
 }
 
@@ -165,19 +157,23 @@ class WebNNGraphImplTest : public testing::Test {
   WebNNGraphImplTest& operator=(const WebNNGraphImplTest&) = delete;
 
   void SetUp() override {
-    WebNNContextProviderImpl::SetBackendForTesting(&backend_for_testing);
+    WebNNContextProviderImpl::SetBackendForTesting(&backend_for_testing_);
   }
   void TearDown() override {
     WebNNContextProviderImpl::SetBackendForTesting(nullptr);
   }
 
  protected:
-  WebNNGraphImplTest() = default;
+  WebNNGraphImplTest()
+      : scoped_feature_list_(
+            webnn::mojom::features::kWebMachineLearningNeuralNetwork) {}
   ~WebNNGraphImplTest() override = default;
 
  private:
-  FakeWebNNBackend backend_for_testing;
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::TaskEnvironment task_environment_;
+
+  FakeWebNNBackend backend_for_testing_;
 };
 
 struct OperandInfo {
@@ -293,7 +289,7 @@ TEST_F(WebNNGraphImplTest, ArgMinMaxTest) {
           "input", {2, 3, 4, 5}, mojom::Operand::DataType::kInt64);
       builder.BuildArgMinMax(kind, input_operand_id, input_operand_id, {0},
                              true, false);
-      EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), false);
+      EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
     }
   }
 }
@@ -413,21 +409,101 @@ TEST_F(WebNNGraphImplTest, ClampTest) {
   }
 }
 
+struct HardSigmoidTester {
+  OperandInfo input;
+  std::optional<float> alpha;
+  std::optional<float> beta;
+  OperandInfo output;
+  bool expected;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+    builder.BuildHardSigmoid(input_operand_id, output_operand_id, alpha, beta);
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
+  }
+};
+
+TEST_F(WebNNGraphImplTest, HardSigmoidTest) {
+  {
+    // Test hardSigmoid operator with default alpha and beta values.
+    HardSigmoidTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                .dimensions = {3, 4}},
+                      .output = {.type = mojom::Operand::DataType::kFloat32,
+                                 .dimensions = {3, 4}},
+                      .expected = true}
+        .Test();
+  }
+  {
+    // Test the invalid graph when the alpha value is NAN.
+    HardSigmoidTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                .dimensions = {2, 3, 4}},
+                      .alpha = NAN,
+                      .beta = 0.5,
+                      .output = {.type = mojom::Operand::DataType::kFloat32,
+                                 .dimensions = {2, 3, 4}},
+                      .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph when the beta value is NAN.
+    HardSigmoidTester{.input = {.type = mojom::Operand::DataType::kFloat16,
+                                .dimensions = {2, 3, 4}},
+                      .alpha = 1.0,
+                      .beta = NAN,
+                      .output = {.type = mojom::Operand::DataType::kFloat16,
+                                 .dimensions = {2, 3, 4}},
+                      .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for the output shapes are not expected.
+    HardSigmoidTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                                .dimensions = {4, 2}},
+                      .output = {.type = mojom::Operand::DataType::kFloat32,
+                                 .dimensions = {2}},
+                      .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for output types don't match.
+    HardSigmoidTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {2}},
+        .output = {.type = mojom::Operand::DataType::kInt32, .dimensions = {2}},
+        .expected = false}
+        .Test();
+  }
+}
+
+struct Activation {
+  mojom::Activation::Tag kind;
+  std::optional<ClampTester::ClampAttributes> clamp_attributes;
+  std::optional<float> elu_alpha;
+  std::optional<float> hard_sigmoid_alpha;
+  std::optional<float> hard_sigmoid_beta;
+  std::optional<float> leaky_relu_alpha;
+  std::optional<float> linear_alpha;
+  std::optional<float> linear_beta;
+  std::optional<float> softplus_steepness;
+};
+
 struct BatchNormalizationTester {
   OperandInfo input;
   OperandInfo mean;
   OperandInfo variance;
-  absl::optional<OperandInfo> scale;
-  absl::optional<OperandInfo> bias;
+  std::optional<OperandInfo> scale;
+  std::optional<OperandInfo> bias;
   struct BatchNormalizationAttributes {
-    absl::optional<uint64_t> scale_operand_id;
-    absl::optional<uint64_t> bias_operand_id;
+    std::optional<uint64_t> scale_operand_id;
+    std::optional<uint64_t> bias_operand_id;
     uint32_t axis = 1;
     float epsilon = 1e-5;
-    absl::optional<mojom::Activation::Tag> activation;
-    absl::optional<ClampTester::ClampAttributes> clamp_attributes;
-    absl::optional<float> elu_alpha;
-    absl::optional<float> leaky_relu_alpha;
+    std::optional<Activation> activation;
   };
   BatchNormalizationAttributes attributes;
   OperandInfo output;
@@ -513,10 +589,12 @@ TEST_F(WebNNGraphImplTest, BatchNormalizationTest) {
         .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .variance = {.type = mojom::Operand::DataType::kFloat32,
                      .dimensions = {2}},
-        .attributes = {.activation = mojom::Activation::Tag::kClamp,
-                       .clamp_attributes =
-                           ClampTester::ClampAttributes{.min_value = 1.0,
-                                                        .max_value = 6.0}},
+        .attributes = {.activation =
+                           Activation{
+                               .kind = mojom::Activation::Tag::kClamp,
+                               .clamp_attributes =
+                                   ClampTester::ClampAttributes{
+                                       .min_value = 1.0, .max_value = 6.0}}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 2, 3, 3}},
         .expected = true}
@@ -530,8 +608,27 @@ TEST_F(WebNNGraphImplTest, BatchNormalizationTest) {
         .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .variance = {.type = mojom::Operand::DataType::kFloat32,
                      .dimensions = {2}},
-        .attributes = {.activation = mojom::Activation::Tag::kElu,
-                       .elu_alpha = 1.0},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kElu,
+                                      .elu_alpha = 1.0}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test batchNormalization with hard_sigmoid activation.
+    BatchNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
+        .variance = {.type = mojom::Operand::DataType::kFloat32,
+                     .dimensions = {2}},
+        .attributes = {.activation =
+                           Activation{
+                               .kind = mojom::Activation::Tag::kHardSigmoid,
+                               .hard_sigmoid_alpha = 0.2,
+                               .hard_sigmoid_beta = 0.5}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 2, 3, 3}},
         .expected = true}
@@ -545,8 +642,27 @@ TEST_F(WebNNGraphImplTest, BatchNormalizationTest) {
         .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .variance = {.type = mojom::Operand::DataType::kFloat32,
                      .dimensions = {2}},
-        .attributes = {.activation = mojom::Activation::Tag::kLeakyRelu,
-                       .leaky_relu_alpha = 0.01},
+        .attributes = {.activation =
+                           Activation{
+                               .kind = mojom::Activation::Tag::kLeakyRelu,
+                               .leaky_relu_alpha = 0.01}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test batchNormalization with linear activation.
+    BatchNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
+        .variance = {.type = mojom::Operand::DataType::kFloat32,
+                     .dimensions = {2}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kLinear,
+                                      .linear_alpha = 0.01,
+                                      .linear_beta = 1}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 2, 3, 3}},
         .expected = true}
@@ -560,7 +676,8 @@ TEST_F(WebNNGraphImplTest, BatchNormalizationTest) {
         .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .variance = {.type = mojom::Operand::DataType::kFloat32,
                      .dimensions = {2}},
-        .attributes = {.activation = mojom::Activation::Tag::kRelu},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kRelu}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 2, 3, 3}},
         .expected = true}
@@ -574,7 +691,9 @@ TEST_F(WebNNGraphImplTest, BatchNormalizationTest) {
         .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .variance = {.type = mojom::Operand::DataType::kFloat32,
                      .dimensions = {2}},
-        .attributes = {.activation = mojom::Activation::Tag::kSigmoid},
+        .attributes = {.activation =
+                           Activation{.kind =
+                                          mojom::Activation::Tag::kSigmoid}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 2, 3, 3}},
         .expected = true}
@@ -588,7 +707,41 @@ TEST_F(WebNNGraphImplTest, BatchNormalizationTest) {
         .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .variance = {.type = mojom::Operand::DataType::kFloat32,
                      .dimensions = {2}},
-        .attributes = {.activation = mojom::Activation::Tag::kSoftmax},
+        .attributes = {.activation =
+                           Activation{.kind =
+                                          mojom::Activation::Tag::kSoftmax}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test BatchNormalization with softplus activation.
+    BatchNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
+        .variance = {.type = mojom::Operand::DataType::kFloat32,
+                     .dimensions = {2}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kSoftplus,
+                                      .softplus_steepness = 1.0}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test batchNormalization with softsign activation.
+    BatchNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
+        .variance = {.type = mojom::Operand::DataType::kFloat32,
+                     .dimensions = {2}},
+        .attributes = {.activation =
+                           Activation{.kind =
+                                          mojom::Activation::Tag::kSoftsign}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 2, 3, 3}},
         .expected = true}
@@ -602,7 +755,8 @@ TEST_F(WebNNGraphImplTest, BatchNormalizationTest) {
         .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .variance = {.type = mojom::Operand::DataType::kFloat32,
                      .dimensions = {2}},
-        .attributes = {.activation = mojom::Activation::Tag::kTanh},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kTanh}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 2, 3, 3}},
         .expected = true}
@@ -616,8 +770,9 @@ TEST_F(WebNNGraphImplTest, BatchNormalizationTest) {
         .mean = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .variance = {.type = mojom::Operand::DataType::kFloat32,
                      .dimensions = {2}},
-        .attributes = {.activation = mojom::Activation::Tag::kElu,
-                       .elu_alpha = -1.0},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kElu,
+                                      .elu_alpha = -1.0}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 2, 3, 3}},
         .expected = false}
@@ -1006,11 +1161,8 @@ struct Conv2dTester {
     uint32_t groups = 1;
     mojom::InputOperandLayout input_layout =
         mojom::InputOperandLayout::kChannelsFirst;
-    absl::optional<OperandInfo> bias;
-    absl::optional<mojom::Activation::Tag> activation;
-    absl::optional<ClampTester::ClampAttributes> clamp_attributes;
-    absl::optional<float> elu_alpha;
-    absl::optional<float> leaky_relu_alpha;
+    std::optional<OperandInfo> bias;
+    std::optional<Activation> activation;
   };
   Conv2dAttributes attributes;
   OperandInfo output;
@@ -1024,7 +1176,7 @@ struct Conv2dTester {
     uint64_t filter_operand_id =
         builder.BuildInput("filter", filter.dimensions, filter.type);
 
-    absl::optional<uint64_t> bias_operand_id;
+    std::optional<uint64_t> bias_operand_id;
     if (attributes.bias) {
       bias_operand_id = builder.BuildInput("bias", attributes.bias->dimensions,
                                            attributes.bias->type);
@@ -1107,31 +1259,54 @@ TEST_F(WebNNGraphImplTest, Conv2dTest) {
   }
   {
     // Test conv2d with clamp activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kDirect,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 5, 5}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kClamp,
-                                .clamp_attributes =
-                                    ClampTester::ClampAttributes{
-                                        .min_value = 1.0, .max_value = 6.0}},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kDirect,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{
+                               .kind = mojom::Activation::Tag::kClamp,
+                               .clamp_attributes =
+                                   ClampTester::ClampAttributes{
+                                       .min_value = 1.0, .max_value = 6.0}}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
         .Test();
   }
   {
     // Test conv2d with elu activation.
-    Conv2dTester{.input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 5, 5}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kElu,
-                                .elu_alpha = 1.0},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .expected = true}
+    Conv2dTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kElu,
+                                      .elu_alpha = 1.0}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test conv2d with hardSigmoid activation.
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kDirect,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{
+                               .kind = mojom::Activation::Tag::kHardSigmoid,
+                               .hard_sigmoid_alpha = 0.2,
+                               .hard_sigmoid_beta = 0.5}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
         .Test();
   }
   {
@@ -1141,8 +1316,26 @@ TEST_F(WebNNGraphImplTest, Conv2dTest) {
                   .dimensions = {1, 1, 5, 5}},
         .filter = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 1, 3, 3}},
-        .attributes = {.activation = mojom::Activation::Tag::kLeakyRelu,
-                       .leaky_relu_alpha = 0.01},
+        .attributes = {.activation =
+                           Activation{
+                               .kind = mojom::Activation::Tag::kLeakyRelu,
+                               .leaky_relu_alpha = 0.01}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test conv2d with linear activation.
+    Conv2dTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kLinear,
+                                      .linear_alpha = 0.01,
+                                      .linear_beta = 1}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
                    .dimensions = {1, 1, 3, 3}},
         .expected = true}
@@ -1150,67 +1343,111 @@ TEST_F(WebNNGraphImplTest, Conv2dTest) {
   }
   {
     // Test conv2d with relu activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kDirect,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 5, 5}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kRelu},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kDirect,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kRelu}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
         .Test();
   }
   {
     // Test conv2d with sigmoid activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kDirect,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 5, 5}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kSigmoid},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kDirect,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind =
+                                          mojom::Activation::Tag::kSigmoid}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
         .Test();
   }
   {
     // Test conv2d with softmax activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kDirect,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 5, 5}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kSoftmax},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kDirect,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind =
+                                          mojom::Activation::Tag::kSoftmax}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test conv2d with softplus activation.
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kDirect,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kSoftplus,
+                                      .softplus_steepness = 1.5}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test conv2d with softsign activation.
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kDirect,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind =
+                                          mojom::Activation::Tag::kSoftsign}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
         .Test();
   }
   {
     // Test conv2d with tanh activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kDirect,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 5, 5}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kTanh},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kDirect,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kTanh}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = true}
         .Test();
   }
   {
     // Test the invalid graph when elu activation has alpha < 0.
-    Conv2dTester{.input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 5, 5}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kElu,
-                                .elu_alpha = -1.0},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .expected = false}
+    Conv2dTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kElu,
+                                      .elu_alpha = -1.0}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = false}
         .Test();
   }
   {
@@ -1300,18 +1537,21 @@ TEST_F(WebNNGraphImplTest, Conv2dTest) {
   }
   {
     // Test the invalid graph when the max value is less than the min value.
-    Conv2dTester{.type = mojom::Conv2d_Type::kDirect,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 5, 5}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kClamp,
-                                .clamp_attributes =
-                                    ClampTester::ClampAttributes{
-                                        .min_value = 6.0, .max_value = 1.0}},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .expected = false}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kDirect,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 5, 5}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{
+                               .kind = mojom::Activation::Tag::kClamp,
+                               .clamp_attributes =
+                                   ClampTester::ClampAttributes{
+                                       .min_value = 6.0, .max_value = 1.0}}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = false}
         .Test();
   }
   {
@@ -1348,7 +1588,7 @@ TEST_F(WebNNGraphImplTest, Conv2dTest) {
 
     builder.BuildConv2d(mojom::Conv2d_Type::kDirect, input_operand_id,
                         filter_operand_id, input_operand_id,
-                        Conv2dTester::Conv2dAttributes{}, absl::nullopt);
+                        Conv2dTester::Conv2dAttributes{}, std::nullopt);
 
     EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
   }
@@ -1362,7 +1602,7 @@ TEST_F(WebNNGraphImplTest, Conv2dTest) {
 
     builder.BuildConv2d(mojom::Conv2d_Type::kDirect, input_operand_id,
                         filter_operand_id, filter_operand_id,
-                        Conv2dTester::Conv2dAttributes{}, absl::nullopt);
+                        Conv2dTester::Conv2dAttributes{}, std::nullopt);
 
     EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
   }
@@ -1450,70 +1690,99 @@ TEST_F(WebNNGraphImplTest, ConvTranspose2dTest) {
   }
   {
     // Test convTranspose2d with clamp activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kTransposed,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 3, 3}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kClamp,
-                                .clamp_attributes =
-                                    ClampTester::ClampAttributes{
-                                        .min_value = 1.0, .max_value = 6.0}},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 5, 5}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kTransposed,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 3, 3}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{
+                               .kind = mojom::Activation::Tag::kClamp,
+                               .clamp_attributes =
+                                   ClampTester::ClampAttributes{
+                                       .min_value = 1.0, .max_value = 6.0}}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 5, 5}},
+        .expected = true}
         .Test();
   }
   {
     // Test convTranspose2d with relu activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kTransposed,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 3, 3}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kRelu},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 5, 5}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kTransposed,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 3, 3}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kRelu}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 5, 5}},
+        .expected = true}
         .Test();
   }
   {
     // Test convTranspose2d with sigmoid activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kTransposed,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 3, 3}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kSigmoid},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 5, 5}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kTransposed,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 3, 3}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind =
+                                          mojom::Activation::Tag::kSigmoid}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 5, 5}},
+        .expected = true}
         .Test();
   }
   {
     // Test convTranspose2d with softmax activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kTransposed,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 3, 3}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kSoftmax},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 5, 5}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kTransposed,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 3, 3}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind =
+                                          mojom::Activation::Tag::kSoftmax}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 5, 5}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test convTranspose2d with softplus activation.
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kTransposed,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 3, 3}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kSoftplus,
+                                      .softplus_steepness = 1.5}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 5, 5}},
+        .expected = true}
         .Test();
   }
   {
     // Test convTranspose2d with tanh activation.
-    Conv2dTester{.type = mojom::Conv2d_Type::kTransposed,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 3, 3}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kTanh},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 5, 5}},
-                 .expected = true}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kTransposed,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 3, 3}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{.kind = mojom::Activation::Tag::kTanh}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 5, 5}},
+        .expected = true}
         .Test();
   }
   {
@@ -1629,18 +1898,21 @@ TEST_F(WebNNGraphImplTest, ConvTranspose2dTest) {
   }
   {
     // Test the invalid graph when the max value is less than the min value.
-    Conv2dTester{.type = mojom::Conv2d_Type::kTransposed,
-                 .input = {.type = mojom::Operand::DataType::kFloat32,
-                           .dimensions = {1, 1, 3, 3}},
-                 .filter = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation = mojom::Activation::Tag::kClamp,
-                                .clamp_attributes =
-                                    ClampTester::ClampAttributes{
-                                        .min_value = 6.0, .max_value = 1.0}},
-                 .output = {.type = mojom::Operand::DataType::kFloat32,
-                            .dimensions = {1, 1, 5, 5}},
-                 .expected = false}
+    Conv2dTester{
+        .type = mojom::Conv2d_Type::kTransposed,
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 1, 3, 3}},
+        .filter = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .attributes = {.activation =
+                           Activation{
+                               .kind = mojom::Activation::Tag::kClamp,
+                               .clamp_attributes =
+                                   ClampTester::ClampAttributes{
+                                       .min_value = 6.0, .max_value = 1.0}}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 5, 5}},
+        .expected = false}
         .Test();
   }
   {
@@ -1653,7 +1925,7 @@ TEST_F(WebNNGraphImplTest, ConvTranspose2dTest) {
 
     builder.BuildConv2d(mojom::Conv2d_Type::kTransposed, input_operand_id,
                         filter_operand_id, input_operand_id,
-                        Conv2dTester::Conv2dAttributes{}, absl::nullopt);
+                        Conv2dTester::Conv2dAttributes{}, std::nullopt);
 
     EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
   }
@@ -1667,7 +1939,7 @@ TEST_F(WebNNGraphImplTest, ConvTranspose2dTest) {
 
     builder.BuildConv2d(mojom::Conv2d_Type::kTransposed, input_operand_id,
                         filter_operand_id, filter_operand_id,
-                        Conv2dTester::Conv2dAttributes{}, absl::nullopt);
+                        Conv2dTester::Conv2dAttributes{}, std::nullopt);
 
     EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
   }
@@ -1933,8 +2205,7 @@ class ElementWiseUnaryDataTypeFixture
     const bool expected =
         (inputDataType == outputDataType ||
          kOperatorsWithDissimilarDatatypeSupport.contains(kind)) &&
-        std::find(operator_trait.second.begin(), operator_trait.second.end(),
-                  inputDataType) != operator_trait.second.end();
+        base::Contains(operator_trait.second, inputDataType);
 
     ElementWiseUnaryTester{
         .kind = kind,
@@ -2508,9 +2779,9 @@ TEST_F(WebNNGraphImplTest, GatherTest) {
 struct GemmTester {
   OperandInfo a;
   OperandInfo b;
-  absl::optional<OperandInfo> c;
+  std::optional<OperandInfo> c;
   struct GemmAttributes {
-    absl::optional<uint64_t> c_operand_id;
+    std::optional<uint64_t> c_operand_id;
     float alpha = 1.0;
     float beta = 1.0;
     bool a_transpose = false;
@@ -2650,13 +2921,215 @@ TEST_F(WebNNGraphImplTest, GemmTest) {
   }
 }
 
+struct InstanceNormalizationTester {
+  OperandInfo input;
+  std::optional<OperandInfo> scale;
+  std::optional<OperandInfo> bias;
+  struct InstanceNormalizationAttributes {
+    std::optional<uint64_t> scale_operand_id;
+    std::optional<uint64_t> bias_operand_id;
+    mojom::InputOperandLayout layout =
+        mojom::InputOperandLayout::kChannelsFirst;
+    float epsilon = 1e-5;
+  };
+  InstanceNormalizationAttributes attributes;
+  OperandInfo output;
+  bool expected;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+
+    if (scale) {
+      attributes.scale_operand_id =
+          builder.BuildInput("scale", scale->dimensions, scale->type);
+    }
+    if (bias) {
+      attributes.bias_operand_id =
+          builder.BuildInput("bias", bias->dimensions, bias->type);
+    }
+    builder.BuildInstanceNormalization(input_operand_id, output_operand_id,
+                                       std::move(attributes));
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
+  }
+};
+
+TEST_F(WebNNGraphImplTest, InstanceNormalizationTest) {
+  {
+    // Test building instanceNormalization with default option.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test building instanceNormalization with layout = kChannelsLast.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .scale = OperandInfo{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3}},
+        .bias = OperandInfo{.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {3}},
+        .attributes = {.layout = mojom::InputOperandLayout::kChannelsLast},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test building instanceNormalization with default layout = kChannelsFirst.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .scale = OperandInfo{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {2}},
+        .bias = OperandInfo{.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {2}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = true}
+        .Test();
+  }
+  {
+    // Test instanceNormalization when input data type and scale data type
+    // mismatched.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .scale = OperandInfo{.type = mojom::Operand::DataType::kInt32,
+                             .dimensions = {2}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = false}
+        .Test();
+  }
+  {
+    // Test building instanceNormalization when the size of scale is not equal
+    // to the size of the feature dimension of the input.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .scale = OperandInfo{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = false}
+        .Test();
+  }
+  {
+    // Test instanceNormalization when input data type and bias data type
+    // mismatched.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .bias = OperandInfo{.type = mojom::Operand::DataType::kInt32,
+                            .dimensions = {2}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = false}
+        .Test();
+  }
+  {
+    // Test building instanceNormalization when the size of bias is not equal
+    // to the size of the feature dimension of the input.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .bias = OperandInfo{.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {2}},
+        .attributes = {.layout = mojom::InputOperandLayout::kChannelsLast},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for output type is not the same as input type.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .output = {.type = mojom::Operand::DataType::kInt32,
+                   .dimensions = {1, 2, 3, 3}},
+        .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for output shape is not the same as input shape.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3, 3}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 1, 3, 3}},
+        .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for input is not a 4-D tensor.
+    InstanceNormalizationTester{
+        .input = {.type = mojom::Operand::DataType::kFloat32,
+                  .dimensions = {1, 2, 3}},
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {1, 2, 3}},
+        .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for input operand == output operand.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id = builder.BuildInput(
+        "input", {1, 2, 3, 4}, mojom::Operand::DataType::kFloat32);
+    builder.BuildInstanceNormalization(
+        input_operand_id, input_operand_id,
+        InstanceNormalizationTester::InstanceNormalizationAttributes{});
+    EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
+  }
+  {
+    // Test the invalid graph when the output is the same as the scale.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id = builder.BuildInput(
+        "input", {1, 2, 3, 4}, mojom::Operand::DataType::kFloat32);
+    uint64_t scale_operand_id =
+        builder.BuildInput("scale", {2}, mojom::Operand::DataType::kFloat32);
+
+    InstanceNormalizationTester::InstanceNormalizationAttributes attributes;
+    attributes.scale_operand_id = scale_operand_id;
+
+    builder.BuildInstanceNormalization(input_operand_id, scale_operand_id,
+                                       std::move(attributes));
+    EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
+  }
+  {
+    // Test the invalid graph when the output is the same as the bias.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id = builder.BuildInput(
+        "input", {1, 2, 3, 4}, mojom::Operand::DataType::kFloat32);
+    uint64_t bias_operand_id =
+        builder.BuildInput("bias", {2}, mojom::Operand::DataType::kFloat32);
+
+    InstanceNormalizationTester::InstanceNormalizationAttributes attributes;
+    attributes.bias_operand_id = bias_operand_id;
+
+    builder.BuildInstanceNormalization(input_operand_id, bias_operand_id,
+                                       std::move(attributes));
+    EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
+  }
+}
+
 struct LayerNormalizationTester {
   OperandInfo input;
-  absl::optional<OperandInfo> scale;
-  absl::optional<OperandInfo> bias;
+  std::optional<OperandInfo> scale;
+  std::optional<OperandInfo> bias;
   struct LayerNormalizationAttributes {
-    absl::optional<uint64_t> scale_operand_id;
-    absl::optional<uint64_t> bias_operand_id;
+    std::optional<uint64_t> scale_operand_id;
+    std::optional<uint64_t> bias_operand_id;
     std::vector<uint32_t> axes;
     float epsilon = 1e-5;
   };
@@ -3096,6 +3569,7 @@ struct Pool2dTester {
 
   void Test() {
     Test(mojom::Pool2d::Kind::kAveragePool2d);
+    Test(mojom::Pool2d::Kind::kL2Pool2d);
     Test(mojom::Pool2d::Kind::kMaxPool2d);
   }
 
@@ -3625,7 +4099,7 @@ struct Resample2dTester {
   struct Resample2dAttributes {
     mojom::Resample2d::InterpolationMode mode =
         mojom::Resample2d::InterpolationMode::kNearestNeighbor;
-    absl::optional<std::vector<float>> scales;
+    std::optional<std::vector<float>> scales;
     std::vector<uint32_t> axes = {2, 3};
   };
   Resample2dAttributes attributes;
@@ -4014,7 +4488,7 @@ TEST_F(WebNNGraphImplTest, SliceTest) {
   }
 }
 
-enum class FloatingPointUnaryKind { kLeakyRelu, kSigmoid, kTanh };
+enum class FloatingPointUnaryKind { kLeakyRelu, kLinear, kSigmoid, kTanh };
 
 struct FloatingPointUnaryTester {
   OperandInfo input;
@@ -4023,6 +4497,7 @@ struct FloatingPointUnaryTester {
 
   void Test() {
     Test(FloatingPointUnaryKind::kLeakyRelu);
+    Test(FloatingPointUnaryKind::kLinear);
     Test(FloatingPointUnaryKind::kSigmoid);
     Test(FloatingPointUnaryKind::kTanh);
   }
@@ -4038,6 +4513,10 @@ struct FloatingPointUnaryTester {
       case FloatingPointUnaryKind::kLeakyRelu:
         builder.BuildLeakyRelu(input_operand_id, output_operand_id,
                                /*alpha*/ 1.0);
+        break;
+      case FloatingPointUnaryKind::kLinear:
+        builder.BuildLinear(input_operand_id, output_operand_id,
+                            /*alpha*/ 1.0, /*beta*/ 0.0);
         break;
       case FloatingPointUnaryKind::kSigmoid:
         builder.BuildSigmoid(input_operand_id, output_operand_id);
@@ -4119,6 +4598,40 @@ TEST_F(WebNNGraphImplTest, FloatingPointUnaryTest) {
         builder.BuildOutput("output", {2}, mojom::Operand::DataType::kFloat32);
     builder.BuildLeakyRelu(input_operand_id, output_operand_id,
                            /*alpha*/ NAN);
+
+    EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
+  }
+  {
+    // Test the invalid graph for linear when the input is as same as output.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", {2}, mojom::Operand::DataType::kFloat32);
+    builder.BuildLinear(input_operand_id, input_operand_id,
+                        /*alpha*/ 1.0, /*beta*/ 0.0);
+
+    EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
+  }
+  {
+    // Test the invalid graph for linear when alpha is NAN.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", {2}, mojom::Operand::DataType::kFloat32);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", {2}, mojom::Operand::DataType::kFloat32);
+    builder.BuildLinear(input_operand_id, output_operand_id,
+                        /*alpha*/ NAN, /*beta*/ 0.0);
+
+    EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
+  }
+  {
+    // Test the invalid graph for linear when beta is NAN.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", {2}, mojom::Operand::DataType::kFloat32);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", {2}, mojom::Operand::DataType::kFloat32);
+    builder.BuildLinear(input_operand_id, output_operand_id,
+                        /*alpha*/ 1.0, /*beta*/ NAN);
 
     EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
   }
@@ -4214,6 +4727,149 @@ TEST_F(WebNNGraphImplTest, SoftmaxTest) {
                              .dimensions = {2, 5}},
                   .expected = false}
         .Test();
+  }
+}
+
+struct SoftplusTester {
+  OperandInfo input;
+  OperandInfo output;
+  float steepness = 1.0;
+  bool expected;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+    builder.BuildSoftplus(input_operand_id, output_operand_id, steepness);
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
+  }
+};
+
+TEST_F(WebNNGraphImplTest, SoftplusTest) {
+  {
+    // Test softplus operator with `steepness` = 1.5.
+    SoftplusTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {2, 2}},
+                   .output = {.type = mojom::Operand::DataType::kFloat32,
+                              .dimensions = {2, 2}},
+                   .steepness = 1.5,
+                   .expected = true}
+        .Test();
+  }
+  {
+    // Test the invalid graph for invalid data type.
+    SoftplusTester{.input = {.type = mojom::Operand::DataType::kInt32,
+                             .dimensions = {4, 2}},
+                   .output = {.type = mojom::Operand::DataType::kInt32,
+                              .dimensions = {4, 2}},
+                   .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for `steepness` is NAN.
+    SoftplusTester{.input = {.type = mojom::Operand::DataType::kFloat16,
+                             .dimensions = {4, 2}},
+                   .output = {.type = mojom::Operand::DataType::kFloat16,
+                              .dimensions = {4, 2}},
+                   .steepness = NAN,
+                   .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for the output shapes are not expected.
+    SoftplusTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {4, 2}},
+                   .output = {.type = mojom::Operand::DataType::kFloat32,
+                              .dimensions = {2}},
+                   .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for output types don't match.
+    SoftplusTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {2, 5}},
+                   .output = {.type = mojom::Operand::DataType::kFloat16,
+                              .dimensions = {2, 5}},
+                   .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for input operand == output operand.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", {4, 6}, mojom::Operand::DataType::kFloat32);
+
+    builder.BuildSoftplus(input_operand_id, input_operand_id,
+                          /*steepness*/ 1.0);
+    EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
+  }
+}
+
+struct SoftsignTester {
+  OperandInfo input;
+  OperandInfo output;
+  bool expected;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+    builder.BuildSoftsign(input_operand_id, output_operand_id);
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
+  }
+};
+
+TEST_F(WebNNGraphImplTest, SoftsignTest) {
+  {
+    // Test softsign operator with input dimensions = [2, 4] and data type
+    // float32.
+    SoftsignTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {2, 4}},
+                   .output = {.type = mojom::Operand::DataType::kFloat32,
+                              .dimensions = {2, 4}},
+                   .expected = true}
+        .Test();
+  }
+  {
+    // Test the invalid graph for invalid data type.
+    SoftsignTester{.input = {.type = mojom::Operand::DataType::kInt32,
+                             .dimensions = {4, 2}},
+                   .output = {.type = mojom::Operand::DataType::kInt32,
+                              .dimensions = {4, 2}},
+                   .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for the output shapes are not expected.
+    SoftsignTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {4, 2}},
+                   .output = {.type = mojom::Operand::DataType::kFloat32,
+                              .dimensions = {2}},
+                   .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for output types don't match.
+    SoftsignTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {2, 5}},
+                   .output = {.type = mojom::Operand::DataType::kFloat16,
+                              .dimensions = {2, 5}},
+                   .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for input operand == output operand.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", {4, 6}, mojom::Operand::DataType::kFloat32);
+    builder.BuildSoftsign(input_operand_id, input_operand_id);
+    EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
   }
 }
 
@@ -4326,7 +4982,7 @@ TEST_F(WebNNGraphImplTest, ValidateSplitTest) {
     builder.BuildSplit(input_operand_id, {input_operand_id}, 0);
     builder.BuildSplit(input_operand_id,
                        {builder.BuildOutput("output", {4, 6}, kFloat32)}, 0);
-    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), false);
+    EXPECT_FALSE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
   }
 }
 
@@ -4631,7 +5287,7 @@ TEST_F(WebNNGraphImplTest, ValidateInputsTest) {
   builder.BuildElementWiseBinary(mojom::ElementWiseBinary::Kind::kAdd,
                                  lhs_operand_id, rhs_operand_id,
                                  output_operand_id);
-  EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), true);
+  EXPECT_TRUE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
 
   auto byte_length =
       ValidateAndCalculateByteLength(sizeof(uint8_t), dimensions).value();
@@ -4640,44 +5296,39 @@ TEST_F(WebNNGraphImplTest, ValidateInputsTest) {
     base::flat_map<std::string, mojo_base::BigBuffer> inputs;
     inputs["lhs"] = std::vector<uint8_t>(byte_length);
     inputs["rhs"] = std::vector<uint8_t>(byte_length);
-    EXPECT_EQ(
-        ValidateInputsForComputing(builder.CloneGraphInfo(), std::move(inputs)),
-        true);
+    EXPECT_TRUE(ValidateInputsForComputing(builder.CloneGraphInfo(),
+                                           std::move(inputs)));
   }
   {
     // Test the invalid inputs for invalid input size.
     base::flat_map<std::string, mojo_base::BigBuffer> inputs;
     inputs["lhs"] = std::vector<uint8_t>(byte_length);
-    EXPECT_EQ(
-        ValidateInputsForComputing(builder.CloneGraphInfo(), std::move(inputs)),
-        false);
+    EXPECT_FALSE(ValidateInputsForComputing(builder.CloneGraphInfo(),
+                                            std::move(inputs)));
   }
   {
     // Test the invalid inputs for invalid input name.
     base::flat_map<std::string, mojo_base::BigBuffer> inputs;
     inputs["a_different_input_name"] = std::vector<uint8_t>(byte_length);
     inputs["rhs"] = std::vector<uint8_t>(byte_length);
-    EXPECT_EQ(
-        ValidateInputsForComputing(builder.CloneGraphInfo(), std::move(inputs)),
-        false);
+    EXPECT_FALSE(ValidateInputsForComputing(builder.CloneGraphInfo(),
+                                            std::move(inputs)));
   }
   {
     // Test the invalid inputs for invalid first input byte length.
     base::flat_map<std::string, mojo_base::BigBuffer> inputs;
     inputs["lhs"] = std::vector<uint8_t>(20);
     inputs["rhs"] = std::vector<uint8_t>(byte_length);
-    EXPECT_EQ(
-        ValidateInputsForComputing(builder.CloneGraphInfo(), std::move(inputs)),
-        false);
+    EXPECT_FALSE(ValidateInputsForComputing(builder.CloneGraphInfo(),
+                                            std::move(inputs)));
   }
   {
     // Test the invalid inputs for invalid second input byte length.
     base::flat_map<std::string, mojo_base::BigBuffer> inputs;
     inputs["lhs"] = std::vector<uint8_t>(byte_length);
     inputs["rhs"] = std::vector<uint8_t>(20);
-    EXPECT_EQ(
-        ValidateInputsForComputing(builder.CloneGraphInfo(), std::move(inputs)),
-        false);
+    EXPECT_FALSE(ValidateInputsForComputing(builder.CloneGraphInfo(),
+                                            std::move(inputs)));
   }
 }
 
@@ -4732,10 +5383,10 @@ TEST_F(WebNNGraphImplTest, BuildMultipleInputsAppendingConstants) {
   uint64_t input_a_operand_id =
       builder.BuildInput("input_a", {2, 2}, mojom::Operand::DataType::kFloat32);
   std::vector<float> constant_data = {5.0, 6.0, 7.0, 8.0};
-  uint64_t constant_a_operand_id = builder.BuildConstant(
-      {2, 2}, mojom::Operand::DataType::kFloat32,
-      base::make_span(reinterpret_cast<const uint8_t*>(constant_data.data()),
-                      constant_data.size() * sizeof(float)));
+  uint64_t constant_a_operand_id =
+      builder.BuildConstant({2, 2}, mojom::Operand::DataType::kFloat32,
+                            base::as_byte_span(constant_data));
+
   uint64_t intermediate_1_operand_id = builder.BuildIntermediateOperand(
       {2, 2}, mojom::Operand::DataType::kFloat32);
   builder.BuildGemm(input_a_operand_id, constant_a_operand_id,
@@ -4743,17 +5394,16 @@ TEST_F(WebNNGraphImplTest, BuildMultipleInputsAppendingConstants) {
 
   uint64_t input_b_operand_id =
       builder.BuildInput("input_b", {2, 2}, mojom::Operand::DataType::kFloat32);
-  uint64_t constant_b_operand_id = builder.BuildConstant(
-      {2, 2}, mojom::Operand::DataType::kFloat32,
-      base::make_span(reinterpret_cast<const uint8_t*>(constant_data.data()),
-                      constant_data.size() * sizeof(float)));
+  uint64_t constant_b_operand_id =
+      builder.BuildConstant({2, 2}, mojom::Operand::DataType::kFloat32,
+                            base::as_byte_span(constant_data));
   uint64_t intermediate_2_operand_id = builder.BuildIntermediateOperand(
       {2, 2}, mojom::Operand::DataType::kFloat32);
   builder.BuildGemm(input_b_operand_id, constant_b_operand_id,
                     intermediate_2_operand_id, GemmTester::GemmAttributes());
   builder.BuildGemm(intermediate_1_operand_id, intermediate_2_operand_id,
                     output_operand_id, GemmTester::GemmAttributes());
-  EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), true);
+  EXPECT_TRUE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
 }
 
 // Test building a graph with two inputs and two constant in the following
@@ -4770,10 +5420,9 @@ TEST_F(WebNNGraphImplTest, BuildMultipleConstantsAppendingInputs) {
   uint64_t output_operand_id =
       builder.BuildOutput("output", {2, 2}, mojom::Operand::DataType::kFloat32);
   std::vector<float> constant_data = {5.0, 6.0, 7.0, 8.0};
-  uint64_t constant_a_operand_id = builder.BuildConstant(
-      {2, 2}, mojom::Operand::DataType::kFloat32,
-      base::make_span(reinterpret_cast<const uint8_t*>(constant_data.data()),
-                      constant_data.size() * sizeof(float)));
+  uint64_t constant_a_operand_id =
+      builder.BuildConstant({2, 2}, mojom::Operand::DataType::kFloat32,
+                            base::as_byte_span(constant_data));
   uint64_t input_a_operand_id =
       builder.BuildInput("input_a", {2, 2}, mojom::Operand::DataType::kFloat32);
   uint64_t intermediate_1_operand_id = builder.BuildIntermediateOperand(
@@ -4783,10 +5432,9 @@ TEST_F(WebNNGraphImplTest, BuildMultipleConstantsAppendingInputs) {
 
   uint64_t input_b_operand_id =
       builder.BuildInput("input_b", {2, 2}, mojom::Operand::DataType::kFloat32);
-  uint64_t constant_b_operand_id = builder.BuildConstant(
-      {2, 2}, mojom::Operand::DataType::kFloat32,
-      base::make_span(reinterpret_cast<const uint8_t*>(constant_data.data()),
-                      constant_data.size() * sizeof(float)));
+  uint64_t constant_b_operand_id =
+      builder.BuildConstant({2, 2}, mojom::Operand::DataType::kFloat32,
+                            base::as_byte_span(constant_data));
   uint64_t intermediate_2_operand_id = builder.BuildIntermediateOperand(
       {2, 2}, mojom::Operand::DataType::kFloat32);
   builder.BuildGemm(constant_b_operand_id, input_b_operand_id,
@@ -4794,7 +5442,7 @@ TEST_F(WebNNGraphImplTest, BuildMultipleConstantsAppendingInputs) {
 
   builder.BuildGemm(intermediate_1_operand_id, intermediate_2_operand_id,
                     output_operand_id, GemmTester::GemmAttributes());
-  EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), true);
+  EXPECT_TRUE(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()));
 }
 
 }  // namespace webnn

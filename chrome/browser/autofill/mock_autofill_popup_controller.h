@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/test/scoped_default_font_description.h"
@@ -96,8 +95,10 @@ class MockAutofillPopupController : public AutofillPopupController {
               RemoveSuggestion,
               (int, AutofillMetrics::SingleEntryRemovalMethod),
               (override));
-  MOCK_METHOD(void, SelectSuggestion, (absl::optional<size_t>), (override));
+  MOCK_METHOD(void, SelectSuggestion, (int), (override));
+  MOCK_METHOD(void, UnselectSuggestion, (), (override));
   MOCK_METHOD(PopupType, GetPopupType, (), (const override));
+  MOCK_METHOD(FillingProduct, GetMainFillingProduct, (), (const override));
   MOCK_METHOD(base::WeakPtr<AutofillPopupController>,
               OpenSubPopup,
               (const gfx::RectF& anchor_bounds,

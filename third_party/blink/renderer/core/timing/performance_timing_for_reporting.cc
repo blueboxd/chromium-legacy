@@ -15,12 +15,32 @@
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
+#include "third_party/blink/renderer/core/paint/timing/lcp_objects.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 
 namespace blink {
+namespace {
+absl::optional<base::TimeTicks> MergeLargestContentfulPaintValues(
+    const LargestContentfulPaintDetails& timing) {
+  const uint64_t text_paint_size = timing.largest_text_paint_size;
+  const uint64_t image_paint_size = timing.largest_image_paint_size;
+  if (text_paint_size == 0 && image_paint_size == 0) {
+    return absl::nullopt;
+  }
+
+  const base::TimeTicks largest_text_paint = timing.largest_text_paint_time;
+  const base::TimeTicks largest_image_paint = timing.largest_image_paint_time;
+
+  if (text_paint_size == image_paint_size) {
+    return std::max(largest_text_paint, largest_image_paint);
+  }
+  return text_paint_size > image_paint_size ? largest_text_paint
+                                            : largest_image_paint;
+}
+}  // namespace
 
 static uint64_t ToIntegerMilliseconds(base::TimeDelta duration,
                                       bool cross_origin_isolated_capability) {
@@ -34,43 +54,47 @@ static uint64_t ToIntegerMilliseconds(base::TimeDelta duration,
 
 LargestContentfulPaintDetailsForReporting PerformanceTimingForReporting::
     PopulateLargestContentfulPaintDetailsForReporting(
-        PaintTimingDetector::LargestContentfulPaintDetails timing) const {
+        const LargestContentfulPaintDetails& timing) const {
   // The largest_image_paint_time and the largest_text_paint_time are converted
   // into seconds.
   double largest_image_paint_time =
       base::Milliseconds(
-          MonotonicTimeToIntegerMilliseconds(timing.largest_image_paint_time_))
+          MonotonicTimeToIntegerMilliseconds(timing.largest_image_paint_time))
           .InSecondsF();
 
   double largest_text_paint_time =
       base::Milliseconds(
-          MonotonicTimeToIntegerMilliseconds(timing.largest_text_paint_time_))
+          MonotonicTimeToIntegerMilliseconds(timing.largest_text_paint_time))
           .InSecondsF();
 
   absl::optional<base::TimeDelta> largest_image_discovery_time =
-      MonotonicTimeToPseudoWallTime(timing.largest_image_discovery_time_);
+      MonotonicTimeToPseudoWallTime(timing.largest_image_discovery_time);
 
   absl::optional<base::TimeDelta> largest_image_load_start =
-      MonotonicTimeToPseudoWallTime(timing.largest_image_load_start_);
+      MonotonicTimeToPseudoWallTime(timing.largest_image_load_start);
 
   absl::optional<base::TimeDelta> largest_image_load_end =
-      MonotonicTimeToPseudoWallTime(timing.largest_image_load_end_);
+      MonotonicTimeToPseudoWallTime(timing.largest_image_load_end);
+
+  absl::optional<base::TimeTicks> merged_unclamped_paint_time =
+      MergeLargestContentfulPaintValues(timing);
 
   return {largest_image_paint_time,
-          timing.largest_image_paint_size_,
+          timing.largest_image_paint_size,
           largest_image_discovery_time,
           largest_image_load_start,
           largest_image_load_end,
-          timing.largest_contentful_paint_type_,
+          timing.largest_contentful_paint_type,
 
-          timing.largest_contentful_paint_image_bpp_,
+          timing.largest_contentful_paint_image_bpp,
           largest_text_paint_time,
-          timing.largest_text_paint_size_,
-          timing.largest_contentful_paint_time_,
+          timing.largest_text_paint_size,
+          timing.largest_contentful_paint_time,
 
-          timing.largest_contentful_paint_image_request_priority_,
-          timing.is_loaded_from_memory_cache_,
-          timing.is_preloaded_with_early_hints_};
+          timing.largest_contentful_paint_image_request_priority,
+          timing.is_loaded_from_memory_cache,
+          timing.is_preloaded_with_early_hints,
+          merged_unclamped_paint_time};
 }
 
 PerformanceTimingForReporting::PerformanceTimingForReporting(

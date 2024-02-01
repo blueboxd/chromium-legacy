@@ -115,6 +115,10 @@ suite('item tests', function() {
   });
 
   test('icon overridden by danger type', async () => {
+    loadTimeData.overrideValues({improvedDownloadWarningsUX: false});
+    const item = document.createElement('downloads-item');
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    document.body.appendChild(item);
     testIconLoader.setShouldIconsLoad(true);
     item.set('data', createDownload({
                filePath: 'unique1',
@@ -448,7 +452,7 @@ suite('item tests', function() {
     flush();
     // The mojo handler is called directly, no event for the dialog is fired.
     const id = await testDownloadsProxy.handler.whenCalled(
-        'saveDangerousRequiringGesture');
+        'saveSuspiciousRequiringGesture');
     assertEquals('itemId', id);
   });
 
@@ -540,7 +544,8 @@ suite('item tests', function() {
     toastManager.show('', /* hideSlotted= */ false);
     assertFalse(toastManager.slottedHidden);
     item.getMoreActionsButton().click();
-    const removeButton = item.shadowRoot!.querySelector<HTMLElement>('#remove');
+    const removeButton =
+        item.shadowRoot!.querySelector<HTMLElement>('#discard-dangerous');
     assertTrue(!!removeButton);
     removeButton.click();
     assertTrue(toastManager.slottedHidden);
@@ -559,7 +564,8 @@ suite('item tests', function() {
     toastManager.show('', /* hideSlotted= */ false);
     assertFalse(toastManager.slottedHidden);
     item.getMoreActionsButton().click();
-    const removeButton = item.shadowRoot!.querySelector<HTMLElement>('#remove');
+    const removeButton =
+        item.shadowRoot!.querySelector<HTMLElement>('#discard-dangerous');
     assertTrue(!!removeButton);
     removeButton.click();
     assertTrue(toastManager.slottedHidden);

@@ -350,20 +350,8 @@ void TestClipboard::WriteHTML(const char* markup_data,
   GetDefaultStore().html_src_url = std::string(url_data, url_len);
 }
 
-void TestClipboard::WriteUnsanitizedHTML(const char* markup_data,
-                                         size_t markup_len,
-                                         const char* url_data,
-                                         size_t url_len) {
-  GetDefaultStore().data[ClipboardFormatType::HtmlType()] =
-      std::string(markup_data, markup_len);
-  GetDefaultStore().html_src_url = std::string(url_data, url_len);
-}
-
-void TestClipboard::WriteSvg(const char* markup_data, size_t markup_len) {
-  std::u16string markup;
-  base::UTF8ToUTF16(markup_data, markup_len, &markup);
-  GetDefaultStore().data[ClipboardFormatType::SvgType()] =
-      base::UTF16ToUTF8(markup);
+void TestClipboard::WriteSvg(base::StringPiece markup) {
+  GetDefaultStore().data[ClipboardFormatType::SvgType()] = markup;
 }
 
 void TestClipboard::WriteRTF(const char* rtf_data, size_t data_len) {

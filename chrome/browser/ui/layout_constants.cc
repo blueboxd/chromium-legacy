@@ -36,9 +36,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case BOOKMARK_BAR_BUTTON_HEIGHT:
       return touch_ui ? 36 : 28;
     case BOOKMARK_BAR_BUTTON_PADDING:
-      return features::IsChromeRefresh2023()
-                 ? (touch_ui ? 0 : 8)
-                 : GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+      return GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     case BOOKMARK_BAR_BUTTON_IMAGE_LABEL_PADDING:
       return features::IsChromeRefresh2023() ? 6 : 8;
     case WEB_APP_MENU_BUTTON_SIZE:
@@ -62,9 +60,9 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_LEADING_DECORATION_EDGE_PADDING:
       // TODO(manukh): See comment in `LocationBarView::Layout()`. We have too
       //   many feature permutations that would affect this and other layout
-      //   constants. So instead of spreading the permutation logic here and
-      //   elsewhere, its consolidated in `Layout()` and will be moved back here
-      //   once we decide on a permutation.
+      //   constants, so instead of spreading the permutation logic here and
+      //   elsewhere, it's consolidated in `Layout()` and will be moved back
+      //   here once we decide on a permutation.
       NOTREACHED_NORETURN();
     case LOCATION_BAR_TRAILING_DECORATION_EDGE_PADDING:
       return touch_ui ? 3 : 12;

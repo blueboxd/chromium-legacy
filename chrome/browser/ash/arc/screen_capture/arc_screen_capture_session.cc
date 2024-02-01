@@ -130,7 +130,8 @@ ArcScreenCaptureSession::Initialize(content::DesktopMediaID desktop_id,
     std::u16string notification_text =
         l10n_util::GetStringFUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT,
                                    base::UTF8ToUTF16(display_name));
-    notification_ui_ = ScreenCaptureNotificationUI::Create(notification_text);
+    notification_ui_ = ScreenCaptureNotificationUI::Create(
+        notification_text, /*capturing_web_contents=*/nullptr);
     notification_ui_->OnStarted(
         base::BindOnce(&ArcScreenCaptureSession::NotificationStop,
                        weak_ptr_factory_.GetWeakPtr()),
@@ -227,7 +228,14 @@ void ArcScreenCaptureSession::SetOutputBuffer(
   auto client_shared_image = sii->CreateSharedImage(
       si_format, size_, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
       kPremul_SkAlphaType,
-      gpu::SHARED_IMAGE_USAGE_RASTER | gpu::SHARED_IMAGE_USAGE_GLES2,
+      // NOTE: This SI will be used as the destination of a copy of the desktop
+      // texture via the raster interface. Hence, it needs RASTER_WRITE usage as
+      // well as GLES2_WRITE usage for the case where the raster interface is
+      // going over GLES2.
+      // TODO(crbug.com/1508447): Remove GLES2_WRITE usage once the browser main
+      // thread using the RasterDecoder implementation has definitively landed.
+      gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
+          gpu::SHARED_IMAGE_USAGE_GLES2_WRITE,
       "ArcScreenCapture", std::move(handle));
   CHECK(client_shared_image);
   ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());

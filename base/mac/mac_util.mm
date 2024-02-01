@@ -133,42 +133,12 @@ class LoginItemsFileList {
 
 }  // namespace
 
-CGColorSpaceRef GetGenericRGBColorSpace() {
-  // Leaked. That's OK, it's scoped to the lifetime of the application.
-  static CGColorSpaceRef g_color_space_generic_rgb(
-      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-  DLOG_IF(ERROR, !g_color_space_generic_rgb) <<
-      "Couldn't get the generic RGB color space";
-  return g_color_space_generic_rgb;
-}
-
 CGColorSpaceRef GetSRGBColorSpace() {
   // Leaked.  That's OK, it's scoped to the lifetime of the application.
   static CGColorSpaceRef g_color_space_sRGB =
       CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
   DLOG_IF(ERROR, !g_color_space_sRGB) << "Couldn't get the sRGB color space";
   return g_color_space_sRGB;
-}
-
-CGColorSpaceRef GetSystemColorSpace() {
-  // Leaked.  That's OK, it's scoped to the lifetime of the application.
-  // Try to get the main display's color space.
-  static CGColorSpaceRef g_system_color_space =
-      CGDisplayCopyColorSpace(CGMainDisplayID());
-
-  if (!g_system_color_space) {
-    // Use a generic RGB color space.  This is better than nothing.
-    g_system_color_space = CGColorSpaceCreateDeviceRGB();
-
-    if (g_system_color_space) {
-      DLOG(WARNING) <<
-          "Couldn't get the main display's color space, using generic";
-    } else {
-      DLOG(ERROR) << "Couldn't get any color space";
-    }
-  }
-
-  return g_system_color_space;
 }
 
 void AddToLoginItems(const FilePath& app_bundle_file_path,
@@ -307,6 +277,21 @@ bool RemoveQuarantineAttribute(const FilePath& file_path) {
   const char kQuarantineAttrName[] = "com.apple.quarantine";
   int status = removexattr(file_path.value().c_str(), kQuarantineAttrName, 0);
   return status == 0 || errno == ENOATTR;
+}
+
+void SetFileTags(const FilePath& file_path,
+                 const std::vector<std::string>& file_tags) {
+  if (file_tags.empty()) {
+    return;
+  }
+
+  NSMutableArray* tag_array = [NSMutableArray array];
+  for (const auto& tag : file_tags) {
+    [tag_array addObject:SysUTF8ToNSString(tag)];
+  }
+
+  NSURL* file_url = apple::FilePathToNSURL(file_path);
+  [file_url setResourceValue:tag_array forKey:NSURLTagNamesKey error:nil];
 }
 
 namespace {

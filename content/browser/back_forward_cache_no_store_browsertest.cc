@@ -957,22 +957,20 @@ IN_PROC_BROWSER_TEST_P(
                     {}, {}, {}, FROM_HERE);
 
   auto subframe_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kYes,
       /*id=*/"", /*name=*/"", /*src=*/url_a_no_store.spec(),
+      /*reasons=*/
+      {"JsNetworkRequestReceivedCacheControlNoStoreResource",
+       "MainResourceHasCacheControlNoStore"},
       MatchesSameOriginDetails(
           /*url=*/url_a_no_store.spec(),
-          /*reasons=*/
-          {"JsNetworkRequestReceivedCacheControlNoStoreResource",
-           "MainResourceHasCacheControlNoStore"},
           /*children=*/{}));
   EXPECT_THAT(
       current_frame_host()->NotRestoredReasonsForTesting(),
       MatchesNotRestoredReasons(
-          blink::mojom::BFCacheBlocked::kYes,
-          /*id=*/absl::nullopt, /*name=*/absl::nullopt, /*src=*/absl::nullopt,
+          /*id=*/std::nullopt, /*name=*/std::nullopt, /*src=*/std::nullopt,
+          /*reasons=*/{"MainResourceHasCacheControlNoStore"},
           MatchesSameOriginDetails(
               /*url=*/url_a_no_store.spec(),
-              /*reasons=*/{"MainResourceHasCacheControlNoStore"},
               /*children=*/
               {subframe_result})));
 }
@@ -1028,7 +1026,7 @@ class CookieDisabledContentBrowserClient
       content::BrowserContext& browser_context,
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
-      const absl::optional<url::Origin>& top_frame_origin,
+      const std::optional<url::Origin>& top_frame_origin,
       const net::CookieSettingOverrides overrides) override {
     return is_cookie_enabled_;
   }

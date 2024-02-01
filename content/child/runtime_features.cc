@@ -19,6 +19,7 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/base/features.h"
 #include "components/attribution_reporting/features.h"
+#include "components/ml/webnn/features.mojom-features.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/features.h"
@@ -89,8 +90,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
       command_line.HasSwitch(
           blink::switches::kEnableGpuMemoryBufferCompositorResources) &&
       !command_line.HasSwitch(switches::kDisableWebGLImageChromium) &&
-      !command_line.HasSwitch(switches::kDisableGpu) &&
-      base::FeatureList::IsEnabled(features::kWebGLImageChromium);
+      !command_line.HasSwitch(switches::kDisableGpu);
 #else
   const bool enable_web_gl_image_chromium =
       command_line.HasSwitch(switches::kEnableWebGLImageChromium);
@@ -193,8 +193,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #if BUILDFLAG(IS_ANDROID)
           {wf::EnableAccessibilityPageZoom,
            raw_ref(features::kAccessibilityPageZoom)},
-          {wf::EnableAutoDisableAccessibilityV2,
-           raw_ref(features::kAutoDisableAccessibilityV2)},
 #endif
           {wf::EnableAccessibilityUseAXPositionForDocumentMarkers,
            raw_ref(features::kUseAXPositionForDocumentMarkers)},
@@ -203,6 +201,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {wf::EnableAutoplayIgnoresWebAudio,
            raw_ref(media::kAutoplayIgnoreWebAudio)},
           {wf::EnableBackgroundFetch, raw_ref(features::kBackgroundFetch)},
+          {wf::EnableBoundaryEventDispatchTracksNodeRemoval,
+           raw_ref(blink::features::kBoundaryEventDispatchTracksNodeRemoval)},
           {wf::EnableBrowserVerifiedUserActivationKeyboard,
            raw_ref(features::kBrowserVerifiedUserActivationKeyboard)},
           {wf::EnableBrowserVerifiedUserActivationMouse,
@@ -256,6 +256,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {wf::EnableFencedFrames,
            raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
            kSetOnlyIfOverridden},
+          // FledgeFeatureDetection should be on if any of the features it aims
+          // to help detect is on.
+          {wf::EnableFledgeFeatureDetection,
+           raw_ref(blink::features::kFledgeCustomMaxAuctionAdComponents)},
           {wf::EnableForcedColors, raw_ref(features::kForcedColors)},
           {wf::EnableFractionalScrollOffsets,
            raw_ref(features::kFractionalScrollOffsets)},
@@ -268,6 +272,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {wf::EnableInstalledApp, raw_ref(features::kInstalledApp)},
           {wf::EnableLazyInitializeMediaControls,
            raw_ref(features::kLazyInitializeMediaControls)},
+#if BUILDFLAG(IS_CHROMEOS)
+          {wf::EnableLockedMode, raw_ref(blink::features::kLockedMode)},
+#endif
           {wf::EnableMachineLearningModelLoader,
            raw_ref(features::kEnableMachineLearningModelLoaderWebPlatformApi),
            kSetOnlyIfOverridden},
@@ -319,6 +326,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #endif
           {wf::EnableWebIdentityDigitalCredentials,
            raw_ref(features::kWebIdentityDigitalCredentials), kDefault},
+          {wf::EnableMachineLearningNeuralNetwork,
+           raw_ref(webnn::mojom::features::kWebMachineLearningNeuralNetwork),
+           kDefault},
           {wf::EnableWebOTP, raw_ref(features::kWebOTP), kSetOnlyIfOverridden},
           {wf::EnableWebOTPAssertionFeaturePolicy,
            raw_ref(features::kWebOTPAssertionFeaturePolicy),
@@ -374,6 +384,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"AttributionReportingCrossAppWeb",
            raw_ref(features::kPrivacySandboxAdsAPIsOverride),
            kSetOnlyIfOverridden},
+          {"AttributionReportingCrossAppWeb",
+           raw_ref(features::kAttributionReportingCrossAppWebOverride)},
           {"AndroidDownloadableFontsMatching",
            raw_ref(features::kAndroidDownloadableFontsMatching)},
 #if BUILDFLAG(IS_ANDROID)
@@ -388,6 +400,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            raw_ref(features::kCookieDeprecationFacilitatedTesting)},
           {"Database", raw_ref(blink::features::kWebSQLAccess),
            kSetOnlyIfOverridden},
+          {"FencedFramesLocalUnpartitionedDataAccess",
+           raw_ref(blink::features::kFencedFramesLocalUnpartitionedDataAccess)},
           {"Fledge", raw_ref(blink::features::kFledge), kSetOnlyIfOverridden},
           {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
            kSetOnlyIfOverridden},
@@ -404,7 +418,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"PartitionedCookies", raw_ref(net::features::kPartitionedCookies)},
           {"ReduceAcceptLanguage",
            raw_ref(network::features::kReduceAcceptLanguage)},
-          {"StorageAccessAPI", raw_ref(features::kFirstPartySets)},
           {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
            kSetOnlyIfOverridden},
           {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
@@ -492,6 +505,8 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
        true},
       {wrf::EnableWebGPUDeveloperFeatures,
        switches::kEnableWebGPUDeveloperFeatures, true},
+      {wrf::EnableWebGPUExperimentalFeatures, switches::kEnableUnsafeWebGPU,
+       true},
       {wrf::EnableDirectSockets, switches::kEnableIsolatedWebAppsInRenderer,
        true},
   };
@@ -629,6 +644,20 @@ void ResolveInvalidConfigurations() {
     WebRuntimeFeatures::EnableFencedFrames(false);
   }
 
+  if (!base::FeatureList::IsEnabled(blink::features::kFencedFrames) &&
+      base::FeatureList::IsEnabled(
+          blink::features::kFencedFramesLocalUnpartitionedDataAccess)) {
+    LOG_IF(
+        WARNING,
+        WebRuntimeFeatures::IsFencedFramesLocalUnpartitionedDataAccessEnabled())
+        << "Fenced frames must be enabled in order to enable local "
+           "unpartitioned "
+        << "data access. Use --" << switches::kEnableFeatures << "="
+        << blink::features::kFencedFrames.name << " in addition.";
+    WebRuntimeFeatures::EnableFeatureFromString(
+        "FencedFramesLocalUnpartitionedDataAccess", false);
+  }
+
   // Topics API cannot be enabled without the support of the browser process.
   // The Document API should be additionally gated by the
   // `kBrowsingTopicsDocumentAPI` feature.
@@ -681,6 +710,21 @@ void ResolveInvalidConfigurations() {
         << attribution_reporting::features::kConversionMeasurement.name
         << " in addition.";
     WebRuntimeFeatures::EnableAttributionReporting(false);
+  }
+
+  if (!base::FeatureList::IsEnabled(
+          attribution_reporting::features::kConversionMeasurement) ||
+      !base::FeatureList::IsEnabled(
+          network::features::kAttributionReportingCrossAppWeb)) {
+    LOG_IF(WARNING,
+           WebRuntimeFeatures::IsAttributionReportingCrossAppWebEnabled())
+        << "AttributionReportingCrossAppWeb cannot be enabled in this "
+           "configuration. Use --"
+        << switches::kEnableFeatures << "="
+        << attribution_reporting::features::kConversionMeasurement.name << ","
+        << network::features::kAttributionReportingCrossAppWeb.name
+        << " in addition.";
+    WebRuntimeFeatures::EnableAttributionReportingCrossAppWeb(false);
   }
 
   if (!base::FeatureList::IsEnabled(blink::features::kInterestGroupStorage)) {

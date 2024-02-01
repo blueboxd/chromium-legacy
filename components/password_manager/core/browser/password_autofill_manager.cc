@@ -228,11 +228,7 @@ void MaybeAppendManagePasswordsEntry(
           ? IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_AND_PASSKEYS
           : IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS));
   suggestion.popup_item_id = autofill::PopupItemId::kAllSavedPasswordsEntry;
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kEnablePasswordsAccountStorage)) {
-    // The UI code will pick up an icon from the resources based on the string.
-    suggestion.icon = autofill::Suggestion::Icon::kSettings;
-  }
+  suggestion.icon = autofill::Suggestion::Icon::kSettings;
   // The UI code will pick up an icon from the resources based on the string.
   suggestion.trailing_icon = autofill::Suggestion::Icon::kGooglePasswordManager;
   suggestions->push_back(std::move(suggestion));
@@ -544,9 +540,7 @@ void PasswordAutofillManager::DidPerformButtonActionForSuggestion(
 }
 
 bool PasswordAutofillManager::RemoveSuggestion(
-    const std::u16string& value,
-    autofill::PopupItemId popup_item_id,
-    autofill::Suggestion::BackendId backend_id) {
+    const autofill::Suggestion& suggestion) {
   // Password suggestions cannot be deleted this way.
   // See http://crbug.com/329038#c15
   return false;
@@ -558,6 +552,11 @@ void PasswordAutofillManager::ClearPreviewedForm() {
 
 autofill::PopupType PasswordAutofillManager::GetPopupType() const {
   return autofill::PopupType::kPasswords;
+}
+
+autofill::FillingProduct PasswordAutofillManager::GetMainFillingProduct()
+    const {
+  return autofill::FillingProduct::kPassword;
 }
 
 int32_t PasswordAutofillManager::GetWebContentsPopupControllerAxId() const {
@@ -798,8 +797,7 @@ void PasswordAutofillManager::LogMetricsForSuggestions(
         break;
     }
   }
-  metrics_util::LogPasswordDropdownShown(dropdown_state,
-                                         password_client_->IsOffTheRecord());
+  metrics_util::LogPasswordDropdownShown(dropdown_state);
 }
 
 bool PasswordAutofillManager::ShowPopup(
@@ -832,7 +830,7 @@ void PasswordAutofillManager::UpdatePopup(
     return;
   }
   autofill_client_->UpdatePopup(
-      suggestions, autofill::PopupType::kPasswords,
+      suggestions, autofill::FillingProduct::kPassword,
       autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 

@@ -81,7 +81,7 @@ net::DohProviderEntry::List ProvidersForCountry(
     int country_id) {
   net::DohProviderEntry::List local_providers;
   base::ranges::copy_if(providers, std::back_inserter(local_providers),
-                        [country_id](const auto* entry) {
+                        [country_id](const net::DohProviderEntry* entry) {
                           return EntryIsForCountry(entry, country_id);
                         });
   return local_providers;
@@ -91,7 +91,7 @@ net::DohProviderEntry::List SelectEnabledProviders(
     const net::DohProviderEntry::List& providers) {
   net::DohProviderEntry::List enabled_providers;
   base::ranges::copy_if(providers, std::back_inserter(enabled_providers),
-                        [](const auto* entry) {
+                        [](const net::DohProviderEntry* entry) {
                           return base::FeatureList::IsEnabled(entry->feature);
                         });
   return enabled_providers;
@@ -107,7 +107,7 @@ void UpdateProbeHistogram(bool success) {
 
 std::unique_ptr<DnsProbeRunner> MakeProbeRunner(
     net::DnsOverHttpsConfig doh_config,
-    const DnsProbeRunner::NetworkContextGetter& network_context_getter) {
+    const network::NetworkContextGetter& network_context_getter) {
   net::DnsConfigOverrides overrides;
   overrides.search = std::vector<std::string>();
   overrides.attempts = 1;

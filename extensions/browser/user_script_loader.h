@@ -10,6 +10,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <string_view>
 
 #include "base/compiler_specific.h"
 #include "base/functional/callback_forward.h"
@@ -29,6 +30,8 @@ namespace content {
 class BrowserContext;
 class RenderProcessHost;
 }
+
+class EmbedderUserScriptLoader;
 
 namespace extensions {
 
@@ -57,7 +60,7 @@ class UserScriptLoader : public content::RenderProcessHostCreationObserver {
   };
 
   // Parses the includes out of |script| and returns them in |includes|.
-  static bool ParseMetadataHeader(const base::StringPiece& script_text,
+  static bool ParseMetadataHeader(std::string_view script_text,
                                   UserScript* script);
 
   UserScriptLoader(content::BrowserContext* browser_context,
@@ -126,6 +129,8 @@ class UserScriptLoader : public content::RenderProcessHostCreationObserver {
   content::BrowserContext* browser_context() const { return browser_context_; }
 
  private:
+  friend class ::EmbedderUserScriptLoader;
+
   // content::RenderProcessHostCreationObserver:
   void OnRenderProcessHostCreated(
       content::RenderProcessHost* process_host) override;

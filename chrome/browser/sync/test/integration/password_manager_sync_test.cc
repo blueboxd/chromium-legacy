@@ -1102,7 +1102,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ClearAccountStoreOnStartup) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     std::string json;
     ASSERT_TRUE(base::ReadFileToString(json_path, &json));
-    absl::optional<base::Value> prefs = base::JSONReader::Read(json);
+    std::optional<base::Value> prefs = base::JSONReader::Read(json);
     ASSERT_TRUE(prefs.has_value());
     ASSERT_TRUE(prefs->is_dict());
     ASSERT_TRUE(prefs->GetDict().RemoveByDottedPath(
@@ -1133,9 +1133,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ClearAccountStoreOnStartup) {
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, SyncUtilApis) {
-  // Username hardcoded in SyncTest.
-  const std::string kExpectedUsername = "user@gmail.com";
-
   ASSERT_TRUE(SetupSync());
 
   EXPECT_TRUE(
@@ -1147,7 +1144,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, SyncUtilApis) {
   EXPECT_EQ(password_manager::sync_util::
                 GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(
                     GetSyncService(0)),
-            kExpectedUsername);
+            SyncTest::kDefaultUserEmail);
   EXPECT_EQ(
       password_manager::sync_util::GetPasswordSyncState(GetSyncService(0)),
       password_manager::SyncState::kSyncingNormalEncryption);
@@ -1172,7 +1169,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, SyncUtilApis) {
   EXPECT_EQ(password_manager::sync_util::
                 GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(
                     GetSyncService(0)),
-            kExpectedUsername);
+            SyncTest::kDefaultUserEmail);
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)

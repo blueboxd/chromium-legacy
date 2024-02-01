@@ -166,26 +166,21 @@ void ImmersiveModeTabbedControllerCocoa::OnTopViewBoundsChanged(
                        tab_titlebar_view_controller_.view.frame.size.height)];
 }
 
-void ImmersiveModeTabbedControllerCocoa::RevealLock() {
+void ImmersiveModeTabbedControllerCocoa::RevealLocked() {
   AddController();
   TitlebarReveal();
-
   // Call after TitlebarReveal() for a proper layout.
-  ImmersiveModeControllerCocoa::RevealLock();
+  ImmersiveModeControllerCocoa::RevealLocked();
   LayoutWindowWithAnchorView(tab_window_, tab_content_view_);
 }
 
-void ImmersiveModeTabbedControllerCocoa::RevealUnlock() {
-  // The reveal lock count will be updated in
-  // ImmersiveModeControllerCocoa::RevealUnlock(), count 1 or less here as
-  // unlocked.
-  if (reveal_lock_count() < 2 &&
-      last_used_style() == mojom::ToolbarVisibilityStyle::kAutohide) {
+void ImmersiveModeTabbedControllerCocoa::RevealUnlocked() {
+  if (last_used_style() == mojom::ToolbarVisibilityStyle::kAutohide) {
     TitlebarHide();
   }
 
-  // Call after TitlebarHide() for a proper layout.
-  ImmersiveModeControllerCocoa::RevealUnlock();
+  // Call after TitlebarReveal() for a proper layout.
+  ImmersiveModeControllerCocoa::RevealUnlocked();
   LayoutWindowWithAnchorView(tab_window_, tab_content_view_);
 }
 
@@ -197,9 +192,8 @@ void ImmersiveModeTabbedControllerCocoa::TitlebarHide() {
   browser_window().toolbar.visible = NO;
 }
 
-void ImmersiveModeTabbedControllerCocoa::OnTitlebarFrameDidChange(
-    NSRect frame) {
-  ImmersiveModeControllerCocoa::OnTitlebarFrameDidChange(frame);
+void ImmersiveModeTabbedControllerCocoa::Reanchor() {
+  ImmersiveModeControllerCocoa::Reanchor();
   LayoutWindowWithAnchorView(tab_window_, tab_content_view_);
 }
 

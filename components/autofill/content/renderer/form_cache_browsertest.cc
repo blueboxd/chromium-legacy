@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <optional>
+#include <string_view>
+
 #include "base/test/scoped_feature_list.h"
 
 #include "base/memory/raw_ptr.h"
@@ -19,7 +22,6 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -41,11 +43,10 @@ namespace autofill {
 using CheckStatus = FormFieldData::CheckStatus;
 
 auto HasId(FormRendererId expected_id) {
-  return Field("unique_renderer_id", &FormData::unique_renderer_id,
-               expected_id);
+  return Field("renderer_id", &FormData::renderer_id, expected_id);
 }
 
-auto HasName(base::StringPiece expected_name) {
+auto HasName(std::string_view expected_name) {
   return Field("name", &FormData::name, base::ASCIIToUTF16(expected_name));
 }
 
@@ -56,7 +57,7 @@ auto IsToken(FrameToken expected_token, int expected_predecessor) {
 }
 
 const FormData* GetFormByName(const std::vector<FormData>& forms,
-                              base::StringPiece name) {
+                              std::string_view name) {
   for (const FormData& form : forms) {
     if (form.name == ASCIIToUTF16(name))
       return &form;
@@ -155,8 +156,8 @@ TEST_F(FormCacheBrowserTest, RemovedForms) {
 
   std::vector<FormRendererId> forms_renderer_id;
   for (const FormData& form : forms.updated_forms) {
-    if (form.unique_renderer_id != FormRendererId()) {
-      forms_renderer_id.push_back(form.unique_renderer_id);
+    if (form.renderer_id != FormRendererId()) {
+      forms_renderer_id.push_back(form.renderer_id);
     }
   }
   ASSERT_EQ(forms_renderer_id.size(), 2u);
@@ -425,7 +426,7 @@ void FillAndCheckState(
     FieldDataManager& field_data_manager,
     const blink::WebFormControlElement& autofill_initiating_element,
     const std::vector<FillElementData>& form_to_fill,
-    absl::optional<blink::WebInputElement> checkbox_element = absl::nullopt,
+    std::optional<blink::WebInputElement> checkbox_element = std::nullopt,
     CheckStatus fill_checkbox_check_status =
         CheckStatus::kCheckableButUnchecked) {
   FormData values_to_fill = form_data;
@@ -445,10 +446,14 @@ void FillAndCheckState(
     value_to_fill->is_autofilled = true;
   }
 
-  form_util::ApplyFormAction(values_to_fill.fields, autofill_initiating_element,
-                             mojom::ActionType::kFill,
-                             mojom::ActionPersistence::kFill,
-                             field_data_manager);
+  std::vector<FormFieldData::FillData> fields_to_fill;
+  fields_to_fill.reserve(values_to_fill.fields.size());
+  for (const FormFieldData& field : values_to_fill.fields) {
+    fields_to_fill.emplace_back(field);
+  }
+  form_util::ApplyFormAction(
+      fields_to_fill, autofill_initiating_element, mojom::ActionType::kFill,
+      mojom::ActionPersistence::kFill, field_data_manager);
 
   for (const FillElementData& field_to_fill : form_to_fill) {
     EXPECT_EQ(field_to_fill.value, field_to_fill.element.Value().Utf16());
@@ -521,7 +526,11 @@ TEST_F(FormCacheBrowserTest,
               UnorderedElementsAre(HasId(FormRendererId()), HasName("myForm")));
   EXPECT_TRUE(forms.removed_forms.empty());
 
-  std::vector<FormFieldData> values_to_fill = forms.updated_forms[0].fields;
+  std::vector<FormFieldData::FillData> values_to_fill;
+  values_to_fill.reserve(forms.updated_forms[0].fields.size());
+  for (const FormFieldData& field : forms.updated_forms[0].fields) {
+    values_to_fill.emplace_back(field);
+  }
   values_to_fill[0].value = u"John";
   values_to_fill[0].is_autofilled = true;
   values_to_fill[1].value = u"Smith";
@@ -595,46 +604,6 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
   EXPECT_EQ(0u, test_api(form_cache).initial_select_values_size());
   EXPECT_EQ(0u, test_api(form_cache).initial_selectlist_values_size());
   EXPECT_EQ(0u, test_api(form_cache).initial_checked_state_size());
-}
-
-TEST_F(FormCacheBrowserTest, IsFormElementEligibleForManualFilling) {
-  // Load a form.
-  LoadHTML(
-      "<html><form id='myForm'>"
-      "<label>First Name:</label><input id='fname' name='0'><br>"
-      "<label>Middle Name:</label> <input id='mname' name='1'><br>"
-      "<label>Last Name:</label> <input id='lname' name='2'><br>"
-      "</form></html>");
-
-  WebDocument doc = GetMainFrame()->GetDocument();
-  auto first_name_element = GetFormControlElementById(doc, "fname");
-  auto middle_name_element = GetFormControlElementById(doc, "mname");
-  auto last_name_element = GetFormControlElementById(doc, "lname");
-
-  FormCache form_cache(GetMainFrame());
-  FormCache::UpdateFormCacheResult forms = UpdateFormCache(form_cache);
-
-  EXPECT_THAT(forms.updated_forms, ElementsAre(HasName("myForm")));
-  EXPECT_TRUE(forms.removed_forms.empty());
-
-  const FormData* form_data = GetFormByName(forms.updated_forms, "myForm");
-  EXPECT_EQ(3u, form_data->fields.size());
-
-  // Set the first_name and last_name fields as eligible for manual filling.
-  std::vector<FieldRendererId> fields_eligible_for_manual_filling;
-  fields_eligible_for_manual_filling.push_back(
-      form_data->fields[0].unique_renderer_id);
-  fields_eligible_for_manual_filling.push_back(
-      form_data->fields[2].unique_renderer_id);
-  form_cache.SetFieldsEligibleForManualFilling(
-      fields_eligible_for_manual_filling);
-
-  EXPECT_TRUE(test_api(form_cache)
-                  .IsFormElementEligibleForManualFilling(first_name_element));
-  EXPECT_FALSE(test_api(form_cache)
-                   .IsFormElementEligibleForManualFilling(middle_name_element));
-  EXPECT_TRUE(test_api(form_cache)
-                  .IsFormElementEligibleForManualFilling(last_name_element));
 }
 
 // Test that the FormCache does not contain empty forms.
@@ -743,8 +712,7 @@ TEST_F(FormCacheBrowserTest, MAYBE_FieldAndFrameLimit) {
                                     &std::vector<FormFieldData>::empty,
                                     &FormData::fields));
   EXPECT_TRUE(base::ranges::none_of(
-      base::make_span(forms.updated_forms)
-          .subspan(0, kMaxExtractableChildFrames),
+      base::make_span(forms.updated_forms).first(kMaxExtractableChildFrames),
       &std::vector<FrameTokenWithPredecessor>::empty, &FormData::child_frames));
   EXPECT_TRUE(base::ranges::all_of(
       base::make_span(forms.updated_forms).subspan(kMaxExtractableChildFrames),

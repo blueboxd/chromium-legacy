@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "components/webapps/common/web_app_id.h"
 
 namespace web_app {
@@ -34,7 +35,8 @@ enum class GeneratedIconFixResult {
 };
 
 class GeneratedIconFixCommand
-    : public WebAppCommandTemplate<SharedWebContentsWithAppLock> {
+    : public WebAppCommand<SharedWebContentsWithAppLock,
+                           GeneratedIconFixResult> {
  public:
   explicit GeneratedIconFixCommand(
       webapps::AppId app_id,
@@ -42,12 +44,10 @@ class GeneratedIconFixCommand
       base::OnceCallback<void(GeneratedIconFixResult)> callback);
   ~GeneratedIconFixCommand() override;
 
-  // WebAppCommandTemplate<SharedWebContentsWithAppLock>:
+ protected:
+  // WebAppCommand:
   void StartWithLock(
       std::unique_ptr<SharedWebContentsWithAppLock> lock) override;
-  void OnShutdown() override;
-  const LockDescription& lock_description() const override;
-  base::Value ToDebugValue() const override;
 
  private:
   void OnIconsDownloaded(IconsDownloadedResult result,
@@ -58,8 +58,6 @@ class GeneratedIconFixCommand
 
   webapps::AppId app_id_;
   GeneratedIconFixSource source_;
-  base::OnceCallback<void(GeneratedIconFixResult)> callback_;
-  SharedWebContentsWithAppLockDescription lock_description_;
   std::unique_ptr<SharedWebContentsWithAppLock> lock_;
 
   std::unique_ptr<WebAppIconDownloader> icon_downloader_;

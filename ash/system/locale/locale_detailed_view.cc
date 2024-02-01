@@ -112,7 +112,7 @@ class LocaleItemView : public views::Button {
   }
 
  private:
-  raw_ptr<LocaleDetailedView, ExperimentalAsh> locale_detailed_view_;
+  raw_ptr<LocaleDetailedView> locale_detailed_view_;
   const bool checked_;
 };
 
@@ -150,7 +150,7 @@ void LocaleDetailedView::CreateItems() {
     id_to_locale_[id] = entry.iso_code;
     ++id;
   }
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void LocaleDetailedView::HandleViewClicked(views::View* view) {

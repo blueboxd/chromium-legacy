@@ -25,9 +25,14 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "v8/include/v8-forward.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "pdf/flatten_pdf_result.h"
 #endif
 
 class SkBitmap;
@@ -228,6 +233,9 @@ class PDFEngine {
 
     // Creates and returns new URL loader for partial document requests.
     virtual std::unique_ptr<UrlLoader> CreateUrlLoader() = 0;
+
+    // Returns the current V8 isolate, if any.
+    virtual v8::Isolate* GetIsolate() = 0;
 
     // Searches the given string for "term" and returns the results.  Unicode-
     // aware.
@@ -510,7 +518,7 @@ class PDFEngineExports {
 
 #if BUILDFLAG(IS_CHROMEOS)
   // See the definition of CreateFlattenedPdf in pdf.cc for details.
-  virtual std::vector<uint8_t> CreateFlattenedPdf(
+  virtual std::optional<FlattenPdfResult> CreateFlattenedPdf(
       base::span<const uint8_t> input_buffer) = 0;
 #endif  // BUILDFLAG(IS_CHROMEOS)
 

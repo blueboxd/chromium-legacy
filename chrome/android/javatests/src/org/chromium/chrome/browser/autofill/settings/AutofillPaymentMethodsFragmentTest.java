@@ -41,6 +41,9 @@ import org.mockito.quality.Strictness;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
@@ -54,9 +57,6 @@ import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.autofill.MandatoryReauthAuthenticationFlowEvent;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
@@ -1100,11 +1100,14 @@ public class AutofillPaymentMethodsFragmentTest {
                 ChromeFeatureList.isEnabled(
                                 ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH)
                         && !BuildInfo.getInstance().isAutomotive;
-        if (mandatoryReauthToggleShown) {
-            return getPreferenceScreen(activity).getPreference(2);
-        } else {
-            return getPreferenceScreen(activity).getPreference(1);
-        }
+        boolean saveCvcToggleShown =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_CVC_STORAGE);
+        // The first payment method will come after the general settings for enabling
+        // autofill, enabling mandatory re-auth (if available), and enabling CVC storage (if
+        // available).
+        int firstPaymentMethodIndex =
+                1 + (mandatoryReauthToggleShown ? 1 : 0) + (saveCvcToggleShown ? 1 : 0);
+        return getPreferenceScreen(activity).getPreference(firstPaymentMethodIndex);
     }
 
     private Preference getCardPreference(SettingsActivity activity) {

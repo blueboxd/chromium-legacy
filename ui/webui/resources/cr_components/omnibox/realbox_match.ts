@@ -81,10 +81,16 @@ export class RealboxMatchElement extends PolymerElement {
         value: () => loadTimeData.getBoolean('realboxCr23ExpandedStateLayout'),
       },
 
+      hasAction: {
+        type: Boolean,
+        computed: `computeHasAction_(match.actions)`,
+        reflectToAttribute: true,
+      },
+
       /** Whether action chip will have an outset focus ring. */
       hasOutsetActionFocusRing: {
         type: Boolean,
-        computed: `computeHasOutsetActionFocusRing_(match.actions)`,
+        computed: `computeHasOutsetActionFocusRing_(hasAction)`,
         reflectToAttribute: true,
       },
 
@@ -94,6 +100,13 @@ export class RealboxMatchElement extends PolymerElement {
       hasImage: {
         type: Boolean,
         computed: `computeHasImage_(match)`,
+        reflectToAttribute: true,
+      },
+
+      /** Whether action chip is inlined. */
+      inlinedActions: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('omniboxActionsUISimplification'),
         reflectToAttribute: true,
       },
 
@@ -130,6 +143,17 @@ export class RealboxMatchElement extends PolymerElement {
       realboxConsistentRowHeight: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('realboxCr23ConsistentRowHeight'),
+        reflectToAttribute: true,
+      },
+
+      renderType: {
+        type: String,
+        reflectToAttribute: true,
+      },
+
+      showCrNonInlinedHoverFill: {
+        type: Boolean,
+        computed: 'computeShowCrNonInlinedHoverFill_(hasAction)',
         reflectToAttribute: true,
       },
 
@@ -196,11 +220,14 @@ export class RealboxMatchElement extends PolymerElement {
 
   override ariaLabel: string;
   expandedStateIconsChromeRefresh: boolean;
+  hasAction: boolean;
   hasOutsetActionFocusRing: boolean;
   hasImage: boolean;
+  inlinedActions: boolean;
   match: AutocompleteMatch;
   matchIndex: number;
   realboxConsistentRowHeight: boolean;
+  showCrNonInlinedHoverFill: boolean;
   sideType: SideType;
   private actionIsVisible_: boolean;
   private contentsHtml_: TrustedHTML;
@@ -354,9 +381,12 @@ export class RealboxMatchElement extends PolymerElement {
                 .innerHTML);
   }
 
+  private computeHasAction_() {
+    return this.match?.actions?.length > 0;
+  }
+
   private computeHasOutsetActionFocusRing_() {
-    return this.expandedStateIconsChromeRefresh &&
-        this.match?.actions?.length > 0;
+    return this.expandedStateIconsChromeRefresh && this.hasAction;
   }
 
   private computeTailSuggestPrefix_(): string {
@@ -397,6 +427,11 @@ export class RealboxMatchElement extends PolymerElement {
         '';
   }
 
+  private computeShowCrNonInlinedHoverFill_(): boolean {
+    return !this.inlinedActions &&
+        loadTimeData.getBoolean('realboxCr23HoverFillShape') && this.hasAction;
+  }
+
   private computeSideTypeClass_(): string {
     return sideTypeToClass(this.sideType);
   }
@@ -404,12 +439,13 @@ export class RealboxMatchElement extends PolymerElement {
   private showActionsInlined_(): boolean {
     // Always show inlined div when feature is enabled, so that it will
     // grow and push other elements like remove button to the right.
-    return loadTimeData.getBoolean('omniboxActionsUISimplification');
+    return this.inlinedActions && !this.showCrNonInlinedHoverFill &&
+        this.sideType === SideType.kDefaultPrimary;
   }
 
   private showActionsUnderneath_(match: AutocompleteMatch): boolean {
-    return match.actions.length > 0 &&
-        !loadTimeData.getBoolean('omniboxActionsUISimplification');
+    return match.actions.length > 0 && !this.inlinedActions &&
+        !this.showCrNonInlinedHoverFill;
   }
 
   /**
@@ -462,18 +498,24 @@ export class RealboxMatchElement extends PolymerElement {
   }
 
   updateSelection(selection: OmniboxPopupSelection) {
+    this.$['focus-indicator'].classList.toggle(
+        'selected-within',
+        selection.state !== SelectionLineState.kNormal &&
+            selection.line === this.matchIndex);
+
     this.$.remove.classList.toggle(
         'selected',
-        selection.state === SelectionLineState.kFocusedButtonRemoveSuggestion);
+        selection.state === SelectionLineState.kFocusedButtonRemoveSuggestion &&
+            selection.line === this.matchIndex);
 
-    const actions =
-        Array.from(this.shadowRoot!.querySelectorAll('cr-realbox-action'));
-    actions.forEach((action, index) => {
-      action.classList.toggle(
-          'selected',
-          selection.state === SelectionLineState.kFocusedButtonAction &&
-              selection.actionIndex === index);
-    });
+    [...this.shadowRoot!.querySelectorAll('cr-realbox-action')].forEach(
+        (action, index) => {
+          action.classList.toggle(
+              'selected',
+              selection.state === SelectionLineState.kFocusedButtonAction &&
+                  selection.actionIndex === index &&
+                  selection.line === this.matchIndex);
+        });
   }
 }
 

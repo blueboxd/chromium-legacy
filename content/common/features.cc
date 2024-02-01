@@ -24,24 +24,10 @@ BASE_FEATURE(kAndroidDownloadableFontsMatching,
              "AndroidDownloadableFontsMatching",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// The following two features, when enabled, result in the browser process only
-// asking the renderer process to run beforeunload handlers if it knows such
-// handlers are registered. The two slightly differ in what they do and how
-// they behave:
-// . `kAvoidUnnecessaryBeforeUnloadCheckPostTask` in this case content continues
-//   to report a beforeunload handler is present (even though it isn't). When
-//   asked to dispatch the beforeunload handler, a post task is used (rather
-//   than going to the renderer).
-// . `kAvoidUnnecessaryBeforeUnloadCheckSync` in this case content does not
-//   report a beforeunload handler is present. A ramification of this is
-//   navigations that would normally check beforeunload handlers before
-//   continuing will not, and navigation will synchronously continue.
-// Only one should be used (if both are set, the second takes precedence). The
-// second is unsafe for Android WebView (and thus entirely disabled via
-// ContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync()),
-// because the embedder may trigger reentrancy, which cannot be avoided.
-BASE_FEATURE(kAvoidUnnecessaryBeforeUnloadCheckSync,
-             "AvoidUnnecessaryBeforeUnloadCheckSync",
+// Enables exposure of the Cross App Web Attribution Reporting in the renderer
+// without an origin trial token.
+BASE_FEATURE(kAttributionReportingCrossAppWebOverride,
+             "AttributionReportingCrossAppWebOverride",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables controlling the time to live for pages in the BackForwardCache.
@@ -50,14 +36,6 @@ BASE_FEATURE(kAvoidUnnecessaryBeforeUnloadCheckSync,
 BASE_FEATURE(kBackForwardCacheTimeToLiveControl,
              "BackForwardCacheTimeToLiveControl",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Sets moderate binding to background renderers playing media, when enabled.
-// Else the renderer will have strong binding.
-#if BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kBackgroundMediaRendererHasModerateBinding,
-             "BackgroundMediaRendererHasModerateBinding",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 // When enabled, the browser will schedule before unload tasks that continue
 // navigation network responses in a kHigh priority queue.
@@ -80,6 +58,12 @@ BASE_FEATURE(kBeforeUnloadBrowserResponseQueue,
 BASE_FEATURE(kBlockInsecurePrivateNetworkRequestsFromUnknown,
              "BlockInsecurePrivateNetworkRequestsFromUnknown",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// The fix to crbug.com/1248529 will be behind this default-enabled flag, in
+// case it breaks any applications in the wild.
+BASE_FEATURE(kHistoryInterventionSameDocumentFix,
+             "HistoryInterventionSameDocumentFix",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, keyboard user activation will be verified by the browser side.
 BASE_FEATURE(kBrowserVerifiedUserActivationKeyboard,
@@ -173,6 +157,14 @@ BASE_FEATURE(kEnableBackForwardCacheForScreenReader,
              "EnableBackForwardCacheForScreenReader",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enable back/forward cache when a page which has subframe(s) with ongoing
+// navigation(s) is navigated. Currently, this is only for navigations which
+// don't need URLLoaders or haven't yet sent network requests. This flag should
+// be removed once the https://crbug.com/1511153 is resolved.
+BASE_FEATURE(kEnableBackForwardCacheForOngoingSubframeNavigation,
+             "EnableBackForwardCacheForOngoingSubframeNavigation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables error reporting for JS errors inside DevTools frontend host
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kEnableDevToolsJsErrorReporting,
@@ -219,6 +211,12 @@ const base::FeatureParam<int> kFledgeLimitNumAuctionsParam{
 // Enables caching when loading interest groups for a bidder in an auction.
 BASE_FEATURE(kFledgeUseInterestGroupCache,
              "FledgeUseInterestGroupCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables a delay for the post-auction interest group update to avoid
+// immediately invalidating cached values.
+BASE_FEATURE(kFledgeDelayPostAuctionInterestGroupUpdate,
+             "FledgeDelayPostAuctionInterestGroupUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables fixes for matching src: local() for web fonts correctly against full
@@ -293,12 +291,6 @@ BASE_FEATURE(kJavaScriptArrayGrouping,
              "JavaScriptArrayGrouping",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables a fix for a macOS IME Live Conversion issue. crbug.com/1328530 and
-// crbug.com/1342551
-BASE_FEATURE(kMacImeLiveConversionFix,
-             "MacImeLiveConversionFix",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Feature that controls whether WebContentsOcclusionChecker should handle
 // occlusion notifications.
 #if BUILDFLAG(IS_MAC)
@@ -337,6 +329,15 @@ BASE_FEATURE(kOptimizeImmHideCalls,
              "OptimizeImmHideCalls",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
+
+// This feature enables Permissions Policy verification in the Browser process
+// in content/. Additionally only for //chrome Permissions Policy verification
+// is enabled in components/permissions/permission_context_base.cc
+#if !BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kPermissionsPolicyVerificationInContent,
+             "kPermissionsPolicyVerificationInContent",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 // Preload cookie database on NetworkContext creation.
 BASE_FEATURE(kPreloadCookies,
@@ -405,6 +406,13 @@ BASE_FEATURE(kRequestFileSetCheckedInCanRequestURL,
 // Make sendBeacon throw for a Blob with a non simple type.
 BASE_FEATURE(kSendBeaconThrowForBlobWithNonSimpleType,
              "SendBeaconThrowForBlobWithNonSimpleType",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, try to reuse an unlocked renderer process when COOP swap is
+// happening on prerender initial navigation. Please see crbug.com/1519131 for
+// more details.
+BASE_FEATURE(kProcessReuseOnPrerenderCOOPSwap,
+             "ProcessReuseOnPrerenderCOOPSwap",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables process sharing for sites that do not require a dedicated process
@@ -562,12 +570,6 @@ BASE_FEATURE(kWebAssemblyDynamicTiering,
              "WebAssemblyDynamicTiering",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// If WebGL Image Chromium is allowed, this feature controls whether it is
-// enabled.
-BASE_FEATURE(kWebGLImageChromium,
-             "WebGLImageChromium",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 BASE_FEATURE(kWebRtcUseGpuMemoryBufferVideoFrames,
              "WebRTC-UseGpuMemoryBufferVideoFrames",
@@ -579,7 +581,7 @@ BASE_FEATURE(kWebOTPAssertionFeaturePolicy,
              "WebOTPAssertionFeaturePolicy",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Flag guard for fix for crbug.com/1414936.
+// Flag guard for fix for crbug.com/1504324.
 BASE_FEATURE(kWindowOpenFileSelectFix,
              "WindowOpenFileSelectFix",
              base::FEATURE_ENABLED_BY_DEFAULT);

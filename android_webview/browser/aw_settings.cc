@@ -42,6 +42,7 @@
 #include "url/origin.h"
 
 using base::android::ConvertJavaStringToUTF16;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -228,8 +229,7 @@ void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
       Java_AwSettings_getHasUserAgentMetadataOverridesLocked(env, obj);
 
   if (ua_overidden) {
-    std::string ua_string_override =
-        base::android::ConvertJavaStringToUTF8(str);
+    std::string ua_string_override = ConvertJavaStringToUTF8(str);
     std::string ua_default = GetUserAgent();
     blink::UserAgentOverride override_ua_with_metadata;
     override_ua_with_metadata.ua_string_override = ua_string_override;
@@ -242,35 +242,32 @@ void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
           blink::UserAgentMetadata();
     }
 
-    if (base::FeatureList::IsEnabled(blink::features::kUserAgentClientHint)) {
-      // Generate user-agent client hints in the following three cases:
-      // 1. If user provide the user-agent metadata overrides, we use the
-      // override data to populate the user-agent client hints.
-      // 2. Otherwise, if override user-agent contains default user-agent, we
-      // use system default user-agent metadata to populate the user-agent
-      // client hints.
-      // 3. Finally, if the above two cases don't match, we only populate system
-      // default low-entropy client hints.
-      if (ua_metadata_overridden) {
-        ScopedJavaLocalRef<jobject> java_ua_metadata =
-            Java_AwSettings_getUserAgentMetadataLocked(env, obj);
-        override_ua_with_metadata.ua_metadata_override =
-            FromJavaAwUserAgentMetadata(env, java_ua_metadata);
-        LogUserAgentMetadataAvailableType(
-            UserAgentMetadataAvailableType::kUserOverrides);
-      } else if (base::Contains(ua_string_override, ua_default)) {
-        override_ua_with_metadata.ua_metadata_override =
-            AwClientHintsControllerDelegate::
-                GetUserAgentMetadataOverrideBrand();
-        LogUserAgentMetadataAvailableType(
-            UserAgentMetadataAvailableType::kSystemDefault);
-      } else {
-        override_ua_with_metadata.ua_metadata_override =
-            AwClientHintsControllerDelegate::GetUserAgentMetadataOverrideBrand(
-                /*only_low_entropy_ch=*/true);
-        LogUserAgentMetadataAvailableType(
-            UserAgentMetadataAvailableType::kSystemDefaultLowEntropyOnly);
-      }
+    // Generate user-agent client hints in the following three cases:
+    // 1. If user provide the user-agent metadata overrides, we use the
+    // override data to populate the user-agent client hints.
+    // 2. Otherwise, if override user-agent contains default user-agent, we
+    // use system default user-agent metadata to populate the user-agent
+    // client hints.
+    // 3. Finally, if the above two cases don't match, we only populate system
+    // default low-entropy client hints.
+    if (ua_metadata_overridden) {
+      ScopedJavaLocalRef<jobject> java_ua_metadata =
+          Java_AwSettings_getUserAgentMetadataLocked(env, obj);
+      override_ua_with_metadata.ua_metadata_override =
+          FromJavaAwUserAgentMetadata(env, java_ua_metadata);
+      LogUserAgentMetadataAvailableType(
+          UserAgentMetadataAvailableType::kUserOverrides);
+    } else if (base::Contains(ua_string_override, ua_default)) {
+      override_ua_with_metadata.ua_metadata_override =
+          AwClientHintsControllerDelegate::GetUserAgentMetadataOverrideBrand();
+      LogUserAgentMetadataAvailableType(
+          UserAgentMetadataAvailableType::kSystemDefault);
+    } else {
+      override_ua_with_metadata.ua_metadata_override =
+          AwClientHintsControllerDelegate::GetUserAgentMetadataOverrideBrand(
+              /*only_low_entropy_ch=*/true);
+      LogUserAgentMetadataAvailableType(
+          UserAgentMetadataAvailableType::kSystemDefaultLowEntropyOnly);
     }
 
     // Set overridden user-agent and default client hints metadata if applied.
@@ -579,7 +576,6 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   bool support_quirks = Java_AwSettings_getSupportLegacyQuirksLocked(env, obj);
   // Please see the corresponding Blink settings for bug references.
   web_prefs->support_deprecated_target_density_dpi = support_quirks;
-  web_prefs->use_legacy_background_size_shorthand_behavior = support_quirks;
   web_prefs->viewport_meta_merge_content_quirk = support_quirks;
   web_prefs->viewport_meta_non_user_scalable_quirk = support_quirks;
   web_prefs->viewport_meta_zero_values_quirk = support_quirks;

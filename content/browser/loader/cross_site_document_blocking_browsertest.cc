@@ -319,7 +319,7 @@ class RequestInterceptor {
                                      consumer_handle),
                 MOJO_RESULT_OK);
       original_client_->OnReceiveResponse(
-          std::move(response_head), std::move(consumer_handle), absl::nullopt);
+          std::move(response_head), std::move(consumer_handle), std::nullopt);
 
       uint32_t num_bytes = response_body.size();
       EXPECT_EQ(MOJO_RESULT_OK,
@@ -337,8 +337,8 @@ class RequestInterceptor {
   const GURL url_to_intercept_;
   URLLoaderInterceptor interceptor_;
 
-  absl::optional<url::Origin> request_initiator_to_inject_;
-  absl::optional<network::mojom::RequestMode> request_mode_to_inject_;
+  std::optional<url::Origin> request_initiator_to_inject_;
+  std::optional<network::mojom::RequestMode> request_mode_to_inject_;
 
   // |pending_test_client_remote_| below is used to transition results of
   // |test_client_.CreateRemote()| into IO thread.
@@ -1113,8 +1113,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
         port.postMessage('WORKER READY');
       };
   )";
-  std::string worker_script;
-  base::Base64Encode(JsReplace(kWorkerScriptTemplate, bar_url), &worker_script);
+  std::string worker_script =
+      base::Base64Encode(JsReplace(kWorkerScriptTemplate, bar_url));
   const char kWorkerStartTemplate[] = R"(
       new Promise(function (resolve, reject) {
           const worker_url = 'data:application/javascript;base64,' + $1;

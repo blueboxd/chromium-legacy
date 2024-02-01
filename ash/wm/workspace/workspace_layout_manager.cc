@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
@@ -16,7 +16,7 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/system/message_center/ash_message_popup_collection.h"
+#include "ash/system/notification_center/ash_message_popup_collection.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
@@ -29,7 +29,9 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/backdrop_controller.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/compositor/layer.h"
@@ -526,8 +528,12 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
   // We also do this when developers running Aura on a desktop manually resize
   // the host window.
   // We also need to do this when the work area insets changes.
-  for (aura::Window* window : windows_)
+  // Update the windows from top-most to bottom-most so when windows get bigger
+  // they occlude windows below them first.
+  auto ordered_windows = window_util::SortWindowsBottomToTop(windows_);
+  for (aura::Window* window : base::Reversed(ordered_windows)) {
     WindowState::Get(window)->OnWMEvent(event);
+  }
 }
 
 void WorkspaceLayoutManager::UpdateShelfVisibility() {
@@ -558,7 +564,8 @@ void WorkspaceLayoutManager::UpdateAlwaysOnTop(
   // appropriate windows will be included in the iteration.
   // Use an `aura::WindowTracker` since `OnWillRemoveWindowFromLayout()` may
   // remove windows from `windows_`.
-  std::vector<aura::Window*> windows(windows_.begin(), windows_.end());
+  std::vector<raw_ptr<aura::Window, VectorExperimental>> windows(
+      windows_.begin(), windows_.end());
   aura::WindowTracker tracker(windows);
   while (!tracker.windows().empty()) {
     aura::Window* window = tracker.Pop();

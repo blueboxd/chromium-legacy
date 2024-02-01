@@ -43,6 +43,7 @@
 #include "base/trace_event/typed_macros.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/features.h"
@@ -70,6 +71,7 @@
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/fragment_directive/text_fragment_anchor.h"
+#include "third_party/blink/renderer/core/frame/attribution_src_loader.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_source.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
@@ -1171,6 +1173,11 @@ void FrameLoader::CommitNavigation(
   RestoreScrollPositionAndViewState();
 
   TakeObjectSnapshot();
+
+  // Let the browser know about the Attribution Reporting runtime features of
+  // this frame.
+  frame_->GetLocalFrameHostRemote().SetAttributionReportingRuntimeFeatures(
+      frame_->GetAttributionSrcLoader()->GetRuntimeFeatures());
 }
 
 bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info) {
@@ -1297,6 +1304,7 @@ void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader,
                                        HistoryItem* previous_history_item,
                                        CommitReason commit_reason) {
   TRACE_EVENT("blink", "FrameLoader::CommitDocumentLoader");
+  base::ElapsedTimer timer;
   document_loader_ = document_loader;
   CHECK(document_loader_);
 
@@ -1335,6 +1343,12 @@ void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader,
   Client()->TransitionToCommittedForNewPage();
 
   document_loader_->CommitNavigation();
+
+  base::UmaHistogramTimes("Blink.CommitDocumentLoaderTime", timer.Elapsed());
+  ukm::builders::Blink_FrameLoader(frame_->GetDocument()->UkmSourceID())
+      .SetCommitDocumentLoaderTime(ukm::GetExponentialBucketMinForUserTiming(
+          timer.Elapsed().InMicroseconds()))
+      .Record(frame_->GetDocument()->UkmRecorder());
 }
 
 void FrameLoader::RestoreScrollPositionAndViewState() {

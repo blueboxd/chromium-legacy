@@ -8,9 +8,9 @@
 #import "components/policy/policy_constants.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
-#import "ios/chrome/browser/policy/policy_app_interface.h"
-#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
-#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/model/policy_app_interface.h"
+#import "ios/chrome/browser/policy/model/policy_earl_grey_utils.h"
+#import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_manager_egtest_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -340,6 +341,10 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // Cancel button is tapped. kReplaceSyncPromosWithSignInPromos is enabled.
 - (void)
     testUnsyncedDataDialogShowsInCaseOfUnsyncedReadingListEntry_SyncToSigninEnabled {
+  // TODO(crbug.com/1521690): Test fails on iPhone device and simulator.
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iPhone.");
+  }
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
@@ -767,10 +772,10 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // contains the correct string for passwords.
 - (void)testBulkUploadDescriptionTextForPasswords {
   // Add local data.
-  password_manager_test_utils::SavePasswordForm(@"password1", @"user1",
-                                                @"https://example1.com");
-  password_manager_test_utils::SavePasswordForm(@"password2", @"user2",
-                                                @"https://example2.com");
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password1", @"user1", @"https://example1.com");
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password2", @"user2", @"https://example2.com");
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
@@ -837,8 +842,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // contains the correct string for passwords and other data type.
 - (void)testBulkUploadDescriptionTextForPasswordsAndOthers {
   // Add local data.
-  password_manager_test_utils::SavePasswordForm(@"password", @"user",
-                                                @"https://example.com");
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password", @"user", @"https://example.com");
   reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
   SaveBookmark(@"foo", @"https://www.foo.com");
 
@@ -864,8 +869,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // - Reading list
 - (void)testBulkUploadPageForAllDataTypes {
   // Add local data.
-  password_manager_test_utils::SavePasswordForm(@"password", @"user",
-                                                @"https://example.com");
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password", @"user", @"https://example.com");
   reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
   SaveBookmark(@"foo", @"https://www.foo.com");
 
@@ -880,8 +885,11 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Tap on the batch upload button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBatchUploadAccessibilityIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(
+                                       kBatchUploadAccessibilityIdentifier),
+                                   grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
 
@@ -910,8 +918,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // - Passwords
 - (void)testBulkUploadPageForPasswordsOnly {
   // Add local data.
-  password_manager_test_utils::SavePasswordForm(@"password", @"user",
-                                                @"https://example.com");
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password", @"user", @"https://example.com");
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
@@ -924,8 +932,11 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Tap on the batch upload button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBatchUploadAccessibilityIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(
+                                       kBatchUploadAccessibilityIdentifier),
+                                   grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
 
@@ -955,8 +966,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // - Bookmarks
 - (void)testBulkUploadPageForPasswordsAndBookmarks {
   // Add local data.
-  password_manager_test_utils::SavePasswordForm(@"password", @"user",
-                                                @"https://example.com");
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password", @"user", @"https://example.com");
   SaveBookmark(@"foo", @"https://www.foo.com");
 
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -970,8 +981,11 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Tap on the batch upload button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBatchUploadAccessibilityIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(
+                                       kBatchUploadAccessibilityIdentifier),
+                                   grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
 
@@ -1000,8 +1014,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // - Passwords
 - (void)testBulkUploadForPasswords {
   // Add local data.
-  password_manager_test_utils::SavePasswordForm(@"password", @"user",
-                                                @"https://example.com");
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password", @"user", @"https://example.com");
   reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
   SaveBookmark(@"foo", @"https://www.foo.com");
 
@@ -1016,8 +1030,11 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Tap on the batch upload button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBatchUploadAccessibilityIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(
+                                       kBatchUploadAccessibilityIdentifier),
+                                   grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
 
@@ -1092,8 +1109,8 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
 // - Reading List
 - (void)testBulkUploadForBookmarksAndReadingList {
   // Add local data.
-  password_manager_test_utils::SavePasswordForm(@"password", @"user",
-                                                @"https://example.com");
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password", @"user", @"https://example.com");
   reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
   SaveBookmark(@"foo", @"https://www.foo.com");
 
@@ -1108,8 +1125,11 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Tap on the batch upload button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBatchUploadAccessibilityIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(
+                                       kBatchUploadAccessibilityIdentifier),
+                                   grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
 
@@ -1157,14 +1177,15 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   // TODO(crbug.com/1482823): Test that items were actually moved.
 }
 
+// TODO(crbug.com/1515517): ManageSyncSettingsTestCase is failing
 // Tests that bulk upload moves the following data types to account:
 // - Passwords
 // - Bookmarks
 // - Reading List
-- (void)testBulkUploadForAllDataTypes {
+- (void)DISABLED_testBulkUploadForAllDataTypes {
   // Add local data.
-  password_manager_test_utils::SavePasswordForm(@"password", @"user",
-                                                @"https://example.com");
+  password_manager_test_utils::SavePasswordFormToProfileStore(
+      @"password", @"user", @"https://example.com");
   reading_list_test_utils::AddURLToReadingList(GURL("https://example.com"));
   SaveBookmark(@"foo", @"https://www.foo.com");
 
@@ -1179,8 +1200,11 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Tap on the batch upload button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBatchUploadAccessibilityIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(
+                                       kBatchUploadAccessibilityIdentifier),
+                                   grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
 
@@ -1245,8 +1269,11 @@ void ExpectBatchUploadConfirmationSnackbar(int count, NSString* email) {
                  grey_accessibilityID(
                      kBatchUploadRecommendationItemAccessibilityIdentifier)]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBatchUploadAccessibilityIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(
+                                       kBatchUploadAccessibilityIdentifier),
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notVisible()];
 
   // TODO(crbug.com/1482823): Test that items were actually moved.

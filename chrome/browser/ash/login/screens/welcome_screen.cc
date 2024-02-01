@@ -91,8 +91,6 @@ constexpr const char kUserActionActivateRemoraRequisition[] =
 constexpr const char kUserActionEditDeviceRequisition[] =
     "editDeviceRequisition";
 constexpr const char kUserActionQuickStartClicked[] = "quickStartClicked";
-constexpr const char kUserActionQuickStartEnableBluetooth[] =
-    "quickStartEnableBluetooth";
 constexpr const char kWelcomeScreenLocaleChangeMetric[] =
     "OOBE.WelcomeScreen.UserChangedLocale";
 constexpr const char kSetLocaleId[] = "setLocaleId";
@@ -374,15 +372,6 @@ void WelcomeScreen::ShowImpl() {
     }
   }
 
-  // Skip this screen if this is an automatic enrollment as part of Zero-Touch
-  // hands off flow.
-  // TODO(crbug.com/1295708): Move this check to an implementation of
-  // BaseScreen:MaybeSkip().
-  if (WizardController::IsZeroTouchHandsOffOobeFlow()) {
-    OnContinueButtonPressed();
-    return;
-  }
-
   // TODO(crbug.com/1105387): Part of initial screen logic.
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(::prefs::kDebuggingFeaturesRequested)) {
@@ -415,10 +404,6 @@ void WelcomeScreen::OnUserAction(const base::Value::List& args) {
   const std::string& action_id = args[0].GetString();
   if (action_id == kUserActionQuickStartClicked) {
     OnQuickStartClicked();
-    return;
-  }
-  if (action_id == kUserActionQuickStartEnableBluetooth) {
-    OnTurnOnBluetoothForQuickStart();
     return;
   }
   if (action_id == kUserActionContinueButtonClicked) {
@@ -730,21 +715,6 @@ void WelcomeScreen::UpdateA11yState() {
 
 void WelcomeScreen::OnQuickStartClicked() {
   CHECK(context()->quick_start_enabled);
-  if (WizardController::default_controller()
-          ->quick_start_controller()
-          ->ShouldShowBluetoothDialog()) {
-    // Show bluetooth dialog
-    view_->ShowQuickStartBluetoothDialog();
-  } else {
-    Exit(Result::kQuickStart);
-  }
-}
-
-void WelcomeScreen::OnTurnOnBluetoothForQuickStart() {
-  CHECK(context()->quick_start_enabled);
-  WizardController::default_controller()
-      ->quick_start_controller()
-      ->TurnOnBluetooth();
   Exit(Result::kQuickStart);
 }
 

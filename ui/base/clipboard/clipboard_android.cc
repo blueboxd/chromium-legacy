@@ -52,14 +52,14 @@
 // These "other formats" only work within the same process, and can't be copied
 // between Android applications.
 
-using base::android::AttachCurrentThread;
-using base::android::ClearException;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaByteArrayToByteVector;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaByteArray;
+using jni_zero::AttachCurrentThread;
+using jni_zero::ClearException;
 
 namespace ui {
 
@@ -687,19 +687,10 @@ void ClipboardAndroid::WriteText(const char* text_data, size_t text_len) {
                   std::string(text_data, text_len));
 }
 
-void ClipboardAndroid::WriteHTML(const char* markup_data,
-                                 size_t markup_len,
-                                 const char* url_data,
-                                 size_t url_len) {
-  g_map.Get().Set(ClipboardFormatType::HtmlType(),
-                  std::string(markup_data, markup_len));
-}
-
-void ClipboardAndroid::WriteUnsanitizedHTML(const char* markup_data,
-                                            size_t markup_len,
-                                            const char* url_data,
-                                            size_t url_len) {
-  WriteHTML(markup_data, markup_len, url_data, url_len);
+void ClipboardAndroid::WriteHTML(
+    base::StringPiece markup,
+    absl::optional<base::StringPiece> /* source_url */) {
+  g_map.Get().Set(ClipboardFormatType::HtmlType(), markup);
 }
 
 void ClipboardAndroid::WriteSvg(const char* markup_data, size_t markup_len) {

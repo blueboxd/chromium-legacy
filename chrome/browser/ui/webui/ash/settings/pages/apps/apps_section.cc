@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/webui/ash/settings/pages/system_preferences/startup_section.h"
 #include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/os_settings_resources.h"
@@ -203,6 +202,34 @@ const std::vector<SearchConcept>& GetAndroidPlayStoreDisabledSearchConcepts() {
        {IDS_OS_SETTINGS_TAG_ANDROID_TURN_ON_PLAY_STORE_ALT1,
         SearchConcept::kAltTagEnd}},
   });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetManageIsolatedWebAppsSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags(
+      {{IDS_OS_SETTINGS_TAG_MANAGE_ISOLATED_WEB_APPS,
+        mojom::kManageIsolatedWebAppsSubpagePath,
+        ash::features::IsOsSettingsRevampWayfindingEnabled()
+            ? mojom::SearchResultIcon::kNotifications
+            : mojom::SearchResultIcon::kAppsGrid,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSubpage,
+        {.subpage = mojom::Subpage::kManageIsolatedWebApps}}});
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetTurnOnIsolatedWebAppsSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags(
+      {{IDS_OS_SETTINGS_TAG_TURN_ON_ISOLATED_WEB_APPS,
+        mojom::kManageIsolatedWebAppsSubpagePath,
+        ash::features::IsOsSettingsRevampWayfindingEnabled()
+            ? mojom::SearchResultIcon::kNotifications
+            : mojom::SearchResultIcon::kAppsGrid,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kEnableIsolatedWebAppsOnOff},
+        {IDS_OS_SETTINGS_TAG_TURN_ON_ISOLATED_WEB_APPS_ALT1,
+         SearchConcept::kAltTagEnd}}});
   return *tags;
 }
 
@@ -427,6 +454,11 @@ AppsSection::AppsSection(Profile* profile,
 
     UpdateAndroidSearchTags();
   }
+
+  if (content::IsolatedWebAppsPolicy::AreIsolatedWebAppsEnabled(profile)) {
+    updater.AddSearchTags(GetManageIsolatedWebAppsSearchConcepts());
+    updater.AddSearchTags(GetTurnOnIsolatedWebAppsSearchConcepts());
+  }
 }
 
 AppsSection::~AppsSection() {
@@ -483,10 +515,6 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"appManagementAppLanguageLabel", IDS_APP_MANAGEMENT_APP_LANGUAGE_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
-
-  html_source->AddBoolean(
-      "appManagementAppDetailsEnabled",
-      base::FeatureList::IsEnabled(::features::kAppManagementAppDetails));
 
   html_source->AddBoolean("appManagementArcReadOnlyPermissions",
                           arc::IsReadOnlyPermissionsEnabled());

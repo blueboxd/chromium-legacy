@@ -55,6 +55,7 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
+using base::android::RunRunnableAndroid;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStringArray;
@@ -863,7 +864,7 @@ void WebContentsAndroid::OnScaleFactorChanged(JNIEnv* env) {
     // |SendScreenRects()| indirectly calls GetViewSize() that asks Java layer.
     web_contents_->SendScreenRects();
     rwhva->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                       absl::nullopt);
+                                       std::nullopt);
   }
 }
 

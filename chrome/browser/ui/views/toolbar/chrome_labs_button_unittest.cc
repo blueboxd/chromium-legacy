@@ -7,9 +7,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/about_flags.h"
-#include "chrome/browser/ui/toolbar/chrome_labs_model.h"
-#include "chrome/browser/ui/toolbar/chrome_labs_prefs.h"
-#include "chrome/browser/ui/toolbar/chrome_labs_utils.h"
+#include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_model.h"
+#include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_prefs.h"
+#include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
@@ -94,8 +94,7 @@ class ChromeLabsButtonTest : public TestWithBrowserView {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
  protected:
-  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
-      user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged> user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 #endif
 

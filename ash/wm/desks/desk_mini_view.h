@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desk.h"
-#include "ash/wm/desks/desk_profiles_view.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/animation/animation_abort_handle.h"
@@ -23,9 +23,10 @@ namespace ash {
 
 class DeskActionContextMenu;
 class DeskActionView;
+class DeskBarViewBase;
 class DeskNameView;
 class DeskPreviewView;
-class DeskBarViewBase;
+class DeskProfilesButton;
 
 // A view that acts as a mini representation (a.k.a. desk thumbnail) of a
 // virtual desk in the desk bar view when overview mode is active. This view
@@ -58,12 +59,15 @@ class ASH_EXPORT DeskMiniView : public views::View,
 
   aura::Window* root_window() { return root_window_; }
 
+  const Desk* desk() const { return desk_; }
   Desk* desk() { return desk_; }
 
   DeskNameView* desk_name_view() { return desk_name_view_; }
 
   const DeskActionView* desk_action_view() const { return desk_action_view_; }
   DeskActionView* desk_action_view() { return desk_action_view_; }
+
+  DeskProfilesButton* desk_profiles_button() { return desk_profile_button_; }
 
   DeskBarViewBase* owner_bar() { return owner_bar_; }
   const DeskBarViewBase* owner_bar() const { return owner_bar_; }
@@ -138,7 +142,6 @@ class ASH_EXPORT DeskMiniView : public views::View,
   void OnPreviewAboutToBeFocusedByReverseTab();
 
   // views::View:
-  const char* GetClassName() const override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -148,7 +151,6 @@ class ASH_EXPORT DeskMiniView : public views::View,
   void OnContentChanged() override;
   void OnDeskDestroyed(const Desk* desk) override;
   void OnDeskNameChanged(const std::u16string& new_name) override;
-  void OnDeskProfileChanged(uint64_t new_lacros_profile_id) override;
 
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -169,33 +171,34 @@ class ASH_EXPORT DeskMiniView : public views::View,
   // visible.
   void OnContextMenuClosed();
 
-  void OnDeskPreviewPressed();
+  // Callback for when a user selects a lacros profile from `context_menu_`.
+  void OnSetLacrosProfileId(uint64_t lacros_profile_id);
 
-  void OnDeskProfilesButtonPressed();
+  void OnDeskPreviewPressed();
 
   // Layout |desk_name_view_| given the current bounds of the desk preview.
   void LayoutDeskNameView(const gfx::Rect& preview_bounds);
 
-  const raw_ptr<DeskBarViewBase, ExperimentalAsh> owner_bar_;
+  const raw_ptr<DeskBarViewBase> owner_bar_;
 
   // The root window on which this mini_view is created.
-  const raw_ptr<aura::Window, ExperimentalAsh> root_window_;
+  const raw_ptr<aura::Window> root_window_;
 
   // The associated desk. This can become null if the desk is deleted before the
   // mini view is done. Desk deletion is monitored by `OnDeskDestroyed`.
-  raw_ptr<Desk, ExperimentalAsh> desk_;  // Not owned.
+  raw_ptr<Desk> desk_;  // Not owned.
 
   // The view that shows a preview of the desk contents.
-  raw_ptr<DeskPreviewView, ExperimentalAsh> desk_preview_ = nullptr;
+  raw_ptr<DeskPreviewView> desk_preview_ = nullptr;
 
   // The view that shows what profile the desk belongs to.
-  raw_ptr<DeskProfilesButton, ExperimentalAsh> desk_profile_button_ = nullptr;
+  raw_ptr<DeskProfilesButton> desk_profile_button_ = nullptr;
 
   // The editable desk name.
-  raw_ptr<DeskNameView, ExperimentalAsh> desk_name_view_ = nullptr;
+  raw_ptr<DeskNameView> desk_name_view_ = nullptr;
 
   // Stores the hover interface for desk actions.
-  raw_ptr<DeskActionView, ExperimentalAsh> desk_action_view_ = nullptr;
+  raw_ptr<DeskActionView> desk_action_view_ = nullptr;
 
   // The context menu that appears when `desk_preview_` is right-clicked or
   // long-pressed.
@@ -203,10 +206,10 @@ class ASH_EXPORT DeskMiniView : public views::View,
 
   // The view containing the desk shortcut icons and labels displaying the
   // shortcut to activate the desk.
-  raw_ptr<views::BoxLayoutView, ExperimentalAsh> desk_shortcut_view_ = nullptr;
+  raw_ptr<views::BoxLayoutView> desk_shortcut_view_ = nullptr;
 
   // The label for the desk shortcut view containing the desk number.
-  raw_ptr<views::Label, ExperimentalAsh> desk_shortcut_label_ = nullptr;
+  raw_ptr<views::Label> desk_shortcut_label_ = nullptr;
 
   // True when this mini view is being animated to be removed from the bar.
   bool is_animating_to_remove_ = false;

@@ -107,6 +107,7 @@
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/test/test_screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -281,8 +282,8 @@ class FakeArcAppIcon : public ArcAppIcon {
     ArcAppIcon::OnIconRead(std::move(read_result));
   }
 
-  const raw_ref<std::set<ArcAppIcon*>, ExperimentalAsh> arc_app_icon_requests_;
-  const raw_ref<size_t, ExperimentalAsh> max_arc_app_icon_request_count_;
+  const raw_ref<std::set<ArcAppIcon*>> arc_app_icon_requests_;
+  const raw_ref<size_t> max_arc_app_icon_request_count_;
 };
 
 // FakeArcAppIconFactory is a sub class of ArcAppIconFactory, to generate
@@ -312,8 +313,8 @@ class FakeArcAppIconFactory : public arc::ArcAppIconFactory {
   }
 
  private:
-  const raw_ref<std::set<ArcAppIcon*>, ExperimentalAsh> arc_app_icon_requests_;
-  const raw_ref<size_t, ExperimentalAsh> max_arc_app_icon_request_count_;
+  const raw_ref<std::set<ArcAppIcon*>> arc_app_icon_requests_;
+  const raw_ref<size_t> max_arc_app_icon_request_count_;
 };
 
 ArcAppIconDescriptor GetAppListIconDescriptor(
@@ -904,6 +905,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
  private:
   ArcAppTest arc_test_;
+  display::test::TestScreen test_screen_{/*create_dispay=*/true,
+                                         /*register_screen=*/true};
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   std::unique_ptr<AppServiceAppModelBuilder> builder_;
@@ -1550,6 +1553,35 @@ TEST_P(ArcAppModelBuilderTest,
   // ChromeOS set-locale "ja" is overridden by ARC modified-locale "fr".
   ValidateHavePackages(fake_packages());
   ASSERT_TRUE(app_instance()->selected_locales().empty());
+}
+
+TEST_P(ArcAppModelBuilderTest, ArcPackagePref_RejectMaliciousAppLocaleTag) {
+  // Setup.
+  SendRefreshAppList(fake_apps());
+  std::vector<arc::mojom::ArcPackageInfoPtr> packages =
+      ArcAppTest::ClonePackages(fake_packages());
+  // Update fake_packages to use malicious locale tag.
+  // fake_packages[4] is the test package with localeInfo.
+  arc::mojom::ArcPackageInfoPtr updated_package = fake_packages()[4]->Clone();
+  updated_package->locale_info->supported_locales.clear();
+  // Add malicious locale tag.
+  updated_package->locale_info->supported_locales.push_back(
+      "+!@#$%^&*()[]{};'");
+  UpdateTestPackage(updated_package);
+
+  // Run.
+  app_instance()->SendRefreshPackageList(
+      ArcAppTest::ClonePackages(fake_packages()));
+
+  // Assert.
+  // Since supported locales will be rejected, we'll have to clear that from the
+  // fake_packages.
+  std::vector<arc::mojom::ArcPackageInfoPtr> expected_packages =
+      ArcAppTest::ClonePackages(fake_packages());
+  arc::mojom::ArcPackageInfoPtr expected_package = fake_packages()[4]->Clone();
+  expected_package->locale_info->supported_locales.clear();
+  UpdateTestPackage(expected_package);
+  ValidateHavePackages(fake_packages());
 }
 
 TEST_P(ArcAppModelBuilderTest, RefreshAllFillsContent) {
@@ -3039,7 +3071,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
   ASSERT_NE(nullptr, proxy);
 
   proxy->LoadIcon(
-      apps::AppType::kArc, app_id, apps::IconType::kCompressed, icon_size,
+      app_id, apps::IconType::kCompressed, icon_size,
       false /*allow_placeholder_icon*/,
       base::BindLambdaForTesting([&](apps::IconValuePtr icon_value) {
         EXPECT_EQ(apps::IconType::kCompressed, icon_value->icon_type);

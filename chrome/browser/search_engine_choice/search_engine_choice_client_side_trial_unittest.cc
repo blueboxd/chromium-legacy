@@ -14,6 +14,7 @@
 #include "base/test/task_environment.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/scoped_metrics_service_for_synthetic_trials.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -26,7 +27,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_switches.h"
-#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/synthetic_trial_registry.h"
@@ -36,92 +36,7 @@
 #include "components/version_info/channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
-#error "Unsupported platform"
-#endif
-
 namespace {
-
-// TODO(b/313407392): Move the class to some utils file.
-class ScopedTestingMetricsService {
- public:
-  // Sets up a `metrics::MetricsService` instance and makes it available in its
-  // scope via `testing_browser_process->metrics_service()`.
-  //
-  // This service only supports feature related to the usage of synthetic field
-  // trials.
-  //
-  // Requires:
-  // - the local state prefs to be usable from `testing_browser_process`
-  // - a task runner to be available (see //docs/threading_and_tasks_testing.md)
-  explicit ScopedTestingMetricsService(
-      TestingBrowserProcess* testing_browser_process)
-      : browser_process_(testing_browser_process) {
-    CHECK(browser_process_);
-
-    auto* local_state = browser_process_->local_state();
-    CHECK(local_state)
-        << "Error: local state prefs are required. In a unit test, this can be "
-           "set up using base::test::ScopedTestingLocalState.";
-
-    // The `SyntheticTrialsActiveGroupIdProvider` needs to be notified of
-    // changes from the registry for them to be used through the variations API.
-    synthetic_trial_registry_observation_.Observe(&synthetic_trial_registry_);
-
-    metrics_service_client_.set_synthetic_trial_registry(
-        &synthetic_trial_registry_);
-
-    metrics_state_manager_ = metrics::MetricsStateManager::Create(
-        local_state, &enabled_state_provider_,
-        /*backup_registry_key=*/std::wstring(),
-        /*user_data_dir=*/base::FilePath());
-
-    // Needs to be set up, will be updated at each synthetic trial change.
-    variations::InitCrashKeys();
-
-    // Required by `MetricsService` to record UserActions. We don't rely on
-    // these here, since we never make it start recording metrics, but the task
-    // runner is still required during the shutdown sequence.
-    base::SetRecordActionTaskRunner(
-        base::SingleThreadTaskRunner::GetCurrentDefault());
-
-    metrics_service_ = std::make_unique<metrics::MetricsService>(
-        metrics_state_manager_.get(), &metrics_service_client_, local_state);
-
-    browser_process_->SetMetricsService(metrics_service_.get());
-  }
-
-  ~ScopedTestingMetricsService() {
-    // The scope is closing, undo the set up that was done in the constructor:
-    // `MetricsService` and other necessary parts like crash keys.
-    browser_process_->SetMetricsService(nullptr);
-    variations::ClearCrashKeysInstanceForTesting();
-
-    // Note: Clears all the synthetic trials, not juste the ones registered
-    // during the lifetime of this object.
-    variations::SyntheticTrialsActiveGroupIdProvider::GetInstance()
-        ->ResetForTesting();
-  }
-
-  metrics::MetricsService* Get() { return metrics_service_.get(); }
-
- private:
-  raw_ptr<TestingBrowserProcess> browser_process_ = nullptr;
-
-  metrics::TestEnabledStateProvider enabled_state_provider_{/*consent=*/true,
-                                                            /*enabled=*/true};
-
-  variations::SyntheticTrialRegistry synthetic_trial_registry_;
-  base::ScopedObservation<variations::SyntheticTrialRegistry,
-                          variations::SyntheticTrialObserver>
-      synthetic_trial_registry_observation_{
-          variations::SyntheticTrialsActiveGroupIdProvider::GetInstance()};
-
-  metrics::TestMetricsServiceClient metrics_service_client_;
-  std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
-
-  std::unique_ptr<metrics::MetricsService> metrics_service_;
-};
 
 struct SearchEngineChoiceFieldTrialTestParams {
   double entropy_value = 0.0;
@@ -153,7 +68,7 @@ class SearchEngineChoiceClientSideTrialTest
       TestingBrowserProcess::GetGlobal()};
 
   // Needed for synthetic trial checks to work.
-  ScopedTestingMetricsService testing_metrics_service_{
+  ScopedMetricsServiceForSyntheticTrials testing_metrics_service_{
       TestingBrowserProcess::GetGlobal()};
 };
 
@@ -174,16 +89,23 @@ TEST_P(SearchEngineChoiceClientSideTrialTest, SetUpIfNeeded) {
 
   EXPECT_EQ(GetParam().expect_feature_enabled,
             base::FeatureList::IsEnabled(switches::kSearchEngineChoiceTrigger));
-  EXPECT_EQ(GetParam().expect_feature_enabled,
-            switches::kSearchEngineChoiceTriggerForTaggedProfilesOnly.Get());
-  EXPECT_EQ(GetParam().expect_feature_enabled,
-            base::FeatureList::IsEnabled(switches::kSearchEngineChoice));
-  EXPECT_EQ(GetParam().expect_feature_enabled,
-            base::FeatureList::IsEnabled(switches::kSearchEngineChoiceFre));
+
+  // Using explicit checks per branch here because the value of this property
+  // depends not only on the study state set in the test, but also on the
+  // hardcoded default value, which might be subject to cherry picks on branch.
+  if (GetParam().expect_feature_enabled) {
+    // Client-side study config explicitly sets it to true.
+    EXPECT_TRUE(
+        switches::kSearchEngineChoiceTriggerForTaggedProfilesOnly.Get());
+  } else {
+    // Default value of the flag, independent from the feature state.
+    EXPECT_TRUE(
+        switches::kSearchEngineChoiceTriggerForTaggedProfilesOnly.Get());
+  }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
   EXPECT_TRUE(base::FieldTrialList::IsTrialActive("WaffleStudy"));
-  
+
   std::string expected_group_name =
       GetParam().expect_study_enabled
           ? GetParam().expect_feature_enabled
@@ -204,45 +126,46 @@ INSTANTIATE_TEST_SUITE_P(
     ,
     SearchEngineChoiceClientSideTrialTest,
     testing::Values(
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
         // `entropy_value` makes the group be assigned according to the
         // specified weight of each group and the order in which they are
         // declared. So for a split at 33% enabled, 33% disabled, 33% default
         // a .4 entropy value should select the "disabled" group.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+        // Today, the feature is enabled by default, never enroll clients.
         SearchEngineChoiceFieldTrialTestParams{
             .entropy_value = 0.01,
             .channel = version_info::Channel::BETA,
-            // In the 50% treatment group
-            .expect_study_enabled = true,
-            .expect_feature_enabled = true},
-        SearchEngineChoiceFieldTrialTestParams{
-            .entropy_value = 0.6,
-            .channel = version_info::Channel::BETA,
-            // In the 50% control group
-            .expect_study_enabled = true,
-            .expect_feature_enabled = false},
-        SearchEngineChoiceFieldTrialTestParams{
-            .entropy_value = 0.0001,
-            .channel = version_info::Channel::STABLE,
-            // In the .5% treatment group
-            .expect_study_enabled = true,
-            .expect_feature_enabled = true},
-        SearchEngineChoiceFieldTrialTestParams{
-            .entropy_value = 0.009,
-            .channel = version_info::Channel::STABLE,
-            // In the .5% control group
-            .expect_study_enabled = true,
-            .expect_feature_enabled = false},
-        SearchEngineChoiceFieldTrialTestParams{
-            .entropy_value = 0.99,
-            .channel = version_info::Channel::STABLE,
-            // Not in the study (99%)
             .expect_study_enabled = false,
-            .expect_feature_enabled = false}
+            .expect_feature_enabled = true},
+        SearchEngineChoiceFieldTrialTestParams{
+            .entropy_value = 0.01,
+            .channel = version_info::Channel::STABLE,
+            .expect_study_enabled = false,
+            .expect_feature_enabled = true}
+#elif BUILDFLAG(IS_CHROMEOS)
+        // Did not have a client-side field trial, so it's not bundled with the
+        // group above, but it's being enabled on a different schedule than the
+        // group below.
+        SearchEngineChoiceFieldTrialTestParams{
+            .entropy_value = 0.01,
+            .channel = version_info::Channel::BETA,
+            .expect_study_enabled = false,
+            .expect_feature_enabled = true},
+        SearchEngineChoiceFieldTrialTestParams{
+            .entropy_value = 0.01,
+            .channel = version_info::Channel::STABLE,
+            .expect_study_enabled = false,
+            .expect_feature_enabled = true}
 #else
         SearchEngineChoiceFieldTrialTestParams{
             .entropy_value = 0.01,
             .channel = version_info::Channel::BETA,
+            // On other platforms we never enroll clients.
+            .expect_study_enabled = false,
+            .expect_feature_enabled = false},
+        SearchEngineChoiceFieldTrialTestParams{
+            .entropy_value = 0.01,
+            .channel = version_info::Channel::STABLE,
             // On other platforms we never enroll clients.
             .expect_study_enabled = false,
             .expect_feature_enabled = false}
@@ -262,7 +185,7 @@ TEST_F(SearchEngineChoiceClientSideTrialTest,
     base::MockEntropyProvider low_entropy_provider{0.01};
     auto feature_list = std::make_unique<base::FeatureList>();
     feature_list->RegisterExtraFeatureOverrides(
-        {{std::cref(switches::kSearchEngineChoice),
+        {{std::cref(switches::kSearchEngineChoiceTrigger),
           base::FeatureList::OVERRIDE_ENABLE_FEATURE}});
 
     SearchEngineChoiceClientSideTrial::SetUpIfNeeded(
@@ -274,11 +197,6 @@ TEST_F(SearchEngineChoiceClientSideTrialTest,
   }
 
   EXPECT_FALSE(base::FieldTrialList::IsTrialActive("WaffleStudy"));
-
-  EXPECT_FALSE(
-      base::FeatureList::IsEnabled(switches::kSearchEngineChoiceTrigger));
-  EXPECT_TRUE(base::FeatureList::IsEnabled(switches::kSearchEngineChoice));
-
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kSearchEnginesStudyGroup));
 }
 

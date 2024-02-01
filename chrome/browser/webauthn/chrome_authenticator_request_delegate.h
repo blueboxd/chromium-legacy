@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_WEBAUTHN_CHROME_AUTHENTICATOR_REQUEST_DELEGATE_H_
 
 #include <memory>
+#include <optional>
 #include <string>
+#include <string_view>
 
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
@@ -15,13 +17,16 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/global_routing_id.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
+class EnclaveManager;
 class PrefService;
 class Profile;
 
@@ -66,7 +71,7 @@ class ChromeWebAuthenticationDelegate
   bool OriginMayUseRemoteDesktopClientOverride(
       content::BrowserContext* browser_context,
       const url::Origin& caller_origin) override;
-  absl::optional<std::string> MaybeGetRelyingPartyIdOverride(
+  std::optional<std::string> MaybeGetRelyingPartyIdOverride(
       const std::string& claimed_relying_party_id,
       const url::Origin& caller_origin) override;
   bool ShouldPermitIndividualAttestation(
@@ -77,7 +82,7 @@ class ChromeWebAuthenticationDelegate
       content::RenderFrameHost* render_frame_host) override;
   bool SupportsPasskeyMetadataSyncing() override;
   bool IsFocused(content::WebContents* web_contents) override;
-  absl::optional<bool> IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+  std::optional<bool> IsUserVerifyingPlatformAuthenticatorAvailableOverride(
       content::RenderFrameHost* render_frame_host) override;
   content::WebAuthenticationRequestProxy* MaybeGetRequestProxy(
       content::BrowserContext* browser_context,
@@ -86,7 +91,7 @@ class ChromeWebAuthenticationDelegate
       content::BrowserContext* browser_context) override;
 
 #if BUILDFLAG(IS_MAC)
-  absl::optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig(
+  std::optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig(
       content::BrowserContext* browser_context) override;
 #endif  // BUILDFLAG(IS_MAC)
 #if BUILDFLAG(IS_CHROMEOS)
@@ -171,10 +176,12 @@ class ChromeAuthenticatorRequestDelegate
       const std::string& rp_id,
       RequestSource request_source,
       device::FidoRequestType request_type,
-      absl::optional<device::ResidentKeyRequirement> resident_key_requirement,
+      std::optional<device::ResidentKeyRequirement> resident_key_requirement,
       base::span<const device::CableDiscoveryData> pairings_from_extension,
       bool is_enclave_authenticator_available,
       device::FidoDiscoveryFactory* discovery_factory) override;
+  void SetHints(
+      const AuthenticatorRequestClientDelegate::Hints& hints) override;
   void SelectAccount(
       std::vector<device::AuthenticatorGetAssertionResponse> responses,
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
@@ -230,13 +237,21 @@ class ChromeAuthenticatorRequestDelegate
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegatePrivateTest,
                            ShouldCreateInICloudKeychain);
 
+  class EnclaveManagerObserver;
+
   // GetRenderFrameHost returns a pointer to the RenderFrameHost that was given
   // to the constructor.
   content::RenderFrameHost* GetRenderFrameHost() const;
 
   content::BrowserContext* GetBrowserContext() const;
 
-  absl::optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
+  void ShowUI(device::FidoRequestHandlerBase::TransportAvailabilityInfo data);
+
+  std::optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
+
+  // Called each time `enclave_manager_` has finished processing all pending
+  // actions.
+  void OnEnclaveManagerIdle();
 
   // ShouldPermitCableExtension returns true if the given |origin| may set a
   // caBLE extension. This extension contains website-chosen BLE pairing
@@ -267,13 +282,13 @@ class ChromeAuthenticatorRequestDelegate
   //
   // It does not parse `formatted_date` strictly and is intended for trusted
   // inputs.
-  static absl::optional<int> DaysSinceDate(const std::string& formatted_date,
-                                           base::Time now);
+  static std::optional<int> DaysSinceDate(const std::string& formatted_date,
+                                          base::Time now);
 
   // GetICloudKeychainPref returns the value of the iCloud Keychain preference
   // as a tristate. If no value for the preference has been set then it
-  // returns `absl::nullopt`.
-  static absl::optional<bool> GetICloudKeychainPref(const PrefService* prefs);
+  // returns `std::nullopt`.
+  static std::optional<bool> GetICloudKeychainPref(const PrefService* prefs);
 
   // IsActiveProfileAuthenticatorUser returns true if the profile authenticator
   // has been used in the past 31 days.
@@ -286,7 +301,7 @@ class ChromeAuthenticatorRequestDelegate
       bool is_active_profile_authenticator_user,
       bool has_icloud_drive_enabled,
       bool request_is_for_google_com,
-      absl::optional<bool> preference);
+      std::optional<bool> preference);
 
   // ConfigureICloudKeychain is called by `ConfigureDiscoveries` to configure
   // the `AuthenticatorRequestDialogModel` with iCloud Keychain-related values.
@@ -327,8 +342,24 @@ class ChromeAuthenticatorRequestDelegate
   // available that can service requests for synced GPM passkeys.
   bool can_use_synced_phone_passkeys_ = false;
 
-  // True when the cloud enclave authenticator is available for use.
-  bool is_enclave_authenticator_available_ = false;
+  // Non-null when the cloud enclave authenticator is available for use. The
+  // `EnclaveManager` is a `KeyedService` for the current profile and so
+  // outlives this object.
+  raw_ptr<EnclaveManager> enclave_manager_ = nullptr;
+
+  // Used to observe `enclave_manager_` without implementing the Observer
+  // interface directly and thus needing to #include all of `enclave_manager.h`
+  // in this header file.
+  std::unique_ptr<EnclaveManagerObserver> enclave_manager_observer_;
+
+  // Stores the TransportAvailabilityInfo while we're waiting for the enclave
+  // state to load from the disk.
+  std::unique_ptr<device::FidoRequestHandlerBase::TransportAvailabilityInfo>
+      pending_transport_availability_info_;
+
+  // Fetcher for OAuth access tokens needed to use the enclave authenticator.
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher_;
 
   base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_{
       this};

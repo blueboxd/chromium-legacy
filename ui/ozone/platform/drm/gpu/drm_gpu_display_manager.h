@@ -24,10 +24,6 @@ struct ColorTemperatureAdjustment;
 struct GammaAdjustment;
 }  // namespace display
 
-namespace gfx {
-class ColorSpace;
-}  // namespace gfx
-
 namespace ui {
 
 class DrmDeviceManager;
@@ -86,8 +82,6 @@ class DrmGpuDisplayManager {
                           const display::GammaCurve& gamma);
   bool SetPrivacyScreen(int64_t display_id, bool enabled);
 
-  void SetColorSpace(int64_t crtc_id, const gfx::ColorSpace& color_space);
-
  private:
   friend class DrmGpuDisplayManagerTest;
 
@@ -99,9 +93,8 @@ class DrmGpuDisplayManager {
       const std::vector<std::unique_ptr<DrmDisplay>>& new_displays,
       const std::vector<std::unique_ptr<DrmDisplay>>& old_displays) const;
 
-  const raw_ptr<ScreenManager, ExperimentalAsh> screen_manager_;  // Not owned.
-  const raw_ptr<DrmDeviceManager, ExperimentalAsh>
-      drm_device_manager_;  // Not owned.
+  const raw_ptr<ScreenManager> screen_manager_;         // Not owned.
+  const raw_ptr<DrmDeviceManager> drm_device_manager_;  // Not owned.
 
   std::vector<std::unique_ptr<DrmDisplay>> displays_;
 

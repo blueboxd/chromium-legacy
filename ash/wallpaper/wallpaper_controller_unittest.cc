@@ -56,6 +56,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
@@ -71,6 +72,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "base/test/values_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
@@ -399,7 +401,7 @@ class TestWallpaperControllerObserver : public WallpaperControllerObserver {
   }
 
  private:
-  raw_ptr<WallpaperController, ExperimentalAsh> controller_;
+  raw_ptr<WallpaperController> controller_;
 
   base::RepeatingClosure resize_callback_;
   base::RepeatingClosure colors_calculated_callback_;
@@ -849,14 +851,37 @@ class WallpaperControllerTestBase : public AshTestBase {
 
     base::test::TestFuture<bool> set_wallpaper_future;
     controller_->SetSeaPenWallpaper(
-        kAccountId1,
-        {std::move(jpg_bytes), /*id=*/5, manta::proto::RESOLUTION_64},
-        set_wallpaper_future.GetCallback());
+        kAccountId1, {std::move(jpg_bytes), /*id=*/5},
+        /*query_info=*/"test query", set_wallpaper_future.GetCallback());
 
     EXPECT_TRUE(set_wallpaper_future.Take());
     EXPECT_EQ(1, observer.wallpaper_changed_count());
     histogram_tester().ExpectUniqueSample("Ash.Wallpaper.SeaPen.Result2",
                                           SetWallpaperResult::kSuccess, 1);
+  }
+
+  base::FilePath WriteSeaPenWallpaperMetadata(
+      const std::string& file_name,
+      const base::Value::Dict& metadata) {
+    base::FilePath sea_pen_dir =
+        online_wallpaper_dir_.GetPath().Append("sea_pen").Append(
+            kAccountId1.GetAccountIdKey());
+    base::CreateDirectory(sea_pen_dir);
+    base::FilePath file_path = sea_pen_dir.Append(file_name);
+    const char test_xmp_data[] = R"(
+            <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="XMP Core 6.0.0">
+               <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                  <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
+                     <dc:description>%s</dc:description>
+                  </rdf:Description>
+               </rdf:RDF>
+            </x:xmpmeta>
+            ... more image data ...)";
+    CHECK(base::WriteFile(
+        file_path,
+        base::StringPrintf(test_xmp_data,
+                           base::WriteJson(metadata).value_or("").c_str())));
+    return file_path;
   }
 
   TestWallpaperImageDownloader* test_wallpaper_image_downloader() {
@@ -888,10 +913,9 @@ class WallpaperControllerTestBase : public AshTestBase {
     return base::Time();
   }
 
-  raw_ptr<WallpaperControllerImpl, DanglingUntriaged | ExperimentalAsh>
-      controller_;
-  raw_ptr<WallpaperPrefManager, DanglingUntriaged | ExperimentalAsh>
-      pref_manager_ = nullptr;  // owned by controller
+  raw_ptr<WallpaperControllerImpl, DanglingUntriaged> controller_;
+  raw_ptr<WallpaperPrefManager, DanglingUntriaged> pref_manager_ =
+      nullptr;  // owned by controller
 
   base::ScopedTempDir user_data_dir_;
   base::ScopedTempDir online_wallpaper_dir_;
@@ -930,6 +954,7 @@ class WallpaperControllerTest
         break;
     }
     enabled_features.push_back(features::kSeaPen);
+    enabled_features.push_back(features::kFeatureManagementSeaPen);
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
@@ -1483,16 +1508,14 @@ TEST_P(WallpaperControllerTest, EnableShelfColoringNotifiesObservers) {
 TEST_P(WallpaperControllerTest,
        OnWallpaperColorsChangedAlwaysCalledOnFirstUpdate) {
   TestWallpaperControllerObserver observer(controller_);
-  controller_->ShowUserWallpaper(kAccountId1,
-                                 user_manager::UserType::USER_TYPE_REGULAR);
+  controller_->ShowUserWallpaper(kAccountId1, user_manager::UserType::kRegular);
   task_environment()->RunUntilIdle();
 
   // Even though the wallpaper color is invalid, observers should still be
   // notified for the first update.
   EXPECT_EQ(observer.colors_changed_count(), 1);
 
-  controller_->ShowUserWallpaper(kAccountId2,
-                                 user_manager::UserType::USER_TYPE_REGULAR);
+  controller_->ShowUserWallpaper(kAccountId2, user_manager::UserType::kRegular);
   task_environment()->RunUntilIdle();
 
   // Observers should not be notified after the first update if the colors do
@@ -1742,7 +1765,7 @@ TEST_P(
   // Log in and trigger `OnActiveUserPrefServiceChange`.
   SimulateUserLogin(kAccountId1);
   controller_->SetPolicyWallpaper(
-      kAccountId1, user_manager::USER_TYPE_REGULAR,
+      kAccountId1, user_manager::UserType::kRegular,
       CreateEncodedImageForTesting(gfx::Size(10, 10)));
   RunAllTasksUntilIdle();
   WallpaperInfo actual_info;
@@ -1797,7 +1820,7 @@ TEST_P(WallpaperControllerTest, SetAndRemovePolicyWallpaper) {
   // the wallpaper info is updated.
   ClearWallpaperCount();
   controller_->SetPolicyWallpaper(
-      kAccountId1, user_manager::USER_TYPE_REGULAR,
+      kAccountId1, user_manager::UserType::kRegular,
       CreateEncodedImageForTesting(gfx::Size(10, 10)));
   RunAllTasksUntilIdle();
   EXPECT_TRUE(
@@ -2024,7 +2047,7 @@ TEST_P(WallpaperControllerTest, SetThirdPartyWallpaper_PolicyWallpaper) {
   // Set a policy wallpaper for |kUser2|. Verify that |kUser2| becomes policy
   // controlled.
   controller_->SetPolicyWallpaper(
-      kAccountId2, user_manager::USER_TYPE_REGULAR,
+      kAccountId2, user_manager::UserType::kRegular,
       CreateEncodedImageForTesting(gfx::Size(10, 10)));
   RunAllTasksUntilIdle();
   EXPECT_TRUE(controller_->IsWallpaperControlledByPolicy(kAccountId2));
@@ -2109,7 +2132,8 @@ TEST_P(WallpaperControllerTest, ShowSeaPenWallpaperOnLogin) {
       /*max_deviation=*/1));
 }
 
-TEST_P(WallpaperControllerTest, SetSeaPenWallpaperFromFile) {
+// TODO(https://crbug.com/1511896): Flaky on linux-chromeos-rel.
+TEST_P(WallpaperControllerTest, DISABLED_SetSeaPenWallpaperFromFile) {
   SimulateUserLogin(kAccountId1);
   TestWallpaperControllerObserver observer(controller_);
 
@@ -2244,7 +2268,7 @@ TEST_P(WallpaperControllerTest, SetDefaultWallpaperForRegularAccount) {
 }
 
 TEST_P(WallpaperControllerTest, SetDefaultWallpaperForChildAccount) {
-  SimulateUserLogin(kChildAccountId, user_manager::USER_TYPE_CHILD);
+  SimulateUserLogin(kChildAccountId, user_manager::UserType::kChild);
 
   // Verify the large child wallpaper is set successfully with the correct file
   // path.
@@ -2297,7 +2321,7 @@ TEST_P(WallpaperControllerTest,
 
   const AccountId guest_id =
       AccountId::FromUserEmail(user_manager::kGuestUserName);
-  SimulateUserLogin(guest_id, user_manager::USER_TYPE_GUEST);
+  SimulateUserLogin(guest_id, user_manager::UserType::kGuest);
   controller_->SetDefaultWallpaper(guest_id, /*show_wallpaper=*/true,
                                    base::DoNothing());
   RunAllTasksUntilIdle();
@@ -2320,7 +2344,7 @@ TEST_P(WallpaperControllerTest,
   // user and verifying that the policy has been applied successfully.
   WallpaperInfo policy_wallpaper_info;
   controller_->SetPolicyWallpaper(
-      kAccountId1, user_manager::USER_TYPE_REGULAR,
+      kAccountId1, user_manager::UserType::kRegular,
       CreateEncodedImageForTesting(gfx::Size(10, 10)));
   RunAllTasksUntilIdle();
   EXPECT_TRUE(
@@ -2351,7 +2375,7 @@ TEST_P(WallpaperControllerTest, SetDefaultWallpaperForGuestSessionAndPreview) {
   const AccountId guest_id =
       AccountId::FromUserEmail(user_manager::kGuestUserName);
   controller_->ShowUserWallpaper(guest_id);
-  SimulateUserLogin(guest_id, user_manager::USER_TYPE_GUEST);
+  SimulateUserLogin(guest_id, user_manager::UserType::kGuest);
   WallpaperInfo wallpaper_info;
   EXPECT_TRUE(pref_manager_->GetUserWallpaperInfo(guest_id, &wallpaper_info));
   EXPECT_EQ(wallpaper_info.type, WallpaperType::kDefault);
@@ -2371,7 +2395,7 @@ TEST_P(WallpaperControllerTest, SetDefaultWallpaperForGuestSession) {
 
   const AccountId guest_id =
       AccountId::FromUserEmail(user_manager::kGuestUserName);
-  SimulateUserLogin(guest_id, user_manager::USER_TYPE_GUEST);
+  SimulateUserLogin(guest_id, user_manager::UserType::kGuest);
 
   // Verify that during a guest session, |SetDefaultWallpaper| removes the user
   // custom wallpaper info, but a guest specific wallpaper should be set,
@@ -2433,9 +2457,77 @@ TEST_P(WallpaperControllerTest, SetDefaultWallpaperCallbackTiming) {
   EXPECT_EQ(1, observer.wallpaper_changed_count());
 }
 
+TEST_P(WallpaperControllerTest, DeleteRecentSeaPenImage) {
+  SimulateUserLogin(kAccountId1);
+  TestWallpaperControllerObserver observer(controller_);
+
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath file_path = scoped_temp_dir.GetPath().Append("111.jpg");
+  ASSERT_TRUE(base::WriteFile(file_path, "test data"));
+
+  base::test::TestFuture<bool> delete_sea_pen_image_future;
+  controller_->DeleteRecentSeaPenImage(
+      kAccountId1, file_path, delete_sea_pen_image_future.GetCallback());
+
+  EXPECT_TRUE(delete_sea_pen_image_future.Get());
+  EXPECT_FALSE(base::PathExists(file_path));
+}
+
+TEST_P(WallpaperControllerTest, GetSeaPenMetadata) {
+  SimulateUserLogin(kAccountId1);
+
+  const base::Value::Dict metadata = base::test::ParseJsonDict(
+      R"({"creation_time":"13349580290544213",
+      "user_visible_query_text":"test template query",
+      "user_visible_query_template":"test template title",
+      "options":{"4":"55","5":"64"},
+      "template_id":"2"})");
+  const auto file_path = WriteSeaPenWallpaperMetadata("111.jpg", metadata);
+
+  {
+    base::test::TestFuture<std::optional<base::Value::Dict>>
+        get_sea_pen_metadata_future;
+    controller_->GetSeaPenMetadata(kAccountId1, file_path,
+                                   get_sea_pen_metadata_future.GetCallback());
+
+    EXPECT_EQ(metadata, get_sea_pen_metadata_future.Get());
+  }
+
+  {
+    base::test::TestFuture<std::optional<base::Value::Dict>>
+        get_sea_pen_metadata_future;
+    // Now try an invalid path with known good metadata.
+    const auto invalid_file_path =
+        WriteSeaPenWallpaperMetadata("../111.jpg", metadata);
+    controller_->GetSeaPenMetadata(kAccountId1, invalid_file_path,
+                                   get_sea_pen_metadata_future.GetCallback());
+    EXPECT_FALSE(get_sea_pen_metadata_future.Get().has_value());
+  }
+}
+
+TEST_P(WallpaperControllerTest, GetSeaPenMetadataInvalidJson) {
+  SimulateUserLogin(kAccountId1);
+
+  // Missing a required `template_id` key.
+  const base::Value::Dict metadata = base::test::ParseJsonDict(
+      R"({"creation_time":"13349580290544213",
+      "user_visible_query_text":"test template query",
+      "user_visible_query_template":"test template title",
+      "options":{"4":"55","5":"64"}})");
+  const auto file_path = WriteSeaPenWallpaperMetadata("8888.jpg", metadata);
+
+  base::test::TestFuture<std::optional<base::Value::Dict>>
+      get_sea_pen_metadata_future;
+  controller_->GetSeaPenMetadata(kAccountId1, file_path,
+                                 get_sea_pen_metadata_future.GetCallback());
+
+  EXPECT_FALSE(get_sea_pen_metadata_future.Take().has_value());
+}
+
 TEST_P(WallpaperControllerTest, IgnoreWallpaperRequestInKioskMode) {
   gfx::ImageSkia image = CreateImage(640, 480, kWallpaperColor);
-  SimulateUserLogin("kiosk", user_manager::USER_TYPE_KIOSK_APP);
+  SimulateUserLogin("kiosk", user_manager::UserType::kKioskApp);
 
   // Verify that |SetDecodedCustomWallpaper| doesn't set wallpaper in kiosk
   // mode, and |kAccountId1|'s wallpaper info is not updated.
@@ -2483,7 +2575,7 @@ TEST_P(WallpaperControllerTest, IgnoreWallpaperRequestInKioskMode) {
 
 // Disable the wallpaper setting for public session since it is ephemeral.
 TEST_P(WallpaperControllerTest, NotShowWallpaperSettingInPublicSession) {
-  SimulateUserLogin("public_session", user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  SimulateUserLogin("public_session", user_manager::UserType::kPublicAccount);
   EXPECT_FALSE(controller_->ShouldShowWallpaperSetting());
 }
 
@@ -2493,7 +2585,7 @@ TEST_P(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
 
   // Set a policy wallpaper for the user. Verify the user is policy controlled.
   controller_->SetPolicyWallpaper(
-      kAccountId1, user_manager::USER_TYPE_REGULAR,
+      kAccountId1, user_manager::UserType::kRegular,
       CreateEncodedImageForTesting(gfx::Size(10, 10)));
   RunAllTasksUntilIdle();
   EXPECT_TRUE(controller_->IsWallpaperControlledByPolicy(kAccountId1));
@@ -2990,7 +3082,7 @@ TEST_P(WallpaperControllerTest, IsActiveUserWallpaperControlledByPolicy) {
   // Set a policy wallpaper for the active user. Verify that the active user
   // becomes policy controlled.
   controller_->SetPolicyWallpaper(
-      kAccountId1, user_manager::USER_TYPE_REGULAR,
+      kAccountId1, user_manager::UserType::kRegular,
       CreateEncodedImageForTesting(gfx::Size(10, 10)));
   RunAllTasksUntilIdle();
   EXPECT_TRUE(controller_->IsActiveUserWallpaperControlledByPolicy());
@@ -3014,9 +3106,9 @@ TEST_P(WallpaperControllerTest,
   // Set a policy wallpaper for the managed guest session. Verify that the
   // managed guest session becomes policy controlled.
   controller_->SetPolicyWallpaper(
-      kAccountId1, user_manager::USER_TYPE_PUBLIC_ACCOUNT,
+      kAccountId1, user_manager::UserType::kPublicAccount,
       CreateEncodedImageForTesting(gfx::Size(10, 10)));
-  SimulateUserLogin(kAccountId1, user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  SimulateUserLogin(kAccountId1, user_manager::UserType::kPublicAccount);
   RunAllTasksUntilIdle();
   EXPECT_TRUE(controller_->IsWallpaperControlledByPolicy(kAccountId1));
 

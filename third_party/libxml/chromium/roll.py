@@ -72,7 +72,6 @@ import tempfile
 # this is helpful.
 
 PATCHES = [
-    'libxml2-2.9.4-security-xpath-nodetab-uaf.patch',
     'undo-sax-deprecation.patch',
 ]
 
@@ -119,7 +118,6 @@ SHARED_XML_CONFIGURE_OPTIONS = [
     ('--without-xptr', 'xptr=no'),
     ('--without-xptr-locs', 'xptr_locs=no'),
     ('--without-zlib', 'zlib=no'),
-    ('--without-tls', 'tls=no'),
 ]
 
 
@@ -129,12 +127,12 @@ EXTRA_NIX_XML_CONFIGURE_OPTIONS = [
     '--without-minimum',
     '--without-readline',
     '--without-history',
+    '--without-tls',
 ]
 
 
 # These options are only available in win32/configure.js for Windows.
 EXTRA_WIN32_XML_CONFIGURE_OPTIONS = [
-    'trio=no',
     'walker=no',
 ]
 
@@ -205,11 +203,6 @@ FILES_TO_REMOVE = [
     'src/testOOM.c',
     'src/testOOMlib.c',
     'src/testOOMlib.h',
-    'src/trio.c',
-    'src/trio.h',
-    'src/triop.h',
-    'src/triostr.c',
-    'src/triostr.h',
     'src/vms',
     'src/win32/VC10/config.h',
     'src/win32/configure.js',

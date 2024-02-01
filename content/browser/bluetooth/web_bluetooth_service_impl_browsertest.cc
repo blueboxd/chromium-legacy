@@ -8,7 +8,6 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
@@ -168,12 +167,11 @@ class TestBluetoothDelegate : public BluetoothDelegate {
     return std::move(prompt);
   }
 
-  void ShowDevicePairPrompt(
-      content::RenderFrameHost* frame,
-      const std::u16string& device_identifier,
-      PairPromptCallback callback,
-      PairingKind pairing_kind,
-      const absl::optional<std::u16string>& pin) override {
+  void ShowDevicePairPrompt(content::RenderFrameHost* frame,
+                            const std::u16string& device_identifier,
+                            PairPromptCallback callback,
+                            PairingKind pairing_kind,
+                            const std::optional<std::u16string>& pin) override {
     NOTREACHED();
   }
 
@@ -253,9 +251,7 @@ class TestBluetoothDelegate : public BluetoothDelegate {
 
  private:
   std::string device_to_select_;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #constexpr-ctor-field-initializer
-  RAW_PTR_EXCLUSION FakeBluetoothScanningPrompt* prompt_ = nullptr;
+  raw_ptr<FakeBluetoothScanningPrompt, DanglingUntriaged> prompt_ = nullptr;
   base::OnceClosure quit_on_scanning_prompt_;
   bool showed_bluetooth_scanning_prompt_ = false;
 };

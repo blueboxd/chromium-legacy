@@ -7,15 +7,16 @@ import {CloseReason, ComposeClientPageHandlerRemote, ComposeDialogCallbackRouter
 /** @interface */
 export interface ComposeApiProxy {
   acceptComposeResult(): Promise<boolean>;
-  acknowledgeConsentDisclaimer(): void;
-  approveConsent(): void;
+  completeFirstRun(): void;
   closeUi(reason: CloseReason): void;
   compose(input: string, edited: boolean): void;
-  rewrite(style: StyleModifiers): void;
+  rewrite(style: StyleModifiers|null): void;
   getRouter(): ComposeDialogCallbackRouter;
   openBugReportingLink(): void;
-  openFeedbackSurveyLink(): void;
+  openComposeLearnMorePage(): void;
   openComposeSettings(): void;
+  openFeedbackSurveyLink(): void;
+  openSignInPage(): void;
   setUserFeedback(reason: UserFeedback): void;
   requestInitialState(): Promise<OpenMetadata>;
   saveWebuiState(state: string): void;
@@ -52,23 +53,23 @@ export class ComposeApiProxyImpl implements ComposeApiProxy {
         res => res.success);
   }
 
-  acknowledgeConsentDisclaimer(): void {
-    this.composeClientPageHandler.acknowledgeConsentDisclaimer();
-  }
-
-  approveConsent(): void {
-    this.composeClientPageHandler.approveConsent();
+  completeFirstRun(): void {
+    this.composeClientPageHandler.completeFirstRun();
   }
 
   closeUi(reason: CloseReason): void {
     this.composeClientPageHandler.closeUI(reason);
   }
 
+  openComposeSettings() {
+    this.composeClientPageHandler.openComposeSettings();
+  }
+
   compose(input: string, edited: boolean): void {
     this.composeSessionPageHandler.compose(input, edited);
   }
 
-  rewrite(style: StyleModifiers): void {
+  rewrite(style: StyleModifiers|null): void {
     this.composeSessionPageHandler.rewrite(style);
   }
 
@@ -80,12 +81,16 @@ export class ComposeApiProxyImpl implements ComposeApiProxy {
     this.composeSessionPageHandler.openBugReportingLink();
   }
 
+  openComposeLearnMorePage() {
+    this.composeSessionPageHandler.openComposeLearnMorePage();
+  }
+
   openFeedbackSurveyLink() {
     this.composeSessionPageHandler.openFeedbackSurveyLink();
   }
 
-  openComposeSettings() {
-    this.composeSessionPageHandler.openComposeSettings();
+  openSignInPage() {
+    this.composeSessionPageHandler.openSignInPage();
   }
 
   requestInitialState(): Promise<OpenMetadata> {

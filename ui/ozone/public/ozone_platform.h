@@ -143,15 +143,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // back via gpu extra info.
     bool fetch_buffer_formats_for_gmb_on_gpu = false;
 
-#if BUILDFLAG(IS_LINUX)
-    // TODO(crbug.com/1116701): add vaapi support for other Ozone platforms on
-    // Linux. At the moment, VA-API Linux implementation supports only X11
-    // backend. This implementation must be refactored to support Ozone
-    // properly. As a temporary solution, VA-API on Linux checks if vaapi is
-    // supported (which implicitly means that it is Ozone/X11).
-    bool supports_vaapi = false;
-#endif
-
     // Indicates that the platform allows client applications to manipulate
     // global screen coordinates. Wayland, for example, disallow it by design.
     bool supports_global_screen_coordinates = true;
@@ -314,6 +305,9 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
                                              gfx::BufferUsage usage) const;
+
+  // Whether the platform supports compositing windows with transparency.
+  virtual bool IsWindowCompositingSupported() const;
 
   // Returns whether a custom frame should be used for windows.
   // The default behaviour is returning what is suggested by the

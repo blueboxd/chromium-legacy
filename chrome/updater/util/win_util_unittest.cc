@@ -59,19 +59,6 @@ namespace {
 
 constexpr char kTestAppID[] = "{D07D2B56-F583-4631-9E8E-9942F63765BE}";
 
-// Allows access to all authenticated users on the machine.
-CSecurityDesc GetEveryoneDaclSecurityDescriptor(ACCESS_MASK accessmask) {
-  CSecurityDesc sd;
-  CDacl dacl;
-  dacl.AddAllowedAce(Sids::System(), accessmask);
-  dacl.AddAllowedAce(Sids::Admins(), accessmask);
-  dacl.AddAllowedAce(Sids::Interactive(), accessmask);
-
-  sd.SetDacl(dacl);
-  sd.MakeAbsolute();
-  return sd;
-}
-
 }  // namespace
 
 TEST(WinUtil, GetDownloadProgress) {
@@ -158,8 +145,9 @@ TEST(WinUtil, ShellExecuteAndWait) {
 TEST(WinUtil, RunElevated) {
   // TODO(crbug.com/1314521): Click on UAC prompts in Updater tests that require
   // elevation
-  if (!::IsUserAnAdmin())
+  if (!::IsUserAnAdmin()) {
     return;
+  }
 
   const base::CommandLine test_process_cmd_line =
       GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
@@ -169,30 +157,26 @@ TEST(WinUtil, RunElevated) {
 }
 
 TEST(WinUtil, RunDeElevated_Exe) {
-  if (!::IsUserAnAdmin() || !IsUACOn())
+  if (!::IsUserAnAdmin() || !IsUACOn()) {
     return;
+  }
 
   // Create a shared event to be waited for in this process and signaled in the
   // test process to confirm that the test process is running at medium
   // integrity.
   // The event is created with a security descriptor that allows the medium
   // integrity process to signal it.
-  const std::wstring event_name =
-      base::StrCat({L"WinUtil.RunDeElevated-",
-                    base::NumberToWString(::GetCurrentProcessId())});
-  CSecurityAttributes sa(GetEveryoneDaclSecurityDescriptor(GENERIC_ALL));
-  base::WaitableEvent event(base::win::ScopedHandle(
-      ::CreateEvent(&sa, FALSE, FALSE, event_name.c_str())));
-  ASSERT_NE(event.handle(), nullptr);
+  test::EventHolder event_holder(CreateEveryoneWaitableEventForTest());
+  ASSERT_NE(event_holder.event.handle(), nullptr);
 
   base::CommandLine test_process_cmd_line =
       GetTestProcessCommandLine(GetTestScope(), test::GetTestName());
   test_process_cmd_line.AppendSwitchNative(kTestEventToSignalIfMediumIntegrity,
-                                           event_name);
+                                           event_holder.name);
   EXPECT_HRESULT_SUCCEEDED(
       RunDeElevated(test_process_cmd_line.GetProgram().value(),
                     test_process_cmd_line.GetArgumentsString()));
-  EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
+  EXPECT_TRUE(event_holder.event.TimedWait(TestTimeouts::action_max_timeout()));
 
   EXPECT_TRUE(test::WaitFor(
       [&] { return test::FindProcesses(kTestProcessExecutableName).empty(); }));

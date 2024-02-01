@@ -68,9 +68,9 @@ class ContextRecyclerTest : public testing::Test {
   v8::Local<v8::UnboundScript> Compile(const std::string& code) {
     v8::Local<v8::UnboundScript> script;
     v8::Context::Scope ctx(helper_->scratch_context());
-    absl::optional<std::string> error_msg;
+    std::optional<std::string> error_msg;
     EXPECT_TRUE(helper_
-                    ->Compile(code, GURL("https://example.org/script.js"),
+                    ->Compile(code, bidding_logic_url_,
                               /*debug_id=*/nullptr, error_msg)
                     .ToLocal(&script));
     EXPECT_FALSE(error_msg.has_value()) << error_msg.value();
@@ -115,8 +115,127 @@ class ContextRecyclerTest : public testing::Test {
         args, time_limit_.get(), error_msgs);
   }
 
+  // Runs a script twice, using a new ContextRecyclerScope each time, testing
+  // that InterestGroupLazyFiller and BiddingBrowserSignalsLazyFiller are
+  // correctly persisted between them.
+  //
+  // In the first run, creates its own parameters for the two recyclers that
+  // make the fillers set all possible lazy callbacks, and adds both sets of
+  // lazy callbacks to a single objects. Then runs a script that stashes that
+  // object. The lazily populated fields are never accessed.
+  //
+  // In the second run, the passed in values are used to reinitialize the lazy
+  // fillers. If the passed in values are null, they are not reinitialized.
+  // Either way, the script serializes the stashed object to JSON, which is
+  // compared to `expected_result`.
+  //
+  // The same hard-coded `bidding_logic_url`, `bidding_wasm_helper_url`, and
+  // 'trusted_bidding_signals_url` are used for both runs, since that doesn't
+  // change across runs, in production code.
+  void RunBidderLazyFilterReuseTest(
+      mojom::BidderWorkletNonSharedParams* ig_params,
+      mojom::BiddingBrowserSignals* bs_params,
+      base::Time now,
+      std::string_view expected_result) {
+    const GURL kBiddingSignalsWasmHelperUrl("https://example.org/wasm_helper");
+    const GURL kTrustedBiddingSignalsUrl("https://example.org/trusted_signals");
+
+    const char kScript[] = R"(
+      function test(obj) {
+        if (!globalThis.stash) {
+          // On first run
+          globalThis.stash = obj;
+        } else {
+          return JSON.stringify(globalThis.stash);
+        }
+      }
+    )";
+
+    v8::Local<v8::UnboundScript> script = Compile(kScript);
+    ASSERT_FALSE(script.IsEmpty());
+
+    ContextRecycler context_recycler(helper_.get());
+    {
+      ContextRecyclerScope scope(context_recycler);  // Initialize context
+      context_recycler.AddInterestGroupLazyFiller();
+      context_recycler.AddBiddingBrowserSignalsLazyFiller();
+    }
+
+    {
+      // Create parameters that should make InterestGroupLazyFillter and
+      // BiddingBrowserSignalsLazyFiller consider their respective managed
+      // values to be full populated, so set up all lazy fillers they can.
+      base::Time now2 = base::Time::Now();
+      mojom::BidderWorkletNonSharedParamsPtr ig_params2 =
+          mojom::BidderWorkletNonSharedParams::New();
+      ig_params2->user_bidding_signals.emplace("{\"j\": 1}");
+      ig_params2->update_url = GURL("https://example.org/update.json");
+      ig_params2->trusted_bidding_signals_keys.emplace();
+      ig_params2->trusted_bidding_signals_keys->push_back("a");
+      ig_params2->trusted_bidding_signals_keys->push_back("b");
+      ig_params2->priority_vector.emplace();
+      ig_params2->priority_vector->insert(
+          std::pair<std::string, double>("a", 42.0));
+
+      mojom::BiddingBrowserSignalsPtr bs_params2 =
+          mojom::BiddingBrowserSignals::New();
+      bs_params2->prev_wins.push_back(
+          mojom::PreviousWin::New(now2 - base::Minutes(1), "[\"a\"]"));
+      bs_params2->prev_wins.push_back(
+          mojom::PreviousWin::New(now2 - base::Minutes(2), "[\"b\"]"));
+
+      ContextRecyclerScope scope(context_recycler);
+      context_recycler.interest_group_lazy_filler()->ReInitialize(
+          &bidding_logic_url_, &kBiddingSignalsWasmHelperUrl,
+          &kTrustedBiddingSignalsUrl, ig_params2.get());
+      context_recycler.bidding_browser_signals_lazy_filler()->ReInitialize(
+          bs_params2.get(), now2);
+
+      v8::Local<v8::Object> arg(v8::Object::New(helper_->isolate()));
+      context_recycler.interest_group_lazy_filler()->FillInObject(arg);
+      context_recycler.bidding_browser_signals_lazy_filler()->FillInObject(arg);
+
+      std::vector<std::string> error_msgs;
+      Run(scope, script, "test", error_msgs, arg);
+      EXPECT_THAT(error_msgs, ElementsAre());
+    }
+
+    {
+      ContextRecyclerScope scope(context_recycler);
+      if (ig_params) {
+        context_recycler.interest_group_lazy_filler()->ReInitialize(
+            &bidding_logic_url_, &kBiddingSignalsWasmHelperUrl,
+            &kTrustedBiddingSignalsUrl, ig_params);
+      }
+      if (bs_params) {
+        context_recycler.bidding_browser_signals_lazy_filler()->ReInitialize(
+            bs_params, now);
+      }
+
+      v8::Local<v8::Object> arg(v8::Object::New(helper_->isolate()));
+      if (ig_params) {
+        context_recycler.interest_group_lazy_filler()->FillInObject(arg);
+      }
+      if (bs_params) {
+        context_recycler.bidding_browser_signals_lazy_filler()->FillInObject(
+            arg);
+      }
+
+      std::vector<std::string> error_msgs;
+      v8::MaybeLocal<v8::Value> maybe_result =
+          Run(scope, script, "test", error_msgs, arg);
+      EXPECT_THAT(error_msgs, ElementsAre());
+      v8::Local<v8::Value> result;
+      ASSERT_TRUE(maybe_result.ToLocal(&result));
+      std::string str_result;
+      ASSERT_TRUE(gin::ConvertFromV8(helper_->isolate(), result, &str_result));
+      EXPECT_EQ(expected_result, str_result);
+    }
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_;
+  const GURL bidding_logic_url_{"https://example.org/script.js"};
   scoped_refptr<AuctionV8Helper> helper_;
   std::unique_ptr<AuctionV8Helper::FullIsolateScope> v8_scope_;
   std::unique_ptr<AuctionV8Helper::TimeLimit> time_limit_;
@@ -311,11 +430,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);  // Initialize context
     context_recycler.AddSetBidBindings();
   }
-
-  base::RepeatingCallback<bool(const GURL&)> matches_ad1 = base::BindRepeating(
-      [](const GURL& url) { return url == GURL("https://example.com/ad1"); });
-  base::RepeatingCallback<bool(const GURL&)> ignore_arg_return_false =
-      base::BindRepeating([](const GURL& ignored) { return false; });
+  base::RepeatingCallback<bool(const std::string&)> matches_ad1 =
+      base::BindRepeating([](const std::string& url) {
+        return url == "https://example.com/ad1";
+      });
+  base::RepeatingCallback<bool(const std::string&)> ignore_arg_return_false =
+      base::BindRepeating([](const std::string& ignored) { return false; });
 
   {
     mojom::BidderWorkletNonSharedParamsPtr params =
@@ -323,11 +443,11 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad1"),
-                                     absl::nullopt);
+                                     std::nullopt);
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*per_buyer_currency=*/absl::nullopt,
+        /*per_buyer_currency=*/std::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -359,12 +479,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/notad1"),
-                                     absl::nullopt);
+                                     std::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*per_buyer_currency=*/absl::nullopt,
+        /*per_buyer_currency=*/std::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -395,17 +515,17 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad3"),
-                                     absl::nullopt);
+                                     std::nullopt);
     params->ad_components.emplace();
     params->ad_components.value().emplace_back(
-        GURL("https://example.com/portion1"), absl::nullopt);
+        GURL("https://example.com/portion1"), std::nullopt);
     params->ad_components.value().emplace_back(
-        GURL("https://example.com/portion2"), absl::nullopt);
+        GURL("https://example.com/portion2"), std::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
-        /*per_buyer_currency=*/absl::nullopt,
+        /*per_buyer_currency=*/std::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -434,19 +554,19 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad5"),
-                                     absl::nullopt);
+                                     std::nullopt);
     params->ad_components.emplace();
     params->ad_components.value().emplace_back(
-        GURL("https://example.com/portion3"), absl::nullopt);
+        GURL("https://example.com/portion3"), std::nullopt);
     params->ad_components.value().emplace_back(
-        GURL("https://example.com/portion4"), absl::nullopt);
+        GURL("https://example.com/portion4"), std::nullopt);
     params->ad_components.value().emplace_back(
-        GURL("https://example.com/portion5"), absl::nullopt);
+        GURL("https://example.com/portion5"), std::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
-        /*per_buyer_currency=*/absl::nullopt,
+        /*per_buyer_currency=*/std::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -488,19 +608,19 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad5"),
-                                     absl::nullopt);
+                                     std::nullopt);
     params->ad_components.emplace();
     params->ad_components.value().emplace_back(
-        GURL("https://example.com/portion6"), absl::nullopt);
+        GURL("https://example.com/portion6"), std::nullopt);
     params->ad_components.value().emplace_back(
-        GURL("https://example.com/portion7"), absl::nullopt);
+        GURL("https://example.com/portion7"), std::nullopt);
     params->ad_components.value().emplace_back(
-        GURL("https://example.com/portion8"), absl::nullopt);
+        GURL("https://example.com/portion8"), std::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*per_buyer_currency=*/absl::nullopt,
+        /*per_buyer_currency=*/std::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -537,12 +657,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad1"),
-                                     absl::nullopt);
+                                     std::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*per_buyer_currency=*/absl::nullopt,
+        /*per_buyer_currency=*/std::nullopt,
         /*is_ad_excluded=*/matches_ad1,
         /*is_component_ad_excluded=*/matches_ad1);
 
@@ -570,12 +690,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad2"),
-                                     absl::nullopt);
+                                     std::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*per_buyer_currency=*/absl::nullopt,
+        /*per_buyer_currency=*/std::nullopt,
         /*is_ad_excluded=*/matches_ad1,
         /*is_component_ad_excluded=*/matches_ad1);
 
@@ -605,7 +725,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad2"),
-                                     absl::nullopt);
+                                     std::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
@@ -642,7 +762,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad2"),
-                                     absl::nullopt);
+                                     std::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
@@ -677,7 +797,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ContextRecyclerScope scope(context_recycler);
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad2"),
-                                     absl::nullopt);
+                                     std::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
@@ -767,203 +887,108 @@ TEST_F(ContextRecyclerTest, SetPriorityBindings) {
   }
 }
 
+// Test to make sure lifetime managing/avoiding UaF is done right.
+// Actual argument passing is covered thoroughly in bidder worklet unit tests.
+//
+// This test covers the case that an object with fully populated bidder lazy
+// fillers (InterestGroupLazyFiller, BiddingBrowserSignalsLazyFiller) that are
+// never invoked is accessed when a context is reused, with fully populated
+// bidder lazy fillers with different values.
 TEST_F(ContextRecyclerTest, BidderLazyFiller) {
-  // Test to make sure lifetime managing/avoiding UaF is done right.
-  // Actual argument passing is covered thoroughly in bidder worklet unit tests.
-  const char kScript[] = R"(
-    function test(obj) {
-      if (!globalThis.stash) {
-        // On first run
-        globalThis.stash = obj;
-      } else {
-        return JSON.stringify(globalThis.stash);
-      }
-    }
-  )";
+  base::Time now = base::Time::Now();
+  mojom::BidderWorkletNonSharedParamsPtr ig_params =
+      mojom::BidderWorkletNonSharedParams::New();
+  ig_params->user_bidding_signals.emplace("{\"k\": 2}");
+  ig_params->update_url = GURL("https://example.org/update2.json");
+  ig_params->trusted_bidding_signals_keys.emplace();
+  ig_params->trusted_bidding_signals_keys->push_back("c");
+  ig_params->trusted_bidding_signals_keys->push_back("d");
+  ig_params->priority_vector.emplace();
+  ig_params->priority_vector->insert(std::pair<std::string, double>("e", 12.0));
+  ig_params->enable_bidding_signals_prioritization = true;
 
-  v8::Local<v8::UnboundScript> script = Compile(kScript);
-  ASSERT_FALSE(script.IsEmpty());
+  mojom::BiddingBrowserSignalsPtr bs_params =
+      mojom::BiddingBrowserSignals::New();
+  bs_params->prev_wins.push_back(
+      mojom::PreviousWin::New(now - base::Minutes(3), "[\"c\"]"));
+  bs_params->prev_wins.push_back(
+      mojom::PreviousWin::New(now - base::Minutes(4), "[\"d\"]"));
 
-  ContextRecycler context_recycler(helper_.get());
-  {
-    ContextRecyclerScope scope(context_recycler);  // Initialize context
-    context_recycler.AddInterestGroupLazyFiller();
-    context_recycler.AddBiddingBrowserSignalsLazyFiller();
-  }
-
-  {
-    base::Time now = base::Time::Now();
-    mojom::BidderWorkletNonSharedParamsPtr ig_params =
-        mojom::BidderWorkletNonSharedParams::New();
-    ig_params->user_bidding_signals.emplace("{\"j\": 1}");
-    ig_params->trusted_bidding_signals_keys.emplace();
-    ig_params->trusted_bidding_signals_keys->push_back("a");
-    ig_params->trusted_bidding_signals_keys->push_back("b");
-    ig_params->priority_vector.emplace();
-    ig_params->priority_vector->insert(
-        std::pair<std::string, double>("a", 42.0));
-
-    mojom::BiddingBrowserSignalsPtr bs_params =
-        mojom::BiddingBrowserSignals::New();
-    bs_params->prev_wins.push_back(
-        mojom::PreviousWin::New(now - base::Minutes(1), "[\"a\"]"));
-    bs_params->prev_wins.push_back(
-        mojom::PreviousWin::New(now - base::Minutes(2), "[\"b\"]"));
-
-    ContextRecyclerScope scope(context_recycler);
-    context_recycler.interest_group_lazy_filler()->ReInitialize(
-        ig_params.get());
-    context_recycler.bidding_browser_signals_lazy_filler()->ReInitialize(
-        bs_params.get(), now);
-
-    v8::Local<v8::Object> arg(v8::Object::New(helper_->isolate()));
-    context_recycler.interest_group_lazy_filler()->FillInObject(arg);
-    context_recycler.bidding_browser_signals_lazy_filler()->FillInObject(arg);
-
-    std::vector<std::string> error_msgs;
-    Run(scope, script, "test", error_msgs, arg);
-    EXPECT_THAT(error_msgs, ElementsAre());
-  }
-
-  {
-    base::Time now = base::Time::Now();
-    mojom::BidderWorkletNonSharedParamsPtr ig_params =
-        mojom::BidderWorkletNonSharedParams::New();
-    ig_params->user_bidding_signals.emplace("{\"k\": 2}");
-    ig_params->trusted_bidding_signals_keys.emplace();
-    ig_params->trusted_bidding_signals_keys->push_back("c");
-    ig_params->trusted_bidding_signals_keys->push_back("d");
-    ig_params->priority_vector.emplace();
-    ig_params->priority_vector->insert(
-        std::pair<std::string, double>("e", 12.0));
-
-    mojom::BiddingBrowserSignalsPtr bs_params =
-        mojom::BiddingBrowserSignals::New();
-    bs_params->prev_wins.push_back(
-        mojom::PreviousWin::New(now - base::Minutes(3), "[\"c\"]"));
-    bs_params->prev_wins.push_back(
-        mojom::PreviousWin::New(now - base::Minutes(4), "[\"d\"]"));
-
-    ContextRecyclerScope scope(context_recycler);
-    context_recycler.interest_group_lazy_filler()->ReInitialize(
-        ig_params.get());
-    context_recycler.bidding_browser_signals_lazy_filler()->ReInitialize(
-        bs_params.get(), now);
-
-    v8::Local<v8::Object> arg(v8::Object::New(helper_->isolate()));
-    context_recycler.interest_group_lazy_filler()->FillInObject(arg);
-    context_recycler.bidding_browser_signals_lazy_filler()->FillInObject(arg);
-
-    std::vector<std::string> error_msgs;
-    v8::MaybeLocal<v8::Value> maybe_result =
-        Run(scope, script, "test", error_msgs, arg);
-    EXPECT_THAT(error_msgs, ElementsAre());
-    v8::Local<v8::Value> result;
-    ASSERT_TRUE(maybe_result.ToLocal(&result));
-    std::string str_result;
-    ASSERT_TRUE(gin::ConvertFromV8(helper_->isolate(), result, &str_result));
-    EXPECT_EQ(
-        "{\"userBiddingSignals\":{\"k\":2},"
-        "\"trustedBiddingSignalsKeys\":[\"c\",\"d\"],"
-        "\"priorityVector\":{\"e\":12},"
-        "\"prevWins\":[[240,[\"d\"]],[180,[\"c\"]]],"
-        "\"prevWinsMs\":[[240000,[\"d\"]],[180000,[\"c\"]]]}",
-        str_result);
-  }
+  RunBidderLazyFilterReuseTest(
+      ig_params.get(), bs_params.get(), now,
+      "{\"userBiddingSignals\":{\"k\":2},"
+      "\"biddingLogicURL\":\"https://example.org/script.js\","
+      "\"biddingLogicUrl\":\"https://example.org/script.js\","
+      "\"biddingWasmHelperURL\":\"https://example.org/wasm_helper\","
+      "\"biddingWasmHelperUrl\":\"https://example.org/wasm_helper\","
+      "\"updateURL\":\"https://example.org/update2.json\","
+      "\"updateUrl\":\"https://example.org/update2.json\","
+      "\"dailyUpdateUrl\":\"https://example.org/update2.json\","
+      "\"trustedBiddingSignalsURL\":\"https://example.org/trusted_signals\","
+      "\"trustedBiddingSignalsUrl\":\"https://example.org/trusted_signals\","
+      "\"trustedBiddingSignalsKeys\":[\"c\",\"d\"],"
+      "\"priorityVector\":{\"e\":12},"
+      "\"useBiddingSignalsPrioritization\":true,"
+      "\"prevWins\":[[240,[\"d\"]],[180,[\"c\"]]],"
+      "\"prevWinsMs\":[[240000,[\"d\"]],[180000,[\"c\"]]]}");
 }
 
+// Test to make sure lifetime managing/avoiding UaF is done right.
+// Actual argument passing is covered thoroughly in bidder worklet unit tests.
+//
+// This test covers the case that an object with fully populated bidder lazy
+// fillers (InterestGroupLazyFiller, BiddingBrowserSignalsLazyFiller) that are
+// never invoked is accessed when a context is reused, with minimally populated
+// bidder lazy fillers.
 TEST_F(ContextRecyclerTest, BidderLazyFiller2) {
-  // Test to make sure that stale objects with fields added that are no longer
-  // there handle it gracefully.
-  const char kScript[] = R"(
-    function test(obj) {
-      if (!globalThis.stash) {
-        // On first run
-        globalThis.stash = obj;
-      } else {
-        return JSON.stringify(globalThis.stash);
-      }
-    }
-  )";
+  base::Time now = base::Time::Now();
+  mojom::BidderWorkletNonSharedParamsPtr ig_params =
+      mojom::BidderWorkletNonSharedParams::New();
+  mojom::BiddingBrowserSignalsPtr bs_params =
+      mojom::BiddingBrowserSignals::New();
+  RunBidderLazyFilterReuseTest(
+      ig_params.get(), bs_params.get(), now,
+      "{\"userBiddingSignals\":null,"
+      "\"biddingLogicURL\":\"https://example.org/script.js\","
+      "\"biddingLogicUrl\":\"https://example.org/script.js\","
+      "\"biddingWasmHelperURL\":\"https://example.org/wasm_helper\","
+      "\"biddingWasmHelperUrl\":\"https://example.org/wasm_helper\","
+      "\"updateURL\":null,"
+      "\"updateUrl\":null,"
+      "\"dailyUpdateUrl\":null,"
+      "\"trustedBiddingSignalsURL\":\"https://example.org/trusted_signals\","
+      "\"trustedBiddingSignalsUrl\":\"https://example.org/trusted_signals\","
+      "\"trustedBiddingSignalsKeys\":null,"
+      "\"priorityVector\":null,"
+      "\"useBiddingSignalsPrioritization\":false,"
+      "\"prevWins\":[],"
+      "\"prevWinsMs\":[]}");
+}
 
-  v8::Local<v8::UnboundScript> script = Compile(kScript);
-  ASSERT_FALSE(script.IsEmpty());
-
-  ContextRecycler context_recycler(helper_.get());
-  {
-    ContextRecyclerScope scope(context_recycler);  // Initialize context
-    context_recycler.AddInterestGroupLazyFiller();
-    context_recycler.AddBiddingBrowserSignalsLazyFiller();
-  }
-
-  {
-    base::Time now = base::Time::Now();
-    mojom::BidderWorkletNonSharedParamsPtr ig_params =
-        mojom::BidderWorkletNonSharedParams::New();
-    ig_params->user_bidding_signals.emplace("{\"j\": 1}");
-    ig_params->trusted_bidding_signals_keys.emplace();
-    ig_params->trusted_bidding_signals_keys->push_back("a");
-    ig_params->trusted_bidding_signals_keys->push_back("b");
-    ig_params->priority_vector.emplace();
-    ig_params->priority_vector->insert(
-        std::pair<std::string, double>("a", 42.0));
-
-    mojom::BiddingBrowserSignalsPtr bs_params =
-        mojom::BiddingBrowserSignals::New();
-    bs_params->prev_wins.push_back(
-        mojom::PreviousWin::New(now - base::Minutes(1), "[\"a\"]"));
-    bs_params->prev_wins.push_back(
-        mojom::PreviousWin::New(now - base::Minutes(2), "[\"b\"]"));
-
-    ContextRecyclerScope scope(context_recycler);
-    context_recycler.interest_group_lazy_filler()->ReInitialize(
-        ig_params.get());
-    context_recycler.bidding_browser_signals_lazy_filler()->ReInitialize(
-        bs_params.get(), now);
-
-    v8::Local<v8::Object> arg(v8::Object::New(helper_->isolate()));
-    context_recycler.interest_group_lazy_filler()->FillInObject(arg);
-    context_recycler.bidding_browser_signals_lazy_filler()->FillInObject(arg);
-
-    std::vector<std::string> error_msgs;
-    Run(scope, script, "test", error_msgs, arg);
-    EXPECT_THAT(error_msgs, ElementsAre());
-  }
-
-  {
-    // Now cover the data for the fields not actually being there.
-    base::Time now = base::Time::Now();
-    mojom::BidderWorkletNonSharedParamsPtr ig_params =
-        mojom::BidderWorkletNonSharedParams::New();
-    mojom::BiddingBrowserSignalsPtr bs_params =
-        mojom::BiddingBrowserSignals::New();
-
-    ContextRecyclerScope scope(context_recycler);
-    context_recycler.interest_group_lazy_filler()->ReInitialize(
-        ig_params.get());
-    context_recycler.bidding_browser_signals_lazy_filler()->ReInitialize(
-        bs_params.get(), now);
-
-    v8::Local<v8::Object> arg(v8::Object::New(helper_->isolate()));
-    context_recycler.interest_group_lazy_filler()->FillInObject(arg);
-    context_recycler.bidding_browser_signals_lazy_filler()->FillInObject(arg);
-
-    std::vector<std::string> error_msgs;
-    v8::MaybeLocal<v8::Value> maybe_result =
-        Run(scope, script, "test", error_msgs, arg);
-    EXPECT_THAT(error_msgs, ElementsAre());
-    v8::Local<v8::Value> result;
-    ASSERT_TRUE(maybe_result.ToLocal(&result));
-    std::string str_result;
-    ASSERT_TRUE(gin::ConvertFromV8(helper_->isolate(), result, &str_result));
-    EXPECT_EQ(
-        "{\"userBiddingSignals\":null,"
-        "\"trustedBiddingSignalsKeys\":null,"
-        "\"priorityVector\":null,"
-        "\"prevWins\":[],"
-        "\"prevWinsMs\":[]}",
-        str_result);
-  }
+// Test to make sure lifetime managing/avoiding UaF is done right.
+// Actual argument passing is covered thoroughly in bidder worklet unit tests.
+//
+// This test covers the case that an object with fully populated bidder lazy
+// fillers (InterestGroupLazyFiller, BiddingBrowserSignalsLazyFiller) that are
+// never invoked is accessed when a context is reused, without populating bidder
+// lazy fillers.
+TEST_F(ContextRecyclerTest, BidderLazyFiller3) {
+  RunBidderLazyFilterReuseTest(nullptr, nullptr, base::Time(),
+                               "{\"userBiddingSignals\":null,"
+                               "\"biddingLogicURL\":null,"
+                               "\"biddingLogicUrl\":null,"
+                               "\"biddingWasmHelperURL\":null,"
+                               "\"biddingWasmHelperUrl\":null,"
+                               "\"updateURL\":null,"
+                               "\"updateUrl\":null,"
+                               "\"dailyUpdateUrl\":null,"
+                               "\"trustedBiddingSignalsURL\":null,"
+                               "\"trustedBiddingSignalsUrl\":null,"
+                               "\"trustedBiddingSignalsKeys\":null,"
+                               "\"priorityVector\":null,"
+                               "\"useBiddingSignalsPrioritization\":null,"
+                               "\"prevWins\":null,"
+                               "\"prevWinsMs\":null}");
 }
 
 TEST_F(ContextRecyclerTest, SharedStorageMethods) {
@@ -1395,14 +1420,14 @@ class ContextRecyclerPrivateAggregationEnabledTest
   }
 
   // Expects that pa_requests has one request, and the request has the given
-  // bucket, value and debug_key (or none, if absl::nullopt). Also expects that
-  // debug mode is enabled if debug_key is not absl::nullopt.
+  // bucket, value and debug_key (or none, if std::nullopt). Also expects that
+  // debug mode is enabled if debug_key is not std::nullopt.
   void ExpectOneHistogramRequestEqualTo(
       std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>
           pa_requests,
       absl::uint128 bucket,
       int value,
-      absl::optional<blink::mojom::DebugKeyPtr> debug_key = absl::nullopt) {
+      std::optional<blink::mojom::DebugKeyPtr> debug_key = std::nullopt) {
     blink::mojom::AggregatableReportHistogramContribution expected_contribution(
         bucket, value);
 

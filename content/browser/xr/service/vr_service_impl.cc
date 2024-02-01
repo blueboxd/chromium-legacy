@@ -4,6 +4,7 @@
 
 #include "content/browser/xr/service/vr_service_impl.h"
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -41,7 +42,6 @@
 #include "device/vr/public/mojom/vr_service.mojom-shared.h"
 #include "device/vr/public/mojom/xr_device.mojom-shared.h"
 #include "device/vr/public/mojom/xr_session.mojom-shared.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-shared.h"
 
@@ -411,8 +411,8 @@ void VRServiceImpl::OnImmersiveSessionCreated(
   // Get the metrics tracker for the new immersive session
   mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
       session_metrics_recorder =
-          GetSessionMetricsHelper()->StartImmersiveSession(*(request.options),
-                                                           enabled_features);
+          GetSessionMetricsHelper()->StartImmersiveSession(
+              request.runtime_id, *(request.options), enabled_features);
 
   // If the session specified a FrameSinkId that means that it is handling its
   // own compositing in a way that we should notify the WebContents about.

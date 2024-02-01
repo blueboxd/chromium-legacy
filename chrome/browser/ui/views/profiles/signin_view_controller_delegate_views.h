@@ -46,9 +46,9 @@ class SigninViewControllerDelegateViews
       public SigninViewControllerDelegate,
       public content::WebContentsDelegate,
       public ChromeWebModalDialogManagerDelegate {
- public:
-  METADATA_HEADER(SigninViewControllerDelegateViews);
+  METADATA_HEADER(SigninViewControllerDelegateViews, views::DialogDelegateView)
 
+ public:
   SigninViewControllerDelegateViews(const SigninViewControllerDelegateViews&) =
       delete;
   SigninViewControllerDelegateViews& operator=(
@@ -74,7 +74,8 @@ class SigninViewControllerDelegateViews
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
-  static std::unique_ptr<views::WebView> CreateEnterpriseConfirmationWebView(
+  static std::unique_ptr<views::WebView>
+  CreateManagedUserNoticeConfirmationWebView(
       Browser* browser,
       const AccountInfo& account_info,
       bool profile_creation_required_by_policy,

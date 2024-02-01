@@ -24,6 +24,7 @@
 #include "base/logging.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -142,6 +143,7 @@
 #include "third_party/blink/public/common/origin_trials/origin_trials_settings_provider.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/common/switches.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/origin_trials/origin_trials_settings.mojom.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -162,7 +164,6 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
@@ -502,11 +503,6 @@ void RenderThreadImpl::Init() {
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // On Mac and Android Java UI, the select popups are rendered by the browser.
-#if BUILDFLAG(IS_MAC)
-  // When UseCommonSelectPopup is enabled, the internal popup menu should be
-  // used.
-  if (!features::IsUseCommonSelectPopupEnabled())
-#endif
     blink::WebView::SetUseExternalPopupMenus(true);
 #endif
 
@@ -700,6 +696,7 @@ std::string RenderThreadImpl::GetLocale() {
   return lang;
 }
 
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
 IPC::SyncMessageFilter* RenderThreadImpl::GetSyncMessageFilter() {
   return sync_message_filter();
 }
@@ -719,6 +716,16 @@ void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
   GetChannel()->RemoveListenerTaskRunner(routing_id);
 }
 
+void RenderThreadImpl::AddFilter(IPC::MessageFilter* filter) {
+  channel()->AddFilter(filter);
+}
+
+void RenderThreadImpl::RemoveFilter(IPC::MessageFilter* filter) {
+  channel()->RemoveFilter(filter);
+}
+
+#endif
+
 mojom::RendererHost* RenderThreadImpl::GetRendererHost() {
   if (!renderer_host_) {
     DCHECK(GetChannel());
@@ -734,14 +741,6 @@ bool RenderThreadImpl::GenerateFrameRoutingID(
     blink::DocumentToken& document_token) {
   return render_message_filter()->GenerateFrameRoutingID(
       &routing_id, &frame_token, &devtools_frame_token, &document_token);
-}
-
-void RenderThreadImpl::AddFilter(IPC::MessageFilter* filter) {
-  channel()->AddFilter(filter);
-}
-
-void RenderThreadImpl::RemoveFilter(IPC::MessageFilter* filter) {
-  channel()->RemoveFilter(filter);
 }
 
 void RenderThreadImpl::AddObserver(RenderThreadObserver* observer) {
@@ -1072,10 +1071,6 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   // See https://crbug.com/880901
   bool automatic_flushes = true;
 
-  // We use kGpuStreamIdDefault here, the same as in
-  // PepperVideoDecodeContextProvider, so we don't need to handle
-  // synchronization between the pepper context and the shared main thread
-  // context.
   shared_main_thread_contexts_ = CreateOffscreenContext(
       std::move(gpu_channel_host), gpu::SharedMemoryLimits(), support_locking,
       support_gles2_interface, support_raster_interface,
@@ -1089,43 +1084,6 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   }
 
   return shared_main_thread_contexts_;
-}
-
-scoped_refptr<viz::ContextProviderCommandBuffer>
-RenderThreadImpl::PepperVideoDecodeContextProvider() {
-  DCHECK(IsMainThread());
-  if (pepper_video_decode_contexts_ &&
-      pepper_video_decode_contexts_->ContextGL()->GetGraphicsResetStatusKHR() ==
-          GL_NO_ERROR)
-    return pepper_video_decode_contexts_;
-
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
-      EstablishGpuChannelSync());
-  if (!gpu_channel_host) {
-    pepper_video_decode_contexts_ = nullptr;
-    return nullptr;
-  }
-
-  bool support_locking = false;
-  bool support_raster_interface = false;
-  bool support_oop_rasterization = false;
-  bool support_gles2_interface = true;
-  bool support_grcontext = !support_oop_rasterization;
-  bool automatic_flushes = false;
-  // We use kGpuStreamIdDefault here, the same as in
-  // SharedMainThreadContextProvider, so we don't need to handle
-  // synchronization between the pepper context and the shared main thread
-  // context.
-  pepper_video_decode_contexts_ = CreateOffscreenContext(
-      std::move(gpu_channel_host), gpu::SharedMemoryLimits::ForMailboxContext(),
-      support_locking, support_gles2_interface, support_raster_interface,
-      support_oop_rasterization, support_grcontext, automatic_flushes,
-      viz::command_buffer_metrics::ContextType::RENDERER_MAIN_THREAD,
-      kGpuStreamIdDefault, kGpuStreamPriorityDefault);
-  auto result = pepper_video_decode_contexts_->BindToCurrentSequence();
-  if (result != gpu::ContextResult::kSuccess)
-    pepper_video_decode_contexts_ = nullptr;
-  return pepper_video_decode_contexts_;
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1275,6 +1233,7 @@ void RenderThreadImpl::OnProcessFinalRelease() {
   NOTREACHED();
 }
 
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   for (auto& observer : observers_) {
     if (observer.OnControlMessageReceived(msg))
@@ -1283,6 +1242,7 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 
   return false;
 }
+#endif
 
 void RenderThreadImpl::SetProcessState(
     mojom::RenderProcessBackgroundState background_state,
@@ -1314,6 +1274,16 @@ void RenderThreadImpl::SetProcessState(
 
   background_state_ = background_state;
   visible_state_ = visible_state;
+}
+
+void RenderThreadImpl::SetBatterySaverMode(bool battery_saver_mode_enabled) {
+  if (battery_saver_mode_enabled) {
+    base::MessagePump::OverrideAlignWakeUpsState(true, base::Milliseconds(32));
+  } else {
+    base::MessagePump::ResetAlignWakeUpsState();
+  }
+
+  blink::SetBatterySaverModeForAllIsolates(battery_saver_mode_enabled);
 }
 
 void RenderThreadImpl::SetIsLockedToSite() {
@@ -1383,8 +1353,10 @@ RenderThreadImpl::GetAssociatedInterfaceRegistry() {
 }
 
 mojom::RenderMessageFilter* RenderThreadImpl::render_message_filter() {
-  if (!render_message_filter_)
-    GetChannel()->GetRemoteAssociatedInterface(&render_message_filter_);
+  if (!render_message_filter_) {
+    blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+        render_message_filter_.BindNewPipeAndPassReceiver());
+  }
   return render_message_filter_.get();
 }
 
@@ -1446,11 +1418,11 @@ void RenderThreadImpl::UpdateScrollbarTheme(
 #if BUILDFLAG(IS_MAC)
   blink::WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
       params->has_initial_button_delay
-          ? absl::make_optional(params->initial_button_delay)
-          : absl::nullopt,
+          ? std::make_optional(params->initial_button_delay)
+          : std::nullopt,
       params->has_autoscroll_button_delay
-          ? absl::make_optional(params->autoscroll_button_delay)
-          : absl::nullopt,
+          ? std::make_optional(params->autoscroll_button_delay)
+          : std::nullopt,
       params->preferred_scroller_style, params->redraw,
       params->jump_on_track_click);
 #endif  // BUILDFLAG(IS_MAC)

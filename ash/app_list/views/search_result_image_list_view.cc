@@ -17,6 +17,7 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/typography.h"
 #include "base/i18n/time_formatting.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -117,7 +118,7 @@ SearchResultImageListView::SearchResultImageListView(
   for (size_t i = 0;
        i < SharedAppListConfig::instance().image_search_max_results(); ++i) {
     auto* image_view = image_view_container_->AddChildView(
-        std::make_unique<SearchResultImageView>(/*index=*/1, this));
+        std::make_unique<SearchResultImageView>(/*index=*/1, this, &delegate_));
     image_view->SetPaintToLayer();
     image_view->layer()->SetFillsBoundsOpaquely(false);
     image_views_.push_back(image_view);
@@ -191,7 +192,7 @@ SearchResultImageView* SearchResultImageListView::GetResultViewAt(
   return image_views_[index];
 }
 
-std::vector<SearchResultImageView*>
+std::vector<raw_ptr<SearchResultImageView, VectorExperimental>>
 SearchResultImageListView::GetSearchResultImageViews() {
   return image_views_;
 }
@@ -202,7 +203,7 @@ void SearchResultImageListView::ConfigureLayoutForAvailableWidth(int width) {
                            kSpaceBetweenImages * (image_count - 1);
   const int image_width = std::max(0, (width - margin_space) / image_count);
 
-  for (auto* image_view : image_views_) {
+  for (ash::SearchResultImageView* image_view : image_views_) {
     image_view->ConfigureLayoutForAvailableWidth(image_width);
   }
 }

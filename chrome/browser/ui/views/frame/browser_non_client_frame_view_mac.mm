@@ -140,8 +140,8 @@ void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
         browser_view()->IsFullscreen());
     UpdateFullscreenTopUI();
 
-    // browser_view()->Layout() is not needed since top chrome is in another
-    // widget.
+    // browser_view()->DeprecatedLayoutImmediately() is not needed since top
+    // chrome is in another widget.
     return;
   }
 
@@ -155,7 +155,7 @@ void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
     UpdateFullscreenTopUI();
     [fullscreen_toolbar_controller_ exitFullscreenMode];
   }
-  browser_view()->Layout();
+  browser_view()->DeprecatedLayoutImmediately();
 }
 
 bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
@@ -306,7 +306,21 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
         it != kStyleMap.end()
             ? it->second
             : remote_cocoa::mojom::ToolbarVisibilityStyle::kAutohide;
+    std::optional<remote_cocoa::mojom::ToolbarVisibilityStyle> old_style =
+        std::exchange(current_toolbar_style_, mapped_style);
     ns_window_mojo->UpdateToolbarVisibility(mapped_style);
+
+    // Update the immersive controller about content fullscreen changes.
+    if (mapped_style == remote_cocoa::mojom::ToolbarVisibilityStyle::kNone) {
+      browser_view()->immersive_mode_controller()->OnContentFullscreenChanged(
+          true);
+    } else if (old_style.has_value() &&
+               old_style ==
+                   remote_cocoa::mojom::ToolbarVisibilityStyle::kNone) {
+      browser_view()->immersive_mode_controller()->OnContentFullscreenChanged(
+          false);
+    }
+
     // The layout changes further down are not needed in immersive fullscreen.
     return;
   }
@@ -325,7 +339,7 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
 
   // Re-layout if toolbar style changes in fullscreen mode.
   if (frame()->IsFullscreen()) {
-    browser_view()->Layout();
+    browser_view()->DeprecatedLayoutImmediately();
   }
 }
 
@@ -495,7 +509,7 @@ void BrowserNonClientFrameViewMac::Layout() {
   if (browser_view()->IsWindowControlsOverlayEnabled()) {
     LayoutWindowControlsOverlay();
   }
-  NonClientFrameView::Layout();
+  LayoutSuperclass<NonClientFrameView>(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -41,7 +41,7 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/web/public/navigation/referrer.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/page_transition_types.h"
 #import "ui/base/resource/resource_bundle.h"
@@ -722,11 +722,12 @@ void OmniboxViewIOS::OnSelectedMatchForOpening(
   // Sometimes the match provided does not correspond to the autocomplete
   // result match specified by `index`. Most Visited Tiles, for example,
   // provide ad hoc matches that are not in the result at all.
-  if (index >= controller()->result().size() ||
-      controller()->result().match_at(index).destination_url !=
+  auto* autocomplete_controller = controller()->autocomplete_controller();
+  if (index >= autocomplete_controller->result().size() ||
+      autocomplete_controller->result().match_at(index).destination_url !=
           match.destination_url) {
     OmniboxPopupSelection selection(
-        controller()->autocomplete_controller()->InjectAdHocMatch(match));
+        autocomplete_controller->InjectAdHocMatch(match));
     model()->OpenSelection(selection, match_selection_timestamp, disposition);
     return;
   }

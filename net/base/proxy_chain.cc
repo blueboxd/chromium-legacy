@@ -9,6 +9,7 @@
 
 #include "base/check.h"
 #include "base/no_destructor.h"
+#include "base/ranges/algorithm.h"
 #include "net/base/proxy_server.h"
 #include "net/base/proxy_string_util.h"
 
@@ -36,16 +37,12 @@ ProxyChain& ProxyChain::operator=(ProxyChain&& other) noexcept {
 }
 ProxyChain::~ProxyChain() = default;
 
-// TODO(crbug.com/1491092): Remove is_direct() check when
-// ProxyServer::SCHEME_DIRECT is deprecated.
 ProxyChain::ProxyChain(ProxyServer proxy_server)
-    : ProxyChain(!proxy_server.is_direct()
-                     ? std::vector<ProxyServer>{std::move(proxy_server)}
-                     : std::vector<ProxyServer>()) {}
+    : ProxyChain(std::vector<ProxyServer>{std::move(proxy_server)}) {}
 
 ProxyChain::ProxyChain(ProxyServer::Scheme scheme,
                        const HostPortPair& host_port_pair)
-    : ProxyChain({ProxyServer(scheme, host_port_pair)}) {}
+    : ProxyChain(ProxyServer(scheme, host_port_pair)) {}
 
 ProxyChain::ProxyChain(std::vector<ProxyServer> proxy_server_list)
     : proxy_server_list_(std::move(proxy_server_list)) {
@@ -65,26 +62,19 @@ const std::vector<ProxyServer>& ProxyChain::proxy_servers() const {
   return proxy_server_list_.value();
 }
 
-const ProxyServer& ProxyChain::proxy_server() const {
-  if (!proxy_server_list_.has_value()) {
-    static base::NoDestructor<ProxyServer> invalid(ProxyServer::SCHEME_INVALID,
-                                                   HostPortPair());
-    return *invalid;
-  } else if (proxy_server_list_.value().empty()) {
-    static base::NoDestructor<ProxyServer> direct(ProxyServer::SCHEME_DIRECT,
-                                                  HostPortPair());
-    return *direct;
-  }
-  CHECK_EQ(1u, proxy_server_list_->size())
-      << "Cannot call `proxy_server() on a ProxyChain with multiple proxies: "
-      << ToDebugString();
-  return proxy_server_list_.value().at(0);
+std::pair<ProxyChain, const ProxyServer&> ProxyChain::SplitLast() const {
+  DCHECK(IsValid());
+  DCHECK_NE(length(), 0u);
+  ProxyChain new_chain =
+      ProxyChain({proxy_server_list_->begin(), proxy_server_list_->end() - 1});
+  new_chain.is_for_ip_protection_ = is_for_ip_protection_;
+  return std::make_pair(new_chain, std::ref(proxy_server_list_->back()));
 }
 
-ProxyChain&& ProxyChain::ForIpProtection() && {
-  CHECK(IsValid());
-  is_for_ip_protection_ = true;
-  return std::move(*this);
+const ProxyServer& ProxyChain::Last() const {
+  DCHECK(IsValid());
+  DCHECK_NE(length(), 0u);
+  return proxy_server_list_->back();
 }
 
 std::string ProxyChain::ToDebugString() const {
@@ -106,23 +96,33 @@ std::string ProxyChain::ToDebugString() const {
   return debug_string;
 }
 
-// TODO(crbug.com/1491092): Remove is_direct() checks when
-// ProxyServer::SCHEME_DIRECT is deprecated.
+ProxyChain::ProxyChain(std::vector<ProxyServer> proxy_server_list,
+                       bool is_for_ip_protection)
+    : proxy_server_list_(std::move(proxy_server_list)),
+      is_for_ip_protection_(is_for_ip_protection) {
+  CHECK(IsValidInternal());
+}
+
 bool ProxyChain::IsValidInternal() const {
   if (!proxy_server_list_.has_value()) {
     return false;
   }
   if (is_single_proxy()) {
-    return proxy_server_list_.value().at(0).is_valid() &&
-           !proxy_server_list_.value().at(0).is_direct();
-  }
-  for (const auto& proxy_server : proxy_server_list_.value()) {
-    if (!proxy_server.is_valid() || !proxy_server.is_https() ||
-        proxy_server.is_direct()) {
-      return false;
+    bool is_valid = proxy_server_list_.value().at(0).is_valid();
+    if (proxy_server_list_.value().at(0).is_quic()) {
+      is_valid = is_valid && is_for_ip_protection_;
     }
+    return is_valid;
   }
-  return true;
+  bool all_https = base::ranges::all_of(
+      proxy_server_list_.value(), [](const auto& proxy_server) {
+        return proxy_server.is_valid() && proxy_server.is_https();
+      });
+  bool all_quic = base::ranges::all_of(
+      proxy_server_list_.value(), [](const auto& proxy_server) {
+        return proxy_server.is_valid() && proxy_server.is_quic();
+      });
+  return all_https || (all_quic && is_for_ip_protection_);
 }
 
 std::ostream& operator<<(std::ostream& os, const ProxyChain& proxy_chain) {

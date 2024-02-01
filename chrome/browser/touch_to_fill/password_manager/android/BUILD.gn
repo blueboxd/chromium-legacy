@@ -31,7 +31,7 @@ source_set("android") {
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/touch_to_fill/data/Credential.java",
-    "java/src/org/chromium/chrome/browser/touch_to_fill/data/WebAuthnCredential.java",
+    "java/src/org/chromium/chrome/browser/touch_to_fill/data/WebauthnCredential.java",
   ]
 }
 
@@ -50,7 +50,7 @@ android_library("public_java") {
   sources = [
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillComponent.java",
     "java/src/org/chromium/chrome/browser/touch_to_fill/data/Credential.java",
-    "java/src/org/chromium/chrome/browser/touch_to_fill/data/WebAuthnCredential.java",
+    "java/src/org/chromium/chrome/browser/touch_to_fill/data/WebauthnCredential.java",
   ]
 }
 
@@ -129,7 +129,9 @@ android_library("test_java") {
     "//components/browser_ui/bottomsheet/android/test:java",
     "//components/password_manager/core/browser:password_manager_java_enums",
     "//components/url_formatter/android:url_formatter_java",
+    "//components/webauthn/android:java",
     "//content/public/test/android:content_java_test_support",
+    "//services/device/public/java:device_feature_list_java",
     "//third_party/android_deps:espresso_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",

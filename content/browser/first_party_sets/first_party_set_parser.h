@@ -6,12 +6,14 @@
 #define CONTENT_BROWSER_FIRST_PARTY_SETS_FIRST_PARTY_SET_PARSER_H_
 
 #include <istream>
+#include <optional>
 #include <utility>
 
 #include "base/containers/flat_map.h"
 #include "base/strings/string_piece.h"
 #include "base/types/expected.h"
 #include "base/values.h"
+#include "content/browser/first_party_sets/first_party_sets_overrides_policy.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/first_party_sets_handler.h"
 #include "net/base/schemeful_site.h"
@@ -19,15 +21,15 @@
 #include "net/first_party_sets/global_first_party_sets.h"
 #include "net/first_party_sets/local_set_declaration.h"
 #include "net/first_party_sets/sets_mutation.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
 class CONTENT_EXPORT FirstPartySetParser {
  public:
-  using PolicyParseResult = std::pair<
-      base::expected<net::SetsMutation, FirstPartySetsHandler::ParseError>,
-      std::vector<FirstPartySetsHandler::ParseWarning>>;
+  using PolicyParseResult =
+      std::pair<base::expected<FirstPartySetsOverridesPolicy,
+                               FirstPartySetsHandler::ParseError>,
+                std::vector<FirstPartySetsHandler::ParseWarning>>;
 
   FirstPartySetParser() = delete;
   ~FirstPartySetParser() = delete;
@@ -42,8 +44,7 @@ class CONTENT_EXPORT FirstPartySetParser {
   // received by Component Updater.
   //
   // Returns an empty GlobalFirstPartySets instance if parsing or validation of
-  // any set failed. Must not be called before field trial state has been
-  // initialized.
+  // any set failed.
   static net::GlobalFirstPartySets ParseSetsFromStream(std::istream& input,
                                                        base::Version version,
                                                        bool emit_errors,
@@ -51,8 +52,8 @@ class CONTENT_EXPORT FirstPartySetParser {
 
   // Canonicalizes the passed in origin to a registered domain. In particular,
   // this ensures that the origin is non-opaque, is HTTPS, and has a registered
-  // domain. Returns absl::nullopt in case of any error.
-  static absl::optional<net::SchemefulSite> CanonicalizeRegisteredDomain(
+  // domain. Returns std::nullopt in case of any error.
+  static std::optional<net::SchemefulSite> CanonicalizeRegisteredDomain(
       const base::StringPiece origin_string,
       bool emit_errors);
 

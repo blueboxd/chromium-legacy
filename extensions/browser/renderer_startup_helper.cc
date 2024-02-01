@@ -33,9 +33,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/service_worker_task_queue.h"
-#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_l10n_util.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature_channel.h"
@@ -100,12 +98,10 @@ mojom::ExtensionLoadedParamsPtr CreateExtensionLoadedParams(
       extension.creation_flags(), extension.guid());
 }
 
-#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
 base::flat_map<std::string, std::string> ToFlatMap(
     const std::map<std::string, std::string>& map) {
   return {map.begin(), map.end()};
 }
-#endif
 
 }  // namespace
 
@@ -474,15 +470,6 @@ void RendererStartupHelper::BindForRenderer(
 
 void RendererStartupHelper::WakeEventPage(const ExtensionId& extension_id,
                                           WakeEventPageCallback callback) {
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  auto* process =
-      content::RenderProcessHost::FromID(receivers_.current_context());
-  if (!process) {
-    return;
-  }
-  bad_message::ReceivedBadMessage(process, bad_message::LEGACY_IPC_MISMATCH);
-  return;
-#else
   auto* browser_context = GetRendererBrowserContext();
   if (!browser_context) {
     std::move(callback).Run(false);
@@ -522,21 +509,11 @@ void RendererStartupHelper::WakeEventPage(const ExtensionId& extension_id,
 
   // The extension has no background page, so there is nothing to wake.
   std::move(callback).Run(false);
-#endif
 }
 
 void RendererStartupHelper::GetMessageBundle(
     const std::string& extension_id,
     GetMessageBundleCallback callback) {
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
-  auto* process =
-      content::RenderProcessHost::FromID(receivers_.current_context());
-  if (!process) {
-    return;
-  }
-  bad_message::ReceivedBadMessage(process, bad_message::LEGACY_IPC_MISMATCH);
-  return;
-#else
   auto* browser_context = GetRendererBrowserContext();
   if (!browser_context) {
     std::move(callback).Run({});
@@ -601,7 +578,6 @@ void RendererStartupHelper::GetMessageBundle(
             std::move(callback).Run(ToFlatMap(*dictionary_map));
           },
           std::move(callback)));
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////

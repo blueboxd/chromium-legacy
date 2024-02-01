@@ -78,7 +78,8 @@ void PasswordCheckManager::StartCheck() {
     progress_->IncrementCounts(password);
   observer_->OnPasswordCheckProgressChanged(progress_->already_processed(),
                                             progress_->remaining_in_queue());
-  bulk_leak_check_service_adapter_.StartBulkLeakCheck();
+  bulk_leak_check_service_adapter_.StartBulkLeakCheck(
+      password_manager::LeakDetectionInitiator::kBulkSyncedPasswordsCheck);
 }
 
 void PasswordCheckManager::StopCheck() {
@@ -197,9 +198,6 @@ void PasswordCheckManager::OnStateChanged(State state) {
     profile_->GetPrefs()->SetDouble(
         password_manager::prefs::kLastTimePasswordCheckCompleted,
         base::Time::Now().InSecondsFSinceUnixEpoch());
-    profile_->GetPrefs()->SetTime(
-        password_manager::prefs::kSyncedLastTimePasswordCheckCompleted,
-        base::Time::Now());
   }
 
   if (state != State::kRunning) {
@@ -225,7 +223,8 @@ void PasswordCheckManager::OnCredentialDone(
   }
   if (is_leaked) {
     // TODO(crbug.com/1092444): Trigger single-credential update.
-    insecure_credentials_manager_.SaveInsecureCredential(credential);
+    insecure_credentials_manager_.SaveInsecureCredential(
+        credential, password_manager::TriggerBackendNotification(false));
   }
 }
 
@@ -259,7 +258,7 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
     // In case no affiliated_web_realm could be obtained we should not have an
     // associated url for android credential.
     credential_facet.url = credential.GetAffiliatedWebRealm().empty()
-                               ? GURL::EmptyGURL()
+                               ? GURL()
                                : GURL(credential.GetAffiliatedWebRealm());
 
   } else {

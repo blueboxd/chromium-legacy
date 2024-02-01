@@ -48,7 +48,6 @@ class PriceTrackingEmailDialogConsentViewInteractiveTest
     : public InteractiveBrowserTest {
  public:
   void SetUp() override {
-    test_features_.InitAndEnableFeature(commerce::kShoppingListTrackByDefault);
     test_iph_features_.InitForDemo(
         feature_engagement::kIPHPriceTrackingEmailConsentFeature);
 
@@ -121,8 +120,6 @@ class PriceTrackingEmailDialogConsentViewInteractiveTest
         .WillByDefault(
             testing::ReturnRef(mock_tab_helper->GetValidProductImage()));
 
-    mock_tab_helper->SetShoppingServiceForTesting(mock_shopping_service);
-
     EXPECT_CALL(*mock_shopping_service, GetProductInfoForUrl)
         .Times(testing::AnyNumber());
 
@@ -130,7 +127,6 @@ class PriceTrackingEmailDialogConsentViewInteractiveTest
     info.product_cluster_id.emplace(kClusterId);
     mock_shopping_service->SetResponseForGetProductInfoForUrl(info);
     mock_shopping_service->SetIsSubscribedCallbackValue(true);
-    mock_shopping_service->SetIsClusterIdTrackedByUserResponse(true);
   }
 
   base::WeakPtrFactory<PriceTrackingEmailDialogConsentViewInteractiveTest>

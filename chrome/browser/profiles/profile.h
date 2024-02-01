@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -43,7 +43,6 @@ class Time;
 }
 
 namespace content {
-class ResourceContext;
 class WebUI;
 }
 
@@ -241,8 +240,6 @@ class Profile : public content::BrowserContext {
 
   variations::VariationsClient* GetVariationsClient() override;
 
-  content::ResourceContext* GetResourceContext() override;
-
   // Returns the creation time of this profile. This will either be the creation
   // time of the profile directory or, for ephemeral off-the-record profiles,
   // the creation time of the profile object instance.
@@ -422,6 +419,9 @@ class Profile : public content::BrowserContext {
 
   // Returns whether it is an Incognito profile. An Incognito profile is an
   // off-the-record profile that is used for incognito mode.
+  //
+  // TODO(crbug.com/1348572): Also returns true for Lacros in a Ash guest
+  // profile.
   bool IsIncognitoProfile() const;
 
   // Returns true if this is a primary OffTheRecord profile, which covers the
@@ -498,6 +498,7 @@ class Profile : public content::BrowserContext {
 
   virtual void RecordPrimaryMainFrameNavigation() = 0;
 
+  base::WeakPtr<const Profile> GetWeakPtr() const;
   base::WeakPtr<Profile> GetWeakPtr();
 
   // Experimental getters/setters to gauge the performance of caching
@@ -505,19 +506,19 @@ class Profile : public content::BrowserContext {
   void set_theme_service(ThemeService* theme_service) {
     theme_service_ = theme_service;
   }
-  const absl::optional<raw_ptr<ThemeService>>& theme_service() {
+  const std::optional<raw_ptr<ThemeService>>& theme_service() {
     return theme_service_;
   }
   void set_template_url_service(TemplateURLService* template_url_service) {
     template_url_service_ = template_url_service;
   }
-  const absl::optional<raw_ptr<TemplateURLService>>& template_url_service() {
+  const std::optional<raw_ptr<TemplateURLService>>& template_url_service() {
     return template_url_service_;
   }
   void set_instant_service(InstantService* instant_service) {
     instant_service_ = instant_service;
   }
-  const absl::optional<raw_ptr<InstantService>>& instant_service() {
+  const std::optional<raw_ptr<InstantService>>& instant_service() {
     return instant_service_;
   }
 
@@ -539,12 +540,6 @@ class Profile : public content::BrowserContext {
   virtual bool IsSignedIn() = 0;
 
  private:
-  // Created on the UI thread, and returned by GetResourceContext(), but
-  // otherwise lives on and is destroyed on the IO thread.
-  //
-  // TODO(https://crbug.com/908955): Get rid of ResourceContext.
-  std::unique_ptr<content::ResourceContext> resource_context_;
-
   bool restored_last_session_ = false;
 
   // Used to prevent the notification that this Profile is destroyed from
@@ -559,9 +554,9 @@ class Profile : public content::BrowserContext {
 
   // Experimental objects to gauge the performance of caching frequently used
   // KeyedServices in a Profile pointer.
-  absl::optional<raw_ptr<ThemeService>> theme_service_;
-  absl::optional<raw_ptr<TemplateURLService>> template_url_service_;
-  absl::optional<raw_ptr<InstantService>> instant_service_;
+  std::optional<raw_ptr<ThemeService>> theme_service_;
+  std::optional<raw_ptr<TemplateURLService>> template_url_service_;
+  std::optional<raw_ptr<InstantService>> instant_service_;
 
   base::ObserverList<ProfileObserver,
                      /*check_empty=*/true,

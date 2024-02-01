@@ -214,11 +214,6 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->WillSendBeginMainFrameOnThread(this);
   }
 
-  void DidSendBeginMainFrame(const viz::BeginFrameArgs& args) override {
-    LayerTreeHostImpl::DidSendBeginMainFrame(args);
-    test_hooks_->DidSendBeginMainFrameOnThread(this);
-  }
-
   void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises,
@@ -446,7 +441,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   void RecordEndOfFrameMetrics(base::TimeTicks,
                                ActiveFrameSequenceTrackers) override {}
   std::unique_ptr<BeginMainFrameMetrics> GetBeginMainFrameMetrics() override {
-    return nullptr;
+    return test_hooks_->GetBeginMainFrameMetrics();
   }
   std::unique_ptr<WebVitalMetrics> GetWebVitalMetrics() override {
     return nullptr;
@@ -1055,7 +1050,7 @@ void LayerTreeTest::RealEndTest() {
     return;
   }
 
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
 void LayerTreeTest::DispatchAddNoDamageAnimation(
@@ -1194,7 +1189,9 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
       FROM_HERE,
       base::BindOnce(&LayerTreeTest::DoBeginTest, base::Unretained(this)));
 
-  base::RunLoop().Run();
+  base::RunLoop loop;
+  quit_closure_ = loop.QuitWhenIdleClosure();
+  loop.Run();
   CleanupBeforeDestroy();
   DestroyLayerTreeHost();
 

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
 
 #import "base/check.h"
+#import "base/memory/raw_ref.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
@@ -26,12 +27,12 @@ class SkipRestricted {
       : restriction_(restriction) {}
 
   bool ShouldFilter(id<SystemIdentity> identity) const {
-    return restriction_.IsAccountRestricted(
+    return restriction_->IsAccountRestricted(
         base::SysNSStringToUTF8(identity.userEmail));
   }
 
  private:
-  const PatternAccountRestriction& restriction_;
+  const raw_ref<const PatternAccountRestriction> restriction_;
 };
 
 // Filter class skipping unrestricted account.
@@ -41,12 +42,12 @@ class KeepRestricted {
       : restriction_(restriction) {}
 
   bool ShouldFilter(id<SystemIdentity> identity) const {
-    return !restriction_.IsAccountRestricted(
+    return !restriction_->IsAccountRestricted(
         base::SysNSStringToUTF8(identity.userEmail));
   }
 
  private:
-  const PatternAccountRestriction& restriction_;
+  const raw_ref<const PatternAccountRestriction> restriction_;
 };
 
 // Filter class skipping identities that do not have the given Gaia ID.
@@ -262,10 +263,9 @@ void ChromeAccountManagerService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ChromeAccountManagerService::OnIdentityListChanged(
-    bool need_user_approval) {
+void ChromeAccountManagerService::OnIdentityListChanged(bool notify_user) {
   for (auto& observer : observer_list_)
-    observer.OnIdentityListChanged(need_user_approval);
+    observer.OnIdentityListChanged(notify_user);
 }
 
 void ChromeAccountManagerService::OnIdentityUpdated(
@@ -286,7 +286,7 @@ void ChromeAccountManagerService::UpdateRestriction() {
   // We want to notify the user that the account list has been updated. This
   // might provide notifications with no changes (if the new restriction doesn't
   // change the account list).
-  OnIdentityListChanged(/* need_user_approval */ true);
+  OnIdentityListChanged(/*notify_user=*/true);
 }
 
 ResizedAvatarCache*

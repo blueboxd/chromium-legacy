@@ -40,15 +40,15 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}  // namespace mojom
+
 class SharedURLLoaderFactory;
 class WeakWrapperSharedURLLoaderFactory;
 }  // namespace network
 
 namespace content {
-
-namespace mojom {
-class URLLoaderFactory;
-}  // namespace mojom
 
 namespace service_worker_provider_context_unittest {
 class ServiceWorkerProviderContextTest;
@@ -291,9 +291,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       fetch_handler_bypass_option_ =
           blink::mojom::ServiceWorkerFetchHandlerBypassOption::kDefault;
 
-  absl::optional<std::string> sha256_script_checksum_;
+  std::optional<std::string> sha256_script_checksum_;
 
-  absl::optional<blink::ServiceWorkerRouterRules> router_rules_;
+  std::optional<blink::ServiceWorkerRouterRules> router_rules_;
   // TODO(crbug.com/1501047): It may be better to make this an optional, so it
   // is possible to distinguish between unset and kStopped, which are not really
   // equivalent.

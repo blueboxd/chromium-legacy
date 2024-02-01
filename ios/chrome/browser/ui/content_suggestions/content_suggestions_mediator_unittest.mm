@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 
+#import "base/memory/raw_ptr.h"
 #import "base/memory/scoped_refptr.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/metrics/histogram_tester.h"
@@ -11,7 +12,6 @@
 #import "base/test/test_timeouts.h"
 #import "base/time/default_clock.h"
 #import "base/time/time.h"
-#import "components/commerce/core/mock_shopping_service.h"
 #import "components/favicon/core/large_icon_service_impl.h"
 #import "components/favicon/core/test/mock_favicon_service.h"
 #import "components/ntp_tiles/icon_cacher.h"
@@ -24,18 +24,15 @@
 #import "components/segmentation_platform/public/segmentation_platform_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
-#import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/default_browser/model/utils_test_support.h"
-#import "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
-#import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#import "ios/chrome/browser/favicon/model/ios_chrome_large_icon_cache_factory.h"
+#import "ios/chrome/browser/favicon/model/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_item_type.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_prefs.h"
-#import "ios/chrome/browser/parcel_tracking/features.h"
-#import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
-#import "ios/chrome/browser/promos_manager/mock_promos_manager.h"
+#import "ios/chrome/browser/promos_manager/model/mock_promos_manager.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_test_utils.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_factory.h"
@@ -58,7 +55,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/parcel_tracking_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/query_suggestion_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
@@ -180,26 +176,6 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     url_loader_ = FakeUrlLoadingBrowserAgent::FromUrlLoadingBrowserAgent(
         UrlLoadingBrowserAgent::FromBrowser(browser_.get()));
     histogram_tester_ = std::make_unique<base::HistogramTester>();
-
-    shopping_service_ = std::make_unique<commerce::MockShoppingService>();
-    std::vector<commerce::ParcelTrackingStatus> parcels;
-    commerce::ParcelTrackingStatus out_for_delivery;
-    out_for_delivery.carrier = commerce::ParcelIdentifier::UPS;
-    out_for_delivery.state = commerce::ParcelStatus::OUT_FOR_DELIVERY;
-    out_for_delivery.tracking_id = "abc";
-    out_for_delivery.estimated_delivery_time =
-        base::Time::Now() + base::Hours(3);
-    parcels.emplace_back(out_for_delivery);
-
-    commerce::ParcelTrackingStatus delivered_status;
-    delivered_status.carrier = commerce::ParcelIdentifier::USPS;
-    delivered_status.state = commerce::ParcelStatus::FINISHED;
-    delivered_status.tracking_id = "def";
-    delivered_status.estimated_delivery_time =
-        base::Time::Now() - base::Days(3);
-    parcels.emplace_back(delivered_status);
-
-    shopping_service_->SetGetAllParcelStatusesCallbackValue(parcels);
   }
 
   ~ContentSuggestionsMediatorTest() override { [mediator_ disconnect]; }
@@ -240,7 +216,7 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
                           syncService:sync_service
                 authenticationService:authentication_service
                       identityManager:identityManager
-                      shoppingService:shopping_service_.get()
+                        actionFactory:nil
                               browser:browser_.get()];
     mediator_.dispatcher = dispatcher_;
     mediator_.webStateList = browser_.get()->GetWebStateList();
@@ -292,17 +268,16 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<Browser> browser_;
-  WebStateList* web_state_list_;
+  raw_ptr<WebStateList> web_state_list_;
   std::unique_ptr<web::FakeWebState> fake_web_state_;
   id dispatcher_;
   id consumer_;
   std::unique_ptr<favicon::LargeIconServiceImpl> large_icon_service_;
   std::unique_ptr<MockPromosManager> promos_manager_;
   ContentSuggestionsMediator* mediator_;
-  FakeUrlLoadingBrowserAgent* url_loader_;
+  raw_ptr<FakeUrlLoadingBrowserAgent> url_loader_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   ContentSuggestionsMetricsRecorder* metrics_recorder_;
-  std::unique_ptr<commerce::MockShoppingService> shopping_service_;
 };
 
 // Tests that the command is sent to the dispatcher when opening the Reading
@@ -319,24 +294,6 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenReadingList) {
 
   // Test.
   EXPECT_OCMOCK_VERIFY(dispatcher_);
-}
-
-// Tests that the command is sent to the loader when opening a most visited.
-TEST_F(ContentSuggestionsMediatorTest, TestOpenMostVisited) {
-  GURL url = GURL("http://chromium.org");
-  ContentSuggestionsMostVisitedItem* item =
-      [[ContentSuggestionsMostVisitedItem alloc] init];
-  item.URL = url;
-  OCMExpect([mediator_.NTPMetricsDelegate mostVisitedTileOpened]);
-
-  // Action.
-  [mediator_ openMostVisitedItem:item atIndex:0];
-
-  // Test.
-  EXPECT_EQ(url, url_loader_->last_params.web_params.url);
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
-      ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-      url_loader_->last_params.web_params.transition_type));
 }
 
 // Tests that MostRecentTab can be opened and that its title is correct when
@@ -467,8 +424,8 @@ TEST_F(ContentSuggestionsMediatorTest, TestMagicStackConsumerCall) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitWithFeatures({kMagicStack}, {});
   OCMExpect([consumer_ setMagicStackOrder:[OCMArg any]]);
-  OCMExpect([consumer_ showSetUpListWithItems:[OCMArg any]]);
-  OCMExpect([consumer_ setShortcutTilesWithConfigs:[OCMArg any]]);
+  OCMExpect([consumer_ showSetUpListModuleWithConfigs:[OCMArg any]]);
+  OCMExpect([consumer_ setShortcutTilesConfig:[OCMArg any]]);
   [consumer_ setExpectationOrderMatters:YES];
   mediator_.consumer = consumer_;
   EXPECT_OCMOCK_VERIFY(consumer_);
@@ -632,17 +589,6 @@ TEST_F(ContentSuggestionsMediatorTest, TestOnServiceStatusChanged) {
   EXPECT_EQ(item_state, SetUpListItemState::kCompleteInList);
 }
 
-// Tests that the -loadParcelTrackingPage ContentSuggestionsCommands
-// implementation logs the correct metric and loads the passed URL.
-TEST_F(ContentSuggestionsMediatorTest, TestParcelTracking) {
-  GURL parcelTrackingURL = GURL("http://chromium.org");
-  [mediator_ loadParcelTrackingPage:parcelTrackingURL];
-  histogram_tester_->ExpectUniqueSample(
-      "IOS.MagicStack.Module.Click",
-      ContentSuggestionsModuleType::kParcelTracking, 1);
-  EXPECT_EQ(parcelTrackingURL, url_loader_->last_params.web_params.url);
-}
-
 // Tests that logging for IOS.MagicStack.Module.Click.[ModuleName] works
 // correctly.
 TEST_F(ContentSuggestionsMediatorTest, TestModuleClickIndexMetric) {
@@ -670,9 +616,8 @@ TEST_F(ContentSuggestionsMediatorTest, TestModuleClickIndexMetric) {
   histogram_tester_->ExpectUniqueSample("IOS.MagicStack.Module.Click.SetUpList",
                                         0, 1);
 
-  [mediator_
-      openMostVisitedItem:[[ContentSuggestionsMostVisitedItem alloc] init]
-                  atIndex:0];
+  [mediator_ logMagicStackEngagementForType:ContentSuggestionsModuleType::
+                                                kMostVisited];
   histogram_tester_->ExpectUniqueSample(
       "IOS.MagicStack.Module.Click.MostVisited", 3, 1);
 
@@ -681,72 +626,4 @@ TEST_F(ContentSuggestionsMediatorTest, TestModuleClickIndexMetric) {
                   atIndex:0];
   histogram_tester_->ExpectUniqueSample("IOS.MagicStack.Module.Click.Shortcuts",
                                         4, 1);
-}
-
-// Tests that the mediator handles the parcels returned from
-// ShoppingService::GetAllParcelStatuses by sending up the parcels to the
-// consumer and includes the parcel tracking module type correctly in the magic
-// stack order.
-TEST_F(ContentSuggestionsMediatorTest, TestParcelTrackingReceived) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      {{segmentation_platform::features::kSegmentationPlatformFeature, {}},
-       {segmentation_platform::features::kSegmentationPlatformIosModuleRanker,
-        {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
-       {kMagicStack, {{kMagicStackMostVisitedModuleParam, "true"}}},
-       {kIOSParcelTracking, {}}},
-      {});
-  [mediator_ disconnect];
-  SetUpMediator();
-  consumer_ = OCMProtocolMock(@protocol(ContentSuggestionsConsumer));
-  mediator_.segmentationService =
-      segmentation_platform::SegmentationPlatformServiceFactory::
-          GetForBrowserState(chrome_browser_state_.get());
-
-  int parcel_tracking_freshness_impression_count =
-      local_state_.Get()->GetInteger(
-          prefs::
-              kIosMagicStackSegmentationParcelTrackingImpressionsSinceFreshness);
-  EXPECT_EQ(parcel_tracking_freshness_impression_count, -1);
-
-  EXPECT_SET_MAGIC_STACK_ORDER(
-      consumer_, ContentSuggestionsModuleType::kSetUpListDefaultBrowser,
-      ContentSuggestionsModuleType::kSetUpListAutofill,
-      ContentSuggestionsModuleType::kSetUpListSync,
-      ContentSuggestionsModuleType::kMostVisited,
-      ContentSuggestionsModuleType::kShortcuts,
-      ContentSuggestionsModuleType::kParcelTracking,
-      ContentSuggestionsModuleType::kParcelTracking, );
-  OCMExpect([consumer_ showParcelTrackingItems:[OCMArg any]]);
-  // One of the parcels should be untracked since it was delivered more than two
-  // days ago.
-  EXPECT_CALL(*shopping_service_, StopTrackingParcel(testing::_, testing::_))
-      .Times(1);
-  mediator_.consumer = consumer_;
-
-  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-      TestTimeouts::action_timeout(), true, ^bool() {
-        base::RunLoop().RunUntilIdle();
-        return [[mediator_ parcelTrackingItems] count] == 2;
-      }));
-  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-      TestTimeouts::action_timeout(), true, ^bool() {
-        base::RunLoop().RunUntilIdle();
-        return mediator_.hasReceivedMagicStackResponse;
-      }));
-
-  EXPECT_OCMOCK_VERIFY(consumer_);
-
-  NSArray<ParcelTrackingItem*>* items = [mediator_ parcelTrackingItems];
-  ParcelTrackingItem* outForDeliveryItem = items[0];
-  EXPECT_EQ(outForDeliveryItem.parcelType, ParcelType::kUPS);
-  EXPECT_EQ(outForDeliveryItem.status, ParcelState::kOutForDelivery);
-
-  ParcelTrackingItem* finishedItem = items[1];
-  EXPECT_EQ(finishedItem.parcelType, ParcelType::kUSPS);
-  EXPECT_EQ(finishedItem.status, ParcelState::kFinished);
-
-  parcel_tracking_freshness_impression_count = local_state_.Get()->GetInteger(
-      prefs::kIosMagicStackSegmentationParcelTrackingImpressionsSinceFreshness);
-  EXPECT_EQ(parcel_tracking_freshness_impression_count, 0);
 }

@@ -18,12 +18,18 @@
 namespace ash::input_method {
 namespace {
 
-constexpr int kOrcaFeedbackProductId = 5314436;
-
 base::WeakPtr<feedback::FeedbackUploader> GetFeedbackUploaderFromContext(
     content::BrowserContext* context) {
-  return base::AsWeakPtr(static_cast<feedback::FeedbackUploader*>(
-      feedback::FeedbackUploaderFactoryChrome::GetForBrowserContext(context)));
+  feedback::FeedbackUploader* uploader =
+      static_cast<feedback::FeedbackUploader*>(
+          feedback::FeedbackUploaderFactoryChrome::GetForBrowserContext(
+              context));
+  // Can be a nullptr value in unit tests.
+  if (!uploader) {
+    return nullptr;
+  }
+
+  return uploader->AsWeakPtr();
 }
 
 std::string GetChromeVersion() {
@@ -68,12 +74,6 @@ bool SendEditorFeedback(Profile* profile, std::string_view description) {
   feedback_data->set_product_id(kOrcaFeedbackProductId);
   feedback_data->set_include_chrome_platform(false);
   feedback_data->set_description(std::string(description));
-  if (absl::optional<std::string> user_email =
-          GetSignedInUserEmailFromProfile(profile);
-      user_email.has_value() &&
-      gaia::IsGoogleInternalAccountEmail(*user_email)) {
-    feedback_data->set_user_email(*user_email);
-  }
   feedback_data->AddLog("CHROME VERSION", GetChromeVersion());
   feedback_data->AddLog("CHROMEOS_RELEASE_VERSION", GetOsVersion());
   RedactThenSendFeedback(feedback_data);

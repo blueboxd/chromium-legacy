@@ -9,6 +9,7 @@
 
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
@@ -102,7 +103,8 @@ void ManagePasswordsTest::ExecuteManagePasswordsCommand() {
   EXPECT_TRUE(updater->ExecuteCommand(IDC_MANAGE_PASSWORDS_FOR_PAGE));
 }
 
-void ManagePasswordsTest::SetupManagingPasswords() {
+void ManagePasswordsTest::SetupManagingPasswords(
+    const GURL& password_form_url) {
   password_manager::PasswordForm federated_form;
   federated_form.signon_realm = "federation://" +
                                 embedded_test_server()->GetOrigin().host() +
@@ -112,8 +114,12 @@ void ManagePasswordsTest::SetupManagingPasswords() {
       url::Origin::Create(GURL("https://somelongeroriginurl.com/"));
   federated_form.username_value = u"test_federation_username";
   federated_form.match_type = password_manager::PasswordForm::MatchType::kExact;
-  std::vector<const password_manager::PasswordForm*> forms = {&password_form_,
-                                                              &federated_form};
+  // Overrides url to a defined value to avoid flakiness in pixel tests.
+  password_form_.url = !password_form_url.is_empty()
+                           ? GURL(password_form_url.spec() + "empty.html")
+                           : embedded_test_server()->GetURL("/empty.html");
+  std::vector<raw_ptr<const password_manager::PasswordForm, VectorExperimental>>
+      forms = {&password_form_, &federated_form};
   GetController()->OnPasswordAutofilled(
       forms, embedded_test_server()->GetOrigin(), nullptr);
 }
@@ -182,14 +188,15 @@ void ManagePasswordsTest::SetupMovingPasswords() {
       testing::NiceMock<password_manager::MockPasswordFormManagerForUI>>();
   password_manager::MockPasswordFormManagerForUI* form_manager_ptr =
       form_manager.get();
-  std::vector<const password_manager::PasswordForm*> best_matches = {
-      test_form()};
+  std::vector<raw_ptr<const password_manager::PasswordForm, VectorExperimental>>
+      best_matches = {test_form()};
   EXPECT_CALL(*form_manager, GetBestMatches).WillOnce(ReturnRef(best_matches));
   ON_CALL(*form_manager, GetPendingCredentials)
       .WillByDefault(ReturnRef(*test_form()));
   ON_CALL(*form_manager, GetFederatedMatches)
       .WillByDefault(
-          Return(std::vector<const password_manager::PasswordForm*>{}));
+          Return(std::vector<raw_ptr<const password_manager::PasswordForm,
+                                     VectorExperimental>>{}));
   ON_CALL(*form_manager, GetURL).WillByDefault(ReturnRef(test_form()->url));
   GetController()->OnShowMoveToAccountBubble(std::move(form_manager));
   // Clearing the mock here ensures that |GetBestMatches| won't be called with a
@@ -197,30 +204,43 @@ void ManagePasswordsTest::SetupMovingPasswords() {
   testing::Mock::VerifyAndClear(form_manager_ptr);
 }
 
-void ManagePasswordsTest::ConfigurePasswordSync(bool is_enabled) {
+void ManagePasswordsTest::ConfigurePasswordSync(
+    SyncConfiguration configuration) {
   // Some tests (such as move password to account) require a signed in users.
   // Make sure there is always one.
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser()->profile());
   AccountInfo info = signin::MakePrimaryAccountAvailable(
       identity_manager, "test@email.com",
-      is_enabled ? signin::ConsentLevel::kSync : signin::ConsentLevel::kSignin);
+      configuration == SyncConfiguration::kSyncing
+          ? signin::ConsentLevel::kSync
+          : signin::ConsentLevel::kSignin);
 
   syncer::TestSyncService* sync_service = static_cast<syncer::TestSyncService*>(
       SyncServiceFactory::GetForProfile(browser()->profile()));
   sync_service->SetAccountInfo(info);
   sync_service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
 
-  if (is_enabled) {
-    sync_service->SetHasSyncConsent(true);
-    sync_service->GetUserSettings()->SetSelectedTypes(
-        /*sync_everything=*/false,
-        /*types=*/{syncer::UserSelectableType::kPasswords});
-  } else {
-    sync_service->SetHasSyncConsent(false);
-    sync_service->GetUserSettings()->SetSelectedTypes(
-        /*sync_everything=*/false,
-        /*types=*/syncer::UserSelectableTypeSet());
+  switch (configuration) {
+    case SyncConfiguration::kNotSyncing:
+      sync_service->SetHasSyncConsent(false);
+      sync_service->GetUserSettings()->SetSelectedTypes(
+          /*sync_everything=*/false,
+          /*types=*/syncer::UserSelectableTypeSet());
+      break;
+    case SyncConfiguration::kSyncing:
+      sync_service->SetHasSyncConsent(true);
+      sync_service->GetUserSettings()->SetSelectedTypes(
+          /*sync_everything=*/false,
+          /*types=*/{syncer::UserSelectableType::kPasswords});
+      break;
+    case SyncConfiguration::kAccountStorageOnly:
+      sync_service->SetLocalSyncEnabled(false);
+      sync_service->SetHasSyncConsent(false);
+
+      sync_service->GetUserSettings()->SetSelectedTypes(
+          /* sync_everything = */ true, {});
+      break;
   }
 }
 

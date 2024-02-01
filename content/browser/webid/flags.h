@@ -35,6 +35,10 @@ bool IsFedCmIdPRegistrationEnabled();
 // Whether the well-known enforcement is bypassed.
 bool IsFedCmWithoutWellKnownEnforcementEnabled();
 
+// Whether we should skip well-known enforcement if RP and IDP are in the
+// same site.
+bool IsFedCmSkipWellKnownForSameSiteEnabled();
+
 // Whether the Web Identity Digital Credentials API is enabled.
 bool IsWebIdentityDigitalCredentialsEnabled();
 
@@ -58,6 +62,10 @@ bool IsFedCmExemptIdpWithThirdPartyCookiesEnabled();
 
 // Whether the ButtonMode feature is enabled.
 bool IsFedCmButtonModeEnabled();
+
+// Whether same-site login status is enabled.
+bool IsFedCmSameSiteLoginStatusEnabled();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_WEBID_FLAGS_H_

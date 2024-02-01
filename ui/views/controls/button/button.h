@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_BUTTON_BUTTON_H_
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -14,10 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "ui/actions/actions.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/action_view_controller.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -27,6 +28,10 @@
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 
+namespace ui {
+class Event;
+}  // namespace ui
+
 namespace views {
 
 namespace test {
@@ -35,7 +40,6 @@ class ButtonTestApi;
 
 class Button;
 class ButtonController;
-class Event;
 
 // A View representing a button. A Button is focusable by default and will
 // be part of the focus chain.
@@ -153,7 +157,7 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
   static ButtonState GetButtonStateFrom(ui::NativeTheme::State state);
 
   void SetTooltipText(const std::u16string& tooltip_text);
-  std::u16string GetTooltipText() const;
+  const std::u16string& GetTooltipText() const;
 
   // Tag is now a property. These accessors are deprecated. Use GetTag() and
   // SetTag() below or even better, use SetID()/GetID() from the ancestor.
@@ -404,8 +408,8 @@ class VIEWS_EXPORT ButtonActionViewInterface : public BaseActionViewInterface {
 
   // BaseActionViewInterface:
   void ActionItemChangedImpl(actions::ActionItem* action_item) override;
-  void LinkActionTriggerToView(
-      base::RepeatingClosure trigger_action_callback) override;
+  void LinkActionInvocationToView(
+      base::RepeatingClosure invoke_action_callback) override;
 
  private:
   raw_ptr<Button> action_view_;

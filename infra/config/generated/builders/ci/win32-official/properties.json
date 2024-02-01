@@ -20,7 +20,8 @@
                   "mb"
                 ],
                 "config": "chromium",
-                "target_bits": 32
+                "target_bits": 32,
+                "target_platform": "win"
               },
               "legacy_gclient_config": {
                 "apply_configs": [
@@ -44,7 +45,8 @@
           "builder": "win32-official",
           "group": "tryserver.chromium"
         }
-      ]
+      ],
+      "targets_spec_directory": "src/infra/config/generated/builders/ci/win32-official/targets"
     }
   },
   "$build/reclient": {

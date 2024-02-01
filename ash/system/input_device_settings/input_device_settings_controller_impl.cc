@@ -12,6 +12,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/events/event_rewriter_controller_impl.h"
 #include "ash/events/peripheral_customization_event_rewriter.h"
+#include "ash/public/cpp/accelerators_util.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
@@ -22,6 +23,7 @@
 #include "ash/system/input_device_settings/input_device_key_alias_manager.h"
 #include "ash/system/input_device_settings/input_device_notifier.h"
 #include "ash/system/input_device_settings/input_device_settings_defaults.h"
+#include "ash/system/input_device_settings/input_device_settings_metadata.h"
 #include "ash/system/input_device_settings/input_device_settings_notification_controller.h"
 #include "ash/system/input_device_settings/input_device_settings_policy_handler.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
@@ -39,6 +41,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/to_string.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/account_id/account_id.h"
@@ -54,6 +57,11 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/touchpad_device.h"
+#include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/message_center/message_center.h"
 
 namespace ash {
@@ -180,11 +188,13 @@ mojom::KeyboardPtr BuildMojomKeyboard(const ui::KeyboardDevice& keyboard) {
 
 mojom::MousePtr BuildMojomMouse(
     const ui::InputDevice& mouse,
-    mojom::CustomizationRestriction customization_restriction) {
+    mojom::CustomizationRestriction customization_restriction,
+    mojom::MouseButtonConfig mouse_button_config) {
   mojom::MousePtr mojom_mouse = mojom::Mouse::New();
   mojom_mouse->id = mouse.id;
   mojom_mouse->name = mouse.name;
   mojom_mouse->customization_restriction = customization_restriction;
+  mojom_mouse->mouse_button_config = mouse_button_config;
   mojom_mouse->device_key =
       Shell::Get()->input_device_key_alias_manager()->GetAliasedDeviceKey(
           mouse);
@@ -220,10 +230,12 @@ mojom::PointingStickPtr BuildMojomPointingStick(
 }
 
 mojom::GraphicsTabletPtr BuildMojomGraphicsTablet(
-    const ui::InputDevice& graphics_tablet) {
+    const ui::InputDevice& graphics_tablet,
+    mojom::CustomizationRestriction customization_restriction) {
   mojom::GraphicsTabletPtr mojom_graphics_tablet = mojom::GraphicsTablet::New();
   mojom_graphics_tablet->name = graphics_tablet.name;
   mojom_graphics_tablet->id = graphics_tablet.id;
+  mojom_graphics_tablet->customization_restriction = customization_restriction;
   mojom_graphics_tablet->device_key =
       Shell::Get()->input_device_key_alias_manager()->GetAliasedDeviceKey(
           graphics_tablet);
@@ -236,10 +248,11 @@ bool IsGraphicsTabletPenButton(const mojom::Button& button) {
 
 void AddButtonToButtonRemappingList(
     const mojom::Button& button,
-    std::vector<mojom::ButtonRemappingPtr>& button_remappings) {
+    std::vector<mojom::ButtonRemappingPtr>& button_remappings,
+    bool is_mouse_button_remapping) {
   std::string button_name;
   // If its a middle click, give it the default middle button name.
-  if (button.is_customizable_button() &&
+  if (is_mouse_button_remapping && button.is_customizable_button() &&
       button.get_customizable_button() == mojom::CustomizableButton::kMiddle) {
     button_name = l10n_util::GetStringUTF8(
         IDS_SETTINGS_CUSTOMIZATION_MIDDLE_BUTTON_DEFAULT_NAME);
@@ -255,7 +268,7 @@ void AddButtonToButtonRemappingList(
                            });
 
     int button_number = button_remappings.size() + 1;
-    if (iter != button_remappings.end()) {
+    if (is_mouse_button_remapping && iter != button_remappings.end()) {
       --button_number;
     }
     button_name = l10n_util::GetStringFUTF8(
@@ -436,8 +449,6 @@ T* FindDevice(InputDeviceSettingsControllerImpl::DeviceId id,
   return nullptr;
 }
 
-}  // namespace
-
 void DeleteLoginScreenSettingsPrefWhenInputDeviceSettingsSplitDisabled(
     PrefService* local_state) {
   // local_state could be null in tests.
@@ -494,6 +505,31 @@ void DeleteLoginScreenButtonRemappingListPrefWhenPeripheralCustomizationDisabled
                      std::nullopt);
 }
 
+void RefreshKeyDisplayInRemappingList(
+    std::vector<mojom::ButtonRemappingPtr>& remappings) {
+  for (const auto& remapping : remappings) {
+    if (!remapping->remapping_action ||
+        !remapping->remapping_action->is_key_event()) {
+      continue;
+    }
+    mojom::KeyEvent& key_event = *remapping->remapping_action->get_key_event();
+    key_event.key_display = base::UTF16ToUTF8(GetKeyDisplay(key_event.vkey));
+  }
+}
+
+void RefreshKeyDisplayMouse(mojom::Mouse& mouse) {
+  RefreshKeyDisplayInRemappingList(mouse.settings->button_remappings);
+}
+
+void RefreshKeyDisplayGraphicsTablet(mojom::GraphicsTablet& graphics_tablet) {
+  RefreshKeyDisplayInRemappingList(
+      graphics_tablet.settings->tablet_button_remappings);
+  RefreshKeyDisplayInRemappingList(
+      graphics_tablet.settings->pen_button_remappings);
+}
+
+}  // namespace
+
 InputDeviceSettingsControllerImpl::InputDeviceSettingsControllerImpl(
     PrefService* local_state)
     : local_state_(local_state),
@@ -528,6 +564,9 @@ InputDeviceSettingsControllerImpl::InputDeviceSettingsControllerImpl(
 
 void InputDeviceSettingsControllerImpl::Init() {
   Shell::Get()->session_controller()->AddObserver(this);
+  CHECK(input_method::InputMethodManager::Get());
+  input_method::InputMethodManager::Get()->AddObserver(this);
+
   InitializePolicyHandler();
   // Initialize the duplicate id finder first then the notifiers to make sure
   // duplicate ids are up to date before the controller gets updates about
@@ -593,6 +632,8 @@ void InputDeviceSettingsControllerImpl::InitializePolicyHandler() {
 
 InputDeviceSettingsControllerImpl::~InputDeviceSettingsControllerImpl() {
   Shell::Get()->session_controller()->RemoveObserver(this);
+  CHECK(input_method::InputMethodManager::Get());
+  input_method::InputMethodManager::Get()->RemoveObserver(this);
   // Clear all dangling observers. Known dependency issue:
   // `InputDeviceSettingsControllerImpl` destructs before `ShortcutAppManager`.
   observers_.Clear();
@@ -640,6 +681,24 @@ void InputDeviceSettingsControllerImpl::RegisterProfilePrefs(
       prefs::kGraphicsTabletTabletButtonRemappingsDictPref);
   pref_registry->RegisterDictionaryPref(
       prefs::kGraphicsTabletPenButtonRemappingsDictPref);
+  pref_registry->RegisterIntegerPref(
+      prefs::kF11KeyModifier,
+      static_cast<int>(ui::mojom::ExtendedFkeysModifier::kDisabled));
+  pref_registry->RegisterIntegerPref(
+      prefs::kF12KeyModifier,
+      static_cast<int>(ui::mojom::ExtendedFkeysModifier::kDisabled));
+  pref_registry->RegisterIntegerPref(
+      prefs::kHomeAndEndKeysModifier,
+      static_cast<int>(ui::mojom::SixPackShortcutModifier::kNone));
+  pref_registry->RegisterIntegerPref(
+      prefs::kPageUpAndPageDownKeysModifier,
+      static_cast<int>(ui::mojom::SixPackShortcutModifier::kNone));
+  pref_registry->RegisterIntegerPref(
+      prefs::kDeleteKeyModifier,
+      static_cast<int>(ui::mojom::SixPackShortcutModifier::kNone));
+  pref_registry->RegisterIntegerPref(
+      prefs::kInsertKeyModifier,
+      static_cast<int>(ui::mojom::SixPackShortcutModifier::kNone));
 }
 
 void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
@@ -1257,11 +1316,13 @@ bool InputDeviceSettingsControllerImpl::SetGraphicsTabletSettings(
   return true;
 }
 
-void InputDeviceSettingsControllerImpl::AddObserver(Observer* observer) {
+void InputDeviceSettingsControllerImpl::AddObserver(
+    InputDeviceSettingsController::Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void InputDeviceSettingsControllerImpl::RemoveObserver(Observer* observer) {
+void InputDeviceSettingsControllerImpl::RemoveObserver(
+    InputDeviceSettingsController::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -1430,72 +1491,40 @@ void InputDeviceSettingsControllerImpl::DispatchGraphicsTabletSettingsChanged(
 mojom::CustomizationRestriction
 InputDeviceSettingsControllerImpl::GetMouseCustomizationRestriction(
     const ui::InputDevice& mouse) {
-  if (!features::IsPeripheralCustomizationEnabled()) {
-    return mojom::CustomizationRestriction::kAllowCustomizations;
+  const auto* mouse_metadata = GetMouseMetadata(mouse);
+  if (mouse_metadata) {
+    return mouse_metadata->customization_restriction;
+  }
+  const auto* keyboard_mouse_combo_metadata =
+      GetKeyboardMouseComboMetadata(mouse);
+  if (keyboard_mouse_combo_metadata) {
+    return keyboard_mouse_combo_metadata->customization_restriction;
   }
 
-  // If the mouse is not customizable, then the CustomizationRestriction is
-  // kDisallowCustomizations.
-  if (!IsMouseCustomizable(mouse)) {
-    return mojom::CustomizationRestriction::kDisallowCustomizations;
-  }
+  return mojom::CustomizationRestriction::kDisableKeyEventRewrites;
+}
 
-  // If the mouse is customizable based on its vid and pid but there exists
-  // duplicate ids in the keyboard list, then the CustomizationRestriction is
-  // kDisableKeyEventRewrites to disable the key event rewrite from the mouse.
-  auto* duplicate_ids = duplicate_id_finder_->GetDuplicateDeviceIds(mouse.id);
-  CHECK(duplicate_ids);
-  for (const auto& duplicate_id : *duplicate_ids) {
-    if (keyboards_.contains(duplicate_id)) {
-      return mojom::CustomizationRestriction::kDisableKeyEventRewrites;
-    }
+mojom::CustomizationRestriction
+InputDeviceSettingsControllerImpl::GetGraphicsTabletCustomizationRestriction(
+    const ui::InputDevice& graphics_tablet) {
+  const auto* graphics_tablet_metadata =
+      GetGraphicsTabletMetadata(graphics_tablet);
+  if (graphics_tablet_metadata) {
+    return graphics_tablet_metadata->customization_restriction;
   }
 
   return mojom::CustomizationRestriction::kAllowCustomizations;
 }
 
-void InputDeviceSettingsControllerImpl::
-    ApplyCustomizationRestrictionFromKeyboard(DeviceId keyboard_id) {
-  if (!features::IsPeripheralCustomizationEnabled()) {
-    return;
+mojom::MouseButtonConfig
+InputDeviceSettingsControllerImpl::GetMouseButtonConfig(
+    const ui::InputDevice& mouse) {
+  const auto* mouse_metadata = GetMouseMetadata(mouse);
+  if (mouse_metadata) {
+    return mouse_metadata->mouse_button_config;
   }
 
-  bool changed_restriction = false;
-  auto* duplicate_ids =
-      duplicate_id_finder_->GetDuplicateDeviceIds(keyboard_id);
-  CHECK(duplicate_ids);
-  for (const auto& duplicate_id : *duplicate_ids) {
-    auto iter = mice_.find(duplicate_id);
-    if (iter == mice_.end()) {
-      continue;
-    }
-    auto& mouse = *iter->second;
-
-    if (mouse.customization_restriction ==
-        mojom::CustomizationRestriction::kDisableKeyEventRewrites) {
-      continue;
-    }
-
-    mouse.customization_restriction =
-        mojom::CustomizationRestriction::kDisableKeyEventRewrites;
-    changed_restriction = true;
-    InitializeMouseSettings(&mouse);
-    DispatchMouseSettingsChanged(mouse.id);
-  }
-
-  // If the restriction changed for any mouse, refresh the observing to match
-  // the new restriction.
-  if (changed_restriction) {
-    PeripheralCustomizationEventRewriter* rewriter =
-        Shell::Get()
-            ->event_rewriter_controller()
-            ->peripheral_customization_event_rewriter();
-    DeviceId id = *duplicate_ids->begin();
-    if (rewriter->mice_to_observe().contains(id)) {
-      rewriter->StopObserving();
-      StartObservingButtons(id);
-    }
-  }
+  return mojom::MouseButtonConfig::kNoConfig;
 }
 
 void InputDeviceSettingsControllerImpl::OnKeyboardListUpdated(
@@ -1508,8 +1537,6 @@ void InputDeviceSettingsControllerImpl::OnKeyboardListUpdated(
     InitializeKeyboardSettings(mojom_keyboard.get());
     keyboards_.insert_or_assign(keyboard.id, std::move(mojom_keyboard));
     DispatchKeyboardConnected(keyboard.id);
-    // Update mouse restrictions if we have a keyboard with the same id.
-    ApplyCustomizationRestrictionFromKeyboard(keyboard.id);
   }
 
   for (const auto id : keyboard_ids_to_remove) {
@@ -1541,7 +1568,8 @@ void InputDeviceSettingsControllerImpl::OnMouseListUpdated(
     std::vector<DeviceId> mouse_ids_to_remove) {
   for (const auto& mouse : mice_to_add) {
     auto mojom_mouse =
-        BuildMojomMouse(mouse, GetMouseCustomizationRestriction(mouse));
+        BuildMojomMouse(mouse, GetMouseCustomizationRestriction(mouse),
+                        GetMouseButtonConfig(mouse));
     if (features::IsPeripheralNotificationEnabled()) {
       notification_controller_->NotifyMouseFirstTimeConnected(*mojom_mouse);
     }
@@ -1580,7 +1608,9 @@ void InputDeviceSettingsControllerImpl::OnGraphicsTabletListUpdated(
     std::vector<ui::InputDevice> graphics_tablets_to_add,
     std::vector<DeviceId> graphics_tablet_ids_to_remove) {
   for (const auto& graphics_tablet : graphics_tablets_to_add) {
-    auto mojom_graphics_tablet = BuildMojomGraphicsTablet(graphics_tablet);
+    auto mojom_graphics_tablet = BuildMojomGraphicsTablet(
+        graphics_tablet,
+        GetGraphicsTabletCustomizationRestriction(graphics_tablet));
     InitializeGraphicsTabletSettings(mojom_graphics_tablet.get());
     if (features::IsPeripheralNotificationEnabled()) {
       notification_controller_->NotifyGraphicsTabletFirstTimeConnected(
@@ -1778,13 +1808,15 @@ void InputDeviceSettingsControllerImpl::StartObservingButtons(DeviceId id) {
   }
 
   auto* graphics_tablet = FindGraphicsTablet(id);
-  if (graphics_tablet) {
+  if (graphics_tablet &&
+      graphics_tablet->customization_restriction !=
+          ash::mojom::CustomizationRestriction::kDisallowCustomizations) {
     const auto* duplicate_ids =
         duplicate_id_finder_->GetDuplicateDeviceIds(graphics_tablet->id);
     CHECK(duplicate_ids);
     for (const auto& duplicate_id : *duplicate_ids) {
       rewriter->StartObservingGraphicsTablet(
-          duplicate_id, mojom::CustomizationRestriction::kAllowCustomizations);
+          duplicate_id, graphics_tablet->customization_restriction);
     }
     return;
   }
@@ -1821,7 +1853,8 @@ void InputDeviceSettingsControllerImpl::OnMouseButtonPressed(
     return;
   }
 
-  AddButtonToButtonRemappingList(button, button_remappings);
+  AddButtonToButtonRemappingList(button, button_remappings,
+                                 /*is_mouse_button_remapping=*/true);
   mouse_pref_handler_->UpdateMouseSettings(
       active_pref_service_, policy_handler_->mouse_policies(), mouse);
   DispatchCustomizableMouseButtonPressed(mouse, button);
@@ -1869,12 +1902,14 @@ void InputDeviceSettingsControllerImpl::OnGraphicsTabletButtonPressed(
   }
 
   if (IsGraphicsTabletPenButton(button)) {
-    AddButtonToButtonRemappingList(button, pen_button_remappings);
+    AddButtonToButtonRemappingList(button, pen_button_remappings,
+                                   /*is_mouse_button_remapping=*/false);
     DispatchCustomizablePenButtonPressed(graphics_tablet, button);
     metrics_manager_->RecordNewButtonRegisteredMetrics(
         button, kGraphicsTabletPenDeviceType);
   } else {
-    AddButtonToButtonRemappingList(button, tablet_button_remappings);
+    AddButtonToButtonRemappingList(button, tablet_button_remappings,
+                                   /*is_mouse_button_remapping=*/false);
     DispatchCustomizableTabletButtonPressed(graphics_tablet, button);
     metrics_manager_->RecordNewButtonRegisteredMetrics(
         button, kGraphicsTabletDeviceType);
@@ -1998,6 +2033,34 @@ void InputDeviceSettingsControllerImpl::RefreshTouchpadDefaultSettings() {
 
   touchpad_pref_handler_->UpdateDefaultTouchpadSettings(
       active_pref_service_, *touchpads_.rbegin()->second);
+}
+
+void InputDeviceSettingsControllerImpl::RefreshKeyDisplay() {
+  for (auto& [_, mouse] : mice_) {
+    RefreshKeyDisplayMouse(*mouse);
+    DispatchMouseSettingsChanged(mouse->id);
+  }
+
+  for (auto& [_, graphics_tablet] : graphics_tablets_) {
+    RefreshKeyDisplayGraphicsTablet(*graphics_tablet);
+    DispatchGraphicsTabletSettingsChanged(graphics_tablet->id);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::InputMethodChanged(
+    input_method::InputMethodManager* manager,
+    Profile* profile,
+    bool show_message) {
+  if (!features::IsPeripheralCustomizationEnabled()) {
+    return;
+  }
+
+  // Must be posted as a task because the data source for key display values is
+  // not yet updated right when this is called.
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&InputDeviceSettingsControllerImpl::RefreshKeyDisplay,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace ash

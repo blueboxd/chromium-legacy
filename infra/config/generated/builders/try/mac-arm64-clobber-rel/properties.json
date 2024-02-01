@@ -22,7 +22,8 @@
                 ],
                 "build_config": "Release",
                 "config": "chromium",
-                "target_bits": 64
+                "target_bits": 64,
+                "target_platform": "mac"
               },
               "legacy_gclient_config": {
                 "config": "chromium"
@@ -37,7 +38,8 @@
           "builder": "mac-arm64-archive-rel",
           "project": "chromium"
         }
-      ]
+      ],
+      "targets_spec_directory": "src/infra/config/generated/builders/try/mac-arm64-clobber-rel/targets"
     }
   },
   "$build/reclient": {

@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_ASH_SYSTEM_WEB_APPS_APPS_PERSONALIZATION_APP_PERSONALIZATION_APP_WALLPAPER_PROVIDER_IMPL_H_
 
 #include "ash/webui/personalization_app/personalization_app_wallpaper_provider.h"
-#include "base/memory/raw_ptr.h"
 
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -21,8 +21,10 @@
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/files/file.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/values.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -267,6 +269,12 @@ class PersonalizationAppWallpaperProviderImpl
       const std::string& collection_id,
       const std::vector<backdrop::Image>& images);
 
+  void FindSeaPenWallpaperAttribution(const base::FilePath& user_file_path);
+
+  void SendSeaPenWallpaperAttribution(
+      const base::FilePath& user_file_path,
+      std::optional<base::Value::Dict> sea_pen_metadata);
+
   void SendGooglePhotosAttribution(
       const ash::WallpaperInfo& info,
       mojo::StructPtr<ash::personalization_app::mojom::GooglePhotosPhoto> photo,
@@ -372,10 +380,10 @@ class PersonalizationAppWallpaperProviderImpl
   // user's background.
   std::set<base::FilePath> local_images_;
 
-  const raw_ptr<content::WebUI, ExperimentalAsh> web_ui_ = nullptr;
+  const raw_ptr<content::WebUI> web_ui_ = nullptr;
 
   // Pointer to profile of user that opened personalization SWA. Not owned.
-  const raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
+  const raw_ptr<Profile> profile_ = nullptr;
 
   base::ScopedObservation<ash::WallpaperController,
                           ash::WallpaperControllerObserver>

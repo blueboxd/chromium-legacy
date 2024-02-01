@@ -43,6 +43,9 @@ import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Promise;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -50,9 +53,6 @@ import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -89,9 +89,9 @@ public class SigninManagerImplTest {
     private static final long NATIVE_IDENTITY_MANAGER = 10002L;
     private static final AccountInfo ACCOUNT_INFO =
             new AccountInfo(
-                    new CoreAccountId("gaia-id-user"),
+                    new CoreAccountId(FakeAccountManagerFacade.toGaiaId("user@domain.com")),
                     "user@domain.com",
-                    "gaia-id-user",
+                    FakeAccountManagerFacade.toGaiaId("user@domain.com"),
                     "full name",
                     "given name",
                     null,
@@ -226,7 +226,7 @@ public class SigninManagerImplTest {
     @Test
     @DisableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
     public void signinAndTurnSyncOn() {
-        when(mIdentityMutator.setPrimaryAccount(any(), anyInt(), anyInt()))
+        when(mIdentityMutator.setPrimaryAccount(any(), anyInt(), anyInt(), any()))
                 .thenReturn(PrimaryAccountError.NO_ERROR);
         when(mSyncService.getSelectedTypes()).thenReturn(Set.of(UserSelectableType.BOOKMARKS));
 
@@ -236,23 +236,29 @@ public class SigninManagerImplTest {
         // Sign out is not allowed.
         assertFalse(mSigninManager.isSignOutAllowed());
 
-        SigninManager.SignInCallback callback = mock(SigninManager.SignInCallback.class);
-        mSigninManager.signinAndEnableSync(
-                AccountUtils.createAccountFromName(ACCOUNT_INFO.getEmail()),
-                SigninAccessPoint.START_PAGE,
-                callback);
+        doAnswer(
+                        (args) -> {
+                            // A sign in operation is in progress, so we do not allow a new sign
+                            // in/out operation.
+                            assertFalse(mSigninManager.isSigninAllowed());
+                            assertFalse(mSigninManager.isSyncOptInAllowed());
+                            assertFalse(mSigninManager.isSignOutAllowed());
 
-        verify(mNativeMock)
+                            ((Runnable) args.getArgument(2)).run();
+                            return null;
+                        })
+                .when(mNativeMock)
                 .fetchAndApplyCloudPolicy(eq(NATIVE_SIGNIN_MANAGER), eq(ACCOUNT_INFO), any());
-        // A sign in operation is in progress, so we do not allow a new sign in/out operation.
-        assertFalse(mSigninManager.isSigninAllowed());
-        assertFalse(mSigninManager.isSyncOptInAllowed());
-        assertFalse(mSigninManager.isSignOutAllowed());
 
-        mSigninManager.finishSignInAfterPolicyEnforced();
+        SigninManager.SignInCallback callback = mock(SigninManager.SignInCallback.class);
+        mSigninManager.signinAndEnableSync(ACCOUNT_INFO, SigninAccessPoint.START_PAGE, callback);
+
         verify(mIdentityMutator)
                 .setPrimaryAccount(
-                        ACCOUNT_INFO.getId(), ConsentLevel.SYNC, SigninAccessPoint.START_PAGE);
+                        eq(ACCOUNT_INFO.getId()),
+                        eq(ConsentLevel.SYNC),
+                        eq(SigninAccessPoint.START_PAGE),
+                        any());
         verify(mSyncService).setSyncRequested();
         // Signin should be complete and callback should be invoked.
         verify(callback).onSignInComplete();
@@ -273,7 +279,7 @@ public class SigninManagerImplTest {
     @EnableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
     public void signinAndTurnSyncOn_seedAccountsRevampEnabled() {
         mFakeAccountManagerFacade.addAccount(ACCOUNT_FROM_INFO);
-        when(mIdentityMutator.setPrimaryAccount(any(), anyInt(), anyInt()))
+        when(mIdentityMutator.setPrimaryAccount(any(), anyInt(), anyInt(), any()))
                 .thenReturn(PrimaryAccountError.NO_ERROR);
         when(mSyncService.getSelectedTypes()).thenReturn(Set.of(UserSelectableType.BOOKMARKS));
 
@@ -283,30 +289,37 @@ public class SigninManagerImplTest {
         // Sign out is not allowed.
         assertFalse(mSigninManager.isSignOutAllowed());
 
-        SigninManager.SignInCallback callback = mock(SigninManager.SignInCallback.class);
-        mSigninManager.signinAndEnableSync(
-                ACCOUNT_FROM_INFO, SigninAccessPoint.START_PAGE, callback);
-
         List<CoreAccountInfo> coreAccountInfos =
                 mFakeAccountManagerFacade.getCoreAccountInfos().getResult();
         CoreAccountInfo primaryAccountInfo =
                 AccountUtils.findCoreAccountInfoByEmail(coreAccountInfos, ACCOUNT_INFO.getEmail());
-        verify(mNativeMock)
-                .fetchAndApplyCloudPolicy(eq(NATIVE_SIGNIN_MANAGER), eq(primaryAccountInfo), any());
-        // A sign in operation is in progress, so we do not allow a new sign in/out operation.
-        assertFalse(mSigninManager.isSigninAllowed());
-        assertFalse(mSigninManager.isSyncOptInAllowed());
-        assertFalse(mSigninManager.isSignOutAllowed());
 
-        mSigninManager.finishSignInAfterPolicyEnforced();
+        doAnswer(
+                        (args) -> {
+                            // A sign in operation is in progress, so we do not allow a new sign
+                            // in/out operation.
+                            assertFalse(mSigninManager.isSigninAllowed());
+                            assertFalse(mSigninManager.isSyncOptInAllowed());
+                            assertFalse(mSigninManager.isSignOutAllowed());
+
+                            ((Runnable) args.getArgument(2)).run();
+                            return null;
+                        })
+                .when(mNativeMock)
+                .fetchAndApplyCloudPolicy(eq(NATIVE_SIGNIN_MANAGER), eq(primaryAccountInfo), any());
+
+        SigninManager.SignInCallback callback = mock(SigninManager.SignInCallback.class);
+        mSigninManager.signinAndEnableSync(ACCOUNT_INFO, SigninAccessPoint.START_PAGE, callback);
+
         verify(mIdentityMutator)
                 .seedAccountsThenReloadAllAccountsWithPrimaryAccount(
                         coreAccountInfos, primaryAccountInfo.getId());
         verify(mIdentityMutator)
                 .setPrimaryAccount(
-                        primaryAccountInfo.getId(),
-                        ConsentLevel.SYNC,
-                        SigninAccessPoint.START_PAGE);
+                        eq(primaryAccountInfo.getId()),
+                        eq(ConsentLevel.SYNC),
+                        eq(SigninAccessPoint.START_PAGE),
+                        any());
         verify(mSyncService).setSyncRequested();
         // Signin should be complete and callback should be invoked.
         verify(callback).onSignInComplete();
@@ -326,23 +339,23 @@ public class SigninManagerImplTest {
     @Test
     @DisableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
     public void signinNoTurnSyncOn() {
-        when(mIdentityMutator.setPrimaryAccount(any(), anyInt(), anyInt()))
+        when(mIdentityMutator.setPrimaryAccount(any(), anyInt(), anyInt(), any()))
                 .thenReturn(PrimaryAccountError.NO_ERROR);
 
         assertTrue(mSigninManager.isSigninAllowed());
         assertTrue(mSigninManager.isSyncOptInAllowed());
 
         SigninManager.SignInCallback callback = mock(SigninManager.SignInCallback.class);
-        mSigninManager.signin(
-                AccountUtils.createAccountFromName(ACCOUNT_INFO.getEmail()),
-                SigninAccessPoint.START_PAGE,
-                callback);
+        mSigninManager.signin(ACCOUNT_INFO, SigninAccessPoint.START_PAGE, callback);
 
         // Signin without turning on sync shouldn't apply policies.
         verify(mNativeMock, never()).fetchAndApplyCloudPolicy(anyLong(), any(), any());
         verify(mIdentityMutator)
                 .setPrimaryAccount(
-                        ACCOUNT_INFO.getId(), ConsentLevel.SIGNIN, SigninAccessPoint.START_PAGE);
+                        eq(ACCOUNT_INFO.getId()),
+                        eq(ConsentLevel.SIGNIN),
+                        eq(SigninAccessPoint.START_PAGE),
+                        any());
 
         verify(mSyncService, never()).setSyncRequested();
         // Signin should be complete and callback should be invoked.
@@ -361,14 +374,14 @@ public class SigninManagerImplTest {
     @EnableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
     public void signinNoTurnSyncOn_seedAccountsRevampEnabled() {
         mFakeAccountManagerFacade.addAccount(ACCOUNT_FROM_INFO);
-        when(mIdentityMutator.setPrimaryAccount(any(), anyInt(), anyInt()))
+        when(mIdentityMutator.setPrimaryAccount(any(), anyInt(), anyInt(), any()))
                 .thenReturn(PrimaryAccountError.NO_ERROR);
 
         assertTrue(mSigninManager.isSigninAllowed());
         assertTrue(mSigninManager.isSyncOptInAllowed());
 
         SigninManager.SignInCallback callback = mock(SigninManager.SignInCallback.class);
-        mSigninManager.signin(ACCOUNT_FROM_INFO, SigninAccessPoint.START_PAGE, callback);
+        mSigninManager.signin(ACCOUNT_INFO, SigninAccessPoint.START_PAGE, callback);
 
         // Signin without turning on sync shouldn't apply policies.
         verify(mNativeMock, never()).fetchAndApplyCloudPolicy(anyLong(), any(), any());
@@ -383,7 +396,10 @@ public class SigninManagerImplTest {
                         coreAccountInfos, primaryAccountId);
         verify(mIdentityMutator)
                 .setPrimaryAccount(
-                        primaryAccountId, ConsentLevel.SIGNIN, SigninAccessPoint.START_PAGE);
+                        eq(primaryAccountId),
+                        eq(ConsentLevel.SIGNIN),
+                        eq(SigninAccessPoint.START_PAGE),
+                        any());
 
         verify(mSyncService, never()).setSyncRequested();
         // Signin should be complete and callback should be invoked.
@@ -882,18 +898,24 @@ public class SigninManagerImplTest {
         doAnswer(setPrimaryAccountAnswer)
                 .when(mIdentityMutator)
                 .setPrimaryAccount(
-                        ACCOUNT_INFO.getId(), ConsentLevel.SYNC, SigninAccessPoint.UNKNOWN);
-
-        mSigninManager.signinAndEnableSync(
-                AccountUtils.createAccountFromName(ACCOUNT_INFO.getEmail()),
-                SigninAccessPoint.UNKNOWN,
-                null);
+                        eq(ACCOUNT_INFO.getId()),
+                        eq(ConsentLevel.SYNC),
+                        eq(SigninAccessPoint.UNKNOWN),
+                        any());
 
         AtomicInteger callCount = new AtomicInteger(0);
-        mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
-        assertEquals(0, callCount.get());
+        doAnswer(
+                        (args) -> {
+                            mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
+                            assertEquals(0, callCount.get());
 
-        mSigninManager.finishSignInAfterPolicyEnforced();
+                            ((Runnable) args.getArgument(2)).run();
+                            return null;
+                        })
+                .when(mNativeMock)
+                .fetchAndApplyCloudPolicy(anyLong(), any(), any());
+
+        mSigninManager.signinAndEnableSync(ACCOUNT_INFO, SigninAccessPoint.UNKNOWN, null);
         assertEquals(1, callCount.get());
     }
 
@@ -912,15 +934,24 @@ public class SigninManagerImplTest {
         doAnswer(setPrimaryAccountAnswer)
                 .when(mIdentityMutator)
                 .setPrimaryAccount(
-                        ACCOUNT_INFO.getId(), ConsentLevel.SYNC, SigninAccessPoint.UNKNOWN);
-
-        mSigninManager.signinAndEnableSync(ACCOUNT_FROM_INFO, SigninAccessPoint.UNKNOWN, null);
+                        eq(ACCOUNT_INFO.getId()),
+                        eq(ConsentLevel.SYNC),
+                        eq(SigninAccessPoint.UNKNOWN),
+                        any());
 
         AtomicInteger callCount = new AtomicInteger(0);
-        mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
-        assertEquals(0, callCount.get());
+        doAnswer(
+                        (args) -> {
+                            mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
+                            assertEquals(0, callCount.get());
 
-        mSigninManager.finishSignInAfterPolicyEnforced();
+                            ((Runnable) args.getArgument(2)).run();
+                            return null;
+                        })
+                .when(mNativeMock)
+                .fetchAndApplyCloudPolicy(anyLong(), any(), any());
+
+        mSigninManager.signinAndEnableSync(ACCOUNT_INFO, SigninAccessPoint.UNKNOWN, null);
         assertEquals(1, callCount.get());
     }
 
@@ -930,10 +961,7 @@ public class SigninManagerImplTest {
         when(mIdentityManagerNativeMock.getPrimaryAccountInfo(
                         eq(NATIVE_IDENTITY_MANAGER), anyInt()))
                 .thenReturn(ACCOUNT_INFO);
-        mSigninManager.signinAndEnableSync(
-                AccountUtils.createAccountFromName(ACCOUNT_INFO.getEmail()),
-                SigninAccessPoint.UNKNOWN,
-                null);
+        mSigninManager.signinAndEnableSync(ACCOUNT_INFO, SigninAccessPoint.UNKNOWN, null);
     }
 
     @Test(expected = AssertionError.class)
@@ -942,10 +970,7 @@ public class SigninManagerImplTest {
         when(mIdentityManagerNativeMock.getPrimaryAccountInfo(
                         eq(NATIVE_IDENTITY_MANAGER), anyInt()))
                 .thenReturn(ACCOUNT_INFO);
-        mSigninManager.signinAndEnableSync(
-                AccountUtils.createAccountFromName(ACCOUNT_INFO.getEmail()),
-                SigninAccessPoint.UNKNOWN,
-                null);
+        mSigninManager.signinAndEnableSync(ACCOUNT_INFO, SigninAccessPoint.UNKNOWN, null);
     }
 
     @Test
@@ -962,16 +987,24 @@ public class SigninManagerImplTest {
         doAnswer(setPrimaryAccountAnswer)
                 .when(mIdentityMutator)
                 .setPrimaryAccount(
-                        ACCOUNT_INFO.getId(), ConsentLevel.SYNC, SigninAccessPoint.START_PAGE);
+                        eq(ACCOUNT_INFO.getId()),
+                        eq(ConsentLevel.SYNC),
+                        eq(SigninAccessPoint.START_PAGE),
+                        any());
 
-        mSigninManager.signinAndEnableSync(
-                AccountUtils.createAccountFromName(ACCOUNT_INFO.getEmail()),
-                SigninAccessPoint.START_PAGE,
-                null);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        verify(mSignInStateObserver).onSignInAllowedChanged();
+        doAnswer(
+                        (args) -> {
+                            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+                            verify(mSignInStateObserver).onSignInAllowedChanged();
 
-        mSigninManager.finishSignInAfterPolicyEnforced();
+                            ((Runnable) args.getArgument(2)).run();
+                            return null;
+                        })
+                .when(mNativeMock)
+                .fetchAndApplyCloudPolicy(anyLong(), any(), any());
+
+        mSigninManager.signinAndEnableSync(ACCOUNT_INFO, SigninAccessPoint.START_PAGE, null);
+
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         verify(mSignInStateObserver).onSignOutAllowedChanged();
         assertFalse(mSigninManager.isSigninAllowed());
@@ -997,15 +1030,24 @@ public class SigninManagerImplTest {
         doAnswer(setPrimaryAccountAnswer)
                 .when(mIdentityMutator)
                 .setPrimaryAccount(
-                        primaryAccountInfo.getId(),
-                        ConsentLevel.SYNC,
-                        SigninAccessPoint.START_PAGE);
+                        eq(primaryAccountInfo.getId()),
+                        eq(ConsentLevel.SYNC),
+                        eq(SigninAccessPoint.START_PAGE),
+                        any());
 
-        mSigninManager.signinAndEnableSync(ACCOUNT_FROM_INFO, SigninAccessPoint.START_PAGE, null);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-        verify(mSignInStateObserver).onSignInAllowedChanged();
+        doAnswer(
+                        (args) -> {
+                            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+                            verify(mSignInStateObserver).onSignInAllowedChanged();
 
-        mSigninManager.finishSignInAfterPolicyEnforced();
+                            ((Runnable) args.getArgument(2)).run();
+                            return null;
+                        })
+                .when(mNativeMock)
+                .fetchAndApplyCloudPolicy(anyLong(), any(), any());
+
+        mSigninManager.signinAndEnableSync(ACCOUNT_INFO, SigninAccessPoint.START_PAGE, null);
+
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         verify(mSignInStateObserver).onSignOutAllowedChanged();
         assertFalse(mSigninManager.isSigninAllowed());

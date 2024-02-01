@@ -21,7 +21,7 @@
 <translation id="1383876407941801731">Durchsuchen</translation>
 <translation id="1384959399684842514">Download angehalten</translation>
 <translation id="1415402041810619267">URL abgeschnitten</translation>
-<translation id="1426410128494586442">Ja</translation>
+<translation id="1434873037477293673">Preissenkungskarte</translation>
 <translation id="1448064542941920355">Herauszoomen</translation>
 <translation id="146867109637325312">{COUNT,plural, =1{<ph name="SITE_COUNT" /> Website}other{<ph name="SITE_COUNT" /> Websites}}</translation>
 <translation id="1510341833810331442">Websites dürfen keine Daten auf deinem Gerät speichern</translation>
@@ -53,7 +53,7 @@
 <translation id="2004697686368036666">Einige Websites funktionieren dann möglicherweise nicht mehr richtig</translation>
 <translation id="2025115093177348061">Augmented Reality</translation>
 <translation id="2030769033451695672">Tippen, um zu <ph name="URL_OF_THE_CURRENT_TAB" /> zurückzukehren</translation>
-<translation id="2079545284768500474">Rückgängig machen</translation>
+<translation id="2079545284768500474">Rückgängig</translation>
 <translation id="2091887806945687916">Ton</translation>
 <translation id="2096716221239095980">Alle Daten löschen</translation>
 <translation id="2117655453726830283">Nächste Folie</translation>
@@ -108,6 +108,7 @@
 <translation id="2750481671343847896">Websites dürfen Anmeldungsaufforderungen von Identitätsdiensten anzeigen.</translation>
 <translation id="2790501146643349491">Wenn dieser Schalter aktiviert ist, können vor Kurzem geschlossene Websites das Senden und Empfangen von Daten abschließen. Wenn er deaktiviert ist, können vor Kurzem geschlossene Websites das Senden oder Empfangen von Daten nicht abschließen.</translation>
 <translation id="2822354292072154809">Möchtest du wirklich alle Websiteberechtigungen für <ph name="CHOSEN_OBJECT_NAME" /> zurücksetzen?</translation>
+<translation id="2836978798613876756"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="2850913818900871965">Mobile Ansicht anfordern</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2874939134665556319">Vorheriger Titel</translation>
@@ -121,7 +122,7 @@
 <translation id="3008272652534848354">Berechtigungen zurücksetzen</translation>
 <translation id="3013291976881901233">MIDI-Geräte</translation>
 <translation id="301521992641321250">Automatisch blockiert</translation>
-<translation id="3069226013421428034">Hier kannst du Websites angeben, für die die Drittanbieter-Anmeldung erlaubt werden soll.</translation>
+<translation id="3069226013421428034">Hier kannst du Websites angeben, für die die Anmeldung über Drittanbieter erlaubt werden soll.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Läuft morgen ab}other{Läuft in # Tagen ab}}</translation>
 <translation id="310297983047869047">Vorherige Folie</translation>
 <translation id="3109724472072898302">Minimiert</translation>
@@ -148,6 +149,7 @@
 <translation id="3448554387819310837">Wenn dieser Schalter aktiviert ist, können Websites anfragen, ob sie deine Kamera verwenden dürfen. Wenn er deaktiviert ist, können Websites deine Kamera nicht verwenden.</translation>
 <translation id="3465378418721443318">{DAYS,plural, =1{Chrome blockiert morgen wieder Cookies}other{Noch # Tage, bis Chrome wieder Cookies blockiert}}</translation>
 <translation id="3521663503435878242">Websites unter <ph name="DOMAIN" /></translation>
+<translation id="3536227077203206203">Einmal gewährt</translation>
 <translation id="3538390592868664640">Websites daran hindern, eine 3D-Karte meiner Umgebung zu erstellen oder die Kameraposition zu verfolgen</translation>
 <translation id="3544058026430919413">Ein Unternehmen kann eine Gruppe von Websites festlegen, die deine Aktivitäten in der Gruppe mithilfe von Cookies teilen. Im Inkognitomodus ist diese Funktion deaktiviert.</translation>
 <translation id="3551268116566418498">Inkognitomodus deaktivieren?</translation>
@@ -166,7 +168,7 @@
 <translation id="3803367742635802571">Websites funktionieren möglicherweise nicht mehr erwartungsgemäß</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="381841723434055211">Telefonnummern</translation>
-<translation id="3826050100957962900">Drittanbieter-Anmeldung</translation>
+<translation id="3826050100957962900">Anmeldung über Drittanbieter</translation>
 <translation id="3835233591525155343">Meine Gerätenutzung</translation>
 <translation id="3843916486309149084">Chrome blockiert heute wieder Cookies</translation>
 <translation id="385051799172605136">Zurück</translation>
@@ -189,6 +191,7 @@
 <translation id="4169549551965910670">Mit einem USB-Gerät verbunden</translation>
 <translation id="4194328954146351878">Nachfragen, bevor Websites erlaubt wird, Informationen auf NFC-Geräten abzurufen und zu ändern (empfohlen)</translation>
 <translation id="4200726100658658164">Standorteinstellungen öffnen</translation>
+<translation id="4212246570487010370">Mehr ansehen</translation>
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
@@ -238,6 +241,7 @@
 <translation id="5099358668261120049">Dadurch werden alle von <ph name="ORIGIN" /> oder der zugehörigen App auf dem Startbildschirm gespeicherten Daten und Cookies gelöscht.</translation>
 <translation id="5100237604440890931">Minimiert – zum Maximieren klicken</translation>
 <translation id="5123685120097942451">Inkognitotab</translation>
+<translation id="5139253256813381453">{PRICE_DROP_COUNT,plural, =1{Preissenkung auf deinen geöffneten Tabs}other{Preissenkungen auf deinen geöffneten Tabs}}</translation>
 <translation id="5186036860380548585">Option ist oben auf dem Bildschirm verfügbar</translation>
 <translation id="5197729504361054390">Die von dir ausgewählten Kontakte werden mit <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> geteilt.</translation>
 <translation id="5216942107514965959">Heute zuletzt besucht</translation>
@@ -319,12 +323,13 @@
 <translation id="6304434827459067558"><ph name="SITE" /> wird daran gehindert, deine Informationen zu nutzen auf</translation>
 <translation id="6320088164292336938">Vibrieren</translation>
 <translation id="6344622098450209924">Schutz vor Tracking</translation>
-<translation id="6367753977865761591">Hier kannst du Websites angeben, für die die Drittanbieter-Anmeldung blockiert werden soll.</translation>
+<translation id="6367753977865761591">Hier kannst du Websites angeben, für die die Anmeldung über Drittanbieter blockiert werden soll.</translation>
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
 <translation id="640163077447496506">Läuft heute ab</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Websites daran hindern, mein Virtual-Reality-Gerät und meine Virtual-Reality-Daten zu verwenden</translation>
 <translation id="6447842834002726250">Cookies</translation>
+<translation id="6452138246455930388">Preissenkung auf dem geöffneten Tab von <ph name="OLD_PRICE" /> auf <ph name="NEW_PRICE" />, <ph name="PRODUCT_NAME" />, <ph name="DOMAIN_NAME" /></translation>
 <translation id="6500423977866688905">Mobile Ansicht anfordern, wenn das Fenster schmal ist</translation>
 <translation id="6527303717912515753">Teilen</translation>
 <translation id="652937045869844725">Versuche, Drittanbieter-Cookies zuzulassen. Das bedeutet zwar weniger Schutz, aber dadurch erhöht sich die Wahrscheinlichkeit, dass Websites richtig funktionieren.</translation>
@@ -344,10 +349,12 @@
 <translation id="6746124502594467657">Nach unten</translation>
 <translation id="6749077623962119521">Berechtigungen zurücksetzen?</translation>
 <translation id="6766622839693428701">Zum Schließen nach unten wischen.</translation>
+<translation id="6785959295338971061"><ph name="ACCESS_TIME" /> <ph name="SEPARATOR" /> von „<ph name="FROM_DEVICE" />“</translation>
 <translation id="6787751205395685251">Wähle eine Option aus für <ph name="SITE_NAME" /></translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6818926723028410516">Einträge auswählen</translation>
 <translation id="6864395892908308021">NFC wird von diesem Gerät nicht unterstützt</translation>
+<translation id="6867014948848323204">Von „<ph name="FROM_DEVICE" />“</translation>
 <translation id="6912998170423641340">Websites dürfen keine Texte oder Bilder aus der Zwischenablage abrufen</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6950072572526089586">Websites, die du besuchst, können Informationen zu deinen Aktivitäten speichern, um erwartungsgemäß zu funktionieren – beispielsweise um dafür zu sorgen, dass du angemeldet bleibst oder um Artikel in deinem Einkaufswagen zu speichern. Oft speichern Websites diese Informationen vorübergehend auf deinem Gerät.</translation>
@@ -364,6 +371,7 @@
 <translation id="7141896414559753902">Anzeige von Pop-ups und Weiterleitungen für Websites blockieren (empfohlen)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
+<translation id="7180865173735832675">Anpassen</translation>
 <translation id="7188508872042490670">Websitedaten auf dem Gerät</translation>
 <translation id="7201549776650881587">Durch diese Aktion werden alle Daten und Cookies gelöscht, die von allen Websites unter <ph name="ORIGIN" /> oder von der zugehörigen App auf dem Startbildschirm gespeichert wurden</translation>
 <translation id="7203150201908454328">Erweitert</translation>
@@ -395,6 +403,7 @@
 <translation id="7667547420449112975">Der Zauberer von Oz</translation>
 <translation id="7684642910516280563">Einer Website nicht erlauben, Drittanbieter-Cookies zu verwenden</translation>
 <translation id="7719367874908701697">Seitenzoom</translation>
+<translation id="7770832849480336015">„<ph name="TITLE_OF_MODULE" />“ ausblenden</translation>
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Nein, danke</translation>

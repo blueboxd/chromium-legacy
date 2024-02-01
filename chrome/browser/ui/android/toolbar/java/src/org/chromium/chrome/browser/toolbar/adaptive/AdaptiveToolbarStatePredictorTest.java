@@ -21,22 +21,18 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionUtil;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor.UiState;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.segmentation_platform.proto.SegmentationProto.SegmentId;
 import org.chromium.ui.permissions.AndroidPermissionDelegate;
 
 /** Unit tests for the {@code AdaptiveToolbarStatePredictor} */
 @Config(manifest = Config.NONE)
 @RunWith(BaseRobolectricTestRunner.class)
-@DisableFeatures({
-    ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR,
-    ChromeFeatureList.VOICE_BUTTON_IN_TOP_TOOLBAR
-})
 @EnableFeatures(ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2)
 public class AdaptiveToolbarStatePredictorTest {
     @Rule public TestRule mProcessor = new Features.JUnitProcessor();

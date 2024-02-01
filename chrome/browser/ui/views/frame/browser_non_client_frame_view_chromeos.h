@@ -42,8 +42,9 @@ class BrowserNonClientFrameViewChromeOS
       public aura::WindowObserver,
       public ImmersiveModeController::Observer,
       public apps::AppRegistryCache::Observer {
+  METADATA_HEADER(BrowserNonClientFrameViewChromeOS, BrowserNonClientFrameView)
+
  public:
-  METADATA_HEADER(BrowserNonClientFrameViewChromeOS);
   BrowserNonClientFrameViewChromeOS(BrowserFrame* frame,
                                     BrowserView* browser_view);
   BrowserNonClientFrameViewChromeOS(const BrowserNonClientFrameViewChromeOS&) =
@@ -68,7 +69,6 @@ class BrowserNonClientFrameViewChromeOS
   SkColor GetFrameColor(BrowserFrameActiveState active_state) const override;
   TabSearchBubbleHost* GetTabSearchBubbleHost() override;
   void UpdateMinimumSize() override;
-  void OnBrowserViewInitViewsComplete() override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

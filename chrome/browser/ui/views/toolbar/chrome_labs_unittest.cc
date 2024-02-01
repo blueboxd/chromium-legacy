@@ -9,9 +9,9 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/about_flags.h"
-#include "chrome/browser/ui/toolbar/chrome_labs_model.h"
-#include "chrome/browser/ui/toolbar/chrome_labs_prefs.h"
-#include "chrome/browser/ui/toolbar/chrome_labs_utils.h"
+#include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_model.h"
+#include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_prefs.h"
+#include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
@@ -184,8 +184,7 @@ class ChromeLabsCoordinatorTest : public TestWithBrowserView {
 
  private:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
-      user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged> user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 #endif
 
@@ -402,8 +401,7 @@ class ChromeLabsViewControllerTest : public TestWithBrowserView {
 
  private:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
-      user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged> user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 #endif
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -496,8 +494,7 @@ class ChromeLabsAshFeatureTest : public ChromeLabsFeatureTest {
   }
 
  private:
-  raw_ptr<FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
-      user_manager_;
+  raw_ptr<FakeChromeUserManager, DanglingUntriaged> user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 };
 

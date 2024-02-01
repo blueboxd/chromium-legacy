@@ -5,6 +5,7 @@
 #include <ctime>
 #include <memory>
 
+#include "base/containers/fixed_flat_set.h"
 #include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -59,8 +60,10 @@ constexpr char kUnusedTestSite[] = "https://example1.com";
 constexpr char kUsedTestSite[] = "https://example2.com";
 constexpr char16_t kUsername[] = u"bob";
 constexpr char16_t kCompromisedPassword[] = u"fnlsr4@cm^mdls@fkspnsg3d";
-constexpr ContentSettingsType kUnusedPermission =
+constexpr ContentSettingsType kUnusedRegularPermission =
     ContentSettingsType::GEOLOCATION;
+constexpr ContentSettingsType kUnusedChooserPermission =
+    ContentSettingsType::FILE_SYSTEM_ACCESS_CHOOSER_DATA;
 
 class SafetyHubHandlerTest : public testing::Test {
  public:
@@ -68,6 +71,8 @@ class SafetyHubHandlerTest : public testing::Test {
     feature_list_.InitWithFeatures(
         /*enabled_features=*/
         {content_settings::features::kSafetyCheckUnusedSitePermissions,
+         content_settings::features::
+             kSafetyCheckUnusedSitePermissionsForSupportedChooserPermissions,
          features::kSafetyHub},
         /*disabled_features=*/{});
   }
@@ -126,10 +131,18 @@ class SafetyHubHandlerTest : public testing::Test {
   }
 
   void AddRevokedPermission() {
-    auto dict = base::Value::Dict().Set(
-        permissions::kRevokedKey,
-        base::Value::List().Append(
-            static_cast<int32_t>(ContentSettingsType::GEOLOCATION)));
+    auto dict =
+        base::Value::Dict()
+            .Set(permissions::kRevokedKey,
+                 base::Value::List()
+                     .Append(static_cast<int32_t>(kUnusedRegularPermission))
+                     .Append(static_cast<int32_t>(kUnusedChooserPermission)))
+            .Set(permissions::kRevokedChooserPermissionsKey,
+                 base::Value::Dict().Set(
+                     base::NumberToString(
+                         static_cast<int32_t>(kUnusedChooserPermission)),
+                     base::Value::Dict().Set("foo", "bar")));
+
     hcsm()->SetWebsiteSettingDefaultScope(
         GURL(kUnusedTestSite), GURL(kUnusedTestSite),
         ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS,
@@ -172,7 +185,10 @@ class SafetyHubHandlerTest : public testing::Test {
     EXPECT_EQ(
         ContentSetting::CONTENT_SETTING_ASK,
         hcsm()->GetContentSetting(GURL(kUnusedTestSite), GURL(kUnusedTestSite),
-                                  kUnusedPermission));
+                                  kUnusedRegularPermission));
+    EXPECT_EQ(base::Value(), hcsm()->GetWebsiteSetting(
+                                 GURL(kUnusedTestSite), GURL(kUnusedTestSite),
+                                 kUnusedChooserPermission));
   }
 
   void ValidateNotificationPermissionUpdate() {
@@ -290,6 +306,8 @@ class SafetyHubHandlerTest : public testing::Test {
             : safety_hub_test_util::CleanAllMockExtensions(profile());
         break;
       case SafetyHubHandler::SafetyHubModule::kNotifications:
+        hcsm()->ClearSettingsForOneType(
+            ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW);
         isModuleRecommended
             ? AddNotificationPermissionsForReview()
             : handler()->HandleIgnoreOriginsForNotificationPermissionReview(
@@ -440,7 +458,11 @@ TEST_F(SafetyHubHandlerTest, HandleAllowPermissionsAgainForUnusedSite) {
   EXPECT_EQ(
       ContentSetting::CONTENT_SETTING_ALLOW,
       hcsm()->GetContentSetting(GURL(kUnusedTestSite), GURL(kUnusedTestSite),
-                                kUnusedPermission));
+                                kUnusedRegularPermission));
+  EXPECT_EQ(
+      base::Value::Dict().Set("foo", "bar"),
+      hcsm()->GetWebsiteSetting(GURL(kUnusedTestSite), GURL(kUnusedTestSite),
+                                kUnusedChooserPermission));
 
   // Undoing restores the initial state.
   handler()->HandleUndoAllowPermissionsAgainForUnusedSite(
@@ -692,14 +714,18 @@ TEST_F(SafetyHubHandlerTest, HandleGetSafeBrowsingCardData_DisabledByUser) {
 TEST_F(SafetyHubHandlerTest, RevokeAllContentSettingTypes) {
   // TODO(crbug.com/1459305): Remove this after adding names for those
   // types.
-  std::list<ContentSettingsType> no_name_types = {
-      ContentSettingsType::DURABLE_STORAGE,
-      ContentSettingsType::ACCESSIBILITY_EVENTS,
-      ContentSettingsType::NFC,
-      ContentSettingsType::FILE_SYSTEM_READ_GUARD,
-      ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
-      ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
-      ContentSettingsType::FILE_SYSTEM_ACCESS_EXTENDED_PERMISSION};
+  static constexpr auto kNoNameTypes =
+      base::MakeFixedFlatSet<ContentSettingsType>({
+          // clang-format off
+          ContentSettingsType::DURABLE_STORAGE,
+          ContentSettingsType::ACCESSIBILITY_EVENTS,
+          ContentSettingsType::NFC,
+          ContentSettingsType::FILE_SYSTEM_READ_GUARD,
+          ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
+          ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
+          ContentSettingsType::FILE_SYSTEM_ACCESS_EXTENDED_PERMISSION,
+          // clang-format on
+      });
 
   // Add all content settings in the content setting registry to revoked
   // permissions list.
@@ -729,13 +755,10 @@ TEST_F(SafetyHubHandlerTest, RevokeAllContentSettingTypes) {
         ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS,
         base::Value(dict.Clone()));
 
-    // Unless the permission in no_name_types, it should be shown on the UI.
+    // Unless the permission in kNoNameTypes, it should be shown on the UI.
     const auto& revoked_permissions =
         handler()->PopulateUnusedSitePermissionsData();
-    bool is_no_name_type =
-        (std::find(no_name_types.begin(), no_name_types.end(), type) !=
-         no_name_types.end());
-    if (is_no_name_type) {
+    if (base::Contains(kNoNameTypes, type)) {
       EXPECT_EQ(revoked_permissions.size(), 0U);
     } else {
       EXPECT_EQ(revoked_permissions.size(), 1U);
@@ -805,6 +828,7 @@ TEST_F(SafetyHubHandlerTest, HandleGetSafetyHubHasRecommendations) {
   // has a recommendation or not.
   for (int testCase = pow(2, (int)modules.size()) - 1; testCase >= 0;
        testCase--) {
+    SCOPED_TRACE("testCase: " + std::bitset<8>(testCase).to_string());
     std::set<SafetyHubHandler::SafetyHubModule> recommendedModules;
 
     for (int i = 0; i < (int)modules.size(); i++) {

@@ -45,7 +45,6 @@
 #include "extensions/browser/suggest_permission_util.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/mojom/view_type.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -413,11 +412,11 @@ bool AppWindow::HandleKeyboardEvent(
   return native_app_window_->HandleKeyboardEvent(event);
 }
 
-void AppWindow::RequestToLockMouse(WebContents* web_contents,
+void AppWindow::RequestPointerLock(WebContents* web_contents,
                                    bool user_gesture,
                                    bool last_unlocked_by_target) {
   DCHECK_EQ(AppWindow::web_contents(), web_contents);
-  helper_->RequestToLockMouse();
+  helper_->RequestPointerLock();
 }
 
 bool AppWindow::PreHandleGestureEvent(WebContents* source,
@@ -587,6 +586,10 @@ void AppWindow::UpdateShape(std::unique_ptr<ShapeRects> rects) {
 void AppWindow::UpdateDraggableRegions(
     const std::vector<mojom::DraggableRegionPtr>& regions) {
   native_app_window_->UpdateDraggableRegions(regions);
+
+  if (on_update_draggable_regions_callback_for_testing_) {
+    std::move(on_update_draggable_regions_callback_for_testing_).Run();
+  }
 }
 
 void AppWindow::UpdateAppIcon(const gfx::Image& image) {

@@ -29,7 +29,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/sync/base/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -150,8 +149,7 @@ class StoreMetricsReporterTest : public SyncUsernameTestBase {
     // should be mocked.
     OSCryptMocker::SetUp();
 
-    feature_list_.InitWithFeatures({features::kPasswordReuseDetectionEnabled,
-                                    syncer::kPasswordNotesWithBackup},
+    feature_list_.InitWithFeatures({features::kPasswordReuseDetectionEnabled},
                                    {});
 
     prefs_.registry()->RegisterBooleanPref(prefs::kCredentialsEnableService,
@@ -188,7 +186,6 @@ TEST_F(StoreMetricsReporterTest, ReportMetricsPasswordManagerEnabledDefault) {
   StoreMetricsReporter reporter(
       /*profile_store=*/nullptr, /*account_store=*/nullptr, sync_service(),
       &prefs_, /*password_reuse_manager=*/nullptr,
-      /*is_under_advanced_protection=*/false,
       /*done_callback*/ base::DoNothing());
 
   histogram_tester.ExpectUniqueSample("PasswordManager.EnableState", 0, 1);
@@ -245,7 +242,6 @@ TEST_P(StoreMetricsReporterTestWithEnableStateParams,
   StoreMetricsReporter reporter(
       /*profile_store=*/nullptr, /*account_store=*/nullptr, sync_service(),
       &prefs_, /*password_reuse_manager=*/nullptr,
-      /*is_under_advanced_protection=*/false,
       /*done_callback*/ base::DoNothing());
 
   histogram_tester.ExpectUniqueSample("PasswordManager.EnableState",
@@ -286,7 +282,6 @@ TEST_P(StoreMetricsReporterTestWithParams,
   StoreMetricsReporter reporter(
       /*profile_store=*/nullptr, /*account_store=*/nullptr, sync_service(),
       &prefs_, /*password_reuse_manager=*/nullptr,
-      /*is_under_advanced_protection=*/false,
       /*done_callback*/ base::DoNothing());
 
   histogram_tester.ExpectUniqueSample(
@@ -307,8 +302,7 @@ TEST_F(StoreMetricsReporterTest, ReportMetricsAtMostOncePerDay) {
   base::MockCallback<base::OnceClosure> done_callback;
   StoreMetricsReporter reporter(
       profile_store.get(), /*account_store=*/nullptr, sync_service(), &prefs_,
-      /*password_reuse_manager=*/nullptr,
-      /*is_under_advanced_protection=*/false, done_callback.Get());
+      /*password_reuse_manager=*/nullptr, done_callback.Get());
   histogram_tester.ExpectTotalCount("PasswordManager.EnableState", 1);
   EXPECT_CALL(done_callback, Run());
   RunUntilIdle();
@@ -320,8 +314,7 @@ TEST_F(StoreMetricsReporterTest, ReportMetricsAtMostOncePerDay) {
   base::MockCallback<base::OnceClosure> done_callback2;
   StoreMetricsReporter reporter2(
       profile_store.get(), /*account_store=*/nullptr, sync_service(), &prefs_,
-      /*password_reuse_manager=*/nullptr,
-      /*is_under_advanced_protection=*/false, done_callback2.Get());
+      /*password_reuse_manager=*/nullptr, done_callback2.Get());
   histogram_tester2.ExpectTotalCount("PasswordManager.Enabled4", 0);
   EXPECT_CALL(done_callback2, Run());
   RunUntilIdle();
@@ -350,7 +343,6 @@ TEST_F(StoreMetricsReporterTest, ReportAccountsPerSiteHiResMetricsTest) {
   StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
   // Wait for the metrics to get reported, which involves queries to the
   // stores, i.e. to background task runners.
@@ -437,7 +429,6 @@ TEST_F(StoreMetricsReporterTest, ReportPasswordProtectedMetricsTest) {
   StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
   // Wait for the metrics to get reported, which involves queries to the
   // stores, i.e. to background task runners.
@@ -499,7 +490,6 @@ TEST_F(StoreMetricsReporterTest,
   StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
   // Wait for the metrics to get reported, which involves queries to the
   // stores, i.e. to background task runners.
@@ -533,7 +523,6 @@ TEST_F(StoreMetricsReporterTest, ReportTotalAccountsHiResMetricsTest) {
   StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   // Wait for the metrics to get reported, which involves queries to the
@@ -619,7 +608,6 @@ TEST_F(StoreMetricsReporterTest, ReportTimesPasswordUsedMetricsTest) {
   StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   // Wait for the metrics to get reported, which involves queries to the
@@ -716,7 +704,6 @@ TEST_F(StoreMetricsReporterTest,
   StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   // Wait for the metrics to get reported, which involves queries to the
@@ -788,7 +775,6 @@ TEST_F(StoreMetricsReporterTest,
   StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   // Wait for the metrics to get reported, which involves queries to the
@@ -876,7 +862,6 @@ TEST_F(StoreMetricsReporterTest,
   StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   // Wait for the metrics to get reported, which involves queries to the
@@ -982,7 +967,6 @@ TEST_F(StoreMetricsReporterTest, DuplicatesMetrics_NoDuplicates) {
   StoreMetricsReporter reporter(profile_store.get(), /*account_store=*/nullptr,
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   // Wait for the metrics to get reported, which involves queries to the
@@ -1034,7 +1018,6 @@ TEST_F(StoreMetricsReporterTest, DuplicatesMetrics_ExactDuplicates) {
   StoreMetricsReporter reporter(profile_store.get(), /*account_store=*/nullptr,
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   // Wait for the metrics to get reported, which involves queries to the
@@ -1085,7 +1068,6 @@ TEST_F(StoreMetricsReporterTest, DuplicatesMetrics_MismatchedDuplicates) {
   StoreMetricsReporter reporter(profile_store.get(), /*account_store=*/nullptr,
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   // Wait for the metrics to get reported, which involves queries to the
@@ -1110,8 +1092,9 @@ TEST_F(StoreMetricsReporterTest, DuplicatesMetrics_MismatchedDuplicates) {
 // StoreMetricsReporter directly.
 TEST_F(StoreMetricsReporterTest, MultiStoreMetrics) {
   // This test is only relevant when the passwords accounts store is enabled.
-  if (!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage))
-    return;
+  base::test::ScopedFeatureList feature_list{
+      features::kEnablePasswordsAccountStorage};
+
   auto profile_store =
       base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
   auto account_store =
@@ -1201,7 +1184,6 @@ TEST_F(StoreMetricsReporterTest, MultiStoreMetrics) {
     StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                   sync_service(), &prefs_,
                                   /*password_reuse_manager=*/nullptr,
-                                  /*is_under_advanced_protection=*/false,
                                   /*done_callback*/ base::DoNothing());
 
     // Wait for the metrics to get reported, which involves queries to the
@@ -1267,11 +1249,10 @@ TEST_F(StoreMetricsReporterTest, ReportMetricsForAdvancedProtection) {
 
   base::HistogramTester histogram_tester;
 
-  EXPECT_CALL(reuse_manager, ReportMetrics(username, true));
+  EXPECT_CALL(reuse_manager, ReportMetrics(username));
   StoreMetricsReporter reporter(/*profile_store=*/store.get(),
                                 /*account_store=*/nullptr, sync_service(),
                                 &prefs_, &reuse_manager,
-                                /*is_under_advanced_protection=*/true,
                                 /*done_callback*/ base::DoNothing());
 
   // Wait for the metrics to get reported, which involves queries to the stores,
@@ -1334,7 +1315,6 @@ TEST_F(StoreMetricsReporterTest, ReportPasswordNoteMetrics) {
   StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   RunUntilIdle();
@@ -1391,7 +1371,6 @@ TEST_F(StoreMetricsReporterTest, ReportPasswordInsecureCredentialMetrics) {
   StoreMetricsReporter reporter(profile_store.get(), /*account_store=*/nullptr,
                                 sync_service(), &prefs_,
                                 /*password_reuse_manager=*/nullptr,
-                                /*is_under_advanced_protection=*/false,
                                 /*done_callback*/ base::DoNothing());
 
   RunUntilIdle();

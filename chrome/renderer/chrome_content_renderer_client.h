@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -64,9 +65,11 @@ namespace content {
 struct WebPluginInfo;
 }  // namespace content
 
+#if BUILDFLAG(ENABLE_NACL)
 namespace extensions {
 class Extension;
 }
+#endif
 
 namespace subresource_filter {
 class UnverifiedRulesetDealer;
@@ -150,7 +153,7 @@ class ChromeContentRendererClient
                        const url::Origin* initiator_origin,
                        GURL* new_url) override;
   bool IsPrefetchOnly(content::RenderFrame* render_frame) override;
-  uint64_t VisitedLinkHash(const char* canonical_url, size_t length) override;
+  uint64_t VisitedLinkHash(std::string_view canonical_url) override;
   bool IsLinkVisited(uint64_t link_hash) override;
   std::unique_ptr<blink::WebPrescientNetworking> CreatePrescientNetworking(
       content::RenderFrame* render_frame) override;

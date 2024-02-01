@@ -11,8 +11,8 @@
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engine_choice/search_engine_choice_service.h"
-#include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -152,19 +152,17 @@ void PrivacySandboxPromptHelper::DidFinishNavigation(
     }
   }
 
-// `SearchEngineChoiceService` may need to suppress this dialog to avoid
-// dialog conflicts and too frequent promos.
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
-  SearchEngineChoiceService* search_engine_choice_service =
-      SearchEngineChoiceServiceFactory::GetForProfile(profile());
-  if (search_engine_choice_service &&
-      !search_engine_choice_service->CanSuppressPrivacySandboxPromo()) {
+  // `SearchEngineChoiceDialogService` may need to suppress this dialog to avoid
+  // dialog conflicts and too frequent promos.
+  SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
+      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
+  if (search_engine_choice_dialog_service &&
+      !search_engine_choice_dialog_service->CanSuppressPrivacySandboxPromo()) {
     base::UmaHistogramEnumeration(kPrivacySandboxPromptHelperEventHistogram,
                                   SettingsPrivacySandboxPromptHelperEvent::
                                       kSearchEngineChoiceDialogShown);
     return;
   }
-#endif
 
   auto* browser =
       chrome::FindBrowserWithTab(navigation_handle->GetWebContents());

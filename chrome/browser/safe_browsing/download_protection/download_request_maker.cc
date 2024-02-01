@@ -37,8 +37,7 @@ namespace {
 // changing this value.
 // Note: The name of this variable is checked by PRESUBMIT. Please update the
 // PRESUBMIT script before renaming this variable.
-constexpr int kTailoredWarningVersion = 1;
-constexpr int kTailoredWarningVersionWithImprovedDownloadBubbleWarnings = 3;
+constexpr int kTailoredWarningVersion = 3;
 
 DownloadRequestMaker::TabUrls TabUrlsFromWebContents(
     content::WebContents* web_contents) {
@@ -55,7 +54,7 @@ DownloadRequestMaker::TabUrls TabUrlsFromWebContents(
 }
 
 void SetDownloadItemWarningData(download::DownloadItem* item,
-                                const absl::optional<std::string>& password,
+                                const std::optional<std::string>& password,
                                 const FileAnalyzer::Results& results) {
   DownloadItemWarningData::SetIsEncryptedArchive(
       item, results.encryption_info.is_encrypted);
@@ -142,7 +141,7 @@ DownloadRequestMaker::CreateFromFileSystemAccess(
       item.full_path, GetFileSystemAccessDownloadUrl(item.frame_url),
       item.sha256_hash, item.size,
       std::vector<ClientDownloadRequest::Resource>{resource},
-      item.has_user_gesture, referrer_chain_data.get(), absl::nullopt,
+      item.has_user_gesture, referrer_chain_data.get(), std::nullopt,
       /*previous_token=*/"", base::DoNothing());
 }
 
@@ -300,11 +299,7 @@ void DownloadRequestMaker::OnGotTabRedirects(
 
 void DownloadRequestMaker::PopulateTailoredInfo() {
   ClientDownloadRequest::TailoredInfo tailored_info;
-  int version = base::FeatureList::IsEnabled(
-                    safe_browsing::kImprovedDownloadBubbleWarnings)
-                    ? kTailoredWarningVersionWithImprovedDownloadBubbleWarnings
-                    : kTailoredWarningVersion;
-  tailored_info.set_version(version);
+  tailored_info.set_version(kTailoredWarningVersion);
   *request_->mutable_tailored_info() = tailored_info;
 }
 

@@ -657,6 +657,8 @@ cc_library(
     }),
     deps = [
         ":tensor_converter_calculator_cc_proto",
+        ":tensor_converter_cpu",
+        ":tensor_converter_gpu",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:port",
         "//mediapipe/framework/formats:image_frame",
@@ -665,7 +667,7 @@ cc_library(
         "//mediapipe/framework/port:ret_check",
         "//mediapipe/framework/port:status",
         "//mediapipe/framework/port:statusor",
-        "//mediapipe/gpu:gpu_buffer_format",
+        "//mediapipe/gpu:gpu_buffer",
         "//mediapipe/gpu:gpu_origin_cc_proto",
         "//mediapipe/util:resource_util",
         "@com_google_absl//absl/log",
@@ -674,10 +676,15 @@ cc_library(
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
     ] + select({
         "//mediapipe/gpu:disable_gpu": [],
-        "//conditions:default": ["tensor_converter_calculator_gpu_deps"],
+        "//conditions:default": [
+            ":tensor_converter_calculator_gpu_deps",
+            "//mediapipe/gpu:gl_base",
+            "//mediapipe/gpu:gl_calculator_helper",
+        ],
     }) + select({
         "//mediapipe:apple": [
             "//third_party/apple_frameworks:MetalKit",
@@ -688,10 +695,107 @@ cc_library(
 )
 
 cc_library(
+    name = "tensor_converter_cpu",
+    srcs = ["tensor_converter_cpu.cc"],
+    hdrs = ["tensor_converter_cpu.h"],
+    deps = [
+        "//mediapipe/framework/formats:image_frame",
+        "//mediapipe/framework/formats:matrix",
+        "//mediapipe/framework/formats:tensor",
+        "//mediapipe/framework/port:ret_check",
+        "//mediapipe/framework/port:status",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_test(
+    name = "tensor_converter_cpu_test",
+    srcs = ["tensor_converter_cpu_test.cc"],
+    deps = [
+        ":tensor_converter_cpu",
+        "//mediapipe/framework/formats:matrix",
+        "//mediapipe/framework/formats:tensor",
+        "//mediapipe/framework/port:gtest",
+        "//mediapipe/framework/port:gtest_main",
+        "//mediapipe/framework/port:status_matchers",
+        "//mediapipe/util:image_test_utils",
+    ],
+)
+
+cc_library(
+    name = "tensor_converter_gpu",
+    hdrs = ["tensor_converter_gpu.h"],
+    deps = [
+        "//mediapipe/framework/formats:tensor",
+        "//mediapipe/gpu:gpu_buffer",
+        "@com_google_absl//absl/status",
+    ],
+)
+
+cc_library(
+    name = "tensor_converter_gl30",
+    srcs = ["tensor_converter_gl30.cc"],
+    hdrs = ["tensor_converter_gl30.h"],
+    features = ["-layering_check"],  # allow depending on tensor_converter_calculator_gpu_deps
+    deps = [
+        ":tensor_converter_gpu",
+        "//mediapipe/framework:port",
+        "//mediapipe/framework/port:status",
+    ] + select({
+        "//mediapipe:apple": [],
+        "//conditions:default": [
+            "//mediapipe/framework:calculator_framework",
+            "//mediapipe/framework/formats:image_frame",
+            "//mediapipe/framework/formats:matrix",
+            "//mediapipe/framework/formats:tensor",
+            "//mediapipe/framework/port:ret_check",
+            "//mediapipe/gpu:gl_base_hdr",
+            "//mediapipe/gpu:gl_calculator_helper",
+            "//mediapipe/gpu:gl_simple_shaders",
+            "//mediapipe/gpu:gl_texture_view",
+            "//mediapipe/gpu:gpu_buffer",
+            "//mediapipe/gpu:gpu_buffer_format",
+            "//mediapipe/gpu:shader_util",
+            "@com_google_absl//absl/log:absl_log",
+            "@com_google_absl//absl/status",
+            "@com_google_absl//absl/strings",
+        ],
+    }),
+)
+
+cc_library(
+    name = "tensor_converter_gl31",
+    srcs = ["tensor_converter_gl31.cc"],
+    hdrs = ["tensor_converter_gl31.h"],
+    features = ["-layering_check"],  # allow depending on tensor_converter_calculator_gpu_deps
+    deps = [
+        ":tensor_converter_gpu",
+        "//mediapipe/framework:port",
+        "//mediapipe/framework/port:status",
+    ] + select({
+        "//mediapipe:apple": [],
+        "//conditions:default": [
+            "//mediapipe/framework:calculator_context",
+            "//mediapipe/framework/formats:tensor",
+            "//mediapipe/framework/port:ret_check",
+            "//mediapipe/gpu:gl_calculator_helper",
+            "//mediapipe/gpu:gl_simple_shaders",
+            "//mediapipe/gpu:gpu_buffer",
+            "//mediapipe/gpu:shader_util",
+            "@com_google_absl//absl/status",
+            "@com_google_absl//absl/strings",
+        ],
+    }),
+)
+
+cc_library(
     name = "tensor_converter_calculator_gpu_deps",
     visibility = ["//visibility:private"],
     deps = select({
         "//mediapipe:android": [
+            ":tensor_converter_gl30",
+            ":tensor_converter_gl31",
             "//mediapipe/gpu:gl_calculator_helper",
             "//mediapipe/gpu:gpu_buffer",
         ],
@@ -703,6 +807,8 @@ cc_library(
         # This setting is needed to allow bazel to build all targets on Mac with GPU disabled
         ":platform_apple_without_gpu": [],
         "//conditions:default": [
+            ":tensor_converter_gl30",
+            ":tensor_converter_gl31",
             "//mediapipe/gpu:gl_calculator_helper",
             "//mediapipe/gpu:gl_simple_shaders",
             "//mediapipe/gpu:gpu_buffer",
@@ -1412,52 +1518,172 @@ cc_library(
         ],
         "//conditions:default": [],
     }),
+    features = ["-layering_check"],  # allow depending on tensors_to_segmentation_calculator_gpu_deps
     deps = [
         ":tensors_to_segmentation_calculator_cc_proto",
+        ":tensors_to_segmentation_converter",
+        ":tensors_to_segmentation_utils",
         "//mediapipe/framework:calculator_context",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:port",
         "//mediapipe/framework/formats:image",
-        "//mediapipe/framework/formats:image_frame",
         "//mediapipe/framework/formats:tensor",
         "//mediapipe/framework/port:ret_check",
-        "//mediapipe/framework/port:statusor",
+        "//mediapipe/framework/port:status",
         "//mediapipe/gpu:gpu_origin_cc_proto",
         "//mediapipe/util:resource_util",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/types:span",
+        "@com_google_absl//absl/status",
         "@org_tensorflow//tensorflow/lite:framework",
-    ] + selects.with_or({
+    ] + select({
         "//mediapipe/gpu:disable_gpu": [],
+        "//conditions:default": [":tensors_to_segmentation_calculator_gpu_deps"],
+    }) + select({
+        "//mediapipe/framework/port:disable_opencv": [],
         "//conditions:default": [
+            ":tensors_to_segmentation_converter_opencv",
+        ],
+    }),
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "tensors_to_segmentation_calculator_gpu_deps",
+    visibility = ["//visibility:private"],
+    deps = selects.with_or({
+        "//mediapipe:android": [
+            "@org_tensorflow//tensorflow/lite/delegates/gpu:gl_delegate",
+            "@org_tensorflow//tensorflow/lite/delegates/gpu/gl:gl_program",
+            "@org_tensorflow//tensorflow/lite/delegates/gpu/gl:gl_shader",
+            "@org_tensorflow//tensorflow/lite/delegates/gpu/gl:gl_texture",
+            "@org_tensorflow//tensorflow/lite/delegates/gpu/gl/converters:util",
+            "//mediapipe/gpu:gl_base_hdr",
             "//mediapipe/gpu:gl_calculator_helper",
             "//mediapipe/gpu:gl_simple_shaders",
             "//mediapipe/gpu:gpu_buffer",
+            "//mediapipe/gpu:gpu_buffer_format",
             "//mediapipe/gpu:shader_util",
         ],
-    }) + selects.with_or({
-        ":gpu_inference_disabled": [],
         ":platform_apple_with_gpu": [
             "//mediapipe/gpu:MPPMetalUtil",
             "//mediapipe/gpu:MPPMetalHelper",
             "//third_party/apple_frameworks:MetalKit",
+            "//mediapipe/gpu:gl_base_hdr",
+            "//mediapipe/gpu:gl_calculator_helper",
+            "//mediapipe/gpu:gl_simple_shaders",
+            "//mediapipe/gpu:gpu_buffer",
+            "//mediapipe/gpu:gpu_buffer_format",
+            "//mediapipe/gpu:shader_util",
         ],
+        # This setting is needed to allow bazel to build all targets on Mac with GPU disabled
+        ":platform_apple_without_gpu": [],
         "//conditions:default": [
             "@org_tensorflow//tensorflow/lite/delegates/gpu:gl_delegate",
             "@org_tensorflow//tensorflow/lite/delegates/gpu/gl:gl_program",
             "@org_tensorflow//tensorflow/lite/delegates/gpu/gl:gl_shader",
             "@org_tensorflow//tensorflow/lite/delegates/gpu/gl:gl_texture",
             "@org_tensorflow//tensorflow/lite/delegates/gpu/gl/converters:util",
-        ],
-    }) + select({
-        "//mediapipe/framework/port:disable_opencv": [],
-        "//conditions:default": [
-            "//mediapipe/framework/formats:image_opencv",
-            "//mediapipe/framework/port:opencv_imgproc",
+            "//mediapipe/gpu:gl_base_hdr",
+            "//mediapipe/gpu:gl_calculator_helper",
+            "//mediapipe/gpu:gl_simple_shaders",
+            "//mediapipe/gpu:gpu_buffer",
+            "//mediapipe/gpu:gpu_buffer_format",
+            "//mediapipe/gpu:shader_util",
         ],
     }),
-    alwayslink = 1,
+)
+
+cc_library(
+    name = "tensors_to_segmentation_utils",
+    srcs = ["tensors_to_segmentation_utils.cc"],
+    hdrs = ["tensors_to_segmentation_utils.h"],
+    deps = [
+        "//mediapipe/framework:calculator_framework",
+        "//mediapipe/framework:port",
+        "//mediapipe/framework/port:ret_check",
+        "//mediapipe/framework/port:status",
+        "//mediapipe/gpu:gpu_origin_cc_proto",
+        "@com_google_absl//absl/status:statusor",
+    ] + selects.with_or({
+        "//mediapipe/gpu:disable_gpu": [],
+        "//conditions:default": [
+            "//mediapipe/gpu:gl_base_hdr",
+        ],
+    }),
+)
+
+cc_test(
+    name = "tensors_to_segmentation_utils_test",
+    srcs = ["tensors_to_segmentation_utils_test.cc"],
+    deps = [
+        ":tensors_to_segmentation_utils",
+        "//mediapipe/framework/port:gtest_main",
+        "//mediapipe/framework/port:status_matchers",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_library(
+    name = "tensors_to_segmentation_converter",
+    hdrs = ["tensors_to_segmentation_converter.h"],
+    deps = [
+        "//mediapipe/framework/formats:image",
+        "//mediapipe/framework/formats:tensor",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_library(
+    name = "tensors_to_segmentation_converter_opencv",
+    srcs = ["tensors_to_segmentation_converter_opencv.cc"],
+    hdrs = ["tensors_to_segmentation_converter_opencv.h"],
+    deps = [
+        ":tensors_to_segmentation_calculator_cc_proto",
+        ":tensors_to_segmentation_converter",
+        ":tensors_to_segmentation_utils",
+        "//mediapipe/framework/formats:image",
+        "//mediapipe/framework/formats:image_frame",
+        "//mediapipe/framework/formats:image_opencv",
+        "//mediapipe/framework/formats:tensor",
+        "//mediapipe/framework/port:opencv_core",
+        "//mediapipe/framework/port:opencv_imgproc",
+        "//mediapipe/framework/port:ret_check",
+        "//mediapipe/framework/port:status",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_library(
+    name = "tensors_to_segmentation_converter_gl_texture",
+    srcs = ["tensors_to_segmentation_converter_gl_texture.cc"],
+    hdrs = ["tensors_to_segmentation_converter_gl_texture.h"],
+    deps = [
+        "//mediapipe/framework:port",
+    ] + select({
+        "//mediapipe/gpu:disable_gpu": [],
+        "//conditions:default": [
+            ":tensors_to_segmentation_calculator_cc_proto",
+            ":tensors_to_segmentation_converter",
+            ":tensors_to_segmentation_utils",
+            "//mediapipe/framework:calculator_context",
+            "//mediapipe/framework:calculator_framework",
+            "//mediapipe/framework/formats:image",
+            "//mediapipe/framework/formats:tensor",
+            "//mediapipe/framework/port:ret_check",
+            "//mediapipe/framework/port:status",
+            "//mediapipe/gpu:gl_base_hdr",
+            "//mediapipe/gpu:gl_calculator_helper",
+            "//mediapipe/gpu:gl_simple_shaders",
+            "//mediapipe/gpu:gpu_buffer",
+            "//mediapipe/gpu:gpu_buffer_format",
+            "//mediapipe/gpu:gpu_origin_cc_proto",
+            "//mediapipe/gpu:shader_util",
+            "@com_google_absl//absl/status",
+            "@com_google_absl//absl/status:statusor",
+            "@com_google_absl//absl/strings",
+            "@com_google_absl//absl/strings:str_format",
+        ],
+    }),
 )
 
 cc_test(
@@ -1466,6 +1692,7 @@ cc_test(
     deps = [
         ":tensors_to_segmentation_calculator",
         ":tensors_to_segmentation_calculator_cc_proto",
+        ":tensors_to_segmentation_calculator_test_utils",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:calculator_runner",
         "//mediapipe/framework:packet",
@@ -1476,10 +1703,30 @@ cc_test(
         "//mediapipe/framework/formats:rect_cc_proto",
         "//mediapipe/framework/formats:tensor",
         "//mediapipe/framework/port:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "tensors_to_segmentation_calculator_test_utils",
+    testonly = 1,
+    srcs = ["tensors_to_segmentation_calculator_test_utils.cc"],
+    hdrs = ["tensors_to_segmentation_calculator_test_utils.h"],
+    deps = [
+        ":tensors_to_segmentation_calculator_cc_proto",
+        "//mediapipe/framework:calculator_cc_proto",
         "//mediapipe/framework/port:parse_text_proto",
-        "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "tensors_to_segmentation_calculator_test_utils_test",
+    srcs = ["tensors_to_segmentation_calculator_test_utils_test.cc"],
+    deps = [
+        ":tensors_to_segmentation_calculator_cc_proto",
+        ":tensors_to_segmentation_calculator_test_utils",
+        "//mediapipe/framework/port:gtest_main",
     ],
 )
 

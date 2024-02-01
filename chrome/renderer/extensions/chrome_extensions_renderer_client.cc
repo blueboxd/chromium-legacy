@@ -5,6 +5,7 @@
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/command_line.h"
@@ -29,6 +30,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/mojom/context_type.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
@@ -44,7 +46,6 @@
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -189,20 +190,20 @@ bool ChromeExtensionsRendererClient::AllowPopup() {
 
   // See http://crbug.com/117446 for the subtlety of this check.
   switch (current_context->context_type()) {
-    case extensions::Feature::UNSPECIFIED_CONTEXT:
-    case extensions::Feature::WEB_PAGE_CONTEXT:
-    case extensions::Feature::UNBLESSED_EXTENSION_CONTEXT:
-    case extensions::Feature::WEBUI_CONTEXT:
-    case extensions::Feature::WEBUI_UNTRUSTED_CONTEXT:
-    case extensions::Feature::OFFSCREEN_EXTENSION_CONTEXT:
-    case extensions::Feature::USER_SCRIPT_CONTEXT:
-    case extensions::Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
+    case extensions::mojom::ContextType::kUnspecified:
+    case extensions::mojom::ContextType::kWebPage:
+    case extensions::mojom::ContextType::kUnprivilegedExtension:
+    case extensions::mojom::ContextType::kWebUi:
+    case extensions::mojom::ContextType::kUntrustedWebUi:
+    case extensions::mojom::ContextType::kOffscreenExtension:
+    case extensions::mojom::ContextType::kUserScript:
+    case extensions::mojom::ContextType::kLockscreenExtension:
       return false;
-    case extensions::Feature::BLESSED_EXTENSION_CONTEXT:
+    case extensions::mojom::ContextType::kPrivilegedExtension:
       return !current_context->IsForServiceWorker();
-    case extensions::Feature::CONTENT_SCRIPT_CONTEXT:
+    case extensions::mojom::ContextType::kContentScript:
       return true;
-    case extensions::Feature::BLESSED_WEB_PAGE_CONTEXT:
+    case extensions::mojom::ContextType::kPrivilegedWebPage:
       return current_context->web_frame()->IsOutermostMainFrame();
   }
 }
@@ -217,18 +218,18 @@ ChromeExtensionsRendererClient::GetProtocolHandlerSecurityLevel() {
     return blink::ProtocolHandlerSecurityLevel::kStrict;
 
   switch (current_context->context_type()) {
-    case extensions::Feature::BLESSED_WEB_PAGE_CONTEXT:
-    case extensions::Feature::CONTENT_SCRIPT_CONTEXT:
-    case extensions::Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
-    case extensions::Feature::OFFSCREEN_EXTENSION_CONTEXT:
-    case extensions::Feature::UNBLESSED_EXTENSION_CONTEXT:
-    case extensions::Feature::UNSPECIFIED_CONTEXT:
-    case extensions::Feature::USER_SCRIPT_CONTEXT:
-    case extensions::Feature::WEBUI_CONTEXT:
-    case extensions::Feature::WEBUI_UNTRUSTED_CONTEXT:
-    case extensions::Feature::WEB_PAGE_CONTEXT:
+    case extensions::mojom::ContextType::kPrivilegedWebPage:
+    case extensions::mojom::ContextType::kContentScript:
+    case extensions::mojom::ContextType::kLockscreenExtension:
+    case extensions::mojom::ContextType::kOffscreenExtension:
+    case extensions::mojom::ContextType::kUnprivilegedExtension:
+    case extensions::mojom::ContextType::kUnspecified:
+    case extensions::mojom::ContextType::kUserScript:
+    case extensions::mojom::ContextType::kWebUi:
+    case extensions::mojom::ContextType::kUntrustedWebUi:
+    case extensions::mojom::ContextType::kWebPage:
       return blink::ProtocolHandlerSecurityLevel::kStrict;
-    case extensions::Feature::BLESSED_EXTENSION_CONTEXT:
+    case extensions::mojom::ContextType::kPrivilegedExtension:
       return blink::ProtocolHandlerSecurityLevel::kExtensionFeatures;
   }
 }

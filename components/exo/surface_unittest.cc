@@ -174,25 +174,6 @@ class SurfaceTest : public test::ExoTestBase,
   base::test::ScopedFeatureList feature_list_;
 };
 
-void ReleaseBuffer(int* release_buffer_call_count) {
-  (*release_buffer_call_count)++;
-}
-
-base::RepeatingClosure CreateReleaseBufferClosure(
-    int* release_buffer_call_count,
-    base::RepeatingClosure closure) {
-  return base::BindLambdaForTesting(
-      [release_buffer_call_count, closure = std::move(closure)]() {
-        (*release_buffer_call_count)++;
-        closure.Run();
-      });
-}
-
-void ExplicitReleaseBuffer(int* release_buffer_call_count,
-                           gfx::GpuFenceHandle release_fence) {
-  (*release_buffer_call_count)++;
-}
-
 // Instantiate the values of frame submission types and device scale factor in
 // the parameterized tests.
 INSTANTIATE_TEST_SUITE_P(
@@ -388,16 +369,7 @@ TEST_P(SurfaceTest, SubsurfaceDamageSynchronizedCommitBehavior) {
   }
 }
 
-// TODO(crbug.com/1427023): Flaky test on Linux ChromiumOS MSan Tests.
-// Re-enable it.
-#if BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_SubsurfaceDamageDesynchronizedCommitBehavior \
-  DISABLED_SubsurfaceDamageDesynchronizedCommitBehavior
-#else
-#define MAYBE_SubsurfaceDamageDesynchronizedCommitBehavior \
-  SubsurfaceDamageDesynchronizedCommitBehavior
-#endif
-TEST_P(SurfaceTest, MAYBE_SubsurfaceDamageDesynchronizedCommitBehavior) {
+TEST_P(SurfaceTest, SubsurfaceDamageDesynchronizedCommitBehavior) {
   gfx::Size buffer_size(256, 512);
   auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -1142,139 +1114,62 @@ TEST_P(SurfaceTest, SetAlpha) {
   }
 }
 
-TEST_P(SurfaceTest, SurfaceQuad) {
+TEST_P(SurfaceTest, ForceRgbxTest) {
   gfx::Size buffer_size(1, 1);
   auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
       true, true, false);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
-  surface->Attach(buffer.get());
-  surface->SetAlpha(1.0f);
-
-  surface->SetEmbeddedSurfaceSize(gfx::Size(1, 1));
-  surface->SetEmbeddedSurfaceId(base::BindRepeating([]() -> viz::SurfaceId {
-    return viz::SurfaceId(
-        viz::FrameSinkId(1, 1),
-        viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
-  }));
 
   {
+    surface->Attach(buffer.get());
+    // Blend mode 'kSrc' will result in an opaque surface.
+    surface->SetBlendMode(SkBlendMode::kSrc);
     surface->Commit();
     test::WaitForLastFrameAck(shell_surface.get());
 
     const viz::CompositorFrame& frame =
         GetFrameFromSurface(shell_surface.get());
-    EXPECT_EQ(1u, frame.render_pass_list.size());
-    EXPECT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
-    EXPECT_EQ(1u, frame.resource_list.size());
-    // Ensure that the quad is correct and the resource is included.
-    EXPECT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
-    EXPECT_EQ(viz::DrawQuad::Material::kSurfaceContent,
-              frame.render_pass_list.back()->quad_list.back()->material);
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
+    ASSERT_EQ(1u, frame.resource_list.size());
+    ASSERT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
+    EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
+    auto& quad_list = frame.render_pass_list.back()->quad_list;
+    auto* texture_quad = quad_list.front()->DynamicCast<viz::TextureDrawQuad>();
+    ASSERT_TRUE(texture_quad);
+    ASSERT_TRUE(texture_quad->force_rgbx);
   }
 }
 
-TEST_P(SurfaceTest, EmptySurfaceQuad) {
+TEST_P(SurfaceTest, ForceRgbxTestNoBufferAlpha) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
-      true, true, false);
+  auto buffer =
+      std::make_unique<Buffer>(exo_test_helper()->CreateGpuMemoryBuffer(
+                                   buffer_size, gfx::BufferFormat::RGBX_8888),
+                               GL_TEXTURE_2D, 0, true, true, false);
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
-  surface->Attach(buffer.get());
-  surface->SetAlpha(1.0f);
-
-  // Explicitly zero the size, no quad should be produced.
-  surface->SetEmbeddedSurfaceSize(gfx::Size(0, 0));
-  surface->SetEmbeddedSurfaceId(base::BindRepeating([]() -> viz::SurfaceId {
-    return viz::SurfaceId(
-        viz::FrameSinkId(1, 1),
-        viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
-  }));
 
   {
+    surface->Attach(buffer.get());
+    // Blend mode 'kSrc' will result in an opaque surface.
+    surface->SetBlendMode(SkBlendMode::kSrc);
     surface->Commit();
     test::WaitForLastFrameAck(shell_surface.get());
 
     const viz::CompositorFrame& frame =
         GetFrameFromSurface(shell_surface.get());
-    EXPECT_EQ(1u, frame.render_pass_list.size());
-    EXPECT_EQ(0u, frame.render_pass_list.back()->quad_list.size());
-    // No quad but still has a resource though.
-    EXPECT_EQ(1u, frame.resource_list.size());
-    EXPECT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
-  }
-}
-
-TEST_P(SurfaceTest, ScaledSurfaceQuad) {
-  gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
-      true, true, false);
-  auto surface = std::make_unique<Surface>();
-  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
-  surface->Attach(buffer.get());
-  surface->SetAlpha(1.0f);
-
-  surface->SetEmbeddedSurfaceId(base::BindRepeating([]() -> viz::SurfaceId {
-    return viz::SurfaceId(
-        viz::FrameSinkId(1, 1),
-        viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
-  }));
-
-  // A 256x256 surface, of which as 128x128 chunk is selected, drawn into a
-  // 128x64 rect.
-  surface->SetEmbeddedSurfaceSize(gfx::Size(256, 256));
-
-  surface->SetViewport(gfx::SizeF(128, 64));
-  surface->SetCrop(
-      gfx::RectF(gfx::PointF(32.0f, 32.0f), gfx::SizeF(128.0f, 128.0f)));
-
-  {
-    surface->Commit();
-    test::WaitForLastFrameAck(shell_surface.get());
-
-    const viz::CompositorFrame& frame =
-        GetFrameFromSurface(shell_surface.get());
-    EXPECT_EQ(1u, frame.render_pass_list.size());
-    EXPECT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
-    EXPECT_EQ(1u, frame.resource_list.size());
-    // Ensure that the quad is correct and the resource is included.
-    EXPECT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
-    EXPECT_EQ(viz::DrawQuad::Material::kSurfaceContent,
-              frame.render_pass_list.back()->quad_list.back()->material);
-    // We are outputting to 0,0 -> 128,64.
-    EXPECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(128, 64)),
-              frame.render_pass_list.back()
-                  ->quad_list.back()
-                  ->shared_quad_state->clip_rect);
-
-    gfx::Rect testing_rect(256, 256);
-    // To get 32,32 -> 160,160 into the correct position it must be translated
-    // backwards and scaled 0.5x in Y, then everything is scaled by the scale
-    // factor.
-    auto expected_transform =
-        gfx::Transform::MakeScale(1.0f * device_scale_factor(),
-                                  0.5f * device_scale_factor()) *
-        gfx::Transform::MakeTranslation(-32.0f, -32.0f);
-
-    // When possible exo will represent the transform completely in the |rect|.
-    // This leaves the |quad_to_target_transform| transform as Identity.
-    if (gfx::Transform() == frame.render_pass_list.back()
-                                ->quad_list.back()
-                                ->shared_quad_state->quad_to_target_transform) {
-      auto expected_rect = expected_transform.MapRect(testing_rect);
-      EXPECT_EQ(expected_rect,
-                frame.render_pass_list.back()->quad_list.back()->rect);
-    } else {
-      EXPECT_EQ(expected_transform,
-                frame.render_pass_list.back()
-                    ->quad_list.back()
-                    ->shared_quad_state->quad_to_target_transform);
-      EXPECT_EQ(testing_rect,
-                frame.render_pass_list.back()->quad_list.back()->rect);
-    }
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
+    ASSERT_EQ(1u, frame.resource_list.size());
+    ASSERT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
+    EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
+    auto& quad_list = frame.render_pass_list.back()->quad_list;
+    auto* texture_quad = quad_list.front()->DynamicCast<viz::TextureDrawQuad>();
+    ASSERT_TRUE(texture_quad);
+    ASSERT_FALSE(texture_quad->force_rgbx);
   }
 }
 
@@ -1290,13 +1185,6 @@ TEST_P(SurfaceTest, ColorBufferAlpha) {
     auto shell_surface = std::make_unique<ShellSurface>(surface.get());
     surface->Attach(buffer.get());
     surface->SetAlpha(1.0f);
-
-    surface->SetEmbeddedSurfaceSize(gfx::Size(1, 1));
-    surface->SetEmbeddedSurfaceId(base::BindRepeating([]() -> viz::SurfaceId {
-      return viz::SurfaceId(
-          viz::FrameSinkId(1, 1),
-          viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
-    }));
 
     {
       surface->Commit();
@@ -1377,16 +1265,7 @@ TEST_P(SurfaceTest, SetClientSurfaceId) {
   EXPECT_EQ(kTestId, surface->GetClientSurfaceId());
 }
 
-// TODO(crbug.com/1427023): Flaky test on Linux ChromiumOS MSan Tests.
-// Re-enable it.
-#if BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_DestroyWithAttachedBufferReleasesBuffer \
-  DISABLED_DestroyWithAttachedBufferReleasesBuffer
-#else
-#define MAYBE_DestroyWithAttachedBufferReleasesBuffer \
-  DestroyWithAttachedBufferReleasesBuffer
-#endif
-TEST_P(SurfaceTest, MAYBE_DestroyWithAttachedBufferReleasesBuffer) {
+TEST_P(SurfaceTest, DestroyWithAttachedBufferReleasesBuffer) {
   gfx::Size buffer_size(1, 1);
   auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -1395,7 +1274,7 @@ TEST_P(SurfaceTest, MAYBE_DestroyWithAttachedBufferReleasesBuffer) {
 
   int release_buffer_call_count = 0;
   base::RunLoop run_loop;
-  buffer->set_release_callback(CreateReleaseBufferClosure(
+  buffer->set_release_callback(test::CreateReleaseBufferClosure(
       &release_buffer_call_count, run_loop.QuitClosure()));
 
   surface->Attach(buffer.get());
@@ -1450,7 +1329,8 @@ TEST_P(SurfaceTest, UpdatesOcclusionOnDestroyingSubsurface) {
   child_surface->Commit();
   surface->Commit();
 
-  SurfaceObserverForTest observer;
+  SurfaceObserverForTest observer(
+      child_surface.get()->window()->GetOcclusionState());
   ScopedSurface scoped_child_surface(child_surface.get(), &observer);
 
   // Destroy the subsurface and expect to get an occlusion update.
@@ -1487,16 +1367,7 @@ TEST_P(SurfaceTest, OcclusionNotRecomputedOnWidgetCommit) {
             window_occlusion_tracker_test_api.GetNumTimesOcclusionRecomputed());
 }
 
-// TODO(crbug.com/1427023): Flaky test on Linux ChromiumOS MSan Tests.
-// Re-enable it.
-#if BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_HasPendingPerCommitBufferReleaseCallback \
-  DISABLED_HasPendingPerCommitBufferReleaseCallback
-#else
-#define MAYBE_HasPendingPerCommitBufferReleaseCallback \
-  HasPendingPerCommitBufferReleaseCallback
-#endif
-TEST_P(SurfaceTest, MAYBE_HasPendingPerCommitBufferReleaseCallback) {
+TEST_P(SurfaceTest, HasPendingPerCommitBufferReleaseCallback) {
   auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(1, 1)));
   auto surface = std::make_unique<Surface>();
@@ -1512,9 +1383,8 @@ TEST_P(SurfaceTest, MAYBE_HasPendingPerCommitBufferReleaseCallback) {
   EXPECT_FALSE(surface->HasPendingPerCommitBufferReleaseCallback());
 }
 
-// TODO(crbug.com/1292674): Flaky.
-TEST_P(SurfaceTest, DISABLED_PerCommitBufferReleaseCallbackForSameSurface) {
-  gfx::Size buffer_size(1, 1);
+TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForSameSurface) {
+  gfx::Size buffer_size(64, 64);
   auto buffer1 = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
   auto buffer2 = std::make_unique<Buffer>(
@@ -1525,39 +1395,48 @@ TEST_P(SurfaceTest, DISABLED_PerCommitBufferReleaseCallbackForSameSurface) {
 
   // Set the release callback that will be run when buffer is no longer in use.
   int buffer_release_count = 0;
-  buffer1->set_release_callback(base::BindRepeating(
-      &ReleaseBuffer, base::Unretained(&buffer_release_count)));
+  base::RunLoop run_loop1;
+  buffer1->set_release_callback(test::CreateReleaseBufferClosure(
+      &buffer_release_count, run_loop1.QuitClosure()));
 
-  surface->SetPerCommitBufferReleaseCallback(base::BindOnce(
-      &ExplicitReleaseBuffer, base::Unretained(&per_commit_release_count)));
+  base::RunLoop run_loop2;
+  surface->SetPerCommitBufferReleaseCallback(
+      test::CreateExplicitReleaseCallback(&per_commit_release_count,
+                                          run_loop2.QuitClosure()));
   surface->Attach(buffer1.get());
+  surface->Damage(gfx::Rect(buffer_size));
   surface->Commit();
-  test::WaitForLastFrameAck(shell_surface.get());
+  test::WaitForLastFramePresentation(shell_surface.get());
   EXPECT_EQ(per_commit_release_count, 0);
   EXPECT_EQ(buffer_release_count, 0);
 
   // Attaching the same buffer causes the per-commit callback to be emitted.
-  surface->SetPerCommitBufferReleaseCallback(base::BindOnce(
-      &ExplicitReleaseBuffer, base::Unretained(&per_commit_release_count)));
+  surface->SetPerCommitBufferReleaseCallback(
+      test::CreateExplicitReleaseCallback(&per_commit_release_count,
+                                          base::DoNothing()));
   surface->Attach(buffer1.get());
+  surface->Damage(gfx::Rect(buffer_size));
   surface->Commit();
-  test::WaitForLastFrameAck(shell_surface.get());
+  test::WaitForLastFramePresentation(shell_surface.get());
+
+  run_loop2.Run();
   EXPECT_EQ(per_commit_release_count, 1);
   EXPECT_EQ(buffer_release_count, 0);
 
   // Attaching a different buffer causes the per-commit callback to be emitted.
   surface->Attach(buffer2.get());
+  surface->Damage(gfx::Rect(buffer_size));
   surface->Commit();
-  test::WaitForLastFrameAck(shell_surface.get());
+  test::WaitForLastFramePresentation(shell_surface.get());
+
+  run_loop1.Run();
   EXPECT_EQ(per_commit_release_count, 2);
   // The buffer should now be completely released.
   EXPECT_EQ(buffer_release_count, 1);
 }
 
-// TODO(crbug.com/1292674): Flaky.
-TEST_P(SurfaceTest,
-       DISABLED_PerCommitBufferReleaseCallbackForDifferentSurfaces) {
-  gfx::Size buffer_size(1, 1);
+TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForDifferentSurfaces) {
+  gfx::Size buffer_size(64, 64);
   auto buffer1 = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
   auto buffer2 = std::make_unique<Buffer>(
@@ -1571,35 +1450,48 @@ TEST_P(SurfaceTest,
 
   // Set the release callback that will be run when buffer is no longer in use.
   int buffer_release_count = 0;
-  buffer1->set_release_callback(base::BindRepeating(
-      &ReleaseBuffer, base::Unretained(&buffer_release_count)));
+  base::RunLoop run_loop1;
+  buffer1->set_release_callback(test::CreateReleaseBufferClosure(
+      &buffer_release_count, run_loop1.QuitClosure()));
 
   // Attach buffer1 to both surface1 and surface2.
-  surface1->SetPerCommitBufferReleaseCallback(base::BindOnce(
-      &ExplicitReleaseBuffer, base::Unretained(&per_commit_release_count1)));
+  base::RunLoop run_loop2;
+  surface1->SetPerCommitBufferReleaseCallback(
+      test::CreateExplicitReleaseCallback(&per_commit_release_count1,
+                                          run_loop2.QuitClosure()));
   surface1->Attach(buffer1.get());
+  surface1->Damage(gfx::Rect(buffer_size));
   surface1->Commit();
-  surface2->SetPerCommitBufferReleaseCallback(base::BindOnce(
-      &ExplicitReleaseBuffer, base::Unretained(&per_commit_release_count2)));
+  surface2->SetPerCommitBufferReleaseCallback(
+      test::CreateExplicitReleaseCallback(&per_commit_release_count2,
+                                          base::DoNothing()));
   surface2->Attach(buffer1.get());
+  surface2->Damage(gfx::Rect(buffer_size));
   surface2->Commit();
-  test::WaitForLastFrameAck(shell_surface2.get());
+  test::WaitForLastFramePresentation(shell_surface2.get());
+
   EXPECT_EQ(per_commit_release_count1, 0);
   EXPECT_EQ(per_commit_release_count2, 0);
   EXPECT_EQ(buffer_release_count, 0);
 
   // Attach buffer2 to surface1, only the surface1 callback should be emitted.
   surface1->Attach(buffer2.get());
+  surface1->Damage(gfx::Rect(buffer_size));
   surface1->Commit();
-  test::WaitForLastFrameAck(shell_surface1.get());
+  test::WaitForLastFramePresentation(shell_surface1.get());
+
+  run_loop2.Run();
   EXPECT_EQ(per_commit_release_count1, 1);
   EXPECT_EQ(per_commit_release_count2, 0);
   EXPECT_EQ(buffer_release_count, 0);
 
   // Attach buffer2 to surface2, only the surface2 callback should be emitted.
   surface2->Attach(buffer2.get());
+  surface2->Damage(gfx::Rect(buffer_size));
   surface2->Commit();
-  test::WaitForLastFrameAck(shell_surface2.get());
+  test::WaitForLastFramePresentation(shell_surface2.get());
+
+  run_loop1.Run();
   EXPECT_EQ(per_commit_release_count1, 1);
   EXPECT_EQ(per_commit_release_count2, 1);
   // The buffer should now be completely released.
@@ -1632,11 +1524,11 @@ TEST_P(SurfaceTest, SubsurfaceClipRect) {
     ASSERT_EQ(1u, frame.render_pass_list.size());
     ASSERT_EQ(2u, frame.render_pass_list.back()->quad_list.size());
     const auto& quad_list = frame.render_pass_list[0]->quad_list;
-    EXPECT_EQ(absl::nullopt, quad_list.front()->shared_quad_state->clip_rect);
+    EXPECT_EQ(std::nullopt, quad_list.front()->shared_quad_state->clip_rect);
   }
 
   int clip_size = 10;
-  absl::optional<gfx::RectF> clip_rect =
+  std::optional<gfx::RectF> clip_rect =
       gfx::RectF(clip_size, clip_size, clip_size, clip_size);
   sub_surface->SetClipRect(clip_rect);
   child_surface->Attach(child_buffer.get());
@@ -1646,7 +1538,7 @@ TEST_P(SurfaceTest, SubsurfaceClipRect) {
 
   {
     // Subsurface has a clip applied.
-    absl::optional<gfx::Rect> clip_rect_px =
+    std::optional<gfx::Rect> clip_rect_px =
         gfx::Rect(clip_size, clip_size, clip_size, clip_size);
 
     const viz::CompositorFrame& frame =

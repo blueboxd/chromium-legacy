@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
+import org.chromium.chrome.browser.page_insights.proto.IntentParams.PageInsightsIntentParams;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -23,6 +24,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.ExpandedSheetHelper;
 import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -64,6 +66,8 @@ public class PageInsightsCoordinator {
      * @param browserControlsSizer Bottom browser controls resizer.
      * @param backPressManager Back press manager.
      * @param inMotionSupplier Supplier for whether the compositor is in motion.
+     * @param appViewportInsetSupplier App-wide viewport inset supplier.
+     * @param intentParams params specified in the custom tabs intent
      * @param isPageInsightsHubEnabled Supplier of the feature flag.
      * @param firstLoadTimeMs Timestamp for the first page load completion.
      */
@@ -80,6 +84,8 @@ public class PageInsightsCoordinator {
             BrowserControlsSizer browserControlsSizer,
             @Nullable BackPressManager backPressManager,
             @Nullable ObservableSupplier<Boolean> inMotionSupplier,
+            ApplicationViewportInsetSupplier appViewportInsetSupplier,
+            PageInsightsIntentParams intentParams,
             BooleanSupplier isPageInsightsEnabledSupplier,
             Function<NavigationHandle, PageInsightsConfig> pageInsightsConfigProvider) {
         mContext = context;
@@ -103,6 +109,8 @@ public class PageInsightsCoordinator {
                         mBrowserControlsSizer,
                         backPressManager,
                         inMotionSupplier,
+                        appViewportInsetSupplier,
+                        intentParams,
                         isPageInsightsEnabledSupplier,
                         pageInsightsConfigProvider);
     }

@@ -4,6 +4,7 @@
 
 #import "components/password_manager/ios/shared_password_controller.h"
 
+#import "base/memory/raw_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
@@ -239,7 +240,7 @@ class SharedPasswordControllerTest : public PlatformTest {
   std::unique_ptr<TestAutofillManagerInjector<TestBrowserAutofillManager>>
       autofill_manager_injector_;
   web::FakeWebState web_state_;
-  web::FakeWebFramesManager* web_frames_manager_;
+  raw_ptr<web::FakeWebFramesManager> web_frames_manager_;
   testing::StrictMock<MockPasswordManager> password_manager_;
   testing::StrictMock<MockPasswordGenerationFrameHelper>
       password_generation_helper_;
@@ -400,6 +401,7 @@ TEST_F(SharedPasswordControllerTest,
   auto web_frame =
       web::FakeWebFrame::Create(SysNSStringToUTF8(kTestFrameID),
                                 /*is_main_frame=*/false, GURL(kTestURL));
+  web::WebFrame* frame = web_frame.get();
   AddWebFrame(std::move(web_frame));
 
   id mock_completion_handler =
@@ -411,6 +413,7 @@ TEST_F(SharedPasswordControllerTest,
   [[suggestion_helper_ expect]
       checkIfSuggestionsAvailableForForm:form_query
                        completionHandler:mock_completion_handler];
+  [[suggestion_helper_ expect] isPasswordFieldOnForm:form_query webFrame:frame];
 
   __block BOOL completion_was_called = NO;
   [controller_ checkIfSuggestionsAvailableForForm:form_query
@@ -953,7 +956,7 @@ class SharedPasswordControllerTestWithRealSuggestionHelper
   base::test::TaskEnvironment task_environment_;
   autofill::TestAutofillClient autofill_client_;
   web::FakeWebState web_state_;
-  web::FakeWebFramesManager* web_frames_manager_;
+  raw_ptr<web::FakeWebFramesManager> web_frames_manager_;
   testing::StrictMock<MockPasswordManager> password_manager_;
   PasswordSuggestionHelper* suggestion_helper_;
   id form_helper_;
@@ -1316,6 +1319,7 @@ TEST_F(SharedPasswordControllerTest,
   [[suggestion_helper_ expect]
       checkIfSuggestionsAvailableForForm:form_query
                        completionHandler:mock_completion_handler];
+  [[suggestion_helper_ expect] isPasswordFieldOnForm:form_query webFrame:frame];
 
   [controller_ checkIfSuggestionsAvailableForForm:form_query
                                    hasUserGesture:NO

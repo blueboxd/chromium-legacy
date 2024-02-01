@@ -29,7 +29,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Search.Ambient.Query" enum="AmbientSearchEntryPoint"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>juanmojica@google.com</owner>
   <owner>schechter@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -125,8 +125,8 @@ chromium-metrics-reviews@google.com.
   <owner>droger@chromium.org</owner>
   <owner>chrome-waffle-eng@google.com</owner>
   <summary>
-    Records the outcome of the search engine reprompt check at startup, based on
-    remote experiment parameters. Reported for {Category}.
+    Records the outcome of the search engine reprompt check, when the profile is
+    opened, based on remote experiment parameters. Reported for {Category}.
   </summary>
   <token key="Category">
     <variant name="" summary="all keys"/>
@@ -222,7 +222,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.All.Searches"
-    enum="BooleanBottomSearchKind" expires_after="2024-04-28">
+    enum="BooleanBottomSearchKind" expires_after="2024-06-30">
 <!-- TODO(donnd): change expires_after to "never" once established and
        approved. -->
 
@@ -300,7 +300,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.NetError" enum="NetErrorCodes"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>donnd@chromium.org</owner>
   <owner>basiaz@google.com</owner>
   <summary>
@@ -381,7 +381,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.SelectionExpanded"
-    enum="ContextualSearchGestureIsTap" expires_after="2024-05-19">
+    enum="ContextualSearchGestureIsTap" expires_after="2024-07-21">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -693,7 +693,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.Image.Camera.Open" enum="CameraOpenEntryPoint"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>juanmojica@google.com</owner>
   <owner>schechter@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -705,7 +705,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.Image.Camera.Result" enum="CameraResult"
-    expires_after="2024-05-26">
+    expires_after="2024-07-28">
   <owner>juanmojica@google.com</owner>
   <owner>schechter@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -718,7 +718,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.iOS.SelectDefaultSearchEngine"
-    enum="OmniboxSearchEngineType" expires_after="2024-04-28">
+    enum="OmniboxSearchEngineType" expires_after="2024-06-30">
   <owner>sczs@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -727,20 +727,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Search.Lens.PingDuration" units="ms"
-    expires_after="2023-08-07">
-  <owner>hujasonx@google.com</owner>
-  <owner>lens-chrome-eng@google.com</owner>
-  <summary>
-    When the user performs a Lens search on Desktop, records the time elapsed
-    from when a Lens Ping was sent and the response was received. Recorded if
-    enable-lens-ping and ping-lens-sequentially are both true. If the ping was
-    never received, or was an unexpected type, such as a non 204 response code,
-    this event will not be logged.
-  </summary>
-</histogram>
-
-<histogram name="Search.Lens.ViewportDimensionsSent.Success" units="Boolean"
+<histogram name="Search.Lens.ViewportDimensionsSent.Success" enum="Boolean"
     expires_after="2024-06-02">
   <owner>mercerd@google.com</owner>
   <owner>lens-chrome-eng@google.com</owner>
@@ -870,33 +857,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Search.QueryTiles.ShowQueryTilesSegmentationResult"
-    enum="ShowQueryTilesSegmentationResult" expires_after="2023-08-31">
-  <owner>haileywang@chromium.org</owner>
-  <owner>ssid@chromium.org</owner>
-  <summary>
-    Records the result from segmentation platform that determines whether or not
-    to show Query Tiles on NTP. When segmentation model is finch enabled, this
-    is recorded every time the user navigates to NTP and the current Query Tiles
-    decision is inexistant or expired. For cases where segmentation model is not
-    finch enabled see ShowQueryTilesSegmentationResultComparison.
-  </summary>
-</histogram>
-
-<histogram name="Search.QueryTiles.ShowQueryTilesSegmentationResultComparison"
-    enum="ShowQueryTilesSegmentationResultComparison"
-    expires_after="2023-10-22">
-  <owner>haileywang@chromium.org</owner>
-  <owner>ssid@chromium.org</owner>
-  <summary>
-    Records the comparison of result from segmentation model and code logic for
-    when to show Query Tiles on NTP. When segmentation model is not finch
-    enabled, this is recorded every time the user navigates to NTP and the
-    current Query Tiles decision is inexistant or expired. For cases where
-    segmentation model is finch enabled see ShowQueryTilesSegmentationResult.
-  </summary>
-</histogram>
-
 <histogram base="true" name="Search.QueryTiles.Tile.Clicked" units="index"
     expires_after="2023-08-31">
 <!-- Name completed by histogram_suffixes name="TileUiSurface" -->
@@ -931,7 +891,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.TrendingTileEvent" enum="TrendingTileEvent"
-    expires_after="2024-05-19">
+    expires_after="2024-07-21">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>
@@ -941,7 +901,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RegionSearch.Lens.RegionAspectRatio"
-    enum="LensRegionSearchAspectRatio" expires_after="2024-04-28">
+    enum="LensRegionSearchAspectRatio" expires_after="2024-06-30">
   <owner>juanmojica@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -953,7 +913,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RegionSearch.Lens.RegionViewportProportion" units="pct"
-    expires_after="2024-04-28">
+    expires_after="2024-06-30">
   <owner>juanmojica@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -965,7 +925,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RegionSearch.Lens.Result"
-    enum="LensRegionSearchCaptureResult" expires_after="2024-04-28">
+    enum="LensRegionSearchCaptureResult" expires_after="2024-06-30">
   <owner>juanmojica@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -1096,6 +1056,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Search.SearchEngineDuplicateCounts" units="keyword duplicates"
+    expires_after="2024-07-21">
+  <owner>dgn@chromium.org</owner>
+  <owner>droger@chromium.org</owner>
+  <summary>
+    The number of keyword duplicates resulting from conflict resolution. This is
+    sampled once per browser session immediately after the client syncs Search
+    Engines.
+  </summary>
+</histogram>
+
 <histogram name="Search.SearchEngineListedInPromoDialog"
     enum="OmniboxSearchEngineType" expires_after="M81">
 <!-- Name completed by histogram_suffixes name="SearchEnginePromoOrdering" and name="SearchEnginePromoDeviceType" -->
@@ -1120,6 +1091,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Search.SearchProviderOverrideStatus"
+    enum="SearchProviderOverrideStatus" expires_after="2024-06-01">
+  <owner>dgn@chromium.org</owner>
+  <owner>droger@chromium.org</owner>
+  <summary>
+    The status of the preference where the search engine overrides provided by
+    the Chrome distribution channel are loaded. It is recorded every time we put
+    together a list of built-in search engines providers, which can happen
+    multiple times per run, when initially loading search engines for the
+    omnibox, showing a search engine choice screen or settings screen, etc.
+  </summary>
+</histogram>
+
 <histogram name="Search.SearchWidgetUseAndDeviceInfo"
     enum="SearchWidgetUseInfo" expires_after="2020-02-16">
   <owner>yusufo@chromium.org</owner>
@@ -1127,6 +1111,60 @@ chromium-metrics-reviews@google.com.
     The current state for search widget use and whether the device is a
     partnership device related with the Android Search Widget. Collected on
     every cold start.
+  </summary>
+</histogram>
+
+<histogram
+    name="Search.SiteSearchPolicyConflict.HasConflictWith.{ConflictType}"
+    enum="Boolean" expires_after="2025-01-02">
+  <owner>ftirelo@chromium.org</owner>
+  <owner>pastarmovj@chromium.org</owner>
+  <summary>
+    Records whether at least one search engine created by SiteSearchSettings
+    policy and {ConflictType} has the same keyword as an existing search engine
+    the user manually edited, counted once per user regardless of the number of
+    conflicting search engines the policy creates.
+
+    Search engines created by the policy can be marked as &quot;featured&quot;,
+    and they override search engines with the same keyword that were manually
+    edited by the user. Search engine created by the policy and not marked as
+    featured do not override search engines manually edited by the user.
+
+    Use &quot;Search.SiteSearchPolicyConflict.NumberOfSearchEngines&quot; for
+    the number of search engines created by policy that conflict with search
+    engines manually edited by the user.
+
+    Collected when the SiteSearchSettings policy is enabled or updated and after
+    that on every browser start.
+  </summary>
+  <token key="ConflictType">
+    <variant name="Featured" summary="marked as 'featured'"/>
+    <variant name="NonFeatured" summary="not marked as 'featured'"/>
+  </token>
+</histogram>
+
+<histogram name="Search.SiteSearchPolicyConflict.NumberOfSearchEngines"
+    enum="SiteSearchPolicyConflictType" expires_after="2025-01-02">
+  <owner>ftirelo@chromium.org</owner>
+  <owner>pastarmovj@chromium.org</owner>
+  <summary>
+    Records the number of search engines created by SiteSearchSettings policy
+    with the same keyword as an existing search engine the user manually edited.
+
+    Search engines created by the policy can be marked as &quot;featured&quot;,
+    and they override search engines with the same keyword that were manually
+    edited by the user. Search engine created by the policy and not marked as
+    featured do not override search engines manually edited by the user.
+
+    Each count corresponds to one search engine, so the total count per user
+    equals the number of search engines created by the policy.
+
+    Use &quot;Search.SiteSearchPolicyConflict.HasConflictWith.*&quot; for the
+    number of users that have at least one conflict with featured or
+    non-featured search engines created by policy.
+
+    Collected when the SiteSearchSettings policy is enabled or updated and after
+    that on every browser start.
   </summary>
 </histogram>
 

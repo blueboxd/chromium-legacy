@@ -16,6 +16,11 @@ std::vector<uint8_t> GetConstantTrustedVaultKey() {
   return std::vector<uint8_t>(16, 0);
 }
 
+GURL GetGetSecurityDomainMembersURL(const GURL& server_url) {
+  // View three is `SECURITY_DOMAIN_MEMBER_METADATA`.
+  return GURL(server_url.spec() + kSecurityDomainMemberNamePrefix + "?view=3");
+}
+
 GURL GetGetSecurityDomainMemberURL(const GURL& server_url,
                                    base::span<const uint8_t> public_key) {
   std::string encoded_public_key;
@@ -29,14 +34,25 @@ GURL GetGetSecurityDomainMemberURL(const GURL& server_url,
 
 GURL GetGetSecurityDomainURL(const GURL& server_url,
                              SecurityDomainId security_domain) {
-  return GURL(server_url.spec() + GetSecurityDomainName(security_domain) +
+  return GURL(server_url.spec() + GetSecurityDomainPath(security_domain) +
               "?view=2");
 }
 
 GURL GetJoinSecurityDomainURL(const GURL& server_url,
                               SecurityDomainId security_domain) {
-  return GURL(server_url.spec() + GetSecurityDomainName(security_domain) +
+  return GURL(server_url.spec() + GetSecurityDomainPath(security_domain) +
               ":join");
+}
+
+GURL GetGetSecurityDomainMembersURLForTesting(
+    const std::optional<std::string>& next_page_token,
+    const GURL& server_url) {
+  GURL url = GetGetSecurityDomainMembersURL(server_url);
+  if (next_page_token) {
+    url = net::AppendQueryParameter(url, "page_token", *next_page_token);
+  }
+  return net::AppendQueryParameter(url, kQueryParameterAlternateOutputKey,
+                                   kQueryParameterAlternateOutputProto);
 }
 
 GURL GetFullJoinSecurityDomainsURLForTesting(const GURL& server_url,
@@ -61,16 +77,17 @@ GURL GetFullGetSecurityDomainURLForTesting(const GURL& server_url,
       kQueryParameterAlternateOutputKey, kQueryParameterAlternateOutputProto);
 }
 
-std::string GetSecurityDomainName(SecurityDomainId domain) {
+std::string GetSecurityDomainPath(SecurityDomainId domain) {
   switch (domain) {
     case SecurityDomainId::kChromeSync:
-      return kSyncSecurityDomainName;
+      return std::string(kSecurityDomainPathPrefix) + kSyncSecurityDomainName;
     case SecurityDomainId::kPasskeys:
-      return kPasskeysSecurityDomainName;
+      return std::string(kSecurityDomainPathPrefix) +
+             kPasskeysSecurityDomainName;
   }
 }
 
-absl::optional<SecurityDomainId> GetSecurityDomainByName(
+std::optional<SecurityDomainId> GetSecurityDomainByName(
     base::StringPiece name) {
   static_assert(static_cast<int>(SecurityDomainId::kMaxValue) == 1,
                 "Update GetSecurityDomainByName when adding SecurityDomainId "
@@ -81,8 +98,8 @@ absl::optional<SecurityDomainId> GetSecurityDomainByName(
           {kPasskeysSecurityDomainName, SecurityDomainId::kPasskeys},
       });
   return base::Contains(kSecurityDomainNames, name)
-             ? absl::make_optional(kSecurityDomainNames.at(name))
-             : absl::nullopt;
+             ? std::make_optional(kSecurityDomainNames.at(name))
+             : std::nullopt;
 }
 
 }  // namespace trusted_vault

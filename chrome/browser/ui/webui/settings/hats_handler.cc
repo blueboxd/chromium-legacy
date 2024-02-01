@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/hats_handler.h"
 
 #include "base/functional/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/hats/hats_service.h"
@@ -32,12 +33,8 @@ SurveyBitsData GetPrivacySettingsProductSpecificBitsData(Profile* profile) {
       static_cast<content_settings::CookieControlsMode>(
           profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode)) ==
       content_settings::CookieControlsMode::kBlockThirdParty;
-  const bool privacy_sandbox_enabled =
-      PrivacySandboxSettingsFactory::GetForProfile(profile)
-          ->IsPrivacySandboxEnabled();
 
-  return {{"3P cookies blocked", third_party_cookies_blocked},
-          {"Privacy Sandbox enabled", privacy_sandbox_enabled}};
+  return {{"3P cookies blocked", third_party_cookies_blocked}};
 }
 
 // Generate the Product Specific bits data which accompanies M1 Ad Privacy
@@ -73,8 +70,8 @@ void HatsHandler::RegisterMessages() {
       base::BindRepeating(&HatsHandler::HandleTrustSafetyInteractionOccurred,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "securityPageInteractionOccurred",
-      base::BindRepeating(&HatsHandler::HandleSecurityPageInteractionOccurred,
+      "securityPageHatsRequest",
+      base::BindRepeating(&HatsHandler::HandleSecurityPageHatsRequest,
                           base::Unretained(this)));
 }
 
@@ -82,14 +79,15 @@ void HatsHandler::RegisterMessages() {
  * First arg in the list indicates the SecurityPageInteraction.
  * Second arg in the list indicates the SafeBrowsingSetting.
  */
-void HatsHandler::HandleSecurityPageInteractionOccurred(
-    const base::Value::List& args) {
+void HatsHandler::HandleSecurityPageHatsRequest(const base::Value::List& args) {
   AllowJavascript();
 
-  // There are 2 argument in the input list.
+  // There are 3 argument in the input list.
   // The first one is the SecurityPageInteraction that triggered the survey.
   // The second one is the safe browsing setting the user was on.
-  CHECK_EQ(2U, args.size());
+  // The third one is the total amount of time a user spent on the security page
+  // in focus.
+  CHECK_EQ(3U, args.size());
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
@@ -109,23 +107,42 @@ void HatsHandler::HandleSecurityPageInteractionOccurred(
     return;
   }
 
+  // Do not send the survey if the user didn't stay on the page long enough.
+  if (args[2].GetDouble() <
+      features::kHappinessTrackingSurveysForSecurityPageTime.Get()
+          .InMilliseconds()) {
+    return;
+  }
+
+  auto interaction = static_cast<SecurityPageInteraction>(args[0].GetInt());
+  if (features::kHappinessTrackingSurveysForSecurityPageRequireInteraction
+          .Get() &&
+      interaction == SecurityPageInteraction::NO_INTERACTION) {
+    return;
+  }
+
   // Generate the Product Specific bits data from |profile| and |args|.
   SurveyStringData product_specific_string_data =
       GetSecurityPageProductSpecificStringData(profile, args);
 
-  hats_service->LaunchDelayedSurveyForWebContents(
-      kHatsSurveyTriggerSettingsSecurity, web_ui()->GetWebContents(),
-      features::kHappinessTrackingSurveysForSecurityPageTime.Get()
-          .InMilliseconds(),
+  hats_service->LaunchSurvey(
+      kHatsSurveyTriggerSettingsSecurity,
+      /*success_callback*/ base::DoNothing(),
+      /*failure_callback*/ base::DoNothing(),
       /*product_specific_bits_data=*/{},
-      /*product_specific_string_data=*/product_specific_string_data,
-      /*require_same_origin=*/true);
+      /*product_specific_string_data=*/product_specific_string_data);
+
+  // Log histogram that indicates that a survey is requested from the security
+  // page.
+  base::UmaHistogramBoolean("Feedback.SecurityPage.SurveyRequested", true);
 }
 
 /**
  * Generate the Product Specific string data from |profile| and |args|.
  * - First arg in the list indicates the SecurityPageInteraction.
  * - Second arg in the list indicates the SafeBrowsingSetting.
+ * - Third arg in the list indicates the amount of time user spent on the
+ * security page in focus.
  */
 SurveyStringData HatsHandler::GetSecurityPageProductSpecificStringData(
     Profile* profile,
@@ -155,12 +172,16 @@ SurveyStringData HatsHandler::GetSecurityPageProductSpecificStringData(
     }
     case SecurityPageInteraction::EXPAND_BUTTON_ENHANCED_CLICK: {
       security_page_interaction_type =
-          "enhanced_protection_expand_button_clicked.";
+          "enhanced_protection_expand_button_clicked";
       break;
     }
     case SecurityPageInteraction::EXPAND_BUTTON_STANDARD_CLICK: {
       security_page_interaction_type =
-          "standard_protection_expand_button_clicked.";
+          "standard_protection_expand_button_clicked";
+      break;
+    }
+    case SecurityPageInteraction::NO_INTERACTION: {
+      security_page_interaction_type = "no_interaction";
       break;
     }
   }
@@ -200,7 +221,7 @@ SurveyStringData HatsHandler::GetSecurityPageProductSpecificStringData(
       {"Safe Browsing Setting Before Trigger", safe_browsing_setting_before},
       {"Safe Browsing Setting After Trigger", safe_browsing_setting_current},
       {"Client Channel", client_channel},
-  };
+      {"Time On Page", std::to_string(args[2].GetDouble())}};
 }
 
 void HatsHandler::HandleTrustSafetyInteractionOccurred(
@@ -232,19 +253,9 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
   std::string trigger = "";
   int timeout_ms = 0;
   SurveyBitsData product_specific_bits_data = {};
-  bool require_same_origin = false;
+  auto navigation_behaviour = HatsService::NavigationBehaviour::ALLOW_ANY;
 
   switch (interaction) {
-    case TrustSafetyInteraction::OPENED_PRIVACY_SANDBOX: {
-      trigger = kHatsSurveyTriggerPrivacySandbox;
-      timeout_ms =
-          features::kHappinessTrackingSurveysForDesktopPrivacySandboxTime.Get()
-              .InMilliseconds();
-      product_specific_bits_data =
-          GetPrivacySettingsProductSpecificBitsData(profile);
-      require_same_origin = true;
-      break;
-    }
     case TrustSafetyInteraction::RAN_SAFETY_CHECK:
       [[fallthrough]];
     case TrustSafetyInteraction::USED_PRIVACY_CARD: {
@@ -257,22 +268,14 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
               prefs::kPrivacyGuideViewed)) {
         return;
       }
-      // If the privacy settings survey is explicitly targeting users who have
-      // not viewed the Privacy Sandbox page, and this user has viewed the page,
-      // do not attempt to show the privacy settings survey.
-      if (features::kHappinessTrackingSurveysForDesktopSettingsPrivacyNoSandbox
-              .Get() &&
-          Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
-              prefs::kPrivacySandboxPageViewed)) {
-        return;
-      }
       trigger = kHatsSurveyTriggerSettingsPrivacy;
       timeout_ms =
           features::kHappinessTrackingSurveysForDesktopSettingsPrivacyTime.Get()
               .InMilliseconds();
       product_specific_bits_data =
           GetPrivacySettingsProductSpecificBitsData(profile);
-      require_same_origin = true;
+      navigation_behaviour =
+          HatsService::NavigationBehaviour::REQUIRE_SAME_ORIGIN;
       break;
     }
     case TrustSafetyInteraction::COMPLETED_PRIVACY_GUIDE: {
@@ -280,7 +283,8 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
       timeout_ms =
           features::kHappinessTrackingSurveysForDesktopPrivacyGuideTime.Get()
               .InMilliseconds();
-      require_same_origin = true;
+      navigation_behaviour =
+          HatsService::NavigationBehaviour::REQUIRE_SAME_ORIGIN;
       break;
     }
     case TrustSafetyInteraction::OPENED_AD_PRIVACY: {
@@ -288,7 +292,8 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
       timeout_ms =
           features::kHappinessTrackingSurveysForDesktopM1AdPrivacyPageTime.Get()
               .InMilliseconds();
-      require_same_origin = true;
+      navigation_behaviour =
+          HatsService::NavigationBehaviour::REQUIRE_SAME_ORIGIN;
       product_specific_bits_data = GetAdPrivacyProductSpecificBitsData(profile);
       break;
     }
@@ -297,7 +302,8 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
       timeout_ms =
           features::kHappinessTrackingSurveysForDesktopM1TopicsSubpageTime.Get()
               .InMilliseconds();
-      require_same_origin = true;
+      navigation_behaviour =
+          HatsService::NavigationBehaviour::REQUIRE_SAME_ORIGIN;
       product_specific_bits_data = GetAdPrivacyProductSpecificBitsData(profile);
       break;
     }
@@ -306,7 +312,8 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
       timeout_ms =
           features::kHappinessTrackingSurveysForDesktopM1FledgeSubpageTime.Get()
               .InMilliseconds();
-      require_same_origin = true;
+      navigation_behaviour =
+          HatsService::NavigationBehaviour::REQUIRE_SAME_ORIGIN;
       product_specific_bits_data = GetAdPrivacyProductSpecificBitsData(profile);
       break;
     }
@@ -317,10 +324,21 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
               kHappinessTrackingSurveysForDesktopM1AdMeasurementSubpageTime
                   .Get()
                   .InMilliseconds();
-      require_same_origin = true;
+      navigation_behaviour =
+          HatsService::NavigationBehaviour::REQUIRE_SAME_ORIGIN;
       product_specific_bits_data = GetAdPrivacyProductSpecificBitsData(profile);
       break;
     }
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    case TrustSafetyInteraction::OPENED_GET_MOST_CHROME: {
+      trigger = kHatsSurveyTriggerGetMostChrome;
+      timeout_ms = features::kHappinessTrackingSurveysGetMostChromeTime.Get()
+                       .InMilliseconds();
+      navigation_behaviour =
+          HatsService::NavigationBehaviour::REQUIRE_SAME_DOCUMENT;
+      break;
+    }
+#endif
     case TrustSafetyInteraction::OPENED_PASSWORD_MANAGER:
       [[fallthrough]];
     case TrustSafetyInteraction::RAN_PASSWORD_CHECK: {
@@ -334,7 +352,7 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
   hats_service->LaunchDelayedSurveyForWebContents(
       trigger, web_ui()->GetWebContents(), timeout_ms,
       product_specific_bits_data,
-      /*product_specific_string_data=*/{}, require_same_origin);
+      /*product_specific_string_data=*/{}, navigation_behaviour);
 }
 
 void HatsHandler::InformSentimentService(TrustSafetyInteraction interaction) {

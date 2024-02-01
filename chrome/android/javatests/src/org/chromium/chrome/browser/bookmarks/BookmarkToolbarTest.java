@@ -38,14 +38,14 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiState.BookmarkUiMode;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -140,7 +140,8 @@ public class BookmarkToolbarTest extends BlankUiTestActivityTestCase {
                                     false,
                                     0,
                                     false,
-                                    0);
+                                    0,
+                                    false);
                     when(mBookmarkModel.getBookmarkById(BOOKMARK_ID_ROOT))
                             .thenReturn(rootBookmarkItem);
 
@@ -228,7 +229,8 @@ public class BookmarkToolbarTest extends BlankUiTestActivityTestCase {
                         false,
                         0,
                         false,
-                        0);
+                        0,
+                        false);
         when(mBookmarkModel.getBookmarkById(bookmarkId)).thenReturn(bookmarkItem);
     }
 

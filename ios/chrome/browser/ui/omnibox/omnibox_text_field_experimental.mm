@@ -15,7 +15,6 @@
 #import "components/grit/components_scaled_resources.h"
 #import "components/omnibox/browser/autocomplete_input.h"
 #import "ios/chrome/browser/autocomplete/model/autocomplete_scheme_classifier_impl.h"
-#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/animation_util.h"
@@ -98,6 +97,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     self.textAlignment = NSTextAlignmentNatural;
     self.keyboardType = UIKeyboardTypeWebSearch;
     self.smartQuotesType = UITextSmartQuotesTypeNo;
+    // Prevent the text from overlapping the clear text button.
+    // (crbug.com/1403031)
+    self.textInputView.clipsToBounds = YES;
 
     // Disable drag on iPhone because there's nowhere to drag to
     if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
@@ -449,6 +451,18 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                                       : [super caretRectForPosition:position];
 }
 
+- (NSArray<UITextSelectionRect*>*)selectionRectsForRange:(UITextRange*)range {
+  // Hide the selection UI in pre-edit. UITextField is expected to hide the
+  // selection UI when `clearsOnInsertion` is YES, but this behavior is not
+  // working on iOS 17.
+  if (@available(iOS 17, *)) {
+    if (self.isPreEditing) {
+      return nil;
+    }
+  }
+  return [super selectionRectsForRange:range];
+}
+
 #pragma mark - UITextInput
 
 - (void)beginFloatingCursorAtPoint:(CGPoint)point {
@@ -696,14 +710,10 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                           modifierFlags:0
                                  action:@selector(forwardKeyCommandRight)];
 
-#if defined(__IPHONE_15_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_15_0
-  if (@available(iOS 15, *)) {
-    commandUp.wantsPriorityOverSystemBehavior = YES;
-    commandDown.wantsPriorityOverSystemBehavior = YES;
-    commandLeft.wantsPriorityOverSystemBehavior = YES;
-    commandRight.wantsPriorityOverSystemBehavior = YES;
-  }
-#endif
+  commandUp.wantsPriorityOverSystemBehavior = YES;
+  commandDown.wantsPriorityOverSystemBehavior = YES;
+  commandLeft.wantsPriorityOverSystemBehavior = YES;
+  commandRight.wantsPriorityOverSystemBehavior = YES;
   return @[ commandUp, commandDown, commandLeft, commandRight ];
 }
 

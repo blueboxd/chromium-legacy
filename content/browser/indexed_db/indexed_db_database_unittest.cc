@@ -22,13 +22,12 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
-#include "components/services/storage/privileged/mojom/indexed_db_client_state_checker.mojom-forward.h"
+#include "components/services/storage/privileged/mojom/indexed_db_client_state_checker.mojom.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
-#include "content/browser/indexed_db/indexed_db_client_state_checker_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
@@ -98,7 +97,9 @@ class IndexedDBDatabaseTest : public ::testing::Test {
 
   void TearDown() override { db_ = nullptr; }
 
-  void OnFatalError(leveldb::Status s) { error_called_ = true; }
+  void OnFatalError(leveldb::Status s, const std::string& error_message) {
+    error_called_ = true;
+  }
 
   void OnBucketContextReadyForDestruction() { bucket_context_.reset(); }
 
@@ -107,13 +108,6 @@ class IndexedDBDatabaseTest : public ::testing::Test {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
-  }
-
-  scoped_refptr<IndexedDBClientStateCheckerWrapper>
-  CreateTestClientStateWrapper() {
-    mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker> remote;
-    return base::MakeRefCounted<IndexedDBClientStateCheckerWrapper>(
-        std::move(remote));
   }
 
  protected:
@@ -145,8 +139,7 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
           database_callbacks.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection1),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection1));
   RunPostedTasks();
 
   MockMojoIndexedDBDatabaseCallbacks database_callbacks2;
@@ -158,8 +151,7 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
           database_callbacks2.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id2, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection2),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection2));
   RunPostedTasks();
   db_ = nullptr;
 
@@ -173,7 +165,7 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
 
   RunPostedTasks();
 
-  EXPECT_TRUE(bucket_context_->databases().empty());
+  EXPECT_TRUE(bucket_context_->GetDatabasesForTesting().empty());
 }
 
 TEST_F(IndexedDBDatabaseTest, ForcedClose) {
@@ -186,8 +178,7 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
           database_callbacks.BindNewEndpointAndPassDedicatedRemote()),
       upgrade_transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection));
   RunPostedTasks();
 
   EXPECT_EQ(db_, request.connection()->database().get());
@@ -250,8 +241,7 @@ TEST_F(IndexedDBDatabaseTest, PendingDelete) {
           database_callbacks1.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection));
   RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
@@ -297,8 +287,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
       std::make_unique<IndexedDBDatabaseCallbacks>(
           database_callbacks1.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id1, kDatabaseVersion, mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection1),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection1));
   RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
@@ -314,8 +303,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
       std::make_unique<IndexedDBDatabaseCallbacks>(
           database_callbacks2.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id2, kDatabaseVersion, mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection2),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection2));
   RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
@@ -331,8 +319,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
       std::make_unique<IndexedDBDatabaseCallbacks>(
           database_callbacks3.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id3, kDatabaseVersion, mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection3),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection3));
   RunPostedTasks();
 
   EXPECT_TRUE(request1.upgrade_called());
@@ -364,8 +351,7 @@ TEST_F(IndexedDBDatabaseTest, ForceDelete) {
           database_callbacks.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection));
   RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
@@ -400,8 +386,7 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenPending) {
           database_callbacks1.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection1),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection1));
   RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
@@ -418,8 +403,7 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenPending) {
       std::make_unique<IndexedDBDatabaseCallbacks>(
           database_callbacks2.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id2, 3, mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection2),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection2));
   RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
@@ -444,8 +428,7 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenAndDeletePending) {
           database_callbacks1.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id1, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection1),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection1));
   RunPostedTasks();
 
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
@@ -460,8 +443,7 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenAndDeletePending) {
       std::make_unique<IndexedDBDatabaseCallbacks>(
           database_callbacks2.BindNewEndpointAndPassDedicatedRemote()),
       transaction_id2, 3, mojo::NullAssociatedReceiver());
-  db_->ScheduleOpenConnection(std::move(connection2),
-                              CreateTestClientStateWrapper());
+  db_->ScheduleOpenConnection(std::move(connection2));
   RunPostedTasks();
 
   bool deleted = false;
@@ -505,11 +487,7 @@ class IndexedDBDatabaseOperationTest : public IndexedDBDatabaseTest {
             mojo::NullAssociatedRemote()),
         transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
         mojo::NullAssociatedReceiver());
-    mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker> remote;
-    db_->ScheduleOpenConnection(
-        std::move(connection),
-        base::MakeRefCounted<IndexedDBClientStateCheckerWrapper>(
-            std::move(remote)));
+    db_->ScheduleOpenConnection(std::move(connection));
     RunPostedTasks();
     EXPECT_EQ(IndexedDBDatabaseMetadata::NO_VERSION, db_->metadata().version);
 
@@ -517,7 +495,15 @@ class IndexedDBDatabaseOperationTest : public IndexedDBDatabaseTest {
     transaction_ = request_.connection()->CreateVersionChangeTransaction(
         transaction_id, /*scope=*/std::set<int64_t>(),
         new IndexedDBFakeBackingStore::FakeTransaction(commit_success_));
-    db_->RegisterAndScheduleTransaction(transaction_);
+
+    std::vector<PartitionedLockManager::PartitionedLockRequest> lock_requests =
+        {{GetDatabaseLockId(db_->metadata().name),
+          PartitionedLockManager::LockType::kExclusive}};
+    db_->lock_manager()->AcquireLocks(
+        std::move(lock_requests),
+        transaction_->mutable_locks_receiver()->AsWeakPtr(),
+        base::BindOnce(&IndexedDBTransaction::Start,
+                       transaction_->AsWeakPtr()));
 
     // Add a dummy task which takes the place of the VersionChangeOperation
     // which kicks off the upgrade. This ensures that the transaction has

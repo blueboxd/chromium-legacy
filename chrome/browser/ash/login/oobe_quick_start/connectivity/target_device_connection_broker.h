@@ -99,6 +99,8 @@ class TargetDeviceConnectionBroker {
     // AuthenticatedConnection caller.
     virtual base::Value::Dict GetPrepareForUpdateInfo() = 0;
 
+    virtual void NotifyPhoneSetupComplete() = 0;
+
     // Retrieve Instance ID (CryptAuth device ID) from BootstrapConfigurations
     // response.
     std::string get_phone_instance_id() { return phone_instance_id_; }
@@ -221,8 +223,7 @@ class TargetDeviceConnectionBroker {
   // request pin verification or QR code verification.
   bool use_pin_authentication_ = false;
 
-  raw_ptr<ConnectionLifecycleListener, ExperimentalAsh>
-      connection_lifecycle_listener_ = nullptr;
+  raw_ptr<ConnectionLifecycleListener> connection_lifecycle_listener_ = nullptr;
 
  private:
   std::vector<FeatureSupportStatusCallback> feature_status_callbacks_;

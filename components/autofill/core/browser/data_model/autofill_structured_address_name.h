@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "components/autofill/core/browser/data_model/autofill_feature_guarded_address_component.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
 #include "components/autofill/core/browser/field_types.h"
 
@@ -16,13 +17,6 @@ class RE2;
 }  // namespace re2
 
 namespace autofill {
-
-// Atomic component that represents the honorific prefix of a name.
-class NameHonorific : public AddressComponent {
- public:
-  NameHonorific();
-  ~NameHonorific() override;
-};
 
 // Atomic components that represents the first name.
 class NameFirst : public AddressComponent {
@@ -37,16 +31,16 @@ class NameMiddle : public AddressComponent {
   NameMiddle();
   ~NameMiddle() override;
 
-  const ServerFieldTypeSet GetAdditionalSupportedFieldTypes() const override;
+  const FieldTypeSet GetAdditionalSupportedFieldTypes() const override;
 
  protected:
   // Implements support for getting the value for the |MIDDLE_NAME_INITIAL|
   // type.
   std::u16string GetValueForOtherSupportedType(
-      ServerFieldType field_type) const override;
+      FieldType field_type) const override;
 
   // Implements support for setting the |MIDDLE_NAME_INITIAL| type.
-  void SetValueForOtherSupportedType(ServerFieldType field_type,
+  void SetValueForOtherSupportedType(FieldType field_type,
                                      const std::u16string& value,
                                      const VerificationStatus& status) override;
 };
@@ -100,6 +94,10 @@ class NameLast : public AddressComponent {
  private:
   // As the fallback, write everything to the second last name.
   void ParseValueAndAssignSubcomponentsByFallbackMethod() override;
+
+  NameLastFirst last_first_;
+  NameLastConjunction last_conjuntion_;
+  NameLastSecond last_second_;
 };
 
 // Compound that represents a full name. It contains a honorific, a first
@@ -136,52 +134,10 @@ class NameFull : public AddressComponent {
 
   // Returns the format string to create the full name from its subcomponents.
   std::u16string GetFormatString() const override;
-};
 
-// Atomic component that represents a honorific prefix.
-class NameHonorificPrefix : public AddressComponent {
- public:
-  NameHonorificPrefix();
-  ~NameHonorificPrefix() override;
-};
-
-// Compound that represent a full name and a honorific prefix.
-//
-//             +-----------------------+
-//             | NAME_FULL_WITH_PREFIX |
-//             +-----------------------+
-//                   /            \
-//                  /              \
-//                 /                \
-//                /                  \
-//   +-------------------+      +------------+
-//   | HONORIFIC_PREFIX  |      | NAME_FULL  |
-//   +-------------------+      +------------+
-//                             /       |      \
-//                            /        |       \
-//                           /         |        \
-//             +------------+  +-------------+   +-----------+
-//             | NAME_FIRST |  | NAME_MIDDLE |   | NAME_LAST |
-//             +------------+  +-------------+   +-----------+
-//                                              /      |      \
-//                                             /       |       \
-//                                            /        |        \
-//                                           /         |         \
-//                                   +--------+ +--------------+ +---------+
-//                                   | _FIRST | | _CONJUNCTION | | _SECOND |
-//                                   +--------+ +--------------+ +---------+
-//
-class NameFullWithPrefix : public AddressComponent {
- public:
-  NameFullWithPrefix();
-  NameFullWithPrefix(const NameFullWithPrefix& other);
-  ~NameFullWithPrefix() override;
-
-  void MigrateLegacyStructure() override;
-
- protected:
-  std::vector<const re2::RE2*> GetParseRegularExpressionsByRelevance()
-      const override;
+  NameFirst first_;
+  NameMiddle middle_;
+  NameLast last_;
 };
 
 }  // namespace autofill

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_POPUP_POPUP_BASE_VIEW_H_
 
 #include <array>
-#include <memory>
 #include <vector>
 
 #include "base/containers/span.h"
@@ -36,6 +35,8 @@ class PopupBaseView : public PopupRowView::AccessibilitySelectionDelegate,
                       public views::WidgetDelegateView,
                       public views::WidgetFocusChangeListener,
                       public views::WidgetObserver {
+  METADATA_HEADER(PopupBaseView, views::WidgetDelegateView)
+
  public:
   // Consider the input element is `kElementBorderPadding` pixels larger at the
   // top and at the bottom in order to reposition the dropdown, so that it
@@ -48,8 +49,6 @@ class PopupBaseView : public PopupRowView::AccessibilitySelectionDelegate,
       kDefaultPreferredPopupSides = {
           views::BubbleArrowSide::kTop, views::BubbleArrowSide::kBottom,
           views::BubbleArrowSide::kLeft, views::BubbleArrowSide::kRight};
-
-  METADATA_HEADER(PopupBaseView);
 
   PopupBaseView(const PopupBaseView&) = delete;
   PopupBaseView& operator=(const PopupBaseView&) = delete;
@@ -154,13 +153,6 @@ class PopupBaseView : public PopupRowView::AccessibilitySelectionDelegate,
 
   // Ensures that the menu start event is not fired redundantly.
   bool is_ax_menu_start_event_fired_ = false;
-
-  // Responsible for re-enabling custom cursors in the triggered tab on popup
-  // destruction.
-  // TODO(crbug.com/1478613): Remove once
-  // `kAutofillPopupMultiWindowCursorSuppression` is removed, since it is
-  // superseded by `custom_cursor_suppressor_`.
-  base::ScopedClosureRunner custom_cursor_blocker_;
 
   // Responsible for blocking (and re-enabling) custom cursors across all
   // browser windows.

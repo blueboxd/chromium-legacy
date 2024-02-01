@@ -4,6 +4,8 @@
 
 #include "components/services/app_service/public/cpp/app_storage/app_storage_file_handler.h"
 
+#include <string_view>
+
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/json/json_string_value_serializer.h"
@@ -59,22 +61,22 @@ constexpr char kAppSizeInBytesKey[] = "app_size_in_bytes";
 constexpr char kDataSizeInBytesKey[] = "data_size_in_bytes";
 constexpr char kSupportedLocalesKey[] = "supported_locales";
 constexpr char kSelectedLocaleKey[] = "selected_locale";
+constexpr char kExtraKey[] = "extra";
 
-absl::optional<std::string> GetStringValueFromDict(
-    const base::Value::Dict& dict,
-    base::StringPiece key_name) {
+std::optional<std::string> GetStringValueFromDict(const base::Value::Dict& dict,
+                                                  std::string_view key_name) {
   const std::string* value = dict.FindString(key_name);
-  return value ? absl::optional<std::string>(*value) : absl::nullopt;
+  return value ? std::optional<std::string>(*value) : std::nullopt;
 }
 
-absl::optional<uint64_t> GetUint64ValueFromDict(const base::Value::Dict& dict,
-                                                base::StringPiece key_name) {
+std::optional<uint64_t> GetUint64ValueFromDict(const base::Value::Dict& dict,
+                                               std::string_view key_name) {
   const std::string* value = dict.FindString(key_name);
   uint64_t ret = 0;
   if (value && base::StringToUint64(*value, &ret)) {
     return ret;
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 template <typename T>
@@ -83,7 +85,7 @@ bool FieldHasValue(const AppPtr& app, T App::*field) {
 }
 
 template <typename T>
-bool FieldHasValue(const AppPtr& app, absl::optional<T> App::*field) {
+bool FieldHasValue(const AppPtr& app, std::optional<T> App::*field) {
   return (app.get()->*field).has_value();
 }
 
@@ -98,14 +100,19 @@ base::Value GetValue(const AppPtr& app, T App::*field) {
 }
 
 template <typename T>
-base::Value GetValue(const AppPtr& app, absl::optional<T> App::*field) {
+base::Value GetValue(const AppPtr& app, std::optional<T> App::*field) {
   return base::Value((app.get()->*field).value());
 }
 
 template <>
-base::Value GetValue(const AppPtr& app,
-                     absl::optional<base::Time> App::*field) {
+base::Value GetValue(const AppPtr& app, std::optional<base::Time> App::*field) {
   return base::TimeToValue((app.get()->*field).value());
+}
+
+template <>
+base::Value GetValue(const AppPtr& app,
+                     std::optional<base::Value::Dict> App::*field) {
+  return base::Value(std::move((app.get()->*field).value()));
 }
 
 template <>
@@ -135,12 +142,12 @@ base::Value GetValue(const AppPtr& app,
 
 template <>
 base::Value GetValue(const AppPtr& app,
-                     absl::optional<RunOnOsLogin> App::*field) {
+                     std::optional<RunOnOsLogin> App::*field) {
   return base::Value(ConvertRunOnOsLoginToDict((app.get()->*field).value()));
 }
 
 template <>
-base::Value GetValue(const AppPtr& app, absl::optional<uint64_t> App::*field) {
+base::Value GetValue(const AppPtr& app, std::optional<uint64_t> App::*field) {
   return base::Value(base::NumberToString((app.get()->*field).value()));
 }
 
@@ -297,6 +304,7 @@ base::Value AppStorageFileHandler::ConvertAppsToValue(
     SetKey(app, &App::data_size_in_bytes, kDataSizeInBytesKey, dict);
     SetKey(app, &App::supported_locales, kSupportedLocalesKey, dict);
     SetKey(app, &App::selected_locale, kSelectedLocaleKey, dict);
+    SetKey(app, &App::extra, kExtraKey, dict);
 
     // TODO(crbug.com/1385932): Add other files in the App structure.
     app_info_dict.Set(app->app_id, std::move(dict));
@@ -416,6 +424,11 @@ std::unique_ptr<AppInfo> AppStorageFileHandler::ConvertValueToApps(
 
     GetListFromKey(value, &App::supported_locales, kSupportedLocalesKey, app);
     app->selected_locale = GetStringValueFromDict(*value, kSelectedLocaleKey);
+
+    base::Value::Dict* extra = value->FindDict(kExtraKey);
+    if (extra) {
+      app->extra = std::move(*extra);
+    }
 
     // TODO(crbug.com/1385932): Add other files in the App structure.
     app_info->apps.push_back(std::move(app));

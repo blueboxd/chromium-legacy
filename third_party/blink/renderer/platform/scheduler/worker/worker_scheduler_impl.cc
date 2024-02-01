@@ -196,6 +196,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalContinueScriptLoading:
     case TaskType::kWakeLock:
     case TaskType::kStorage:
+    case TaskType::kClipboard:
       // UnthrottledTaskRunner is generally discouraged in future.
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in
@@ -216,7 +217,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerSchedulerImpl::GetTaskRunner(
       // Get(LocalFrame). (https://crbug.com/670534)
       return unpausable_task_queue_->CreateTaskRunner(type);
     case TaskType::kNetworkingUnfreezable:
-    case TaskType::kNetworkingUnfreezableImageLoading:
+    case TaskType::kNetworkingUnfreezableRenderBlockingLoading:
       return IsInflightNetworkRequestBackForwardCacheSupportEnabled()
                  ? unpausable_task_queue_->CreateTaskRunner(type)
                  : pausable_non_vt_task_queue_->CreateTaskRunner(type);

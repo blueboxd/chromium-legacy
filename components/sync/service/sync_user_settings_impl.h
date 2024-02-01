@@ -44,6 +44,10 @@ class SyncUserSettingsImpl : public SyncUserSettings {
 
   ModelTypeSet GetPreferredDataTypes() const;
   bool IsEncryptedDatatypeEnabled() const;
+  // The encryption bootstrap token is used for explicit passphrase users
+  // (usually custom passphrase) and represents a user-entered passphrase.
+  std::string GetEncryptionBootstrapToken() const;
+  void SetEncryptionBootstrapToken(const std::string& token);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void SetSyncFeatureDisabledViaDashboard();
@@ -96,11 +100,13 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   bool IsTrustedVaultRecoverabilityDegraded() const override;
   bool IsUsingExplicitPassphrase() const override;
   base::Time GetExplicitPassphraseTime() const override;
-  absl::optional<PassphraseType> GetPassphraseType() const override;
+  std::optional<PassphraseType> GetPassphraseType() const override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
-  void SetDecryptionNigoriKey(std::unique_ptr<Nigori> nigori) override;
-  std::unique_ptr<Nigori> GetDecryptionNigoriKey() const override;
+  void SetExplicitPassphraseDecryptionNigoriKey(
+      std::unique_ptr<Nigori> nigori) override;
+  std::unique_ptr<Nigori> GetExplicitPassphraseDecryptionNigoriKey()
+      const override;
 
  private:
   bool ShouldUsePerAccountPrefs() const;

@@ -46,6 +46,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DoNotBatch;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkDelegate;
@@ -67,7 +68,6 @@ import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.MenuUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
@@ -209,9 +209,7 @@ public class ReadingListTest {
 
         // We should default to the root bookmark.
         Assert.assertEquals(BookmarkUiMode.FOLDER, delegate.getCurrentUiMode());
-        Assert.assertEquals(
-                "chrome-native://bookmarks/folder/0",
-                BookmarkUtils.getLastUsedUrl(mActivityTestRule.getActivity()));
+        Assert.assertEquals("chrome-native://bookmarks/folder/0", BookmarkUtils.getLastUsedUrl());
         Assert.assertEquals("Bookmarks", toolbar.getTitle());
 
         // When opening "Mobile bookmarks", we should come back to it when within the same session.
@@ -229,9 +227,7 @@ public class ReadingListTest {
 
         // Reopen and make sure we're back in "Mobile bookmarks".
         Assert.assertEquals(BookmarkUiMode.FOLDER, delegate.getCurrentUiMode());
-        Assert.assertEquals(
-                "chrome-native://bookmarks/folder/3",
-                BookmarkUtils.getLastUsedUrl(mActivityTestRule.getActivity()));
+        Assert.assertEquals("chrome-native://bookmarks/folder/3", BookmarkUtils.getLastUsedUrl());
     }
 
     @Test

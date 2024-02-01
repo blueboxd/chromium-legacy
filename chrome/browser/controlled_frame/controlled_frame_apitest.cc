@@ -6,7 +6,9 @@
 
 #include "base/files/file_path.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/apps/app_service/app_registry_cache_waiter.h"
 #include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/service_worker_apitest.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/common/chrome_features.h"
@@ -34,6 +36,164 @@ constexpr char kWebRequestOnBeforeRequestEventName[] =
     "webViewInternal.onBeforeRequest";
 constexpr char kWebRequestOnAuthRequiredEventName[] =
     "webViewInternal.onAuthRequired";
+constexpr char kEvalSuccessStr[] = "SUCCESS";
+
+const extensions::MenuItem::Id CreateMenuItemId(
+    const extensions::MenuItem::ExtensionKey& extension_key,
+    const std::string& string_uid) {
+  extensions::MenuItem::Id id;
+  id.extension_key = extension_key;
+  id.string_uid = string_uid;
+  return id;
+}
+
+const content::EvalJsResult CreateContextMenuItem(
+    content::WebContents* app_contents,
+    const std::string& id,
+    const std::string& title) {
+  return content::EvalJs(app_contents, content::JsReplace(R"(
+      (async function() {
+        const frame = document.getElementsByTagName('controlledframe')[0];
+        return await new Promise((resolve, reject) => {
+          if (!frame || !frame.contextMenus || !frame.contextMenus.create) {
+            reject('FAIL: frame, frame.contextMenus, or ' +
+                'frame.contextMenus.create is undefined');
+            return;
+          }
+          frame.contextMenus.create(
+              { title: $2, id: $1 },
+              () => { resolve('SUCCESS'); });
+        });
+      })();
+    )",
+                                                          id, title));
+}
+
+const content::EvalJsResult UpdateContextMenuItemTitle(
+    content::WebContents* app_contents,
+    const std::string& id,
+    const std::string& new_title) {
+  return content::EvalJs(app_contents, content::JsReplace(R"(
+    (async function() {
+      const frame = document.getElementsByTagName('controlledframe')[0];
+      return await new Promise((resolve, reject) =>{
+        if (!frame || !frame.contextMenus || !frame.contextMenus.update) {
+          reject('FAIL: frame, frame.contextMenus, or ' +
+              'frame.contextMenus.update is undefined');
+          return;
+        }
+
+        frame.contextMenus.update(
+            /*id=*/$1,
+            { title: $2 },
+            () => { resolve('SUCCESS'); });
+      });
+    })();
+  )",
+                                                          id, new_title));
+}
+
+const content::EvalJsResult RemoveContextMenuItem(
+    content::WebContents* app_contents,
+    const std::string& id) {
+  return content::EvalJs(app_contents, content::JsReplace(R"(
+    (async function() {
+      return await new Promise((resolve, reject) =>{
+        const frame = document.getElementsByTagName('controlledframe')[0];
+        if (!frame || !frame.contextMenus || !frame.contextMenus.remove) {
+          reject('FAIL: frame, frame.contextMenus, or ' +
+              'frame.contextMenus.remove is undefined');
+          return;
+        }
+
+        frame.contextMenus.remove(
+            /*id=*/$1,
+            () => { resolve('SUCCESS'); });
+      });
+    })();
+  )",
+                                                          id));
+}
+
+const content::EvalJsResult RemoveAllContextMenuItems(
+    content::WebContents* app_contents) {
+  return content::EvalJs(app_contents, R"(
+    (async function() {
+      return await new Promise((resolve, reject) =>{
+        const frame = document.getElementsByTagName('controlledframe')[0];
+        if (!frame || !frame.contextMenus || !frame.contextMenus.removeAll) {
+          reject('FAIL: frame, frame.contextMenus, or ' +
+              'frame.contextMenus.removeAll is undefined');
+          return;
+        }
+
+        frame.contextMenus.removeAll(() => { resolve('SUCCESS'); });
+      });
+    })();
+  )");
+}
+
+const content::EvalJsResult SetBackgroundColorToWhite(
+    content::WebContents* app_contents) {
+  return content::EvalJs(app_contents, R"(
+    (function() {
+      document.body.style.backgroundColor = 'white';
+      return 'SUCCESS';
+    })();
+  )");
+}
+
+const content::EvalJsResult ExecuteScriptRedBackgroundCode(
+    content::WebContents* app_contents) {
+  return content::EvalJs(app_contents, R"(
+    (async function() {
+      return await new Promise((resolve, reject) => {
+        const frame = document.getElementsByTagName('controlledframe')[0];
+        if (!frame || !frame.request) {
+          reject('FAIL');
+          return;
+        }
+        frame.executeScript(
+          {code: "document.body.style.backgroundColor = 'red';"},
+          () => { resolve('SUCCESS') });
+      });
+    })();
+  )");
+}
+
+const content::EvalJsResult ExecuteScriptRedBackgroundFile(
+    content::WebContents* app_contents) {
+  return content::EvalJs(app_contents, R"(
+    (async function() {
+      return await new Promise((resolve, reject) => {
+        const frame = document.getElementsByTagName('controlledframe')[0];
+        if (!frame || !frame.request) {
+          reject('FAIL');
+          return;
+        }
+        frame.executeScript(
+          {file: "/execute_script.input.js"},
+          () => { resolve('SUCCESS') });
+      });
+    })();
+  )");
+}
+
+const content::EvalJsResult VerifyBackgroundColorIsRed(
+    content::WebContents* app_contents) {
+  return content::EvalJs(app_contents, R"(
+    (function() {
+      if (document.body.style.backgroundColor === 'red') {
+        return 'SUCCESS';
+      } else {
+        return 'FAIL';
+      }
+    })();
+  )");
+}
+
+// TODO(odejesush): Add tests for the rest of the Promise API methods.
+const char* kControlledFramePromiseApiMethods[]{"back", "forward", "go"};
 
 }  // namespace
 
@@ -45,13 +205,27 @@ class ControlledFrameApiTest
         CreateAndStartServer(FILE_PATH_LITERAL("web_apps/simple_isolated_app"));
   }
 
+  void SetUpOnMainThread() override {
+    web_app::IsolatedWebAppUrlInfo url_info = InstallDevModeProxyIsolatedWebApp(
+        isolated_web_app_dev_server().GetOrigin());
+    Browser* app_browser = LaunchWebAppBrowserAndWait(url_info.app_id());
+    app_contents_ = app_browser->tab_strip_model()->GetActiveWebContents();
+  }
+
+  void TearDownOnMainThread() override { app_contents_ = nullptr; }
+
   [[nodiscard]] bool CreateControlledFrame(content::WebContents* web_contents,
                                            const GURL& src) {
     static std::string kCreateControlledFrame = R"(
       (async function() {
-        const controlledframe = document.createElement('controlledframe');
-        controlledframe.setAttribute('src', $1);
         await new Promise((resolve, reject) => {
+          const controlledframe = document.createElement('controlledframe');
+          if (!('src' in controlledframe)) {
+            // Tag is undefined or generates a malformed response.
+            reject('FAIL');
+            return;
+          }
+          controlledframe.setAttribute('src', $1);
           controlledframe.addEventListener('loadstop', resolve);
           controlledframe.addEventListener('loadabort', reject);
           document.body.appendChild(controlledframe);
@@ -74,36 +248,164 @@ class ControlledFrameApiTest
     return web_view_guest;
   }
 
+  void ExpectMenuItemWithIdAndTitle(
+      const extensions::MenuItem::ExtensionKey& extension_key,
+      const std::string& expected_id,
+      const std::string& expected_title) {
+    auto* menu_manager = extensions::MenuManager::Get(browser_context());
+    extensions::MenuItem* menu_item =
+        menu_manager->GetItemById(CreateMenuItemId(extension_key, expected_id));
+
+    ASSERT_TRUE(menu_item);
+    EXPECT_EQ(expected_title, menu_item->title());
+  }
+
   const net::EmbeddedTestServer& isolated_web_app_dev_server() {
     return *isolated_web_app_dev_server_.get();
   }
 
+  content::WebContents* app_contents() { return app_contents_; }
+
+  content::BrowserContext* browser_context() {
+    return app_contents_->GetBrowserContext();
+  }
+
  private:
+  raw_ptr<content::WebContents> app_contents_;
   std::unique_ptr<net::EmbeddedTestServer> isolated_web_app_dev_server_;
 };
+
+IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, ContextMenusCreate) {
+  const GURL& kOriginalControlledFrameUrl =
+      isolated_web_app_dev_server().GetURL("/controlled_frame.html");
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
+  extensions::WebViewGuest* web_view_guest = GetWebViewGuest(app_contents());
+  auto* menu_manager = extensions::MenuManager::Get(browser_context());
+
+  const extensions::MenuItem::ExtensionKey extension_key(
+      /*extension_id=*/"", web_view_guest->owner_rfh()->GetProcess()->GetID(),
+      web_view_guest->owner_rfh()->GetRoutingID(),
+      web_view_guest->view_instance_id());
+  EXPECT_EQ(0u, menu_manager->MenuItemsSize(extension_key));
+
+  static constexpr std::string kItem1ID = "1";
+  static constexpr std::string kItem1Title = "Test";
+  EXPECT_EQ(kEvalSuccessStr,
+            CreateContextMenuItem(app_contents(), kItem1ID, kItem1Title));
+  ASSERT_EQ(1u, menu_manager->MenuItemsSize(extension_key));
+  ExpectMenuItemWithIdAndTitle(extension_key, kItem1ID, kItem1Title);
+
+  static constexpr std::string kItem2ID = "2";
+  static constexpr std::string kItem2Title = "Test2";
+  EXPECT_EQ(kEvalSuccessStr,
+            CreateContextMenuItem(app_contents(), kItem2ID, kItem2Title));
+  ASSERT_EQ(2u, menu_manager->MenuItemsSize(extension_key));
+  ExpectMenuItemWithIdAndTitle(extension_key, kItem2ID, kItem2Title);
+
+  static constexpr std::string kItem3ID = "3";
+  static constexpr std::string kItem3Title = "Test3";
+  EXPECT_EQ(kEvalSuccessStr,
+            CreateContextMenuItem(app_contents(), kItem3ID, kItem3Title));
+  ASSERT_EQ(3u, menu_manager->MenuItemsSize(extension_key));
+  ExpectMenuItemWithIdAndTitle(extension_key, kItem3ID, kItem3Title);
+}
+
+IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, ContextMenusUpdate) {
+  const GURL& kOriginalControlledFrameUrl =
+      isolated_web_app_dev_server().GetURL("/controlled_frame.html");
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
+  extensions::WebViewGuest* web_view_guest = GetWebViewGuest(app_contents());
+  auto* menu_manager = extensions::MenuManager::Get(browser_context());
+
+  static constexpr std::string kItem1ID = "1";
+  static constexpr std::string kItem1Title = "Test";
+  EXPECT_EQ(kEvalSuccessStr,
+            CreateContextMenuItem(app_contents(), kItem1ID, kItem1Title));
+
+  const extensions::MenuItem::ExtensionKey extension_key(
+      /*extension_id=*/"", web_view_guest->owner_rfh()->GetProcess()->GetID(),
+      web_view_guest->owner_rfh()->GetRoutingID(),
+      web_view_guest->view_instance_id());
+  ASSERT_EQ(1u, menu_manager->MenuItemsSize(extension_key));
+  ExpectMenuItemWithIdAndTitle(extension_key, kItem1ID, kItem1Title);
+
+  static constexpr std::string kItem1NewTitle = "Test1";
+  EXPECT_EQ(kEvalSuccessStr, UpdateContextMenuItemTitle(
+                                 app_contents(), kItem1ID, kItem1NewTitle));
+
+  ASSERT_EQ(1u, menu_manager->MenuItemsSize(extension_key));
+  ExpectMenuItemWithIdAndTitle(extension_key, kItem1ID, kItem1NewTitle);
+}
+
+IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, ContextMenusRemove) {
+  const GURL& kOriginalControlledFrameUrl =
+      isolated_web_app_dev_server().GetURL("/controlled_frame.html");
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
+  extensions::WebViewGuest* web_view_guest = GetWebViewGuest(app_contents());
+  auto* menu_manager = extensions::MenuManager::Get(browser_context());
+
+  static constexpr std::string kItem1ID = "1";
+  static constexpr std::string kItem1Title = "Test1";
+  EXPECT_EQ(kEvalSuccessStr,
+            CreateContextMenuItem(app_contents(), kItem1ID, kItem1Title));
+  EXPECT_EQ(kEvalSuccessStr, CreateContextMenuItem(app_contents(), /*id=*/"2",
+                                                   /*title=*/"Test2"));
+
+  EXPECT_EQ(kEvalSuccessStr, RemoveContextMenuItem(app_contents(), kItem1ID));
+
+  const extensions::MenuItem::ExtensionKey extension_key(
+      /*extension_id=*/"", web_view_guest->owner_rfh()->GetProcess()->GetID(),
+      web_view_guest->owner_rfh()->GetRoutingID(),
+      web_view_guest->view_instance_id());
+  ASSERT_EQ(1u, menu_manager->MenuItemsSize(extension_key));
+
+  extensions::MenuItem* deleted_item =
+      menu_manager->GetItemById(CreateMenuItemId(extension_key, kItem1ID));
+  EXPECT_FALSE(deleted_item);
+}
+
+IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, ContextMenusRemoveAll) {
+  const GURL& kOriginalControlledFrameUrl =
+      isolated_web_app_dev_server().GetURL("/controlled_frame.html");
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
+  extensions::WebViewGuest* web_view_guest = GetWebViewGuest(app_contents());
+  auto* menu_manager = extensions::MenuManager::Get(browser_context());
+
+  EXPECT_EQ(kEvalSuccessStr, CreateContextMenuItem(app_contents(), /*id=*/"1",
+                                                   /*title=*/"Test1"));
+  EXPECT_EQ(kEvalSuccessStr, CreateContextMenuItem(app_contents(), /*id=*/"2",
+                                                   /*title=*/"Test2"));
+
+  EXPECT_EQ(kEvalSuccessStr, RemoveAllContextMenuItems(app_contents()));
+
+  const extensions::MenuItem::ExtensionKey extension_key(
+      /*extension_id=*/"", web_view_guest->owner_rfh()->GetProcess()->GetID(),
+      web_view_guest->owner_rfh()->GetRoutingID(),
+      web_view_guest->view_instance_id());
+  ASSERT_EQ(0u, menu_manager->MenuItemsSize(extension_key));
+}
 
 // This test checks if the Controlled Frame is able to intercept URL navigation
 // requests.
 IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, URLLoaderIsProxied) {
-  web_app::IsolatedWebAppUrlInfo url_info = InstallDevModeProxyIsolatedWebApp(
-      isolated_web_app_dev_server().GetOrigin());
-  Browser* app_browser = LaunchWebAppBrowserAndWait(url_info.app_id());
-  content::WebContents* app_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
   const GURL& kOriginalControlledFrameUrl =
       isolated_web_app_dev_server().GetURL("/controlled_frame.html");
-  ASSERT_TRUE(CreateControlledFrame(app_contents, kOriginalControlledFrameUrl));
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
 
-  content::BrowserContext* browser_context = app_contents->GetBrowserContext();
   auto* web_request_event_router =
-      extensions::WebRequestEventRouter::Get(browser_context);
+      extensions::WebRequestEventRouter::Get(browser_context());
   EXPECT_EQ(0u, web_request_event_router->GetListenerCountForTesting(
-                    browser_context, kWebRequestOnBeforeRequestEventName));
+                    browser_context(), kWebRequestOnBeforeRequestEventName));
 
   const std::string& kServerHostPort =
       isolated_web_app_dev_server().host_port_pair().ToString();
-  EXPECT_EQ("SUCCESS",
-            content::EvalJs(app_contents, content::JsReplace(R"(
+  EXPECT_EQ("SUCCESS", content::EvalJs(app_contents(),
+                                       content::JsReplace(R"(
     (function() {
       const frame = document.getElementsByTagName('controlledframe')[0];
       if (!frame || !frame.request) {
@@ -123,11 +425,11 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, URLLoaderIsProxied) {
       return 'SUCCESS';
     })();
   )",
-                                                             kServerHostPort)));
+                                                          kServerHostPort)));
   EXPECT_EQ(3u, web_request_event_router->GetListenerCountForTesting(
-                    browser_context, kWebRequestOnBeforeRequestEventName));
+                    browser_context(), kWebRequestOnBeforeRequestEventName));
 
-  auto* web_view_guest = GetWebViewGuest(app_contents);
+  auto* web_view_guest = GetWebViewGuest(app_contents());
   content::WebContents* guest_web_contents = web_view_guest->web_contents();
 
   // Check that navigations can be cancelled.
@@ -179,24 +481,19 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, URLLoaderIsProxied) {
 }
 
 IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, AuthRequestIsProxied) {
-  web_app::IsolatedWebAppUrlInfo url_info = InstallDevModeProxyIsolatedWebApp(
-      isolated_web_app_dev_server().GetOrigin());
-  Browser* app_browser = LaunchWebAppBrowserAndWait(url_info.app_id());
-  content::WebContents* app_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
   const GURL& kOriginalControlledFrameUrl =
       isolated_web_app_dev_server().GetURL("/controlled_frame.html");
-  ASSERT_TRUE(CreateControlledFrame(app_contents, kOriginalControlledFrameUrl));
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
 
-  content::BrowserContext* browser_context = app_contents->GetBrowserContext();
   auto* web_request_event_router =
-      extensions::WebRequestEventRouter::Get(browser_context);
+      extensions::WebRequestEventRouter::Get(browser_context());
   EXPECT_EQ(0u, web_request_event_router->GetListenerCountForTesting(
-                    browser_context, kWebRequestOnAuthRequiredEventName));
+                    browser_context(), kWebRequestOnAuthRequiredEventName));
 
   const std::string& kServerHostPort =
       isolated_web_app_dev_server().host_port_pair().ToString();
-  EXPECT_EQ(true, content::EvalJs(app_contents, R"(
+  EXPECT_EQ(true, content::EvalJs(app_contents(), R"(
     (function() {
       const frame = document.getElementsByTagName('controlledframe')[0];
       if (!frame || !frame.request) {
@@ -217,9 +514,9 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, AuthRequestIsProxied) {
     })();
   )"));
   EXPECT_EQ(1u, web_request_event_router->GetListenerCountForTesting(
-                    browser_context, kWebRequestOnAuthRequiredEventName));
+                    browser_context(), kWebRequestOnAuthRequiredEventName));
 
-  auto* web_view_guest = GetWebViewGuest(app_contents);
+  auto* web_view_guest = GetWebViewGuest(app_contents());
   content::WebContents* guest_web_contents = web_view_guest->web_contents();
 
   // Check that the injecting the credentials through WebRequest produces a
@@ -288,24 +585,19 @@ class ControlledFrameWebSocketApiTest : public ControlledFrameApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ControlledFrameWebSocketApiTest, WebSocketIsProxied) {
-  web_app::IsolatedWebAppUrlInfo url_info = InstallDevModeProxyIsolatedWebApp(
-      isolated_web_app_dev_server().GetOrigin());
-  Browser* app_browser = LaunchWebAppBrowserAndWait(url_info.app_id());
-  content::WebContents* app_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
   const GURL& kOriginalControlledFrameUrl =
       isolated_web_app_dev_server().GetURL("/controlled_frame.html");
-  ASSERT_TRUE(CreateControlledFrame(app_contents, kOriginalControlledFrameUrl));
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
 
-  content::BrowserContext* browser_context = app_contents->GetBrowserContext();
   auto* web_request_event_router =
-      extensions::WebRequestEventRouter::Get(browser_context);
+      extensions::WebRequestEventRouter::Get(browser_context());
   EXPECT_EQ(0u, web_request_event_router->GetListenerCountForTesting(
-                    browser_context, kWebRequestOnBeforeRequestEventName));
+                    browser_context(), kWebRequestOnBeforeRequestEventName));
 
   // Use Web Sockets before installing a WebRequest event listener to verify
   // that it works inside of the Controlled Frame.
-  auto* web_view_guest = GetWebViewGuest(app_contents);
+  auto* web_view_guest = GetWebViewGuest(app_contents());
   content::WebContents* guest_web_contents = web_view_guest->web_contents();
   GURL::Replacements http_scheme_replacement;
   http_scheme_replacement.SetSchemeStr("http");
@@ -342,7 +634,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebSocketApiTest, WebSocketIsProxied) {
 
   // Set up a WebRequest event listener that cancels any requests to the Web
   // Socket server.
-  EXPECT_EQ(true, content::EvalJs(app_contents,
+  EXPECT_EQ(true, content::EvalJs(app_contents(),
                                   R"(
     (function() {
       const frame = document.getElementsByTagName('controlledframe')[0];
@@ -356,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebSocketApiTest, WebSocketIsProxied) {
     })();
   )"));
   EXPECT_EQ(1u, web_request_event_router->GetListenerCountForTesting(
-                    browser_context, kWebRequestOnBeforeRequestEventName));
+                    browser_context(), kWebRequestOnBeforeRequestEventName));
   {
     content::TitleWatcher title_watcher(guest_web_contents, u"PASS");
     title_watcher.AlsoWaitForTitle(u"FAIL");
@@ -396,24 +688,19 @@ class ControlledFrameWebTransportApiTest : public ControlledFrameApiTest {
 
 IN_PROC_BROWSER_TEST_F(ControlledFrameWebTransportApiTest,
                        WebTransportIsProxied) {
-  web_app::IsolatedWebAppUrlInfo url_info = InstallDevModeProxyIsolatedWebApp(
-      isolated_web_app_dev_server().GetOrigin());
-  Browser* app_browser = LaunchWebAppBrowserAndWait(url_info.app_id());
-  content::WebContents* app_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
   const GURL& kOriginalControlledFrameUrl =
       isolated_web_app_dev_server().GetURL("/controlled_frame.html");
-  ASSERT_TRUE(CreateControlledFrame(app_contents, kOriginalControlledFrameUrl));
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
 
-  content::BrowserContext* browser_context = app_contents->GetBrowserContext();
   auto* web_request_event_router =
-      extensions::WebRequestEventRouter::Get(browser_context);
+      extensions::WebRequestEventRouter::Get(browser_context());
   EXPECT_EQ(0u, web_request_event_router->GetListenerCountForTesting(
-                    browser_context, kWebRequestOnBeforeRequestEventName));
+                    browser_context(), kWebRequestOnBeforeRequestEventName));
 
   // Use WebTransport before installing a WebRequest event listener to verify
   // that it works inside of the Controlled Frame.
-  auto* web_view_guest = GetWebViewGuest(app_contents);
+  auto* web_view_guest = GetWebViewGuest(app_contents());
   content::WebContents* guest_web_contents = web_view_guest->web_contents();
   EXPECT_EQ(true, content::EvalJs(
                       guest_web_contents,
@@ -435,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebTransportApiTest,
 
   // Set up a WebRequest event listener that cancels any requests to the
   // WebTransport server.
-  EXPECT_EQ(true, content::EvalJs(app_contents,
+  EXPECT_EQ(true, content::EvalJs(app_contents(),
                                   R"(
     let cancelRequest = false;
     (function() {
@@ -451,7 +738,7 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebTransportApiTest,
     })();
   )"));
   EXPECT_EQ(1u, web_request_event_router->GetListenerCountForTesting(
-                    browser_context, kWebRequestOnBeforeRequestEventName));
+                    browser_context(), kWebRequestOnBeforeRequestEventName));
 
   EXPECT_EQ(false, content::EvalJs(
                        guest_web_contents,
@@ -472,6 +759,39 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameWebTransportApiTest,
   )",
                            webtransport_server().server_address().port())));
 }
+
+class ControlledFramePromiseApiTest
+    : public ControlledFrameApiTest,
+      public testing::WithParamInterface<const char*> {};
+
+IN_PROC_BROWSER_TEST_P(ControlledFramePromiseApiTest, PromiseAPIs) {
+  web_app::IsolatedWebAppUrlInfo url_info = InstallDevModeProxyIsolatedWebApp(
+      isolated_web_app_dev_server().GetOrigin());
+  Browser* app_browser = LaunchWebAppBrowserAndWait(url_info.app_id());
+  content::WebContents* app_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  const GURL& test_url =
+      url_info.origin().GetURL().Resolve("/controlled_frame_api_test.html");
+  ASSERT_TRUE(content::NavigateToURL(app_contents, test_url));
+
+  const GURL& original_controlled_frame_url =
+      isolated_web_app_dev_server().GetURL("/controlled_frame.html");
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents, original_controlled_frame_url));
+
+  EXPECT_EQ("SUCCESS",
+            content::EvalJs(app_contents, content::JsReplace(R"(
+      (async function() {
+        const frame = document.getElementsByTagName('controlledframe')[0];
+        return await testAPI(frame, $1);
+      })();
+    )",
+                                                             GetParam())));
+}
+
+INSTANTIATE_TEST_SUITE_P(PromiseAPIs,
+                         ControlledFramePromiseApiTest,
+                         testing::ValuesIn(kControlledFramePromiseApiMethods));
 
 class ControlledFrameServiceWorkerTest
     : public extensions::ServiceWorkerBasedBackgroundTest {
@@ -532,6 +852,116 @@ IN_PROC_BROWSER_TEST_F(ControlledFrameServiceWorkerTest, Basic) {
       extensions::browsertest_util::AddTab(browser(), url);
   EXPECT_TRUE(new_web_contents);
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(ControlledFrameApiTest, ExecuteScript) {
+  const GURL& kOriginalControlledFrameUrl =
+      isolated_web_app_dev_server().GetURL("/controlled_frame.html");
+  ASSERT_TRUE(
+      CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
+
+  auto* web_view_guest = GetWebViewGuest(app_contents());
+  content::WebContents* guest_web_contents = web_view_guest->web_contents();
+
+  // Verify that executeScript() using JS code can change the background color.
+  EXPECT_EQ(kEvalSuccessStr, SetBackgroundColorToWhite(guest_web_contents));
+  EXPECT_EQ(kEvalSuccessStr, ExecuteScriptRedBackgroundCode(app_contents()));
+  EXPECT_EQ(kEvalSuccessStr, VerifyBackgroundColorIsRed(guest_web_contents));
+
+  // Verify that executeScript() using a JS file changes the background color.
+  EXPECT_EQ(kEvalSuccessStr, SetBackgroundColorToWhite(guest_web_contents));
+  EXPECT_EQ(kEvalSuccessStr, ExecuteScriptRedBackgroundFile(app_contents()));
+  EXPECT_EQ(kEvalSuccessStr, VerifyBackgroundColorIsRed(guest_web_contents));
+}
+
+class ControlledFrameAvailableChannelTest
+    : public ControlledFrameApiTest,
+      public testing::WithParamInterface<version_info::Channel> {
+ protected:
+  ControlledFrameAvailableChannelTest() : channel_(GetParam()) {}
+  ~ControlledFrameAvailableChannelTest() = default;
+  ControlledFrameAvailableChannelTest(
+      const ControlledFrameAvailableChannelTest&) = delete;
+  ControlledFrameAvailableChannelTest& operator=(
+      const ControlledFrameAvailableChannelTest&) = delete;
+
+  void CheckIsAvailable() {
+    // Test if Controlled Frame is available.
+    const GURL& kOriginalControlledFrameUrl =
+        isolated_web_app_dev_server().GetURL("/controlled_frame.html");
+    ASSERT_TRUE(
+        CreateControlledFrame(app_contents(), kOriginalControlledFrameUrl));
+    EXPECT_EQ(kEvalSuccessStr, ExecuteScriptRedBackgroundFile(app_contents()));
+  }
+
+ private:
+  extensions::ScopedCurrentChannel channel_;
+};
+
+INSTANTIATE_TEST_SUITE_P(ControlledFrameAvailableChannels,
+                         ControlledFrameAvailableChannelTest,
+                         testing::Values(version_info::Channel::STABLE,
+                                         version_info::Channel::BETA,
+                                         version_info::Channel::DEV,
+                                         version_info::Channel::CANARY,
+                                         version_info::Channel::DEFAULT));
+
+IN_PROC_BROWSER_TEST_P(ControlledFrameAvailableChannelTest, Test) {
+  CheckIsAvailable();
+}
+
+class ControlledFrameNotAvailableChannelTest
+    : public web_app::WebAppControllerBrowserTest,
+      public testing::WithParamInterface<version_info::Channel> {
+ protected:
+  ControlledFrameNotAvailableChannelTest() : channel_(GetParam()) {}
+  ~ControlledFrameNotAvailableChannelTest() = default;
+  ControlledFrameNotAvailableChannelTest(
+      const ControlledFrameNotAvailableChannelTest&) = delete;
+  ControlledFrameNotAvailableChannelTest& operator=(
+      const ControlledFrameNotAvailableChannelTest&) = delete;
+
+  [[nodiscard]] bool IsControlledFramePresent(
+      content::WebContents* web_contents) {
+    return ExecJs(web_contents, R"(
+      (async function() {
+        return await new Promise((resolve, reject) => {
+          const controlledframe = document.createElement('controlledframe');
+          if (('src' in controlledframe)) {
+            // Tag is defined.
+            resolve('SUCCESS');
+          } else {
+            reject('FAIL');
+          }
+        });
+      })();
+    )");
+  }
+
+  void CheckIsNotAvailable() {
+    // Test if Controlled Frame is not available.
+    const GURL start_url("https://app.site.test/example/index");
+    const webapps::AppId app_id = InstallPWA(start_url);
+    content::WebContents* app_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    ASSERT_FALSE(IsControlledFramePresent(app_contents));
+  }
+
+ private:
+  extensions::ScopedCurrentChannel channel_;
+};
+
+INSTANTIATE_TEST_SUITE_P(ControlledFrameNotAvailableChannels,
+                         ControlledFrameNotAvailableChannelTest,
+                         testing::Values(version_info::Channel::STABLE,
+                                         version_info::Channel::BETA,
+                                         version_info::Channel::DEV,
+                                         version_info::Channel::CANARY,
+                                         version_info::Channel::DEFAULT));
+
+IN_PROC_BROWSER_TEST_P(ControlledFrameNotAvailableChannelTest, Test) {
+  CheckIsNotAvailable();
 }
 
 }  // namespace controlled_frame

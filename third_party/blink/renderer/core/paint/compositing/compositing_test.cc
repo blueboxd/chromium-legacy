@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
+#include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
@@ -125,6 +126,8 @@ class CompositingTest : public PaintTestConfigurations,
 
  private:
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
+
+  test::TaskEnvironment task_environment_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -726,11 +729,7 @@ TEST_P(CompositingTest, HitTestOpaquenessOfSolidColorLayer) {
   )HTML");
 
   auto* layer = CcLayersByDOMElementId(RootCcLayer(), "target")[0];
-  if (RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_TRUE(layer->IsSolidColorLayerForTesting());
-  } else {
-    EXPECT_FALSE(layer->IsSolidColorLayerForTesting());
-  }
+  EXPECT_TRUE(layer->IsSolidColorLayerForTesting());
   if (RuntimeEnabledFeatures::HitTestOpaquenessEnabled()) {
     EXPECT_EQ(cc::HitTestOpaqueness::kOpaque, layer->hit_test_opaqueness());
   } else {
@@ -3044,17 +3043,8 @@ TEST_P(CompositingSimTest, SolidColorLayersWithSnapping) {
 
   auto* snap_down = CcLayerByDOMElementId("snapDown");
   auto* snap_up = CcLayerByDOMElementId("snapUp");
-  if (RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_TRUE(snap_down->IsSolidColorLayerForTesting());
-    EXPECT_TRUE(snap_up->IsSolidColorLayerForTesting());
-  } else {
-    EXPECT_TRUE(static_cast<const cc::PictureLayer*>(snap_down)
-                    ->GetRecordingSourceForTesting()
-                    ->is_solid_color());
-    EXPECT_TRUE(static_cast<const cc::PictureLayer*>(snap_up)
-                    ->GetRecordingSourceForTesting()
-                    ->is_solid_color());
-  }
+  EXPECT_TRUE(snap_down->IsSolidColorLayerForTesting());
+  EXPECT_TRUE(snap_up->IsSolidColorLayerForTesting());
 }
 
 TEST_P(CompositingSimTest, SolidColorLayerWithSubpixelTransform) {
@@ -3084,13 +3074,7 @@ TEST_P(CompositingSimTest, SolidColorLayerWithSubpixelTransform) {
   Compositor().BeginFrame();
 
   auto* target = CcLayerByDOMElementId("target");
-  if (RuntimeEnabledFeatures::SolidColorLayersEnabled()) {
-    EXPECT_TRUE(target->IsSolidColorLayerForTesting());
-  } else {
-    EXPECT_TRUE(static_cast<const cc::PictureLayer*>(target)
-                    ->GetRecordingSourceForTesting()
-                    ->is_solid_color());
-  }
+  EXPECT_TRUE(target->IsSolidColorLayerForTesting());
   EXPECT_NEAR(0.4, target->offset_to_transform_parent().x(), 0.001);
   EXPECT_NEAR(0.6, target->offset_to_transform_parent().y(), 0.001);
 }
@@ -3235,7 +3219,9 @@ TEST_P(CompositingSimTest, CompositedImageWithSubpixelOffset) {
       static_cast<const cc::PictureLayer*>(CcLayerByDOMElementId("image"));
   ASSERT_TRUE(image_layer);
   EXPECT_EQ(gfx::Vector2dF(0.25f, 0.0625f),
-            image_layer->DirectlyCompositedImageDefaultRasterScaleForTesting());
+            image_layer->GetRecordingSourceForTesting()
+                ->directly_composited_image_info()
+                ->default_raster_scale);
 }
 
 TEST_P(CompositingSimTest, CompositedImageWithSubpixelOffsetAndOrientation) {
@@ -3249,7 +3235,9 @@ TEST_P(CompositingSimTest, CompositedImageWithSubpixelOffsetAndOrientation) {
       static_cast<const cc::PictureLayer*>(CcLayerByDOMElementId("image"));
   ASSERT_TRUE(image_layer);
   EXPECT_EQ(gfx::Vector2dF(0.0625f, 0.25f),
-            image_layer->DirectlyCompositedImageDefaultRasterScaleForTesting());
+            image_layer->GetRecordingSourceForTesting()
+                ->directly_composited_image_info()
+                ->default_raster_scale);
 }
 
 }  // namespace blink

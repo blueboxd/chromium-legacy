@@ -6,6 +6,7 @@
 #define CONTENT_SERVICES_AUCTION_WORKLET_WEBIDL_COMPAT_H_
 
 #include <initializer_list>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/strings/strcat.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "v8/include/v8-local-handle.h"
 #include "v8/include/v8-value.h"
@@ -227,8 +227,9 @@ CONTENT_EXPORT IdlConvert::Status ConvertRecord(
 class CONTENT_EXPORT DictConverter {
  public:
   // This should be bigger than the biggest Sequence<> the users of this need to
-  // handle, which is currently blink::kMaxAdAuctionAdComponents.
-  static const size_t kSequenceLengthLimit = 21;
+  // handle, which is currently up to
+  // blink::kMaxAdAuctionAdComponentsConfigLimit.
+  static const size_t kSequenceLengthLimit = 101;
 
   // Prepares to convert `value` to a WebIDL dictionary.
   //
@@ -267,7 +268,7 @@ class CONTENT_EXPORT DictConverter {
   }
 
   template <typename T>
-  bool GetOptional(std::string_view field, absl::optional<T>& out) {
+  bool GetOptional(std::string_view field, std::optional<T>& out) {
     if (is_failed()) {
       return false;
     }
@@ -278,7 +279,7 @@ class CONTENT_EXPORT DictConverter {
     }
 
     if (val->IsUndefined()) {
-      out = absl::nullopt;
+      out = std::nullopt;
       return true;
     }
 

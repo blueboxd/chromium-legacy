@@ -49,7 +49,9 @@ using testing::Return;
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient()
-      : template_url_service_(new TemplateURLService(nullptr, 0)),
+      : template_url_service_(
+            new TemplateURLService(/*prefs=*/nullptr,
+                                   /*search_engine_choice_service=*/nullptr)),
         pref_service_(new TestingPrefServiceSimple()) {
     pref_service_->registry()->RegisterBooleanPref(
         omnibox::kDocumentSuggestEnabled, true);
@@ -385,7 +387,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
      })",
       kSampleOriginalURL);
 
-  absl::optional<base::Value> response =
+  std::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponse);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -473,7 +475,7 @@ TEST_F(DocumentProviderTest,
      })",
       kSampleOriginalURL);
 
-  absl::optional<base::Value> response =
+  std::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithMimeTypes);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -566,7 +568,7 @@ TEST_F(DocumentProviderTest, MatchDescriptionString) {
     })",
       kSampleOriginalURL);
 
-  absl::optional<base::Value> response =
+  std::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithMimeTypes);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -616,7 +618,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
      })",
       kSampleOriginalURL);
 
-  absl::optional<base::Value> response =
+  std::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithTies);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -674,7 +676,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
      })",
       kSampleOriginalURL);
 
-  absl::optional<base::Value> response =
+  std::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithTies);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -734,7 +736,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
      })",
       kSampleOriginalURL);
 
-  absl::optional<base::Value> response =
+  std::optional<base::Value> response =
       base::JSONReader::Read(kGoodJSONResponseWithTies);
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
@@ -783,7 +785,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithBadResponse) {
   ACMatches matches;
   ASSERT_FALSE(provider_->backoff_for_session_);
 
-  absl::optional<base::Value> bad_response = base::JSONReader::Read(
+  std::optional<base::Value> bad_response = base::JSONReader::Read(
       kMismatchedMessageJSON, base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(bad_response);
   ASSERT_TRUE(bad_response->is_dict());
@@ -1140,7 +1142,7 @@ TEST_F(DocumentProviderTest, LowQualitySuggestions) {
   auto test = [&](const std::string& response_str,
                   const std::string& input_text,
                   const std::vector<int> expected_scores) {
-    absl::optional<base::Value> response = base::JSONReader::Read(response_str);
+    std::optional<base::Value> response = base::JSONReader::Read(response_str);
     provider_->input_.UpdateText(base::UTF8ToUTF16(input_text), 0, {});
     ACMatches matches = provider_->ParseDocumentSearchResults(*response);
 

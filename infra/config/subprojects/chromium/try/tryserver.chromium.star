@@ -40,27 +40,12 @@ try_.builder(
     gn_args = gn_args.config(
         configs = [
             "ci/android-official",
-            "dcheck_always_on",
+            # TODO(crbug.com/1517934): Restore DCHECKs when the build is fixed.
+            #"dcheck_always_on",
         ],
     ),
-    ssd = True,
+    builderless = False,
     contact_team_email = "clank-engprod@google.com",
-)
-
-try_.builder(
-    name = "fuchsia-official",
-    branch_selector = branches.selector.FUCHSIA_BRANCHES,
-    mirrors = [
-        "ci/fuchsia-official",
-    ],
-    gn_args = gn_args.config(
-        configs = [
-            "ci/fuchsia-official",
-            "minimal_symbols",
-            "dcheck_always_on",
-        ],
-    ),
-    ssd = True,
 )
 
 try_.builder(

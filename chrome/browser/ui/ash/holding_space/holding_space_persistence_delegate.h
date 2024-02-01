@@ -61,8 +61,9 @@ class HoldingSpacePersistenceDelegate
       const std::vector<const HoldingSpaceItem*>& items) override;
   void OnHoldingSpaceItemsRemoved(
       const std::vector<const HoldingSpaceItem*>& items) override;
-  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item,
-                                 uint32_t updated_fields) override;
+  void OnHoldingSpaceItemUpdated(
+      const HoldingSpaceItem* item,
+      const HoldingSpaceItemUpdatedFields& updated_fields) override;
 
   // Restores the holding space model from persistent storage.
   void RestoreModelFromPersistence();
@@ -72,7 +73,7 @@ class HoldingSpacePersistenceDelegate
   void MaybeRemoveItemsFromPersistence();
 
   // Owned by `HoldingSpaceKeyedService`.
-  const raw_ptr<ThumbnailLoader, ExperimentalAsh> thumbnail_loader_;
+  const raw_ptr<ThumbnailLoader> thumbnail_loader_;
 
   // Callback to invoke when holding space persistence has been restored.
   PersistenceRestoredCallback persistence_restored_callback_;

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,13 @@
 
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_item.h"
 
-class GURL;
+@class FaviconAttributes;
+@class FaviconView;
 
-// SearchEngineItem contains the model data for a TableViewURLCell.
-@interface SettingsSearchEngineItem : TableViewItem
+// This protocol is implemented by SettingsSearchEngineItem and
+// LegacySettingsSearchEngineItem. This can be removed once
+// LegacySettingsSearchEngineItem is removed.
+@protocol SettingsSearchEngineItem <NSObject>
 
 // The enabled/disabled state. If disabled, user interaction will be forbidden
 // and cell's alpha will be reduced.
@@ -21,12 +24,25 @@ class GURL;
 @property(nonatomic, readwrite, copy) NSString* text;
 // The text for the subtitle.
 @property(nonatomic, readwrite, copy) NSString* detailText;
-// The URL to fetch the favicon. This can be the favicon's URL, or a "fake" web
-// page URL created by filling empty query word into the search engine's
-// searchable URL template(e.g. "http://www.google.com/?q=").
-@property(nonatomic, assign) GURL URL;
-// Identifier to match a URLItem with its URLCell.
-@property(nonatomic, readonly, copy) NSString* uniqueIdentifier;
+
+@end
+
+// SettingsSearchEngineItem contains the model data for a TableViewURLCell.
+@interface SettingsSearchEngineItem : TableViewItem <SettingsSearchEngineItem>
+
+// Sets the favicon.
+@property(nonatomic, strong) FaviconAttributes* faviconAttributes;
+
+@end
+
+@interface SettingsSearchEngineCell : TableViewCell
+
+// Cell image.
+@property(nonatomic, strong, readonly) FaviconView* faviconView;
+// Cell title.
+@property(nonatomic, strong, readonly) UILabel* textLabel;
+// Cell subtitle.
+@property(nonatomic, strong, readonly) UILabel* detailTextLabel;
 
 @end
 

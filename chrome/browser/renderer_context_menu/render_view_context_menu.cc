@@ -132,8 +132,10 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/compose/buildflags.h"
+#include "components/compose/core/browser/compose_features.h"
 #include "components/custom_handlers/protocol_handler.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/guest_view/browser/guest_view_base.h"
@@ -251,7 +253,9 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)
+#include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/pdf/pdf_frame_util.h"
+#include "pdf/pdf_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -722,13 +726,13 @@ bool DoesFormControlTypeSupportEmoji(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // If the link points to a system web app (in |profile|), return its type.
 // Otherwise nullopt.
-absl::optional<ash::SystemWebAppType> GetLinkSystemAppType(Profile* profile,
-                                                           const GURL& url) {
-  absl::optional<webapps::AppId> link_app_id =
+std::optional<ash::SystemWebAppType> GetLinkSystemAppType(Profile* profile,
+                                                          const GURL& url) {
+  std::optional<webapps::AppId> link_app_id =
       web_app::FindInstalledAppWithUrlInScope(profile, url);
 
   if (!link_app_id)
-    return absl::nullopt;
+    return std::nullopt;
 
   return ash::GetSystemWebAppTypeForAppId(profile, *link_app_id);
 }
@@ -776,6 +780,21 @@ Browser* FindNormalBrowser(const Profile* profile) {
   return nullptr;
 }
 
+#if BUILDFLAG(ENABLE_PDF)
+// Returns true if the PDF viewer is handling the save, false otherwise.
+bool MaybePdfViewerHandlesSave(RenderFrameHost* frame_host) {
+  if (!base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif) ||
+      !IsFrameInPdfViewer(frame_host)) {
+    return false;
+  }
+
+  RenderFrameHost* embedder_host = pdf_frame_util::GetEmbedderHost(frame_host);
+  CHECK(embedder_host);
+
+  return pdf_extension_util::MaybeDispatchSaveEvent(embedder_host);
+}
+#endif  // BUILDFLAG(ENABLE_PDF)
+
 }  // namespace
 
 // static
@@ -797,6 +816,7 @@ void RenderViewContextMenu::AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(RenderViewContextMenu,
                                       kExitFullscreenMenuItem);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(RenderViewContextMenu, kComposeMenuItem);
 
 RenderViewContextMenu::RenderViewContextMenu(
     content::RenderFrameHost& render_frame_host,
@@ -818,7 +838,8 @@ RenderViewContextMenu::RenderViewContextMenu(
       autofill_context_menu_manager_(
           autofill::PersonalDataManagerFactory::GetForProfile(GetProfile()),
           this,
-          &menu_model_) {
+          &menu_model_),
+      new_badge_tracker_(GetProfile()) {
   if (!g_custom_id_ranges_initialized) {
     g_custom_id_ranges_initialized = true;
     SetContentCustomCommandIdRange(IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
@@ -1183,7 +1204,14 @@ void RenderViewContextMenu::InitMenu() {
   }
 
   // Show Read Anything option if it's not already open in the side panel.
-  if (features::IsReadAnythingEnabled()) {
+  // Only show it on the context menu for the page, selections without links,
+  // and editables.
+  if (features::IsReadAnythingEnabled() &&
+      (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PAGE) ||
+       content_type_->SupportsGroup(
+           ContextMenuContentType::ITEM_GROUP_SMART_SELECTION) ||
+       content_type_->SupportsGroup(
+           ContextMenuContentType::ITEM_GROUP_EDITABLE))) {
     if (GetBrowser() && GetBrowser()->is_type_normal() &&
         !IsReadAnythingEntryShowing(GetBrowser())) {
       AppendReadingModeItem();
@@ -1648,7 +1676,7 @@ void RenderViewContextMenu::AppendLinkItems() {
         ash::SystemWebDialogDelegate::HasInstance(current_url_);
 
     Profile* profile = GetProfile();
-    absl::optional<ash::SystemWebAppType> link_system_app_type =
+    std::optional<ash::SystemWebAppType> link_system_app_type =
         GetLinkSystemAppType(profile, params_.link_url);
 
     // true if the link points to a WebUI page, including SWA.
@@ -1756,9 +1784,7 @@ void RenderViewContextMenu::AppendLinkItems() {
         }
       }
 
-      if ((multiple_profiles_open_ ||
-           (base::FeatureList::IsEnabled(features::kDisplayOpenLinkAsProfile) &&
-            has_active_profiles))) {
+      if (multiple_profiles_open_ || has_active_profiles) {
         DCHECK(!target_profiles_entries.empty());
         if (target_profiles_entries.size() == 1) {
           int menu_index = static_cast<int>(profile_link_paths_.size());
@@ -1874,7 +1900,7 @@ void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
   if (!provider)
     return;
 
-  absl::optional<webapps::AppId> link_app_id =
+  std::optional<webapps::AppId> link_app_id =
       web_app::FindInstalledAppWithUrlInScope(profile, params_.link_url);
   if (!link_app_id)
     return;
@@ -2010,7 +2036,6 @@ void RenderViewContextMenu::AppendVideoItems() {
   if (base::FeatureList::IsEnabled(media::kContextMenuSaveVideoFrameAs)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS,
                                     IDS_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS);
-    menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
   }
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
@@ -2048,8 +2073,29 @@ void RenderViewContextMenu::AppendMediaItems() {
 }
 
 void RenderViewContextMenu::AppendPluginItems() {
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
+
+  bool is_full_page_pdf_viewer = false;
+#if BUILDFLAG(ENABLE_PDF)
+  // Always append page items for full page PDF Viewers.
+  if (base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif) &&
+      render_frame_host) {
+    // If the plugin is the PDF viewer, then `render_frame_host` will either be
+    // the PDF extension host or the PDF content host.
+    RenderFrameHost* extension_host =
+        pdf_frame_util::FindFullPagePdfExtensionHost(embedder_web_contents_);
+    // Check if the context menu is for the PDF extension host.
+    is_full_page_pdf_viewer = render_frame_host == extension_host;
+    if (!is_full_page_pdf_viewer) {
+      // Check if the context menu is for the PDF content host.
+      RenderFrameHost* parent_host = render_frame_host->GetParent();
+      is_full_page_pdf_viewer = parent_host && (parent_host == extension_host);
+    }
+  }
+#endif  // BUILDFLAG(ENABLE_PDF)
   if (params_.page_url == params_.src_url ||
-      (guest_view::GuestViewBase::IsGuest(GetRenderFrameHost()) &&
+      ((is_full_page_pdf_viewer ||
+        guest_view::GuestViewBase::IsGuest(render_frame_host)) &&
        (!embedder_web_contents_ || !embedder_web_contents_->IsSavable()))) {
     // Both full page and embedded plugins are hosted as guest now,
     // the difference is a full page plugin is not considered as savable.
@@ -2199,9 +2245,7 @@ void RenderViewContextMenu::AppendMediaRouterItem() {
 void RenderViewContextMenu::AppendReadingModeItem() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE,
                                   IDS_CONTENT_CONTEXT_READING_MODE);
-  menu_model_.SetIsNewFeatureAt(
-      menu_model_.GetItemCount() - 1,
-      !content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK));
+  menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -2334,17 +2378,35 @@ void RenderViewContextMenu::AppendSpellingAndSearchSuggestionItems() {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (render_frame_host) {
     auto* compose_client = GetChromeComposeClient();
-    if (compose_client &&
-        compose_client->ShouldTriggerContextMenu(render_frame_host, params_)) {
+    if (compose_client) {
+      bool should_trigger =
+          compose_client->ShouldTriggerContextMenu(render_frame_host, params_);
       compose::LogComposeContextMenuCtr(
           compose::ComposeContextMenuCtrEvent::kMenuItemDisplayed);
+      base::RecordAction(
+          base::UserMetricsAction("Compose.ContextMenu.ItemSeen"));
       menu_model_.AddItemWithStringId(IDC_CONTEXT_COMPOSE,
-                                      IDS_COMPOSE_SUGGESTION_MAIN_TEXT);
-      // TODO(b/303646344): Remove new feature tag when no longer new.
-      menu_model_.SetIsNewFeatureAt(
-          menu_model_.GetItemCount() - 1,
-          !content_type_->SupportsGroup(
-              ContextMenuContentType::ITEM_GROUP_LINK));
+                                      IDS_COMPOSE_CONTEXT_MENU_TEXT);
+
+      absl::optional<size_t> command_index =
+          menu_model_.GetIndexOfCommandId(IDC_CONTEXT_COMPOSE);
+
+      if (command_index.has_value()) {
+        menu_model_.SetElementIdentifierAt(command_index.value(),
+                                           kComposeMenuItem);
+
+        if (should_trigger) {
+          // TODO(b/303646344): Remove new feature tag when no longer new.
+          menu_model_.SetIsNewFeatureAt(
+              menu_model_.GetItemCount() - 1,
+              new_badge_tracker_.TryShowNewBadge(
+                  feature_engagement::kIPHComposeMenuNewBadgeFeature,
+                  &compose::features::kEnableCompose));
+        } else {
+          // Still show the menu item, but disable it.
+          menu_model_.SetEnabledAt(command_index.value(), false);
+        }
+      }
 
       render_separator = true;
     }
@@ -2550,7 +2612,7 @@ void RenderViewContextMenu::AppendSharingItems() {
 #if !BUILDFLAG(IS_FUCHSIA)
 void RenderViewContextMenu::AppendClickToCallItem() {
   SharingClickToCallEntryPoint entry_point;
-  absl::optional<std::string> phone_number;
+  std::optional<std::string> phone_number;
   std::string selection_text;
   if (ShouldOfferClickToCallForURL(browser_context_, params_.link_url)) {
     entry_point = SharingClickToCallEntryPoint::kRightClickLink;
@@ -3182,6 +3244,13 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_SAVE_PAGE:
+#if BUILDFLAG(ENABLE_PDF)
+      // Give the PDF viewer a chance to handle the save, otherwise have the
+      // embedder `WebContents` handle it.
+      if (MaybePdfViewerHandlesSave(GetRenderFrameHost())) {
+        break;
+      }
+#endif  // BUILDFLAG(ENABLE_PDF)
       embedder_web_contents_->OnSavePage();
       break;
 
@@ -3376,21 +3445,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
 #if BUILDFLAG(ENABLE_COMPOSE)
     case IDC_CONTEXT_COMPOSE: {
-      auto* client = GetChromeComposeClient();
-      compose::ComposeManager* compose_manager =
-          client ? &client->GetManager() : nullptr;
-      RenderFrameHost* render_frame_host = GetRenderFrameHost();
-      if (compose_manager && render_frame_host) {
-        auto* content_autofill_driver =
-            autofill::ContentAutofillDriver::GetForRenderFrameHost(
-                render_frame_host);
-        if (content_autofill_driver) {
-          compose_manager->OpenComposeFromContextMenu(
-              content_autofill_driver,
-              autofill::FormRendererId(params_.form_renderer_id),
-              autofill::FieldRendererId(params_.field_renderer_id));
-        }
-      }
+      ExecOpenCompose();
       break;
     }
 #endif  // BUILDFLAG(ENABLE_COMPOSE)
@@ -3871,7 +3926,7 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
 }
 
 void RenderViewContextMenu::ExecOpenWebApp() {
-  absl::optional<webapps::AppId> app_id =
+  std::optional<webapps::AppId> app_id =
       web_app::FindInstalledAppWithUrlInScope(
           Profile::FromBrowserContext(browser_context_), params_.link_url);
   // |app_id| could be nullopt if it has been uninstalled since the user
@@ -3927,6 +3982,38 @@ void RenderViewContextMenu::ExecOpenLinkInProfile(int profile_index) {
       profile_path, false,
       base::BindRepeating(OnBrowserCreated, params_.link_url));
 }
+
+#if BUILDFLAG(ENABLE_COMPOSE)
+void RenderViewContextMenu::ExecOpenCompose() {
+  ChromeComposeClient* client = GetChromeComposeClient();
+  if (!client) {
+    compose::LogOpenComposeDialogResult(
+        compose::OpenComposeDialogResult::kNoChromeComposeClient);
+    return;
+  }
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
+  if (!render_frame_host) {
+    compose::LogOpenComposeDialogResult(
+        compose::OpenComposeDialogResult::kNoRenderFrameHost);
+    return;
+  }
+  if (auto* driver = autofill::ContentAutofillDriver::GetForRenderFrameHost(
+          render_frame_host)) {
+    autofill::LocalFrameToken frame_token = driver->GetFrameToken();
+    client->GetManager().OpenCompose(
+        *driver,
+        autofill::FormGlobalId(
+            frame_token, autofill::FormRendererId(params_.form_renderer_id)),
+        autofill::FieldGlobalId(
+            frame_token, autofill::FieldRendererId(params_.field_renderer_id)),
+        compose::ComposeManagerImpl::UiEntryPoint::kContextMenu);
+    new_badge_tracker_.ActionPerformed("compose_menu_item_activated");
+  } else {
+    compose::LogOpenComposeDialogResult(
+        compose::OpenComposeDialogResult::kNoContentAutofillDriver);
+  }
+}
+#endif
 
 void RenderViewContextMenu::ExecOpenInReadAnything() {
   Browser* browser = GetBrowser();
@@ -4031,34 +4118,59 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
 }
 
 void RenderViewContextMenu::ExecSaveAs() {
+  RenderFrameHost* frame_host = GetRenderFrameHost();
   bool is_large_data_url =
       params_.has_image_contents && params_.src_url.is_empty();
   if (params_.media_type == ContextMenuDataMediaType::kCanvas ||
       (params_.media_type == ContextMenuDataMediaType::kImage &&
        is_large_data_url)) {
-    RenderFrameHost* frame_host = GetRenderFrameHost();
     if (frame_host)
       frame_host->SaveImageAt(params_.x, params_.y);
-  } else {
-    RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
-    const GURL& url = params_.src_url;
-    content::Referrer referrer = CreateReferrer(url, params_);
-    RenderFrameHost* frame_host =
-        (params_.media_type == ContextMenuDataMediaType::kPlugin)
-            ? source_web_contents_->GetOuterWebContentsFrame()
-            : GetRenderFrameHost();
-    if (frame_host) {
-      net::HttpRequestHeaders headers;
+    return;
+  }
 
-      if (params_.media_type == ContextMenuDataMediaType::kImage) {
-        headers.SetHeaderIfMissing(net::HttpRequestHeaders::kAccept,
-                                   blink::network_utils::ImageAcceptHeader());
-      }
-      source_web_contents_->SaveFrameWithHeaders(
-          url, referrer, headers.ToString(), params_.suggested_filename,
-          frame_host);
+  RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
+  GURL url = params_.src_url;
+  const bool is_plugin =
+      params_.media_type == ContextMenuDataMediaType::kPlugin;
+  RenderFrameHost* target_frame_host = nullptr;
+
+#if BUILDFLAG(ENABLE_PDF)
+  if (base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif) &&
+      is_plugin && IsFrameInPdfViewer(frame_host)) {
+    // Give the PDF viewer a chance to handle the save.
+    if (MaybePdfViewerHandlesSave(frame_host)) {
+      return;
+    }
+
+    // Handle the save here.
+    target_frame_host = pdf_frame_util::GetEmbedderHost(frame_host);
+    CHECK(target_frame_host);
+    url = frame_host->GetLastCommittedURL();
+  }
+#endif  // BUILDFLAG(ENABLE_PDF)
+
+  if (!target_frame_host) {
+    target_frame_host = is_plugin
+                            ? source_web_contents_->GetOuterWebContentsFrame()
+                            : frame_host;
+    if (!target_frame_host) {
+      return;
     }
   }
+
+  net::HttpRequestHeaders headers;
+
+  if (params_.media_type == ContextMenuDataMediaType::kImage) {
+    headers.SetHeaderIfMissing(net::HttpRequestHeaders::kAccept,
+                               blink::network_utils::ImageAcceptHeader());
+  }
+  content::Referrer referrer = CreateReferrer(url, params_);
+  bool is_subresource = params_.media_type != ContextMenuDataMediaType::kNone &&
+                        !params_.is_image_media_plugin_document;
+  source_web_contents_->SaveFrameWithHeaders(url, referrer, headers.ToString(),
+                                             params_.suggested_filename,
+                                             target_frame_host, is_subresource);
 }
 
 void RenderViewContextMenu::ExecExitFullscreen() {
@@ -4119,6 +4231,10 @@ void RenderViewContextMenu::ExecRegionSearch(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   Browser* browser = GetBrowser();
   CHECK(browser);
+  if (lens::features::IsLensRegionSearchStaticPageEnabled()) {
+    lens::OpenLensStaticPage(browser);
+    return;
+  }
 
   // We don't use `source_web_contents_` here because it doesn't work with the
   // PDF reader.
@@ -4419,12 +4535,14 @@ void RenderViewContextMenu::PluginActionAt(
     blink::mojom::PluginActionType plugin_action) {
   content::RenderFrameHost* plugin_rfh = nullptr;
 #if BUILDFLAG(ENABLE_PDF)
-  // A PDF plugin exists in a child frame embedded inside the extension's
-  // main frame when Pepper-free PDF viewer is enabled. To trigger any plugin
-  // action, we need to detect this child frame and trigger the actions from
-  // there.
-  plugin_rfh = pdf_frame_util::FindPdfChildFrame(
-      source_web_contents_->GetPrimaryMainFrame());
+  // A PDF plugin exists in a child frame embedded inside the PDF extension's
+  // frame. To trigger any plugin action, detect this child frame and trigger
+  // the actions from there.
+  content::RenderFrameHost* extension_rfh =
+      base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif)
+          ? pdf_frame_util::FindFullPagePdfExtensionHost(source_web_contents_)
+          : source_web_contents_->GetPrimaryMainFrame();
+  plugin_rfh = pdf_frame_util::FindPdfChildFrame(extension_rfh);
 #endif
   if (!plugin_rfh)
     plugin_rfh = source_web_contents_->GetPrimaryMainFrame();

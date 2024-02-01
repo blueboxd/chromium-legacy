@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_utils.h"
@@ -433,8 +434,11 @@ void Page::UsesOverlayScrollbarsChanged() {
   for (Page* page : AllPages()) {
     for (Frame* frame = page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
-      if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-        local_frame->View()->UsesOverlayScrollbarsChanged();
+      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+        if (LocalFrameView* view = local_frame->View()) {
+          view->UsesOverlayScrollbarsChanged();
+        }
+      }
     }
   }
 }
@@ -444,7 +448,9 @@ void Page::PlatformColorsChanged() {
     for (Frame* frame = page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
       if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-        local_frame->GetDocument()->PlatformColorsChanged();
+        if (Document* document = local_frame->GetDocument()) {
+          document->PlatformColorsChanged();
+        }
         if (LayoutView* view = local_frame->ContentLayoutObject())
           view->InvalidatePaintForViewAndDescendants();
       }
@@ -456,14 +462,31 @@ void Page::ColorSchemeChanged() {
   for (const Page* page : AllPages())
     for (Frame* frame = page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
-      if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-        local_frame->GetDocument()->ColorSchemeChanged();
+      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+        if (Document* document = local_frame->GetDocument()) {
+          document->ColorSchemeChanged();
+        }
+      }
     }
 }
 
 void Page::ColorProvidersChanged() {
-  for (Page* page : AllPages())
+  for (Page* page : AllPages()) {
     page->InvalidatePaint();
+  }
+}
+
+void Page::EmulateForcedColors(bool is_dark_theme) {
+  emulated_forced_colors_provider_ =
+      WebTestSupport::IsRunningWebTest()
+          ? std::make_unique<ui::ColorProvider>(
+                ui::CreateEmulatedForcedColorsColorProviderForTest())
+          : std::make_unique<ui::ColorProvider>(
+                ui::CreateEmulatedForcedColorsColorProvider(is_dark_theme));
+}
+
+void Page::DisableEmulatedForcedColors() {
+  emulated_forced_colors_provider_.reset();
 }
 
 void Page::UpdateColorProviders(
@@ -480,15 +503,31 @@ void Page::UpdateColorProviders(
   dark_color_provider_ = std::make_unique<ui::ColorProvider>(
       ui::CreateColorProviderFromRendererColorMap(
           color_provider_colors.dark_colors_map));
+  forced_colors_color_provider_ =
+      WebTestSupport::IsRunningWebTest()
+          ? std::make_unique<ui::ColorProvider>(
+                ui::CreateEmulatedForcedColorsColorProviderForTest())
+          : std::make_unique<ui::ColorProvider>(
+                ui::CreateColorProviderFromRendererColorMap(
+                    color_provider_colors.forced_colors_map));
+}
+
+void Page::UpdateColorProvidersForTest() {
+  light_color_provider_ = std::make_unique<ui::ColorProvider>(
+      ui::CreateColorProviderForBlinkTests(/*dark_mode=*/false));
+  dark_color_provider_ = std::make_unique<ui::ColorProvider>(
+      ui::CreateColorProviderForBlinkTests(/*dark_mode=*/true));
   forced_colors_color_provider_ = std::make_unique<ui::ColorProvider>(
-      ui::CreateColorProviderFromRendererColorMap(
-          color_provider_colors.forced_colors_map));
+      ui::CreateEmulatedForcedColorsColorProviderForTest());
 }
 
 const ui::ColorProvider* Page::GetColorProviderForPainting(
     mojom::blink::ColorScheme color_scheme,
     bool in_forced_colors) const {
   if (in_forced_colors) {
+    if (emulated_forced_colors_provider_) {
+      return emulated_forced_colors_provider_.get();
+    }
     return forced_colors_color_provider_.get();
   }
 
@@ -913,12 +952,6 @@ void Page::SettingsChanged(ChangeType change_type) {
     }
     case ChangeType::kColorScheme:
       InvalidateColorScheme();
-      break;
-    case ChangeType::kSpatialNavigation:
-      if (spatial_navigation_controller_ ||
-          GetSettings().GetSpatialNavigationEnabled()) {
-        GetSpatialNavigationController().OnSpatialNavigationSettingChanged();
-      }
       break;
     case ChangeType::kUniversalAccess: {
       if (!GetSettings().GetAllowUniversalAccessFromFileURLs())

@@ -13,7 +13,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/process/process_handle.h"
 #include "base/task/single_thread_task_runner.h"
@@ -23,6 +22,7 @@
 #include "content/browser/child_process_host_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/file_system_access/file_system_access_error.h"
+#include "content/browser/loader/url_loader_factory_utils.h"
 #include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -39,19 +39,13 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/test/fake_network_url_loader_factory.h"
 #include "media/media_buildflags.h"
+#include "services/network/public/cpp/url_loader_factory_builder.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 
 namespace {
-
-MockRenderProcessHost::CreateNetworkFactoryCallback&
-GetNetworkFactoryCallback() {
-  static base::NoDestructor<MockRenderProcessHost::CreateNetworkFactoryCallback>
-      callback;
-  return *callback;
-}
 
 StoragePartitionConfig GetOrCreateStoragePartitionConfig(
     BrowserContext* browser_context,
@@ -92,8 +86,7 @@ MockRenderProcessHost::MockRenderProcessHost(
       keep_alive_ref_count_(0),
       worker_ref_count_(0),
       pending_reuse_ref_count_(0),
-      foreground_service_worker_count_(0),
-      url_loader_factory_(std::make_unique<FakeNetworkURLLoaderFactory>()) {
+      foreground_service_worker_count_(0) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID(), browser_context);
@@ -134,12 +127,6 @@ void MockRenderProcessHost::SimulateReady() {
   is_ready_ = true;
   for (auto& observer : observers_)
     observer.RenderProcessReady(this);
-}
-
-// static
-void MockRenderProcessHost::SetNetworkFactory(
-    const CreateNetworkFactoryCallback& create_network_factory_callback) {
-  GetNetworkFactoryCallback() = create_network_factory_callback;
 }
 
 bool MockRenderProcessHost::Init() {
@@ -380,7 +367,9 @@ IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
   return nullptr;
 }
 
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
 void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {}
+#endif
 
 base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() {
   return base::Milliseconds(0);
@@ -516,18 +505,22 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
   return renderer_interface_->get();
 }
 
+// TODO(crbug.com/1506871): This is mostly duplicate of
+// RenderProcessHostImpl::CreateURLLoaderFactory(). Dedup and remove this.
 void MockRenderProcessHost::CreateURLLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     network::mojom::URLLoaderFactoryParamsPtr params) {
-  if (GetNetworkFactoryCallback().is_null()) {
-    url_loader_factory_->Clone(std::move(receiver));
-    return;
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(params);
+  DCHECK_EQ(GetID(), static_cast<int>(params->process_id));
 
-  mojo::Remote<network::mojom::URLLoaderFactory> original_factory;
-  url_loader_factory_->Clone(original_factory.BindNewPipeAndPassReceiver());
-  GetNetworkFactoryCallback().Run(std::move(receiver), GetID(),
-                                  original_factory.Unbind());
+  network::URLLoaderFactoryBuilder factory_builder;
+  if (url_loader_factory::GetTestingInterceptor()) {
+    url_loader_factory::GetTestingInterceptor().Run(GetID(), factory_builder);
+  }
+  std::move(factory_builder)
+      .Finish(std::move(receiver), GetStoragePartition()->GetNetworkContext(),
+              std::move(params));
 }
 
 bool MockRenderProcessHost::MayReuseHost() {
@@ -544,6 +537,10 @@ void MockRenderProcessHost::SetIsUsed() {
 
 bool MockRenderProcessHost::HostHasNotBeenUsed() {
   return IsUnused() && listeners_.IsEmpty() && GetKeepAliveRefCount() == 0;
+}
+
+bool MockRenderProcessHost::IsSpare() const {
+  return this == RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
 }
 
 void MockRenderProcessHost::SetProcessLock(

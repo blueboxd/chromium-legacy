@@ -129,3 +129,13 @@ IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest,
                        ReadAloud_KeyboardForPlayPause) {
   ASSERT_TRUE(RunTest("k_plays_and_pauses.js"));
 }
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest,
+                       ReadAloud_LinksToggleButtonOnToolbar) {
+  ASSERT_TRUE(RunTest("read_aloud_links_toggle_button.js"));
+                       }
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest,
+                       ReadAloud_SpeechUsesMaximumTextLength) {
+  ASSERT_TRUE(RunTest("speech_uses_maximum_text_length.js"));
+}

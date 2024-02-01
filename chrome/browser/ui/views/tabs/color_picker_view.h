@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -19,7 +20,7 @@
 namespace views {
 class Button;
 class BubbleDialogDelegateView;
-}
+}  // namespace views
 
 class ColorPickerElementView;
 
@@ -27,9 +28,9 @@ class ColorPickerElementView;
 // clicked on. Similar to radio buttons, exactly one is selected after the first
 // selection is made.
 class ColorPickerView : public views::View {
- public:
-  METADATA_HEADER(ColorPickerView);
+  METADATA_HEADER(ColorPickerView, views::View)
 
+ public:
   using ColorSelectedCallback = base::RepeatingCallback<void()>;
 
   // |colors| should contain the color values and accessible names. There should
@@ -58,7 +59,7 @@ class ColorPickerView : public views::View {
   // Called each time the color selection changes.
   ColorSelectedCallback callback_;
 
-  std::vector<ColorPickerElementView*> elements_;
+  std::vector<raw_ptr<ColorPickerElementView, VectorExperimental>> elements_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_COLOR_PICKER_VIEW_H_

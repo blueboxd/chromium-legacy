@@ -151,23 +151,33 @@ export class ShortcutInputElement extends ShortcutInputElementBase {
       return;
     }
 
+    // Ignore the release event if no key was pressed before. This is to
+    // avoid the case when the user presses "enter" key to pop up the
+    // shortcut input, release of the key is captured by accident.
+    if (!this.pendingKeyEvent) {
+      return;
+    }
+
     if (this.updateOnKeyPress) {
-      // If the key released is not a modifier and is the same as the previously
-      // released key, remove it from the `keyDisplay`.
-      if (this.pendingKeyEvent!.keyDisplay === keyEvent.keyDisplay &&
-          !ModifierKeyCodes.includes(keyEvent.vkey as number)) {
-        this.pendingKeyEvent!.keyDisplay = '';
+      const updatedKeyEvent = {...keyEvent};
+      const updatedPrerewrittenKeyEvent = {...prerewrittenKeyEvent};
+
+      // If the key released is not a modifier, reset keyDisplay.
+      if (!ModifierKeyCodes.includes(updatedKeyEvent.vkey as number)) {
+        updatedKeyEvent.keyDisplay = '';
       }
 
-      if (this.pendingPrerewrittenKeyEvent!.keyDisplay ===
-              prerewrittenKeyEvent.keyDisplay &&
-          !ModifierKeyCodes.includes(prerewrittenKeyEvent.vkey as number)) {
-        this.pendingPrerewrittenKeyEvent!.keyDisplay = '';
+      if (!ModifierKeyCodes.includes(
+              updatedPrerewrittenKeyEvent.vkey as number)) {
+        updatedPrerewrittenKeyEvent.keyDisplay = '';
       }
 
-      this.pendingKeyEvent!.modifiers = keyEvent.modifiers;
-      this.pendingPrerewrittenKeyEvent!.modifiers =
-          prerewrittenKeyEvent.modifiers;
+      // Update pending events with the modifications made to the key events
+      // above.
+      this.pendingKeyEvent = updatedKeyEvent;
+      // console.log('pendingKeyEvent', pendingKeyEvent.keyDisplay);
+
+      this.pendingPrerewrittenKeyEvent = updatedPrerewrittenKeyEvent;
     } else {
       // Only update the UI if the released key is the last key pressed OR if
       // its a modifier.
@@ -181,12 +191,10 @@ export class ShortcutInputElement extends ShortcutInputElementBase {
             prerewrittenKeyEvent.modifiers;
         return;
       }
-    }
 
-    this.pendingKeyEvent = keyEvent;
-    this.pendingPrerewrittenKeyEvent = prerewrittenKeyEvent;
+      this.pendingKeyEvent = keyEvent;
+      this.pendingPrerewrittenKeyEvent = prerewrittenKeyEvent;
 
-    if (!this.updateOnKeyPress) {
       this.dispatchEvent(new CustomEvent('shortcut-input-event', {
         bubbles: true,
         composed: true,

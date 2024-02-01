@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -73,7 +74,7 @@ DOMWindow::~DOMWindow() {
   DCHECK(!frame_);
 }
 
-v8::MaybeLocal<v8::Value> DOMWindow::Wrap(ScriptState* script_state) {
+v8::Local<v8::Value> DOMWindow::Wrap(ScriptState* script_state) {
   // TODO(yukishiino): Get understanding of why it's possible to initialize
   // the context after the frame is detached.  And then, remove the following
   // lines.  See also https://crbug.com/712638 .
@@ -84,6 +85,9 @@ v8::MaybeLocal<v8::Value> DOMWindow::Wrap(ScriptState* script_state) {
   // TODO(yukishiino): Make this function always return the non-empty handle
   // even if the frame is detached because the global proxy must always exist
   // per spec.
+  //
+  // Getting the proxy also results in initializing it and eventually yields in
+  // `SetupWindowPrototypeChain()` calls for the window proxy.
   return frame->GetWindowProxy(script_state->World())
       ->GlobalProxyIfNotDetached();
 }
@@ -92,8 +96,22 @@ v8::Local<v8::Object> DOMWindow::AssociateWithWrapper(
     v8::Isolate*,
     const WrapperTypeInfo*,
     v8::Local<v8::Object> wrapper) {
-  NOTREACHED();
-  return v8::Local<v8::Object>();
+  NOTREACHED_NORETURN();
+}
+
+v8::Local<v8::Object> DOMWindow::AssociateWithWrapper(
+    v8::Isolate* isolate,
+    scoped_refptr<DOMWrapperWorld> world,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::Object> wrapper) {
+  // Using the world directly avoids fetching it from a potentially
+  // half-initialized context.
+  if (world->DomDataStore().Set</*entered_context=*/false>(
+          isolate, this, wrapper_type_info, wrapper)) {
+    V8DOMWrapper::SetNativeInfo(isolate, wrapper, wrapper_type_info, this);
+    DCHECK(V8DOMWrapper::HasInternalFieldsSet(wrapper));
+  }
+  return wrapper;
 }
 
 const AtomicString& DOMWindow::InterfaceName() const {
@@ -211,7 +229,6 @@ void DOMWindow::setOpenerForBindings(v8::Isolate* isolate,
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Object> this_wrapper =
       ToV8Traits<DOMWindow>::ToV8(ScriptState::From(context), this)
-          .ToLocalChecked()
           .As<v8::Object>();
   v8::PropertyDescriptor desc(opener.V8Value(), /*writable=*/true);
   desc.set_enumerable(true);
@@ -613,9 +630,10 @@ void DOMWindow::InstallCoopAccessMonitor(
   monitor->is_in_same_virtual_coop_related_group =
       is_in_same_virtual_coop_related_group;
 
+  // `task_runner` is used for handling disconnect, and it uses
+  // `TaskType::kInternalDefault` to match the main frame receiver.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      execution_context->GetTaskRunner(
-          TaskType::kInternalHighPriorityLocalFrame);
+      execution_context->GetTaskRunner(TaskType::kInternalDefault);
   monitor->reporter.Bind(std::move(coop_reporter_params->reporter),
                          std::move(task_runner));
   // CoopAccessMonitor are cleared when their reporter are gone. This avoids
@@ -641,6 +659,9 @@ void DOMWindow::InstallCoopAccessMonitor(
     if (old->accessing_main_frame == monitor->accessing_main_frame &&
         network::IsAccessFromCoopPage(old->report_type) ==
             network::IsAccessFromCoopPage(monitor->report_type)) {
+      // Eagerly reset the connection to prevent the disconnect handler from
+      // running, which could remove this new entry.
+      old->reporter.reset();
       old = monitor;
       return;
     }
@@ -728,9 +749,11 @@ void DOMWindow::ReportCoopAccess(const char* property_name) {
     // TODO(arthursonzogni): Reconsider this decision later, developers might be
     // interested.
     if (monitor->endpoint_defined) {
-      monitor->reporter->QueueAccessReport(
-          monitor->report_type, property_name, std::move(source_location),
-          std::move(monitor->reported_window_url));
+      if (monitor->reporter.is_bound()) {
+        monitor->reporter->QueueAccessReport(
+            monitor->report_type, property_name, std::move(source_location),
+            std::move(monitor->reported_window_url));
+      }
       // Send a coop-access-violation report.
       if (network::IsAccessFromCoopPage(monitor->report_type)) {
         ReportingContext::From(accessing_main_frame.DomWindow())
@@ -745,6 +768,7 @@ void DOMWindow::ReportCoopAccess(const char* property_name) {
 
     // CoopAccessMonitor are used once and destroyed. This avoids sending
     // multiple reports for the same access.
+    (*it)->reporter.reset();
     it = coop_access_monitor_.erase(it);
   }
 }

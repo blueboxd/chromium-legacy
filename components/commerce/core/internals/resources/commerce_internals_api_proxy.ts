@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CommerceInternalsHandlerFactory, CommerceInternalsHandlerRemote, CommerceInternalsPageCallbackRouter, ShoppingListEligibleDetail} from './commerce_internals.mojom-webui.js';
+import {ProductInfo} from 'chrome://resources/cr_components/commerce/shopping_service.mojom-webui.js';
+import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
+
+import {CommerceInternalsHandlerFactory, CommerceInternalsHandlerRemote, CommerceInternalsPageCallbackRouter, ShoppingListEligibleDetail, Subscription} from './commerce_internals.mojom-webui.js';
 
 export class CommerceInternalsApiProxy {
   private callbackRouter: CommerceInternalsPageCallbackRouter;
@@ -35,8 +38,16 @@ export class CommerceInternalsApiProxy {
     this.handler.resetPriceTrackingEmailPref();
   }
 
+  getProductInfoForUrl(url: Url): Promise<{info: ProductInfo}> {
+    return this.handler.getProductInfoForUrl(url);
+  }
+
   getCallbackRouter(): CommerceInternalsPageCallbackRouter {
     return this.callbackRouter;
+  }
+
+  getSubscriptionDetails(): Promise<{subscriptions: Subscription[]}> {
+    return this.handler.getSubscriptionDetails();
   }
 }
 

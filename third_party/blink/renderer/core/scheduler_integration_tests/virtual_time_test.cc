@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -73,21 +74,23 @@ class VirtualTimeTest : public SimTest {
     SimTest::TearDown();
   }
 
-  void StopVirtualTimeAndExitRunLoop() {
+  void StopVirtualTimeAndExitRunLoop(base::OnceClosure quit_closure) {
     GetVirtualTimeController()->SetVirtualTimePolicy(
         VirtualTimeController::VirtualTimePolicy::kPause);
-    test::ExitRunLoop();
+    std::move(quit_closure).Run();
   }
 
   // Some task queues may have repeating v8 tasks that run forever so we impose
   // a hard (virtual) time limit.
   void RunTasksForPeriod(double delay_ms) {
+    base::RunLoop loop;
     scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
         FROM_HERE,
         WTF::BindOnce(&VirtualTimeTest::StopVirtualTimeAndExitRunLoop,
-                      WTF::Unretained(this)),
+                      WTF::Unretained(this), loop.QuitClosure()),
         base::Milliseconds(delay_ms));
-    test::EnterRunLoop();
+
+    loop.Run();
   }
 
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
@@ -112,10 +115,10 @@ TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
       "     clearInterval(interval_handle);"
       "  }"
       "  run_order.push(count);"
-      "}, 1000);"
+      "}, 900);"
       "setTimeout(function() { run_order.push('timer'); }, 1500);");
 
-  RunTasksForPeriod(10001);
+  RunTasksForPeriod(9001);
 
   EXPECT_EQ("9, timer, 8, 7, 6, 5, 4, 3, 2, 1, 0",
             ExecuteJavaScript("run_order.join(', ')"));

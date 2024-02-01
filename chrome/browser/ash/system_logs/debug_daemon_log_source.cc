@@ -190,20 +190,11 @@ void DebugDaemonLogSource::Fetch(SysLogsSourceCallback callback) {
         cryptohome::CreateAccountIdentifierFromAccountId(
             user ? user->GetAccountId() : EmptyAccountId());
 
-    if (base::FeatureList::IsEnabled(
-            ash::features::kEnableGetDebugdLogsInParallel)) {
-      // GetFeedbackLogsV3 collects logs in parallel.
-      client->GetFeedbackLogsV3(
-          account_identifier, GetLogTypesForUser(user),
-          base::BindOnce(&DebugDaemonLogSource::OnGetLogs,
-                         weak_ptr_factory_.GetWeakPtr(), start_time));
-    } else {
-      // GetFeedbackLogsV2 collects logs in sequence.
-      client->GetFeedbackLogsV2(
-          account_identifier, GetLogTypesForUser(user),
-          base::BindOnce(&DebugDaemonLogSource::OnGetLogs,
-                         weak_ptr_factory_.GetWeakPtr(), start_time));
-    }
+    client->GetFeedbackLogs(
+        account_identifier, GetLogTypesForUser(user),
+        base::BindOnce(&DebugDaemonLogSource::OnGetLogs,
+                       weak_ptr_factory_.GetWeakPtr(), start_time));
+
   } else {
     client->GetAllLogs(base::BindOnce(&DebugDaemonLogSource::OnGetLogs,
                                       weak_ptr_factory_.GetWeakPtr(),
@@ -287,7 +278,7 @@ void DebugDaemonLogSource::GetLoggedInUsersLogFiles() {
   std::vector<base::FilePath> profile_dirs;
   const user_manager::UserList& users =
       user_manager::UserManager::Get()->GetLoggedInUsers();
-  for (const auto* user : users) {
+  for (const user_manager::User* user : users) {
     if (user->username_hash().empty()) {
       continue;
     }

@@ -8,9 +8,11 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequence_bound.h"
@@ -18,9 +20,12 @@
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/storage_interest_group.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
+#include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "url/origin.h"
 
 namespace content {
+
+struct DebugReportLockoutAndCooldowns;
 
 class StorageInterestGroups;
 // SingleStorageInterestGroup ensures that pointers to values inside
@@ -70,6 +75,8 @@ class CONTENT_EXPORT StorageInterestGroups
     }
     return storage_interest_groups;
   }
+
+  std::optional<SingleStorageInterestGroup> FindGroup(std::string_view name);
 
   bool IsExpired() { return expiry_ < base::Time::Now(); }
 
@@ -152,20 +159,29 @@ class CONTENT_EXPORT InterestGroupCachingStorage {
   // piece of opaque data to identify the winning ad.
   void RecordInterestGroupWin(const blink::InterestGroupKey& group_key,
                               const std::string& ad_json);
+  // Adds an entry to forDebuggingOnly report lockout table if the table is
+  // empty. Otherwise replaces the existing entry.
+  void RecordDebugReportLockout(base::Time last_report_sent_time);
+  // Adds an entry to forDebuggingOnly report cooldown table for `origin` if it
+  // does not exist, otherwise replaces the existing entry.
+  void RecordDebugReportCooldown(const url::Origin& origin,
+                                 base::Time cooldown_start,
+                                 DebugReportCooldownType cooldown_type);
   // Records K-anonymity.
   void UpdateKAnonymity(const StorageInterestGroup::KAnonymityData& data);
 
   // Gets the last time that the key was reported to the k-anonymity server.
   void GetLastKAnonymityReported(
       const std::string& key,
-      base::OnceCallback<void(absl::optional<base::Time>)> callback);
+      base::OnceCallback<void(std::optional<base::Time>)> callback);
   // Updates the last time that the key was reported to the k-anonymity server.
   void UpdateLastKAnonymityReported(const std::string& key);
 
   // Gets a single interest group.
   void GetInterestGroup(
       const blink::InterestGroupKey& group_key,
-      base::OnceCallback<void(absl::optional<StorageInterestGroup>)> callback);
+      base::OnceCallback<void(std::optional<SingleStorageInterestGroup>)>
+          callback);
   // Gets a list of all interest group owners. Each owner will only appear
   // once.
   void GetAllInterestGroupOwners(
@@ -186,6 +202,12 @@ class CONTENT_EXPORT InterestGroupCachingStorage {
       const blink::InterestGroupKey& group_key,
       base::OnceCallback<void(
           const std::vector<StorageInterestGroup::KAnonymityData>&)> callback);
+
+  // Gets lockout and cooldown for sending forDebuggingOnly reports.
+  void GetDebugReportLockoutAndCooldowns(
+      base::flat_set<url::Origin> origins,
+      base::OnceCallback<void(std::optional<DebugReportLockoutAndCooldowns>)>
+          callback);
 
   // Gets a list of all interest group joining origins. Each joining origin
   // will only appear once.

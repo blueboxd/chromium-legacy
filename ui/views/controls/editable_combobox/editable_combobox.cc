@@ -409,7 +409,7 @@ void EditableCombobox::SetText(const std::u16string& text) {
   HandleNewContent(text);
 }
 
-std::u16string EditableCombobox::GetPlaceholderText() const {
+const std::u16string& EditableCombobox::GetPlaceholderText() const {
   return textfield_->GetPlaceholderText();
 }
 
@@ -443,7 +443,7 @@ void EditableCombobox::UpdateMenu() {
 }
 
 void EditableCombobox::Layout() {
-  View::Layout();
+  LayoutSuperclass<View>(this);
   int preferred_width = control_elements_container_->GetPreferredSize().width();
   control_elements_container_->SetBounds(width() - preferred_width, 0,
                                          preferred_width, height());

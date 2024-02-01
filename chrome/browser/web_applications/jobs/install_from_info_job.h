@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_JOBS_INSTALL_FROM_INFO_JOB_H_
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/common/web_app_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -40,44 +40,40 @@ namespace web_app {
 class InstallFromInfoJob {
  public:
   using ResultCallback =
-      base::OnceCallback<void(const webapps::AppId& app_id,
+      base::OnceCallback<void(webapps::AppId app_id,
                               webapps::InstallResultCode code,
                               OsHooksErrors os_hook_errors)>;
 
   // The `install_params` controls whether and how OS hooks get installed.
   InstallFromInfoJob(Profile* profile,
+                     base::Value::Dict& debug_value,
                      std::unique_ptr<WebAppInstallInfo> install_info,
                      bool overwrite_existing_manifest_fields,
                      webapps::WebappInstallSource install_surface,
-                     absl::optional<WebAppInstallParams> install_params,
+                     std::optional<WebAppInstallParams> install_params,
                      ResultCallback install_callback);
 
   ~InstallFromInfoJob();
 
   void Start(WithAppResources* lock_with_app_resources);
-  base::Value ToDebugValue() const;
 
  private:
   void OnInstallCompleted(const webapps::AppId& app_id,
                           webapps::InstallResultCode code,
                           OsHooksErrors os_hooks_errors);
 
-  void SignalCompletionAndSelfDestruct(webapps::InstallResultCode code,
-                                       OsHooksErrors os_hook_errors);
-
   const raw_ref<Profile> profile_;
+  const raw_ref<base::Value::Dict> debug_value_;
   const webapps::ManifestId manifest_id_;
   const webapps::AppId app_id_;
   const bool overwrite_existing_manifest_fields_;
   const webapps::WebappInstallSource install_surface_;
-  absl::optional<WebAppInstallParams> install_params_;
+  const std::optional<WebAppInstallParams> install_params_;
 
   raw_ptr<WithAppResources> lock_with_app_resources_ = nullptr;
 
   std::unique_ptr<WebAppInstallInfo> install_info_;
   ResultCallback callback_;
-
-  base::Value::Dict debug_value_;
 
   base::WeakPtrFactory<InstallFromInfoJob> weak_factory_{this};
 };

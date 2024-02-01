@@ -59,8 +59,9 @@
 namespace {
 
 class FrameGrabHandle : public views::View {
+  METADATA_HEADER(FrameGrabHandle, views::View)
+
  public:
-  METADATA_HEADER(FrameGrabHandle);
   gfx::Size CalculatePreferredSize() const override {
     // Reserve some space for the frame to be grabbed by, even if the tabstrip
     // is full.
@@ -69,7 +70,7 @@ class FrameGrabHandle : public views::View {
   }
 };
 
-BEGIN_METADATA(FrameGrabHandle, views::View)
+BEGIN_METADATA(FrameGrabHandle)
 END_METADATA
 
 bool ShouldShowNewTabButton(const Browser* browser) {
@@ -309,19 +310,19 @@ views::View::Views TabStripRegionView::GetChildrenInZOrder() {
   views::View::Views children;
 
   if (tab_strip_container_) {
-    children.emplace_back(tab_strip_container_);
+    children.emplace_back(tab_strip_container_.get());
   }
 
   if (new_tab_button_) {
-    children.emplace_back(new_tab_button_);
+    children.emplace_back(new_tab_button_.get());
   }
 
   if (tab_search_container_) {
-    children.emplace_back(tab_search_container_);
+    children.emplace_back(tab_search_container_.get());
   }
 
   if (reserved_grab_handle_space_) {
-    children.emplace_back(reserved_grab_handle_space_);
+    children.emplace_back(reserved_grab_handle_space_.get());
   }
 
   return children;
@@ -337,7 +338,7 @@ void TabStripRegionView::Layout() {
     UpdateTabStripMargin();
   }
 
-  views::AccessiblePaneView::Layout();
+  LayoutSuperclass<views::AccessiblePaneView>(this);
 
   if (tab_search_container_before_tab_strip) {
     const gfx::Size tab_search_container_size =
@@ -534,5 +535,5 @@ void TabStripRegionView::UpdateTabStripMargin() {
   }
 }
 
-BEGIN_METADATA(TabStripRegionView, views::AccessiblePaneView)
+BEGIN_METADATA(TabStripRegionView)
 END_METADATA

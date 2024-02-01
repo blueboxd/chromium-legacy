@@ -10,6 +10,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/state_transitions.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
@@ -233,6 +234,20 @@ void DocumentSpeculationRules::AddRuleSet(SpeculationRuleSet* rule_set) {
   QueueUpdateSpeculationCandidates();
 
   probe::DidAddSpeculationRuleSet(*GetSupplementable(), *rule_set);
+
+  // Record some use counters about the kinds of actions being proposed.
+  if (rule_set->prefetch_rules().size()) {
+    UseCounter::Count(GetSupplementable(),
+                      rule_set->source()->IsFromBrowserInjected()
+                          ? WebFeature::kSpeculationRulesBrowserPrefetchRule
+                          : WebFeature::kSpeculationRulesAuthorPrefetchRule);
+  }
+  if (rule_set->prerender_rules().size()) {
+    UseCounter::Count(GetSupplementable(),
+                      rule_set->source()->IsFromBrowserInjected()
+                          ? WebFeature::kSpeculationRulesBrowserPrerenderRule
+                          : WebFeature::kSpeculationRulesAuthorPrerenderRule);
+  }
 
   if (!rule_set->source()->IsFromBrowserInjected()) {
     HeapVector<Member<SpeculationRuleSet>> to_remove;

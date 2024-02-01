@@ -1126,8 +1126,10 @@ void TraceLog::SetDisabledWhileLocked(uint8_t modes_to_disable) {
     // Release trace events lock, so observers can trigger trace events.
     AutoUnlock unlock(lock_);
     AutoLock lock2(observers_lock_);
-    for (auto* it : enabled_state_observers_)
+    for (base::trace_event::TraceLog::EnabledStateObserver* it :
+         enabled_state_observers_) {
       it->OnTraceLogDisabled();
+    }
     for (const auto& it : async_observers_) {
       it.second.task_runner->PostTask(
           FROM_HERE, BindOnce(&AsyncEnabledStateObserver::OnTraceLogDisabled,
@@ -2097,6 +2099,11 @@ void TraceLog::OnSetProcessName(const std::string& process_name) {
 #endif
 }
 
+int TraceLog::GetNewProcessLabelId() {
+  AutoLock lock(lock_);
+  return next_process_label_id_++;
+}
+
 void TraceLog::UpdateProcessLabel(int label_id,
                                   const std::string& current_label) {
   if (!current_label.length())
@@ -2234,8 +2241,10 @@ void TraceLog::OnStop(const perfetto::DataSourceBase::StopArgs& args) {
   }
 
   AutoLock lock(observers_lock_);
-  for (auto* it : enabled_state_observers_)
+  for (base::trace_event::TraceLog::EnabledStateObserver* it :
+       enabled_state_observers_) {
     it->OnTraceLogDisabled();
+  }
   for (const auto& it : async_observers_) {
     it.second.task_runner->PostTask(
         FROM_HERE, BindOnce(&AsyncEnabledStateObserver::OnTraceLogDisabled,

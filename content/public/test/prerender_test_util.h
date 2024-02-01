@@ -122,6 +122,8 @@ class PrerenderTestHelper {
   // creates test server after SetUp).
   void RegisterServerRequestMonitor(
       net::test_server::EmbeddedTestServer* http_server);
+  void RegisterServerRequestMonitor(
+      net::test_server::EmbeddedTestServer& test_server);
 
   // Attempts to lookup the host for the given |gurl|. Returns
   // RenderFrameHost::kNoFrameTreeNodeId upon failure.
@@ -146,7 +148,7 @@ class PrerenderTestHelper {
   int AddPrerender(const GURL& prerendering_url,
                    int32_t world_id = ISOLATED_WORLD_ID_GLOBAL);
   int AddPrerender(const GURL& prerendering_url,
-                   absl::optional<blink::mojom::SpeculationEagerness> eagerness,
+                   std::optional<blink::mojom::SpeculationEagerness> eagerness,
                    const std::string& target_hint,
                    int32_t world_id = ISOLATED_WORLD_ID_GLOBAL);
   // AddPrerenderAsync() is the same as AddPrerender(), but does not wait until
@@ -155,7 +157,7 @@ class PrerenderTestHelper {
                          int32_t world_id = ISOLATED_WORLD_ID_GLOBAL);
   void AddPrerendersAsync(
       const std::vector<GURL>& prerendering_urls,
-      absl::optional<blink::mojom::SpeculationEagerness> eagerness,
+      std::optional<blink::mojom::SpeculationEagerness> eagerness,
       const std::string& target_hint,
       int32_t world_id = ISOLATED_WORLD_ID_GLOBAL);
 
@@ -179,15 +181,17 @@ class PrerenderTestHelper {
   // Navigates the primary page to the URL and waits until the completion of
   // the navigation.
   //
-  // Navigations that could activate a prerendered page on the multiple
-  // WebContents architecture (not multiple-pages architecture known as
-  // MPArch) should use this function instead of the NavigateToURL() test
-  // helper. This is because the test helper accesses the predecessor
-  // WebContents to be destroyed during activation and results in crashes.
-  // See https://crbug.com/1154501 for the MPArch migration.
-  // TODO(crbug.com/1198960): remove this once the migration is complete.
+  // Navigations that could activate a prerendered page should use this function
+  // instead of the NavigateToURL() test helper. This is because the test helper
+  // could access a navigating frame being destroyed during activation and fail.
   static void NavigatePrimaryPage(WebContents& web_contents, const GURL& gurl);
   void NavigatePrimaryPage(const GURL& gurl);
+
+  // Opens a new window without an opener on the primary page of `web_contents`.
+  // This is intended for activating a prerendered page initiated for a new
+  // window.
+  static void OpenNewWindowWithoutOpener(WebContents& web_contents,
+                                         const GURL& url);
 
   // Confirms that, internally, appropriate subframes report that they are
   // prerendering (and that each frame tree type is kPrerender).

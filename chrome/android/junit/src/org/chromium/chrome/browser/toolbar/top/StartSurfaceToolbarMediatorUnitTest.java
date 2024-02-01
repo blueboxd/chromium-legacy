@@ -52,6 +52,9 @@ import org.robolectric.annotation.LooperMode;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -60,8 +63,6 @@ import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.logo.LogoBridge;
 import org.chromium.chrome.browser.logo.LogoBridgeJni;
 import org.chromium.chrome.browser.logo.LogoView;
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -77,9 +78,6 @@ import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -197,6 +195,9 @@ public class StartSurfaceToolbarMediatorUnitTest {
 
     @Test
     public void testShowAndHideHomePage() {
+        boolean isLogoMovedDownForSurfacePolish =
+                ChromeFeatureList.sSurfacePolish.isEnabled()
+                        && StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.getValue();
         createMediator(false);
 
         doReturn(0).when(mIncognitoTabModel).getCount();
@@ -210,7 +211,9 @@ public class StartSurfaceToolbarMediatorUnitTest {
 
         mMediator.onStartSurfaceStateChanged(
                 StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
-        assertTrue(mMediator.isLogoVisibleForTesting());
+        if (!isLogoMovedDownForSurfacePolish) {
+            assertTrue(mMediator.isLogoVisibleForTesting());
+        }
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
         assertTrue(mPropertyModel.get(IDENTITY_DISC_AT_START));
         assertFalse(mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE));
@@ -221,7 +224,9 @@ public class StartSurfaceToolbarMediatorUnitTest {
         doReturn(1).when(mIncognitoTabModel).getCount();
         mMediator.onStartSurfaceStateChanged(
                 StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
-        assertTrue(mMediator.isLogoVisibleForTesting());
+        if (!isLogoMovedDownForSurfacePolish) {
+            assertTrue(mMediator.isLogoVisibleForTesting());
+        }
         assertFalse(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
         assertTrue(mPropertyModel.get(IDENTITY_DISC_AT_START));
         assertFalse(mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE));
@@ -275,13 +280,18 @@ public class StartSurfaceToolbarMediatorUnitTest {
 
     @Test
     public void testSwitchBetweenHomePageAndTabSwitcher() {
+        boolean isLogoMovedDownForSurfacePolish =
+                ChromeFeatureList.sSurfacePolish.isEnabled()
+                        && StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.getValue();
         createMediator(false);
 
         mButtonData.setCanShow(true);
         mMediator.updateIdentityDisc(mButtonData);
         mMediator.onStartSurfaceStateChanged(
                 StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
-        assertTrue(mMediator.isLogoVisibleForTesting());
+        if (!isLogoMovedDownForSurfacePolish) {
+            assertTrue(mMediator.isLogoVisibleForTesting());
+        }
         assertTrue(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
         assertTrue(mPropertyModel.get(IDENTITY_DISC_AT_START));
         assertFalse(mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE));
@@ -300,7 +310,9 @@ public class StartSurfaceToolbarMediatorUnitTest {
 
         mMediator.onStartSurfaceStateChanged(
                 StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
-        assertTrue(mMediator.isLogoVisibleForTesting());
+        if (!isLogoMovedDownForSurfacePolish) {
+            assertTrue(mMediator.isLogoVisibleForTesting());
+        }
         assertTrue(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE));
         assertTrue(mPropertyModel.get(IDENTITY_DISC_AT_START));
         assertFalse(mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE));
@@ -360,6 +372,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
 
     @Test
     public void enableDisableSearchEngineHaveLogo() {
+        StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.setForTesting(false);
         createMediator(false);
         when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(true);
         mMediator.onStartSurfaceStateChanged(
@@ -532,7 +545,7 @@ public class StartSurfaceToolbarMediatorUnitTest {
     }
 
     @Test
-    @DisableFeatures(ChromeFeatureList.START_SURFACE_DISABLED_FEED_IMPROVEMENT)
+    @DisableFeatures(ChromeFeatureList.SURFACE_POLISH)
     public void testLogoLoadOrDestroy() {
         createMediator(false);
         assertFalse(mMediator.isLogoVisibleForTesting());
@@ -549,28 +562,6 @@ public class StartSurfaceToolbarMediatorUnitTest {
         mMediator.onStartSurfaceStateChanged(
                 StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
         assertTrue(mMediator.isLogoVisibleForTesting());
-    }
-
-    @Test
-    @EnableFeatures(ChromeFeatureList.START_SURFACE_DISABLED_FEED_IMPROVEMENT)
-    public void testNotShowLogoWhenStartSurfaceDisabledFeedImprovementIsOn() {
-        ChromeSharedPreferences.getInstance()
-                .writeBoolean(ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, false);
-        createMediator(false);
-        assertFalse(mMediator.isLogoVisibleForTesting());
-
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
-        assertFalse(mMediator.isLogoVisibleForTesting());
-
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_TABSWITCHER, true, LayoutType.TAB_SWITCHER);
-        assertFalse(mMediator.isLogoVisibleForTesting());
-        verify(mLogoBridge, times(0)).destroy(eq(1L), any());
-
-        mMediator.onStartSurfaceStateChanged(
-                StartSurfaceState.SHOWN_HOMEPAGE, true, LayoutType.START_SURFACE);
-        assertFalse(mMediator.isLogoVisibleForTesting());
     }
 
     @Test
@@ -636,14 +627,8 @@ public class StartSurfaceToolbarMediatorUnitTest {
 
     private void createMediator(boolean hideIncognitoSwitchWhenNoTabs) {
         boolean shouldCreateLogoInToolbar =
-                (!ChromeFeatureList.sStartSurfaceDisabledFeedImprovement.isEnabled()
-                                || ChromeSharedPreferences.getInstance()
-                                        .readBoolean(
-                                                ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE,
-                                                true))
-                        && !(ChromeFeatureList.sSurfacePolish.isEnabled()
-                                && StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO
-                                        .getValue());
+                !(ChromeFeatureList.sSurfacePolish.isEnabled()
+                        && StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.getValue());
         mMediator =
                 new StartSurfaceToolbarMediator(
                         mActivity,

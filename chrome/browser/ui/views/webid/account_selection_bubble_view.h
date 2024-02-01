@@ -7,7 +7,7 @@
 
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/ui/views/webid/account_selection_bubble_view_interface.h"
+#include "chrome/browser/ui/views/webid/account_selection_view_interface.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "content/public/browser/identity_request_account.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
@@ -17,6 +17,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
 
+using LinkType = content::IdentityRequestDialogController::LinkType;
 using TokenError = content::IdentityCredentialTokenError;
 
 namespace views {
@@ -35,13 +36,13 @@ class IdpImageView;
 // account chooser for the user, and it changes the content of that dialog as
 // user moves through the FedCM flow steps.
 class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
-                                   public AccountSelectionBubbleViewInterface {
+                                   public AccountSelectionViewInterface {
+  METADATA_HEADER(AccountSelectionBubbleView, views::BubbleDialogDelegateView)
+
  public:
   // Used to observe changes to the account selection bubble.
   class Observer {
    public:
-    enum class LinkType { PRIVACY_POLICY, TERMS_OF_SERVICE };
-
     // Called when a user either selects the account from the multi-account
     // chooser or clicks the "continue" button.
     // Takes `account` as well as `idp_display_data` since passing `account_id`
@@ -65,7 +66,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
 
     // Called when the user clicks the "continue" button on the sign-in
     // failure dialog or wants to sign in to another account.
-    virtual void OnLoginToIdP(const GURL& idp_login_url,
+    virtual void OnLoginToIdP(const GURL& idp_config_url,
+                              const GURL& idp_login_url,
                               const ui::Event& event) = 0;
 
     // Called when the user clicks "got it" button.
@@ -79,7 +81,6 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
     virtual void CloseModalDialog() = 0;
   };
 
-  METADATA_HEADER(AccountSelectionBubbleView);
   AccountSelectionBubbleView(
       const std::u16string& top_frame_for_display,
       const std::optional<std::u16string>& iframe_for_display,
@@ -91,7 +92,7 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
       Observer* observer);
   ~AccountSelectionBubbleView() override;
 
-  // AccountSelectionBubbleViewInterface:
+  // AccountSelectionViewInterface:
   void ShowMultiAccountPicker(const std::vector<IdentityProviderDisplayData>&
                                   idp_display_data_list) override;
   void ShowVerifyingSheet(const content::IdentityRequestAccount& account,
@@ -156,6 +157,17 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
       const content::IdentityRequestAccount& account,
       const IdentityProviderDisplayData& idp_display_data,
       bool should_hover);
+
+  // Returns a view containing a button for the user to login to an IDP for
+  // which there was a login status mismatch, to be used in the multiple account
+  // chooser case.
+  std::unique_ptr<views::View> CreateIdpLoginRow(
+      const std::u16string& idp_for_display,
+      const content::IdentityProviderMetadata& idp_metadata);
+
+  // Creates the "Use other account" button.
+  std::unique_ptr<views::View> CreateUseOtherAccountButton(
+      const content::IdentityProviderMetadata& idp_metadata);
 
   // Updates the header title, the header icon visibility and the header back
   // button visibiltiy. `idp_metadata` is not null when we need to set a header

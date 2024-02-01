@@ -100,8 +100,8 @@ enum class FedCmIdpSigninMatchStatus {
   kMaxValue = kMismatchWithUnexpectedAccounts
 };
 
-// This enum describes the type of frame that invokes preventSilentAccess.
-enum class PreventSilentAccessFrameType {
+// This enum describes the type of frame that invokes a FedCM API.
+enum class FedCmRequesterFrameType {
   // Do not change the meaning or order of these values since they are being
   // recorded in metrics and in sync with the counterpart in enums.xml.
   kMainFrame,
@@ -166,6 +166,22 @@ enum class FedCmErrorDialogResult {
   kMaxValue = kOtherWithMoreDetails
 };
 
+// This enum is used when we fail a FedCM request due to a bad
+// lifecycle state.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class FedCmLifecycleStateFailureReason {
+  kOther = 0,
+  kSpeculative = 1,
+  kPendingCommit = 2,
+  kPrerendering = 3,
+  kInBackForwardCache = 4,
+  kRunningUnloadHandlers = 5,
+  kReadyToBeDeleted = 6,
+
+  kMaxValue = kReadyToBeDeleted
+};
+
 class CONTENT_EXPORT FedCmMetrics {
  public:
   FedCmMetrics(const GURL& provider,
@@ -219,7 +235,7 @@ class CONTENT_EXPORT FedCmMetrics {
   // the IDP based on observing signin/signout HTTP headers matches the
   // information returned by the accounts endpoint.
   void RecordIdpSigninMatchStatus(
-      absl::optional<bool> idp_signin_status,
+      std::optional<bool> idp_signin_status,
       IdpNetworkRequestManager::ParseStatus accounts_endpoint_status);
 
   // Records whether the user selected account is for sign-in or not.
@@ -242,19 +258,33 @@ class CONTENT_EXPORT FedCmMetrics {
   // |has_single_returning_account| is nullopt when we are recording the metrics
   // during a failure that happened before the accounts fetch.
   void RecordAutoReauthnMetrics(
-      absl::optional<bool> has_single_returning_account,
+      std::optional<bool> has_single_returning_account,
       const IdentityRequestAccount* auto_signin_account,
       bool auto_reauthn_success,
       bool is_auto_reauthn_setting_blocked,
       bool is_auto_reauthn_embargoed,
-      absl::optional<base::TimeDelta> time_from_embargo,
+      std::optional<base::TimeDelta> time_from_embargo,
       bool requires_user_mediation);
 
   // Records a sample when an accounts dialog is shown.
   void RecordAccountsDialogShown();
 
-  // Records a sample when a mismatch dialog is shown.
-  void RecordMismatchDialogShown();
+  // This enum is used in histograms. Do not remove or modify existing entries.
+  // You may add entries at the end, and update |kMaxValue|.
+  enum class MismatchDialogType {
+    kFirstWithoutHints,
+    kFirstWithHints,
+    kRepeatedWithoutHints,
+    kRepeatedWithHints,
+
+    kMaxValue = kRepeatedWithHints
+  };
+
+  // Records a sample when a mismatch dialog is shown. Also records whether this
+  // is a mismatch seen for the first time or a if there has already been a
+  // mismatch dialog for this call. Finally, records when there is a repeated
+  // mismatch and hints were requested in the call.
+  void RecordMismatchDialogShown(bool has_shown_mismatch, bool has_hints);
 
   // Records a sample when an accounts request is sent.
   void RecordAccountsRequestSent();
@@ -264,8 +294,14 @@ class CONTENT_EXPORT FedCmMetrics {
   // FedCM request or for the purpose of MDocs or multi-IDP are not counted.
   void RecordNumRequestsPerDocument(const int num_requests);
 
-  // Records the status of the disconnect call.
-  void RecordDisconnectStatus(FedCmDisconnectStatus status);
+  // Records metrics for a disconnect call. `duration` is nullopt if the
+  // disconnect fetch request was not sent, in which case we do not log the
+  // metric.
+  void RecordDisconnectMetrics(FedCmDisconnectStatus status,
+                               std::optional<base::TimeDelta> duration,
+                               const RenderFrameHost& rfh,
+                               url::Origin requester,
+                               url::Origin embedder);
 
   // Records the type of error dialog shown.
   void RecordErrorDialogType(
@@ -307,7 +343,8 @@ class CONTENT_EXPORT FedCmMetrics {
 // existing FedCM call. Records metrics associated with a preventSilentAccess()
 // call from the given RenderFrameHost.
 void RecordPreventSilentAccess(RenderFrameHost& rfh,
-                               PreventSilentAccessFrameType frame_type);
+                               url::Origin requester,
+                               url::Origin embedder);
 
 // The following are UMA-only recordings, hence do not need to be in the
 // FedCmMetrics class.
@@ -328,6 +365,10 @@ void RecordAccountsResponseInvalidReason(
 
 // Records the reason why we ignored an attempt to set a login status.
 void RecordSetLoginStatusIgnoredReason(FedCmSetLoginStatusIgnoredReason reason);
+
+// Records the lifecycle state if we fail a FedCM request due to a page not
+// being primary.
+void RecordLifecycleStateFailureReason(FedCmLifecycleStateFailureReason reason);
 
 }  // namespace content
 

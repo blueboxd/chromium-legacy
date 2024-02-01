@@ -5,6 +5,7 @@
 module webnn.mojom;
 
 import "mojo/public/mojom/base/big_buffer.mojom";
+import "services/webnn/public/mojom/webnn_error.mojom";
 
 // Represents the `MLOperand` which describes not only input and constant
 // operand, but also the output operand of operator.
@@ -288,6 +289,29 @@ union PaddingMode {
   SymmetricPadding symmetric;
 };
 
+// This operator performs the following normalization, defined as:
+// Output = scale * (input - mean) / sqrt(variance + epsilon) + bias, where
+// mean and variance are computed per instance per channel. The specified
+// layout determines how to choose the channel.
+struct InstanceNormalization {
+  // The input operand (referenced by input_operand_id) must be distinct from
+  // the output operand (referenced by output_operand_id).
+  uint64 input_operand_id;
+  uint64 output_operand_id;
+
+  // The optional 1-D tensor of the scale values whose size is equal to the
+  // size of the feature dimension of the input.
+  uint64? scale_operand_id;
+  // The optional 1-D tensor of the bias values whose size is equal to the
+  // size of the feature dimension of the input.
+  uint64? bias_operand_id;
+  // A float scalar which specifies a small value to prevent computational
+  // error due to divide-by-zero.
+  float epsilon = 1e-5;
+  // The layout format of the input.
+  InputOperandLayout layout;
+};
+
 // Represents matmul operation which compute the matrix product of two input tensors.
 struct Matmul {
   // The id of `a` operand is used to get the `Operand` description from
@@ -360,6 +384,7 @@ struct Reduce  {
 struct Pool2d {
   enum Kind {
     kAveragePool2d,
+    kL2Pool2d,
     kMaxPool2d,
   };
 
@@ -507,6 +532,22 @@ struct Gemm {
   bool b_transpose = false;
 };
 
+// Represents an operation which performs a hard sigmoid function on every
+// element in InputTensor, placing the result into the corresponding
+// element of OutputTensor:
+// Output = max(0, min(alpha * input + beta, 1))
+struct HardSigmoid {
+  // The input operand (referenced by input_operand_id) must be distinct from
+  // the output operand (referenced by output_operand_id).
+  uint64 input_operand_id;
+  uint64 output_operand_id;
+
+  // A float scalar multiplier. The default value is 0.2.
+  float alpha = 0.2;
+  // A float scalar addition. The default value is 0.5.
+  float beta = 0.5;
+};
+
 // Represents an operation of normalizing the input across the feature
 // dimensions for each individual sample in a batch, where the feature
 // dimensions are the input dimensions indexed by `axes`.
@@ -544,6 +585,21 @@ struct LeakyRelu {
   uint64 output_operand_id;
   // A float scalar multiplier for min(0, x).
   float alpha = 0.01;
+};
+
+// Represents a linear operation whose calculation follows the
+// expression alpha * x + beta.
+struct Linear {
+  // The id of input operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 input_operand_id;
+  // The id of output operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 output_operand_id;
+  // A float scalar multiplier.
+  float alpha = 1.0;
+  // A float scalar addition.
+  float beta = 0;
 };
 
 // Represents a parametric relu operation whose calculation follows the
@@ -602,6 +658,28 @@ struct Softmax {
   uint64 input_operand_id;
   // The id of output operand is used to get the `Operand` description from
   // `GraphInfo.id_to_operand_map`.
+  uint64 output_operand_id;
+};
+
+// Corresponds to `MLOperand softplus(MLOperand x)` that computes the softplus
+// function of the input tensor following the expression
+// ln(1 + exp(steepness * x)) / steepness.
+struct Softplus {
+  // The input operand (referenced by input_operand_id) must be distinct from
+  // the output operand (referenced by output_operand_id).
+  uint64 input_operand_id;
+  uint64 output_operand_id;
+
+  // The steepness value defaults to 1.0.
+  float steepness = 1.0;
+};
+
+// Corresponds to `MLOperand softsign(MLOperand x)` that computes the softsign
+// function of the input tensor following the expression x / (1 + |x|).
+struct Softsign {
+  // The input operand (referenced by input_operand_id) must be distinct from
+  // the output operand (referenced by output_operand_id).
+  uint64 input_operand_id;
   uint64 output_operand_id;
 };
 
@@ -702,10 +780,14 @@ struct Where {
 union Activation {
   Clamp clamp;
   Elu elu;
+  HardSigmoid hard_sigmoid;
   LeakyRelu leaky_relu;
+  Linear linear;
   Relu relu;
   Sigmoid sigmoid;
   Softmax softmax;
+  Softplus softplus;
+  Softsign softsign;
   Tanh tanh;
 };
 
@@ -723,8 +805,11 @@ union Operation {
   Expand expand;
   Gather gather;
   Gemm gemm;
+  HardSigmoid hard_sigmoid;
   LayerNormalization layer_normalization;
+  InstanceNormalization instance_normalization;
   LeakyRelu leaky_relu;
+  Linear linear;
   Matmul matmul;
   Pad pad;
   Pool2d pool2d;
@@ -736,6 +821,8 @@ union Operation {
   Sigmoid sigmoid;
   Slice slice;
   Softmax softmax;
+  Softplus softplus;
+  Softsign softsign;
   Split split;
   Tanh tanh;
   Transpose transpose;
@@ -759,12 +846,11 @@ struct GraphInfo {
   map<uint64, mojo_base.mojom.BigBuffer> constant_id_to_buffer_map;
 };
 
-enum ComputeResult {
-  kOk,
-  // The input for inference is invalid.
-  kInvalidInputs,
-  // Something has gone wrong during execution of the graph.
-  kUnknownError,
+// Represents the return value of `WebNNGraph::Compute()`. Let it be
+// `named_outputs` if the computation was successful and `error` otherwise.
+union ComputeResult {
+  map<string, mojo_base.mojom.BigBuffer> named_outputs;
+  Error error;
 };
 
 // WebNNGraph runs in the GPU process and is called by the renderer process to
@@ -780,7 +866,6 @@ interface WebNNGraph {
   // TODO(crbug.com/1488162): Remove [Sync] the standard groups decides that
   // the WebNN sync APIs are not required.
   [Sync]
-  Compute(map<string, mojo_base.mojom.BigBuffer>  named_inputs)
-      => (ComputeResult result,
-          map<string, mojo_base.mojom.BigBuffer>? named_outputs);
+  Compute(map<string, mojo_base.mojom.BigBuffer> named_inputs)
+      => (ComputeResult result);
 };

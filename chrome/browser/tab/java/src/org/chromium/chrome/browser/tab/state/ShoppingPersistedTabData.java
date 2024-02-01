@@ -481,11 +481,36 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         }
     }
 
+    /**
+     * Acquire {@link ShoppingPersistedTabData} for a {@link Tab}, with an option to skip delayed
+     * initialization and initialize immediately.
+     * @param tab {@link Tab} ShoppingPersistedTabData is acquired for
+     * @param callback {@link Callback} receiving the Tab's {@link ShoppingPersistedTabData}
+     * @param skipDelayedInit whether to skip the delayed initialization of {@link
+     * ShoppingPersistedTabData} and initialize immediately
+     * The result in the callback wil be null for a:
+     * - Custom Tab
+     * - Incognito Tab
+     * - Tab greater than 90 days old
+     * - Tab with a non-shopping related page currently navigated to
+     * - Tab with a shopping related page for which no shopping related data was found
+     * - Uninitialized Tab
+     */
+    static void from(
+            Tab tab, Callback<ShoppingPersistedTabData> callback, boolean skipDelayedInit) {
+        if (skipDelayedInit) {
+            fromWithoutDelayedInit(tab, callback);
+        } else {
+            from(tab, callback);
+        }
+    }
+
     private static void fromWithoutDelayedInit(
             Tab tab, Callback<ShoppingPersistedTabData> callback) {
-        // Shopping related data is not available for incognito or Custom Tabs. For example,
-        // for incognito Tabs it is not possible to call a backend service with the user's URL.
-        if (tab.isIncognito() || tab.isCustomTab()) {
+        // Shopping related data is not available for incognito, Custom or Destroyed Tabs. For
+        // example, for incognito Tabs it is not possible to call a backend service with the user's
+        // URL.
+        if (tab == null || tab.isDestroyed() || tab.isIncognito() || tab.isCustomTab()) {
             PostTask.postTask(
                     TaskTraits.UI_DEFAULT,
                     () -> {

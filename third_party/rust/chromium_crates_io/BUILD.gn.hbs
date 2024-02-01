@@ -44,6 +44,8 @@ cargo_crate("{{this.name}}") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
+  proc_macro_configs -= [ "//build/config/compiler:chromium_code" ]
+  proc_macro_configs += [ "//build/config/compiler:no_chromium_code" ]
   {{#each deps}}
   {{#if @first}}
   deps = [
@@ -138,7 +140,8 @@ cargo_crate("{{this.name}}") {
   {{#unless this.gn_visibility.public}}
 
   # Only for usage from third-party crates. Add the crate to
-  # third_party.toml to use it from first-party code.
+  # //third_party/rust/chromium_crates_io/Cargo.toml to use
+  # it from first-party code.
   visibility = [ "//third_party/rust/*" ]
   {{/unless}}
   {{#if this.gn_visibility.testonly}}

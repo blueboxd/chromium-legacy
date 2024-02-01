@@ -4,6 +4,7 @@
 
 #include "components/autofill/content/renderer/form_autofill_issues.h"
 
+#include <string_view>
 #include <vector>
 
 #include "base/check_op.h"
@@ -43,15 +44,15 @@ namespace {
 
 constexpr size_t kMaxNumberOfDevtoolsIssuesEmitted = 100;
 
-constexpr base::StringPiece kFor = "for";
-constexpr base::StringPiece kAriaLabelledBy = "aria-labelledby";
-constexpr base::StringPiece kName = "name";
-constexpr base::StringPiece kId = "id";
-constexpr base::StringPiece kLabel = "label";
-constexpr base::StringPiece kAutocomplete = "autocomplete";
+constexpr std::string_view kFor = "for";
+constexpr std::string_view kAriaLabelledBy = "aria-labelledby";
+constexpr std::string_view kName = "name";
+constexpr std::string_view kId = "id";
+constexpr std::string_view kLabel = "label";
+constexpr std::string_view kAutocomplete = "autocomplete";
 
 // Wrapper for frequently used WebString constants.
-template <const base::StringPiece& string>
+template <const std::string_view& string>
 const WebString& GetWebString() {
   static const base::NoDestructor<WebString> web_string(
       WebString::FromUTF8(string));
@@ -103,6 +104,14 @@ void MaybeAppendInputWithEmptyIdAndNameDevtoolsIssue(
   }
 }
 
+int GetShadowHostDOMNodeId(const WebFormControlElement& element) {
+  WebElement host = element.OwnerShadowHost();
+  if (host.IsNull()) {
+    return /*blink::kInvalidDOMNodeId*/ 0;
+  }
+  return host.GetDomNodeId();
+}
+
 void MaybeAppendDuplicateIdForInputDevtoolsIssue(
     const WebVector<WebFormControlElement>& elements,
     std::vector<blink::WebAutofillClient::FormIssue>& form_issues) {
@@ -116,14 +125,20 @@ void MaybeAppendDuplicateIdForInputDevtoolsIssue(
       elements_with_id_attr.push_back(element);
     }
   }
-  base::ranges::sort(elements_with_id_attr, {},
-                     &WebFormControlElement::GetIdAttribute);
+  base::ranges::sort(elements_with_id_attr, [](const WebFormControlElement& a,
+                                               const WebFormControlElement& b) {
+    return std::forward_as_tuple(a.GetIdAttribute(),
+                                 GetShadowHostDOMNodeId(a)) <
+           std::forward_as_tuple(b.GetIdAttribute(), GetShadowHostDOMNodeId(b));
+  });
 
   for (auto it = elements_with_id_attr.begin();
        (it = base::ranges::adjacent_find(
-            it, elements_with_id_attr.end(), {},
-            &WebFormControlElement::GetIdAttribute)) !=
-       elements_with_id_attr.end();
+            it, elements_with_id_attr.end(),
+            [](const WebFormControlElement& a, const WebFormControlElement& b) {
+              return a.GetIdAttribute() == b.GetIdAttribute() &&
+                     GetShadowHostDOMNodeId(a) == GetShadowHostDOMNodeId(b);
+            })) != elements_with_id_attr.end();
        it++) {
     bool current_element_not_added =
         form_issues.empty() ||
@@ -173,7 +188,7 @@ void MaybeAppendInputAssignedAutocompleteValueToIdOrNameAttributesDevtoolsIssue(
 
   auto ParsedHtmlAttributeValueToAutocompleteHasFieldType =
       [](const std::string& attribute_value) {
-        absl::optional<AutocompleteParsingResult>
+        std::optional<AutocompleteParsingResult>
             parsed_attribute_to_autocomplete =
                 ParseAutocompleteAttribute(attribute_value);
         if (!parsed_attribute_to_autocomplete) {
@@ -309,7 +324,7 @@ void MaybeEmitFormIssuesToDevtools(blink::WebLocalFrame& web_local_frame,
   }
   // Get issues from input elements that belong to no form.
   form_issues = form_issues::GetFormIssues(
-      form_util::GetUnownedAutofillableFormFieldElements(document),
+      form_util::GetAutofillableFormControlElements(document, WebFormElement()),
       std::move(form_issues));
   // Look for fields that after parsed were found to have labels incorrectly
   // used.

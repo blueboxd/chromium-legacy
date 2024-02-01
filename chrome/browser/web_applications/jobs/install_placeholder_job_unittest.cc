@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/containers/flat_set.h"
+#include "base/functional/callback_helpers.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/test_future.h"
@@ -39,24 +40,31 @@ namespace web_app {
 namespace {
 
 class InstallPlaceholderJobWrapperCommand
-    : public WebAppCommandTemplate<SharedWebContentsWithAppLock> {
+    : public WebAppCommand<SharedWebContentsWithAppLock,
+                           webapps::InstallResultCode,
+                           webapps::AppId> {
  public:
   InstallPlaceholderJobWrapperCommand(
       Profile* profile,
       const ExternalInstallOptions& install_options,
       InstallPlaceholderJob::InstallAndReplaceCallback callback,
       std::unique_ptr<WebAppDataRetriever> data_retriever = nullptr)
-      : WebAppCommandTemplate<SharedWebContentsWithAppLock>(
-            "InstallPlaceholderJobWrapperCommand"),
+      : WebAppCommand<SharedWebContentsWithAppLock,
+                      webapps::InstallResultCode,
+                      webapps::AppId>(
+            "InstallPlaceholderJobWrapperCommand",
+            SharedWebContentsWithAppLockDescription(
+                base::flat_set<webapps::AppId>{
+                    GenerateAppId(/*manifest_id_path=*/std::nullopt,
+                                  install_options.install_url)}),
+            std::move(callback),
+            /*args_for_shutdown=*/
+            std::make_tuple(webapps::InstallResultCode::
+                                kCancelledOnWebAppProviderShuttingDown,
+                            webapps::AppId())),
         profile_(*profile),
         install_options_(install_options),
-        callback_(std::move(callback)),
-        data_retriever_(std::move(data_retriever)),
-        lock_description_(
-            std::make_unique<SharedWebContentsWithAppLockDescription>(
-                base::flat_set<webapps::AppId>{
-                    GenerateAppId(/*manifest_id_path=*/absl::nullopt,
-                                  install_options.install_url)})) {}
+        data_retriever_(std::move(data_retriever)) {}
 
   ~InstallPlaceholderJobWrapperCommand() override = default;
 
@@ -64,7 +72,7 @@ class InstallPlaceholderJobWrapperCommand
       std::unique_ptr<SharedWebContentsWithAppLock> lock) override {
     lock_ = std::move(lock);
     install_placeholder_job_ = std::make_unique<InstallPlaceholderJob>(
-        &*profile_, install_options_,
+        &*profile_, *GetMutableDebugValue().EnsureDict("job"), install_options_,
         base::BindOnce(
             &InstallPlaceholderJobWrapperCommand::OnPlaceholderInstalled,
             weak_factory_.GetWeakPtr()),
@@ -78,27 +86,16 @@ class InstallPlaceholderJobWrapperCommand
 
   void OnPlaceholderInstalled(webapps::InstallResultCode code,
                               webapps::AppId app_id) {
-    SignalCompletionAndSelfDestruct(
-        webapps::IsSuccess(code) ? CommandResult::kSuccess
-                                 : CommandResult::kFailure,
-        base::BindOnce(std::move(callback_), code, std::move(app_id)));
+    CompleteAndSelfDestruct(webapps::IsSuccess(code) ? CommandResult::kSuccess
+                                                     : CommandResult::kFailure,
+                            code, app_id);
   }
-
-  const LockDescription& lock_description() const override {
-    return *lock_description_;
-  }
-
-  base::Value ToDebugValue() const override { return base::Value(); }
-
-  void OnShutdown() override {}
 
  private:
   raw_ref<Profile> profile_;
   ExternalInstallOptions install_options_;
-  InstallPlaceholderJob::InstallAndReplaceCallback callback_;
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
 
-  std::unique_ptr<SharedWebContentsWithAppLockDescription> lock_description_;
   std::unique_ptr<SharedWebContentsWithAppLock> lock_;
 
   std::unique_ptr<InstallPlaceholderJob> install_placeholder_job_;
@@ -161,7 +158,7 @@ TEST_F(InstallPlaceholderJobTest, InstallPlaceholder) {
   EXPECT_TRUE(last_install_options->add_to_quick_launch_bar);
   EXPECT_FALSE(last_install_options->os_hooks[OsHookType::kRunOnOsLogin]);
   if (AreOsIntegrationSubManagersEnabled()) {
-    absl::optional<proto::WebAppOsIntegrationState> os_state =
+    std::optional<proto::WebAppOsIntegrationState> os_state =
         provider()->registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
     ASSERT_TRUE(os_state.has_value());
     EXPECT_TRUE(os_state->has_shortcut());
@@ -187,12 +184,14 @@ TEST_F(InstallPlaceholderJobTest, InstallPlaceholderWithOverrideIconUrl) {
   bitmap.allocN32Pixels(kIconSize, kIconSize);
   bitmap.eraseColor(SK_ColorRED);
   IconsMap icons = {{icon_url, {bitmap}}};
+  const IconUrlWithSize icon_metadata =
+      IconUrlWithSize::CreateForUnspecifiedSize(icon_url);
   DownloadedIconsHttpResults http_result = {
-      {icon_url, net::HttpStatusCode::HTTP_OK}};
-  EXPECT_CALL(
-      *data_retriever,
-      GetIcons(testing::_, testing::ElementsAre(icon_url), skip_page_favicons,
-               fail_all_if_any_fail, base::test::IsNotNullCallback()))
+      {icon_metadata, net::HttpStatusCode::HTTP_OK}};
+  EXPECT_CALL(*data_retriever,
+              GetIcons(testing::_, testing::ElementsAre(icon_metadata),
+                       skip_page_favicons, fail_all_if_any_fail,
+                       base::test::IsNotNullCallback()))
       .WillOnce(base::test::RunOnceCallback<4>(
           IconsDownloadedResult::kCompleted, std::move(icons), http_result));
 
@@ -206,7 +205,7 @@ TEST_F(InstallPlaceholderJobTest, InstallPlaceholderWithOverrideIconUrl) {
       app_id, WebAppManagement::kPolicy));
   EXPECT_EQ(fake_os_integration_manager().num_create_shortcuts_calls(), 1u);
   if (AreOsIntegrationSubManagersEnabled()) {
-    absl::optional<proto::WebAppOsIntegrationState> os_state =
+    std::optional<proto::WebAppOsIntegrationState> os_state =
         provider()->registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
     ASSERT_TRUE(os_state.has_value());
     EXPECT_TRUE(os_state->has_shortcut());

@@ -11,10 +11,13 @@
 #include "base/functional/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
+#include "components/safe_browsing/content/browser/async_check_tracker.h"
 #include "components/safe_browsing/content/browser/base_blocking_page.h"
+#include "components/safe_browsing/content/browser/unsafe_resource_util.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -130,7 +133,6 @@ ThreatSeverity GetThreatSeverity(safe_browsing::SBThreatType threat_type) {
       return 1;
     case safe_browsing::SB_THREAT_TYPE_API_ABUSE:
     case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:
-    case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
     case safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER:
       return 2;
     case safe_browsing::SB_THREAT_TYPE_CSD_ALLOWLIST:
@@ -158,11 +160,11 @@ BaseUIManager::~BaseUIManager() = default;
 bool BaseUIManager::IsAllowlisted(const UnsafeResource& resource) {
   NavigationEntry* entry = nullptr;
   if (resource.is_subresource) {
-    entry = GetNavigationEntryForResource(resource);
+    entry = unsafe_resource_util::GetNavigationEntryForResource(resource);
   }
 
   content::WebContents* web_contents =
-      security_interstitials::GetWebContentsForResource(resource);
+      unsafe_resource_util::GetWebContentsForResource(resource);
   // |web_contents| can be null after RenderFrameHost is destroyed.
   if (!web_contents)
     return false;
@@ -208,7 +210,8 @@ void BaseUIManager::OnBlockingPageDone(
     bool showed_interstitial) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& resource : resources) {
-    resource.DispatchCallback(FROM_HERE, proceed, showed_interstitial);
+    resource.DispatchCallback(FROM_HERE, proceed, showed_interstitial,
+                              false /* has_post_commit_interstitial_skipped */);
 
     GURL allowlist_url = GetAllowlistUrl(
         main_frame_url, false /* is subresource */,
@@ -244,8 +247,9 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
         (resource.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
          resource.threat_metadata.threat_pattern_type ==
              ThreatPatternType::MALWARE_LANDING)) {
-      resource.DispatchCallback(FROM_HERE, true /* proceed */,
-                                false /* showed_interstitial */);
+      resource.DispatchCallback(
+          FROM_HERE, true /* proceed */, false /* showed_interstitial */,
+          false /* has_post_commit_interstitial_skipped */);
       return;
     }
   }
@@ -253,7 +257,7 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
   // The tab might have been closed. If it was closed, just act as if "Don't
   // Proceed" had been chosen.
   content::WebContents* web_contents =
-      security_interstitials::GetWebContentsForResource(resource);
+      unsafe_resource_util::GetWebContentsForResource(resource);
   if (!web_contents) {
     OnBlockingPageDone(std::vector<UnsafeResource>{resource},
                        false /* proceed */, web_contents,
@@ -266,14 +270,16 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
   // and top-level domain.
   if (IsAllowlisted(resource)) {
     resource.DispatchCallback(FROM_HERE, true /* proceed */,
-                              false /* showed_interstitial */);
+                              false /* showed_interstitial */,
+                              false /* has_post_commit_interstitial_skipped */);
     return;
   }
 
   if (resource.threat_type != SB_THREAT_TYPE_SAFE &&
       resource.threat_type != SB_THREAT_TYPE_BILLING &&
       resource.threat_type != SB_THREAT_TYPE_MANAGED_POLICY_BLOCK &&
-      resource.threat_type != SB_THREAT_TYPE_MANAGED_POLICY_WARN) {
+      resource.threat_type != SB_THREAT_TYPE_MANAGED_POLICY_WARN &&
+      resource.should_send_reports) {
     // TODO(vakh): crbug/883462: The reports for SB_THREAT_TYPE_BILLING should
     // be disabled for M70 but enabled for a later release (M71?).
     CreateAndSendHitReport(resource);
@@ -289,16 +295,17 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
 
   // |entry| can be null if we are on a brand new tab, and a resource is added
   // via javascript without a navigation.
-  content::NavigationEntry* entry = GetNavigationEntryForResource(resource);
+  content::NavigationEntry* entry =
+      unsafe_resource_util::GetNavigationEntryForResource(resource);
 
   GURL unsafe_url = resource.url;
-  if (entry && !resource.IsMainPageLoadBlocked()) {
+  if (entry && !AsyncCheckTracker::IsMainPageLoadPending(resource)) {
     unsafe_url = entry->GetURL();
   }
 
-  // In top-document navigation cases, we just mark the resource unsafe and
-  // cancel the load from here, the actual interstitial will be shown from the
-  // SafeBrowsingNavigationThrottle when the navigation fails.
+  // If the top-level navigation is still pending, we just mark the resource
+  // unsafe and cancel the load from here, the actual interstitial will be shown
+  // from the SafeBrowsingNavigationThrottle when the navigation fails.
   //
   // In other cases, the error interstitial is manually loaded here, after the
   // load is canceled:
@@ -310,8 +317,11 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
   // - Delayed Warning Experiment: When enabled, this method is only called
   //   after the navigation completes and a user action occurs so the throttle
   //   cannot be used.
+  // - Async check: If the check is not able to complete before
+  //   DidFinishNavigation, it won't hit the throttle.
   const bool load_post_commit_error_page =
-      !resource.IsMainPageLoadBlocked() || resource.is_delayed_warning;
+      !AsyncCheckTracker::IsMainPageLoadPending(resource) ||
+      resource.is_delayed_warning;
   if (!load_post_commit_error_page) {
     AddUnsafeResource(unsafe_url, resource);
   }
@@ -322,7 +332,8 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
   // LoadPostCommitErrorPage creates another navigation).
   resource.DispatchCallback(
       FROM_HERE, false /* proceed */,
-      !load_post_commit_error_page /* showed_interstitial */);
+      !load_post_commit_error_page /* showed_interstitial */,
+      !load_post_commit_error_page /* has_post_commit_interstitial_skipped */);
 
   if (!base::FeatureList::IsEnabled(safe_browsing::kDelayedWarnings)) {
     DCHECK(!resource.is_delayed_warning);
@@ -345,8 +356,11 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
 
     // In some cases the interstitial must be loaded here since there will be
     // no navigation to intercept in the throttle.
-    std::unique_ptr<BaseBlockingPage> blocking_page = base::WrapUnique(
-        CreateBlockingPageForSubresource(web_contents, unsafe_url, resource));
+    std::unique_ptr<security_interstitials::SecurityInterstitialPage>
+        blocking_page = base::WrapUnique(CreateBlockingPage(
+            web_contents, unsafe_url, resource,
+            /*forward_extension_event=*/true,
+            AsyncCheckTracker::GetBlockedPageCommittedTimestamp(resource)));
     base::WeakPtr<content::NavigationHandle> error_page_navigation_handle =
         web_contents->GetController().LoadPostCommitErrorPage(
             web_contents->GetPrimaryMainFrame(), unsafe_url,
@@ -369,10 +383,13 @@ void BaseUIManager::CreateAndSendHitReport(const UnsafeResource& resource) {}
 void BaseUIManager::CreateAndSendClientSafeBrowsingWarningShownReport(
     const UnsafeResource& resource) {}
 
-BaseBlockingPage* BaseUIManager::CreateBlockingPageForSubresource(
+security_interstitials::SecurityInterstitialPage*
+BaseUIManager::CreateBlockingPage(
     content::WebContents* contents,
     const GURL& blocked_url,
-    const UnsafeResource& unsafe_resource) {
+    const UnsafeResource& unsafe_resource,
+    bool forward_extension_event,
+    std::optional<base::TimeTicks> blocked_page_shown_timestamp) {
   // TODO(carlosil): This can be removed once all implementations of SB use
   // committed interstitials. In the meantime, there is no create method for the
   // non-committed implementations, and this code won't be called if committed
@@ -466,15 +483,27 @@ void BaseUIManager::AddUnsafeResource(
   unsafe_resources_.push_back(std::make_pair(url, resource));
 }
 
-bool BaseUIManager::PopUnsafeResourceForURL(
+bool BaseUIManager::PopUnsafeResourceForNavigation(
     GURL url,
+    int64_t navigation_id,
     security_interstitials::UnsafeResource* resource) {
   for (auto it = unsafe_resources_.begin(); it != unsafe_resources_.end();
        it++) {
     if (it->first == url) {
-      *resource = it->second;
-      unsafe_resources_.erase(it);
-      return true;
+      bool match_navigation_id =
+          it->second.navigation_id.has_value() &&
+          it->second.navigation_id.value() == navigation_id;
+      base::UmaHistogramBoolean(
+          "SafeBrowsing.NavigationIdMatchedInUnsafeResource",
+          match_navigation_id);
+      // Add the flag check to ensure no behavioral change when the flag is
+      // disabled.
+      if (match_navigation_id ||
+          !base::FeatureList::IsEnabled(kSafeBrowsingAsyncRealTimeCheck)) {
+        *resource = it->second;
+        unsafe_resources_.erase(it);
+        return true;
+      }
     }
   }
   return false;
@@ -489,12 +518,25 @@ ThreatSeverity BaseUIManager::GetSeverestThreatForNavigation(
   if (!handle)
     return min_severity;
 
-  for (auto&& url : handle->GetRedirectChain()) {
+  return GetSeverestThreatForRedirectChain(
+      handle->GetRedirectChain(), handle->GetNavigationId(), severest_resource);
+}
+
+ThreatSeverity BaseUIManager::GetSeverestThreatForRedirectChain(
+    const std::vector<GURL>& redirect_chain,
+    int64_t navigation_id,
+    security_interstitials::UnsafeResource& severest_resource) {
+  // Default is safe
+  // Smaller numbers are more severe for ThreatSeverity
+  ThreatSeverity min_severity = std::numeric_limits<ThreatSeverity>::max();
+
+  for (auto&& url : redirect_chain) {
     security_interstitials::UnsafeResource resource;
-    if (PopUnsafeResourceForURL(url, &resource)) {
+    if (PopUnsafeResourceForNavigation(url, navigation_id, &resource)) {
       ThreatSeverity severity = GetThreatSeverity(resource.threat_type);
-      if (severity > min_severity)
+      if (severity > min_severity) {
         continue;
+      }
       min_severity = severity;
       severest_resource = std::move(resource);
     }
@@ -547,10 +589,11 @@ void BaseUIManager::RemoveAllowlistUrlSet(const GURL& allowlist_url,
 // static
 GURL BaseUIManager::GetMainFrameAllowlistUrlForResource(
     const security_interstitials::UnsafeResource& resource) {
-  return GetAllowlistUrl(resource.url, resource.is_subresource,
-                         resource.is_subresource
-                             ? GetNavigationEntryForResource(resource)
-                             : nullptr);
+  return GetAllowlistUrl(
+      resource.url, resource.is_subresource,
+      resource.is_subresource
+          ? unsafe_resource_util::GetNavigationEntryForResource(resource)
+          : nullptr);
 }
 
 }  // namespace safe_browsing

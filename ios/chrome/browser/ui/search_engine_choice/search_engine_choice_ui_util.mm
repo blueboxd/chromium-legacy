@@ -6,6 +6,9 @@
 
 #import "base/i18n/rtl.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "components/search_engines/search_engine_choice_utils.h"
+#import "components/search_engines/template_url.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -15,154 +18,14 @@
 #import "ios/chrome/common/ui/util/device_util.h"
 #import "ios/chrome/common/ui/util/sdk_forward_declares.h"
 #import "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/resource/resource_bundle.h"
 
 namespace {
 
-// Line width for the fake omnibox.
-constexpr CGFloat kLineWidth = 1.;
-// Parameters for the fake omnibox.
-constexpr CGFloat kFakeOmniboxCornerRadius = 99.;
-// Parameters for empty field in the fake omnibox.
-constexpr CGFloat kFakeOmniboxFieldWidth = 102.;
-constexpr CGFloat kFakeOmniboxFieldHeight = 12.;
-constexpr CGFloat kFakeOmniboxFieldCornerRadius = 12.;
-constexpr CGFloat kFakeOmniboxFieldLeadingInset = 48.;
-// Magnifying glass size.
-constexpr CGFloat kMagnifyingGlassSize = 20.;
-constexpr CGFloat kMagnifyingGlassFrameSize = 24.;
-constexpr CGFloat kMagnifyingGlassLeadingInset = 16.;
-constexpr CGFloat kMagnifyingGlassTopInset = 12.;
 // The margin between the text and the arrow on the "More" button.
 constexpr CGFloat kMoreArrowMargin = 4;
 
 }  // namespace
-
-UIView* CreateFakeEmptyOmnibox() {
-  UIView* fake_omnibox = [[UIView alloc] init];
-
-  fake_omnibox.bounds = CGRectMake(0, 0, kFakeOmniboxWidth, kFakeOmniboxHeight);
-
-  // Create the dashed border line.
-  CAShapeLayer* fake_omnibox_border = [CAShapeLayer layer];
-  fake_omnibox_border.strokeColor = [UIColor colorNamed:kGrey300Color].CGColor;
-  fake_omnibox_border.fillColor = nil;
-  fake_omnibox_border.lineDashPattern = @[ @2, @1 ];
-  fake_omnibox_border.frame = fake_omnibox.bounds;
-  fake_omnibox_border.lineWidth = kLineWidth;
-  fake_omnibox_border.path =
-      [UIBezierPath bezierPathWithRoundedRect:fake_omnibox.bounds
-                                 cornerRadius:kFakeOmniboxCornerRadius]
-          .CGPath;
-  [fake_omnibox.layer addSublayer:fake_omnibox_border];
-
-  // Add the empty grey field inside.
-  CAShapeLayer* fake_omnibox_field = [CAShapeLayer layer];
-  fake_omnibox_field.fillColor = [UIColor colorNamed:kGrey100Color].CGColor;
-  if (base::i18n::IsRTL()) {
-    fake_omnibox_field.frame =
-        CGRectMake(kFakeOmniboxWidth - kFakeOmniboxFieldLeadingInset -
-                       kFakeOmniboxFieldWidth,
-                   (kFakeOmniboxHeight - kFakeOmniboxFieldHeight) / 2.,
-                   kFakeOmniboxFieldWidth, kFakeOmniboxFieldHeight);
-  } else {
-    fake_omnibox_field.frame =
-        CGRectMake(kFakeOmniboxFieldLeadingInset,
-                   (kFakeOmniboxHeight - kFakeOmniboxFieldHeight) / 2.,
-                   kFakeOmniboxFieldWidth, kFakeOmniboxFieldHeight);
-  }
-  fake_omnibox_field.path =
-      [UIBezierPath
-          bezierPathWithRoundedRect:CGRectMake(0, 0, kFakeOmniboxFieldWidth,
-                                               kFakeOmniboxFieldHeight)
-                       cornerRadius:kFakeOmniboxFieldCornerRadius]
-          .CGPath;
-  [fake_omnibox.layer addSublayer:fake_omnibox_field];
-
-  // Add the search icon to the side.
-  UIImageView* searchSymbolIcon = [[UIImageView alloc]
-      initWithImage:DefaultSymbolWithPointSize(kMagnifyingglassSymbol,
-                                               kMagnifyingGlassSize)];
-
-  [fake_omnibox addSubview:searchSymbolIcon];
-  if (base::i18n::IsRTL()) {
-    searchSymbolIcon.frame =
-        CGRectMake(kFakeOmniboxWidth - kMagnifyingGlassLeadingInset -
-                       kMagnifyingGlassFrameSize,
-                   kMagnifyingGlassTopInset, kMagnifyingGlassFrameSize,
-                   kMagnifyingGlassFrameSize);
-  } else {
-    searchSymbolIcon.frame =
-        CGRectMake(kMagnifyingGlassLeadingInset, kMagnifyingGlassTopInset,
-                   kMagnifyingGlassFrameSize, kMagnifyingGlassFrameSize);
-  }
-  fake_omnibox.translatesAutoresizingMaskIntoConstraints = NO;
-  return fake_omnibox;
-}
-
-UIView* CreateFakeOmnibox(UIImageView* icon, NSString* searchEngineName) {
-  UIView* fake_omnibox = [[UIView alloc] init];
-
-  fake_omnibox.bounds = CGRectMake(0, 0, kFakeOmniboxWidth, kFakeOmniboxHeight);
-
-  // Add the shadow around the omnibox.
-  CAShapeLayer* fake_omnibox_shadow = [CAShapeLayer layer];
-  fake_omnibox_shadow.frame = fake_omnibox.bounds;
-  fake_omnibox_shadow.shadowColor = [UIColor colorNamed:kGrey300Color].CGColor;
-  fake_omnibox_shadow.shadowOpacity = 1;
-  fake_omnibox_shadow.shadowRadius = 16;
-  fake_omnibox_shadow.shadowOffset = CGSizeMake(0, 4);
-  fake_omnibox_shadow.shadowPath =
-      [UIBezierPath bezierPathWithRoundedRect:fake_omnibox.bounds
-                                 cornerRadius:kFakeOmniboxCornerRadius]
-          .CGPath;
-  [fake_omnibox.layer addSublayer:fake_omnibox_shadow];
-
-  // Create the pill-shaped field.
-  CAShapeLayer* fake_omnibox_pill = [CAShapeLayer layer];
-  fake_omnibox_pill.fillColor = [UIColor colorNamed:kBackgroundColor].CGColor;
-  fake_omnibox_pill.frame = fake_omnibox.bounds;
-  fake_omnibox_pill.path =
-      [UIBezierPath bezierPathWithRoundedRect:fake_omnibox.bounds
-                                 cornerRadius:kFakeOmniboxCornerRadius]
-          .CGPath;
-  [fake_omnibox.layer addSublayer:fake_omnibox_pill];
-  // Add the search engine Label.
-  UILabel* searchWithLabel = [[UILabel alloc] init];
-  if (base::i18n::IsRTL()) {
-    searchWithLabel.frame =
-        CGRectMake(0., 0., kFakeOmniboxWidth - kFakeOmniboxFieldLeadingInset,
-                   kFakeOmniboxHeight);
-  } else {
-    searchWithLabel.frame = CGRectMake(
-        kFakeOmniboxFieldLeadingInset, 0.,
-        kFakeOmniboxWidth - kFakeOmniboxFieldLeadingInset, kFakeOmniboxHeight);
-  }
-
-  searchWithLabel.text =
-      l10n_util::GetNSStringF(IDS_SEARCH_ENGINE_CHOICE_FAKE_OMNIBOX_TEXT,
-                              base::SysNSStringToUTF16(searchEngineName));
-  searchWithLabel.font = [UIFont systemFontOfSize:13];
-  searchWithLabel.numberOfLines = 0;
-  [fake_omnibox addSubview:searchWithLabel];
-
-  // Add the favicon on the side.
-  icon.layer.cornerRadius = kFaviconImageViewRadius;
-  icon.clipsToBounds = YES;
-  [fake_omnibox addSubview:icon];
-  if (base::i18n::IsRTL()) {
-    icon.frame = CGRectMake(kFakeOmniboxWidth - kMagnifyingGlassLeadingInset -
-                                kMagnifyingGlassFrameSize,
-                            kMagnifyingGlassTopInset, kMagnifyingGlassFrameSize,
-                            kMagnifyingGlassFrameSize);
-  } else {
-    icon.frame =
-        CGRectMake(kMagnifyingGlassLeadingInset, kMagnifyingGlassTopInset,
-                   kMagnifyingGlassFrameSize, kMagnifyingGlassFrameSize);
-  }
-
-  fake_omnibox.translatesAutoresizingMaskIntoConstraints = NO;
-  return fake_omnibox;
-}
 
 UIFont* GetTitleFontWithTraitCollection(UITraitCollection* trait_collection) {
   BOOL dynamic_type_enabled = UIContentSizeCategoryIsAccessibilityCategory(
@@ -176,8 +39,7 @@ UIFont* GetTitleFontWithTraitCollection(UITraitCollection* trait_collection) {
   } else {
     text_style = UIFontTextStyleTitle2;
   }
-
-  DCHECK(text_style);
+  CHECK(text_style);
   UIFontDescriptor* descriptor =
       [UIFontDescriptor preferredFontDescriptorWithTextStyle:text_style];
   UIFont* font = [UIFont systemFontOfSize:descriptor.pointSize
@@ -260,4 +122,24 @@ void UpdatePrimaryButton(UIButton* button,
   button.configuration = buttonConfiguration;
   button.enabled = isEnabled;
   button.accessibilityIdentifier = kSetAsDefaultSearchEngineIdentifier;
+}
+
+UIImage* SearchEngineFaviconFromTemplateURL(const TemplateURL& template_url) {
+  // Only works for prepopulated search engines.
+  CHECK_GT(template_url.prepopulate_id(), 0, base::NotFatalUntil::M124)
+      << base::UTF16ToUTF8(template_url.short_name());
+  std::u16string engine_keyword = template_url.data().keyword();
+  int resource_id = search_engines::GetIconResourceId(engine_keyword);
+  CHECK_NE(resource_id, -1, base::NotFatalUntil::M124)
+      << base::UTF16ToUTF8(engine_keyword);
+  if (resource_id == -1) {
+    return nil;
+  }
+  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
+  return resource_bundle.GetNativeImageNamed(resource_id).ToUIImage();
+}
+
+bool IsSearchEngineForceEnabled() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:kSearchEngineForceEnabled];
 }

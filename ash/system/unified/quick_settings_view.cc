@@ -64,7 +64,7 @@ class AccessibilityFocusHelperView : public views::View {
   }
 
  private:
-  raw_ptr<UnifiedSystemTrayController, ExperimentalAsh> controller_;
+  raw_ptr<UnifiedSystemTrayController> controller_;
 };
 
 BEGIN_METADATA(AccessibilityFocusHelperView)
@@ -97,7 +97,7 @@ class QuickSettingsView::SystemTrayContainer : public views::View {
   }
 
  private:
-  const raw_ptr<views::BoxLayout, ExperimentalAsh> layout_manager_;
+  const raw_ptr<views::BoxLayout> layout_manager_;
 };
 
 BEGIN_METADATA(QuickSettingsView, SystemTrayContainer, views::View)
@@ -235,11 +235,11 @@ void QuickSettingsView::SetDetailedView(
   system_tray_container_->SetVisible(false);
   detailed_view_container_->SetVisible(true);
 
-  // We need to enforce a manual `Layout()` here to make sure that
-  // `CalendarView` is notified that it can be initialized through
-  // `OnViewBoundsChanged`. The `CalendarView` depends on `OnViewsBoundsChanged`
-  // to check if it can `ScrollToToday`.
-  Layout();
+  // We need to trigger layout here to make sure that `CalendarView` is notified
+  // that it can be initialized through `OnViewBoundsChanged`. The
+  // `CalendarView` depends on `OnViewsBoundsChanged` to check if it can
+  // `ScrollToToday`.
+  DeprecatedLayoutImmediately();
 }
 
 void QuickSettingsView::ResetDetailedView() {

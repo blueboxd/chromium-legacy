@@ -15,7 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_data_pipe_getter.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/connector_data_pipe_getter.h"
 #include "components/file_access/scoped_file_access.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -112,7 +112,7 @@ class MultipartUploadRequest {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       MultipartUploadRequest::Callback callback);
 
-  MultipartDataPipeGetter* data_pipe_getter_for_testing() {
+  ConnectorDataPipeGetter* data_pipe_getter_for_testing() {
     return data_pipe_getter_.get();
   }
 
@@ -142,12 +142,12 @@ class MultipartUploadRequest {
                                   const std::string& data);
 
   // Called whenever a net request finishes (on success or failure).
-  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
+  void OnURLLoaderComplete(std::optional<std::string> response_body);
 
   // Called whenever a net request finishes (on success or failure).
   void RetryOrFinish(int net_error,
                      int response_code,
-                     std::unique_ptr<std::string> response_body);
+                     std::optional<std::string> response_body);
 
   // Called to send a single request. Is overridden in tests.
   virtual void SendRequest();
@@ -158,7 +158,7 @@ class MultipartUploadRequest {
   // Called after `data_pipe_getter_` has been initialized.
   void DataPipeCreatedCallback(
       std::unique_ptr<network::ResourceRequest> request,
-      std::unique_ptr<MultipartDataPipeGetter> data_pipe_getter);
+      std::unique_ptr<ConnectorDataPipeGetter> data_pipe_getter);
 
   // Called by SendFileRequest and SendPageRequest after `data_pipe_getter_`
   // is known to be initialized to a correct state.
@@ -190,7 +190,7 @@ class MultipartUploadRequest {
 
   // Data pipe getter used to stream a file or a page. Only populated for the
   // corresponding requests.
-  std::unique_ptr<MultipartDataPipeGetter> data_pipe_getter_;
+  std::unique_ptr<ConnectorDataPipeGetter> data_pipe_getter_;
 
   std::string boundary_;
   Callback callback_;

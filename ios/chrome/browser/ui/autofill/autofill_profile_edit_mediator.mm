@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_profile_edit_mediator.h"
 
+#import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/browser/geo/autofill_country.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
@@ -49,7 +50,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @end
 
 @implementation AutofillProfileEditMediator {
-  autofill::AutofillProfile* _autofillProfile;
+  raw_ptr<autofill::AutofillProfile> _autofillProfile;
 }
 
 - (instancetype)initWithDelegate:
@@ -139,7 +140,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (BOOL)fieldValueEmptyOnProfileLoadForType:
-    (autofill::ServerFieldType)serverFieldType {
+    (autofill::FieldType)serverFieldType {
   return _autofillProfile
       ->GetInfo(serverFieldType,
                 GetApplicationContext()->GetApplicationLocale())
@@ -148,7 +149,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)updateProfileMetadataWithValue:(NSString*)value
                      forAutofillUIType:(AutofillUIType)autofillUIType {
-  autofill::ServerFieldType serverFieldType =
+  autofill::FieldType serverFieldType =
       AutofillTypeFromAutofillUIType(autofillUIType);
 
   // Since the country field is a text field, we should use SetInfo() to
@@ -243,8 +244,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   autofill::AutofillCountry country(
       base::SysNSStringToUTF8(self.selectedCountryCode),
       GetApplicationContext()->GetApplicationLocale());
-  // TODO(crbug.com/1413205): Remove `setNameRequired()`.
-  [self.consumer setNameRequired:NO];
   [self.consumer setLine1Required:country.requires_line1()];
   [self.consumer setCityRequired:country.requires_city()];
   [self.consumer setStateRequired:country.requires_state()];
@@ -260,9 +259,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
         autofill::AutofillType(field.autofillType),
         GetApplicationContext()->GetApplicationLocale()));
     switch (autofillUIType) {
-      case AutofillUITypeProfileHonorificPrefix:
-        [self.consumer setHonorificPrefix:fieldValue];
-        break;
       case AutofillUITypeProfileCompanyName:
         [self.consumer setCompanyName:fieldValue];
         break;

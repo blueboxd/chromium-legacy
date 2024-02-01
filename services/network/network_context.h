@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -65,15 +66,13 @@
 #include "services/network/public/mojom/restricted_udp_socket.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
-#include "services/network/restricted_cookie_manager.h"
-
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler.h"
+#include "services/network/restricted_cookie_manager.h"
 #include "services/network/socket_factory.h"
 #include "services/network/url_request_context_owner.h"
 #include "services/network/web_bundle/web_bundle_manager.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/reporting/reporting_cache_observer.h"
@@ -90,11 +89,10 @@ class UnguessableToken;
 
 namespace net {
 class CertVerifier;
-class CookieCryptoDelegate;
 class HostPortPair;
 class IsolationInfo;
 class NetworkAnonymizationKey;
-class ReportSender;
+class ProxyDelegate;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
 class URLRequestContextBuilder;
@@ -102,7 +100,6 @@ class URLRequestContextBuilder;
 
 namespace certificate_transparency {
 class ChromeRequireCTDelegate;
-class ChromeCTPolicyEnforcer;
 }  // namespace certificate_transparency
 
 namespace domain_reliability {
@@ -122,7 +119,6 @@ class MojoBackendFileOperationsFactory;
 class NetworkService;
 class NetworkServiceMemoryCache;
 class NetworkServiceNetworkDelegate;
-class NetworkServiceProxyDelegate;
 class P2PSocketManager;
 class PendingTrustTokenStore;
 class ProxyLookupRequest;
@@ -324,11 +320,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const net::X509Certificate* validated_certificate_chain,
       const net::SignedCertificateTimestampAndStatusList&
           signed_certificate_timestamps);
-  void SetCTLogListAlwaysTimelyForTesting() override;
   void SetSCTAuditingMode(mojom::SCTAuditingMode mode) override;
-  void OnCTLogListUpdated(
-      const std::vector<network::mojom::CTLogInfoPtr>& log_list,
-      base::Time update_time);
   SCTAuditingHandler* sct_auditing_handler() {
     return sct_auditing_handler_.get();
   }
@@ -354,7 +346,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
       CreateTCPServerSocketCallback callback) override;
   void CreateTCPConnectedSocket(
-      const absl::optional<net::IPEndPoint>& local_addr,
+      const std::optional<net::IPEndPoint>& local_addr,
       const net::AddressList& remote_addr_list,
       mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -392,7 +384,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
           url_loader_network_observer,
       mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
-      const absl::optional<base::UnguessableToken>& throttling_profile_id)
+      const std::optional<base::UnguessableToken>& throttling_profile_id)
       override;
   void CreateWebTransport(
       const GURL& url,
@@ -409,12 +401,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::ResolveHostParametersPtr optional_parameters,
       mojo::PendingRemote<mojom::ResolveHostClient> response_client) override;
   void CreateHostResolver(
-      const absl::optional<net::DnsConfigOverrides>& config_overrides,
+      const std::optional<net::DnsConfigOverrides>& config_overrides,
       mojo::PendingReceiver<mojom::HostResolver> receiver) override;
   void VerifyCertForSignedExchange(
       const scoped_refptr<net::X509Certificate>& certificate,
       const GURL& url,
-      const net::NetworkAnonymizationKey& network_anonymization_key,
       const std::string& ocsp_result,
       const std::string& sct_list,
       VerifyCertForSignedExchangeCallback callback) override;
@@ -469,9 +460,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::string& type,
       const std::string& group,
       const GURL& url,
-      const absl::optional<base::UnguessableToken>& reporting_source,
+      const std::optional<base::UnguessableToken>& reporting_source,
       const net::NetworkAnonymizationKey& network_anonymization_key,
-      const absl::optional<std::string>& user_agent,
+      const std::optional<std::string>& user_agent,
       base::Value::Dict body) override;
   void QueueSignedExchangeReport(
       mojom::SignedExchangeReportPtr report,
@@ -532,11 +523,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void FlushCachedClientCertIfNeeded(
       const net::HostPortPair& host,
       const scoped_refptr<net::X509Certificate>& certificate) override;
-  void VerifyIpProtectionConfigGetterForTesting(
-      VerifyIpProtectionConfigGetterForTestingCallback callback) override;
-  void InvalidateIpProtectionConfigCacheTryAgainAfterTime() override;
   void SetCookieDeprecationLabel(
-      const absl::optional<std::string>& label) override;
+      const std::optional<std::string>& label) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);
@@ -748,9 +736,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // TODO(crbug.com/828447): This code is more-or-less duplicated in
   // SSLClientSocket and QUIC. Fold this into some CertVerifier-shaped class
   // in //net.
-  int CheckCTComplianceForSignedExchange(
+  int CheckCTRequirementsForSignedExchange(
       net::CertVerifyResult& cert_verify_result,
-      const net::X509Certificate& certificate,
       const net::HostPortPair& host_port_pair);
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
@@ -769,9 +756,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   bool IsAllowedToUseAllHttpAuthSchemes(
       const url::SchemeHostPort& scheme_host_port);
-
-  void OnIpProtectionConfigAvailableForTesting(
-      VerifyIpProtectionConfigGetterForTestingCallback callback);
 
   const raw_ptr<NetworkService> network_service_;
 
@@ -877,17 +861,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Owned by the URLRequestContext
   raw_ptr<net::StaticHttpUserAgentSettings> user_agent_settings_ = nullptr;
 
-  // Pointed to by the TransportSecurityState (owned by the
-  // URLRequestContext), and must be disconnected from it before it's destroyed.
-  std::unique_ptr<net::ReportSender> certificate_report_sender_;
-
 #if BUILDFLAG(IS_CT_SUPPORTED)
   std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>
       require_ct_delegate_;
-
-  // Owned by the URLRequestContext.
-  raw_ptr<certificate_transparency::ChromeCTPolicyEnforcer>
-      ct_policy_enforcer_ = nullptr;
 
   std::unique_ptr<SCTAuditingHandler> sct_auditing_handler_;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
@@ -913,7 +889,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       host_resolvers_;
   std::unique_ptr<net::HostResolver::ProbeRequest> doh_probes_request_;
 
-  raw_ptr<NetworkServiceProxyDelegate> proxy_delegate_ = nullptr;
+  // Owned by URLRequestContext.
+  raw_ptr<net::ProxyDelegate> proxy_delegate_ = nullptr;
 
   // Used for Signed Exchange certificate verification.
   uint64_t next_cert_verify_id_ = 0;
@@ -928,7 +905,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     VerifyCertForSignedExchangeCallback callback;
     scoped_refptr<net::X509Certificate> certificate;
     GURL url;
-    net::NetworkAnonymizationKey network_anonymization_key;
     std::string ocsp_result;
     std::string sct_list;
   };
@@ -967,11 +943,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // The ohttp_handler_ needs to be destroyed before cookie_manager_, since it
   // depends on it indirectly through this context.
   ObliviousHttpRequestHandler ohttp_handler_;
-
-  // Contains the instance of crypto delegate for this network context, if
-  // cookie encryption is enabled, and the 'default' delegate from
-  // components/cookie_config is not being used.
-  std::unique_ptr<net::CookieCryptoDelegate> crypto_delegate_;
 
   // Whether all external consumers are expected to provide a non-empty
   // NetworkAnonymizationKey with all requests. When set, enabled a variety of

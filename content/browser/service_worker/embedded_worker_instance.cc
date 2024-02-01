@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/embedded_worker_instance.h"
 
+#include <optional>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -51,8 +52,8 @@
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/url_loader_factory_builder.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/embedded_worker_status.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -492,8 +493,6 @@ void EmbeddedWorkerInstance::Stop() {
   // stopped.
   inflight_start_info_.reset();
 
-  pause_initializing_global_scope_ = false;
-
   // Don't send the StopWorker message if the StartWorker message hasn't
   // been sent.
   if (status_ == blink::EmbeddedWorkerStatus::kStarting &&
@@ -659,6 +658,9 @@ void EmbeddedWorkerInstance::OnWorkerVersionInstalled() {
 }
 
 void EmbeddedWorkerInstance::OnWorkerVersionDoomed() {
+  if (!context_) {
+    return;
+  }
   ServiceWorkerDevToolsManager::GetInstance()->WorkerVersionDoomed(
       process_id(), worker_devtools_agent_route_id(),
       base::WrapRefCounted(context_->wrapper()), owner_version_->version_id());
@@ -857,7 +859,7 @@ EmbeddedWorkerInstance::CreateFactoryBundle(
           rph, origin, storage_key.ToPartialNetIsolationInfo(),
           std::move(coep_reporter),
           static_cast<StoragePartitionImpl*>(rph->GetStoragePartition())
-              ->CreateAuthCertObserverForServiceWorker(),
+              ->CreateAuthCertObserverForServiceWorker(rph->GetID()),
           NetworkServiceDevToolsObserver::MakeSelfOwned(devtools_worker_token),
           std::move(client_security_state),
           "EmbeddedWorkerInstance::CreateFactoryBundle");
@@ -869,18 +871,22 @@ EmbeddedWorkerInstance::CreateFactoryBundle(
 
   // See if the default factory needs to be tweaked by the embedder.
   bool bypass_redirect_checks = false;
+  network::URLLoaderFactoryBuilder factory_builder;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
-      factory_type, origin, absl::nullopt /* navigation_id */,
-      ukm::kInvalidSourceIdObj, &default_factory_receiver,
-      &factory_params->header_client, &bypass_redirect_checks,
-      nullptr /* disable_secure_dns */, &factory_params->factory_override,
+      factory_type, origin, std::nullopt /* navigation_id */,
+      ukm::kInvalidSourceIdObj, factory_builder, &factory_params->header_client,
+      &bypass_redirect_checks, nullptr /* disable_secure_dns */,
+      &factory_params->factory_override,
       /*navigation_response_task_runner=*/nullptr);
-  devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
-      rph, routing_id, &factory_params->factory_override);
+  devtools_instrumentation::WillCreateURLLoaderFactoryParams::ForServiceWorker(
+      *rph, routing_id)
+      .Run(/*is_navigation=*/false, /*is_download=*/false, factory_builder,
+           &factory_params->factory_override);
 
-  rph->CreateURLLoaderFactory(std::move(default_factory_receiver),
-                              std::move(factory_params));
+  std::move(factory_builder)
+      .Finish(std::move(default_factory_receiver), rph,
+              std::move(factory_params));
 
   factory_bundle->set_bypass_redirect_checks(bypass_redirect_checks);
 
@@ -1033,7 +1039,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   status_ = blink::EmbeddedWorkerStatus::kStopped;
   starting_phase_ = NOT_STARTING;
   thread_id_ = ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId;
-  token_ = absl::nullopt;
+  token_ = std::nullopt;
 
   DCHECK(!foreground_notified_);
 }
@@ -1115,6 +1121,7 @@ void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerRemoved() {
 mojo::PendingRemote<network::mojom::URLLoaderFactory>
 EmbeddedWorkerInstance::MakeScriptLoaderFactoryRemote(
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle) {
+  CHECK(context_);
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       script_loader_factory_remote;
 

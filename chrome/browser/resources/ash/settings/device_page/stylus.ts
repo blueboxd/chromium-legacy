@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
-import '/shared/settings/controls/settings_toggle_button.js';
+import '../controls/settings_toggle_button.js';
 import '../settings_shared.css.js';
 
 import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_mixin.js';
@@ -22,6 +22,7 @@ import {microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer
 import {assertExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
 import {RouteObserverMixin} from '../common/route_observer_mixin.js';
+import {PrefsState} from '../common/types.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {Route, routes} from '../router.js';
@@ -29,7 +30,7 @@ import {Route, routes} from '../router.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, NoteAppInfo, NoteAppLockScreenSupport} from './device_page_browser_proxy.js';
 import {getTemplate} from './stylus.html.js';
 
-interface SettingsStylusElement {
+export interface SettingsStylusElement {
   $: {
     selectApp: HTMLSelectElement,
   };
@@ -41,7 +42,7 @@ const FIND_MORE_APPS_URL = 'https://play.google.com/store/apps/' +
 const SettingsStylusElementBase =
     DeepLinkingMixin(RouteObserverMixin(PolymerElement));
 
-class SettingsStylusElement extends SettingsStylusElementBase {
+export class SettingsStylusElement extends SettingsStylusElementBase {
   static get is() {
     return 'settings-stylus';
   }
@@ -121,6 +122,7 @@ class SettingsStylusElement extends SettingsStylusElementBase {
     };
   }
 
+  prefs: PrefsState;
   private appChoices_: NoteAppInfo[];
   private browserProxy_: DevicePageBrowserProxy;
   private selectedApp_: NoteAppInfo|null;

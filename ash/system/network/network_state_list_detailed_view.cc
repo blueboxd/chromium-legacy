@@ -179,7 +179,7 @@ class NetworkStateListDetailedView::InfoBubble
   }
 
   // Not owned.
-  raw_ptr<NetworkStateListDetailedView, ExperimentalAsh> detailed_view_;
+  raw_ptr<NetworkStateListDetailedView> detailed_view_;
 };
 
 //------------------------------------------------------------------------------
@@ -196,7 +196,6 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       info_button_(nullptr),
       settings_button_(nullptr),
       info_bubble_(nullptr) {
-  RecordDetailedViewSection(DetailedViewSection::kDetailedSection);
   OverrideProgressBarAccessibleName(l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_NETWORK_PROGRESS_ACCESSIBLE_NAME));
 }
@@ -233,7 +232,7 @@ void NetworkStateListDetailedView::Update() {
   UpdateNetworkList();
   UpdateHeaderButtons();
   UpdateScanningBar();
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void NetworkStateListDetailedView::ActiveNetworkStateChanged() {
@@ -269,8 +268,6 @@ void NetworkStateListDetailedView::HandleViewClickedImpl(
       if (!Shell::Get()->session_controller()->ShouldEnableSettings()) {
         return;
       }
-      RecordNetworkRowClickedAction(
-          NetworkRowClickedAction::kOpenSimUnlockDialog);
       Shell::Get()->system_tray_model()->client()->ShowSettingsSimUnlock();
       return;
     }
@@ -288,10 +285,6 @@ void NetworkStateListDetailedView::HandleViewClickedImpl(
           list_type_ == LIST_TYPE_VPN
               ? UserMetricsAction("StatusArea_VPN_ConnectToNetwork")
               : UserMetricsAction("StatusArea_Network_ConnectConfigured"));
-      if (list_type_ == LIST_TYPE_NETWORK) {
-        RecordNetworkRowClickedAction(
-            NetworkRowClickedAction::kConnectToNetwork);
-      }
       NetworkConnect::Get()->ConnectToNetworkId(network->guid);
       return;
     }
@@ -302,10 +295,6 @@ void NetworkStateListDetailedView::HandleViewClickedImpl(
       list_type_ == LIST_TYPE_VPN
           ? UserMetricsAction("StatusArea_VPN_ConnectionDetails")
           : UserMetricsAction("StatusArea_Network_ConnectionDetails"));
-  if (list_type_ == LIST_TYPE_NETWORK) {
-    RecordNetworkRowClickedAction(
-        NetworkRowClickedAction::kOpenNetworkSettingsPage);
-  }
   Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(
       network ? network->guid : std::string());
 }

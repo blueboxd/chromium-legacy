@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.customtabs.FirstMeaningfulPaintObserver;
 import org.chromium.chrome.browser.customtabs.PageLoadMetricsObserver;
 import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -497,7 +496,7 @@ public class CustomTabActivityTabController implements InflationObserver {
                         Runnable finishedCallback =
                                 () -> {
                                     if (tab.isInitialized()
-                                            && ActivityUtils.isActivityFinishingOrDestroyed(
+                                            && !ActivityUtils.isActivityFinishingOrDestroyed(
                                                     mActivity)) {
                                         tab.getView().setBackgroundResource(0);
                                     }
@@ -515,11 +514,6 @@ public class CustomTabActivityTabController implements InflationObserver {
     }
 
     public void updateEngagementSignalsHandler() {
-        if (!CustomTabsConnection.getInstance()
-                .isDynamicFeatureEnabled(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
-            return;
-        }
-
         var handler = mConnection.getEngagementSignalsHandler(mSession);
         if (handler == null) return;
         handler.setTabObserverRegistrar(mTabObserverRegistrar);

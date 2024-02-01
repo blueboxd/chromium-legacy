@@ -223,7 +223,7 @@ bool SkiaOutputDeviceGL::Reshape(const SkImageInfo& image_info,
     base::debug::Alias(nullptr);
     return false;
   }
-  SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
+  SkSurfaceProps surface_props;
 
   GrGLFramebufferInfo framebuffer_info = {0};
   DCHECK_EQ(gl_surface_->GetBackingFramebufferObject(), 0u);
@@ -272,7 +272,7 @@ bool SkiaOutputDeviceGL::Reshape(const SkImageInfo& image_info,
   return !!sk_surface_;
 }
 
-void SkiaOutputDeviceGL::Present(const absl::optional<gfx::Rect>& update_rect,
+void SkiaOutputDeviceGL::Present(const std::optional<gfx::Rect>& update_rect,
                                  BufferPresentedCallback feedback,
                                  OutputSurfaceFrame frame) {
   if (multisurface_swapbuffers_tracker_) {

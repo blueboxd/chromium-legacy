@@ -96,8 +96,7 @@ void CopyGifToClipboard(const GURL& gif_to_copy) {
   auto clipboard = std::make_unique<ui::ScopedClipboardWriter>(
       ui::ClipboardBuffer::kCopyPaste);
 
-  clipboard->WriteHTML(base::UTF8ToUTF16(BuildGifHTML(gif_to_copy)), "",
-                       ui::ClipboardContentType::kSanitized);
+  clipboard->WriteHTML(base::UTF8ToUTF16(BuildGifHTML(gif_to_copy)), "");
 
   // Show a toast that says "GIF not supported. Copied to clipboard.".
   ToastManager::Get()->Show(ToastData(
@@ -182,7 +181,7 @@ class InsertObserver : public ui::InputMethodObserver {
   }
   int focus_change_count_ = 0;
   base::OneShotTimer delete_timer_;
-  raw_ptr<ui::InputMethod, LeakedDanglingUntriaged | ExperimentalAsh> ime_;
+  raw_ptr<ui::InputMethod, LeakedDanglingUntriaged> ime_;
   bool inserted_ = false;
   base::TimeTicks start_time_;
 };
@@ -294,15 +293,16 @@ void EmojiPageHandler::GetFeatureList(GetFeatureListCallback callback) {
     enabled_features.push_back(
         emoji_picker::mojom::Feature::EMOJI_PICKER_GIF_SUPPORT);
   }
-  if (base::FeatureList::IsEnabled(
-          features::kImeSystemEmojiPickerJellySupport)) {
-    enabled_features.push_back(
-        emoji_picker::mojom::Feature::EMOJI_PICKER_JELLY_SUPPORT);
-  }
 
   if (SealUtils::ShouldEnable()) {
     enabled_features.push_back(
         emoji_picker::mojom::Feature::EMOJI_PICKER_SEAL_SUPPORT);
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kImeSystemEmojiPickerVariantGrouping)) {
+    enabled_features.push_back(
+        emoji_picker::mojom::Feature::EMOJI_PICKER_VARIANT_GROUPING_SUPPORT);
   }
 
   std::move(callback).Run(enabled_features);

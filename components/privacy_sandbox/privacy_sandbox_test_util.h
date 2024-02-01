@@ -155,7 +155,6 @@ enum class StateKey {
   kHasBlockedTopics = 10,
   kAdvanceClockBy = 11,
   kActiveTopicsConsent = 12,
-  kApisEnabledV2 = 13,
   kTrialsConsentDecisionMade = 14,
   kTrialsNoticeDisplayed = 15,
   kM1ConsentDecisionPreviouslyMade = 16,
@@ -185,6 +184,8 @@ enum class InputKey {
   kForceChromeBuild = 9,
   kPromptAction = 10,
   kEventReportingDestinationOrigin = 11,
+  kOutSharedStorageDebugMessage = 12,
+  kOutSharedStorageSelectURLDebugMessage = 13,
 };
 
 // Defines the expected output of the functions under test, when the profile is
@@ -235,6 +236,8 @@ enum class OutputKey {
   kIsFledgeBuyAllowedMetric = 45,
   kIsCookieDeprecationLabelAllowedForContext = 46,
   kIsPrivateAggregationDebugModeAllowed = 47,
+  kIsSharedStorageAllowedDebugMessage = 48,
+  kIsSharedStorageSelectURLAllowedDebugMessage = 49,
 };
 
 // To allow multiple input keys to map to the same value, without having to
@@ -261,6 +264,7 @@ using SiteDataExceptions = std::vector<SiteDataException>;
 using TestCaseItemValue = absl::variant<
     bool,
     std::string,
+    std::string*,
     url::Origin,
     GURL,
     content_settings::CookieControlsMode,
@@ -271,7 +275,7 @@ using TestCaseItemValue = absl::variant<
     base::TimeDelta,
     privacy_sandbox::TopicsConsentUpdateSource,
     std::vector<int>,
-    absl::optional<privacy_sandbox::PrivacySandboxAttestationsMap>>;
+    std::optional<privacy_sandbox::PrivacySandboxAttestationsMap>>;
 
 using TestState = std::map<TestKey<StateKey>, TestCaseItemValue>;
 using TestInput = std::map<TestKey<InputKey>, TestCaseItemValue>;
@@ -288,18 +292,6 @@ struct CookieContentSettingException {
   std::string secondary_pattern;
   ContentSetting content_setting;
 };
-
-// Sets up preferences and content settings based on provided parameters.
-void SetupTestState(
-    sync_preferences::TestingPrefServiceSyncable* testing_pref_service,
-    HostContentSettingsMap* map,
-    bool privacy_sandbox_enabled,
-    bool block_third_party_cookies,
-    ContentSetting default_cookie_setting,
-    const std::vector<CookieContentSettingException>& user_cookie_exceptions,
-    ContentSetting managed_cookie_setting,
-    const std::vector<CookieContentSettingException>&
-        managed_cookie_exceptions);
 
 // Setup and run the provided test case.
 void RunTestCase(

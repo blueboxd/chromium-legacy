@@ -125,10 +125,11 @@ static_library("browser") {
     "password_manager_util.h",
     "password_requirements_service.cc",
     "password_requirements_service.h",
-    "password_reuse_detector.cc",
     "password_reuse_detector.h",
     "password_reuse_detector_consumer.cc",
     "password_reuse_detector_consumer.h",
+    "password_reuse_detector_impl.cc",
+    "password_reuse_detector_impl.h",
     "password_reuse_manager.h",
     "password_reuse_manager_impl.cc",
     "password_reuse_manager_impl.h",
@@ -259,11 +260,13 @@ source_set("passkey_credential") {
     "//base",
     "//components/strings:components_strings",
     "//components/sync/protocol",
-    "//third_party/abseil-cpp:absl",
     "//ui/base",
   ]
   if (!is_ios) {
     deps += [ "//components/webauthn/core/browser" ]
+  }
+  if (is_android) {
+    deps += [ "//components/webauthn/android" ]
   }
 }
 
@@ -361,6 +364,13 @@ static_library("test_support") {
     "sync_username_test_base.h",
   ]
 
+  if (is_android) {
+    sources += [
+      "mock_password_credential_filler.cc",
+      "mock_password_credential_filler.h",
+    ]
+  }
+
   public_deps = [
     ":browser",
     ":hash_password_manager",
@@ -432,7 +442,7 @@ source_set("unit_tests") {
     "password_manager_unittest.cc",
     "password_manager_util_unittest.cc",
     "password_requirements_service_unittest.cc",
-    "password_reuse_detector_unittest.cc",
+    "password_reuse_detector_impl_unittest.cc",
     "password_reuse_manager_impl_unittest.cc",
     "password_save_manager_impl_unittest.cc",
     "password_sync_util_unittest.cc",

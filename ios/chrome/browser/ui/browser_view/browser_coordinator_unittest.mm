@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
+#import "ios/chrome/browser/ui/browser_view/browser_coordinator+Testing.h"
 
 #import "base/files/file_util.h"
 #import "base/test/scoped_feature_list.h"
@@ -10,14 +11,15 @@
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/download/model/download_directory_util.h"
 #import "ios/chrome/browser/download/model/external_app_util.h"
-#import "ios/chrome/browser/favicon/favicon_service_factory.h"
-#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
-#import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#import "ios/chrome/browser/favicon/model/favicon_service_factory.h"
+#import "ios/chrome/browser/favicon/model/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/favicon/model/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/history/model/history_service_factory.h"
 #import "ios/chrome/browser/lens/model/lens_browser_agent.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/prerender/model/prerender_service_factory.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
+#import "ios/chrome/browser/segmentation_platform/model/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -35,7 +37,6 @@
 #import "ios/chrome/browser/sync/model/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/tabs/model/tab_helper_util.h"
-#import "ios/chrome/browser/ui/browser_view/browser_coordinator+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
@@ -50,6 +51,7 @@
 #import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ios/chrome/browser/web/model/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/model/web_state_delegate_browser_agent.h"
+#import "ios/chrome/browser/web_state_list/model/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -94,6 +96,12 @@ class BrowserCoordinatorTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
         base::BindRepeating(AuthenticationServiceFactory::GetDefaultFactory()));
+    test_cbs_builder.AddTestingFactory(
+        segmentation_platform::SegmentationPlatformServiceFactory::
+            GetInstance(),
+        base::BindRepeating(
+            segmentation_platform::SegmentationPlatformServiceFactory::
+                GetDefaultFactory()));
 
     chrome_browser_state_ = test_cbs_builder.Build();
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
@@ -102,10 +110,15 @@ class BrowserCoordinatorTest : public PlatformTest {
     UrlLoadingBrowserAgent::CreateForBrowser(browser_.get());
     LensBrowserAgent::CreateForBrowser(browser_.get());
     WebNavigationBrowserAgent::CreateForBrowser(browser_.get());
+    WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
     TabInsertionBrowserAgent::CreateForBrowser(browser_.get());
     WebStateDelegateBrowserAgent::CreateForBrowser(
         browser_.get(), TabInsertionBrowserAgent::FromBrowser(browser_.get()));
     SyncErrorBrowserAgent::CreateForBrowser(browser_.get());
+
+    WebUsageEnablerBrowserAgent* enabler =
+        WebUsageEnablerBrowserAgent::FromBrowser(browser_.get());
+    enabler->SetWebUsageEnabled(true);
 
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         chrome_browser_state_.get(),
@@ -338,16 +351,17 @@ TEST_F(BrowserCoordinatorTest, NewTabPageTabHelperDelegate) {
 
 // Tests that BrowserCoordinator starts and stops the SaveToPhotosCoordinator
 // properly when SaveToPhotosCommands are issued.
+
 TEST_F(BrowserCoordinatorTest, StartsAndStopsSaveToPhotosCoordinator) {
-  // Mock the SaveToPhotosCoordinator class
+  // Mock the SaveToPhotosCoordinator class.
   id mockSaveToPhotosCoordinator =
       OCMStrictClassMock([SaveToPhotosCoordinator class]);
 
-  // Start the BrowserCoordinator
+  // Start the BrowserCoordinator.
   BrowserCoordinator* browser_coordinator = GetBrowserCoordinator();
   [browser_coordinator start];
 
-  // At rest, check the SaveToPhotosCoordinator is nil
+  // At rest, check the SaveToPhotosCoordinator is nil.
   EXPECT_EQ(browser_coordinator.saveToPhotosCoordinator, nil);
 
   CommandDispatcher* dispatcher = browser_->GetCommandDispatcher();

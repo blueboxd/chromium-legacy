@@ -8,6 +8,7 @@
 #import "base/apple/bundle_locations.h"
 #import "base/apple/foundation_util.h"
 #import "base/ios/ios_util.h"
+#import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
 #import "components/enterprise/idle/idle_features.h"
@@ -41,7 +42,7 @@
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
+#import "ios/chrome/browser/ui/bookmarks/home/bookmarks_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/browser_view/safe_area_provider.h"
@@ -71,8 +72,6 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
-#import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/fullscreen/toolbar_ui.h"
 #import "ios/chrome/browser/ui/toolbar/fullscreen/toolbar_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
@@ -94,7 +93,7 @@
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state_observer_bridge.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 #import "services/metrics/public/cpp/ukm_builders.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -216,16 +215,16 @@ enum HeaderBehaviour {
   UIView* _fakeStatusBarView;
 
   // The service used to load url parameters in current or new tab.
-  UrlLoadingBrowserAgent* _urlLoadingBrowserAgent;
+  raw_ptr<UrlLoadingBrowserAgent> _urlLoadingBrowserAgent;
 
   // Used to report usage of a single Browser's tab.
-  TabUsageRecorderBrowserAgent* _tabUsageRecorderBrowserAgent;
+  raw_ptr<TabUsageRecorderBrowserAgent> _tabUsageRecorderBrowserAgent;
 
   // Used to get the layout guide center.
   LayoutGuideCenter* _layoutGuideCenter;
 
   // Used to add or cancel a page placeholder for next navigation.
-  PagePlaceholderBrowserAgent* _pagePlaceholderBrowserAgent;
+  raw_ptr<PagePlaceholderBrowserAgent> _pagePlaceholderBrowserAgent;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -1295,7 +1294,11 @@ enum HeaderBehaviour {
   _fakeStatusBarView = [[UIView alloc] initWithFrame:statusBarFrame];
   [_fakeStatusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    _fakeStatusBarView.backgroundColor = UIColor.blackColor;
+    if (base::FeatureList::IsEnabled(kModernTabStrip)) {
+      _fakeStatusBarView.backgroundColor = [UIColor colorNamed:kGrey200Color];
+    } else {
+      _fakeStatusBarView.backgroundColor = UIColor.blackColor;
+    }
     _fakeStatusBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     DCHECK(self.contentArea);
     [self.view insertSubview:_fakeStatusBarView aboveSubview:self.contentArea];
@@ -1386,7 +1389,8 @@ enum HeaderBehaviour {
         constraintEqualToAnchor:self.tabStripView.leadingAnchor],
     [self.view.safeAreaLayoutGuide.trailingAnchor
         constraintEqualToAnchor:self.tabStripView.trailingAnchor],
-    [self.tabStripView.heightAnchor constraintEqualToConstant:kTabStripHeight],
+    [self.tabStripView.heightAnchor
+        constraintEqualToConstant:kModernTabStripHeight],
   ]];
 }
 
@@ -1727,7 +1731,8 @@ enum HeaderBehaviour {
     _tabUsageRecorderBrowserAgent->RecordPageLoadStart(webState);
   }
   if (!webState->IsCrashed()) {
-    // Load the page if it was evicted by browsing data clearing logic.
+    // Load the page if it was evicted by browsing data clearing logic or if
+    // page was never loaded yet after launch.
     webState->GetNavigationManager()->LoadIfNecessary();
   }
   return webState->GetView();
@@ -1973,6 +1978,11 @@ enum HeaderBehaviour {
 - (void)updateFootersForFullscreenProgress:(CGFloat)progress {
   self.footerFullscreenProgress = progress;
 
+  // Don't update the height of the secondary toolbar if it is hidden.
+  if (!IsSplitToolbarMode(self)) {
+    return;
+  }
+
   const CGFloat expandedToolbarHeight =
       self.fullscreenController->GetMaxViewportInsets().bottom;
   if (!expandedToolbarHeight) {
@@ -2121,12 +2131,13 @@ enum HeaderBehaviour {
 }
 
 - (void)webStateSelected {
-  if (!self.viewForCurrentWebState) {
-    return;
-  }
   // Ignore changes while the tab stack view is visible (or while suspended).
   // The display will be refreshed when this view becomes active again.
   if (!self.visible || !self.webUsageEnabled) {
+    return;
+  }
+
+  if (!self.viewForCurrentWebState) {
     return;
   }
 

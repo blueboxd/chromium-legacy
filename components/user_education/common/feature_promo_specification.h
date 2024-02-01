@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <initializer_list>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "base/memory/raw_ptr.h"
 #include "components/user_education/common/help_bubble_params.h"
 #include "components/user_education/common/tutorial_identifier.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -34,6 +34,70 @@ class FeaturePromoHandle;
 // Specifies the parameters for a feature promo and its associated bubble.
 class FeaturePromoSpecification {
  public:
+  // Represents additional conditions that can affect when a promo can show.
+  class AdditionalConditions {
+   public:
+    AdditionalConditions();
+    AdditionalConditions(AdditionalConditions&&) noexcept;
+    AdditionalConditions& operator=(AdditionalConditions&&) noexcept;
+    ~AdditionalConditions();
+
+    // Provides constraints on when the promo can show based on some other
+    // Feautre Engagement event.
+    enum class Constraint { kAtMost, kAtLeast, kExactly };
+
+    // Represents an additional condition for the promo to show.
+    struct AdditionalCondition {
+      // The associated event name.
+      std::string event_name;
+      // How `count` should be interpreted.
+      Constraint constraint = Constraint::kAtMost;
+      // The required count for `event_name`, interpreted by `constraint`.
+      uint32_t count = 0;
+      // The window in which to evaluate `count` using `constraint`.
+      std::optional<uint32_t> in_days;
+    };
+
+    // Sets the number of days in which "used" and other events should be
+    // collected before deciding whether to show a promo.
+    //
+    // Default is zero unless there are additional conditions, in which case it
+    // is a week.
+    void set_initial_delay_days(uint32_t initial_delay_days) {
+      this->initial_delay_days_ = initial_delay_days;
+    }
+    std::optional<uint32_t> initial_delay_days() const {
+      return initial_delay_days_;
+    }
+
+    // Sets the number of times a promoted feature can be used before the
+    // associated promo stops showing. Default is zero - i.e. if the feature is
+    // used at all, the promo won't show.
+    void set_used_limit(uint32_t used_limit) { this->used_limit_ = used_limit; }
+    std::optional<uint32_t> used_limit() const { return used_limit_; }
+
+    // Adds an additional constraint on when the promo can show. `event_name` is
+    // arbitrary and can be shared between promos.
+    //
+    // Will only allow the promo to show if `event_name` has been seen
+    // `constraint` `count` times in `in_days` days. If `in_days` isn't
+    // specified, the period is effectively unlimited.
+    void AddAdditionalCondition(const char* event_name,
+                                Constraint constraint,
+                                uint32_t count,
+                                std::optional<uint32_t> in_days = std::nullopt);
+    void AddAdditionalCondition(
+        const AdditionalCondition& additional_condition);
+    const std::vector<AdditionalCondition>& additional_conditions() const {
+      return additional_conditions_;
+    }
+
+   private:
+    std::optional<uint32_t> initial_delay_days_;
+    std::optional<uint32_t> used_limit_;
+    std::vector<AdditionalCondition> additional_conditions_;
+  };
+
   // Provides metadata about an IPH. Metadata will be shown and used on the
   // tester page, and also provides a information as to when an IPH was added to
   // Chrome and by whom.
@@ -70,6 +134,7 @@ class FeaturePromoSpecification {
     Metadata(int launch_milestone,
              std::string owners,
              std::string triggering_condition_description,
+             base::flat_set<const base::Feature*> required_features = {},
              base::flat_set<Platforms> platforms = kAllDesktopPlatforms);
     Metadata();
     Metadata(Metadata&&) noexcept;
@@ -90,6 +155,11 @@ class FeaturePromoSpecification {
     // but a good description will help other people understand how the IPH is
     // implemented and when to expect it to appear.
     std::string triggering_condition_description;
+
+    // The set of non-IPH features that must be enabled in order for the IPH to
+    // be displayed.
+    using FeatureSet = base::flat_set<const base::Feature*>;
+    FeatureSet required_features;
 
     // The set of platforms the IPH can be displayed on.
     base::flat_set<Platforms> platforms = kAllDesktopPlatforms;
@@ -165,7 +235,11 @@ class FeaturePromoSpecification {
     // A promo that must be able to be shown until explicitly acknowledged and
     // dismissed by the user. This type requires being on an allowlist.
     kLegalNotice = 2,
-    kMaxValue = kLegalNotice
+    // A promo that must be able to be shown at most times, alerting the user
+    // that something important has happened, and offering them an opportunity
+    // to address it. This type requires being on an allowlist.
+    kActionableAlert = 3,
+    kMaxValue = kActionableAlert
   };
 
   // Represents a command or command accelerator. Can be valueless (falsy) if
@@ -323,7 +397,7 @@ class FeaturePromoSpecification {
   int bubble_title_string_id() const { return bubble_title_string_id_; }
   const gfx::VectorIcon* bubble_icon() const { return bubble_icon_; }
   HelpBubbleArrow bubble_arrow() const { return bubble_arrow_; }
-  const absl::optional<bool>& focus_on_show_override() const {
+  const std::optional<bool>& focus_on_show_override() const {
     return focus_on_show_override_;
   }
   int screen_reader_string_id() const { return screen_reader_string_id_; }
@@ -358,6 +432,13 @@ class FeaturePromoSpecification {
       const ui::ElementIdentifier highlighted_menu_identifier);
   const ui::ElementIdentifier highlighted_menu_identifier() const {
     return highlighted_menu_identifier_;
+  }
+
+  // Sets the additional conditions for the promo to show.
+  FeaturePromoSpecification& SetAdditionalConditions(
+      AdditionalConditions additional_conditions);
+  const AdditionalConditions& additional_conditions() const {
+    return additional_conditions_;
   }
 
   // Sets the metadata for this promotion.
@@ -422,7 +503,7 @@ class FeaturePromoSpecification {
   // Overrides the default focus-on-show behavior for a bubble, which is to
   // focus bubbles with action buttons, but not bubbles that only have a close
   // button.
-  absl::optional<bool> focus_on_show_override_;
+  std::optional<bool> focus_on_show_override_;
 
   // Optional screen reader announcement that replaces bubble text when the
   // bubble is first announced.
@@ -450,6 +531,9 @@ class FeaturePromoSpecification {
   // Identifier of the menu item that should be highlighted while
   // FeaturePromo is active.
   ui::ElementIdentifier highlighted_menu_identifier_;
+
+  // Additional conditions describing when the promo can show.
+  AdditionalConditions additional_conditions_;
 
   // Metadata for this promo.
   Metadata metadata_;

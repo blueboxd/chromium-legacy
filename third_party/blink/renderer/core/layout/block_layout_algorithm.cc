@@ -11,6 +11,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/layout/block_child_iterator.h"
+#include "third_party/blink/renderer/core/layout/block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/column_spanner_path.h"
 #include "third_party/blink/renderer/core/layout/constraint_space.h"
@@ -21,16 +23,15 @@
 #include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_node.h"
 #include "third_party/blink/renderer/core/layout/inline/physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/inline/ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_result.h"
 #include "third_party/blink/renderer/core/layout/legacy_layout_tree_walking.h"
+#include "third_party/blink/renderer/core/layout/length_utils.h"
 #include "third_party/blink/renderer/core/layout/list/unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/logical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/logical_fragment.h"
-#include "third_party/blink/renderer/core/layout/block_child_iterator.h"
-#include "third_party/blink/renderer/core/layout/block_layout_algorithm_utils.h"
-#include "third_party/blink/renderer/core/layout/length_utils.h"
 #include "third_party/blink/renderer/core/layout/out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/positioned_float.h"
@@ -565,7 +566,7 @@ NOINLINE const LayoutResult* BlockLayoutAlgorithm::RelayoutIgnoringLineClamp() {
   algorithm_ignoring_line_clamp.ignore_line_clamp_ = true;
   BoxFragmentBuilder& new_builder =
       algorithm_ignoring_line_clamp.container_builder_;
-  new_builder.SetBoxType(container_builder_.BoxType());
+  new_builder.SetBoxType(container_builder_.GetBoxType());
   return algorithm_ignoring_line_clamp.Layout();
 }
 
@@ -1155,7 +1156,8 @@ const LayoutResult* BlockLayoutAlgorithm::FinishLayout(
   if (constraint_space.IsTableCell()) {
     FinalizeTableCellLayout(intrinsic_block_size_, &container_builder_);
   } else {
-    AlignContent(unconstrained_intrinsic_block_size);
+    AlignBlockContent(Style(), GetBreakToken(),
+                      unconstrained_intrinsic_block_size, container_builder_);
   }
 
   OutOfFlowLayoutPart(Node(), constraint_space, &container_builder_).Run();
@@ -1177,46 +1179,6 @@ const LayoutResult* BlockLayoutAlgorithm::FinishLayout(
   }
 
   return container_builder_.ToBoxFragment();
-}
-
-void BlockLayoutAlgorithm::AlignContent(LayoutUnit content_block_size) {
-  if (IsBreakInside(GetBreakToken())) {
-    // Do nothing for the second or later fragments.
-    return;
-  }
-
-  LayoutUnit free_space =
-      container_builder_.FragmentBlockSize() - content_block_size;
-  if (Style().AlignContentBlockCenter()) {
-    container_builder_.MoveChildrenInBlockDirection(free_space / 2);
-    return;
-  }
-
-  if (!RuntimeEnabledFeatures::AlignContentForBlocksEnabled() ||
-      !ShouldIncludeBlockEndBorderPadding(container_builder_)) {
-    // Do nothing for the first fragment without block-end border and padding.
-    // See css/css-align/blocks/align-content-block-break-overflow-010.html
-    return;
-  }
-
-  BlockContentAlignment alignment = ComputeContentAlignmentForBlock(Style());
-  if (alignment == BlockContentAlignment::kSafeCenter ||
-      alignment == BlockContentAlignment::kSafeEnd) {
-    free_space = free_space.ClampNegativeToZero();
-  }
-  switch (alignment) {
-    case BlockContentAlignment::kStart:
-    case BlockContentAlignment::kBaseline:
-      // Nothing to do.
-      break;
-    case BlockContentAlignment::kSafeCenter:
-    case BlockContentAlignment::kUnsafeCenter:
-      container_builder_.MoveChildrenInBlockDirection(free_space / 2);
-      break;
-    case BlockContentAlignment::kSafeEnd:
-    case BlockContentAlignment::kUnsafeEnd:
-      container_builder_.MoveChildrenInBlockDirection(free_space);
-  }
 }
 
 bool BlockLayoutAlgorithm::TryReuseFragmentsFromCache(
@@ -3324,7 +3286,7 @@ void BlockLayoutAlgorithm::HandleRubyText(BlockNode ruby_text_child) {
   const auto& ruby_text_fragment =
       To<PhysicalBoxFragment>(result->GetPhysicalFragment());
   const LogicalRect ruby_text_box = ruby_text_fragment.ConvertChildToLogical(
-      ruby_text_fragment.ComputeRubyEmHeightBox());
+      ComputeRubyEmHeightBox(ruby_text_fragment));
 
   // Find the ruby-base fragment.
   const PhysicalBoxFragment* ruby_base_fragment = nullptr;
@@ -3350,7 +3312,7 @@ void BlockLayoutAlgorithm::HandleRubyText(BlockNode ruby_text_child) {
       first_line_top = ruby_base_block_offset +
                        ruby_base_fragment
                            ->ConvertChildToLogical(
-                               ruby_base_fragment->ComputeRubyEmHeightBox())
+                               ComputeRubyEmHeightBox(*ruby_base_fragment))
                            .offset.block_offset;
     }
     ruby_text_box_top = first_line_top - last_line_ruby_text_bottom;
@@ -3372,7 +3334,7 @@ void BlockLayoutAlgorithm::HandleRubyText(BlockNode ruby_text_child) {
       last_line_bottom = ruby_base_block_offset +
                          ruby_base_fragment
                              ->ConvertChildToLogical(
-                                 ruby_base_fragment->ComputeRubyEmHeightBox())
+                                 ComputeRubyEmHeightBox(*ruby_base_fragment))
                              .BlockEndOffset();
       base_logical_bottom = ruby_base_block_offset + base_block_size;
     }

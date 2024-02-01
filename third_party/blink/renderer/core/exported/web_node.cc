@@ -36,6 +36,7 @@
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_element_collection.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -54,7 +55,6 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -144,8 +144,8 @@ bool WebNode::IsFocusable() const {
     return false;
   if (!private_->GetDocument().HaveRenderBlockingResourcesLoaded())
     return false;
-  private_->GetDocument().UpdateStyleAndLayoutTreeForNode(
-      private_.Get(), DocumentUpdateReason::kFocus);
+  private_->GetDocument().UpdateStyleAndLayoutTreeForElement(
+      element, DocumentUpdateReason::kFocus);
   return element->IsFocusable();
 }
 
@@ -162,7 +162,8 @@ bool WebNode::IsInsideFocusableElementOrARIAWidget() const {
 v8::Local<v8::Value> WebNode::ToV8Value(v8::Isolate* isolate) {
   if (!private_.Get())
     return v8::Local<v8::Value>();
-  return ToV8(private_.Get(), isolate->GetCurrentContext()->Global(), isolate);
+  return ToV8Traits<Node>::ToV8(ScriptState::From(isolate->GetCurrentContext()),
+                                private_.Get());
 }
 
 bool WebNode::IsElementNode() const {

@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
@@ -22,9 +23,11 @@
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browsing_topics/browsing_topics_document_host.h"
+#include "content/browser/compute_pressure/pressure_service_for_frame.h"
 #include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
+#include "content/browser/device_posture/device_posture_provider_impl.h"
 #include "content/browser/eye_dropper_chooser_impl.h"
 #include "content/browser/handwriting/handwriting_recognition_service_factory.h"
 #include "content/browser/image_capture/image_capture_impl.h"
@@ -116,6 +119,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
@@ -152,6 +156,7 @@
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/model_execution/model_manager.mojom.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "third_party/blink/public/mojom/origin_trial_state/origin_trial_state_host.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
@@ -236,7 +241,7 @@
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS)
-#include "components/ml/webnn/features.h"
+#include "components/ml/webnn/features.mojom-features.h"
 #include "components/viz/host/gpu_client.h"
 #include "services/webnn/public/mojom/webnn_context_provider.mojom.h"
 #endif
@@ -453,22 +458,6 @@ BindWorkerReceiver(
           (process_host->*method)(std::move(receiver));
       },
       base::Unretained(host), method);
-}
-
-template <typename WorkerHost>
-base::RepeatingCallback<
-    void(const url::Origin&,
-         mojo::PendingReceiver<device::mojom::PressureManager>)>
-BindPressureManagerWorkerForOrigin(WorkerHost* host) {
-  return base::BindRepeating(
-      [](WorkerHost* host, const url::Origin& origin,
-         mojo::PendingReceiver<device::mojom::PressureManager> receiver) {
-        if (!network::IsOriginPotentiallyTrustworthy(origin)) {
-          return;
-        }
-        GetDeviceService().BindPressureManager(std::move(receiver));
-      },
-      base::Unretained(host));
 }
 
 template <typename WorkerHost, typename Interface>
@@ -693,12 +682,8 @@ void BindPressureManager(
     return;
   }
 
-  GetDeviceService().BindPressureManager(std::move(receiver));
-}
-
-void BindDevicePostureProvider(
-    mojo::PendingReceiver<device::mojom::DevicePostureProvider> receiver) {
-  GetDeviceService().BindDevicePostureProvider(std::move(receiver));
+  PressureServiceForFrame::GetOrCreateForCurrentDocument(host)->BindReceiver(
+      std::move(receiver));
 }
 
 VibrationManagerBinder& GetVibrationManagerBinderOverride() {
@@ -731,6 +716,14 @@ void BindSocketManager(
       ->BindP2PSocketManager(
           frame->GetIsolationInfoForSubresources().network_anonymization_key(),
           std::move(receiver), frame->GetGlobalId());
+}
+
+void BindDevicePostureProvider(
+    RenderFrameHost* frame_host,
+    mojo::PendingReceiver<blink::mojom::DevicePostureProvider> receiver) {
+  DevicePostureProviderImpl::GetOrCreate(
+      WebContents::FromRenderFrameHost(frame_host))
+      ->Bind(std::move(receiver));
 }
 
 }  // namespace
@@ -776,6 +769,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::DedicatedWorkerHostFactory>(base::BindRepeating(
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
       base::Unretained(host)));
+
+  map->Add<blink::mojom::DevicePostureProvider>(
+      base::BindRepeating(&BindDevicePostureProvider, base::Unretained(host)));
 
   map->Add<blink::mojom::FeatureObserver>(base::BindRepeating(
       &RenderFrameHostImpl::GetFeatureObserver, base::Unretained(host)));
@@ -916,7 +912,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
 
 #if !BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
-          webnn::features::kEnableMachineLearningNeuralNetworkService)) {
+          webnn::mojom::features::kWebMachineLearningNeuralNetwork)) {
     map->Add<webnn::mojom::WebNNContextProvider>(base::BindRepeating(
         &BindWebNNContextProviderForRenderFrame, base::Unretained(host)));
   }
@@ -941,12 +937,12 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
       base::BindRepeating(&RenderFrameHostImpl::GetWebAuthenticationService,
                           base::Unretained(host)));
 
+  map->Add<payments::mojom::PaymentCredential>(base::BindRepeating(
+      &RenderFrameHostImpl::CreatePaymentCredential, base::Unretained(host)));
+
   map->Add<blink::test::mojom::VirtualAuthenticatorManager>(
       base::BindRepeating(&RenderFrameHostImpl::GetVirtualAuthenticatorManager,
                           base::Unretained(host)));
-
-  map->Add<device::mojom::DevicePostureProvider>(
-      base::BindRepeating(&BindDevicePostureProvider));
 
   // BrowserMainLoop::GetInstance() may be null on unit tests.
   if (BrowserMainLoop::GetInstance()) {
@@ -1124,8 +1120,6 @@ void PopulateBinderMapWithContext(
   // production embedder (such as in tests).
   map->Add<blink::mojom::NoStatePrefetchProcessor>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::NoStatePrefetchProcessor>));
-  map->Add<payments::mojom::PaymentCredential>(base::BindRepeating(
-      &EmptyBinderForFrame<payments::mojom::PaymentCredential>));
   map->Add<payments::mojom::PaymentRequest>(base::BindRepeating(
       &EmptyBinderForFrame<payments::mojom::PaymentRequest>));
   map->Add<blink::mojom::AnchorElementMetricsHost>(base::BindRepeating(
@@ -1134,6 +1128,8 @@ void PopulateBinderMapWithContext(
       &EmptyBinderForFrame<blink::mojom::CredentialManager>));
   map->Add<blink::mojom::LCPCriticalPathPredictorHost>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::LCPCriticalPathPredictorHost>));
+  map->Add<blink::mojom::ModelManager>(
+      base::BindRepeating(&EmptyBinderForFrame<blink::mojom::ModelManager>));
   if (base::FeatureList::IsEnabled(blink::features::kBrowsingTopics) &&
       base::FeatureList::IsEnabled(
           blink::features::kBrowsingTopicsDocumentAPI)) {
@@ -1296,7 +1292,7 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
 
 #if !BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
-          webnn::features::kEnableMachineLearningNeuralNetworkService)) {
+          webnn::mojom::features::kWebMachineLearningNeuralNetwork)) {
     // base::Unretained(host->GetProcessHost()) is safe because the map is owned
     // by |DedicatedWorkerHost::broker_|.
     map->Add<webnn::mojom::WebNNContextProvider>(base::BindRepeating(
@@ -1344,6 +1340,10 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
   map->Add<blink::mojom::FileSystemAccessManager>(
       base::BindRepeating(&DedicatedWorkerHost::GetFileSystemAccessManager,
                           base::Unretained(host)));
+  if (base::FeatureList::IsEnabled(blink::features::kComputePressure)) {
+    map->Add<device::mojom::PressureManager>(base::BindRepeating(
+        &DedicatedWorkerHost::BindPressureService, base::Unretained(host)));
+  }
 
   // RenderProcessHost binders
   map->Add<media::mojom::VideoDecodePerfHistory>(BindWorkerReceiver(
@@ -1379,13 +1379,6 @@ void PopulateBinderMapWithContext(
       &RenderProcessHostImpl::CreatePaymentManagerForOrigin, host));
   map->Add<blink::mojom::PermissionService>(BindWorkerReceiverForOrigin(
       &RenderProcessHostImpl::CreatePermissionService, host));
-
-  // BindPressureManagerWorkerForOrigin() does not use RenderProcessHost,
-  // but also needs an origin for its checks.
-  if (base::FeatureList::IsEnabled(blink::features::kComputePressure)) {
-    map->Add<device::mojom::PressureManager>(
-        BindPressureManagerWorkerForOrigin(host));
-  }
   map->Add<blink::mojom::FileBackedBlobFactory>(BindWorkerReceiverForOrigin(
       &RenderProcessHostImpl::BindFileBackedBlobFactory, host));
 }
@@ -1446,6 +1439,10 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host, mojo::BinderMap* map) {
       &CreateReportingServiceProxyForSharedWorker, base::Unretained(host)));
   map->Add<blink::mojom::BucketManagerHost>(base::BindRepeating(
       &SharedWorkerHost::CreateBucketManagerHost, base::Unretained(host)));
+  if (base::FeatureList::IsEnabled(blink::features::kComputePressure)) {
+    map->Add<device::mojom::PressureManager>(base::BindRepeating(
+        &SharedWorkerHost::BindPressureService, base::Unretained(host)));
+  }
 
   // RenderProcessHost binders
   map->Add<media::mojom::VideoDecodePerfHistory>(BindWorkerReceiver(
@@ -1481,13 +1478,6 @@ void PopulateBinderMapWithContext(
       &RenderProcessHostImpl::CreatePaymentManagerForOrigin, host));
   map->Add<blink::mojom::PermissionService>(BindWorkerReceiverForOrigin(
       &RenderProcessHostImpl::CreatePermissionService, host));
-
-  // BindPressureManagerWorkerForOrigin() does not use RenderProcessHost,
-  // but also needs an origin for its checks.
-  if (base::FeatureList::IsEnabled(blink::features::kComputePressure)) {
-    map->Add<device::mojom::PressureManager>(
-        BindPressureManagerWorkerForOrigin(host));
-  }
   map->Add<blink::mojom::FileBackedBlobFactory>(BindWorkerReceiverForOrigin(
       &RenderProcessHostImpl::BindFileBackedBlobFactory, host));
 }

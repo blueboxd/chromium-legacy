@@ -31,7 +31,7 @@
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
@@ -168,7 +168,7 @@ ash::ShelfAction SelectItem(
 
 // Find the browser that associated with |app_name|.
 Browser* FindBrowserForApp(const std::string& app_name) {
-  for (auto* browser : *BrowserList::GetInstance()) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
     std::string browser_app_name =
         web_app::GetAppIdFromApplicationName(browser->app_name());
     if (browser_app_name == app_name)
@@ -253,7 +253,7 @@ ash::ShelfID CreateAppShortcutItem(const ash::ShelfID& shelf_id) {
 
   return controller->CreateAppItem(
       std::make_unique<AppShortcutShelfItemController>(shelf_id),
-      ash::STATUS_CLOSED, /*pinned=*/true, /*title=*/base::EmptyString16());
+      ash::STATUS_CLOSED, /*pinned=*/true, /*title=*/std::u16string());
 }
 
 // A class that waits for the child removal to occur on a parent view.
@@ -276,7 +276,7 @@ class ChildRemovalWaiter : public views::ViewObserver {
   }
 
  private:
-  const raw_ptr<views::View, ExperimentalAsh> parent_view_;
+  const raw_ptr<views::View> parent_view_;
   base::RunLoop run_loop_;
 };
 
@@ -310,8 +310,7 @@ class ShelfPlatformAppBrowserTest : public extensions::PlatformAppBrowserTest {
 
   apps::AppServiceTest& app_service_test() { return app_service_test_; }
 
-  raw_ptr<ChromeShelfController, DanglingUntriaged | ExperimentalAsh>
-      controller_ = nullptr;
+  raw_ptr<ChromeShelfController, DanglingUntriaged> controller_ = nullptr;
 
  private:
   apps::AppServiceTest app_service_test_;
@@ -431,8 +430,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
                            /*filter_predicate=*/base::NullCallback());
   }
 
-  raw_ptr<ChromeShelfController, DanglingUntriaged | ExperimentalAsh>
-      controller_ = nullptr;
+  raw_ptr<ChromeShelfController, DanglingUntriaged> controller_ = nullptr;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -667,8 +665,7 @@ class UnpinnedBrowserShortcutTest : public extensions::ExtensionBrowserTest {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
   }
 
-  raw_ptr<ChromeShelfController, DanglingUntriaged | ExperimentalAsh>
-      controller_ = nullptr;
+  raw_ptr<ChromeShelfController, DanglingUntriaged> controller_ = nullptr;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -962,8 +959,8 @@ IN_PROC_BROWSER_TEST_F(ShelfPlatformAppBrowserTest, SetIcon) {
 
   gfx::ImageSkia image_skia;
   int32_t size_hint_in_dip = 48;
-  image_skia = app_service_test().LoadAppIconBlocking(
-      apps::AppType::kChromeApp, extension->id(), size_hint_in_dip);
+  image_skia =
+      app_service_test().LoadAppIconBlocking(extension->id(), size_hint_in_dip);
 
   // Create non-shelf window.
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
@@ -2504,6 +2501,10 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest,
 // install.
 IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest,
                        WindowedShortcutAppsHaveActivityIndicatorSet) {
+  // With shortstand enabled, we no longer allow creating windowed shortcut.
+  if (chromeos::features::IsCrosShortstandEnabled()) {
+    GTEST_SKIP();
+  }
   // Start server and open test page.
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(AddTabAtIndex(
@@ -2704,7 +2705,7 @@ class HotseatShelfAppBrowserTest : public ShelfAppBrowserTest {
 // Verifies that hotseat should be hidden after launching the browser from
 // a context menu (https://crbug.com/1072043).
 IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, LaunchAppFromContextMenu) {
-  ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
 
   ash::RootWindowController* controller =
       ash::Shell::GetRootWindowControllerWithDisplayId(
@@ -2751,7 +2752,7 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, LaunchAppFromContextMenu) {
 // hotseat.
 IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest,
                        TappingAppIconsHidesHotseat) {
-  ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
 
   // Create two apps, then extend the hotseat.
   ash::ShelfID shortcut_id_1 = CreateShortcut("app1");
@@ -2789,7 +2790,7 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest,
 // Verify that the in-app shelf should be shown when the app icon receives
 // the accessibility focus.
 IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
-  ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ash::TabletModeControllerTestApi().EnterTabletMode();
   ash::test::SpeechMonitor speech_monitor;
 
   // Enable ChromeVox.
@@ -3003,8 +3004,7 @@ class PerDeskShelfAppBrowserTest : public ShelfAppBrowserTest,
       std::move(run_loop_)->Quit();
   }
 
-  raw_ptr<ash::ShelfView, DanglingUntriaged | ExperimentalAsh> shelf_view_ =
-      nullptr;
+  raw_ptr<ash::ShelfView, DanglingUntriaged> shelf_view_ = nullptr;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -3096,13 +3096,8 @@ class AppServiceShortcutShelfBrowserTest : public ShelfAppBrowserTest {
   apps::ShortcutId CreateWebAppBasedShortcut(
       const GURL& shortcut_url,
       const std::u16string& shortcut_name) {
-    // Create web app based shortcut.
-    auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    web_app_info->start_url = shortcut_url;
-    web_app_info->title = shortcut_name;
-    auto local_shortcut_id = web_app::test::InstallWebApp(
-        profile(), std::move(web_app_info),
-        /*overwrite_existing_manifest_fields=*/true);
+    webapps::AppId local_shortcut_id = web_app::test::InstallShortcut(
+        browser()->profile(), base::UTF16ToUTF8(shortcut_name), shortcut_url);
     return apps::GenerateShortcutId(app_constants::kChromeAppId,
                                     local_shortcut_id);
   }

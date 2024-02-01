@@ -72,18 +72,19 @@ void MaybeOverrideScanResult(DownloadCheckResultReason reason,
     case DownloadCheckResult::PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
     case DownloadCheckResult::POTENTIALLY_UNWANTED:
     case DownloadCheckResult::UNCOMMON:
-      if (reason == REASON_DOWNLOAD_DANGEROUS)
+      if (reason == REASON_DOWNLOAD_DANGEROUS) {
         callback.Run(DownloadCheckResult::DANGEROUS);
-      else if (reason == REASON_DOWNLOAD_DANGEROUS_HOST)
+      } else if (reason == REASON_DOWNLOAD_DANGEROUS_HOST) {
         callback.Run(DownloadCheckResult::DANGEROUS_HOST);
-      else if (reason == REASON_DOWNLOAD_POTENTIALLY_UNWANTED)
+      } else if (reason == REASON_DOWNLOAD_POTENTIALLY_UNWANTED) {
         callback.Run(DownloadCheckResult::POTENTIALLY_UNWANTED);
-      else if (reason == REASON_DOWNLOAD_UNCOMMON)
+      } else if (reason == REASON_DOWNLOAD_UNCOMMON) {
         callback.Run(DownloadCheckResult::UNCOMMON);
-      else if (reason == REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE)
+      } else if (reason == REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE) {
         callback.Run(DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE);
-      else
+      } else {
         callback.Run(deep_scan_result);
+      }
       return;
 
     // These other results have precedence over dangerous ones because they
@@ -247,28 +248,45 @@ void CheckClientDownloadRequest::MaybeStorePingsForDownload(
       result, upload_requested, item_, request_data, response_body);
 }
 
-void CheckClientDownloadRequest::LogDeepScanningPrompt() const {
-  LogDeepScanEvent(item_, DeepScanEvent::kPromptShown);
+void CheckClientDownloadRequest::LogDeepScanningPrompt(bool did_prompt) const {
+  if (did_prompt) {
+    LogDeepScanEvent(item_, DeepScanEvent::kPromptShown);
+    Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
+    if (profile && profile->GetPrefs()) {
+      profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingDeepScanPromptSeen,
+                                      true);
+    }
+  }
+
+  base::UmaHistogramBoolean("SBClientDownload.ServerRequestsDeepScanningPrompt",
+                            did_prompt);
+  if (DownloadItemWarningData::IsEncryptedArchive(item_)) {
+    base::UmaHistogramBoolean(
+        "SBClientDownload.ServerRequestsDeepScanningPromptPasswordProtected",
+        did_prompt);
+  }
 }
 
-absl::optional<enterprise_connectors::AnalysisSettings>
+std::optional<enterprise_connectors::AnalysisSettings>
 CheckClientDownloadRequest::ShouldUploadBinary(
     DownloadCheckResultReason reason) {
   // If the download was destroyed, we can't upload it.
-  if (reason == REASON_DOWNLOAD_DESTROYED)
-    return absl::nullopt;
+  if (reason == REASON_DOWNLOAD_DESTROYED) {
+    return std::nullopt;
+  }
 
   // If the download already has a scanning response attached, there is no need
   // to try and upload it again.
-  if (item_->GetUserData(enterprise_connectors::ScanResult::kKey))
-    return absl::nullopt;
+  if (item_->GetUserData(enterprise_connectors::ScanResult::kKey)) {
+    return std::nullopt;
+  }
 
   // If the download is considered dangerous, don't upload the binary to show
   // a warning to the user ASAP.
   if (reason == REASON_DOWNLOAD_DANGEROUS ||
       reason == REASON_DOWNLOAD_DANGEROUS_HOST ||
       reason == REASON_DOWNLOAD_DANGEROUS_ACCOUNT_COMPROMISE) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   auto settings = DeepScanningRequest::ShouldUploadBinary(item_);
@@ -277,8 +295,9 @@ CheckClientDownloadRequest::ShouldUploadBinary(
   // might still need to happen.
   if (settings && reason == REASON_ALLOWLISTED_URL) {
     settings->tags.erase("malware");
-    if (settings->tags.empty())
-      return absl::nullopt;
+    if (settings->tags.empty()) {
+      return std::nullopt;
+    }
   }
 
   return settings;
@@ -296,11 +315,11 @@ void CheckClientDownloadRequest::UploadBinary(
     service()->UploadForDeepScanning(
         item_, base::BindRepeating(&MaybeOverrideScanResult, reason, callback_),
         DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY, result,
-        std::move(settings), /*password=*/absl::nullopt);
+        std::move(settings), /*password=*/std::nullopt);
   } else {
     service()->UploadForDeepScanning(
         item_, callback_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        result, std::move(settings), /*password=*/absl::nullopt);
+        result, std::move(settings), /*password=*/std::nullopt);
   }
 }
 
@@ -318,24 +337,28 @@ void CheckClientDownloadRequest::NotifyRequestFinished(
 
 bool CheckClientDownloadRequest::IsUnderAdvancedProtection(
     Profile* profile) const {
-  if (!profile)
+  if (!profile) {
     return false;
+  }
   AdvancedProtectionStatusManager* advanced_protection_status_manager =
       AdvancedProtectionStatusManagerFactory::GetForProfile(profile);
-  if (!advanced_protection_status_manager)
+  if (!advanced_protection_status_manager) {
     return false;
+  }
   return advanced_protection_status_manager->IsUnderAdvancedProtection();
 }
 
 bool CheckClientDownloadRequest::ShouldPromptForDeepScanning(
     bool server_requests_prompt) const {
-  if (!server_requests_prompt)
+  if (!server_requests_prompt) {
     return false;
+  }
 
   // Too large uploads would fail immediately, so don't prompt in this case.
   if (static_cast<size_t>(item_->GetTotalBytes()) >=
-      BinaryUploadService::kMaxUploadSizeBytes)
+      BinaryUploadService::kMaxUploadSizeBytes) {
     return false;
+  }
 
   Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
   if (!profile) {
@@ -343,6 +366,10 @@ bool CheckClientDownloadRequest::ShouldPromptForDeepScanning(
   }
 
   if (!AreDeepScansAllowedByPolicy(*profile->GetPrefs())) {
+    return false;
+  }
+
+  if (profile->IsOffTheRecord()) {
     return false;
   }
 
@@ -404,8 +431,9 @@ bool CheckClientDownloadRequest::ShouldShowScanFailure() const {
 
 bool CheckClientDownloadRequest::IsAllowlistedByPolicy() const {
   Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
-  if (!profile)
+  if (!profile) {
     return false;
+  }
   return MatchesEnterpriseAllowlist(*profile->GetPrefs(), item_->GetUrlChain());
 }
 

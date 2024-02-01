@@ -18,18 +18,6 @@ namespace autofill {
 // Exposes some testing operations for BrowserAutofillManager.
 class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
  public:
-  static void DeterminePossibleFieldTypesForUpload(
-      const std::vector<AutofillProfile>& profiles,
-      const std::vector<CreditCard>& credit_cards,
-      const std::u16string& last_unlocked_credit_card_cvc,
-      const std::string& app_locale,
-      FormStructure* form) {
-    // For tests, the observed_submission is hardcoded to true.
-    BrowserAutofillManager::DeterminePossibleFieldTypesForUpload(
-        profiles, credit_cards, last_unlocked_credit_card_cvc, app_locale,
-        /*observed_submission=*/true, form);
-  }
-
   explicit BrowserAutofillManagerTestApi(BrowserAutofillManager* manager)
       : AutofillManagerTestApi(manager), manager_(*manager) {}
 
@@ -46,6 +34,10 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
 
   AutofillExternalDelegate* external_delegate() {
     return manager_->external_delegate_.get();
+  }
+
+  void set_limit_before_refill(base::TimeDelta limit) {
+    manager_->limit_before_refill_ = limit;
   }
 
   bool ShouldTriggerRefill(const FormStructure& form_structure,
@@ -73,8 +65,12 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
         ->form_interactions_flow_id_for_test();
   }
 
-  SingleFieldFormFillRouter* single_field_form_fill_router() {
-    return manager_->single_field_form_fill_router_.get();
+  SingleFieldFormFillRouter& single_field_form_fill_router() {
+    return *manager_->single_field_form_fill_router_;
+  }
+
+  autofill_metrics::CreditCardFormEventLogger* credit_card_form_event_logger() {
+    return manager_->credit_card_form_event_logger_.get();
   }
 
   void set_single_field_form_fill_router(
@@ -98,11 +94,11 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
       const FormFieldData& field,
       absl::variant<const AutofillProfile*, const CreditCard*>
           profile_or_credit_card,
-      const std::u16string* optional_cvc,
+      base::optional_ref<const std::u16string> cvc,
       FormStructure* form_structure,
       AutofillField* autofill_field) {
     return manager_->FillOrPreviewDataModelForm(
-        action_persistence, form, field, profile_or_credit_card, optional_cvc,
+        action_persistence, form, field, profile_or_credit_card, cvc,
         form_structure, autofill_field,
         {.trigger_source = AutofillTriggerSource::kPopup});
   }
@@ -125,7 +121,7 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
   }
 
   void SetConsiderFormAsSecureForTesting(
-      absl::optional<bool> consider_form_as_secure_for_testing) {
+      std::optional<bool> consider_form_as_secure_for_testing) {
     manager_->consider_form_as_secure_for_testing_ =
         consider_form_as_secure_for_testing;
   }

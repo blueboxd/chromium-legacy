@@ -102,6 +102,7 @@
 #include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/shell.h"
 #include "chrome/browser/ash/boot_times_recorder.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/compositor/layer.h"
 #endif
@@ -127,10 +128,15 @@ std::set<SessionRestoreImpl*>* active_session_restorers = nullptr;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void StartRecordingRestoredWindowsMetrics(
+    const Profile* profile,
     const std::vector<std::unique_ptr<sessions::SessionWindow>>& windows) {
   // Ash is not always initialized in unit tests.
   if (!ash::Shell::HasInstance())
     return;
+
+  if (!ash::ProfileHelper::IsPrimaryProfile(profile)) {
+    return;
+  }
 
   ash::LoginUnlockThroughputRecorder* throughput_recorder =
       ash::Shell::Get()->login_unlock_throughput_recorder();
@@ -141,9 +147,6 @@ void StartRecordingRestoredWindowsMetrics(
           w->window_id.id(), w->app_name,
           ash::LoginUnlockThroughputRecorder::kBrowser);
     }
-  }
-  if (throughput_recorder) {
-    throughput_recorder->RestoreDataLoaded();
   }
 }
 
@@ -343,7 +346,7 @@ class SessionRestoreImpl : public BrowserListObserver {
           use_new_window ? 0 : browser->tab_strip_model()->active_index() + 1;
       web_contents = chrome::AddRestoredTab(
           browser, tab.navigations, tab_index, selected_index,
-          tab.extension_app_id, absl::nullopt,
+          tab.extension_app_id, std::nullopt,
           disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB,  // selected
           tab.pinned, base::TimeTicks(), nullptr, tab.user_agent_override,
           tab.extra_data, true /* from_session_restore */);
@@ -481,7 +484,7 @@ class SessionRestoreImpl : public BrowserListObserver {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (!read_error_)
-      StartRecordingRestoredWindowsMetrics(windows);
+      StartRecordingRestoredWindowsMetrics(profile_, windows);
 #endif
 
     // Copy windows into windows_ so that we can combine both app and browser
@@ -865,7 +868,7 @@ class SessionRestoreImpl : public BrowserListObserver {
     }
 
     // Relabel group IDs to prevent duplicating groups. See crbug.com/1202102.
-    absl::optional<tab_groups::TabGroupId> new_group;
+    std::optional<tab_groups::TabGroupId> new_group;
     if (tab.group) {
       auto it = new_group_ids->find(*tab.group);
       if (it == new_group_ids->end()) {

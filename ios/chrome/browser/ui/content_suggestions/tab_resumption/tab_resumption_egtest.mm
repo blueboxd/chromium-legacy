@@ -124,11 +124,11 @@ NSString* HostnameFromGURL(GURL URL) {
   [SigninEarlGrey signOut];
   [ChromeEarlGrey waitForSyncEngineInitialized:NO
                                    syncTimeout:kSyncOperationTimeout];
-  [ChromeEarlGrey clearSyncServerData];
+  [ChromeEarlGrey clearFakeSyncServerData];
   [ChromeEarlGrey resetDataForLocalStatePref:tab_resumption_prefs::
                                                  kTabResumptioDisabledPref];
-  [ChromeEarlGrey resetDataForLocalStatePref:
-                      tab_resumption_prefs::kTabResumptionLastOpenedTabURLPref];
+  [ChromeEarlGrey clearUserPrefWithName:tab_resumption_prefs::
+                                            kTabResumptionLastOpenedTabURLPref];
   [super tearDown];
 }
 

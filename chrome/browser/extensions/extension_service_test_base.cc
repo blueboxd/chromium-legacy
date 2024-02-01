@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "base/memory/raw_ptr.h"
 
 #include <utility>
 
@@ -243,7 +244,9 @@ ExtensionServiceTestBase::ExtensionServiceTestBase(
   data_dir_ = test_data_dir.AppendASCII("extensions");
 
   policy_service_ = std::make_unique<policy::PolicyServiceImpl>(
-      std::vector<policy::ConfigurationPolicyProvider*>{&policy_provider_});
+      std::vector<
+          raw_ptr<policy::ConfigurationPolicyProvider, VectorExperimental>>{
+          &policy_provider_});
 }
 
 ExtensionServiceTestBase::~ExtensionServiceTestBase() {
@@ -320,7 +323,7 @@ testing::AssertionResult ExtensionServiceTestBase::ValidateBooleanPref(
            << "extension pref does not exist " << msg;
   }
 
-  absl::optional<bool> val = pref->FindBoolByDottedPath(pref_path);
+  std::optional<bool> val = pref->FindBoolByDottedPath(pref_path);
   if (!val.has_value()) {
     return testing::AssertionFailure()
            << pref_path << " pref not found " << msg;
@@ -402,7 +405,7 @@ void ExtensionServiceTestBase::TearDown() {
 #endif
 }
 
-void ExtensionServiceTestBase::SetUpTestCase() {
+void ExtensionServiceTestBase::SetUpTestSuite() {
   // Safe to call multiple times.
   LoadErrorReporter::Init(false);  // no noisy errors.
 }

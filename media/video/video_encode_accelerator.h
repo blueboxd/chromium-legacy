@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/functional/callback_forward.h"
@@ -23,7 +24,6 @@
 #include "media/base/video_encoder.h"
 #include "media/base/video_types.h"
 #include "media/video/video_encoder_info.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/color_space.h"
 
 namespace media {
@@ -78,8 +78,6 @@ struct MEDIA_EXPORT Vp9Metadata final {
   bool referenced_by_upper_spatial_layers = false;
   // True iff frame is dependent on directly lower spatial layer frame.
   bool reference_lower_spatial_layers = false;
-  // True iff frame is last layer frame of picture.
-  bool end_of_picture = true;
 
   // The temporal index for this frame.
   uint8_t temporal_idx = 0;
@@ -133,28 +131,34 @@ struct MEDIA_EXPORT BitstreamBufferMetadata final {
                           base::TimeDelta timestamp);
   ~BitstreamBufferMetadata();
 
+  // If |payload_size_bytes| is zero, it indicates the frame corresponded to
+  // |timestamp| is dropped.
   size_t payload_size_bytes;
   bool key_frame;
   base::TimeDelta timestamp;
   int32_t qp = -1;
+  // This is true if a frame is the last spatial layer frame in SVC encoding.
+  // This is useful, in SVC encoding, to represent it when a frame is dropped
+  // and thus the vp9 metadata is not filled.
+  bool end_of_picture = true;
 
-  bool end_of_picture() const;
-  absl::optional<uint8_t> spatial_idx() const;
+  bool dropped_frame() const;
+  std::optional<uint8_t> spatial_idx() const;
 
   // |h264|, |vp8| or |vp9| may be set, but not multiple of them. Presumably,
   // it's also possible for none of them to be set.
-  absl::optional<H264Metadata> h264;
-  absl::optional<Vp8Metadata> vp8;
-  absl::optional<Vp9Metadata> vp9;
-  absl::optional<Av1Metadata> av1;
-  absl::optional<H265Metadata> h265;
+  std::optional<H264Metadata> h264;
+  std::optional<Vp8Metadata> vp8;
+  std::optional<Vp9Metadata> vp9;
+  std::optional<Av1Metadata> av1;
+  std::optional<H265Metadata> h265;
 
   // Some platforms may adjust the encoding size to meet hardware requirements.
   // If not set, the encoded size is the same as configured.
-  absl::optional<gfx::Size> encoded_size;
+  std::optional<gfx::Size> encoded_size;
 
   // Some platforms may adjust the color space.
-  absl::optional<gfx::ColorSpace> encoded_color_space;
+  std::optional<gfx::ColorSpace> encoded_color_space;
 };
 
 // Video encoder interface.
@@ -259,18 +263,18 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
 
     // Initial encoding framerate in frames per second. This is optional and
     // VideoEncodeAccelerator should use |kDefaultFramerate| if not given.
-    absl::optional<uint32_t> initial_framerate =
+    std::optional<uint32_t> initial_framerate =
         VideoEncodeAccelerator::kDefaultFramerate;
 
     // Group of picture length for encoded output stream, indicates the
     // distance between two key frames, i.e. IPPPIPPP would be represent as 4.
-    absl::optional<uint32_t> gop_length;
+    std::optional<uint32_t> gop_length;
 
     // Codec level of encoded output stream for H264 only. This value should
     // be aligned to the H264 standard definition of SPS.level_idc.
     // If this is not given, VideoEncodeAccelerator selects one of proper H.264
     // levels for |input_visible_size| and |initial_framerate|.
-    absl::optional<uint8_t> h264_output_level;
+    std::optional<uint8_t> h264_output_level;
 
     // Indicates baseline profile or constrained baseline profile for H264 only.
     bool is_constrained_h264 = false;
@@ -280,7 +284,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     // Encode().
     // This is kShmem iff a video frame is mapped in user space.
     // This is kDmabuf iff a video frame has dmabuf.
-    absl::optional<StorageType> storage_type;
+    std::optional<StorageType> storage_type;
 
     // Indicates captured video (from a camera) or generated (screen grabber).
     // Screen content has a number of special properties such as lack of noise,
@@ -288,6 +292,19 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     // bright colors. With this content hint the encoder may choose to optimize
     // for the given use case.
     ContentType content_type = ContentType::kCamera;
+
+    // |drop_frame_thresh_percentage| is described as a percentage of the target
+    // data buffer. When the data buffer falls below this percentage of
+    // fullness, a dropped frame is indicated. The default value is zero, which
+    // means a VideoEncodeAccelerator doesn't allow to drop a frame.
+    // Two caveats:
+    // (1) VideoToolboxVideoEncodeAccelerator (macOS) doesn't provide a way to
+    // disallow drop a frame. That's said, the VideoEncodeAccelerator may drop
+    // a frame even if |drop_frame_thresh_percentage| is set to zero.
+    // (2) A VideoENcodeAccelerator doesn't necessarily support a frame drop.
+    // Therefore a frame may not be dropped even if
+    // |drop_frame_thresh_percentage| is set to a positive value.
+    uint8_t drop_frame_thresh_percentage = 0;
 
     // The configuration for spatial layers. This is not empty if and only if
     // either spatial or temporal layer encoding is configured. When this is not
@@ -403,10 +420,16 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   //  |framerate| is the requested new framerate, in frames per second.
   //  |size| is the requested new input visible frame size. Clients can request
   //  frame size change only when there is no pending frame in the encoder.
+  // Note:
+  // Implementation must call |RequireBitstreamBuffers| when frame size changes,
+  // even existing buffer can be reused. This is a workaround for
+  // |VideoEncodeAcceleratorAdapter| to know when reconfigure is done. This
+  // requirement can be removed once |RequestEncodingParametersChange| has a
+  // callback.
   virtual void RequestEncodingParametersChange(
       const Bitrate& bitrate,
       uint32_t framerate,
-      const absl::optional<gfx::Size>& size) = 0;
+      const std::optional<gfx::Size>& size) = 0;
 
   // Request a change to the encoding parameters. If not implemented, default
   // behavior is to get the sum over layers and pass to version with bitrate
@@ -416,10 +439,16 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   //  |framerate| is the requested new framerate, in frames per second.
   //  |size| is the requested new input visible frame size. Clients can request
   //  frame size change only when there is no pending frame in the encoder.
+  // Note:
+  // Implementation must call |RequireBitstreamBuffers| when frame size changes,
+  // even existing buffer can be reused. This is a workaround for
+  // |VideoEncodeAcceleratorAdapter| to know when reconfigure is done. This
+  // requirement can be removed once |RequestEncodingParametersChange| has a
+  // callback.
   virtual void RequestEncodingParametersChange(
       const VideoBitrateAllocation& bitrate,
       uint32_t framerate,
-      const absl::optional<gfx::Size>& size);
+      const std::optional<gfx::Size>& size);
 
   // Destroys the encoder: all pending inputs and outputs are dropped
   // immediately and the component is freed.  This call may asynchronously free

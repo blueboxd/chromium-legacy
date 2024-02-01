@@ -328,6 +328,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // AXObjectCacheImpl::InvalidateCachedValuesOnSubtree().
   void InvalidateCachedValues();
   bool NeedsToUpdateCachedValues() const { return cached_values_need_update_; }
+  bool ChildrenNeedToUpdateCachedValues() const {
+    return child_cached_values_need_update_;
+  }
   void CheckCanAccessCachedValues() const;
 
   // The AXObjectCacheImpl that owns this object, and its unique ID within this
@@ -1206,7 +1209,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual bool CanHaveChildren() const { return true; }
   void UpdateChildrenIfNecessary();
   bool NeedsToUpdateChildren() const;
-  virtual void SetNeedsToUpdateChildren() const;
+  virtual void SetNeedsToUpdateChildren(bool update = true) const;
   virtual void ClearChildren() const;
   void DetachFromParent();
   virtual void SelectedOptions(AXObjectVector&) const {}
@@ -1396,7 +1399,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   mutable Member<AXObject> parent_;
   // Only children that are included in tree, maybe rename to children_in_tree_.
   mutable AXObjectVector children_;
-  mutable bool children_dirty_ = false;
   mutable bool has_dirty_descendants_ = false;
 
   // The final role, taking into account the ARIA role and native role.
@@ -1486,21 +1488,30 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
  private:
   bool ComputeCanSetFocusAttribute() const;
   String KeyboardShortcut() const;
+  void UpdateStyleAndLayoutTreeForNode(Node& node);
+  void OnInheritedCachedValuesChanged() const;
+
+  mutable bool children_dirty_ : 1 = false;
 
   // Do the rest of the cached_* member variables need to be recomputed?
-  mutable bool cached_values_need_update_ : 1;
+  mutable bool cached_values_need_update_ : 1 = true;
+  // Do children need to recompute their cached values?
+  mutable bool child_cached_values_need_update_ : 1 = false;
 
-  // The following cached attribute values (the ones starting with m_cached*)
-  // are only valid if last_modification_count_ matches
-  // AXObjectCacheImpl::ModificationCount().
-  mutable bool cached_is_ignored_ : 1;
-  mutable bool cached_is_ignored_but_included_in_tree_ : 1;
-  mutable bool cached_is_inert_ : 1;
-  mutable bool cached_is_aria_hidden_ : 1;
-  mutable bool cached_is_hidden_by_child_tree_ : 1;
-  mutable bool cached_is_hidden_via_style_ : 1;
-  mutable bool cached_is_descendant_of_disabled_node_ : 1;
-  mutable bool cached_can_set_focus_attribute_ : 1;
+  // The following cached attribute values (the ones starting with cached_**)
+  // are only valid if cached_values_need_update_ is false.
+  // Objects are marked ignored at construction time (and thus by default they
+  // not included in the tree), so that if object becomes included in Init()
+  // or in a future page update, the included node count will be incremented via
+  // AXObjectCacheImpl::UpdateIncludedNodeCount().
+  mutable bool cached_is_ignored_ : 1 = true;
+  mutable bool cached_is_ignored_but_included_in_tree_ : 1 = false;
+  mutable bool cached_is_inert_ : 1 = false;
+  mutable bool cached_is_aria_hidden_ : 1 = false;
+  mutable bool cached_is_hidden_by_child_tree_ : 1 = false;
+  mutable bool cached_is_hidden_via_style_ : 1 = false;
+  mutable bool cached_is_descendant_of_disabled_node_ : 1 = false;
+  mutable bool cached_can_set_focus_attribute_ : 1 = false;
 
   mutable Member<AXObject> cached_live_region_root_;
   mutable gfx::RectF cached_local_bounding_box_rect_for_accessibility_;

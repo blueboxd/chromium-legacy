@@ -6,6 +6,7 @@
 #define COMPONENTS_SAFE_BROWSING_CORE_BROWSER_REALTIME_URL_LOOKUP_SERVICE_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/functional/callback.h"
@@ -19,7 +20,6 @@
 #include "components/safe_browsing/core/browser/realtime/url_lookup_service_base.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/proto/realtimeapi.pb.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -66,7 +66,8 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
           client_token_config_callback,
       bool is_off_the_record,
       variations::VariationsService* variations_service,
-      ReferrerChainProvider* referrer_chain_provider);
+      ReferrerChainProvider* referrer_chain_provider,
+      WebUIDelegate* delegate);
 
   RealTimeUrlLookupService(const RealTimeUrlLookupService&) = delete;
   RealTimeUrlLookupService& operator=(const RealTimeUrlLookupService&) = delete;
@@ -101,14 +102,17 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
       const GURL& url,
       const GURL& last_committed_url,
       bool is_mainframe,
-      RTLookupRequestCallback request_callback,
       RTLookupResponseCallback response_callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner) override;
-  absl::optional<std::string> GetDMTokenString() const override;
+  std::optional<std::string> GetDMTokenString() const override;
   bool ShouldIncludeCredentials() const override;
   void OnResponseUnauthorized(const std::string& invalid_access_token) override;
-  base::Time GetMinAllowedTimestampForReferrerChains() const override;
+  std::optional<base::Time> GetMinAllowedTimestampForReferrerChains()
+      const override;
   void MaybeLogLastProtegoPingTimeToPrefs(bool sent_with_token) override;
+  void MaybeLogProtegoPingCookieHistograms(bool request_had_cookie,
+                                           bool was_first_request,
+                                           bool sent_with_token) override;
 
   // Called when prefs that affect real time URL lookup are changed.
   void OnPrefChanged();
@@ -118,7 +122,6 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
       const GURL& url,
       const GURL& last_committed_url,
       bool is_mainframe,
-      RTLookupRequestCallback request_callback,
       RTLookupResponseCallback response_callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
       base::TimeTicks get_token_start_time,
@@ -142,8 +145,9 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   // |url_lookup_service| is an off the record profile.
   bool is_off_the_record_;
 
-  // The time that real time URL lookup is enabled.
-  base::Time url_lookup_enabled_timestamp_;
+  // The time that real time URL lookup is enabled. Not set if it is already
+  // enabled at startup.
+  std::optional<base::Time> url_lookup_enabled_timestamp_ = std::nullopt;
 
   // Unowned. For checking whether real-time checks can be enabled in a given
   // location.

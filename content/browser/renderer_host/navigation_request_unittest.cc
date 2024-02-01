@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/navigation_request.h"
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -29,7 +30,6 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/common/origin_trials/scoped_test_origin_trial_policy.h"
@@ -95,7 +95,7 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   // throttle checks when they are finished.
   void SimulateWillFailRequest(
       net::Error net_error_code,
-      const absl::optional<net::SSLInfo> ssl_info = absl::nullopt) {
+      const std::optional<net::SSLInfo> ssl_info = std::nullopt) {
     was_callback_called_ = false;
     callback_result_ = NavigationThrottle::DEFER;
     GetNavigationRequest()->set_net_error(net_error_code);
@@ -196,7 +196,7 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
         std::move(commit_params), false /* was_opener_suppressed */,
         std::string() /* extra_headers */, nullptr /* frame_entry */,
         nullptr /* entry */, false /* is_form_submission */,
-        nullptr /* navigation_ui_data */, absl::nullopt /* impression */,
+        nullptr /* navigation_ui_data */, std::nullopt /* impression */,
         false /* is_pdf */);
     main_test_rfh()->frame_tree_node()->TakeNavigationRequest(
         std::move(request));
@@ -528,10 +528,10 @@ TEST_F(NavigationRequestTest, SharedStorageWritable) {
       content::RenderFrameHostTester::For(main_rfh())->AppendFencedFrame());
   FrameTreeNode* fenced_frame_node =
       static_cast<RenderFrameHostImpl*>(fenced_frame_root)->frame_tree_node();
-  absl::optional<FencedFrameProperties> new_props =
-      fenced_frame_node->GetFencedFrameProperties();
-  new_props->effective_enabled_permissions.push_back(
+  FencedFrameConfig new_config = FencedFrameConfig(GURL("about:blank"));
+  new_config.AddEffectiveEnabledPermissionForTesting(
       blink::mojom::PermissionsPolicyFeature::kSharedStorage);
+  FencedFrameProperties new_props = FencedFrameProperties(new_config);
   fenced_frame_node->set_fenced_frame_properties(new_props);
   fenced_frame_root->ResetPermissionsPolicy();
 
@@ -742,7 +742,7 @@ TEST_F(NavigationRequestTest, StorageKeyToCommit) {
   NavigationRequest* request =
       NavigationRequest::From(navigation->GetNavigationHandle());
   EXPECT_TRUE(request->commit_params().storage_key.nonce().has_value());
-  EXPECT_EQ(child_document->GetMainFrame()->credentialless_iframes_nonce(),
+  EXPECT_EQ(child_document->GetPage().credentialless_iframes_nonce(),
             request->commit_params().storage_key.nonce().value());
 
   navigation->Commit();
@@ -751,7 +751,7 @@ TEST_F(NavigationRequestTest, StorageKeyToCommit) {
   EXPECT_TRUE(child_document->IsCredentialless());
   EXPECT_EQ(blink::StorageKey::CreateWithNonce(
                 url::Origin::Create(kUrl),
-                child_document->GetMainFrame()->credentialless_iframes_nonce()),
+                child_document->GetPage().credentialless_iframes_nonce()),
             child_document->GetStorageKey());
 }
 
@@ -902,12 +902,12 @@ TEST_F(NavigationRequestTest,
           GURL("https://example.com/navigation.html"), child_frame);
   navigation->ReadyToCommit();
 
-  EXPECT_EQ(main_test_rfh()->credentialless_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->GetPage().credentialless_iframes_nonce(),
             static_cast<NavigationRequest*>(navigation->GetNavigationHandle())
                 ->isolation_info_for_subresources()
                 .network_isolation_key()
                 .GetNonce());
-  EXPECT_EQ(main_test_rfh()->credentialless_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->GetPage().credentialless_iframes_nonce(),
             static_cast<NavigationRequest*>(navigation->GetNavigationHandle())
                 ->GetIsolationInfo()
                 .network_isolation_key()
@@ -960,7 +960,8 @@ TEST_F(NavigationRequestTest, IsolatedAppPolicyInjection) {
   EXPECT_EQ("'self'", csp->raw_directives[Directive::DefaultSrc]);
   EXPECT_EQ("'self' https: blob: data:",
             csp->raw_directives[Directive::FrameSrc]);
-  EXPECT_EQ("'self' https: wss:", csp->raw_directives[Directive::ConnectSrc]);
+  EXPECT_EQ("'self' https: wss: blob: data:",
+            csp->raw_directives[Directive::ConnectSrc]);
   EXPECT_EQ("'self' 'wasm-unsafe-eval'",
             csp->raw_directives[Directive::ScriptSrc]);
   EXPECT_EQ("'self' https: blob: data:",

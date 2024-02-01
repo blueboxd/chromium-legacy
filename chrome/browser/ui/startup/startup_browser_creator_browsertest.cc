@@ -171,8 +171,15 @@ using testing::Return;
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_MAC)
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
+#include "chrome/browser/web_applications/app_shim_registry_mac.h"
 #endif
+
+#if BUILDFLAG(IS_WIN)
+#include "base/base_paths_win.h"
+#include "base/test/scoped_path_override.h"
+#endif  // BUILDFLAG(IS_WIN)
 
 using extensions::Extension;
 using testing::_;
@@ -193,7 +200,7 @@ Browser* FindOneOtherBrowser(Browser* browser) {
 
   // Find the new browser.
   Browser* other_browser = nullptr;
-  for (auto* b : *BrowserList::GetInstance()) {
+  for (Browser* b : *BrowserList::GetInstance()) {
     if (b != browser)
       other_browser = b;
   }
@@ -312,7 +319,7 @@ class StartupBrowserCreatorTest : public extensions::ExtensionBrowserTest {
 
   Browser* FindOneOtherBrowserForProfile(Profile* profile,
                                          Browser* not_this_browser) {
-    for (auto* browser : *BrowserList::GetInstance()) {
+    for (Browser* browser : *BrowserList::GetInstance()) {
       if (browser != not_this_browser && browser->profile() == profile)
         return browser;
     }
@@ -558,7 +565,6 @@ enum class ChromeAppDeprecationFeatureValue {
   kDefault,
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-  kEnabledWithLaunchOption,
   kEnabledWithNoLaunch,
   kDisabled,
 #endif
@@ -574,9 +580,6 @@ std::string ChromeAppDeprecationFeatureValueToString(
       break;
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-    case ChromeAppDeprecationFeatureValue::kEnabledWithLaunchOption:
-      result = "ChromeAppDeprecationFeatureEnabledWithLaunchOption";
-      break;
     case ChromeAppDeprecationFeatureValue::kEnabledWithNoLaunch:
       result = "ChromeAppDeprecationFeatureEnabledWithNoLaunch";
       break;
@@ -600,23 +603,9 @@ class StartupBrowserCreatorChromeAppShortcutTest
         break;
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-      case ChromeAppDeprecationFeatureValue::kEnabledWithLaunchOption:
-        scoped_feature_list_.InitWithFeaturesAndParameters(
-            {{ features::kChromeAppsDeprecation,
-               {
-                 { "HideLaunchAnyways",
-                   "false" }
-               } }},
-            {});
-        break;
       case ChromeAppDeprecationFeatureValue::kEnabledWithNoLaunch:
-        scoped_feature_list_.InitWithFeaturesAndParameters(
-            {{ features::kChromeAppsDeprecation,
-               {
-                 { "HideLaunchAnyways",
-                   "true" }
-               } }},
-            {});
+        scoped_feature_list_.InitAndEnableFeature(
+            features::kChromeAppsDeprecation);
         break;
       case ChromeAppDeprecationFeatureValue::kDisabled:
         scoped_feature_list_.InitAndDisableFeature(
@@ -673,10 +662,8 @@ class StartupBrowserCreatorChromeAppShortcutTest
 
   enum class ExpectedLaunchBehavior{kLaunchAnywaysInTab, kLaunchAnywaysInWindow,
                                     kNoLaunch};
-  Browser* ExpectBlockLaunchWithLaunchBehavior(
-      const std::string& app_id,
-      bool force_install_dialog,
-      ExpectedLaunchBehavior behavior) {
+  void ExpectBlockLaunchWithLaunchBehavior(const std::string& app_id,
+                                           bool force_install_dialog) {
     EXPECT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
     auto waiter = views::NamedWidgetShownWaiter(
         views::test::AnyWidgetTestPasskey{},
@@ -706,8 +693,9 @@ class StartupBrowserCreatorChromeAppShortcutTest
               other_tab_strip->GetWebContentsAt(0)->GetVisibleURL());
 
     std::set<Browser*> initial_browsers;
-    for (auto* initial_browser : *BrowserList::GetInstance())
+    for (Browser* initial_browser : *BrowserList::GetInstance()) {
       initial_browsers.insert(initial_browser);
+    }
 
     content::TestNavigationObserver same_tab_observer(
         other_tab_strip->GetActiveWebContents(), 1,
@@ -725,68 +713,21 @@ class StartupBrowserCreatorChromeAppShortcutTest
       dialog->widget_delegate()->AsDialogDelegate()->Cancel();
     }
 
-    switch (behavior) {
-      case ExpectedLaunchBehavior::kLaunchAnywaysInTab:
-        same_tab_observer.Wait();
-        return other_browser;
-      case ExpectedLaunchBehavior::kLaunchAnywaysInWindow: {
-        Browser* app_browser =
-            ui_test_utils::GetBrowserNotInSet(initial_browsers);
-        if (!app_browser) {
-          app_browser = ui_test_utils::WaitForBrowserToOpen();
-          // The new browser should never be in |excluded_browsers|.
-          DCHECK(!base::Contains(initial_browsers, app_browser));
-        }
-        DCHECK(app_browser);
-        TabStripModel* app_tab_strip = app_browser->tab_strip_model();
-        EXPECT_EQ(1, app_tab_strip->count());
-        EXPECT_TRUE(app_browser->is_type_app());
-        EXPECT_FALSE(app_browser->is_type_normal());
-        return app_browser;
-      }
-      case ExpectedLaunchBehavior::kNoLaunch:
-        // To ensure that no launch happens, run the run loop until idle.
-        base::RunLoop().RunUntilIdle();
-        Browser* app_browser =
-            ui_test_utils::GetBrowserNotInSet(initial_browsers);
-        EXPECT_EQ(app_browser, nullptr);
-        return nullptr;
-    }
+    // To ensure that no launch happens, run the run loop until idle.
+    base::RunLoop().RunUntilIdle();
+    Browser* app_browser = ui_test_utils::GetBrowserNotInSet(initial_browsers);
+    EXPECT_EQ(app_browser, nullptr);
   }
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
   bool IsExpectedToAllowLaunch() {
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-    // Under no circumstance can the kChromeAppsDeprecation flag be used to
-    // globally disable deprecation.
-    switch (GetParam()) {
-      case ChromeAppDeprecationFeatureValue::kEnabledWithLaunchOption:
-      case ChromeAppDeprecationFeatureValue::kEnabledWithNoLaunch:
-      case ChromeAppDeprecationFeatureValue::kDefault:
-      case ChromeAppDeprecationFeatureValue::kDisabled:
-        return false;
-    }
-#endif
+    return false;
+#else
     return true;
-  }
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-  ExpectedLaunchBehavior GetLaunchBehaviorExpected(bool would_launch_tab) {
-    switch (GetParam()) {
-      case ChromeAppDeprecationFeatureValue::kEnabledWithLaunchOption:
-        return would_launch_tab
-                   ? ExpectedLaunchBehavior::kLaunchAnywaysInTab
-                   : ExpectedLaunchBehavior::kLaunchAnywaysInWindow;
-      case ChromeAppDeprecationFeatureValue::kEnabledWithNoLaunch:
-      case ChromeAppDeprecationFeatureValue::kDefault:
-      case ChromeAppDeprecationFeatureValue::kDisabled:
-        // Under no circumstance can the kChromeAppsDeprecation flag be used to
-        // globally disable deprecation.
-        return ExpectedLaunchBehavior::kNoLaunch;
-    }
-  }
 #endif
+  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -978,7 +919,6 @@ INSTANTIATE_TEST_SUITE_P(
         ChromeAppDeprecationFeatureValue::kDefault
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
         ,
-        ChromeAppDeprecationFeatureValue::kEnabledWithLaunchOption,
         ChromeAppDeprecationFeatureValue::kEnabledWithNoLaunch,
         ChromeAppDeprecationFeatureValue::kDisabled
 #endif
@@ -1009,26 +949,10 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTestWithLaunch,
       command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       {browser()->profile(), StartupProfileMode::kBrowserWindow}, {}));
 
-  ExpectedLaunchBehavior launch_behavior =
-      GetLaunchBehaviorExpected(/*would_launch_tab=*/true);
-  Browser* tabbed_browser = ExpectBlockLaunchWithLaunchBehavior(
-      extension_app->id(),
-      /*force_install_dialog=*/false, launch_behavior);
+  ExpectBlockLaunchWithLaunchBehavior(extension_app->id(),
+                                      /*force_install_dialog=*/false);
 
-  if (launch_behavior == ExpectedLaunchBehavior::kNoLaunch) {
-    ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-    return;
-  }
-  // When we block the launch, we always create a new browser window to
-  // display chrome://apps and the dialog. After launch, the tab should open to
-  // the extension.
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-  tab_strip = tabbed_browser->tab_strip_model();
-  EXPECT_EQ(1, tab_strip->count());
-
-  // It should be a standard tabbed window, not an app window.
-  EXPECT_FALSE(tabbed_browser->is_type_app());
-  EXPECT_TRUE(tabbed_browser->is_type_normal());
 }
 
 IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTestWithLaunch,
@@ -1048,33 +972,10 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTestWithLaunch,
       command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       {browser()->profile(), StartupProfileMode::kBrowserWindow}, {}));
 
-  ExpectedLaunchBehavior launch_behavior =
-      GetLaunchBehaviorExpected(/*would_launch_tab=*/false);
-  Browser* app_browser = ExpectBlockLaunchWithLaunchBehavior(
-      extension_app->id(),
-      /*force_install_dialog=*/false, launch_behavior);
+  ExpectBlockLaunchWithLaunchBehavior(extension_app->id(),
+                                      /*force_install_dialog=*/false);
 
-  if (launch_behavior == ExpectedLaunchBehavior::kNoLaunch) {
-    ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-    return;
-  }
-
-  // When we block the launch, we always create a new browser window to
-  // display chrome://apps and the dialog, and then another to launch the app.
-  ASSERT_EQ(3u, chrome::GetBrowserCount(browser()->profile()));
-
-  // Pref was set to open in a window, so the app should have opened in a
-  // window.  The launch should have created a new browser. Find the new
-  // browser.
-  ASSERT_TRUE(app_browser);
-
-  // Expect an app window.
-  EXPECT_TRUE(app_browser->is_type_app());
-
-  // The browser's app_name should include the app's ID.
-  EXPECT_NE(app_browser->app_name().find(extension_app->id()),
-            std::string::npos)
-      << app_browser->app_name();
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 }
 
 IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTestWithLaunch,
@@ -1097,27 +998,10 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTestWithLaunch,
       command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       {browser()->profile(), StartupProfileMode::kBrowserWindow}, {}));
 
-  ExpectedLaunchBehavior launch_behavior =
-      GetLaunchBehaviorExpected(/*would_launch_tab=*/true);
-  Browser* tabbed_browser = ExpectBlockLaunchWithLaunchBehavior(
-      extension_app->id(),
-      /*force_install_dialog=*/false, launch_behavior);
+  ExpectBlockLaunchWithLaunchBehavior(extension_app->id(),
+                                      /*force_install_dialog=*/false);
 
-  if (launch_behavior == ExpectedLaunchBehavior::kNoLaunch) {
-    ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-    return;
-  }
-  // When we block the launch, we always create a new browser window to
-  // display chrome://apps and the dialog.
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-  tab_strip = tabbed_browser->tab_strip_model();
-  EXPECT_EQ(1, tab_strip->count());
-
-  // The browser's app_name should not include the app's ID: it is in a normal
-  // tabbed browser.
-  EXPECT_EQ(tabbed_browser->app_name().find(extension_app->id()),
-            std::string::npos)
-      << browser()->app_name();
 }
 
 IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTestWithLaunch,
@@ -1146,26 +1030,10 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTestWithLaunch,
       command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       {browser()->profile(), StartupProfileMode::kBrowserWindow}, {}));
 
-  ExpectedLaunchBehavior launch_behavior =
-      GetLaunchBehaviorExpected(/*would_launch_tab=*/true);
-  Browser* tabbed_browser = ExpectBlockLaunchWithLaunchBehavior(
-      extension_app->id(),
-      /*force_install_dialog=*/true, launch_behavior);
+  ExpectBlockLaunchWithLaunchBehavior(extension_app->id(),
+                                      /*force_install_dialog=*/true);
 
-  if (launch_behavior == ExpectedLaunchBehavior::kNoLaunch) {
-    ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-    return;
-  }
-
-  // When we block the launch, we always create a new browser window to
-  // display chrome://apps and the dialog.
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-  tab_strip = tabbed_browser->tab_strip_model();
-  EXPECT_EQ(1, tab_strip->count());
-
-  // It should be a standard tabbed window, not an app window.
-  EXPECT_FALSE(tabbed_browser->is_type_app());
-  EXPECT_TRUE(tabbed_browser->is_type_normal());
 }
 
 // These tests are specifically for testing what happens when the "Launch
@@ -1174,7 +1042,6 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     StartupBrowserCreatorChromeAppShortcutTestWithLaunch,
     ::testing::Values(
-        ChromeAppDeprecationFeatureValue::kEnabledWithLaunchOption,
         ChromeAppDeprecationFeatureValue::kEnabledWithNoLaunch),
     ChromeAppDeprecationFeatureValueToString);
 
@@ -2299,8 +2166,17 @@ class StartupBrowserWithWebAppTest : public StartupBrowserCreatorTest {
     StartupBrowserCreatorTest::SetUpCommandLine(command_line);
     if (GetTestPreCount() == 1) {
       // Load an app with launch.container = 'window'.
+
+#if BUILDFLAG(IS_MAC)
+      // While the non-mac version of this test would pass on macOS, it isn't
+      // testing a code path that would actually be used on macOS, and thus not
+      // very useful as a test. Instead test the way an app shim would launch
+      // Chrome in the background to launch an app.
+      command_line->AppendSwitch(switches::kNoStartupWindow);
+#else
       command_line->AppendSwitchASCII(switches::kAppId, kAppId);
       command_line->AppendSwitchASCII(switches::kProfileDirectory, "Default");
+#endif
     }
   }
   WebAppProvider& provider() { return *WebAppProvider::GetForTest(profile()); }
@@ -2349,7 +2225,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
   WebAppProvider* const provider =
       WebAppProvider::GetForTest(browser()->profile());
 
-  // Install web app set to open as a tab.
+  // Install web app set to open as a standalone window.
   {
     std::unique_ptr<web_app::WebAppInstallInfo> info =
         std::make_unique<web_app::WebAppInstallInfo>();
@@ -2368,12 +2244,23 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
               webapps::InstallResultCode::kSuccessNewInstall);
     EXPECT_EQ(provider->registrar_unsafe().GetAppUserDisplayMode(kAppId),
               web_app::mojom::UserDisplayMode::kStandalone);
+
+#if BUILDFLAG(IS_MAC)
+    AppShimRegistry::Get()->OnAppInstalledForProfile(
+        kAppId, browser()->profile()->GetPath());
+#endif
   }
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
                        PRE_LastUsedProfilesWithWebApp) {
   BrowserAddedObserver added_observer;
+
+#if BUILDFLAG(IS_MAC)
+  // Simulate an app shim connecting and launching an app.
+  apps::AppShimManager::Get()->LoadAndLaunchAppForTesting(kAppId);
+#endif
+
   content::RunAllTasksUntilIdle();
   // Launching with an app opens the app window via a task, so the test
   // might start before SelectFirstBrowser is called.
@@ -2759,6 +2646,13 @@ class StartupBrowserWebAppProtocolHandlingTest : public InProcessBrowserTest {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
+#if BUILDFLAG(IS_WIN)
+  // This is needed to stop StartupBrowserWebAppProtocolHandlingTests creating a
+  // shortcut in the Windows start menu. The override needs to last until the
+  // test is destroyed, because Windows shortcut tasks which create the shortcut
+  // can run after the test body returns.
+  base::ScopedPathOverride override_start_dir{base::DIR_START_MENU};
+#endif  // BUILDFLAG(IS_WIN)
 };
 
 IN_PROC_BROWSER_TEST_F(
@@ -2920,7 +2814,7 @@ IN_PROC_BROWSER_TEST_F(
   Browser* app_browser2;
   // There should be 3 browser windows opened at the moment.
   ASSERT_EQ(3u, chrome::GetBrowserCount(browser()->profile()));
-  for (auto* b : *BrowserList::GetInstance()) {
+  for (Browser* b : *BrowserList::GetInstance()) {
     if (b != browser() && b != app_browser1)
       app_browser2 = b;
   }
@@ -2988,7 +2882,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWebAppProtocolHandlingTest,
   Browser* app_browser2;
   // There should be 3 browser windows opened at the moment.
   ASSERT_EQ(3u, chrome::GetBrowserCount(browser()->profile()));
-  for (auto* b : *BrowserList::GetInstance()) {
+  for (Browser* b : *BrowserList::GetInstance()) {
     if (b != browser() && b != app_browser1)
       app_browser2 = b;
   }

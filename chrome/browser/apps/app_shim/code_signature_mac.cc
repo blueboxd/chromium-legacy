@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_shim/code_signature_mac.h"
+#include <dlfcn.h>
 
 #include "base/apple/bundle_locations.h"
 #include "base/apple/foundation_util.h"
@@ -83,9 +84,17 @@ FrameworkBundleDesignatedRequirementString() {
   // Look up the code signing flags. If the flags are absent treat this as
   // unsigned. This decision is consistent with the StaticCode source:
   // https://github.com/apple-oss-distributions/Security/blob/Security-60157.40.30.0.1/OSX/libsecurity_codesigning/lib/StaticCode.cpp#L2270
-  CFNumberRef framework_signing_info_flags =
-      base::apple::GetValueFromDictionary<CFNumberRef>(
-          framework_signing_info.get(), kSecCodeInfoFlags);
+  static CFStringRef const* kSecCodeInfoFlagsStr =
+      reinterpret_cast<CFStringRef*>(dlsym(((void*)-2), "kSecCodeInfoFlags"));
+  CFNumberRef framework_signing_info_flags;
+  if (kSecCodeInfoFlagsStr) {
+    framework_signing_info_flags =
+        base::apple::GetValueFromDictionary<CFNumberRef>(
+            framework_signing_info.get(), *kSecCodeInfoFlagsStr);
+  } else {
+    framework_signing_info_flags = nullptr;
+  }
+
   if (!framework_signing_info_flags) {
     return base::unexpected(MissingRequirementReason::NoOrAdHocSignature);
   }

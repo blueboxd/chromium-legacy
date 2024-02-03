@@ -81,8 +81,10 @@ class EyeDropperView : public content::EyeDropper,
    private:
     void OnMouseEvent(ui::MouseEvent* event) override;
     void OnGestureEvent(ui::GestureEvent* event) override;
+#if !BUILDFLAG(IS_MAC)
     void OnTouchEvent(ui::TouchEvent* event) override;
-
+#endif
+    
     raw_ptr<EyeDropperView> view_;
 #if defined(USE_AURA)
     class KeyboardHandler;
@@ -100,6 +102,7 @@ class EyeDropperView : public content::EyeDropper,
   void CaptureScreen(std::optional<webrtc::DesktopCapturer::SourceId> screen);
   void OnScreenCaptured();
 
+  void MoveViewToFront();
   // Moves the view to the specified position.
   void UpdatePosition(gfx::Point position);
 

@@ -43,7 +43,6 @@ void MacNotificationProviderImpl::BindNotificationService(
       return;
     }
   }
-}
 
 // MacNotificationServiceNS implements the Chromium interface to the
 // NSUserNotificationCenter deprecated API. It is in the process of being

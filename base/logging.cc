@@ -800,7 +800,7 @@ void LogMessage::Flush() {
     }
   };
 
-  if (severity_ == LOGGING_FATAL)
+  if (severity_ == LOGGING_FATAL) {
     SetLogFatalCrashKey(this);
   }
 

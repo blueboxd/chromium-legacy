@@ -1211,10 +1211,6 @@ void CARendererLayerTree::ContentLayer::CommitToCA(
         }
         if ([ca_layer_ respondsToSelector:(@selector(setContentsScale:))])
           ca_layer_.contentsScale = tree()->scale_factor_;
-      } else {
-        // Used for UMA
-        if (io_surface_)
-          tree()->unchanged_io_surfaces_during_commit_++;
       }
       break;
   }

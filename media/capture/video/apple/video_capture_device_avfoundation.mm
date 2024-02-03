@@ -236,6 +236,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 
   // For testing.
   base::RepeatingCallback<void()> _onPhotoOutputStopped;
+  bool _forceLegacyStillImageApi;
   std::optional<bool> _isPortraitEffectSupportedForTesting;
   std::optional<bool> _isPortraitEffectActiveForTesting;
 

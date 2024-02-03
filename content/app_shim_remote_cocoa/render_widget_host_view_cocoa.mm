@@ -1943,7 +1943,7 @@ void ExtractUnderlines(NSAttributedString* string,
   NSPoint local_point = [view convertPoint:point_in_window fromView:nil];
   local_point.y = NSHeight([view bounds]) - local_point.y;
 
-  return [rootElement accessibilityHitTest:localPoint];
+  return [rootElement accessibilityHitTest:local_point];
 }
 
 - (id)accessibilityFocusedUIElement {

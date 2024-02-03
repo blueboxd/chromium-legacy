@@ -294,9 +294,9 @@ using content::DropData;
       !_dropData->download_metadata.empty()) {
     // TODO(https://crbug.com/898608): The |downloadFileName_| and
     // |downloadURL_| values should be computed by the caller.
-    if (_dropData.download_metadata.empty()) {
+    if (_dropData->download_metadata.empty()) {
       std::optional<base::FilePath> suggestedFilename =
-          _dropData.GetSafeFilenameForImageFileContents();
+          _dropData->GetSafeFilenameForImageFileContents();
       if (suggestedFilename) {
         _downloadFileName = std::move(*suggestedFilename);
         net::GetMimeTypeFromFile(_downloadFileName, &mimeType);

@@ -250,7 +250,7 @@ EyeDropperView::EyeDropperView(content::RenderFrameHost* frame,
     : render_frame_host_(frame),
       listener_(listener),
       view_position_handler_(std::make_unique<ViewPositionHandler>(this)),
-      screen_capturer_(std::make_unique<ScreenCapturer>()) {
+      screen_capturer_(std::make_unique<ScreenCapturer>(this)) {
   SetModalType(ui::MODAL_TYPE_WINDOW);
   // This is owned as a unique_ptr<EyeDropper> elsewhere.
   SetOwnedByWidget(false);
@@ -285,7 +285,7 @@ EyeDropperView::EyeDropperView(content::RenderFrameHost* frame,
       this, content::WebContents::FromRenderFrameHost(render_frame_host_)
                 ->GetNativeView());
   widget->Show();
-  CaptureInputIfNeeded();
+  CaptureInput();
   // The ignore selection time should be long enough to allow the user to see
   // the UI.
   ignore_selection_time_ = base::TimeTicks::Now() + base::Milliseconds(500);

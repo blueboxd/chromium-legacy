@@ -5,9 +5,7 @@
 #import "components/remote_cocoa/app_shim/menu_controller_cocoa_delegate_impl.h"
 
 #include "base/apple/bridging.h"
-#include "base/apple/foundation_util.h"
 #include "base/logging.h"
-#include "base/apple/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/message_loop/message_pump_apple.h"
 #import "skia/ext/skia_utils_mac.h"
@@ -16,9 +14,14 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/color/color_provider.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/platform_font_mac.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/badge_painter.h"
+#include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace {
 
@@ -103,8 +106,7 @@ NSImage* NewTagImage(const remote_cocoa::mojom::MenuControllerParams& params) {
         [NSBezierPath bezierPathWithRoundedRect:badge_frame
                                         xRadius:badge_radius
                                         yRadius:badge_radius];
-    NSColor* badge_color = skia::SkColorToSRGBNSColor(
-        color_provider->GetColor(ui::kColorButtonBackgroundProminent));
+    NSColor* badge_color = skia::SkColorToSRGBNSColor(params.badge_color);
     [badge_color set];
     [rounded_badge_rect fill];
 
@@ -141,8 +143,7 @@ NSImage* IPHDotImage(const remote_cocoa::mojom::MenuControllerParams& params) {
     NSBezierPath* dot_path = [NSBezierPath
         bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0, kIPHDotSize,
                                             kIPHDotSize)];
-    NSColor* dot_color = skia::SkColorToSRGBNSColor(
-        color_provider->GetColor(ui::kColorButtonBackgroundProminent));
+    NSColor* dot_color = skia::SkColorToSRGBNSColor(params.iph_dot_color);
     [dot_color set];
     [dot_path fill];
     [dot_image unlockFocus];
@@ -195,9 +196,10 @@ NSImage* IPHDotImage(const remote_cocoa::mojom::MenuControllerParams& params) {
 
 @implementation NewTagAttachmentCell
 
-- (instancetype)initWithColorProvider:(const ui::ColorProvider*)colorProvider {
+- (instancetype)initWithParams:
+    (remote_cocoa::mojom::MenuControllerParams)params {
   if (self = [super init]) {
-    self.image = NewTagImage(colorProvider);
+    self.image = NewTagImage(params);
   }
   return self;
 }
@@ -215,7 +217,6 @@ NSImage* IPHDotImage(const remote_cocoa::mojom::MenuControllerParams& params) {
 @end
 
 @interface MenuControllerCocoaDelegateImpl () {
-  NSMutableArray* _menuObservers;
   gfx::Rect _anchorRect;
 }
 @end
@@ -244,15 +245,6 @@ NSImage* IPHDotImage(const remote_cocoa::mojom::MenuControllerParams& params) {
                     fromModel:(ui::MenuModel*)model
                       atIndex:(size_t)index {
   if (model->IsNewFeatureAt(index)) {
-    NSTextAttachment* attachment = [[NSTextAttachment alloc] initWithData:nil
-                                                                   ofType:nil];
-    attachment.image = NewTagImage(*_params);
-    NSSize newTagSize = attachment.image.size;
-
-    // The baseline offset of the badge image to the menu text baseline.
-    const int kBadgeBaselineOffset = -3;
-    attachment.bounds = NSMakeRect(0, kBadgeBaselineOffset, newTagSize.width,
-                                   newTagSize.height);
 
     NSMutableAttributedString* attrTitle =
         [[NSMutableAttributedString alloc] initWithString:menuItem.title];
@@ -262,7 +254,7 @@ NSImage* IPHDotImage(const remote_cocoa::mojom::MenuControllerParams& params) {
     // comment above.
     NSTextAttachment* attachment = [[NSTextAttachment alloc] init];
     attachment.attachmentCell =
-        [[NewTagAttachmentCell alloc] initWithColorProvider:colorProvider];
+        [[NewTagAttachmentCell alloc] initWithParams:*_params];
 
     [attrTitle
         appendAttributedString:[NSAttributedString

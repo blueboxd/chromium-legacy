@@ -10,7 +10,6 @@
 #include <optional>
 #include <set>
 #include <utility>
-#include <dlfcn.h>
 
 #include "apps/app_lifetime_monitor_factory.h"
 #include "base/apple/bundle_locations.h"
@@ -128,89 +127,7 @@ CreateAppShimRequirement() {
     return base::unexpected(apps::MissingRequirementReason::Error);
   }
 
-  // If there was an error obtaining the SecStaticCodeRef something is very
-  // broken or something bad is happening, deny.
-  if (status != errSecSuccess) {
-    DumpOSStatusError(status, "SecStaticCodeCreateWithPath");
-    // has_value() == true
-    return base::apple::ScopedCFTypeRef<SecRequirementRef>(nullptr);
-  }
-
-  // Copy the signing info from the SecStaticCodeRef.
-  base::apple::ScopedCFTypeRef<CFDictionaryRef> framework_signing_info;
-  status = SecCodeCopySigningInformation(
-      framework_code.get(), kSecCSSigningInformation,
-      framework_signing_info.InitializeInto());
-  if (status != errSecSuccess) {
-    DumpOSStatusError(status, "SecCodeCopySigningInformation");
-    // has_value() == true
-    return base::apple::ScopedCFTypeRef<SecRequirementRef>(nullptr);
-  }
-
-  // Look up the code signing flags. If the flags are absent treat this as
-  // unsigned. This decision is consistent with the StaticCode source:
-  // https://github.com/apple-oss-distributions/Security/blob/Security-60157.40.30.0.1/OSX/libsecurity_codesigning/lib/StaticCode.cpp#L2270
-  static CFStringRef const*kSecCodeInfoFlagsStr = reinterpret_cast<CFStringRef*>(dlsym(((void *) -2), "kSecCodeInfoFlags"));
-
-  CFNumberRef framework_signing_info_flags;
-  if(kSecCodeInfoFlagsStr) {
-    framework_signing_info_flags =
-        base::apple::GetValueFromDictionary<CFNumberRef>(
-            framework_signing_info.get(), *kSecCodeInfoFlagsStr);
-  } else {
-    framework_signing_info_flags = nullptr;
-  }
-
-  if (!framework_signing_info_flags) {
-    return std::nullopt;  // has_value() == false
-  }
-
-  // If the framework bundle is ad-hoc signed there is nothing else to
-  // do. While the framework bundle is code-signed an ad-hoc signature does not
-  // contain any identities to match against. Treat this as a success.
-  //
-  // Note: Using a long long to extract the value from the CFNumberRef to be
-  // consistent with how it was packed by Security.framework.
-  // https://github.com/apple-oss-distributions/Security/blob/Security-60157.40.30.0.1/OSX/libsecurity_utilities/lib/cfutilities.h#L262
-  long long flags;
-  if (!CFNumberGetValue(framework_signing_info_flags, kCFNumberLongLongType,
-                        &flags)) {
-    DumpError("CFNumberGetValue");
-    // has_value() == true
-    return base::apple::ScopedCFTypeRef<SecRequirementRef>(nullptr);
-  }
-  if (static_cast<uint32_t>(flags) & kSecCodeSignatureAdhoc) {
-    return std::nullopt;  // has_value() == false
-  }
-
-  // Moving on. Time to start building a requirement that we will use to
-  // validate the app shim's code signature. First let's get the framework
-  // bundle requirement. We will build a suitable requirement for the app shim
-  // based off that.
-  base::apple::ScopedCFTypeRef<SecRequirementRef> framework_requirement;
-  status =
-      SecCodeCopyDesignatedRequirement(framework_code.get(), kSecCSDefaultFlags,
-                                       framework_requirement.InitializeInto());
-  if (status != errSecSuccess) {
-    DumpOSStatusError(status, "SecCodeCopyDesignatedRequirement");
-    // has_value() == true
-    return base::apple::ScopedCFTypeRef<SecRequirementRef>(nullptr);
-  }
-
-  base::apple::ScopedCFTypeRef<CFStringRef> framework_requirement_string;
-  status =
-      SecRequirementCopyString(framework_requirement.get(), kSecCSDefaultFlags,
-                               framework_requirement_string.InitializeInto());
-  if (status != errSecSuccess) {
-    DumpOSStatusError(status, "SecRequirementCopyString");
-    // has_value() == true
-    return base::apple::ScopedCFTypeRef<SecRequirementRef>(nullptr);
-  }
-
-  // Always returns has_value() == true.
-  return apps::AppShimManager::
-      BuildAppShimRequirementFromFrameworkRequirementString(
-          framework_requirement_string.get());
+  return apps::RequirementFromString(app_shim_requirement_string.get());
 }
 
 // Returns whether |app_shim_pid|'s code signature is trusted:

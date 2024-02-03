@@ -3905,7 +3905,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds.removeDynamicIndexingOfSwizzledVector = true;
 
   // Initialize uninitialized locals by default
-  driver_bug_workarounds.initializeUninitializedLocals = true;
+  if (!workarounds().dont_initialize_uninitialized_locals)
+    driver_bug_workarounds.initializeUninitializedLocals = true;
 
   ShShaderOutput shader_output_language =
       ShaderTranslator::GetShaderOutputLanguageForContext(gl_version_info());

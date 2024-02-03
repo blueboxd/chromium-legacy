@@ -186,7 +186,7 @@ std::unique_ptr<Network::Cookie> BuildCookie(
           .SetSecure(cookie.IsSecure())
           .SetSession(!cookie.IsPersistent())
           .SetPriority(BuildCookiePriority(cookie.Priority()))
-          .SetSameParty(cookie.IsSameParty())
+          .SetSameParty(false)
           .SetSourceScheme(BuildCookieSourceScheme(cookie.SourceScheme()))
           .SetSourcePort(cookie.SourcePort())
           .Build();
@@ -559,15 +559,17 @@ String securityState(const GURL& url, const net::CertStatus& cert_status) {
   return Security::SecurityStateEnum::Secure;
 }
 
-DevToolsURLLoaderInterceptor::InterceptionStage ToInterceptorStage(
+absl::optional<DevToolsURLLoaderInterceptor::InterceptionStage>
+ToInterceptorStage(
     const protocol::Network::InterceptionStage& interceptor_stage) {
-  if (interceptor_stage == protocol::Network::InterceptionStageEnum::Request)
+  if (interceptor_stage == protocol::Network::InterceptionStageEnum::Request) {
     return DevToolsURLLoaderInterceptor::REQUEST;
+  }
   if (interceptor_stage ==
-      protocol::Network::InterceptionStageEnum::HeadersReceived)
+      protocol::Network::InterceptionStageEnum::HeadersReceived) {
     return DevToolsURLLoaderInterceptor::RESPONSE;
-  NOTREACHED();
-  return DevToolsURLLoaderInterceptor::REQUEST;
+  }
+  return absl::nullopt;
 }
 
 double timeDelta(base::TimeTicks time,
@@ -1968,6 +1970,12 @@ std::unique_ptr<Network::Response> BuildResponse(
   if (!info.cache_storage_cache_name.empty()) {
     response->SetCacheStorageCacheName(info.cache_storage_cache_name);
   }
+  if (!info.service_worker_router_info.is_null()) {
+    response->SetServiceWorkerRouterInfo(
+        protocol::Network::ServiceWorkerRouterInfo::Create()
+            .SetRuleIdMatched(info.service_worker_router_info->rule_id_matched)
+            .Build());
+  }
 
   response->SetProtocol(GetProtocol(url, info));
   if (info.alternate_protocol_usage !=
@@ -1983,6 +1991,20 @@ std::unique_ptr<Network::Response> BuildResponse(
     response->SetSecurityDetails(BuildSecurityDetails(*info.ssl_info));
 
   return response;
+}
+
+std::unique_ptr<Network::Response> BuildRedirectResponse(
+    absl::optional<std::pair<
+        const GURL&,
+        const network::mojom::URLResponseHeadDevToolsInfo&>> redirect_info,
+    bool& redirect_emitted_extra_info) {
+  std::unique_ptr<Network::Response> redirect_response;
+  if (redirect_info) {
+    const auto& [previous_url, head] = *redirect_info;
+    redirect_emitted_extra_info = head.emitted_extra_info;
+    redirect_response = BuildResponse(previous_url, head);
+  }
+  return redirect_response;
 }
 
 String blockedReason(blink::ResourceRequestBlockedReason reason) {
@@ -2132,12 +2154,8 @@ void NetworkHandler::PrefetchRequestWillBeSent(
           .Build();
 
   bool redirect_emitted_extra_info = false;
-  std::unique_ptr<Network::Response> redirect_response;
-  if (redirect_info) {
-    const auto& [previous_url, head] = *redirect_info;
-    redirect_emitted_extra_info = head.emitted_extra_info;
-    redirect_response = BuildResponse(previous_url, head);
-  }
+  std::unique_ptr<Network::Response> redirect_response =
+      BuildRedirectResponse(redirect_info, redirect_emitted_extra_info);
 
   auto request_info =
       Network::Request::Create()
@@ -2462,6 +2480,53 @@ void NetworkHandler::LoadingComplete(
       status.encoded_data_length);
 }
 
+void NetworkHandler::FetchKeepAliveRequestWillBeSent(
+    const std::string& request_id,
+    const network::ResourceRequest& request,
+    const GURL& initiator_url,
+    Maybe<std::string> frame_token,
+    base::TimeTicks timestamp,
+    absl::optional<
+        std::pair<const GURL&,
+                  const network::mojom::URLResponseHeadDevToolsInfo&>>
+        redirect_info) {
+  if (!enabled_) {
+    return;
+  }
+
+  std::string url = request.url.is_valid() ? request.url.spec() : "";
+  double current_ticks = timestamp.since_origin().InSecondsF();
+  double current_wall_time = base::Time::Now().InSecondsFSinceUnixEpoch();
+  auto initiator =
+      Network::Initiator::Create()
+          .SetType(Network::Initiator::TypeEnum::Script)
+          .SetUrl(initiator_url.is_valid() ? initiator_url.spec() : "")
+          .Build();
+
+  bool redirect_emitted_extra_info = false;
+  std::unique_ptr<Network::Response> redirect_response =
+      BuildRedirectResponse(redirect_info, redirect_emitted_extra_info);
+
+  auto request_info =
+      Network::Request::Create()
+          .SetUrl(url)
+          .SetMethod(request.method)
+          .SetHeaders(BuildRequestHeaders(request.headers, request.referrer))
+          .SetInitialPriority(resourcePriority(request.priority))
+          .SetReferrerPolicy(referrerPolicy(request.referrer_policy))
+          // A fetch keepalive request is categorized as blockable.
+          // https://www.w3.org/TR/mixed-content/#category-blockable
+          .SetMixedContentType(Security::MixedContentTypeEnum::Blockable)
+          .Build();
+
+  frontend_->RequestWillBeSent(
+      request_id, request_id, url, std::move(request_info), current_ticks,
+      current_wall_time, std::move(initiator), redirect_emitted_extra_info,
+      std::move(redirect_response),
+      std::string(Network::ResourceTypeEnum::Fetch), std::move(frame_token),
+      request.has_user_gesture);
+}
+
 void NetworkHandler::OnSignedExchangeReceived(
     absl::optional<const base::UnguessableToken> devtools_navigation_token,
     const GURL& outer_request_url,
@@ -2561,10 +2626,15 @@ DispatchResponse NetworkHandler::SetRequestInterception(
             "Cannot intercept resources of type '%s'", resource_type.c_str()));
       }
     }
-    interceptor_patterns.emplace_back(
-        pattern->GetUrlPattern("*"), std::move(resource_types),
-        ToInterceptorStage(pattern->GetInterceptionStage(
-            protocol::Network::InterceptionStageEnum::Request)));
+    auto interception_stage = pattern->GetInterceptionStage(
+        protocol::Network::InterceptionStageEnum::Request);
+    auto stage = ToInterceptorStage(interception_stage);
+    if (!stage.has_value()) {
+      return Response::InvalidParams(base::StringPrintf(
+          "Unsupported interception stage '%s'", interception_stage.c_str()));
+    }
+    interceptor_patterns.emplace_back(pattern->GetUrlPattern("*"),
+                                      std::move(resource_types), stage.value());
   }
 
   if (!host_)

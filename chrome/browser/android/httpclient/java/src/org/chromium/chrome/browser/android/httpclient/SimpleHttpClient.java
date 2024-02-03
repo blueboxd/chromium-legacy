@@ -12,7 +12,10 @@ import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
 import org.chromium.base.JNIUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.lifetime.Destroyable;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKeyedMap;
 import org.chromium.net.NetworkTrafficAnnotationTag;
@@ -70,6 +73,7 @@ public class SimpleHttpClient implements Destroyable {
     }
 
     public SimpleHttpClient(Profile profile) {
+        ThreadUtils.assertOnUiThread();
         mNativeBridge = SimpleHttpClientJni.get().init(profile);
     }
 
@@ -84,6 +88,7 @@ public class SimpleHttpClient implements Destroyable {
     @Override
     public void destroy() {
         SimpleHttpClientJni.get().destroy(mNativeBridge);
+        mNativeBridge = 0;
     }
 
     /**
@@ -96,8 +101,13 @@ public class SimpleHttpClient implements Destroyable {
      * @param responseConsumer The {@link Consumer} which will be invoked after the request is send
      *         when some response comes back.
      */
-    public void send(GURL gurl, String requestType, byte[] body, Map<String, String> headers,
-            NetworkTrafficAnnotationTag annotation, Callback<HttpResponse> responseConsumer) {
+    public void send(
+            GURL gurl,
+            String requestType,
+            byte[] body,
+            Map<String, String> headers,
+            NetworkTrafficAnnotationTag annotation,
+            Callback<HttpResponse> responseConsumer) {
         assert mNativeBridge != 0;
         assert gurl.isValid();
 
@@ -105,8 +115,20 @@ public class SimpleHttpClient implements Destroyable {
         String[] headerValues = new String[headerKeys.length];
         JNIUtils.splitMap(headers, headerKeys, headerValues);
 
-        SimpleHttpClientJni.get().sendNetworkRequest(mNativeBridge, gurl, requestType, body,
-                headerKeys, headerValues, annotation.getHashCode(), responseConsumer);
+        PostTask.runOrPostTask(
+                TaskTraits.UI_DEFAULT,
+                () -> {
+                    SimpleHttpClientJni.get()
+                            .sendNetworkRequest(
+                                    mNativeBridge,
+                                    gurl,
+                                    requestType,
+                                    body,
+                                    headerKeys,
+                                    headerValues,
+                                    annotation.getHashCode(),
+                                    responseConsumer);
+                });
     }
 
     /**
@@ -123,8 +145,12 @@ public class SimpleHttpClient implements Destroyable {
      */
     @VisibleForTesting
     @CalledByNative
-    public static HttpResponse createHttpResponse(int responseCode, int netErrorCode, byte[] body,
-            String[] headerKeys, String[] headerValues) {
+    public static HttpResponse createHttpResponse(
+            int responseCode,
+            int netErrorCode,
+            byte[] body,
+            String[] headerKeys,
+            String[] headerValues) {
         assert headerKeys.length == headerValues.length;
 
         Map<String, String> responseHeaders = new HashMap<>();
@@ -144,9 +170,17 @@ public class SimpleHttpClient implements Destroyable {
     @NativeMethods
     interface Natives {
         long init(Profile profile);
+
         void destroy(long nativeHttpClientBridge);
-        void sendNetworkRequest(long nativeHttpClientBridge, GURL gurl, String requestType,
-                byte[] body, String[] headerKeys, String[] headerValues, int annotation,
+
+        void sendNetworkRequest(
+                long nativeHttpClientBridge,
+                GURL gurl,
+                String requestType,
+                byte[] body,
+                String[] headerKeys,
+                String[] headerValues,
+                int annotation,
                 Callback<HttpResponse> responseCallback);
     }
 }

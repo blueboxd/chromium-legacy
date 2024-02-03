@@ -6,12 +6,12 @@
 #define ASH_AMBIENT_AMBIENT_PHOTO_CONTROLLER_H_
 
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>
 
 #include "ash/ambient/ambient_constants.h"
-#include "ash/ambient/ambient_photo_cache.h"
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/model/ambient_photo_config.h"
 #include "ash/ambient/model/ambient_topic_queue.h"
@@ -29,13 +29,14 @@
 #include "net/base/backoff_entry.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom-shared.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
 namespace ash {
+
+class AmbientAccessTokenController;
 
 // Class to handle photos in ambient mode.
 //
@@ -109,8 +110,6 @@ namespace ash {
 class ASH_EXPORT AmbientPhotoController : public AmbientViewDelegateObserver {
  public:
   AmbientPhotoController(
-      AmbientPhotoCache& photo_cache,
-      AmbientPhotoCache& backup_photo_cache,
       AmbientViewDelegate& view_delegate,
       AmbientPhotoConfig photo_config,
       std::unique_ptr<AmbientTopicQueue::Delegate> topic_queue_delegate);
@@ -172,7 +171,7 @@ class ASH_EXPORT AmbientPhotoController : public AmbientViewDelegateObserver {
 
   void OnAllPhotoRawDataAvailable(bool from_downloading);
 
-  void OnPhotoRawDataSaved(bool from_downloading);
+  void SaveCurrentPhotoToCache();
 
   void DecodePhotoRawData(bool from_downloading,
                           bool is_related_image,
@@ -237,8 +236,7 @@ class ASH_EXPORT AmbientPhotoController : public AmbientViewDelegateObserver {
   // Backoff to resume fetch images.
   net::BackoffEntry resume_fetch_image_backoff_;
 
-  const raw_ptr<AmbientPhotoCache> photo_cache_;
-  const raw_ptr<AmbientPhotoCache> backup_photo_cache_;
+  const raw_ptr<AmbientAccessTokenController> access_token_controller_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5320594929574852403">Presúvate doľava</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
+<translation id="539541037630043848">Otvoriť <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">Skenuje sa <ph name="COUNT" />. strana</translation>
 <translation id="5671277269877808209">Štvorec</translation>
 <translation id="574392208103952083">Stredné</translation>
@@ -163,6 +164,7 @@ Ak sa týka kvality obrázkov či videí, priložte ukážku fotky alebo videa a
 <translation id="8870695351537079478">Zaznamenávanie sa nedá spustiť</translation>
 <translation id="8880167521484863515">4 ku 3</translation>
 <translation id="8903921497873541725">Priblížiť</translation>
+<translation id="8926890870105777777">Pripojte sa k sieti <ph name="WIFINAME" /></translation>
 <translation id="9045010116236796332">Umiestnite všetky okraje dokumentu do rámu</translation>
 <translation id="9045155556724273246">10 sekúnd</translation>
 <translation id="906331135292332864">Obrázok sa spracúva…</translation>

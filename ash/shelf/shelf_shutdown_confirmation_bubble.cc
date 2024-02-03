@@ -61,7 +61,7 @@ ShelfShutdownConfirmationBubble::ShelfShutdownConfirmationBubble(
     : ShelfBubble(anchor,
                   alignment,
                   /*for_tooltip=*/false,
-                  /*arrow_position=*/absl::nullopt) {
+                  /*arrow_position=*/std::nullopt) {
   DCHECK(on_confirm_callback);
   DCHECK(on_cancel_callback);
   confirm_callback_ = std::move(on_confirm_callback);
@@ -149,6 +149,10 @@ ShelfShutdownConfirmationBubble::ShelfShutdownConfirmationBubble(
           views::Emphasis::kHigh));
   GetBubbleFrameView()->SetBubbleBorder(std::move(bubble_border));
   GetBubbleFrameView()->SetBackgroundColor(GetBackgroundColor());
+  // The bubble content size changes after border setting, therefore resize
+  // the widget to its content.
+  // TODO(crbug.com/1520953): widget should autoresize to its content.
+  SizeToContents();
   GetWidget()->Show();
 
   base::UmaHistogramEnumeration(

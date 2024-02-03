@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -30,6 +31,7 @@
 #include "components/safe_browsing/content/browser/web_api_handshake_checker.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/legacy_tech_cookie_issue_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
 #include "extensions/buildflags/buildflags.h"
@@ -79,9 +81,13 @@ class BluetoothDelegateImpl;
 }  // namespace permissions
 
 namespace safe_browsing {
+class AsyncCheckTracker;
 class RealTimeUrlLookupServiceBase;
 class SafeBrowsingService;
 class UrlCheckerDelegate;
+namespace hash_realtime_utils {
+enum class HashRealTimeSelection;
+}
 }  // namespace safe_browsing
 
 namespace sandbox {
@@ -178,6 +184,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                        const GURL& site_url) override;
   bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
+  bool ShouldAllowCrossProcessSandboxedFrameForPrecursor(
+      content::BrowserContext* browser_context,
+      const GURL& precursor) override;
   bool DoesWebUIUrlRequireProcessLock(const GURL& url) override;
   bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
       base::StringPiece scheme,
@@ -364,6 +373,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const url::Origin& top_frame_origin,
       const url::Origin& context_origin) override;
+  bool IsFullCookieAccessAllowed(content::BrowserContext* browser_context,
+                                 const GURL& url,
+                                 const blink::StorageKey& storage_key) override;
 #if BUILDFLAG(IS_CHROMEOS)
   void OnTrustAnchorUsed(content::BrowserContext* browser_context) override;
 #endif
@@ -899,7 +911,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool WillProvidePublicFirstPartySets() override;
 
   bool ShouldPreconnectNavigation(
-      content::BrowserContext* browser_context) override;
+      content::RenderFrameHost* render_frame_host) override;
 
   bool ShouldDisableOriginAgentClusterDefault(
       content::BrowserContext* browser_context) override;
@@ -1042,14 +1054,28 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool is_enterprise_lookup_enabled,
       bool is_consumer_lookup_enabled);
 
+  // Returns an AsyncCheckTracker object used for holding URL checkers for async
+  // Safe Browsing check. It may return nullptr if the WebContents is null,
+  // the ui_manager is null or the real-time check is not enabled.
+  safe_browsing::AsyncCheckTracker* GetAsyncCheckTracker(
+      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+      bool is_enterprise_lookup_enabled,
+      bool is_consumer_lookup_enabled,
+      safe_browsing::hash_realtime_utils::HashRealTimeSelection
+          hash_realtime_selection);
+
   // Try to upload an enterprise legacy tech event to the enterprise management
   // server for admins.
-  void ReportLegacyTechEvent(content::RenderFrameHost* render_frame_host,
-                             const std::string type,
-                             const GURL& url,
-                             const std::string& filename,
-                             uint64_t line,
-                             uint64_t column) override;
+  void ReportLegacyTechEvent(
+      content::RenderFrameHost* render_frame_host,
+      const std::string type,
+      const GURL& url,
+      const GURL& frame_url,
+      const std::string& filename,
+      uint64_t line,
+      uint64_t column,
+      std::optional<content::LegacyTechCookieIssueDetails> cookie_issue_details)
+      override;
 
   void SafeBrowsingWebApiHandshakeChecked(
       std::unique_ptr<safe_browsing::WebApiHandshakeChecker> checker,

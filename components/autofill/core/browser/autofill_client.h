@@ -77,7 +77,7 @@ class AddressNormalizer;
 class AutocompleteHistoryManager;
 class AutofillAblationStudy;
 class AutofillComposeDelegate;
-class AutofillDownloadManager;
+class AutofillCrowdsourcingManager;
 class AutofillDriver;
 struct AutofillErrorDialogContext;
 class AutofillMlPredictionModelHandler;
@@ -117,6 +117,7 @@ enum class WebauthnDialogState;
 
 namespace payments {
 class MandatoryReauthManager;
+class PaymentsAutofillClient;
 class PaymentsNetworkInterface;
 }
 
@@ -373,10 +374,10 @@ class AutofillClient : public RiskDataLoader {
   // Callback to run after local/upload IBAN save is offered. The callback runs
   // with `user_decision` indicating whether the prompt was accepted, declined,
   // or ignored. `nickname` is optionally provided by the user when IBAN local
-  // or upload save is offered, and can be nullopt.
+  // or upload save is offered, and can be an empty string.
   using SaveIbanPromptCallback =
       base::OnceCallback<void(SaveIbanOfferUserDecision user_decision,
-                              std::optional<std::u16string> nickname)>;
+                              std::u16string_view nickname)>;
 
   // Callback to run if the OK button or the cancel button in a
   // Webauthn dialog is clicked.
@@ -411,9 +412,9 @@ class AutofillClient : public RiskDataLoader {
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
 
-  // Returns the AutofillDownloadManager for communication with the Autofill
-  // crowdsourcing server.
-  virtual AutofillDownloadManager* GetDownloadManager();
+  // Returns the AutofillCrowdsourcingManager for communication with the
+  // Autofill server.
+  virtual AutofillCrowdsourcingManager* GetCrowdsourcingManager();
 
   // Gets the PersonalDataManager instance associated with the original Chrome
   // profile.
@@ -477,6 +478,9 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the FormDataImporter instance owned by the client.
   virtual FormDataImporter* GetFormDataImporter() = 0;
+
+  // Gets the payments::PaymentsAutofillClient instance owned by the client.
+  virtual payments::PaymentsAutofillClient* GetPaymentsAutofillClient();
 
   // Gets the payments::PaymentsNetworkInterface instance owned by the client.
   virtual payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() = 0;
@@ -717,11 +721,10 @@ class AutofillClient : public RiskDataLoader {
   // Runs `callback` once the user makes a decision with respect to the
   // offer-to-upload prompt. On desktop, shows the offer-to-upload bubble if
   // `should_show_prompt` is true; otherwise only shows the omnibox icon.
-  virtual void ConfirmUploadIbanToCloud(
-      const Iban& iban,
-      const LegalMessageLines& legal_message_lines,
-      bool should_show_prompt,
-      SaveIbanPromptCallback callback);
+  virtual void ConfirmUploadIbanToCloud(const Iban& iban,
+                                        LegalMessageLines legal_message_lines,
+                                        bool should_show_prompt,
+                                        SaveIbanPromptCallback callback);
 
   // Called after credit card upload is finished. Will show upload result to
   // users. |card_saved| indicates if the card is successfully saved.

@@ -17,6 +17,7 @@
 namespace blink {
 
 class ExceptionState;
+class KURL;
 class URLPatternInit;
 class URLPatternOptions;
 class URLPatternResult;
@@ -29,23 +30,36 @@ class CORE_EXPORT URLPattern : public ScriptWrappable {
                                      Component::Type::kHash>;
 
  public:
-  static URLPattern* Create(const V8URLPatternInput* input,
+  // Used to convert the convenience types that may be passed to WebIDL APIs in
+  // place of a URLPattern into a URLPattern object. `base_url` will usually be
+  // the result of calling `ExecutionContext::BaseURL`.
+  static URLPattern* From(v8::Isolate* isolate,
+                          const V8URLPatternCompatible* compatible,
+                          const KURL& base_url,
+                          ExceptionState& exception_state);
+
+  static URLPattern* Create(v8::Isolate* isolate,
+                            const V8URLPatternInput* input,
                             const String& base_url,
                             const URLPatternOptions* options,
                             ExceptionState& exception_state);
 
-  static URLPattern* Create(const V8URLPatternInput* input,
+  static URLPattern* Create(v8::Isolate* isolate,
+                            const V8URLPatternInput* input,
                             const String& base_url,
                             ExceptionState& exception_state);
 
-  static URLPattern* Create(const V8URLPatternInput* input,
+  static URLPattern* Create(v8::Isolate* isolate,
+                            const V8URLPatternInput* input,
                             const URLPatternOptions* options,
                             ExceptionState& exception_state);
 
-  static URLPattern* Create(const V8URLPatternInput* input,
+  static URLPattern* Create(v8::Isolate* isolate,
+                            const V8URLPatternInput* input,
                             ExceptionState& exception_state);
 
-  static URLPattern* Create(const URLPatternInit* init,
+  static URLPattern* Create(v8::Isolate* isolate,
+                            const URLPatternInit* init,
                             Component* precomputed_protocol_component,
                             const URLPatternOptions* options,
                             ExceptionState& exception_state);
@@ -84,6 +98,8 @@ class CORE_EXPORT URLPattern : public ScriptWrappable {
   String pathname() const;
   String search() const;
   String hash() const;
+
+  bool hasRegExpGroups() const;
 
   static int compareComponent(const V8URLPatternComponent& component,
                               const URLPattern* left,

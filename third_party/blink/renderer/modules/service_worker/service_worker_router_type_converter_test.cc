@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/service_worker/service_worker_router_rule.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_urlpatterninit_usvstring.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_urlpattern_urlpatterninit_usvstring.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_url_pattern_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_router_condition.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_router_rule.h"
@@ -77,7 +77,7 @@ TEST(ServiceWorkerRouterTypeConverterTest, Basic) {
   auto* idl_rule = blink::RouterRule::Create();
   auto* idl_condition = blink::RouterCondition::Create();
   idl_condition->setUrlPattern(
-      MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
           kFakeUrlPattern));
   idl_rule->setCondition(idl_condition);
   idl_rule->setSource(
@@ -102,8 +102,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, Basic) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -120,7 +121,8 @@ TEST(ServiceWorkerRouterTypeConverterTest, BasicURLPatternInit) {
   init->setHostname(kFakeHostPattern);
   init->setPathname(kFakePathPattern);
   idl_condition->setUrlPattern(
-      MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(init));
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
+          init));
   idl_rule->setCondition(idl_condition);
   idl_rule->setSource(
       MakeGarbageCollected<blink::V8UnionRouterSourceOrRouterSourceEnum>(
@@ -159,8 +161,64 @@ TEST(ServiceWorkerRouterTypeConverterTest, BasicURLPatternInit) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+  EXPECT_TRUE(blink_rule.has_value());
+  EXPECT_EQ(expected_rule, *blink_rule);
+}
+
+TEST(ServiceWorkerRouterTypeConverterTest, URLPatternInitWithEmptyProtocol) {
+  constexpr const char kFakeProtoPattern[] = "";
+  constexpr const char kFakeHostPattern[] = "example.com";
+  constexpr const char kFakePathPattern[] = "/test";
+  auto* idl_rule = blink::RouterRule::Create();
+  auto* idl_condition = blink::RouterCondition::Create();
+  blink::URLPatternInit* init = blink::URLPatternInit::Create();
+  init->setProtocol(kFakeProtoPattern);
+  init->setHostname(kFakeHostPattern);
+  init->setPathname(kFakePathPattern);
+  idl_condition->setUrlPattern(
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
+          init));
+  idl_rule->setCondition(idl_condition);
+  idl_rule->setSource(
+      MakeGarbageCollected<blink::V8UnionRouterSourceOrRouterSourceEnum>(
+          blink::V8RouterSourceEnum(
+              blink::V8RouterSourceEnum::Enum::kNetwork)));
+
+  blink::ServiceWorkerRouterRule expected_rule;
+  blink::SafeUrlPattern expected_url_pattern =
+      DefaultURLPatternInitUrlPattern();
+
+  // An empty string must be translated to an empty vector.
+  expected_url_pattern.protocol = {};
+  {
+    auto parse_result = liburlpattern::Parse(
+        kFakeHostPattern,
+        [](base::StringPiece input) { return std::string(input); });
+    ASSERT_TRUE(parse_result.ok());
+    expected_url_pattern.hostname = parse_result.value().PartList();
+  }
+  {
+    auto parse_result = liburlpattern::Parse(
+        kFakePathPattern,
+        [](base::StringPiece input) { return std::string(input); });
+    ASSERT_TRUE(parse_result.ok());
+    expected_url_pattern.pathname = parse_result.value().PartList();
+  }
+  expected_rule.condition =
+      blink::ServiceWorkerRouterCondition::WithUrlPattern(expected_url_pattern);
+  blink::ServiceWorkerRouterSource expected_source;
+  expected_source.type = blink::ServiceWorkerRouterSource::Type::kNetwork;
+  expected_source.network_source.emplace();
+  expected_rule.sources.emplace_back(expected_source);
+
+  V8TestingScope scope;
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -170,6 +228,7 @@ TEST(ServiceWorkerRouterTypeConverterTest, URLPatternInitWithEmptyPathname) {
   constexpr const char kFakeProtoPattern[] = "https";
   constexpr const char kFakeHostPattern[] = "example.com";
   constexpr const char kFakePathPattern[] = "";
+  constexpr const char kFakeBaseURLPathname[] = "/test/base/";
   auto* idl_rule = blink::RouterRule::Create();
   auto* idl_condition = blink::RouterCondition::Create();
   blink::URLPatternInit* init = blink::URLPatternInit::Create();
@@ -177,7 +236,8 @@ TEST(ServiceWorkerRouterTypeConverterTest, URLPatternInitWithEmptyPathname) {
   init->setHostname(kFakeHostPattern);
   init->setPathname(kFakePathPattern);
   idl_condition->setUrlPattern(
-      MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(init));
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
+          init));
   idl_rule->setCondition(idl_condition);
   idl_rule->setSource(
       MakeGarbageCollected<blink::V8UnionRouterSourceOrRouterSourceEnum>(
@@ -201,8 +261,16 @@ TEST(ServiceWorkerRouterTypeConverterTest, URLPatternInitWithEmptyPathname) {
     ASSERT_TRUE(parse_result.ok());
     expected_url_pattern.hostname = parse_result.value().PartList();
   }
-  // An empty string must be translated to an empty vector.
-  expected_url_pattern.pathname = {};
+  {
+    // An empty field will be complemented by the baseURL. The new pathname will
+    // be the substring from 0 to slash_index + 1 within the baseURL path.
+    // Step 17 https://urlpattern.spec.whatwg.org/#canon-processing-for-init
+    auto parse_result = liburlpattern::Parse(
+        kFakeBaseURLPathname,
+        [](base::StringPiece input) { return std::string(input); });
+    ASSERT_TRUE(parse_result.ok());
+    expected_url_pattern.pathname = parse_result.value().PartList();
+  }
   expected_rule.condition =
       blink::ServiceWorkerRouterCondition::WithUrlPattern(expected_url_pattern);
   blink::ServiceWorkerRouterSource expected_source;
@@ -211,8 +279,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, URLPatternInitWithEmptyPathname) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -224,7 +293,7 @@ TEST(ServiceWorkerRouterTypeConverterTest,
   auto* idl_rule = blink::RouterRule::Create();
   auto* idl_condition = blink::RouterCondition::Create();
   idl_condition->setUrlPattern(
-      MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
           kFakeUrlPattern));
   idl_rule->setCondition(idl_condition);
   idl_rule->setSource(
@@ -241,8 +310,9 @@ TEST(ServiceWorkerRouterTypeConverterTest,
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -255,7 +325,7 @@ TEST(ServiceWorkerRouterTypeConverterTest,
   auto* idl_rule = blink::RouterRule::Create();
   auto* idl_condition = blink::RouterCondition::Create();
   idl_condition->setUrlPattern(
-      MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
           kFakeUrlPattern));
   idl_rule->setCondition(idl_condition);
   idl_rule->setSource(
@@ -264,8 +334,8 @@ TEST(ServiceWorkerRouterTypeConverterTest,
               blink::V8RouterSourceEnum::Enum::kNetwork)));
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, kFakeBaseUrl,
-                                               scope.GetExceptionState());
+  auto blink_rule = ConvertV8RouterRuleToBlink(
+      scope.GetIsolate(), idl_rule, kFakeBaseUrl, scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_FALSE(blink_rule.has_value());
 }
@@ -275,7 +345,8 @@ TEST(ServiceWorkerRouterTypeConverterTest, RegexpUrlPatternShouldBeNullopt) {
     auto* idl_rule = blink::RouterRule::Create();
     auto* idl_condition = blink::RouterCondition::Create();
     idl_condition->setUrlPattern(
-        MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(
+        MakeGarbageCollected<
+            blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
             test_url_pattern));
     idl_rule->setCondition(idl_condition);
     idl_rule->setSource(
@@ -284,8 +355,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, RegexpUrlPatternShouldBeNullopt) {
                 blink::V8RouterSourceEnum::Enum::kNetwork)));
 
     V8TestingScope scope;
-    auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                                 scope.GetExceptionState());
+    auto blink_rule =
+        ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule,
+                                   DefaultBaseUrl(), scope.GetExceptionState());
     EXPECT_TRUE(scope.GetExceptionState().HadException());
     EXPECT_FALSE(blink_rule.has_value());
   };
@@ -298,7 +370,7 @@ TEST(ServiceWorkerRouterTypeConverterTest, Race) {
   auto* idl_rule = blink::RouterRule::Create();
   auto* idl_condition = blink::RouterCondition::Create();
   idl_condition->setUrlPattern(
-      MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
           kFakeUrlPattern));
   idl_rule->setCondition(idl_condition);
   idl_rule->setSource(
@@ -323,8 +395,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, Race) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -335,7 +408,7 @@ TEST(ServiceWorkerRouterTypeConverterTest, FetchEvent) {
   auto* idl_rule = blink::RouterRule::Create();
   auto* idl_condition = blink::RouterCondition::Create();
   idl_condition->setUrlPattern(
-      MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
           kFakeUrlPattern));
   idl_rule->setCondition(idl_condition);
   idl_rule->setSource(
@@ -360,8 +433,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, FetchEvent) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -393,8 +467,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, Request) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -423,8 +498,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, RequestMethodNormalize) {
     expected_rule.sources.emplace_back(expected_source);
 
     V8TestingScope scope;
-    auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                                 scope.GetExceptionState());
+    auto blink_rule =
+        ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule,
+                                   DefaultBaseUrl(), scope.GetExceptionState());
     EXPECT_FALSE(scope.GetExceptionState().HadException());
     EXPECT_TRUE(blink_rule.has_value());
     EXPECT_EQ(expected_rule, *blink_rule);
@@ -464,7 +540,8 @@ TEST(ServiceWorkerRouterTypeConverterTest, RunningStatus) {
         expected_rule.sources.emplace_back(expected_source);
 
         V8TestingScope scope;
-        auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
+        auto blink_rule = ConvertV8RouterRuleToBlink(scope.GetIsolate(),
+                                                     idl_rule, DefaultBaseUrl(),
                                                      scope.GetExceptionState());
         EXPECT_FALSE(scope.GetExceptionState().HadException());
         EXPECT_TRUE(blink_rule.has_value());
@@ -499,8 +576,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, EmptyOrConditionShouldBeAllowed) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -559,8 +637,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, OrConditionWithMultipleElements) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -598,8 +677,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, NestedOrCondition) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -621,8 +701,8 @@ TEST(ServiceWorkerRouterTypeConverterTest,
               blink::V8RouterSourceEnum::Enum::kNetwork)));
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, kFakeBaseUrl,
-                                               scope.GetExceptionState());
+  auto blink_rule = ConvertV8RouterRuleToBlink(
+      scope.GetIsolate(), idl_rule, kFakeBaseUrl, scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_FALSE(blink_rule.has_value());
 }
@@ -634,7 +714,7 @@ TEST(ServiceWorkerRouterTypeConverterTest, Cache) {
   auto* idl_rule = blink::RouterRule::Create();
   auto* idl_condition = blink::RouterCondition::Create();
   idl_condition->setUrlPattern(
-      MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
           kFakeUrlPattern));
   idl_rule->setCondition(idl_condition);
   idl_rule->setSource(
@@ -658,8 +738,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, Cache) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);
@@ -670,7 +751,7 @@ TEST(ServiceWorkerRouterTypeConverterTest, CacheName) {
   auto* idl_rule = blink::RouterRule::Create();
   auto* idl_condition = blink::RouterCondition::Create();
   idl_condition->setUrlPattern(
-      MakeGarbageCollected<blink::V8UnionURLPatternInitOrUSVString>(
+      MakeGarbageCollected<blink::V8UnionURLPatternOrURLPatternInitOrUSVString>(
           kFakeUrlPattern));
   idl_rule->setCondition(idl_condition);
   auto* idl_source = blink::RouterSource::Create();
@@ -698,8 +779,9 @@ TEST(ServiceWorkerRouterTypeConverterTest, CacheName) {
   expected_rule.sources.emplace_back(expected_source);
 
   V8TestingScope scope;
-  auto blink_rule = ConvertV8RouterRuleToBlink(idl_rule, DefaultBaseUrl(),
-                                               scope.GetExceptionState());
+  auto blink_rule =
+      ConvertV8RouterRuleToBlink(scope.GetIsolate(), idl_rule, DefaultBaseUrl(),
+                                 scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_TRUE(blink_rule.has_value());
   EXPECT_EQ(expected_rule, *blink_rule);

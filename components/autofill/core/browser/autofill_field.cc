@@ -75,6 +75,8 @@ static constexpr auto kAutofillHeuristicsVsServerOverrides =
          {ADDRESS_HOME_APT_NUM, ADDRESS_HOME_LINE2},
          {ADDRESS_HOME_APT_NUM, ADDRESS_HOME_LINE3},
          {ADDRESS_HOME_APT_NUM, ADDRESS_HOME_HOUSE_NUMBER},
+         {ADDRESS_HOME_BETWEEN_STREETS, ADDRESS_HOME_LINE1},
+         {ADDRESS_HOME_BETWEEN_STREETS, ADDRESS_HOME_LINE2},
          {ADDRESS_HOME_BETWEEN_STREETS, ADDRESS_HOME_STREET_ADDRESS},
          {ADDRESS_HOME_DEPENDENT_LOCALITY, ADDRESS_HOME_CITY},
          {ADDRESS_HOME_DEPENDENT_LOCALITY, ADDRESS_HOME_STATE},
@@ -570,6 +572,11 @@ void AutofillField::AppendLogEventIfNotRepeated(
       !AreCollapsibleLogEvents(field_log_events_.back(), log_event)) {
     field_log_events_.push_back(log_event);
   }
+}
+
+bool AutofillField::WasAutofilledWithFallback() const {
+  return autofilled_type_ &&
+         autofilled_type_ != overall_type_.GetStorableType();
 }
 
 }  // namespace autofill

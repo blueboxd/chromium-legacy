@@ -13,6 +13,8 @@
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
 #include "chrome/browser/search/background/wallpaper_search/wallpaper_search_background_manager.h"
@@ -31,6 +33,7 @@
 #include "chrome/grit/side_panel_customize_chrome_resources_map.h"
 #include "chrome/grit/side_panel_shared_resources.h"
 #include "chrome/grit/side_panel_shared_resources_map.h"
+#include "components/optimization_guide/core/model_execution/model_execution_features.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/search/ntp_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -71,9 +74,17 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       module_id_names_(ntp::MakeModuleIdNames(
           NewTabPageUI::IsDriveModuleEnabledForProfile(profile_))),
       page_factory_receiver_(this),
-      wallpaper_search_background_manager_(
-          std::make_unique<WallpaperSearchBackgroundManager>(profile_)),
       id_(RandInt64()) {
+  const bool wallpaper_search_flags_enabled =
+      base::FeatureList::IsEnabled(
+          ntp_features::kCustomizeChromeWallpaperSearch) &&
+      base::FeatureList::IsEnabled(
+          optimization_guide::features::kOptimizationGuideModelExecution) &&
+      features::IsChromeWebuiRefresh2023();
+  if (wallpaper_search_flags_enabled) {
+    wallpaper_search_background_manager_ =
+        std::make_unique<WallpaperSearchBackgroundManager>(profile_);
+  }
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       profile_, chrome::kChromeUICustomizeChromeSidePanelHost);
 
@@ -97,6 +108,9 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"defaultColorName", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
       {"greyDefaultColorName", IDS_NTP_CUSTOMIZE_GREY_DEFAULT_LABEL},
       {"hueSliderTitle", IDS_NTP_CUSTOMIZE_COLOR_HUE_SLIDER_TITLE},
+      {"hueSliderDeleteTitle", IDS_NTP_CUSTOMIZE_COLOR_HUE_SLIDER_DELETE_TITLE},
+      {"hueSliderDeleteA11yLabel",
+       IDS_NTP_CUSTOMIZE_COLOR_HUE_SLIDER_DELETE_A11Y_LABEL},
       {"mainColorName", IDS_NTP_CUSTOMIZE_MAIN_COLOR_LABEL},
       {"managedColorsTitle", IDS_NTP_THEME_MANAGED_DIALOG_TITLE},
       {"managedColorsBody", IDS_NTP_THEME_MANAGED_DIALOG_BODY},
@@ -130,10 +144,19 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"darkMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_DARK_LABEL},
       {"systemMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_SYSTEM_LABEL},
       // Wallpaper search strings.
+      {"colorRed", IDS_NTP_WALLPAPER_SEARCH_COLOR_RED_LABEL},
+      {"colorBlue", IDS_NTP_WALLPAPER_SEARCH_COLOR_BLUE_LABEL},
+      {"colorYellow", IDS_NTP_WALLPAPER_SEARCH_COLOR_YELLOW_LABEL},
+      {"colorGreen", IDS_NTP_WALLPAPER_SEARCH_COLOR_GREEN_LABEL},
+      {"colorBlack", IDS_NTP_WALLPAPER_SEARCH_COLOR_BLACK_LABEL},
       {"genericErrorDescription",
        IDS_NTP_WALLPAPER_SEARCH_GENERIC_ERROR_DESCRIPTION},
+      {"genericErrorDescriptionWithHistory",
+       IDS_NTP_WALLPAPER_SEARCH_GENERIC_ERROR_DESCRIPTION_WITH_HISTORY},
       {"genericErrorTitle", IDS_NTP_WALLPAPER_SEARCH_GENERIC_ERROR_TITLE},
       {"offlineDescription", IDS_NTP_WALLPAPER_SEARCH_OFFLINE_DESCRIPTION},
+      {"offlineDescriptionWithHistory",
+       IDS_NTP_WALLPAPER_SEARCH_OFFLINE_DESCRIPTION_WITH_HISTORY},
       {"offlineTitle", IDS_NTP_WALLPAPER_SEARCH_OFFLINE_TITLE},
       {"optionalDetailsLabel", IDS_NTP_WALLPAPER_SEARCH_OPTIONAL_DETAILS_LABEL},
       {"requestThrottledDescription",
@@ -141,13 +164,50 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"requestThrottledTitle",
        IDS_NTP_WALLPAPER_SEARCH_REQUEST_THROTTLED_TITLE},
       {"tryAgain", IDS_NTP_WALLPAPER_SEARCH_TRY_AGAIN_CTA},
-      {"wallpaperSearchHeader", IDS_NTP_WALLPAPER_SEARCH_HEADER},
       {"wallpaperSearchHistoryHeader", IDS_NTP_WALLPAPER_SEARCH_HISTORY_HEADER},
+      {"wallpaperSearchMoodLabel", IDS_NTP_WALLPAPER_SEARCH_MOOD_LABEL},
+      {"wallpaperSearchMoodDefaultOptionLabel",
+       IDS_NTP_WALLPAPER_SEARCH_MOOD_DEFAULT_OPTION_LABEL},
+      {"wallpaperSearchStyleLabel", IDS_NTP_WALLPAPER_SEARCH_STYLE_LABEL},
+      {"wallpaperSearchStyleDefaultOptionLabel",
+       IDS_NTP_WALLPAPER_SEARCH_STYLE_DEFAULT_OPTION_LABEL},
+      {"wallpaperSearchSubjectLabel", IDS_NTP_WALLPAPER_SEARCH_SUBJECT_LABEL},
+      {"wallpaperSearchSubjectDefaultOptionLabel",
+       IDS_NTP_WALLPAPER_SEARCH_SUBJECT_DEFAULT_OPTION_LABEL},
       {"wallpaperSearchSubmitBtn", IDS_NTP_WALLPAPER_SEARCH_SUBMIT_BTN_TEXT},
-      {"wallpaperSearchSubmitAgainBtn",
-       IDS_NTP_WALLPAPER_SEARCH_SUBMIT_AGAIN_BTN_TEXT},
-      {"experimentalFeatureDisclaimer", IDS_EXPERIMENTAL_FEATURE_DISCLAIMER},
-  };
+      {"wallpaperSearchResultLabel", IDS_NTP_WALLPAPER_SEARCH_RESULT_LABEL},
+      {"wallpaperSearchResultLabelB",
+       IDS_NTP_WALLPAPER_SEARCH_RESULT_LABEL_WITH_DESCRIPTOR_B},
+      {"wallpaperSearchResultLabelC",
+       IDS_NTP_WALLPAPER_SEARCH_RESULT_LABEL_WITH_DESCRIPTOR_C},
+      {"wallpaperSearchResultLabelBC",
+       IDS_NTP_WALLPAPER_SEARCH_RESULT_LABEL_WITH_DESCRIPTORS_B_AND_C},
+      {"experimentalFeatureDisclaimer", IDS_NTP_WALLPAPER_SEARCH_DISCLAIMER},
+      {"learnMore", IDS_LEARN_MORE},
+      {"learnMoreAboutFeatureA11yLabel",
+       IDS_LEARN_MORE_ABOUT_FEATURE_A11Y_LABEL},
+      {"thumbsDown", IDS_THUMBS_DOWN_OPENS_FEEDBACK_FORM_A11Y_LABEL},
+      {"thumbsUp", IDS_THUMBS_UP_RESULTS_A11Y_LABEL},
+      {"wallpaperSearchPageHeader", IDS_NTP_WALLPAPER_SEARCH_PAGE_HEADER},
+      {"wallpaperSearchTileLabel", IDS_NTP_WALLPAPER_SEARCH_TILE_LABEL},
+      {"wallpaperSearchInspirationHeader",
+       IDS_NTP_WALLPAPER_SEARCH_INSPIRATION_HEADER},
+      {"wallpaperSearchLoadingA11yMessage",
+       IDS_NTP_WALLPAPER_SEARCH_LOADING_A11Y_MESSAGE},
+      {"wallpaperSearchSuccessA11yMessage",
+       IDS_NTP_WALLPAPER_SEARCH_SUCCESS_A11Y_MESSAGE},
+      {"wallpaperSearchHistoryResultLabelNoDescriptor",
+       IDS_NTP_WALLPAPER_SEARCH_HISTORY_RESULT_LABEL_NO_DESCRIPTOR},
+      {"wallpaperSearchHistoryResultLabel",
+       IDS_NTP_WALLPAPER_SEARCH_HISTORY_RESULT_LABEL},
+      {"wallpaperSearchHistoryResultLabelB",
+       IDS_NTP_WALLPAPER_SEARCH_HISTORY_RESULT_LABEL_WITH_DESCRIPTOR_B},
+      {"wallpaperSearchHistoryResultLabelC",
+       IDS_NTP_WALLPAPER_SEARCH_HISTORY_RESULT_LABEL_WITH_DESCRIPTOR_C},
+      {"wallpaperSearchHistoryResultLabelBC",
+       IDS_NTP_WALLPAPER_SEARCH_HISTORY_RESULT_LABEL_WITH_DESCRIPTORS_B_AND_C},
+      {"wallpaperSearchMeadowInspirationTitle",
+       IDS_NTP_WALLPAPER_SEARCH_MEADOW_INSPIRATION_TITLE}};
   source->AddLocalizedStrings(kLocalizedStrings);
 
   source->AddBoolean(
@@ -173,13 +233,22 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
           ntp_features::kCustomizeChromeSidePanelExtensionsCard) &&
           features::IsChromeWebuiRefresh2023());
 
+  OptimizationGuideKeyedService* optimization_guide_keyed_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);
   source->AddBoolean(
       "wallpaperSearchEnabled",
-      base::FeatureList::IsEnabled(
-          ntp_features::kCustomizeChromeWallpaperSearch) &&
-          base::FeatureList::IsEnabled(
-              optimization_guide::features::kOptimizationGuideModelExecution));
+      wallpaper_search_flags_enabled &&
+          (optimization_guide_keyed_service &&
+           optimization_guide_keyed_service
+               ->ShouldFeatureBeCurrentlyEnabledForUser(
+                   optimization_guide::proto::ModelExecutionFeature::
+                       MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH)));
 
+  source->AddBoolean(
+      "wallpaperSearchInspirationCardEnabled",
+      wallpaper_search_flags_enabled &&
+          base::FeatureList::IsEnabled(
+              ntp_features::kCustomizeChromeWallpaperSearchInspirationCard));
   webui::SetupChromeRefresh2023(source);
 
   webui::SetupWebUIDataSource(
@@ -334,6 +403,7 @@ void CustomizeChromeUI::CreateWallpaperSearchHandler(
     mojo::ReportBadMessage("Only allowed to create one Mojo pipe per WebUI.");
     return;
   }
+  CHECK(wallpaper_search_background_manager_);
   wallpaper_search_handler_ = std::make_unique<WallpaperSearchHandler>(
       std::move(handler), std::move(client), profile_, image_decoder_.get(),
       wallpaper_search_background_manager_.get(), id_);

@@ -1,6 +1,6 @@
 import pytest
 
-from webdriver.bidi.modules.input import Actions, get_element_origin
+from webdriver.bidi.modules.input import Actions
 from webdriver.bidi.modules.script import ContextTarget
 
 from tests.support.asserts import assert_move_to_coordinates
@@ -85,9 +85,7 @@ async def test_tripleclick_at_coordinates(
     desired outcome as taps are handled differently on mobile.
     """
     url = inline(
-        f"""<div>
-          {lots_of_text}
-        </div>"""
+        f"""<div>{lots_of_text}</div>"""
     )
 
     await bidi_session.browsing_context.navigate(

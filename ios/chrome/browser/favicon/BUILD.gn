@@ -28,7 +28,7 @@ source_set("favicon") {
     "//components/image_fetcher/core",
     "//components/image_fetcher/ios",
     "//components/resources",
-    "//ios/chrome/browser/history",
+    "//ios/chrome/browser/history/model",
     "//ios/chrome/browser/sessions:restoration_observer",
     "//ios/chrome/browser/sessions:session_restoration_service",
     "//ios/chrome/browser/sessions:session_restoration_service_factory",
@@ -66,6 +66,7 @@ source_set("unit_tests") {
     "//ios/chrome/common/ui/favicon",
     "//skia",
     "//testing/gtest",
+    "//ui/gfx:test_support",
     "//ui/gfx/codec",
     "//url",
   ]

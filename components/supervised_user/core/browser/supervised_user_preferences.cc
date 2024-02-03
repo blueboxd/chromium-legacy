@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
 #include "components/supervised_user/core/common/features.h"
@@ -184,6 +185,16 @@ bool IsSubjectToParentalControls(const PrefService& pref_service) {
   return IsChildAccount(pref_service) && IsChildAccountSupervisionEnabled();
 }
 
+bool IsUrlFilteringEnabled(const PrefService& pref_service) {
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+  return IsChildAccount(pref_service);
+#else
+  return IsChildAccount(pref_service) &&
+         base::FeatureList::IsEnabled(
+             kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
+#endif
+}
+
 bool AreExtensionsPermissionsEnabled(const PrefService& pref_service) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
@@ -196,6 +207,20 @@ bool AreExtensionsPermissionsEnabled(const PrefService& pref_service) {
 #else
   return false;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
+bool IsCookieDeletionDisabled(const GURL& origin,
+                              const PrefService& pref_service) {
+  if (!base::FeatureList::IsEnabled(
+          supervised_user::kClearingCookiesKeepsSupervisedUsersSignedIn)) {
+    return false;
+  }
+
+  if (!IsChildAccount(pref_service)) {
+    return false;
+  }
+  return google_util::IsYoutubeDomainUrl(origin, google_util::ALLOW_SUBDOMAIN,
+                                         google_util::ALLOW_NON_STANDARD_PORTS);
 }
 
 }  // namespace supervised_user

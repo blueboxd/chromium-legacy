@@ -101,7 +101,6 @@ void SafeBrowsingUserInteractionObserver::CreateForWebContents(
   // create an observer if there isn't one.
   // TODO(crbug.com/1057157): The observer should observe all unsafe resources
   // instead of the first one only.
-  DCHECK(!web_contents->IsPortal());
   content::WebContentsUserData<
       SafeBrowsingUserInteractionObserver>::CreateForWebContents(web_contents,
                                                                  resource,
@@ -180,7 +179,8 @@ void SafeBrowsingUserInteractionObserver::Detach() {
 }
 
 void SafeBrowsingUserInteractionObserver::DidToggleFullscreenModeForTab(
-    bool entered_fullscreen) {
+    bool entered_fullscreen,
+    bool will_cause_resize) {
   // This class is only instantiated upon a navigation. If a page is in
   // fullscreen mode, any navigation away from it should exit fullscreen. This
   // means that this class is never instantiated while the current web contents
@@ -197,7 +197,7 @@ void SafeBrowsingUserInteractionObserver::DidToggleFullscreenModeForTab(
   ShowInterstitial(DelayedWarningEvent::kWarningShownOnFullscreenAttempt);
   // Exit fullscreen only after navigating to the interstitial. We don't want to
   // interfere with an ongoing fullscreen request.
-  contents->ExitFullscreen();
+  contents->ExitFullscreen(will_cause_resize);
   // DO NOT add code past this point. |this| is destroyed.
 }
 

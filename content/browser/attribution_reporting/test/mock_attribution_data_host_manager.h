@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 #include "components/attribution_reporting/registration_eligibility.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/attribution_reporting_runtime_features.h"
+#include "services/network/public/cpp/trigger_verification.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -48,7 +50,8 @@ class MockAttributionDataHostManager : public AttributionDataHostManager {
       bool,
       RegisterNavigationDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-       const blink::AttributionSrcToken& attribution_src_token),
+       const blink::AttributionSrcToken& attribution_src_token,
+       size_t expected_registrations),
       (override));
 
   MOCK_METHOD(void,
@@ -73,6 +76,32 @@ class MockAttributionDataHostManager : public AttributionDataHostManager {
   MOCK_METHOD(void,
               NotifyNavigationRegistrationCompleted,
               (const blink::AttributionSrcToken& attribution_src_token),
+              (override));
+
+  MOCK_METHOD(void,
+              NotifyBackgroundRegistrationStarted,
+              (BackgroundRegistrationsId id,
+               const attribution_reporting::SuitableOrigin& context_origin,
+               bool is_within_fenced_frame,
+               attribution_reporting::mojom::RegistrationEligibility,
+               GlobalRenderFrameHostId,
+               int64_t last_navigation_id,
+               absl::optional<blink::AttributionSrcToken>,
+               std::string devtools_request_id),
+              (override));
+
+  MOCK_METHOD(bool,
+              NotifyBackgroundRegistrationData,
+              (BackgroundRegistrationsId id,
+               const net::HttpResponseHeaders* headers,
+               GURL reporting_url,
+               network::AttributionReportingRuntimeFeatures,
+               std::vector<network::TriggerVerification>),
+              (override));
+
+  MOCK_METHOD(void,
+              NotifyBackgroundRegistrationCompleted,
+              (BackgroundRegistrationsId id),
               (override));
 
   MOCK_METHOD(void,

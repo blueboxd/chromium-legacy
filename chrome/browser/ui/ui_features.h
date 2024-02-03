@@ -40,7 +40,7 @@ bool IsExtensionMenuInRootAppMenu();
 BASE_DECLARE_FEATURE(kAccessCodeCastUI);
 #endif
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
 BASE_DECLARE_FEATURE(kCameraMicPreview);
 #endif
 
@@ -84,6 +84,12 @@ BASE_DECLARE_FEATURE(kSidePanelWebView);
 BASE_DECLARE_FEATURE(kSidePanelCompanionDefaultPinned);
 
 BASE_DECLARE_FEATURE(kSidePanelPinning);
+
+bool IsSidePanelPinningEnabled();
+
+BASE_DECLARE_FEATURE(kSidePanelMinimumWidth);
+extern const base::FeatureParam<int> kSidePanelMinimumWidthParameter;
+int GetSidePanelMinimumWidth();
 #endif
 
 BASE_DECLARE_FEATURE(kSidePanelJourneysQueryless);
@@ -128,6 +134,26 @@ extern const char kTabHoverCardAdditionalMaxWidthDelay[];
 
 BASE_DECLARE_FEATURE(kTabOrganization);
 bool IsTabOrganization();
+
+// The target (and minimum) interval between proactive nudge triggers. Measured
+// against a clock that only runs while Chrome is in the foreground.
+extern const base::FeatureParam<base::TimeDelta> kTabOrganizationTriggerPeriod;
+
+// The base to use for the trigger logic's exponential backoff.
+extern const base::FeatureParam<double> kTabOrganizationTriggerBackoffBase;
+
+// The minimum score threshold for proactive nudge triggering to occur.
+extern const base::FeatureParam<double> kTabOrganizationTriggerThreshold;
+
+// The maximum sensitivity score for a tab to contribute to trigger scoring.
+extern const base::FeatureParam<double>
+    kTabOrganizationTriggerSensitivityThreshold;
+
+// Enable 'demo mode' for Tab Organization triggering, which triggers much more
+// predictably and frequently.
+extern const base::FeatureParam<bool> KTabOrganizationTriggerDemoMode;
+
+BASE_DECLARE_FEATURE(kTabOrganizationRefreshButton);
 
 BASE_DECLARE_FEATURE(kTabSearchChevronIcon);
 

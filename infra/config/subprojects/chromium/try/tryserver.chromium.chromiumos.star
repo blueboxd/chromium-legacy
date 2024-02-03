@@ -167,6 +167,7 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        "chromium.skip_successful_tests": 50,
     },
     gn_args = gn_args.config(
         configs = [
@@ -268,6 +269,9 @@ try_.builder(
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
     mirrors = ["ci/chromeos-arm-generic-rel"],
     builderless = not settings.is_main,
+    experiments = {
+        "chromium.skip_successful_tests": 50,
+    },
     gn_args = gn_args.config(
         configs = [
             "ci/chromeos-arm-generic-rel",
@@ -296,6 +300,9 @@ Lacros builder that runs Tast tests and gtests on ChromeOS devices via Skylab"""
     ],
     compilator = "lacros-amd64-generic-rel-compilator",
     contact_team_email = "chrome-desktop-engprod@google.com",
+    experiments = {
+        "chromium.skip_successful_tests": 50,
+    },
     gn_args = gn_args.config(
         configs = [
             "ci/lacros-amd64-generic-rel",
@@ -349,6 +356,9 @@ try_.builder(
         "ci/lacros-arm-generic-rel",
     ],
     builderless = not settings.is_main,
+    experiments = {
+        "chromium.skip_successful_tests": 50,
+    },
     gn_args = gn_args.config(
         configs = [
             "ci/lacros-arm-generic-rel",
@@ -408,6 +418,9 @@ try_.builder(
         is_compile_only = True,
     ),
     builderless = not settings.is_main,
+    experiments = {
+        "chromium.skip_successful_tests": 50,
+    },
     gn_args = gn_args.config(
         configs = [
             "ci/linux-chromeos-dbg",
@@ -469,6 +482,19 @@ try_.builder(
 )
 
 try_.builder(
+    name = "chromeos-octopus-rel-skylab",
+    branch_selector = branches.selector.MAIN,
+    description_html = "This builder builds public image and runs tests on octopus DUTs in the lab.<br/>" +
+                       "This is experimental.",
+    mirrors = [
+        "ci/chromeos-octopus-rel-skylab-fyi",
+    ],
+    contact_team_email = "chromeos-velocity@google.com",
+    gn_args = "ci/chromeos-octopus-rel-skylab-fyi",
+    main_list_view = "try",
+)
+
+try_.builder(
     name = "chromeos-octopus-rel",
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
     mirrors = [
@@ -489,7 +515,7 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
-        "chromium.pre_retry_shards_without_patch_compile": 100,
+        "chromium.skip_successful_tests": 50,
     },
     gn_args = gn_args.config(
         configs = [
@@ -540,6 +566,7 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        "chromium.skip_successful_tests": 50,
     },
     gn_args = gn_args.config(
         configs = [
@@ -588,6 +615,18 @@ try_.builder(
     mirrors = [
         "ci/linux-chromeos-annotator-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/linux-chromeos-annotator-rel",
+            "try_builder",
+            "no_symbols",
+            "also_build_lacros_chrome",
+            "use_clang_coverage",
+            "partial_code_coverage_instrumentation",
+            "enable_dangling_raw_ptr_feature_flag",
+            "enable_backup_ref_ptr_feature_flag",
+        ],
+    ),
 )
 
 try_.builder(

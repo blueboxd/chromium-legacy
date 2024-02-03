@@ -39,10 +39,10 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/x/atom_cache.h"
 #include "ui/gfx/x/visual_manager.h"
-#include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/window_event_manager.h"
 #include "ui/gfx/x/x11_path.h"
-#include "ui/gfx/x/x11_window_event_manager.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/ozone/platform/x11/hit_test_x11.h"
 #include "ui/ozone/platform/x11/x11_window_manager.h"
@@ -256,8 +256,7 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
       x11::EventMask::LeaveWindow | x11::EventMask::Exposure |
       x11::EventMask::VisibilityChange | x11::EventMask::StructureNotify |
       x11::EventMask::PropertyChange | x11::EventMask::PointerMotion;
-  xwindow_events_ =
-      std::make_unique<x11::XScopedEventSelector>(xwindow_, event_mask);
+  xwindow_events_ = connection_->ScopedSelectEvent(xwindow_, event_mask);
   connection_->Flush();
 
   if (IsXInput2Available()) {
@@ -789,7 +788,7 @@ void X11Window::Activate() {
   // https://code.google.com/p/wmii/issues/detail?id=266
   static bool wm_supports_active_window =
       GuessWindowManager() != WM_WMII &&
-      WmSupportsHint(x11::GetAtom("_NET_ACTIVE_WINDOW"));
+      connection_->WmSupportsHint(x11::GetAtom("_NET_ACTIVE_WINDOW"));
 
   x11::Time timestamp = X11EventSource::GetInstance()->GetTimestamp();
 
@@ -1113,7 +1112,7 @@ bool X11Window::CanSetDecorationInsets() const {
       return false;
     }
   }
-  return ui::WmSupportsHint(x11::GetAtom("_GTK_FRAME_EXTENTS"));
+  return connection_->WmSupportsHint(x11::GetAtom("_GTK_FRAME_EXTENTS"));
 }
 
 void X11Window::SetDecorationInsets(const gfx::Insets* insets_px) {
@@ -1677,12 +1676,12 @@ void X11Window::UpdateCursor(DragOperation negotiated_operation) {
 
 void X11Window::OnBeginForeignDrag(x11::Window window) {
   notified_enter_ = false;
-  source_window_events_ = std::make_unique<x11::XScopedEventSelector>(
-      window, x11::EventMask::PropertyChange);
+  source_window_events_ =
+      connection_->ScopedSelectEvent(window, x11::EventMask::PropertyChange);
 }
 
 void X11Window::OnEndForeignDrag() {
-  source_window_events_.reset();
+  source_window_events_.Reset();
 }
 
 void X11Window::OnBeforeDragLeave() {
@@ -1839,7 +1838,8 @@ void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties) {
     std::string atom_name =
         "_NET_SYSTEM_TRAY_S" +
         base::NumberToString(connection_->DefaultScreenId());
-    auto selection = connection_->GetSelectionOwner({x11::GetAtom(atom_name)});
+    auto selection =
+        connection_->GetSelectionOwner({x11::GetAtom(atom_name.c_str())});
     if (auto reply = selection.Sync()) {
       connection_->GetPropertyAs(
           reply->owner, x11::GetAtom("_NET_SYSTEM_TRAY_VISUAL"), &visual_id_);
@@ -2659,7 +2659,8 @@ void X11Window::NotifyBoundsChanged(bool origin_changed) {
 bool X11Window::InitializeAsStatusIcon() {
   std::string atom_name = "_NET_SYSTEM_TRAY_S" +
                           base::NumberToString(connection_->DefaultScreenId());
-  auto reply = connection_->GetSelectionOwner({x11::GetAtom(atom_name)}).Sync();
+  auto reply =
+      connection_->GetSelectionOwner({x11::GetAtom(atom_name.c_str())}).Sync();
   if (!reply || reply->owner == x11::Window::None) {
     return false;
   }

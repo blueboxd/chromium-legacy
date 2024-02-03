@@ -18,6 +18,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager.ThumbnailChangeListener;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -28,10 +29,8 @@ import org.chromium.chrome.browser.hub.HubLayoutDependencyHolder;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegateProvider;
@@ -56,21 +55,24 @@ import java.util.concurrent.Callable;
  * A {@link Layout} controller for the more complicated Chrome browser.  This is currently a
  * superset of {@link LayoutManagerImpl}.
  */
-public class LayoutManagerChrome
-        extends LayoutManagerImpl implements ChromeAccessibilityUtil.Observer {
+public class LayoutManagerChrome extends LayoutManagerImpl
+        implements ChromeAccessibilityUtil.Observer {
     // Layouts
     /** A {@link Layout} that should be used when the user is swiping sideways on the toolbar. */
     protected ToolbarSwipeLayout mToolbarSwipeLayout;
+
     /**
      * A {@link Layout} that should be used when the user is in the tab switcher or start surface
      * when the refactor flag isn't enabled.
      */
     protected Layout mOverviewLayout;
+
     /**
      * A {@link Layout} that should be used when the user is in the start surface when the refactor
      * flag is enabled.
      */
     protected Layout mStartSurfaceHomeLayout;
+
     /**
      * A {@link Layout} that should be used when the user is in the tab switcher when the refactor
      * flag is enabled.
@@ -88,11 +90,12 @@ public class LayoutManagerChrome
 
     /** Whether or not animations are enabled.  This can disable certain layouts or effects. */
     private boolean mEnableAnimations = true;
-    private boolean mCreatingNtp;
+
     private LayoutStateObserver mTabSwitcherFocusLayoutStateObserver;
 
     protected ObservableSupplier<TabContentManager> mTabContentManagerSupplier;
     private boolean mFinishNativeInitialization;
+    private TabContentManager mTabContentManager;
 
     // Lazy Tab Switcher Init
     private final Supplier<StartSurface> mStartSurfaceSupplier;
@@ -101,6 +104,8 @@ public class LayoutManagerChrome
     private final Callable<ViewGroup> mCreateTabSwitcherOrStartSurfaceCallable;
 
     private final HubLayoutDependencyHolder mHubLayoutDependencyHolder;
+    private final ThumbnailChangeListener mThumbnailChangeListener = (id) -> requestUpdate();
+    private final Callback<TabContentManager> mOnTabContentManager = this::onTabContentManager;
 
     // Theme Color
     private TopUiThemeColorProvider mTopUiThemeColorProvider;
@@ -140,31 +145,11 @@ public class LayoutManagerChrome
             Callable<ViewGroup> delayedTabSwitcherOrStartSurfaceCallable,
             HubLayoutDependencyHolder hubLayoutDependencyHolder) {
         super(host, contentContainer, tabContentManagerSupplier, topUiThemeColorProvider);
-
         // Build Event Filter Handlers
-        mToolbarSwipeHandler = createToolbarSwipeHandler(/* supportSwipeDown = */ true);
+        mToolbarSwipeHandler = createToolbarSwipeHandler(/* supportSwipeDown= */ true);
 
         mTabContentManagerSupplier = tabContentManagerSupplier;
-        mTabContentManagerSupplier.addObserver(
-                new Callback<TabContentManager>() {
-                    @Override
-                    public void onResult(TabContentManager manager) {
-                        manager.addThumbnailChangeListener((id) -> requestUpdate());
-                        if (mOverviewLayout != null) {
-                            mOverviewLayout.setTabContentManager(manager);
-                        }
-                        if (mTabSwitcherLayout != null) {
-                            mTabSwitcherLayout.setTabContentManager(manager);
-                        }
-                        if (mStartSurfaceHomeLayout != null) {
-                            mStartSurfaceHomeLayout.setTabContentManager(manager);
-                        }
-                        if (mHubLayout != null) {
-                            mHubLayout.setTabContentManager(manager);
-                        }
-                        tabContentManagerSupplier.removeObserver(this);
-                    }
-                });
+        mTabContentManagerSupplier.addObserver(mOnTabContentManager);
 
         mStartSurfaceSupplier = startSurfaceSupplier;
         mTabSwitcherSupplier = tabSwitcherSupplier;
@@ -242,8 +227,11 @@ public class LayoutManagerChrome
             }
         } else {
             assert startSurface != null;
-            createTabSwitcherAndStartSurfaceLayout(startSurface, browserControlsStateProvider,
-                    scrimCoordinator, tabSwitcherScrimAnchor);
+            createTabSwitcherAndStartSurfaceLayout(
+                    startSurface,
+                    browserControlsStateProvider,
+                    scrimCoordinator,
+                    tabSwitcherScrimAnchor);
         }
     }
 
@@ -255,9 +243,11 @@ public class LayoutManagerChrome
      * @param scrimCoordinator scrim coordinator for GTS
      * @param tabSwitcherScrimAnchor scrim anchor view for GTS
      */
-    protected void createTabSwitcherLayout(@NonNull TabSwitcher tabSwitcher,
+    protected void createTabSwitcherLayout(
+            @NonNull TabSwitcher tabSwitcher,
             BrowserControlsStateProvider browserControlsStateProvider,
-            ScrimCoordinator scrimCoordinator, ViewGroup tabSwitcherScrimAnchor) {
+            ScrimCoordinator scrimCoordinator,
+            ViewGroup tabSwitcherScrimAnchor) {
         assert mTabSwitcherLayout == null;
         boolean isRefactorEnabled =
                 ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mHost.getContext());
@@ -268,19 +258,27 @@ public class LayoutManagerChrome
 
         TabManagementDelegate tabManagementDelegate = TabManagementDelegateProvider.getDelegate();
 
-        mTabSwitcherLayout = tabManagementDelegate.createTabSwitcherLayout(context, this, this,
-                renderHost, browserControlsStateProvider, tabSwitcher, tabSwitcherScrimAnchor,
-                scrimCoordinator);
+        mTabSwitcherLayout =
+                tabManagementDelegate.createTabSwitcherLayout(
+                        context,
+                        this,
+                        this,
+                        renderHost,
+                        browserControlsStateProvider,
+                        tabSwitcher,
+                        tabSwitcherScrimAnchor,
+                        scrimCoordinator);
 
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mHost.getContext())) {
-            mTabSwitcherFocusLayoutStateObserver = new LayoutStateObserver() {
-                @Override
-                public void onFinishedShowing(int layoutType) {
-                    if (layoutType == LayoutType.TAB_SWITCHER) {
-                        tabSwitcher.getTabListDelegate().requestFocusOnCurrentTab();
-                    }
-                }
-            };
+            mTabSwitcherFocusLayoutStateObserver =
+                    new LayoutStateObserver() {
+                        @Override
+                        public void onFinishedShowing(int layoutType) {
+                            if (layoutType == LayoutType.TAB_SWITCHER) {
+                                tabSwitcher.getTabListDelegate().requestFocusOnCurrentTab();
+                            }
+                        }
+                    };
             addObserver(mTabSwitcherFocusLayoutStateObserver);
         }
         if (mTabContentManagerSupplier.hasValue()) {
@@ -331,8 +329,9 @@ public class LayoutManagerChrome
         Context context = mHost.getContext();
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
 
-        mStartSurfaceHomeLayout = StartSurfaceDelegate.createStartSurfaceHomeLayout(
-                context, this, renderHost, startSurface);
+        mStartSurfaceHomeLayout =
+                StartSurfaceDelegate.createStartSurfaceHomeLayout(
+                        context, this, renderHost, startSurface);
 
         if (mTabContentManagerSupplier.hasValue()) {
             mStartSurfaceHomeLayout.setTabContentManager(mTabContentManagerSupplier.get());
@@ -354,9 +353,11 @@ public class LayoutManagerChrome
      * @param scrimCoordinator scrim coordinator for GTS
      * @param tabSwitcherScrimAnchor scrim anchor view for GTS
      */
-    protected void createTabSwitcherAndStartSurfaceLayout(@NonNull StartSurface startSurface,
+    protected void createTabSwitcherAndStartSurfaceLayout(
+            @NonNull StartSurface startSurface,
             BrowserControlsStateProvider browserControlsStateProvider,
-            ScrimCoordinator scrimCoordinator, ViewGroup tabSwitcherScrimAnchor) {
+            ScrimCoordinator scrimCoordinator,
+            ViewGroup tabSwitcherScrimAnchor) {
         assert mOverviewLayout == null;
         boolean isRefactorEnabled =
                 ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mHost.getContext());
@@ -365,19 +366,26 @@ public class LayoutManagerChrome
         Context context = mHost.getContext();
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
 
-        mOverviewLayout = StartSurfaceDelegate.createTabSwitcherAndStartSurfaceLayout(context, this,
-                renderHost, browserControlsStateProvider, startSurface, tabSwitcherScrimAnchor,
-                scrimCoordinator);
+        mOverviewLayout =
+                StartSurfaceDelegate.createTabSwitcherAndStartSurfaceLayout(
+                        context,
+                        this,
+                        renderHost,
+                        browserControlsStateProvider,
+                        startSurface,
+                        tabSwitcherScrimAnchor,
+                        scrimCoordinator);
 
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mHost.getContext())) {
-            mTabSwitcherFocusLayoutStateObserver = new LayoutStateObserver() {
-                @Override
-                public void onFinishedShowing(int layoutType) {
-                    if (layoutType == LayoutType.TAB_SWITCHER) {
-                        startSurface.getGridTabListDelegate().requestFocusOnCurrentTab();
-                    }
-                }
-            };
+            mTabSwitcherFocusLayoutStateObserver =
+                    new LayoutStateObserver() {
+                        @Override
+                        public void onFinishedShowing(int layoutType) {
+                            if (layoutType == LayoutType.TAB_SWITCHER) {
+                                startSurface.getGridTabListDelegate().requestFocusOnCurrentTab();
+                            }
+                        }
+                    };
             addObserver(mTabSwitcherFocusLayoutStateObserver);
         }
 
@@ -393,9 +401,7 @@ public class LayoutManagerChrome
         }
     }
 
-    /**
-     * @return A list of virtual views representing compositor rendered views.
-     */
+    /** Returns a list of virtual views representing compositor rendered views. */
     @Override
     public void getVirtualViews(List<VirtualView> views) {
         // TODO(dtrainor): Investigate order.
@@ -405,9 +411,7 @@ public class LayoutManagerChrome
         }
     }
 
-    /**
-     * @return The {@link SwipeHandler} responsible for processing swipe events for the toolbar.
-     */
+    /** Returns the {@link SwipeHandler} responsible for processing swipe events for the toolbar. */
     @Override
     public SwipeHandler getToolbarSwipeHandler() {
         return mToolbarSwipeHandler;
@@ -419,8 +423,11 @@ public class LayoutManagerChrome
     }
 
     @Override
-    public void init(TabModelSelector selector, TabCreatorManager creator,
-            ControlContainer controlContainer, DynamicResourceLoader dynamicResourceLoader,
+    public void init(
+            TabModelSelector selector,
+            TabCreatorManager creator,
+            ControlContainer controlContainer,
+            DynamicResourceLoader dynamicResourceLoader,
             TopUiThemeColorProvider topUiColorProvider) {
         Context context = mHost.getContext();
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
@@ -428,8 +435,14 @@ public class LayoutManagerChrome
                 mHost.getBrowserControlsManager();
 
         // Build Layouts
-        mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost,
-                browserControlsStateProvider, this, topUiColorProvider);
+        mToolbarSwipeLayout =
+                new ToolbarSwipeLayout(
+                        context,
+                        this,
+                        renderHost,
+                        browserControlsStateProvider,
+                        this,
+                        topUiColorProvider);
 
         super.init(selector, creator, controlContainer, dynamicResourceLoader, topUiColorProvider);
 
@@ -506,8 +519,11 @@ public class LayoutManagerChrome
             } else {
                 final StartSurface startSurface = mStartSurfaceSupplier.get();
                 assert startSurface != null;
-                createTabSwitcherAndStartSurfaceLayout(startSurface,
-                        mHost.getBrowserControlsManager(), mScrimCoordinator, containerView);
+                createTabSwitcherAndStartSurfaceLayout(
+                        startSurface,
+                        mHost.getBrowserControlsManager(),
+                        mScrimCoordinator,
+                        containerView);
             }
 
             if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mHost.getContext())) {
@@ -543,7 +559,13 @@ public class LayoutManagerChrome
         super.destroy();
 
         if (mTabContentManagerSupplier != null) {
+            mTabContentManagerSupplier.removeObserver(mOnTabContentManager);
             mTabContentManagerSupplier = null;
+        }
+
+        if (mTabContentManager != null) {
+            mTabContentManager.removeThumbnailChangeListener(mThumbnailChangeListener);
+            mTabContentManager = null;
         }
 
         if (mTabSwitcherFocusLayoutStateObserver != null) {
@@ -599,12 +621,6 @@ public class LayoutManagerChrome
     }
 
     @Override
-    protected void startShowing(Layout layout, boolean animate) {
-        mCreatingNtp = false;
-        super.startShowing(layout, animate);
-    }
-
-    @Override
     public void doneHiding() {
         if (getNextLayout() == getDefaultLayout()) {
             Tab tab = getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null;
@@ -615,19 +631,12 @@ public class LayoutManagerChrome
     }
 
     @Override
-    protected void tabCreated(int id, int sourceId, @TabLaunchType int launchType,
-            boolean incognito, boolean willBeSelected, float originX, float originY) {
-        Tab newTab = TabModelUtils.getTabById(getTabModelSelector().getModel(incognito), id);
-        mCreatingNtp = newTab != null && newTab.isNativePage();
-        super.tabCreated(id, sourceId, launchType, incognito, willBeSelected, originX, originY);
-    }
-
-    @Override
     protected void tabClosed(int id, int nextId, boolean incognito, boolean tabRemoved) {
         boolean showOverview = nextId == Tab.INVALID_TAB_ID;
         boolean animate = !tabRemoved && animationsEnabled();
         if (getActiveLayoutType() != LayoutType.TAB_SWITCHER
-                && getActiveLayoutType() != LayoutType.START_SURFACE && showOverview
+                && getActiveLayoutType() != LayoutType.START_SURFACE
+                && showOverview
                 && getNextLayoutType() != LayoutType.TAB_SWITCHER) {
             showLayout(LayoutType.TAB_SWITCHER, animate);
         }
@@ -641,9 +650,7 @@ public class LayoutManagerChrome
         super.onTabsAllClosing(incognito);
     }
 
-    /**
-     * @return The overview layout {@link Layout} managed by this class.
-     */
+    /** Returns the overview layout {@link Layout} managed by this class. */
     @VisibleForTesting
     public Layout getOverviewLayout() {
         return mOverviewLayout;
@@ -662,9 +669,7 @@ public class LayoutManagerChrome
         return mTabSwitcherLayout;
     }
 
-    /**
-     * Returns the {@link StripLayoutHelperManager} managed by this class.
-     */
+    /** Returns the {@link StripLayoutHelperManager} managed by this class. */
     public StripLayoutHelperManager getStripLayoutHelperManager() {
         return null;
     }
@@ -677,9 +682,7 @@ public class LayoutManagerChrome
         mEnableAnimations = enabled;
     }
 
-    /**
-     * @return Whether animations should be done for model changes.
-     */
+    /** Returns whether animations should be done for model changes. */
     @VisibleForTesting
     public boolean animationsEnabled() {
         return mEnableAnimations;
@@ -692,9 +695,7 @@ public class LayoutManagerChrome
         setEnableAnimations(DeviceClassManager.enableAnimations());
     }
 
-    /**
-     * A {@link SwipeHandler} meant to respond to edge events for the toolbar.
-     */
+    /** A {@link SwipeHandler} meant to respond to edge events for the toolbar. */
     protected class ToolbarSwipeHandler implements SwipeHandler {
         /** The scroll direction of the current gesture. */
         private @ScrollDirection int mScrollDirection;
@@ -736,7 +737,8 @@ public class LayoutManagerChrome
             mScrollDirection = computeScrollDirection(dx, dy);
             if (mScrollDirection == ScrollDirection.UNKNOWN) return;
 
-            if (mSupportSwipeDown && isTabSwitcherReady()
+            if (mSupportSwipeDown
+                    && isTabSwitcherReady()
                     && mScrollDirection == ScrollDirection.DOWN) {
                 RecordUserAction.record("MobileToolbarSwipeOpenStackView");
                 showLayout(LayoutType.TAB_SWITCHER, true);
@@ -755,8 +757,13 @@ public class LayoutManagerChrome
         }
 
         @Override
-        public void onFling(@ScrollDirection int direction, MotionEvent current, float tx, float ty,
-                float vx, float vy) {
+        public void onFling(
+                @ScrollDirection int direction,
+                MotionEvent current,
+                float tx,
+                float ty,
+                float vx,
+                float vy) {
             if (mToolbarSwipeLayout == null || !mToolbarSwipeLayout.isActive()) return;
             float x = current.getRawX() * mPxToDp;
             float y = current.getRawX() * mPxToDp;
@@ -774,8 +781,7 @@ public class LayoutManagerChrome
          * @return The direction of the scroll.
          */
         private @ScrollDirection int computeScrollDirection(float dx, float dy) {
-            @ScrollDirection
-            int direction = ScrollDirection.UNKNOWN;
+            @ScrollDirection int direction = ScrollDirection.UNKNOWN;
 
             // Figure out the angle of the swipe. Invert 'dy' so 90 degrees is up.
             double swipeAngle = (Math.toDegrees(Math.atan2(-dy, dx)) + 360) % 360;
@@ -794,7 +800,8 @@ public class LayoutManagerChrome
         @Override
         public boolean isSwipeEnabled(@ScrollDirection int direction) {
             FullscreenManager manager = mHost.getFullscreenManager();
-            if (getActiveLayout() != mStaticLayout || !DeviceClassManager.enableToolbarSwipe()
+            if (getActiveLayout() != mStaticLayout
+                    || !DeviceClassManager.enableToolbarSwipe()
                     || (manager != null && manager.getPersistentFullscreenMode())) {
                 return false;
             }
@@ -806,9 +813,7 @@ public class LayoutManagerChrome
             return direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT;
         }
 
-        /**
-         * @return Whether or not we are ready to show the GTS layout.
-         */
+        /** Returns whether or not we are ready to show the GTS layout. */
         private boolean isTabSwitcherReady() {
             // On Tablets, or with Start Surface Refactor, attempting to show the GTS while it's
             // null will trigger its creation.
@@ -839,5 +844,26 @@ public class LayoutManagerChrome
 
         mToolbarSwipeLayout.setSwitchToTab(tab.getId(), lastTabId);
         showLayout(LayoutType.TOOLBAR_SWIPE, false);
+    }
+
+    private void onTabContentManager(TabContentManager tabContentManager) {
+        assert mTabContentManager == null;
+        mTabContentManager = tabContentManager;
+        mTabContentManager.addThumbnailChangeListener(mThumbnailChangeListener);
+        if (mOverviewLayout != null) {
+            mOverviewLayout.setTabContentManager(mTabContentManager);
+        }
+        if (mTabSwitcherLayout != null) {
+            mTabSwitcherLayout.setTabContentManager(mTabContentManager);
+        }
+        if (mStartSurfaceHomeLayout != null) {
+            mStartSurfaceHomeLayout.setTabContentManager(mTabContentManager);
+        }
+        if (mHubLayout != null) {
+            mHubLayout.setTabContentManager(mTabContentManager);
+        }
+        if (mTabContentManagerSupplier != null) {
+            mTabContentManagerSupplier.removeObserver(mOnTabContentManager);
+        }
     }
 }

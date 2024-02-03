@@ -26,7 +26,6 @@
 #include "ash/wm/desks/desks_test_api.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
@@ -41,7 +40,6 @@
 #include "ash/wm/desks/templates/saved_desk_save_desk_button_container.h"
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
-#include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_focus_cycler.h"
@@ -116,12 +114,6 @@ class SavedDeskTest : public OverviewTestBase,
                       std::move(restore_data));
   }
 
-  // Adds a captured desk entry to the desks model.
-  void AddEntry(std::unique_ptr<DeskTemplate> saved_desk) {
-    AddSavedDeskEntry(ash_test_helper()->saved_desk_test_helper()->desk_model(),
-                      std::move(saved_desk));
-  }
-
   // Creates an app_restore::RestoreData object with `num_windows.size()` apps,
   // where the ith app has `num_windows[i]` windows. The windows
   // activation index is its creation order.
@@ -143,7 +135,7 @@ class SavedDeskTest : public OverviewTestBase,
 
         app_restore::WindowInfo window_info;
         window_info.activation_index =
-            absl::make_optional<int32_t>(activation_index_counter++);
+            std::make_optional<int32_t>(activation_index_counter++);
 
         restore_data->ModifyWindowInfo(app_id, window_id, window_info);
       }
@@ -387,9 +379,7 @@ class SavedDeskTest : public OverviewTestBase,
   }
 
   void SetDisableAppIdCheckForSavedDesks(bool disabled) {
-    Shell::Get()
-        ->overview_controller()
-        ->set_disable_app_id_check_for_saved_desks(disabled);
+    OverviewController::Get()->disable_app_id_check_for_saved_desks_ = disabled;
   }
 
   SkBitmap GetBitmapWithInnerRoundedRect(gfx::Size size,
@@ -1418,7 +1408,7 @@ TEST_F(SavedDeskTest, IconsOrderWithInactiveTabs) {
   app_launch_info_1->urls = kTabs1;
   restore_data->AddAppLaunchInfo(std::move(app_launch_info_1));
   app_restore::WindowInfo window_info_1;
-  window_info_1.activation_index = absl::make_optional<int32_t>(kWindowId1);
+  window_info_1.activation_index = std::make_optional<int32_t>(kWindowId1);
   restore_data->ModifyWindowInfo(kAppId1, kWindowId1, window_info_1);
 
   // Add app launch info for the second browser instance.
@@ -1428,7 +1418,7 @@ TEST_F(SavedDeskTest, IconsOrderWithInactiveTabs) {
   app_launch_info_2->urls = kTabs2;
   restore_data->AddAppLaunchInfo(std::move(app_launch_info_2));
   app_restore::WindowInfo window_info_2;
-  window_info_2.activation_index = absl::make_optional<int32_t>(kWindowId2);
+  window_info_2.activation_index = std::make_optional<int32_t>(kWindowId2);
   restore_data->ModifyWindowInfo(kAppId2, kWindowId2, window_info_2);
 
   AddEntry(base::Uuid::GenerateRandomV4(), "template_1", base::Time::Now(),
@@ -1478,7 +1468,7 @@ TEST_F(SavedDeskTest, IdenticalURL) {
   app_launch_info->urls = kTabs;
   restore_data->AddAppLaunchInfo(std::move(app_launch_info));
   app_restore::WindowInfo window_info;
-  window_info.activation_index = absl::make_optional<int32_t>(kWindowId);
+  window_info.activation_index = std::make_optional<int32_t>(kWindowId);
   restore_data->ModifyWindowInfo(kAppId, kWindowId, window_info);
 
   AddEntry(base::Uuid::GenerateRandomV4(), "template", base::Time::Now(),
@@ -3108,7 +3098,7 @@ TEST_F(SavedDeskTest, SaveDeskRecordsWindowAndTabCountMetrics) {
   app_launch_info_1->urls = kTabs1;
   restore_data->AddAppLaunchInfo(std::move(app_launch_info_1));
   app_restore::WindowInfo window_info_1;
-  window_info_1.activation_index = absl::make_optional<int32_t>(kWindowId1);
+  window_info_1.activation_index = std::make_optional<int32_t>(kWindowId1);
   restore_data->ModifyWindowInfo(kAppId1, kWindowId1, window_info_1);
 
   // Add app launch info for the second browser instance.
@@ -3118,7 +3108,7 @@ TEST_F(SavedDeskTest, SaveDeskRecordsWindowAndTabCountMetrics) {
   app_launch_info_2->urls = kTabs2;
   restore_data->AddAppLaunchInfo(std::move(app_launch_info_2));
   app_restore::WindowInfo window_info_2;
-  window_info_2.activation_index = absl::make_optional<int32_t>(kWindowId2);
+  window_info_2.activation_index = std::make_optional<int32_t>(kWindowId2);
   restore_data->ModifyWindowInfo(kAppId2, kWindowId2, window_info_2);
 
   auto desk_template = std::make_unique<DeskTemplate>(
@@ -4695,4 +4685,32 @@ TEST_F(SavedDeskTest, SaveDeskFilterByAccountID) {
       QueryRestoreData(*GetAllEntries()[0], {}, win_2_id);
   EXPECT_FALSE(app_restore_data);
 }
+
+// Tests that if we tab while the saved desks library is fading out, there is no
+// crash. Regression test for http://b/302708219.
+TEST_F(SavedDeskTest, TabbingDuringExitAnimation) {
+  ui::ScopedAnimationDurationScaleMode scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Ensure we have a desk saved so we can go into the library.
+  AddEntry(base::Uuid::GenerateRandomV4(), "template_1", base::Time::Now(),
+           DeskTemplateType::kSaveAndRecall);
+
+  ToggleOverview();
+  WaitForOverviewEnterAnimation();
+
+  // Enter the desks library.
+  ShowSavedDeskLibrary();
+  WaitForSavedDeskLibrary();
+
+  // Exit overview. This will fade out the saved desks library.
+  ToggleOverview();
+
+  // Try tab focus traversal while the animation is in progress. There should be
+  // no crash.
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+}
+
 }  // namespace ash

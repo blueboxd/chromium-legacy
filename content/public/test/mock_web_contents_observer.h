@@ -87,11 +87,6 @@ class MockWebContentsObserver : public WebContentsObserver {
               DidFinishNavigation,
               (NavigationHandle* navigation_handle),
               (override));
-  MOCK_METHOD(void,
-              DidActivatePortal,
-              (WebContents* predecessor_web_contents,
-               base::TimeTicks activation_time),
-              (override));
   MOCK_METHOD(void, DidStartLoading, (), (override));
   MOCK_METHOD(void, DidStopLoading, (), (override));
   MOCK_METHOD(void, LoadProgressChanged, (double progress), (override));
@@ -249,7 +244,7 @@ class MockWebContentsObserver : public WebContentsObserver {
   MOCK_METHOD(void, DidUpdateAudioMutingState, (bool muted), (override));
   MOCK_METHOD(void,
               DidToggleFullscreenModeForTab,
-              (bool entered_fullscreen),
+              (bool entered_fullscreen, bool will_cause_resize),
               (override));
   MOCK_METHOD(void, DidAcquireFullscreen, (RenderFrameHost* rfh), (override));
   MOCK_METHOD(void,

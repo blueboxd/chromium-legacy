@@ -66,7 +66,7 @@
 <translation id="4118525110028899586">రికార్డింగ్‌ను పాజ్ చేయి</translation>
 <translation id="4121305183798804752">డాక్యుమెంట్ గుర్తించబడింది</translation>
 <translation id="414641094616694804">ఈ కెమెరా రిజల్యూషన్‌ను మార్చలేదు</translation>
-<translation id="4176463684765177261">ఆపివేయబడింది</translation>
+<translation id="4176463684765177261">డిజేబుల్ చేయబడింది</translation>
 <translation id="4269820728363426813">లింక్ అడ్రస్‌ను కాపీ చేయండి</translation>
 <translation id="428234092390943511">పేజీ థంబ్‌నెయిల్</translation>
 <translation id="4349714250734879769">Chrome ద్వారా ఫ్రేమ్‌లను స్కేల్ చేయండి</translation>
@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">సేవ్ చేయండి</translation>
 <translation id="5320594929574852403">ఎడమ వైపునకు కదులుతోంది</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
+<translation id="539541037630043848"><ph name="HOSTNAME" />‌ను తెరవండి</translation>
 <translation id="5662366948659129155"><ph name="COUNT" />వ పేజీని స్కాన్ చేస్తోంది</translation>
 <translation id="5671277269877808209">చతురస్రం</translation>
 <translation id="574392208103952083">మధ్యస్థం</translation>
@@ -163,6 +164,7 @@
 <translation id="8870695351537079478">రికార్డింగ్‌ను ప్రారంభించడం సాధ్యం కాలేదు</translation>
 <translation id="8880167521484863515">4:3</translation>
 <translation id="8903921497873541725">దగ్గరికి జూమ్ చేయి</translation>
+<translation id="8926890870105777777">"<ph name="WIFINAME" />" నెట్‌వర్క్‌లో చేరండి</translation>
 <translation id="9045010116236796332">డాక్యుమెంట్‌లోని అన్ని అంచులు ఫ్రేమ్ లోపల వచ్చేటట్టుగా ఉంచండి</translation>
 <translation id="9045155556724273246">10 సెకన్లు</translation>
 <translation id="906331135292332864">ఇమేజ్‌ను ప్రాసెస్ చేస్తోంది...</translation>

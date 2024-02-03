@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
@@ -42,6 +43,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.privacy_sandbox.TrackingProtectionNoticeController.NoticeControllerEvent;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -126,6 +128,10 @@ public final class TrackingProtectionNoticeTest {
     @Test
     @SmallTest
     public void testNoticeShownOnlyOnSecurePage() {
+        FeatureList.TestValues testValues = new FeatureList.TestValues();
+        testValues.addFeatureFlagOverride(
+                ChromeFeatureList.TRACKING_PROTECTION_NOTICE_REQUEST_TRACKING, false);
+        FeatureList.setTestValues(testValues);
         var notShownWatcher =
                 HistogramWatcher.newBuilder()
                         .expectIntRecords(
@@ -156,6 +162,30 @@ public final class TrackingProtectionNoticeTest {
 
         setConnectionSecurityLevel(ConnectionSecurityLevel.SECURE);
         sActivityTestRule.loadUrl(UrlConstants.GOOGLE_URL);
+        assertNoticeRequestedActionIsRecorded(false);
+        onView(withId(R.id.message_banner)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    public void testNoticeRequestSentOnSecurePage() {
+        FeatureList.TestValues testValues = new FeatureList.TestValues();
+        testValues.addFeatureFlagOverride(
+                ChromeFeatureList.TRACKING_PROTECTION_NOTICE_REQUEST_TRACKING, true);
+        FeatureList.setTestValues(testValues);
+
+        mFakeTrackingProtectionBridge.setRequiredNotice(NoticeType.ONBOARDING);
+
+        sActivityTestRule.startMainActivityOnBlankPage();
+        onView(withId(R.id.message_banner)).check(doesNotExist());
+
+        sActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        onView(withId(R.id.message_banner)).check(doesNotExist());
+        assertNoticeRequestedActionIsRecorded(false);
+
+        setConnectionSecurityLevel(ConnectionSecurityLevel.SECURE);
+        sActivityTestRule.loadUrl(UrlConstants.GOOGLE_URL);
+        assertNoticeRequestedActionIsRecorded(true);
         onView(withId(R.id.message_banner)).check(matches(isDisplayed()));
     }
 
@@ -289,11 +319,49 @@ public final class TrackingProtectionNoticeTest {
         onView(withId(R.id.message_banner)).check(doesNotExist());
     }
 
+    @Test
+    @SmallTest
+    public void testSilentOnboardingNoticeShown() {
+        mFakeTrackingProtectionBridge.setRequiredNotice(NoticeType.SILENT_ONBOARDING);
+        setConnectionSecurityLevel(ConnectionSecurityLevel.SECURE);
+
+        // Show the notice.
+        sActivityTestRule.startMainActivityWithURL(UrlConstants.GOOGLE_URL);
+
+        assertNoticeShownActionIsRecorded();
+    }
+
+    @Test
+    @SmallTest
+    public void testSilentOnboardingNoticeShownOnlyOnSecurePage() {
+        mFakeTrackingProtectionBridge.setRequiredNotice(NoticeType.SILENT_ONBOARDING);
+        sActivityTestRule.startMainActivityOnBlankPage();
+
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords(
+                                NOTICE_CONTROLLER_EVENT_HISTOGRAM,
+                                NoticeControllerEvent.NAVIGATION_FINISHED,
+                                NoticeControllerEvent.NON_SECURE_CONNECTION,
+                                NoticeControllerEvent.NOTICE_REQUESTED_BUT_NOT_SHOWN)
+                        .build();
+        sActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        histogramWatcher.assertExpected();
+
+        setConnectionSecurityLevel(ConnectionSecurityLevel.SECURE);
+        sActivityTestRule.loadUrl(UrlConstants.GOOGLE_URL);
+        assertNoticeShownActionIsRecorded();
+    }
+
     private void assertLastAction(int action) {
         assertEquals(
                 "Last notice action",
                 action,
                 (int) mFakeTrackingProtectionBridge.getLastNoticeAction());
+    }
+
+    private void assertNoticeRequestedActionIsRecorded(boolean noticeRequested) {
+        assertEquals(mFakeTrackingProtectionBridge.wasNoticeRequested(), noticeRequested);
     }
 
     private void assertNoticeShownActionIsRecorded() {

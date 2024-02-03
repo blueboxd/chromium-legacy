@@ -10,7 +10,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "components/password_manager/core/browser/sync/password_account_storage_settings_watcher.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/service/model_type_controller.h"
@@ -50,7 +49,6 @@ class CredentialModelTypeController : public syncer::ModelTypeController,
   void LoadModels(const syncer::ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
   void Stop(syncer::SyncStopMetadataFate fate, StopCallback callback) override;
-  PreconditionState GetPreconditionState() const override;
   bool ShouldRunInTransportOnlyMode() const override;
 
   // SyncServiceObserver overrides.
@@ -63,13 +61,9 @@ class CredentialModelTypeController : public syncer::ModelTypeController,
   void OnAccountsCookieDeletedByUserAction() override;
 
  private:
-  void OnOptInStateMaybeChanged();
-
   const raw_ptr<PrefService> pref_service_;
   const raw_ptr<signin::IdentityManager> identity_manager_;
   const raw_ptr<syncer::SyncService> sync_service_;
-
-  PasswordAccountStorageSettingsWatcher account_storage_settings_watcher_;
 
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>

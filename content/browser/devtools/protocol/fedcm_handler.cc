@@ -27,6 +27,8 @@ FedCm::DialogType ConvertDialogType(
       return FedCm::DialogTypeEnum::AutoReauthn;
     case content::FederatedAuthRequestImpl::kConfirmIdpLogin:
       return FedCm::DialogTypeEnum::ConfirmIdpLogin;
+    case content::FederatedAuthRequestImpl::kError:
+      return FedCm::DialogTypeEnum::Error;
   }
 }
 }  // namespace
@@ -65,7 +67,7 @@ DispatchResponse FedCmHandler::Enable(Maybe<bool> in_disableRejectionDelay) {
   // rejection delay.
   if (!was_enabled && auth_request &&
       auth_request->GetDialogType() != FederatedAuthRequestImpl::kNone) {
-    OnDialogShown();
+    DidShowDialog();
   }
 
   return DispatchResponse::Success();
@@ -76,7 +78,7 @@ DispatchResponse FedCmHandler::Disable() {
   return DispatchResponse::Success();
 }
 
-void FedCmHandler::OnDialogShown() {
+void FedCmHandler::DidShowDialog() {
   DCHECK(frontend_);
   if (!enabled_) {
     return;
@@ -155,6 +157,14 @@ void FedCmHandler::OnDialogShown() {
                          dialog->GetTitle(), std::move(maybe_subtitle));
 }
 
+void FedCmHandler::DidCloseDialog() {
+  CHECK(frontend_);
+  if (!enabled_) {
+    return;
+  }
+  frontend_->DialogClosed(dialog_id_);
+}
+
 DispatchResponse FedCmHandler::SelectAccount(const String& in_dialogId,
                                              int in_accountIndex) {
   if (in_dialogId != dialog_id_) {
@@ -197,7 +207,6 @@ DispatchResponse FedCmHandler::ClickDialogButton(
   }
 
   FederatedAuthRequestImpl::DialogType type = auth_request->GetDialogType();
-  // TODO(crbug.com/1499341): Add support for clicking error dialog buttons.
   if (in_dialogButton == FedCm::DialogButtonEnum::ConfirmIdpLoginContinue) {
     if (type != FederatedAuthRequestImpl::kConfirmIdpLogin) {
       return DispatchResponse::ServerError(
@@ -205,6 +214,26 @@ DispatchResponse FedCmHandler::ClickDialogButton(
           "confirm IDP login dialog is shown");
     }
     auth_request->AcceptConfirmIdpLoginDialogForDevtools();
+    return DispatchResponse::Success();
+  } else if (in_dialogButton == FedCm::DialogButtonEnum::ErrorGotIt) {
+    if (type != FederatedAuthRequestImpl::kError) {
+      return DispatchResponse::ServerError(
+          "clickDialogButton called with ErrorGotIt while no error dialog is "
+          "shown");
+    }
+    auth_request->ClickErrorDialogGotItForDevtools();
+    return DispatchResponse::Success();
+  } else if (in_dialogButton == FedCm::DialogButtonEnum::ErrorMoreDetails) {
+    if (type != FederatedAuthRequestImpl::kError) {
+      return DispatchResponse::ServerError(
+          "clickDialogButton called with ErrorMoreDetails while no error "
+          "dialog is shown");
+    } else if (!auth_request->HasMoreDetailsButtonForDevtools()) {
+      return DispatchResponse::ServerError(
+          "clickDialogButton called with ErrorMoreDetails but more details "
+          "button is not shown");
+    }
+    auth_request->ClickErrorDialogMoreDetailsForDevtools();
     return DispatchResponse::Success();
   }
   return DispatchResponse::InvalidParams("Invalid dialog button");
@@ -226,6 +255,10 @@ DispatchResponse FedCmHandler::DismissDialog(const String& in_dialogId,
   FederatedAuthRequestImpl::DialogType type = auth_request->GetDialogType();
   if (type == FederatedAuthRequestImpl::kConfirmIdpLogin) {
     auth_request->DismissConfirmIdpLoginDialogForDevtools();
+    return DispatchResponse::Success();
+  }
+  if (type == FederatedAuthRequestImpl::kError) {
+    auth_request->DismissErrorDialogForDevtools();
     return DispatchResponse::Success();
   }
   const auto* idp_data = GetIdentityProviderData(auth_request);

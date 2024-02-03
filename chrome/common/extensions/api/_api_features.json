@@ -359,6 +359,15 @@
     "dependencies": ["permission:documentScan"],
     "contexts": ["blessed_extension"]
   },
+  "documentScan.getScannerList": {
+    "channel": "dev"
+  },
+  "documentScan.openScanner": {
+    "channel": "dev"
+  },
+  "documentScan.closeScanner": {
+    "channel": "dev"
+  },
   "dom": {
     "channel": "stable",
     "contexts": ["blessed_extension", "content_script"]
@@ -816,15 +825,6 @@
     "dependencies": ["permission:sidePanel"],
     "contexts": ["blessed_extension"]
   },
-  "sidePanel.open": [{
-    "feature_flag": "ApiSidePanelOpen"
-  }, {
-    "allowlist": [
-      // Note: this list is also enforced in the sidePanel.open() implementation
-      // as a sanity check.
-      "3CEFE7915CDBD48D769E214807ACAA51581724A0"  // https://crbug.com/1446731
-    ]
-  }],
   "smartCardProviderPrivate": {
     "dependencies": ["permission:smartCardProviderPrivate"],
     "contexts": ["blessed_extension"]

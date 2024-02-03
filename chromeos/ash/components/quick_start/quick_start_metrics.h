@@ -104,7 +104,9 @@ class QuickStartMetrics {
     kNotifySourceOfUpdate = 3,
     kGetInfo = 4,
     kAssertion = 5,
-    kMaxValue = kAssertion,
+    kBootstrapStateCancel = 6,
+    kBootstrapStateComplete = 7,
+    kMaxValue = kBootstrapStateComplete,
   };
 
   // This enum is tied directly to a UMA enum defined in

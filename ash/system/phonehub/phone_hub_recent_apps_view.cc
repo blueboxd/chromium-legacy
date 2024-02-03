@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <utility>
 
 #include "ash/constants/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -158,12 +159,12 @@ PhoneHubRecentAppsView::HeaderView::HeaderView(
 
   if (features::IsEcheNetworkConnectionStateEnabled()) {
     error_button_ =
-        AddChildView(std::make_unique<views::ImageButton>(callback));
-    gfx::ImageSkia image = gfx::CreateVectorIcon(
+        AddChildView(std::make_unique<views::ImageButton>(std::move(callback)));
+    ui::ImageModel image = ui::ImageModel::FromVectorIcon(
         kPhoneHubEcheErrorStatusIcon,
         AshColorProvider::Get()->GetContentLayerColor(
             AshColorProvider::ContentLayerType::kIconColorWarning));
-    error_button_->SetImage(views::Button::STATE_NORMAL, image);
+    error_button_->SetImageModel(views::Button::STATE_NORMAL, image);
     views::FocusRing::Get(error_button_)
         ->SetColorId(static_cast<ui::ColorId>(cros_tokens::kCrosSysFocusRing));
     views::InstallCircleHighlightPathGenerator(error_button_);
@@ -566,9 +567,10 @@ std::unique_ptr<views::View> PhoneHubRecentAppsView::GenerateMoreAppsButton() {
       kPhoneHubFullAppsListIcon,
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kButtonIconColor));
-  more_apps_button->SetImage(
+  more_apps_button->SetImageModel(
       views::Button::STATE_NORMAL,
-      gfx::ImageSkiaOperations::ExtractSubset(image, kMoreAppsButtonArea));
+      ui::ImageModel::FromImageSkia(
+          gfx::ImageSkiaOperations::ExtractSubset(image, kMoreAppsButtonArea)));
   more_apps_button->SetBackground(views::CreateRoundedRectBackground(
       AshColorProvider::Get()->GetControlsLayerColor(
           AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive),

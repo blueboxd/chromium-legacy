@@ -23,6 +23,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
+#include "base/test/test_future.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_ash.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -896,7 +897,7 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
   ChromeAppListItem* item = GetChromeAppListItem(kTestPackageId);
   ASSERT_TRUE(item);
   EXPECT_EQ(item->app_status(), ash::AppStatus::kPending);
-  ASSERT_EQ(item->name(), "waiting…");
+  ASSERT_EQ(item->name(), "Waiting…");
   ASSERT_EQ(item->accessible_name(), "Long Name, waiting");
 
   // Update the promise app in the promise app registry cache.
@@ -907,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
 
   // Promise app item should have updated fields.
   EXPECT_EQ(item->app_status(), ash::AppStatus::kInstalling);
-  EXPECT_EQ(item->name(), "installing…");
+  EXPECT_EQ(item->name(), "Installing…");
   ASSERT_EQ(item->accessible_name(), "Long Name, installing");
 }
 
@@ -1002,6 +1003,26 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
   EXPECT_TRUE(IsItemPinned(app_id));
 }
 
+IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest, ContextMenu) {
+  apps::PromiseAppPtr promise_app =
+      std::make_unique<PromiseApp>(kTestPackageId);
+  promise_app->should_show = true;
+  cache()->OnPromiseApp(std::move(promise_app));
+
+  // Promise app item should exist in the model.
+  ChromeAppListItem* item = GetChromeAppListItem(kTestPackageId);
+  ASSERT_TRUE(item);
+  base::test::TestFuture<std::unique_ptr<ui::SimpleMenuModel>> future;
+  item->GetContextMenuModel(ash::AppListItemContext::kNone,
+                            future.GetCallback());
+  std::unique_ptr<ui::SimpleMenuModel> menu_model = future.Take();
+
+  // The context menu should only have the option to pin to shelf.
+  EXPECT_EQ(menu_model->GetItemCount(), 1u);
+  EXPECT_EQ(menu_model->GetTypeAt(0), ui::MenuModel::ItemType::TYPE_COMMAND);
+  EXPECT_EQ(menu_model->GetCommandIdAt(0), ash::CommandId::TOGGLE_PIN);
+}
+
 // Test the full promise icon lifecycle where promise icon changes are triggered
 // by ARC mojom updates.
 IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
@@ -1047,7 +1068,7 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
   // icon in the positions indicated by the sync data.
   ash::AppListItem* launcher_item = GetAppListItem(package_id.ToString());
   ASSERT_TRUE(launcher_item);
-  EXPECT_EQ(launcher_item->name(), "waiting…");
+  EXPECT_EQ(launcher_item->name(), "Waiting…");
   EXPECT_EQ(launcher_item->progress(), 0);
   EXPECT_EQ(launcher_item->position(), launcher_ordinal);
   EXPECT_TRUE(IsItemPinned(package_id.ToString()));
@@ -1063,7 +1084,7 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
 
   // Confirm the promise icon fields.
   launcher_item = GetAppListItem(package_id.ToString());
-  EXPECT_EQ(launcher_item->name(), "installing…");
+  EXPECT_EQ(launcher_item->name(), "Installing…");
   EXPECT_FLOAT_EQ(launcher_item->progress(), 0.2f);
   EXPECT_EQ(launcher_item->position(), launcher_ordinal);
   EXPECT_TRUE(IsItemPinned(package_id.ToString()));

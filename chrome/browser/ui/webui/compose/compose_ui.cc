@@ -17,6 +17,7 @@
 #include "chrome/grit/compose_resources.h"
 #include "chrome/grit/compose_resources_map.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/compose/core/browser/compose_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -36,13 +37,15 @@ ComposeUI::ComposeUI(content::WebUI* web_ui)
 
   // Localized strings.
   static constexpr webui::LocalizedString kStrings[] = {
+      {"close", IDS_CLOSE},
       {"consentTitle", IDS_COMPOSE_CONSENT_TITLE},
       {"consentMainTop", IDS_COMPOSE_CONSENT_MAIN_TOP},
       {"consentMainBottom", IDS_COMPOSE_CONSENT_MAIN_BOTTOM},
       {"consentNoButton", IDS_COMPOSE_CONSENT_NO_BUTTON},
       {"consentYesButton", IDS_COMPOSE_CONSENT_YES_BUTTON},
       {"consentLearnMore", IDS_COMPOSE_CONSENT_LEARN_LINK},
-      {"dialogTitle", IDS_COMPOSE_TITLE},
+      {"dialogTitle", IDS_COMPOSE_DIALOG_TITLE},
+      {"disclaimerLetsGoButton", IDS_COMPOSE_DISCLAIMER_BUTTON},
       {"inputPlaceholder", IDS_COMPOSE_INPUT_PLACEHOLDER},
       {"inputFooter", IDS_COMPOSE_FOOTER_FISHFOOD},
       {"submitButton", IDS_COMPOSE_SUBMIT_BUTTON},
@@ -54,20 +57,25 @@ ComposeUI::ComposeUI(content::WebUI* web_ui)
       {"toneMenuTitle", IDS_COMPOSE_MENU_2_TITLE},
       {"casualToneOption", IDS_COMPOSE_MENU_2_OPTION_1},
       {"formalToneOption", IDS_COMPOSE_MENU_2_OPTION_2},
+      {"errorTooShort", IDS_COMPOSE_ERROR_TOO_SHORT},
       {"errorTooLong", IDS_COMPOSE_ERROR_TOO_LONG},
       {"errorTryAgain", IDS_COMPOSE_ERROR_TRY_AGAIN},
       {"errorTryAgainLater", IDS_COMPOSE_ERROR_TRY_AGAIN_LATER},
       {"errorRequestNotSuccessful", IDS_COMPOSE_ERROR_REQUEST_NOT_SUCCESSFUL},
       {"errorPermissionDenied", IDS_COMPOSE_ERROR_REQUEST_NOT_SUCCESSFUL},
       {"errorGeneric", IDS_COMPOSE_ERROR_GENERIC},
-      {"editButton", IDS_EDIT},
+      {"editButton", IDS_COMPOSE_EDIT},
       {"editCancelButton", IDS_CANCEL},
       {"editUpdateButton", IDS_COMPOSE_EDIT_UPDATE_BUTTON},
-      {"fileBugText", IDS_COMPOSE_FILE_BUG},
+      {"undo", IDS_COMPOSE_UNDO},
+      {"resubmit", IDS_COMPOSE_RESUBMIT},
       {"thumbsDown", IDS_THUMBS_DOWN},
       {"thumbsUp", IDS_THUMBS_UP},
   };
   source->AddLocalizedStrings(kStrings);
+  source->AddBoolean("enableAnimations",
+                     base::FeatureList::IsEnabled(
+                         compose::features::kEnableComposeWebUIAnimations));
 }
 
 ComposeUI::~ComposeUI() = default;

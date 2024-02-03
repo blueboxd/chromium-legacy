@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder.h"
@@ -67,7 +68,7 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
   bool SubmitFrame(void* ctrls,
                    const uint8_t* data,
                    size_t size,
-                   int32_t bitstream_id) override;
+                   uint32_t frame_id) override;
 
  private:
   V4L2StatelessVideoDecoder(
@@ -85,6 +86,18 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
   // to know |profile| and |resolution| in order to know if the queue
   // can be created.
   bool CreateInputQueue(VideoCodecProfile profile, const gfx::Size resolution);
+
+  // The uncompressed format that the driver produces is setup by the
+  // |output_queue_|. This format then needs to be passed further down the
+  // pipeline.
+  bool SetupOutputFormatForPipeline();
+
+  // Restart the thread that will wait on a dequeue event from the driver.
+  void ArmOutputBufferMonitor();
+
+  // Take the uncompressed buffers out of the v4l2 queue so that they can be
+  // passed along to the display.
+  void DequeueDecodedBuffers();
 
   // Process the data in the |compressed_buffer| using the |decoder_|.
   void ProcessCompressedBuffer(scoped_refptr<DecoderBuffer> compressed_buffer,
@@ -104,8 +117,12 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
 
   // Queue to hold compressed bitstream buffers to be submitted to the hardware
   std::unique_ptr<InputQueue> input_queue_;
+
   // Queue to hold uncompressed image buffers returned by the hardware
   std::unique_ptr<OutputQueue> output_queue_;
+
+  // Aspect ratio from config to use for output frames.
+  VideoAspectRatio aspect_ratio_;
 
   // Int32 safe ID generator, starting at 0. Generated IDs are used to uniquely
   // identify a Decode() request for stateless backends. BitstreamID is just
@@ -113,6 +130,22 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
   struct BitstreamID {};
   base::IdType32<BitstreamID>::Generator bitstream_id_generator_
       GUARDED_BY_CONTEXT(decoder_sequence_checker_);
+
+  // Unique enough identifier so that all outstanding reference frames have a
+  // unique identifier
+  struct FrameID {};
+  base::IdTypeU32<FrameID>::Generator frame_id_generator_
+      GUARDED_BY_CONTEXT(decoder_sequence_checker_);
+
+  base::CancelableTaskTracker cancelable_task_tracker_;
+
+  // A sequenced TaskRunner to wait for events coming from |CAPTURE_queue_| or
+  // |wake_event_|.
+  scoped_refptr<base::SequencedTaskRunner> event_task_runner_;
+
+  // Weak factories associated with the main thread
+  // (|decoder_sequence_checker_|).
+  base::WeakPtrFactory<V4L2StatelessVideoDecoder> weak_ptr_factory_for_events_;
 };
 
 }  // namespace media

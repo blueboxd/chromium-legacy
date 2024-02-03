@@ -84,6 +84,7 @@ class SigninManagerTest : public testing::Test,
   SigninManagerTest& operator=(const SigninManagerTest&) = delete;
 
   void RecreateSigninManager() {
+    // `profile` is not tested here.
     signin_manager_ =
         std::make_unique<SigninManager>(prefs_, *identity_manager(), client_);
   }

@@ -89,11 +89,6 @@ class PageSpecificContentSettingsDelegate
   std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes() override;
   browsing_data::CookieHelper::IsDeletionDisabledCallback
   GetIsDeletionDisabledCallback() override;
-  bool IsMicrophoneCameraStateChanged(
-      content_settings::PageSpecificContentSettings::MicrophoneCameraState
-          microphone_camera_state,
-      const std::string& media_stream_selected_audio_device,
-      const std::string& media_stream_selected_video_device) override;
   content_settings::PageSpecificContentSettings::MicrophoneCameraState
   GetMicrophoneCameraState() override;
   content::WebContents* MaybeGetSyncedWebContentsForPictureInPicture(
@@ -103,6 +98,12 @@ class PageSpecificContentSettingsDelegate
 
   // content::WebContentsObserver:
   void PrimaryPageChanged(content::Page& page) override;
+
+  // Notify `PageSpecificContentSettings` about changes in capturing audio and
+  // video.
+  void OnCapturingStateChanged(content::WebContents* web_contents,
+                               ContentSettingsType type,
+                               bool is_capturing);
 
   // The pending protocol handler, if any. This can be set if
   // registerProtocolHandler was invoked without user gesture.

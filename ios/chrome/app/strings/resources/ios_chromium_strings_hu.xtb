@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Segítség a Chromium funkcióinak és teljesítményének javítása érdekében</translation>
 <translation id="1513122820609681462">A Chromium beállítása alapértelmezett böngészőként</translation>
 <translation id="1531155317299575425">Értesítéseket jelenít meg a Chromiumba való bejelentkezéshez</translation>
+<translation id="159029779861043703">A Chromium biztonságban tartja az Ön bizalmas adatait a Face ID segítségével.</translation>
 <translation id="1591119736686995611">Megnyitja a Chromium laprácsát.</translation>
+<translation id="1611584326765829247">A Chromium segíthet a csomagok nyomon követésében</translation>
 <translation id="1617663976202781617">A Chromium szinkronizálásából származó adatok</translation>
 <translation id="1647558790457890304">A Chromium beállításai</translation>
 <translation id="164952285225495380">Ezt a csomagot már nyomon követi a Chromium.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">A Chromium beállításainak kezelése</translation>
 <translation id="2798503587425057129">Megnyitja a Chromium-olvasólistát.</translation>
 <translation id="2843571538056574338">A Chromium használata automatikus kitöltéshez</translation>
-<translation id="2915596697727466327">A Chromium a Face ID segítségével ellenőrzi a jogosultságot a jelszavakhoz való hozzáféréshez.</translation>
 <translation id="2918709798697875261">Szervezete nem engedélyezi, hogy bejelentkezzen a Chromiumba.</translation>
 <translation id="2942241131342758843">A Chromiumot alapértelmezett böngészőként használva linkek nyithatók meg, modulokban lehet keresni, és jelszavak tölthetők be automatikusan az egyéb alkalmazásokban</translation>
 <translation id="2977470724722393594">A Chromium naprakész</translation>
@@ -87,6 +88,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />törölje a fiókjában
 <translation id="4195557071150719219">Legutóbbi Chromium-lapok megtekintése</translation>
 <translation id="4408912345039114853">A Chromium biztonsági ellenőrzésének futtatása</translation>
 <translation id="4432744876818348753">Jelentkezzen be, hogy a legtöbbet hozhassa ki a Chromiumból.</translation>
+<translation id="4498832288620833153">A bevitt URL-eket felveszi a Chromiumban használt olvasólistájára.</translation>
 <translation id="452436063477828504">Biztosítsa, hogy mindig használhassa a Google-fiókjában lévő Chromium-adatokat</translation>
 <translation id="4555020257205549924">Ha a funkció be van kapcsolva, a Chromium felajánlja a más nyelveken írt oldalak lefordítását a Google Fordító segítségével. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="4576283463017113841">Megnyitja a Fizetési módok beállítási oldalát a Chromiumban.</translation>
@@ -167,7 +169,6 @@ Csak az Ön összetett jelszava ismeretében tudja bárki is megtekinteni a titk
 <translation id="6911341667534646387">Továbbra is használhatja a Google-fiókjában lévő Chromium-adatokat</translation>
 <translation id="7006920032187763988">A Jelszókezelőbe mentett jelszavakat használhatja más alkalmazásokban iPad eszközén.</translation>
 <translation id="7018284295775193585">Nem lehet frissíteni a Chromiumot</translation>
-<translation id="7025471822960602362">Észlelt csomagok nyomon követése a Chromiumban</translation>
 <translation id="7045244423563602563">Tegye személyessé a Chromiumot</translation>
 <translation id="7055269218854630176">Szervezete (<ph name="DOMAIN" />) kezeli azt a fiókot, amelybe bejelentkezik, valamint azt is, hogy miként használhatja a Chromiumot. A rendszergazda beállíthat, illetve korlátozhat bizonyos funkciókat.</translation>
 <translation id="7099326575020694068">A Chromium Osztott nézet módban nem tudja használni a kamerát</translation>
@@ -197,6 +198,7 @@ Csak az Ön összetett jelszava ismeretében tudja bárki is megtekinteni a titk
 <translation id="7928628054454574139">A Chromium megnyitása mindig, amikor más alkalmazásokban lévő linkekre koppint</translation>
 <translation id="7931842119211730154">Inkognitó lapok zárolása a Chromium bezárásakor</translation>
 <translation id="7934404985878918282">A Chromium-olvasólista megtekintése</translation>
+<translation id="7971753607796745700">Olvasólista-elem felvétele a Chromiumba</translation>
 <translation id="7980860476903281594">A Chromium megosztja a tartózkodási helyét az Ön által engedélyezett webhelyekkel.</translation>
 <translation id="7995166854192397899">A javaslatok a többi eszközén végzett böngészési tevékenységein alapulnak. Ha javaslatokat szeretne kapni, jelentkezzen be a Chromiumba az összes eszközén.</translation>
 <translation id="800195749539500647">Hozza ki a legtöbbet a Chromiumból.</translation>

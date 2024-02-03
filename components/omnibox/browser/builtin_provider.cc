@@ -230,7 +230,10 @@ void BuiltinProvider::AddStarterPackMatch(const TemplateURL& template_url,
       match.fill_into_edit.substr(input.text().length());
   match.destination_url = GURL(destination_url);
   match.transition = ui::PAGE_TRANSITION_GENERATED;
-  if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled()) {
+  if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled() &&
+      input.current_page_classification() !=
+          metrics::OmniboxEventProto::NTP_REALBOX &&
+      template_url.keyword().starts_with(u'@')) {
     match.description = l10n_util::GetStringFUTF16(
         IDS_OMNIBOX_INSTANT_KEYWORD_SEARCH_TEXT, template_url.short_name());
     match.description_class.emplace_back(0, ACMatchClassification::NONE);
@@ -238,6 +241,7 @@ void BuiltinProvider::AddStarterPackMatch(const TemplateURL& template_url,
         l10n_util::GetStringUTF16(IDS_OMNIBOX_INSTANT_KEYWORD_HELP);
     match.contents_class.emplace_back(0, ACMatchClassification::DIM);
     match.allowed_to_be_default_match = false;
+    match.keyword = template_url.keyword();
   } else {
     match.description = template_url.short_name();
     match.description_class.emplace_back(0, ACMatchClassification::NONE);

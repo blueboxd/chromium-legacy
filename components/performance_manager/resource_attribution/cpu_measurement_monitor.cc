@@ -28,12 +28,33 @@
 #include "components/performance_manager/public/resource_attribution/frame_context.h"
 #include "components/performance_manager/public/resource_attribution/worker_context.h"
 #include "components/performance_manager/resource_attribution/graph_change.h"
+#include "components/performance_manager/resource_attribution/worker_client_pages.h"
 #include "content/public/common/process_type.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace performance_manager::resource_attribution {
 
 namespace {
+
+// Returns true if `resource_context` refers to a node that's been removed from
+// the PM graph.
+bool IsDeadContext(const ResourceContext& resource_context) {
+  return absl::visit(base::Overloaded{
+                         [](const FrameContext& context) {
+                           return context.GetFrameNode() == nullptr;
+                         },
+                         [](const PageContext& context) {
+                           return context.GetPageNode() == nullptr;
+                         },
+                         [](const ProcessContext& context) {
+                           return context.GetProcessNode() == nullptr;
+                         },
+                         [](const WorkerContext& context) {
+                           return context.GetWorkerNode() == nullptr;
+                         },
+                     },
+                     resource_context);
+}
 
 // Returns true if `result` is in the default-initialized state.
 bool IsEmptyCPUTimeResult(const CPUTimeResult& result) {
@@ -105,74 +126,10 @@ void ApplyOverlappingDelta(CPUTimeResult& result, const CPUTimeResult& delta) {
   ValidateCPUTimeResult(result);
 }
 
-// Recursively visits all client workers of `worker_node`, and all client
-// frames of each worker, and adds each frame's PageNode to `client_pages`.
-// `visited_workers` is used to check for loops in the graph of client
-// workers. `graph_change` is a change to the graph topology in progress that
-// may affect the client page set, or NoGraphChange.
-void RecursivelyFindClientPages(const WorkerNode* worker_node,
-                                GraphChange graph_change,
-                                std::set<const PageNode*>& client_pages,
-                                std::set<const WorkerNode*>& visited_workers) {
-  const auto [_, inserted] = visited_workers.insert(worker_node);
-  if (!inserted) {
-    // Already visited, halt recursion.
-    return;
-  }
-  worker_node->VisitClientFrames(
-      [&client_pages, &graph_change, worker_node](const FrameNode* f) {
-        const auto* add_client_frame_change =
-            absl::get_if<GraphChangeAddClientFrameToWorker>(&graph_change);
-        if (add_client_frame_change &&
-            add_client_frame_change->worker_node == worker_node &&
-            add_client_frame_change->client_frame_node == f) {
-          // Skip this client node. The measurement being distributed includes
-          // CPU usage from before it was added.
-          return true;
-        }
-        client_pages.insert(f->GetPageNode());
-        return true;
-      });
-  worker_node->VisitClientWorkers([&client_pages, &visited_workers,
-                                   &graph_change,
-                                   worker_node](const WorkerNode* w) {
-    const auto* add_client_worker_change =
-        absl::get_if<GraphChangeAddClientWorkerToWorker>(&graph_change);
-    if (add_client_worker_change &&
-        add_client_worker_change->worker_node == worker_node &&
-        add_client_worker_change->client_worker_node == w) {
-      // Skip this client node. The measurement being distributed includes CPU
-      // usage from before it was added.
-      return true;
-    }
-
-    RecursivelyFindClientPages(w, graph_change, client_pages, visited_workers);
-    return true;
-  });
-  // Unlike FrameNode, WorkerNode does not update any graph links in
-  // WorkerNodeImpl::OnBeforeLeavingGraph(). So no need to check for
-  // GraphChangeRemoveClient*FromWorker.
-  // TODO(https://crbug.com/1481676): If that changes. handle
-  // `graph_change.client_*_node` as if it was visited by the above visitors.
-}
-
-// Returns the complete set of pages that are clients of `worker_node`.
-// `graph_change` is a change to the graph topology in progress that may affect
-// the client page set, or NoGraphChange.
-std::set<const PageNode*> GetClientPages(const WorkerNode* worker_node,
-                                         GraphChange graph_change) {
-  std::set<const PageNode*> client_pages;
-  std::set<const WorkerNode*> visited_workers;
-  RecursivelyFindClientPages(worker_node, graph_change, client_pages,
-                             visited_workers);
-  return client_pages;
-}
-
 }  // namespace
 
 CPUMeasurementMonitor::CPUMeasurementMonitor()
-    : cpu_measurement_delegate_factory_(
-          CPUMeasurementDelegate::GetDefaultFactory()) {}
+    : delegate_factory_(CPUMeasurementDelegate::GetDefaultFactory()) {}
 
 CPUMeasurementMonitor::~CPUMeasurementMonitor() {
   if (graph_) {
@@ -181,13 +138,13 @@ CPUMeasurementMonitor::~CPUMeasurementMonitor() {
   CHECK(!graph_);
 }
 
-void CPUMeasurementMonitor::SetCPUMeasurementDelegateFactoryForTesting(
+void CPUMeasurementMonitor::SetDelegateFactoryForTesting(
     CPUMeasurementDelegate::Factory* factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ensure that all CPU measurements use the same delegate.
   CHECK(cpu_measurement_map_.empty());
   CHECK(factory);
-  cpu_measurement_delegate_factory_ = factory;
+  delegate_factory_ = factory;
 }
 
 void CPUMeasurementMonitor::StartMonitoring(Graph* graph) {
@@ -202,7 +159,7 @@ void CPUMeasurementMonitor::StartMonitoring(Graph* graph) {
   // usage until they have a pid assigned.
   graph_->VisitAllProcessNodes([this](const ProcessNode* process_node) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (cpu_measurement_delegate_factory_->ShouldMeasureProcess(process_node)) {
+    if (delegate_factory_->ShouldMeasureProcess(process_node)) {
       MonitorCPUUsage(process_node);
     }
     return true;
@@ -224,19 +181,27 @@ bool CPUMeasurementMonitor::IsMonitoring() const {
   return graph_;
 }
 
-std::map<ResourceContext, CPUTimeResult>
+std::map<ResourceContext, QueryResult>
 CPUMeasurementMonitor::UpdateAndGetCPUMeasurements() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UpdateAllCPUMeasurements();
-  std::map<ResourceContext, CPUTimeResult> results;
+  std::map<ResourceContext, QueryResult> results;
   for (const auto& [context, result] : measurement_results_) {
     ValidateCPUTimeResult(result);
     if (IsEmptyCPUTimeResult(result)) {
       // Don't include empty measurements in the public results.
       continue;
     }
-    results.emplace(context, result);
+    results.emplace(context, QueryResult(result));
   }
+
+  // After a node is deleted its measurements should only be kept until used
+  // for one query result. This was that query.
+  std::erase_if(measurement_results_,
+                [](const std::pair<ResourceContext, CPUTimeResult>& entry) {
+                  return IsDeadContext(entry.first);
+                });
+
   return results;
 }
 
@@ -266,7 +231,7 @@ void CPUMeasurementMonitor::OnProcessLifetimeChange(
     CHECK(cpu_measurement_map_.empty());
     return;
   }
-  if (cpu_measurement_delegate_factory_->ShouldMeasureProcess(process_node)) {
+  if (delegate_factory_->ShouldMeasureProcess(process_node)) {
     MonitorCPUUsage(process_node);
   }
 }
@@ -357,10 +322,8 @@ void CPUMeasurementMonitor::MonitorCPUUsage(const ProcessNode* process_node) {
   // ApplyMeasurementDeltas will add the new measurements and the old
   // measurements in the same ProcessContext.
   cpu_measurement_map_.insert_or_assign(
-      process_node,
-      CPUMeasurement(
-          cpu_measurement_delegate_factory_->CreateDelegateForProcess(
-              process_node)));
+      process_node, CPUMeasurement(delegate_factory_->CreateDelegateForProcess(
+                        process_node)));
 }
 
 void CPUMeasurementMonitor::UpdateAllCPUMeasurements() {
@@ -454,7 +417,7 @@ void CPUMeasurementMonitor::ApplyMeasurementDeltas(
           AsContext<WorkerContext>(context).GetWorkerNode();
       CHECK(worker_node);
       for (const PageNode* page_node :
-           GetClientPages(worker_node, graph_change)) {
+           GetWorkerClientPages(worker_node, graph_change)) {
         ApplyOverlappingDelta(
             measurement_results_[page_node->GetResourceContext()], delta);
       }

@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/cart/cart_handler.h"
@@ -544,6 +545,8 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesJourneysCartTileLabelDefault",
        IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_DEFAULT},
       {"modulesMoreActions", IDS_NTP_MODULES_MORE_ACTIONS},
+      {"modulesTabResumptionTitle", IDS_NTP_TAB_RESUMPTION_TITLE},
+      {"modulesTabResumptionInfo", IDS_NTP_MODULES_TAB_RESUMPTION_INFO},
 
       // Middle slot promo.
       {"undoDismissPromoButtonToast", IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST},
@@ -683,13 +686,16 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
 
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 
-  // Give OGB 3P Cookie Permissions.
+// Give OGB 3P Cookie Permissions. Only necessary on non-Ash builds. Granting
+// 3P cookies on Ash causes b/314326552.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   WebUIAllowlist::GetOrCreate(profile_)->RegisterAutoGrantedThirdPartyCookies(
       url::Origin::Create(GURL(chrome::kChromeUIUntrustedNewTabPageUrl)),
       {
           ContentSettingsPattern::FromURL(GURL("https://ogs.google.com")),
           ContentSettingsPattern::FromURL(GURL("https://corp.google.com")),
       });
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
@@ -897,7 +903,7 @@ void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<ntp::tab_resumption::mojom::PageHandler>
         pending_page_handler) {
   tab_resumption_handler_ = std::make_unique<TabResumptionPageHandler>(
-      std::move(pending_page_handler), profile_, web_contents());
+      std::move(pending_page_handler), web_contents());
 }
 
 void NewTabPageUI::BindInterface(

@@ -18,6 +18,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_object_objectarray_string.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_begin_layer_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasfilter_string.h"
 #include "third_party/blink/renderer/core/css/cssom/css_color_value.h"
@@ -35,6 +36,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_color_cache.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_filter.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_filter_operation_resolver.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
@@ -47,10 +49,13 @@
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/blink/renderer/platform/graphics/video_frame_image_util.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/skia/include/core/SkPathBuilder.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -200,10 +205,10 @@ void BaseRenderingContext2D::beginLayer(ScriptState* script_state,
   CanvasRenderingContext2DState& state = GetState();
   if (const V8CanvasFilterInput* filter_input = CHECK_DEREF(options).filter();
       filter_input != nullptr) {
-    FilterOperations filter_operations =
-        CanvasFilterOperationResolver::CreateFilterOperations(
-            *filter_input, CHECK_DEREF(ExecutionContext::From(script_state)),
-            exception_state);
+    HTMLCanvasElement* canvas_for_filter = HostAsHTMLCanvasElement();
+    FilterOperations filter_operations = CanvasFilter::CreateFilterOperations(
+        *filter_input, AccessFont(canvas_for_filter), canvas_for_filter,
+        CHECK_DEREF(ExecutionContext::From(script_state)), exception_state);
     if (exception_state.HadException()) {
       return;
     }
@@ -2175,6 +2180,22 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
   scoped_refptr<StaticBitmapImage> snapshot =
       GetImage(FlushReason::kGetImageData);
 
+  TRACE_EVENT_INSTANT(
+      TRACE_DISABLED_BY_DEFAULT("identifiability.high_entropy_api"),
+      "CanvasReadback", perfetto::Flow::FromPointer(this),
+      [&](perfetto::EventContext ctx) {
+        String data = "data:,";
+        if (snapshot) {
+          std::unique_ptr<ImageDataBuffer> data_buffer =
+              ImageDataBuffer::Create(snapshot);
+          if (data_buffer) {
+            data = data_buffer->ToDataURL(ImageEncodingMimeType::kMimeTypePng,
+                                          -1.0);
+          }
+        }
+        ctx.AddDebugAnnotation("data_url", data.Utf8());
+      });
+
   // Determine if the array should be zero initialized, or if it will be
   // completely overwritten.
   validate_and_create_params.zero_initialize = false;
@@ -2579,11 +2600,6 @@ bool BaseRenderingContext2D::CurrentFontResolvedAndUpToDate() const {
   return GetState().HasRealizedFont();
 }
 
-bool BaseRenderingContext2D::ResolveFont(const String& new_font) {
-  // Should only be called in unit tests
-  return false;
-}
-
 void BaseRenderingContext2D::setFont(const String& new_font) {
   if (UNLIKELY(!WillSetFont())) {
     return;
@@ -2709,40 +2725,6 @@ const Font& BaseRenderingContext2D::AccessFont(HTMLCanvasElement* canvas) {
   return GetState().GetFont();
 }
 
-namespace {
-
-// Drawing methods need to use this instead of SkAutoCanvasRestore in case
-// overdraw detection substitutes the recording canvas (to discard overdrawn
-// draw calls).
-class BaseRenderingContext2DAutoRestoreSkCanvas {
-  STACK_ALLOCATED();
-
- public:
-  explicit BaseRenderingContext2DAutoRestoreSkCanvas(
-      BaseRenderingContext2D* context)
-      : context_(context) {
-    DCHECK(context_);
-    cc::PaintCanvas* c = context_->GetOrCreatePaintCanvas();
-    if (c) {
-      save_count_ = c->getSaveCount();
-    }
-  }
-
-  ~BaseRenderingContext2DAutoRestoreSkCanvas() {
-    cc::PaintCanvas* c = context_->GetOrCreatePaintCanvas();
-    if (c) {
-      c->restoreToCount(save_count_);
-    }
-    context_->ValidateStateStack();
-  }
-
- private:
-  BaseRenderingContext2D* context_;
-  int save_count_ = 0;
-};
-
-}  // namespace
-
 void BaseRenderingContext2D::DrawTextInternal(
     const String& text,
     double x,
@@ -2763,8 +2745,10 @@ void BaseRenderingContext2D::DrawTextInternal(
     canvas->GetDocument().UpdateStyleAndLayoutTreeForNode(
         canvas, DocumentUpdateReason::kCanvas);
   }
-  cc::PaintCanvas* c = GetOrCreatePaintCanvas();
-  if (!c) {
+
+  // Abort if we don't have a paint canvas (e.g. the context was lost).
+  cc::PaintCanvas* paint_canvas = GetOrCreatePaintCanvas();
+  if (!paint_canvas) {
     return;
   }
 
@@ -2835,14 +2819,13 @@ void BaseRenderingContext2D::DrawTextInternal(
     InflateStrokeRect(bounds);
   }
 
-  BaseRenderingContext2DAutoRestoreSkCanvas state_restorer(this);
   if (use_max_width) {
-    c->save();
+    paint_canvas->save();
     // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op)
     // still work. As the width of canvas is scaled, so text can be scaled to
     // match the given maxwidth, update text location so it appears on desired
     // place.
-    c->scale(ClampTo<float>(width / font_width), 1);
+    paint_canvas->scale(ClampTo<float>(width / font_width), 1);
     location.set_x(location.x() / ClampTo<float>(width / font_width));
   }
 
@@ -2873,6 +2856,16 @@ void BaseRenderingContext2D::DrawTextInternal(
       { return false; },
       bounds, paint_type, CanvasRenderingContext2DState::kNoImage,
       CanvasPerformanceMonitor::DrawType::kText);
+
+  if (use_max_width) {
+    // Cannot use `paint_canvas` in case recording canvas was substituted or
+    // destroyed during draw call.
+    cc::PaintCanvas* c = GetPaintCanvas();
+    if (c) {
+      c->restore();
+    }
+  }
+  ValidateStateStack();
 }
 
 TextMetrics* BaseRenderingContext2D::measureText(const String& text) {

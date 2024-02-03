@@ -6610,9 +6610,9 @@ class CompositedSelectionBoundsTest
     v8::Array& expected_result = *v8::Array::Cast(*result);
     ASSERT_GE(expected_result.Length(), 10u);
 
-    v8::Local<v8::Context> context = web_view_helper_.GetAgentGroupScheduler()
-                                         .Isolate()
-                                         ->GetCurrentContext();
+    v8::Local<v8::Context> context =
+        expected_result.GetCreationContext().ToLocalChecked();
+    v8::Context::Scope v8_context_scope(context);
 
     int start_edge_start_in_layer_x = expected_result.Get(context, 1)
                                           .ToLocalChecked()
@@ -10231,6 +10231,33 @@ TEST_F(RemoteWindowCloseTest, WindowOpenRemoteClose) {
   EXPECT_TRUE(Closed());
 }
 
+// Tests that calling window.close() when detaching document as a result of
+// closing the WebView shouldn't crash. This is a regression test for
+// https://crbug.com/5058796.
+TEST_F(WebFrameTest, WindowCloseOnDetach) {
+  // Open a page that calls window.close() from its pagehide handler.
+  RegisterMockedHttpURLLoad("close-on-pagehide.html");
+  frame_test_helpers::WebViewHelper main_web_view;
+  main_web_view.InitializeAndLoad(base_url_ + "close-on-pagehide.html");
+
+  // Mark the Page as opened by DOM so that window.close() will work.
+  LocalFrame* local_frame = main_web_view.LocalMainFrame()->GetFrame();
+  local_frame->GetPage()->SetOpenedByDOM();
+
+  // Reset the WebView, which will detach the document, triggering the pagehide
+  // handler, eventually calling window.close().
+  main_web_view.Reset();
+
+  // window.close() should synchronously mark the page as closed.
+  EXPECT_TRUE(local_frame->DomWindow()->closed());
+
+  // We used to still post a task to close the WebView even after the WebView is
+  // reset, causing a crash when the task runs. Now we won't post the task, and
+  // the crash should not happen. Verify that we won't crash if we run pending
+  // tasks.
+  RunPendingTasks();
+}
+
 TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener) {
   frame_test_helpers::WebViewHelper main_web_view;
   main_web_view.Initialize();
@@ -12774,10 +12801,10 @@ TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
       ->ScrollFocusedEditableElementIntoView();
 
   Element* input = GetDocument().getElementById(AtomicString("target"));
-  gfx::Rect input_rect(input->getBoundingClientRect()->top(),
-                       input->getBoundingClientRect()->left(),
-                       input->getBoundingClientRect()->width(),
-                       input->getBoundingClientRect()->height());
+  gfx::Rect input_rect(input->GetBoundingClientRect()->top(),
+                       input->GetBoundingClientRect()->left(),
+                       input->GetBoundingClientRect()->width(),
+                       input->GetBoundingClientRect()->height());
 
   gfx::Rect visible_content_rect(frame_view->Size());
   EXPECT_TRUE(visible_content_rect.Contains(input_rect))
@@ -12899,7 +12926,7 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
       ScrollOffset(2000 - 440, 3000 - 450),
       mojom::blink::ScrollType::kProgrammatic);
   Element* target = GetDocument().QuerySelector(AtomicString("#target"));
-  DOMRect* rect = target->getBoundingClientRect();
+  DOMRect* rect = target->GetBoundingClientRect();
   ASSERT_EQ(440, rect->left());
   ASSERT_EQ(450, rect->top());
 

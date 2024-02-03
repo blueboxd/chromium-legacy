@@ -26,12 +26,11 @@
   'accessibility_unittests': {
     'modifications': {
       'Linux ASan LSan Tests (1)': {
-        'swarming': {
-          'dimensions': {
-            # TODO(crbug.com/1442303): Move to Jammy when it's compatible.
-            'os': 'Ubuntu-18.04',
-          },
-        },
+        'args': [
+            # TODO(crbug.com/1442303): Re-enable.
+          '--gtest_filter=-AXPlatformNodeAuraLinuxTest.AtkComponentScrollTo:'
+          'AtkUtilAuraLinuxTest.*',
+        ],
       },
       'linux-exp-asan-lsan-fyi-rel': {
         'swarming': {
@@ -135,6 +134,7 @@
           'dimensions': {
             'cores': '8', # crbug.com/1292221
           },
+          'shards': 3,
         },
       },
       # Keep this same as android-oreo-x86-rel above
@@ -348,6 +348,10 @@
         },
       },
       'Mac12 Tests': {
+        # TODO(crbug.com/1479108): Remove this once the bug is fixed.
+        'args': [
+          '--driver-logging',
+        ],
         'swarming': {
           'dimensions': {
             'gpu': None,
@@ -597,6 +601,11 @@
           'hard_timeout': 2400,
         },
       },
+      'mac12-arm64-rel-tests': {
+        'args': [
+          '--driver-logging',
+        ],
+      },
       'mac12.0-blink-rel': {
         'swarming': {
           'hard_timeout': 2400,
@@ -695,6 +704,9 @@
         },
       },
       'Mac12 Tests': {
+        'args': [
+          '--driver-logging',
+        ],
         'swarming': {
           'dimensions': {
             'gpu': None,
@@ -915,6 +927,11 @@
           'hard_timeout': 2400,
         },
       },
+      'mac12-arm64-rel-tests': {
+        'args': [
+          '--driver-logging',
+        ],
+      },
       'mac12.0-blink-rel': {
         'swarming': {
           'hard_timeout': 2400,
@@ -1068,8 +1085,9 @@
       'Linux Tests (dbg)(1)': {
         # crbug.com/1066161
         # crbug.com/1459645
+        # crbug.com/1508286
         'swarming': {
-          'shards': 27,
+          'shards': 32,
         },
       },
       'Mac ASan 64 Tests (1)': {
@@ -1417,6 +1435,9 @@
         'swarming': {
           'shards': 15,
         },
+        'args': [
+          '--tast-shard-method=hash',
+        ],
       },
       'chromeos-eve-chrome': {
         'swarming': {
@@ -1673,8 +1694,8 @@
   # TODO(weizhong): Remove this once experiment completes
   'chrome_wpt_tests': {
     'modifications': {
-      'Linux Tests': {
-        'experiment_percentage': 10,
+      'linux-wpt-chromium-rel': {
+        'ci_only': False,
       },
     },
   },
@@ -2573,6 +2594,17 @@
       },
     },
   },
+  'expected_color_pixel_passthrough_test VOLTEER_PUBLIC_RELEASE_LKGM': {
+    'modifications': {
+      'ChromeOS FYI Release Skylab (volteer)': {
+        'args': [
+          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
+          # automatically get the service account to authenticate with.
+          '--service-account=/creds/service_accounts/skylab-drone.json',
+        ],
+      },
+    },
+  },
   'expected_color_pixel_validating_test': {
     'modifications': {
       'Android FYI Release (Pixel 4)': {
@@ -3011,6 +3043,7 @@
         'args': [
           # Swarming does not report a GPU since tests are run in a VM, but
           # the VM does report that a GPU is present.
+          '--expected-vendor-id', '1af4',
           '--expected-device-id', '1050',
         ],
       },
@@ -3018,36 +3051,10 @@
     'replacements': {
       'ChromeOS FYI Release (amd64-generic)': {
         'args': {
-          # Swarming does not report a GPU since tests are run in a VM, but
-          # the VM does report that a GPU is present.
-          '--expected-vendor-id': '1af4',
           # Magic substitution happens after regular replacement, so remove it
           # now since we are manually applying the expected device ID above.
+          '$$MAGIC_SUBSTITUTION_GPUExpectedVendorId': None,
           '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId': None,
-        },
-      },
-      'Mac FYI Experimental Release (Apple M1)': {
-        'args': {
-          # Apple silicon does not show up normally as a PCI-e device, but
-          # Chrome is able to find a vendor ID that matches other (non-GPU)
-          # Apple PCI-e devices.
-          '--expected-vendor-id': '106b',
-        },
-      },
-      'Mac FYI Release (Apple M1)': {
-        'args': {
-          # Apple silicon does not show up normally as a PCI-e device, but
-          # Chrome is able to find a vendor ID that matches other (non-GPU)
-          # Apple PCI-e devices.
-          '--expected-vendor-id': '106b',
-        },
-      },
-      'Mac FYI Retina Release (Apple M2)': {
-        'args': {
-          # Apple silicon does not show up normally as a PCI-e device, but
-          # Chrome is able to find a vendor ID that matches other (non-GPU)
-          # Apple PCI-e devices.
-          '--expected-vendor-id': '106b',
         },
       },
     },
@@ -3086,7 +3093,7 @@
       },
       'Linux MSan Tests': {
         'swarming': {
-          'shards': 4,
+          'shards': 8,
         },
       },
       'Linux TSan Tests': {
@@ -3449,6 +3456,15 @@
       'fuchsia-x64-cast-receiver-rel',
       'fuchsia-x64-rel',
     ],
+  },
+  'model_validation_tests MODEL_VALIDATION_BASE': {
+    'modifications': {
+      'optimization_guide-win32': {
+        'args': [
+          '--target-platform=win32',
+        ],
+      },
+    },
   },
   'mojo_test_apk': {
     'remove_from': [
@@ -3830,6 +3846,17 @@
   'pixel_skia_gold_passthrough_test JACUZZI_RELEASE_LKGM': {
     'modifications': {
       'ChromeOS FYI Release Skylab (jacuzzi)': {
+        'args': [
+          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
+          # automatically get the service account to authenticate with.
+          '--service-account=/creds/service_accounts/skylab-drone.json',
+        ],
+      },
+    },
+  },
+  'pixel_skia_gold_passthrough_test VOLTEER_PUBLIC_RELEASE_LKGM': {
+    'modifications': {
+      'ChromeOS FYI Release Skylab (volteer)': {
         'args': [
           # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
           # automatically get the service account to authenticate with.
@@ -4402,6 +4429,11 @@
         # shards.
         'retry_only_failed_tests': True,
       },
+      'Mac ASan 64 Tests (1)': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
       'Mac13 Tests': {
         'swarming': {
           'shards': 2,
@@ -4905,9 +4937,11 @@
       # sufficient capacity.
       'Dawn Linux x64 DEPS Release (Intel UHD 630)': {
         'ci_only': True,
+        'experiment_percentage': 100,
       },
       'Dawn Linux x64 Release (Intel UHD 630)': {
         'ci_only': True,
+        'experiment_percentage': 100,
       },
     },
   },

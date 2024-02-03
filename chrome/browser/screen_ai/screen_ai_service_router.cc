@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/screen_ai/screen_ai_install_state.h"
@@ -25,6 +26,10 @@
 #endif
 
 namespace {
+
+// Maximum time to wait for service initialization.
+// TODO(crbug.com/1506969): Update based on collected metrics.
+constexpr base::TimeDelta kInitializationTimeout = base::Seconds(10);
 
 // The name of the file that contains the list of files that are downloaded with
 // the component and are required to initialize the library.
@@ -136,23 +141,30 @@ void ScreenAIServiceRouter::BindMainContentExtractor(
 
 void ScreenAIServiceRouter::LaunchIfNotRunning() {
   ScreenAIInstallState::GetInstance()->SetLastUsageTime();
+  auto* state_instance = ScreenAIInstallState::GetInstance();
+  screen_ai::ScreenAIInstallState::State install_state =
+      state_instance->get_state();
 
   if (screen_ai_service_factory_.is_bound() ||
-      screen_ai::ScreenAIInstallState::GetInstance()->get_state() ==
-          screen_ai::ScreenAIInstallState::State::kFailed) {
+      install_state == screen_ai::ScreenAIInstallState::State::kFailed) {
     return;
   }
 
-  auto* screen_ai_install = ScreenAIInstallState::GetInstance();
+  // TODO(crbug.com/1508404): Remove after crash root cause is found, or replace
+  // above.
+  if (install_state != screen_ai::ScreenAIInstallState::State::kDownloaded &&
+      install_state != screen_ai::ScreenAIInstallState::State::kReady) {
+    return;
+  }
+
   // Callers of the service should ensure that the component is downloaded
   // before promising it to the users and triggering its launch.
-  // TODO(crbug.com/1443345): Add tests to cover this case.
-  CHECK(screen_ai_install->IsComponentAvailable())
+  CHECK(state_instance->IsComponentAvailable())
       << "ScreenAI service launch triggered when component is not "
          "available.";
 
 #if BUILDFLAG(IS_WIN)
-  base::FilePath library_path = screen_ai_install->get_component_binary_path();
+  base::FilePath library_path = state_instance->get_component_binary_path();
   std::vector<base::FilePath> preload_libraries = {library_path};
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -175,6 +187,7 @@ void ScreenAIServiceRouter::InitializeOCRIfNeeded() {
     return;
   }
 
+  int request_id = CreateRequestIdAndSetTimeOut();
   LaunchIfNotRunning();
 
   if (!screen_ai_service_factory_.is_bound()) {
@@ -186,15 +199,16 @@ void ScreenAIServiceRouter::InitializeOCRIfNeeded() {
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ComponentFiles::Load, kOcrFilesList),
       base::BindOnce(&ScreenAIServiceRouter::InitializeOCR,
-                     weak_ptr_factory_.GetWeakPtr(),
+                     weak_ptr_factory_.GetWeakPtr(), request_id,
                      ocr_service_.BindNewPipeAndPassReceiver()));
 }
 
 void ScreenAIServiceRouter::InitializeOCR(
+    int request_id,
     mojo::PendingReceiver<mojom::OCRService> receiver,
     std::unique_ptr<ComponentFiles> component_files) {
   if (component_files->model_files_.empty()) {
-    ScreenAIServiceRouter::SetLibraryLoadState(false);
+    ScreenAIServiceRouter::SetLibraryLoadState(request_id, false);
     return;
   }
 
@@ -202,7 +216,7 @@ void ScreenAIServiceRouter::InitializeOCR(
       component_files->library_binary_path_,
       std::move(component_files->model_files_), std::move(receiver),
       base::BindOnce(&ScreenAIServiceRouter::SetLibraryLoadState,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), request_id));
 }
 
 void ScreenAIServiceRouter::InitializeMainContentExtractionIfNeeded() {
@@ -212,6 +226,7 @@ void ScreenAIServiceRouter::InitializeMainContentExtractionIfNeeded() {
     return;
   }
 
+  int request_id = CreateRequestIdAndSetTimeOut();
   LaunchIfNotRunning();
 
   if (!screen_ai_service_factory_.is_bound()) {
@@ -224,15 +239,16 @@ void ScreenAIServiceRouter::InitializeMainContentExtractionIfNeeded() {
       base::BindOnce(&ComponentFiles::Load, kMainContentExtractionFilesList),
       base::BindOnce(
           &ScreenAIServiceRouter::InitializeMainContentExtraction,
-          weak_ptr_factory_.GetWeakPtr(),
+          weak_ptr_factory_.GetWeakPtr(), request_id,
           main_content_extraction_service_.BindNewPipeAndPassReceiver()));
 }
 
 void ScreenAIServiceRouter::InitializeMainContentExtraction(
+    int request_id,
     mojo::PendingReceiver<mojom::MainContentExtractionService> receiver,
     std::unique_ptr<ComponentFiles> component_files) {
   if (component_files->model_files_.empty()) {
-    ScreenAIServiceRouter::SetLibraryLoadState(false);
+    ScreenAIServiceRouter::SetLibraryLoadState(request_id, false);
     return;
   }
 
@@ -240,10 +256,42 @@ void ScreenAIServiceRouter::InitializeMainContentExtraction(
       component_files->library_binary_path_,
       std::move(component_files->model_files_), std::move(receiver),
       base::BindOnce(&ScreenAIServiceRouter::SetLibraryLoadState,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), request_id));
 }
 
-void ScreenAIServiceRouter::SetLibraryLoadState(bool successful) {
+int ScreenAIServiceRouter::CreateRequestIdAndSetTimeOut() {
+  int request_id = ++last_request_id_;
+  pending_requests_trigger_time_[request_id] = base::TimeTicks::Now();
+
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ScreenAIServiceRouter::SetLibraryLoadState,
+                     weak_ptr_factory_.GetWeakPtr(), request_id,
+                     /*successful=*/false),
+      kInitializationTimeout);
+
+  return request_id;
+}
+
+void ScreenAIServiceRouter::SetLibraryLoadState(int request_id,
+                                                bool successful) {
+  // Verify that `request_id` is not handled before. This function can be called
+  // by the initialization callback or the timeout task.
+  auto trigger_time = pending_requests_trigger_time_.find(request_id);
+  if (trigger_time == pending_requests_trigger_time_.end()) {
+    return;
+  }
+
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - trigger_time->second;
+  pending_requests_trigger_time_.erase(trigger_time);
+
+  base::UmaHistogramBoolean("Accessibility.ScreenAI.Service.Initialization",
+                            successful);
+  base::UmaHistogramTimes(
+      successful ? "Accessibility.ScreenAI.Service.InitializationTime.Success"
+                 : "Accessibility.ScreenAI.Service.InitializationTime.Failure",
+      elapsed_time);
+
   screen_ai::ScreenAIInstallState::GetInstance()->SetState(
       successful ? screen_ai::ScreenAIInstallState::State::kReady
                  : screen_ai::ScreenAIInstallState::State::kFailed);

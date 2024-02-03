@@ -12,6 +12,7 @@
 #include "chrome/browser/enterprise/reporting/legacy_tech/legacy_tech_report_generator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_selections.h"
+#include "content/public/browser/legacy_tech_cookie_issue_details.h"
 
 namespace enterprise_reporting {
 
@@ -23,15 +24,27 @@ LegacyTechService::LegacyTechService(Profile* profile,
 
 LegacyTechService::~LegacyTechService() = default;
 
-void LegacyTechService::ReportEvent(const std::string& type,
-                                    const GURL& url,
-                                    const std::string& filename,
-                                    uint64_t line,
-                                    uint64_t column) const {
+void LegacyTechService::ReportEvent(
+    const std::string& type,
+    const GURL& url,
+    const GURL& frame_url,
+    const std::string& filename,
+    uint64_t line,
+    uint64_t column,
+    std::optional<content::LegacyTechCookieIssueDetails> cookie_issue_details)
+    const {
   absl::optional<std::string> matched_url = url_matcher_.GetMatchedURL(url);
   VLOG(2) << "Get report for URL " << url
           << (matched_url ? " that matches a policy."
                           : " without matching any policies.");
+
+  if (!matched_url) {
+    matched_url = url_matcher_.GetMatchedURL(frame_url);
+    VLOG(2) << "Get report for Frame URL " << url
+            << (matched_url ? " that matches a policy."
+                            : " without matching any policies.");
+  }
+
   if (!matched_url) {
     return;
   }
@@ -40,11 +53,12 @@ void LegacyTechService::ReportEvent(const std::string& type,
       type,
       /*timestamp=*/base::Time::Now(),
       url,
+      frame_url,
       *matched_url,
       filename,
       line,
       column,
-      /*cookie_issue_details=*/std::nullopt};
+      cookie_issue_details};
 
   trigger_.Run(std::move(data));
 }

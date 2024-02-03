@@ -758,6 +758,10 @@ inline constexpr char kSecondaryDisplays[] =
 inline constexpr char kAllowMGSToStoreDisplayProperties[] =
     "settings.display.allow_mgs_to_store";
 
+// A list of all displays used by the user and reported to popularity metrics.
+const char kDisplayPopularityUserReportedDisplays[] =
+    "display_popularity.user_reported_displays";
+
 // A boolean pref that enable fullscreen alert bubble.
 // TODO(zxdan): Change to an allowlist in M89.
 inline constexpr char kFullscreenAlertEnabled[] =
@@ -1336,11 +1340,6 @@ inline constexpr char kAppListReorderNudge[] =
 // the continue files section for the launcher.
 inline constexpr char kLauncherFilesPrivacyNotice[] =
     "ash.launcher.continue_section_privacy_notice";
-
-// A dictionary pref that determines if the image search privacy notice in the
-// launcher search should be shown or not.
-inline constexpr char kImageSearchPrivacyNotice[] =
-    "ash.launcher.image_search_privacy_notice";
 
 // A boolean pref that indicates whether lock screen media controls are enabled.
 // Controlled by user policy.

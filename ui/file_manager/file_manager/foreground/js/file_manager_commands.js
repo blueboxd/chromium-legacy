@@ -8,27 +8,26 @@ import {assert} from 'chrome://resources/ash/common/assert.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 
 import {getDlpRestrictionDetails, getHoldingSpaceState, startIOTask} from '../../common/js/api.js';
-import {DialogType, isModal} from '../../common/js/dialog_type.js';
+import {isModal} from '../../common/js/dialog_type.js';
 import {getFocusedTreeItem, isDirectoryTree, isDirectoryTreeItem} from '../../common/js/dom_utils.js';
-import {entriesToURLs, isFakeEntry, isInteractiveVolume, isNonModifiable, isRecentRootType, isSameEntry, isSameVolume, isTeamDriveRoot, isTeamDrivesGrandRoot, isTrashEntry, isTrashRoot, isTrashRootType, unwrapEntry} from '../../common/js/entry_utils.js';
-import {FileType} from '../../common/js/file_type.js';
+import {entriesToURLs, isFakeEntry, isGrandRootEntryInDrives, isInteractiveVolume, isNonModifiable, isRecentRootType, isSameEntry, isSameVolume, isTeamDriveRoot, isTeamDrivesGrandRoot, isTrashEntry, isTrashRoot, isTrashRootType, unwrapEntry} from '../../common/js/entry_utils.js';
+import {getExtension, getType, isEncrypted} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {isDlpEnabled, isDriveFsBulkPinningEnabled, isMirrorSyncEnabled, isNewDirectoryTreeEnabled, isSinglePartitionFormatEnabled} from '../../common/js/flags.js';
 import {recordEnum, recordUserAction} from '../../common/js/metrics.js';
 import {getFileErrorString, str, strf} from '../../common/js/translations.js';
 import {deleteIsForever, RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, shouldMoveToTrash, TrashEntry} from '../../common/js/trash.js';
 import {visitURL} from '../../common/js/util.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {FileSystemType, isRecentArcEntry, RootType, VolumeError, VolumeType} from '../../common/js/volume_manager_types.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {State} from '../../externs/ts/state.js';
-import {VolumeManager} from '../../externs/volume_manager.js';
+import {DialogType, State} from '../../externs/ts/state.js';
 import {readSubDirectories} from '../../state/ducks/all_entries.js';
 import {changeDirectory} from '../../state/ducks/current_directory.js';
 import {getFileData, getStore} from '../../state/store.js';
 import {XfTreeItem} from '../../widgets/xf_tree_item.js';
 
-import {ActionsModel} from './actions_model.js';
+import {CommonActionId, InternalActionId} from './actions_model.js';
 import {constants} from './constants.js';
 import {DirectoryModel} from './directory_model.js';
 import {FileSelection, FileSelectionHandler} from './file_selection.js';
@@ -40,6 +39,16 @@ import {DirectoryItem, DirectoryTree} from './ui/directory_tree.js';
 import {FilesConfirmDialog} from './ui/files_confirm_dialog.js';
 import {List} from './ui/list.js';
 
+
+/**
+ * TODO(TS): Remove when converting to TS.
+ *
+ * @param {!Event} event
+ */
+function getCommand(event) {
+  return /** @type {import('ui/command.js').CommandEvent} */ (event)
+      .detail.command;
+}
 
 /**
  * A command.
@@ -293,6 +302,7 @@ CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly =
       event.canExecute = enabled;
       // @ts-ignore: error TS2339: Property 'command' does not exist on type
       // 'Event'.
+
       event.command.setHidden(!enabled);
     };
 
@@ -319,14 +329,11 @@ CommandUtil.forceDefaultHandler = (node, commandId) => {
     }
   });
   node.addEventListener('command', event => {
-    // @ts-ignore: error TS2339: Property 'command' does not exist on type
-    // 'Event'.
-    if (event.command.id !== commandId) {
+    const command = getCommand(event);
+    if (command.id !== commandId) {
       return;
     }
-    // @ts-ignore: error TS2339: Property 'command' does not exist on type
-    // 'Event'.
-    document.execCommand(event.command.id);
+    document.execCommand(command.id);
     event.cancelBubble = true;
   });
   node.addEventListener('canExecute', event => {
@@ -396,7 +403,8 @@ CommandUtil.getOnlyOneSelectedDirectory = selection => {
 
 /**
  * Returns true if the given entry is the root entry of the volume.
- * @param {!VolumeManager} volumeManager
+ * @param {!import('../../externs/volume_manager.js').VolumeManager}
+ *     volumeManager
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the entry is a root entry.
  */
@@ -423,7 +431,8 @@ CommandUtil.isFromSelectionMenu = event => {
 /**
  * If entry is fake/invalid/non-interactive/root, we don't show menu items
  * intended for regular entries.
- * @param {!VolumeManager} volumeManager
+ * @param {!import('../../externs/volume_manager.js').VolumeManager}
+ *     volumeManager
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if we should show the menu items for regular entries.
  */
@@ -512,7 +521,8 @@ CommandUtil.shouldIgnoreEvents = function(doc) {
  * parts (Shared Drives, My Drive, Shared with me, etc).
  *
  * @param {!Array<!Entry|!FilesAppEntry>} entries
- * @param {!VolumeManager} volumeManager
+ * @param {!import('../../externs/volume_manager.js').VolumeManager}
+ *     volumeManager
  * @return {boolean}
  */
 CommandUtil.isDriveEntries = (entries, volumeManager) => {
@@ -528,7 +538,7 @@ CommandUtil.isDriveEntries = (entries, volumeManager) => {
     return false;
   }
 
-  if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE &&
+  if (volumeInfo.volumeType === VolumeType.DRIVE &&
       isSameVolume(entries, volumeManager)) {
     return true;
   }
@@ -554,7 +564,7 @@ CommandUtil.isOnlyMyDriveEntries = (entries, state) => {
     if (!fileData) {
       return false;
     }
-    if (fileData.rootType !== VolumeManagerCommon.RootType.DRIVE) {
+    if (fileData.rootType !== RootType.DRIVE) {
       return false;
     }
   }
@@ -584,7 +594,7 @@ CommandUtil.isOnTrashRoot = fileManager => {
  *
  * @param {!Event} event Command event to mark.
  * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
- * @return {Entry|FilesAppDirEntry} Entry of the event node.
+ * @return {Entry|FilesAppDirEntry|undefined} Entry of the event node.
  */
 CommandUtil.getEventEntry = (event, fileManager) => {
   let entry;
@@ -728,9 +738,8 @@ export class CommandHandler {
     if (CommandUtil.shouldIgnoreEvents(assert(this.fileManager_.document))) {
       return;
     }
-    // @ts-ignore: error TS2339: Property 'command' does not exist on type
-    // 'Event'.
-    const handler = CommandHandler.COMMANDS_[event.command.id];
+    const command = getCommand(event);
+    const handler = CommandHandler.COMMANDS_[command.id];
     // @ts-ignore: error TS18048: 'handler' is possibly 'undefined'.
     handler.execute.call(
         /** @type {FilesCommand} */ (handler), event, this.fileManager_);
@@ -768,14 +777,14 @@ export class CommandHandler {
 
 /**
  * Supported disk file system types for renaming.
- * @private @const @type {!Array<!VolumeManagerCommon.FileSystemType>}
+ * @private @const @type {!Array<!FileSystemType>}
  */
 // @ts-ignore: error TS2341: Property 'RENAME_DISK_FILE_SYSTEM_SUPPORT_' is
 // private and only accessible within class 'CommandHandler'.
 CommandHandler.RENAME_DISK_FILE_SYSTEM_SUPPORT_ = [
-  VolumeManagerCommon.FileSystemType.EXFAT,
-  VolumeManagerCommon.FileSystemType.VFAT,
-  VolumeManagerCommon.FileSystemType.NTFS,
+  FileSystemType.EXFAT,
+  FileSystemType.VFAT,
+  FileSystemType.NTFS,
 ];
 
 /**
@@ -885,9 +894,9 @@ CommandHandler.COMMANDS_['unmount'] = new (class extends FilesCommand {
    * @private
    */
   async executeImpl_(event, fileManager) {
-    /** @param {VolumeManagerCommon.VolumeType=} opt_volumeType */
+    /** @param {VolumeType=} opt_volumeType */
     const errorCallback = opt_volumeType => {
-      if (opt_volumeType === VolumeManagerCommon.VolumeType.REMOVABLE) {
+      if (opt_volumeType === VolumeType.REMOVABLE) {
         fileManager.ui.alertDialog.showHtml(
             '', str('UNMOUNT_FAILED'), null, null, null);
       } else {
@@ -934,7 +943,7 @@ CommandHandler.COMMANDS_['unmount'] = new (class extends FilesCommand {
       } catch (error) {
         console.warn('Cannot unmount (redacted):', error);
         console.debug(`Cannot unmount '${volume.volumeId}':`, error);
-        if (error != VolumeManagerCommon.VolumeError.PATH_NOT_MOUNTED) {
+        if (error != VolumeError.PATH_NOT_MOUNTED) {
           errorCallback(volume.volumeType);
         }
       }
@@ -970,19 +979,18 @@ CommandHandler.COMMANDS_['unmount'] = new (class extends FilesCommand {
     }
 
     event.canExecute =
-        (volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
-         volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||
-         volumeType === VolumeManagerCommon.VolumeType.PROVIDED ||
-         volumeType === VolumeManagerCommon.VolumeType.SMB);
+        (volumeType === VolumeType.ARCHIVE ||
+         volumeType === VolumeType.REMOVABLE ||
+         volumeType === VolumeType.PROVIDED || volumeType === VolumeType.SMB);
     event.command.setHidden(!event.canExecute);
 
     switch (volumeType) {
-      case VolumeManagerCommon.VolumeType.ARCHIVE:
-      case VolumeManagerCommon.VolumeType.PROVIDED:
-      case VolumeManagerCommon.VolumeType.SMB:
+      case VolumeType.ARCHIVE:
+      case VolumeType.PROVIDED:
+      case VolumeType.SMB:
         event.command.label = str('CLOSE_VOLUME_BUTTON_LABEL');
         break;
-      case VolumeManagerCommon.VolumeType.REMOVABLE:
+      case VolumeType.REMOVABLE:
         event.command.label = str('UNMOUNT_DEVICE_BUTTON_LABEL');
         break;
     }
@@ -1048,8 +1056,8 @@ CommandHandler.COMMANDS_['format'] = new (class extends FilesCommand {
     const isRoot = location && location.isRootEntry;
 
     // Enable the command if this is a removable device (e.g. a USB drive).
-    const removableRoot = location && isRoot &&
-        location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
+    const removableRoot =
+        location && isRoot && location.rootType === RootType.REMOVABLE;
     event.canExecute = removableRoot && (isUnrecognizedVolume || writable);
 
     if (isSinglePartitionFormatEnabled()) {
@@ -1099,8 +1107,8 @@ CommandHandler.COMMANDS_['erase-device'] = new (class extends FilesCommand {
     const writable = location && !location.isReadOnly;
     const isRoot = location && location.isRootEntry;
 
-    const removableRoot = location && isRoot &&
-        location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
+    const removableRoot =
+        location && isRoot && location.rootType === RootType.REMOVABLE;
 
     let isDevice = false;
     if (root && root instanceof EntryList) {
@@ -1385,7 +1393,8 @@ CommandHandler.COMMANDS_['toggle-hidden-files'] =
       execute(event, fileManager) {
         const visible = !fileManager.fileFilter.isHiddenFilesVisible();
         fileManager.fileFilter.setHiddenFilesVisible(visible);
-        event.command.checked = visible;  // Checkmark for "Show hidden files".
+        const command = getCommand(event);
+        command.checked = visible;  // Check-mark for "Show hidden files".
         CommandHandler.recordMenuItemSelected(
             visible ? CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_SHOW :
                       CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_HIDE);
@@ -1405,7 +1414,8 @@ CommandHandler.COMMANDS_['toggle-hidden-android-folders'] =
       execute(event, fileManager) {
         const visible = !fileManager.fileFilter.isAllAndroidFoldersVisible();
         fileManager.fileFilter.setAllAndroidFoldersVisible(visible);
-        event.command.checked = visible;
+        const command = getCommand(event);
+        command.checked = visible;
         CommandHandler.recordMenuItemSelected(
             visible ?
                 CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_SHOW :
@@ -1418,13 +1428,12 @@ CommandHandler.COMMANDS_['toggle-hidden-android-folders'] =
       canExecute(event, fileManager) {
         const hasAndroidFilesVolumeInfo =
             !!fileManager.volumeManager.getCurrentProfileVolumeInfo(
-                VolumeManagerCommon.VolumeType.ANDROID_FILES);
+                VolumeType.ANDROID_FILES);
         const currentRootType = fileManager.directoryModel.getCurrentRootType();
-        const isInMyFiles =
-            currentRootType == VolumeManagerCommon.RootType.MY_FILES ||
-            currentRootType == VolumeManagerCommon.RootType.DOWNLOADS ||
-            currentRootType == VolumeManagerCommon.RootType.CROSTINI ||
-            currentRootType == VolumeManagerCommon.RootType.ANDROID_FILES;
+        const isInMyFiles = currentRootType == RootType.MY_FILES ||
+            currentRootType == RootType.DOWNLOADS ||
+            currentRootType == RootType.CROSTINI ||
+            currentRootType == RootType.ANDROID_FILES;
         event.canExecute = hasAndroidFilesVolumeInfo && isInMyFiles;
         event.command.setHidden(!event.canExecute);
         event.command.checked =
@@ -1476,9 +1485,8 @@ export class DeleteCommand extends FilesCommand {
    */
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
-    // @ts-ignore: error TS2339: Property 'command' does not exist on type
-    // 'Event'.
-    const permanentlyDelete = event.command.id === 'delete';
+    const command = getCommand(event);
+    const permanentlyDelete = command.id === 'delete';
 
     // Execute might be called without a call of canExecute method, e.g.,
     // called directly from code, crbug.com/509483. See toolbar controller
@@ -1681,9 +1689,6 @@ CommandHandler.COMMANDS_['move-to-trash'] = deleteCommand;
 
 /**
  * Restores selected files from trash.
- *
- * @suppress {invalidCasts} See FilesAppEntry in files_app_entry_interfaces.js
- * for explanation of why FilesAppEntry cannot extend Entry.
  */
 CommandHandler
     // @ts-ignore: error TS2341: Property 'COMMANDS_' is private and only
@@ -1787,7 +1792,8 @@ CommandHandler
    * Check whether the parent exists from a supplied entry and return the folder
    * name (if it exists or doesn't).
    * @param {!Entry} entry The entry to identify the parent from.
-   * @param {!VolumeManager} volumeManager
+   * @param {!import('../../externs/volume_manager.js').VolumeManager}
+   *     volumeManager
    * @returns {Promise<{exists: boolean, parentName: string}>}
    */
   async getParentName(entry, volumeManager) {
@@ -1856,7 +1862,7 @@ CommandHandler.COMMANDS_['paste'] = new (class extends FilesCommand {
     if (CommandUtil.isOnTrashRoot(fileManager)) {
       return;
     }
-    fileManager.document.execCommand(event.command.id);
+    fileManager.document.execCommand(getCommand(event).id);
   }
 
   /** @override */
@@ -2014,7 +2020,7 @@ CommandHandler.cutCopyCommand_ = new (class extends FilesCommand {
     // Cancel check-select-mode on cut/copy.  Any further selection of a dir
     // should start a new selection rather than add to the existing selection.
     fileManager.directoryModel.getFileListSelection().setCheckSelectMode(false);
-    fileManager.document.execCommand(event.command.id);
+    fileManager.document.execCommand(getCommand(event).id);
   }
 
   /** @override */
@@ -2222,8 +2228,7 @@ CommandHandler.COMMANDS_['rename'] = new (class extends FilesCommand {
             return true;
           }
           const writable = !location.isReadOnly;
-          const removable =
-              location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
+          const removable = location.rootType === RootType.REMOVABLE;
           event.canExecute = removable && writable &&
               volumeInfo.diskFileSystemType &&
               // @ts-ignore: error TS2341: Property
@@ -2263,9 +2268,14 @@ CommandHandler.COMMANDS_['rename'] = new (class extends FilesCommand {
     // ARC doesn't support rename for now. http://b/232152680
     // @ts-ignore: error TS2345: Argument of type 'FileSystemEntry | undefined'
     // is not assignable to parameter of type 'FileSystemEntry | null'.
-    const isRecentArcEntry = VolumeManagerCommon.isRecentArcEntry(entries[0]);
+    const recentArcEntry = isRecentArcEntry(entries[0]);
+    // Drive grand roots do not support rename.
+    // @ts-ignore: error TS2345: Argument of type 'FileSystemEntry | undefined'
+    // is not assignable to parameter of type 'FileSystemEntry | null'.
+    const isDriveGrandRoot = isGrandRootEntryInDrives(entries[0]);
+
     event.canExecute = entries.length === 1 && volumeIsNotReadOnly &&
-        !isRecentArcEntry &&
+        !recentArcEntry && !isDriveGrandRoot &&
         CommandUtil.hasCapability(fileManager, entries, 'canRename');
     event.command.setHidden(false);
   }
@@ -2638,56 +2648,53 @@ CommandHandler.COMMANDS_['toggle-holding-space'] =
 /**
  * Opens containing folder of the focused file.
  */
-// @ts-ignore: error TS2341: Property 'COMMANDS_' is private and only accessible
-// within class 'CommandHandler'.
-CommandHandler.COMMANDS_['go-to-file-location'] =
-    new (class extends FilesCommand {
-      // @ts-ignore: error TS7006: Parameter 'fileManager' implicitly has an
-      // 'any' type.
-      execute(event, fileManager) {
-        const entries =
-            CommandUtil.getCommandEntries(fileManager, event.target);
-        if (entries.length !== 1) {
-          return;
-        }
+CommandHandler
+    // @ts-ignore: error TS2341: Property 'COMMANDS_' is private and only
+    // accessible within class 'CommandHandler'.
+    .COMMANDS_['go-to-file-location'] = new (class extends FilesCommand {
+  // @ts-ignore: error TS7006: Parameter 'fileManager' implicitly has an
+  // 'any' type.
+  execute(event, fileManager) {
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    if (entries.length !== 1) {
+      return;
+    }
 
-        const components = PathComponent.computeComponentsFromEntry(
-            // @ts-ignore: error TS2345: Argument of type 'FileSystemEntry |
-            // undefined' is not assignable to parameter of type
-            // 'FileSystemEntry | FilesAppEntry'.
-            entries[0], fileManager.volumeManager);
-        // Entries in file list table should always have its containing folder.
-        // (i.e. Its path have at least two components: its parent and itself.)
-        assert(components.length >= 2);
-        const parentComponent = components[components.length - 2];
-        // @ts-ignore: error TS18048: 'parentComponent' is possibly 'undefined'.
-        parentComponent.resolveEntry().then(entry => {
-          if (entry && entry.isDirectory) {
-            fileManager.directoryModel.changeDirectoryEntry(
-                /** @type {!(DirectoryEntry|FilesAppDirEntry)} */ (entry));
-          }
-        });
+    const components = PathComponent.computeComponentsFromEntry(
+        // @ts-ignore: error TS2345: Argument of type 'FileSystemEntry |
+        // undefined' is not assignable to parameter of type
+        // 'FileSystemEntry | FilesAppEntry'.
+        entries[0], fileManager.volumeManager);
+    // Entries in file list table should always have its containing folder.
+    // (i.e. Its path have at least two components: its parent and itself.)
+    assert(components.length >= 2);
+    const parentComponent = components[components.length - 2];
+    // @ts-ignore: error TS18048: 'parentComponent' is possibly 'undefined'.
+    parentComponent.resolveEntry().then(entry => {
+      if (entry && entry.isDirectory) {
+        fileManager.directoryModel.changeDirectoryEntry(
+            /** @type {!(DirectoryEntry|FilesAppDirEntry)} */ (entry));
       }
+    });
+  }
 
-      /** @override */
-      // @ts-ignore: error TS7006: Parameter 'fileManager' implicitly has an
-      // 'any' type.
-      canExecute(event, fileManager) {
-        // Available in Recents, Audio, Images, and Videos.
-        if (!isRecentRootType(
-                fileManager.directoryModel.getCurrentRootType())) {
-          event.canExecute = false;
-          event.command.setHidden(true);
-          return;
-        }
+  /** @override */
+  // @ts-ignore: error TS7006: Parameter 'fileManager' implicitly has an
+  // 'any' type.
+  canExecute(event, fileManager) {
+    // Available in Recents, Audio, Images, and Videos.
+    if (!isRecentRootType(fileManager.directoryModel.getCurrentRootType())) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
 
-        // Available for a single entry.
-        const entries =
-            CommandUtil.getCommandEntries(fileManager, event.target);
-        event.canExecute = entries.length === 1;
-        event.command.setHidden(!event.canExecute);
-      }
-    })();
+    // Available for a single entry.
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    event.canExecute = entries.length === 1;
+    event.command.setHidden(!event.canExecute);
+  }
+})();
 
 /**
  * Displays QuickView for current selection.
@@ -2799,7 +2806,7 @@ CommandHandler.COMMANDS_['search'] = new (class extends FilesCommand {
     // start native search for an app window. Thus we always allow it and do
     // nothing in trash.
     const currentRootType = fileManager.directoryModel.getCurrentRootType();
-    if (currentRootType !== VolumeManagerCommon.RootType.TRASH) {
+    if (currentRootType !== RootType.TRASH) {
       // Cancel item selection.
       fileManager.directoryModel.clearSelection();
       // Open the query input via the search container.
@@ -2874,10 +2881,10 @@ CommandHandler.COMMANDS_['toggle-pinned'] = new (class extends FilesCommand {
           if (!actionsModel) {
             return;
           }
-          const saveForOfflineAction = actionsModel.getAction(
-              ActionsModel.CommonActionId.SAVE_FOR_OFFLINE);
-          const offlineNotNeededAction = actionsModel.getAction(
-              ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY);
+          const saveForOfflineAction =
+              actionsModel.getAction(CommonActionId.SAVE_FOR_OFFLINE);
+          const offlineNotNeededAction =
+              actionsModel.getAction(CommonActionId.OFFLINE_NOT_NECESSARY);
           // Saving for offline has a priority if both actions are available.
           let action = offlineNotNeededAction;
           if (saveForOfflineAction && saveForOfflineAction.canExecute()) {
@@ -2926,9 +2933,9 @@ CommandHandler.COMMANDS_['toggle-pinned'] = new (class extends FilesCommand {
         return;
       }
       const saveForOfflineAction =
-          actionsModel.getAction(ActionsModel.CommonActionId.SAVE_FOR_OFFLINE);
-      const offlineNotNeededAction = actionsModel.getAction(
-          ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY);
+          actionsModel.getAction(CommonActionId.SAVE_FOR_OFFLINE);
+      const offlineNotNeededAction =
+          actionsModel.getAction(CommonActionId.OFFLINE_NOT_NECESSARY);
       let action = offlineNotNeededAction;
       command.checked = !!offlineNotNeededAction;
       if (saveForOfflineAction && saveForOfflineAction.canExecute()) {
@@ -2995,7 +3002,7 @@ CommandHandler.COMMANDS_['extract-all'] = new (class extends FilesCommand {
     } else {
       // Check the selected entries for a ZIP archive in the selected set.
       for (const entry of selection.entries) {
-        if (FileType.getExtension(entry) === '.zip') {
+        if (getExtension(entry) === '.zip') {
           event.command.setHidden(false);
           event.canExecute = true;
           return;
@@ -3049,7 +3056,7 @@ CommandHandler.COMMANDS_['zip-selection'] = new (class extends FilesCommand {
 
     // Hide ZIP selection for single ZIP file selected.
     if (selection.entries.length === 1 &&
-        FileType.getExtension(selection.entries[0]) === '.zip') {
+        getExtension(selection.entries[0]) === '.zip') {
       event.command.setHidden(true);
       event.canExecute = false;
       return;
@@ -3077,7 +3084,7 @@ CommandHandler.COMMANDS_['zip-selection'] = new (class extends FilesCommand {
             .some(
                 // @ts-ignore: error TS7006: Parameter 'i' implicitly has an
                 // 'any' type.
-                (metadata, i) => FileType.isEncrypted(
+                (metadata, i) => isEncrypted(
                     selection.entries[i], metadata.contentMimeType));
 
     event.canExecute = dirEntry && !fileManager.directoryModel.isReadOnly() &&
@@ -3105,8 +3112,7 @@ CommandHandler.COMMANDS_['share'] = new (class extends FilesCommand {
           if (!actionsModel) {
             return;
           }
-          const action =
-              actionsModel.getAction(ActionsModel.CommonActionId.SHARE);
+          const action = actionsModel.getAction(CommonActionId.SHARE);
           if (action) {
             actionsController.executeAction(action);
           }
@@ -3135,7 +3141,7 @@ CommandHandler.COMMANDS_['share'] = new (class extends FilesCommand {
       if (!actionsModel) {
         return;
       }
-      const action = actionsModel.getAction(ActionsModel.CommonActionId.SHARE);
+      const action = actionsModel.getAction(CommonActionId.SHARE);
       event.canExecute = action && action.canExecute();
       command.disabled = !event.canExecute;
       command.setHidden(!action);
@@ -3175,8 +3181,8 @@ CommandHandler.COMMANDS_['manage-in-drive'] = new (class extends FilesCommand {
           if (!actionsModel) {
             return;
           }
-          const action = actionsModel.getAction(
-              ActionsModel.InternalActionId.MANAGE_IN_DRIVE);
+          const action =
+              actionsModel.getAction(InternalActionId.MANAGE_IN_DRIVE);
           if (action) {
             actionsController.executeAction(action);
           }
@@ -3205,8 +3211,7 @@ CommandHandler.COMMANDS_['manage-in-drive'] = new (class extends FilesCommand {
       if (!actionsModel) {
         return;
       }
-      const action =
-          actionsModel.getAction(ActionsModel.InternalActionId.MANAGE_IN_DRIVE);
+      const action = actionsModel.getAction(InternalActionId.MANAGE_IN_DRIVE);
       if (action) {
         command.setHidden(!action);
         event.canExecute = action && action.canExecute();
@@ -3251,9 +3256,8 @@ CommandHandler.COMMANDS_['manage-mirrorsync'] =
         // MirrorSync is only available to sync local directories, only show the
         // folder when navigated to a local directory.
         const currentRootType = fileManager.directoryModel.getCurrentRootType();
-        event.canExecute =
-            (currentRootType === VolumeManagerCommon.RootType.MY_FILES ||
-             currentRootType === VolumeManagerCommon.RootType.DOWNLOADS) &&
+        event.canExecute = (currentRootType === RootType.MY_FILES ||
+                            currentRootType === RootType.DOWNLOADS) &&
             isMirrorSyncEnabled();
         event.command.setHidden(!event.canExecute);
       }
@@ -3354,10 +3358,9 @@ class GuestOsShareCommand extends FilesCommand {
           share, () => {});
     } else if (
         info.isRootEntry &&
-        (info.rootType == VolumeManagerCommon.RootType.DRIVE ||
-         info.rootType == VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
-         info.rootType ==
-             VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT)) {
+        (info.rootType == RootType.DRIVE ||
+         info.rootType == RootType.COMPUTERS_GRAND_ROOT ||
+         info.rootType == RootType.SHARED_DRIVES_GRAND_ROOT)) {
       // Only show the dialog for My Drive, Shared Drives Grand Root and
       // Computers Grand Root.  Do not show for roots of a single Shared
       // Drive or Computer.
@@ -3540,8 +3543,8 @@ CommandHandler.COMMANDS_['pin-folder'] = new (class extends FilesCommand {
           if (!actionsModel) {
             return;
           }
-          const action = actionsModel.getAction(
-              ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT);
+          const action =
+              actionsModel.getAction(InternalActionId.CREATE_FOLDER_SHORTCUT);
           if (action) {
             actionsController.executeAction(action);
           }
@@ -3570,8 +3573,8 @@ CommandHandler.COMMANDS_['pin-folder'] = new (class extends FilesCommand {
       if (!actionsModel) {
         return;
       }
-      const action = actionsModel.getAction(
-          ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT);
+      const action =
+          actionsModel.getAction(InternalActionId.CREATE_FOLDER_SHORTCUT);
       event.canExecute = action && action.canExecute();
       command.disabled = !event.canExecute;
       command.setHidden(!action);
@@ -3612,8 +3615,8 @@ CommandHandler.COMMANDS_['unpin-folder'] = new (class extends FilesCommand {
           if (!actionsModel) {
             return;
           }
-          const action = actionsModel.getAction(
-              ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT);
+          const action =
+              actionsModel.getAction(InternalActionId.REMOVE_FOLDER_SHORTCUT);
           if (action) {
             actionsController.executeAction(action);
           }
@@ -3642,8 +3645,8 @@ CommandHandler.COMMANDS_['unpin-folder'] = new (class extends FilesCommand {
       if (!actionsModel) {
         return;
       }
-      const action = actionsModel.getAction(
-          ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT);
+      const action =
+          actionsModel.getAction(InternalActionId.REMOVE_FOLDER_SHORTCUT);
       command.setHidden(!action);
       event.canExecute = action && action.canExecute();
       command.disabled = !event.canExecute;
@@ -3986,7 +3989,7 @@ CommandHandler.COMMANDS_['set-wallpaper'] = new (class extends FilesCommand {
       event.command.setHidden(true);
       return;
     }
-    const type = FileType.getType(entries[0]);
+    const type = getType(entries[0]);
     if (entries.length !== 1 || type.type !== 'image') {
       event.canExecute = false;
       event.command.setHidden(true);
@@ -4021,18 +4024,12 @@ CommandHandler.COMMANDS_['volume-storage'] = new (class extends FilesCommand {
     }
 
     // Can execute only for local file systems.
-    if (currentVolumeInfo.volumeType ==
-            VolumeManagerCommon.VolumeType.MY_FILES ||
-        currentVolumeInfo.volumeType ==
-            VolumeManagerCommon.VolumeType.DOWNLOADS ||
-        currentVolumeInfo.volumeType ==
-            VolumeManagerCommon.VolumeType.CROSTINI ||
-        currentVolumeInfo.volumeType ==
-            VolumeManagerCommon.VolumeType.GUEST_OS ||
-        currentVolumeInfo.volumeType ==
-            VolumeManagerCommon.VolumeType.ANDROID_FILES ||
-        currentVolumeInfo.volumeType ==
-            VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER) {
+    if (currentVolumeInfo.volumeType == VolumeType.MY_FILES ||
+        currentVolumeInfo.volumeType == VolumeType.DOWNLOADS ||
+        currentVolumeInfo.volumeType == VolumeType.CROSTINI ||
+        currentVolumeInfo.volumeType == VolumeType.GUEST_OS ||
+        currentVolumeInfo.volumeType == VolumeType.ANDROID_FILES ||
+        currentVolumeInfo.volumeType == VolumeType.DOCUMENTS_PROVIDER) {
       event.canExecute = true;
     }
   }

@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Chromium का सुविधा तथा कार्यसम्पादनको गुणस्तर सुधार्न मद्दत गर्नुहोस्</translation>
 <translation id="1513122820609681462">Chromium लाई डिफल्ट ब्राउजरका रूपमा सेट गर्नुहोस्</translation>
 <translation id="1531155317299575425">Chromium मा साइन इन गर्ने निर्देशन देखाउँछ।</translation>
+<translation id="159029779861043703">Chromium ले Face ID का सहायताले तपाईंको संवेदनशील डेटा सुरक्षित राख्छ।</translation>
 <translation id="1591119736686995611">यसले Chromium को ट्याब ग्रिड खोल्छ।</translation>
+<translation id="1611584326765829247">Chromium लाई आफ्ना प्याकेजहरू ट्र्याक गर्न दिनुहोस्</translation>
 <translation id="1617663976202781617">Chromium सिंकको डेटा</translation>
 <translation id="1647558790457890304">Chromium का सेटिङ</translation>
 <translation id="164952285225495380">यो प्याकेज Chromium मा पहिल्यैदेखि ट्र्याक गरिराखिएको छ।</translation>
@@ -52,7 +54,6 @@
 <translation id="2784449251446768092">Chromium का सेटिङ मिलाउनुहोस्</translation>
 <translation id="2798503587425057129">Chromium मा पछि पढ्न सेभ गरिएका वेबपेजको सूची खोल्छ।</translation>
 <translation id="2843571538056574338">अटोफिल सुविधाका लागि Chromium प्रयोग गर्नुहोस्</translation>
-<translation id="2915596697727466327">Chromium ले तपाईंका पासवर्डहरूको अधिकृत पहुँच सुनिश्चित गर्न Face ID को प्रयोग गर्छ।</translation>
 <translation id="2918709798697875261">तपाईंको सङ्गठनका अनुसार तपाईं Chromium बाट साइन आउट रहिरहनु पर्ने हुन्छ।</translation>
 <translation id="2942241131342758843">लिंक खोल्न, विजेटबाट खोजी गर्न तथा अन्य एपहरूमा पासवर्ड स्वतः भर्न डिफल्ट रूपमा Chromium प्रयोग गर्नुहोस्</translation>
 <translation id="2977470724722393594">Chromium अद्यावधिक छ</translation>
@@ -86,6 +87,7 @@
 <translation id="4195557071150719219">Chromium मा हालसालै बन्द गरिएका ट्याबहरू हेर्नुहोस्</translation>
 <translation id="4408912345039114853">Chromium को सुरक्षा जाँच गर्ने सुविधा रन गर्नुहोस्</translation>
 <translation id="4432744876818348753">तपाईं Chromium बाट बढीभन्दा बढी फाइदा लिन चाहनुहुन्छ भने साइन इन गर्नुहोस्।</translation>
+<translation id="4498832288620833153">यसले इनपुट गरिएका URL हरू Chromium मा भएको तपाईंको रिडिङ लिस्टमा हाल्छ।</translation>
 <translation id="452436063477828504">तपाईं आफ्नो Google खातामा भएको Chromium सम्बन्धी जानकारी सधैँ प्रयोग गर्न सक्नुहुन्छ भन्ने कुरा सुनिश्चित गर्नुहोस्</translation>
 <translation id="4555020257205549924">यो सुविधा सक्रिय भएपछि, Chromium ले Google अनुवादकको प्रयोग गरी अन्य भाषाहरूमा लेखिएका पृष्ठहरू अनुवाद गर्न प्रस्ताव गर्ने छ। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Chromium मा "भुक्तानी विधिसम्बन्धी सेटिङ" पेज खोल्छ।</translation>
@@ -166,7 +168,6 @@
 <translation id="6911341667534646387">आफ्नो Google खातामा भएको Chromium सम्बन्धी जानकारी प्रयोग गरिराख्नुहोस्</translation>
 <translation id="7006920032187763988">तपाईं आफूले पासवर्ड म्यानेजरमा सेभ गरेका पासवर्डहरू आफ्नो iPad मा भएका अन्य एपमा प्रयोग गर्न सक्नुहुन्छ।</translation>
 <translation id="7018284295775193585">Chromium अपडेट गर्न सकिएन</translation>
-<translation id="7025471822960602362">Chromium मा पत्ता लगाइएका प्याकेजहरू ट्र्याक गर्नुहोस्</translation>
 <translation id="7045244423563602563">Chromium आफूले चाहेको जस्तो बनाउनुहोस्</translation>
 <translation id="7055269218854630176">तपाईंको सङ्गठन, <ph name="DOMAIN" /> ले तपाईंले साइन इन गर्न लागिरहेको खाता र Chromium प्रयोग गर्न सकिने तरिका व्यवस्थापन गर्छ। तपाईंका एड्मिन खास सुविधाहरू सेटअप गर्न वा ती सुविधामाथि प्रतिबन्ध लगाउन सक्नुहुन्छ।</translation>
 <translation id="7099326575020694068">Chromium ले विभाजित दृश्य सम्बन्धी मोडमा तपाईँको क्यामेराको प्रयोग गर्न सक्दैन</translation>
@@ -196,6 +197,7 @@
 <translation id="7928628054454574139">तपाईंले अन्य एपमा भएका लिंकमा ट्याप गर्दा ती लिंक सधैँ Chromium मा खोल्नुहोस्</translation>
 <translation id="7931842119211730154">मैले Chromium बन्द गर्दा इन्कोग्निटो ट्याब लक गरियोस्</translation>
 <translation id="7934404985878918282">Chromium मा पछि पढ्न सेभ गरिएका वेबपेजको सूची हेर्नुहोस्</translation>
+<translation id="7971753607796745700">रिडिङ लिस्टमा भएको सामग्री Chromium मा हालियोस्</translation>
 <translation id="7980860476903281594">Chromium ले तपाईंले अनुमति दिनुभएका साइटहरूसँग तपाईंको स्थानसम्बन्धी जानकारी सेयर गर्छ।</translation>
 <translation id="7995166854192397899">सुझावहरू तपाईंले अन्य डिभाइसमा ब्राउजर प्रयोग गरी गरेका क्रियाकलापमा आधारित हुन्छन्। सुझावहरू प्राप्त गर्न तपाईंका सबै डिभाइसहरूको Chromium मा साइन इन गर्नुहोस्।</translation>
 <translation id="800195749539500647">Chromium बाट बढीभन्दा बढी फाइदा लिनुहोस्</translation>

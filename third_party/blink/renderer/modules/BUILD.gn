@@ -404,6 +404,7 @@ source_set("unit_tests") {
     "canvas/canvas2d/base_rendering_context_2d_test.cc",
     "canvas/canvas2d/canvas_color_cache_test.cc",
     "canvas/canvas2d/canvas_filter_operation_resolver_test.cc",
+    "canvas/canvas2d/canvas_filter_test.cc",
     "canvas/canvas2d/canvas_filter_test_utils.cc",
     "canvas/canvas2d/canvas_filter_test_utils.h",
     "canvas/canvas2d/canvas_path_test.cc",
@@ -616,9 +617,16 @@ source_set("unit_tests") {
   ]
 
   if (!is_android) {
-    # Inline text box tests do not apply to Android, which only loads
-    # AXInlineTextBox tests for the focused node.
-    sources += [ "accessibility/ax_inline_text_box_test.cc" ]
+    sources += [
+      # Inline text box tests do not apply to Android, which only loads
+      # AXInlineTextBox tests for the focused node.
+      "accessibility/ax_inline_text_box_test.cc",
+
+      # CaptureController is not Web-exposed on Android,
+      # so most of the logic is compile-guarded away on Android,
+      # preventing meaningful testing.
+      "mediastream/capture_controller_test.cc",
+    ]
   }
 
   if (rtc_use_h264) {

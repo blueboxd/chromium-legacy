@@ -35,8 +35,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-enum UploadRequired { UPLOAD_NOT_REQUIRED, UPLOAD_REQUIRED, USE_UPLOAD_RATES };
-
 namespace base {
 class TimeTicks;
 }
@@ -264,7 +262,6 @@ class FormStructure {
 
   // Classifies each field in |fields_| using the regular expressions.
   void ParseFieldTypesWithPatterns(PatternSource pattern_source,
-                                   const GeoIpCountryCode& client_country,
                                    LogManager* log_manager);
 
   // Returns the values that can be filled into the form structure for the
@@ -347,11 +344,6 @@ class FormStructure {
   void set_submission_event(mojom::SubmissionIndicatorEvent submission_event) {
     submission_event_ = submission_event;
   }
-
-  void set_upload_required(UploadRequired required) {
-    upload_required_ = required;
-  }
-  UploadRequired upload_required() const { return upload_required_; }
 
   base::TimeTicks form_parsed_timestamp() const {
     return form_parsed_timestamp_;
@@ -558,6 +550,10 @@ class FormStructure {
   // adjacent fields.
   void ExtractParseableFieldLabels();
 
+  // The country where the user is currently located. Used to introduce biases
+  // in form parsing and understanding according to the user's location.
+  GeoIpCountryCode client_country_;
+
   // The language detected for this form's page, before any translations
   // performed by Chrome.
   LanguageCode current_page_language_;
@@ -604,10 +600,6 @@ class FormStructure {
   // The number of fields that are part of the form signature and that are
   // included in queries to the Autofill server.
   size_t active_field_count_ = 0;
-
-  // Whether the server expects us to always upload, never upload, or default
-  // to the stored upload rates.
-  UploadRequired upload_required_ = USE_UPLOAD_RATES;
 
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.

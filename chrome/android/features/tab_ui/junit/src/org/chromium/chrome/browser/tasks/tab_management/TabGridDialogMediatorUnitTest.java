@@ -48,7 +48,6 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
@@ -102,7 +101,7 @@ public class TabGridDialogMediatorUnitTest {
     @Mock TabModelFilterProvider mTabModelFilterProvider;
     @Mock TabGroupModelFilter mTabGroupModelFilter;
     @Mock TabModel mTabModel;
-    @Mock TabSelectionEditorCoordinator.TabSelectionEditorController mTabSelectionEditorController;
+    @Mock TabListEditorCoordinator.TabListEditorController mTabListEditorController;
     @Mock TabGroupTitleEditor mTabGroupTitleEditor;
     @Mock EditText mTitleTextView;
     @Mock Editable mEditable;
@@ -110,8 +109,8 @@ public class TabGridDialogMediatorUnitTest {
     @Mock Supplier<RecyclerViewPosition> mRecyclerViewPositionSupplier;
     @Captor ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
 
-    private TabImpl mTab1;
-    private TabImpl mTab2;
+    private Tab mTab1;
+    private Tab mTab2;
     private Activity mActivity;
     private PropertyModel mModel;
     private TabGridDialogMediator mMediator;
@@ -176,7 +175,7 @@ public class TabGridDialogMediatorUnitTest {
         assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(true));
         mMediator.initWithNative(
                 () -> {
-                    return mTabSelectionEditorController;
+                    return mTabListEditorController;
                 },
                 mTabGroupTitleEditor);
         assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(false));
@@ -208,23 +207,22 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
-    public void setupTabSelectionEditor() {
+    public void setupTabListEditor() {
         // Setup selection editor for multiple items.
         assertThat(
                 mModel.get(TabGridPanelProperties.MENU_CLICK_LISTENER),
                 instanceOf(View.OnClickListener.class));
 
-        ArgumentCaptor<List<TabSelectionEditorAction>> captor =
+        ArgumentCaptor<List<TabListEditorAction>> captor =
                 ArgumentCaptor.forClass((Class) List.class);
         mMediator.getToolbarMenuCallbackForTesting().onResult(R.id.select_tabs);
-        verify(mTabSelectionEditorController)
-                .configureToolbarWithMenuItems(captor.capture(), eq(null));
+        verify(mTabListEditorController).configureToolbarWithMenuItems(captor.capture(), eq(null));
         verify(mRecyclerViewPositionSupplier, times(1)).get();
-        verify(mTabSelectionEditorController).show(any(), eq(0), eq(null));
-        List<TabSelectionEditorAction> actions = captor.getValue();
-        assertThat(actions.get(0), instanceOf(TabSelectionEditorSelectionAction.class));
-        assertThat(actions.get(1), instanceOf(TabSelectionEditorCloseAction.class));
-        assertThat(actions.get(2), instanceOf(TabSelectionEditorUngroupAction.class));
+        verify(mTabListEditorController).show(any(), eq(0), eq(null));
+        List<TabListEditorAction> actions = captor.getValue();
+        assertThat(actions.get(0), instanceOf(TabListEditorSelectionAction.class));
+        assertThat(actions.get(1), instanceOf(TabListEditorCloseAction.class));
+        assertThat(actions.get(2), instanceOf(TabListEditorUngroupAction.class));
     }
 
     @Test
@@ -262,7 +260,7 @@ public class TabGridDialogMediatorUnitTest {
         View.OnClickListener listener = mModel.get(TabGridPanelProperties.ADD_CLICK_LISTENER);
         listener.onClick(mView);
 
-        verify(mTabCreator).launchNTP();
+        verify(mTabCreator).launchNtp();
     }
 
     @Test
@@ -419,7 +417,7 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void tabAddition() {
-        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         // Mock that the animation source view is not null, and the dialog is showing.
         mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
@@ -533,7 +531,7 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     public void tabClosure_NonRootTab_StillGroupAfterClosure_WithStoredTitle() {
         // Mock that tab1, tab2 and newTab are in the same group and tab1 is the root tab.
-        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2, newTab));
         createTabGroup(tabgroup, TAB1_ID);
 
@@ -561,7 +559,7 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     public void tabClosure_RootTab_StillGroupAfterClosure_WithStoredTitle() {
         // Mock that tab1, tab2 and newTab are in the same group and newTab is the root tab.
-        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2, newTab));
         createTabGroup(tabgroup, TAB3_ID);
 
@@ -940,7 +938,7 @@ public class TabGridDialogMediatorUnitTest {
 
         mMediator.hideDialog(false);
 
-        verify(mTabSelectionEditorController).hide();
+        verify(mTabListEditorController).hide();
     }
 
     @Test
@@ -1047,7 +1045,7 @@ public class TabGridDialogMediatorUnitTest {
                         "");
         mMediator.initWithNative(
                 () -> {
-                    return mTabSelectionEditorController;
+                    return mTabListEditorController;
                 },
                 mTabGroupTitleEditor);
 
@@ -1094,7 +1092,7 @@ public class TabGridDialogMediatorUnitTest {
                         "");
         mMediator.initWithNative(
                 () -> {
-                    return mTabSelectionEditorController;
+                    return mTabListEditorController;
                 },
                 mTabGroupTitleEditor);
         // Mock that the dialog is hidden and animation source view, header title and scrim click
@@ -1142,7 +1140,7 @@ public class TabGridDialogMediatorUnitTest {
                         "");
         mMediator.initWithNative(
                 () -> {
-                    return mTabSelectionEditorController;
+                    return mTabListEditorController;
                 },
                 mTabGroupTitleEditor);
         // Mock that the dialog is hidden and animation source view is set to some mock view for
@@ -1174,7 +1172,7 @@ public class TabGridDialogMediatorUnitTest {
 
         assertThat(mModel.get(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED), equalTo(false));
         verify(mRecyclerViewPositionSupplier, times(1)).get();
-        verify(mTabSelectionEditorController).show(eq(tabgroup), eq(0), eq(null));
+        verify(mTabListEditorController).show(eq(tabgroup), eq(0), eq(null));
     }
 
     @Test
@@ -1218,7 +1216,7 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     public void testScrollToTab() {
         // Mock that tab1, tab2 and newTab are in the same group and newTab is the root tab.
-        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2, newTab));
         createTabGroup(tabgroup, TAB2_ID);
 
@@ -1243,8 +1241,8 @@ public class TabGridDialogMediatorUnitTest {
                 .removeTabModelFilterObserver(mTabModelObserverCaptor.capture());
     }
 
-    private TabImpl prepareTab(int id, String title) {
-        TabImpl tab = TabUiUnitTestUtils.prepareTab(id, title, GURL.emptyGURL());
+    private Tab prepareTab(int id, String title) {
+        Tab tab = TabUiUnitTestUtils.prepareTab(id, title, GURL.emptyGURL());
         doReturn(true).when(tab).isIncognito();
         return tab;
     }

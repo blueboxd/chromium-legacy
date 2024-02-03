@@ -8,7 +8,7 @@ import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {CustomizeButtonSelectElement} from 'chrome://os-settings/lazy_load.js';
 import {fakeGraphicsTabletButtonActions, fakeGraphicsTablets} from 'chrome://os-settings/os_settings.js';
 import {assert} from 'chrome://resources/js/assert.js';
-import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 suite('<customize-button-select>', () => {
@@ -93,7 +93,9 @@ suite('<customize-button-select>', () => {
     await flushTasks();
 
     assertEquals(getSelectedValue(), 'key combination');
-    assertEquals(select.get('label_'), 'ctrl + z');
+    assertTrue(select.get('remappedToKeyCombination_'));
+    assertEquals(select.get('label_'), 'Key combination');
+    assertDeepEquals(select.get('inputKeys_'), ['Ctrl', '+', 'z']);
 
     // Switch to another button remapping.
     select.set(
@@ -103,7 +105,9 @@ suite('<customize-button-select>', () => {
     await flushTasks();
 
     assertEquals(getSelectedValue(), 'key combination');
-    assertEquals(select.get('label_'), 'ctrl + v');
+    assertTrue(select.get('remappedToKeyCombination_'));
+    assertEquals(select.get('label_'), 'Key combination');
+    assertDeepEquals(select.get('inputKeys_'), ['Ctrl', '+', 'v']);
   });
 
   test('update dropdown will sent events', async () => {
@@ -187,5 +191,17 @@ suite('<customize-button-select>', () => {
     await flushTasks();
     assertEquals(select.selectedValue, 'none');
     assertEquals(buttonRemappingChangedEventCount, 1);
+  });
+
+  test('select react to key event', async () => {
+    await initializeSelect();
+    assertFalse(select.get('shouldShowDropdownMenu_'));
+
+    const enterEvent = new KeyboardEvent(
+        'keydown', {cancelable: true, key: 'Enter', keyCode: 13});
+    select.dispatchEvent(enterEvent);
+
+    await flushTasks();
+    assertTrue(select.get('shouldShowDropdownMenu_'));
   });
 });

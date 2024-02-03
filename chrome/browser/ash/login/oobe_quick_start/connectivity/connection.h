@@ -40,7 +40,7 @@ class QuickStartMessage;
 class Connection
     : public TargetDeviceConnectionBroker::AuthenticatedConnection {
  public:
-  static constexpr base::TimeDelta kDefaultRoundTripTimeout = base::Seconds(3);
+  static constexpr base::TimeDelta kDefaultRoundTripTimeout = base::Seconds(60);
 
   using HandshakeSuccessCallback = base::OnceCallback<void(bool)>;
   using ConnectionAuthenticatedCallback = base::OnceCallback<void(
@@ -120,7 +120,7 @@ class Connection
   // TargetDeviceConnectionBroker::AuthenticatedConnection:
   void RequestWifiCredentials(RequestWifiCredentialsCallback callback) override;
   void NotifySourceOfUpdate(NotifySourceOfUpdateCallback callback) override;
-  void RequestAccountInfo(base::OnceClosure callback) override;
+  void RequestAccountInfo(RequestAccountInfoCallback callback) override;
   void RequestAccountTransferAssertion(
       const Base64UrlString& challenge,
       RequestAccountTransferAssertionCallback callback) override;
@@ -149,7 +149,7 @@ class Connection
       mojom::QuickStartMessagePtr quick_start_message);
 
   void OnBootstrapConfigurationsResponse(
-      base::OnceClosure callback,
+      RequestAccountInfoCallback callback,
       mojom::QuickStartMessagePtr quick_start_message);
 
   void SendMessageAndDecodeResponse(
@@ -162,6 +162,8 @@ class Connection
       QuickStartResponseType response_type,
       base::OnceClosure callback,
       base::TimeDelta timeout = kDefaultRoundTripTimeout);
+  void SendMessageWithoutResponse(std::unique_ptr<QuickStartMessage> message,
+                                  QuickStartResponseType message_type);
   void SendBytesAndReadResponse(
       std::vector<uint8_t>&& bytes,
       QuickStartResponseType response_type,

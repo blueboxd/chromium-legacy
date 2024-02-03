@@ -341,7 +341,7 @@ void RecentTabsSubMenuModel::Build() {
     SetCommandIcon(this, IDC_SHOW_HISTORY,
                    vector_icons::kHistoryChromeRefreshIcon);
   }
-  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+  if (features::IsSidePanelPinningEnabled()) {
     InsertItemWithStringIdAt(1, IDC_SHOW_HISTORY_CLUSTERS_SIDE_PANEL,
                              IDS_HISTORY_CLUSTERS_SHOW_SIDE_PANEL);
     if (features::IsChromeRefresh2023()) {
@@ -858,6 +858,8 @@ void RecentTabsSubMenuModel::ClearTabsFromOtherDevices() {
   weak_ptr_factory_for_other_devices_tab_.InvalidateWeakPtrs();
 
   other_devices_tab_navigation_items_.clear();
+
+  device_sub_menu_items_.clear();
 }
 
 sync_sessions::OpenTabsUIDelegate*

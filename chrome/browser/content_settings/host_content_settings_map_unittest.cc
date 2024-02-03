@@ -82,19 +82,23 @@ class MockUserModifiableProvider
     : public content_settings::UserModifiableProvider {
  public:
   ~MockUserModifiableProvider() override = default;
-  MOCK_CONST_METHOD2(
-      GetRuleIterator,
-      std::unique_ptr<content_settings::RuleIterator>(ContentSettingsType,
-                                                      bool));
+  MOCK_CONST_METHOD3(GetRuleIterator,
+                     std::unique_ptr<content_settings::RuleIterator>(
+                         ContentSettingsType,
+                         bool,
+                         const content_settings::PartitionKey&));
 
-  MOCK_METHOD5(SetWebsiteSetting,
+  MOCK_METHOD6(SetWebsiteSetting,
                bool(const ContentSettingsPattern&,
                     const ContentSettingsPattern&,
                     ContentSettingsType,
                     base::Value&&,
-                    const content_settings::ContentSettingConstraints&));
+                    const content_settings::ContentSettingConstraints&,
+                    const content_settings::PartitionKey&));
 
-  MOCK_METHOD1(ClearAllContentSettingsRules, void(ContentSettingsType));
+  MOCK_METHOD2(ClearAllContentSettingsRules,
+               void(ContentSettingsType,
+                    const content_settings::PartitionKey&));
 
   MOCK_METHOD0(ShutdownOnUIThread, void());
 
@@ -2353,4 +2357,24 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritSaaAndRenew) {
   otr_map->RenewContentSetting(host, host, type,
                                ContentSetting::CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_ASK, otr_map->GetContentSetting(host, host, type));
+}
+
+TEST_F(HostContentSettingsMapTest, ShutdownDuringExpirationAsanTest) {
+  TestingProfile profile;
+
+  auto host_content_settings_map = base::MakeRefCounted<HostContentSettingsMap>(
+      profile.GetPrefs(), false, true, true, true);
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("[*.]example.com");
+
+  base::TimeDelta ttl = base::Seconds(1);
+  content_settings::ContentSettingConstraints constraints;
+  constraints.set_lifetime(ttl);
+
+  host_content_settings_map->SetContentSettingCustomScope(
+      pattern, ContentSettingsPattern::Wildcard(),
+      ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW, constraints);
+
+  host_content_settings_map->ShutdownOnUIThread();
+  FastForwardTime(ttl);
 }

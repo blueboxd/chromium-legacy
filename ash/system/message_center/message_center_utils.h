@@ -21,7 +21,11 @@ namespace views {
 class View;
 }
 
-namespace ash::message_center_utils {
+namespace ash {
+
+class NotificationGroupingController;
+
+namespace message_center_utils {
 
 // Return a hash string derived from `notifier_id` data. This is appended to a
 // notification's `id` to create a unique identifier for a grouped notification.
@@ -62,6 +66,12 @@ message_center::NotificationViewController*
 GetActiveNotificationViewControllerForNotificationView(
     views::View* notification_view);
 
+// Gets the grouping controller for the provided notification view. Each display
+// has it's own `NotificationGroupingController` so we need to look up the
+// display for the provide view first.
+NotificationGroupingController* GetGroupingControllerForNotificationView(
+    views::View* notification_view);
+
 // Utils for animation within a notification view.
 
 // Initializes the layer for the specified `view` for animations.
@@ -92,8 +102,8 @@ void SlideOutView(views::View* view,
                   const std::string& animation_histogram_name = std::string());
 
 // Returns the resized image if the binary size of `input_image` is greater than
-// `size_limit_in_byte`. Otherwise, returns `absl::nullopt`.
-[[nodiscard]] ASH_EXPORT absl::optional<gfx::ImageSkia>
+// `size_limit_in_byte`. Otherwise, returns `std::nullopt`.
+[[nodiscard]] ASH_EXPORT std::optional<gfx::ImageSkia>
 ResizeImageIfExceedSizeLimit(const gfx::ImageSkia& input_image,
                              size_t size_limit_in_byte);
 
@@ -107,6 +117,7 @@ bool IsAshNotificationView(views::View* sender);
 // checks for casting `AshNotificationView*`.
 bool IsAshNotification(const message_center::Notification* notification);
 
-}  // namespace ash::message_center_utils
+}  // namespace message_center_utils
+}  // namespace ash
 
 #endif  // ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_UTILS_H_

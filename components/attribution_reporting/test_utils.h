@@ -18,12 +18,14 @@ class TimeDelta;
 
 namespace attribution_reporting {
 
+class AggregatableTriggerConfig;
 class AggregatableTriggerData;
 class AggregatableValues;
 class AggregationKeys;
 class DestinationSet;
 class EventReportWindows;
 class SuitableOrigin;
+class SummaryBuckets;
 
 struct AggregatableDedupKey;
 struct EventTriggerData;
@@ -61,11 +63,15 @@ std::ostream& operator<<(std::ostream&, const AggregatableDedupKey&);
 
 std::ostream& operator<<(std::ostream&, const OsRegistrationItem&);
 
+std::ostream& operator<<(std::ostream&, const SummaryBuckets&);
+
 std::ostream& operator<<(std::ostream&, const TriggerSpec&);
 
 std::ostream& operator<<(std::ostream&, const TriggerSpecs&);
 
 std::ostream& operator<<(std::ostream&, const TriggerSpecs::const_iterator&);
+
+std::ostream& operator<<(std::ostream&, const AggregatableTriggerConfig&);
 
 }  // namespace attribution_reporting
 

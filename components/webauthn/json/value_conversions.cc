@@ -78,10 +78,9 @@ std::tuple<bool, absl::optional<std::string>> Base64UrlDecodeOptionalStringKey(
     return {true, absl::nullopt};
   }
   if (value->is_none()) {
-    return {!(base::FeatureList::IsEnabled(device::kWebAuthnNoNullInJSON) &&
-              (base::FeatureList::IsEnabled(
-                   device::kWebAuthnRequireUpToDateJSONForRemoteDesktop) ||
-               user != JSONUser::kRemoteDesktop)),
+    return {!base::FeatureList::IsEnabled(
+                device::kWebAuthnRequireUpToDateJSONForRemoteDesktop) &&
+                user == JSONUser::kRemoteDesktop,
             absl::nullopt};
   }
   std::string decoded;
@@ -293,10 +292,9 @@ OptionalAuthenticatorAttachmentFromValue(const base::Value* value,
     return device::AuthenticatorAttachment::kAny;
   }
   if (value->is_none()) {
-    if (base::FeatureList::IsEnabled(device::kWebAuthnNoNullInJSON) &&
-        (base::FeatureList::IsEnabled(
-             device::kWebAuthnRequireUpToDateJSONForRemoteDesktop) ||
-         user != JSONUser::kRemoteDesktop)) {
+    if (base::FeatureList::IsEnabled(
+            device::kWebAuthnRequireUpToDateJSONForRemoteDesktop) ||
+        user != JSONUser::kRemoteDesktop) {
       return absl::nullopt;
     }
     return device::AuthenticatorAttachment::kAny;
@@ -589,13 +587,10 @@ MakeCredentialResponseFromValue(const base::Value& value, JSONUser user) {
   response->attestation_object = std::move(fields->attestation_object_bytes);
 
   if (base::FeatureList::IsEnabled(
-          device::kWebAuthnRequireEasyAccessorFieldsInJSON) &&
-      (base::FeatureList::IsEnabled(
-           device::kWebAuthnRequireUpToDateJSONForRemoteDesktop) ||
-       user != JSONUser::kRemoteDesktop)) {
+          device::kWebAuthnRequireUpToDateJSONForRemoteDesktop) ||
+      user != JSONUser::kRemoteDesktop) {
     // These fields are checked against the calculated values to ensure that
     // bugs in providers don't sneak in.
-
     absl::optional<int> opt_public_key_algo =
         attestation_response->FindInt("publicKeyAlgorithm");
     if (!opt_public_key_algo ||

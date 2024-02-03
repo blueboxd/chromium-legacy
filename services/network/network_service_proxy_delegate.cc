@@ -4,9 +4,11 @@
 
 #include "services/network/network_service_proxy_delegate.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
+#include "net/base/features.h"
 #include "net/base/proxy_chain.h"
 #include "net/base/proxy_server.h"
 #include "net/base/url_util.h"
@@ -38,9 +40,10 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig::ProxyRules& rules,
 // Checks if |target_proxy| is in |proxy_list|.
 bool CheckProxyList(const net::ProxyList& proxy_list,
                     const net::ProxyServer& target_proxy) {
-  for (const auto& proxy : proxy_list.GetAll()) {
-    if (!proxy.is_direct() &&
-        proxy.host_port_pair().Equals(target_proxy.host_port_pair())) {
+  for (const auto& proxy_chain : proxy_list.AllChains()) {
+    if (proxy_chain.is_single_proxy() &&
+        proxy_chain.GetProxyServer(/*chain_index=*/0).host_port_pair() ==
+            target_proxy.host_port_pair()) {
       return true;
     }
   }
@@ -143,10 +146,16 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
              << ") - " << message;
   };
   if (IsForIpProtection()) {
-    // Do not use the proxy if the request doesn't match the allow list or the
-    // token cache is not available or does not have a token.
-    if (!ipp_config_cache_ || !network_service_proxy_allow_list_) {
-      dvlog("no cache or proxy allow list");
+    // Note: We do not proxy requests if:
+    // - The allow list is not available or is not enabled.
+    // - The request doesn't match the allow list.
+    // - The token cache is not available.
+    // - The token cache does not have tokens.
+    // - No proxy list is available.
+    // - `kEnableIpProtection` is `false`.
+    // - `kIpPrivacyDirectOnly` is `true`.
+    if (!network_service_proxy_allow_list_) {
+      dvlog("no proxy allow list");
       return;
     }
     if (!network_service_proxy_allow_list_->IsEnabled()) {
@@ -158,15 +167,25 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
       dvlog("proxy allow list did not match");
       return;
     }
+    result->set_is_mdl_match(true);
+    if (!base::FeatureList::IsEnabled(
+            net::features::kEnableIpProtectionProxy)) {
+      dvlog("ip protection proxy not enabled");
+      return;
+    }
+    if (!ipp_config_cache_) {
+      dvlog("no cache");
+      return;
+    }
     if (!ipp_config_cache_->AreAuthTokensAvailable()) {
       dvlog("no auth token available from cache");
       return;
     }
     if (!ipp_config_cache_->IsProxyListAvailable()) {
-      // TODO: When this `vlog()` is removed, there's no need to distinguish the
-      // case where a proxy list has not been downloaded, and the case where a
-      // proxy list is empty. The `IsProxyListAvailable()` method can be removed
-      // at that time.
+      // NOTE: When this `vlog()` is removed, there's no need to distinguish
+      // the case where a proxy list has not been downloaded, and the case
+      // where a proxy list is empty. The `IsProxyListAvailable()` method can
+      // be removed at that time.
       dvlog("no proxy list available from cache");
       return;
     }
@@ -184,7 +203,7 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
 
     if (VLOG_IS_ON(3)) {
       dvlog(base::StrCat({"setting proxy list (before deprioritization) to ",
-                          proxy_list.ToPacString()}));
+                          proxy_list.ToDebugString()}));
     }
     result->set_is_for_ip_protection(true);
     result->OverrideProxyList(

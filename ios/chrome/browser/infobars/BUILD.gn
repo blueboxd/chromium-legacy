@@ -4,7 +4,6 @@
 
 source_set("infobars") {
   sources = [
-    "infobar_controller+protected.h",
     "infobar_ios.h",
     "infobar_ios.mm",
     "infobar_manager_impl.h",
@@ -74,11 +73,10 @@ source_set("unit_tests") {
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/infobars/overlays:test_support",
     "//ios/chrome/browser/infobars/test",
-    "//ios/chrome/browser/main",
+    "//ios/chrome/browser/main/model",
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/web_state_list",
-    "//ios/chrome/browser/shared/model/web_state_list/test:test_support",
     "//ios/chrome/browser/ui/badges:public",
     "//ios/chrome/browser/ui/badges:util",
     "//ios/chrome/browser/ui/infobars:test_support",

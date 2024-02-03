@@ -167,6 +167,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     {name: 'Lexend Deca', css: '"Lexend Deca"'},
     {name: 'EB Garamond', css: '"EB Garamond"'},
     {name: 'STIX Two Text', css: '"STIX Two Text"'},
+    {name: 'Andika', css: 'Andika'},
   ];
 
   // Maps a DOM node to the AXNodeID that was used to create it. DOM nodes and
@@ -185,6 +186,9 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   private currentUtteranceIndex_: number = 0;
   private previousHighlight_: HTMLElement|null;
   private currentColorSuffix_: string;
+
+  private chromeRefresh2023Enabled_ =
+      document.documentElement.hasAttribute('chrome-refresh-2023');
 
   // If the WebUI toolbar should be shown. This happens when the WebUI feature
   // flag is enabled.
@@ -959,10 +963,16 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   getBackgroundColorVar(colorSuffix: string) {
+    if (this.chromeRefresh2023Enabled_ && (colorSuffix === '')) {
+      return 'var(--color-sys-base-container-elevated)';
+    }
     return `var(--color-read-anything-background${colorSuffix})`;
   }
 
   getForegroundColorVar(colorSuffix: string) {
+    if (this.chromeRefresh2023Enabled_ && (colorSuffix === '')) {
+      return 'var(--color-sys-on-surface)';
+    }
     return `var(--color-read-anything-foreground${colorSuffix})`;
   }
 
@@ -973,6 +983,8 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         SkColor = {value: chrome.readingMode.backgroundColor};
     const linkColor = this.getLinkColor_(backgroundColor);
 
+    // TODO(crbug.com/1465029): Use color tokens for previous highlight and
+    // selection.
     this.updateStyles({
       '--background-color': skColorToRgba(backgroundColor),
       '--font-family': this.validatedFontName_(),

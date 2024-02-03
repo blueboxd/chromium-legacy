@@ -12,6 +12,8 @@ namespace blink {
 // static
 String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
   switch (kind) {
+    case MLOperator::OperatorKind::kBatchNormalization:
+      return "batchNormalization";
     case MLOperator::OperatorKind::kClamp:
       return "clamp";
     case MLOperator::OperatorKind::kConcat:
@@ -56,6 +58,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "reciprocal";
     case MLOperator::OperatorKind::kSqrt:
       return "sqrt";
+    case MLOperator::OperatorKind::kCast:
+      return "cast";
     case MLOperator::OperatorKind::kLeakyRelu:
       return "leakyRelu";
     case MLOperator::OperatorKind::kMax:
@@ -66,6 +70,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "elu";
     case MLOperator::OperatorKind::kExpand:
       return "expand";
+    case MLOperator::OperatorKind::kGather:
+      return "gather";
     case MLOperator::OperatorKind::kGemm:
       return "gemm";
     case MLOperator::OperatorKind::kHardSwish:
@@ -122,6 +128,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "tanh";
     case MLOperator::OperatorKind::kTranspose:
       return "transpose";
+    case MLOperator::OperatorKind::kWhere:
+      return "where";
   }
 }
 

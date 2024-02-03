@@ -79,16 +79,18 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
   void OnBlur();
 
  private:
-  enum class ButtonTextState { kNotShowing, kShowingName, kShowingSigninText };
+  enum class ButtonTextState {
+    kNotShowing,
+    kWaitingForImage,
+    kShowingName,
+    kShowingSigninText
+  };
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 
   // ProfileAttributesStorage::Observer:
-  void OnProfileAdded(const base::FilePath& profile_path) override;
-  void OnProfileWasRemoved(const base::FilePath& profile_path,
-                           const std::u16string& profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
   void OnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) override;

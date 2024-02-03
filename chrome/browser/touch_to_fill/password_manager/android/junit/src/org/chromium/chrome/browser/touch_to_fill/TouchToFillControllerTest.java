@@ -26,10 +26,8 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Fo
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.ON_CLICK_HYBRID;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.SHOW_HYBRID;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.IMAGE_DRAWABLE_ID;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.SHOW_SUBMIT_SUBTITLE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.SUBTITLE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.TITLE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
@@ -58,6 +56,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_manager.GetLoginMatchType;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FaviconOrFallback;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
@@ -66,6 +65,7 @@ import org.chromium.chrome.browser.touch_to_fill.common.BottomSheetFocusHelper;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.touch_to_fill.data.WebAuthnCredential;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.favicon.IconType;
 import org.chromium.components.favicon.LargeIconBridge;
@@ -180,10 +180,13 @@ public class TouchToFillControllerTest {
         assertThat(
                 itemList.get(0).model.get(TITLE),
                 is(mContext.getString(R.string.touch_to_fill_sheet_uniform_title)));
-        assertThat(itemList.get(0).model.get(FORMATTED_URL), is(TEST_URL_FORMATTED));
-        assertThat(itemList.get(0).model.get(ORIGIN_SECURE), is(true));
-        assertThat(itemList.get(0).model.get(SHOW_SUBMIT_SUBTITLE), is(true));
-
+        assertThat(
+                itemList.get(0).model.get(SUBTITLE),
+                is(
+                        String.format(
+                                mContext.getString(
+                                        R.string.touch_to_fill_sheet_subtitle_submission),
+                                TEST_URL_FORMATTED)));
         assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
         assertThat(itemList.get(1).model.get(CREDENTIAL), is(ANA));
         assertNotNull(itemList.get(1).model.get(ON_CLICK_LISTENER));
@@ -217,9 +220,7 @@ public class TouchToFillControllerTest {
         assertThat(
                 itemList.get(0).model.get(TITLE),
                 is(mContext.getString(R.string.touch_to_fill_sheet_uniform_title)));
-        assertThat(itemList.get(0).model.get(FORMATTED_URL), is(TEST_URL_FORMATTED));
-        assertThat(itemList.get(0).model.get(ORIGIN_SECURE), is(true));
-
+        assertThat(itemList.get(0).model.get(SUBTITLE), is(TEST_URL_FORMATTED));
         assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
         assertThat(itemList.get(1).model.get(CREDENTIAL), is(ANA));
         assertNotNull(itemList.get(1).model.get(ON_CLICK_LISTENER));
@@ -310,7 +311,16 @@ public class TouchToFillControllerTest {
                 is(mContext.getString(R.string.manage_passwords)));
 
         assertThat(itemList.get(0).type, is(ItemType.HEADER));
-        assertThat(itemList.get(0).model.get(SHOW_SUBMIT_SUBTITLE), is(true));
+        assertThat(
+                itemList.get(0).model.get(TITLE),
+                is(mContext.getString(R.string.touch_to_fill_sheet_uniform_title)));
+        assertThat(
+                itemList.get(0).model.get(SUBTITLE),
+                is(
+                        String.format(
+                                mContext.getString(
+                                        R.string.touch_to_fill_sheet_subtitle_submission),
+                                TEST_URL_FORMATTED)));
 
         assertThat(itemList.get(2).type, is(ItemType.FILL_BUTTON));
         assertThat(itemList.get(2).model.get(SHOW_SUBMIT_BUTTON), is(true));
@@ -345,6 +355,110 @@ public class TouchToFillControllerTest {
                 .getLargeIconForStringUrl(eq(ANA.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
         verify(mMockIconBridge)
                 .getLargeIconForStringUrl(eq(BOB.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.SHARED_PASSWORD_NOTIFICATION_UI)
+    public void testShowSheetForOneSharedCredential() {
+        Credential sharedCredentials =
+                new Credential(
+                        "Ana",
+                        "S3cr3t",
+                        "Ana",
+                        "https://m.a.xyz/",
+                        "m.a.xyz",
+                        GetLoginMatchType.PSL,
+                        0,
+                        true,
+                        "Sender Name",
+                        new GURL("https://sender-profile-image.xyz/"),
+                        false);
+        mMediator.showCredentials(
+                TEST_URL,
+                true,
+                Collections.emptyList(),
+                Arrays.asList(sharedCredentials),
+                /* showMorePasskeys= */ false,
+                /* submitCredential= */ true,
+                /* managePasskeysHidesPasswords= */ false,
+                /* showHybridPasskeyOption= */ false);
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(SHEET_ITEMS);
+        // Header + 1 credential + Button + Footer.
+        assertThat(itemList.size(), is(4));
+        assertThat(itemList.get(0).type, is(ItemType.HEADER));
+        assertThat(
+                itemList.get(0).model.get(TITLE),
+                is(
+                        mContext.getResources()
+                                .getQuantityString(
+                                        R.plurals.touch_to_fill_sheet_shared_passwords_title, 1)));
+        assertThat(
+                itemList.get(0).model.get(SUBTITLE),
+                is(
+                        String.format(
+                                mContext.getString(
+                                        R.string
+                                                .touch_to_fill_sheet_shared_passwords_one_password_subtitle),
+                                "<b>Sender Name</b>",
+                                TEST_URL_FORMATTED)));
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.SHARED_PASSWORD_NOTIFICATION_UI)
+    public void testShowSheetForMultipleSharedCredentials() {
+        Credential sharedCredential1 =
+                new Credential(
+                        "Ana",
+                        "S3cr3t",
+                        "Ana",
+                        "https://m.a.xyz/",
+                        "m.a.xyz",
+                        GetLoginMatchType.PSL,
+                        0,
+                        true,
+                        "Sender Name",
+                        new GURL("https://sender-profile-image.xyz/"),
+                        false);
+        Credential sharedCredential2 =
+                new Credential(
+                        "Bob",
+                        "S3cr3t",
+                        "Ana",
+                        "https://m.a.xyz/",
+                        "m.a.xyz",
+                        GetLoginMatchType.PSL,
+                        0,
+                        true,
+                        "Sender Name",
+                        new GURL("https://sender-profile-image.xyz/"),
+                        false);
+        mMediator.showCredentials(
+                TEST_URL,
+                true,
+                Collections.emptyList(),
+                Arrays.asList(sharedCredential1, sharedCredential2),
+                /* showMorePasskeys= */ false,
+                /* submitCredential= */ true,
+                /* managePasskeysHidesPasswords= */ false,
+                /* showHybridPasskeyOption= */ false);
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(SHEET_ITEMS);
+        // Header + 2 credentials + Footer.
+        assertThat(itemList.size(), is(4));
+        assertThat(itemList.get(0).type, is(ItemType.HEADER));
+        assertThat(
+                itemList.get(0).model.get(TITLE),
+                is(
+                        mContext.getResources()
+                                .getQuantityString(
+                                        R.plurals.touch_to_fill_sheet_shared_passwords_title, 2)));
+        assertThat(
+                itemList.get(0).model.get(SUBTITLE),
+                is(
+                        String.format(
+                                mContext.getString(
+                                        R.string
+                                                .touch_to_fill_sheet_shared_passwords_multiple_passwords_subtitle),
+                                TEST_URL_FORMATTED)));
     }
 
     @Test

@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Lagundu Chromium-en eginbideak eta funtzionamendua hobetzen</translation>
 <translation id="1513122820609681462">Ezarri Chromium arakatzaile lehenetsi gisa</translation>
 <translation id="1531155317299575425">Chromium-en saioa hasteko onarpen-mezuak erakusten ditu.</translation>
+<translation id="159029779861043703">Chromium-ek Face ID bidez babesten ditu zure kontuzko datuak.</translation>
 <translation id="1591119736686995611">Chromium-en fitxen sareta irekitzen du.</translation>
+<translation id="1611584326765829247">Eman paketeen jarraipena egiten laguntzeko baimena Chromium-i</translation>
 <translation id="1617663976202781617">Chromium-en sinkronizazioaren datuak</translation>
 <translation id="1647558790457890304">Chromium-en ezarpenak</translation>
 <translation id="164952285225495380">Pakete honen jarraipena Chromium-en egin da jada.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">Kudeatu Chromium-en ezarpenak</translation>
 <translation id="2798503587425057129">Chromium-en Irakurketa-zerrenda irekitzen du.</translation>
 <translation id="2843571538056574338">Erabili Chromium betetze automatikorako</translation>
-<translation id="2915596697727466327">Chromium-ek aurpegi bidezko identifikazioa erabiltzen du pasahitzak baimena dutenek bakarrik atzitzen dituztela ziurtatzeko.</translation>
 <translation id="2918709798697875261">Chromium-en saioa amaituta edukitzea eskatzen dizu zure erakundeak.</translation>
 <translation id="2942241131342758843">Erabili Chromium modu lehenetsian estekak irekitzeko, widgetetatik bilaketak egiteko eta beste aplikazio batzuetako pasahitzak automatikoki betetzeko</translation>
 <translation id="2977470724722393594">Eguneratuta dago Chromium</translation>
@@ -87,6 +88,7 @@ Ezarpen hori aldatzeko, <ph name="BEGIN_LINK" />garbitu kontuko Chromium-eko dat
 <translation id="4195557071150719219">Ikusi Chromium-en azken fitxak</translation>
 <translation id="4408912345039114853">Exekutatu Chromium-en segurtasun-egiaztapena</translation>
 <translation id="4432744876818348753">Hasi saioa Chromium-i etekinik handiena ateratzeko.</translation>
+<translation id="4498832288620833153">Idatzitako URLak Chromium-eko irakurketa-zerrendan gehitzen ditu.</translation>
 <translation id="452436063477828504">Izan beti Google-ko kontuko Chromium-en datuak erabiltzeko aukera</translation>
 <translation id="4555020257205549924">Eginbide hau aktibatuta dagoenean, Chromium-ek beste hizkuntzetan idatzita dauden orriak Google Translate bidez itzultzea proposatuko dizu. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Chromium-eko ordainketa-metodoen ezarpenen orria irekitzen du.</translation>
@@ -167,7 +169,6 @@ Zure pasaesaldia dakitenek soilik irakur ditzakete zure datu enkriptatuak. Googl
 <translation id="6911341667534646387">Jarraitu Google-ko kontuko Chromium-en datuak erabiltzen</translation>
 <translation id="7006920032187763988">iPad-eko beste aplikazio batzuk erabiltzen ari zinela Pasahitz-kudeatzailea zerbitzuan gorde zenituen pasahitzak erabil ditzakezu.</translation>
 <translation id="7018284295775193585">Ezin da eguneratu Chromium</translation>
-<translation id="7025471822960602362">Egin hautemandako paketeen jarraipena Chromium-en</translation>
 <translation id="7045244423563602563">Pertsonalizatu Chromium</translation>
 <translation id="7055269218854630176"><ph name="DOMAIN" /> erakundeak kudeatzen du saioa hasteko erabiltzen ari zaren kontua eta Chromium erabiltzeko modua. Administratzaileak eginbide batzuk konfiguratu edo muga ditzake.</translation>
 <translation id="7099326575020694068">Chromium-ek ezin du erabili kamera Ikuspegi zatitua moduan</translation>
@@ -197,6 +198,7 @@ Zure pasaesaldia dakitenek soilik irakur ditzakete zure datu enkriptatuak. Googl
 <translation id="7928628054454574139">Ireki Chromium beste aplikazioetako estekak sakatzen dituzunean</translation>
 <translation id="7931842119211730154">Blokeatu ezkutuko moduko fitxak Chromium ixten duzunean</translation>
 <translation id="7934404985878918282">Ikusi Chromium-en Irakurketa-zerrenda</translation>
+<translation id="7971753607796745700">Gehitu irakurketa-zerrendako elementu bat Chromium-en</translation>
 <translation id="7980860476903281594">Onartzen dituzun webguneekin partekatuko du kokapena Chromium-ek.</translation>
 <translation id="7995166854192397899">Beste gailuetan egin dituzun arakatze-jardueretan oinarrituta daude iradokizunak. Haiek jasotzeko, hasi saioa Chromium-en gailu guztietan.</translation>
 <translation id="800195749539500647">Atera ahalik eta etekin handiena Chromium-i</translation>

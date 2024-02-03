@@ -594,13 +594,11 @@ public class NavigateTest {
         HistogramWatcher startSurfaceHistogram =
                 HistogramWatcher.newSingleRecordWatcher(
                         histogram,
-                        BackPressManager.getHistogramValueForTesting(
-                                BackPressHandler.Type.START_SURFACE));
+                        BackPressManager.getHistogramValue(BackPressHandler.Type.START_SURFACE));
         HistogramWatcher tabSwitcherHistogram =
                 HistogramWatcher.newSingleRecordWatcher(
                         histogram,
-                        BackPressManager.getHistogramValueForTesting(
-                                BackPressHandler.Type.TAB_SWITCHER));
+                        BackPressManager.getHistogramValue(BackPressHandler.Type.TAB_SWITCHER));
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabUiTestHelper.enterTabSwitcher(cta);

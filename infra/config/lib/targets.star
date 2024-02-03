@@ -599,7 +599,6 @@ def _legacy_test_config(
         *,
         script = None,
         test = None,
-        override_compile_targets = [],
         results_handler = None,
         telemetry_test_name = None,
         tast_expr = None,
@@ -614,10 +613,6 @@ def _legacy_test_config(
             run as the test. Only applicable to script tests.
         test: The name of the isolate to run as the test. Only applicable to
             gtests, isolated script tests and junit tests.
-        override_compile_targets: A list of compile targets that need to be
-            built to run the test instead of whatever the standard set of
-            compile targets would be. Only applicable to gtests, isolated
-            script tests and script tests.
         results_handler: The name of the results handler to use for the test.
             Only applicable to isolated script tests and gtests that set
             use_isolated_scripts_api.
@@ -638,7 +633,6 @@ def _legacy_test_config(
     return struct(
         script = script,
         test = test,
-        override_compile_targets = override_compile_targets,
         telemetry_test_name = telemetry_test_name,
         results_handler = results_handler,
         tast_expr = tast_expr,
@@ -763,7 +757,7 @@ _PYL_HEADER_FMT = """\
 
 def _generate_gn_isolate_map_pyl(ctx):
     entries = []
-    for n in graph.children(keys.project(), _TARGET.kind, graph.DEFINITION_ORDER):
+    for n in graph.children(keys.project(), _TARGET.kind, graph.KEY_ORDER):
         entries.append('  "{}": {{'.format(n.key.id))
         entries.append('    "label": "{}",'.format(n.props.label))
         if n.props.label_type != None:
@@ -1001,7 +995,7 @@ def _generate_mixin_values(formatter, mixin, generate_skylab_container = False):
 def _generate_mixins_pyl(ctx):
     formatter = _formatter()
 
-    for n in graph.children(keys.project(), _TARGET_MIXIN.kind, graph.DEFINITION_ORDER):
+    for n in graph.children(keys.project(), _TARGET_MIXIN.kind, graph.KEY_ORDER):
         mixin = n.props.mixin_values
         formatter.open_scope("'{}': {{".format(n.key.id))
 
@@ -1019,7 +1013,7 @@ lucicfg.generator(_generate_mixins_pyl)
 def _generate_variants_pyl(ctx):
     formatter = _formatter()
 
-    for n in graph.children(keys.project(), _TARGET_VARIANT.kind, graph.DEFINITION_ORDER):
+    for n in graph.children(keys.project(), _TARGET_VARIANT.kind, graph.KEY_ORDER):
         mixin = n.props.mixin_values
         formatter.open_scope("'{}': {{".format(n.key.id))
 
@@ -1050,11 +1044,11 @@ def _generate_test_suites_pyl(ctx):
 
     formatter.open_scope("'basic_suites': {")
 
-    for suite in graph.children(keys.project(), _LEGACY_BASIC_SUITE.kind, graph.DEFINITION_ORDER):
+    for suite in graph.children(keys.project(), _LEGACY_BASIC_SUITE.kind, graph.KEY_ORDER):
         formatter.add_line("")
         formatter.open_scope("'{}': {{".format(suite.key.id))
 
-        for test_name, test_config in suite.props.tests.items():
+        for test_name, test_config in sorted(suite.props.tests.items()):
             if not test_config:
                 formatter.add_line("'{}': {{}},".format(test_name))
                 continue
@@ -1066,11 +1060,6 @@ def _generate_test_suites_pyl(ctx):
 
             if test_config.test:
                 formatter.add_line("'test': '{}',".format(test_config.test))
-            if test_config.override_compile_targets:
-                formatter.open_scope("'override_compile_targets': [")
-                for t in test_config.override_compile_targets:
-                    formatter.add_line("'{}',".format(t))
-                formatter.close_scope("],")
             if test_config.results_handler:
                 formatter.add_line("'results_handler': '{}',".format(test_config.results_handler))
 
@@ -1105,10 +1094,10 @@ def _generate_test_suites_pyl(ctx):
 
     formatter.open_scope("'compound_suites': {")
 
-    for suite in graph.children(keys.project(), _LEGACY_COMPOUND_SUITE.kind, graph.DEFINITION_ORDER):
+    for suite in graph.children(keys.project(), _LEGACY_COMPOUND_SUITE.kind, graph.KEY_ORDER):
         formatter.add_line("")
         formatter.open_scope("'{}': [".format(suite.key.id))
-        for basic_suite in graph.children(suite.key, _LEGACY_BASIC_SUITE.kind, graph.DEFINITION_ORDER):
+        for basic_suite in graph.children(suite.key, _LEGACY_BASIC_SUITE.kind, graph.KEY_ORDER):
             formatter.add_line("'{}',".format(basic_suite.key.id))
         formatter.close_scope("],")
 
@@ -1118,12 +1107,15 @@ def _generate_test_suites_pyl(ctx):
 
     formatter.open_scope("'matrix_compound_suites': {")
 
-    for suite in graph.children(keys.project(), _LEGACY_MATRIX_COMPOUND_SUITE.kind, graph.DEFINITION_ORDER):
+    for suite in graph.children(keys.project(), _LEGACY_MATRIX_COMPOUND_SUITE.kind, graph.KEY_ORDER):
         formatter.add_line("")
         formatter.open_scope("'{}': {{".format(suite.key.id))
-        for matrix_config in graph.children(suite.key, _LEGACY_MATRIX_CONFIG.kind, graph.DEFINITION_ORDER):
+        for matrix_config in graph.children(suite.key, _LEGACY_MATRIX_CONFIG.kind, graph.KEY_ORDER):
+            # The order that mixins are declared is significant,
+            # DEFINITION_ORDER preserves the order that the edges were added
+            # from the parent to the child
             mixins = graph.children(matrix_config.key, _TARGET_MIXIN.kind, graph.DEFINITION_ORDER)
-            variants = graph.children(matrix_config.key, _TARGET_VARIANT.kind, graph.DEFINITION_ORDER)
+            variants = graph.children(matrix_config.key, _TARGET_VARIANT.kind, graph.KEY_ORDER)
             if not (mixins or variants):
                 formatter.add_line("'{}': {{}},".format(matrix_config.key.id))
                 continue

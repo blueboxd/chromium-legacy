@@ -740,9 +740,6 @@ class Browser : public TabStripModelObserver,
   bool IsBackForwardCacheSupported() override;
   content::PreloadingEligibility IsPrerender2Supported(
       content::WebContents& web_contents) override;
-  std::unique_ptr<content::WebContents> ActivatePortalWebContents(
-      content::WebContents* predecessor_contents,
-      std::unique_ptr<content::WebContents> portal_contents) override;
   void UpdateInspectedWebContentsIfNecessary(
       content::WebContents* old_contents,
       content::WebContents* new_contents,
@@ -910,10 +907,6 @@ class Browser : public TabStripModelObserver,
                           const std::string& frame_name,
                           const GURL& target_url,
                           content::WebContents* new_contents) override;
-  void PortalWebContentsCreated(
-      content::WebContents* portal_web_contents) override;
-  void WebContentsBecamePortal(
-      content::WebContents* portal_web_contents) override;
   void RendererUnresponsive(
       content::WebContents* source,
       content::RenderWidgetHost* render_widget_host,
@@ -986,11 +979,8 @@ class Browser : public TabStripModelObserver,
       const content::MediaStreamRequest& request,
       content::MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
-                                  const GURL& security_origin,
+                                  const url::Origin& security_origin,
                                   blink::mojom::MediaStreamType type) override;
-  std::string GetDefaultMediaDeviceID(
-      content::WebContents* web_contents,
-      blink::mojom::MediaStreamType type) override;
   std::string GetTitleForMediaControls(
       content::WebContents* web_contents) override;
 

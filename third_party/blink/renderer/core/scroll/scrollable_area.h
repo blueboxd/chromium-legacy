@@ -155,6 +155,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // rect in absolute coordinates.
   virtual PhysicalRect ScrollIntoView(
       const PhysicalRect&,
+      const PhysicalBoxStrut& scroll_margin,
       const mojom::blink::ScrollIntoViewParamsPtr&);
 
   static bool ScrollBehaviorFromString(const String&,
@@ -581,6 +582,15 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   bool ScrollOffsetIsNoop(const ScrollOffset& offset) const;
 
+  void EnqueueSnapChangingEvent() const;
+  virtual const cc::SnappedTargetData* GetSnapChangingTargetData() const {
+    return nullptr;
+  }
+  virtual void SetSnapChangingTargetData(
+      absl::optional<cc::SnappedTargetData>) {}
+  virtual void UpdateSnapChangingTargetsAndEnqueueSnapChanging(
+      const gfx::PointF&) {}
+
  protected:
   // Deduces the mojom::blink::ScrollBehavior based on the
   // element style and the parameter set by programmatic scroll into either
@@ -669,6 +679,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   void ScrollToScrollStartTarget(const LayoutBox*, cc::SnapAxis);
   void ScrollToScrollStartTargets(const ScrollStartTargetCandidates*);
+
+  HeapVector<Member<Node>> PrepareSnapEventTargets(
+      const cc::SnappedTargetData* target_data) const;
 
   // This animator is used to handle painting animations for MacOS scrollbars
   // using AppKit-specific code (Cocoa APIs). It requires input from

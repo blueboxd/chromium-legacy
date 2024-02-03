@@ -70,8 +70,12 @@ public interface TabModel extends TabList {
      *
      * @return true if the tab was found.
      */
-    public boolean closeTab(Tab tab, @Nullable Tab recommendedNextTab, boolean animate,
-            boolean uponExit, boolean canUndo);
+    public boolean closeTab(
+            Tab tab,
+            @Nullable Tab recommendedNextTab,
+            boolean animate,
+            boolean uponExit,
+            boolean canUndo);
 
     /**
      * Returns which tab would be selected if the specified tab {@code id} were closed.
@@ -121,9 +125,7 @@ public interface TabModel extends TabList {
      */
     boolean isClosurePending(int tabId);
 
-    /**
-     * Commits all pending closures, closing all tabs that had a chance to be undone.
-     */
+    /** Commits all pending closures, closing all tabs that had a chance to be undone. */
     public void commitAllTabClosures();
 
     /**
@@ -194,6 +196,12 @@ public interface TabModel extends TabList {
      * As a result of this call, all {@link Tab}s owned by this model should be destroyed.
      */
     public void destroy();
+
+    /**
+     * Returns a supplier for the number of tabs in this tab model. This does not count tabs that
+     * are pending closure.
+     */
+    public @NonNull ObservableSupplier<Integer> getTabCountSupplier();
 
     /**
      * Adds a newly created tab to this model.

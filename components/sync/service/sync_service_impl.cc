@@ -62,6 +62,10 @@ namespace syncer {
 
 namespace {
 
+BASE_FEATURE(kSyncUnsubscribeFromTypesWithPermanentErrors,
+             "SyncUnsubscribeFromTypesWithPermanentErrors",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // The time after browser startup to report sync configuration metrics.
 constexpr base::TimeDelta kRecordDownloadStatusTimeout = base::Seconds(30);
 
@@ -182,6 +186,15 @@ void LogWaitingForUpdatesReasonIfNeeded(
   }
 }
 
+bool ShouldForceImmediateStartIfTransportDataMissing() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return true;
+#else
+  return base::FeatureList::IsEnabled(
+      kSyncAlwaysForceImmediateStartIfTransportDataMissing);
+#endif
+}
+
 }  // namespace
 
 SyncServiceImpl::InitParams::InitParams() = default;
@@ -271,8 +284,13 @@ void SyncServiceImpl::Initialize() {
     }
   }
 
-  // *After* setting up `auth_manager_`, run a prefs migration that depends on
+  // *After* setting up `auth_manager_`, run pref migrations that depend on
   // the account state.
+#if BUILDFLAG(IS_IOS)
+  sync_prefs_.MaybeMigratePasswordsToPerAccountPref(
+      GetSyncAccountStateForPrefs(),
+      signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
+#endif  // BUILDFLAG(IS_IOS)
   sync_prefs_.MaybeMigratePrefsForSyncToSigninPart1(
       GetSyncAccountStateForPrefs(),
       signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
@@ -312,14 +330,20 @@ void SyncServiceImpl::Initialize() {
 #endif
   }
 
+  const bool is_sync_feature_requested_for_metrics =
+      IsLocalSyncEnabled() ||
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      !user_settings_->IsSyncFeatureDisabledViaDashboard();
+#else
+      HasSyncConsent();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // Note: We need to record the initial state *after* calling
   // RegisterForAuthNotifications(), because before that the authenticated
   // account isn't initialized.
-  RecordSyncInitialState(
-      GetDisableReasons(),
-      /*is_sync_feature_requested=*/
-      IsLocalSyncEnabled() || IsSyncFeatureConsideredRequested(),
-      user_settings_->IsInitialSyncFeatureSetupComplete());
+  RecordSyncInitialState(GetDisableReasons(),
+                         is_sync_feature_requested_for_metrics,
+                         user_settings_->IsInitialSyncFeatureSetupComplete());
 
   ModelTypeSet data_types_to_track =
       Intersection(GetRegisteredDataTypes(), ProtocolTypes());
@@ -342,13 +366,11 @@ void SyncServiceImpl::Initialize() {
   }
 
   if (IsEngineAllowedToRun()) {
-    // TODO(crbug.com/1374718): Consider simplifying the logic and always
-    // triggering an immediate start if transport data is missing.
     const bool force_immediate_start =
         !sync_client_->GetSyncApiComponentFactory()
              ->HasTransportDataIncludingFirstSync() &&
-        ShouldAutoStartSyncFeature() &&
-        (IsLocalSyncEnabled() || IsSyncFeatureConsideredRequested());
+        (IsLocalSyncEnabled() ||
+         ShouldForceImmediateStartIfTransportDataMissing());
 
     if (force_immediate_start) {
       // Sync never initialized before on this profile, so let's try immediately
@@ -1059,7 +1081,9 @@ void SyncServiceImpl::OnActionableProtocolError(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       // On Ash, the primary account is always set and sync the feature
       // turned on, so a dedicated bit is needed to ensure that
-      // Sync-the-feature remains off.
+      // Sync-the-feature remains off. Note that sync-the-transport will restart
+      // immediately because IsEngineAllowedToRun() is almost certainly true at
+      // this point and StopAndClear() leads to TryStart().
       user_settings_->SetSyncFeatureDisabledViaDashboard();
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
       // On every platform except ash, revoke the Sync consent/Clear primary
@@ -1403,24 +1427,6 @@ SyncClient* SyncServiceImpl::GetSyncClientForTest() {
   return sync_client_.get();
 }
 
-bool SyncServiceImpl::IsSyncFeatureConsideredRequested() const {
-  CHECK(!IsLocalSyncEnabled());
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // On Ash, `has_sync_consent` should always be true, and what actually matters
-  // is whether sync was disabled via dashboard, which is detected when the
-  // server responds with DISABLE_SYNC_ON_CLIENT.
-  return !user_settings_->IsSyncFeatureDisabledViaDashboard();
-#else
-  // On all platforms except Chrome Ash, IdentityManager determines via
-  // consent level whether or not sync is condered requested.
-  // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
-  // deleted from the codebase. See ConsentLevel::kSync documentation for
-  // details.
-  return HasSyncConsent();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-}
-
 void SyncServiceImpl::AddObserver(SyncServiceObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_->AddObserver(observer);
@@ -1622,13 +1628,21 @@ void SyncServiceImpl::UpdateDataTypesForInvalidations() {
   }
 
   // No need to register invalidations for non-protocol or commit-only types.
-  // TODO(crbug.com/1260836): consider DataTypeManager::GetActiveDataTypes() to
-  // unsubscribe from failed data types.
   ModelTypeSet types = Intersection(GetPreferredDataTypes(), ProtocolTypes());
   types.RemoveAll(CommitOnlyTypes());
   if (!sessions_invalidations_enabled_) {
     types.Remove(SESSIONS);
   }
+
+  if (!data_type_manager_->GetDataTypesWithPermanentErrors().Empty() &&
+      base::FeatureList::IsEnabled(
+          kSyncUnsubscribeFromTypesWithPermanentErrors)) {
+    // Unsubscribe from data types with permanent errors. Types which are
+    // unready or have crypto errors are intentionally kept because they will
+    // may change their state.
+    types.RemoveAll(data_type_manager_->GetDataTypesWithPermanentErrors());
+  }
+
 #if BUILDFLAG(IS_ANDROID)
   // On Android, don't subscribe to HISTORY invalidations, to save network
   // traffic.
@@ -1816,23 +1830,51 @@ void SyncServiceImpl::OnFirstSetupCompletePrefChange(
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
+void SyncServiceImpl::OnAccountsCookieDeletedByUserAction() {
+#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
+  // Clear account settings. On Android and iOS this is done when accounts are
+  // removed from the OS instead.
+  user_settings_->KeepAccountSettingsPrefsOnlyForUsers({});
+#endif
+}
+
 void SyncServiceImpl::OnAccountsInCookieUpdated(
     const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
-  OnAccountsInCookieUpdatedWithCallback(
-      accounts_in_cookie_jar_info.signed_in_accounts, base::NullCallback());
+  OnAccountsInCookieUpdatedWithCallback(accounts_in_cookie_jar_info,
+                                        base::NullCallback());
 }
 
 void SyncServiceImpl::OnAccountsInCookieUpdatedWithCallback(
-    const std::vector<gaia::ListedAccount>& signed_in_accounts,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
+  if (accounts_in_cookie_jar_info.accounts_are_fresh) {
+    // Clear settings for accounts no longer in the cookie jar. On Android
+    // and iOS this is done when the account is removed from the OS instead.
+    std::vector<signin::GaiaIdHash> hashes;
+    for (const gaia::ListedAccount& account :
+         accounts_in_cookie_jar_info.signed_in_accounts) {
+      hashes.push_back(signin::GaiaIdHash::FromGaiaId(account.gaia_id));
+    }
+    for (const gaia::ListedAccount& account :
+         accounts_in_cookie_jar_info.signed_out_accounts) {
+      hashes.push_back(signin::GaiaIdHash::FromGaiaId(account.gaia_id));
+    }
+    user_settings_->KeepAccountSettingsPrefsOnlyForUsers(hashes);
+  }
+#endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
+
   if (!engine_ || !engine_->IsInitialized()) {
     return;
   }
 
-  bool cookie_jar_mismatch = HasCookieJarMismatch(signed_in_accounts);
-  bool cookie_jar_empty = signed_in_accounts.empty();
+  bool cookie_jar_mismatch =
+      HasCookieJarMismatch(accounts_in_cookie_jar_info.signed_in_accounts);
+  bool cookie_jar_empty =
+      accounts_in_cookie_jar_info.signed_in_accounts.empty();
 
   DVLOG(1) << "Cookie jar mismatch: " << cookie_jar_mismatch;
   DVLOG(1) << "Cookie jar empty: " << cookie_jar_empty;
@@ -2288,16 +2330,6 @@ void SyncServiceImpl::OnSetupInProgressHandleDestroyed() {
   NotifyObservers();
 }
 
-// TODO(crbug.com/1445931): If FirstSetupComplete is set earlier, in
-// Initialize(), this method can be inlined.
-bool SyncServiceImpl::ShouldAutoStartSyncFeature() const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return true;
-#else
-  return IsLocalSyncEnabled();
-#endif
-}
-
 void SyncServiceImpl::OnDownloadStatusRecorderFinished() {
   download_status_recorder_.reset();
 }
@@ -2394,13 +2426,19 @@ void SyncServiceImpl::DownloadStatusRecorder::OnTimeout() {
 }
 
 void SyncServiceImpl::GetTypesWithUnsyncedData(
+    ModelTypeSet requested_types,
     base::OnceCallback<void(ModelTypeSet)> callback) const {
   if (!engine_ || !engine_->IsInitialized()) {
     // TODO(crbug.com/1477527): Wait for the sync engine to be initialized.
     std::move(callback).Run(ModelTypeSet());
     return;
   }
-  engine_->GetTypesWithUnsyncedData(std::move(callback));
+  engine_->GetTypesWithUnsyncedData(base::BindOnce(
+      [](ModelTypeSet requested_types,
+         base::OnceCallback<void(ModelTypeSet)> callback, ModelTypeSet types) {
+        std::move(callback).Run(base::Intersection(types, requested_types));
+      },
+      requested_types, std::move(callback)));
 }
 
 void SyncServiceImpl::GetLocalDataDescriptions(

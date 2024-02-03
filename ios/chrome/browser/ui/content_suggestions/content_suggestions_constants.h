@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ntp/set_up_list_item_type.h"
+#import "ios/chrome/browser/ntp/model/set_up_list_item_type.h"
 
 // Enum specifying the type of Content Suggestions a module is showing.
 // Entries should always keep synced with the IOSMagicStackModuleType histogram
@@ -61,6 +61,10 @@ extern NSString* const kMagicStackEditButtonAccessibilityIdentifier;
 // Represents the "Done" button in the Magic Stack edit half sheet.
 extern NSString* const
     kMagicStackEditHalfSheetDoneButtonAccessibilityIdentifier;
+
+// Represents the "Continue Browsing" module in the magic stack.
+extern NSString* const
+    kMagicStackContentSuggestionsModuleTabResumptionAccessibilityIdentifier;
 
 // Represents the width of the Magic Stack ScrollView for the unique wide
 // layout.

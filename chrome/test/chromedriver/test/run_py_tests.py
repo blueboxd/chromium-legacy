@@ -7500,9 +7500,6 @@ class VendorSpecificTest(ChromeDriverBaseTestWithWebServer):
 class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
 
   def setUp(self):
-    global _VENDOR_ID
-    self._vendor_id = _VENDOR_ID
-
     port = self._https_server._server.server_port
     self._url_prefix = (self._https_server.GetUrl("localhost") +
         "/chromedriver/fedcm")
@@ -7524,6 +7521,11 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
 }
     """
     self._accounts = self._default_accounts
+    self._token_response = bytes("""
+        {
+          "token": "token"
+        }
+        """, 'utf-8')
 
     def respondWithWellKnownFile(request):
       return {'Content-Type': 'application/json'}, bytes("""
@@ -7541,16 +7543,22 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
           %s
         ]}""" % self._accounts, 'utf-8')
 
+    def respondWithTokenResponse(request):
+      return {'Content-Type': 'application/json'}, self._token_response
+
     self._https_server.SetCallbackForPath('/.well-known/web-identity',
                                           respondWithWellKnownFile)
     self._https_server.SetCallbackForPath('/chromedriver/fedcm/mark-signed-in',
                                           respondWithSignedInHeader)
     self._https_server.SetCallbackForPath('/chromedriver/fedcm/accounts.json',
                                           respondWithAccountList)
+    self._https_server.SetCallbackForPath('/chromedriver/fedcm/token.json',
+                                          respondWithTokenResponse)
 
     script_content = bytes("""
       <script>
       let promise = null;
+      let abortController = new AbortController();
       function callFedCm() {
         promise = navigator.credentials.get({
           identity: {
@@ -7559,14 +7567,25 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
               clientId: '123',
             }]
           },
-          mediation: 'required'
+          mediation: 'required',
+          signal: abortController.signal
         });
       }
       async function getResult() {
         try {
           return (await promise).token;
         } catch (e) {
-          return "Error: " + e;
+          let result = e.toString();
+          if (e.name != "IdentityCredentialError") {
+            return result;
+          }
+          if (e.code) {
+            result += " Code: " + e.code;
+          }
+          if (e.url) {
+            result += " Url: " + e.url;
+          }
+          return result;
         }
       }
       </script>
@@ -7584,8 +7603,22 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
 
   def FedCmDialogCondition(self):
     try:
-        self._driver.GetFedCmTitle()
+        self._driver.GetDialogType()
         return True
+    except:
+        return False
+
+  def FedCmNoDialogCondition(self):
+    return not self.FedCmDialogCondition()
+
+  def FedCmPopupWindowCondition(self):
+    try:
+        window_handles = self._driver.GetWindowHandles()
+        # The two windows are the main window and the pop-up window
+        if len(window_handles) == 2:
+          return True
+        else:
+          return False
     except:
         return False
 
@@ -7622,7 +7655,23 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
     self._driver.CancelFedCmDialog()
     self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
     token = self._driver.ExecuteScript('return getResult()')
-    self.assertEqual('Error: NetworkError: Error retrieving a token.', token)
+    self.assertEqual('NetworkError: Error retrieving a token.', token)
+
+  def testAbortRequest(self):
+    self._driver.Load(self._https_server.GetUrl() + '/fedcm.html')
+
+    self._driver.ResetCooldown()
+    self._driver.SetDelayEnabled(False)
+
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+    self._driver.ExecuteScript('callFedCm()')
+    self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
+
+    self._driver.ExecuteScript('abortController.abort()')
+    self.assertTrue(self.WaitForCondition(self.FedCmNoDialogCondition))
+
+    token = self._driver.ExecuteScript('return getResult()')
+    self.assertEqual('AbortError: signal is aborted without reason', token)
 
   def testConfirmIdpLogin(self):
     self._accounts = ""
@@ -7642,8 +7691,7 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
 
     self._accounts = self._default_accounts
 
-    self._driver.ClickFedCmDialogButton(self._vendor_id,
-                                        "ConfirmIdpLoginContinue")
+    self._driver.ClickFedCmDialogButton("ConfirmIdpLoginContinue")
 
     self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
     accounts = self._driver.GetAccounts()
@@ -7654,6 +7702,76 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
     self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
     token = self._driver.ExecuteScript("return getResult()")
     self.assertEqual("token", token)
+
+  def testClickErrorGotIt(self):
+    self._token_response = bytes("""
+        {
+          "error": {
+            "code": "invalid_request"
+          }
+        }
+        """, 'utf-8')
+
+    self._driver.Load(self._https_server.GetUrl() + "/fedcm.html")
+
+    self._driver.SetDelayEnabled(False)
+    self._driver.ResetCooldown()
+
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+    self._driver.ExecuteScript("callFedCm()")
+    self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
+
+    accounts = self._driver.GetAccounts()
+    self.assertEqual('AccountChooser', self._driver.GetDialogType())
+    self.assertEqual(2, len(accounts))
+
+    self._driver.SelectAccount(0)
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+
+    self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
+    self.assertEqual("Error", self._driver.GetDialogType())
+    self._driver.ClickFedCmDialogButton("ErrorGotIt")
+
+    error = self._driver.ExecuteScript("return getResult()")
+    self.assertEqual("IdentityCredentialError: Error retrieving a token. "
+                     "Code: invalid_request", error)
+
+  def testClickErrorMoreDetails(self):
+    self._token_response = bytes("""
+        {
+          "error": {
+            "code": "invalid_request",
+            "url": "/chromedriver/fedcm/more_details.html"
+          }
+        }
+        """, 'utf-8')
+
+    self._driver.Load(self._https_server.GetUrl() + "/fedcm.html")
+
+    self._driver.SetDelayEnabled(False)
+    self._driver.ResetCooldown()
+
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+    self._driver.ExecuteScript("callFedCm()")
+    self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
+
+    accounts = self._driver.GetAccounts()
+    self.assertEqual('AccountChooser', self._driver.GetDialogType())
+    self.assertEqual(2, len(accounts))
+
+    self._driver.SelectAccount(0)
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+
+    self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
+    self.assertEqual("Error", self._driver.GetDialogType())
+    self._driver.ClickFedCmDialogButton("ErrorMoreDetails")
+
+    error = self._driver.ExecuteScript("return getResult()")
+    self.assertTrue(self.WaitForCondition(self.FedCmPopupWindowCondition))
+    self.assertEqual("IdentityCredentialError: Error retrieving a token. "
+                     "Code: invalid_request Url: " +
+                     self._https_server.GetUrl("localhost") +
+                     "/chromedriver/fedcm/more_details.html", error)
 
 # 'Z' in the beginning is to make test executed in the end of suite.
 class ZChromeStartRetryCountTest(unittest.TestCase):

@@ -72,7 +72,7 @@ bool ShouldShowSignOutButton() {
     return false;
   }
 
-  absl::optional<int> number_of_users_that_could_be_logged_in =
+  std::optional<int> number_of_users_that_could_be_logged_in =
       session_controller->GetExistingUsersCount();
   const bool multiple_past_accounts =
       number_of_users_that_could_be_logged_in.has_value() &&
@@ -93,9 +93,9 @@ bool ShouldShowAvatar() {
 
 // The avatar button shows in the quick setting bubble.
 class UserAvatarButton : public views::Button {
- public:
-  METADATA_HEADER(UserAvatarButton);
+  METADATA_HEADER(UserAvatarButton, views::Button)
 
+ public:
   explicit UserAvatarButton(PressedCallback callback)
       : views::Button(std::move(callback)) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -114,7 +114,7 @@ class UserAvatarButton : public views::Button {
   ~UserAvatarButton() override = default;
 };
 
-BEGIN_METADATA(UserAvatarButton, views::Button)
+BEGIN_METADATA(UserAvatarButton)
 END_METADATA
 
 }  // namespace
@@ -193,10 +193,10 @@ void QsBatteryInfoViewBase::ConfigureIcon(bool bsm_active) {
   const SkColor battery_icon_color = GetColorProvider()->GetColor(
       bsm_active ? cros_tokens::kCrosSysSystemOnWarningContainer
                  : cros_tokens::kCrosSysOnPositiveContainer);
-  const absl::optional<SkColor> battery_badge_color =
-      bsm_active ? absl::optional<SkColor>(GetColorProvider()->GetColor(
+  const std::optional<SkColor> battery_badge_color =
+      bsm_active ? std::optional<SkColor>(GetColorProvider()->GetColor(
                        cros_tokens::kCrosSysSystemWarningContainer))
-                 : absl::nullopt;
+                 : std::nullopt;
 
   PowerStatus::BatteryImageInfo info =
       PowerStatus::Get()->GenerateBatteryImageInfo(battery_icon_color,
@@ -212,7 +212,7 @@ void QsBatteryInfoViewBase::ConfigureIcon(bool bsm_active) {
                     info, kUnifiedTrayBatteryIconSize, GetColorProvider())));
 }
 
-BEGIN_METADATA(QsBatteryInfoViewBase, PillButton)
+BEGIN_METADATA(QsBatteryInfoViewBase)
 END_METADATA
 
 QsBatteryLabelView::QsBatteryLabelView(UnifiedSystemTrayController* controller)
@@ -238,7 +238,7 @@ void QsBatteryLabelView::Update() {
   }
 }
 
-BEGIN_METADATA(QsBatteryLabelView, QsBatteryInfoViewBase)
+BEGIN_METADATA(QsBatteryLabelView)
 END_METADATA
 
 QsBatteryIconView::QsBatteryIconView(UnifiedSystemTrayController* controller)
@@ -254,7 +254,7 @@ void QsBatteryIconView::Update() {
   UpdateIconAndText(PowerStatus::Get()->IsBatterySaverActive());
 }
 
-BEGIN_METADATA(QsBatteryIconView, QsBatteryIconView)
+BEGIN_METADATA(QsBatteryIconView)
 END_METADATA
 
 QuickSettingsFooter::QuickSettingsFooter(
@@ -389,7 +389,7 @@ views::View* QuickSettingsFooter::CreateEndContainer() {
   return end_container;
 }
 
-BEGIN_METADATA(QuickSettingsFooter, views::View)
+BEGIN_METADATA(QuickSettingsFooter)
 END_METADATA
 
 }  // namespace ash

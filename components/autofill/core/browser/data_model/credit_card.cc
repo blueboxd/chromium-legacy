@@ -31,6 +31,7 @@
 #include "components/autofill/core/browser/data_model/data_model_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/payments/constants.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -317,6 +318,7 @@ int CreditCard::IconResourceId(Suggestion::Icon icon) {
     case Suggestion::Icon::kSettings:
     case Suggestion::Icon::kSettingsAndroid:
     case Suggestion::Icon::kUndo:
+    case Suggestion::Icon::kPlusAddress:
       NOTREACHED_NORETURN();
   }
   NOTREACHED_NORETURN();
@@ -705,6 +707,7 @@ void CreditCard::SetRawInfoWithVerificationStatus(ServerFieldType type,
     }
 
     case CREDIT_CARD_VERIFICATION_CODE:
+    case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
       cvc_ = value;
       break;
 
@@ -1241,6 +1244,12 @@ bool CreditCard::HasNonEmptyValidNickname() const {
 
 std::u16string CreditCard::NicknameAndLastFourDigitsForTesting() const {
   return NicknameAndLastFourDigits();
+}
+
+bool CreditCard::HasRichCardArtImageFromMetadata() const {
+  return card_art_url().is_valid() &&
+         card_art_url().spec() != kCapitalOneLargeCardArtUrl &&
+         card_art_url().spec() != kCapitalOneCardArtUrl;
 }
 
 void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {

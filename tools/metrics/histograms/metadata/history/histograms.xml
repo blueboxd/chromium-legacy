@@ -58,17 +58,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.Backend.TransactionBeginError"
-    enum="SqliteLoggedResultCode" expires_after="2023-10-01">
-  <owner>tommycli@chromium.org</owner>
-  <owner>asully@chromium.org</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>
-    The exact database error encountered when beginning a transaction, if it
-    failed.
-  </summary>
-</histogram>
-
 <histogram name="History.Backend.TransactionBeginSuccess" enum="BooleanSuccess"
     expires_after="2023-10-01">
   <owner>tommycli@chromium.org</owner>
@@ -391,17 +380,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="History.ClearBrowsingData.PasswordsDeletion.AdditionalDatatypesCount"
-    units="units" expires_after="M85">
-  <owner>msramek@chromium.org</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>
-    Recorded when the user deletes their passwords in the ClearBrowsingData
-    dialog. Counts how many other data types were selected for deletion.
-  </summary>
-</histogram>
-
 <histogram name="History.ClearBrowsingData.ShownHistoryNoticeAfterClearing"
     enum="BooleanShown" expires_after="M81">
   <owner>msramek@chromium.org</owner>
@@ -451,7 +429,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.UserDeletedFromTab"
-    enum="ClearBrowsingDataTab" expires_after="2024-03-17">
+    enum="ClearBrowsingDataTab" expires_after="2024-05-19">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -462,7 +440,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.DidMakeQuery" enum="BooleanQueried"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -1593,7 +1571,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DatabaseBasicMetricsTime" units="ms"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>sophiechang@chromium.org</owner>
   <owner>tommycli@chromium.org</owner>
   <owner>treib@chromium.org</owner>
@@ -1643,7 +1621,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DatabaseSqliteError" enum="SqliteLoggedResultCode"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>sophiechang@chromium.org</owner>
   <owner>asully@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -1654,7 +1632,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DomainCount1Day_V2" units="domains"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -1688,7 +1666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DomainCount1Day_V3" units="domains"
-    expires_after="2024-03-24">
+    expires_after="2024-05-26">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -1716,7 +1694,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DomainCount28Day_V2" units="domains"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -1778,7 +1756,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DomainCount7Day_V2" units="domains"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -1868,16 +1846,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.FirstSetTopSitesDeltaSize" units="units"
-    expires_after="M77">
-  <owner>yiyaoliu@chromium.org</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>
-    The count of differences between cached top sites and up-to-date top sites
-    when function TopSitesImpl::SetTopSites is firstly called at startup.
-  </summary>
-</histogram>
-
 <histogram name="History.FirstUpdateTime" units="ms" expires_after="2020-02-02">
   <owner>yiyaoliu@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -1956,12 +1924,6 @@ chromium-metrics-reviews@google.com.
     DB table. Recorded on initialization of the History DB on 1% of starts, only
     if any foreign visits exist (i.e. basically for users with History Sync on).
   </summary>
-</histogram>
-
-<histogram name="History.GetFavIconFromDB" units="ms" expires_after="M79">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>Time to check the thumbnail database for a URL's favicon.</summary>
 </histogram>
 
 <histogram name="History.HistoryPageView" enum="HistoryPageView"
@@ -2060,7 +2022,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.MonthlyHostCount" units="hosts"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -2100,28 +2062,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.QueryMostVisitedURLsTime" units="ms"
-    expires_after="M81">
-  <owner>chengx@chromium.org</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>
-    The amount of time for function HistoryBackend::QueryMostVisitedURLs to
-    execute. Excludes the case where local HistoryDatabase db_ is unavailable,
-    i.e. where the query doesn't really happen.
-  </summary>
-</histogram>
-
-<histogram name="History.ResultsRenderedTime" units="ms" expires_after="M90">
-  <owner>calamity@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>
-    Records the time taken to load the history Web UI and render (at least) a
-    screen full of items. This is roughly equivalent to 'time to first
-    meaningful paint' for the history page.
-  </summary>
-</histogram>
-
 <histogram name="History.TopSites.QueryFromHistoryTime" units="ms"
     expires_after="2024-05-12">
   <owner>mahmadi@chromium.org</owner>
@@ -2154,18 +2094,6 @@ chromium-metrics-reviews@google.com.
   <component>UI&gt;Browser&gt;History</component>
   <summary>
     Rows recovered from [thumbnails] table in TopSites recovery.
-  </summary>
-</histogram>
-
-<histogram name="History.TopSitesRecovery" enum="HistoryTopSitesRecoveryEnum"
-    expires_after="2018-08-30">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>
-    The TopSites recovery code is written conservatively, with successful
-    recovery committed and any failure leading to rollback. This tracks the
-    outcomes to determine which cases are high-frequency enough to warrant
-    adding additional code to handle them (versus simply deleting the data).
   </summary>
 </histogram>
 
@@ -2272,7 +2200,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.WeeklyHostCount" units="hosts"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>

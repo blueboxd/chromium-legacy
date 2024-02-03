@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/signin/public/base/gaia_id_hash.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/android/jni_headers/SyncServiceImpl_jni.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -26,6 +27,7 @@
 #include "components/sync/service/sync_user_settings.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -335,4 +337,17 @@ jlong SyncServiceAndroidBridge::GetLastSyncedTimeForDebugging(JNIEnv* env) {
       native_sync_service_->GetLastSyncedTimeForDebugging();
   return static_cast<jlong>(
       (last_sync_time - base::Time::UnixEpoch()).InMicroseconds());
+}
+
+void SyncServiceAndroidBridge::KeepAccountSettingsPrefsOnlyForUsers(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobjectArray>& gaia_ids) {
+  std::vector<std::string> gaia_id_strings;
+  AppendJavaStringArrayToStringVector(env, gaia_ids, &gaia_id_strings);
+  std::vector<signin::GaiaIdHash> gaia_id_hashes;
+  for (const std::string& gaia_id_string : gaia_id_strings) {
+    gaia_id_hashes.push_back(signin::GaiaIdHash::FromGaiaId(gaia_id_string));
+  }
+  native_sync_service_->GetUserSettings()->KeepAccountSettingsPrefsOnlyForUsers(
+      gaia_id_hashes);
 }

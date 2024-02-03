@@ -69,6 +69,18 @@ BLINK_EXPORT void Initialize(
 // Platform::CreateMainThreadAndInitialize().
 BLINK_EXPORT void CreateMainThreadAndInitialize(Platform*, mojo::BinderMap*);
 
+// Performs initialization required for Blink (wtf, core, modules and
+// web), but without initializing the main thread isolate. This allows
+// for CreateMainThreadIsolate() below to be called.
+BLINK_EXPORT void InitializeWithoutIsolateForTesting(
+    Platform*,
+    mojo::BinderMap*,
+    scheduler::WebThreadScheduler* main_thread_scheduler);
+
+// Initializes and returns the Main Thread Isolate. InitializeCommon()
+// must be called before this.
+BLINK_EXPORT v8::Isolate* CreateMainThreadIsolate();
+
 // Get the V8 Isolate for the main thread.
 // initialize must have been called first.
 BLINK_EXPORT v8::Isolate* MainThreadIsolate();
@@ -93,8 +105,8 @@ BLINK_EXPORT void ResetPluginCache(bool reload_pages = false);
 // performance and memory usage.
 BLINK_EXPORT void DecommitFreeableMemory();
 
-// Send memory pressure notification to worker thread isolate.
-BLINK_EXPORT void MemoryPressureNotificationToWorkerThreadIsolates(
+// Send memory pressure notification to isolates.
+BLINK_EXPORT void MemoryPressureNotificationToAllIsolates(
     v8::MemoryPressureLevel);
 
 // Send isolate background/foreground notification to worker thread isolates.

@@ -35,6 +35,7 @@ import './screens/common/oobe_reset.js';
 import './screens/common/os_install.js';
 import './screens/common/os_trial.js';
 import './screens/common/parental_handoff.js';
+import './screens/common/quick_start.js';
 import './screens/common/recommend_apps.js';
 import './screens/common/remote_activity_notification.js';
 import './screens/common/saml_confirm_password.js';
@@ -52,6 +53,8 @@ import './screens/osauth/cryptohome_recovery_setup.js';
 import './screens/osauth/factor_setup_success.js';
 import './screens/osauth/fingerprint_setup.js';
 import './screens/osauth/local_password_setup.js';
+import './screens/osauth/local_data_loss_warning.js';
+import './screens/osauth/enter_old_password.js';
 import './screens/osauth/osauth_error.js';
 import './screens/osauth/password_selection.js';
 import './screens/osauth/pin_setup.js';
@@ -76,7 +79,6 @@ import './screens/oobe/enterprise_enrollment.js';
 import './screens/oobe/hid_detection.js';
 import './screens/oobe/oobe_network.js';
 import './screens/oobe/packaged_license.js';
-import './screens/oobe/quick_start.js';
 import './screens/oobe/update.js';
 
 /**
@@ -118,6 +120,10 @@ export const commonScreensList = [
     condition: 'isDrivePinningEnabled',
   },
   {tag: 'enable-kiosk-element', id: 'kiosk-enable'},
+  {
+    tag: 'enter-old-password-element',
+    id: 'enter-old-password',
+  },
   {tag: 'error-message-element', id: 'error-message'},
   {tag: 'family-link-notice-element', id: 'family-link-notice'},
   {tag: 'fingerprint-setup-element', id: 'fingerprint-setup'},
@@ -134,6 +140,10 @@ export const commonScreensList = [
     tag: 'local-password-setup-element',
     id: 'local-password-setup',
     condition: 'isOobeConsumersLocalPasswordsEnabled',
+  },
+  {
+    tag: 'local-data-loss-warning-element',
+    id: 'local-data-loss-warning',
   },
   {tag: 'local-state-error-element', id: 'local-state-error'},
   {tag: 'managed-terms-of-service-element', id: 'terms-of-service'},
@@ -160,6 +170,7 @@ export const commonScreensList = [
     condition: 'isOobeConsumersLocalPasswordsEnabled',
   },
   {tag: 'pin-setup-element', id: 'pin-setup'},
+  {tag: 'quick-start-element', id: 'quick-start'},
   {tag: 'recommend-apps-element', id: 'recommend-apps'},
   {
     tag: 'remote-activity-notification-element',
@@ -232,6 +243,5 @@ export const oobeScreensList = [
   {tag: 'hid-detection-element', id: 'hid-detection'},
   {tag: 'oobe-network-element', id: 'network-selection'},
   {tag: 'packaged-license-element', id: 'packaged-license'},
-  {tag: 'quick-start-element', id: 'quick-start'},
   {tag: 'update-element', id: 'oobe-update'},
 ];

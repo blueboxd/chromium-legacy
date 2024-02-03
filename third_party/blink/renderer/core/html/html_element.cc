@@ -1942,12 +1942,17 @@ const HTMLElement* NearestTargetPopoverForInvoker(
     const PopoverAncestorOptionsSet ancestor_options =
         PopoverAncestorOptionsSet()) {
   return NearestMatchingAncestor(
-      node, ancestor_options, [](const Node* test_node) {
-        auto* form_element = DynamicTo<HTMLFormControlElement>(test_node);
-        return form_element ? const_cast<HTMLFormControlElement*>(form_element)
-                                  ->popoverTargetElement()
-                                  .popover.Get()
-                            : nullptr;
+      node, ancestor_options, [](const Node* test_node) -> const HTMLElement* {
+        auto* form_element =
+            DynamicTo<HTMLFormControlElement>(const_cast<Node*>(test_node));
+        if (!form_element) {
+          return nullptr;
+        }
+        auto* invoke_target_element = form_element->invokeTargetElement();
+
+        return invoke_target_element
+                   ? invoke_target_element
+                   : form_element->popoverTargetElement().popover.Get();
       });
 }
 
@@ -2265,42 +2270,6 @@ bool HTMLElement::HandleInvokeInternal(HTMLElement& invoker,
   }
 
   auto& document = GetDocument();
-  LocalFrame* frame = document.GetFrame();
-
-  if (EqualIgnoringASCIICase(action, keywords::kToggleFullscreen)) {
-    if (Fullscreen::IsFullscreenElement(*this)) {
-      Fullscreen::ExitFullscreen(document);
-      return true;
-    } else if (LocalFrame::HasTransientUserActivation(frame)) {
-      Fullscreen::RequestFullscreen(*this);
-      return true;
-    } else {
-      String message = "Cannot request fullscreen without a user gesture.";
-      document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning, message));
-      return false;
-    }
-  } else if (EqualIgnoringASCIICase(action, keywords::kRequestFullscreen)) {
-    if (Fullscreen::IsFullscreenElement(*this)) {
-      return true;
-    }
-    if (LocalFrame::HasTransientUserActivation(frame)) {
-      Fullscreen::RequestFullscreen(*this);
-      return true;
-    } else {
-      String message = "Cannot request fullscreen without a user gesture.";
-      document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning, message));
-      return false;
-    }
-  } else if (EqualIgnoringASCIICase(action, keywords::kExitFullscreen)) {
-    if (Fullscreen::IsFullscreenElement(*this)) {
-      Fullscreen::ExitFullscreen(document);
-    }
-    return true;
-  }
 
   // Note that the order is: `mousedown` which runs popover light dismiss
   // code, then (for clicked elements) focus is set to the clicked
@@ -2360,6 +2329,47 @@ bool HTMLElement::HandleInvokeInternal(HTMLElement& invoker,
       InvokePopover(invoker);
       return true;
     }
+  }
+
+  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
+    return false;
+  }
+
+  LocalFrame* frame = document.GetFrame();
+
+  if (EqualIgnoringASCIICase(action, keywords::kToggleFullscreen)) {
+    if (Fullscreen::IsFullscreenElement(*this)) {
+      Fullscreen::ExitFullscreen(document);
+      return true;
+    } else if (LocalFrame::HasTransientUserActivation(frame)) {
+      Fullscreen::RequestFullscreen(*this);
+      return true;
+    } else {
+      String message = "Cannot request fullscreen without a user gesture.";
+      document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
+      return false;
+    }
+  } else if (EqualIgnoringASCIICase(action, keywords::kRequestFullscreen)) {
+    if (Fullscreen::IsFullscreenElement(*this)) {
+      return true;
+    }
+    if (LocalFrame::HasTransientUserActivation(frame)) {
+      Fullscreen::RequestFullscreen(*this);
+      return true;
+    } else {
+      String message = "Cannot request fullscreen without a user gesture.";
+      document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
+      return false;
+    }
+  } else if (EqualIgnoringASCIICase(action, keywords::kExitFullscreen)) {
+    if (Fullscreen::IsFullscreenElement(*this)) {
+      Fullscreen::ExitFullscreen(document);
+    }
+    return true;
   }
   return false;
 }

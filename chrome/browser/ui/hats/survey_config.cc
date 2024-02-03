@@ -3,15 +3,17 @@
 // found in the LICENSE file.
 
 #include "survey_config.h"
+
 #include "base/feature_list.h"
 #include "base/features.h"
+#include "components/permissions/features.h"
+#include "components/permissions/permission_hats_trigger_helper.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/common/chrome_features.h"
+#include "components/password_manager/core/browser/features/password_features.h"  // nogncheck
 #include "components/performance_manager/public/features.h"         // nogncheck
 #include "components/permissions/constants.h"                       // nogncheck
-#include "components/permissions/features.h"                        // nogncheck
-#include "components/permissions/permission_hats_trigger_helper.h"  // nogncheck
 #include "components/safe_browsing/core/common/features.h"          // nogncheck
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"  // nogncheck
 #else
@@ -41,13 +43,14 @@ constexpr char kHatsSurveyTriggerPerformanceControlsBatterySaverOptOut[] =
 // The permission prompt trigger permits configuring multiple triggers
 // simultaneously. Each trigger increments a counter at the end -->
 // "permission-prompt0", "permission-prompt1", ...
-constexpr char kHatsSurveyTriggerPermissionsPrompt[] = "permissions-prompt";
 constexpr char kHatsSurveyTriggerPrivacyGuide[] = "privacy-guide";
 constexpr char kHatsSurveyTriggerPrivacySandbox[] = "privacy-sandbox";
 constexpr char kHatsSurveyTriggerRedWarning[] = "red-warning";
 constexpr char kHatsSurveyTriggerSettings[] = "settings";
 constexpr char kHatsSurveyTriggerSettingsPrivacy[] = "settings-privacy";
 constexpr char kHatsSurveyTriggerSettingsSecurity[] = "settings-security";
+constexpr char kHatsSurveyTriggerSuggestedPasswordsExperiment[] =
+    "suggested-passwords-experiment";
 constexpr char kHatsSurveyTriggerTrackingProtectionControlImmediate[] =
     "tracking-protection-control-immediate";
 constexpr char kHatsSurveyTriggerTrackingProtectionTreatmentImmediate[] =
@@ -108,6 +111,7 @@ constexpr char kHatsSurveyTriggerTrustSafetyV2PrivacySandbox4NoticeSettings[] =
     "ts-v2-ps4-notice-settings";
 constexpr char kHatsSurveyTriggerTrustSafetyV2SafeBrowsingInterstitial[] =
     "ts-v2-safe-browsing-interstitial";
+constexpr char kHatsSurveyTriggerWallpaperSearch[] = "wallpaper-search";
 #else   // BUILDFLAG(IS_ANDROID)
 constexpr char kHatsSurveyTriggerAndroidStartupSurvey[] = "startup_survey";
 #endif  // #if !BUILDFLAG(IS_ANDROID)
@@ -115,6 +119,8 @@ constexpr char kHatsSurveyTriggerAndroidStartupSurvey[] = "startup_survey";
 constexpr char kHatsSurveyTriggerTesting[] = "testing";
 constexpr char kHatsNextSurveyTriggerIDTesting[] =
     "HLpeYy5Av0ugnJ3q1cK0XzzA8UHv";
+
+constexpr char kHatsSurveyTriggerPermissionsPrompt[] = "permissions-prompt";
 
 namespace {
 
@@ -138,6 +144,29 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
                                                       "Test Field 2"};
   default_survey.product_specific_string_data_fields = {"Test Field 3"};
   survey_configs.emplace_back(default_survey);
+
+  // Permissions surveys.
+  for (auto& trigger_id_pair : permissions::PermissionHatsTriggerHelper::
+           GetPermissionPromptTriggerIdPairs(
+               kHatsSurveyTriggerPermissionsPrompt)) {
+    // trigger_id_pair has structure <trigger_name, trigger_id>. trigger_name is
+    // a unique name used by the HaTS service integration, and trigger_id is an
+    // ID that specifies a survey in the Listnr backend.
+    survey_configs.emplace_back(
+        &permissions::features::kPermissionsPromptSurvey, trigger_id_pair.first,
+        trigger_id_pair.second,
+        std::vector<std::string>{
+            permissions::kPermissionsPromptSurveyHadGestureKey},
+        std::vector<std::string>{
+            permissions::kPermissionsPromptSurveyPromptDispositionKey,
+            permissions::kPermissionsPromptSurveyPromptDispositionReasonKey,
+            permissions::kPermissionsPromptSurveyActionKey,
+            permissions::kPermissionsPromptSurveyRequestTypeKey,
+            permissions::kPermissionsPromptSurveyReleaseChannelKey,
+            permissions::kPermissionsPromptSurveyDisplayTimeKey,
+            permissions::kPermissionPromptSurveyOneTimePromptsDecidedBucketKey,
+            permissions::kPermissionPromptSurveyUrlKey});
+  }
 
 #if !BUILDFLAG(IS_ANDROID)
   // Dev tools surveys.
@@ -174,9 +203,10 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
       /*presupplied_trigger_id=*/
       features::kHappinessTrackingSurveysForSecurityPageTriggerId.Get(),
       std::vector<std::string>{},
-      std::vector<std::string>{
-          "Security Page User Action", "Safe Browsing Setting Before Trigger",
-          "Safe Browsing Setting After Trigger", "Client Channel"});
+      std::vector<std::string>{"Security Page User Action",
+                               "Safe Browsing Setting Before Trigger",
+                               "Safe Browsing Setting After Trigger",
+                               "Client Channel", "Time On Page"});
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopPrivacyGuide,
       kHatsSurveyTriggerPrivacyGuide);
@@ -215,6 +245,7 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopNtpModules,
       kHatsSurveyTriggerNtpModules);
+
   // NTP Photos module opt-out survey.
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForNtpPhotosOptOut,
@@ -428,48 +459,30 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
   survey_configs.emplace_back(&features::kAutofillPasswordSurvey,
                               kHatsSurveyTriggerAutofillPassword);
 
+  // Wallpaper Search survey.
+  survey_configs.emplace_back(
+      &features::kHappinessTrackingSurveysForWallpaperSearch,
+      kHatsSurveyTriggerWallpaperSearch);
+
   // What's New survey.
   survey_configs.emplace_back(
       &features::kHappinessTrackingSurveysForDesktopWhatsNew,
       kHatsSurveyTriggerWhatsNew);
-
-  // Permissions surveys.
-  for (auto& trigger_id_pair : permissions::PermissionHatsTriggerHelper::
-           GetPermissionPromptTriggerIdPairs(
-               kHatsSurveyTriggerPermissionsPrompt)) {
-    // trigger_id_pair has structure <trigger_name, trigger_id>. trigger_name is
-    // a unique name used by the HaTS service integration, and trigger_id is an
-    // ID that specifies a survey in the Listnr backend.
-    survey_configs.emplace_back(
-        &permissions::features::kPermissionsPromptSurvey, trigger_id_pair.first,
-        trigger_id_pair.second,
-        std::vector<std::string>{
-            permissions::kPermissionsPromptSurveyHadGestureKey},
-        std::vector<std::string>{
-            permissions::kPermissionsPromptSurveyPromptDispositionKey,
-            permissions::kPermissionsPromptSurveyPromptDispositionReasonKey,
-            permissions::kPermissionsPromptSurveyActionKey,
-            permissions::kPermissionsPromptSurveyRequestTypeKey,
-            permissions::kPermissionsPromptSurveyReleaseChannelKey,
-            permissions::kPermissionsPromptSurveyDisplayTimeKey,
-            permissions::kPermissionPromptSurveyOneTimePromptsDecidedBucketKey,
-            permissions::kPermissionPromptSurveyUrlKey});
-  }
 
   // Performance Controls surveys.
   survey_configs.emplace_back(
       &performance_manager::features::kPerformanceControlsPerformanceSurvey,
       kHatsSurveyTriggerPerformanceControlsPerformance,
       /*presupplied_trigger_id=*/absl::nullopt,
-      std::vector<std::string>{"high_efficiency_mode"},
-      std::vector<std::string>{"battery_saver_mode"});
+      std::vector<std::string>{"high_efficiency_mode", "battery_saver_mode"},
+      std::vector<std::string>{});
   survey_configs.emplace_back(
       &performance_manager::features::
           kPerformanceControlsBatteryPerformanceSurvey,
       kHatsSurveyTriggerPerformanceControlsBatteryPerformance,
       /*presupplied_trigger_id=*/absl::nullopt,
-      std::vector<std::string>{"high_efficiency_mode"},
-      std::vector<std::string>{"battery_saver_mode"});
+      std::vector<std::string>{"high_efficiency_mode", "battery_saver_mode"},
+      std::vector<std::string>{});
   survey_configs.emplace_back(
       &performance_manager::features::
           kPerformanceControlsHighEfficiencyOptOutSurvey,
@@ -487,6 +500,14 @@ std::vector<hats::SurveyConfig> GetAllSurveyConfigs() {
       std::vector<std::string>{
           safe_browsing::kFlaggedUrl, safe_browsing::kMainFrameUrl,
           safe_browsing::kReferrerUrl, safe_browsing::kUserActivityWithUrls});
+
+  // Suggested passwords experiment surveys.
+  survey_configs.emplace_back(
+      &password_manager::features::kPasswordGenerationExperiment,
+      kHatsSurveyTriggerSuggestedPasswordsExperiment,
+      password_manager::features::kPasswordGenerationExperimentSurveyTriggerId
+          .Get(),
+      std::vector<std::string>{"Suggested password accepted"});
 
 #else
   survey_configs.emplace_back(&chrome::android::kChromeSurveyNextAndroid,
@@ -546,7 +567,7 @@ void GetActiveSurveyConfigs(SurveyConfigs& survey_configs_by_triggers_) {
   // of whether the feature is enabled, so checking whether a particular survey
   // is enabled should be fast.
   for (const SurveyConfig& survey : surveys) {
-    if (!survey.enabled || survey.trigger_id.empty()) {
+    if (!survey.enabled) {
       continue;
     }
 

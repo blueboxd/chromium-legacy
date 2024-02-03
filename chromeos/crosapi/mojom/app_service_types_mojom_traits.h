@@ -124,6 +124,8 @@ struct StructTraits<crosapi::mojom::AppDataView, apps::AppPtr> {
 
   static absl::optional<uint64_t> data_size_in_bytes(const apps::AppPtr& r);
 
+  static crosapi::mojom::OptionalBool allow_close(const apps::AppPtr& r);
+
   static bool Read(crosapi::mojom::AppDataView data, apps::AppPtr* out);
 };
 
@@ -451,6 +453,10 @@ struct StructTraits<crosapi::mojom::AppShortcutDataView, apps::ShortcutPtr> {
   }
 
   static apps::IconKeyPtr icon_key(const apps::ShortcutPtr& r);
+
+  static const absl::optional<bool>& allow_removal(const apps::ShortcutPtr& r) {
+    return r->allow_removal;
+  }
 
   static bool Read(crosapi::mojom::AppShortcutDataView data,
                    apps::ShortcutPtr* out);

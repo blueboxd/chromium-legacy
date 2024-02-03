@@ -512,7 +512,7 @@ void Shell::OnDictationEnded() {
 }
 
 bool Shell::IsInTabletMode() const {
-  return tablet_mode_controller()->InTabletMode();
+  return display::Screen::GetScreen()->InTabletMode();
 }
 
 bool Shell::ShouldSaveDisplaySettings() {
@@ -779,13 +779,15 @@ Shell::~Shell() {
 
   wm_mode_controller_.reset();
 
+  // `shortcut_input_handler_` must be cleaned up before
+  // `event_rewriter_controller_`.
+  shortcut_input_handler_.reset();
   event_rewriter_controller_.reset();
   keyboard_modifier_metrics_recorder_.reset();
   input_device_settings_dispatcher_.reset();
   input_device_tracker_.reset();
   input_device_settings_controller_.reset();
   input_device_key_alias_manager_.reset();
-  shortcut_input_handler_.reset();
 
   screen_orientation_controller_.reset();
   screen_layout_observer_.reset();
@@ -1285,10 +1287,6 @@ void Shell::Init(
 
   InitializeDisplayManager();
 
-  if (features::IsWindowBoundsTrackerEnabled()) {
-    window_bounds_tracker_ = std::make_unique<WindowBoundsTracker>();
-  }
-
   // RefreshFontParams depends on display prefs.
   display_manager_->RefreshFontParams();
 
@@ -1370,6 +1368,12 @@ void Shell::Init(
   focus_rules_ = new AshFocusRules();
   focus_controller_ = std::make_unique<::wm::FocusController>(focus_rules_);
   focus_controller_->AddObserver(this);
+
+  // `WindowBoundsTracker` depends on `FocusController`, as it needs to track
+  // the window's activation changes.
+  if (features::IsWindowBoundsTrackerEnabled()) {
+    window_bounds_tracker_ = std::make_unique<WindowBoundsTracker>();
+  }
 
   overview_controller_ = std::make_unique<OverviewController>();
 
@@ -1579,7 +1583,8 @@ void Shell::Init(
   modality_filter_ = std::make_unique<SystemModalContainerEventFilter>(this);
   AddPreTargetHandler(modality_filter_.get());
 
-  if (features::IsPeripheralCustomizationEnabled()) {
+  if (features::IsPeripheralCustomizationEnabled() ||
+      ::features::IsShortcutCustomizationEnabled()) {
     shortcut_input_handler_ = std::make_unique<ShortcutInputHandler>();
     AddPreTargetHandler(shortcut_input_handler_.get());
   }

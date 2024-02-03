@@ -56,6 +56,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extensions_dialogs.h"
+#include "chrome/browser/ui/safety_hub/menu_notification_service_factory.h"
+#include "chrome/browser/ui/safety_hub/safety_hub_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
@@ -2014,10 +2016,12 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
       return RespondNow(Error(kInvalidLazyBackgroundPageParameter));
     if (properties.render_process_id == -1) {
       // Start the service worker and open the inspect window.
-      devtools_util::InspectInactiveServiceWorkerBackground(extension, profile);
+      devtools_util::InspectInactiveServiceWorkerBackground(
+          extension, profile, DevToolsOpenedByAction::kInspectLink);
       return RespondNow(NoArguments());
     }
-    devtools_util::InspectServiceWorkerBackground(extension, profile);
+    devtools_util::InspectServiceWorkerBackground(
+        extension, profile, DevToolsOpenedByAction::kInspectLink);
     return RespondNow(NoArguments());
   }
 
@@ -2028,7 +2032,8 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
     if (!BackgroundInfo::HasLazyBackgroundPage(extension))
       return RespondNow(Error(kInvalidRenderProcessId));
     // Wakes up the background page and opens the inspect window.
-    devtools_util::InspectBackgroundPage(extension, profile);
+    devtools_util::InspectBackgroundPage(extension, profile,
+                                         DevToolsOpenedByAction::kInspectLink);
     return RespondNow(NoArguments());
   }
 
@@ -2058,9 +2063,11 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
         DevToolsToggleAction::Reveal(
             base::UTF8ToUTF16(*properties.url),
             properties.line_number ? *properties.line_number - 1 : 0,
-            properties.column_number ? *properties.column_number - 1 : 0));
+            properties.column_number ? *properties.column_number - 1 : 0),
+        DevToolsOpenedByAction::kInspectLink);
   } else {
-    DevToolsWindow::OpenDevToolsWindow(web_contents);
+    DevToolsWindow::OpenDevToolsWindow(web_contents,
+                                       DevToolsOpenedByAction::kInspectLink);
   }
 
   // Once we open the inspector, we focus on the appropriate tab...
@@ -2750,6 +2757,27 @@ void DeveloperPrivateRemoveMultipleExtensionsFunction::OnDialogAccepted() {
         extension_id, UNINSTALL_REASON_USER_INITIATED, nullptr);
   }
   Respond(NoArguments());
+}
+
+DeveloperPrivateDismissSafetyHubExtensionsMenuNotificationFunction::
+    DeveloperPrivateDismissSafetyHubExtensionsMenuNotificationFunction() =
+        default;
+DeveloperPrivateDismissSafetyHubExtensionsMenuNotificationFunction::
+    ~DeveloperPrivateDismissSafetyHubExtensionsMenuNotificationFunction() =
+        default;
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateDismissSafetyHubExtensionsMenuNotificationFunction::Run() {
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents) {
+    return RespondNow(Error(kCouldNotFindWebContentsError));
+  }
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  SafetyHubMenuNotificationServiceFactory::GetForProfile(profile)
+      ->DismissActiveNotificationOfModule(
+          safety_hub::SafetyHubModuleType::EXTENSIONS);
+  return RespondNow(NoArguments());
 }
 
 }  // namespace api

@@ -274,6 +274,7 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_preferences.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #endif
@@ -975,6 +976,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
                       : web_view_guest->owner_web_contents()->GetTitle();
     key = MenuItem::ExtensionKey(
         extension_id, web_view_guest->owner_rfh()->GetProcess()->GetID(),
+        web_view_guest->owner_rfh()->GetRoutingID(),
         web_view_guest->view_instance_id());
   } else {
     key = MenuItem::ExtensionKey(extension->id());
@@ -2005,6 +2007,12 @@ void RenderViewContextMenu::AppendVideoItems() {
                                     IDS_CONTENT_CONTEXT_COPYVIDEOFRAME);
   }
 
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
+                                  IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
+  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
+                                       IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
+  AppendMediaRouterItem();
+
   if (base::FeatureList::IsEnabled(media::kContextMenuSearchForVideoFrame)) {
     const auto* provider = GetImageSearchProvider();
     if (!provider) {
@@ -2015,17 +2023,9 @@ void RenderViewContextMenu::AppendVideoItems() {
         GetSearchForVideoFrameIdc(),
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHFORVIDEOFRAME,
                                    GetImageSearchProviderName(provider)));
-    if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
-      menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
-    }
+    menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
     MaybePrepareForLensQuery();
   }
-
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
-                                  IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
-  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
-                                       IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
-  AppendMediaRouterItem();
 }
 
 void RenderViewContextMenu::AppendMediaItems() {
@@ -3076,7 +3076,15 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHLENSFORVIDEOFRAME:
+      RecordAmbientSearchQuery(
+          lens::AmbientSearchEntryPoint::
+              CONTEXT_MENU_SEARCH_VIDEO_FRAME_WITH_GOOGLE_LENS);
+      ExecSearchForVideoFrame();
+      break;
+
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORVIDEOFRAME:
+      RecordAmbientSearchQuery(lens::AmbientSearchEntryPoint::
+                                   CONTEXT_MENU_SEARCH_VIDEO_FRAME_WITH_WEB);
       ExecSearchForVideoFrame();
       break;
 
@@ -3207,6 +3215,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
+      base::RecordAction(base::UserMetricsAction("ExitFullscreen_ContextMenu"));
       ExecExitFullscreen();
       break;
 
@@ -3564,10 +3573,10 @@ bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   Profile* const profile = Profile::FromBrowserContext(browser_context_);
-  supervised_user::SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
-  if (supervised_user_service &&
-      supervised_user_service->IsURLFilteringEnabled()) {
+  CHECK(profile);
+  if (supervised_user::IsUrlFilteringEnabled(*profile->GetPrefs())) {
+    supervised_user::SupervisedUserService* supervised_user_service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
     supervised_user::SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
     // Use the URL filter's synchronous call to check if a site has been
@@ -3916,17 +3925,17 @@ void RenderViewContextMenu::ExecInspectBackgroundPage() {
   DCHECK(platform_app);
   DCHECK(platform_app->is_platform_app());
 
-  extensions::devtools_util::InspectBackgroundPage(platform_app, GetProfile());
+  extensions::devtools_util::InspectBackgroundPage(
+      platform_app, GetProfile(), DevToolsOpenedByAction::kContextMenuInspect);
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 void RenderViewContextMenu::CheckSupervisedUserURLFilterAndSaveLinkAs() {
   Profile* const profile = Profile::FromBrowserContext(browser_context_);
-  supervised_user::SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
-
-  if (supervised_user_service &&
-      supervised_user_service->IsURLFilteringEnabled()) {
+  CHECK(profile);
+  if (supervised_user::IsUrlFilteringEnabled(*profile->GetPrefs())) {
+    supervised_user::SupervisedUserService* supervised_user_service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
     supervised_user::SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
     url_filter->GetFilteringBehaviorForURLWithAsyncChecks(
@@ -4369,9 +4378,9 @@ void RenderViewContextMenu::SearchForVideoFrame(const gfx::ImageSkia& image) {
   }
 
   if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
-    // TODO(crbug.com/1453681): Add an entry point for VideoFrame search.
-    core_tab_helper->SearchWithLens(gfx::Image(image),
-                                    lens::EntryPoint::UNKNOWN);
+    core_tab_helper->SearchWithLens(
+        gfx::Image(image),
+        lens::EntryPoint::CHROME_VIDEO_FRAME_SEARCH_CONTEXT_MENU_ITEM);
   } else {
     core_tab_helper->SearchByImage(gfx::Image(image));
   }

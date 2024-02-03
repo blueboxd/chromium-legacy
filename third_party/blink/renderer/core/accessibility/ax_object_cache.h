@@ -53,7 +53,6 @@ class AXObject;
 class AccessibleNode;
 class HTMLCanvasElement;
 class HTMLOptionElement;
-class HTMLTableElement;
 class HTMLFrameOwnerElement;
 class HTMLSelectElement;
 class LocalFrameView;
@@ -103,9 +102,10 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   // Will also notify the parent that its children have changed, so that the
   // parent will recompute its children and be reserialized.
   virtual void Remove(AccessibleNode*) = 0;
-  virtual void Remove(LayoutObject*) = 0;
   virtual void Remove(Node*) = 0;
   virtual void RemoveSubtreeWhenSafe(Node*, bool remove_root = true) = 0;
+  virtual void RemoveAXObjectsInLayoutSubtree(LayoutObject*) = 0;
+  virtual void RemoveAXObjectsInLayoutSubtree(Node*) = 0;
   virtual void RemovePopup(Document*) = 0;
   virtual void Remove(AbstractInlineTextBox*) = 0;
 
@@ -129,7 +129,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   // Called to process queued subtree removals when flat tree traversal is safe.
   virtual void ProcessSubtreeRemovals() = 0;
-  // Returns true if the AXObjectCache cares about this attribute
   virtual void HandleAttributeChanged(const QualifiedName& attr_name,
                                       Element*) = 0;
   virtual void HandleFocusedUIElementChanged(Element* old_focused_node,
@@ -156,14 +155,13 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
                                           const AtomicString& event_type) = 0;
 
   // Handle any notifications which arrived while layout was dirty.
-  virtual void ProcessDeferredAccessibilityEvents(Document&) = 0;
+  // If |force|, then process regardless of any active batching or pauses.
+  virtual void ProcessDeferredAccessibilityEvents(Document&,
+                                                  bool force = false) = 0;
 
   // Changes to virtual Accessibility Object Model nodes.
   virtual void HandleAttributeChanged(const QualifiedName& attr_name,
                                       AccessibleNode*) = 0;
-
-  // Called when the DOM parser has reached the closing tag of a table element.
-  virtual void FinishedParsingTable(HTMLTableElement*) = 0;
 
   // Called when a HTMLFrameOwnerElement (such as an iframe element) changes the
   // embedding token of its child frame.
@@ -314,7 +312,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 class ScopedFreezeAXCache : public GarbageCollected<ScopedFreezeAXCache> {
  public:
   explicit ScopedFreezeAXCache(AXObjectCache& cache) : cache_(&cache) {
-    CHECK(!cache.IsFrozen());
     cache.Freeze();
   }
 
@@ -323,7 +320,6 @@ class ScopedFreezeAXCache : public GarbageCollected<ScopedFreezeAXCache> {
 
   ~ScopedFreezeAXCache() {
     CHECK(cache_);
-    CHECK(cache_->IsFrozen());
     cache_->Thaw();
   }
 

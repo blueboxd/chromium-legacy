@@ -213,7 +213,8 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(
   }
 
   // No need to install a placeholder because there should be one already.
-  install_options.wait_for_windows_closed = true;
+  install_options.placeholder_resolution_behavior =
+      PlaceholderResolutionBehavior::kWaitForAppWindowsClosed;
 
   // If the app is not a placeholder app, ExternallyManagedAppManager will
   // ignore the request.
@@ -238,7 +239,8 @@ void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicy(
     pref_change_registrar_.Add(
         prefs::kWebAppInstallForceList,
         base::BindRepeating(&WebAppPolicyManager::RefreshPolicyInstalledApps,
-                            weak_ptr_factory_.GetWeakPtr()));
+                            weak_ptr_factory_.GetWeakPtr(),
+                            /*allow_close_and_relaunch=*/false));
     if (base::FeatureList::IsEnabled(
             features::kDesktopPWAsEnforceWebAppSettingsPolicy)) {
       pref_change_registrar_.Add(
@@ -248,7 +250,13 @@ void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicy(
 
       RefreshPolicySettings();
     }
-    RefreshPolicyInstalledApps();
+#if BUILDFLAG(IS_CHROMEOS)
+    RefreshPolicyInstalledApps(
+        /*allow_close_and_relaunch=*/base::FeatureList::IsEnabled(
+            features::kForcedAppRelaunchOnPlaceholderUpdate));
+#else
+    RefreshPolicyInstalledApps(/*allow_close_and_relaunch=*/false);
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS)
     pref_change_registrar_.Add(
@@ -317,7 +325,12 @@ bool WebAppPolicyManager::IsDisabledAppsModeHidden() const {
   return false;
 }
 
-void WebAppPolicyManager::RefreshPolicyInstalledApps() {
+void WebAppPolicyManager::RefreshPolicyInstalledApps(
+    bool allow_close_and_relaunch) {
+#if !BUILDFLAG(IS_CHROMEOS)
+  CHECK(!allow_close_and_relaunch);
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
   if (!AreForceInstalledAppsAllowed(profile_)) {
     OnWebAppForceInstallPolicyParsed();
     return;
@@ -352,11 +365,18 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
     // When the policy gets refreshed, we should try to reinstall placeholder
     // apps but only if they are not being used. In the non-placeholder case, we
     // will not reinstall and there is no need to wait for windows being closed.
-    install_options.wait_for_windows_closed =
+    // Note: an exception to this rule is described in
+    // go/preventclose-waitforwindowsclosed.
+
+    install_options.placeholder_resolution_behavior =
         provider_->registrar_unsafe()
-            .LookupPlaceholderAppId(install_options.install_url,
-                                    WebAppManagement::kPolicy)
-            .has_value();
+                .LookupPlaceholderAppId(install_options.install_url,
+                                        WebAppManagement::kPolicy)
+                .has_value()
+            ? (allow_close_and_relaunch
+                   ? PlaceholderResolutionBehavior::kCloseAndRelaunch
+                   : PlaceholderResolutionBehavior::kWaitForAppWindowsClosed)
+            : PlaceholderResolutionBehavior::kClose;
 
     absl::optional<webapps::AppId> app_id =
         provider_->registrar_unsafe().LookupExternalAppId(
@@ -763,8 +783,9 @@ bool WebAppPolicyManager::IsPreventCloseEnabled(
 #endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
-void WebAppPolicyManager::RefreshPolicyInstalledAppsForTesting() {
-  RefreshPolicyInstalledApps();
+void WebAppPolicyManager::RefreshPolicyInstalledAppsForTesting(
+    bool allow_close_and_relaunch) {
+  RefreshPolicyInstalledApps(allow_close_and_relaunch);
 }
 
 void WebAppPolicyManager::OnAppsSynchronized(

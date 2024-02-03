@@ -22,6 +22,7 @@ import {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {SearchResult as PersonalizationSearchResult} from '../mojom-webui/personalization_search.mojom-webui.js';
 import {Section, Subpage} from '../mojom-webui/routes.mojom-webui.js';
 import {SearchResult as SettingsSearchResult, SearchResultIdentifier, SearchResultType} from '../mojom-webui/search.mojom-webui.js';
@@ -80,7 +81,7 @@ function isPersonalizationSearchResult(result: SearchResult):
  * Used to locate matches such that the query text omits a hyphen when the
  * matching result text contains a hyphen.
  */
-const DELOCALIZED_HYPHEN: string = '-';
+const DELOCALIZED_HYPHEN = '-';
 
 /**
  * A list of hyphens in all languages that will be ignored during the
@@ -99,7 +100,7 @@ const HYPHENS: string[] = [
 /**
  * String form of the regexp expressing hyphen chars.
  */
-const HYPHENS_REGEX_STR: string = `[${HYPHENS.join('')}]`;
+const HYPHENS_REGEX_STR = `[${HYPHENS.join('')}]`;
 
 /**
  * Regexp expressing hyphen chars.
@@ -664,14 +665,17 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
    * @return The name of the icon to use.
    */
   private getResultIcon_(): string {
+    const isRevampEnabled = isRevampWayfindingEnabled();
     if (isPersonalizationSearchResult(this.searchResult)) {
-      return 'os-settings:paint-brush';
+      return isRevampEnabled ? 'os-settings:personalization-revamp' :
+                               'os-settings:paint-brush';
     }
 
     const settingsSearchResult = this.searchResult as SettingsSearchResult;
     switch (settingsSearchResult.icon) {
       case SearchResultIcon.kA11y:
-        return 'os-settings:accessibility';
+        return isRevampEnabled ? 'os-settings:accessibility-revamp' :
+                                 'os-settings:accessibility';
       case SearchResultIcon.kAndroid:
         return 'os-settings:android';
       case SearchResultIcon.kAppsGrid:
@@ -687,59 +691,70 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
       case SearchResultIcon.kSwitchAccess:
         return 'os-settings:switch-access';
       case SearchResultIcon.kAvatar:
-        return 'cr:person';
+        return isRevampEnabled ? 'os-settings:privacy-manage-people' :
+                                 'cr:person';
       case SearchResultIcon.kBluetooth:
         return 'cr:bluetooth';
       case SearchResultIcon.kCamera:
         return 'os-settings:camera';
       case SearchResultIcon.kCellular:
         return 'os-settings:cellular';
+      case SearchResultIcon.kCheckForUpdate:
+        return 'os-settings:about-update-complete';
       case SearchResultIcon.kChrome:
         return 'os-settings:chrome';
       case SearchResultIcon.kChromeVox:
         return 'os-settings:chromevox';
       case SearchResultIcon.kClock:
-        return 'os-settings:access-time';
+        return 'os-settings:clock';
       case SearchResultIcon.kContrast:
         return 'os-settings:contrast';
+      case SearchResultIcon.kDetailedBuild:
+        return 'os-settings:about-additional-details';
       case SearchResultIcon.kDeveloperTags:
         return 'os-settings:developer-tags';
+      case SearchResultIcon.kDiagnostics:
+        return 'os-settings:about-diagnostics';
       case SearchResultIcon.kDictation:
         return 'os-settings:dictation';
       case SearchResultIcon.kDisplay:
         return 'os-settings:display';
       case SearchResultIcon.kDockedMagnifier:
         return 'os-settings:docked-magnifier';
-      case SearchResultIcon.kDrive:
-        return 'os-settings:google-drive';
       case SearchResultIcon.kEthernet:
         return 'os-settings:settings-ethernet';
       case SearchResultIcon.kFingerprint:
         return 'os-settings:fingerprint';
+      case SearchResultIcon.kFirmwareUpdates:
+        return 'os-settings:about-firmware-updates';
       case SearchResultIcon.kFolder:
         return 'os-settings:folder-outline';
+      case SearchResultIcon.kFolderShared:
+        return 'os-settings:folder-shared';
       case SearchResultIcon.kFullscreenMagnifier:
         return 'os-settings:fullscreen-magnifier';
       case SearchResultIcon.kGeolocation:
         return 'os-settings:geolocation';
-      case SearchResultIcon.kGlobe:
-        return 'os-settings:language';
+      case SearchResultIcon.kGoogleDrive:
+        return isRevampEnabled ? 'os-settings:google-drive-revamp' :
+                                 'os-settings:google-drive';
       case SearchResultIcon.kGooglePlay:
         return 'os-settings:google-play';
-      case SearchResultIcon.kHardDrive:
-        return 'os-settings:hard-drive';
+      case SearchResultIcon.kHelp:
+        return 'os-settings:about-help';
       case SearchResultIcon.kHotspot:
         return 'os-settings:hotspot';
       case SearchResultIcon.kInstantTethering:
         return 'os-settings:magic-tethering';
       case SearchResultIcon.kKeyboard:
         return 'os-settings:keyboard';
+      case SearchResultIcon.kLanguage:
+        return isRevampEnabled ? 'os-settings:language-revamp' :
+                                 'os-settings:language';
       case SearchResultIcon.kLaptop:
         return 'os-settings:laptop-chromebook';
       case SearchResultIcon.kLock:
-        return 'os-settings:lock';
-      case SearchResultIcon.kMagnifyingGlass:
-        return 'cr:search';
+        return isRevampEnabled ? 'os-settings:lock-revamp' : 'os-settings:lock';
       case SearchResultIcon.kMicrophone:
         return 'os-settings:microphone';
       case SearchResultIcon.kMouse:
@@ -754,7 +769,8 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
       case SearchResultIcon.kOnScreenKeyboard:
         return 'os-settings:on-screen-keyboard';
       case SearchResultIcon.kPaintbrush:
-        return 'os-settings:paint-brush';
+        return isRevampEnabled ? 'os-settings:personalization-revamp' :
+                                 'os-settings:paint-brush';
       case SearchResultIcon.kPenguin:
         return 'os-settings:crostini-mascot';
       case SearchResultIcon.kPhone:
@@ -765,18 +781,28 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
         return 'os-settings:power';
       case SearchResultIcon.kPrinter:
         return 'os-settings:print';
+      case SearchResultIcon.kPrivacyControls:
+        return 'os-settings:privacy-controls';
+      case SearchResultIcon.kReleaseNotes:
+        return 'os-settings:about-release-notes';
       case SearchResultIcon.kReset:
-        return 'os-settings:restore';
+        return isRevampEnabled ? 'os-settings:startup' : 'os-settings:restore';
+      case SearchResultIcon.kRestore:
+        return isRevampEnabled ? 'os-settings:restore-revamp' :
+                                 'os-settings:startup';
+      case SearchResultIcon.kSearch:
+        return isRevampEnabled ? 'os-settings:explore' : 'cr:search';
       case SearchResultIcon.kSelectToSpeak:
         return 'os-settings:select-to-speak';
       case SearchResultIcon.kShield:
         return 'cr:security';
-      case SearchResultIcon.kStartup:
-        return 'os-settings:startup';
+      case SearchResultIcon.kStorage:
+        return isRevampEnabled ? 'os-settings:storage' :
+                                 'os-settings:hard-drive';
       case SearchResultIcon.kStylus:
         return 'os-settings:stylus';
       case SearchResultIcon.kSync:
-        return 'os-settings:sync';
+        return isRevampEnabled ? 'os-settings:sync-revamp' : 'os-settings:sync';
       case SearchResultIcon.kSystemPreferences:
         return 'os-settings:system-preferences';
       case SearchResultIcon.kWallpaper:

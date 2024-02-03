@@ -35,6 +35,12 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       prefs::kTrackingProtectionOnboardingAckAction,
       static_cast<int>(TrackingProtectionOnboardingAckAction::kNotSet));
 
+  registry->RegisterTimePref(
+      prefs::kTrackingProtectionOnboardingNoticeFirstRequested, base::Time());
+
+  registry->RegisterTimePref(
+      prefs::kTrackingProtectionOnboardingNoticeLastRequested, base::Time());
+
   // Offboarding
   registry->RegisterBooleanPref(prefs::kTrackingProtectionOffboarded, false);
 
@@ -44,6 +50,17 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       prefs::kTrackingProtectionOffboardingAckAction,
       static_cast<int>(TrackingProtectionOnboardingAckAction::kNotSet));
+
+  // Silent onboarding
+  registry->RegisterIntegerPref(
+      prefs::kTrackingProtectionSilentOnboardingStatus,
+      static_cast<int>(TrackingProtectionOnboardingStatus::kIneligible));
+
+  registry->RegisterTimePref(prefs::kTrackingProtectionSilentEligibleSince,
+                             base::Time());
+
+  registry->RegisterTimePref(prefs::kTrackingProtectionSilentOnboardedSince,
+                             base::Time());
 
   // Tracking Protection Settings Prefs
   registry->RegisterBooleanPref(

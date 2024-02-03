@@ -53,19 +53,19 @@ export class TabSearchItem extends TabSearchItemBase {
         value: () => loadTimeData.getBoolean('useRipples'),
       },
 
-      hideTimestamp: {
+      index: Number,
+
+      inSuggestedGroup: {
         type: Boolean,
         value: false,
       },
-
-      index: Number,
     };
   }
 
   data: TabData;
   private buttonRipples_: boolean;
-  hideTimestamp: boolean;
   index: number;
+  inSuggestedGroup: boolean;
 
   /**
    * @return Whether a close action can be performed on the item.
@@ -177,7 +177,17 @@ export class TabSearchItem extends TabSearchItemBase {
   }
 
   private ariaLabelForButton_(title: string): string {
+    if (this.inSuggestedGroup) {
+      return loadTimeData.getStringF('tabOrganizationCloseTabAriaLabel', title);
+    }
     return `${loadTimeData.getString('closeTab')} ${title}`;
+  }
+
+  private tooltipForButton_(): string {
+    if (this.inSuggestedGroup) {
+      return loadTimeData.getString('tabOrganizationCloseTabTooltip');
+    }
+    return loadTimeData.getString('closeTab');
   }
 }
 

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <tuple>
 #include <utility>
+#include <variant>
 
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
@@ -13,9 +15,9 @@
 #include "chrome/browser/pdf/pdf_extension_test_base.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/printing/browser_printing_context_factory_for_test.h"
-#include "chrome/browser/printing/print_backend_service_test_impl.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job.h"
+#include "chrome/browser/printing/print_test_utils.h"
 #include "chrome/browser/printing/print_view_manager_base.h"
 #include "chrome/browser/printing/test_print_preview_observer.h"
 #include "chrome/browser/printing/test_print_view_manager.h"
@@ -29,6 +31,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "pdf/pdf_features.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/test_print_backend.h"
 #include "printing/buildflags/buildflags.h"
@@ -36,6 +39,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+#include "chrome/browser/printing/print_backend_service_manager.h"
+#include "chrome/browser/printing/print_backend_service_test_impl.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "ui/base/ui_base_types.h"
@@ -62,6 +70,14 @@ using testing::_;
 using testing::AtMost;
 using testing::NiceMock;
 #endif
+
+struct PDFExtensionPrintingTestPassToString {
+  std::string operator()(
+      const ::testing::TestParamInfo<std::tuple<bool, bool>>& i) const {
+    return std::string(std::get<1>(i.param) ? "OOPIF_" : "GUESTVIEW_") +
+           std::string(std::get<0>(i.param) ? "SERVICE" : "BROWSER");
+  }
+};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -91,9 +107,10 @@ using ::content::WebContents;
 using ::extensions::MimeHandlerViewGuest;
 using ::pdf_extension_test_util::SetInputFocusOnPlugin;
 
-class PDFExtensionPrintingTest : public PDFExtensionTestBase,
-                                 public printing::PrintJob::Observer,
-                                 public testing::WithParamInterface<bool> {
+class PDFExtensionPrintingTest
+    : public PDFExtensionTestBase,
+      public printing::PrintJob::Observer,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   PDFExtensionPrintingTest() = default;
   ~PDFExtensionPrintingTest() override = default;
@@ -110,17 +127,27 @@ class PDFExtensionPrintingTest : public PDFExtensionTestBase,
         test_print_backend_.get());
     printing::PrintingContext::SetPrintingContextFactoryForTest(
         &test_printing_context_factory_);
+
+    // Tests assume that printing can be done to the print backend, so there
+    // must be at least one printer available for that to make sense.
+    constexpr char kTestPrinter[] = "printer1";
+    AddPrinter(kTestPrinter);
+    test_printing_context_factory_.SetPrinterNameForSubsequentContexts(
+        kTestPrinter);
+
     PDFExtensionTestBase::SetUp();
   }
   void SetUpOnMainThread() override {
     // Avoid getting blocked by modal print error dialogs. Must be called after
     // the UI thread is up and running.
     SetShowPrintErrorDialogForTest(base::DoNothing());
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
     if (UseService()) {
       print_backend_service_ =
           printing::PrintBackendServiceTestImpl::LaunchForTesting(
               test_remote_, test_print_backend_.get(), /*sandboxed=*/true);
     }
+#endif
     PDFExtensionTestBase::SetUpOnMainThread();
   }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -152,7 +179,9 @@ class PDFExtensionPrintingTest : public PDFExtensionTestBase,
 #endif
   void TearDownOnMainThread() override {
     PDFExtensionTestBase::TearDownOnMainThread();
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
     printing::PrintBackendServiceManager::ResetForTesting();
+#endif
     SetShowPrintErrorDialogForTest(base::NullCallback());
   }
   void TearDown() override {
@@ -160,17 +189,46 @@ class PDFExtensionPrintingTest : public PDFExtensionTestBase,
     printing::PrintingContext::SetPrintingContextFactoryForTest(nullptr);
     printing::PrintBackend::SetPrintBackendForTesting(nullptr);
   }
+  bool UseOopif() const override { return std::get<1>(GetParam()); }
   std::vector<base::test::FeatureRef> GetEnabledFeatures() const override {
+    std::vector<base::test::FeatureRef> enabled =
+        PDFExtensionTestBase::GetEnabledFeatures();
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
     if (UseService()) {
-      return {printing::features::kEnableOopPrintDrivers};
+      enabled.push_back(printing::features::kEnableOopPrintDrivers);
     }
-    return {};
+#endif
+    return enabled;
   }
   std::vector<base::test::FeatureRef> GetDisabledFeatures() const override {
-    if (UseService()) {
-      return {};
+    std::vector<base::test::FeatureRef> disabled =
+        PDFExtensionTestBase::GetDisabledFeatures();
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+    if (!UseService()) {
+      disabled.push_back(printing::features::kEnableOopPrintDrivers);
     }
-    return {printing::features::kEnableOopPrintDrivers};
+#endif
+    return disabled;
+  }
+
+  void AddPrinter(const std::string& printer_name) {
+    printing::PrinterBasicInfo printer_info(
+        printer_name,
+        /*display_name=*/"test printer",
+        /*printer_description=*/"A printer for testing.",
+        /*printer_status=*/0,
+        /*is_default=*/true, printing::test::kPrintInfoOptions);
+
+    auto default_caps =
+        std::make_unique<printing::PrinterSemanticCapsAndDefaults>();
+    default_caps->copies_max = 1;
+    default_caps->dpis = printing::test::kPrinterCapabilitiesDefaultDpis;
+    default_caps->default_dpi = printing::test::kPrinterCapabilitiesDpi;
+    default_caps->papers.push_back(printing::test::kPaperLetter);
+    default_caps->papers.push_back(printing::test::kPaperLegal);
+    test_print_backend_->AddValidPrinter(
+        printer_name, std::move(default_caps),
+        std::make_unique<printing::PrinterBasicInfo>(printer_info));
   }
 
   void SetupPrintViewManagerForJobMonitoring(content::RenderFrameHost* frame) {
@@ -197,7 +255,7 @@ class PDFExtensionPrintingTest : public PDFExtensionTestBase,
 #endif
 
  private:
-  bool UseService() const { return GetParam(); }
+  bool UseService() const { return std::get<0>(GetParam()); }
 
   void OnCreatedPrintJob(printing::PrintJob* print_job) {
     EXPECT_FALSE(observing_print_job_);
@@ -227,8 +285,10 @@ class PDFExtensionPrintingTest : public PDFExtensionTestBase,
   scoped_refptr<printing::TestPrintBackend> test_print_backend_ =
       base::MakeRefCounted<printing::TestPrintBackend>();
   printing::BrowserPrintingContextFactoryForTest test_printing_context_factory_;
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
   mojo::Remote<printing::mojom::PrintBackendService> test_remote_;
   std::unique_ptr<printing::PrintBackendServiceTestImpl> print_backend_service_;
+#endif
   bool observing_print_job_ = false;
   bool print_job_destroyed_ = false;
   raw_ptr<base::RunLoop> run_loop_ = nullptr;
@@ -236,6 +296,11 @@ class PDFExtensionPrintingTest : public PDFExtensionTestBase,
 };
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest, BasicPrintCommand) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Acknowledge print job creation so that the mojo callback doesn't hang.
   EXPECT_CALL(local_printer(), CreatePrintJob(_, _))
@@ -253,6 +318,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest, BasicPrintCommand) {
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest, PrintCommand) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
   MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test.pdf"));
   content::RenderFrameHost* frame = GetPluginFrame(guest);
@@ -273,6 +343,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest, PrintCommand) {
 #endif
 IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
                        MAYBE_ContextMenuPrintCommandExtensionMainFrame) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
   MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test.pdf"));
   content::RenderFrameHost* plugin_frame = GetPluginFrame(guest);
@@ -296,6 +371,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
 IN_PROC_BROWSER_TEST_P(
     PDFExtensionPrintingTest,
     DISABLED_ContextMenuPrintCommandEmbeddedExtensionMainFrame) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
   MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/pdf_embed.html"));
   content::RenderFrameHost* plugin_frame = GetPluginFrame(guest);
@@ -319,6 +399,11 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
                        ContextMenuPrintCommandPluginFrame) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
   MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test.pdf"));
   content::RenderFrameHost* plugin_frame = GetPluginFrame(guest);
@@ -341,6 +426,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
 // TODO(crbug.com/1330032): Fix flakiness.
 IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
                        DISABLED_ContextMenuPrintCommandEmbeddedPluginFrame) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
   MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/pdf_embed.html"));
   content::RenderFrameHost* plugin_frame = GetPluginFrame(guest);
@@ -361,6 +451,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest, PrintButton) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
   MimeHandlerViewGuest* guest = LoadPdfGetMimeHandlerView(
       embedded_test_server()->GetURL("/pdf/test.pdf"));
   content::RenderFrameHost* frame = GetPluginFrame(guest);
@@ -377,7 +472,16 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest, PrintButton) {
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-INSTANTIATE_TEST_SUITE_P(All, PDFExtensionPrintingTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         PDFExtensionPrintingTest,
+                         testing::Combine(
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+                             testing::Bool(),
+#else
+                             testing::Values(false),
+#endif
+                             testing::Bool()),
+                         PDFExtensionPrintingTestPassToString());
 
 class PDFExtensionBasicPrintingTest : public PDFExtensionPrintingTest {
  public:
@@ -396,6 +500,11 @@ class PDFExtensionBasicPrintingTest : public PDFExtensionPrintingTest {
 // defined above.
 IN_PROC_BROWSER_TEST_P(PDFExtensionBasicPrintingTest,
                        MAYBE_ContextMenuPrintCommandExtensionMainFrame) {
+  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  if (UseOopif()) {
+    GTEST_SKIP();
+  }
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Acknowledge print job creation so that the mojo callback doesn't hang.
   EXPECT_CALL(local_printer(), CreatePrintJob(_, _))
@@ -421,4 +530,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionBasicPrintingTest,
   WaitForPrintJobDestruction();
 }
 
-INSTANTIATE_TEST_SUITE_P(All, PDFExtensionBasicPrintingTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         PDFExtensionBasicPrintingTest,
+                         testing::Combine(testing::Bool(), testing::Bool()),
+                         PDFExtensionPrintingTestPassToString());

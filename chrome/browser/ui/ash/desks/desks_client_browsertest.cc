@@ -147,6 +147,14 @@ constexpr char kTestAppName[] = "test_app_name";
 constexpr char kUnknownTestAppName[] = "unknown_test_app_name";
 constexpr char kUnknownTestAppId[] = "07eb07d7-f338-48aa-a996-7beb76a5042c";
 
+void WaitForDeskModel() {
+  while (
+      !(DesksClient::Get() && DesksClient::Get()->GetDeskModel()->IsReady())) {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+}
+
 Browser* FindBrowser(int32_t window_id) {
   for (auto* browser : *BrowserList::GetInstance()) {
     aura::Window* window = browser->window()->GetNativeWindow();
@@ -1636,16 +1644,22 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUILaunchSnappedWindow) {
   event_generator.set_current_screen_location(gfx::Point(1000, 500));
   event_generator.DragMouseBy(200, 0);
   ASSERT_EQ(gfx::Rect(1200, 1000), window->GetBoundsInScreen());
+  auto* window_state = ash::WindowState::Get(window);
+  EXPECT_EQ(0.6f, *window_state->snap_ratio());
 
   // Enter overview and save our snapped window as a template.
   ash::ToggleOverview();
   ash::WaitForOverviewEnterAnimation();
+  auto* split_view_controller =
+      ash::SplitViewController::Get(window->GetRootWindow());
+  ASSERT_FALSE(split_view_controller->IsWindowInSplitView(window));
   ClickSaveDeskAsTemplateButton();
 
   // Launch our template and then exit overview.
   ClickFirstTemplateItem();
   ash::ToggleOverview();
   ash::WaitForOverviewExitAnimation();
+  ASSERT_FALSE(split_view_controller->IsWindowInSplitView(window));
 
   // Our snapped window should have the similar bounds as it did when it was
   // saved. We may lose some precision when saving a float as a percentage.
@@ -1657,6 +1671,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUILaunchSnappedWindow) {
   EXPECT_EQ(0, new_bounds.y());
   EXPECT_NEAR(1200, new_bounds.width(), 5);
   EXPECT_EQ(1000, new_bounds.height());
+  EXPECT_EQ(0.6f, *window_state->snap_ratio());
 
   // Launches the first template on the template grid.
   auto launch_first_template = []() {
@@ -1689,6 +1704,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUILaunchSnappedWindow) {
   EXPECT_EQ(0, new_bounds.y());
   EXPECT_NEAR(1200, new_bounds.width(), 5);
   EXPECT_EQ(1000, new_bounds.height());
+  EXPECT_EQ(0.6f, *window_state->snap_ratio());
 
   // Change to portrait mode, work area is 1000x2000.
   display_manager_test_api.UpdateDisplay(
@@ -1704,6 +1720,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUILaunchSnappedWindow) {
   EXPECT_EQ(0, new_bounds.y());
   EXPECT_EQ(1000, new_bounds.width());
   EXPECT_NEAR(1200, new_bounds.height(), 5);
+  EXPECT_EQ(0.6f, *window_state->snap_ratio());
 
   // Launch the window in upside down portrait mode. The height is 60% of the
   // work area height and the window is physically on the top, but the
@@ -1719,6 +1736,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUILaunchSnappedWindow) {
   EXPECT_EQ(800, new_bounds.y());
   EXPECT_EQ(1000, new_bounds.width());
   EXPECT_NEAR(1200, new_bounds.height(), 5);
+  EXPECT_EQ(0.6f, *window_state->snap_ratio());
 }
 
 // Tests that incognito browser windows will NOT be captured in the desk
@@ -3507,6 +3525,8 @@ class DesksTemplatesClientMultiProfileTest : public ash::LoginManagerTest {
         ash::ProfileHelper::Get()
             ->GetProfileByAccountId(account_id1_)
             ->GetPath());
+
+    WaitForDeskModel();
   }
 
  protected:
@@ -3516,13 +3536,7 @@ class DesksTemplatesClientMultiProfileTest : public ash::LoginManagerTest {
   AccountId account_id2_;
 };
 
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_MultiProfileTest DISABLED_MultiProfileTest
-#else
-#define MAYBE_MultiProfileTest MultiProfileTest
-#endif
-IN_PROC_BROWSER_TEST_F(DesksTemplatesClientMultiProfileTest,
-                       MAYBE_MultiProfileTest) {
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientMultiProfileTest, MultiProfileTest) {
   CreateBrowser(ash::ProfileHelper::Get()->GetProfileByAccountId(account_id1_));
   // Capture the active desk, which contains the browser windows.
   std::unique_ptr<ash::DeskTemplate> desk_template =
@@ -3538,13 +3552,16 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientMultiProfileTest,
   // be accessed from |account_id2_|.
   ash::UserAddingScreen::Get()->Start();
   AddUser(account_id2_);
+
+  // Make sure desk template storage async load completes after user switches.
+  WaitForDeskModel();
   EXPECT_EQ(0u, GetDeskTemplates().size());
 }
 
 // Flakily failing https://crbug.com/1447440
 // Tests that admin templates policy can be set.
 IN_PROC_BROWSER_TEST_F(DesksTemplatesClientMultiProfileTest,
-                       DISABLED_SetAndClearAdminTemplates) {
+                       SetAndClearAdminTemplates) {
   EXPECT_TRUE(DesksClient::Get());
 
   base::Uuid admin_template_uuid =

@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5320594929574852403">Перемещение влево</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
+<translation id="539541037630043848">Открыть <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">Сканирование страницы <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">Квадрат</translation>
 <translation id="574392208103952083">Средний</translation>
@@ -163,6 +164,7 @@
 <translation id="8870695351537079478">Не удалось начать запись</translation>
 <translation id="8880167521484863515">4 на 3</translation>
 <translation id="8903921497873541725">Увеличить</translation>
+<translation id="8926890870105777777">Подключиться к сети "<ph name="WIFINAME" />"</translation>
 <translation id="9045010116236796332">Расположите документ внутри рамки.</translation>
 <translation id="9045155556724273246">10 секунд</translation>
 <translation id="906331135292332864">Обработка изображения…</translation>

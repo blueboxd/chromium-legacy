@@ -168,7 +168,8 @@ var OSSettingsCrostiniPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsCrostiniPageTest', 'AllJsTests', () => {
+// TODO(crbug.com/1504815): This test is flaky.
+TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
@@ -213,6 +214,14 @@ TEST_F(
  [
    'ApnSubpage', 'apn_subpage_tests.js',
    {enabled: ['ash::features::kApnRevamp']}
+ ],
+ [
+   'AppLanguageSelectionDialog',
+   'common/app_language_selection_dialog/app_language_selection_dialog_test.js'
+ ],
+ [
+   'AppLanguageSelectionItem',
+   'common/app_language_selection_dialog/app_language_selection_item_test.js'
  ],
  ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
  ['AppManagementManagedApps', 'app_management/managed_apps_test.js'],

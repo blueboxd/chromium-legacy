@@ -24,6 +24,7 @@
 #include "chrome/browser/tpcd/heuristics/opener_heuristic_utils.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -54,6 +55,8 @@ using content::RenderFrameHost;
 using content::WebContents;
 using content::WebContentsObserver;
 using testing::ElementsAre;
+using testing::Field;
+using testing::Optional;
 using testing::Pair;
 using tpcd::experiment::EnableForIframeTypes;
 
@@ -263,6 +266,23 @@ class OpenerHeuristicBrowserTest
     }
     return static_cast<OptionalBool>(
         entries[0].metrics["OpenerHasSameSiteIframe"]);
+  }
+
+  absl::optional<PopupsStateValue> GetPopupState(const GURL& opener_url,
+                                                 const GURL& popup_url) {
+    absl::optional<PopupsStateValue> state;
+
+    GetDipsService()
+        ->storage()
+        ->AsyncCall(&DIPSStorage::ReadPopup)
+        .WithArgs(GetSiteForDIPS(opener_url), GetSiteForDIPS(popup_url))
+        .Then(base::BindLambdaForTesting(
+            [&state](absl::optional<PopupsStateValue> db_state) {
+              state = db_state;
+            }));
+    GetDipsService()->storage()->FlushPostedTasksForTesting();
+
+    return state;
   }
 
   base::FieldTrialParams tpcd_heuristics_grants_params_;
@@ -516,31 +536,49 @@ class OpenerHeuristicPastInteractionGrantBrowserTest
 IN_PROC_BROWSER_TEST_P(OpenerHeuristicPastInteractionGrantBrowserTest,
                        PopupPastInteractionIsReported_WithStorageAccessGrant) {
   GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
-  GURL popup_url = embedded_test_server()->GetURL("b.test", "/title1.html");
-  RecordInteraction(popup_url, clock_.Now() - base::Hours(3));
+  GURL initial_url = embedded_test_server()->GetURL(
+      "b.test", "/cross-site/c.test/title1.html");
+  GURL final_url = embedded_test_server()->GetURL("c.test", "/title1.html");
+  RecordInteraction(initial_url, clock_.Now() - base::Hours(3));
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  ASSERT_THAT(OpenPopup(popup_url), HasValue());
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(initial_url));
+  ASSERT_EQ(popup->GetLastCommittedURL(), final_url);
 
   // Expect that cookie access was granted for the Popup With Past Interaction
   // heuristic, if the feature is enabled.
   auto cookie_settings = CookieSettingsFactory::GetForProfile(
       Profile::FromBrowserContext(GetActiveWebContents()->GetBrowserContext()));
+  EXPECT_EQ(
+      cookie_settings->GetCookieSetting(initial_url, opener_url,
+                                        net::CookieSettingOverrides(), nullptr),
+      GetParam().write_grant_enabled ? CONTENT_SETTING_ALLOW
+                                     : CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(
+      cookie_settings->GetThirdPartyCookieAllowMechanism(
+          initial_url, opener_url, net::CookieSettingOverrides(), nullptr),
+      GetParam().write_grant_enabled
+          ? content_settings::CookieSettingsBase::
+                ThirdPartyCookieAllowMechanism::kAllowBy3PCDHeuristics
+          : content_settings::CookieSettingsBase::
+                ThirdPartyCookieAllowMechanism::kNone);
+
+  // Cookie access was NOT granted for the site that the popup redirected to.
   EXPECT_EQ(cookie_settings->GetCookieSetting(
-                popup_url, opener_url, net::CookieSettingOverrides(), nullptr),
-            GetParam().write_grant_enabled ? CONTENT_SETTING_ALLOW
-                                           : CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(cookie_settings->GetThirdPartyCookieAllowMechanism(
-                popup_url, opener_url, net::CookieSettingOverrides(), nullptr),
-            GetParam().write_grant_enabled
-                ? content_settings::CookieSettingsBase::
-                      ThirdPartyCookieAllowMechanism::kAllowBy3PCDHeuristics
-                : content_settings::CookieSettingsBase::
-                      ThirdPartyCookieAllowMechanism::kNone);
+                final_url, opener_url, net::CookieSettingOverrides(), nullptr),
+            CONTENT_SETTING_BLOCK);
 }
 
+// TODO(crbug.com/1506932) Flaky on mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_AdTaggedPopupPastInteractionIsReported_WithStorageAccessGrant \
+  DISABLED_AdTaggedPopupPastInteractionIsReported_WithStorageAccessGrant
+#else
+#define MAYBE_AdTaggedPopupPastInteractionIsReported_WithStorageAccessGrant \
+  AdTaggedPopupPastInteractionIsReported_WithStorageAccessGrant
+#endif
 IN_PROC_BROWSER_TEST_P(
     OpenerHeuristicPastInteractionGrantBrowserTest,
-    AdTaggedPopupPastInteractionIsReported_WithStorageAccessGrant) {
+    MAYBE_AdTaggedPopupPastInteractionIsReported_WithStorageAccessGrant) {
   GURL opener_url =
       embedded_test_server()->GetURL("a.com", "/ad_tagging/frame_factory.html");
   GURL popup_url = embedded_test_server()->GetURL("c.com", "/title1.html");
@@ -789,18 +827,27 @@ class OpenerHeuristicCurrentInteractionGrantBrowserTest
 IN_PROC_BROWSER_TEST_P(OpenerHeuristicCurrentInteractionGrantBrowserTest,
                        PopupInteractionWithStorageAccessGrant) {
   GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
-  GURL popup_url = embedded_test_server()->GetURL("b.test", "/title1.html");
+  GURL initial_url = embedded_test_server()->GetURL(
+      "b.test", "/cross-site/c.test/title1.html");
+  GURL final_url = embedded_test_server()->GetURL("c.test", "/title1.html");
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(initial_url));
+  ASSERT_EQ(popup->GetLastCommittedURL(), final_url);
   clock_.Advance(base::Minutes(1));
   SimulateMouseClick(popup);
 
-  // Expect that cookie access was granted for the Popup With Current
-  // Interaction heuristic.
   auto cookie_settings = CookieSettingsFactory::GetForProfile(
       Profile::FromBrowserContext(GetActiveWebContents()->GetBrowserContext()));
+  // Cookie access was NOT granted for the initial URL (that the user didn't
+  // interact with).
+  EXPECT_EQ(
+      cookie_settings->GetCookieSetting(initial_url, opener_url,
+                                        net::CookieSettingOverrides(), nullptr),
+      CONTENT_SETTING_BLOCK);
+  // Cookie access WAS granted for the interacted-with URL (if the feature was
+  // enabled).
   EXPECT_EQ(cookie_settings->GetCookieSetting(
-                popup_url, opener_url, net::CookieSettingOverrides(), nullptr),
+                final_url, opener_url, net::CookieSettingOverrides(), nullptr),
             GetParam().write_grant_enabled ? CONTENT_SETTING_ALLOW
                                            : CONTENT_SETTING_BLOCK);
 }
@@ -1254,6 +1301,37 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   EXPECT_EQ(entries[0].metrics["IsAdTaggedPopupClick"], true);
 }
 
+IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
+                       PastAndCurrentInteractionAreBothReportedToDipsDb) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
+  GURL initial_site = embedded_test_server()->GetURL("b.test", "/title1.html");
+  GURL initial_url = embedded_test_server()->GetURL(
+      "b.test", "/cross-site/c.test/title1.html");
+  GURL final_url = embedded_test_server()->GetURL("c.test", "/title1.html");
+
+  // Initialize popup and interaction.
+  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), initial_site));
+  SimulateMouseClick(GetActiveWebContents());
+
+  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(initial_url));
+  ASSERT_EQ(popup->GetLastCommittedURL(), final_url);
+  clock_.Advance(base::Minutes(1));
+  SimulateMouseClick(popup);
+  GetDipsService()->storage()->FlushPostedTasksForTesting();
+
+  absl::optional<PopupsStateValue> initial_state =
+      GetPopupState(opener_url, initial_url);
+  absl::optional<PopupsStateValue> final_state =
+      GetPopupState(opener_url, final_url);
+  ASSERT_THAT(
+      initial_state,
+      Optional(Field(&PopupsStateValue::is_current_interaction, false)));
+  ASSERT_THAT(final_state,
+              Optional(Field(&PopupsStateValue::is_current_interaction, true)));
+}
+
 // chrome/browser/ui/browser.h (for changing profile prefs) is not available on
 // Android.
 #if !BUILDFLAG(IS_ANDROID)
@@ -1264,6 +1342,8 @@ class OpenerHeuristicBackfillGrantBrowserTest
   OpenerHeuristicBackfillGrantBrowserTest() {
     tpcd_heuristics_grants_params_["TpcdBackfillPopupHeuristicsGrants"] =
         GetParam() ? "10m" : "0s";
+    tpcd_heuristics_grants_params_
+        ["TpcdWritePopupCurrentInteractionHeuristicsGrants"] = "0s";
   }
 
   void SetUpOnMainThread() override {

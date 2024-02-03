@@ -68,7 +68,7 @@ class TestNotificationView : public AshNotificationView {
   int top_radius_ = 0;
   int bottom_radius_ = 0;
 
-  absl::optional<float> slide_amount_;
+  std::optional<float> slide_amount_;
 };
 
 class TestNotificationListView : public NotificationListView {
@@ -98,10 +98,10 @@ class TestNotificationListView : public NotificationListView {
   }
 
   // NotificationListView:
-  message_center::MessageView* CreateMessageView(
+  std::unique_ptr<message_center::MessageView> CreateMessageView(
       const message_center::Notification& notification) override {
-    auto* message_view = new TestNotificationView(notification);
-    ConfigureMessageView(message_view);
+    auto message_view = std::make_unique<TestNotificationView>(notification);
+    ConfigureMessageView(message_view.get());
     return message_view;
   }
 

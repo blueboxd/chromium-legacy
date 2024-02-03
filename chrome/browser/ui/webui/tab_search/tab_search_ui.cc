@@ -11,6 +11,7 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_prefs.h"
@@ -71,32 +72,69 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       // Tab organization UI strings
       {"createGroup", IDS_TAB_ORGANIZATION_CREATE_GROUP},
       {"dismiss", IDS_TAB_ORGANIZATION_DISMISS},
-      {"failureBodyGeneric", IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC},
-      {"failureBodyGrouping", IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING},
+      {"failureBodyGenericPreLink",
+       IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC_PRE_LINK},
+      {"failureBodyGroupingPreLink",
+       IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING_PRE_LINK},
+      {"failureBodyGenericLink",
+       IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC_LINK},
+      {"failureBodyGroupingLink",
+       IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING_LINK},
+      {"failureBodyGenericPostLink",
+       IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC_POST_LINK},
+      {"failureBodyGroupingPostLink",
+       IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING_POST_LINK},
       {"failureTitleGeneric", IDS_TAB_ORGANIZATION_FAILURE_TITLE_GENERIC},
       {"failureTitleGrouping", IDS_TAB_ORGANIZATION_FAILURE_TITLE_GROUPING},
       {"inProgressTitle", IDS_TAB_ORGANIZATION_IN_PROGRESS_TITLE},
+      {"inputAriaLabel", IDS_TAB_ORGANIZATION_INPUT_ARIA_LABEL},
       {"learnMore", IDS_TAB_ORGANIZATION_LEARN_MORE},
+      {"learnMoreAriaLabel", IDS_TAB_ORGANIZATION_LEARN_MORE_ARIA_LABEL},
+      {"learnMoreDisclaimer", IDS_TAB_ORGANIZATION_DISCLAIMER},
       {"notStartedBody", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY},
       {"notStartedBodyFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE},
+      {"notStartedBodySignedOut",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_SIGNED_OUT},
+      {"notStartedBodySyncPaused",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_SYNC_PAUSED},
       {"notStartedBodyUnsynced",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_UNSYNCED},
       {"notStartedBodyUnsyncedHistory",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_UNSYNCED_HISTORY},
       {"notStartedButton", IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON},
+      {"notStartedButtonAriaLabel",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_ARIA_LABEL},
+      {"notStartedButtonFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_FRE},
+      {"notStartedButtonFREAriaLabel",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_FRE_ARIA_LABEL},
       {"notStartedButtonSyncPaused",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SYNC_PAUSED},
+      {"notStartedButtonSyncPausedAriaLabel",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SYNC_PAUSED_ARIA_LABEL},
       {"notStartedButtonUnsynced",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED},
+      {"notStartedButtonUnsyncedAriaLabel",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_ARIA_LABEL},
       {"notStartedButtonUnsyncedHistory",
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY},
+      {"notStartedButtonUnsyncedHistoryAriaLabel",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY_ARIA_LABEL},
       {"notStartedTitle", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE},
       {"notStartedTitleFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE_FRE},
+      {"rejectSuggestion", IDS_TAB_ORGANIZATION_REJECT_SUGGESTION},
+      {"rejectFinalSuggestion", IDS_TAB_ORGANIZATION_REJECT_FINAL_SUGGESTION},
       {"successTitle", IDS_TAB_ORGANIZATION_SUCCESS_TITLE},
+      {"tabOrganizationCloseTabAriaLabel",
+       IDS_TAB_ORGANIZATION_CLOSE_TAB_ARIA_LABEL},
+      {"tabOrganizationCloseTabTooltip",
+       IDS_TAB_ORGANIZATION_CLOSE_TAB_TOOLTIP},
       {"tabOrganizationTabName", IDS_TAB_ORGANIZATION_TAB_NAME},
       {"tipAction", IDS_TAB_ORGANIZATION_TIP_ACTION},
+      {"tipAriaDescription", IDS_TAB_ORGANIZATION_TIP_ARIA_DESCRIPTION},
       {"tipBody", IDS_TAB_ORGANIZATION_TIP_BODY},
       {"tipTitle", IDS_TAB_ORGANIZATION_TIP_TITLE},
+      {"thumbsDown", IDS_TAB_ORGANIZATION_THUMBS_DOWN},
+      {"thumbsUp", IDS_TAB_ORGANIZATION_THUMBS_UP},
   };
   webui::SetupChromeRefresh2023(source);
   source->AddLocalizedStrings(kStrings);
@@ -134,7 +172,7 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       features::kTabSearchRecentlyClosedDefaultItemDisplayCount.Get());
 
   bool tab_organization_enabled = false;
-  if (features::IsTabOrganization()) {
+  if (TabOrganizationUtils::GetInstance()->IsEnabled(profile)) {
     const auto* const tab_organization_service =
         TabOrganizationServiceFactory::GetForProfile(profile);
     if (tab_organization_service) {
@@ -142,6 +180,9 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
     }
   }
   source->AddBoolean("tabOrganizationEnabled", tab_organization_enabled);
+  source->AddBoolean(
+      "tabOrganizationRefreshButtonEnabled",
+      base::FeatureList::IsEnabled(features::kTabOrganizationRefreshButton));
 
   source->AddInteger("tabIndex", TabIndex());
   source->AddBoolean("showTabOrganizationFRE", ShowTabOrganizationFRE());

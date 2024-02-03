@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/gpu-fyi-cq-android-arm64/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "Android FYI Release (Pixel 6)",
-              "project": "chromium"
+              "project": "chromium-m121"
             },
             "builder_spec": {
               "builder_group": "chromium.gpu.fyi",
@@ -31,7 +34,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "GPU FYI Android arm64 Builder",
-                "project": "chromium"
+                "project": "chromium-m121"
               },
               "run_tests_serially": true
             }
@@ -40,7 +43,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "GPU FYI Android arm64 Builder",
-              "project": "chromium"
+              "project": "chromium-m121"
             },
             "builder_spec": {
               "builder_group": "chromium.gpu.fyi",
@@ -69,14 +72,14 @@
         {
           "bucket": "ci",
           "builder": "GPU FYI Android arm64 Builder",
-          "project": "chromium"
+          "project": "chromium-m121"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Android FYI Release (Pixel 6)",
-          "project": "chromium"
+          "project": "chromium-m121"
         }
       ],
       "retry_failed_shards": false

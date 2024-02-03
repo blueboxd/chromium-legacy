@@ -33,18 +33,17 @@ BASE_FEATURE(kForgotPasswordFormSupport,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_IOS)
-// Removes the list of passwords from the Settings UI and adds a separate
-// Password Manager view.
-BASE_FEATURE(kIOSPasswordUISplit,
-             "IOSPasswordUISplit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables password bottom sheet to be displayed (on iOS) when a user is
 // signed-in and taps on a username or password field on a website that has at
 // least one credential saved in their password manager.
 BASE_FEATURE(kIOSPasswordBottomSheet,
              "IOSPasswordBottomSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables password bottom sheet to be triggered on autofocus events (on iOS).
+BASE_FEATURE(kIOSPasswordBottomSheetAutofocus,
+             "kIOSPasswordBottomSheetAutofocus",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, eligible users will be given the possibility to bulk upload
 // local passwords in the iOS password settings.
@@ -85,10 +84,6 @@ BASE_FEATURE(kRecoverFromNeverSaveAndroid,
 // Use GMS AccountSettings to manage passkeys when UPM is not available.
 BASE_FEATURE(kPasskeyManagementUsingAccountSettingsAndroid,
              "PasskeyManagementUsingAccountSettingsAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPasswordEditDialogWithDetails,
-             "PasswordEditDialogWithDetails",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Password generation bottom sheet.

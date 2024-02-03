@@ -1201,11 +1201,12 @@ ContextResult WebGPUDecoderImpl::Initialize(
 
 bool WebGPUDecoderImpl::IsFeatureExposed(wgpu::FeatureName feature) const {
   switch (feature) {
-    case wgpu::FeatureName::ChromiumExperimentalDp4a:
     case wgpu::FeatureName::ChromiumExperimentalTimestampQueryInsidePasses:
     case wgpu::FeatureName::ChromiumExperimentalSubgroups:
     case wgpu::FeatureName::ChromiumExperimentalSubgroupUniformControlFlow:
       return allow_unsafe_apis_;
+    case wgpu::FeatureName::AdapterPropertiesMemoryHeaps:
+      return enable_webgpu_developer_features_;
     case wgpu::FeatureName::DepthClipControl:
     case wgpu::FeatureName::Depth32FloatStencil8:
     case wgpu::FeatureName::TimestampQuery:
@@ -1362,6 +1363,16 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
   // disallowed.
   if (adapter_obj.HasFeature(wgpu::FeatureName::DawnMultiPlanarFormats)) {
     required_features.push_back(wgpu::FeatureName::DawnMultiPlanarFormats);
+  }
+
+  // Require platform-specific SharedTextureMemory features for use by
+  // the relevant SharedImage backings. These features should always be
+  // supported when running on the corresponding backend.
+  if (adapter_obj.HasFeature(wgpu::FeatureName::SharedTextureMemoryIOSurface)) {
+    CHECK(adapter_obj.HasFeature(wgpu::FeatureName::SharedFenceMTLSharedEvent));
+    required_features.push_back(
+        wgpu::FeatureName::SharedTextureMemoryIOSurface);
+    required_features.push_back(wgpu::FeatureName::SharedFenceMTLSharedEvent);
   }
 
 #if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)

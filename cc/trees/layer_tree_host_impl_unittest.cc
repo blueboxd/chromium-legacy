@@ -10756,7 +10756,7 @@ class BlendStateCheckLayer : public LayerImpl {
         quad_visible_rect_(5, 5, 5, 5) {
     resource_id_ = resource_provider_->ImportResource(
         viz::TransferableResource::MakeSoftware(
-            viz::SharedBitmap::GenerateId(), gfx::Size(1, 1),
+            viz::SharedBitmap::GenerateId(), gpu::SyncToken(), gfx::Size(1, 1),
             viz::SinglePlaneFormat::kRGBA_8888),
         base::DoNothing());
     SetBounds(gfx::Size(10, 10));
@@ -18175,7 +18175,7 @@ using UnifiedScrollingDeathTest = UnifiedScrollingTest;
 
 // A main thread hit test that with an empty target id should be dropped.
 TEST_F(UnifiedScrollingDeathTest, EmptyMainThreadHitTest) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
   CreateUncompositedScrollerAndNonFastScrollableRegion();
   {
     ElementId kInvalidId;

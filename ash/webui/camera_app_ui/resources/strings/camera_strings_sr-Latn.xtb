@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5320594929574852403">Kreće se ulevo</translation>
 <translation id="5374917190292010970">4K (2160 piksela)</translation>
+<translation id="539541037630043848">Otvorite: <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">Skenira se <ph name="COUNT" />. stranica</translation>
 <translation id="5671277269877808209">Kvadrat</translation>
 <translation id="574392208103952083">Srednja</translation>
@@ -163,6 +164,7 @@ Ako su povratne informacije u vezi sa kvalitetom slike ili videa, priložite uzo
 <translation id="8870695351537079478">Snimanje nije moglo da počne</translation>
 <translation id="8880167521484863515">4 prema 3</translation>
 <translation id="8903921497873541725">Uvećavanje</translation>
+<translation id="8926890870105777777">Pridruži me mreži <ph name="WIFINAME" /></translation>
 <translation id="9045010116236796332">Postavite sve ivice dokumenta u okvir</translation>
 <translation id="9045155556724273246">10 sekundi</translation>
 <translation id="906331135292332864">Slika se obrađuje…</translation>

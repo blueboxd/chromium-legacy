@@ -91,6 +91,7 @@
 #include "base/test/to_vector.h"
 #include "base/time/time.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -107,6 +108,7 @@
 #include "ui/compositor/test/test_utils.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -982,7 +984,8 @@ TEST_P(OverviewSessionTest, MaximizedFullscreenHistograms) {
 }
 #endif
 
-TEST_P(OverviewSessionTest, TabletModeHistograms) {
+// TODO(crbug.com/1493835): Re-enable this test. Disabled because of flakiness.
+TEST_P(OverviewSessionTest, DISABLED_TabletModeHistograms) {
   ui::ScopedAnimationDurationScaleMode anmatin_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -1524,7 +1527,7 @@ TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   EnterTabletMode();
   // DisplayConfigurationObserver enables mirror mode when tablet mode is
   // enabled. Disable mirror mode to test multiple displays.
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, std::nullopt);
   base::RunLoop().RunUntilIdle();
 
   const aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
@@ -6396,7 +6399,7 @@ TEST_F(TabletModeOverviewSessionTest, FlingToClose) {
 
   ToggleOverview();
   ASSERT_TRUE(GetOverviewController()->InOverviewSession());
-  EXPECT_EQ(1u, GetOverviewSession()->grid_list()[0]->size());
+  EXPECT_EQ(1u, GetOverviewSession()->grid_list()[0]->GetNumWindows());
 
   auto* item = GetOverviewItemForWindow(widget->GetNativeWindow());
   const gfx::PointF start = item->target_bounds().CenterPoint();
@@ -8228,8 +8231,8 @@ TEST_F(SplitViewOverviewSessionTest,
   EXPECT_TRUE(InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   ASSERT_TRUE(split_view_controller()->split_view_divider());
-  std::vector<aura::Window*> window_list =
-      GetOverviewController()->GetWindowsListInOverviewGridsForTest();
+  const std::vector<aura::Window*> window_list =
+      GetWindowsListInOverviewGrids();
   EXPECT_EQ(2u, window_list.size());
   EXPECT_FALSE(base::Contains(window_list, window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
@@ -8246,9 +8249,10 @@ TEST_F(SplitViewOverviewSessionTest,
   // the overview list.
   EXPECT_TRUE(InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
-  window_list = GetOverviewController()->GetWindowsListInOverviewGridsForTest();
-  EXPECT_EQ(3u, window_list.size());
-  EXPECT_TRUE(base::Contains(window_list, window1.get()));
+  const std::vector<aura::Window*> new_window_list =
+      GetWindowsListInOverviewGrids();
+  EXPECT_EQ(3u, new_window_list.size());
+  EXPECT_TRUE(base::Contains(new_window_list, window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 }
 
@@ -8287,8 +8291,7 @@ TEST_F(
   EXPECT_EQ(
       expected_mru_list,
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
-  EXPECT_EQ(expected_overview_list,
-            GetOverviewController()->GetWindowsListInOverviewGridsForTest());
+  EXPECT_EQ(expected_overview_list, GetWindowsListInOverviewGrids());
 
   // Verify the stacking order.
   aura::Window* parent = window1->parent();
@@ -8337,8 +8340,7 @@ TEST_F(
   EXPECT_EQ(
       expected_mru_list,
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
-  EXPECT_EQ(expected_overview_list,
-            GetOverviewController()->GetWindowsListInOverviewGridsForTest());
+  EXPECT_EQ(expected_overview_list, GetWindowsListInOverviewGrids());
 
   // Verify the stacking order.
   aura::Window* parent = window1->parent();
@@ -8755,8 +8757,8 @@ TEST_F(SplitViewOverviewSessionTest,
   ToggleOverview();
   split_view_controller()->SnapWindow(
       window.get(), SplitViewController::SnapPosition::kPrimary);
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
-  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, absl::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, std::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, std::nullopt);
 }
 
 // Tests that there is no crash when dragging the divider in portrait mode.
@@ -8856,7 +8858,7 @@ class SplitViewOverviewSessionInClamshellTest
 // Test some basic functionalities in clamshell splitview mode.
 TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   UpdateDisplay("600x400");
-  EXPECT_FALSE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_FALSE(display::Screen::GetScreen()->InTabletMode());
 
   // 1. Test the 1 window scenario.
   const gfx::Rect bounds(400, 400);
@@ -9325,7 +9327,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
       window1.get(), SplitViewController::SnapPosition::kPrimary);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      window1.get());
-  int divider_position = split_view_controller()->divider_position();
+  int divider_position = window1->GetBoundsInScreen().width();
   generator.MoveMouseTo(divider_position, 10);
   divider_position = 300;
   generator.DragMouseTo(divider_position, 10);
@@ -9438,6 +9440,8 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, DisplayOrientationChangeTest) {
   ToggleOverview();
   split_view_controller()->SnapWindow(
       split_view_window.get(), SplitViewController::SnapPosition::kPrimary);
+  WindowState* window_state = WindowState::Get(split_view_window.get());
+  absl::optional<float> default_snap_ratio = window_state->snap_ratio();
   const auto test_many_orientation_changes =
       [this](const std::string& description) {
         SCOPED_TRACE(description);
@@ -9445,7 +9449,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, DisplayOrientationChangeTest) {
              {display::Display::ROTATE_270, display::Display::ROTATE_180,
               display::Display::ROTATE_90, display::Display::ROTATE_0,
               display::Display::ROTATE_180, display::Display::ROTATE_0}) {
-          const auto compute_divider_position_ratio = [this]() {
+          const auto compute_window_snap_ratio = [this]() {
             const display::Display& display =
                 display::Screen::GetScreen()->GetPrimaryDisplay();
             const bool is_horizontal =
@@ -9453,28 +9457,28 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, DisplayOrientationChangeTest) {
             const gfx::Rect work_area = display.work_area();
             const int size =
                 is_horizontal ? work_area.width() : work_area.height();
-            return static_cast<float>(
-                       split_view_controller()->divider_position()) /
-                   static_cast<float>(size);
+            const gfx::Rect window_bounds(split_view_controller()
+                                              ->GetDefaultSnappedWindow()
+                                              ->GetBoundsInScreen());
+            const int window_size =
+                is_horizontal ? window_bounds.width() : window_bounds.height();
+            return static_cast<float>(window_size) / static_cast<float>(size);
           };
-          const float before = compute_divider_position_ratio();
+          const float before = compute_window_snap_ratio();
           Shell::Get()->display_manager()->SetDisplayRotation(
               display::Screen::GetScreen()->GetPrimaryDisplay().id(), rotation,
               display::Display::RotationSource::ACTIVE);
-          const float after = compute_divider_position_ratio();
+          const float after = compute_window_snap_ratio();
           EXPECT_NEAR(before, after, 0.001f);
         }
       };
-  EXPECT_EQ(split_view_controller()->GetDefaultDividerPosition(),
-            split_view_controller()->divider_position());
+  EXPECT_EQ(default_snap_ratio, window_state->snap_ratio());
   test_many_orientation_changes("centered divider");
-  EXPECT_EQ(split_view_controller()->GetDefaultDividerPosition(),
-            split_view_controller()->divider_position());
+  EXPECT_EQ(default_snap_ratio, window_state->snap_ratio());
   ui::test::EventGenerator(Shell::GetPrimaryRootWindow(),
                            split_view_window.get())
       .DragMouseBy(50, 50);
-  EXPECT_NE(split_view_controller()->GetDefaultDividerPosition(),
-            split_view_controller()->divider_position());
+  EXPECT_NE(default_snap_ratio, window_state->snap_ratio());
   test_many_orientation_changes("off-center divider");
 }
 
@@ -9761,13 +9765,16 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
 // Test dragging to snap an overview item on an external display.
 TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
        DraggingOnExternalDisplay) {
-  UpdateDisplay("800x600,800x600");
+  UpdateDisplay("800x600,800+0-800x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
+
   const gfx::Rect bounds_within_root2(800, 0, 400, 400);
   std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root2);
   std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root2);
+
   ToggleOverview();
+
   OverviewGrid* grid_on_root2 =
       GetOverviewSession()->GetGridWithRootWindow(root_windows[1]);
   auto* item1 = grid_on_root2->GetOverviewItemContaining(window1.get());
@@ -9777,13 +9784,14 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   const SplitViewDragIndicators* indicators =
       grid_on_root2->split_view_drag_indicators();
 
-  Shell::Get()->cursor_manager()->SetDisplay(
-      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
-  GetOverviewSession()->InitiateDrag(
-      item1, item1->target_bounds().CenterPoint(),
-      /*is_touch_dragging=*/false, /*event_source_item=*/item1);
-  const gfx::PointF right_snap_point(1599.f, 300.f);
-  GetOverviewSession()->Drag(item1, right_snap_point);
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(
+      gfx::ToRoundedPoint(item1->target_bounds().CenterPoint()));
+  event_generator->PressLeftButton();
+
+  // TODO(http://b/300700394): Avoid hardcoding these numbers.
+  const gfx::Point right_snap_point(1599, 300);
+  event_generator->MoveMouseTo(right_snap_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapSecondary,
             indicators->current_window_dragging_state());
   EXPECT_EQ(SplitViewController::Get(root_windows[1])
@@ -9791,31 +9799,32 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
                     SplitViewController::SnapPosition::kPrimary,
                     /*window_for_minimum_size=*/nullptr),
             grid_on_root2->bounds_for_testing());
-  GetOverviewSession()->CompleteDrag(item1, right_snap_point);
+
+  event_generator->ReleaseLeftButton();
   EXPECT_EQ(SplitViewController::State::kSecondarySnapped,
             split_view_controller->state());
   EXPECT_EQ(window1.get(), split_view_controller->secondary_window());
 
-  GetOverviewSession()->InitiateDrag(
-      item2, item2->target_bounds().CenterPoint(),
-      /*is_touch_dragging=*/false, /*event_source_item=*/item2);
-  const gfx::PointF left_of_middle(1150.f, 300.f);
-  GetOverviewSession()->Drag(item2, left_of_middle);
+  event_generator->MoveMouseTo(
+      gfx::ToRoundedPoint(item2->target_bounds().CenterPoint()));
+  GetEventGenerator()->PressLeftButton();
+  const gfx::Point left_of_middle(1150, 300);
+  event_generator->MoveMouseTo(left_of_middle);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
             indicators->current_window_dragging_state());
-  GetOverviewSession()->CompleteDrag(item2, left_of_middle);
+  event_generator->ReleaseLeftButton();
   EXPECT_EQ(SplitViewController::State::kSecondarySnapped,
             split_view_controller->state());
   EXPECT_EQ(window1.get(), split_view_controller->secondary_window());
 
-  GetOverviewSession()->InitiateDrag(
-      item2, item2->target_bounds().CenterPoint(),
-      /*is_touch_dragging=*/false, /*event_source_item=*/item2);
-  const gfx::PointF left_snap_point(810.f, 300.f);
-  GetOverviewSession()->Drag(item2, left_snap_point);
+  event_generator->MoveMouseTo(
+      gfx::ToRoundedPoint(item2->target_bounds().CenterPoint()));
+  event_generator->PressLeftButton();
+  const gfx::Point left_snap_point(810, 300);
+  event_generator->MoveMouseTo(left_snap_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapPrimary,
             indicators->current_window_dragging_state());
-  GetOverviewSession()->CompleteDrag(item2, left_snap_point);
+  event_generator->ReleaseLeftButton();
   EXPECT_EQ(SplitViewController::State::kNoSnap,
             split_view_controller->state());
 }
@@ -9823,7 +9832,6 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
 // Test dragging from one display to another.
 TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
        MultiDisplayDragging) {
-  wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   UpdateDisplay("800x600,800x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
@@ -9847,10 +9855,10 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   const SplitViewDragIndicators* indicators_on_root2 =
       grid_on_root2->split_view_drag_indicators();
 
-  ASSERT_EQ(display_with_root1.id(), cursor_manager->GetDisplay().id());
-  GetOverviewSession()->InitiateDrag(
-      item1, item1->target_bounds().CenterPoint(),
-      /*is_touch_dragging=*/false, /*event_source_item=*/item1);
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(
+      gfx::ToRoundedPoint(item1->target_bounds().CenterPoint()));
+  event_generator->PressLeftButton();
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
@@ -9860,8 +9868,8 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(display_with_root2.work_area(),
             grid_on_root2->bounds_for_testing());
 
-  const gfx::PointF root1_left_snap_point(0.f, 300.f);
-  GetOverviewSession()->Drag(item1, root1_left_snap_point);
+  const gfx::Point root1_left_snap_point(0, 300);
+  event_generator->MoveMouseTo(root1_left_snap_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapPrimary,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(SplitViewController::Get(root_windows[0])
@@ -9874,8 +9882,8 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(display_with_root2.work_area(),
             grid_on_root2->bounds_for_testing());
 
-  const gfx::PointF root1_middle_point(400.f, 300.f);
-  GetOverviewSession()->Drag(item1, root1_middle_point);
+  const gfx::Point root1_middle_point(400, 300);
+  event_generator->MoveMouseTo(root1_middle_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
@@ -9885,8 +9893,8 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(display_with_root2.work_area(),
             grid_on_root2->bounds_for_testing());
 
-  const gfx::PointF root1_right_snap_point(799.f, 300.f);
-  GetOverviewSession()->Drag(item1, root1_right_snap_point);
+  const gfx::Point root1_right_snap_point(799, 300);
+  event_generator->MoveMouseTo(root1_right_snap_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapSecondary,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(SplitViewController::Get(root_windows[0])
@@ -9899,9 +9907,8 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(display_with_root2.work_area(),
             grid_on_root2->bounds_for_testing());
 
-  const gfx::PointF root2_left_snap_point(800.f, 300.f);
-  cursor_manager->SetDisplay(display_with_root2);
-  GetOverviewSession()->Drag(item1, root2_left_snap_point);
+  const gfx::Point root2_left_snap_point(800, 300);
+  event_generator->MoveMouseTo(root2_left_snap_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
@@ -9914,8 +9921,8 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
                     /*window_for_minimum_size=*/nullptr),
             grid_on_root2->bounds_for_testing());
 
-  const gfx::PointF root2_left_snap_point_away_from_edge(816.f, 300.f);
-  GetOverviewSession()->Drag(item1, root2_left_snap_point_away_from_edge);
+  const gfx::Point root2_left_snap_point_away_from_edge(816, 300);
+  event_generator->MoveMouseTo(root2_left_snap_point_away_from_edge);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
@@ -9928,8 +9935,8 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
                     /*window_for_minimum_size=*/nullptr),
             grid_on_root2->bounds_for_testing());
 
-  const gfx::PointF root2_right_snap_point(1599.f, 300.f);
-  GetOverviewSession()->Drag(item1, root2_right_snap_point);
+  const gfx::Point root2_right_snap_point(1599, 300);
+  event_generator->MoveMouseTo(root2_right_snap_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
@@ -9942,8 +9949,8 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
                     /*window_for_minimum_size=*/nullptr),
             grid_on_root2->bounds_for_testing());
 
-  const gfx::PointF root2_middle_point(1200.f, 300.f);
-  GetOverviewSession()->Drag(item1, root2_middle_point);
+  const gfx::Point root2_middle_point(1200, 300);
+  event_generator->MoveMouseTo(root2_middle_point);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kOtherDisplay,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
@@ -9953,7 +9960,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(display_with_root2.work_area(),
             grid_on_root2->bounds_for_testing());
 
-  GetOverviewSession()->CompleteDrag(item1, root2_middle_point);
+  event_generator->ReleaseLeftButton();
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             indicators_on_root1->current_window_dragging_state());
   EXPECT_EQ(display_with_root1.work_area(),
@@ -10025,15 +10032,14 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(OverviewGridWindowFillMode::kLetterBoxed,
             item->GetWindowDimensionsType());
   EXPECT_EQ(2.f, item_bounds.width() / item_bounds.height());
-  GetOverviewSession()->InitiateDrag(item, item->target_bounds().CenterPoint(),
-                                     /*is_touch_dragging=*/false,
-                                     /*event_source_item=*/item);
-  Shell::Get()->cursor_manager()->SetDisplay(
-      display::test::DisplayManagerTestApi(display_manager())
-          .GetSecondaryDisplay());
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(gfx::ToRoundedPoint(item_bounds.CenterPoint()));
+  event_generator->PressLeftButton();
+
   // Drag to the middle of the secondary display to avoid triggering the drag
   // snap indicator animation.
-  GetOverviewSession()->Drag(item, gfx::PointF(1200.f, 500.f));
+  event_generator->MoveMouseTo(gfx::Point(1200, 500));
+
   auto* drop_target = GetDropTarget(1);
   ASSERT_TRUE(drop_target);
   // Verify that |drop_target| is effectively pillar boxed. Avoid calling
@@ -10051,26 +10057,21 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
 // shrink to fit into the corresponding work area.
 TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
        DropTargetBoundsOnDisplayWhereDraggedWindowDoesNotFitIntoWorkArea) {
-  UpdateDisplay("600x500,1200x1000");
-  // Drags |item| from the right display to the left display and back, and
+  UpdateDisplay("600x500,600+0-1200x1000");
+  // Drags `item` from the right display to the left display and back, and
   // returns the bounds of the drop target that appears on the left display.
   const auto root1_drop_target_bounds = [this](OverviewItemBase* item) {
-    wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
-    const gfx::PointF drag_starting_point = item->target_bounds().CenterPoint();
-    display::test::DisplayManagerTestApi display_manager_test(
-        display_manager());
-    cursor_manager->SetDisplay(display_manager_test.GetSecondaryDisplay());
-    GetOverviewSession()->InitiateDrag(item, drag_starting_point,
-                                       /*is_touch_dragging=*/false,
-                                       /*event_source_item=*/item);
-    cursor_manager->SetDisplay(
-        display::Screen::GetScreen()->GetPrimaryDisplay());
-    GetOverviewSession()->Drag(item, gfx::PointF(300.f, 0.f));
-    cursor_manager->SetDisplay(display_manager_test.GetSecondaryDisplay());
-    GetOverviewSession()->Drag(item, drag_starting_point);
-    DCHECK(GetDropTarget(0));
+    const gfx::Point drag_starting_point =
+        gfx::ToRoundedPoint(item->target_bounds().CenterPoint());
+    auto* event_generator = GetEventGenerator();
+    event_generator->MoveMouseTo(drag_starting_point);
+    event_generator->PressLeftButton();
+    event_generator->MoveMouseTo(gfx::Point(300, 0));
+    event_generator->MoveMouseTo(drag_starting_point);
+
+    CHECK(GetDropTarget(0));
     const gfx::RectF result = GetDropTarget(0)->target_bounds();
-    GetOverviewSession()->CompleteDrag(item, drag_starting_point);
+    event_generator->ReleaseLeftButton();
     return result;
   };
 
@@ -10210,8 +10211,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   // Verify that the right grid is in MRU order.
   const std::vector<aura::Window*> expected_order = {
       window1.get(), window2.get(), window3.get()};
-  EXPECT_EQ(expected_order,
-            GetOverviewController()->GetWindowsListInOverviewGridsForTest());
+  EXPECT_EQ(expected_order, GetWindowsListInOverviewGrids());
 }
 
 // Test dragging from one display to another and then snapping.

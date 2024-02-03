@@ -939,6 +939,9 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
       u"Street Name between streets House Number Premise APT 10 Floor 2 "
       u"Landmark",
       VerificationStatus::kUserVerified);
+  home_profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_LOCATION,
+                                                u"Street Name House Number",
+                                                VerificationStatus::kFormatted);
   home_profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_STREET_NAME, u"Street Name", VerificationStatus::kFormatted);
   home_profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_DEPENDENT_LOCALITY,
@@ -1032,9 +1035,11 @@ TEST_F(AutofillTableTest, GetAutofillProfiles) {
 // source.
 TEST_P(AutofillTableProfileTest, RemoveAllAutofillProfiles) {
   ASSERT_TRUE(table_->AddAutofillProfile(
-      AutofillProfile(AutofillProfile::Source::kLocalOrSyncable)));
+      AutofillProfile(AutofillProfile::Source::kLocalOrSyncable,
+                      i18n_model_definition::kLegacyHierarchyCountryCode)));
   ASSERT_TRUE(table_->AddAutofillProfile(
-      AutofillProfile(AutofillProfile::Source::kAccount)));
+      AutofillProfile(AutofillProfile::Source::kAccount,
+                      i18n_model_definition::kLegacyHierarchyCountryCode)));
 
   EXPECT_TRUE(table_->RemoveAllAutofillProfiles(profile_source()));
 
@@ -1159,7 +1164,7 @@ TEST_F(AutofillTableTest, MaskedServerIban) {
   Iban iban_2 = test::GetServerIban3();
   std::vector<Iban> ibans = {iban_0, iban_1, iban_2};
 
-  EXPECT_TRUE(table_->SetServerIbans(ibans));
+  table_->SetServerIbansForTesting(ibans);
 
   std::vector<std::unique_ptr<Iban>> masked_server_ibans;
   EXPECT_TRUE(table_->GetServerIbans(masked_server_ibans));
@@ -1167,6 +1172,20 @@ TEST_F(AutofillTableTest, MaskedServerIban) {
   EXPECT_THAT(ibans, UnorderedElementsAre(*masked_server_ibans[0],
                                           *masked_server_ibans[1],
                                           *masked_server_ibans[2]));
+  EXPECT_FALSE(table_->GetServerIbansMetadata().empty());
+}
+
+// Test that masked IBANs can be added and loaded successfully without updating
+// their metadata.
+TEST_F(AutofillTableTest, MaskedServerIbanMetadataNotUpdated) {
+  std::vector<Iban> ibans = {test::GetServerIban()};
+
+  table_->SetServerIbansData(ibans);
+
+  std::vector<std::unique_ptr<Iban>> masked_server_ibans;
+  EXPECT_TRUE(table_->GetServerIbans(masked_server_ibans));
+  EXPECT_EQ(1U, masked_server_ibans.size());
+  EXPECT_THAT(ibans, UnorderedElementsAre(*masked_server_ibans[0]));
 }
 
 TEST_F(AutofillTableTest, CreditCard) {
@@ -2302,9 +2321,9 @@ TEST_F(AutofillTableTest, UpdateServerCardMetadataDoesNotChangeData) {
 }
 
 // Test that updating masked IBAN metadata won't affect IBAN data.
-TEST_F(AutofillTableTest, UpdateServerIbanMetadataDoesNotChangeData) {
+TEST_F(AutofillTableTest, UpdateServerIbanMetadata) {
   std::vector<Iban> inputs = {test::GetServerIban()};
-  table_->SetServerIbans(inputs);
+  table_->SetServerIbansForTesting(inputs);
 
   std::vector<std::unique_ptr<Iban>> outputs;
   EXPECT_TRUE(table_->GetServerIbans(outputs));

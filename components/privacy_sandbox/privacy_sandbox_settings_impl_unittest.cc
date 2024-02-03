@@ -4,12 +4,18 @@
 
 #include "components/privacy_sandbox/privacy_sandbox_settings_impl.h"
 
+#include <string>
+#include <tuple>
+#include <vector>
+
 #include "base/json/values_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/with_feature_override.h"
+#include "base/values.h"
 #include "components/browsing_topics/test_util.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -41,105 +47,9 @@ using Topic = browsing_topics::Topic;
 
 namespace {
 
-// C++20 introduces the "using enum" construct, which significantly reduces the
-// required verbosity here. C++20 is support is coming to Chromium
-// (crbug.com/1284275), with Mac / Windows / Linux support at the time of
-// writing.
-// TODO (crbug.com/1401686): Replace groups with commented lines when C++20 is
-// supported.
-
-// using enum privacy_sandbox_test_util::TestState;
-using privacy_sandbox_test_util::StateKey;
-constexpr auto kM1TopicsEnabledUserPrefValue =
-    StateKey::kM1TopicsEnabledUserPrefValue;
-constexpr auto kM1FledgeEnabledUserPrefValue =
-    StateKey::kM1FledgeEnabledUserPrefValue;
-constexpr auto kM1AdMeasurementEnabledUserPrefValue =
-    StateKey::kM1AdMeasurementEnabledUserPrefValue;
-constexpr auto kCookieControlsModeUserPrefValue =
-    StateKey::kCookieControlsModeUserPrefValue;
-constexpr auto kSiteDataUserDefault = StateKey::kSiteDataUserDefault;
-constexpr auto kSiteDataUserExceptions = StateKey::kSiteDataUserExceptions;
-constexpr auto kIsIncognito = StateKey::kIsIncognito;
-constexpr auto kIsRestrictedAccount = StateKey::kIsRestrictedAccount;
-constexpr auto kHasAppropriateTopicsConsent =
-    StateKey::kHasAppropriateTopicsConsent;
-constexpr auto kAttestationsMap = StateKey::kAttestationsMap;
-constexpr auto kBlockFledgeJoiningForEtldplus1 =
-    StateKey::kBlockFledgeJoiningForEtldplus1;
-
-// using enum privacy_sandbox_test_util::InputKey;
-using privacy_sandbox_test_util::InputKey;
-constexpr auto kTopFrameOrigin = InputKey::kTopFrameOrigin;
-constexpr auto kTopicsURL = InputKey::kTopicsURL;
-constexpr auto kFledgeAuctionPartyOrigin = InputKey::kFledgeAuctionPartyOrigin;
-constexpr auto kAdMeasurementReportingOrigin =
-    InputKey::kAdMeasurementReportingOrigin;
-constexpr auto kAdMeasurementSourceOrigin =
-    InputKey::kAdMeasurementSourceOrigin;
-constexpr auto kAdMeasurementDestinationOrigin =
-    InputKey::kAdMeasurementDestinationOrigin;
-constexpr auto kAccessingOrigin = InputKey::kAccessingOrigin;
-constexpr auto kEventReportingDestinationOrigin =
-    InputKey::kEventReportingDestinationOrigin;
-
-// using enum privacy_sandbox_test_util::TestOutput;
-using privacy_sandbox_test_util::OutputKey;
-constexpr auto kIsTopicsAllowed = OutputKey::kIsTopicsAllowed;
-constexpr auto kIsTopicsAllowedForContext =
-    OutputKey::kIsTopicsAllowedForContext;
-constexpr auto kIsFledgeJoinAllowed = OutputKey::kIsFledgeJoinAllowed;
-constexpr auto kIsFledgeLeaveAllowed = OutputKey::kIsFledgeLeaveAllowed;
-constexpr auto kIsFledgeUpdateAllowed = OutputKey::kIsFledgeUpdateAllowed;
-constexpr auto kIsFledgeSellAllowed = OutputKey::kIsFledgeSellAllowed;
-constexpr auto kIsFledgeBuyAllowed = OutputKey::kIsFledgeBuyAllowed;
-constexpr auto kIsAttributionReportingAllowed =
-    OutputKey::kIsAttributionReportingAllowed;
-constexpr auto kMaySendAttributionReport = OutputKey::kMaySendAttributionReport;
-constexpr auto kIsSharedStorageAllowed = OutputKey::kIsSharedStorageAllowed;
-constexpr auto kIsSharedStorageSelectURLAllowed =
-    OutputKey::kIsSharedStorageSelectURLAllowed;
-constexpr auto kIsPrivateAggregationAllowed =
-    OutputKey::kIsPrivateAggregationAllowed;
-constexpr auto kIsPrivateAggregationDebugModeAllowed =
-    OutputKey::kIsPrivateAggregationDebugModeAllowed;
-constexpr auto kIsCookieDeprecationLabelAllowedForContext =
-    OutputKey::kIsCookieDeprecationLabelAllowedForContext;
-
-constexpr auto kIsTopicsAllowedMetric = OutputKey::kIsTopicsAllowedMetric;
-constexpr auto kIsTopicsAllowedForContextMetric =
-    OutputKey::kIsTopicsAllowedForContextMetric;
-constexpr auto kIsFledgeJoinAllowedMetric =
-    OutputKey::kIsFledgeJoinAllowedMetric;
-constexpr auto kIsFledgeLeaveAllowedMetric =
-    OutputKey::kIsFledgeLeaveAllowedMetric;
-constexpr auto kIsFledgeUpdateAllowedMetric =
-    OutputKey::kIsFledgeUpdateAllowedMetric;
-constexpr auto kIsFledgeSellAllowedMetric =
-    OutputKey::kIsFledgeSellAllowedMetric;
-constexpr auto kIsFledgeBuyAllowedMetric = OutputKey::kIsFledgeBuyAllowedMetric;
-constexpr auto kIsAttributionReportingAllowedMetric =
-    OutputKey::kIsAttributionReportingAllowedMetric;
-constexpr auto kMaySendAttributionReportMetric =
-    OutputKey::kMaySendAttributionReportMetric;
-constexpr auto kIsSharedStorageAllowedMetric =
-    OutputKey::kIsSharedStorageAllowedMetric;
-constexpr auto kIsSharedStorageSelectURLAllowedMetric =
-    OutputKey::kIsSharedStorageSelectURLAllowedMetric;
-constexpr auto kIsPrivateAggregationAllowedMetric =
-    OutputKey::kIsPrivateAggregationAllowedMetric;
-constexpr auto kIsAttributionReportingEverAllowed =
-    OutputKey::kIsAttributionReportingEverAllowed;
-constexpr auto kIsAttributionReportingEverAllowedMetric =
-    OutputKey::kIsAttributionReportingEverAllowedMetric;
-constexpr auto kIsEventReportingDestinationAttestedForFledge =
-    OutputKey::kIsEventReportingDestinationAttestedForFledge;
-constexpr auto kIsEventReportingDestinationAttestedForSharedStorage =
-    OutputKey::kIsEventReportingDestinationAttestedForSharedStorage;
-constexpr auto kIsEventReportingDestinationAttestedForFledgeMetric =
-    OutputKey::kIsEventReportingDestinationAttestedForFledgeMetric;
-constexpr auto kIsEventReportingDestinationAttestedForSharedStorageMetric =
-    OutputKey::kIsEventReportingDestinationAttestedForSharedStorageMetric;
+using enum privacy_sandbox_test_util::StateKey;
+using enum privacy_sandbox_test_util::InputKey;
+using enum privacy_sandbox_test_util::OutputKey;
 
 // using enum ContentSetting;
 constexpr auto CONTENT_SETTING_ALLOW = ContentSetting::CONTENT_SETTING_ALLOW;
@@ -755,6 +665,117 @@ TEST_F(
                          ara_transitional_debug_reporting_can_bypass));
     EXPECT_FALSE(ara_transitional_debug_reporting_can_bypass);
   }
+}
+
+struct PrivateAggregationDebugModeTestCase {
+  using TupleT = std::tuple<bool, bool, bool, bool>;
+
+  explicit PrivateAggregationDebugModeTestCase(TupleT t)
+      : bypass_feature_enabled(std::get<0>(t)),
+        cookies_blocked_by_experiment(std::get<1>(t)),
+        cookies_blocked_by_user_setting(std::get<2>(t)),
+        cookie_controls_mode_ui_pref(std::get<3>(t)) {}
+
+  bool bypass_feature_enabled = false;
+  bool cookies_blocked_by_experiment = false;
+  bool cookies_blocked_by_user_setting = false;
+  bool cookie_controls_mode_ui_pref = false;
+};
+
+class PrivacySandboxSettingsPrivateAggregationDebugModeTest
+    : public PrivacySandboxSettingsTest,
+      public testing::WithParamInterface<
+          PrivateAggregationDebugModeTestCase::TupleT> {
+ public:
+  PrivacySandboxSettingsPrivateAggregationDebugModeTest() = default;
+
+  // TODO(https://crbug.com/1517710): Once gtest provides
+  // ::testing::ConvertGenerator(), we can skip the tuple and parameterize
+  // directly on PrivateAggregationDebugModeTestCase.
+  PrivateAggregationDebugModeTestCase GetTestCase() const {
+    return PrivateAggregationDebugModeTestCase(GetParam());
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PrivacySandboxSettingsPrivateAggregationDebugModeTest,
+    testing::Combine(testing::Bool(),
+                     testing::Bool(),
+                     testing::Bool(),
+                     testing::Bool()),
+    // Creates a human-readable name for each test. Per gtest docs, test names
+    // must contain only alphanumeric characters.
+    [](const testing::TestParamInfo<
+        PrivateAggregationDebugModeTestCase::TupleT>& info) -> std::string {
+      const PrivateAggregationDebugModeTestCase test_case(info.param);
+      return base::StringPrintf(
+          "BypassFeature%s"
+          "And3pcdExperiment%s"
+          "AndExplicitUserSetting%s"
+          "AndCookieControlsModePref%s",
+          test_case.bypass_feature_enabled ? "On" : "Off",
+          test_case.cookies_blocked_by_experiment ? "On" : "Off",
+          test_case.cookies_blocked_by_user_setting ? "Blocks3pc" : "IsNotSet",
+          test_case.cookie_controls_mode_ui_pref ? "On" : "Off");
+    });
+
+// Test that Private Aggregation Debug Mode can be enabled in some circumstances
+// even though third-party cookies are blocked.
+TEST_P(PrivacySandboxSettingsPrivateAggregationDebugModeTest,
+       IsPrivateAggregationDebugModeAllowed) {
+  // Debug Mode should be disabled when third-party cookies are blocked,
+  // unless all of the following are true:
+  //   1. The bypass feature is enabled.
+  //   2. Third-party cookies were blocked due to the 3PCD experiment.
+  //   3. Third-party cookies were not blocked due to an explicit user setting.
+  //
+  // Note that `test_case.cookie_controls_mode_pref` does not affect the value
+  // of `expect_debug_mode`.
+  const PrivateAggregationDebugModeTestCase test_case = GetTestCase();
+  const bool expect_debug_mode = test_case.bypass_feature_enabled &&
+                                 test_case.cookies_blocked_by_experiment &&
+                                 !test_case.cookies_blocked_by_user_setting;
+
+  base::test::ScopedFeatureList feature_list;
+  std::vector<base::test::FeatureRef> enabled_features = {
+      content_settings::features::kTrackingProtection3pcd};
+  if (test_case.bypass_feature_enabled) {
+    enabled_features.emplace_back(
+        kPrivateAggregationDebugReportingCookieDeprecationTesting);
+  }
+  feature_list.InitWithFeatures(enabled_features, /*disabled_features=*/{});
+
+  // Enable ad measurement pref. Otherwise, Private Aggregation will not be
+  // allowed by PrivacySandboxSettingsImpl::IsPrivateAggregationAllowed().
+  prefs()->SetUserPref(prefs::kPrivacySandboxM1AdMeasurementEnabled,
+                       base::Value(true));
+
+  ON_CALL(*mock_delegate(),
+          AreThirdPartyCookiesBlockedByCookieDeprecationExperiment())
+      .WillByDefault(testing::Return(test_case.cookies_blocked_by_experiment));
+
+  std::vector<privacy_sandbox_test_util::CookieContentSettingException>
+      user_cookie_exceptions;
+  if (test_case.cookies_blocked_by_user_setting) {
+    user_cookie_exceptions.emplace_back("https://embedded.com", "*",
+                                        ContentSetting::CONTENT_SETTING_BLOCK);
+  }
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/test_case.cookie_controls_mode_ui_pref,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/user_cookie_exceptions,
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  const bool is_debug_mode_allowed =
+      privacy_sandbox_settings()->IsPrivateAggregationDebugModeAllowed(
+          url::Origin::Create(GURL("https://test.com")),
+          url::Origin::Create(GURL("https://embedded.com")));
+
+  EXPECT_EQ(is_debug_mode_allowed, expect_debug_mode);
 }
 
 class PrivacySandboxSettingsTestCookiesClearOnExitTurnedOff

@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5320594929574852403">左側に移動しています</translation>
 <translation id="5374917190292010970">4K（2160p）</translation>
+<translation id="539541037630043848"><ph name="HOSTNAME" /> を開きます</translation>
 <translation id="5662366948659129155"><ph name="COUNT" /> ページ目をスキャンしています</translation>
 <translation id="5671277269877808209">スクエア</translation>
 <translation id="574392208103952083">中</translation>
@@ -163,6 +164,7 @@
 <translation id="8870695351537079478">録画を開始できません</translation>
 <translation id="8880167521484863515">4 対 3</translation>
 <translation id="8903921497873541725">拡大する</translation>
+<translation id="8926890870105777777">ネットワーク「<ph name="WIFINAME" />」に参加</translation>
 <translation id="9045010116236796332">ドキュメントのすべての端をフレーム内に収めてください</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="906331135292332864">画像を処理しています...</translation>

@@ -71,6 +71,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorPermissionPromptRequestText] = {ui::kColorSysOnSurfaceSubtle};
 
   // Profile Menu colors.
+  mixer[kColorProfileMenuBackground] = {ui::kColorSysSurface};
   mixer[kColorProfileMenuHeaderBackground] = {ui::kColorSysTonalContainer};
   mixer[kColorProfileMenuHeaderLabel] = {ui::kColorSysOnTonalContainer};
   mixer[kColorProfileMenuIconButton] = {ui::kColorSysOnTonalContainer};
@@ -83,10 +84,19 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorProfileMenuSyncOffIcon] = {ui::kColorMenuIcon};
   mixer[kColorProfileMenuSyncPausedIcon] = {ui::kColorSysPrimary};
 
+  // Signin bubble colors. Uses the same colors as the profle menu.
+  mixer[kColorChromeSigninBubbleBackground] = {kColorProfileMenuBackground};
+  mixer[kColorChromeSigninBubbleInfoBackground] = {
+      kColorProfileMenuSyncInfoBackground};
+
   // Tab Search colors.
   mixer[kColorTabSearchCardBackground] = {ui::kColorSysSurface5};
   mixer[kColorTabSearchBackground] = {ui::kColorSysSurface};
   mixer[kColorTabSearchDivider] = {ui::kColorSysDivider};
+  mixer[kColorTabSearchImageTabContentBottom] = {ui::kColorSysHeaderContainer};
+  mixer[kColorTabSearchImageTabContentTop] = {ui::kColorSysOnPrimary};
+  mixer[kColorTabSearchImageTabText] = {ui::kColorSysStateRipplePrimary};
+  mixer[kColorTabSearchImageWindowFrame] = {ui::kColorSysInversePrimary};
   mixer[kColorTabSearchMediaIcon] = {ui::kColorSysOnSurfaceSubtle};
   mixer[kColorTabSearchMediaRecordingIcon] = {ui::kColorSysError};
   mixer[kColorTabSearchPrimaryForeground] = {ui::kColorSysOnSurface};

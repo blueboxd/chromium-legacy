@@ -11,6 +11,7 @@
 #include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/dice_response_handler.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_client.h"
@@ -69,7 +70,7 @@ SigninManager::SigninManager(PrefService& prefs,
       signin_client_(client),
       identity_manager_(identity_manager) {
   signin_allowed_.Init(
-      prefs::kSigninAllowed, &prefs_.get(),
+      prefs::kSigninAllowed, &prefs,
       base::BindRepeating(&SigninManager::OnSigninAllowedPrefChanged,
                           base::Unretained(this)));
   UpdateUnconsentedPrimaryAccount();

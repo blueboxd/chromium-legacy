@@ -243,26 +243,26 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // Sets the host badge image to display for this entry
   void SetHostBadgeImage(const gfx::ImageSkia& host_badge_image);
 
-  // Returns the icon scale adjusted to fit for the `progress_indicator_` if any
-  // is currently active.
-  float GetAdjustedIconScaleForProgressRing() const;
+  // Returns the preferred icon size for promise icons depending on this
+  // button's `app_state_`.
+  float GetIconDimensionByAppState() const;
 
   // Called when the app button completes animating in from a promise app state.
   void OnAnimatedInFromPromiseApp(base::RepeatingClosure callback);
 
   // The container for the icon, which looks like a halo around the icon.
-  raw_ptr<views::View, ExperimentalAsh> icon_container_view_ = nullptr;
+  raw_ptr<views::View> icon_container_view_ = nullptr;
 
   // The icon part of a button can be animated independently of the rest.
   const raw_ptr<views::ImageView, ExperimentalAsh> icon_view_;
 
   // The container for the host badge icon, which looks like a halo around the
   // host badge icon.
-  raw_ptr<views::View, ExperimentalAsh> host_badge_container_view_ = nullptr;
+  raw_ptr<views::View> host_badge_container_view_ = nullptr;
 
   // The host badge icon part of a button, can be animated independently of the
   // rest.
-  raw_ptr<views::ImageView, ExperimentalAsh> host_badge_icon_view_ = nullptr;
+  raw_ptr<views::ImageView> host_badge_icon_view_ = nullptr;
 
   // The ShelfView showing this ShelfAppButton. Owned by RootWindowController.
   const raw_ptr<ShelfView, ExperimentalAsh> shelf_view_;
@@ -337,7 +337,7 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // state to prevent app icon changes mid animation.
   bool force_fallback_icon_ = false;
 
-  absl::optional<float> forced_progress_indicator_value_;
+  std::optional<float> forced_progress_indicator_value_;
 
   // Whether the non-placeholder app icon has been loaded for the app.
   bool has_icon_image_ = false;

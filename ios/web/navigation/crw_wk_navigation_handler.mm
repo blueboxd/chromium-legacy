@@ -32,6 +32,7 @@
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_controller.h"
+#import "ios/web/public/navigation/form_warning_type.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/security/crw_cert_verification_controller.h"
 #import "ios/web/security/wk_web_view_security_util.h"
@@ -430,6 +431,8 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
   }
 
   BOOL isUserInitiated = [self.delegate isUserInitiatedAction:action];
+  BOOL hasTappedRecently =
+      self.userInteractionState->HasUserTappedRecently(webView);
 
   BOOL isCrossOriginTargetFrame = NO;
   if (action.sourceFrame && action.targetFrame &&
@@ -451,7 +454,7 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
 
   const web::WebStatePolicyDecider::RequestInfo requestInfo(
       transition, isMainFrameNavigationAction, isCrossOriginTargetFrame,
-      isUserInitiated);
+      isUserInitiated, hasTappedRecently);
 
   self.webStateImpl->ShouldAllowRequest(action.request, requestInfo,
                                         std::move(callback));
@@ -1591,6 +1594,7 @@ void LogPresentingErrorPageFailedWithError(NSError* error) {
       // Display the confirmation dialog if a form repost is detected.
       if (action.navigationType == WKNavigationTypeFormResubmitted) {
         self.webStateImpl->ShowRepostFormWarningDialog(
+            web::FormWarningType::kRepost,
             base::BindOnce(^(bool shouldContinue) {
               if (self.beingDestroyed) {
                 decisionHandler(WKNavigationActionPolicyCancel);

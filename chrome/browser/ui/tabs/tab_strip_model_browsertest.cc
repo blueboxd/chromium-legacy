@@ -5,17 +5,18 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 #include "base/json/json_reader.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/prevent_close_test_base.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_session.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/test/prevent_close_test_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -108,6 +109,8 @@ class TabStripModelBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TabStripModelBrowserTest, CommandOrganizeTabs) {
+  base::HistogramTester histogram_tester;
+
   TabStripModel* const tab_strip_model = browser()->tab_strip_model();
   EXPECT_EQ(1, tab_strip_model->count());
 
@@ -123,6 +126,11 @@ IN_PROC_BROWSER_TEST_F(TabStripModelBrowserTest, CommandOrganizeTabs) {
   const TabOrganizationSession* const session =
       service->GetSessionForBrowser(browser());
   EXPECT_NE(session, nullptr);
-  EXPECT_NE(session->request()->state(),
+  EXPECT_EQ(session->request()->state(),
             TabOrganizationRequest::State::NOT_STARTED);
+
+  histogram_tester.ExpectUniqueSample("Tab.Organization.AllEntrypoints.Clicked",
+                                      true, 1);
+  histogram_tester.ExpectUniqueSample("Tab.Organization.TabContextMenu.Clicked",
+                                      true, 1);
 }

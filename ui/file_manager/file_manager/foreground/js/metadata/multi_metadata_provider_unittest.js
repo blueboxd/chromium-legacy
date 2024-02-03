@@ -5,13 +5,13 @@
 import {assertArrayEquals, assertEquals, assertNotReached, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
 import {reportPromise} from '../../../common/js/test_error_reporting.js';
-import {VolumeManagerCommon} from '../../../common/js/volume_manager_types.js';
-import {VolumeManager} from '../../../externs/volume_manager.js';
+import {VolumeType} from '../../../common/js/volume_manager_types.js';
 
 import {ContentMetadataProvider} from './content_metadata_provider.js';
 import {DlpMetadataProvider} from './dlp_metadata_provider.js';
 import {ExternalMetadataProvider} from './external_metadata_provider.js';
 import {FileSystemMetadataProvider} from './file_system_metadata_provider.js';
+import {MetadataItem} from './metadata_item.js';
 import {MetadataRequest} from './metadata_request.js';
 import {MultiMetadataProvider} from './multi_metadata_provider.js';
 
@@ -39,29 +39,31 @@ const entryD = /** @type {!Entry} */ ({
   },
 });
 
-const volumeManager = /** @type {!VolumeManager} */ ({
-  // @ts-ignore: error TS7030: Not all code paths return a value.
-  getVolumeInfo: function(entry) {
-    if (entry.toURL() === 'filesystem://A') {
-      return {
-        volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
-      };
-    } else if (entry.toURL() === 'filesystem://B') {
-      return {
-        volumeType: VolumeManagerCommon.VolumeType.DRIVE,
-      };
-    } else if (entry.toURL() === 'filesystem://C') {
-      return {
-        volumeType: VolumeManagerCommon.VolumeType.DRIVE,
-      };
-    } else if (entry.toURL() === 'filesystem://D') {
-      return {
-        volumeType: VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER,
-      };
-    }
-    assertNotReached();
-  },
-});
+const volumeManager =
+    /** @type {!import('../../../externs/volume_manager.js').VolumeManager} */ (
+        {
+          // @ts-ignore: error TS7030: Not all code paths return a value.
+          getVolumeInfo: function(entry) {
+            if (entry.toURL() === 'filesystem://A') {
+              return {
+                volumeType: VolumeType.DOWNLOADS,
+              };
+            } else if (entry.toURL() === 'filesystem://B') {
+              return {
+                volumeType: VolumeType.DRIVE,
+              };
+            } else if (entry.toURL() === 'filesystem://C') {
+              return {
+                volumeType: VolumeType.DRIVE,
+              };
+            } else if (entry.toURL() === 'filesystem://D') {
+              return {
+                volumeType: VolumeType.DOCUMENTS_PROVIDER,
+              };
+            }
+            assertNotReached();
+          },
+        });
 
 /** @param {()=>void} callback */
 export function testMultiMetadataProviderBasic(callback) {
@@ -79,8 +81,12 @@ export function testMultiMetadataProviderBasic(callback) {
       /** @type {!ExternalMetadataProvider} */ ({
         get: function(requests) {
           assertEquals(1, requests.length);
-          assertEquals('filesystem://B', requests[0].entry.toURL());
-          assertArrayEquals(['size', 'modificationTime'], requests[0].names);
+          assertEquals(
+              'filesystem://B',
+              /** @type {!MetadataRequest} */ (requests[0]).entry.toURL());
+          assertArrayEquals(
+              ['size', 'modificationTime'],
+              /** @type {!MetadataRequest} */ (requests[0]).names);
           return Promise.resolve(
               [{modificationTime: new Date(2015, 1, 2), size: 2048}]);
         },
@@ -112,7 +118,7 @@ export function testMultiMetadataProviderBasic(callback) {
       /** @type {!DlpMetadataProvider} */ ({
         get: function(requests) {
           assertEquals(0, requests.length);
-          return Promise.resolve([]);
+          return Promise.resolve(/** @type {!Array<MetadataItem>} */ ([]));
         },
       }),
       volumeManager);
@@ -163,10 +169,18 @@ export function testMultiMetadataProviderExternalAndContentProperty(callback) {
       /** @type {!ExternalMetadataProvider} */ ({
         get: function(requests) {
           assertEquals(2, requests.length);
-          assertEquals('filesystem://B', requests[0].entry.toURL());
-          assertEquals('filesystem://C', requests[1].entry.toURL());
-          assertArrayEquals(['imageWidth', 'present'], requests[0].names);
-          assertArrayEquals(['imageWidth', 'present'], requests[1].names);
+          assertEquals(
+              'filesystem://B',
+              /** @type {!MetadataRequest} */ (requests[0]).entry.toURL());
+          assertEquals(
+              'filesystem://C',
+              /** @type {!MetadataRequest} */ (requests[1]).entry.toURL());
+          assertArrayEquals(
+              ['imageWidth', 'present'],
+              /** @type {!MetadataRequest} */ (requests[0]).names);
+          assertArrayEquals(
+              ['imageWidth', 'present'],
+              /** @type {!MetadataRequest} */ (requests[1]).names);
           return Promise.resolve([
             {present: false, imageWidth: 200},
             {present: true, imageWidth: 400},
@@ -193,7 +207,7 @@ export function testMultiMetadataProviderExternalAndContentProperty(callback) {
       /** @type {!DlpMetadataProvider} */ ({
         get: function(requests) {
           assertEquals(0, requests.length);
-          return Promise.resolve([]);
+          return Promise.resolve(/** @type {!Array<MetadataItem>} */ ([]));
         },
       }),
       volumeManager);
@@ -236,7 +250,9 @@ export function testMultiMetadataProviderFileSystemAndExternalForDP(callback) {
       /** @type {!ExternalMetadataProvider} */ ({
         get: function(requests) {
           assertEquals(1, requests.length);
-          assertEquals('filesystem://D', requests[0].entry.toURL());
+          assertEquals(
+              'filesystem://D',
+              /** @type {!MetadataRequest} */ (requests[0]).entry.toURL());
           assertArrayEquals(
               [
                 'canCopy',
@@ -246,7 +262,7 @@ export function testMultiMetadataProviderFileSystemAndExternalForDP(callback) {
                 'modificationTime',
                 'size',
               ],
-              requests[0].names);
+              /** @type {!MetadataRequest} */ (requests[0]).names);
           return Promise.resolve([
             {
               canCopy: true,
@@ -272,7 +288,7 @@ export function testMultiMetadataProviderFileSystemAndExternalForDP(callback) {
       /** @type {!DlpMetadataProvider} */ ({
         get: function(requests) {
           assertEquals(0, requests.length);
-          return Promise.resolve([]);
+          return Promise.resolve(/** @type {!Array<MetadataItem>} */ ([]));
         },
       }),
       volumeManager);
@@ -326,7 +342,7 @@ export function testDlpMetadataProvider(callback) {
       /** @type {!ExternalMetadataProvider} */ ({
         get: function(requests) {
           assertEquals(0, requests.length);
-          return Promise.resolve([]);
+          return Promise.resolve(/** @type {!MetadataItem[]} */ ([]));
         },
       }),
       // @ts-ignore: error TS2352: Conversion of type '{ get: (requests: any) =>

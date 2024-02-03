@@ -3,31 +3,31 @@
 // found in the LICENSE file.
 
 import {getParentEntry} from '../../common/js/api.js';
-import {DialogType} from '../../common/js/dialog_type.js';
 import {isDriveRootEntryList, isEntryInsideDrive, isFakeEntryInDrives, isGrandRootEntryInDrives, isVolumeEntry, shouldSupportDriveSpecificIcons, sortEntries} from '../../common/js/entry_utils.js';
-import {FileType} from '../../common/js/file_type.js';
+import {getIcon} from '../../common/js/file_type.js';
 import {EntryList, VolumeEntry} from '../../common/js/files_app_entry_types.js';
 import {recordInterval, recordSmallCount, startInterval} from '../../common/js/metrics.js';
 import {getEntryLabel, str} from '../../common/js/translations.js';
 import {iconSetToCSSBackgroundImageValue} from '../../common/js/util.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {COMPUTERS_DIRECTORY_PATH, RootType, SHARED_DRIVES_DIRECTORY_PATH, shouldProvideIcons, VolumeType} from '../../common/js/volume_manager_types.js';
 import {EntryLocation} from '../../externs/entry_location.js';
 import {FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {CurrentDirectory, EntryType, FileData, State, Volume, VolumeMap} from '../../externs/ts/state.js';
+import {CurrentDirectory, DialogType, EntryType, FileData, State, Volume, VolumeMap} from '../../externs/ts/state.js';
 import type {VolumeInfo} from '../../externs/volume_info.js';
 import {constants} from '../../foreground/js/constants.js';
 import {MetadataItem} from '../../foreground/js/metadata/metadata_item.js';
 import type {ActionsProducerGen} from '../../lib/actions_producer.js';
 import {Slice} from '../../lib/base_store.js';
+import {keepLatest} from '../../lib/concurrency_models.js';
 import type {FileKey} from '../file_key.js';
-import {getEntry, getFileData, getStore} from '../store.js';
+import {getEntry, getFileData, getStore, getVolume} from '../store.js';
 
 import {hasDlpDisabledFiles} from './current_directory.js';
+import {updateNavigationEntry} from './navigation.js';
 import {driveRootEntryListKey, myFilesEntryListKey, recentRootKey} from './volumes.js';
 
 /**
  * @fileoverview Entries slice of the store.
- * @suppress {checkTypes} TS already checks this file.
  */
 
 const slice = new Slice<State, State['allEntries']>('allEntries');
@@ -148,11 +148,11 @@ const prefetchPropertyNames = Array.from(new Set([
 /** Get the icon for an entry. */
 function getEntryIcon(
     entry: Entry|FilesAppEntry, locationInfo: EntryLocation|null,
-    volumeType: VolumeManagerCommon.VolumeType|null): FileData['icon'] {
+    volumeType: VolumeType|null): FileData['icon'] {
   const url = entry.toURL();
 
   // Pre-defined icons based on the URL.
-  const urlToIconPath = {
+  const urlToIconPath: Record<FileKey, string> = {
     [recentRootKey]: constants.ICON_TYPES.RECENT,
     [myFilesEntryListKey]: constants.ICON_TYPES.MY_FILES,
     [driveRootEntryListKey]: constants.ICON_TYPES.SERVICE_DRIVE,
@@ -167,32 +167,30 @@ function getEntryIcon(
   // not, because normal directory can also have the same full path. We also
   // need to check if the entry is a direct child of the drive root entry list.
   const grandRootPathToIconMap = {
-    [VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH]:
-        constants.ICON_TYPES.COMPUTERS_GRAND_ROOT,
-    [VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH]:
+    [COMPUTERS_DIRECTORY_PATH]: constants.ICON_TYPES.COMPUTERS_GRAND_ROOT,
+    [SHARED_DRIVES_DIRECTORY_PATH]:
         constants.ICON_TYPES.SHARED_DRIVES_GRAND_ROOT,
   };
-  if (volumeType === VolumeManagerCommon.VolumeType.DRIVE &&
+  if (volumeType === VolumeType.DRIVE &&
       grandRootPathToIconMap[entry.fullPath]) {
     return grandRootPathToIconMap[entry.fullPath]!;
   }
 
   // For grouped removable devices, its parent folder is an entry list, we
   // should use USB icon for it.
-  if ('rootType' in entry &&
-      entry.rootType === VolumeManagerCommon.VolumeType.REMOVABLE) {
+  if ('rootType' in entry && entry.rootType === RootType.REMOVABLE) {
     return constants.ICON_TYPES.USB;
   }
 
   if (isVolumeEntry(entry) && entry.volumeInfo) {
     switch (entry.volumeInfo.volumeType) {
-      case VolumeManagerCommon.VolumeType.DOWNLOADS:
+      case VolumeType.DOWNLOADS:
         return constants.ICON_TYPES.MY_FILES;
-      case VolumeManagerCommon.VolumeType.SMB:
+      case VolumeType.SMB:
         return constants.ICON_TYPES.SMB;
-      case VolumeManagerCommon.VolumeType.PROVIDED:
+      case VolumeType.PROVIDED:
       // Fallthrough
-      case VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER: {
+      case VolumeType.DOCUMENTS_PROVIDER: {
         // Only return IconSet if there's valid background image generated.
         const iconSet = entry.volumeInfo.iconSet;
         if (iconSet) {
@@ -204,27 +202,27 @@ function getEntryIcon(
         }
         // If no background is generated from IconSet, set the icon to the
         // generic one for certain volume type.
-        if (volumeType && VolumeManagerCommon.shouldProvideIcons(volumeType)) {
+        if (volumeType && shouldProvideIcons(volumeType)) {
           return constants.ICON_TYPES.GENERIC;
         }
         return '';
       }
-      case VolumeManagerCommon.VolumeType.MTP:
+      case VolumeType.MTP:
         return constants.ICON_TYPES.MTP;
-      case VolumeManagerCommon.VolumeType.ARCHIVE:
+      case VolumeType.ARCHIVE:
         return constants.ICON_TYPES.ARCHIVE;
-      case VolumeManagerCommon.VolumeType.REMOVABLE:
+      case VolumeType.REMOVABLE:
         // For sub-partition from a removable volume, its children icon should
         // be UNKNOWN_REMOVABLE.
         return entry.volumeInfo.prefixEntry ?
             constants.ICON_TYPES.UNKNOWN_REMOVABLE :
             constants.ICON_TYPES.USB;
-      case VolumeManagerCommon.VolumeType.DRIVE:
+      case VolumeType.DRIVE:
         return constants.ICON_TYPES.DRIVE;
     }
   }
 
-  return FileType.getIcon(entry as Entry, undefined, locationInfo?.rootType);
+  return getIcon(entry as Entry, undefined, locationInfo?.rootType);
 }
 
 /**
@@ -242,7 +240,7 @@ export function convertEntryToFileData(entry: Entry|FilesAppEntry): FileData {
   // For FakeEntry, we need to read from entry.volumeType because it doesn't
   // have volumeInfo in the volume manager.
   const volumeType = 'volumeType' in entry && entry.volumeType ?
-      entry.volumeType as VolumeManagerCommon.VolumeType :
+      entry.volumeType as VolumeType :
       (volumeInfo?.volumeType || null);
   const volumeId = volumeInfo?.volumeId || null;
   const icon = getEntryIcon(entry, locationInfo, volumeType);
@@ -356,17 +354,17 @@ function getEntryType(entry: Entry|FilesAppEntry): EntryType {
       return EntryType.VOLUME_ROOT;
     case 'FakeEntry':
       switch (entry.rootType) {
-        case VolumeManagerCommon.RootType.RECENT:
+        case RootType.RECENT:
           return EntryType.RECENT;
-        case VolumeManagerCommon.RootType.TRASH:
+        case RootType.TRASH:
           return EntryType.TRASH;
-        case VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT:
+        case RootType.DRIVE_FAKE_ROOT:
           return EntryType.ENTRY_LIST;
-        case VolumeManagerCommon.RootType.CROSTINI:
-        case VolumeManagerCommon.RootType.ANDROID_FILES:
+        case RootType.CROSTINI:
+        case RootType.ANDROID_FILES:
           return EntryType.PLACEHOLDER;
-        case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
-        case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
+        case RootType.DRIVE_OFFLINE:
+        case RootType.DRIVE_SHARED_WITH_ME:
           // TODO(lucmult): This isn't really Recent but it's the closest.
           return EntryType.RECENT;
       }
@@ -421,8 +419,7 @@ function updateMetadataReducer(currentState: State, payload: {
   };
 }
 
-function findVolumeByType(
-    volumes: VolumeMap, volumeType: VolumeManagerCommon.VolumeType): Volume|
+function findVolumeByType(volumes: VolumeMap, volumeType: VolumeType): Volume|
     null {
   return Object.values<Volume>(volumes).find(v => {
     // If the volume isn't resolved yet, we just ignore here.
@@ -441,16 +438,15 @@ function findVolumeByType(
 export function getMyFiles(state: State):
     {myFilesVolume: null|Volume, myFilesEntry: VolumeEntry|EntryList} {
   const {volumes} = state;
-  const myFilesVolume =
-      findVolumeByType(volumes, VolumeManagerCommon.VolumeType.DOWNLOADS);
+  const myFilesVolume = findVolumeByType(volumes, VolumeType.DOWNLOADS);
   const myFilesVolumeEntry = myFilesVolume ?
       getEntry(state, myFilesVolume.rootKey!) as VolumeEntry | null :
       null;
   let myFilesEntryList =
       getEntry(state, myFilesEntryListKey) as EntryList | null;
   if (!myFilesVolumeEntry && !myFilesEntryList) {
-    myFilesEntryList = new EntryList(
-        str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
+    myFilesEntryList =
+        new EntryList(str('MY_FILES_ROOT_LABEL'), RootType.MY_FILES);
     appendEntry(state, myFilesEntryList);
     state.uiEntries = [...state.uiEntries, myFilesEntryList.toURL()];
   }
@@ -543,8 +539,8 @@ export async function*
     childEntriesToReadDeeper.push(...subDirectories);
     // Fetch metadata if the entry supports Drive specific share icon.
     const state = getStore().getState();
-    const parentFileData = getFileData(state, validEntry.toURL())!;
-    if (isEntryInsideDrive(parentFileData)) {
+    const parentFileData = getFileData(state, validEntry.toURL());
+    if (parentFileData && isEntryInsideDrive(parentFileData)) {
       const entriesNeedMetadata = subDirectories.filter(subDirectory => {
         const fileData = getFileData(state, subDirectory.toURL());
         return fileData && shouldSupportDriveSpecificIcons(fileData);
@@ -570,7 +566,7 @@ export async function*
     if (fileData?.expanded) {
       for (const childEntry of childEntriesToReadDeeper) {
         for await (const action of readSubDirectories(
-            childEntry, /* recursive */ true)) {
+            childEntry, /* recursive= */ true)) {
           yield action;
         }
       }
@@ -594,8 +590,8 @@ async function*
     readSubDirectoriesForDriveRootEntryList(entry: EntryList):
         ActionsProducerGen {
   const metricNameMap = {
-    [VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH]: 'TeamDrivesCount',
-    [VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH]: 'ComputerCount',
+    [SHARED_DRIVES_DIRECTORY_PATH]: 'TeamDrivesCount',
+    [COMPUTERS_DIRECTORY_PATH]: 'ComputerCount',
   };
 
   const driveChildren = entry.getUIChildren();
@@ -679,3 +675,85 @@ export async function*
     yield action;
   }
 }
+
+/**
+ * Traverse each entry in the `pathEntryKeys`: if the entry doesn't exist in the
+ * store, read sub directories for its parent. After all entries exist in the
+ * store, expand all parent entries.
+ *
+ * @param pathEntryKeys An array of FileKey starts from ancestor to child, e.g.
+ *     [A, B, C] A is the parent entry of B, B is the parent entry of C.
+ */
+export async function*
+    traverseAndExpandPathEntriesInternal(pathEntryKeys: FileKey[]):
+        ActionsProducerGen {
+  if (pathEntryKeys.length === 0) {
+    return;
+  }
+  const childEntryKey = pathEntryKeys[pathEntryKeys.length - 1]!;
+  const state = getStore().getState();
+  const childEntryFileData = getFileData(state, childEntryKey);
+  if (!childEntryFileData) {
+    console.warn(`Can not find the child entry: ${childEntryKey}`);
+    return;
+  }
+  const volume = getVolume(state, childEntryFileData);
+  if (!volume) {
+    console.warn(
+        `Can not find the volume root for the child entry: ${childEntryKey}`);
+    return;
+  }
+  const volumeEntry = getEntry(state, volume.rootKey!);
+  if (!volumeEntry) {
+    console.warn(`Can not find the volume root entry: ${volume.rootKey}`);
+    return;
+  }
+
+  for (let i = 1; i < pathEntryKeys.length; i++) {
+    // We need to getStore() for each loop because the below `yield action` will
+    // add new entries to the store.
+    const state = getStore().getState();
+    const currentEntryKey = pathEntryKeys[i]!;
+    const parentEntryKey = pathEntryKeys[i - 1]!;
+    const parentEntry = getEntry(state, parentEntryKey)!;
+    const parentFileData = getFileData(state, parentEntryKey)!;
+    const fileData = getFileData(state, currentEntryKey);
+    // Read sub directories if the child entry doesn't exist or it's not in
+    // parent entry's children.
+    if (!fileData || !parentFileData.children.includes(currentEntryKey)) {
+      let foundCurrentEntry = false;
+      for await (const action of readSubDirectories(parentEntry)) {
+        yield action;
+        const childEntries: Array<Entry|FilesAppEntry> =
+            action?.payload.entries || [];
+        foundCurrentEntry =
+            !!childEntries.find(entry => entry.toURL() === currentEntryKey);
+        if (foundCurrentEntry) {
+          break;
+        }
+      }
+      if (!foundCurrentEntry) {
+        console.warn(`Failed to find entry "${
+            currentEntryKey}" from its parent "${parentEntryKey}"`);
+        return;
+      }
+    }
+  }
+  // Now all entries on `pathEntryKeys` are found, we can expand all of them
+  // now. Note: if any entry on the path can't be found, we don't expand
+  // anything because we don't want to expand half-way, e.g. if `pathEntryKeys =
+  // [entryA, entryB, entryC]` but somehow entryB doesn't exist, we don't want
+  // to expand `entryA`.
+  for (let i = 0; i < pathEntryKeys.length - 1; i++) {
+    yield updateNavigationEntry({key: pathEntryKeys[i]!, expanded: true});
+  }
+}
+
+/**
+ * `traverseAndExpandPathEntries` is mainly used to traverse and expand the
+ * `pathComponent` for current directory, if concurrent requests happen (e.g.
+ * current directory changes too quickly while we are still resolving the
+ * previous one), we just ditch the previous request and only keep the latest.
+ */
+export const traverseAndExpandPathEntries =
+    keepLatest(traverseAndExpandPathEntriesInternal);

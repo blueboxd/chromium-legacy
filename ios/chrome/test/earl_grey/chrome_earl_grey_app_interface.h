@@ -610,6 +610,11 @@
 // Sets the value of a integer user pref in the original browser state.
 + (void)setIntegerValue:(int)value forUserPref:(NSString*)prefName;
 
+// Returns true if the Preference is currently using its default value,
+// and has not been set by any higher-priority source (even with the same
+// value).
++ (BOOL)prefWithNameIsDefaultValue:(NSString*)prefName;
+
 // Clears the user pref of |prefName|.
 + (void)clearUserPrefWithName:(NSString*)prefName;
 
@@ -690,6 +695,11 @@
 
 // Copies a chrome:// URL that doesn't require internet connection.
 + (void)copyURLToPasteBoard;
+
+#pragma mark - Default Search Engine Choice Screen Utilities
+
+// Returns YES if the search engine choice screen will be shown.
++ (BOOL)IsSearchEngineChoiceScreenEnabledFre;
 
 #pragma mark - First Run Utilities
 

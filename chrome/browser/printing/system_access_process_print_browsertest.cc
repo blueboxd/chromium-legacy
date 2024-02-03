@@ -6,6 +6,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -73,7 +74,7 @@ namespace printing {
 
 namespace {
 
-#if !BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENABLE_OOP_PRINTING) && !BUILDFLAG(IS_CHROMEOS)
 constexpr gfx::SizeF kLetterPhysicalSize = gfx::SizeF(612, 792);
 constexpr gfx::RectF kLetterPrintableArea = gfx::RectF(5, 5, 602, 782);
 constexpr gfx::SizeF kLegalPhysicalSize = gfx::SizeF(612, 1008);
@@ -84,7 +85,7 @@ constexpr gfx::RectF kLegalPrintableArea = gfx::RectF(5, 5, 602, 998);
 // Letter, and similarly is 556 x 952 for Legal.
 constexpr gfx::SizeF kLetterExpectedContentSize = gfx::SizeF(556, 736);
 constexpr gfx::SizeF kLegalExpectedContentSize = gfx::SizeF(556, 952);
-#endif  // !BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING) && !BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 constexpr char kFakeDmToken[] = "fake-dm-token";
@@ -118,6 +119,7 @@ using OnDidCompositeForContentAnalysis =
     base::RepeatingCallback<void(bool allowed)>;
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
 void CancelPrintPreview(content::WebContents* preview_dialog) {
   // This script locates and clicks the Cancel button for a Print Preview
   // dialog.
@@ -137,6 +139,30 @@ void CancelPrintPreview(content::WebContents* preview_dialog) {
   // as monitoring for the Print Preview to be done if that is needed.
   std::ignore = content::ExecJs(preview_dialog, kScript);
 }
+
+// Values for parameterized testing.
+enum class PrintBackendFeatureVariation {
+  // `PrintBackend` calls occur from browser process.
+  kInBrowserProcess,
+  // Use OOP `PrintBackend`.  Attempt to have `PrintBackendService` be
+  // sandboxed.
+  kOopSandboxedService,
+  // Use OOP `PrintBackend`.  Always use `PrintBackendService` unsandboxed.
+  kOopUnsandboxedService,
+};
+
+const char* GetPrintBackendTestSuffix(
+    const testing::TestParamInfo<PrintBackendFeatureVariation>& info) {
+  switch (info.param) {
+    case PrintBackendFeatureVariation::kInBrowserProcess:
+      return "InBrowser";
+    case PrintBackendFeatureVariation::kOopSandboxedService:
+      return "OopSandboxed";
+    case PrintBackendFeatureVariation::kOopUnsandboxedService:
+      return "OopUnsandboxed";
+  }
+}
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
 }  // namespace
 
@@ -453,9 +479,8 @@ class SystemAccessProcessPrintBrowserTestBase
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
   // Only of interest for content analysis tests. This will enable/disable the
-  // kEnableLocalScanAfterPreview and kEnableCloudScanAfterPreview features so
-  // that content analysis is done after the printing settings are picked from a
-  // dialog.
+  // kEnableCloudScanAfterPreview features so that content analysis is done
+  // after the printing settings are picked from a dialog.
   virtual bool EnableContentAnalysisAfterDialog() = 0;
 #endif
 
@@ -464,13 +489,12 @@ class SystemAccessProcessPrintBrowserTestBase
     std::vector<base::test::FeatureRef> disabled_features;
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
     if (EnableContentAnalysisAfterDialog()) {
-      enabled_features.push_back({features::kEnableLocalScanAfterPreview, {}});
       enabled_features.push_back({features::kEnableCloudScanAfterPreview, {}});
     } else {
-      disabled_features.push_back(features::kEnableLocalScanAfterPreview);
       disabled_features.push_back(features::kEnableCloudScanAfterPreview);
     }
 #endif
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
     if (UseService()) {
       enabled_features.push_back(
           {features::kEnableOopPrintDrivers,
@@ -480,6 +504,7 @@ class SystemAccessProcessPrintBrowserTestBase
     } else {
       disabled_features.push_back(features::kEnableOopPrintDrivers);
     }
+#endif
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
                                                 disabled_features);
   }
@@ -600,6 +625,7 @@ class SystemAccessProcessPrintBrowserTestBase
 #endif
   }
 
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
   // `PrintBackendServiceTestImpl` does a debug check on shutdown that there
   // are no residual persistent printing contexts left in the service.  For
   // tests which are known to break this (either by design, for test simplicity
@@ -619,6 +645,7 @@ class SystemAccessProcessPrintBrowserTestBase
   void OnRegisterSystemPrintClient(bool succeeded) override {
     system_print_registration_succeeded_ = succeeded;
   }
+#endif
 
   void OnDidPrintDocument() override {
     ++did_print_document_count_;
@@ -881,9 +908,11 @@ class SystemAccessProcessPrintBrowserTestBase
   }
 #endif
 
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
   void SetCheckForPrintPreviewDone(bool check) {
     check_for_print_preview_done_ = check;
   }
+#endif
 
   const absl::optional<bool> system_print_registration_succeeded() const {
     return system_print_registration_succeeded_;
@@ -1118,17 +1147,6 @@ class SystemAccessProcessPrintBrowserTestBase
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 
-// Values for parameterized testing.
-enum class PrintBackendFeatureVariation {
-  // `PrintBackend` calls occur from browser process.
-  kInBrowserProcess,
-  // Use OOP `PrintBackend`.  Attempt to have `PrintBackendService` be
-  // sandboxed.
-  kOopSandboxedService,
-  // Use OOP `PrintBackend`.  Always use `PrintBackendService` unsandboxed.
-  kOopUnsandboxedService,
-};
-
 class SystemAccessProcessSandboxedServicePrintBrowserTest
     : public SystemAccessProcessPrintBrowserTestBase {
  public:
@@ -1162,22 +1180,8 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     SystemAccessProcessServicePrintBrowserTest,
     testing::Values(PrintBackendFeatureVariation::kOopSandboxedService,
-                    PrintBackendFeatureVariation::kOopUnsandboxedService));
-
-#endif
-
-class SystemAccessProcessInBrowserPrintBrowserTest
-    : public SystemAccessProcessPrintBrowserTestBase {
- public:
-  SystemAccessProcessInBrowserPrintBrowserTest() = default;
-  ~SystemAccessProcessInBrowserPrintBrowserTest() override = default;
-
-  bool UseService() override { return false; }
-  bool SandboxService() override { return false; }
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-  bool EnableContentAnalysisAfterDialog() override { return false; }
-#endif
-};
+                    PrintBackendFeatureVariation::kOopUnsandboxedService),
+    GetPrintBackendTestSuffix);
 
 class SystemAccessProcessPrintBrowserTest
     : public SystemAccessProcessPrintBrowserTestBase,
@@ -1202,7 +1206,8 @@ INSTANTIATE_TEST_SUITE_P(
     SystemAccessProcessPrintBrowserTest,
     testing::Values(PrintBackendFeatureVariation::kInBrowserProcess,
                     PrintBackendFeatureVariation::kOopSandboxedService,
-                    PrintBackendFeatureVariation::kOopUnsandboxedService));
+                    PrintBackendFeatureVariation::kOopUnsandboxedService),
+    GetPrintBackendTestSuffix);
 
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
                        UpdatePrintSettings) {
@@ -1238,8 +1243,6 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
   EXPECT_EQ(kLetterExpectedContentSize, snooped_params->params->content_size);
 #endif
 }
-
-#if BUILDFLAG(ENABLE_OOP_PRINTING)
 
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
                        UpdatePrintSettingsPrintableArea) {
@@ -2923,6 +2926,11 @@ class TestPrintViewManagerForContentAnalysis : public TestPrintViewManager {
   int got_snapshot_count_ = 0;
 };
 
+using ContentAnalysisConfigurationVariation =
+    testing::tuple<const char* /*policy_value*/,
+                   bool /*content_analysis_allows_print*/,
+                   bool /*oop_enabled*/>;
+
 class ContentAnalysisPrintBrowserTestBase
     : public SystemAccessProcessPrintBrowserTestBase {
  public:
@@ -3037,6 +3045,37 @@ class ContentAnalysisPrintBrowserTestBase
            PolicyValue() == kCloudAnalysisNonBlockingPolicy;
   }
 
+  static std::string GetTestSuffix(
+      const testing::TestParamInfo<ContentAnalysisConfigurationVariation>&
+          info) {
+    return base::JoinString({GetPolicyTestSuffix(std::get<0>(info.param)),
+                             GetAllowsPrintTestSuffix(std::get<1>(info.param)),
+                             GetPrintDriverTestSuffix(std::get<2>(info.param))},
+                            /*separator=*/"_");
+  }
+
+ protected:
+  static const char* GetPolicyTestSuffix(const char* policy_value) {
+#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
+    if (policy_value == kLocalAnalysisPolicy) {
+      return "LocalPolicy";
+    }
+#endif
+    if (policy_value == kCloudAnalysisBlockingPolicy) {
+      return "BlockingCloudPolicy";
+    }
+    CHECK_EQ(policy_value, kCloudAnalysisNonBlockingPolicy);
+    return "NonBlockingCloudPolicy";
+  }
+
+  static const char* GetAllowsPrintTestSuffix(bool allows_print) {
+    return allows_print ? "AllowsPrint" : "DisallowsPrint";
+  }
+
+  static const char* GetPrintDriverTestSuffix(bool oop_enabled) {
+    return oop_enabled ? "PrintDriverOop" : "PrintDriverInBrowser";
+  }
+
  private:
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
   enterprise_connectors::FakeContentAnalysisSdkManager sdk_manager_;
@@ -3047,15 +3086,10 @@ class ContentAnalysisPrintBrowserTestBase
   int scanning_responses_ = 0;
 };
 
-using ContentAnalysisBeforePrintPreviewVariation =
-    testing::tuple<const char* /*policy_value*/,
-                   bool /*content_analysis_allows_print*/,
-                   bool /*oop_enabled*/>;
-
 class ContentAnalysisBeforePrintPreviewBrowserTest
     : public ContentAnalysisPrintBrowserTestBase,
       public testing::WithParamInterface<
-          ContentAnalysisBeforePrintPreviewVariation> {
+          ContentAnalysisConfigurationVariation> {
  public:
   bool EnableContentAnalysisAfterDialog() override { return false; }
   const char* PolicyValue() const override { return std::get<0>(GetParam()); }
@@ -3065,15 +3099,10 @@ class ContentAnalysisBeforePrintPreviewBrowserTest
   bool UseService() override { return std::get<2>(GetParam()); }
 };
 
-using ContentAnalysisAfterPrintPreviewVariation =
-    testing::tuple<const char* /*policy_value*/,
-                   bool /*content_analysis_allows_print*/,
-                   bool /*oop_enabled*/>;
-
 class ContentAnalysisAfterPrintPreviewBrowserTest
     : public ContentAnalysisPrintBrowserTestBase,
       public testing::WithParamInterface<
-          ContentAnalysisAfterPrintPreviewVariation> {
+          ContentAnalysisConfigurationVariation> {
  public:
   bool EnableContentAnalysisAfterDialog() override { return true; }
 
@@ -3087,15 +3116,10 @@ class ContentAnalysisAfterPrintPreviewBrowserTest
   void OnCanceling() override { CheckForQuit(); }
 };
 
-using ContentAnalysisScriptedPreviewlessVariation =
-    testing::tuple<const char* /*policy_value*/,
-                   bool /*content_analysis_allows_print*/,
-                   bool /*oop_enabled*/>;
-
 class ContentAnalysisScriptedPreviewlessPrintBrowserTestBase
     : public ContentAnalysisPrintBrowserTestBase,
       public testing::WithParamInterface<
-          ContentAnalysisScriptedPreviewlessVariation> {
+          ContentAnalysisConfigurationVariation> {
  public:
   const char* PolicyValue() const override { return std::get<0>(GetParam()); }
   bool ContentAnalysisAllowsPrint() const override {
@@ -4119,16 +4143,11 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     ContentAnalysisBeforePrintPreviewBrowserTest,
     testing::Combine(
-#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
-        /*policy_value=*/testing::Values(kCloudAnalysisBlockingPolicy,
-                                         kCloudAnalysisNonBlockingPolicy,
-                                         kLocalAnalysisPolicy),
-#else
         /*policy_value=*/testing::Values(kCloudAnalysisBlockingPolicy,
                                          kCloudAnalysisNonBlockingPolicy),
-#endif
         /*content_analysis_allows_print=*/testing::Bool(),
-        /*oop_enabled=*/testing::Bool()));
+        /*oop_enabled=*/testing::Bool()),
+    ContentAnalysisBeforePrintPreviewBrowserTest::GetTestSuffix);
 
 INSTANTIATE_TEST_SUITE_P(
     All,
@@ -4143,23 +4162,20 @@ INSTANTIATE_TEST_SUITE_P(
                                          kCloudAnalysisNonBlockingPolicy),
 #endif
         /*content_analysis_allows_print=*/testing::Bool(),
-        /*oop_enabled=*/testing::Bool()));
+        /*oop_enabled=*/testing::Bool()),
+    ContentAnalysisAfterPrintPreviewBrowserTest::GetTestSuffix);
 
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 INSTANTIATE_TEST_SUITE_P(
     All,
     ContentAnalysisScriptedPreviewlessPrintBeforeDialogBrowserTest,
     testing::Combine(
-#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
-        /*policy_value=*/testing::Values(kCloudAnalysisBlockingPolicy,
-                                         kCloudAnalysisNonBlockingPolicy,
-                                         kLocalAnalysisPolicy),
-#else
         /*policy_value=*/testing::Values(kCloudAnalysisBlockingPolicy,
                                          kCloudAnalysisNonBlockingPolicy),
-#endif
         /*content_analysis_allows_print=*/testing::Bool(),
-        /*oop_enabled=*/testing::Bool()));
+        /*oop_enabled=*/testing::Bool()),
+    ContentAnalysisScriptedPreviewlessPrintBeforeDialogBrowserTest::
+        GetTestSuffix);
 
 INSTANTIATE_TEST_SUITE_P(
     All,
@@ -4174,7 +4190,9 @@ INSTANTIATE_TEST_SUITE_P(
                                          kCloudAnalysisNonBlockingPolicy),
 #endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
         /*content_analysis_allows_print=*/testing::Bool(),
-        /*oop_enabled=*/testing::Bool()));
+        /*oop_enabled=*/testing::Bool()),
+    ContentAnalysisScriptedPreviewlessPrintAfterDialogBrowserTest::
+        GetTestSuffix);
 
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 

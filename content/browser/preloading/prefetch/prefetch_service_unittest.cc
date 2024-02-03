@@ -366,7 +366,7 @@ class PrefetchServiceTest : public RenderViewHostTestHarness {
     PrefetchDocumentManager* prefetch_document_manager =
         PrefetchDocumentManager::GetOrCreateForCurrentDocument(main_rfh());
     if (enable_no_vary_search_header)
-      prefetch_document_manager->EnableNoVarySearchSupport();
+      prefetch_document_manager->EnableNoVarySearchSupportFromOriginTrial();
 
     prefetch_document_manager->PrefetchUrl(
         prefetch_url, prefetch_type, referrer, no_vary_search_hint, nullptr);
@@ -2374,7 +2374,8 @@ class PrefetchServiceLimitedPrefetchesTest : public PrefetchServiceTest {
           {{"ineligible_decoy_request_probability", "0"},
            {"prefetch_container_lifetime_s", "-1"},
            {"max_srp_prefetches", "2"}}}},
-        {network::features::kPrefetchNoVarySearch});
+        {network::features::kPrefetchNoVarySearch,
+         ::features::kPrefetchNewLimits});
   }
 };
 
@@ -5301,7 +5302,7 @@ class PrefetchServiceWaitForMultiplePrefetchesBlockedUntilHeadTest
           }},
          // For this test class we need to enable kPrefetchNoVarySearch.
          {network::features::kPrefetchNoVarySearch, {}}},
-        {});
+        {::features::kPrefetchNewLimits});
   }
 };
 

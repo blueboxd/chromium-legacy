@@ -178,10 +178,9 @@ void FastInkHost::InitializeFastInkBuffer(aura::Window* host_window) {
 
   if (switches::ShouldClearFastInkBuffer()) {
     if (features::ShouldUseMappableSharedImage()) {
-      std::unique_ptr<gpu::SharedImageInterface::ScopedMapping> mapping;
+      std::unique_ptr<gpu::ClientSharedImage::ScopedMapping> mapping;
       if (client_shared_image_) {
-        mapping = context_provider_->SharedImageInterface()->MapSharedImage(
-            client_shared_image_);
+        mapping = client_shared_image_->Map();
       }
       LOG_IF(ERROR, !mapping) << "Failed to map MappableSI";
       uint8_t* memory =
@@ -242,7 +241,7 @@ void FastInkHost::Draw(SkBitmap bitmap, const gfx::Rect& damage_rect) {
 }
 
 void FastInkHost::DrawBitmap(SkBitmap bitmap, const gfx::Rect& damage_rect) {
-  std::unique_ptr<gpu::SharedImageInterface::ScopedMapping> mapping;
+  std::unique_ptr<gpu::ClientSharedImage::ScopedMapping> mapping;
 
   {
     // TODO(zoraiznaeem): Investigate the precision as we will get non trivial
@@ -250,8 +249,7 @@ void FastInkHost::DrawBitmap(SkBitmap bitmap, const gfx::Rect& damage_rect) {
     TRACE_EVENT0("ui", "FastInkHost::ScopedPaint::Map");
 
     if (features::ShouldUseMappableSharedImage()) {
-      mapping = context_provider_->SharedImageInterface()->MapSharedImage(
-          client_shared_image_);
+      mapping = client_shared_image_->Map();
       if (!mapping) {
         LOG(ERROR) << "Failed to map MappableSI";
         return;

@@ -7,11 +7,11 @@ import {dispatchPropertyChange} from 'chrome://resources/ash/common/cr_deprecate
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 import {EventTracker} from 'chrome://resources/ash/common/event_tracker.js';
 
-import {decorate} from '../../../common/js/ui.js';
+import {decorate} from '../../../common/js/cr_ui.js';
 
 import {Menu} from './menu.js';
-import {HideType} from './menu_button.js';
 import {MenuItem} from './menu_item.js';
+import {HideType} from './multi_menu_button.js';
 import {positionPopupAtPoint} from './position_util.js';
 
 

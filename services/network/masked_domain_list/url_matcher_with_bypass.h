@@ -51,11 +51,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UrlMatcherWithBypass {
 
   // Adds a matcher rule and bypass matcher for the domain.
   void AddDomainWithBypass(std::string_view domain,
-                           net::SchemeHostPortMatcher bypass_matcher);
+                           net::SchemeHostPortMatcher bypass_matcher,
+                           bool include_subdomains);
 
   // Builds the bypass rules from the MDL ownership entry and adds a rule.
   void AddMaskedDomainListRules(
       std::string_view domain,
+      const masked_domain_list::ResourceOwner& resource_owner);
+
+  // Builds a single pair of matcher and bypass rules for the provided partition
+  // to minimize unnecessary memory usage.
+  void AddMaskedDomainListRules(
+      const std::vector<std::string>& domains,
+      const std::string& partition_key,
       const masked_domain_list::ResourceOwner& resource_owner);
 
   void Clear();
@@ -72,8 +80,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UrlMatcherWithBypass {
   // Maps partition map keys to smaller maps of domains eligible for the match
   // list and the top frame domains that allow the match list to be bypassed.
   std::map<std::string,
-           std::map<std::unique_ptr<net::SchemeHostPortMatcherRule>,
-                    net::SchemeHostPortMatcher>>
+           std::vector<std::pair<net::SchemeHostPortMatcher,
+                                 net::SchemeHostPortMatcher>>>
       match_list_with_bypass_map_;
 };
 

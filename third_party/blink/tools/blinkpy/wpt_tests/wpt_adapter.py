@@ -273,11 +273,12 @@ class WPTAdapter:
                 '--log-path=-',
             ])
 
-        runner_options.log_wptreport = [
-            mozlog.commandline.log_file(
-                self.fs.join(self.port.results_directory(),
-                             'wpt_reports.json'))
-        ]
+        if self.using_upstream_wpt:
+            runner_options.log_wptreport = [
+                mozlog.commandline.log_file(
+                    self.fs.join(self.port.results_directory(),
+                                 'wpt_reports.json'))
+            ]
         runner_options.log = wptlogging.setup(dict(vars(runner_options)),
                                               {'grouped': sys.stdout})
         logging.root.handlers.clear()
@@ -405,7 +406,7 @@ class WPTAdapter:
             # default to 1 retries. Otherwise [e.g. if tests are being passed by
             # name], default to 0 retries.
             if self.options.test_list or len(self.paths) < len(all_test_names):
-                self.options.num_retries = 1
+                self.options.num_retries = 3
             else:
                 self.options.num_retries = 0
 
@@ -613,7 +614,8 @@ class WPTAdapter:
         with processor.stream_results() as events:
             runner_options.log.add_handler(events.put)
             yield
-        processor.process_wpt_report(runner_options.log_wptreport[0].name)
+        if runner_options.log_wptreport:
+            processor.process_wpt_report(runner_options.log_wptreport[0].name)
         processor.process_results_json(
             self.port.get_option('json_test_results'))
         processor.copy_results_viewer()

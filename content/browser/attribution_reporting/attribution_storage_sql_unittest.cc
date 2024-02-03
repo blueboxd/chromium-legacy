@@ -34,6 +34,7 @@
 #include "components/aggregation_service/features.h"
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/event_level_epsilon.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
@@ -80,6 +81,7 @@ using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Pair;
+using ::testing::Property;
 using ::testing::SizeIs;
 
 const char kDefaultReportOrigin[] = "https://reporter.test/";
@@ -116,6 +118,7 @@ struct AttributionAggregatableMetadataRecord {
       proto::AttributionCommonAggregatableMetadata_SourceRegistrationTimeConfig>
       source_registration_time_config =
           proto::AttributionCommonAggregatableMetadata::INCLUDE;
+  absl::optional<std::string> trigger_context_id;
 };
 
 struct AttributionNullAggregatableMetadataRecord {
@@ -125,6 +128,7 @@ struct AttributionNullAggregatableMetadataRecord {
       proto::AttributionCommonAggregatableMetadata_SourceRegistrationTimeConfig>
       source_registration_time_config =
           proto::AttributionCommonAggregatableMetadata::INCLUDE;
+  absl::optional<std::string> trigger_context_id;
 };
 
 std::string CreateSerializedFilterData(
@@ -190,6 +194,11 @@ std::string SerializeReportMetadata(
         *record.source_registration_time_config);
   }
 
+  if (record.trigger_context_id.has_value()) {
+    msg.mutable_common_data()->set_trigger_context_id(
+        *record.trigger_context_id);
+  }
+
   std::string str;
   bool success = msg.SerializeToString(&str);
   CHECK(success);
@@ -212,6 +221,11 @@ std::string SerializeReportMetadata(
   if (record.source_registration_time_config) {
     msg.mutable_common_data()->set_source_registration_time_config(
         *record.source_registration_time_config);
+  }
+
+  if (record.trigger_context_id.has_value()) {
+    msg.mutable_common_data()->set_trigger_context_id(
+        *record.trigger_context_id);
   }
 
   std::string str;
@@ -1507,8 +1521,7 @@ TEST_P(AttributionStorageSqlTest, CreateReport_DeactivatesAttributedSources) {
   ExpectImpressionRows(2);
 }
 
-// Tests that a "source_type" or "_lookback_window" filter key present in the
-// serialized data is removed.
+// Tests that invalid filter keys present in the serialized data are removed.
 TEST_P(AttributionStorageSqlTest, DeserializeFilterData_RemovesReservedKeys) {
   {
     OpenDatabase();
@@ -1524,6 +1537,7 @@ TEST_P(AttributionStorageSqlTest, DeserializeFilterData_RemovesReservedKeys) {
     sql::Statement statement(raw_db.GetUniqueStatement(kUpdateSql));
     statement.BindBlob(0, CreateSerializedFilterData({
                               {"source_type", {"abc"}},
+                              {"_some_key", {"y"}},
                               {"x", {"y"}},
                               {"_lookback_window", {"def"}},
                           }));
@@ -1709,6 +1723,51 @@ TEST_P(AttributionStorageSqlTest,
   delegate()->set_randomized_response_rate(0.2);
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(RandomizedResponseRateIs(0.2)));
+}
+
+TEST_P(AttributionStorageSqlTest, EpsilonNotStored_RecalculatedWhenHandled) {
+  {
+    OpenDatabase();
+    storage()->StoreSource(SourceBuilder().Build());
+    CloseDatabase();
+  }
+
+  {
+    sql::Database raw_db;
+    ASSERT_TRUE(raw_db.Open(db_path()));
+
+    static constexpr char kGetSql[] =
+        "SELECT source_id,read_only_source_data FROM sources";
+    sql::Statement get_statement(raw_db.GetUniqueStatement(kGetSql));
+
+    static constexpr char kSetSql[] =
+        "UPDATE sources SET read_only_source_data=? WHERE source_id=?";
+    sql::Statement set_statement(raw_db.GetUniqueStatement(kSetSql));
+
+    while (get_statement.Step()) {
+      int64_t id = get_statement.ColumnInt64(0);
+
+      std::string blob;
+      ASSERT_TRUE(get_statement.ColumnBlobAsString(1, &blob));
+
+      proto::AttributionReadOnlySourceData msg;
+      ASSERT_TRUE(msg.ParseFromString(blob));
+
+      msg.clear_event_level_epsilon();
+
+      set_statement.Reset(/*clear_bound_vars=*/true);
+      set_statement.BindBlob(0, msg.SerializeAsString());
+      set_statement.BindInt64(1, id);
+      ASSERT_TRUE(set_statement.Run());
+    }
+  }
+
+  OpenDatabase();
+
+  EXPECT_THAT(
+      storage()->GetActiveSources(),
+      ElementsAre(Property(&StoredSource::event_level_epsilon,
+                           attribution_reporting::EventLevelEpsilon())));
 }
 
 // Having the missing field default to the correct value allows us to avoid a
@@ -1987,6 +2046,24 @@ TEST_P(AttributionStorageSqlTest,
               },
           .valid = false,
       },
+      {
+          .desc = "invalid_trigger_context_id",
+          .record =
+              AttributionAggregatableMetadataRecord{
+                  .contributions =
+                      {
+                          AttributionAggregatableMetadataRecord::Contribution{
+                              .high_bits = 1,
+                              .low_bits = 2,
+                              .value = 3,
+                          },
+                      },
+                  .source_registration_time_config =
+                      proto::AttributionCommonAggregatableMetadata::INCLUDE,
+                  .trigger_context_id = "123",
+              },
+          .valid = false,
+      },
   };
 
   base::test::ScopedFeatureList scoped_feature_list(
@@ -2085,6 +2162,17 @@ TEST_P(AttributionStorageSqlTest,
                   .fake_source_time = 12345678900,
                   .coordinator_origin =
                       url::Origin::Create(GURL("http://a.test")),
+              },
+          .valid = false,
+      },
+      {
+          .desc = "invalid_trigger_context_id",
+          .record =
+              AttributionNullAggregatableMetadataRecord{
+                  .fake_source_time = 12345678900,
+                  .source_registration_time_config =
+                      proto::AttributionCommonAggregatableMetadata::INCLUDE,
+                  .trigger_context_id = "123",
               },
           .valid = false,
       },

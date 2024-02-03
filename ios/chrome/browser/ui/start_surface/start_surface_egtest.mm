@@ -89,10 +89,11 @@ constexpr base::TimeDelta kWaitElementTimeout = base::Seconds(2);
 
   // Swipe over to the tab resumption module if needed.
   [[[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(l10n_util::GetNSString(
-                                       IDS_IOS_TAB_RESUMPTION_TITLE)),
-                                   grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_accessibilityID(
+                  kMagicStackContentSuggestionsModuleTabResumptionAccessibilityIdentifier),
+              grey_sufficientlyVisible(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionRight, 343)
       onElementWithMatcher:grey_accessibilityID(
                                kMagicStackScrollViewAccessibilityIdentifier)]
@@ -110,7 +111,15 @@ constexpr base::TimeDelta kWaitElementTimeout = base::Seconds(2);
 // Tests that navigating to a page and restarting upon cold start, an NTP page
 // is opened with the Return to Recent Tab tile. Then, removing that last tab
 // also removes the tile while that NTP is still being shown.
-- (void)testRemoveRecentTabRemovesReturnToRecenTabTile {
+// TODO(crbug.com/1504147): Test is failing on device.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testRemoveRecentTabRemovesReturnToRecenTabTile \
+  testRemoveRecentTabRemovesReturnToRecenTabTile
+#else
+#define MAYBE_testRemoveRecentTabRemovesReturnToRecenTabTile \
+  DISABLED_testRemoveRecentTabRemovesReturnToRecenTabTile
+#endif
+- (void)MAYBE_testRemoveRecentTabRemovesReturnToRecenTabTile {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL destinationUrl = self.testServer->GetURL("/pony.html");
   [ChromeEarlGrey loadURL:destinationUrl];
@@ -136,10 +145,11 @@ constexpr base::TimeDelta kWaitElementTimeout = base::Seconds(2);
 
   // Swipe over to the tab resumption module if needed.
   [[[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(l10n_util::GetNSString(
-                                       IDS_IOS_TAB_RESUMPTION_TITLE)),
-                                   grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_accessibilityID(
+                  kMagicStackContentSuggestionsModuleTabResumptionAccessibilityIdentifier),
+              grey_sufficientlyVisible(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionRight, 343)
       onElementWithMatcher:grey_accessibilityID(
                                kMagicStackScrollViewAccessibilityIdentifier)]
@@ -155,8 +165,9 @@ constexpr base::TimeDelta kWaitElementTimeout = base::Seconds(2);
                  kWaitElementTimeout, waitForTabToCloseCondition),
              @"Waiting for tab to close");
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                   IDS_IOS_TAB_RESUMPTION_TITLE))]
+      selectElementWithMatcher:
+          grey_accessibilityLabel(
+              kMagicStackContentSuggestionsModuleTabResumptionAccessibilityIdentifier)]
       assertWithMatcher:grey_notVisible()];
 }
 

@@ -47,11 +47,13 @@
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_change_event.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/supervised_user/core/common/buildflags.h"
+#include "components/sync/base/pref_names.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -96,6 +98,13 @@
 #include "extensions/browser/extension_registry_factory.h"
 #endif
 
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+#include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service_factory.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_request_throttled_handler_browser_impl.h"
+#include "chrome/browser/signin/bound_session_credentials/throttled_gaia_auth_fetcher.h"
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+
 namespace {
 
 // List of sources for which sign out is always allowed.
@@ -120,6 +129,10 @@ signin_metrics::ProfileSignout kAlwaysAllowedSignoutSources[] = {
     // kAlwaysAllowedSignoutSources for coherence.
     signin_metrics::ProfileSignout::
         kUserClickedSignoutFromUserPolicyNotificationDialog,
+    // Allowed, because the profile was signed out and the account was signed in
+    // to the web only before showing the sync confirmation dialog. The account
+    // was signed in to the profile in order to show the sync confirmation.
+    signin_metrics::ProfileSignout::kCancelSyncConfirmationOnWebOnlySignedIn,
 };
 
 // Returns the histogram suffix name per group of `signin_metrics::AccessPoint`.
@@ -291,7 +304,9 @@ void ChromeSigninClient::PreSignOut(
   bool user_declines_sync_after_consenting_to_management =
       (signout_source_metric == signin_metrics::ProfileSignout::kAbortSignin ||
        signout_source_metric ==
-           signin_metrics::ProfileSignout::kRevokeSyncFromSettings) &&
+           signin_metrics::ProfileSignout::kRevokeSyncFromSettings ||
+       signout_source_metric == signin_metrics::ProfileSignout::
+                                    kCancelSyncConfirmationOnWebOnlySignedIn) &&
       chrome::enterprise_util::UserAcceptedAccountManagement(profile_);
   // These sign out won't remove the policy cache, keep the window opened.
   bool keep_window_opened =
@@ -313,7 +328,10 @@ void ChromeSigninClient::PreSignOut(
                             base::Unretained(this)),
         signout_source_metric == signin_metrics::ProfileSignout::kAbortSignin ||
             signout_source_metric == signin_metrics::ProfileSignout::
-                                         kAuthenticationFailedWithForceSignin);
+                                         kAuthenticationFailedWithForceSignin ||
+            signout_source_metric ==
+                signin_metrics::ProfileSignout::
+                    kCancelSyncConfirmationOnWebOnlySignedIn);
   } else {
 #else
   {
@@ -334,6 +352,18 @@ void ChromeSigninClient::DelayNetworkCall(base::OnceClosure callback) {
 std::unique_ptr<GaiaAuthFetcher> ChromeSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
     gaia::GaiaSource source) {
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+  if (BoundSessionCookieRefreshService* bound_session_cookie_refresh_service =
+          BoundSessionCookieRefreshServiceFactory::GetForProfile(profile_);
+      bound_session_cookie_refresh_service) {
+    CHECK(switches::IsBoundSessionCredentialsEnabled());
+    return std::make_unique<ThrottledGaiaAuthFetcher>(
+        consumer, source, GetURLLoaderFactory(),
+        bound_session_cookie_refresh_service->GetBoundSessionThrottlerParams(),
+        std::make_unique<BoundSessionRequestThrottledHandlerBrowserImpl>(
+            *bound_session_cookie_refresh_service));
+  }
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
                                            GetURLLoaderFactory());
 }
@@ -350,8 +380,11 @@ void ChromeSigninClient::OnPrimaryAccountChangedWithEventSource(
        {signin::ConsentLevel::kSignin, signin::ConsentLevel::kSync}) {
     switch (event_details.GetEventTypeFor(consent_level)) {
       case signin::PrimaryAccountChangeEvent::Type::kNone:
+        break;
       case signin::PrimaryAccountChangeEvent::Type::kCleared:
-        // Only record metrics when setting the primary account.
+        if (consent_level == signin::ConsentLevel::kSignin) {
+          GetPrefs()->ClearPref(syncer::prefs::kExplicitBrowserSignin);
+        }
         break;
       case signin::PrimaryAccountChangeEvent::Type::kSet:
         CHECK(
@@ -359,6 +392,7 @@ void ChromeSigninClient::OnPrimaryAccountChangedWithEventSource(
         signin_metrics::AccessPoint access_point =
             absl::get<signin_metrics::AccessPoint>(event_source);
 
+        // Only record metrics when setting the primary account.
         absl::optional<size_t> all_bookmarks_count = GetAllBookmarksCount();
         absl::optional<size_t> bar_bookmarks_count =
             GetBookmarkBarBookmarksCount();
@@ -375,6 +409,21 @@ void ChromeSigninClient::OnPrimaryAccountChangedWithEventSource(
                                  extensions_count.value());
         }
 #endif
+
+        // Records explicit signin.
+        if (consent_level == signin::ConsentLevel::kSignin) {
+          // Unknown access points cannot be properly identified and should
+          // clear the explicit signin pref.
+          if (access_point ==
+              signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN) {
+            GetPrefs()->ClearPref(syncer::prefs::kExplicitBrowserSignin);
+          } else if (access_point !=
+                     signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN) {
+            // All others access points are explicit sign ins except the Web
+            // Signin event.
+            GetPrefs()->SetBoolean(syncer::prefs::kExplicitBrowserSignin, true);
+          }
+        }
     }
   }
 }

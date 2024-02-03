@@ -7,13 +7,19 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
+#include "build/build_config.h"
+#include "components/bookmarks/common/bookmark_constants.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/gaia_id_hash.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/service/sync_feature_status_for_migrations_recorder.h"
+#include "components/sync/service/sync_prefs.h"
 
 namespace browser_sync {
 
@@ -122,7 +128,12 @@ const char* GetHistogramMigratingOrNotInfix(bool doing_migration) {
 
 }  // namespace
 
-void MaybeMigrateSyncingUserToSignedIn(PrefService* pref_service) {
+void MaybeMigrateSyncingUserToSignedIn(const base::FilePath& profile_path,
+                                       PrefService* pref_service) {
+  // ======================================
+  // Global migration decision and metrics.
+  // ======================================
+
   const SyncToSigninMigrationDecision decision =
       ShouldMigrateSyncingUserToSignedIn(pref_service);
   base::UmaHistogramEnumeration("Sync.SyncToSigninMigrationDecision", decision);
@@ -140,6 +151,10 @@ void MaybeMigrateSyncingUserToSignedIn(PrefService* pref_service) {
       // reason for not migrating, also record more detailed per-type metrics.
       break;
   }
+
+  // ===================================================
+  // Data-type-specific migration decisions and metrics.
+  // ===================================================
 
   const bool doing_migration =
       decision == SyncToSigninMigrationDecision::kMigrate;
@@ -178,7 +193,81 @@ void MaybeMigrateSyncingUserToSignedIn(PrefService* pref_service) {
     return;
   }
 
-  // TODO(crbug.com/1486420): Add actual migration logic.
+  // =========================
+  // Global (prefs) migration.
+  // =========================
+
+  // The account identifier of an account is its Gaia ID. So
+  // `kGoogleServicesAccountId` stores the Gaia ID of the syncing account.
+  const std::string gaia_id =
+      pref_service->GetString(prefs::kGoogleServicesAccountId);
+  // Guaranteed to be non-empty by ShouldMigrateSyncingUserToSignedIn().
+  CHECK(!gaia_id.empty());
+
+  // Remove ConsentLevel::kSync. This also ensures that the whole migration will
+  // not run a second time.
+  // Note that it's important to explicitly set this pref to false (not just
+  // clear it), since the signin code treats "unset" differently.
+  pref_service->SetBoolean(prefs::kGoogleServicesConsentedToSync, false);
+  // Save the ID and username of the migrated account, to be able to revert the
+  // migration if necessary.
+  pref_service->SetString(prefs::kGoogleServicesSyncingGaiaIdMigratedToSignedIn,
+                          gaia_id);
+  pref_service->SetString(
+      prefs::kGoogleServicesSyncingUsernameMigratedToSignedIn,
+      pref_service->GetString(prefs::kGoogleServicesLastSyncingUsername));
+  // Clear the "previously syncing user" prefs, to prevent accidental misuse.
+  pref_service->ClearPref(prefs::kGoogleServicesLastSyncingAccountIdDeprecated);
+  pref_service->ClearPref(prefs::kGoogleServicesLastSyncingGaiaId);
+  pref_service->ClearPref(prefs::kGoogleServicesLastSyncingUsername);
+
+  // Migrate the global data type prefs (used for Sync-the-feature) over to the
+  // account-specific ones.
+  signin::GaiaIdHash gaia_id_hash = signin::GaiaIdHash::FromGaiaId(gaia_id);
+  syncer::SyncPrefs::MigrateGlobalDataTypePrefsToAccount(pref_service,
+                                                         gaia_id_hash);
+
+  // Ensure the prefs changes are persisted as soon as possible. (They get
+  // persisted on shutdown anyway, but better make sure.)
+  pref_service->CommitPendingWrite();
+
+  // ==============================
+  // Data-type-specific migrations.
+  // ==============================
+
+  // Move passwords DB file, if password sync is enabled.
+  if (passwords_decision == SyncToSigninMigrationDataTypeDecision::kMigrate) {
+    base::FilePath from_path =
+        profile_path.Append(password_manager::kLoginDataForProfileFileName);
+    base::FilePath to_path =
+        profile_path.Append(password_manager::kLoginDataForAccountFileName);
+    base::File::Error error = base::File::Error::FILE_OK;
+    base::ReplaceFile(from_path, to_path, &error);
+    base::UmaHistogramExactLinear(
+        "Sync.SyncToSigninMigrationOutcome.PasswordsFileMove", -error,
+        -base::File::FILE_ERROR_MAX);
+  }
+
+#if BUILDFLAG(IS_IOS)
+  // Move bookmarks json file, if bookmark sync is enabled.
+  if (bookmarks_decision == SyncToSigninMigrationDataTypeDecision::kMigrate) {
+    base::FilePath from_path =
+        profile_path.Append(bookmarks::kLocalOrSyncableBookmarksFileName);
+    base::FilePath to_path =
+        profile_path.Append(bookmarks::kAccountBookmarksFileName);
+    base::File::Error error = base::File::Error::FILE_OK;
+    base::ReplaceFile(from_path, to_path, &error);
+    base::UmaHistogramExactLinear(
+        "Sync.SyncToSigninMigrationOutcome.BookmarksFileMove", -error,
+        -base::File::FILE_ERROR_MAX);
+  }
+#else
+  // TODO(crbug.com/1503647): On platforms other than iOS, the on-disk layout of
+  // bookmarks may be different (no two separate JSON files).
+  NOTIMPLEMENTED();
+#endif  // BUILDFLAG(IS_IOS)
+
+  // TODO(crbug.com/1486420): Add migration logic for ReadingList.
   NOTIMPLEMENTED();
 }
 

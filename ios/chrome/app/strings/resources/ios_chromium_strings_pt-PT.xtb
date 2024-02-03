@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Ajudar a melhorar as funcionalidades e o desempenho do Chromium</translation>
 <translation id="1513122820609681462">Defina o Chromium como o navegador predefinido</translation>
 <translation id="1531155317299575425">Mostra pedidos para iniciar sessão no Chromium.</translation>
+<translation id="159029779861043703">O Chromium mantém os seus dados confidenciais seguros com o Face ID.</translation>
 <translation id="1591119736686995611">Abre a grelha de separadores do Chromium.</translation>
+<translation id="1611584326765829247">Permita que o Chromium ajude a acompanhar as suas embalagens</translation>
 <translation id="1617663976202781617">Dados da sincronização do Chromium</translation>
 <translation id="1647558790457890304">Definições do Chromium</translation>
 <translation id="164952285225495380">Esta embalagem já foi acompanhada no Chromium.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">Faça a gestão das definições do Chromium</translation>
 <translation id="2798503587425057129">Abre a Lista de leitura do Chromium.</translation>
 <translation id="2843571538056574338">Use o Chromium para o preenchimento automático</translation>
-<translation id="2915596697727466327">O Chromium utiliza o Face ID para assegurar o acesso autorizado às suas palavras-passe.</translation>
 <translation id="2918709798697875261">A sua entidade requer que se mantenha sem sessão iniciada no Chromium.</translation>
 <translation id="2942241131342758843">Utilize o Chromium por predefinição para abrir links, pesquisar a partir de widgets e preencher automaticamente palavras-passe noutras apps</translation>
 <translation id="2977470724722393594">O Chromium está atualizado</translation>
@@ -87,6 +88,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />limpe os dados do Chromiu
 <translation id="4195557071150719219">Veja os separadores recentes do Chromium</translation>
 <translation id="4408912345039114853">Execute a verificação de segurança do Chromium</translation>
 <translation id="4432744876818348753">Inicie sessão para tirar o máximo partido do Chromium.</translation>
+<translation id="4498832288620833153">Adiciona os URLs introduzidos à sua Lista de leitura no Chromium.</translation>
 <translation id="452436063477828504">Certifique-se de que pode sempre usar os dados do Chromium na sua Conta Google</translation>
 <translation id="4555020257205549924">Se esta funcionalidade estiver ativada, o Chromium oferecer-se-á para traduzir páginas escritas noutros idiomas com o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Abre a página Definição dos métodos de pagamento no Chromium.</translation>
@@ -167,7 +169,6 @@ Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google n�
 <translation id="6911341667534646387">Continue a usar os dados do Chromium na sua Conta Google</translation>
 <translation id="7006920032187763988">Pode utilizar as palavras-passe que guardou no Gestor de palavras-passe noutras apps no seu iPad.</translation>
 <translation id="7018284295775193585">Não é possível atualizar o Chromium.</translation>
-<translation id="7025471822960602362">Acompanhe pacotes detetados no Chromium</translation>
 <translation id="7045244423563602563">Personalize o Chromium</translation>
 <translation id="7055269218854630176">A sua organização, <ph name="DOMAIN" />, gere a conta na qual está a iniciar sessão e a forma como o Chromium pode ser usado. O seu administrador pode configurar ou restringir determinadas funcionalidades.</translation>
 <translation id="7099326575020694068">O Chromium não pode utilizar a câmara no modo Vista dividida</translation>
@@ -197,6 +198,7 @@ Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google n�
 <translation id="7928628054454574139">Abra o Chromium sempre que tocar em links noutras apps</translation>
 <translation id="7931842119211730154">Bloquear os separadores de navegação anónima quando fecha o Chromium</translation>
 <translation id="7934404985878918282">Veja a Lista de leitura do Chromium</translation>
+<translation id="7971753607796745700">Adicione o item da Lista de leitura ao Chromium</translation>
 <translation id="7980860476903281594">O Chromium partilha a sua localização com os sites que permite.</translation>
 <translation id="7995166854192397899">As sugestões são baseadas na atividade de navegação nos seus outros dispositivos. Para ver sugestões, inicie sessão no Chromium em todos os seus dispositivos.</translation>
 <translation id="800195749539500647">Tire o máximo partido do Chromium</translation>

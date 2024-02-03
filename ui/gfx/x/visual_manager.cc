@@ -5,23 +5,20 @@
 #include "ui/gfx/x/visual_manager.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "ui/gfx/x/atom_cache.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/visual_picker_glx.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xfixes.h"
 
 namespace x11 {
 
 VisualManager::VisualManager(Connection* connection) : connection_(connection) {
-  compositor_atom_ = GetAtom(
-      "_NET_WM_CM_S" + base::NumberToString(connection_->DefaultScreenId()));
+  auto atom_name =
+      "_NET_WM_CM_S" + base::NumberToString(connection_->DefaultScreenId());
+  compositor_atom_ = GetAtom(atom_name.c_str());
 
   auto& xfixes = connection_->xfixes();
   if (xfixes.present()) {
-    // Let the server know the client version.
-    xfixes.QueryVersion(
-        {x11::XFixes::major_version, x11::XFixes::minor_version});
-
     auto mask = x11::XFixes::SelectionEventMask::SetSelectionOwner |
                 x11::XFixes::SelectionEventMask::SelectionWindowDestroy |
                 x11::XFixes::SelectionEventMask::SelectionClientClose;

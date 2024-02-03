@@ -157,7 +157,7 @@ class ASH_EXPORT NotificationListView
 
  protected:
   // Virtual for testing.
-  virtual message_center::MessageView* CreateMessageView(
+  virtual std::unique_ptr<message_center::MessageView> CreateMessageView(
       const message_center::Notification& notification);
 
   void ConfigureMessageView(message_center::MessageView* message_view);
@@ -270,7 +270,7 @@ class ASH_EXPORT NotificationListView
   const std::unique_ptr<gfx::LinearAnimation> animation_;
 
   // Measure animation smoothness metrics for `animation_`.
-  absl::optional<ui::ThroughputTracker> throughput_tracker_;
+  std::optional<ui::ThroughputTracker> throughput_tracker_;
 
   State state_ = State::IDLE;
 

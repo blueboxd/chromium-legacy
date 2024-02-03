@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/organization/request_factory.h"
 #include "chrome/browser/ui/tabs/organization/tab_data.h"
@@ -22,23 +22,66 @@ TabOrganizationSession::TabOrganizationSession()
     : TabOrganizationSession(std::make_unique<TabOrganizationRequest>()) {}
 
 TabOrganizationSession::TabOrganizationSession(
-    std::unique_ptr<TabOrganizationRequest> request)
-    : request_(std::move(request)), session_id_(kNextSessionID) {
+    std::unique_ptr<TabOrganizationRequest> request,
+    TabOrganizationEntryPoint entrypoint)
+    : request_(std::move(request)),
+      session_id_(kNextSessionID),
+      entrypoint_(entrypoint) {
   kNextSessionID++;
 }
 
 TabOrganizationSession::~TabOrganizationSession() {
   for (auto& organization : tab_organizations_) {
     organization->RemoveObserver(this);
+
+    switch (entrypoint_) {
+      case TabOrganizationEntryPoint::PROACTIVE: {
+        UMA_HISTOGRAM_ENUMERATION("Tab.Organization.Proactive.UserChoice",
+                                  organization->choice());
+        break;
+      }
+      case TabOrganizationEntryPoint::TAB_CONTEXT_MENU: {
+        UMA_HISTOGRAM_ENUMERATION("Tab.Organization.TabContextMenu.UserChoice",
+                                  organization->choice());
+        break;
+      }
+      case TabOrganizationEntryPoint::THREE_DOT_MENU: {
+        UMA_HISTOGRAM_ENUMERATION("Tab.Organization.ThreeDotMenu.UserChoice",
+                                  organization->choice());
+        break;
+      }
+
+      case TabOrganizationEntryPoint::NONE: {
+      }
+    }
+
+    UMA_HISTOGRAM_ENUMERATION("Tab.Organization.AllEntrypoints.UserChoice",
+                              organization->choice());
+
+    if (organization->choice() == TabOrganization::UserChoice::kAccepted) {
+      UMA_HISTOGRAM_COUNTS_100("Tab.Organization.Organization.TabRemovedCount",
+                               organization->GetTabRemovedCount());
+
+      UMA_HISTOGRAM_BOOLEAN(
+          "Tab.Organization.Organization.LabelEdited",
+          organization->names()[0] != organization->GetDisplayName());
+    }
   }
+
   for (auto& observer : observers_) {
     observer.OnTabOrganizationSessionDestroyed(session_id());
+  }
+
+  if (request_) {
+    request_->LogResults(this);
   }
 }
 
 // static
 std::unique_ptr<TabOrganizationSession>
-TabOrganizationSession::CreateSessionForBrowser(const Browser* browser) {
+TabOrganizationSession::CreateSessionForBrowser(
+    const Browser* browser,
+    const content::WebContents* base_session_webcontents) {
   std::unique_ptr<TabOrganizationRequest> request =
       TabOrganizationRequestFactory::GetForProfile(browser->profile())
           ->CreateRequest(browser->profile());
@@ -47,10 +90,16 @@ TabOrganizationSession::CreateSessionForBrowser(const Browser* browser) {
   std::vector<std::unique_ptr<TabData>> tab_datas;
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   for (int index = 0; index < tab_strip_model->count(); index++) {
-    std::unique_ptr<TabData> tab_data = std::make_unique<TabData>(
-        tab_strip_model, tab_strip_model->GetWebContentsAt(index));
+    content::WebContents* web_contents =
+        tab_strip_model->GetWebContentsAt(index);
+    std::unique_ptr<TabData> tab_data =
+        std::make_unique<TabData>(tab_strip_model, web_contents);
     if (!tab_data->IsValidForOrganizing()) {
       continue;
+    }
+
+    if (base_session_webcontents && web_contents == base_session_webcontents) {
+      request->SetBaseTabID(tab_data->tab_id());
     }
 
     request->AddTabData(std::move(tab_data));
@@ -62,7 +111,7 @@ TabOrganizationSession::CreateSessionForBrowser(const Browser* browser) {
 const TabOrganization* TabOrganizationSession::GetNextTabOrganization() const {
   for (auto& tab_organization : tab_organizations_) {
     if (tab_organization->IsValidForOrganizing() &&
-        !tab_organization->choice().has_value()) {
+        tab_organization->choice() == TabOrganization::UserChoice::kNoChoice) {
       return tab_organization.get();
     }
   }
@@ -72,7 +121,7 @@ const TabOrganization* TabOrganizationSession::GetNextTabOrganization() const {
 TabOrganization* TabOrganizationSession::GetNextTabOrganization() {
   for (auto& tab_organization : tab_organizations_) {
     if (tab_organization->IsValidForOrganizing() &&
-        !tab_organization->choice().has_value()) {
+        tab_organization->choice() == TabOrganization::UserChoice::kNoChoice) {
       return tab_organization.get();
     }
   }
@@ -126,7 +175,7 @@ void TabOrganizationSession::NotifyObserversOfUpdate() {
 }
 
 void TabOrganizationSession::OnRequestResponse(
-    const TabOrganizationResponse* response) {
+    TabOrganizationResponse* response) {
   if (response) {
     PopulateOrganizations(response);
   }
@@ -134,7 +183,7 @@ void TabOrganizationSession::OnRequestResponse(
 }
 
 void TabOrganizationSession::PopulateAndCreate(
-    const TabOrganizationResponse* response) {
+    TabOrganizationResponse* response) {
   PopulateOrganizations(response);
   TabOrganization* organization = GetNextTabOrganization();
   if (organization->IsValidForOrganizing()) {
@@ -143,10 +192,11 @@ void TabOrganizationSession::PopulateAndCreate(
 }
 
 void TabOrganizationSession::PopulateOrganizations(
-    const TabOrganizationResponse* response) {
+    TabOrganizationResponse* response) {
+  feedback_id_ = response->feedback_id;
   // for each of the organizations, make sure that the TabData is valid for
   // grouping.
-  for (const TabOrganizationResponse::Organization& response_organization :
+  for (TabOrganizationResponse::Organization& response_organization :
        response->organizations) {
     std::vector<std::unique_ptr<TabData>> tab_datas_for_org;
 
@@ -182,11 +232,9 @@ void TabOrganizationSession::PopulateOrganizations(
 
     std::unique_ptr<TabOrganization> organization =
         std::make_unique<TabOrganization>(std::move(tab_datas_for_org),
-                                          std::move(names), 0u, absl::nullopt);
+                                          std::move(names));
 
-    if (!organization->IsValidForOrganizing()) {
-      continue;
-    }
+    response_organization.organization_id = organization->organization_id();
 
     organization->AddObserver(this);
     tab_organizations_.emplace_back(std::move(organization));

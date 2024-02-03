@@ -2104,7 +2104,8 @@ RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
     // Create new sender (with empty stream set).
     sender = MakeGarbageCollected<RTCRtpSender>(
         this, std::move(rtp_sender_platform), kind, track, MediaStreamVector(),
-        encoded_insertable_streams_);
+        encoded_insertable_streams_,
+        GetExecutionContext()->GetTaskRunner(TaskType::kInternalMedia));
     rtp_senders_.push_back(sender);
   } else {
     // Update existing sender (not touching the stream set).
@@ -2138,7 +2139,8 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
     // Create new receiver.
     receiver = MakeGarbageCollected<RTCRtpReceiver>(
         this, std::move(platform_receiver), track, MediaStreamVector(),
-        encoded_insertable_streams_);
+        encoded_insertable_streams_,
+        GetExecutionContext()->GetTaskRunner(TaskType::kInternalMedia));
     // Receiving tracks should be muted by default. SetReadyState() propagates
     // the related state changes to ensure it is muted on all layers. It also
     // fires events - which is not desired - but because they fire synchronously
@@ -2277,30 +2279,19 @@ void RTCPeerConnection::NoteSdpCreated(const RTCSessionDescription& desc) {
 }
 
 void RTCPeerConnection::OnStreamAddTrack(MediaStream* stream,
-                                         MediaStreamTrack* track) {
-  ExceptionState exception_state(v8::Isolate::GetCurrent(),
-                                 ExceptionContextType::kUnknown, nullptr,
-                                 nullptr);
+                                         MediaStreamTrack* track,
+                                         ExceptionState& exception_state) {
   MediaStreamVector streams;
   streams.push_back(stream);
   addTrack(track, streams, exception_state);
-  // If addTrack() failed most likely the track already has a sender and this is
-  // a NO-OP or the connection is closed. The exception can be suppressed, there
-  // is nothing to do.
-  exception_state.ClearException();
 }
 
 void RTCPeerConnection::OnStreamRemoveTrack(MediaStream* stream,
-                                            MediaStreamTrack* track) {
+                                            MediaStreamTrack* track,
+                                            ExceptionState& exception_state) {
   auto* sender = FindSenderForTrackAndStream(track, stream);
   if (sender) {
-    ExceptionState exception_state(v8::Isolate::GetCurrent(),
-                                   ExceptionContextType::kUnknown, nullptr,
-                                   nullptr);
     removeTrack(sender, exception_state);
-    // If removeTrack() failed most likely the connection is closed. The
-    // exception can be suppressed, there is nothing to do.
-    exception_state.ClearException();
   }
 }
 

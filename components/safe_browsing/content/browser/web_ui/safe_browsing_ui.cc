@@ -1465,6 +1465,8 @@ std::string UrlRequestDestinationToString(
       return "WEB_IDENTITY";
     case ClientSafeBrowsingReportRequest::DICTIONARY:
       return "DICTIONARY";
+    case ClientSafeBrowsingReportRequest::SPECULATION_RULES:
+      return "SPECULATION_RULES";
   }
 }
 
@@ -1602,6 +1604,9 @@ std::string SerializeCSBRR(const ClientSafeBrowsingReportRequest& report) {
         break;
       case ClientSafeBrowsingReportRequest::PHISHY_SITE_INTERACTIONS:
         report_type = "PHISHY_SITE_INTERACTIONS";
+        break;
+      case ClientSafeBrowsingReportRequest::WARNING_SHOWN:
+        report_type = "WARNING_SHOWN";
         break;
     }
     report_request.Set("type", report_type);

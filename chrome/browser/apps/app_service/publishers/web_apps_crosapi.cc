@@ -166,19 +166,21 @@ void WebAppsCrosapi::GetMenuModel(
     base::OnceCallback<void(MenuItems)> callback) {
   bool is_system_web_app = false;
   bool can_use_uninstall = false;
+  bool can_close = true;
   WindowMode display_mode = WindowMode::kUnknown;
 
   proxy_->AppRegistryCache().ForOneApp(
-      app_id, [&is_system_web_app, &can_use_uninstall,
+      app_id, [&is_system_web_app, &can_use_uninstall, &can_close,
                &display_mode](const AppUpdate& update) {
         is_system_web_app = update.InstallReason() == InstallReason::kSystem;
         can_use_uninstall = update.AllowUninstall().value_or(false);
+        can_close = update.AllowClose().value_or(true);
         display_mode = update.WindowMode();
       });
 
   MenuItems menu_items;
 
-  if (display_mode != WindowMode::kUnknown && !is_system_web_app) {
+  if (display_mode != WindowMode::kUnknown && !is_system_web_app && can_close) {
     if (chromeos::features::IsCrosShortstandEnabled()) {
       apps::AddCommandItem(ash::LAUNCH_NEW,
                            IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW, menu_items);
@@ -190,10 +192,8 @@ void WebAppsCrosapi::GetMenuModel(
     }
   }
 
-  if (menu_type == MenuType::kShelf) {
-    if (proxy_->InstanceRegistry().ContainsAppId(app_id)) {
-      AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, menu_items);
-    }
+  if (ShouldAddCloseItem(app_id, menu_type, proxy_->profile())) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, menu_items);
   }
 
   if (can_use_uninstall) {

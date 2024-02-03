@@ -341,6 +341,16 @@ void SetFlags(IsolateHolder::ScriptMode mode,
     }
   }
 
+  if (base::FeatureList::IsEnabled(
+          features::kWebAssemblyMoreAggressiveCodeCaching)) {
+    SetV8FlagsFormatted(
+        "--wasm-caching-threshold=%d --wasm-caching-hard-threshold=%d "
+        "--wasm-caching-timeout-ms=%d",
+        features::kWebAssemblyMoreAggressiveCodeCachingThreshold.Get(),
+        features::kWebAssemblyMoreAggressiveCodeCachingHardThreshold.Get(),
+        features::kWebAssemblyMoreAggressiveCodeCachingTimeoutMs.Get());
+  }
+
   // Make sure aliases of kV8SlowHistograms only enable the feature to
   // avoid contradicting settings between multiple finch experiments.
   bool any_slow_histograms_alias =
@@ -416,6 +426,9 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--no-experimental-wasm-multi-memory");
   SetV8FlagsIfOverridden(features::kWebAssemblyTurboshaft, "--turboshaft-wasm",
                          "--no-turboshaft-wasm");
+  SetV8FlagsIfOverridden(features::kWebAssemblyTurboshaftInstructionSelection,
+                         "--turboshaft-wasm-instruction-selection-staged",
+                         "--no-turboshaft-wasm-instruction-selection-staged");
 
   if (js_command_line_flags.empty())
     return;

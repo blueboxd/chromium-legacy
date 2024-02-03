@@ -328,7 +328,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // AXObjectCacheImpl::InvalidateCachedValuesOnSubtree().
   void InvalidateCachedValues();
   bool NeedsToUpdateCachedValues() const { return cached_values_need_update_; }
-  bool CanAccessCachedValues() const;
+  void CheckCanAccessCachedValues() const;
 
   // The AXObjectCacheImpl that owns this object, and its unique ID within this
   // cache.
@@ -702,8 +702,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Load inline text boxes for just this node, even if
   // AXObjectCache().GetAXMode().has_mode(ui::AXMode::kInlineTextBoxes) is
-  // false. Can be called even when layout is not clean, but in that case
-  // it will force clean layout.
+  // false. Must be called with clean layout.
   virtual void LoadInlineTextBoxes();
   virtual void LoadInlineTextBoxesHelper();
   // When adding children to this node, consider inline textboxes.
@@ -1379,9 +1378,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // xml-roles object attribute.
   const AtomicString& GetRoleAttributeStringForObjectAttribute(
       ui::AXNodeData* node_data);
-
-  // Extra checks that occur right before a node is evaluated for serialization.
-  void PreSerializationConsistencyCheck();
 
   // Returns a string representation of this object.
   // |cached_values_only| avoids recomputing cached values, and thus can be

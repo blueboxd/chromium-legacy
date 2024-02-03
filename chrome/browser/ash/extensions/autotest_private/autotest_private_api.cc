@@ -111,6 +111,7 @@
 #include "chrome/browser/ash/fusebox/fusebox_server.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/input_method/editor_mediator_factory.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer.h"
@@ -122,6 +123,7 @@
 #include "chrome/browser/ash/power/ml/smart_dim/ml_agent.h"
 #include "chrome/browser/ash/printing/cups_printers_manager.h"
 #include "chrome/browser/ash/printing/cups_printers_manager_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
@@ -2072,6 +2074,8 @@ AutotestPrivateGetLacrosInfoFunction::ToLacrosState(
       return api::autotest_private::LacrosState::kStopped;
     case crosapi::BrowserManager::State::PREPARING_FOR_LAUNCH:
       return api::autotest_private::LacrosState::kPreparingForLaunch;
+    case crosapi::BrowserManager::State::WAITING_OWNER_FETCH:
+      return api::autotest_private::LacrosState::kWaitingOwnerFetch;
     case crosapi::BrowserManager::State::PRE_LAUNCHED:
       return api::autotest_private::LacrosState::kPreLaunched;
     case crosapi::BrowserManager::State::STARTING:
@@ -4301,22 +4305,7 @@ AutotestPrivateArcAppTracingStopAndAnalyzeFunction::Run() {
     return RespondNow(Error("No ARC performance tracing is available."));
   }
 
-  tracing->StopCustomTracing(base::BindOnce(
-      &AutotestPrivateArcAppTracingStopAndAnalyzeFunction::OnTracingResult,
-      this));
-  return did_respond() ? AlreadyResponded() : RespondLater();
-}
-
-void AutotestPrivateArcAppTracingStopAndAnalyzeFunction::OnTracingResult(
-    bool success,
-    double fps,
-    double commit_deviation,
-    double render_quality) {
-  Respond(WithArguments(base::Value::Dict()
-                            .Set("success", success)
-                            .Set("fps", fps)
-                            .Set("commitDeviation", commit_deviation)
-                            .Set("renderQuality", render_quality)));
+  return RespondNow(WithArguments(tracing->StopCustomTracing()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6366,6 +6355,35 @@ AutotestPrivateIsInputMethodReadyForTestingFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateOverrideOrcaResponseForTestingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateOverrideOrcaResponseForTestingFunction::
+    AutotestPrivateOverrideOrcaResponseForTestingFunction() = default;
+
+AutotestPrivateOverrideOrcaResponseForTestingFunction::
+    ~AutotestPrivateOverrideOrcaResponseForTestingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateOverrideOrcaResponseForTestingFunction::Run() {
+  absl::optional<api::autotest_private::OverrideOrcaResponseForTesting::Params>
+      params =
+          api::autotest_private::OverrideOrcaResponseForTesting::Params::Create(
+              args());
+
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  ash::input_method::EditorMediator* editor_mediator =
+      ash::input_method::EditorMediatorFactory::GetInstance()->GetForProfile(
+          ash::ProfileHelper::Get()->GetProfileByUser(
+              user_manager::UserManager::Get()->GetActiveUser()));
+
+  return RespondNow(
+      WithArguments(editor_mediator->SetTextQueryProviderResponseForTesting(
+          params->array.responses)));  // IN-TEST
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateMakeFuseboxTempDirFunction
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -6745,13 +6763,15 @@ AutotestPrivateSetArcInteractiveStateFunction::Run() {
   }
 
   arc::mojom::PowerInstance* power_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service->power(), SetInteractive);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service->power(), SetIdleState);
 
   if (!power_instance) {
     return RespondNow(Error("ARC power service is not available"));
   }
 
-  power_instance->SetInteractive(params->enabled);
+  power_instance->SetIdleState(params->enabled
+                                   ? arc::mojom::IdleState::ACTIVE
+                                   : arc::mojom::IdleState::INACTIVE);
 
   return RespondNow(NoArguments());
 }
@@ -6813,7 +6833,7 @@ AutotestPrivateGetArcWakefulnessModeFunction::Run() {
   }
 
   arc::mojom::PowerInstance* power_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service->power(), SetInteractive);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service->power(), SetIdleState);
 
   if (!power_instance) {
     return RespondNow(

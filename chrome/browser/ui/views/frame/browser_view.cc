@@ -43,6 +43,8 @@
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/native_window_notification_source.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -225,6 +227,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/command.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -867,7 +870,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       accessibility_mode_observer_(
           std::make_unique<AccessibilityModeObserver>(this)) {
   // Store the actions so that the access is available for other classes.
-  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+  if (features::IsSidePanelPinningEnabled()) {
     browser_->SetUserData(BrowserActions::UserDataKey(),
                           std::make_unique<BrowserActions>(*browser_));
   }
@@ -1182,12 +1185,15 @@ bool BrowserView::UsesImmersiveFullscreenTabbedMode() const {
 #endif
 
 TabSearchBubbleHost* BrowserView::GetTabSearchBubbleHost() {
-  if (auto* tab_search_host = frame_->GetFrameView()->GetTabSearchBubbleHost())
+  if (auto* tab_search_host =
+          frame_->GetFrameView()->GetTabSearchBubbleHost()) {
     return tab_search_host;
-  auto* const tab_search_button =
-      tab_strip_region_view_->tab_search_container()->tab_search_button();
-  return tab_search_button ? tab_search_button->tab_search_bubble_host()
-                           : nullptr;
+  }
+  if (auto* tab_search_container =
+          tab_strip_region_view_->tab_search_container()) {
+    return tab_search_container->tab_search_button()->tab_search_bubble_host();
+  }
+  return nullptr;
 }
 
 bool BrowserView::GetTabStripVisible() const {
@@ -2459,20 +2465,23 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
   // TODO: this fixes crbug.com/1042010 and crbug.com/1052676, but a more
   // general solution should be desirable to find any bubbles anchored in the
   // views hierarchy.
-  if (toolbar_ && toolbar_->app_menu_button()) {
-    views::DialogDelegate* bubble =
-        toolbar_->app_menu_button()->GetProperty(views::kAnchoredDialogKey);
-    if ((!bubble || user_education::HelpBubbleView::IsHelpBubble(bubble)) &&
-        GetLocationBarView())
-      bubble = GetLocationBarView()->GetProperty(views::kAnchoredDialogKey);
-    if ((!bubble || user_education::HelpBubbleView::IsHelpBubble(bubble)) &&
-        toolbar_button_provider_ &&
-        toolbar_button_provider_->GetAvatarToolbarButton()) {
-      bubble = toolbar_button_provider_->GetAvatarToolbarButton()->GetProperty(
-          views::kAnchoredDialogKey);
+  if (toolbar_) {
+    views::DialogDelegate* bubble = nullptr;
+    for (auto* view : std::initializer_list<views::View*>{
+             toolbar_->app_menu_button(), GetLocationBarView(),
+             toolbar_button_provider_->GetAvatarToolbarButton(),
+             toolbar_button_provider_->GetDownloadButton()}) {
+      if (view) {
+        if (auto* dialog = view->GetProperty(views::kAnchoredDialogKey);
+            dialog && !user_education::HelpBubbleView::IsHelpBubble(dialog)) {
+          bubble = dialog;
+          break;
+        }
+      }
     }
 
-    if (bubble && !user_education::HelpBubbleView::IsHelpBubble(bubble)) {
+    if (bubble) {
+      CHECK(!user_education::HelpBubbleView::IsHelpBubble(bubble));
       View* focusable = bubble->GetInitiallyFocusedView();
 
       // A PermissionPromptBubbleView will explicitly return nullptr due to
@@ -2590,6 +2599,10 @@ void BrowserView::OnCanResizeFromWebAPIChanged() {
 }
 
 void BrowserView::SynchronizeRenderWidgetHostVisualPropertiesForMainFrame() {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kDesktopPWAsAdditionalWindowingControls)) {
+    return;
+  }
   content::WebContents* web_contents = GetActiveWebContents();
   if (!web_contents || !web_contents->GetPrimaryMainFrame()) {
     return;
@@ -2646,6 +2659,17 @@ void BrowserView::MaybeShowReadingListInSidePanelIPH() {
           reading_list::prefs::kReadingListDesktopFirstUseExperienceShown)) {
     MaybeShowFeaturePromo(
         feature_engagement::kIPHReadingListInSidePanelFeature);
+  }
+}
+
+void BrowserView::MaybeShowExperimentalAIIPH() {
+  if (!browser()->is_type_normal()) {
+    return;
+  }
+  auto* opt_guide_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser_->profile());
+  if (opt_guide_service && opt_guide_service->ShouldShowExperimentalAIPromo()) {
+    MaybeShowFeaturePromo(feature_engagement::kIPHExperimentalAIPromoFeature);
   }
 }
 
@@ -3045,8 +3069,7 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
   // Don't show download shelf if download bubble is enabled, except that the
   // shelf is already showing (this can happen if prefs were changed at
   // runtime).
-  if (download::IsDownloadBubbleEnabled(browser_->profile()) &&
-      !download_shelf_) {
+  if (download::IsDownloadBubbleEnabled() && !download_shelf_) {
     return nullptr;
   }
   if (!download_shelf_) {
@@ -3999,7 +4022,7 @@ const views::Widget* BrowserView::GetWidget() const {
   return View::GetWidget();
 }
 
-void BrowserView::CreateTabSearchBubble() {
+void BrowserView::CreateTabSearchBubble(const int tab_index) {
   // Do not spawn the bubble if using the WebUITabStrip.
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   if (WebUITabStripContainerView::UseTouchableTabStrip(browser_.get()))
@@ -4007,7 +4030,7 @@ void BrowserView::CreateTabSearchBubble() {
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   if (auto* tab_search_host = GetTabSearchBubbleHost())
-    tab_search_host->ShowTabSearchBubble(true);
+    tab_search_host->ShowTabSearchBubble(true, tab_index);
 }
 
 void BrowserView::CloseTabSearchBubble() {
@@ -4336,6 +4359,11 @@ void BrowserView::AddedToWidget() {
       FROM_HERE,
       base::BindOnce(&BrowserView::MaybeShowReadingListInSidePanelIPH,
                      GetAsWeakPtr()),
+      base::Minutes(5));
+
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&BrowserView::MaybeShowExperimentalAIIPH, GetAsWeakPtr()),
       base::Minutes(5));
 
   initialized_ = true;
@@ -4878,6 +4906,15 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 
   if (command_id == IDC_NEW_INCOGNITO_WINDOW) {
     base::RecordAction(base::UserMetricsAction("Accel_NewIncognitoWindow"));
+  }
+
+  if (command_id == IDC_FULLSCREEN) {
+    if (browser_->window()->IsFullscreen()) {
+      base::RecordAction(base::UserMetricsAction("ExitFullscreen_Accelerator"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("EnterFullscreen_Accelerator"));
+    }
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

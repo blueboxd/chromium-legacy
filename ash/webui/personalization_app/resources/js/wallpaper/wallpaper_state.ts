@@ -5,9 +5,9 @@ import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {CurrentAttribution, CurrentWallpaper, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperImage} from '../../personalization_app.mojom-webui.js';
-import {SeaPenThumbnail} from '../../sea_pen.mojom-webui.js';
 
-import {DefaultImageSymbol, DisplayableImage, kDefaultImageSymbol, SeaPenWallpaper} from './constants.js';
+import {DefaultImageSymbol, DisplayableImage, kDefaultImageSymbol} from './constants.js';
+import {emptyState as emptySeaPenState, SeaPenState} from './sea_pen/sea_pen_state.js';
 
 /**
  * Stores collections and images from backdrop server.
@@ -84,13 +84,10 @@ export interface LoadingState {
     photos: boolean,
     photosByAlbumId: Record<string, boolean>,
   };
-}
-
-export interface SeaPenState {
-  query: string|null;
-  thumbnails: SeaPenThumbnail[]|null;
-  thumbnailsLoading: boolean;
-  recentWallpapers: SeaPenWallpaper[]|null;
+  seaPen: {
+    recentImages: boolean,
+    recentImageData: Record<FilePath['path'], boolean>,
+  };
 }
 
 /**
@@ -152,6 +149,10 @@ export function emptyState(): WallpaperState {
         photos: false,
         photosByAlbumId: {},
       },
+      seaPen: {
+        recentImages: false,
+        recentImageData: {},
+      },
     },
     local: {images: null, data: {[kDefaultImageSymbol]: {url: ''}}},
     attribution: null,
@@ -169,11 +170,6 @@ export function emptyState(): WallpaperState {
       resumeTokens:
           {albums: null, albumsShared: null, photos: null, photosByAlbumId: {}},
     },
-    seaPen: {
-      query: null,
-      thumbnails: null,
-      thumbnailsLoading: false,
-      recentWallpapers: null,
-    },
+    seaPen: emptySeaPenState(),
   };
 }

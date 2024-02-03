@@ -66,13 +66,11 @@
 #include "ash/wm/desks/desks_test_api.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/root_window_desk_switch_animator_test_api.h"
 #include "ash/wm/desks/scroll_arrow_button.h"
 #include "ash/wm/desks/templates/saved_desk_test_helper.h"
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
-#include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_focus_cycler.h"
@@ -1666,7 +1664,7 @@ TEST_P(DesksTest, DragWindowToDesk) {
   EnterOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(2u, overview_grid->size());
+  EXPECT_EQ(2u, overview_grid->GetNumWindows());
 
   // While in overview mode, the window's shadow is hidden.
   EXPECT_FALSE(shadow->layer()->GetTargetVisibility());
@@ -1688,7 +1686,7 @@ TEST_P(DesksTest, DragWindowToDesk) {
                   desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
                   event_generator, GetParam().use_touch_gestures);
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(2u, overview_grid->size());
+  EXPECT_EQ(2u, overview_grid->GetNumWindows());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
   EXPECT_TRUE(DoesActiveDeskContainWindow(win1.get()));
 
@@ -1700,7 +1698,7 @@ TEST_P(DesksTest, DragWindowToDesk) {
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
                   event_generator, GetParam().use_touch_gestures);
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(1u, overview_grid->GetNumWindows());
   EXPECT_FALSE(DoesActiveDeskContainWindow(win1.get()));
   EXPECT_TRUE(base::Contains(desk_2->windows(), win1.get()));
   EXPECT_FALSE(overview_grid->drop_target());
@@ -1845,7 +1843,7 @@ TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   const auto* overview_grid =
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(1u, overview_grid->GetNumWindows());
 
   auto* overview_session = overview_controller->overview_session();
   auto* overview_item =
@@ -1862,7 +1860,7 @@ TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
                   window->GetRootWindow()->GetBoundsInScreen().bottom_center(),
                   GetEventGenerator(), GetParam().use_touch_gestures);
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(1u, overview_grid->GetNumWindows());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
   EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
 }
@@ -1956,7 +1954,7 @@ TEST_P(DesksTest, DragWindowAtZeroState) {
             controller->GetDeskAtIndex(0));
   // |overview_grid| should have size equals to 0 now, since |overview_item1|
   // havs been moved to a new desk.
-  EXPECT_EQ(0u, overview_grid->size());
+  EXPECT_EQ(0u, overview_grid->GetNumWindows());
 }
 
 // Tests that dragging a window at zero state but without dropping it on the new
@@ -2530,9 +2528,9 @@ TEST_F(DesksWithMultiDisplayOverview, DropOnSameDeskInOtherDisplay) {
   // The window should exist on the grid of the first display.
   auto* grid1 = GetOverviewGridForRoot(roots[0]);
   auto* grid2 = GetOverviewGridForRoot(roots[1]);
-  EXPECT_EQ(1u, grid1->size());
+  EXPECT_EQ(1u, grid1->GetNumWindows());
   EXPECT_EQ(grid1, overview_item->overview_grid());
-  EXPECT_EQ(0u, grid2->size());
+  EXPECT_EQ(0u, grid2->GetNumWindows());
 
   // Drag the item and drop it on the mini view of the same desk (i.e. desk 1)
   // on the second display. The window should not change desks, but it should
@@ -2551,9 +2549,9 @@ TEST_F(DesksWithMultiDisplayOverview, DropOnSameDeskInOtherDisplay) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   overview_item = overview_session->GetOverviewItemForWindow(win.get());
   ASSERT_TRUE(overview_item);
-  EXPECT_EQ(0u, grid1->size());
+  EXPECT_EQ(0u, grid1->GetNumWindows());
   EXPECT_EQ(grid2, overview_item->overview_grid());
-  EXPECT_EQ(1u, grid2->size());
+  EXPECT_EQ(1u, grid2->GetNumWindows());
   EXPECT_TRUE(DoesActiveDeskContainWindow(win.get()));
   EXPECT_EQ(roots[1], win->GetRootWindow());
 }
@@ -2573,9 +2571,9 @@ TEST_F(DesksWithMultiDisplayOverview, DropOnOtherDeskInOtherDisplay) {
   // The window should exist on the grid of the first display.
   auto* grid1 = GetOverviewGridForRoot(roots[0]);
   auto* grid2 = GetOverviewGridForRoot(roots[1]);
-  EXPECT_EQ(1u, grid1->size());
+  EXPECT_EQ(1u, grid1->GetNumWindows());
   EXPECT_EQ(grid1, overview_item->overview_grid());
-  EXPECT_EQ(0u, grid2->size());
+  EXPECT_EQ(0u, grid2->GetNumWindows());
 
   const auto* desks_bar_view = grid2->desks_bar_view();
   auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
@@ -2606,8 +2604,8 @@ TEST_F(DesksWithMultiDisplayOverview, DropOnOtherDeskInOtherDisplay) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   overview_item = overview_session->GetOverviewItemForWindow(win.get());
   ASSERT_FALSE(overview_item);
-  EXPECT_EQ(0u, grid1->size());
-  EXPECT_EQ(0u, grid2->size());
+  EXPECT_EQ(0u, grid1->GetNumWindows());
+  EXPECT_EQ(0u, grid2->GetNumWindows());
   EXPECT_FALSE(DoesActiveDeskContainWindow(win.get()));
   EXPECT_EQ(roots[1], win->GetRootWindow());
   EXPECT_FALSE(win->IsVisible());
@@ -3100,7 +3098,7 @@ TEST_P(TabletModeDesksTest, Backdrops) {
   EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window()->IsVisible());
 
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(1u, overview_grid->GetNumWindows());
 
   auto* overview_session = overview_controller->overview_session();
   auto* overview_item =
@@ -3172,7 +3170,7 @@ TEST_P(TabletModeDesksTest,
 
   // Prepare to drag and drop |window| on desk_2's mini view.
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(1u, overview_grid->GetNumWindows());
   auto* overview_session = overview_controller->overview_session();
   auto* overview_item =
       overview_session->GetOverviewItemForWindow(window.get());
@@ -5361,11 +5359,11 @@ class DesksAcceleratorsTest : public DesksTest,
     return true;
   }
   void SuppressMetaTopRowKeyComboRewrites(bool should_suppress) override {}
-  absl::optional<ui::mojom::ModifierKey> GetKeyboardRemappedModifierValue(
+  std::optional<ui::mojom::ModifierKey> GetKeyboardRemappedModifierValue(
       int device_id,
       ui::mojom::ModifierKey modifier_key,
       const std::string& pref_name) const override {
-    return absl::nullopt;
+    return std::nullopt;
   }
   bool TopRowKeysAreFunctionKeys(int device_id) const override { return false; }
   bool IsExtensionCommandRegistered(ui::KeyboardCode key_code,
@@ -5380,15 +5378,15 @@ class DesksAcceleratorsTest : public DesksTest,
   void RecordEventRemappedToRightClick(bool alt_based_right_click) override {}
   void RecordSixPackEventRewrite(ui::KeyboardCode key_code,
                                  bool alt_based) override {}
-  absl::optional<ui::mojom::SimulateRightClickModifier>
+  std::optional<ui::mojom::SimulateRightClickModifier>
   GetRemapRightClickModifier(int device_id) override {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
-  absl::optional<ui::mojom::SixPackShortcutModifier>
+  std::optional<ui::mojom::SixPackShortcutModifier>
   GetShortcutModifierForSixPackKey(int device_id,
                                    ui::KeyboardCode key_code) override {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   void NotifyRightClickRewriteBlockedBySetting(
@@ -5401,10 +5399,10 @@ class DesksAcceleratorsTest : public DesksTest,
       ui::mojom::SixPackShortcutModifier active_modifier,
       int device_id) override {}
 
-  absl::optional<ui::mojom::ExtendedFkeysModifier> GetExtendedFkeySetting(
+  std::optional<ui::mojom::ExtendedFkeysModifier> GetExtendedFkeySetting(
       int device_id,
       ui::KeyboardCode key_code) override {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   void SendAccelerator(ui::KeyboardCode key_code, int flags) {

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/webid/account_selection_bubble_view.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
@@ -201,7 +202,7 @@ class ContinueButton : public views::MdTextButton {
                  const std::u16string& text,
                  AccountSelectionBubbleView* bubble_view,
                  const content::IdentityProviderMetadata& idp_metadata)
-      : views::MdTextButton(callback, text),
+      : views::MdTextButton(std::move(callback), text),
         bubble_view_(bubble_view),
         brand_background_color_(idp_metadata.brand_background_color),
         brand_text_color_(idp_metadata.brand_text_color) {
@@ -292,7 +293,7 @@ class AccountImageView : public views::ImageView {
           gfx::CanvasImageSource::MakeImageSkia<CircleCroppedImageSkiaSource>(
               image.AsImageSkia(), absl::nullopt, kDesiredAvatarSize);
     }
-    SetImage(avatar);
+    SetImage(ui::ImageModel::FromImageSkia(avatar));
   }
 
   base::WeakPtrFactory<AccountImageView> weak_ptr_factory_{this};
@@ -339,7 +340,7 @@ class IdpImageView : public views::ImageView {
             image.Width() *
                 FedCmAccountSelectionView::kMaskableWebIconSafeZoneRatio,
             kDesiredIdpIconSize);
-    SetImage(idp_image);
+    SetImage(ui::ImageModel::FromImageSkia(idp_image));
     bubble_view_->AddIdpImage(image_url, idp_image);
   }
 
@@ -684,7 +685,7 @@ void AccountSelectionBubbleView::ShowFailureDialog(
 
   // Add continue button.
   auto button = std::make_unique<ContinueButton>(
-      base::BindRepeating(&Observer::OnSigninToIdP, base::Unretained(observer_),
+      base::BindRepeating(&Observer::OnLoginToIdP, base::Unretained(observer_),
                           idp_metadata.idp_login_url),
       l10n_util::GetStringUTF16(IDS_IDP_SIGNIN_STATUS_MISMATCH_DIALOG_CONTINUE),
       this, idp_metadata);
@@ -1024,7 +1025,7 @@ AccountSelectionBubbleView::CreateMultipleAccountChooser(
       idp_display_data_list[0].idp_metadata;
   if (idp_metadata.supports_add_account) {
     auto button = std::make_unique<ContinueButton>(
-        base::BindRepeating(&Observer::OnSigninToIdP,
+        base::BindRepeating(&Observer::OnLoginToIdP,
                             base::Unretained(observer_),
                             idp_metadata.idp_login_url),
         l10n_util::GetStringUTF16(IDS_ACCOUNT_SELECTION_ADD_ACCOUNT), this,
@@ -1154,7 +1155,7 @@ void AccountSelectionBubbleView::ConfigureIdpBrandImageView(
 
   auto it = idp_images_.find(idp_metadata.brand_icon_url);
   if (it != idp_images_.end()) {
-    image_view->SetImage(it->second);
+    image_view->SetImage(ui::ImageModel::FromImageSkia(it->second));
     return;
   }
 

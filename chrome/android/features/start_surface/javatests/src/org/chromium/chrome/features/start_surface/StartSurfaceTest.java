@@ -89,8 +89,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
-import org.chromium.chrome.browser.util.BrowserUiUtils;
-import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNTP;
+import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNtp;
 import org.chromium.chrome.features.tasks.SingleTabSwitcherMediator;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -123,7 +122,6 @@ import java.util.List;
 })
 @EnableFeatures({
     ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
-    ChromeFeatureList.EMPTY_STATES
 })
 @DisableFeatures({ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID})
 @CommandLineFlags.Add({
@@ -335,7 +333,7 @@ public class StartSurfaceTest {
                 1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         HISTOGRAM_START_SURFACE_MODULE_CLICK,
-                        ModuleTypeOnStartAndNTP.TAB_SWITCHER_BUTTON));
+                        ModuleTypeOnStartAndNtp.TAB_SWITCHER_BUTTON));
 
         if (isInstantReturn()) {
             // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
@@ -386,7 +384,7 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 0);
         assertTrue(cta.getLayoutManager().isLayoutVisible(getStartSurfaceLayoutType()));
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> cta.getTabCreator(/* incognito= */ true).launchNTP());
+                () -> cta.getTabCreator(/* incognito= */ true).launchNtp());
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
 
         // Simulates pressing the Android's home button and bringing Chrome to the background.
@@ -431,7 +429,7 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
         ChromeTabUtils.waitForTabPageLoaded(cta.getActivityTab(), (String) null);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
+        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNtp());
         StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 
@@ -450,7 +448,7 @@ public class StartSurfaceTest {
     @CommandLineFlags.Add({
         START_SURFACE_TEST_BASE_PARAMS + "hide_switch_when_no_incognito_tabs/false"
     })
-    public void testCreateNewTab_OpenNTPInsteadOfStart() {
+    public void testCreateNewTab_OpenNtpInsteadOfStart() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForTabModel(cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
@@ -478,7 +476,7 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    public void testHomeButton_OpenNTPInsteadOfStart() {
+    public void testHomeButton_OpenNtpInsteadOfStart() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForTabModel(cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
@@ -502,7 +500,7 @@ public class StartSurfaceTest {
         // Click the home button should navigate to NTP instead of showing start surface.
         StartSurfaceTestUtils.pressHomePageButton(cta);
         CriteriaHelper.pollUiThread(
-                () -> UrlUtilities.isNTPUrl(cta.getTabModelSelector().getCurrentTab().getUrl()));
+                () -> UrlUtilities.isNtpUrl(cta.getTabModelSelector().getCurrentTab().getUrl()));
         assertFalse(
                 cta.getLayoutManager()
                         .isLayoutVisible(StartSurfaceTestUtils.getStartSurfaceLayoutType()));
@@ -704,7 +702,7 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
+        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNtp());
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
 
@@ -746,7 +744,7 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.clickTabSwitcherButton(cta);
 
         StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
-        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
+        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNtp());
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
 
         // The Start surface should reset its scroll position.
@@ -852,7 +850,7 @@ public class StartSurfaceTest {
                 cta.getLayoutManager()
                         .isLayoutVisible(StartSurfaceTestUtils.getStartSurfaceLayoutType()));
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> cta.getTabCreator(/* incognito= */ true).launchNTP());
+                () -> cta.getTabCreator(/* incognito= */ true).launchNtp());
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
 
         // Simulates pressing the home button. Incognito tab should stay and homepage shouldn't
@@ -899,7 +897,7 @@ public class StartSurfaceTest {
         HistogramWatcher histogramWatcher =
                 HistogramWatcher.newSingleRecordWatcher(
                         HISTOGRAM_START_SURFACE_MODULE_CLICK,
-                        BrowserUiUtils.ModuleTypeOnStartAndNTP.PROFILE_BUTTON);
+                        ModuleTypeOnStartAndNtp.PROFILE_BUTTON);
         onViewWaiting(withId(R.id.identity_disc_button)).perform(click());
         histogramWatcher.assertExpected(
                 HISTOGRAM_START_SURFACE_MODULE_CLICK
@@ -921,8 +919,7 @@ public class StartSurfaceTest {
 
         HistogramWatcher histogramWatcher =
                 HistogramWatcher.newSingleRecordWatcher(
-                        HISTOGRAM_START_SURFACE_MODULE_CLICK,
-                        BrowserUiUtils.ModuleTypeOnStartAndNTP.MENU_BUTTON);
+                        HISTOGRAM_START_SURFACE_MODULE_CLICK, ModuleTypeOnStartAndNtp.MENU_BUTTON);
         onView(allOf(withId(R.id.menu_button_wrapper), withParent(withId(R.id.menu_anchor))))
                 .perform(click());
         histogramWatcher.assertExpected(

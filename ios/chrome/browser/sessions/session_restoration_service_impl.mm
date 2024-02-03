@@ -367,9 +367,13 @@ void SessionRestorationServiceImpl::LoadSession(Browser* browser) {
   info.observer().ClearDirty();
   dirty_web_state_lists_.erase(browser->GetWebStateList());
 
-  DCHECK(dirty_web_state_lists_.empty());
-  if (timer_.IsRunning()) {
-    timer_.Stop();
+  // If multiple windows are open, it is possible for some other Browsers
+  // to be dirty. Check if this is the case or not. If there are no dirty
+  // Browsers, cancel the timer.
+  if (dirty_web_state_lists_.empty()) {
+    if (timer_.IsRunning()) {
+      timer_.Stop();
+    }
   }
 
   for (auto& observer : observers_) {
@@ -459,6 +463,13 @@ void SessionRestorationServiceImpl::InvokeClosureWhenBackgroundProcessingDone(
     base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_runner_->PostTask(FROM_HERE, std::move(closure));
+}
+
+void SessionRestorationServiceImpl::PurgeUnassociatedData(
+    base::OnceClosure closure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                           std::move(closure));
 }
 
 #pragma mark - Private

@@ -33,7 +33,8 @@ enum class ComposeContextMenuCtrEvent {
   kComposeOpened = 1,
   kMaxValue = kComposeOpened,
 };
-// Keep in sync with ComposeContextMenuCtrEvent in
+
+// Keep in sync with ComposeSessionCloseReasonType in
 // src/tools/metrics/histograms/enums.xml.
 enum class ComposeSessionCloseReason {
   kAcceptedSuggestion = 0,
@@ -57,7 +58,8 @@ enum class ComposeShowStatus {
   kUnsupportedLanguage = 5,
   kFormFieldInCrossOriginFrame = 6,
   kPerUrlChecksFailed = 7,
-  kMaxValue = kPerUrlChecksFailed,
+  kUserNotAllowedByOptimizationGuide = 8,
+  kMaxValue = kUserNotAllowedByOptimizationGuide,
 };
 
 void LogComposeContextMenuCtr(ComposeContextMenuCtrEvent event);
@@ -68,11 +70,19 @@ void LogComposeContextMenuShowStatus(ComposeShowStatus status);
 // the request.
 void LogComposeRequestDuration(base::TimeDelta duration, bool is_ok);
 
-// Log session based meterics at when a session ends.
+// Log session based metrics when a session ends.
 void LogComposeSessionCloseMetrics(ComposeSessionCloseReason reason,
                                    int compose_count,
                                    int dialog_shown_count,
                                    int undo_count);
+
+// Log the amount trimmed from the inner text from the page (in bytes) when the
+// dialog is opened.
+void LogComposeDialogInnerTextShortenedBy(int shortened_by);
+
+// Log the size (in bytes) of the untrimmed inner text from the page when the
+// dialog is opened.
+void LogComposeDialogInnerTextSize(int size);
 
 // Log the time taken for the dialog to be fully shown and interactable.
 void LogComposeDialogOpenLatency(base::TimeDelta duration);

@@ -48,6 +48,7 @@ try_.builder(
     mirrors = [
         "ci/mac-arm64-archive-rel",
     ],
+    gn_args = "ci/mac-arm64-archive-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -72,6 +73,7 @@ try_.builder(
     mirrors = [
         "ci/mac-archive-rel",
     ],
+    gn_args = "ci/mac-archive-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -82,6 +84,7 @@ try_.builder(
     ],
     builderless = False,
     os = os.MAC_13,
+    gn_args = "ci/mac-osxbeta-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -117,6 +120,7 @@ try_.builder(
     builderless = False,
     os = os.MAC_13,
     cpu = cpu.ARM64,
+    gn_args = "ci/Mac Builder Next",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
@@ -125,6 +129,13 @@ try_.builder(
     mirrors = [
         "ci/mac-perfetto-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/mac-perfetto-rel",
+            "try_builder",
+            "no_symbols",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -143,6 +154,7 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        "chromium.skip_successful_tests": 50,
     },
     gn_args = gn_args.config(
         configs = [
@@ -212,6 +224,7 @@ try_.builder(
     mirrors = [
         "ci/mac10.15-wpt-content-shell-fyi-rel",
     ],
+    gn_args = "ci/mac10.15-wpt-content-shell-fyi-rel",
 )
 
 try_.builder(
@@ -238,6 +251,7 @@ try_.builder(
     mirrors = [
         "ci/mac11-arm64-wpt-content-shell-fyi-rel",
     ],
+    gn_args = "ci/mac11-arm64-wpt-content-shell-fyi-rel",
 )
 
 try_.builder(
@@ -245,6 +259,7 @@ try_.builder(
     mirrors = [
         "ci/mac11-wpt-content-shell-fyi-rel",
     ],
+    gn_args = "ci/mac11-wpt-content-shell-fyi-rel",
 )
 
 try_.builder(
@@ -293,6 +308,7 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "mac13-arm64-rel-compilator",
     branch_selector = branches.selector.MAC_BRANCHES,
+    cpu = cpu.ARM64,
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
     main_list_view = "try",
@@ -303,6 +319,7 @@ try_.builder(
     mirrors = [
         "ci/mac12-arm64-wpt-content-shell-fyi-rel",
     ],
+    gn_args = "ci/mac12-arm64-wpt-content-shell-fyi-rel",
 )
 
 try_.builder(
@@ -310,6 +327,7 @@ try_.builder(
     mirrors = [
         "ci/mac12-wpt-content-shell-fyi-rel",
     ],
+    gn_args = "ci/mac12-wpt-content-shell-fyi-rel",
 )
 
 try_.builder(
@@ -317,6 +335,7 @@ try_.builder(
     mirrors = [
         "ci/mac13-arm64-wpt-content-shell-fyi-rel",
     ],
+    gn_args = "ci/mac13-arm64-wpt-content-shell-fyi-rel",
 )
 
 try_.builder(
@@ -324,6 +343,7 @@ try_.builder(
     mirrors = [
         "ci/mac13-wpt-content-shell-fyi-rel",
     ],
+    gn_args = "ci/mac13-wpt-content-shell-fyi-rel",
 )
 
 # NOTE: the following trybots aren't sensitive to Mac version on which
@@ -397,6 +417,15 @@ try_.builder(
         "ci/Mac ASan 64 Builder",
         "ci/Mac ASan 64 Tests (1)",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "asan",
+            "dcheck_always_on",
+            "disable_nacl",
+            "release_builder",
+            "reclient",
+        ],
+    ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
@@ -410,6 +439,9 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    experiments = {
+        "chromium.skip_successful_tests": 50,
+    },
     gn_args = gn_args.config(
         configs = [
             "ci/Mac Builder (dbg)",
@@ -482,6 +514,7 @@ try_.builder(
     name = "mac-code-coverage",
     mirrors = ["ci/mac-code-coverage"],
     execution_timeout = 20 * time.hour,
+    gn_args = "ci/mac-code-coverage",
 )
 
 ios_builder(
@@ -489,6 +522,7 @@ ios_builder(
     mirrors = [
         "ci/ios-asan",
     ],
+    gn_args = "ci/ios-asan",
 )
 
 ios_builder(
@@ -499,6 +533,7 @@ ios_builder(
     builderless = True,
     cpu = cpu.ARM64,
     execution_timeout = 4 * time.hour,
+    gn_args = "ci/ios-blink-dbg-fyi",
 )
 
 ios_builder(
@@ -515,6 +550,7 @@ ios_builder(
     mirrors = [
         "ci/ios-device",
     ],
+    cpu = cpu.ARM64,
     gn_args = "ci/ios-device",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
@@ -523,12 +559,14 @@ ios_builder(
     name = "ios-fieldtrial-rel",
     mirrors = ["ci/ios-fieldtrial-rel"],
     builderless = True,
+    gn_args = "ci/ios-fieldtrial-rel",
 )
 
 ios_builder(
     name = "ios-m1-simulator",
     mirrors = ["ci/ios-m1-simulator"],
     cpu = cpu.ARM64,
+    gn_args = "ci/ios-m1-simulator",
 )
 
 try_.orchestrator_builder(
@@ -548,6 +586,7 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        "chromium.skip_successful_tests": 50,
     },
     gn_args = gn_args.config(
         configs = [
@@ -640,6 +679,7 @@ ios_builder(
     name = "ios-simulator-multi-window",
     mirrors = ["ci/ios-simulator-multi-window"],
     cpu = cpu.ARM64,
+    gn_args = "ci/ios-simulator-multi-window",
 )
 
 ios_builder(
@@ -667,6 +707,7 @@ ios_builder(
     mirrors = [
         "ci/ios-wpt-fyi-rel",
     ],
+    gn_args = "ci/ios-wpt-fyi-rel",
 )
 
 ios_builder(
@@ -676,6 +717,7 @@ ios_builder(
     ],
     os = os.MAC_13,
     cpu = cpu.ARM64,
+    gn_args = "ci/ios16-beta-simulator",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -686,6 +728,7 @@ ios_builder(
     ],
     os = os.MAC_14,
     cpu = cpu.ARM64,
+    gn_args = "ci/ios16-sdk-simulator",
     xcode = xcode.x15betabots,
 )
 
@@ -694,6 +737,7 @@ ios_builder(
     mirrors = ["ci/ios17-beta-simulator"],
     os = os.MAC_13,
     cpu = cpu.ARM64,
+    gn_args = "ci/ios17-beta-simulator",
 )
 
 ios_builder(
@@ -701,6 +745,7 @@ ios_builder(
     mirrors = ["ci/ios17-sdk-simulator"],
     os = os.MAC_13,
     cpu = cpu.ARM64,
+    gn_args = "ci/ios17-sdk-simulator",
     xcode = xcode.x15betabots,
 )
 
@@ -709,6 +754,12 @@ ios_builder(
     mirrors = ["ci/ios-simulator-code-coverage"],
     builderless = True,
     execution_timeout = 20 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "ci/ios-simulator-code-coverage",
+            "ios_simulator",
+        ],
+    ),
 )
 
 try_.gpu.optional_tests_builder(
@@ -733,6 +784,7 @@ try_.gpu.optional_tests_builder(
         ),
         build_gs_bucket = "chromium-gpu-fyi-archive",
     ),
+    cpu = cpu.ARM64,
     ssd = None,
     main_list_view = "try",
     tryjob = try_.job(

@@ -7,10 +7,14 @@ import {CloseReason, ComposeClientPageHandlerRemote, ComposeDialogCallbackRouter
 /** @interface */
 export interface ComposeApiProxy {
   acceptComposeResult(): Promise<boolean>;
+  acknowledgeConsentDisclaimer(): void;
+  approveConsent(): void;
   closeUi(reason: CloseReason): void;
-  compose(style: StyleModifiers, input: string, rewrite: boolean): void;
+  compose(input: string, edited: boolean): void;
+  rewrite(style: StyleModifiers): void;
   getRouter(): ComposeDialogCallbackRouter;
   openBugReportingLink(): void;
+  openFeedbackSurveyLink(): void;
   openComposeSettings(): void;
   setUserFeedback(reason: UserFeedback): void;
   requestInitialState(): Promise<OpenMetadata>;
@@ -48,12 +52,24 @@ export class ComposeApiProxyImpl implements ComposeApiProxy {
         res => res.success);
   }
 
+  acknowledgeConsentDisclaimer(): void {
+    this.composeClientPageHandler.acknowledgeConsentDisclaimer();
+  }
+
+  approveConsent(): void {
+    this.composeClientPageHandler.approveConsent();
+  }
+
   closeUi(reason: CloseReason): void {
     this.composeClientPageHandler.closeUI(reason);
   }
 
-  compose(style: StyleModifiers, input: string, rewrite: boolean): void {
-    this.composeSessionPageHandler.compose(style, input, rewrite);
+  compose(input: string, edited: boolean): void {
+    this.composeSessionPageHandler.compose(input, edited);
+  }
+
+  rewrite(style: StyleModifiers): void {
+    this.composeSessionPageHandler.rewrite(style);
   }
 
   getRouter() {
@@ -62,6 +78,10 @@ export class ComposeApiProxyImpl implements ComposeApiProxy {
 
   openBugReportingLink() {
     this.composeSessionPageHandler.openBugReportingLink();
+  }
+
+  openFeedbackSurveyLink() {
+    this.composeSessionPageHandler.openFeedbackSurveyLink();
   }
 
   openComposeSettings() {

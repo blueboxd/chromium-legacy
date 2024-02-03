@@ -84,7 +84,7 @@ class ProfileTokenQualityTest : public testing::Test {
 };
 
 TEST_F(ProfileTokenQualityTest, GetObservationTypesForFieldType) {
-  AutofillProfile profile;
+  AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
   ProfileTokenQuality quality(&profile);
 
   EXPECT_TRUE(quality.GetObservationTypesForFieldType(NAME_FIRST).empty());
@@ -216,6 +216,24 @@ TEST_F(ProfileTokenQualityTest, AddObservationsForFilledForm_SameField) {
   EXPECT_THAT(quality.GetObservationTypesForFieldType(NAME_FIRST),
               UnorderedElementsAre(ObservationType::kAccepted));
   EXPECT_FALSE(
+      quality.AddObservationsForFilledForm(*form_structure, form, pdm_));
+  EXPECT_THAT(quality.GetObservationTypesForFieldType(NAME_FIRST),
+              UnorderedElementsAre(ObservationType::kAccepted));
+}
+
+// Tests that when the type of a field changes between filling and submission,
+// observations are collected for the type the field had when it was filled.
+TEST_F(ProfileTokenQualityTest, AddObservationsForFilledForm_DynamicChange) {
+  AutofillProfile profile = test::GetFullProfile();
+  pdm_.AddProfile(profile);
+  ProfileTokenQuality& quality = profile.token_quality();
+
+  FormData form = GetFormWithTypes({NAME_FIRST});
+  FillForm(form, profile);
+
+  FormStructure* form_structure = bam_.FindCachedFormById(form.global_id());
+  form_structure->field(0)->SetTypeTo(AutofillType(NAME_LAST));
+  EXPECT_TRUE(
       quality.AddObservationsForFilledForm(*form_structure, form, pdm_));
   EXPECT_THAT(quality.GetObservationTypesForFieldType(NAME_FIRST),
               UnorderedElementsAre(ObservationType::kAccepted));

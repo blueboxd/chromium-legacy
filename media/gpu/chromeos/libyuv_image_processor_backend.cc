@@ -47,6 +47,9 @@ static constexpr struct {
 #define CONV(in, out, trans, result) \
   {Fourcc::in, Fourcc::out, Transform::trans, SupportResult::result}
     // Conversion.
+#if BUILDFLAG(IS_LINUX)
+    CONV(NV12, AR24, kConversion, Supported),
+#endif
     CONV(NV12, NV12, kConversion, Supported),
     CONV(YM16, NV12, kConversion, Supported),
     CONV(YM16, YU12, kConversion, Supported),
@@ -213,7 +216,8 @@ LibYUVImageProcessorBackend::CreateWithTaskRunner(
     intermediate_frame = VideoFrame::CreateFrame(
         res == SupportResult::SupportedWithI420Pivot ? PIXEL_FORMAT_I420
                                                      : PIXEL_FORMAT_NV12,
-        input_config.size, gfx::Rect(input_config.visible_rect.size()),
+        input_config.visible_rect.size(),
+        gfx::Rect(input_config.visible_rect.size()),
         input_config.visible_rect.size(), base::TimeDelta());
     if (!intermediate_frame) {
       VLOGF(1) << "Failed to create intermediate frame";
@@ -228,17 +232,20 @@ LibYUVImageProcessorBackend::CreateWithTaskRunner(
   // format that can be easily cropped.
   scoped_refptr<VideoFrame> crop_intermediate_frame;
   if (input_config.visible_rect.origin() != gfx::Point(0, 0) &&
-      transform != Transform::kScaling) {
-    crop_intermediate_frame = VideoFrame::CreateFrame(
-        output_config.fourcc.ToVideoPixelFormat(), input_config.size,
-        input_config.visible_rect, input_config.size, base::TimeDelta());
-    if (!crop_intermediate_frame) {
-      VLOGF(1) << "Failed to create cropping intermediate frame";
+      input_config.fourcc == Fourcc(Fourcc::MM21)) {
+    if (transform != Transform::kScaling) {
+      crop_intermediate_frame = VideoFrame::CreateFrame(
+          output_config.fourcc.ToVideoPixelFormat(), input_config.size,
+          input_config.visible_rect, input_config.size, base::TimeDelta());
+      if (!crop_intermediate_frame) {
+        VLOGF(1) << "Failed to create cropping intermediate frame";
+        return nullptr;
+      }
+    } else {
+      VLOGF(1)
+          << "Scaling and cropping simultaneously are not supported for MM21.";
       return nullptr;
     }
-  } else if (input_config.visible_rect.origin() != gfx::Point(0, 0)) {
-    VLOGF(1) << "Scaling and cropping simultaneously are not supported";
-    return nullptr;
   }
 
   auto processor =
@@ -328,7 +335,8 @@ void LibYUVImageProcessorBackend::Process(
                  input_frame->AsHumanReadableString(), "output_frame",
                  mapped_frame->AsHumanReadableString());
     SCOPED_UMA_HISTOGRAM_TIMER("LibYUVImageProcessorBackend::Process");
-    if (input_config_.visible_rect.origin() == gfx::Point(0, 0)) {
+    if (input_config_.visible_rect.origin() == gfx::Point(0, 0) ||
+        input_config_.fourcc != Fourcc(Fourcc::MM21)) {
       res = DoConversion(input_frame.get(), mapped_frame.get());
     } else {
       res = DoConversion(input_frame.get(), crop_intermediate_frame_.get());
@@ -421,6 +429,12 @@ int LibYUVImageProcessorBackend::DoConversion(const VideoFrame* const input,
       reinterpret_cast<uint16_t*>(                           \
           fr->GetWritableVisibleData(VideoFrame::kUVPlane)), \
       fr->stride(VideoFrame::kUVPlane)
+
+#if BUILDFLAG(IS_LINUX)
+#define ARGB_DATA(fr)                                 \
+  fr->GetWritableVisibleData(VideoFrame::kARGBPlane), \
+      fr->stride(VideoFrame::kARGBPlane)
+#endif
 
 #define LIBYUV_FUNC(func, i, o)                      \
   libyuv::func(i, o, output->visible_rect().width(), \
@@ -558,6 +572,15 @@ int LibYUVImageProcessorBackend::DoConversion(const VideoFrame* const input,
                          Y_UV_DATA_W_10BIT(output));
     }
   }
+
+#if BUILDFLAG(IS_LINUX)
+  if (output->format() == PIXEL_FORMAT_ARGB) {
+    if (input_config_.fourcc == Fourcc(Fourcc::NV12)) {
+      return LIBYUV_FUNC(NV12ToARGB, Y_UV_DATA(input),
+                         ARGB_DATA(output));
+    }
+  }
+#endif
 
 #undef Y_U_V_DATA
 #undef Y_V_U_DATA

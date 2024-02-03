@@ -29,7 +29,6 @@
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/auto_reset.h"
@@ -40,6 +39,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/tablet_state.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center.h"
@@ -74,14 +74,12 @@ AshMessagePopupCollection::NotifierCollisionHandler::NotifierCollisionHandler(
     AshMessagePopupCollection* popup_collection)
     : popup_collection_(popup_collection) {
   Shell::Get()->system_tray_notifier()->AddSystemTrayObserver(this);
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
   popup_collection_->shelf_->AddObserver(this);
 }
 
 AshMessagePopupCollection::NotifierCollisionHandler::
     ~NotifierCollisionHandler() {
   popup_collection_->shelf_->RemoveObserver(this);
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayObserver(this);
 }
 
@@ -251,12 +249,12 @@ void AshMessagePopupCollection::NotifierCollisionHandler::RecordSurfaceType() {
 }
 
 void AshMessagePopupCollection::NotifierCollisionHandler::
-    OnTabletModeStarted() {
-  // Reset bounds so pop-up baseline is updated.
-  popup_collection_->ResetBounds();
-}
+    OnDisplayTabletStateChanged(display::TabletState state) {
+  if (display::IsTabletStateChanging(state)) {
+    // Do nothing when the tablet state is still in the process of transition.
+    return;
+  }
 
-void AshMessagePopupCollection::NotifierCollisionHandler::OnTabletModeEnded() {
   // Reset bounds so pop-up baseline is updated.
   popup_collection_->ResetBounds();
 }
@@ -328,12 +326,15 @@ int AshMessagePopupCollection::GetPopupOriginX(
 
 int AshMessagePopupCollection::GetBaseline() const {
   gfx::Insets tray_bubble_insets = GetTrayBubbleInsets(shelf_->GetWindow());
+  int notifier_collision_offset =
+      notifier_collision_handler_
+          ? notifier_collision_handler_->CalculateBaselineOffset()
+          : 0;
 
   // Decrease baseline by `kShelfDisplayOffset` to compensate for the adjustment
   // of edges in `Shelf::GetSystemTrayAnchorRect()`.
   return work_area_.bottom() - tray_bubble_insets.bottom() -
-         notifier_collision_handler_->CalculateBaselineOffset() -
-         kShelfDisplayOffset;
+         notifier_collision_offset - kShelfDisplayOffset;
 }
 
 gfx::Rect AshMessagePopupCollection::GetWorkArea() const {
@@ -418,6 +419,10 @@ void AshMessagePopupCollection::NotifySilentNotification(
 }
 
 void AshMessagePopupCollection::NotifyPopupCollectionHeightChanged() {
+  if (!notifier_collision_handler_) {
+    return;
+  }
+
   notifier_collision_handler_->OnPopupCollectionHeightChanged();
 }
 

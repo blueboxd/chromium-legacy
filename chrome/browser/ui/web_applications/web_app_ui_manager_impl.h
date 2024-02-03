@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/functional/callback_forward.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -117,6 +117,13 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       const std::vector<std::string>& app_names,
       base::WeakPtr<Profile> profile) override;
 #endif
+
+  void NotifyAppRelaunchState(const webapps::AppId& placeholder_app_id,
+                              const webapps::AppId& final_app_id,
+                              const std::u16string& final_app_name,
+                              base::WeakPtr<Profile> profile,
+                              AppRelaunchState relaunch_state) override;
+
   content::WebContents* CreateNewTab() override;
   bool IsWebContentsActiveTabInBrowser(
       content::WebContents* web_contents) override;
@@ -147,6 +154,11 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   void MaybeCreateEnableSupportedLinksInfobar(
       content::WebContents* web_contents,
       const std::string& launch_name) override;
+
+  void MaybeShowIPHPromoForAppsLaunchedViaLinkCapturing(
+      content::WebContents* web_contents,
+      Profile* profile,
+      const std::string& app_id) override;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
@@ -192,6 +204,15 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       const GURL app_start_url,
       UninstallCompleteCallback uninstall_complete_callback,
       webapps::UninstallResultCode uninstall_code);
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  void ShowIPHPromoForAppsLaunchedViaLinkCapturing(const Browser* browser,
+                                                   const webapps::AppId& app_id,
+                                                   bool is_activated);
+
+  void OnIPHPromoResponseForLinkCapturing(const Browser* browser,
+                                          const webapps::AppId& app_id);
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
   const raw_ptr<Profile> profile_;
   std::map<webapps::AppId, std::vector<base::OnceClosure>>

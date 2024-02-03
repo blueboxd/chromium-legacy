@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.readaloud.player.expanded;
 
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.text.format.DateUtils;
@@ -216,8 +215,9 @@ public class ExpandedPlayerSheetContent implements BottomSheetContent {
         return mOptionsMenu.getVoiceMenu();
     }
 
-    public void notifySheetClosed() {
-        mOptionsMenu.notifySheetClosed();
+    public void notifySheetClosed(BottomSheetContent contentClosed) {
+        mOptionsMenu.notifySheetClosed(contentClosed);
+        mSpeedMenu.notifySheetClosed(contentClosed);
     }
 
     public void showSpeedMenu() {

@@ -68,6 +68,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
+#include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/http/http_auth.h"
@@ -1505,17 +1506,6 @@ int NetworkContext::CheckCTComplianceForSignedExchange(
               url_request_context_->net_log(),
               net::NetLogSourceType::CERT_VERIFIER_JOB));
 
-  // TODO(https://crbug.com/803774): We should determine whether EV & SXG
-  // should be a thing (due to the online/offline signing difference)
-  if (cert_verify_result.cert_status & net::CERT_STATUS_IS_EV &&
-      cert_verify_result.policy_compliance !=
-          net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS &&
-      cert_verify_result.policy_compliance !=
-          net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
-    cert_verify_result.cert_status |= net::CERT_STATUS_CT_COMPLIANCE_FAILED;
-    cert_verify_result.cert_status &= ~net::CERT_STATUS_IS_EV;
-  }
-
   net::TransportSecurityState::CTRequirementsStatus ct_requirement_status =
       url_request_context_->transport_security_state()->CheckCTRequirements(
           host_port_pair, cert_verify_result.is_issued_by_known_root,
@@ -2902,9 +2892,17 @@ NetworkContext::MakeSessionCleanupCookieStore() const {
           {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
+  // Network Context does not own this pointer.
   net::CookieCryptoDelegate* crypto_delegate = nullptr;
+
   if (params_->enable_encrypted_cookies) {
-    crypto_delegate = cookie_config::GetCookieCryptoDelegate();
+    // Crypto delegate is used if `cookie_encryption_provider` was specified to
+    // the network service.
+    if (network_service_->cookie_crypto_delegate()) {
+      crypto_delegate = network_service_->cookie_crypto_delegate();
+    } else {
+      crypto_delegate = cookie_config::GetCookieCryptoDelegate();
+    }
   }
 
 #if BUILDFLAG(IS_WIN)

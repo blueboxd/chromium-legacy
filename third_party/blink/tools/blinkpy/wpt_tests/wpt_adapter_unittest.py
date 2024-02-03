@@ -221,7 +221,6 @@ class WPTAdapterTest(unittest.TestCase):
             path: contents
             for path, contents in self.fs.files.items() if contents is not None
         }
-        files.pop('/mock-checkout/out/Release/wpt_reports.json')
         self.assertEqual(files, files_before)
 
     def test_parse_isolated_filter_nonexistent_tests(self):
@@ -355,7 +354,7 @@ class WPTAdapterTest(unittest.TestCase):
         adapter = WPTAdapter.from_args(
             self.host, ['--product=content_shell', '--no-manifest-update'])
         with adapter.test_env() as options:
-            self.assertEqual(options.retry_unexpected, 1)
+            self.assertEqual(options.retry_unexpected, 3)
 
         # TODO We should not retry failures when running with '--use-upstream-wpt'
         # Consider add a unit test for that
@@ -364,7 +363,7 @@ class WPTAdapterTest(unittest.TestCase):
             self.host,
             ['--product=content_shell', '--no-manifest-update', '--smoke'])
         with adapter.test_env() as options:
-            self.assertEqual(options.retry_unexpected, 1)
+            self.assertEqual(options.retry_unexpected, 3)
 
         adapter = WPTAdapter.from_args(self.host, [
             '--product=content_shell', '--no-manifest-update',

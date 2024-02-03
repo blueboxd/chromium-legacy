@@ -167,7 +167,7 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
 
   // HighlightPathGenerator:
-  absl::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
+  std::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     gfx::RectF bounds(tray_background_view_->GetBackgroundBounds());
     bounds.Inset(gfx::InsetsF(insets_));
     return gfx::RRectF(bounds, tray_background_view_->GetRoundedCorners());
@@ -1091,7 +1091,14 @@ void TrayBackgroundView::AddRippleLayer() {
 void TrayBackgroundView::RemoveRippleLayer() {
   CHECK(!pulse_animation_cool_down_timer_.IsRunning());
   if (ripple_layer_) {
-    layer()->parent()->Remove(ripple_layer_.get());
+    // The `parent_layer` will be null during `StatusAreaWidgetDelegate`
+    // shutdown (ie. after display disconnect).
+    // `views::view::RemoveAllChildViews()` is called, which recursively orphans
+    // layers prior to destroying the view.
+    auto* parent_layer = layer()->parent();
+    if (parent_layer) {
+      parent_layer->Remove(ripple_layer_.get());
+    }
     ripple_layer_.reset();
   }
 }

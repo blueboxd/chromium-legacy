@@ -72,9 +72,7 @@ import java.util.concurrent.TimeoutException;
 
 /** Integration tests of showing a NTP with Start surface UI at startup. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Restriction({
-    Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE
-})
+@Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
 @EnableFeatures({
     ChromeFeatureList.START_SURFACE_ON_TABLET,
     ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID,
@@ -152,7 +150,7 @@ public class ShowNtpAtStartupTest {
     public void testShowNtpAtStartupWithNtpExist() throws IOException {
         // The existing NTP isn't the last active Tab.
         String modifiedNtpUrl = UrlConstants.NTP_URL + "/1";
-        Assert.assertTrue(UrlUtilities.isNTPUrl(modifiedNtpUrl));
+        Assert.assertTrue(UrlUtilities.isNtpUrl(modifiedNtpUrl));
 
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
@@ -180,7 +178,7 @@ public class ShowNtpAtStartupTest {
     public void testShowNtpAtStartupWithActiveNtpExist() throws IOException {
         // The existing NTP is set as the last active Tab.
         String modifiedNtpUrl = UrlConstants.NTP_URL + "/1";
-        Assert.assertTrue(UrlUtilities.isNTPUrl(modifiedNtpUrl));
+        Assert.assertTrue(UrlUtilities.isNtpUrl(modifiedNtpUrl));
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
                         .expectBooleanRecord(HOME_SURFACE_SHOWN_AT_STARTUP_UMA, true)

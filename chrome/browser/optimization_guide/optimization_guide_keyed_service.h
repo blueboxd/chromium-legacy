@@ -39,9 +39,12 @@ namespace android {
 class OptimizationGuideBridge;
 }  // namespace android
 class ChromeHintsManager;
+class ModelExecutionEnterprisePolicyBrowserTest;
+class ModelExecutionLiveTest;
 class ModelExecutionManager;
 class ModelInfo;
 class ModelQualityLogEntry;
+class ModelQualityLogsUploaderService;
 class OptimizationGuideStore;
 class PredictionManager;
 class PredictionManagerBrowserTestBase;
@@ -128,7 +131,13 @@ class OptimizationGuideKeyedService
   // Returns true if the `feature` should be currently enabled for this user.
   // Note that the return value here may not match the feature enable state on
   // chrome settings page since the latter takes effect on browser restart.
-  bool ShouldFeatureBeCurrentlyEnabledForUser(
+  // Virtualized for testing.
+  virtual bool ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature feature) const;
+
+  // Returns whether the `feature` should be currently allowed for logging model
+  // quality logs.
+  virtual bool ShouldFeatureBeCurrentlyAllowedForLogging(
       optimization_guide::proto::ModelExecutionFeature feature) const;
 
   // Adds `observer` which can observe the change in feature settings.
@@ -169,6 +178,7 @@ class OptimizationGuideKeyedService
   void SimulateBrowserRestartForControllerTesting();
 
  private:
+  friend class BrowserView;
   friend class ChromeBrowserMainExtraPartsOptimizationGuide;
   friend class ChromeBrowsingDataRemoverDelegate;
   friend class HintsFetcherBrowserTest;
@@ -176,12 +186,17 @@ class OptimizationGuideKeyedService
   friend class OptimizationGuideKeyedServiceBrowserTest;
   friend class OptimizationGuideMessageHandler;
   friend class OptimizationGuideWebContentsObserver;
+  friend class optimization_guide::ModelExecutionEnterprisePolicyBrowserTest;
+  friend class optimization_guide::ModelExecutionLiveTest;
   friend class optimization_guide::PredictionManagerBrowserTestBase;
   friend class optimization_guide::PredictionModelDownloadClient;
   friend class optimization_guide::PredictionModelStoreBrowserTestBase;
   friend class optimization_guide::android::OptimizationGuideBridge;
   friend class PersonalizedHintsFetcherBrowserTest;
   friend class settings::SettingsUI;
+
+  // Logs metrics from the OnDeviceModelService.
+  static void LogOnDeviceMetrics();
 
   // Initializes |this|.
   void Initialize();
@@ -229,6 +244,10 @@ class OptimizationGuideKeyedService
   bool IsSettingVisible(
       optimization_guide::proto::ModelExecutionFeature feature) const;
 
+  // Returns whether all conditions are met to show the IPH promo for
+  // experimental AI.
+  bool ShouldShowExperimentalAIPromo() const;
+
   download::BackgroundDownloadService* BackgroundDownloadServiceProvider();
 
   bool ComponentUpdatesEnabledProvider() const;
@@ -270,6 +289,11 @@ class OptimizationGuideKeyedService
 
   std::unique_ptr<optimization_guide::ModelExecutionFeaturesController>
       model_execution_features_controller_;
+
+  // Manages the model quality logs uploader service. Not created for off the
+  // record profiles.
+  std::unique_ptr<optimization_guide::ModelQualityLogsUploaderService>
+      model_quality_logs_uploader_service_;
 
   // Used to observe profile initialization event.
   base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};

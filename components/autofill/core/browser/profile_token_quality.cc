@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/metrics/profile_token_quality_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
@@ -146,9 +147,19 @@ bool ProfileTokenQuality::AddObservationsForFilledForm(
       // The field was not autofilled or autofilled with a different profile.
       continue;
     }
+    if (!field.autofilled_type()) {
+      // TODO(b/311604770): Field-by-field filling doesn't support
+      // `autofilled_type()`.
+      continue;
+    }
+    if (!GetSupportedTypes(*profile_).contains(*field.autofilled_type())) {
+      // If the user changed the country of their profile before submission, the
+      // `autofilled_type()` might not be supported anymore.
+      continue;
+    }
 
     const ServerFieldType stored_type =
-        profile_->GetStorableTypeOf(field.Type().GetStorableType());
+        profile_->GetStorableTypeOf(*field.autofilled_type());
     const FormSignatureHash hash =
         GetFormSignatureHash(form_structure.form_signature());
     if (auto observations = observations_.find(stored_type);
@@ -178,6 +189,9 @@ void ProfileTokenQuality::SaveObservationsForFilledFormForAllSubmittedProfiles(
     return;
   }
 
+  autofill_metrics::LogObservationCountBeforeSubmissionMetric(form_structure,
+                                                              pdm);
+
   std::set<std::string> guids_seen;
   for (const std::unique_ptr<AutofillField>& field : form_structure) {
     if (!field->autofill_source_profile_guid() ||
@@ -198,7 +212,6 @@ void ProfileTokenQuality::SaveObservationsForFilledFormForAllSubmittedProfiles(
 std::vector<ObservationType>
 ProfileTokenQuality::GetObservationTypesForFieldType(
     ServerFieldType type) const {
-  CHECK(GetSupportedTypes(*profile_).contains(type));
   const auto it = observations_.find(profile_->GetStorableTypeOf(type));
   if (it == observations_.end()) {
     return {};
@@ -270,7 +283,6 @@ ObservationType ProfileTokenQuality::GetObservationTypeFromField(
 
   // Since the `autofill_source_profile_guid()` is set and the field is not
   // autofilled anymore, it must have been previously autofilled.
-  CHECK(field.previously_autofilled());
   return GetObservationTypeForEditedField(type, current_field_value, *profile_,
                                           other_profiles, app_locale);
 }
@@ -333,16 +345,6 @@ void ProfileTokenQuality::ResetObservationsForDifferingTokens(
       ResetObservationsForStoredType(type);
     }
   }
-}
-
-bool ProfileTokenQuality::Observation::operator==(
-    const ProfileTokenQuality::Observation& other) const {
-  return type == other.type && form_hash == other.form_hash;
-}
-
-bool ProfileTokenQuality::Observation::operator!=(
-    const ProfileTokenQuality::Observation& other) const {
-  return !operator==(other);
 }
 
 ProfileTokenQuality::FormSignatureHash

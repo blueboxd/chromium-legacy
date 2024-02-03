@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Help improve Chromium's features and performance</translation>
 <translation id="1513122820609681462">Set Chromium As Default Browser</translation>
 <translation id="1531155317299575425">Shows prompts to sign in to Chromium.</translation>
+<translation id="159029779861043703">Chromium keeps your sensitive data secure with Face ID.</translation>
 <translation id="1591119736686995611">Opens the Chromium Tab Grid.</translation>
+<translation id="1611584326765829247">Let Chromium help you track your packages</translation>
 <translation id="1617663976202781617">Data from Chromium sync</translation>
 <translation id="1647558790457890304">Chromium settings</translation>
 <translation id="164952285225495380">This package has already been tracked on Chromium.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">Manage Chromium Settings</translation>
 <translation id="2798503587425057129">Opens the Chromium reading list.</translation>
 <translation id="2843571538056574338">Use Chromium for Autofill</translation>
-<translation id="2915596697727466327">Chromium uses Face ID to ensure authorised access to your passwords.</translation>
 <translation id="2918709798697875261">Your organisation requires you to stay signed out of Chromium.</translation>
 <translation id="2942241131342758843">Use Chromium by default to open links, search from widgets and auto-fill passwords in other apps</translation>
 <translation id="2977470724722393594">Chromium is up to date</translation>
@@ -87,6 +88,7 @@ To change this setting, <ph name="BEGIN_LINK" />clear the Chromium data in your 
 <translation id="4195557071150719219">See Chromium Recent Tabs</translation>
 <translation id="4408912345039114853">Run Chromium Safety Check</translation>
 <translation id="4432744876818348753">Sign in to get the most out of Chromium.</translation>
+<translation id="4498832288620833153">Adds the inputted URLs to your reading list in Chromium.</translation>
 <translation id="452436063477828504">Make sure that you can always use the Chromium data in your Google Account</translation>
 <translation id="4555020257205549924">When this feature is turned on, Chromium will offer to translate pages written in other languages using Google Translate. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Opens The Payment Methods Setting Page in Chromium.</translation>
@@ -167,7 +169,6 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="6911341667534646387">Keep using the Chromium data in your Google Account</translation>
 <translation id="7006920032187763988">You can use the passwords that you saved to Password Manager in other apps on your iPad.</translation>
 <translation id="7018284295775193585">Chromium can't update</translation>
-<translation id="7025471822960602362">Track Detected Packages on Chromium</translation>
 <translation id="7045244423563602563">Make Chromium your own</translation>
 <translation id="7055269218854630176">Your organisation, <ph name="DOMAIN" />, manages the account that you're signing in to and how Chromium can be used. Your administrator can set up or restrict certain features.</translation>
 <translation id="7099326575020694068">Chromium can't use your camera in Split View mode</translation>
@@ -197,6 +198,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="7928628054454574139">Open Chromium whenever you tap on links in other apps</translation>
 <translation id="7931842119211730154">Lock incognito tabs when you close Chromium</translation>
 <translation id="7934404985878918282">See Chromium reading list</translation>
+<translation id="7971753607796745700">Add Reading List item to Chromium</translation>
 <translation id="7980860476903281594">Chromium shares your location with sites that you allow.</translation>
 <translation id="7995166854192397899">Suggestions are based on your browsing activity on your other devices. To get suggestions, sign in to Chromium on all your devices.</translation>
 <translation id="800195749539500647">Get the most out of Chromium.</translation>

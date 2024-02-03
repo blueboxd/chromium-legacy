@@ -17,14 +17,14 @@
 
 namespace blink {
 
+class BlockNode;
+class BoxFragmentBuilder;
 class ComputedStyle;
+class ConstraintSpace;
 class LayoutOutsideListMarker;
+class LayoutResult;
 class LayoutUnit;
-class NGBlockNode;
-class NGConstraintSpace;
-class NGBoxFragmentBuilder;
-class NGLayoutResult;
-class NGPhysicalFragment;
+class PhysicalFragment;
 
 // Represents an unpositioned list marker.
 //
@@ -34,7 +34,7 @@ class NGPhysicalFragment;
 //
 // To handle these two cases consistently, when list markers appear in these
 // algorithm, they are set as "unpositioned", and are propagated to ancestors
-// through NGLayoutResult until they meet the corresponding list items.
+// through LayoutResult until they meet the corresponding list items.
 //
 // In order to adjust with the other content of LI, marker will be handled
 // after other children.
@@ -54,7 +54,7 @@ class CORE_EXPORT UnpositionedListMarker final {
  public:
   UnpositionedListMarker() : marker_layout_object_(nullptr) {}
   explicit UnpositionedListMarker(LayoutOutsideListMarker*);
-  explicit UnpositionedListMarker(const NGBlockNode&);
+  explicit UnpositionedListMarker(const BlockNode&);
 
   explicit operator bool() const { return marker_layout_object_ != nullptr; }
 
@@ -64,26 +64,26 @@ class CORE_EXPORT UnpositionedListMarker final {
   // to align to, and that caller should try next child, or use the
   // |AddToBoxWithoutLineBoxes()| method.
   absl::optional<LayoutUnit> ContentAlignmentBaseline(
-      const NGConstraintSpace&,
+      const ConstraintSpace&,
       FontBaseline,
-      const NGPhysicalFragment& content) const;
+      const PhysicalFragment& content) const;
   // Add a fragment for an outside list marker.
-  void AddToBox(const NGConstraintSpace&,
+  void AddToBox(const ConstraintSpace&,
                 FontBaseline,
-                const NGPhysicalFragment& content,
+                const PhysicalFragment& content,
                 const BoxStrut&,
-                const NGLayoutResult& marker_layout_result,
+                const LayoutResult& marker_layout_result,
                 LayoutUnit content_baseline,
                 LayoutUnit* block_offset,
-                NGBoxFragmentBuilder*) const;
+                BoxFragmentBuilder*) const;
 
   // Add a fragment for an outside list marker when the list item has no line
   // boxes. Also adjust |intrinsic_block_size| if it was smaller than the list
   // marker.
-  void AddToBoxWithoutLineBoxes(const NGConstraintSpace&,
+  void AddToBoxWithoutLineBoxes(const ConstraintSpace&,
                                 FontBaseline,
-                                const NGLayoutResult& marker_layout_result,
-                                NGBoxFragmentBuilder*,
+                                const LayoutResult& marker_layout_result,
+                                BoxFragmentBuilder*,
                                 LayoutUnit* intrinsic_block_size) const;
   LayoutUnit InlineOffset(const LayoutUnit marker_inline_size) const;
 
@@ -91,9 +91,9 @@ class CORE_EXPORT UnpositionedListMarker final {
     return marker_layout_object_ == other.marker_layout_object_;
   }
 
-  const NGLayoutResult* Layout(const NGConstraintSpace& parent_space,
-                               const ComputedStyle& parent_style,
-                               FontBaseline) const;
+  const LayoutResult* Layout(const ConstraintSpace& parent_space,
+                             const ComputedStyle& parent_style,
+                             FontBaseline) const;
 
 #if DCHECK_IS_ON()
   void CheckMargin() const;
@@ -102,8 +102,8 @@ class CORE_EXPORT UnpositionedListMarker final {
   void Trace(Visitor*) const;
 
  private:
-  LayoutUnit ComputeIntrudedFloatOffset(const NGConstraintSpace&,
-                                        const NGBoxFragmentBuilder*,
+  LayoutUnit ComputeIntrudedFloatOffset(const ConstraintSpace&,
+                                        const BoxFragmentBuilder*,
                                         const BoxStrut&,
                                         LayoutUnit) const;
 

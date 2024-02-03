@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Bidra til å gjøre Chromium bedre og raskere</translation>
 <translation id="1513122820609681462">Angi Chromium som standardnettleser</translation>
 <translation id="1531155317299575425">Viser vinduer som ber deg logge på Chromium.</translation>
+<translation id="159029779861043703">Chromium beskytter de sensitive dataene dine med Face ID.</translation>
 <translation id="1591119736686995611">Åpner Chromium-fanerutenettet.</translation>
+<translation id="1611584326765829247">La Chromium hjelpe deg med å spore pakkene dine</translation>
 <translation id="1617663976202781617">Data fra Chromium-synkronisering</translation>
 <translation id="1647558790457890304">Chromium-innstillinger</translation>
 <translation id="164952285225495380">Denne pakken blir allerede sporet i Chromium.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">Administrer Chromium-innstillingene</translation>
 <translation id="2798503587425057129">Åpner Chromium-leselisten.</translation>
 <translation id="2843571538056574338">Bruk Chromium til autofyll</translation>
-<translation id="2915596697727466327">Chromium bruker Face ID til å sikre at bare godkjente personer får tilgang til passordene dine.</translation>
 <translation id="2918709798697875261">Organisasjonen din krever at du forblir logget av Chromium.</translation>
 <translation id="2942241131342758843">Bruk Chromium som standard til å åpne linker, søke i moduler og fylle ut passord i andre apper automatisk</translation>
 <translation id="2977470724722393594">Chromium er oppdatert</translation>
@@ -87,6 +88,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />slett Chromium-dataene
 <translation id="4195557071150719219">Se nylige faner fra Chromium</translation>
 <translation id="4408912345039114853">Kjør Chromium-sikkerhetssjekk</translation>
 <translation id="4432744876818348753">Logg på for å få mest mulig ut av Chromium.</translation>
+<translation id="4498832288620833153">Legger til de angitte nettadressene på leselisten i Chromium.</translation>
 <translation id="452436063477828504">Sørg for at du alltid kan bruke Chromium-dataene i Google-kontoen din</translation>
 <translation id="4555020257205549924">Når denne funksjonen er slått på, tilbyr Chromium å oversette sider som er skrevet på andre språk, ved hjelp av Google Oversetter. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Åpner innstillingssiden for betalingsmåter i Chromium.</translation>
@@ -167,7 +169,6 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 <translation id="6911341667534646387">Fortsett å bruke Chromium-dataene i Google-kontoen din</translation>
 <translation id="7006920032187763988">Du kan bruke passordene du har lagret i Passordlagring, i andre apper på iPaden din.</translation>
 <translation id="7018284295775193585">Kan ikke oppdatere Chromium</translation>
-<translation id="7025471822960602362">Spor registrerte pakker i Chromium</translation>
 <translation id="7045244423563602563">Gi Chromium et personlig preg</translation>
 <translation id="7055269218854630176">Organisasjonen din, <ph name="DOMAIN" />, administrerer kontoen du logger på, og hvordan Chromium kan brukes. Administratoren kan konfigurere eller begrense visse funksjoner.</translation>
 <translation id="7099326575020694068">Chromium kan ikke bruke kameraet i modus for delt visning</translation>
@@ -197,13 +198,14 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 <translation id="7928628054454574139">Åpne alltid Chromium når du trykker på linker i andre apper</translation>
 <translation id="7931842119211730154">Lås inkognitofaner når du lukker Chromium</translation>
 <translation id="7934404985878918282">Se Chromium-leselisten</translation>
+<translation id="7971753607796745700">Legg til elementet på leselisten i Chromium</translation>
 <translation id="7980860476903281594">Chromium deler posisjonen din med nettsteder du tillater.</translation>
 <translation id="7995166854192397899">Forslagene er basert på nettleseraktiviteten din på de andre enhetene dine. For å få forslag, logg på Chromium på alle enhetene dine.</translation>
 <translation id="800195749539500647">Få mest mulig ut av Chromium</translation>
 <translation id="8013573822802650211">For å se fanene dine overalt hvor du bruker Chromium, logg på alle enhetene dine</translation>
 <translation id="8071041515667087705">Gå til Chromium-innstillingene.</translation>
 <translation id="8073677936375100957">Vil du fjerne Chromium-dataene dine fra denne enheten?</translation>
-<translation id="8115308261377517697">Bruk Chromium som standard nettleser</translation>
+<translation id="8115308261377517697">Bruk Chromium som standardnettleser</translation>
 <translation id="8197822717502700527">Nå får du mest mulig ut av Chromium på enheten din.</translation>
 <translation id="8235427517854598594">Vil du gjøre Chromium til standardnettleseren din?</translation>
 <translation id="8240981428553046115">Chromium kunne ikke se etter oppdateringer. Prøv på nytt senere.</translation>

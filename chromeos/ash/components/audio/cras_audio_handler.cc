@@ -19,6 +19,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/system/system_monitor.h"
@@ -392,7 +393,7 @@ void CrasAudioHandler::MediaSessionInfoChanged(
 }
 
 void CrasAudioHandler::MediaSessionMetadataChanged(
-    const absl::optional<media_session::MediaMetadata>& metadata) {
+    const std::optional<media_session::MediaMetadata>& metadata) {
   if (!metadata || metadata->IsEmpty()) {
     HandleMediaSessionMetadataReset();
     return;
@@ -419,7 +420,7 @@ void CrasAudioHandler::MediaSessionMetadataChanged(
 }
 
 void CrasAudioHandler::MediaSessionPositionChanged(
-    const absl::optional<media_session::MediaPosition>& position) {
+    const std::optional<media_session::MediaPosition>& position) {
   if (!position) {
     return;
   }
@@ -673,7 +674,7 @@ void CrasAudioHandler::RequestNoiseCancellationSupported(
 
 void CrasAudioHandler::HandleGetNoiseCancellationSupported(
     OnNoiseCancellationSupportedCallback callback,
-    absl::optional<bool> noise_cancellation_supported) {
+    std::optional<bool> noise_cancellation_supported) {
   if (!noise_cancellation_supported.has_value()) {
     LOG(ERROR)
         << "cras_audio_handler: Failed to retrieve noise cancellation support";
@@ -735,7 +736,7 @@ void CrasAudioHandler::SetHfpMicSrSupportedForTesting(bool supported) {
 
 void CrasAudioHandler::HandleGetHfpMicSrSupported(
     OnHfpMicSrSupportedCallback callback,
-    absl::optional<bool> hfp_mic_sr_supported) {
+    std::optional<bool> hfp_mic_sr_supported) {
   if (!hfp_mic_sr_supported.has_value()) {
     LOG(ERROR) << "cras_audio_handler: Failed to retrieve hfp_mic_sr support";
   } else {
@@ -799,8 +800,8 @@ void CrasAudioHandler::SetSpeakOnMuteDetection(bool som_on) {
 void CrasAudioHandler::AddActiveNode(uint64_t node_id, bool notify) {
   const AudioDevice* device = GetDeviceFromId(node_id);
   if (!device) {
-    VLOG(1) << "AddActiveInputNode: Cannot find device id="
-            << "0x" << std::hex << node_id;
+    VLOG(1) << "AddActiveInputNode: Cannot find device id=" << "0x" << std::hex
+            << node_id;
     return;
   }
 
@@ -1291,8 +1292,8 @@ void CrasAudioHandler::SetMuteForDevice(uint64_t device_id, bool mute_on) {
     return;
   }
   if (device_id == active_input_node_id_) {
-    VLOG(1) << "SetMuteForDevice sets active input device id="
-            << "0x" << std::hex << device_id << " mute=" << mute_on;
+    VLOG(1) << "SetMuteForDevice sets active input device id=" << "0x"
+            << std::hex << device_id << " mute=" << mute_on;
     SetInputMute(mute_on, InputMuteChangeMethod::kOther);
     return;
   }
@@ -1581,11 +1582,7 @@ const AudioDevice* CrasAudioHandler::GetDeviceFromId(uint64_t device_id) const {
 AudioDevice CrasAudioHandler::ConvertAudioNodeWithModifiedPriority(
     const AudioNode& node) {
   AudioDevice device(node);
-
-  if (base::FeatureList::IsEnabled(features::kRobustAudioDeviceSelectLogic)) {
-    device.user_priority = audio_pref_handler_->GetUserPriority(device);
-  }
-
+  device.user_priority = audio_pref_handler_->GetUserPriority(device);
   return device;
 }
 
@@ -1629,8 +1626,8 @@ void CrasAudioHandler::SetupAudioInputState() {
     return;
   }
   input_gain_ = audio_pref_handler_->GetInputGainValue(device);
-  VLOG(1) << "SetupAudioInputState for active device id="
-          << "0x" << std::hex << device->id << " mute=" << input_mute_on_;
+  VLOG(1) << "SetupAudioInputState for active device id=" << "0x" << std::hex
+          << device->id << " mute=" << input_mute_on_;
   SetInputMuteInternal(input_mute_on_);
 
   SetInputNodeGain(active_input_node_id_, input_gain_);
@@ -1669,8 +1666,8 @@ void CrasAudioHandler::SetupAudioOutputState() {
 void CrasAudioHandler::SetupAdditionalActiveAudioNodeState(uint64_t node_id) {
   const AudioDevice* device = GetDeviceFromId(node_id);
   if (!device) {
-    VLOG(1) << "Can't set up audio state for unknown device id ="
-            << "0x" << std::hex << node_id;
+    VLOG(1) << "Can't set up audio state for unknown device id =" << "0x"
+            << std::hex << node_id;
     return;
   }
 
@@ -1892,12 +1889,10 @@ bool CrasAudioHandler::ChangeActiveDevice(
   }
 
   // Update user priority whenever the audio device is activated.
-  if (base::FeatureList::IsEnabled(features::kRobustAudioDeviceSelectLogic)) {
-    const AudioDevice* current_active_device =
-        GetDeviceFromId(current_active_node_id);
-    audio_pref_handler_->SetUserPriorityHigherThan(new_active_device,
-                                                   current_active_device);
-  }
+  const AudioDevice* current_active_device =
+      GetDeviceFromId(current_active_node_id);
+  audio_pref_handler_->SetUserPriorityHigherThan(new_active_device,
+                                                 current_active_device);
 
   // Set the current active input/output device to the new_active_device.
   current_active_node_id = new_active_device.id;
@@ -1938,7 +1933,7 @@ void CrasAudioHandler::SwitchToDevice(const AudioDevice& device,
 
 bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
                                        bool is_input,
-                                       AudioDevicePriorityQueue* new_discovered,
+                                       AudioDeviceList* new_discovered,
                                        bool* device_removed,
                                        bool* active_device_removed) {
   *device_removed = false;
@@ -1957,9 +1952,7 @@ bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
   }
 
   bool new_or_changed_device = false;
-  while (!new_discovered->empty()) {
-    new_discovered->pop();
-  }
+  new_discovered->clear();
 
   for (const AudioNode& node : new_nodes) {
     if (is_input != node.is_input) {
@@ -1969,7 +1962,7 @@ bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
     AudioDevice device = ConvertAudioNodeWithModifiedPriority(node);
     DeviceStatus status = CheckDeviceStatus(device);
     if (status == NEW_DEVICE) {
-      new_discovered->push(device);
+      new_discovered->push_back(device);
     }
     if (status == NEW_DEVICE || status == CHANGED_DEVICE) {
       new_or_changed_device = true;
@@ -2086,7 +2079,8 @@ void CrasAudioHandler::PauseAllStreams() {
 
 void CrasAudioHandler::HandleNonHotplugNodesChange(
     bool is_input,
-    const AudioDevicePriorityQueue& hotplug_devices,
+    const AudioDeviceList& devices,
+    const AudioDeviceList& hotplug_devices,
     bool has_device_change,
     bool has_device_removed,
     bool active_device_removed) {
@@ -2115,7 +2109,7 @@ void CrasAudioHandler::HandleNonHotplugNodesChange(
         }
 
         // Unplugged the current active device.
-        SwitchToTopPriorityDevice(is_input);
+        SwitchToTopPriorityDevice(devices);
 
         return;
       }
@@ -2125,10 +2119,10 @@ void CrasAudioHandler::HandleNonHotplugNodesChange(
     // Either cras sent stale nodes to chrome again or cras triggered some
     // error. Restore the previously selected active.
     VLOG(1) << "Odd case from cras, the active node is lost unexpectedly.";
-    SwitchToPreviousActiveDeviceIfAvailable(is_input);
+    SwitchToPreviousActiveDeviceIfAvailable(is_input, devices);
   } else {
     // Looks like a new chrome session starts.
-    SwitchToPreviousActiveDeviceIfAvailable(is_input);
+    SwitchToPreviousActiveDeviceIfAvailable(is_input, devices);
   }
 }
 
@@ -2187,97 +2181,13 @@ void CrasAudioHandler::HandleHotPlugDeviceByUserPriority(
           << hotplug_device.ToString();
 }
 
-void CrasAudioHandler::HandleHotPlugDevice(
-    const AudioDevice& hotplug_device,
-    const AudioDevicePriorityQueue& device_priority_queue) {
-  if (base::FeatureList::IsEnabled(features::kRobustAudioDeviceSelectLogic)) {
-    return HandleHotPlugDeviceByUserPriority(hotplug_device);
-  }
-
-  // This most likely may happen during the transition period of cras
-  // initialization phase, in which a non-simple-usage node may appear like
-  // a hotplug node.
-  if (!hotplug_device.is_for_simple_usage()) {
+void CrasAudioHandler::SwitchToTopPriorityDevice(
+    const AudioDeviceList& devices) {
+  if (devices.empty()) {
     return;
   }
 
-  // Whenever 35mm headphone or mic is hot plugged, always pick it as the active
-  // device.
-  if (hotplug_device.type == AudioDeviceType::kHeadphone ||
-      hotplug_device.type == AudioDeviceType::kMic) {
-    SwitchToDevice(hotplug_device, true, ACTIVATE_BY_PRIORITY);
-    return;
-  }
-
-  bool last_state_active = false;
-  bool last_activate_by_user = false;
-  if (!audio_pref_handler_->GetDeviceActive(hotplug_device, &last_state_active,
-                                            &last_activate_by_user)) {
-    // |hotplug_device| is plugged in for the first time, activate it if it
-    // is of the highest priority.
-    if (device_priority_queue.top().id == hotplug_device.id) {
-      VLOG(1) << "Hotplug a device for the first time: "
-              << hotplug_device.ToString();
-      SwitchToDevice(hotplug_device, true, ACTIVATE_BY_PRIORITY);
-    }
-  } else if (last_state_active) {
-    if (!last_activate_by_user &&
-        device_priority_queue.top().id != hotplug_device.id) {
-      // This handles crbug.com/698809. Before the device is powered off, unplug
-      // the external output device, leave the internal audio device(such as
-      // internal speaker) active. Then turn off the power, plug in the exteranl
-      // device, turn on power. On some device, cras sends NodesChanged first
-      // signal with only external device; then later it sends another
-      // NodesChanged signal with internal audio device also discovered.
-      // For such case, do not switch to the lower priority device which was
-      // made active not by user's choice.
-      return;
-    }
-
-    SwitchToDevice(hotplug_device, true, ACTIVATE_BY_RESTORE_PREVIOUS_STATE);
-  } else {
-    // The hot plugged device was not active last time it was plugged in.
-    // Let's check how the current active device is activated, if it is not
-    // activated by user choice, then select the hot plugged device it is of
-    // higher priority.
-    uint64_t& active_node_id = hotplug_device.is_input ? active_input_node_id_
-                                                       : active_output_node_id_;
-    const AudioDevice* active_device = GetDeviceFromId(active_node_id);
-    if (!active_device) {
-      // Can't find any current active device.
-      // This is an odd case, but if it happens, switch to hotplug device.
-      LOG(ERROR) << "Can not find current active device when the device is"
-                 << " hot plugged: " << hotplug_device.ToString();
-      SwitchToDevice(hotplug_device, true, ACTIVATE_BY_PRIORITY);
-      return;
-    }
-
-    bool activate_by_user = false;
-    bool state_active = false;
-    bool found_active_state = audio_pref_handler_->GetDeviceActive(
-        *active_device, &state_active, &activate_by_user);
-    DCHECK(found_active_state && state_active);
-    if (!found_active_state || !state_active) {
-      LOG(ERROR) << "Cannot retrieve current active device's state in prefs: "
-                 << active_device->ToString();
-      return;
-    }
-    if (!activate_by_user &&
-        device_priority_queue.top().id == hotplug_device.id) {
-      SwitchToDevice(hotplug_device, true, ACTIVATE_BY_PRIORITY);
-    } else {
-      // Do not active the hotplug device. Either the current device is
-      // expliciltly activated by user, or the hotplug device is of lower
-      // priority.
-      VLOG(1) << "Hotplug device remains inactive as its previous state:"
-              << hotplug_device.ToString();
-    }
-  }
-}
-
-void CrasAudioHandler::SwitchToTopPriorityDevice(bool is_input) {
-  AudioDevice top_device =
-      is_input ? input_devices_pq_.top() : output_devices_pq_.top();
+  AudioDevice top_device = base::ranges::max(devices, LessUserPriority);
   if (!top_device.is_for_simple_usage()) {
     return;
   }
@@ -2292,7 +2202,9 @@ void CrasAudioHandler::SwitchToTopPriorityDevice(bool is_input) {
   SwitchToDevice(top_device, true, ACTIVATE_BY_PRIORITY);
 }
 
-void CrasAudioHandler::SwitchToPreviousActiveDeviceIfAvailable(bool is_input) {
+void CrasAudioHandler::SwitchToPreviousActiveDeviceIfAvailable(
+    bool is_input,
+    const AudioDeviceList& devices) {
   AudioDevice previous_active_device;
   if (GetActiveDeviceFromUserPref(is_input, &previous_active_device)) {
     DCHECK(previous_active_device.is_for_simple_usage());
@@ -2301,14 +2213,16 @@ void CrasAudioHandler::SwitchToPreviousActiveDeviceIfAvailable(bool is_input) {
                    ACTIVATE_BY_RESTORE_PREVIOUS_STATE);
   } else {
     // No previous active device, switch to the top priority device.
-    SwitchToTopPriorityDevice(is_input);
+    SwitchToTopPriorityDevice(devices);
   }
 }
 
 void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     const AudioNodeList& nodes) {
-  AudioDevicePriorityQueue hotplug_output_devices;
-  AudioDevicePriorityQueue hotplug_input_devices;
+  AudioDeviceList output_devices;
+  AudioDeviceList input_devices;
+  AudioDeviceList hotplug_output_devices;
+  AudioDeviceList hotplug_input_devices;
   bool has_output_removed = false;
   bool has_input_removed = false;
   bool active_output_removed = false;
@@ -2343,13 +2257,6 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
   has_alternative_input_ = false;
   has_alternative_output_ = false;
 
-  while (!input_devices_pq_.empty()) {
-    input_devices_pq_.pop();
-  }
-  while (!output_devices_pq_.empty()) {
-    output_devices_pq_.pop();
-  }
-
   for (AudioDevice device : devices) {
     audio_devices_[device.id] = device;
     if (!has_alternative_input_ && device.is_input &&
@@ -2361,19 +2268,19 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     }
 
     if (device.is_input) {
-      input_devices_pq_.push(device);
+      input_devices.push_back(device);
     } else {
-      output_devices_pq_.push(device);
+      output_devices.push_back(device);
     }
   }
 
   // Handle output device changes.
-  HandleAudioDeviceChange(false, output_devices_pq_, hotplug_output_devices,
+  HandleAudioDeviceChange(false, output_devices, hotplug_output_devices,
                           output_devices_changed, has_output_removed,
                           active_output_removed);
 
   // Handle input device changes.
-  HandleAudioDeviceChange(true, input_devices_pq_, hotplug_input_devices,
+  HandleAudioDeviceChange(true, input_devices, hotplug_input_devices,
                           input_devices_changed, has_input_removed,
                           active_input_removed);
 
@@ -2391,8 +2298,8 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
 
 void CrasAudioHandler::HandleAudioDeviceChange(
     bool is_input,
-    const AudioDevicePriorityQueue& devices_pq,
-    const AudioDevicePriorityQueue& hotplug_devices,
+    const AudioDeviceList& devices,
+    const AudioDeviceList& hotplug_devices,
     bool has_device_change,
     bool has_device_removed,
     bool active_device_removed) {
@@ -2411,7 +2318,7 @@ void CrasAudioHandler::HandleAudioDeviceChange(
   }
 
   // No audio devices found.
-  if (devices_pq.empty()) {
+  if (devices.empty()) {
     VLOG(1) << "No " << (is_input ? "input" : "output") << " devices found";
     active_node_id = 0;
     NotifyActiveNodeChanged(is_input);
@@ -2428,15 +2335,16 @@ void CrasAudioHandler::HandleAudioDeviceChange(
 
   if (!active_node_id || hotplug_devices.empty() ||
       hotplug_devices.size() > 1) {
-    HandleNonHotplugNodesChange(is_input, hotplug_devices, has_device_change,
-                                has_device_removed, active_device_removed);
+    HandleNonHotplugNodesChange(is_input, devices, hotplug_devices,
+                                has_device_change, has_device_removed,
+                                active_device_removed);
   } else {
     // Typical user hotplug case.
-    HandleHotPlugDevice(hotplug_devices.top(), devices_pq);
+    HandleHotPlugDeviceByUserPriority(hotplug_devices.front());
   }
 }
 
-void CrasAudioHandler::HandleGetNodes(absl::optional<AudioNodeList> node_list) {
+void CrasAudioHandler::HandleGetNodes(std::optional<AudioNodeList> node_list) {
   if (!node_list.has_value()) {
     LOG(ERROR) << "Failed to retrieve audio nodes data";
     return;
@@ -2460,7 +2368,7 @@ void CrasAudioHandler::HandleGetNodes(absl::optional<AudioNodeList> node_list) {
 }
 
 void CrasAudioHandler::HandleGetNumberOfNonChromeOutputStreams(
-    absl::optional<int32_t> new_output_streams_count) {
+    std::optional<int32_t> new_output_streams_count) {
   if (!new_output_streams_count.has_value()) {
     LOG(ERROR) << "Failed to retrieve number of active output streams.";
     return;
@@ -2482,7 +2390,7 @@ void CrasAudioHandler::HandleGetNumberOfNonChromeOutputStreams(
 }
 
 void CrasAudioHandler::HandleGetNumActiveOutputStreams(
-    absl::optional<int> new_output_streams_count) {
+    std::optional<int> new_output_streams_count) {
   if (!new_output_streams_count.has_value()) {
     LOG(ERROR) << "Failed to retrieve number of active output streams";
     return;
@@ -2504,8 +2412,8 @@ void CrasAudioHandler::HandleGetNumActiveOutputStreams(
 void CrasAudioHandler::AddAdditionalActiveNode(uint64_t node_id, bool notify) {
   const AudioDevice* device = GetDeviceFromId(node_id);
   if (!device) {
-    VLOG(1) << "AddActiveInputNode: Cannot find device id="
-            << "0x" << std::hex << node_id;
+    VLOG(1) << "AddActiveInputNode: Cannot find device id=" << "0x" << std::hex
+            << node_id;
     return;
   }
 
@@ -2530,8 +2438,8 @@ void CrasAudioHandler::AddAdditionalActiveNode(uint64_t node_id, bool notify) {
 void CrasAudioHandler::RemoveActiveNodeInternal(uint64_t node_id, bool notify) {
   const AudioDevice* device = GetDeviceFromId(node_id);
   if (!device) {
-    VLOG(1) << "RemoveActiveInputNode: Cannot find device id="
-            << "0x" << std::hex << node_id;
+    VLOG(1) << "RemoveActiveInputNode: Cannot find device id=" << "0x"
+            << std::hex << node_id;
     return;
   }
 
@@ -2712,7 +2620,7 @@ CrasAudioHandler::ClientType CrasAudioHandler::ConvertClientTypeStringToEnum(
 }
 
 void CrasAudioHandler::HandleGetNumberOfInputStreamsWithPermission(
-    absl::optional<base::flat_map<std::string, uint32_t>> num_input_streams) {
+    std::optional<base::flat_map<std::string, uint32_t>> num_input_streams) {
   if (!num_input_streams.has_value()) {
     LOG(ERROR) << "Failed to retrieve number of input streams with permission";
     return;
@@ -2733,7 +2641,7 @@ void CrasAudioHandler::GetDefaultOutputBufferSizeInternal() {
 }
 
 void CrasAudioHandler::HandleGetDefaultOutputBufferSize(
-    absl::optional<int> buffer_size) {
+    std::optional<int> buffer_size) {
   if (!buffer_size.has_value()) {
     LOG(ERROR) << "Failed to retrieve output buffer size";
     return;
@@ -2766,7 +2674,7 @@ void CrasAudioHandler::GetSystemAecSupported() {
 }
 
 void CrasAudioHandler::HandleGetSystemAecSupported(
-    absl::optional<bool> system_aec_supported) {
+    std::optional<bool> system_aec_supported) {
   if (!system_aec_supported.has_value()) {
     LOG(ERROR) << "Failed to retrieve system aec supported";
     return;
@@ -2790,7 +2698,7 @@ void CrasAudioHandler::GetSystemAecGroupId() {
 }
 
 void CrasAudioHandler::HandleGetSystemAecGroupId(
-    absl::optional<int32_t> system_aec_group_id) {
+    std::optional<int32_t> system_aec_group_id) {
   if (!system_aec_group_id.has_value()) {
     // If the group Id is not available, set the ID to reflect that.
     system_aec_group_id_ = kSystemAecGroupIdNotAvailable;
@@ -2815,7 +2723,7 @@ void CrasAudioHandler::GetSystemNsSupported() {
 }
 
 void CrasAudioHandler::HandleGetSystemNsSupported(
-    absl::optional<bool> system_ns_supported) {
+    std::optional<bool> system_ns_supported) {
   if (!system_ns_supported.has_value()) {
     LOG(ERROR) << "Failed to retrieve system ns supported";
     return;
@@ -2843,7 +2751,7 @@ void CrasAudioHandler::GetSystemAgcSupported() {
 }
 
 void CrasAudioHandler::HandleGetSystemAgcSupported(
-    absl::optional<bool> system_agc_supported) {
+    std::optional<bool> system_agc_supported) {
   if (!system_agc_supported.has_value()) {
     LOG(ERROR) << "Failed to retrieve system agc supported";
     return;
@@ -2858,7 +2766,7 @@ void CrasAudioHandler::GetNumStreamIgnoreUiGains() {
 }
 
 void CrasAudioHandler::HandleGetNumStreamIgnoreUiGains(
-    absl::optional<int32_t> new_stream_ignore_ui_gains_count) {
+    std::optional<int32_t> new_stream_ignore_ui_gains_count) {
   if (!new_stream_ignore_ui_gains_count.has_value()) {
     LOG(ERROR) << "Failed to retrieve number of ignore ui gains streams.";
     return;

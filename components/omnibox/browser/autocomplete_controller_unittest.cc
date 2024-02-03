@@ -18,8 +18,10 @@
 #include "components/omnibox/browser/autocomplete_scoring_model_service.h"
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,6 +104,9 @@ class AutocompleteControllerTest : public testing::Test {
 
   void SetUp() override {
     auto provider_client = std::make_unique<FakeAutocompleteProviderClient>();
+
+    omnibox::RegisterProfilePrefs(static_cast<PrefRegistrySimple*>(
+        provider_client->GetPrefs()->DeprecatedGetPrefRegistry()));
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
     provider_client->set_scoring_model_service(
@@ -534,8 +539,10 @@ TEST_F(AutocompleteControllerTest, FilterMatchesForInstantKeywordWithBareAt) {
       CreateStarterPackMatch(u"@tabs"),
   });
 
+  AutocompleteInput input(u"@", 1u, metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
   controller_->MaybeCleanSuggestionsForKeywordMode(
-      u"@", &controller_->internal_result_);
+      input, &controller_->internal_result_);
 
   EXPECT_EQ(controller_->internal_result_.size(), 4u);
   EXPECT_TRUE(

@@ -6,12 +6,12 @@
 #define ASH_WM_OVERVIEW_OVERVIEW_UTILS_H_
 
 #include <memory>
+#include <optional>
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_focusable_view.h"
 #include "ash/wm/overview/overview_types.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/transform.h"
 
@@ -41,6 +41,11 @@ bool CanCoverAvailableWorkspace(aura::Window* window);
 void FadeInWidgetToOverview(views::Widget* widget,
                             OverviewAnimationType animation_type,
                             bool observe);
+
+// Makes `widget` not be able to process events. This should only be used if
+// `widget`'s lifetime extends beyond an overview session's lifetime for
+// animation purposes, as `widget` will no longer be interactable.
+void PrepareWidgetForOverviewShutdown(views::Widget* widget);
 
 // Fades `widget` to opacity zero with animation settings depending on
 // `animation_type`. Used by several classes which need to be destroyed on
@@ -74,15 +79,14 @@ void MaximizeIfSnapped(aura::Window* window);
 gfx::Rect GetGridBoundsInScreen(aura::Window* target_root);
 gfx::Rect GetGridBoundsInScreen(
     aura::Window* target_root,
-    absl::optional<SplitViewDragIndicators::WindowDraggingState>
+    std::optional<SplitViewDragIndicators::WindowDraggingState>
         window_dragging_state,
-    bool divider_changed,
     bool account_for_hotseat);
 
 // Gets the bounds of a window if it were to be snapped or about to be snapped
 // in splitview. Returns nothing if we are not in tablet mode, or if we aren't
 // in splitview, or if we aren't showing a splitview preview.
-absl::optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio();
+std::optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio();
 
 // Check if the grid layout in tablet mode should be used.
 bool ShouldUseTabletModeGridLayout();

@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
-#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#import "ios/chrome/browser/metrics/model/new_tab_page_uma.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/reading_list/model/offline_page_tab_helper.h"
@@ -45,6 +45,7 @@
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/account_settings_presenter.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
@@ -75,7 +76,8 @@
 // TODO(crbug.com/1425862): SigninPromoViewMediator will be refactored so that
 // we can move the SigninPromoViewConsumer implementation from the coordinator
 // to the view.
-@interface ReadingListCoordinator () <IdentityManagerObserverBridgeDelegate,
+@interface ReadingListCoordinator () <AccountSettingsPresenter,
+                                      IdentityManagerObserverBridgeDelegate,
                                       ReadingListMenuProvider,
                                       ReadingListListItemFactoryDelegate,
                                       ReadingListListViewControllerAudience,
@@ -205,7 +207,8 @@
                         syncService:_syncService
                         accessPoint:signin_metrics::AccessPoint::
                                         ACCESS_POINT_READING_LIST
-                          presenter:self];
+                    signinPresenter:self
+           accountSettingsPresenter:self];
   _signinPromoViewMediator.signinPromoAction =
       SigninPromoAction::kInstantSignin;
   _signinPromoViewMediator.consumer = self;
@@ -565,6 +568,12 @@
                        baseViewController:self.tableViewController];
 }
 
+#pragma mark - AccountSettingsPresenter
+
+- (void)showAccountSettings {
+  NOTIMPLEMENTED();
+}
+
 #pragma mark - SigninPromoViewConsumer
 
 - (void)configureSigninPromoWithConfigurator:
@@ -615,8 +624,6 @@
 // updates the view accordingly.
 - (void)updateSignInPromoVisibility {
   BOOL areAccountStorageAndPromoEnabled =
-      base::FeatureList::IsEnabled(
-          syncer::kReadingListEnableDualReadingListModel) &&
       base::FeatureList::IsEnabled(
           syncer::kReadingListEnableSyncTransportModeUponSignIn);
   if (!areAccountStorageAndPromoEnabled || self.isSyncDisabledByAdministrator) {

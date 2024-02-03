@@ -4,17 +4,33 @@
 
 #include "ash/capture_mode/capture_mode_education_controller.h"
 
+#include "ash/capture_mode/capture_mode_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/notifier_catalogs.h"
+#include "ash/public/cpp/ash_view_ids.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/system/anchored_nudge_data.h"
 #include "ash/public/cpp/system/anchored_nudge_manager.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
+#include "ash/style/keyboard_shortcut_view.h"
+#include "ash/style/system_dialog_delegate_view.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/layout/table_layout.h"
+#include "ui/views/layout/table_layout_view.h"
+#include "ui/views/view.h"
 
 namespace ash {
 
@@ -27,11 +43,14 @@ constexpr base::TimeDelta kNudgeTimeBetweenShown = base::Hours(24);
 
 constexpr char kCaptureModeNudgeId[] = "kCaptureModeNudge";
 
+// Tutorial styling values.
+constexpr int kRowSpacing = 30;
+constexpr int kTitleShortcutSpacing = 8;
+constexpr int kImageButtonSpacing = 20;
+constexpr int kKeyboardImageWidth = 448;
+
 // Clock that can be overridden for testing.
 base::Clock* g_clock_override = nullptr;
-
-// Nudge styling values.
-constexpr int kShortcutIconSize = 60;
 
 PrefService* GetPrefService() {
   return Shell::Get()->session_controller()->GetActivePrefService();
@@ -39,6 +58,92 @@ PrefService* GetPrefService() {
 
 base::Time GetTime() {
   return g_clock_override ? g_clock_override->Now() : base::Time::Now();
+}
+
+// Creates nudge data common to Arms 1 and 2.
+AnchoredNudgeData CreateBaseNudgeData(NudgeCatalogName catalog_name) {
+  AnchoredNudgeData nudge_data(
+      kCaptureModeNudgeId, catalog_name,
+      l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_EDUCATION_NUDGE_LABEL));
+
+  nudge_data.image_model =
+      ui::ResourceBundle::GetSharedInstance().GetThemedLottieImageNamed(
+          IDR_SCREEN_CAPTURE_EDUCATION_NUDGE_IMAGE);
+  nudge_data.fill_image_size = true;
+  nudge_data.keyboard_codes = {ui::VKEY_CONTROL, ui::VKEY_SHIFT,
+                               ui::VKEY_MEDIA_LAUNCH_APP1};
+
+  return nudge_data;
+}
+
+// Creates a view containing a keyboard illustration that indicates the
+// location of the keys in the screenshot keyboard shortcut.
+std::unique_ptr<views::ImageView> CreateImageView() {
+  auto image_view = std::make_unique<views::ImageView>();
+  image_view->SetImage(
+      ui::ResourceBundle::GetSharedInstance().GetThemedLottieImageNamed(
+          IDR_SCREEN_CAPTURE_EDUCATION_KEYBOARD_IMAGE));
+  // Rescale the image size to properly take up the width of the container.
+  auto image_bounds = image_view->GetImageBounds();
+  const float image_scale =
+      static_cast<float>(kKeyboardImageWidth) / image_bounds.width();
+  image_view->SetImageSize(
+      gfx::Size(kKeyboardImageWidth, image_bounds.height() * image_scale));
+  image_view->SetHorizontalAlignment(views::ImageViewBase::Alignment::kCenter);
+  image_view->SetVerticalAlignment(views::ImageViewBase::Alignment::kCenter);
+  image_view->SetID(VIEW_ID_SCREEN_CAPTURE_EDUCATION_KEYBOARD_IMAGE);
+  return image_view;
+}
+
+// Creates a view containing a keyboard shortcut view and a keyboard
+// illustration. To be used as the middle content in a
+// `SystemDialogDelegateView`.
+std::unique_ptr<views::TableLayoutView> CreateContentView() {
+  // Use a vertical table with two rows, so we can choose which cells to
+  // left-align.
+  auto content_view = std::make_unique<views::TableLayoutView>();
+  content_view->AddColumn(
+      views::LayoutAlignment::kStretch, views::LayoutAlignment::kStretch,
+      /*horizontal_resize=*/1.0f, views::TableLayout::ColumnSize::kUsePreferred,
+      /*fixed_width=*/0, /*min_width=*/0);
+  content_view->AddRows(1, views::TableLayout::kFixedSize);
+  content_view->AddPaddingRow(views::TableLayout::kFixedSize, kRowSpacing);
+  content_view->AddRows(1, views::TableLayout::kFixedSize);
+  // If the middle content of `SystemDialogDelegateView` has no top margin, it
+  // will automatically insert a default content padding. We want to avoid this,
+  // so we will set the margin ourselves.
+  content_view->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::TLBR(kTitleShortcutSpacing, 0, kImageButtonSpacing, 0));
+
+  // The shortcut view should be left-aligned with the title text.
+  const std::vector<ui::KeyboardCode> key_codes{
+      ui::VKEY_CONTROL, ui::VKEY_SHIFT, ui::VKEY_MEDIA_LAUNCH_APP1};
+  auto* shortcut_view = content_view->AddChildView(
+      std::make_unique<KeyboardShortcutView>(key_codes));
+  shortcut_view->SetProperty(views::kTableHorizAlignKey,
+                             views::LayoutAlignment::kStart);
+
+  // Add the keyboard illustration below the keyboard shortcut.
+  content_view->AddChildView(CreateImageView());
+
+  return content_view;
+}
+
+// Creates a `SystemDialogDelegateView` to be used as the `WidgetDelegate` for
+// the Arm 2 tutorial widget.
+std::unique_ptr<SystemDialogDelegateView> CreateDialogView() {
+  auto dialog = std::make_unique<SystemDialogDelegateView>();
+  dialog->SetTitleText(l10n_util::GetStringUTF16(
+      IDS_ASH_SCREEN_CAPTURE_EDUCATION_TUTORIAL_TITLE));
+  dialog->SetMiddleContentView(CreateContentView());
+  dialog->SetMiddleContentAlignment(views::LayoutAlignment::kStretch);
+  // Override the title margins to be zero, as the space between the title and
+  // the shortcut view has already been set by the `content_view` margins.
+  dialog->SetTitleMargins(gfx::Insets());
+  dialog->SetAcceptButtonVisible(false);
+  dialog->SetModalType(ui::ModalType::MODAL_TYPE_SYSTEM);
+  return dialog;
 }
 
 }  // namespace
@@ -70,10 +175,10 @@ bool CaptureModeEducationController::IsArm2ShortcutTutorialEnabled() {
 }
 
 // static
-bool CaptureModeEducationController::IsArm3SettingsNudgeEnabled() {
+bool CaptureModeEducationController::IsArm3QuickSettingsNudgeEnabled() {
   return features::IsCaptureModeEducationEnabled() &&
          features::kCaptureModeEducationParam.Get() ==
-             features::CaptureModeEducationParam::kSettingsNudge;
+             features::CaptureModeEducationParam::kQuickSettingsNudge;
 }
 
 void CaptureModeEducationController::MaybeShowEducation() {
@@ -86,7 +191,8 @@ void CaptureModeEducationController::MaybeShowEducation() {
     return;
   }
 
-  if (!skip_prefs_for_test_) {
+  if (!(features::IsCaptureModeEducationBypassLimitsEnabled() ||
+        skip_prefs_for_test_)) {
     const int shown_count =
         pref_service->GetInteger(prefs::kCaptureModeEducationShownCount);
     const base::Time last_shown_time =
@@ -107,9 +213,24 @@ void CaptureModeEducationController::MaybeShowEducation() {
     pref_service->SetTime(prefs::kCaptureModeEducationLastShown, now);
   }
 
+  CloseAllEducationNudgesAndTutorials();
+
   if (IsArm1ShortcutNudgeEnabled()) {
     ShowShortcutNudge();
   }
+
+  if (IsArm2ShortcutTutorialEnabled()) {
+    ShowTutorialNudge();
+  }
+
+  if (IsArm3QuickSettingsNudgeEnabled()) {
+    ShowQuickSettingsNudge();
+  }
+}
+
+void CaptureModeEducationController::CloseAllEducationNudgesAndTutorials() {
+  AnchoredNudgeManager::Get()->Cancel(kCaptureModeNudgeId);
+  tutorial_widget_.reset();
 }
 
 // static
@@ -119,20 +240,59 @@ void CaptureModeEducationController::SetOverrideClockForTesting(
 }
 
 void CaptureModeEducationController::ShowShortcutNudge() {
-  // Close the nudge if it already exists.
-  auto* nudge_manager = AnchoredNudgeManager::Get();
-  nudge_manager->Cancel(kCaptureModeNudgeId);
+  AnchoredNudgeData nudge_data =
+      CreateBaseNudgeData(NudgeCatalogName::kCaptureModeEducationShortcutNudge);
 
+  AnchoredNudgeManager::Get()->Show(nudge_data);
+}
+
+void CaptureModeEducationController::ShowTutorialNudge() {
+  AnchoredNudgeData nudge_data = CreateBaseNudgeData(
+      NudgeCatalogName::kCaptureModeEducationShortcutTutorial);
+
+  nudge_data.primary_button_text =
+      l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_EDUCATION_NUDGE_BUTTON);
+  nudge_data.primary_button_callback = base::BindRepeating(
+      &CaptureModeEducationController::OnShowMeHowButtonPressed,
+      weak_ptr_factory_.GetWeakPtr());
+
+  AnchoredNudgeManager::Get()->Show(nudge_data);
+}
+
+void CaptureModeEducationController::ShowQuickSettingsNudge() {
   AnchoredNudgeData nudge_data(
-      kCaptureModeNudgeId, NudgeCatalogName::kCaptureModeEducationShortcutNudge,
-      l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_EDUCATION_NUDGE_LABEL));
+      kCaptureModeNudgeId,
+      NudgeCatalogName::kCaptureModeEducationQuickSettingsNudge,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_SCREEN_CAPTURE_EDUCATION_SETTINGS_NUDGE_LABEL));
 
-  nudge_data.image_model = ui::ImageModel::FromVectorIcon(
-      kCaptureModeIcon, kColorAshIconColorPrimary, kShortcutIconSize);
+  nudge_data.image_model =
+      ui::ResourceBundle::GetSharedInstance().GetThemedLottieImageNamed(
+          IDR_SCREEN_CAPTURE_EDUCATION_NUDGE_IMAGE);
+  nudge_data.fill_image_size = true;
+  nudge_data.SetAnchorView(
+      RootWindowController::ForWindow(Shell::GetRootWindowForNewWindows())
+          ->shelf()
+          ->status_area_widget()
+          ->unified_system_tray());
 
-  // TODO(b/302368860): Add a new view to display keyboard shortcuts in the same
-  // style as the launcher and the new keyboard shortcut app.
-  nudge_manager->Show(nudge_data);
+  AnchoredNudgeManager::Get()->Show(nudge_data);
+}
+
+void CaptureModeEducationController::CreateAndShowTutorialDialog() {
+  // As we are creating a system modal dialog, it will automatically be parented
+  // to `kShellWindowId_SystemModalContainer`.
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  params.delegate = CreateDialogView().release();
+  params.name = "CaptureModeEducationTutorialWidget";
+  tutorial_widget_ = std::make_unique<views::Widget>();
+  tutorial_widget_->Init(std::move(params));
+  tutorial_widget_->Show();
+}
+
+void CaptureModeEducationController::OnShowMeHowButtonPressed() {
+  CHECK(!tutorial_widget_);
+  CreateAndShowTutorialDialog();
 }
 
 }  // namespace ash

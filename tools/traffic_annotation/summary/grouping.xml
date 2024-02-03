@@ -292,6 +292,7 @@ after discussions on the right group.
       <annotation id="almanac_launcher_app"/>
       <annotation id="ip_protection_service_get_proxy_config"/>
       <annotation id="customize_chrome_page_handler"/>
+      <annotation id="customize_chrome_page_handler_image"/>
       <annotation id="almanac_icon_cache"/>
       <annotation id="blink_fetch_later_manager"/>
       <annotation id="carrier_lock_manager_fetch_configuration"/>
@@ -301,6 +302,11 @@ after discussions on the right group.
       <annotation id="remoting_report_provisioning_error"/>
       <annotation id="webauthn_rp_id_check"/>
       <annotation id="tasks_integration"/>
+      <annotation id="search_engine_adapter"/>
+      <annotation id="model_quality_logging"/>
+      <annotation id="wallpaper_create_themes_model_execution"/>
+      <annotation id="tab_organizer_model_execution"/>
+      <annotation id="help_me_write_model_execution"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">

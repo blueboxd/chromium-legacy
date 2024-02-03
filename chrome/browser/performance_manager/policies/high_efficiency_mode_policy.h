@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/timer/timer.h"
+#include "components/performance_manager/public/decorators/tab_page_decorator.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/page_node.h"
 
@@ -18,19 +19,28 @@ namespace performance_manager::policies {
 // backgrounded for a certain amount of time, when High Efficiency Mode is
 // enabled by the user.
 class HighEfficiencyModePolicy : public GraphOwned,
-                                 public PageNode::ObserverDefaultImpl {
+                                 public PageNode::ObserverDefaultImpl,
+                                 public TabPageObserverDefaultImpl {
  public:
+  enum class MemorySaverMode {
+    kUserSpecified = 0,  // The user has selected the time value
+    kConservative,
+    kMedium,
+    kAggressive,
+    kMaxValue = kAggressive,
+  };
+
   HighEfficiencyModePolicy();
   ~HighEfficiencyModePolicy() override;
 
   static HighEfficiencyModePolicy* GetInstance();
 
   // PageNode::ObserverDefaultImpl:
-  void OnPageNodeAdded(const PageNode* page_node) override;
-  void OnBeforePageNodeRemoved(const PageNode* page_node) override;
   void OnIsVisibleChanged(const PageNode* page_node) override;
-  void OnTypeChanged(const PageNode* page_node,
-                     PageType previous_type) override;
+
+  // TabPageObserverDefaultImpl:
+  void OnTabAdded(TabPageDecorator::TabHandle* tab_handle) override;
+  void OnBeforeTabRemoved(TabPageDecorator::TabHandle* tab_handle) override;
 
   // GraphOwned:
   void OnPassedToGraph(Graph* graph) override;
@@ -46,16 +56,20 @@ class HighEfficiencyModePolicy : public GraphOwned,
 
  private:
   void StartAllDiscardTimers();
-  void StartDiscardTimerIfEnabled(const PageNode* page_node,
+  void StartDiscardTimerIfEnabled(const TabPageDecorator::TabHandle* tab_handle,
                                   base::TimeDelta time_before_discard);
-  void RemoveActiveTimer(const PageNode* page_node);
-  void DiscardPageTimerCallback(const PageNode* page_node,
+  void RemoveActiveTimer(const TabPageDecorator::TabHandle* tab_handle);
+  void DiscardPageTimerCallback(const TabPageDecorator::TabHandle* tab_handle,
                                 base::LiveTicks posted_at,
                                 base::TimeDelta requested_time_before_discard);
 
+  base::TimeDelta GetTimeBeforeDiscardForCurrentMode() const;
+  int GetMaxNumRevisitsForCurrentMode() const;
+
   bool high_efficiency_mode_enabled_ = false;
 
-  std::map<const PageNode*, base::OneShotTimer> active_discard_timers_;
+  std::map<const TabPageDecorator::TabHandle*, base::OneShotTimer>
+      active_discard_timers_;
   base::TimeDelta time_before_discard_;
 
   raw_ptr<Graph> graph_ = nullptr;

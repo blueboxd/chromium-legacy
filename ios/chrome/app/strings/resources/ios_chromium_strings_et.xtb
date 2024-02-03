@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Aidake täiustada Chromiumi funktsioone ja toimivust</translation>
 <translation id="1513122820609681462">Chromiumi määramine vaikebrauseriks</translation>
 <translation id="1531155317299575425">Kuvatakse viibad Chromiumisse sisselogimiseks.</translation>
+<translation id="159029779861043703">Chromium kaitseb teie delikaatseid isikuandmeid näotuvastuse abil.</translation>
 <translation id="1591119736686995611">Avab Chromiumi vahelehtede ruudustiku.</translation>
+<translation id="1611584326765829247">Lubage Chromiumil aidata teil pakke jälgida</translation>
 <translation id="1617663976202781617">Chromiumi andmete sünkroonimine</translation>
 <translation id="1647558790457890304">Chromiumi seaded</translation>
 <translation id="164952285225495380">Seda saadetist on Chromiumis juba jälgitud.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">Chromiumi seadete haldamine</translation>
 <translation id="2798503587425057129">Avab Chromiumi lugemisloendi.</translation>
 <translation id="2843571538056574338">Automaattäite jaoks Chromiumi kasutamine</translation>
-<translation id="2915596697727466327">Chromium kasutab paroolide volitatud juurdepääsu kontrollimiseks Face ID-d.</translation>
 <translation id="2918709798697875261">Teie organisatsioon nõuab, et jääksite Chromiumist väljalogituks.</translation>
 <translation id="2942241131342758843">Kasutage linkide avamiseks, vidinatest otsimiseks ja muudes rakendustes paroolide automaatselt täitmiseks vaikimisi Chromiumi</translation>
 <translation id="2977470724722393594">Chromium on ajakohane</translation>
@@ -87,6 +88,7 @@ Selle seade muutmiseks <ph name="BEGIN_LINK" />kustutage oma kontol Chromiumi an
 <translation id="4195557071150719219">Kuva Chromiumi hiljutised vahelehed</translation>
 <translation id="4408912345039114853">Chromiumi ohutuskontrolli käitamine</translation>
 <translation id="4432744876818348753">Chromiumi parimal moel kasutamiseks logige sisse.</translation>
+<translation id="4498832288620833153">Lisab sisestatud URL-id Chromiumis teie lugemisloendisse.</translation>
 <translation id="452436063477828504">Veenduge, et saaksite alati kasutada oma Google'i kontol Chromiumi andmeid</translation>
 <translation id="4555020257205549924">Kui see funktsioon on sisse lülitatud, pakub Chromium võimalust tõlkida teistes keeltes kirjutatud lehti Google'i tõlke abil. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Avab Chromiumis makseviisi seadete lehe.</translation>
@@ -167,7 +169,6 @@ Teie krüpteeritud andmeid saab lugeda ainult isik, kes teab teie parooli. Paroo
 <translation id="6911341667534646387">Jätkake Chromiumi andmete kasutamist Google'i kontol</translation>
 <translation id="7006920032187763988">Saate paroolihaldurisse salvestatud paroole oma iPadi muudes rakendustes kasutada.</translation>
 <translation id="7018284295775193585">Chromiumit ei saa värskendada</translation>
-<translation id="7025471822960602362">Tuvastatud pakettide jälgimine Chromiumis</translation>
 <translation id="7045244423563602563">Isikupärastage Chromiumi</translation>
 <translation id="7055269218854630176">Teie organisatsioon <ph name="DOMAIN" /> haldab kontot, millele sisse logite, ja Chromiumi kasutamist. Teie administraator saab teatud funktsioone seadistada või piirata.</translation>
 <translation id="7099326575020694068">Chromium ei saa poolitatud vaate režiimis kaamerat kasutada</translation>
@@ -197,6 +198,7 @@ Teie krüpteeritud andmeid saab lugeda ainult isik, kes teab teie parooli. Paroo
 <translation id="7928628054454574139">Kui muudes rakendustes linke puudutate, avaneb alati Chromium</translation>
 <translation id="7931842119211730154">Lukusta Chromiumi sulgemisel inkognito vahelehed</translation>
 <translation id="7934404985878918282">Kuva Chromiumi lugemisloend</translation>
+<translation id="7971753607796745700">Lisa Chromiumi lugemisloendi üksus</translation>
 <translation id="7980860476903281594">Chromium jagab teie asukohateavet saitidega, millele olete loa andnud.</translation>
 <translation id="7995166854192397899">Soovitused põhinevad teie sirvimistegevusel teie teistes seadmetes. Soovituste saamiseks logige kõigis oma seadmetes Chromiumi sisse.</translation>
 <translation id="800195749539500647">Chromiumi parimal moel kasutamine</translation>

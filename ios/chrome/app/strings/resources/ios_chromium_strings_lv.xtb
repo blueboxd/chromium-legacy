@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Palīdzēt uzlabot Chromium funkcijas un veiktspēju</translation>
 <translation id="1513122820609681462">Chromium iestatīšana par noklusējuma pārlūku</translation>
 <translation id="1531155317299575425">Tiek rādīti aicinājumi pierakstīties pārlūkā Chromium.</translation>
+<translation id="159029779861043703">Pārlūkā Chromium jūsu sensitīvie dati tiek aizsargāti, izmantojot sejas ID.</translation>
 <translation id="1591119736686995611">Pārlūkā Chromium atver ciļņu režģi.</translation>
+<translation id="1611584326765829247">Izmantojiet pārlūku Chromium sūtījumu izsekošanai</translation>
 <translation id="1617663976202781617">Chromium sinhronizācijas dati</translation>
 <translation id="1647558790457890304">Chromium iestatījumi</translation>
 <translation id="164952285225495380">Šis sūtījums jau tiek izsekots pārlūkā Chromium.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">Chromium iestatījumu pārvaldība</translation>
 <translation id="2798503587425057129">Tiek atvērts Chromium lasīšanas saraksts.</translation>
 <translation id="2843571538056574338">Izmantojiet pārlūku Chromium automātiskajai aizpildei</translation>
-<translation id="2915596697727466327">Chromium izmanto Face ID, lai jūsu parolēm varētu piekļūt tikai pilnvarotas personas.</translation>
 <translation id="2918709798697875261">Saskaņā ar jūsu organizācijas politiku ir atspējota pierakstīšanās pārlūkā Chromium.</translation>
 <translation id="2942241131342758843">Lai atvērtu saites, veiktu meklēšanu logrīkos un automātiski aizpildītu paroles citās lietotnēs, izmantojiet pārlūku Chromium kā noklusējuma pārlūku</translation>
 <translation id="2977470724722393594">Chromium ir atjaunināts</translation>
@@ -87,6 +88,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />notīriet Chromium datus 
 <translation id="4195557071150719219">Skatīt pārlūkā Chromium nesen atvērtās cilnes</translation>
 <translation id="4408912345039114853">Chromium drošības pārbaudes veikšana</translation>
 <translation id="4432744876818348753">Pierakstieties, lai pilnvērtīgi izmantotu pārlūku Chromium.</translation>
+<translation id="4498832288620833153">Ievadītie URL tiek pievienoti jūsu lasīšanas sarakstam pārlūkā Chromium.</translation>
 <translation id="452436063477828504">Parūpējieties, lai vienmēr varētu izmantot Google kontā saglabātos Chromium datus</translation>
 <translation id="4555020257205549924">Ja šī funkcija ir ieslēgta, Chromium piedāvā tulkot citās valodās rakstītas lapas, izmantojot Google tulkotāju. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="4576283463017113841">Tiek atvērta maksājumu veidu iestatījumu lapa pārlūkā Chromium.</translation>
@@ -167,7 +169,6 @@ Jūsu šifrētos datus var lasīt tikai personas, kurām ir jūsu ieejas frāze.
 <translation id="6911341667534646387">Turpiniet izmantot Google kontā saglabātos Chromium datus</translation>
 <translation id="7006920032187763988">Paroļu pārvaldniekā saglabātās paroles varat izmantot citās iPad planšetdatora lietotnēs.</translation>
 <translation id="7018284295775193585">Nevar atjaunināt pārlūku Chromium.</translation>
-<translation id="7025471822960602362">Izsekot noteiktajām pakām pārlūkā Chromium</translation>
 <translation id="7045244423563602563">Pielāgojiet pārlūku Chromium savām vajadzībām</translation>
 <translation id="7055269218854630176">Jūsu organizācija <ph name="DOMAIN" /> pārvalda kontu, kurā pašlaik pierakstāties, un pārlūka Chromium lietošanas iespējas. Administrators var iestatīt vai ierobežot noteiktas funkcijas.</translation>
 <translation id="7099326575020694068">Chromium nevar izmantot kameru dalītā skata režīmā.</translation>
@@ -197,6 +198,7 @@ Jūsu šifrētos datus var lasīt tikai personas, kurām ir jūsu ieejas frāze.
 <translation id="7928628054454574139">Tiks atvērts pārlūks Chromium ikreiz, kad pieskarsieties saitēm citās lietotnēs.</translation>
 <translation id="7931842119211730154">Bloķēt inkognito cilnes, kad pārlūks Chromium tiek aizvērts</translation>
 <translation id="7934404985878918282">Skatīt Chromium lasīšanas sarakstu</translation>
+<translation id="7971753607796745700">Pievienot lasīšanas saraksta vienumu pārlūkam Chromium</translation>
 <translation id="7980860476903281594">Chromium kopīgo jūsu atrašanās vietu ar vietnēm, kam atļaujat saņemt šo informāciju.</translation>
 <translation id="7995166854192397899">Ieteikumu pamatā ir pārlūkošanas darbības citās ierīcēs. Lai saņemtu ieteikumus, visās savās ierīcēs pierakstieties pārlūkā Chromium.</translation>
 <translation id="800195749539500647">Izmantojiet pārlūku Chromium pilnvērtīgi</translation>

@@ -17,12 +17,12 @@
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
+#include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
-#include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
@@ -386,18 +386,19 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           table.children[0].children[13]?.innerText === '{}' &&
           table.children[1].children[13]?.innerText === '{\n "a": "0x1"\n}' &&
           table.children[0].children[14]?.innerText === 'modulus' &&
-          table.children[0].children[15]?.innerText === '0 / 65536' &&
-          table.children[1].children[15]?.innerText === '1300 / 65536' &&
-          table.children[0].children[16]?.innerText === '19' &&
-          table.children[1].children[16]?.innerText === '' &&
-          table.children[0].children[17]?.innerText === 'true' &&
-          table.children[1].children[17]?.innerText === 'false' &&
-          table.children[0].children[18]?.innerText === '' &&
-          table.children[1].children[18]?.children[0]?.children[0]?.innerText === '13' &&
-          table.children[1].children[18]?.children[0]?.children[1]?.innerText === '17' &&
+          table.children[0].children[15]?.innerText === '14' &&
+          table.children[0].children[16]?.innerText === '0 / 65536' &&
+          table.children[1].children[16]?.innerText === '1300 / 65536' &&
+          table.children[0].children[17]?.innerText === '19' &&
+          table.children[1].children[17]?.innerText === '' &&
+          table.children[0].children[18]?.innerText === 'true' &&
+          table.children[1].children[18]?.innerText === 'false' &&
           table.children[0].children[19]?.innerText === '' &&
-          table.children[1].children[19]?.children[0]?.children[0]?.innerText === '14' &&
-          table.children[1].children[19]?.children[0]?.children[1]?.innerText === '18' &&
+          table.children[1].children[19]?.children[0]?.children[0]?.innerText === '13' &&
+          table.children[1].children[19]?.children[0]?.children[1]?.innerText === '17' &&
+          table.children[0].children[20]?.innerText === '' &&
+          table.children[1].children[20]?.children[0]?.children[0]?.innerText === '14' &&
+          table.children[1].children[20]?.children[0]?.children[1]?.innerText === '18' &&
           table.children[0].children[1]?.innerText === 'Unattributable: noised with no reports' &&
           table.children[1].children[1]?.innerText === 'Attributable' &&
           table.children[2].children[1]?.innerText === 'Attributable: reached event-level attribution limit' &&
@@ -1202,8 +1203,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                 {{"a", 123}, {"b", 456}}),
             /*debug_reporting=*/false,
             /*aggregation_coordinator_origin=*/absl::nullopt,
-            attribution_reporting::mojom::SourceRegistrationTimeConfig::
-                kInclude),
+            attribution_reporting::AggregatableTriggerConfig()),
         *SuitableOrigin::Deserialize("https://d.test"),
         std::move(verifications),
         /*is_within_fenced_frame=*/false);

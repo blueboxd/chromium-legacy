@@ -16,10 +16,12 @@ import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 // Did you mean to set the 'moduleResolution' option to 'nodenext', or to add
 // aliases to the 'paths' option?
 import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
+import {FileManagerBase} from '../../background/js/file_manager_base.js';
 import {getBulkPinProgress, getDialogCaller, getDlpBlockedComponents, getDriveConnectionState, getPreferences} from '../../common/js/api.js';
 import {ArrayDataModel} from '../../common/js/array_data_model.js';
-import {DialogType, isFolderDialogType} from '../../common/js/dialog_type.js';
+import {isFolderDialogType} from '../../common/js/dialog_type.js';
 import {getKeyModifiers, queryDecoratedElement, queryRequiredElement} from '../../common/js/dom_utils.js';
 import {EntryList, FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
 import {FilesAppState} from '../../common/js/files_app_state.js';
@@ -30,16 +32,14 @@ import {ProgressItemState} from '../../common/js/progress_center_common.js';
 import {str} from '../../common/js/translations.js';
 import {TrashRootEntry} from '../../common/js/trash.js';
 import {getLastVisitedURL, isInGuestMode, runningInBrowser} from '../../common/js/util.js';
-import {AllowedPaths, VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {AllowedPaths, ARCHIVE_OPENED_EVENT_TYPE, RootType, VolumeType} from '../../common/js/volume_manager_types.js';
 import {DirectoryTreeContainer} from '../../containers/directory_tree_container.js';
 import {NudgeType} from '../../containers/nudge_container.js';
 import {Crostini} from '../../externs/background/crostini.js';
-import {FileManagerBaseInterface} from '../../externs/background/file_manager_base.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
-import {ForegroundWindow} from '../../externs/foreground_window.js';
-import {PropStatus} from '../../externs/ts/state.js';
+import {DialogType, PropStatus, SearchLocation} from '../../externs/ts/state.js';
 import {Store} from '../../externs/ts/store.js';
 import {getMyFiles} from '../../state/ducks/all_entries.js';
 import {updateBulkPinProgress} from '../../state/ducks/bulk_pinning.js';
@@ -343,7 +343,7 @@ export class FileManager extends EventTarget {
     // DOM elements.
 
     /**
-     * @private @type {?FileManagerBaseInterface}
+     * @private @type {?FileManagerBase}
      */
     this.fileBrowserBackground_ = null;
 
@@ -428,7 +428,6 @@ export class FileManager extends EventTarget {
     /** @private @type {!Store} */
     this.store_ = getStore();
 
-    /** @suppress {checkTypes} */
     (function() {
       ColorChangeUpdater.forDocument().start();
     })();
@@ -687,29 +686,29 @@ export class FileManager extends EventTarget {
       listBeingUpdated.endBatchUpdates();
       listBeingUpdated = null;
     });
-    this.volumeManager_.addEventListener(
-        VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE, event => {
-          // @ts-ignore: error TS2339: Property 'detail' does not exist on type
-          // 'Event'.
-          assert(event.detail.mountPoint);
-          // @ts-ignore: error TS2339: Property 'isFocused' does not exist on
-          // type 'Window & typeof globalThis'.
-          if (window.isFocused()) {
-            // @ts-ignore: error TS2339: Property 'detail' does not exist on
-            // type 'Event'.
-            this.directoryModel_.changeDirectoryEntry(event.detail.mountPoint);
-          }
-        });
+    this.volumeManager_.addEventListener(ARCHIVE_OPENED_EVENT_TYPE, event => {
+      // @ts-ignore: error TS2339: Property 'detail' does not exist on type
+      // 'Event'.
+      assert(event.detail.mountPoint);
+      // @ts-ignore: error TS2339: Property 'isFocused' does not exist on
+      // type 'Window & typeof globalThis'.
+      if (window.isFocused()) {
+        // @ts-ignore: error TS2339: Property 'detail' does not exist on
+        // type 'Event'.
+        this.directoryModel_.changeDirectoryEntry(event.detail.mountPoint);
+      }
+    });
 
     // @ts-ignore: error TS2531: Object is possibly 'null'.
-    this.directoryModel_.addEventListener(
-        'directory-changed',
-        /** @param {!Event} event */
-        event => {
-          // @ts-ignore: error TS2339: Property 'newDirEntry' does not exist on
-          // type 'Event'.
-          this.navigationUma_.onDirectoryChanged(event.newDirEntry);
-        });
+    this.directoryModel_.addEventListener('directory-changed', event => {
+      const
+          customEvent = /**
+                           @type {import('../../definitions/directory_change_event.js').DirectoryChangeEvent}
+                             */
+          (event);
+      // @ts-ignore: error TS2531: Object is possibly 'null'.
+      this.navigationUma_.onDirectoryChanged(customEvent.detail.newDirEntry);
+    });
 
     this.initCommands_();
 
@@ -792,7 +791,7 @@ export class FileManager extends EventTarget {
         // @ts-ignore: error TS2345: Argument of type 'FileManagerUI | null' is
         // not assignable to parameter of type 'FileManagerUI'.
         this.dialogType, this.ui_, this.volumeManager_, this.directoryModel_,
-        this.fileFilter_, this.selectionHandler_, this.namingController_,
+        this.selectionHandler_, this.namingController_,
         this.appStateController_, this.taskController_);
 
     this.initDataTransferOperations_();
@@ -900,17 +899,12 @@ export class FileManager extends EventTarget {
         new CommandHandler(this, assert(this.selectionHandler_));
 
     // TODO(hirono): Move the following block to the UI part.
-    // @ts-ignore: error TS2488: Type 'NodeListOf<Element>' must have a
-    // '[Symbol.iterator]()' method that returns an iterator.
-    for (const button of this.dialogDom_.querySelectorAll('button[command]')) {
-      CommandButton.decorate(button);
-    }
     // Hook up the cr-button commands.
     // @ts-ignore: error TS2488: Type 'NodeListOf<Element>' must have a
     // '[Symbol.iterator]()' method that returns an iterator.
     for (const crButton of this.dialogDom_.querySelectorAll(
              'cr-button[command]')) {
-      CommandButton.decorate(crButton);
+      CommandButton.decorate(/** @type {CrButtonElement} */ (crButton));
     }
 
     // @ts-ignore: error TS2488: Type 'NodeListOf<Element>' must have a
@@ -1102,16 +1096,9 @@ export class FileManager extends EventTarget {
   async startInitBackgroundPage_() {
     startInterval('Load.InitBackgroundPage');
 
-    this.fileBrowserBackground_ =
-        // @ts-ignore: error TS2352: Conversion of type 'Window & typeof
-        // globalThis' to type 'ForegroundWindow' may be a mistake because
-        // neither type sufficiently overlaps with the other. If this was
-        // intentional, convert the expression to 'unknown' first.
-        /** @type {!ForegroundWindow} */ (window).background;
+    this.fileBrowserBackground_ = window.background;
 
-    // @ts-ignore: error TS2345: Argument of type '(value: any) => void' is not
-    // assignable to parameter of type '() => void'.
-    await new Promise(resolve => this.fileBrowserBackground_.ready(resolve));
+    await this.fileBrowserBackground_.ready();
 
     // For the SWA, we load background and foreground in the same Window, avoid
     // loading the `data` twice.
@@ -1136,8 +1123,7 @@ export class FileManager extends EventTarget {
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         this.launchParams_.type === DialogType.SELECT_SAVEAS_FILE;
     const disabledVolumes =
-        /** @type {!Array<!VolumeManagerCommon.VolumeType>} */ (
-            await this.getDisabledVolumes_());
+        /** @type {!Array<!VolumeType>} */ (await this.getDisabledVolumes_());
 
     // FilteredVolumeManager hides virtual file system related event and data
     // even depends on the value of |supportVirtualPath|. If it is
@@ -1291,8 +1277,7 @@ export class FileManager extends EventTarget {
         this.launchParams_.includeAllFiles, this.launchParams_.typeList);
 
     this.recentEntry_ = new FakeEntryImpl(
-        str('RECENT_ROOT_LABEL'), VolumeManagerCommon.RootType.RECENT,
-        this.getSourceRestriction_(),
+        str('RECENT_ROOT_LABEL'), RootType.RECENT, this.getSourceRestriction_(),
         chrome.fileManagerPrivate.FileCategory.ALL);
     // @ts-ignore: error TS2741: Property 'getUIChildren' is missing in type
     // 'FakeEntry' but required in type 'FakeEntryImpl'.
@@ -1370,10 +1355,10 @@ export class FileManager extends EventTarget {
     this.dialogActionController_ = new DialogActionController(
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         this.dialogType, this.ui_.dialogFooter, this.directoryModel_,
-        // @ts-ignore: error TS2345: Argument of type 'MetadataModel | null' is
-        // not assignable to parameter of type 'MetadataModel'.
-        this.metadataModel_, this.volumeManager_, this.fileFilter_,
-        this.namingController_, this.selectionHandler_, this.launchParams_);
+        // @ts-ignore: error TS2345: Argument of type 'FileFilter | null' is not
+        // assignable to parameter of type 'FileFilter'.
+        this.volumeManager_, this.fileFilter_, this.namingController_,
+        this.selectionHandler_, this.launchParams_);
 
     // Create file-type filter controller.
     this.fileTypeFiltersController_ = new FileTypeFiltersController(
@@ -1394,7 +1379,7 @@ export class FileManager extends EventTarget {
   /**
    * Based on the dialog type and dialog caller, sets the list of volumes
    * that should be disabled according to Data Leak Prevention rules.
-   * @return {Promise<!Array<!VolumeManagerCommon.VolumeType>>}
+   * @return {Promise<!Array<!VolumeType>>}
    */
   async getDisabledVolumes_() {
     if (this.dialogType !== DialogType.SELECT_SAVEAS_FILE || !isDlpEnabled()) {
@@ -1408,7 +1393,7 @@ export class FileManager extends EventTarget {
     const disabledVolumes = [];
     for (const c of dlpBlockedComponents) {
       disabledVolumes.push(
-          /** @type {!VolumeManagerCommon.VolumeType }*/ (c));
+          /** @type {!VolumeType }*/ (c));
     }
     return disabledVolumes;
   }
@@ -1464,7 +1449,6 @@ export class FileManager extends EventTarget {
       this.ui_.initDirectoryTree(directoryTree);
     }
 
-
     // If 'media-store-files-only' volume filter is enabled, then Android ARC
     // SelectFile opened files app to pick files from volumes that are indexed
     // by the Android MediaStore. Never add Drive, Crostini, GuestOS, to the
@@ -1503,8 +1487,7 @@ export class FileManager extends EventTarget {
         // flag is off, remove it after the tree replacement.
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         assert(/** @type {DirectoryTree} */ (this.ui_.directoryTree)),
-        this.volumeManager_.isDisabled(
-            VolumeManagerCommon.VolumeType.CROSTINI));
+        this.volumeManager_.isDisabled(VolumeType.CROSTINI));
     await this.crostiniController_.redraw();
     // Never show toast in an open-file dialog.
     const maybeShowToast = this.dialogType === DialogType.FULL_PAGE;
@@ -1653,11 +1636,13 @@ export class FileManager extends EventTarget {
     const searchQuery = this.launchParams_.searchQuery;
     if (searchQuery) {
       startInterval('Load.ProcessInitialSearchQuery');
-      this.store_.dispatch(updateSearch({
-        query: searchQuery,
-        status: PropStatus.STARTED,
-        options: getDefaultSearchOptions(),
-      }));
+      if (!isNewDirectoryTreeEnabled()) {
+        this.store_.dispatch(updateSearch({
+          query: searchQuery,
+          status: PropStatus.STARTED,
+          options: getDefaultSearchOptions(),
+        }));
+      }
       // Show a spinner, as the crossover search function call could be slow.
       // @ts-ignore: error TS2531: Object is possibly 'null'.
       const hideSpinnerCallback = this.spinnerController_.show();
@@ -1714,8 +1699,7 @@ export class FileManager extends EventTarget {
         // Having root directory of DRIVE_SHARED_WITH_ME here should be only for
         // shared with me files. Fallback to Drive root in such case.
         if (locationInfo.isRootEntry &&
-            locationInfo.rootType ===
-                VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME) {
+            locationInfo.rootType === RootType.DRIVE_SHARED_WITH_ME) {
           const volumeInfo =
               this.volumeManager_.getVolumeInfo(nextCurrentDirEntry);
           if (!volumeInfo) {
@@ -1852,11 +1836,19 @@ export class FileManager extends EventTarget {
           // @ts-ignore: error TS2531: Object is possibly 'null'.
           this.directoryModel_.selectEntry(opt_selectionEntry);
         }
-        // @ts-ignore: error TS2531: Object is possibly 'null'.
-        if (this.launchParams_.searchQuery) {
-          this.store_.dispatch(
-              // @ts-ignore: error TS2531: Object is possibly 'null'.
-              updateSearch({query: this.launchParams_.searchQuery}));
+        if (this.launchParams_?.searchQuery) {
+          const searchState = this.store_.getState().search;
+          this.store_.dispatch(updateSearch({
+            query: this.launchParams_.searchQuery,
+            status: undefined,
+            // Make sure the current directory can be highlighted in the
+            // directory tree.
+            options: {
+              ...getDefaultSearchOptions(),
+              ...searchState?.options,
+              location: SearchLocation.THIS_FOLDER,
+            },
+          }));
         }
       } else {
         console.warn('No entry for finishSetupCurrentDirectory_');
@@ -1929,8 +1921,9 @@ export class FileManager extends EventTarget {
    * @returns {AllowedPaths}
    */
   getAllowedPaths_() {
-    // @ts-ignore: error TS2531: Object is possibly 'null'.
-    let allowedPaths = this.launchParams_.allowedPaths;
+    let allowedPaths =
+        // @ts-ignore: error TS2531: Object is possibly 'null'.
+        /** @type {AllowedPaths} */ (this.launchParams_.allowedPaths);
     // The native implementation of the Files app creates snapshot files for
     // non-native files. But it does not work for folders (e.g., dialog for
     // loading unpacked extensions).
@@ -1944,6 +1937,7 @@ export class FileManager extends EventTarget {
         allowedPaths = AllowedPaths.ANY_PATH;
       }
     }
+
     return allowedPaths;
   }
 
@@ -2138,21 +2132,19 @@ export class FileManager extends EventTarget {
           (getEntry(this.store_.getState(), driveRootEntryListKey));
       if (!driveFakeRoot) {
         driveFakeRoot = new EntryList(
-            str('DRIVE_DIRECTORY_LABEL'),
-            VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
+            str('DRIVE_DIRECTORY_LABEL'), RootType.DRIVE_FAKE_ROOT);
         this.store_.dispatch(addUiEntry({entry: driveFakeRoot}));
       }
       if (!isNewDirectoryTreeEnabled()) {
         // TODO(b/285977941): Remove the old FakeEntry based drive root.
         const driveFakeRoot = new FakeEntryImpl(
-            str('DRIVE_DIRECTORY_LABEL'),
-            VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
+            str('DRIVE_DIRECTORY_LABEL'), RootType.DRIVE_FAKE_ROOT);
         if (!this.fakeDriveItem_) {
           this.fakeDriveItem_ = new NavigationModelFakeItem(
               str('DRIVE_DIRECTORY_LABEL'), NavigationModelItemType.DRIVE,
               driveFakeRoot);
-          this.fakeDriveItem_.disabled = this.volumeManager_.isDisabled(
-              VolumeManagerCommon.VolumeType.DRIVE);
+          this.fakeDriveItem_.disabled =
+              this.volumeManager_.isDisabled(VolumeType.DRIVE);
         }
         // @ts-ignore: error TS2339: Property 'dataModel' does not exist on
         // type 'XfTree | DirectoryTree'.

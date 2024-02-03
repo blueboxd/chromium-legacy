@@ -1,113 +1,4 @@
 {
-  "android-asan": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_asan": true,
-      "is_clang": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "strip_debug_info": true,
-      "symbol_level": 1,
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true
-    }
-  },
-  "android-chrome-pie-x86-wpt-android-specific": {
-    "gn_args": {
-      "android_static_analysis": "off",
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "strip_debug_info": true,
-      "symbol_level": 0,
-      "system_webview_package_name": "com.google.android.apps.chrome",
-      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
-      "target_cpu": "x86",
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true
-    }
-  },
-  "android-chrome-pie-x86-wpt-fyi-rel": {
-    "gn_args": {
-      "android_static_analysis": "off",
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "strip_debug_info": true,
-      "symbol_level": 0,
-      "system_webview_package_name": "com.google.android.apps.chrome",
-      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
-      "target_cpu": "x86",
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true
-    }
-  },
-  "android-clobber-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "strip_debug_info": true,
-      "symbol_level": 0,
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true
-    }
-  },
-  "android-code-coverage": {
-    "gn_args": {
-      "android_static_analysis": "off",
-      "dcheck_always_on": false,
-      "debuggable_apks": false,
-      "enable_resource_allowlist_generation": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "is_java_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "system_webview_package_name": "com.google.android.webview",
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_jacoco_coverage": true,
-      "use_remoteexec": true,
-      "use_static_angle": true
-    }
-  },
-  "android-code-coverage-native": {
-    "gn_args": {
-      "android_static_analysis": "off",
-      "dcheck_always_on": false,
-      "debuggable_apks": false,
-      "enable_resource_allowlist_generation": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "is_java_debug": true,
-      "proprietary_codecs": true,
-      "system_webview_package_name": "com.google.android.webview",
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_clang_coverage": true,
-      "use_remoteexec": true,
-      "use_static_angle": true
-    }
-  },
   "android-cronet-lollipop-arm-rel": {
     "gn_args": {
       "arm_use_neon": false,
@@ -197,42 +88,6 @@
       "use_remoteexec": true
     }
   },
-  "android-fieldtrial-rel": {
-    "gn_args": {
-      "android_static_analysis": "off",
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "skip_secondary_abi_for_cq": true,
-      "strip_debug_info": true,
-      "symbol_level": 0,
-      "system_webview_package_name": "com.google.android.webview.debug",
-      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
-      "target_cpu": "x64",
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true
-    }
-  },
-  "android-perfetto-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "target_cpu": "x64",
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_perfetto_client_library": true,
-      "use_remoteexec": true
-    }
-  },
   "android-weblayer-pie-x86-fyi-rel": {
     "gn_args": {
       "android_static_analysis": "off",
@@ -250,24 +105,6 @@
       "target_os": "android",
       "use_dummy_lastchange": true,
       "use_goma": true
-    }
-  },
-  "android-webview-pie-x86-wpt-fyi-rel": {
-    "gn_args": {
-      "android_static_analysis": "off",
-      "dcheck_always_on": false,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "strip_debug_info": true,
-      "symbol_level": 1,
-      "system_webview_package_name": "com.google.android.apps.chrome",
-      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
-      "target_cpu": "x86",
-      "target_os": "android",
-      "use_remoteexec": true
     }
   },
   "android_blink_rel": {
@@ -330,68 +167,6 @@
       "use_static_angle": true
     }
   },
-  "gpu-fyi-cq-android-arm64": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true,
-      "use_static_angle": true
-    }
-  },
-  "gpu-fyi-try-android-m-nexus-5x-64": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true,
-      "use_static_angle": true
-    }
-  },
-  "gpu-fyi-try-android-nvidia-shield-tv": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true,
-      "use_static_angle": true
-    }
-  },
-  "gpu-fyi-try-android-p-pixel-2-32": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true,
-      "use_static_angle": true
-    }
-  },
   "gpu-fyi-try-android-pixel-6-64": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -402,21 +177,6 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_cpu": "arm64",
-      "target_os": "android",
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true,
-      "use_static_angle": true
-    }
-  },
-  "gpu-fyi-try-android-r-pixel-4-32": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
       "target_os": "android",
       "use_dummy_lastchange": true,
       "use_remoteexec": true,

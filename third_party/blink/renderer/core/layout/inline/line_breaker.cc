@@ -7,6 +7,11 @@
 #include "base/containers/adapters.h"
 #include "base/ranges/algorithm.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/layout/block_break_token.h"
+#include "third_party/blink/renderer/core/layout/constraint_space.h"
+#include "third_party/blink/renderer/core/layout/constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/floats_utils.h"
+#include "third_party/blink/renderer/core/layout/fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_item_segment.h"
@@ -15,18 +20,13 @@
 #include "third_party/blink/renderer/core/layout/inline/line_info.h"
 #include "third_party/blink/renderer/core/layout/inline/ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/core/layout/length_utils.h"
+#include "third_party/blink/renderer/core/layout/logical_fragment.h"
+#include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/positioned_float.h"
+#include "third_party/blink/renderer/core/layout/space_utils.h"
 #include "third_party/blink/renderer/core/layout/svg/resolved_text_layout_attributes_iterator.h"
+#include "third_party/blink/renderer/core/layout/unpositioned_float.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
@@ -58,7 +58,7 @@ inline LineBreakStrictness StrictnessFromLineBreak(LineBreak line_break) {
 // Returns smallest negative left and right bearing in `box_fragment`.
 // This function is used for calculating side bearing.
 LineBoxStrut ComputeNegativeSideBearings(
-    const NGPhysicalBoxFragment& box_fragment) {
+    const PhysicalBoxFragment& box_fragment) {
   const auto get_shape_result =
       [](const InlineCursor cursor) -> const ShapeResultView* {
     if (!cursor)
@@ -156,7 +156,7 @@ LineBoxStrut ComputeNegativeSideBearings(
 // Note: We don't apply inline kerning for vertical writing mode with text
 // orientation other than `sideways` because characters are laid out vertically.
 // [1] https://drafts.csswg.org/css-inline/#initial-letter-inline-position
-bool ShouldApplyInlineKerning(const NGPhysicalBoxFragment& box_fragment) {
+bool ShouldApplyInlineKerning(const PhysicalBoxFragment& box_fragment) {
   if (!box_fragment.Borders().IsZero() || !box_fragment.Padding().IsZero())
     return false;
   const ComputedStyle& style = box_fragment.Style();
@@ -223,7 +223,7 @@ inline bool HasUnpositionedFloats(const InlineItemResults& item_results) {
   return !item_results.empty() && item_results.back().has_unpositioned_floats;
 }
 
-LayoutUnit ComputeInlineEndSize(const NGConstraintSpace& space,
+LayoutUnit ComputeInlineEndSize(const ConstraintSpace& space,
                                 const ComputedStyle* style) {
   DCHECK(style);
   BoxStrut margins = ComputeMarginsForSelf(space, *style);
@@ -267,7 +267,7 @@ inline void RemoveLastItem(LineInfo* line_info) {
 // The inline-end size from all of these ancestors contribute to the "used
 // size" of the float, and may cause the float to be pushed down.
 LayoutUnit ComputeFloatAncestorInlineEndSize(
-    const NGConstraintSpace& space,
+    const ConstraintSpace& space,
     const HeapVector<InlineItem>& items,
     wtf_size_t item_index) {
   LayoutUnit inline_end_size;
@@ -367,11 +367,11 @@ void LineBreaker::UpdateAvailableWidth() {
 
 LineBreaker::LineBreaker(InlineNode node,
                          LineBreakerMode mode,
-                         const NGConstraintSpace& space,
+                         const ConstraintSpace& space,
                          const LineLayoutOpportunity& line_opportunity,
                          const LeadingFloats& leading_floats,
                          const InlineBreakToken* break_token,
-                         const NGColumnSpannerPath* column_spanner_path,
+                         const ColumnSpannerPath* column_spanner_path,
                          ExclusionSpace* exclusion_space)
     : line_opportunity_(line_opportunity),
       node_(node),
@@ -737,7 +737,7 @@ void LineBreaker::NextLine(LineInfo* line_info) {
   PrepareNextLine(line_info);
 
   if (break_token_ && break_token_->IsInParallelBlockFlow()) {
-    const auto* block_break_token = break_token_->BlockBreakToken();
+    const auto* block_break_token = break_token_->GetBlockBreakToken();
     DCHECK(block_break_token);
     const InlineItem& item = Items()[break_token_->StartItemIndex()];
     DCHECK_EQ(item.GetLayoutObject(),
@@ -878,8 +878,8 @@ void LineBreaker::BreakLine(LineInfo* line_info) {
       continue;
     }
     if (item.Type() == InlineItem::kBlockInInline) {
-      const NGBlockBreakToken* block_break_token =
-          break_token_ ? break_token_->BlockBreakToken() : nullptr;
+      const BlockBreakToken* block_break_token =
+          break_token_ ? break_token_->GetBlockBreakToken() : nullptr;
       HandleBlockInInline(item, block_break_token, line_info);
       continue;
     }
@@ -2444,6 +2444,11 @@ void LineBreaker::HandleControlItem(const InlineItem& item,
     case kTabulationCharacter: {
       DCHECK(item.Style());
       const ComputedStyle& style = *item.Style();
+      if (!style.GetFont().PrimaryFont()) {
+        // TODO(crbug.com/561873): PrimaryFont should not be nullptr.
+        HandleEmptyText(item, line_info);
+        return;
+      }
       scoped_refptr<const ShapeResult> shape_result =
           ShapeResult::CreateForTabulationCharacters(
               &style.GetFont(), item.Direction(), style.GetTabSize(), position_,
@@ -2577,22 +2582,22 @@ void LineBreaker::HandleAtomicInline(const InlineItem& item,
   if (mode_ == LineBreakerMode::kContent || UNLIKELY(is_initial_letter_box)) {
     // If our baseline-source is non-auto use the easier to reason about
     // "default" algorithm type.
-    NGBaselineAlgorithmType baseline_algorithm_type =
+    BaselineAlgorithmType baseline_algorithm_type =
         style.BaselineSource() == EBaselineSource::kAuto
-            ? NGBaselineAlgorithmType::kInlineBlock
-            : NGBaselineAlgorithmType::kDefault;
+            ? BaselineAlgorithmType::kInlineBlock
+            : BaselineAlgorithmType::kDefault;
 
     // https://drafts.csswg.org/css-pseudo-4/#first-text-line
     // > The first line of a table-cell or inline-block cannot be the first
     // > formatted line of an ancestor element.
     item_result->layout_result =
-        NGBlockNode(To<LayoutBox>(item.GetLayoutObject()))
+        BlockNode(To<LayoutBox>(item.GetLayoutObject()))
             .LayoutAtomicInline(constraint_space_, node_.Style(),
                                 /* use_first_line_style */ false,
                                 baseline_algorithm_type);
 
-    const auto& physical_box_fragment = To<NGPhysicalBoxFragment>(
-        item_result->layout_result->PhysicalFragment());
+    const auto& physical_box_fragment = To<PhysicalBoxFragment>(
+        item_result->layout_result->GetPhysicalFragment());
     item_result->inline_size =
         LogicalFragment(constraint_space_.GetWritingDirection(),
                         physical_box_fragment)
@@ -2657,10 +2662,10 @@ void LineBreaker::ComputeMinMaxContentSizeForBlockChild(
   }
 
   DCHECK(mode_ == LineBreakerMode::kMinContent || !max_size_cache_);
-  NGBlockNode child(To<LayoutBox>(item.GetLayoutObject()));
+  BlockNode child(To<LayoutBox>(item.GetLayoutObject()));
 
-  NGMinMaxConstraintSpaceBuilder builder(constraint_space_, node_.Style(),
-                                         child, /* is_new_fc */ true);
+  MinMaxConstraintSpaceBuilder builder(constraint_space_, node_.Style(), child,
+                                       /* is_new_fc */ true);
   builder.SetAvailableBlockSize(constraint_space_.AvailableSize().block_size);
   builder.SetPercentageResolutionBlockSize(
       constraint_space_.PercentageResolutionBlockSize());
@@ -2689,10 +2694,9 @@ void LineBreaker::ComputeMinMaxContentSizeForBlockChild(
   item_result->inline_size = result.sizes.max_size + inline_margins;
 }
 
-void LineBreaker::HandleBlockInInline(
-    const InlineItem& item,
-    const NGBlockBreakToken* block_break_token,
-    LineInfo* line_info) {
+void LineBreaker::HandleBlockInInline(const InlineItem& item,
+                                      const BlockBreakToken* block_break_token,
+                                      LineInfo* line_info) {
   DCHECK_EQ(item.Type(), InlineItem::kBlockInInline);
   DCHECK(!block_break_token || block_break_token->InputNode().GetLayoutBox() ==
                                    item.GetLayoutObject());
@@ -2714,21 +2718,21 @@ void LineBreaker::HandleBlockInInline(
     constraint_space_.GetExclusionSpace().MoveAndUpdateDerivedGeometry(
         *exclusion_space_);
 
-    NGBlockNode block_node(To<LayoutBox>(item.GetLayoutObject()));
-    const NGColumnSpannerPath* spanner_path_for_child =
+    BlockNode block_node(To<LayoutBox>(item.GetLayoutObject()));
+    const ColumnSpannerPath* spanner_path_for_child =
         FollowColumnSpannerPath(column_spanner_path_, block_node);
-    const NGLayoutResult* layout_result =
+    const LayoutResult* layout_result =
         block_node.Layout(constraint_space_, block_break_token,
                           /* early_break */ nullptr, spanner_path_for_child);
     line_info->SetBlockInInlineLayoutResult(layout_result);
 
     // Early exit if the layout didn't succeed.
-    if (layout_result->Status() != NGLayoutResult::kSuccess) {
+    if (layout_result->Status() != LayoutResult::kSuccess) {
       state_ = LineBreakState::kDone;
       return;
     }
 
-    const NGPhysicalFragment& fragment = layout_result->PhysicalFragment();
+    const auto& fragment = layout_result->GetPhysicalFragment();
     item_result->inline_size =
         LogicalFragment(constraint_space_.GetWritingDirection(), fragment)
             .InlineSize();
@@ -2736,8 +2740,8 @@ void LineBreaker::HandleBlockInInline(
     item_result->should_create_line_box = !layout_result->IsSelfCollapsing();
     item_result->layout_result = layout_result;
 
-    if (const auto* outgoing_block_break_token = To<NGBlockBreakToken>(
-            layout_result->PhysicalFragment().BreakToken())) {
+    if (const auto* outgoing_block_break_token = To<BlockBreakToken>(
+            layout_result->GetPhysicalFragment().GetBreakToken())) {
       // The block broke inside. If the block itself fits, but some content
       // inside overflowed, we now need to enter a parallel flow, i.e. resume
       // the block-in-inline in the next fragmentainer, but continue layout of
@@ -2833,7 +2837,7 @@ bool LineBreaker::ShouldPushFloatAfterLine(
 // allowed to position a float "above" another float which has come before us
 // in the document.
 void LineBreaker::HandleFloat(const InlineItem& item,
-                              const NGBlockBreakToken* float_break_token,
+                              const BlockBreakToken* float_break_token,
                               LineInfo* line_info) {
   // When rewind occurs, an item may be handled multiple times.
   // Since floats are put into a separate list, avoid handling same floats
@@ -2870,7 +2874,7 @@ void LineBreaker::HandleFloat(const InlineItem& item,
 
   LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
   UnpositionedFloat unpositioned_float(
-      NGBlockNode(To<LayoutBox>(item.GetLayoutObject())), float_break_token,
+      BlockNode(To<LayoutBox>(item.GetLayoutObject())), float_break_token,
       constraint_space_.AvailableSize(),
       constraint_space_.PercentageResolutionSize(),
       constraint_space_.ReplacedPercentageResolutionSize(),
@@ -2940,11 +2944,10 @@ void LineBreaker::HandleOutOfFlowPositioned(const InlineItem& item,
   MoveToNextOf(item);
 }
 
-bool LineBreaker::ComputeOpenTagResult(
-    const InlineItem& item,
-    const NGConstraintSpace& constraint_space,
-    bool is_in_svg_text,
-    InlineItemResult* item_result) {
+bool LineBreaker::ComputeOpenTagResult(const InlineItem& item,
+                                       const ConstraintSpace& constraint_space,
+                                       bool is_in_svg_text,
+                                       InlineItemResult* item_result) {
   DCHECK_EQ(item.Type(), InlineItem::kOpenTag);
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
@@ -3652,18 +3655,18 @@ const InlineBreakToken* LineBreaker::CreateBreakToken(
     return nullptr;
   }
 
-  const NGBlockBreakToken* sub_break_token = nullptr;
+  const BlockBreakToken* sub_break_token = nullptr;
   if (resume_block_in_inline_in_same_flow_) {
     const auto* block_in_inline = line_info.BlockInInlineLayoutResult();
     DCHECK(block_in_inline);
-    if (UNLIKELY(block_in_inline->Status() != NGLayoutResult::kSuccess)) {
+    if (UNLIKELY(block_in_inline->Status() != LayoutResult::kSuccess)) {
       return nullptr;
     }
     // Look for a break token inside the block-in-inline, so that we can add it
     // to the inline break token that we're about to create.
     const auto& block_in_inline_fragment =
-        To<NGPhysicalBoxFragment>(block_in_inline->PhysicalFragment());
-    sub_break_token = block_in_inline_fragment.BreakToken();
+        To<PhysicalBoxFragment>(block_in_inline->GetPhysicalFragment());
+    sub_break_token = block_in_inline_fragment.GetBreakToken();
   }
 
   DCHECK_EQ(line_info.HasForcedBreak(), is_after_forced_break_);

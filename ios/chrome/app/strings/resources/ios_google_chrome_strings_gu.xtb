@@ -55,9 +55,11 @@
 <translation id="2574249610672786438">તમે જ્યાંથી Chromeનો ઉપયોગ કરો ત્યાંથી તમારી ટૅબ જોવા માટે, તમારા બધાં ડિવાઇસ પર સાઇન ઇન કરો</translation>
 <translation id="2576431527583832481">Chrome હમણાં જ વધુ સારું થયું છે! એક નવું વર્ઝન ઉપલબ્ધ છે.</translation>
 <translation id="257708665678654955">શું તમે Google Chromeને આ સાઇટ પર આગલી વખતે <ph name="LANGUAGE_NAME" /> પેજને અનુવાદ કરવાનું ઑફર કરવા માગો છો?</translation>
+<translation id="2650286135394207535">તમારા પૅકેજને ટ્રૅક કરવામાં Chromeને તમારી સહાય કરવા દો</translation>
 <translation id="2671426118752779020">તમે Google પાસવર્ડ મેનેજરમાં સાચવેલા તમારા પાસવર્ડનો ઉપયોગ તમારા iPhone પરની અન્ય ઍપમાં કરી શકો છો.</translation>
 <translation id="2689064829982324496">બધી વેબસાઇટ પર તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ કરવા માટે, <ph name="BEGIN_LINK" />Chromeમાંથી સાઇન આઉટ કરો<ph name="END_LINK" />.</translation>
 <translation id="2695886661449553974">Chrome અપડેટ ચેક કરી શક્યું નથી. થોડા સમય પછી ફરી પ્રયાસ કરો.</translation>
+<translation id="2702250627063295552">Chromeમાં વાંચન સૂચિની આઇટમ ઉમેરો</translation>
 <translation id="2736805085127235148">તમારા ડિવાઇસ સેટિંગમાં Chromeના નોટિફિકેશન હાલમાં બંધ કરવામાં આવ્યા છે.</translation>
 <translation id="2767464022270041271">કોઈ સાચવેલો પાસવર્ડ નથી. જ્યારે તમે તમારા પાસવર્ડ સાચવો, ત્યારે Google Password Manager તેને ચેક કરી શકે છે.</translation>
 <translation id="2868822340714096138">Chromeમાં બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
@@ -83,6 +85,7 @@
 <translation id="3744018071945602754">Chromeમાં પાસવર્ડ મેનેજ કરો</translation>
 <translation id="3827545470516145620">તમે આ ડિવાઇસ માટે સ્ટૅન્ડર્ડ સુરક્ષા સંરક્ષણ મેળવી રહ્યા છો</translation>
 <translation id="384394811301901750">Google Chrome, અત્યારે તમારા કૅમેરાનો ઉપયોગ કરી શકતું નથી</translation>
+<translation id="3863841106411295595">Chromeમાં તમારી વાંચન સૂચિમાં ઇનપુટ કરેલા URLs ઉમેરે છે.</translation>
 <translation id="3901001113120561395">Chromeનો વધુને વધુ લાભ મેળવો.</translation>
 <translation id="3967382818307165056">Chromeમાં ચુકવણી પદ્ધતિઓ મેનેજ કરો</translation>
 <translation id="3980220367029651214">તમે સિંક એકાઉન્ટ <ph name="USER_EMAIL1" />થી <ph name="USER_EMAIL2" /> પર સ્વિચ કરી રહ્યાં છો. તમારો અસ્તિત્વમાંનો Chrome ડેટા <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે. આ ડિવાઇસ પરથી આ તમારા ડેટાને ડિલીટ કરશે, પરંતુ તમારો ડેટા <ph name="USER_EMAIL1" /> માં રહેશે.</translation>
@@ -96,7 +99,6 @@
 <translation id="424864128008805179">Chromeમાંથી સાઇન આઉટ કરીએ?</translation>
 <translation id="4251174643044751591">Chromeમાં ચુકવણી પદ્ધતિઓનું સેટિંગ પેજ ખોલે છે.</translation>
 <translation id="4453284704333523777">Chromeના સેટિંગ મેનેજ કરો</translation>
-<translation id="4471662743048412085">Chrome પર ભાળ મેળવેલા પૅકેજને ટ્રૅક કરો</translation>
 <translation id="4508370294876102450">કોઈપણ ઍપમાંથી Chrome ખોલો</translation>
 <translation id="4523886039239821078">કેટલાંક એડ-ઓનને કારણે Chrome ક્રૅશ થાય છે. કૃપા કરી આને અનઇન્સ્ટૉલ કરો:</translation>
 <translation id="4633328489441962921">Chrome અપડેટ ચેક કરી શકતું નથી</translation>
@@ -168,7 +170,6 @@
 <translation id="7124339256045485976">Chrome અપ ટૂ ડેટ રાખો</translation>
 <translation id="7161390184744336561">Google Chrome જૂનું થઈ ગયું છે</translation>
 <translation id="7165736900384873061">Google Chrome QR સ્કૅનરને ઉપયોગમાં લેવાનું શરૂ કરો</translation>
-<translation id="7173660919484573146">તમારા પાસવર્ડની અધિકૃત ઍક્સેસની ખાતરી કરવા માટે, Chrome ચહેરાના IDનો ઉપયોગ કરે છે.</translation>
 <translation id="7187993566681480880">તમને Chrome પર સલામત રાખે છે અને જ્યારે તમે સાઇન ઇન થયા હો, ત્યારે Googleની અન્ય ઍપમાં તમારી સુરક્ષા બહેતર બનાવવામાં ઉપયોગમાં લેવાઈ શકે છે.</translation>
 <translation id="7200524487407690471">Chrome દરરોજ ઑટોમૅટિક રીતે સલામતી માટે તપાસ ચલાવે છે, જેથી તમને ડેટા ઉલ્લંઘનની ઘટનાઓ, અસલામત વેબસાઇટ અને બીજા ઘણા જોખમોથી સલામત રાખી શકાય. તમે સેટિંગમાં જઈને સલામતી માટે તપાસની સુવિધા વિશે વધુ જાણી શકો છો.</translation>
 <translation id="72119412072970160">તમે Google પાસવર્ડ મેનેજરમાં સાચવેલા તમારા પાસવર્ડનો ઉપયોગ તમારા iPad પરની અન્ય ઍપમાં કરી શકો છો.</translation>
@@ -188,6 +189,7 @@
 <translation id="7698568245838009292">Chromeને કૅમેરાનો ઍક્સેસ જોઈશે</translation>
 <translation id="7754633291442704733">તમારી સંસ્થા <ph name="DOMAIN" />ને તમારા Chrome ડેટા, બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને તમે આ એકાઉન્ટમાં સ્ટોર કરો છો તે અન્ય સેટિંગનો ઍક્સેસ મળશે. જ્યારે તમે સાઇન આઉટ કરશો, ત્યારે આ ડિવાઇસમાંથી તમારો ડેટા સાફ કરવામાં આવશે.  જોકે, તમારો ડેટા તમારા મેનેજ કરેલા Google એકાઉન્ટમાં સ્ટોર કરેલો રહેશે અને તમારી સંસ્થા માટે ઉપલબ્ધ રહેશે. તમારી સંસ્થા વિશેષ કરીને તે એકાઉન્ટ માટે વપરાશકર્તાની પૉલિસીઓ સેટ કરી શકે છે કે જે Chromeના વર્તનને બદલી શકે છે.</translation>
 <translation id="7780154209050837198">Chromeનો વધુમાં વધુ લાભ લેવા માટે, તમારા Google એકાઉન્ટ વડે Chromeમાં સાઇન ઇન કરો.</translation>
+<translation id="7792140019572081272">Chrome ચહેરાના ID વડે તમારો સંવેદનશીલ વ્યક્તિગત ડેટા સુરક્ષિત રાખે છે.</translation>
 <translation id="7855730255114109580">Google Chrome અપ ટૂ ડેટ છે</translation>
 <translation id="7897703007638178753">Chromeના તાજેતરના ટૅબ જુઓ</translation>
 <translation id="7925119591961387184">"Chrome" પસંદ કરો.</translation>

@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5320594929574852403">Flyttas åt vänster</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
+<translation id="539541037630043848">Öppna <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">Skannar sida <ph name="COUNT" />.</translation>
 <translation id="5671277269877808209">Kvadratiskt</translation>
 <translation id="574392208103952083">Medelstark</translation>
@@ -163,6 +164,7 @@ Om din feedback handlar om bild- eller videokvalitet bifogar du en exempelbild e
 <translation id="8870695351537079478">Det gick inte att starta inspelningen</translation>
 <translation id="8880167521484863515">4 till 3</translation>
 <translation id="8903921497873541725">Zooma in</translation>
+<translation id="8926890870105777777">Gå med i nätverket <ph name="WIFINAME" /></translation>
 <translation id="9045010116236796332">Placera dokumentets kanter i ramen</translation>
 <translation id="9045155556724273246">Tio sekunder</translation>
 <translation id="906331135292332864">Bilden bearbetas …</translation>

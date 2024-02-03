@@ -13,6 +13,10 @@
 
 namespace chromeos::features {
 
+namespace {
+bool g_app_install_service_uri_enabled_for_testing = false;
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables triggering app installs from a specific URI.
 BASE_FEATURE(kAppInstallServiceUri,
@@ -73,9 +77,6 @@ BASE_FEATURE(kCrosWebAppInstallDialog,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // With this feature enabled, the shortcut app badge is painted in the UI
 // instead of being part of the shortcut app icon.
-BASE_FEATURE(kSeparateWebAppShortcutBadgeIcon,
-             "SeparateWebAppShortcutBadgeIcon",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the new UI for browser created shortcut backed by web app system
 // on Chrome OS.
@@ -111,6 +112,11 @@ BASE_FEATURE(kDisableOfficeEditingComponentApp,
 // Disables translation services of the Quick Answers V2.
 BASE_FEATURE(kDisableQuickAnswersV2Translation,
              "DisableQuickAnswersV2Translation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables Essential Search in Omnibox for both launcher and browser.
+BASE_FEATURE(kEssentialSearch,
+             "EssentialSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable experimental goldfish web app isolation.
@@ -177,6 +183,9 @@ BASE_FEATURE(kRoundedWindows,
 const char kRoundedWindowsRadius[] = "window_radius";
 
 bool IsAppInstallServiceUriEnabled() {
+  if (g_app_install_service_uri_enabled_for_testing) {
+    return true;
+  }
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return chromeos::BrowserParamsProxy::Get()->IsAppInstallServiceUriEnabled();
 #else
@@ -214,15 +223,6 @@ bool IsCrosComponentsEnabled() {
   return base::FeatureList::IsEnabled(kCrosComponents) && IsJellyEnabled();
 }
 
-bool IsSeparateWebAppShortcutBadgeIconEnabled() {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(b/304661502): Pass the value to lacros.
-  return false;
-#else
-  return base::FeatureList::IsEnabled(kSeparateWebAppShortcutBadgeIcon);
-#endif
-}
-
 bool IsCrosShortstandEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return chromeos::BrowserParamsProxy::Get()->IsCrosShortstandEnabled();
@@ -252,6 +252,10 @@ bool IsDeskProfilesEnabled() {
 #endif
 }
 
+bool IsEssentialSearchEnabled() {
+  return base::FeatureList::IsEnabled(kEssentialSearch);
+}
+
 bool IsIWAForTelemetryExtensionAPIEnabled() {
   return base::FeatureList::IsEnabled(kIWAForTelemetryExtensionAPI);
 }
@@ -266,6 +270,8 @@ bool IsJellyrollEnabled() {
   return IsJellyEnabled() && base::FeatureList::IsEnabled(kJellyroll);
 }
 
+// TODO:b/312592767 - Remove this function in favor of the equivalent ash
+// function.
 bool IsOrcaEnabled() {
   return base::FeatureList::IsEnabled(kOrca) ||
          base::FeatureList::IsEnabled(kOrcaDogfood);
@@ -319,6 +325,10 @@ int RoundedWindowsRadius() {
 
   return base::GetFieldTrialParamByFeatureAsInt(
       kRoundedWindows, kRoundedWindowsRadius, /*default_value=*/12);
+}
+
+base::AutoReset<bool> SetAppInstallServiceUriEnabledForTesting() {
+  return {&g_app_install_service_uri_enabled_for_testing, true};
 }
 
 }  // namespace chromeos::features

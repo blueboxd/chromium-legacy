@@ -6,18 +6,17 @@ import '../../elements/icons.html.js';
 
 import {assertInstanceof} from 'chrome://resources/ash/common/assert.js';
 
-import {DialogType} from '../../../common/js/dialog_type.js';
+import {decorate} from '../../../common/js/cr_ui.js';
 import {queryDecoratedElement, queryRequiredElement} from '../../../common/js/dom_utils.js';
 import {isDlpEnabled, isNewDirectoryTreeEnabled} from '../../../common/js/flags.js';
 import {str, strf} from '../../../common/js/translations.js';
-import {decorate} from '../../../common/js/ui.js';
 import {AllowedPaths} from '../../../common/js/volume_manager_types.js';
 import {BreadcrumbContainer} from '../../../containers/breadcrumb_container.js';
 import {CloudPanelContainer} from '../../../containers/cloud_panel_container.js';
 import {DirectoryTreeContainer} from '../../../containers/directory_tree_container.js';
 import {NudgeContainer} from '../../../containers/nudge_container.js';
 import {SearchContainer} from '../../../containers/search_container.js';
-import {VolumeManager} from '../../../externs/volume_manager.js';
+import {DialogType} from '../../../externs/ts/state.js';
 import {XfConflictDialog} from '../../../widgets/xf_conflict_dialog.js';
 import {XfDlpRestrictionDetailsDialog} from '../../../widgets/xf_dlp_restriction_details_dialog.js';
 import {XfPasswordDialog} from '../../../widgets/xf_password_dialog.js';
@@ -503,7 +502,8 @@ export class FileManagerUI {
    *
    * @param {!FileTable} table
    * @param {!FileGrid} grid
-   * @param {!VolumeManager} volumeManager
+   * @param {!import('../../../externs/volume_manager.js').VolumeManager}
+   *     volumeManager
    */
   initAdditionalUI(table, grid, volumeManager) {
     // List container.
@@ -617,8 +617,6 @@ export class FileManagerUI {
   /**
    * TODO(hirono): Merge the method into initAdditionalUI.
    * @param {!(DirectoryTree|DirectoryTreeContainer)} directoryTree
-   *
-   * @suppress {checkTypes} closure can't cast Element to XfTree.
    */
   initDirectoryTree(directoryTree) {
     if (isNewDirectoryTreeEnabled()) {

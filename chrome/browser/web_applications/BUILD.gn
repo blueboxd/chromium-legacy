@@ -286,6 +286,8 @@ source_set("web_applications") {
     "web_app_origin_association_manager.h",
     "web_app_origin_association_task.cc",
     "web_app_origin_association_task.h",
+    "web_app_pref_guardrails.cc",
+    "web_app_pref_guardrails.h",
     "web_app_prefs_utils.cc",
     "web_app_prefs_utils.h",
     "web_app_proto_utils.cc",
@@ -656,6 +658,28 @@ source_set("web_applications_test_support") {
   }
 }
 
+# This has to be a separate target to avoid circular dependencies with
+# `//chrome/test:test_support` target.
+source_set("prevent_close_test_support") {
+  testonly = true
+
+  sources = [
+    "test/prevent_close_test_base.cc",
+    "test/prevent_close_test_base.h",
+  ]
+  deps = [
+    ":web_applications",
+    ":web_applications_test_support",
+    "//chrome/browser/policy:test_support",
+    "//chrome/browser/profiles:profile",
+    "//chrome/browser/ui:ui",
+    "//chrome/test:test_support",
+    "//components/policy/core/common:test_support",
+    "//components/webapps/common:common",
+    "//ui/base:types",
+  ]
+}
+
 source_set("web_applications_unit_tests") {
   testonly = true
 
@@ -735,7 +759,7 @@ source_set("web_applications_unit_tests") {
     "web_app_icon_manager_unittest.cc",
     "web_app_install_finalizer_unittest.cc",
     "web_app_install_utils_unittest.cc",
-    "web_app_prefs_utils_unittest.cc",
+    "web_app_pref_guardrails_unittest.cc",
     "web_app_proto_utils_unittest.cc",
     "web_app_registrar_unittest.cc",
     "web_app_sync_bridge_unittest.cc",
@@ -829,6 +853,7 @@ source_set("web_applications_unit_tests") {
     "//ui/base/idle:idle",
     "//ui/base/idle:test_support",
     "//ui/events/devices:test_support",
+    "//ui/gfx:test_support",
   ]
 
   if (is_chromeos_ash) {
@@ -911,7 +936,6 @@ source_set("web_applications_browser_tests") {
     "web_app_icon_manager_browsertest.cc",
     "web_app_internals_browsertest.cc",
     "web_app_origin_association_manager_browsertest.cc",
-    "web_app_pref_migration_browsertest.cc",
     "web_app_scope_extensions_browsertest.cc",
     "web_contents/web_app_url_loader_browsertest.cc",
   ]
@@ -982,6 +1006,7 @@ source_set("web_applications_browser_tests") {
     deps += [
       "//chrome/browser/web_applications/app_service:test_support",
       "//chromeos/constants",
+      "//chromeos/lacros",
       "//chromeos/startup",
     ]
   }

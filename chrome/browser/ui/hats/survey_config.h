@@ -30,12 +30,12 @@ extern const char kHatsSurveyTriggerPerformanceControlsPerformance[];
 extern const char kHatsSurveyTriggerPerformanceControlsBatteryPerformance[];
 extern const char kHatsSurveyTriggerPerformanceControlsHighEfficiencyOptOut[];
 extern const char kHatsSurveyTriggerPerformanceControlsBatterySaverOptOut[];
-extern const char kHatsSurveyTriggerPermissionsPrompt[];
 extern const char kHatsSurveyTriggerPrivacyGuide[];
 extern const char kHatsSurveyTriggerPrivacySandbox[];
 extern const char kHatsSurveyTriggerRedWarning[];
 extern const char kHatsSurveyTriggerSettings[];
 extern const char kHatsSurveyTriggerSettingsPrivacy[];
+extern const char kHatsSurveyTriggerSuggestedPasswordsExperiment[];
 extern const char kHatsSurveyTriggerTrackingProtectionControlImmediate[];
 extern const char kHatsSurveyTriggerTrackingProtectionTreatmentImmediate[];
 extern const char kHatsSurveyTriggerTrackingProtectionControlDelayed[];
@@ -69,10 +69,13 @@ extern const char kHatsSurveyTriggerTrustSafetyV2PrivacySandbox4NoticeOk[];
 extern const char
     kHatsSurveyTriggerTrustSafetyV2PrivacySandbox4NoticeSettings[];
 extern const char kHatsSurveyTriggerTrustSafetyV2SafeBrowsingInterstitial[];
+extern const char kHatsSurveyTriggerWallpaperSearch[];
 extern const char kHatsSurveyTriggerWhatsNew[];
 #else
 extern const char kHatsSurveyTriggerAndroidStartupSurvey[];
 #endif
+
+extern const char kHatsSurveyTriggerPermissionsPrompt[];
 
 extern const char kHatsSurveyTriggerTesting[];
 // The Trigger ID for a test HaTS Next survey which is available for testing
@@ -129,4 +132,4 @@ void GetActiveSurveyConfigs(SurveyConfigs& survey_configs_by_triggers_);
 
 }  // namespace hats
 
-#endif  // def CHROME_BROWSER_UI_HATS_SURVEY_CONFIG_H_
+#endif  // CHROME_BROWSER_UI_HATS_SURVEY_CONFIG_H_

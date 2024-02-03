@@ -76,9 +76,9 @@
 #import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/memory/model/memory_debugger_manager.h"
-#import "ios/chrome/browser/metrics/constants.h"
-#import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
-#import "ios/chrome/browser/ntp/set_up_list_prefs.h"
+#import "ios/chrome/browser/metrics/model/constants.h"
+#import "ios/chrome/browser/metrics/model/ios_chrome_metrics_service_client.h"
+#import "ios/chrome/browser/ntp/model/set_up_list_prefs.h"
 #import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/photos/model/photos_policy.h"
@@ -713,7 +713,8 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 }
 
 // This method should be periodically pruned of year+ old migrations.
-void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
+void MigrateObsoleteBrowserStatePrefs(const base::FilePath& state_path,
+                                      PrefService* prefs) {
   // Check MigrateDeprecatedAutofillPrefs() to see if this is safe to remove.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(prefs);
 
@@ -838,7 +839,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 10/2023, but DO NOT REMOVE after the usual year!
   // TODO(crbug.com/1486420): Remove ~one year after full launch.
-  browser_sync::MaybeMigrateSyncingUserToSignedIn(prefs);
+  browser_sync::MaybeMigrateSyncingUserToSignedIn(state_path, prefs);
 }
 
 void MigrateObsoleteUserDefault() {

@@ -60,6 +60,12 @@ class FolderInMyFiles {
   std::vector<base::FilePath> files_;
 };
 
+// Take test files from the chromeos/file_manager/ test directory and copy them
+// into a temp folder mounted within MyFiles.
+std::vector<storage::FileSystemURL> CopyTestFilesIntoMyFiles(
+    Profile* profile,
+    std::vector<std::string> file_names);
+
 // Load the default set of component extensions used on ChromeOS. This should be
 // done in an override of InProcessBrowserTest::SetUpOnMainThread().
 void AddDefaultComponentExtensionsOnMainThread(Profile* profile);
@@ -70,12 +76,18 @@ scoped_refptr<const extensions::Extension> InstallTestingChromeApp(
     Profile* profile,
     const char* test_path_ascii);
 
-// Installs a test File System Provider chrome app that provides a file system
-// containing readwrite.gif and readonly.png files, and wait for the file system
-// to be mounted. Returns a base::WeakPtr<file_manager::Volume> to the mounted
-// file system.
+// Uses InstallTestingChromeApp to install a test File System Provider chrome
+// app that provides a file system containing readwrite.gif and readonly.png
+// files, and wait for the file system to be mounted. Returns a
+// base::WeakPtr<file_manager::Volume> to the mounted file system.
 base::WeakPtr<file_manager::Volume> InstallFileSystemProviderChromeApp(
     Profile* profile);
+// Like above but uses the provided chrome app installation function
+// |install_fn| instead of InstallTestingChromeApp. |install_fn| receives the
+// chrome app's path (relative to DIR_TEST_DATA) as argument.
+base::WeakPtr<file_manager::Volume> InstallFileSystemProviderChromeApp(
+    Profile* profile,
+    base::OnceCallback<void(const char*)> install_fn);
 
 // Gets the list of available tasks for the provided `file`. Note only the path
 // string is used for this helper, so it must have a well-known MIME type
@@ -205,15 +217,32 @@ class FakeExtensionProviderOneDrive
       const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info)
       override;
 
+  // Calls `request_mount_callback` if set.
+  bool RequestMount(
+      Profile* profile,
+      ash::file_system_provider::RequestMountCallback callback) override;
+
+  // `RequestMount()` will call this callback as its implementation.
+  void SetRequestMountImpl(
+      base::OnceCallback<
+          void(ash::file_system_provider::RequestMountCallback)>);
+
  private:
   FakeExtensionProviderOneDrive(
       const extensions::ExtensionId& extension_id,
       const ash::file_system_provider::Capabilities& capabilities);
+  ~FakeExtensionProviderOneDrive() override;
+
+  base::OnceCallback<void(ash::file_system_provider::RequestMountCallback)>
+      request_mount_impl_;
 };
 
 // Mount a `FakeProvidedFileSystemOneDrive`.
 FakeProvidedFileSystemOneDrive* CreateFakeProvidedFileSystemOneDrive(
     Profile* profile);
+
+// Only call this after `CreateFakeProvidedFileSystemOneDrive()`.
+FakeExtensionProviderOneDrive* GetFakeProviderOneDrive(Profile* profile);
 
 }  // namespace test
 }  // namespace file_manager

@@ -108,9 +108,9 @@ BASE_FEATURE(kFledgeRounding,
              base::FEATURE_ENABLED_BY_DEFAULT);
 // For now default bid and score to full resolution.
 const base::FeatureParam<int> kFledgeBidReportingBits{
-    &kFledgeRounding, "fledge_bid_reporting_bits", 16};
+    &kFledgeRounding, "fledge_bid_reporting_bits", 8};
 const base::FeatureParam<int> kFledgeScoreReportingBits{
-    &kFledgeRounding, "fledge_score_reporting_bits", 16};
+    &kFledgeRounding, "fledge_score_reporting_bits", 8};
 const base::FeatureParam<int> kFledgeAdCostReportingBits{
     &kFledgeRounding, "fledge_ad_cost_reporting_bits", 8};
 
@@ -221,7 +221,6 @@ InterestGroupAuctionReporter::InterestGroupAuctionReporter(
   DCHECK(auction_worklet_manager_);
   DCHECK(url_loader_factory_);
   DCHECK(client_security_state_);
-  DCHECK(!interest_groups_that_bid_.empty());
   EnforceAttestationsReportUrls(debug_win_report_urls_);
   EnforceAttestationsReportUrls(debug_loss_report_urls_);
 }
@@ -244,6 +243,7 @@ void InterestGroupAuctionReporter::Start(base::OnceClosure callback) {
   if (!component_seller_winning_bid_info_) {
     fenced_frame_reporter_->OnUrlMappingReady(
         blink::FencedFrame::ReportingDestination::kComponentSeller,
+        /*reporting_url_declarer_origin=*/absl::nullopt,
         /*reporting_url_map=*/{});
   }
   callback_ = std::move(callback);
@@ -257,7 +257,8 @@ void InterestGroupAuctionReporter::Start(base::OnceClosure callback) {
 }
 
 void InterestGroupAuctionReporter::InitializeFromServerResponse(
-    const BiddingAndAuctionResponse& response) {
+    const BiddingAndAuctionResponse& response,
+    blink::FencedFrame::ReportingDestination seller_destination) {
   reporter_worklet_state_ = ReporterState::kAllWorkletsCompleted;
 
   if (response.seller_reporting) {
@@ -266,15 +267,16 @@ void InterestGroupAuctionReporter::InitializeFromServerResponse(
     // Ignore return value - there's nothing we can do at this point if the
     // server did something wrong beyond logging the error.
     AddReportResultResult(
-        seller_reporting.reporting_url, seller_reporting.beacon_urls,
-        blink::FencedFrame::ReportingDestination::kSeller, errors_);
+        auction_config_->seller, seller_reporting.reporting_url,
+        seller_reporting.beacon_urls, seller_destination, errors_);
   }
   if (response.buyer_reporting) {
     const BiddingAndAuctionResponse::ReportingURLs& buyer_reporting =
         *response.buyer_reporting;
     // Ignore return value - there's nothing we can do at this point if the
     // server did something wrong beyond logging the error.
-    AddReportWinResult(buyer_reporting.reporting_url,
+    AddReportWinResult(response.interest_group_owner,
+                       buyer_reporting.reporting_url,
                        buyer_reporting.beacon_urls,
                        /*bidder_ad_macro_map=*/absl::nullopt, errors_);
   }
@@ -369,6 +371,21 @@ void InterestGroupAuctionReporter::RequestSellerWorklet(
     reporter_worklet_state_ = ReporterState::kComponentSellerReportResult;
   }
   seller_worklet_handle_.reset();
+
+  if (seller_info->saved_response.has_value()) {
+    InitializeFromServerResponse(
+        *seller_info->saved_response,
+        seller_info == &top_level_seller_winning_bid_info_
+            ? blink::FencedFrame::ReportingDestination::kSeller
+            : blink::FencedFrame::ReportingDestination::kComponentSeller);
+
+    // If any event-level reports were queued, send them now, if the winning ad
+    // has been navigated to.
+    SendPendingReportsIfNavigated();
+
+    OnReportingComplete();
+    return;
+  }
   // base::Unretained is safe to use for these callbacks because destroying
   // `seller_worklet_handle_` will prevent the callbacks from being invoked, if
   // `this` is destroyed while still waiting on the callbacks.
@@ -563,7 +580,8 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
   }
 
   std::vector<std::string> validation_errors;
-  if (!AddReportResultResult(seller_report_url, seller_ad_beacon_map,
+  if (!AddReportResultResult(seller_info->auction_config->seller,
+                             seller_report_url, seller_ad_beacon_map,
                              reporting_destination, validation_errors)) {
     for (const auto& error : validation_errors) {
       mojo::ReportBadMessage(error);
@@ -595,6 +613,7 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
 }
 
 bool InterestGroupAuctionReporter::AddReportResultResult(
+    const url::Origin& seller_origin,
     const absl::optional<GURL>& seller_report_url,
     const base::flat_map<std::string, GURL>& seller_ad_beacon_map,
     blink::FencedFrame::ReportingDestination destination,
@@ -615,7 +634,7 @@ bool InterestGroupAuctionReporter::AddReportResultResult(
     }
   }
   fenced_frame_reporter_->OnUrlMappingReady(
-      destination, std::move(validated_seller_ad_beacon_map));
+      destination, seller_origin, std::move(validated_seller_ad_beacon_map));
 
   if (seller_report_url) {
     if (!IsEventLevelReportingUrlValid(*seller_report_url)) {
@@ -647,6 +666,12 @@ void InterestGroupAuctionReporter::RequestBidderWorklet(
   absl::optional<uint16_t> experiment_group_id =
       InterestGroupAuction::GetBuyerExperimentId(*bidder_auction.auction_config,
                                                  interest_group.owner);
+  // While this has no effect when calling reportWin(), it's best to set it to
+  // the same value to maximize the chance of finding a worklet to reuse.
+  std::string trusted_bidder_signals_slot_size_param =
+      InterestGroupAuction::CreateTrustedBiddingSignalsSlotSizeParam(
+          *bidder_auction.auction_config,
+          interest_group.trusted_bidding_signals_slot_size_mode);
 
   // base::Unretained is safe to use for these callbacks because destroying
   // `bidder_worklet_handle_` will prevent the callbacks from being invoked, if
@@ -657,6 +682,7 @@ void InterestGroupAuctionReporter::RequestBidderWorklet(
       interest_group.trusted_bidding_signals_url,
       /*needs_cors_for_additional_bid=*/
       winning_bid_info_.provided_as_additional_bid, experiment_group_id,
+      trusted_bidder_signals_slot_size_param,
       base::BindOnce(&InterestGroupAuctionReporter::OnBidderWorkletReceived,
                      base::Unretained(this), signals_for_winner),
       base::BindOnce(&InterestGroupAuctionReporter::OnBidderWorkletFatalError,
@@ -863,8 +889,10 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
   }
 
   std::vector<std::string> validation_errors;
-  if (!AddReportWinResult(bidder_report_url, bidder_ad_beacon_map,
-                          bidder_ad_macro_map, validation_errors)) {
+  if (!AddReportWinResult(
+          winning_bid_info_.storage_interest_group->interest_group.owner,
+          bidder_report_url, bidder_ad_beacon_map, bidder_ad_macro_map,
+          validation_errors)) {
     for (const auto& error : validation_errors) {
       mojo::ReportBadMessage(error);
     }
@@ -878,6 +906,7 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
 }
 
 bool InterestGroupAuctionReporter::AddReportWinResult(
+    const url::Origin& bidder_origin,
     const absl::optional<GURL>& bidder_report_url,
     const base::flat_map<std::string, GURL>& bidder_ad_beacon_map,
     const absl::optional<base::flat_map<std::string, std::string>>&
@@ -909,7 +938,7 @@ bool InterestGroupAuctionReporter::AddReportWinResult(
     }
   }
   fenced_frame_reporter_->OnUrlMappingReady(
-      blink::FencedFrame::ReportingDestination::kBuyer,
+      blink::FencedFrame::ReportingDestination::kBuyer, bidder_origin,
       std::move(validated_bidder_ad_beacon_map), std::move(bidder_macros));
 
   if (bidder_report_url) {

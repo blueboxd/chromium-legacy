@@ -6,11 +6,10 @@ import {assert} from 'chrome://resources/ash/common/assert.js';
 
 import {ArrayDataModel} from '../../common/js/array_data_model.js';
 import {compareLabel, compareName} from '../../common/js/entry_utils.js';
-import {FileExtensionType, FileType} from '../../common/js/file_type.js';
+import {FileExtensionType, getType, isImage, isRaw} from '../../common/js/file_type.js';
 import {getRecentDateBucket, getTranslationKeyForDateBucket} from '../../common/js/recent_date_bucket.js';
 import {collator, str, strf} from '../../common/js/translations.js';
 import {EntryLocation} from '../../externs/entry_location.js';
-import {VolumeManager} from '../../externs/volume_manager.js';
 
 import {MetadataModel} from './metadata/metadata_model.js';
 
@@ -119,7 +118,10 @@ export class FileListModel extends ArrayDataModel {
      */
     this.useModificationByMeTime_ = false;
 
-    /** @private @type {?VolumeManager} The volume manager. */
+    /**
+     * @private @type {?import('../../externs/volume_manager.js').VolumeManager}
+     *     The volume manager.
+     */
     this.volumeManager_ = null;
 
     /**
@@ -158,8 +160,7 @@ export class FileListModel extends ArrayDataModel {
   }
 
   /**
-   * @param {!FileExtensionType} fileType Type object returned by
-   *     FileType.getType().
+   * @param {!FileExtensionType} fileType Type object returned by getType().
    * @return {string} Localized string representation of file type.
    */
   static getFileTypeString(fileType) {
@@ -346,16 +347,13 @@ export class FileListModel extends ArrayDataModel {
     // Dispatch permute/splice event.
     this.dispatchPermutedEvent_(permutation);
     // TODO(arv): Maybe unify splice and change events?
-    const spliceEvent = new Event('splice');
-    // @ts-ignore: error TS2339: Property 'removed' does not exist on type
-    // 'Event'.
-    spliceEvent.removed = deletedItems;
-    // @ts-ignore: error TS2339: Property 'added' does not exist on type
-    // 'Event'.
-    spliceEvent.added = args;
-    // @ts-ignore: error TS2339: Property 'index' does not exist on type
-    // 'Event'.
-    spliceEvent.index = spliceIndex;
+    const spliceEvent = new CustomEvent('splice', {
+      detail: {
+        removed: deletedItems,
+        added: args,
+        index: spliceIndex,
+      },
+    });
     this.dispatchEvent(spliceEvent);
 
     this.updateGroupBySnapshot_();
@@ -429,7 +427,7 @@ export class FileListModel extends ArrayDataModel {
         // @ts-ignore: error TS2532: Object is possibly 'undefined'.
         this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
             .contentMimeType;
-    if (FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType)) {
+    if (isImage(entry, mimeType) || isRaw(entry, mimeType)) {
       this.numImageFiles_++;
     }
   }
@@ -450,7 +448,7 @@ export class FileListModel extends ArrayDataModel {
         // @ts-ignore: error TS2532: Object is possibly 'undefined'.
         this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
             .contentMimeType;
-    if (FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType)) {
+    if (isImage(entry, mimeType) || isRaw(entry, mimeType)) {
       this.numImageFiles_--;
     }
   }
@@ -586,17 +584,18 @@ export class FileListModel extends ArrayDataModel {
         this.metadataModel_.getCache([a, b], ['contentMimeType']);
     const aType = FileListModel.getFileTypeString(
         // @ts-ignore: error TS2532: Object is possibly 'undefined'.
-        FileType.getType(a, properties[0].contentMimeType));
+        getType(a, properties[0].contentMimeType));
     const bType = FileListModel.getFileTypeString(
         // @ts-ignore: error TS2532: Object is possibly 'undefined'.
-        FileType.getType(b, properties[1].contentMimeType));
+        getType(b, properties[1].contentMimeType));
 
     const result = collator.compare(aType, bType);
     return result !== 0 ? result : compareName(a, b);
   }
 
   /**
-   * @param {!VolumeManager} volumeManager The volume manager.
+   * @param {!import('../../externs/volume_manager.js').VolumeManager}
+   *     volumeManager The volume manager.
    */
   InitNewDirContents(volumeManager) {
     this.volumeManager_ = volumeManager;

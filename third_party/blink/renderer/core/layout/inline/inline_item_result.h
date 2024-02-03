@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/layout/inline/hyphen_result.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_item_text_index.h"
 #include "third_party/blink/renderer/core/layout/inline/text_offset_range.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
+#include "third_party/blink/renderer/core/layout/positioned_float.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -21,7 +21,7 @@
 namespace blink {
 
 class InlineItem;
-class NGLayoutResult;
+class LayoutResult;
 class ShapeResult;
 class ShapeResultView;
 struct PositionedFloat;
@@ -88,8 +88,8 @@ struct CORE_EXPORT InlineItemResult {
   // This field may be set even when this item is not hyphenated.
   HyphenResult hyphen;
 
-  // NGLayoutResult for atomic inline items.
-  Member<const NGLayoutResult> layout_result;
+  // LayoutResult for atomic inline items.
+  Member<const LayoutResult> layout_result;
 
   // PositionedFloat for floating inline items. Should only be present for
   // positioned floats (not unpositioned). It indicates where it was placed

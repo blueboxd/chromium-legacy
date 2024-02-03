@@ -259,7 +259,7 @@ void ViewTreeHostRootViewFrameFactory::Paint(
   DCHECK(gpu_buffer || base::FeatureList::IsEnabled(
                            kUseMappableSIInViewTreeHostRootViewFrameFactory));
 
-  std::unique_ptr<gpu::SharedImageInterface::ScopedMapping> mapping;
+  std::unique_ptr<gpu::ClientSharedImage::ScopedMapping> mapping;
 
   auto display_item_list = base::MakeRefCounted<cc::DisplayItemList>();
   float dsf = widget_->GetCompositor()->device_scale_factor();
@@ -275,10 +275,8 @@ void ViewTreeHostRootViewFrameFactory::Paint(
           kUseMappableSIInViewTreeHostRootViewFrameFactory)) {
     DCHECK(!gpu_buffer);
 
-    gpu::SharedImageInterface* sii =
-        resource->context_provider->SharedImageInterface();
     CHECK(resource->client_shared_image());
-    mapping = sii->MapSharedImage(resource->client_shared_image());
+    mapping = resource->client_shared_image()->Map();
     if (!mapping) {
       TRACE_EVENT0("ui", "ViewTreeHostRootView::Paint::Map");
       LOG(ERROR) << "MapSharedImage Failed.";
@@ -332,7 +330,7 @@ void ViewTreeHostRootViewFrameFactory::AppendQuad(
                      /*layer_rect=*/output_rect,
                      /*visible_layer_rect=*/output_rect,
                      /*filter_info=*/gfx::MaskFilterInfo(),
-                     /*clip=*/absl::nullopt, /*contents_opaque=*/false,
+                     /*clip=*/std::nullopt, /*contents_opaque=*/false,
                      /*opacity_f=*/1.f,
                      /*blend=*/SkBlendMode::kSrcOver,
                      /*sorting_context=*/0,

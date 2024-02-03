@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
+#include "third_party/blink/public/web/web_form_related_change_type.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -117,6 +118,20 @@ bool HTMLFormControlElement::FormNoValidate() const {
 void HTMLFormControlElement::Reset() {
   SetAutofillState(WebAutofillState::kNotFilled);
   ResetImpl();
+}
+
+void HTMLFormControlElement::AttachLayoutTree(AttachContext& context) {
+  HTMLElement::AttachLayoutTree(context);
+  if (!GetLayoutObject()) {
+    FocusabilityLost();
+  }
+}
+
+void HTMLFormControlElement::DetachLayoutTree(bool performing_reattach) {
+  HTMLElement::DetachLayoutTree(performing_reattach);
+  if (!performing_reattach) {
+    FocusabilityLost();
+  }
 }
 
 void HTMLFormControlElement::AttributeChanged(
@@ -386,6 +401,16 @@ HTMLFormControlElement::popoverTargetElement() {
   return PopoverTargetElement{.popover = target_popover, .action = action};
 }
 
+HTMLElement* HTMLFormControlElement::invokeTargetElement() {
+  if (!IsInTreeScope() || IsDisabledFormControl() ||
+      (Form() && IsSuccessfulSubmitButton())) {
+    return nullptr;
+  }
+
+  return DynamicTo<HTMLElement>(
+      GetElementAttribute(html_names::kInvoketargetAttr));
+}
+
 AtomicString HTMLFormControlElement::popoverTargetAction() const {
   auto attribute_value =
       FastGetAttribute(html_names::kPopovertargetactionAttr).LowerASCII();
@@ -426,8 +451,7 @@ void HTMLFormControlElement::DefaultEventHandler(Event& event) {
   // buttons.
   if (event.type() == event_type_names::kDOMActivate && IsInTreeScope() &&
       !IsDisabledFormControl() && (!Form() || !IsSuccessfulSubmitButton())) {
-    HTMLElement* invokee = DynamicTo<HTMLElement>(
-        GetElementAttribute(html_names::kInvoketargetAttr));
+    auto* invokee = invokeTargetElement();
     auto popover = popoverTargetElement();
 
     // invoketarget & popovertarget shouldn't be combined, so warn.

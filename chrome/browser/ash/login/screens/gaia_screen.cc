@@ -39,7 +39,7 @@ constexpr char kUserActionEnterIdentifier[] = "identifierEntered";
 constexpr char kUserActionQuickStartButtonClicked[] = "activateQuickStart";
 
 bool ShouldPrepareForRecovery(const AccountId& account_id) {
-  if (!features::IsCryptohomeRecoveryEnabled() || !account_id.is_valid()) {
+  if (!account_id.is_valid()) {
     return false;
   }
 
@@ -122,10 +122,8 @@ void GaiaScreen::LoadOnlineGaia() {
   switch (context->gaia_config.gaia_path) {
     case WizardContext::GaiaPath::kDefault:
     case WizardContext::GaiaPath::kSamlRedirect:
-      LoadDefaultOnlineGaia(context->gaia_config.prefilled_account);
-      break;
     case WizardContext::GaiaPath::kReauth:
-      LoadDefaultOnlineGaia(EmptyAccountId());
+      LoadDefaultOnlineGaia(context->gaia_config.prefilled_account);
       break;
     case WizardContext::GaiaPath::kChildSignin:
     case WizardContext::GaiaPath::kChildSignup:
@@ -145,7 +143,6 @@ void GaiaScreen::LoadDefaultOnlineGaia(const AccountId& account) {
   // conditions which may be difficult as of now.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceCryptohomeRecoveryForTesting)) {
-    DCHECK(features::IsCryptohomeRecoveryEnabled());
     LoginDisplayHost::default_host()
         ->GetWizardContext()
         ->gaia_config.gaia_path = WizardContext::GaiaPath::kReauth;

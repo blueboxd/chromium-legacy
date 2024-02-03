@@ -6,7 +6,7 @@
 
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_consumer.h"
-#import "ios/chrome/browser/ui/settings/cells/search_engine_item.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/cells/snippet_search_engine_item.h"
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "url/gurl.h"
@@ -25,22 +25,14 @@
 
 #pragma mark - Properties
 
-- (void)setSelectedItem:(SearchEngineItem*)item {
+- (void)setSelectedItem:(SnippetSearchEngineItem*)item {
   if (_selectedItem == item) {
     return;
   }
   _selectedItem = item;
 
-  __weak __typeof(self) weakSelf = self;
-  _faviconLoader->FaviconForPageUrl(
-      item.URL, kDesiredMediumFaviconSizePt, kMinFaviconSizePt,
-      /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
-        [weakSelf.consumer
-            updateFakeOmniboxWithFavicon:[[UIImageView alloc]
-                                             initWithImage:attributes
-                                                               .faviconImage]
-                        SearchEngineName:item.text];
-      });
+  [self.consumer updateFakeOmniboxWithFaviconImage:item.faviconImage
+                                  searchEngineName:item.name];
 }
 
 - (void)disconnect {

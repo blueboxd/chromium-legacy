@@ -42,6 +42,7 @@
 #include "chrome/browser/ash/app_list/arc/arc_app_scoped_pref_update.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/app_list/arc/arc_default_app_list.h"
+#include "chrome/browser/ash/app_list/arc/arc_package_install_priority_handler.h"
 #include "chrome/browser/ash/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/browser/ash/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -395,6 +396,33 @@ ash::LoginUnlockThroughputRecorder* GetLoginRecorder() {
              : nullptr;
 }
 
+// In some cases when ARC is not ready (e.g. ARC hasn't booted / ARC failed to
+// boot), users are still allowed to change App Settings from ChromeOS Settings
+// page. Hence, there might be synchronization issue between ARC and ChromeOS
+// and we should eventually re-sync them.
+bool IsSelectedLocaleResyncRequired(
+    const base::Value::Dict& saved_package_dict,
+    const arc::mojom::PackageLocaleInfo& arc_locale_info,
+    const UpdatePackagePrefsReason& update_reason) {
+  // Only checks for ARC-boot package refresh.
+  if (update_reason != UpdatePackagePrefsReason::kOnPackageListRefreshed) {
+    return false;
+  }
+  const base::Value::Dict* locale_info_dict =
+      saved_package_dict.FindDict(kLocaleInfo);
+  if (!locale_info_dict) {
+    return false;
+  }
+  // selected_locale always exists if locale_info is present.
+  const std::string* saved_selected_locale =
+      locale_info_dict->FindString(kSelectedLocale);
+  CHECK(saved_selected_locale)
+      << "selected_locale always exists if locale_info is present.";
+  // Validates if there's a mismatch between ChromeOS' saved `selected_locale`
+  // and ARC's previous `selected_locale`
+  return *saved_selected_locale != arc_locale_info.selected_locale;
+}
+
 void OnArcAppListRefreshed(Profile* profile) {
   if (!arc::IsArcPlayStoreEnabledForProfile(profile))
     return;
@@ -548,6 +576,11 @@ ArcAppListPrefs::ArcAppListPrefs(
     if (net_host) {
       net_host->SetArcAppMetadataProvider(this);
     }
+  }
+
+  if (base::FeatureList::IsEnabled(arc::kSyncInstallPriority)) {
+    install_priority_handler_ =
+        std::make_unique<arc::ArcPackageInstallPriorityHandler>(profile);
   }
 }
 
@@ -1352,6 +1385,22 @@ arc::mojom::AppCategory ArcAppListPrefs::GetAppCategory(
   return app_info->app_category;
 }
 
+arc::ArcPackageInstallPriorityHandler*
+ArcAppListPrefs::GetInstallPriorityHandler() {
+  return install_priority_handler_.get();
+}
+
+void ArcAppListPrefs::SetAppLocale(const std::string& package_name,
+                                   const std::string& selected_locale) {
+  arc::ArcAppScopedPrefUpdate update(prefs_, package_name,
+                                     arc::prefs::kArcPackages);
+  base::Value::Dict& package_dict = update.Get();
+  package_dict.EnsureDict(kLocaleInfo)->Set(kSelectedLocale, selected_locale);
+
+  const std::string& app_id = GetAppIdByPackageName(package_name);
+  NotifyAppStatesChanged(app_id);
+}
+
 void ArcAppListPrefs::SetResizeLockState(const std::string& app_id,
                                          arc::mojom::ArcResizeLockState state) {
   if (!IsRegistered(app_id)) {
@@ -1440,6 +1489,11 @@ void ArcAppListPrefs::Shutdown() {
       arc::ArcPolicyBridge::GetForBrowserContext(profile_);
   if (policy_bridge)
     policy_bridge->RemoveObserver(this);
+
+  // TODO(lgcheng) remove the check once the feature is enabled.
+  if (install_priority_handler_) {
+    install_priority_handler_->Shutdown();
+  }
 }
 
 void ArcAppListPrefs::RegisterDefaultApps() {
@@ -1544,6 +1598,11 @@ void ArcAppListPrefs::OnConnectionClosed() {
   is_initialized_ = false;
   package_list_initial_refreshed_ = false;
   app_list_refreshed_callback_.Reset();
+
+  // TODO(lgcheng) remove the check once the feature is enabled.
+  if (install_priority_handler_) {
+    install_priority_handler_->Clear();
+  }
 
   for (auto& observer : observer_list_)
     observer.OnAppConnectionClosed();
@@ -1788,7 +1847,8 @@ ArcAppListPrefs::app_connection_holder() {
 }
 
 void ArcAppListPrefs::AddOrUpdatePackagePrefs(
-    const arc::mojom::ArcPackageInfo& package) {
+    const arc::mojom::ArcPackageInfo& package,
+    const UpdatePackagePrefsReason& update_reason) {
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
   const std::string& package_name = package.package_name;
 
@@ -1864,21 +1924,38 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
 
   if (package.locale_info &&
       base::FeatureList::IsEnabled(arc::kPerAppLanguage)) {
-    // TODO(nergi): For on-boot package refresh, conditionally accepts package
-    // locale info from ARC. Accept if current pref is null, else reject and
-    // sends back CrOS prefs to ARC.
-    const arc::mojom::PackageLocaleInfo& package_locale_info =
-        *package.locale_info;
-    base::Value::List supported_locales;
-    for (const std::string& supported_locale :
-         package_locale_info.supported_locales) {
-      supported_locales.Append(supported_locale);
+    if (IsSelectedLocaleResyncRequired(package_dict, *package.locale_info,
+                                       update_reason)) {
+      // Rejects ARC prefs and sends the correct locale back to Android to
+      // ensure eventual correctness.
+      const base::Value::Dict* locale_info_dict =
+          package_dict.EnsureDict(kLocaleInfo);
+      const std::string* saved_selected_locale =
+          locale_info_dict->FindString(kSelectedLocale);
+      arc::mojom::AppInstance* app_instance =
+          (arc::ArcServiceManager::Get()
+               ? ARC_GET_INSTANCE_FOR_METHOD(
+                     arc::ArcServiceManager::Get()->arc_bridge_service()->app(),
+                     SetAppLocale)
+               : nullptr);
+      if (app_instance) {
+        app_instance->SetAppLocale(package_name, *saved_selected_locale);
+      }
+    } else {
+      // Accepts ARC prefs and save to dict.
+      base::Value::List supported_locales;
+      const arc::mojom::PackageLocaleInfo& package_locale_info =
+          *package.locale_info;
+      for (const std::string& supported_locale :
+           package_locale_info.supported_locales) {
+        supported_locales.Append(supported_locale);
+      }
+      package_dict.Set(
+          kLocaleInfo,
+          base::Value::Dict()
+              .Set(kSupportedLocales, std::move(supported_locales))
+              .Set(kSelectedLocale, package_locale_info.selected_locale));
     }
-    package_dict.Set(
-        kLocaleInfo,
-        base::Value::Dict()
-            .Set(kSupportedLocales, std::move(supported_locales))
-            .Set(kSelectedLocale, package_locale_info.selected_locale));
   } else {
     package_dict.Remove(kLocaleInfo);
   }
@@ -2330,10 +2407,16 @@ void ArcAppListPrefs::OnPackageAdded(
     arc::mojom::ArcPackageInfoPtr package_info) {
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
 
-  AddOrUpdatePackagePrefs(*package_info);
+  AddOrUpdatePackagePrefs(*package_info,
+                          UpdatePackagePrefsReason::kOnPackageAdded);
 
   packages_to_be_added_.erase(package_info->package_name);
   UpdateArcPackagesIsUpToDatePref();
+
+  // TODO(lgcheng) remove the check once the feature is enabled.
+  if (install_priority_handler_) {
+    install_priority_handler_->ClearPackage(package_info->package_name);
+  }
 
   for (auto& observer : observer_list_)
     observer.OnPackageInstalled(*package_info);
@@ -2342,7 +2425,8 @@ void ArcAppListPrefs::OnPackageAdded(
 void ArcAppListPrefs::OnPackageModified(
     arc::mojom::ArcPackageInfoPtr package_info) {
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
-  AddOrUpdatePackagePrefs(*package_info);
+  AddOrUpdatePackagePrefs(*package_info,
+                          UpdatePackagePrefsReason::kOnPackageModified);
   for (auto& observer : observer_list_)
     observer.OnPackageModified(*package_info);
 }
@@ -2355,7 +2439,8 @@ void ArcAppListPrefs::OnPackageListRefreshed(
   std::set<std::string> current_packages;
 
   for (const auto& package : packages) {
-    AddOrUpdatePackagePrefs(*package);
+    AddOrUpdatePackagePrefs(*package,
+                            UpdatePackagePrefsReason::kOnPackageListRefreshed);
     if (!base::Contains(old_packages, package->package_name)) {
       for (auto& observer : observer_list_)
         observer.OnPackageInstalled(*package);

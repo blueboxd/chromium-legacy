@@ -22,7 +22,7 @@ Blink code in `third_party/blink` uses [Blink style](blink-c++.md).
 ## Modern C++ features
 
 Google and Chromium style
-[targets C++17](https://google.github.io/styleguide/cppguide.html#C++_Version).
+[targets C++20](https://google.github.io/styleguide/cppguide.html#C++_Version).
 Additionally, some features of supported C++ versions remain forbidden. The
 status of Chromium's C++ support is covered in more detail in
 [Modern C++ use in Chromium](c++-features.md).
@@ -39,7 +39,9 @@ status of Chromium's C++ support is covered in more detail in
     [PRESUBMIT.py](https://chromium.googlesource.com/chromium/src/+/main/PRESUBMIT.py).
     `ForTesting` is the conventional suffix although similar patterns, such as
     `ForTest`, are also accepted. These suffixes are checked at presubmit time
-    to ensure the functions are called only by test files.
+    to ensure the functions are called only by test files. In the rare case of
+    adding a test-only code path to an area where a testing suffix is not
+    possible, CHECK_IS_TEST() may be appropriate.
   * Classes used only for testing should be in a GN build target that is
     marked `testonly=true`. Tests can depend on such targets, but production
     code can not.

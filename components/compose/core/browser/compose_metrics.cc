@@ -10,6 +10,9 @@
 
 namespace compose {
 
+const char kComposeDialogInnerTextShortenedBy[] =
+    "Compose.Dialog.InnerTextShortenedBy";
+const char kComposeDialogInnerTextSize[] = "Compose.Dialog.InnerTextSize";
 const char kComposeDialogOpenLatency[] = "Compose.Dialog.OpenLatency";
 const char kComposeDialogSelectionLength[] = "Compose.Dialog.SelectionLength";
 const char kComposeResponseDurationOk[] = "Compose.Response.Duration.Ok";
@@ -59,12 +62,20 @@ void LogComposeSessionCloseMetrics(ComposeSessionCloseReason reason,
   base::UmaHistogramCounts1000(kComposeSessionUndoCount + status, undo_count);
 }
 
+void LogComposeDialogInnerTextShortenedBy(int shortened_by) {
+  base::UmaHistogramCounts10M(kComposeDialogInnerTextShortenedBy, shortened_by);
+}
+
+void LogComposeDialogInnerTextSize(int size) {
+  base::UmaHistogramCounts10M(kComposeDialogInnerTextSize, size);
+}
+
 void LogComposeDialogOpenLatency(base::TimeDelta duration) {
   base::UmaHistogramMediumTimes(kComposeDialogOpenLatency, duration);
 }
 
 void LogComposeDialogSelectionLength(int length) {
-  // The autofil::kMaxSelectedTextLength is in UTF16 bytes so divide by 2 for
+  // The autofill::kMaxSelectedTextLength is in UTF16 bytes so divide by 2 for
   // the maximum number of unicode code points.
   const int max_selection_size = 51200 / 2;
   base::UmaHistogramCustomCounts(kComposeDialogSelectionLength, length, 1,

@@ -173,8 +173,11 @@ class CloudOpenTask : public BrowserListObserver,
   // Callbacks from `DriveUploadHandler` and `OneDriveUploadHandler`. URL passed
   // to these callbacks will be `absl::nullopt` and size will be 0 if upload
   // fails.
-  void FinishedDriveUpload(absl::optional<GURL> url, int64_t size);
+  void FinishedDriveUpload(OfficeTaskResult task_result,
+                           absl::optional<GURL> url,
+                           int64_t size);
   void FinishedOneDriveUpload(base::WeakPtr<Profile> profile_weak_ptr,
+                              OfficeTaskResult task_result,
                               absl::optional<storage::FileSystemURL> url,
                               int64_t size);
 
@@ -231,9 +234,6 @@ class CloudOpenTask : public BrowserListObserver,
 // Returns True if OneDrive is the selected `cloud_provider` but either ODFS
 // is not mounted or the Office PWA is not installed. Returns False otherwise.
 bool ShouldFixUpOffice(Profile* profile, const CloudProvider cloud_provider);
-
-// Returns True if the url is on ODFS.
-bool UrlIsOnODFS(Profile* profile, const FileSystemURL& url);
 
 // Returns True if the url is on the Android OneDrive DocumentsProvider.
 bool UrlIsOnAndroidOneDrive(Profile* profile, const FileSystemURL& url);

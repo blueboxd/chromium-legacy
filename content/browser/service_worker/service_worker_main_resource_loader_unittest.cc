@@ -15,6 +15,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/response_head_update_params.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
@@ -26,7 +27,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
-#include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
@@ -527,7 +527,7 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
   // The |fallback_callback| passed to the ServiceWorkerMainResourceLoader in
   // StartRequest().
   void Fallback(bool reset_subresource_loader_params,
-                const net::LoadTimingInfo& timing_info) {
+                const ResponseHeadUpdateParams& head_update_params) {
     did_call_fallback_callback_ = true;
     reset_subresource_loader_params_ = reset_subresource_loader_params;
     if (quit_closure_for_fallback_callback_)
@@ -571,6 +571,8 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
               info.cache_storage_cache_name);
     EXPECT_EQ(expected_info.did_service_worker_navigation_preload,
               info.did_service_worker_navigation_preload);
+    // TODO(crbug.com/1504040): Write tests about Static Routing API, in
+    // particular, checking the correctness of `service_worker_router_info`.
   }
 
   std::unique_ptr<network::ResourceRequest> CreateRequest() {

@@ -269,7 +269,7 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
           WebFeature::kChromeLoadTimesWasNpnNegotiated,
           WebFeature::kGamepadButtons,
           WebFeature::kWebNfcNdefReaderScan,
-          WebFeature::kWakeLockAcquireScreenLockWithoutActivation,
+          WebFeature::kWakeLockAcquireScreenLockWithoutStickyActivation,
           WebFeature::kDataUrlInSvgUse,
           WebFeature::kExecutedNonTrivialJavaScriptURL,
           WebFeature::kV8DeprecatedStorageQuota_QueryUsageAndQuota_Method,
@@ -370,6 +370,7 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
           WebFeature::kThirdPartyCookieDeprecation_AllowByStorageAccess,
           WebFeature::kThirdPartyCookieDeprecation_AllowByTopLevelStorageAccess,
           WebFeature::kAutoSpeculationRulesOptedOut,
+          WebFeature::kOverrideFlashEmbedwithHTML,
       }));
   return *opt_in_features;
 }

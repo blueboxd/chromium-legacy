@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/win32-official/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "win32-official",
-              "project": "chromium"
+              "project": "chromium-m121"
             },
             "builder_spec": {
               "builder_group": "chromium",
@@ -33,7 +36,7 @@
         {
           "bucket": "ci",
           "builder": "win32-official",
-          "project": "chromium"
+          "project": "chromium-m121"
         }
       ]
     }

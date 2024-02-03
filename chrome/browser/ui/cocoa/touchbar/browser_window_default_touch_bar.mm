@@ -219,7 +219,8 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
   }
 
   // WebContentsObserver:
-  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override {
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override {
     UpdateTouchBar();
   }
 

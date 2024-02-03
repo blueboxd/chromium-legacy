@@ -369,8 +369,10 @@ class AutocompleteController : public AutocompleteProviderListener,
   // `notify_changed_debouncer_`.
   void CancelDelayedNotifyChanged();
 
-  // Updates |done_| to be accurate with respect to current providers' statuses.
-  void CheckIfDone();
+  // Returns true if all of the providers which should be run are done. If
+  // `ignore_document_provider` is true, ignores the state of the
+  // `TYPE_DOCUMENT` provider.
+  bool CheckIfDone(bool ignore_document_provider = false);
 
   // Starts |expire_timer_|.
   void StartExpireTimer();
@@ -438,7 +440,7 @@ class AutocompleteController : public AutocompleteProviderListener,
   // May remove actions from default suggestion to avoid interference with
   // keyword mode refresh interaction. May clear some match text that is
   // repeated across multiple consecutive matches.
-  void MaybeCleanSuggestionsForKeywordMode(const std::u16string& input,
+  void MaybeCleanSuggestionsForKeywordMode(const AutocompleteInput& input,
                                            AutocompleteResult* result);
 
   // Get the experiment stats v2 entry for the omnibox position. Used on iOS.

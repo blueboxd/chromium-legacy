@@ -58,8 +58,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
-#include "chrome/browser/media/history/media_history_keyed_service.h"
-#include "chrome/browser/media/history/media_history_store.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
@@ -319,8 +317,9 @@ const extensions::Extension* GetExtensionForOrigin(
     Profile* profile,
     const GURL& security_origin) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!security_origin.SchemeIs(extensions::kExtensionScheme))
+  if (!security_origin.SchemeIs(extensions::kExtensionScheme)) {
     return nullptr;
+  }
 
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
@@ -1507,12 +1506,6 @@ content::PreloadingEligibility Browser::IsPrerender2Supported(
   return prefetch::IsSomePreloadingEnabled(*profile->GetPrefs());
 }
 
-std::unique_ptr<content::WebContents> Browser::ActivatePortalWebContents(
-    content::WebContents* predecessor_contents,
-    std::unique_ptr<content::WebContents> portal_contents) {
-  return SwapWebContents(predecessor_contents, std::move(portal_contents));
-}
-
 void Browser::UpdateInspectedWebContentsIfNecessary(
     content::WebContents* old_contents,
     content::WebContents* new_contents,
@@ -1561,12 +1554,9 @@ bool Browser::ShouldShowStaleContentOnEviction(content::WebContents* source) {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
+// TODO(crbug.com/1198344): Remove this.
 void Browser::MediaWatchTimeChanged(
     const content::MediaPlayerWatchTime& watch_time) {
-  if (media_history::MediaHistoryKeyedService::IsEnabled()) {
-    media_history::MediaHistoryKeyedService::Get(profile())->SavePlayback(
-        watch_time);
-  }
 }
 
 base::WeakPtr<content::WebContentsDelegate> Browser::GetDelegateWeakPtr() {
@@ -1785,7 +1775,7 @@ void Browser::CloseContents(WebContents* source) {
 }
 
 void Browser::SetContentsBounds(WebContents* source, const gfx::Rect& bounds) {
-  if (is_type_normal() || is_type_picture_in_picture()) {
+  if (is_type_normal()) {
     return;
   }
 
@@ -1935,22 +1925,6 @@ void Browser::WebContentsCreated(WebContents* source_contents,
 
   // Make the tab show up in the task manager.
   task_manager::WebContentsTags::CreateForTabContents(new_contents);
-}
-
-void Browser::PortalWebContentsCreated(WebContents* portal_web_contents) {
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("PortalsActive",
-                                                            "Enabled");
-
-  TabHelpers::AttachTabHelpers(portal_web_contents);
-
-  // Make the portal show up in the task manager.
-  WebContentsBecamePortal(portal_web_contents);
-}
-
-void Browser::WebContentsBecamePortal(WebContents* portal_web_contents) {
-  // Make the contents show up as a portal in the task manager.
-  task_manager::WebContentsTags::ClearTag(portal_web_contents);
-  task_manager::WebContentsTags::CreateForPortal(portal_web_contents);
 }
 
 void Browser::RendererUnresponsive(
@@ -2300,24 +2274,15 @@ void Browser::RequestMediaAccessPermission(
 
 bool Browser::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     blink::mojom::MediaStreamType type) {
   Profile* profile =
       Profile::FromBrowserContext(render_frame_host->GetBrowserContext());
   const extensions::Extension* extension =
-      GetExtensionForOrigin(profile, security_origin);
+      GetExtensionForOrigin(profile, security_origin.GetURL());
   return MediaCaptureDevicesDispatcher::GetInstance()
       ->CheckMediaAccessPermission(render_frame_host, security_origin, type,
                                    extension);
-}
-
-std::string Browser::GetDefaultMediaDeviceID(
-    content::WebContents* web_contents,
-    blink::mojom::MediaStreamType type) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return MediaCaptureDevicesDispatcher::GetInstance()
-      ->GetDefaultDeviceIDForProfile(profile, type);
 }
 
 std::string Browser::GetTitleForMediaControls(WebContents* web_contents) {
@@ -2375,7 +2340,7 @@ void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
     // class-level comments for further details.
     if (!exclusive_access_manager_->fullscreen_controller()
              ->IsFullscreenWithinTab(web_contents)) {
-      web_contents->ExitFullscreen();
+      web_contents->ExitFullscreen(true);
     }
   }
 

@@ -10,9 +10,9 @@
 #import "base/test/ios/wait_util.h"
 #import "base/test/metrics/histogram_tester.h"
 #import "components/sessions/core/session_id.h"
-#import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
+#import "ios/chrome/browser/main/model/browser_web_state_list_delegate.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
@@ -42,11 +42,6 @@
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
-
-// To get access to web::features::kEnableSessionSerializationOptimizations.
-// TODO(crbug.com/1383087): remove once the feature is fully launched.
-#import "base/test/scoped_feature_list.h"
-#import "ios/web/common/features.h"
 
 namespace {
 
@@ -133,9 +128,6 @@ SessionWindowIOS* CreateSessionWindow(SessionInfo<N> session_info) {
 class SessionRestorationBrowserAgentTest : public PlatformTest {
  public:
   SessionRestorationBrowserAgentTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        web::features::kEnableSessionSerializationOptimizations);
-
     test_session_service_ = [[TestSessionService alloc] init];
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
@@ -158,8 +150,7 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
     // constructor.
     browser_ = std::make_unique<TestBrowser>(
         chrome_browser_state_.get(),
-        std::make_unique<BrowserWebStateListDelegate>(
-            /* force_realization_on_activation */ true));
+        std::make_unique<BrowserWebStateListDelegate>());
   }
 
   void TearDown() override {
@@ -213,7 +204,6 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<Browser> browser_;

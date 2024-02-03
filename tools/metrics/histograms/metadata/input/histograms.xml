@@ -46,7 +46,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Input.UnrecognizedToolType.Android" units="tool type"
-    expires_after="2024-01-15">
+    expires_after="2024-05-19">
   <owner>alexmitra@chromium.org</owner>
   <owner>flackr@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
@@ -931,16 +931,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="InputMethod.CompositionWithImm32BasedIme" enum="Boolean"
-    expires_after="M78">
-  <owner>lanwei@chromium.org</owner>
-  <owner>siliu@microsoft.com</owner>
-  <summary>
-    Whether the composition is composed by IMM32-based input method processor
-    when TSF is disabled on Windows. Recorded when user starts new composition.
-  </summary>
-</histogram>
-
 <histogram name="InputMethod.Handwriting.Actions" enum="ImeHandwritingActions"
     expires_after="2022-04-10">
   <owner>shend@chromium.org</owner>
@@ -1408,7 +1398,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.StylusHandwriting.GestureResult"
-    enum="StylusHandwritingGestureResult" expires_after="2024-03-01">
+    enum="StylusHandwritingGestureResult" expires_after="2024-05-26">
   <owner>alexmitra@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1417,7 +1407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.StylusHandwriting.GestureTime" units="ms"
-    expires_after="2024-03-01">
+    expires_after="2024-05-26">
   <owner>alexmitra@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>

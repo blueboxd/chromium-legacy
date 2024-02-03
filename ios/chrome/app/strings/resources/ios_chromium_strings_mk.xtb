@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Помогнете да се подобрат функциите и изведбата на Chromium</translation>
 <translation id="1513122820609681462">Поставете го Chromium како стандарден прелистувач</translation>
 <translation id="1531155317299575425">Прикажува prompt за најава на Chromium.</translation>
+<translation id="159029779861043703">Chromium ги штити вашите чувствителни податоци со ID на лик.</translation>
 <translation id="1591119736686995611">Ја отвора мрежата со картички во Chromium.</translation>
+<translation id="1611584326765829247">Дозволете Chromium да ви помага да ги следите вашите пакети</translation>
 <translation id="1617663976202781617">Податоци од синхронизацијата на Chromium</translation>
 <translation id="1647558790457890304">Поставки за Chromium</translation>
 <translation id="164952285225495380">Пакетов веќе се следи на Chromium.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">Управувајте со „Поставките“ за Chromium</translation>
 <translation id="2798503587425057129">Го отвора „Списокот за читање“ на Chromium.</translation>
 <translation id="2843571538056574338">Користење Chromium за „Автоматско пополнување“</translation>
-<translation id="2915596697727466327">Chromium користи Face ID за да обезбеди овластен пристап до вашите лозинки.</translation>
 <translation id="2918709798697875261">Вашата организација бара да останете одјавени од Chromium.</translation>
 <translation id="2942241131342758843">Користете го Chromium како стандарден прелистувач за отворање линкови, пребарување од виџети и автоматско пополнување лозинки во другите апликации</translation>
 <translation id="2977470724722393594">Chromium е ажуриран</translation>
@@ -87,6 +88,7 @@
 <translation id="4195557071150719219">Прикажување на неодамнешните картички во Chromium</translation>
 <translation id="4408912345039114853">Извршете безбедносна проверка во Chromium</translation>
 <translation id="4432744876818348753">Најавете се за да извадите максимум од Chromium.</translation>
+<translation id="4498832288620833153">Ги додава внесените URL-адреси во вашиот „Список за читање“ во Chromium.</translation>
 <translation id="452436063477828504">Уверете се дека секогаш ќе може да ги користите податоците на Chromium во вашата сметка на Google</translation>
 <translation id="4555020257205549924">Кога е вклучена функцијава, Chromium ќе нуди да преведува страници што се напишани на други јазици користејќи го „Преведи на Google“. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Ја отвора страницата со поставки за начините на плаќање во Chromium.</translation>
@@ -167,7 +169,6 @@
 <translation id="6911341667534646387">Продолжете да ги користите податоците на Chromium во вашата сметка на Google</translation>
 <translation id="7006920032187763988">Може да ги користите лозинките што сте ги зачувале во „Управникот со лозинки“ во други апликации на вашиот iPad.</translation>
 <translation id="7018284295775193585">Chromium не може да се ажурира</translation>
-<translation id="7025471822960602362">Следете ги откриените пакети во Chromium</translation>
 <translation id="7045244423563602563">Направете го Chromium свој</translation>
 <translation id="7055269218854630176">Вашата организација, <ph name="DOMAIN" />, управува со сметката на којашто се најавувате, а и со тоа како може да се користи Chromium. Вашиот администратор може да постави или да ограничи конкретни функции.</translation>
 <translation id="7099326575020694068">Chromium не може да ја користи камерата во режимот „Поделен приказ“</translation>
@@ -197,6 +198,7 @@
 <translation id="7928628054454574139">Линковите од други апликации секогаш ќе се отвораат во Chromium</translation>
 <translation id="7931842119211730154">Заклучувај ги картичките „Инкогнито“ кога ќе го затворам Chromium</translation>
 <translation id="7934404985878918282">Видете го „Списокот за читање“ на Chromium</translation>
+<translation id="7971753607796745700">Додајте ставка во „Список за читање“ на Chromium</translation>
 <translation id="7980860476903281594">Изберете дали дозволувате Chromium ја споделува вашата локација со сајтов.</translation>
 <translation id="7995166854192397899">Предлозите се засноваат на вашата активност од прелистувањето на вашите други уреди. За да добивате предлози, најавете се на Chromium на сите ваши уреди.</translation>
 <translation id="800195749539500647">Извлечете го максимумот од Chromium</translation>

@@ -47,7 +47,7 @@ bool AutofillClient::IsOffTheRecord() {
   return false;
 }
 
-AutofillDownloadManager* AutofillClient::GetDownloadManager() {
+AutofillCrowdsourcingManager* AutofillClient::GetCrowdsourcingManager() {
   return nullptr;
 }
 
@@ -105,6 +105,10 @@ CreditCardOtpAuthenticator* AutofillClient::GetOtpAuthenticator() {
 }
 
 CreditCardRiskBasedAuthenticator* AutofillClient::GetRiskBasedAuthenticator() {
+  return nullptr;
+}
+
+payments::PaymentsAutofillClient* AutofillClient::GetPaymentsAutofillClient() {
   return nullptr;
 }
 
@@ -274,7 +278,7 @@ void AutofillClient::ConfirmSaveIbanLocally(const Iban& iban,
 
 void AutofillClient::ConfirmUploadIbanToCloud(
     const Iban& iban,
-    const LegalMessageLines& legal_message_lines,
+    LegalMessageLines legal_message_lines,
     bool should_show_prompt,
     SaveIbanPromptCallback callback) {}
 

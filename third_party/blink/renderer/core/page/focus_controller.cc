@@ -58,7 +58,6 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
-#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -499,10 +498,21 @@ inline bool IsShadowHostWithoutCustomFocusLogic(const Element& element) {
 }
 
 inline bool IsNonKeyboardFocusableShadowHost(const Element& element) {
-  return IsShadowHostWithoutCustomFocusLogic(element) &&
-         !(element.GetShadowRoot()
-               ? (element.IsFocusable() || element.DelegatesFocus())
-               : element.IsKeyboardFocusable());
+  if (!IsShadowHostWithoutCustomFocusLogic(element) ||
+      element.DelegatesFocus()) {
+    return false;
+  }
+  if (!element.IsFocusable()) {
+    return true;
+  }
+  if (element.IsKeyboardFocusable()) {
+    return false;
+  }
+  // This host supports focus, but cannot be keyboard focused. For example:
+  // - Tabindex is negative
+  // - It is a scroller with focusable children
+  // When tabindex is negative, we should not visit the host.
+  return !(element.GetIntegralAttribute(html_names::kTabindexAttr, 0) < 0);
 }
 
 inline bool IsKeyboardFocusableShadowHost(const Element& element) {
@@ -516,6 +526,9 @@ inline bool IsNonFocusableFocusScopeOwner(Element& element) {
 }
 
 inline bool ShouldVisit(Element& element) {
+  DCHECK(!element.IsKeyboardFocusable() ||
+         FocusController::AdjustedTabIndex(element) >= 0)
+      << "Keyboard focusable element with negative tabindex" << element;
   return element.IsKeyboardFocusable() || element.DelegatesFocus() ||
          IsNonFocusableFocusScopeOwner(element);
 }
@@ -1187,20 +1200,11 @@ bool FocusController::AdvanceFocusInDocumentOrder(
   auto* owner = DynamicTo<HTMLFrameOwnerElement>(element);
   bool has_remote_frame =
       owner && owner->ContentFrame() && owner->ContentFrame()->IsRemoteFrame();
-  // Portals do not currently allow input events, so we block focus from
-  // advancing into the portal's content frame.
-  bool is_portal = IsA<HTMLPortalElement>(owner);
-  if (owner && !is_portal &&
-      (has_remote_frame || !IsA<HTMLPlugInElement>(*element) ||
-       !element->IsKeyboardFocusable())) {
+  if (owner && (has_remote_frame || !IsA<HTMLPlugInElement>(*element) ||
+                !element->IsKeyboardFocusable())) {
     // FIXME: We should not focus frames that have no scrollbars, as focusing
     // them isn't useful to the user.
     if (!owner->ContentFrame()) {
-      // TODO (liviutinta) remove TRACE after fixing crbug.com/1063548
-      TRACE_EVENT_INSTANT1(
-          "input", "FocusController::AdvanceFocusInDocumentOrder",
-          TRACE_EVENT_SCOPE_THREAD, "reason_for_no_focus_element",
-          "portal blocks focus");
       return false;
     }
 

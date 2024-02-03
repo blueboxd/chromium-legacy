@@ -26,6 +26,10 @@
 #include "base/cpu.h"
 #endif
 
+#if BUILDFLAG(IS_WIN)
+#include "base/native_library.h"
+#endif
+
 namespace {
 const int kScreenAICleanUpDelayInDays = 30;
 const char kMinExpectedVersion[] = "121.1";
@@ -68,6 +72,38 @@ bool ScreenAIInstallState::VerifyLibraryVersion(const std::string& version) {
   VLOG(0) << "Screen AI library version is expected to be at least "
           << kMinExpectedVersion << ", but it is: " << version;
   return false;
+}
+
+// static
+bool ScreenAIInstallState::VerifyLibraryAvailablity(
+    const base::FilePath& install_dir) {
+  // Check the file iterator heuristic to find the library in the sandbox
+  // returns the same directory as `install_dir`.
+  base::FilePath binary_path = screen_ai::GetLatestComponentBinaryPath();
+  if (binary_path.DirName() != install_dir) {
+    VLOG(0) << "Screen AI library is installed in an unexpected folder.";
+    return false;
+  }
+
+#if !BUILDFLAG(IS_WIN)
+  return true;
+#else
+  // Sometimes the library cannot be loaded due to an installation error or OS
+  // limitations.
+  base::NativeLibraryLoadError lib_error;
+  base::NativeLibrary library =
+      base::LoadNativeLibrary(binary_path, &lib_error);
+  bool available = (library != nullptr);
+  base::UmaHistogramBoolean("Accessibility.ScreenAI.LibraryAvailableOnVerify",
+                            available);
+  base::UmaHistogramSparse("Accessibility.ScreenAI.LibraryAccessResultOnVerify",
+                           lib_error.code);
+  if (available) {
+    base::UnloadNativeLibrary(library);
+  }
+
+  return available;
+#endif
 }
 
 ScreenAIInstallState::ScreenAIInstallState() {
@@ -155,11 +191,17 @@ void ScreenAIInstallState::SetComponentFolder(
 }
 
 void ScreenAIInstallState::SetState(State state) {
+  // TODO(crbug.com/1508404): Remove after crash root cause is found.
+  if ((state == State::kDownloaded || state == State::kReady) &&
+      !IsComponentAvailable()) {
+    state = State::kFailed;
+  }
+
   if (state == state_) {
     // Failed and ready state can be repeated as they come from different
     // profiles. Downloading can be repeated in ChromeOS tests that call
     // LoginManagerTest::AddUser() and reset UserSessionInitializer.
-    // TODO(crbug.com/1278249): While the case is highly unexpected, add more
+    // TODO(crbug.com/1443341): While the case is highly unexpected, add more
     // control logic if state is changed from failed to ready or vice versa.
     DCHECK(state == State::kReady || state == State::kFailed ||
            state == State::kDownloading);
@@ -214,6 +256,9 @@ void ScreenAIInstallState::ResetForTesting() {
 
 void ScreenAIInstallState::SetStateForTesting(State state) {
   state_ = state;
+  for (ScreenAIInstallState::Observer* observer : observers_) {
+    observer->StateChanged(state_);
+  }
 }
 
 }  // namespace screen_ai

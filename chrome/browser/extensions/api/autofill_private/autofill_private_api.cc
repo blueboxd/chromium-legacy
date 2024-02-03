@@ -88,7 +88,7 @@ base::Value::Dict AddressUiComponentAsValueMap(
   return info;
 }
 
-autofill::AutofillManager* GetAutofillManager(
+autofill::BrowserAutofillManager* GetBrowserAutofillManager(
     content::WebContents* web_contents) {
   if (!web_contents) {
     return nullptr;
@@ -98,7 +98,10 @@ autofill::AutofillManager* GetAutofillManager(
           ->DriverForFrame(web_contents->GetPrimaryMainFrame());
   if (!autofill_driver)
     return nullptr;
-  return &autofill_driver->GetAutofillManager();
+  // This cast is safe, since `AutofillManager` is always a
+  // `BrowserAutofillManager` apart from on WebView.
+  return static_cast<autofill::BrowserAutofillManager*>(
+      &autofill_driver->GetAutofillManager());
 }
 
 autofill::AutofillProfile CreateNewAutofillProfile(
@@ -383,6 +386,34 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
     if (existing_card && existing_card->Compare(credit_card) == 0)
       return RespondNow(NoArguments());
 
+    if (existing_card->cvc().empty()) {
+      if (credit_card.cvc().empty()) {
+        // Record when an existing card without CVC is edited and no CVC was
+        // added.
+        base::RecordAction(base::UserMetricsAction(
+            "AutofillCreditCardsEditedAndCvcWasLeftBlank"));
+      } else {
+        // Record when an existing card without CVC is edited and CVC was added.
+        base::RecordAction(
+            base::UserMetricsAction("AutofillCreditCardsEditedAndCvcWasAdded"));
+      }
+    } else {
+      if (credit_card.cvc().empty()) {
+        // Record when an existing card with CVC is edited and CVC was removed.
+        base::RecordAction(base::UserMetricsAction(
+            "AutofillCreditCardsEditedAndCvcWasRemoved"));
+      } else if (credit_card.cvc() != existing_card->cvc()) {
+        // Record when an existing card with CVC is edited and CVC was updated.
+        base::RecordAction(base::UserMetricsAction(
+            "AutofillCreditCardsEditedAndCvcWasUpdated"));
+      } else {
+        // Record when an existing card with CVC is edited and CVC was
+        // unchanged.
+        base::RecordAction(base::UserMetricsAction(
+            "AutofillCreditCardsEditedAndCvcWasUnchanged"));
+      }
+    }
+
     // Record when nickname is updated.
     if (credit_card.HasNonEmptyValidNickname() &&
         existing_card->nickname() != credit_card.nickname()) {
@@ -398,6 +429,10 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
     if (credit_card.HasNonEmptyValidNickname()) {
       base::RecordAction(
           base::UserMetricsAction("AutofillCreditCardsAddedWithNickname"));
+    }
+    if (!credit_card.cvc().empty()) {
+      base::RecordAction(
+          base::UserMetricsAction("AutofillCreditCardsAddedWithCvc"));
     }
   }
   return RespondNow(NoArguments());
@@ -424,6 +459,17 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
 
   if (personal_data->GetIbanByGUID(parameters->guid)) {
     base::RecordAction(base::UserMetricsAction("AutofillIbanDeleted"));
+  } else if (autofill::CreditCard* credit_card =
+                 personal_data->GetCreditCardByGUID(parameters->guid)) {
+    base::RecordAction(base::UserMetricsAction("AutofillCreditCardDeleted"));
+    if (!credit_card->cvc().empty()) {
+      base::RecordAction(
+          base::UserMetricsAction("AutofillCreditCardDeletedAndHadCvc"));
+    }
+    if (credit_card->HasNonEmptyValidNickname()) {
+      base::RecordAction(
+          base::UserMetricsAction("AutofillCreditCardDeletedAndHadNickname"));
+    }
   }
   personal_data->RemoveByGUID(parameters->guid);
   return RespondNow(NoArguments());
@@ -499,7 +545,7 @@ AutofillPrivateMigrateCreditCardsFunction::Run() {
   // BrowserAutofillManager has a pointer to its AutofillClient which owns
   // FormDataImporter.
   autofill::AutofillManager* autofill_manager =
-      GetAutofillManager(GetSenderWebContents());
+      GetBrowserAutofillManager(GetSenderWebContents());
   if (!autofill_manager) {
     return RespondNow(Error(kErrorDataUnavailable));
   }
@@ -552,13 +598,9 @@ AutofillPrivateLogServerCardLinkClickedFunction::Run() {
 ExtensionFunction::ResponseAction
 AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction::Run() {
   // Getting CreditCardAccessManager from WebContents.
-  autofill::AutofillManager* autofill_manager =
-      GetAutofillManager(GetSenderWebContents());
+  autofill::BrowserAutofillManager* autofill_manager =
+      GetBrowserAutofillManager(GetSenderWebContents());
   if (!autofill_manager)
-    return RespondNow(Error(kErrorDataUnavailable));
-  autofill::CreditCardAccessManager* credit_card_access_manager =
-      autofill_manager->GetCreditCardAccessManager();
-  if (!credit_card_access_manager)
     return RespondNow(Error(kErrorDataUnavailable));
 
   absl::optional<
@@ -567,7 +609,7 @@ AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction::Run() {
           Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
-  credit_card_access_manager->OnSettingsPageFIDOAuthToggled(
+  autofill_manager->GetCreditCardAccessManager().OnSettingsPageFIDOAuthToggled(
       parameters->enabled);
   return RespondNow(NoArguments());
 }
@@ -698,8 +740,8 @@ ExtensionFunction::ResponseAction AutofillPrivateAddVirtualCardFunction::Run() {
   if (!card)
     return RespondNow(Error(kErrorDataUnavailable));
 
-  autofill::AutofillManager* autofill_manager =
-      GetAutofillManager(GetSenderWebContents());
+  autofill::BrowserAutofillManager* autofill_manager =
+      GetBrowserAutofillManager(GetSenderWebContents());
   if (!autofill_manager || !autofill_manager->client().GetFormDataImporter() ||
       !autofill_manager->client()
            .GetFormDataImporter()
@@ -742,8 +784,8 @@ AutofillPrivateRemoveVirtualCardFunction::Run() {
   if (!card)
     return RespondNow(Error(kErrorDataUnavailable));
 
-  autofill::AutofillManager* autofill_manager =
-      GetAutofillManager(GetSenderWebContents());
+  autofill::BrowserAutofillManager* autofill_manager =
+      GetBrowserAutofillManager(GetSenderWebContents());
   if (!autofill_manager || !autofill_manager->client().GetFormDataImporter() ||
       !autofill_manager->client()
            .GetFormDataImporter()

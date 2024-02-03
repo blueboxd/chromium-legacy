@@ -2896,9 +2896,6 @@ TEST_P(PdfOcrServiceTest, EmptyOCRResults) {
             status_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 }
 
-// TODO(crbug.com/1473176): Update it to provide fine-grained test coverage,
-// considering that the status node can be updated with an OCR complete message
-// before or after `UnserializeNodes()`.
 TEST_P(PdfOcrServiceTest, OCRCompleteNotification) {
   CreatePdfAccessibilityTree();
 
@@ -2971,7 +2968,7 @@ INSTANTIATE_TEST_SUITE_P(
             PdfOcrServiceTestBatchData(105u, 10u),
             PdfOcrServiceTestBatchData(280u, 20u))));
 
-// TODO(crbug.com/1443341): Add test for end result on a non-synthetic
+// TODO(crbug.com/1443346): Add test for end result on a non-synthetic
 // multi-page PDF.
 
 class PdfOcrTest : public PdfAccessibilityTreeTest {

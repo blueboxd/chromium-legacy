@@ -191,7 +191,8 @@ enum class OfficeFilesUploadResult {
   kSyncCancelledAndDeleted = 21,
   kSyncCancelledAndTrashed = 22,
   kUploadNotStartedReauthenticationRequired = 23,
-  kMaxValue = kUploadNotStartedReauthenticationRequired,
+  kSuccessAfterReauth = 24,
+  kMaxValue = kSuccessAfterReauth,
 };
 
 constexpr char kGoogleDriveTaskResultMetricName[] =
@@ -326,6 +327,10 @@ bool IsODFSMounted(Profile* profile);
 bool IsODFSInstalled(Profile* profile);
 bool IsOfficeWebAppInstalled(Profile* profile);
 
+// Returns true if url refers to an entry on any current mount provided by the
+// ODFS file system provider.
+bool UrlIsOnODFS(Profile* profile, const storage::FileSystemURL& url);
+
 // Get ODFS metadata as actions by doing a special GetActions request (for the
 // root directory) and return the actions to |OnODFSMetadataActions| which will
 // be converted to |ODFSMetadata| and passed to |callback|.
@@ -343,6 +348,10 @@ void GetODFSEntryMetadata(
 // Get the first task error that is not `base::File::Error::FILE_OK`.
 absl::optional<base::File::Error> GetFirstTaskError(
     const ::file_manager::io_task::ProgressStatus& status);
+
+// Use the most recent Files app window to calculate where the popup auth window
+// for OneDrive OAuth should display on the screen.
+absl::optional<gfx::Rect> CalculateAuthWindowBounds(Profile* profile);
 
 }  // namespace ash::cloud_upload
 

@@ -48,7 +48,6 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/features.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -537,15 +536,6 @@ void PasswordAutofillManager::DidPerformButtonActionForSuggestion(
     const autofill::Suggestion&) {
   // Button actions do currently not exist for password entries.
   NOTREACHED();
-}
-
-bool PasswordAutofillManager::GetDeletionConfirmationText(
-    const std::u16string& value,
-    autofill::PopupItemId popup_item_id,
-    autofill::Suggestion::BackendId backend_id,
-    std::u16string* title,
-    std::u16string* body) {
-  return false;
 }
 
 bool PasswordAutofillManager::RemoveSuggestion(

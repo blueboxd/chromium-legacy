@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {DialogType} from '../../common/js/dialog_type.js';
-import {FilesAppState} from '../../common/js/files_app_state.js';
+import type {FilesAppState, TypeList} from '../../common/js/files_app_state.js';
 import {AllowedPaths} from '../../common/js/volume_manager_types.js';
+import {DialogType} from '../../externs/ts/state.js';
 
 /**
  * Parsed options used to launch a new Files app window.
@@ -16,9 +16,9 @@ export class LaunchParam {
   readonly currentDirectoryURL: string;
   readonly selectionURL: string;
   readonly targetName: string;
-  readonly typeList: Object[];
+  readonly typeList: TypeList[];
   readonly includeAllFiles: boolean;
-  readonly allowedPaths: string;
+  readonly allowedPaths: AllowedPaths;
   readonly searchQuery: string;
   readonly showAndroidPickerApps: boolean;
   readonly volumeFilter: string[];

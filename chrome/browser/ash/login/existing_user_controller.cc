@@ -674,20 +674,6 @@ void ExistingUserController::ShowTPMError() {
   GetLoginDisplayHost()->StartWizard(TpmErrorView::kScreenId);
 }
 
-void ExistingUserController::ShowPasswordChangedDialogLegacy(
-    const UserContext& user_context) {
-  CHECK(login_performer_);
-  VLOG(1) << "Show password changed dialog"
-          << ", count=" << login_performer_->password_changed_callback_count();
-
-  // True if user has already made an attempt to enter old password and failed.
-  bool show_invalid_old_password_error =
-      login_performer_->password_changed_callback_count() > 1;
-
-  GetLoginDisplayHost()->GetSigninUI()->ShowPasswordChangedDialogLegacy(
-      user_context.GetAccountId(), show_invalid_old_password_error);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, LoginPerformer::Delegate implementation:
 //
@@ -955,34 +941,14 @@ void ExistingUserController::OnOffTheRecordAuthSuccess() {
   }
 }
 
-void ExistingUserController::OnPasswordChangeDetectedLegacy(
-    const UserContext& user_context) {
-  DCHECK(!ash::features::IsCryptohomeRecoveryEnabled());
-  is_login_in_progress_ = false;
-
-  // Must not proceed without signature verification.
-  if (CrosSettingsProvider::TRUSTED !=
-      cros_settings_->PrepareTrustedValues(base::BindOnce(
-          &ExistingUserController::OnPasswordChangeDetectedLegacy,
-          weak_factory_.GetWeakPtr(), user_context))) {
-    // Value of owner email is still not verified.
-    // Another attempt will be invoked after verification completion.
-    return;
-  }
-
-  for (auto& auth_status_consumer : auth_status_consumers_) {
-    auth_status_consumer.OnPasswordChangeDetectedLegacy(user_context);
-  }
-
-  ShowPasswordChangedDialogLegacy(user_context);
-}
-
-void ExistingUserController::OnPasswordChangeDetected(
-    std::unique_ptr<UserContext> user_context) {
+void ExistingUserController::OnOnlinePasswordUnusable(
+    std::unique_ptr<UserContext> user_context,
+    bool online_password_mismatch) {
   // Workaround for PrepareTrustedValues and need to move unique_ptr:
   base::OnceClosure callback =
-      base::BindOnce(&ExistingUserController::OnPasswordChangeDetectedImpl,
-                     weak_factory_.GetWeakPtr(), std::move(user_context));
+      base::BindOnce(&ExistingUserController::OnOnlinePasswordUnusableImpl,
+                     weak_factory_.GetWeakPtr(), std::move(user_context),
+                     online_password_mismatch);
   auto [continue_async, continue_now] =
       base::SplitOnceCallback(std::move(callback));
   // Must not proceed without signature verification.
@@ -995,19 +961,21 @@ void ExistingUserController::OnPasswordChangeDetected(
   std::move(continue_now).Run();
 }
 
-void ExistingUserController::OnPasswordChangeDetectedImpl(
-    std::unique_ptr<UserContext> user_context) {
-  DCHECK(ash::features::IsCryptohomeRecoveryEnabled());
+void ExistingUserController::OnOnlinePasswordUnusableImpl(
+    std::unique_ptr<UserContext> user_context,
+    bool online_password_mismatch) {
   DCHECK(user_context);
   is_login_in_progress_ = false;
 
-  for (auto& auth_status_consumer : auth_status_consumers_) {
-    auth_status_consumer.OnPasswordChangeDetectedFor(
-        user_context->GetAccountId());
+  if (online_password_mismatch) {
+    for (auto& auth_status_consumer : auth_status_consumers_) {
+      auth_status_consumer.OnPasswordChangeDetectedFor(
+          user_context->GetAccountId());
+    }
   }
 
-  GetLoginDisplayHost()->GetSigninUI()->StartCryptohomeRecovery(
-      std::move(user_context));
+  GetLoginDisplayHost()->GetSigninUI()->UseAlternativeAuthentication(
+      std::move(user_context), online_password_mismatch);
 }
 
 void ExistingUserController::OnLocalAuthenticationRequired(

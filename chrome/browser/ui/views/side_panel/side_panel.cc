@@ -155,8 +155,7 @@ class SidePanelBorder : public views::Border {
     // If there is a header we want to increase the top inset to give room for
     // the header to paint on top of the border area.
     int top_inset = views::Separator::kThickness + header_height_;
-    if (base::FeatureList::IsEnabled(features::kSidePanelPinning) &&
-        features::IsChromeRefresh2023()) {
+    if (features::IsSidePanelPinningEnabled()) {
       top_inset -= kBorderThickness;
     }
     return kBorderInsets + gfx::Insets::TLBR(top_inset, 0, 0, 0);
@@ -280,7 +279,8 @@ bool SidePanel::IsRightAligned() {
 }
 
 gfx::Size SidePanel::GetMinimumSize() const {
-  const int min_side_panel_contents_width = 320;
+  const int min_side_panel_contents_width =
+      features::GetSidePanelMinimumWidth();
   const int min_height = 0;
   return gfx::Size(min_side_panel_contents_width + kBorderInsets.width(),
                    min_height);
@@ -298,7 +298,7 @@ void SidePanel::AddHeaderView(std::unique_ptr<views::View> view) {
   // Update the border so that the insets include space for the header to be
   // placed on top of the border.
   int top_inset = header_view_->height();
-  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+  if (features::IsSidePanelPinningEnabled()) {
     top_inset -= kBorderThickness;
   }
   SetBorder(views::CreateEmptyBorder(kBorderInsets +
@@ -411,7 +411,7 @@ void SidePanel::UpdateVisibility() {
       if (header_view_) {
         static_cast<BorderView*>(border_view_)->HeaderViewChanged(header_view_);
         int top_inset = header_view_->height();
-        if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+        if (features::IsSidePanelPinningEnabled()) {
           top_inset -= kBorderThickness;
         }
         SetBorder(views::CreateEmptyBorder(

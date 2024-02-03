@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_context_state.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/immediate_crash.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
@@ -92,27 +93,44 @@ MakeGraphiteRecorderWithImageProvider(skgpu::graphite::Context* context) {
   return context->makeRecorder(options);
 }
 
+#if BUILDFLAG(SKIA_USE_DAWN)
+int32_t GetDawnMaxTextureSize(gpu::DawnContextProvider* context_provider) {
+  wgpu::SupportedLimits limits = {};
+  auto succeded = context_provider->GetDevice().GetLimits(&limits);
+  CHECK(succeded);
+  return limits.limits.maxTextureDimension2D;
+}
+#endif  // BUILDFLAG(SKIA_USE_DAWN)
+
 }  // anonymous namespace
 
 namespace gpu {
 
-void SharedContextState::compileError(const char* shader, const char* errors) {
+void SharedContextState::compileError(const char* shader,
+                                      const char* errors,
+                                      bool shaderWasCached) {
   if (!context_lost()) {
-    LOG(ERROR) << "Skia shader compilation error\n"
+    LOG(ERROR) << "Skia shader compilation error (was cached = "
+               << shaderWasCached << ")" << "\n"
                << "------------------------\n"
                << shader << "\nErrors:\n"
                << errors;
 
     static crash_reporter::CrashKeyString<2048> error_key("skia-compile-error");
     error_key.Set(errors);
-    // https://crbug.com/1442633 Sometimes we would fail to compile a cached
-    // GLSL shader because of GL driver change. Increase shader cache shm
-    // count and crash the GPU process so that the browser process would clear
-    // the cache.
-    GpuProcessShmCount::ScopedIncrement increment(
-        use_shader_cache_shm_count_.get());
 
-    base::ImmediateCrash();
+    if (shaderWasCached && use_shader_cache_shm_count_ != nullptr) {
+      // https://crbug.com/1442633 Sometimes we would fail to compile a cached
+      // GLSL shader because of GL driver change. Increase shader cache shm
+      // count and crash the GPU process so that the browser process would clear
+      // the cache.
+      GpuProcessShmCount::ScopedIncrement increment(
+          use_shader_cache_shm_count_.get());
+
+      base::ImmediateCrash();
+    } else {
+      base::debug::DumpWithoutCrashing();
+    }
   }
 }
 
@@ -339,9 +357,8 @@ bool SharedContextState::InitializeGanesh(
 
   if (gr_context_type_ == GrContextType::kGL) {
     DCHECK(context_->IsCurrent(nullptr));
-    constexpr bool use_version_es2 = false;
     sk_sp<GrGLInterface> gr_gl_interface(gl::init::CreateGrGLInterface(
-        *context_->GetVersionInfo(), use_version_es2, progress_reporter));
+        *context_->GetVersionInfo(), progress_reporter));
     if (!gr_gl_interface) {
       LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
                     "failed.";
@@ -1011,9 +1028,19 @@ int32_t SharedContextState::GetMaxTextureSize() const {
     NOTREACHED_NORETURN();
 #endif
   } else {
-    // TODO(crbug.com/1090476): Query Dawn for this value once an API exists for
-    // capabilities.
     max_texture_size = 8192;
+#if BUILDFLAG(SKIA_USE_DAWN)
+#if BUILDFLAG(IS_IOS)
+    // Note: We currently run tests against the Graphite-Metal backend on iOS;
+    // in these contexts the Dawn context provider is not created.
+    if (dawn_context_provider()) {
+      max_texture_size = GetDawnMaxTextureSize(dawn_context_provider());
+    }
+#else
+    CHECK(dawn_context_provider());
+    max_texture_size = GetDawnMaxTextureSize(dawn_context_provider());
+#endif  // BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(SKIA_USE_DAWN)
   }
   // Ensure max_texture_size_ is less than INT_MAX so that gfx::Rect and friends
   // can be used to accurately represent all valid sub-rects, with overflow

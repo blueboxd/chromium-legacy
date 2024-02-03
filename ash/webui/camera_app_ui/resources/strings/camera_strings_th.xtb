@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5320594929574852403">ย้ายไปทางด้านซ้าย</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
+<translation id="539541037630043848">เปิด <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">กำลังสแกนหน้า <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">สี่เหลี่ยมจัตุรัส</translation>
 <translation id="574392208103952083">ปานกลาง</translation>
@@ -163,6 +164,7 @@
 <translation id="8870695351537079478">เริ่มบันทึกวิดีโอไม่ได้</translation>
 <translation id="8880167521484863515">4 ต่อ 3</translation>
 <translation id="8903921497873541725">ขยาย</translation>
+<translation id="8926890870105777777">เข้าร่วมเครือข่าย "<ph name="WIFINAME" />"</translation>
 <translation id="9045010116236796332">จัดขอบเอกสารทุกด้านให้อยู่ภายในกรอบ</translation>
 <translation id="9045155556724273246">10 วินาที</translation>
 <translation id="906331135292332864">กำลังดำเนินการกับรูปภาพ...</translation>

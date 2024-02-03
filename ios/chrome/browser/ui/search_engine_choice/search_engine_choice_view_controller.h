@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_consumer.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/search_engine_choice_table_consumer.h"
 
 @class SearchEngineChoiceTableViewController;
 
@@ -23,10 +24,15 @@
 
 // A base view controller for showing a choice screen.
 @interface SearchEngineChoiceViewController
-    : UIViewController <SearchEngineChoiceConsumer, UITextViewDelegate>
+    : UIViewController <SearchEngineChoiceConsumer,
+                        SearchEngineChoiceFaviconUpdateConsumer,
+                        UITextViewDelegate>
 
 // Delegate for all the user actions.
 @property(nonatomic, weak) id<SearchEngineChoiceActionDelegate> actionDelegate;
+
+// Whether the user has selected a row.
+@property(nonatomic, assign, readwrite) BOOL didUserSelectARow;
 
 - (instancetype)initWithSearchEngineTableViewController:
     (SearchEngineChoiceTableViewController*)tableViewController
@@ -36,9 +42,9 @@
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-// The primary button is disabled by default and is only enabled after the user
-// has made a selection.
-- (void)enablePrimaryButton;
+// Update the primary action button based on whether the user has scrolled to
+// the bottom and whether they have selected a row.
+- (void)updatePrimaryActionButton;
 
 @end
 

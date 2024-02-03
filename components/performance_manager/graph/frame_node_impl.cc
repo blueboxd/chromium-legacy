@@ -42,9 +42,7 @@ FrameNodeImpl::FrameNodeImpl(ProcessNodeImpl* process_node,
       browsing_instance_id_(browsing_instance_id),
       site_instance_id_(site_instance_id),
       render_frame_host_proxy_(content::GlobalRenderFrameHostId(
-          process_node->render_process_host_proxy()
-              .render_process_host_id()
-              .value(),
+          process_node->GetRenderProcessHostId().value(),
           render_frame_id)) {
   // Nodes are created on the UI thread, then accessed on the PM sequence.
   // `weak_this_` can be returned from GetWeakPtrOnUIThread() and dereferenced
@@ -190,42 +188,45 @@ bool FrameNodeImpl::IsAdFrame() const {
 
 bool FrameNodeImpl::IsHoldingWebLock() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return is_holding_weblock();
+  return is_holding_weblock_.value();
 }
 
 bool FrameNodeImpl::IsHoldingIndexedDBLock() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return is_holding_indexeddb_lock();
+  return is_holding_indexeddb_lock_.value();
 }
 
 bool FrameNodeImpl::HadFormInteraction() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return had_form_interaction();
+  return document_.had_form_interaction.value();
 }
 
 bool FrameNodeImpl::HadUserEdits() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return had_user_edits();
+  return document_.had_user_edits.value();
 }
 
 bool FrameNodeImpl::IsAudible() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return is_audible();
+  return is_audible_.value();
 }
 
 bool FrameNodeImpl::IsCapturingMediaStream() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return is_capturing_media_stream();
+  return is_capturing_media_stream_.value();
 }
 
 absl::optional<bool> FrameNodeImpl::IntersectsViewport() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return intersects_viewport();
+  // The intersection with the viewport of the outermost main frame or embedder
+  // is not tracked.
+  DCHECK(parent_or_outer_document_or_embedder());
+  return intersects_viewport_.value();
 }
 
 FrameNode::Visibility FrameNodeImpl::GetVisibility() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return visibility();
+  return visibility_.value();
 }
 
 const RenderFrameHostProxy& FrameNodeImpl::GetRenderFrameHostProxy() const {
@@ -296,53 +297,10 @@ const base::flat_set<PageNodeImpl*>& FrameNodeImpl::embedded_page_nodes()
   return embedded_page_nodes_;
 }
 
-bool FrameNodeImpl::is_holding_weblock() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return is_holding_weblock_.value();
-}
-
-bool FrameNodeImpl::is_holding_indexeddb_lock() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return is_holding_indexeddb_lock_.value();
-}
-
 const base::flat_set<WorkerNodeImpl*>& FrameNodeImpl::child_worker_nodes()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return child_worker_nodes_;
-}
-
-bool FrameNodeImpl::had_form_interaction() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return document_.had_form_interaction.value();
-}
-
-bool FrameNodeImpl::had_user_edits() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return document_.had_user_edits.value();
-}
-
-bool FrameNodeImpl::is_audible() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return is_audible_.value();
-}
-
-bool FrameNodeImpl::is_capturing_media_stream() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return is_capturing_media_stream_.value();
-}
-
-absl::optional<bool> FrameNodeImpl::intersects_viewport() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // The intersection with the viewport of the outermost main frame or embedder
-  // is not tracked.
-  DCHECK(parent_or_outer_document_or_embedder());
-  return intersects_viewport_.value();
-}
-
-FrameNode::Visibility FrameNodeImpl::visibility() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return visibility_.value();
 }
 
 void FrameNodeImpl::SetIsCurrent(bool is_current) {
@@ -666,7 +624,7 @@ void FrameNodeImpl::OnJoiningGraph() {
   DCHECK(GetWeakPtr().get());
 
   // Enable querying this node using process and frame routing ids.
-  graph()->RegisterFrameNodeForId(process_node_->GetRenderProcessId(),
+  graph()->RegisterFrameNodeForId(process_node_->GetRenderProcessHostId(),
                                   render_frame_id_, this);
 
   // Notify the initializing observers.
@@ -704,7 +662,7 @@ void FrameNodeImpl::OnBeforeLeavingGraph() {
   graph()->NotifyFrameNodeTearingDown(this);
 
   // Disable querying this node using process and frame routing ids.
-  graph()->UnregisterFrameNodeForId(process_node_->GetRenderProcessId(),
+  graph()->UnregisterFrameNodeForId(process_node_->GetRenderProcessHostId(),
                                     render_frame_id_, this);
 }
 

@@ -136,7 +136,7 @@ if (build_with_tflite_lib) {
   }
 }
 
-static_library("features") {
+component("features") {
   sources = [
     "insertion_ordered_set.h",
     "optimization_guide_constants.cc",
@@ -158,9 +158,11 @@ static_library("features") {
     "//components/variations",
     "//google_apis",
     "//net",
+    "//third_party/metrics_proto:metrics_proto",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  defines = [ "IS_OPTIMIZATION_GUIDE_FEATURES_IMPL" ]
 }
 
 input_proto_descriptor_file =
@@ -193,6 +195,8 @@ static_library("core") {
     "model_quality/model_quality_log_entry.cc",
     "model_quality/model_quality_log_entry.h",
     "model_quality/model_quality_logs_uploader.h",
+    "model_quality/model_quality_logs_uploader_service.cc",
+    "model_quality/model_quality_logs_uploader_service.h",
     "noisy_metrics_recorder.cc",
     "noisy_metrics_recorder.h",
     "optimization_filter.cc",
@@ -202,7 +206,6 @@ static_library("core") {
     "optimization_guide_enums.h",
     "optimization_guide_logger.cc",
     "optimization_guide_logger.h",
-    "optimization_guide_model_executor.cc",
     "optimization_guide_model_executor.h",
     "optimization_guide_model_provider.h",
     "optimization_guide_navigation_data.cc",
@@ -245,6 +248,12 @@ static_library("core") {
       "model_execution/model_execution_fetcher.h",
       "model_execution/model_execution_manager.cc",
       "model_execution/model_execution_manager.h",
+      "model_execution/model_execution_prefs.cc",
+      "model_execution/model_execution_prefs.h",
+      "model_execution/model_execution_util.cc",
+      "model_execution/model_execution_util.h",
+      "model_execution/on_device_model_access_controller.cc",
+      "model_execution/on_device_model_access_controller.h",
       "model_execution/on_device_model_execution_config_interpreter.cc",
       "model_execution/on_device_model_execution_config_interpreter.h",
       "model_execution/on_device_model_execution_proto_descriptors.h",
@@ -252,12 +261,10 @@ static_library("core") {
       "model_execution/on_device_model_execution_proto_value_utils.h",
       "model_execution/on_device_model_service_controller.cc",
       "model_execution/on_device_model_service_controller.h",
-      "model_execution/on_device_model_stream_receiver.cc",
-      "model_execution/on_device_model_stream_receiver.h",
-      "model_execution/on_device_session.cc",
-      "model_execution/on_device_session.h",
       "model_execution/optimization_guide_model_execution_error.cc",
       "model_execution/optimization_guide_model_execution_error.h",
+      "model_execution/session_impl.cc",
+      "model_execution/session_impl.h",
       "model_execution/settings_enabled_observer.cc",
       "model_execution/settings_enabled_observer.h",
       output_proto_descriptors_cc_file,
@@ -326,7 +333,10 @@ static_library("core") {
   ]
 
   if (!is_fuchsia || !optimize_for_size) {
-    deps += [ ":on_device_model_execution_proto_generator" ]
+    deps += [
+      ":on_device_model_execution_proto_generator",
+      "//components/version_info",
+    ]
   }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -456,6 +466,7 @@ source_set("unit_tests") {
     "insertion_ordered_set_unittest.cc",
     "model_handler_unittest.cc",
     "model_quality/model_quality_log_entry_unittest.cc",
+    "model_quality/model_quality_logs_uploader_service_unittest.cc",
     "model_store_metadata_entry_unittest.cc",
     "model_util_unittest.cc",
     "noisy_metrics_recorder_unittest.cc",
@@ -481,6 +492,8 @@ source_set("unit_tests") {
 
   if (!is_fuchsia || !optimize_for_size) {
     sources += [
+      "model_execution/model_execution_features_controller_unittest.cc",
+      "model_execution/model_execution_features_unittest.cc",
       "model_execution/model_execution_fetcher_unittest.cc",
       "model_execution/model_execution_manager_unittest.cc",
       "model_execution/on_device_model_execution_config_interpreter_unittest.cc",

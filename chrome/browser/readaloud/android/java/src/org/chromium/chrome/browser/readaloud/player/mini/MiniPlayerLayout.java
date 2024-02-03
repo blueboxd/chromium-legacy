@@ -208,7 +208,7 @@ public class MiniPlayerLayout extends LinearLayout {
 
     void onPlaybackStateChanged(@PlaybackListener.State int state) {
         switch (state) {
-            // UNKNOWN is currently the "reset" state and can be treated same as buffering.
+                // UNKNOWN is currently the "reset" state and can be treated same as buffering.
             case BUFFERING:
             case UNKNOWN:
                 showOnly(mBufferingLayout);
@@ -231,19 +231,17 @@ public class MiniPlayerLayout extends LinearLayout {
                         getResources().getString(R.string.readaloud_pause));
                 break;
 
+            case STOPPED:
             case PAUSED:
                 if (mLastPlaybackState != PLAYING && mLastPlaybackState != PAUSED) {
                     showOnly(mNormalLayout);
                     mProgressBar.setVisibility(View.VISIBLE);
                 }
-
                 mPlayPauseView.setImageResource(R.drawable.mini_play_button);
                 mPlayPauseView.setContentDescription(
                         getResources().getString(R.string.readaloud_play));
                 break;
 
-            // TODO(b/301657446): handle this case
-            case STOPPED:
             default:
                 break;
         }
@@ -262,7 +260,11 @@ public class MiniPlayerLayout extends LinearLayout {
     }
 
     private void setOnClickListener(int id, Runnable handler) {
-        findViewById(id).setOnClickListener((v) -> { handler.run(); });
+        findViewById(id)
+                .setOnClickListener(
+                        (v) -> {
+                            handler.run();
+                        });
     }
 
     private void destroyAnimator() {

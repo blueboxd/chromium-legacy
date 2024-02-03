@@ -1046,7 +1046,8 @@ ContainerOsVersion VersionFromOsRelease(
 
 bool IsUpgradableContainerVersion(ContainerOsVersion version) {
   return version == ContainerOsVersion::kDebianStretch ||
-         version == ContainerOsVersion::kDebianBuster;
+         version == ContainerOsVersion::kDebianBuster ||
+         version == ContainerOsVersion::kDebianBullseye;
 }
 
 }  // namespace
@@ -1971,6 +1972,8 @@ vm_tools::cicerone::UpgradeContainerRequest::Version ConvertVersion(
       return vm_tools::cicerone::UpgradeContainerRequest::DEBIAN_BUSTER;
     case ContainerVersion::BULLSEYE:
       return vm_tools::cicerone::UpgradeContainerRequest::DEBIAN_BULLSEYE;
+    case ContainerVersion::BOOKWORM:
+      return vm_tools::cicerone::UpgradeContainerRequest::DEBIAN_BOOKWORM;
     case ContainerVersion::UNKNOWN:
     default:
       return vm_tools::cicerone::UpgradeContainerRequest::UNKNOWN;

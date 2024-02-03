@@ -18,6 +18,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/typography.h"
+#include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_action_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/desk_name_view.h"
@@ -47,6 +48,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/event_observer.h"
@@ -482,7 +484,7 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
       views::ScrollView::ScrollWithLayers::kEnabled));
   scroll_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   scroll_view_->layer()->SetMasksToBounds(true);
-  scroll_view_->SetBackgroundColor(absl::nullopt);
+  scroll_view_->SetBackgroundColor(std::nullopt);
   scroll_view_->SetDrawOverflowIndicator(false);
   scroll_view_->SetHorizontalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
@@ -750,6 +752,13 @@ void DeskBarViewBase::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void DeskBarViewBase::Init() {
+  // It's possible that window occlusion state change triggers some new windows
+  // to show up during desk bar initialization process. It should not broadcast
+  // the desk content update since desk mini view may not be ready. Please refer
+  // to b/320530730.
+  Desk::ScopedContentUpdateNotificationDisabler desks_scoped_notify_disabler(
+      DesksController::Get()->desks(), /*notify_when_destroyed=*/false);
+
   UpdateNewMiniViews(/*initializing_bar_view=*/true,
                      /*expanding_bar_view=*/false);
 
@@ -860,7 +869,7 @@ void DeskBarViewBase::NudgeDeskName(int desk_index) {
 
     // If we're in tablet mode and there are no external keyboards, open up the
     // virtual keyboard.
-    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+    if (display::Screen::GetScreen()->InTabletMode() &&
         !HasExternalKeyboard()) {
       keyboard::KeyboardUIController::Get()->ShowKeyboard(/*lock=*/false);
     }
@@ -974,7 +983,7 @@ bool DeskBarViewBase::ShouldShowLibraryUi() {
   // Only update visibility when needed. This will save a lot of repeated work.
   if (library_ui_visibility_ == LibraryUiVisibility::kToBeChecked) {
     if (!saved_desk_util::IsSavedDesksEnabled() ||
-        Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+        display::Screen::GetScreen()->InTabletMode()) {
       library_ui_visibility_ = LibraryUiVisibility::kHidden;
     } else {
       auto* desk_model = Shell::Get()->saved_desk_delegate()->GetDeskModel();

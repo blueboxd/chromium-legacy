@@ -5,7 +5,6 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
 #define BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
 
-#include <atomic>
 #include <deque>
 #include <map>
 #include <memory>
@@ -106,15 +105,6 @@ class BASE_EXPORT SequenceManagerImpl
   // after FeatureList initialization.
   static void InitializeFeatures();
 
-  // Sets the global cached state of the NoWakeUpsForCanceledTasks feature
-  // according to its enabled state. Must be invoked after FeatureList
-  // initialization.
-  static void ApplyNoWakeUpsForCanceledTasks();
-
-  // Resets the global cached state of the NoWakeUpsForCanceledTasks feature
-  // according to its default state.
-  static void ResetNoWakeUpsForCanceledTasksForTesting();
-
   // SequenceManager implementation:
   void BindToCurrentThread() override;
   scoped_refptr<SequencedTaskRunner> GetTaskRunnerForCurrentTask() override;
@@ -147,10 +137,9 @@ class BASE_EXPORT SequenceManagerImpl
       LazyNow& lazy_now,
       SelectTaskOption option = SelectTaskOption::kDefault) override;
   void DidRunTask(LazyNow& lazy_now) override;
-  void RemoveAllCanceledDelayedTasksFromFront(LazyNow* lazy_now) override;
   absl::optional<WakeUp> GetPendingWakeUp(
       LazyNow* lazy_now,
-      SelectTaskOption option = SelectTaskOption::kDefault) const override;
+      SelectTaskOption option = SelectTaskOption::kDefault) override;
   bool HasPendingHighResolutionTasks() override;
   bool OnSystemIdle() override;
   void MaybeEmitTaskDetails(
@@ -419,7 +408,8 @@ class BASE_EXPORT SequenceManagerImpl
   // Deletes queues marked for deletion and empty queues marked for shutdown.
   void CleanUpQueues();
 
-  void RemoveAllCanceledTasksFromFrontOfWorkQueues();
+  // Removes canceled delayed tasks from the front of wake up queue.
+  void RemoveAllCanceledDelayedTasksFromFront(LazyNow* lazy_now);
 
   TaskQueue::TaskTiming::TimeRecordingPolicy ShouldRecordTaskTiming(
       const internal::TaskQueueImpl* task_queue);
@@ -468,7 +458,7 @@ class BASE_EXPORT SequenceManagerImpl
   const MetricRecordingSettings metric_recording_settings_;
 
   // Whether to add the queue time to tasks.
-  std::atomic_bool add_queue_time_to_tasks_;
+  base::subtle::Atomic32 add_queue_time_to_tasks_;
 
   AtomicFlagSet empty_queues_to_reload_;
 

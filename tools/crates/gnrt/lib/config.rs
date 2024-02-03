@@ -34,7 +34,16 @@ pub struct GnConfig {
     /// Path to a handlebars template for writing README.chromium files. The
     /// path is relative to the config file. Only used for
     /// //third_party/rust crates.
+    #[serde(default)]
     pub readme_file_template: std::path::PathBuf,
+    /// Path to a handlebars template for writing placeholder crates that we
+    /// don't want to vendor. This is the Cargo.toml file.
+    #[serde(default)]
+    pub removed_cargo_template: std::path::PathBuf,
+    /// Path to a handlebars template for writing placeholder crates that we
+    /// don't want to vendor. This is the src/lib.rs file.
+    #[serde(default)]
+    pub removed_librs_template: std::path::PathBuf,
 }
 
 /// Influences dependency resolution for a session.
@@ -100,5 +109,5 @@ pub struct CrateConfig {
     #[serde(default)]
     pub license: Option<String>,
     #[serde(default)]
-    pub license_file: Option<String>,
+    pub license_files: Vec<String>,
 }

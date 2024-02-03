@@ -12,7 +12,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/app_service/web_apps_with_shortcuts_test.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/test/base/testing_profile.h"
@@ -92,11 +94,20 @@ class LacrosBrowserShortcutsControllerTest : public testing::Test,
   }
 
   std::string CreateWebAppBasedShortcut(const GURL& shortcut_url,
-                                        const std::u16string& shortcut_name) {
+                                        const std::u16string& shortcut_name,
+                                        bool with_icon = false) {
     // Create web app based shortcut.
     auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
     web_app_info->start_url = shortcut_url;
     web_app_info->title = shortcut_name;
+
+    if (with_icon) {
+      const GeneratedIconsInfo icon_info(
+          IconPurpose::ANY, {web_app::icon_size::k32}, {SK_ColorBLACK});
+      web_app::AddIconsToWebAppInstallInfo(
+          web_app_info.get(), GURL(shortcut_url.spec() + "/icon"), {icon_info});
+    }
+
     auto local_shortcut_id = web_app::test::InstallWebApp(
         profile(), std::move(web_app_info),
         /*overwrite_existing_manifest_fields=*/true);
@@ -142,23 +153,45 @@ class LacrosBrowserShortcutsControllerTest : public testing::Test,
 };
 
 TEST_F(LacrosBrowserShortcutsControllerTest, PublishShortcuts) {
-  auto shortcut_id_1 = CreateWebAppBasedShortcut(
-      GURL("https://www.example.com/"), u"shortcut name");
+  auto local_id_1 = CreateWebAppBasedShortcut(GURL("https://www.example.com/"),
+                                              u"shortcut name");
 
   InitializeLacrosBrowserShortcutsController();
   ASSERT_TRUE(fake_publisher()->controller_registered());
   ASSERT_EQ(fake_publisher()->get_deltas().size(), 1U);
-  EXPECT_EQ(fake_publisher()->get_deltas().back()->local_id, shortcut_id_1);
+  EXPECT_EQ(fake_publisher()->get_deltas().back()->local_id, local_id_1);
   EXPECT_EQ(fake_publisher()->get_deltas().back()->host_app_id,
             app_constants::kLacrosAppId);
+  EXPECT_EQ(fake_publisher()->get_deltas().back()->shortcut_id,
+            apps::GenerateShortcutId(app_constants::kLacrosAppId, local_id_1));
+  EXPECT_EQ(fake_publisher()->get_deltas().back()->name, "shortcut name");
+  EXPECT_EQ(fake_publisher()->get_deltas().back()->shortcut_source,
+            apps::ShortcutSource::kUser);
+  EXPECT_TRUE(fake_publisher()->get_deltas().back()->icon_key.has_value());
+  EXPECT_EQ(
+      fake_publisher()->get_deltas().back()->icon_key->icon_effects,
+      apps::IconEffects::kRoundCorners | apps::IconEffects::kCrOsStandardMask);
+  EXPECT_TRUE(fake_publisher()->get_deltas().back()->allow_removal);
 
-  auto shortcut_id_2 = CreateWebAppBasedShortcut(
-      GURL("https://www.another-example.com/"), u"another shortcut name");
+  auto local_id_2 = CreateWebAppBasedShortcut(
+      GURL("https://www.another-example.com/"), u"another shortcut name",
+      /*with_icon = */ true);
 
   EXPECT_EQ(fake_publisher()->get_deltas().size(), 2U);
-  EXPECT_EQ(fake_publisher()->get_deltas().back()->local_id, shortcut_id_2);
+  EXPECT_EQ(fake_publisher()->get_deltas().back()->local_id, local_id_2);
   EXPECT_EQ(fake_publisher()->get_deltas().back()->host_app_id,
             app_constants::kLacrosAppId);
+  EXPECT_EQ(fake_publisher()->get_deltas().back()->shortcut_id,
+            apps::GenerateShortcutId(app_constants::kLacrosAppId, local_id_2));
+  EXPECT_EQ(fake_publisher()->get_deltas().back()->name,
+            "another shortcut name");
+  EXPECT_EQ(fake_publisher()->get_deltas().back()->shortcut_source,
+            apps::ShortcutSource::kUser);
+  EXPECT_TRUE(fake_publisher()->get_deltas().back()->icon_key.has_value());
+  EXPECT_EQ(
+      fake_publisher()->get_deltas().back()->icon_key->icon_effects,
+      apps::IconEffects::kRoundCorners | apps::IconEffects::kCrOsStandardIcon);
+  EXPECT_TRUE(fake_publisher()->get_deltas().back()->allow_removal);
 }
 
 TEST_F(LacrosBrowserShortcutsControllerTest, WebAppNotPublished) {

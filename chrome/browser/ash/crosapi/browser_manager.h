@@ -19,10 +19,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/process/process.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/crosapi/browser_action.h"
+#include "chrome/browser/ash/crosapi/browser_launcher.h"
 #include "chrome/browser/ash/crosapi/browser_manager_observer.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_observer.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -421,9 +421,12 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     // Lacros-chrome is loaded and ready for launching.
     STOPPED,
 
-    // Params for the lacros-chrome are parepared on a background thread, and
-    // the device owner set up is being waited.
+    // Params for lacros-chrome are parepared on a background thread.
     PREPARING_FOR_LAUNCH,
+
+    // Lacros-chrome is waiting for device owner to be fetched after receiving
+    // params. For prelaunching, it also waits for profile to be added.
+    WAITING_OWNER_FETCH,
 
     // Lacros-chrome has been pre-launched at login screen, and it's waiting to
     // be unblocked post-login.
@@ -712,6 +715,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   void PerformAction(std::unique_ptr<BrowserAction> action);
 
+  crosapi::BrowserLauncher browser_launcher_;
+
   // NOTE: The state is exposed to tests via autotest_private.
   State state_ = State::NOT_INITIALIZED;
 
@@ -741,9 +746,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Time when the lacros process was resumed (when pre-launching at login
   // screen).
   base::TimeTicks lacros_resume_time_;
-
-  // Process handle for the lacros-chrome process.
-  base::Process lacros_process_;
 
   // Remembers the request from Lacros-chrome whether it needs to be
   // relaunched. Reset on new process start in any cases.

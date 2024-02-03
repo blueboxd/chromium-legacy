@@ -21,6 +21,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
@@ -98,7 +99,8 @@ std::unique_ptr<views::LabelButton> CreateMenuItem(
           ? gfx::Insets::VH(5 * vertical_spacing / 4, horizontal_spacing)
           : gfx::Insets::VH(vertical_spacing, horizontal_spacing);
 
-  auto button = CreateBubbleMenuItem(button_id, name, callback, icon);
+  auto button =
+      CreateBubbleMenuItem(button_id, name, std::move(callback), icon);
   button->SetBorder(views::CreateEmptyBorder(control_insets));
   if (features::IsChromeRefresh2023()) {
     button->SetLabelStyle(views::style::STYLE_BODY_3_EMPHASIS);
@@ -329,6 +331,9 @@ views::Widget* TabGroupEditorBubbleView::Show(
     absl::optional<gfx::Rect> anchor_rect,
     views::View* anchor_view,
     bool stop_context_menu_propagation) {
+  feature_engagement::TrackerFactory::GetForBrowserContext(browser->profile())
+      ->NotifyEvent("tab_group_editor_shown");
+
   // TODO(pbos): Clean this duplicate implementation up. This is only here while
   // development of a DialogModel version of this bubble is in progress. This is
   // also only checked in so that development on DialogModel and
@@ -402,6 +407,7 @@ views::Widget* TabGroupEditorBubbleView::Show(
     bubble_ptr->GetBubbleFrameView()->SetPreferredArrowAdjustment(
         views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
     widget->Show();
+
     return widget;
   }
 

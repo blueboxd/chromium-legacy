@@ -180,6 +180,13 @@ void FakeWebAppUiManager::DisplayRunOnOsLoginNotification(
 
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+void FakeWebAppUiManager::NotifyAppRelaunchState(
+    const webapps::AppId& placeholder_app_id,
+    const webapps::AppId& final_app_id,
+    const std::u16string& final_app_name,
+    base::WeakPtr<Profile> profile,
+    AppRelaunchState relaunch_state) {}
+
 content::WebContents* FakeWebAppUiManager::CreateNewTab() {
   return nullptr;
 }
@@ -224,5 +231,10 @@ void FakeWebAppUiManager::LaunchIsolatedWebAppInstaller(
 void FakeWebAppUiManager::MaybeCreateEnableSupportedLinksInfobar(
     content::WebContents* web_contents,
     const std::string& launch_name) {}
+
+void FakeWebAppUiManager::MaybeShowIPHPromoForAppsLaunchedViaLinkCapturing(
+    content::WebContents* web_contents,
+    Profile* profile,
+    const std::string& app_id) {}
 
 }  // namespace web_app

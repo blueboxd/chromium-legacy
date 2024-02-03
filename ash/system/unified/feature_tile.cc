@@ -4,6 +4,8 @@
 
 #include "ash/system/unified/feature_tile.h"
 
+#include <utility>
+
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
@@ -82,10 +84,10 @@ std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight(
 
 }  // namespace
 
-FeatureTile::FeatureTile(base::RepeatingCallback<void()> callback,
+FeatureTile::FeatureTile(PressedCallback callback,
                          bool is_togglable,
                          TileType type)
-    : Button(callback),
+    : Button(std::move(callback)),
       corner_radius_(kDefaultCornerRadius),
       is_togglable_(is_togglable),
       type_(type) {

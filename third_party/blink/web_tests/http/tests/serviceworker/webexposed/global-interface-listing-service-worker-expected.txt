@@ -557,6 +557,7 @@ interface FileSystemHandle
     method requestPermission
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
+    getter mode
     method constructor
     method seek
     method truncate
@@ -1329,6 +1330,9 @@ interface Response
     method formData
     method json
     method text
+interface RestrictionTarget
+    attribute @@toStringTag
+    method constructor
 interface Scheduler
     attribute @@toStringTag
     method constructor
@@ -1415,6 +1419,7 @@ interface Subscriber
     attribute @@toStringTag
     getter active
     getter signal
+    method addTeardown
     method complete
     method constructor
     method error
@@ -1592,6 +1597,7 @@ interface URL
 interface URLPattern
     static method compareComponent
     attribute @@toStringTag
+    getter hasRegExpGroups
     getter hash
     getter hostname
     getter password

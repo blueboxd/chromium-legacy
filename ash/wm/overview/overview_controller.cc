@@ -24,7 +24,6 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -36,6 +35,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/presentation_time_recorder.h"
+#include "ui/display/screen.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -58,13 +58,6 @@ constexpr base::TimeDelta kOcclusionPauseDurationForEnd =
 
 constexpr base::TimeDelta kEnterExitPresentationMaxLatency = base::Seconds(2);
 
-bool IsSplitViewDividerDraggedOrAnimated() {
-  SplitViewController* split_view_controller =
-      SplitViewController::Get(Shell::GetPrimaryRootWindow());
-  return split_view_controller->IsResizingWithDivider() ||
-         split_view_controller->IsDividerAnimating();
-}
-
 // Returns the enter/exit type that should be used if kNormal enter/exit type
 // was originally requested - if the overview is expected to transition to/from
 // the home screen, the normal enter/exit mode is expected to be overridden by
@@ -79,8 +72,9 @@ OverviewEnterExitType MaybeOverrideEnterExitTypeForHomeScreen(
     return original_type;
 
   // Use normal type if home launcher is not available.
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+  if (!display::Screen::GetScreen()->InTabletMode()) {
     return original_type;
+  }
 
   // Transition to home screen only if all windows are minimized.
   for (const aura::Window* window : windows) {
@@ -285,17 +279,6 @@ void OverviewController::OnWindowActivating(ActivationReason reason,
     overview_session_->OnWindowActivating(reason, gained_active, lost_active);
 }
 
-std::vector<aura::Window*>
-OverviewController::GetWindowsListInOverviewGridsForTest() {
-  std::vector<aura::Window*> windows;
-  for (const std::unique_ptr<OverviewGrid>& grid :
-       overview_session_->grid_list()) {
-    for (const auto& overview_item : grid->window_list())
-      windows.push_back(overview_item->GetWindow());
-  }
-  return windows;
-}
-
 bool OverviewController::CanEnterOverview() const {
   if (!DesksController::Get()->CanEnterOverview()) {
     return false;
@@ -306,20 +289,14 @@ bool OverviewController::CanEnterOverview() const {
     return false;
   }
 
-  // Prevent entering overview while the divider is dragged or animated.
-  if (IsSplitViewDividerDraggedOrAnimated()) {
-    return false;
-  }
-
   // Don't allow a window overview if the user session is not active (e.g.
   // locked or in user-adding screen) or a modal dialog is open or running in
   // kiosk app session.
-  SessionControllerImpl* session_controller =
-      Shell::Get()->session_controller();
-  return session_controller->GetSessionState() ==
+  Shell* shell = Shell::Get();
+  return shell->session_controller()->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
          !Shell::IsSystemModalWindowOpen() &&
-         !Shell::Get()->screen_pinning_controller()->IsPinned();
+         !shell->screen_pinning_controller()->IsPinned();
 }
 
 void OverviewController::ToggleOverview(OverviewEnterExitType type) {
@@ -532,10 +509,6 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
 }
 
 bool OverviewController::CanEndOverview(OverviewEnterExitType type) const {
-  // Prevent ending overview while the divider is dragged or animated.
-  if (IsSplitViewDividerDraggedOrAnimated())
-    return false;
-
   // Do not allow ending overview if we're in single split mode unless swiping
   // up from the shelf in tablet mode, or ending overview immediately without
   // animations.

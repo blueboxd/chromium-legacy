@@ -11,7 +11,6 @@
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_controller.h"
-#include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "base/check_op.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -152,7 +151,7 @@ gfx::Size CrOSNextDeskIconButton::CalculatePreferredSize() const {
 }
 
 void CrOSNextDeskIconButton::UpdateFocusState() {
-  absl::optional<ui::ColorId> new_focus_color_id;
+  std::optional<ui::ColorId> new_focus_color_id;
 
   if (is_focused() ||
       (state_ == State::kActive && bar_view_->dragged_item_over_bar() &&
@@ -161,7 +160,7 @@ void CrOSNextDeskIconButton::UpdateFocusState() {
   } else if (state_ == State::kActive && paint_as_active_) {
     new_focus_color_id = cros_tokens::kCrosSysTertiary;
   } else {
-    new_focus_color_id = absl::nullopt;
+    new_focus_color_id = std::nullopt;
   }
 
   if (focus_color_id_ == new_focus_color_id) {

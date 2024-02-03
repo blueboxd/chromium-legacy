@@ -49,12 +49,11 @@ class SingleFieldFormFillRouter : public SingleFieldFormFiller {
       AutofillSuggestionTriggerSource trigger_source,
       const FormFieldData& field,
       const AutofillClient& client,
-      base::WeakPtr<SingleFieldFormFiller::SuggestionsHandler> handler,
+      OnSuggestionsReturnedCallback on_suggestions_returned,
       const SuggestionsContext& context) override;
   void OnWillSubmitFormWithFields(const std::vector<FormFieldData>& fields,
                                   bool is_autocomplete_enabled) override;
-  void CancelPendingQueries(
-      const SingleFieldFormFiller::SuggestionsHandler* handler) override;
+  void CancelPendingQueries() override;
   void OnRemoveCurrentSingleFieldSuggestion(const std::u16string& field_name,
                                             const std::u16string& value,
                                             PopupItemId popup_item_id) override;

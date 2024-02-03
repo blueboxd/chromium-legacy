@@ -6,9 +6,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
+#include "base/task/thread_pool.h"
+#include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/stateless/utils.h"
+#include "media/gpu/v4l2/stateless/vp8_delegate.h"
 #include "media/gpu/v4l2/stateless/vp9_delegate.h"
 #include "media/gpu/v4l2/v4l2_status.h"
 
@@ -32,7 +35,8 @@ V4L2StatelessVideoDecoder::V4L2StatelessVideoDecoder(
     : VideoDecoderMixin(std::move(media_log),
                         std::move(decoder_task_runner),
                         std::move(client)),
-      device_(std::move(device)) {
+      device_(std::move(device)),
+      weak_ptr_factory_for_events_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
 }
 
@@ -100,6 +104,8 @@ void V4L2StatelessVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  aspect_ratio_ = config.aspect_ratio();
+
   output_cb_ = std::move(output_cb);
   std::move(init_cb).Run(DecoderStatus::Codes::kOk);
 }
@@ -111,6 +117,12 @@ void V4L2StatelessVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   const int32_t bitstream_id =
       bitstream_id_generator_.GenerateNextId().GetUnsafeValue();
+
+  if (!event_task_runner_) {
+    event_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    CHECK(event_task_runner_);
+  }
 
   ProcessCompressedBuffer(std::move(buffer), std::move(decode_cb),
                           bitstream_id);
@@ -162,13 +174,30 @@ V4L2StatelessVideoDecoder::CreateSurface() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4);
 
-  return base::MakeRefCounted<StatelessDecodeSurface>();
+  // This function is called before decoding of the bitstream. A place to
+  // store the decoded frame should be available before the decode occurs. But
+  // that is not how the V4L2 stateless model works. The compressed buffer queue
+  // is independent of the decoded frame queue.
+  // The two queues need to be matched up. The metadata associated with the
+  // compressed data needs to be tracked. In V4L2 m2m model this is done by
+  // copying the timestamps from the compressed buffer to the decoded buffer.
+  //
+  // The surface needs to match up the decompressed buffer to the originating
+  // metadata. This can't be done with |bitstream_id| because |bitstream_id| is
+  // a per packet, not per frame, designator. But it is used to match up the
+  // incoming timestamp with the displayed frame.
+
+  const uint32_t frame_id =
+      frame_id_generator_.GenerateNextId().GetUnsafeValue();
+
+  return base::MakeRefCounted<StatelessDecodeSurface>(frame_id);
 }
 
 bool V4L2StatelessVideoDecoder::SubmitFrame(void* ctrls,
                                             const uint8_t* data,
                                             size_t size,
-                                            int32_t bitstream_id) {
+                                            uint32_t frame_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4);
   if (!output_queue_) {
     if (!input_queue_->PrepareBuffers()) {
@@ -191,10 +220,20 @@ bool V4L2StatelessVideoDecoder::SubmitFrame(void* ctrls,
       return false;
     }
 
+    if (!SetupOutputFormatForPipeline()) {
+      return false;
+    }
+
     output_queue_->StartStreaming();
+
+    ArmOutputBufferMonitor();
   }
 
-  return true;
+  // Reclaim input buffers that are done being processed.
+  input_queue_->Reclaim();
+
+  DVLOGF(2) << "Submitting compressed frame " << frame_id << " to be decoded.";
+  return input_queue_->SubmitCompressedFrameData(ctrls, data, size, frame_id);
 }
 
 void V4L2StatelessVideoDecoder::SurfaceReady(
@@ -211,6 +250,10 @@ bool V4L2StatelessVideoDecoder::CreateDecoder(VideoCodecProfile profile,
   DVLOGF(3);
 
   switch (VideoCodecProfileToVideoCodec(profile)) {
+    case VideoCodec::kVP8:
+      decoder_ = std::make_unique<VP8Decoder>(
+          std::make_unique<VP8Delegate>(this), color_space);
+      break;
     case VideoCodec::kVP9:
       decoder_ = std::make_unique<VP9Decoder>(
           std::make_unique<VP9Delegate>(
@@ -236,6 +279,74 @@ bool V4L2StatelessVideoDecoder::CreateInputQueue(VideoCodecProfile profile,
   input_queue_ = InputQueue::Create(device_, codec, resolution);
 
   return !!input_queue_;
+}
+
+bool V4L2StatelessVideoDecoder::SetupOutputFormatForPipeline() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(4);
+  DCHECK(output_queue_);
+
+  // The |output_queue_| has been already set up by the driver. This format
+  // needs to be consumed by those further down the pipeline, i.e. image
+  // processor, gpu, or display.
+  std::vector<ImageProcessor::PixelLayoutCandidate> candidates;
+  candidates.emplace_back(ImageProcessor::PixelLayoutCandidate{
+      .fourcc = output_queue_->GetQueueFormat(),
+      .size = output_queue_->GetVideoResolution()});
+
+  const gfx::Rect visible_rect = decoder_->GetVisibleRect();
+  const size_t num_codec_reference_frames = decoder_->GetNumReferenceFrames();
+  // Verify |num_codec_reference_frames| has a reasonable value. Anecdotally
+  // 16 is the largest amount of reference frames seen, on an ITU-T H.264 test
+  // vector (CAPCM*1_Sand_E.h264).
+  CHECK_LE(num_codec_reference_frames, 32u);
+
+  // The pipeline needs to pick an output format. If the |output_queue_| format
+  // can not be consumed by the rest of the pipeline an image processor will be
+  // needed.
+  CroStatus::Or<ImageProcessor::PixelLayoutCandidate> status_or_output_format =
+      client_->PickDecoderOutputFormat(
+          candidates, visible_rect, aspect_ratio_.GetNaturalSize(visible_rect),
+          /*output_size=*/absl::nullopt, num_codec_reference_frames,
+          /*use_protected=*/false, /*need_aux_frame_pool=*/false,
+          /*allocator=*/absl::nullopt);
+  if (!status_or_output_format.has_value()) {
+    return false;
+  }
+
+  return true;
+}
+
+void V4L2StatelessVideoDecoder::ArmOutputBufferMonitor() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(4);
+
+  // This callback is run once a buffers is ready to be dequeued. It is posted
+  // as a task instead of being run directly from |WaitOnceForEvents|. Doing
+  // this avoids servicing the buffers while other tasks are running.
+  auto dequeue_callback = base::BindPostTaskToCurrentDefault(
+      base::BindOnce(&V4L2StatelessVideoDecoder::DequeueDecodedBuffers,
+                     weak_ptr_factory_for_events_.GetWeakPtr()));
+
+  // V4L2 |v4l2_m2m_poll_for_data| the default handler for polling, requires
+  // that there be a buffer queued in both input and output queues, otherwise
+  // it will error out immediately. This condition can occur when running with a
+  // small number of buffers. The solution is to rearm the monitor.
+  auto error_callback = base::BindPostTaskToCurrentDefault(
+      base::BindOnce(&V4L2StatelessVideoDecoder::ArmOutputBufferMonitor,
+                     weak_ptr_factory_for_events_.GetWeakPtr()));
+
+  cancelable_task_tracker_.PostTask(
+      event_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&WaitOnceForEvents, device_->GetPollEvent(),
+                     std::move(dequeue_callback), std::move(error_callback)));
+}
+
+void V4L2StatelessVideoDecoder::DequeueDecodedBuffers() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(4);
+
+  NOTIMPLEMENTED();
 }
 
 void V4L2StatelessVideoDecoder::ProcessCompressedBuffer(

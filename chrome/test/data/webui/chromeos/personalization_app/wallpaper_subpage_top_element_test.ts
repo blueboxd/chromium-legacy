@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import 'chrome://personalization/strings.m.js';
-import 'chrome://webui-test/mojo_webui_test_support.js';
+import 'chrome://webui-test/chromeos/mojo_webui_test_support.js';
 
-import {emptyState, Paths, PersonalizationRouterElement, SeaPenState, WallpaperActionName, WallpaperSubpageTopElement} from 'chrome://personalization/js/personalization_app.js';
+import {emptyState, Paths, PersonalizationRouterElement, QueryParams, SeaPenActionName, SeaPenState, WallpaperSubpageTopElement} from 'chrome://personalization/js/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -145,12 +145,13 @@ suite('WallpaperSubpageTopElementTest', function() {
     assertTrue(!!searchButton, 'search button should display.');
   });
 
-  test('shows input element on input query tab', async () => {
+  test('shows input element on sea pen results page', async () => {
     loadTimeData.overrideValues(
         {isSeaPenEnabled: true, isSeaPenTextInputEnabled: true});
-    wallpaperSubpageTopElement = initElement(
-        WallpaperSubpageTopElement,
-        {path: Paths.SEA_PEN_COLLECTION, 'templateId': 'query'});
+    wallpaperSubpageTopElement = initElement(WallpaperSubpageTopElement, {
+      path: Paths.SEA_PEN_RESULTS,
+      'templateId': 'Query',
+    });
     await waitAfterNextRender(wallpaperSubpageTopElement);
 
     // wallpaper selected page isn't displayed.
@@ -192,29 +193,29 @@ suite('WallpaperSubpageTopElementTest', function() {
     const router = TestMock.fromClass(PersonalizationRouterElement);
     PersonalizationRouterElement.instance = () => router;
 
-    // Mock |PersonalizationRouter.selectSeaPenTemplate()|.
+    // Mock |PersonalizationRouter.goToRoute()|.
     let selectedTemplateId: string|undefined;
-    router.selectSeaPenTemplate = (templateId: string) => {
-      selectedTemplateId = templateId;
+    router.goToRoute = (path: string, queryParams: QueryParams) => {
+      selectedTemplateId = queryParams.seaPenTemplateId;
+      assertEquals(Paths.SEA_PEN_RESULTS, path);
     };
 
     // Make sure state starts at expected value.
     assertDeepEquals(emptyState(), personalizationStore.data);
     // Actually run the reducers.
     personalizationStore.setReducersEnabled(true);
-    personalizationStore.expectAction(WallpaperActionName.SET_IMAGE_THUMBNAILS);
+    personalizationStore.expectAction(SeaPenActionName.SET_SEA_PEN_THUMBNAILS);
 
     // Update input query and click on search button.
     inputQuery.value = 'this is a test query';
     searchButton.click();
 
-    assertEquals(selectedTemplateId, 'query');
+    assertEquals('Query', selectedTemplateId);
 
     await personalizationStore.waitForAction(
-        WallpaperActionName.SET_IMAGE_THUMBNAILS);
+        SeaPenActionName.SET_SEA_PEN_THUMBNAILS);
 
     const expectedState: SeaPenState = {
-      query: 'this is a test query',
       thumbnailsLoading: false,
       thumbnails: [
         {
@@ -234,7 +235,8 @@ suite('WallpaperSubpageTopElementTest', function() {
           image: {url: 'https://sea-pen-images.googleusercontent.com/4'},
         },
       ],
-      recentWallpapers: null,
+      recentImages: null,
+      recentImageData: {},
     };
     assertDeepEquals(
         expectedState,
@@ -249,6 +251,22 @@ suite('WallpaperSubpageTopElementTest', function() {
     wallpaperSubpageTopElement = initElement(
         WallpaperSubpageTopElement,
         {path: Paths.SEA_PEN_COLLECTION, 'templateId': '4'});
+    await waitAfterNextRender(wallpaperSubpageTopElement);
+
+    const seaPenTemplateQueryElement =
+        wallpaperSubpageTopElement.shadowRoot!.querySelector(
+            'sea-pen-template-query');
+
+    assertTrue(
+        !!seaPenTemplateQueryElement, 'template query should be displayed.');
+  });
+
+  test('displays template query content on sea pen results page', async () => {
+    loadTimeData.overrideValues({isSeaPenEnabled: true});
+    // Initialize |wallpaperSubpageTopElement|.
+    wallpaperSubpageTopElement = initElement(
+        WallpaperSubpageTopElement,
+        {path: Paths.SEA_PEN_RESULTS, 'templateId': '4'});
     await waitAfterNextRender(wallpaperSubpageTopElement);
 
     const seaPenTemplateQueryElement =

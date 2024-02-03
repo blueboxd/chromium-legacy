@@ -8,22 +8,42 @@
 #include <string>
 
 #include "base/functional/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/tabs/organization/tab_data.h"
 
 TabOrganizationResponse::Organization::Organization(
     std::u16string label_,
-    std::vector<TabData::TabID> tab_ids_)
-    : label(label_), tab_ids(std::move(tab_ids_)) {}
+    std::vector<TabData::TabID> tab_ids_,
+    absl::optional<TabOrganization::ID> organization_id_)
+    : label(label_),
+      tab_ids(std::move(tab_ids_)),
+      organization_id(organization_id_) {}
+
 TabOrganizationResponse::Organization::Organization(
     const Organization& organization) = default;
+
 TabOrganizationResponse::Organization::Organization(
     Organization&& organization) = default;
+
 TabOrganizationResponse::Organization::~Organization() = default;
 
 TabOrganizationResponse::TabOrganizationResponse(
-    std::vector<TabOrganizationResponse::Organization> organizations_)
-    : organizations(organizations_) {}
+    std::vector<TabOrganizationResponse::Organization> organizations_,
+    std::u16string feedback_id_,
+    LogResultsCallback log_results_callback_)
+    : organizations(organizations_),
+      feedback_id(feedback_id_),
+      log_results_callback(std::move(log_results_callback_)) {}
+
 TabOrganizationResponse::~TabOrganizationResponse() = default;
+
+int TabOrganizationResponse::GetTabCount() {
+  int count = 0;
+  for (const auto& organization : organizations) {
+    count += organization.tab_ids.size();
+  }
+  return count;
+}
 
 TabOrganizationRequest::TabOrganizationRequest(
     BackendStartRequest backend_start_request_lambda,
@@ -51,6 +71,7 @@ TabData* TabOrganizationRequest::AddTabData(std::unique_ptr<TabData> tab_data) {
 void TabOrganizationRequest::StartRequest() {
   CHECK(state_ == State::NOT_STARTED);
   state_ = State::STARTED;
+  request_start_time_ = base::Time::Now();
 
   std::move(backend_start_request_lambda_)
       .Run(this,
@@ -68,6 +89,7 @@ void TabOrganizationRequest::CompleteRequest(
   }
   CHECK(state_ == State::STARTED);
 
+  request_end_time_ = base::Time::Now();
   state_ = State::COMPLETED;
   response_ = std::move(response);
   if (response_callback_) {
@@ -92,4 +114,24 @@ void TabOrganizationRequest::CancelRequest() {
     std::move(response_callback_).Run(response_.get());
   }
   state_ = State::CANCELED;
+}
+
+void TabOrganizationRequest::LogResults(const TabOrganizationSession* session) {
+  // Log metrics about the response.
+  UMA_HISTOGRAM_BOOLEAN("Tab.Organization.Response.Succeeded",
+                        state_ == State::COMPLETED);
+  if (!response_ || state_ != State::COMPLETED) {
+    return;
+  }
+
+  UMA_HISTOGRAM_COUNTS_1000("Tab.Organization.Response.TabCount",
+                            response_->GetTabCount());
+
+  if (response_->log_results_callback) {
+    std::move(response_->log_results_callback).Run(session);
+  }
+
+  CHECK(request_start_time_.has_value() && request_end_time_.has_value());
+  UMA_HISTOGRAM_TIMES("Tab.Organization.Response.Latency",
+                      request_end_time_.value() - request_start_time_.value());
 }

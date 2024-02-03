@@ -41,6 +41,12 @@ BASE_FEATURE(kCustomizeChromeWallpaperSearch,
              "CustomizeChromeWallpaperSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, shows inspiration card in Customize Chrome Side Panel Wallpaper
+// Search.
+BASE_FEATURE(kCustomizeChromeWallpaperSearchInspirationCard,
+             "CustomizeChromeWallpaperSearchInspirationCard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Forces a dark Google logo for a specific subset of Chrome Web Store themes
 // (see crbug.com/1329552). This is enabled by default to allow finch to disable
 // this NTP treatment in the case of unexpected regressions.
@@ -57,6 +63,12 @@ BASE_FEATURE(kRealboxCr23All,
              "NtpRealboxCr23All",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, NTP "realbox" will have consistent row height. Includes changing
+// entity sizes and inlining subtitles.
+BASE_FEATURE(kRealboxCr23ConsistentRowHeight,
+             "NtpRealboxCr23ConsistentRowHeight",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, NTP "realbox" expanded state icon CR23 updates will appear.
 // Includes CR23 icons as well as backgrounds for AiS and pedal suggestions and
 // updated entity corner radii.
@@ -68,6 +80,12 @@ BASE_FEATURE(kRealboxCr23ExpandedStateIcons,
 // appear.
 BASE_FEATURE(kRealboxCr23ExpandedStateLayout,
              "NtpRealboxCr23ExpandedStateLayout",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, NTP "realbox" will be themed for CR23. Includes realbox
+// matching omnibox theme and increased realbox shadow.
+BASE_FEATURE(kRealboxCr23Theming,
+             "NtpRealboxCr23Theming",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the NTP "realbox" will have same border/drop shadow in hover
@@ -384,8 +402,14 @@ BASE_FEATURE(kNtpTabResumptionModule,
              "NtpTabResumptionModule",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const char kNtpModuleIgnoredCriteriaThreshold[] =
+    "NtpModuleIgnoredCriteriaThreshold";
+const char kNtpModuleIgnoredHaTSDelayTimeParam[] =
+    "NtpModuleIgnoredHaTSDelayTimeParam";
 const char kNtpModulesEligibleForHappinessTrackingSurveyParam[] =
     "NtpModulesEligibleForHappinessTrackingSurveyParam";
+const char kNtpModulesInteractionBasedSurveyEligibleIdsParam[] =
+    "NtpModulesInteractionBasedSurveyEligibleIdsParam";
 const char kNtpModulesLoadTimeoutMillisecondsParam[] =
     "NtpModulesLoadTimeoutMillisecondsParam";
 const char kNtpModulesLoadedWithOtherModulesMaxInstanceCountParam[] =
@@ -440,7 +464,11 @@ const char kNtpHistoryClustersModuleCategoriesBoostlistParam[] =
     "NtpHistoryClustersModuleCategoriesBoostlistParam";
 const char kNtpHistoryClustersModuleMaxClustersParam[] =
     "NtpHistoryClustersModuleMaxClustersParam";
+const char kNtpHistoryClustersModuleScoreThresholdParam[] =
+    "NtpHistoryClustersModuleScoreThresholdParam";
 const char kNtpRealboxWidthBehaviorParam[] = "NtpRealboxWidthBehaviorParam";
+const char kNtpTabResumptionModuleDataParam[] =
+    "NtpTabResumptionModuleDataParam";
 
 base::TimeDelta GetModulesLoadTimeout() {
   std::string param_value = base::GetFieldTrialParamValueByFeature(

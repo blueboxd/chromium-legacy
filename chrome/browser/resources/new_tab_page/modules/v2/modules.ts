@@ -13,6 +13,7 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {PolymerElement, TemplateInstanceBase, templatize} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
+import {recordOccurence as recordOccurrence} from '../../metrics_utils.js';
 import {IphFeature} from '../../new_tab_page.mojom-webui.js';
 import {NewTabPageProxy} from '../../new_tab_page_proxy.js';
 import {WindowProxy} from '../../window_proxy.js';
@@ -199,13 +200,6 @@ export class ModulesV2Element extends AppElementBase {
         this.maxColumnCount_ * SUPPORTED_MODULE_WIDTHS[0].value +
         (this.maxColumnCount_ - 1) * CONTAINER_GAP_WIDTH;
     this.loadModules_();
-
-    const onModuleUse = (e: Event) => {
-      e.stopPropagation();
-      NewTabPageProxy.getInstance().handler.onModulesUsed();
-    };
-    this.addEventListener('usage', onModuleUse, {once: true});
-    this.addEventListener('menu-button-click', onModuleUse, {once: true});
   }
 
   private moduleDisabled_(
@@ -419,8 +413,10 @@ export class ModulesV2Element extends AppElementBase {
             this.$.container.insertBefore(
                 wrapper, this.$.container.childNodes[index]);
             restoreCallback();
-            chrome.metricsPrivate.recordSparseValueWithPersistentHash(
-                'NewTabPage.Modules.Restored', wrapper.module.descriptor.id);
+
+            recordOccurrence('NewTabPage.Modules.Restored');
+            recordOccurrence(
+                `NewTabPage.Modules.Restored.${wrapper.module.descriptor.id}`);
           } :
           undefined,
     };
@@ -428,8 +424,8 @@ export class ModulesV2Element extends AppElementBase {
     // Notify the user.
     this.$.undoToast.show();
 
-    chrome.metricsPrivate.recordSparseValueWithPersistentHash(
-        'NewTabPage.Modules.Dismissed', wrapper.module.descriptor.id);
+    NewTabPageProxy.getInstance().handler.onDismissModule(
+        wrapper.module.descriptor.id);
   }
 
   private onUndoButtonClick_() {

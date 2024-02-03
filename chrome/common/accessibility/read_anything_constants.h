@@ -24,6 +24,8 @@ extern const char kSettingsChangeHistogramName[];
 extern const char kScrollEventHistogramName[];
 extern const char kEmptyStateHistogramName[];
 extern const char kLanguageHistogramName[];
+extern const char kPDFPageStart[];
+extern const char kPDFPageEnd[];
 
 extern const std::set<std::string> GetNonSelectableUrls();
 
@@ -90,6 +92,11 @@ const char* kLanguagesSupportedByStixTwoText[] = {
     "af", "bg", "ca", "cs", "da", "de", "en", "es", "et", "fi", "fil",
     "fr", "hr", "hu", "id", "it", "lt", "lv", "ms", "nl", "pl", "pt",
     "ro", "ru", "sk", "sl", "sr", "sv", "sw", "tr", "uk", "vi"};
+
+const char* kLanguagesSupportedByAndika[] = {
+    "af", "bg", "ca", "cs", "da", "de", "en", "es", "et", "fi", "fil", "fr",
+    "hr", "hu", "id", "it", "kr", "lt", "lu", "lv", "ms", "nd", "nl",  "nr",
+    "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv", "sw", "tr", "uk",  "vi"};
 
 // Enum for logging when a text style setting is changed.
 // These values are persisted to logs. Entries should not be renumbered and

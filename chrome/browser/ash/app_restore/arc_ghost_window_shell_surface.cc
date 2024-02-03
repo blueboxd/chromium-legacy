@@ -29,9 +29,6 @@
 
 namespace ash::full_restore {
 
-// Explicitly identifies ARC ghost surface.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kArcGhostSurface, false)
-
 ArcGhostWindowShellSurface::ArcGhostWindowShellSurface(
     std::unique_ptr<exo::Surface> surface,
     int container,
@@ -137,11 +134,15 @@ std::unique_ptr<ArcGhostWindowShellSurface> ArcGhostWindowShellSurface::Create(
     DCHECK_NE(window_state, chromeos::WindowStateType::kPip);
 
     const int window_corner_radius =
-        chromeos::ShouldHaveRoundedWindow(window_state)
+        chromeos::ShouldWindowStateHaveRoundedCorners(window_state)
             ? chromeos::features::RoundedWindowsRadius()
             : 0;
-    shell_surface->SetWindowCornerRadii(
-        gfx::RoundedCornersF(window_corner_radius));
+
+    gfx::RoundedCornersF window_radii(window_corner_radius);
+    shell_surface->SetWindowCornersRadii(window_radii);
+
+    // Ghost surface shadow radii must match the window radii.
+    shell_surface->SetShadowCornersRadii(window_radii);
 
     // Ghost surface is an overlay widget, so its corners must be rounded. The
     // bottom two corners of the ghost window overlay overlap with the window,
@@ -180,7 +181,6 @@ void ArcGhostWindowShellSurface::OverrideInitParams(
     views::Widget::InitParams* params) {
   ClientControlledShellSurface::OverrideInitParams(params);
   SetShellAppId(&params->init_properties_container, app_id_);
-  params->init_properties_container.SetProperty(kArcGhostSurface, true);
 }
 
 exo::Surface* ArcGhostWindowShellSurface::controller_surface() {

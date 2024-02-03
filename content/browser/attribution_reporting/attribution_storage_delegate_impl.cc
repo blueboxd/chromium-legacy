@@ -12,12 +12,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
+#include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/constants.h"
+#include "components/attribution_reporting/event_level_epsilon.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/features.h"
 #include "components/attribution_reporting/max_event_level_reports.h"
@@ -196,11 +199,11 @@ void AttributionStorageDelegateImpl::ShuffleTriggerVerifications(
 
 double AttributionStorageDelegateImpl::GetRandomizedResponseRate(
     const attribution_reporting::TriggerSpecs& trigger_specs,
-    attribution_reporting::MaxEventLevelReports max_event_level_reports) const {
+    attribution_reporting::MaxEventLevelReports max_event_level_reports,
+    attribution_reporting::EventLevelEpsilon epsilon) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return content::GetRandomizedResponseRate(
-      GetNumStates(trigger_specs, max_event_level_reports),
-      config_.event_level_limit.randomized_response_epsilon);
+      GetNumStates(trigger_specs, max_event_level_reports), epsilon);
 }
 
 AttributionStorageDelegate::GetRandomizedResponseResult
@@ -208,11 +211,11 @@ AttributionStorageDelegateImpl::GetRandomizedResponse(
     SourceType source_type,
     const attribution_reporting::TriggerSpecs& trigger_specs,
     attribution_reporting::MaxEventLevelReports max_event_level_reports,
+    attribution_reporting::EventLevelEpsilon epsilon,
     base::Time source_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RandomizedResponseData response = DoRandomizedResponse(
-      trigger_specs, max_event_level_reports,
-      config_.event_level_limit.randomized_response_epsilon);
+  RandomizedResponseData response =
+      DoRandomizedResponse(trigger_specs, max_event_level_reports, epsilon);
 
   if (response.channel_capacity() > GetMaxChannelCapacity(source_type)) {
     return base::unexpected(ExceedsChannelCapacityLimit());
@@ -253,7 +256,13 @@ AttributionStorageDelegateImpl::GetNullAggregatableReportsImpl(
   // See spec
   // https://wicg.github.io/attribution-reporting-api/#generate-null-reports.
 
-  switch (trigger.registration().source_registration_time_config) {
+  bool has_trigger_context_id =
+      trigger.registration()
+          .aggregatable_trigger_config.trigger_context_id()
+          .has_value();
+
+  switch (trigger.registration()
+              .aggregatable_trigger_config.source_registration_time_config()) {
     case attribution_reporting::mojom::SourceRegistrationTimeConfig::kInclude: {
       absl::optional<base::Time> rounded_attributed_source_time;
       if (attributed_source_time) {
@@ -263,6 +272,8 @@ AttributionStorageDelegateImpl::GetNullAggregatableReportsImpl(
 
       static_assert(attribution_reporting::kMaxSourceExpiry == base::Days(30),
                     "update null reports rate");
+
+      CHECK(!has_trigger_context_id);
 
       return GetNullAggregatableReportsForLookback(
           trigger, trigger_time, rounded_attributed_source_time,
@@ -279,8 +290,10 @@ AttributionStorageDelegateImpl::GetNullAggregatableReportsImpl(
 
       return GetNullAggregatableReportsForLookback(
           trigger, trigger_time, attributed_source_time, /*days_lookback=*/0,
-          config_.aggregate_limit
-              .null_reports_rate_exclude_source_registration_time);
+          has_trigger_context_id
+              ? 1.
+              : config_.aggregate_limit
+                    .null_reports_rate_exclude_source_registration_time);
     }
   }
 }

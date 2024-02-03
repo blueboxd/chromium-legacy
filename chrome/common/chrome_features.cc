@@ -117,6 +117,18 @@ BASE_FEATURE(kQuickOfficeForceFileDownload,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_ANDROID)
+// Enable boarding pass detector on Chrome Android.
+BASE_FEATURE(kBoardingPassDetector,
+             "BoardingPassDetector",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const char kBoardingPassDetectorUrlParamName[] = "boarding_pass_detector_urls";
+const base::FeatureParam<std::string> kBoardingPassDetectorUrlParam(
+    &kBoardingPassDetector,
+    kBoardingPassDetectorUrlParamName,
+    "");
+#endif  // BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable Borealis on Chrome OS.
 BASE_FEATURE(kBorealis, "Borealis", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -315,11 +327,17 @@ BASE_FEATURE(kDesktopPWAsIconHealthChecks,
              "DesktopPWAsIconHealthChecks",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+#if !BUILDFLAG(IS_CHROMEOS) || !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kDesktopPWAsLinkCapturing,
              "DesktopPWAsLinkCapturing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<bool> kLinksCapturedByDefault{
     &kDesktopPWAsLinkCapturing, "on_by_default", true};
+
+const base::FeatureParam<int> kLinkCapturingIPHGuardrailStorageDuration{
+    &kDesktopPWAsLinkCapturing, "link_capturing_guardrail_storage_duration",
+    kTotalDaysToStoreLinkCapturingIPHGuardrails};
+#endif  // !BUILDFLAG(IS_CHROMEOS) || !BUILDFLAG(IS_ANDROID)
 
 // Adds a user settings that allows PWAs to be opened with a tab strip.
 BASE_FEATURE(kDesktopPWAsTabStripSettings,
@@ -460,6 +478,12 @@ BASE_FEATURE(kFlashDeprecationWarning,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+BASE_FEATURE(kForcedAppRelaunchOnPlaceholderUpdate,
+             "ForcedAppRelaunchOnPlaceholderUpdate",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 // Controls whether the GeoLanguage system is enabled. GeoLanguage uses IP-based
 // coarse geolocation to provide an estimate (for use by other Chrome features
 // such as Translate) of the local/regional language(s) corresponding to the
@@ -536,6 +560,15 @@ BASE_FEATURE(kHaTSDesktopDevToolsIssuesCSP,
              "HaTSDesktopDevToolsIssuesCSP",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables or disables the Happiness Tracking System for Chrome extensions page.
+BASE_FEATURE(kHappinessTrackingSurveysExtensionsSafetyHub,
+             "HappinessTrackingSurveysExtensionsSafetyHub",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysExtensionsSafetyHubTime{
+        &kHappinessTrackingSurveysExtensionsSafetyHub, "settings-time",
+        base::Seconds(10)};
+
 // Enables or disables the Happiness Tracking System for Desktop Privacy Guide.
 BASE_FEATURE(kHappinessTrackingSurveysForDesktopPrivacyGuide,
              "HappinessTrackingSurveysForDesktopPrivacyGuide",
@@ -586,6 +619,11 @@ BASE_FEATURE(kHappinessTrackingSurveysForDesktopNtpModules,
 
 BASE_FEATURE(kHappinessTrackingSurveysForNtpPhotosOptOut,
              "HappinessTrackingSurveysForrNtpPhotosOptOut",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables the Happiness Tracking System for Wallpaper Search.
+BASE_FEATURE(kHappinessTrackingSurveysForWallpaperSearch,
+             "HappinessTrackingSurveysForWallpaperSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables the Happiness Tracking System for Chrome What's New.
@@ -639,6 +677,10 @@ extern const base::FeatureParam<std::string>
     kHappinessTrackingSurveysForSecurityPageTriggerId{
         &kHappinessTrackingSurveysForSecurityPage, "security-page-trigger-id",
         ""};
+extern const base::FeatureParam<bool>
+    kHappinessTrackingSurveysForSecurityPageRequireInteraction{
+        &kHappinessTrackingSurveysForSecurityPage,
+        "security-page-require-interaction", false};
 
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -947,13 +989,6 @@ BASE_FEATURE(kMeteredShowToggle,
 BASE_FEATURE(kShowHiddenNetworkToggle,
              "ShowHiddenNetworkToggle",
              base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-// Enables the new design of metrics settings.
-BASE_FEATURE(kMetricsSettingsAndroid,
-             "MetricsSettingsAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kMoveWebApp,

@@ -29,7 +29,7 @@
 #include "chrome/common/open_search_description_document_handler.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/renderer/chrome_content_settings_agent_delegate.h"
-#include "chrome/renderer/companion/visual_search/visual_search_classifier_agent.h"
+#include "chrome/renderer/companion/visual_query/visual_query_classifier_agent.h"
 #include "chrome/renderer/media/media_feeds.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/lens/lens_metadata.mojom.h"
@@ -201,7 +201,7 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-  SetVisualSearchClassifierAgent();
+  SetVisualQueryClassifierAgent();
 #endif
   translate_agent_ =
       new translate::TranslateAgent(render_frame, ISOLATED_WORLD_ID_TRANSLATE);
@@ -343,7 +343,7 @@ void ChromeRenderFrameObserver::OnDestruct() {
   delete this;
 }
 
-void ChromeRenderFrameObserver::WillDetach() {
+void ChromeRenderFrameObserver::WillDetach(blink::DetachReason detach_reason) {
 #if BUILDFLAG(IS_ANDROID)
   base::AutoLock auto_lock(GetFrameHeaderMapLock());
   GetFrameHeaderMap().erase(
@@ -581,10 +581,10 @@ void ChromeRenderFrameObserver::SetClientSidePhishingDetection() {
 #endif
 }
 
-void ChromeRenderFrameObserver::SetVisualSearchClassifierAgent() {
+void ChromeRenderFrameObserver::SetVisualQueryClassifierAgent() {
 #if !BUILDFLAG(IS_ANDROID)
   visual_classifier_ =
-      companion::visual_search::VisualSearchClassifierAgent::Create(
+      companion::visual_query::VisualQueryClassifierAgent::Create(
           render_frame());
 #endif
 }
@@ -685,20 +685,6 @@ void ChromeRenderFrameObserver::CapturePageText(
   // loads, so attempt detection here first.
   if (translate_agent_ &&
       (layout_type == blink::WebMeaningfulLayout::kFinishedParsing)) {
-    // Under kRetryLanguageDetection, do not attempt language detection if no
-    // page content was captured.
-    if (!base::FeatureList::IsEnabled(translate::kRetryLanguageDetection) ||
-        contents.size()) {
-      translate_agent_->PageCaptured(contents);
-    }
-  }
-  // Under kRetryLanguageDetection, language detection may be attempted
-  // later when the page finishes loading if no content was captured at
-  // kFinishedParsing.
-  if (base::FeatureList::IsEnabled(translate::kRetryLanguageDetection) &&
-      translate_agent_ &&
-      (layout_type == blink::WebMeaningfulLayout::kFinishedLoading) &&
-      !translate_agent_->WasPageContentCapturedForUrl()) {
     translate_agent_->PageCaptured(contents);
   }
 

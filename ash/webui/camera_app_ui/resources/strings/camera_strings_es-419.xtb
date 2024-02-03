@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5320594929574852403">Se está moviendo hacia la izquierda</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
+<translation id="539541037630043848">Abrir <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">Escaneando página <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">Cuadrado</translation>
 <translation id="574392208103952083">Media</translation>
@@ -163,6 +164,7 @@ Si tus comentarios están relacionados con la calidad de imagen o video, adjunta
 <translation id="8870695351537079478">No es posible comenzar a grabar</translation>
 <translation id="8880167521484863515">4:3</translation>
 <translation id="8903921497873541725">Acercar</translation>
+<translation id="8926890870105777777">Unirse a la red "<ph name="WIFINAME" />"</translation>
 <translation id="9045010116236796332">Coloca todos los bordes del documento dentro del cuadro.</translation>
 <translation id="9045155556724273246">10 segundos</translation>
 <translation id="906331135292332864">Procesando imagen…</translation>

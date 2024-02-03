@@ -32,10 +32,12 @@ class TriggerTest : public testing::Test {
                                                              nullptr);
   }
 
-  content::WebContents* AddTab() {
+  content::WebContents* AddTab(GURL url) {
     std::unique_ptr<content::WebContents> contents_unique_ptr =
         CreateWebContents();
     content::WebContents* content_ptr = contents_unique_ptr.get();
+    content::WebContentsTester::For(contents_unique_ptr.get())
+        ->NavigateAndCommit(url);
     tab_strip_model()->AppendWebContents(std::move(contents_unique_ptr), true);
 
     return content_ptr;
@@ -50,20 +52,20 @@ class TriggerTest : public testing::Test {
   const std::unique_ptr<TabStripModel> tab_strip_model_;
 };
 
-TEST_F(TriggerTest, MVPTriggerHappyPath) {
+TEST_F(TriggerTest, TriggerHappyPath) {
   auto trigger = std::make_unique<TabOrganizationTrigger>(
-      GetDefaultTriggerScoringFunction(), GetDefaultTriggerScoreThreshold(),
-      std::make_unique<GreedyTriggerPolicy>());
+      GetTriggerScoringFunction(), GetTriggerScoreThreshold(),
+      std::make_unique<DemoTriggerPolicy>());
 
   // Should not trigger under the score threshold.
   EXPECT_FALSE(trigger->ShouldTrigger(tab_strip_model()));
 
   // Should trigger the first time over the score threshold.
   for (int i = 0; i < 10; i++) {
-    AddTab();
+    AddTab(GURL("https://www.example.com"));
   }
   EXPECT_TRUE(trigger->ShouldTrigger(tab_strip_model()));
 
-  // Should trigger only once (because GreedyTriggerPolicy).
-  EXPECT_FALSE(trigger->ShouldTrigger(tab_strip_model()));
+  // Should trigger every time (because DemoTriggerPolicy).
+  EXPECT_TRUE(trigger->ShouldTrigger(tab_strip_model()));
 }

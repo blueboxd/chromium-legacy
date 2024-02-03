@@ -62,6 +62,7 @@
 #include "components/omnibox/browser/most_visited_sites_provider.h"
 #include "components/omnibox/browser/omnibox_feature_configs.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/on_device_head_provider.h"
 #include "components/omnibox/browser/open_tab_provider.h"
 #include "components/omnibox/browser/query_tile_provider.h"
@@ -514,7 +515,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
 
   // This will usually set |done_| to false, unless all providers are finished
   // after the synchronous pass we just completed.
-  CheckIfDone();
+  done_ = CheckIfDone();
 
   // The second true forces saying the default match has changed.
   // This triggers the edit model to update things such as the inline
@@ -642,7 +643,7 @@ void AutocompleteController::OnProviderUpdate(
     return;
   }
 
-  CheckIfDone();
+  done_ = CheckIfDone();
 
   if (updated_matches || done_)
     UpdateResult(false, false, true);
@@ -1127,7 +1128,7 @@ void AutocompleteController::SortCullAndAnnotateResult(
   UpdateAssistedQueryStats(&internal_result_);
   UpdateTailSuggestPrefix(&internal_result_);
   MaybeRemoveCompanyEntityImages(&internal_result_);
-  MaybeCleanSuggestionsForKeywordMode(input_.text(), &internal_result_);
+  MaybeCleanSuggestionsForKeywordMode(input_, &internal_result_);
 
   if (search_provider_)
     search_provider_->RegisterDisplayedAnswers(internal_result_);
@@ -1240,7 +1241,11 @@ void AutocompleteController::UpdateAssociatedKeywords(
           match.type != AutocompleteMatchType::STARTER_PACK) {
         TemplateURL* turl =
             template_url_service_->GetTemplateURLForKeyword(exact_keyword);
-        if (turl && turl->starter_pack_id() != 0) {
+        // Note, starter pack matches that removed the '@' from the beginning of
+        // the keyword are still allowed to attach because those don't get the
+        // special UX, by design.
+        if (turl && turl->starter_pack_id() != 0 &&
+            turl->keyword().starts_with(u'@')) {
           continue;
         }
       }
@@ -1270,7 +1275,8 @@ void AutocompleteController::UpdateAssociatedKeywords(
           match.type != AutocompleteMatchType::STARTER_PACK) {
         TemplateURL* turl =
             template_url_service_->GetTemplateURLForKeyword(keyword);
-        if (turl && turl->starter_pack_id() != 0) {
+        if (turl && turl->starter_pack_id() != 0 &&
+            turl->keyword().starts_with(u'@')) {
           continue;
         }
       }
@@ -1524,7 +1530,10 @@ void AutocompleteController::NotifyChanged() {
 void AutocompleteController::DelayedNotifyChanged(bool notify_default_match) {
   if (notify_default_match)
     notify_changed_default_match_ = true;
-  if (done_ || !sync_pass_done_) {
+
+  const bool ignore_document_provider =
+      omnibox_feature_configs::DocumentProvider::Get().ignore_when_debouncing;
+  if (!sync_pass_done_ || CheckIfDone(ignore_document_provider)) {
     notify_changed_debouncer_.ResetTimeLastRun();
     NotifyChanged();
   } else {
@@ -1538,20 +1547,27 @@ void AutocompleteController::CancelDelayedNotifyChanged() {
   notify_changed_default_match_ = false;
 }
 
-void AutocompleteController::CheckIfDone() {
+bool AutocompleteController::CheckIfDone(bool ignore_document_provider) {
   bool all_providers_done = true;
   for (const auto& provider : providers_) {
     if (!ShouldRunProvider(provider.get()))
       continue;
+
+    if (ignore_document_provider &&
+        provider->type() == AutocompleteProvider::TYPE_DOCUMENT) {
+      continue;
+    }
 
     if (!provider->done()) {
       all_providers_done = false;
       break;
     }
   }
+
   // If asynchronous matches have been disallowed, all providers should be done.
   DCHECK(!input_.omit_asynchronous_matches() || all_providers_done);
-  done_ = all_providers_done;
+
+  return all_providers_done;
 }
 
 void AutocompleteController::StartExpireTimer() {
@@ -1981,15 +1997,20 @@ void AutocompleteController::MaybeRemoveCompanyEntityImages(
 }
 
 void AutocompleteController::MaybeCleanSuggestionsForKeywordMode(
-    const std::u16string& input,
+    const AutocompleteInput& input,
     AutocompleteResult* result) {
+  if (input.current_page_classification() ==
+      metrics::OmniboxEventProto::NTP_REALBOX) {
+    // Realbox doesn't support keyword mode yet, so keep original list intact.
+    return;
+  }
   if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled() &&
-      input.starts_with(u'@')) {
+      input.text().starts_with(u'@')) {
     // When the input is '@' exactly, some special filtering rules are applied.
     // Note: the rule preserving other matches with `associated_keyword` is
     // not currently necessary, but is intended to make it easy to coexist
     // with enterprise configured scopes when that feature is implemented.
-    if (input == u"@") {
+    if (input.text() == u"@") {
       result->EraseMatchesWhere([](const AutocompleteMatch& match) {
         return !(match.type == AutocompleteMatchType::STARTER_PACK ||
                  match.contents == u"@" || match.associated_keyword);
@@ -2022,12 +2043,17 @@ void AutocompleteController::MaybeCleanSuggestionsForKeywordMode(
     }
 
     // Clear help text that is repeated across consecutive instant keyword
-    // matches.
+    // matches. During this pass, also eliminate tab switch on instant
+    // keyword matches for an extra clean appearance.
+    PrefService* prefs = provider_client_->GetPrefs();
+    const bool instant_keyword_used =
+        prefs ? prefs->GetBoolean(omnibox::kOmniboxInstantKeywordUsed) : false;
     size_t instant_counter = 0;
     for (size_t i = 0; i < result->size(); i++) {
       if (result->match_at(i)->HasInstantKeyword(template_url_service_)) {
+        result->match_at(i)->actions.clear();
         instant_counter++;
-        if (instant_counter > 1) {
+        if (instant_counter > 1 || instant_keyword_used) {
           result->match_at(i)->contents.clear();
           result->match_at(i)->contents_class = {{}};
         }

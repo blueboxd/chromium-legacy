@@ -43,6 +43,7 @@
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/ash/login/test/user_auth_config.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
@@ -878,7 +879,7 @@ class ReauthWebviewLoginTest : public WebviewLoginTest {
   LoginManagerMixin::TestUserInfo reauth_user_{
       AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
                                      FakeGaiaMixin::kFakeUserGaiaId),
-      user_manager::USER_TYPE_REGULAR,
+      test::kDefaultAuthSetup, user_manager::USER_TYPE_REGULAR,
       /* invalid token status to force online signin */
       user_manager::User::OAUTH2_TOKEN_STATUS_INVALID};
   LoginManagerMixin login_manager_mixin_{&mixin_host_, {reauth_user_}};
@@ -898,8 +899,6 @@ IN_PROC_BROWSER_TEST_F(ReauthWebviewLoginTest, EmailPrefill) {
 class ReauthTokenWebviewLoginTest : public ReauthWebviewLoginTest {
  public:
   ReauthTokenWebviewLoginTest() {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndEnableFeature(features::kCryptohomeRecovery);
     login_manager_mixin_.AppendRegularUsers(1);
     user_with_invalid_token_ = login_manager_mixin_.users().back().account_id;
     cryptohome_mixin_.MarkUserAsExisting(user_with_invalid_token_);
@@ -1021,7 +1020,7 @@ class ReauthEndpointWebviewLoginTest : public WebviewLoginTest {
   LoginManagerMixin::TestUserInfo reauth_user_{
       AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
                                      FakeGaiaMixin::kFakeUserGaiaId),
-      user_manager::USER_TYPE_CHILD,
+      test::kDefaultAuthSetup, user_manager::USER_TYPE_CHILD,
       /* invalid token status to force online signin */
       user_manager::User::OAUTH2_TOKEN_STATUS_INVALID};
   LoginManagerMixin login_manager_mixin_{&mixin_host_, {reauth_user_}};
@@ -1421,7 +1420,7 @@ class WebviewClientCertsLoginTest : public WebviewClientCertsLoginTestBase {
   LoginManagerMixin::TestUserInfo test_user_{
       AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
                                      FakeGaiaMixin::kFakeUserGaiaId),
-      user_manager::USER_TYPE_REGULAR};
+      test::kDefaultAuthSetup, user_manager::USER_TYPE_REGULAR};
   LoginManagerMixin login_manager_mixin_{&mixin_host_, {test_user_}};
 
  private:
@@ -2123,7 +2122,9 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   // gaia. Returns the LoginHandler handling this authentication request.
   LoginHandler* WaitForAuthRequested() {
     auth_needed_wait_loop_->Run();
-    return gaia_frame_login_handler_;
+    LoginHandler* handler = gaia_frame_login_handler_;
+    gaia_frame_login_handler_ = nullptr;
+    return handler;
   }
 
   void UpdateServedPolicyFromDevicePolicyTestHelper() {
@@ -2155,8 +2156,10 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
 
-// TODO(crbug.com/1377241): Test is flaky.
-IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, DISABLED_ProxyAuthTransfer) {
+// This tests that proxy authentication details supplied on the sign-in screen
+// when attempting to load gaia are used for the gaia page load, for device
+// policy fetches and for subsequent gaia page loads.
+IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, ProxyAuthTransfer) {
   WaitForSigninScreen();
 
   LoginHandler* login_handler = WaitForAuthRequested();
@@ -2166,7 +2169,8 @@ IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, DISABLED_ProxyAuthTransfer) {
   em::ChromeDeviceSettingsProto& device_policy =
       device_policy_builder()->payload();
   device_policy.mutable_device_login_screen_auto_select_certificate_for_urls()
-      ->add_login_screen_auto_select_certificate_rules("test_pattern");
+      ->add_login_screen_auto_select_certificate_rules(
+          "{\"pattern\": \"https://www.example.com\", \"filter\": {}}");
   UpdateServedPolicyFromDevicePolicyTestHelper();
 
   policy::PolicyChangeRegistrar policy_change_registrar(
@@ -2176,20 +2180,27 @@ IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, DISABLED_ProxyAuthTransfer) {
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
                               std::string() /* component_id */));
 
-  // Now enter auth data
-  login_handler->SetAuth(u"foo", u"bar");
-  WaitForGaiaPageLoad();
-
+  // Setup waiting for the policy to change.
   base::RunLoop run_loop;
   policy_change_registrar.Observe(
       policy::key::kDeviceLoginScreenAutoSelectCertificateForUrls,
       base::BindRepeating(&PolicyChangedCallback, run_loop.QuitClosure()));
+
+  // Now enter auth data, which should trigger a gaia page which should now be
+  // successful.
+  login_handler->SetAuth(u"foo", u"bar");
+  WaitForGaiaPageLoad();
+
+  // Wait for the policy-mapped pref to change, because the supplied proxy auth
+  // credentials above should be propagated to the "system network context"
+  // which can now be used for a successful device policy fetch.
   run_loop.Run();
 
   // Press the back button at a sign-in screen without pre-existing users to
   // start a new sign-in attempt.
   // This will re-load gaia, rotating the StoragePartition. The new
-  // StoragePartition must also have the proxy auth details.
+  // StoragePartition must also have the proxy auth details, so authentication
+  // credentials don't have to be re-entered.
   test::OobeJS().ClickOnPath(kBackButton);
   WaitForGaiaPageLoadAndPropertyUpdate();
   // Expect that we got back to the identifier page, as there are no known users

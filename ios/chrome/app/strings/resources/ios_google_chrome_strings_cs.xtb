@@ -55,9 +55,11 @@ Co je třeba zvážit:
 <translation id="2574249610672786438">Chcete-li mít své karty k dispozici všude, kde používáte Chrome, na všech zařízeních se přihlaste</translation>
 <translation id="2576431527583832481">Chrome je opět o něco lepší. K dispozici je nová verze.</translation>
 <translation id="257708665678654955">Chcete, aby Google Chrome příště pro stránky v jazyce <ph name="LANGUAGE_NAME" /> z tohoto webu nabízel překlad?</translation>
+<translation id="2650286135394207535">Nechte Chrome pomáhat vám se sledováním zásilek</translation>
 <translation id="2671426118752779020">Hesla, která jste si uložili do Správce hesel Google, můžete používat v jiných aplikacích na svém iPhonu.</translation>
 <translation id="2689064829982324496">Pokud se chcete odhlásit z účtu Google na všech webech, <ph name="BEGIN_LINK" />odhlaste se z Chromu<ph name="END_LINK" />.</translation>
 <translation id="2695886661449553974">Chrome nemůže vyhledat dostupné aktualizace. Zkuste to znovu později.</translation>
+<translation id="2702250627063295552">Přidat položku do seznamu četby v Chromu</translation>
 <translation id="2736805085127235148">Oznámení prohlížeče Chrome jsou aktuálně v nastavení zařízení vypnutá.</translation>
 <translation id="2767464022270041271">Nemáte žádná uložená hesla. Správce hesel Google může hesla zkontrolovat, pouze když si je uložíte.</translation>
 <translation id="2868822340714096138">Vymazat údaje o prohlížení v Chromu</translation>
@@ -83,6 +85,7 @@ Co je třeba zvážit:
 <translation id="3744018071945602754">Spravovat hesla v prohlížeči Chrome</translation>
 <translation id="3827545470516145620">Na tomto zařízení máte standardní bezpečnostní ochranu</translation>
 <translation id="384394811301901750">Google Chrome teď nemůže použít fotoaparát</translation>
+<translation id="3863841106411295595">Přidá zadané adresy URL do seznamu četby v prohlížeči Chrome.</translation>
 <translation id="3901001113120561395">Využijte Chrome na maximum.</translation>
 <translation id="3967382818307165056">Spravovat platební metody v prohlížeči Chrome</translation>
 <translation id="3980220367029651214">Přepínáte účet pro synchronizaci z <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Vaše existující data prohlížeče Chrome jsou spravována doménou <ph name="DOMAIN" />. Touto akcí svá data smažete z tohoto zařízení, v účtu <ph name="USER_EMAIL1" /> však vaše data zůstanou.</translation>
@@ -96,7 +99,6 @@ Co je třeba zvážit:
 <translation id="424864128008805179">Odhlásit se z Chromu?</translation>
 <translation id="4251174643044751591">Otevře stránku nastavení platebních metod v prohlížeči Chrome.</translation>
 <translation id="4453284704333523777">Spravovat nastavení prohlížeče Chrome</translation>
-<translation id="4471662743048412085">Sledujte v prohlížeči Chrome zjištěné zásilky</translation>
 <translation id="4508370294876102450">Otevírejte Chrome z libovolné aplikace</translation>
 <translation id="4523886039239821078">Některé doplňky způsobují selhání prohlížeče Chrome. Prosím odinstalujte:</translation>
 <translation id="4633328489441962921">Chrome nemůže vyhledat dostupné aktualizace</translation>
@@ -168,7 +170,6 @@ Vaše šifrovaná data mohou číst pouze uživatelé, kteří mají vaši heslo
 <translation id="7124339256045485976">Udržují Chrome aktuální</translation>
 <translation id="7161390184744336561">Google Chrome je zastaralý</translation>
 <translation id="7165736900384873061">Začněte používat čtečku QR kódů prohlížeče Google Chrome</translation>
-<translation id="7173660919484573146">Chrome pomocí funkce Face ID ověřuje přístup k heslům.</translation>
 <translation id="7187993566681480880">Zajišťuje vám bezpečí v Chromu a může zvýšit vaši bezpečnost v jiných aplikacích Google, když jste přihlášeni.</translation>
 <translation id="7200524487407690471">Chrome každý den automaticky spouští bezpečnostní kontrolu, aby vás ochránil před porušením zabezpečení údajů, nebezpečnými weby a dalšími hrozbami. Další informace o bezpečnostní kontrole najdete v Nastavení.</translation>
 <translation id="72119412072970160">Hesla, která jste si uložili do Správce hesel Google, můžete používat v jiných aplikacích na svém iPadu.</translation>
@@ -188,6 +189,7 @@ Vaše šifrovaná data mohou číst pouze uživatelé, kteří mají vaši heslo
 <translation id="7698568245838009292">Chrome potřebuje přístup k fotoaparátu</translation>
 <translation id="7754633291442704733">Vaše organizace <ph name="DOMAIN" /> bude mít přístup k datům, záložkám, historii, heslům a dalším nastavením prohlížeče Chrome, která uložíte do tohoto účtu. Když se odhlásíte, vaše data budou z tohoto zařízení vymazána.  Ve spravovaném účtu Google nicméně vaše data zůstanou uložena a vaše organizace k nim bude mít přístup. Vaše organizace také může v tomto konkrétním účtu nastavit zásady pro uživatele, které mohou chování prohlížeče Chrome změnit.</translation>
 <translation id="7780154209050837198">Pokud z Chromu chcete získat maximum, přihlaste se do něj pomocí účtu Google.</translation>
+<translation id="7792140019572081272">Chrome chrání vaše citlivá data pomocí Face ID.</translation>
 <translation id="7855730255114109580">Google Chrome je aktuální</translation>
 <translation id="7897703007638178753">Zobrazit nedávno použité karty prohlížeče Chrome</translation>
 <translation id="7925119591961387184">Vyberte Chrome.</translation>

@@ -31,6 +31,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/features.h"
@@ -48,6 +49,7 @@
 #include "content/public/browser/network_service_util.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -3668,7 +3670,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 // the first. This is a situation where the navigation has an initiator frame
 // token, but no corresponding RenderFrameHost.
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
-                       RendererInitiatedCrossWindowNavigationInUnload) {
+                       RendererInitiatedCrossWindowNavigationInPagehide) {
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   GURL always_referrer_url(embedded_test_server()->GetURL(
       "/set-header?Referrer-Policy: unsafe-url"));
@@ -3685,7 +3687,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 
   // When deleted, the openee will initiate a navigation in its opener.
   EXPECT_TRUE(ExecJs(openee_shell, R"(
-    window.addEventListener("unload", () => {
+    window.addEventListener("pagehide", () => {
       opener.location.href = "about:blank";
     })
   )"));
@@ -7212,7 +7214,20 @@ void AddUnloadHandler(RenderFrameHostImpl* rfh) {
 }
 
 class NavigationSuddenTerminationDisablerTypeBrowserTest
-    : public NavigationBrowserTest,
+    : public NavigationBrowserTest {
+ public:
+  NavigationSuddenTerminationDisablerTypeBrowserTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{blink::features::kDeprecateUnload});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class NavigationSuddenTerminationDisablerTypeWithFrameTypeBrowserTest
+    : public NavigationSuddenTerminationDisablerTypeBrowserTest,
       public ::testing::WithParamInterface<
           std::tuple<UnloadFrameType, NavigateFrameType>> {
  public:
@@ -7269,12 +7284,25 @@ class NavigationSuddenTerminationDisablerTypeBrowserTest
   }
 };
 
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    NavigationSuddenTerminationDisablerTypeWithFrameTypeBrowserTest,
+    ::testing::Combine(::testing::Values(UnloadFrameType::kMainFrame,
+                                         UnloadFrameType::kSubFrame,
+                                         UnloadFrameType::kNone),
+                       ::testing::Values(NavigateFrameType::kMainFrame,
+                                         NavigateFrameType::kSubFrame,
+                                         NavigateFrameType::kOther)),
+    &NavigationSuddenTerminationDisablerTypeWithFrameTypeBrowserTest::
+        DescribeParams);
+
 // Set up a page with 2 subframes. The main frame or one of the subframes may
 // have an unload handler. Then navigate one of the frames and verify that we
 // correctly record which type of frame navigates combined with whether it
 // involved an unload handler.
-IN_PROC_BROWSER_TEST_P(NavigationSuddenTerminationDisablerTypeBrowserTest,
-                       RecordUma) {
+IN_PROC_BROWSER_TEST_P(
+    NavigationSuddenTerminationDisablerTypeWithFrameTypeBrowserTest,
+    RecordUma) {
   ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "a.com", "/cross_site_iframe_factory.html?a(a,a)")));
@@ -7305,21 +7333,10 @@ IN_PROC_BROWSER_TEST_P(NavigationSuddenTerminationDisablerTypeBrowserTest,
       expected_histogram_value, 1);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    NavigationSuddenTerminationDisablerTypeBrowserTest,
-    ::testing::Combine(::testing::Values(UnloadFrameType::kMainFrame,
-                                         UnloadFrameType::kSubFrame,
-                                         UnloadFrameType::kNone),
-                       ::testing::Values(NavigateFrameType::kMainFrame,
-                                         NavigateFrameType::kSubFrame,
-                                         NavigateFrameType::kOther)),
-    &NavigationSuddenTerminationDisablerTypeBrowserTest::DescribeParams);
-
 // Test that "SameOrigin" only considers frames that have an unbroken path of
 // same-origin frames from the frame that navigates.
 IN_PROC_BROWSER_TEST_F(
-    NavigationBrowserTest,
+    NavigationSuddenTerminationDisablerTypeBrowserTest,
     NavigationSuddenTerminationDisablerTypeRecordUmaSameOrigin) {
   ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
@@ -7347,7 +7364,7 @@ IN_PROC_BROWSER_TEST_F(
 // This is tested because the code path for a navigation involving activation
 // is different from one involving a pageload.
 IN_PROC_BROWSER_TEST_F(
-    NavigationBrowserTest,
+    NavigationSuddenTerminationDisablerTypeBrowserTest,
     NavigationSuddenTerminationDisablerTypeRecordUmaActivation) {
   ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
@@ -7378,7 +7395,7 @@ IN_PROC_BROWSER_TEST_F(
 // histogram value, just that the scenario is counted under the correct
 // histogram.
 IN_PROC_BROWSER_TEST_F(
-    NavigationBrowserTest,
+    NavigationSuddenTerminationDisablerTypeBrowserTest,
     NavigationSuddenTerminationDisablerTypeRecordUmaInitialEmptyDocument) {
   GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
   ASSERT_TRUE(NavigateToURL(shell(), url));
@@ -7410,7 +7427,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Ensure that navigations from non-HTTP(S) pages are recorded correctly.
 IN_PROC_BROWSER_TEST_F(
-    NavigationBrowserTest,
+    NavigationSuddenTerminationDisablerTypeBrowserTest,
     NavigationSuddenTerminationDisablerTypeRecordUmaNotHttp) {
   GURL blank_url("about:blank");
   GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
@@ -7707,6 +7724,94 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   // The top frame is indeed navigated successfully.
   observer.Wait();
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), destination);
+}
+
+// Test navigation with site instances whose storage partitions are fixed.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, FixedStoragePartition) {
+  auto* browser_context = shell()->web_contents()->GetBrowserContext();
+  auto storage_partition_config = StoragePartitionConfig::Create(
+      browser_context, "NavigationBrowserTest", "FixedStoragePartition", true);
+  auto url = embedded_test_server()->GetURL("/");
+  auto* shell = Shell::CreateNewWindow(
+      browser_context, url,
+      SiteInstanceImpl::CreateForFixedStoragePartition(
+          browser_context, url, storage_partition_config),
+      gfx::Size());
+
+  auto GetSiteInstance = [](Shell* shell) {
+    return static_cast<SiteInstanceImpl*>(
+        shell->web_contents()->GetSiteInstance());
+  };
+
+  EXPECT_EQ(GetSiteInstance(shell)->GetStoragePartitionConfig(),
+            storage_partition_config);
+  EXPECT_TRUE(GetSiteInstance(shell)->IsFixedStoragePartition());
+
+  // Check navigation.
+  ASSERT_TRUE(
+      NavigateToURL(shell, embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(GetSiteInstance(shell)->GetStoragePartitionConfig(),
+            storage_partition_config);
+  EXPECT_TRUE(GetSiteInstance(shell)->IsFixedStoragePartition());
+
+  // Check opening a window. The new window should stay in the same
+  // BrowsingInstance and StoragePartition.
+  {
+    ShellAddedObserver observer;
+    auto destination = embedded_test_server()->GetURL("a.com", "/title1.html");
+    EXPECT_TRUE(ExecJs(shell, JsReplace("window.open($1)", destination),
+                       EXECUTE_SCRIPT_NO_USER_GESTURE));
+    auto* popup = observer.GetShell();
+    EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
+    EXPECT_EQ(popup->web_contents()->GetLastCommittedURL(), destination);
+    EXPECT_EQ(GetSiteInstance(popup)->GetBrowsingInstanceId(),
+              GetSiteInstance(shell)->GetBrowsingInstanceId());
+    EXPECT_EQ(GetSiteInstance(popup)->GetStoragePartitionConfig(),
+              storage_partition_config);
+    EXPECT_TRUE(GetSiteInstance(popup)->IsFixedStoragePartition());
+  }
+
+  // Check opening a window with about:blank at the beginning, and then navigate
+  // it. It should stay in the same BrowsingInstance and StoragePartition.
+  {
+    ShellAddedObserver observer;
+    EXPECT_TRUE(ExecJs(shell, "newWindow = window.open()",
+                       EXECUTE_SCRIPT_NO_USER_GESTURE));
+    auto* popup = observer.GetShell();
+    EXPECT_EQ(GetSiteInstance(popup)->GetStoragePartitionConfig(),
+              storage_partition_config);
+    EXPECT_TRUE(GetSiteInstance(popup)->IsFixedStoragePartition());
+
+    auto destination = embedded_test_server()->GetURL("a.com", "/title1.html");
+    EXPECT_TRUE(ExecJs(shell,
+                       JsReplace("newWindow.location.href = $1", destination),
+                       EXECUTE_SCRIPT_NO_USER_GESTURE));
+    EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
+    EXPECT_EQ(popup->web_contents()->GetLastCommittedURL(), destination);
+    EXPECT_EQ(GetSiteInstance(popup)->GetBrowsingInstanceId(),
+              GetSiteInstance(shell)->GetBrowsingInstanceId());
+    EXPECT_EQ(GetSiteInstance(popup)->GetStoragePartitionConfig(),
+              storage_partition_config);
+    EXPECT_TRUE(GetSiteInstance(popup)->IsFixedStoragePartition());
+  }
+
+  // Check navigation again.
+  ASSERT_TRUE(
+      NavigateToURL(shell, embedded_test_server()->GetURL("/title2.html")));
+  EXPECT_EQ(GetSiteInstance(shell)->GetStoragePartitionConfig(),
+            storage_partition_config);
+  EXPECT_TRUE(GetSiteInstance(shell)->IsFixedStoragePartition());
+
+  // Check navigation that triggers a BrowsingInstance swap, and the storage
+  // partition config should also be preserved.
+  auto browsing_instance_id = GetSiteInstance(shell)->GetBrowsingInstanceId();
+  ASSERT_TRUE(NavigateToURL(
+      shell, embedded_test_server()->GetURL("c.com", "/title2.html")));
+  EXPECT_NE(GetSiteInstance(shell)->GetBrowsingInstanceId(),
+            browsing_instance_id);
+  EXPECT_EQ(GetSiteInstance(shell)->GetStoragePartitionConfig(),
+            storage_partition_config);
+  EXPECT_TRUE(GetSiteInstance(shell)->IsFixedStoragePartition());
 }
 
 }  // namespace content

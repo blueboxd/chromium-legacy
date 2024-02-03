@@ -5,13 +5,13 @@
 #ifndef ASH_SEARCH_BOX_SEARCH_BOX_VIEW_BASE_H_
 #define ASH_SEARCH_BOX_SEARCH_BOX_VIEW_BASE_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "ash/search_box/search_box_constants.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/font_list.h"
@@ -35,6 +35,7 @@ class Textfield;
 
 namespace ash {
 
+class LauncherSearchIphView;
 class SearchBoxImageButton;
 class SearchIconImageView;
 
@@ -93,9 +94,9 @@ class SearchBoxViewBase : public views::View,
   views::ImageView* search_icon();
   views::Textfield* search_box() { return search_box_; }
 
-  void SetIphView(std::unique_ptr<views::View> iph_view);
+  void SetIphView(std::unique_ptr<LauncherSearchIphView> iph_view);
+  LauncherSearchIphView* GetIphView();
   void DeleteIphView();
-  raw_ptr<views::View> iph_view() { return iph_view_tracker_.view(); }
 
   // Called when the query in the search box textfield changes. The search box
   // implementation is expected to handle the new query.
@@ -176,7 +177,7 @@ class SearchBoxViewBase : public views::View,
     bool increase_child_view_padding = false;
 
     // If set, the margins that should be used for the search box text field.
-    absl::optional<gfx::Insets> textfield_margins;
+    std::optional<gfx::Insets> textfield_margins;
   };
 
   void Init(const InitParams& params);

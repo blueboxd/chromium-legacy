@@ -316,27 +316,42 @@ bool PrivacySandboxSettingsDelegate::IsCookieDeprecationLabelAllowed() const {
     return false;
   }
 
-  if (!tpcd::experiment::kDisable3PCookies.Get()) {
-    return true;
-  }
-
   auto* tracking_protection_onboarding =
       TrackingProtectionOnboardingFactory::GetForProfile(profile_);
   if (!tracking_protection_onboarding) {
     return false;
   }
 
-  switch (tracking_protection_onboarding->GetOnboardingStatus()) {
-    case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
-        kIneligible:
-    case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
-        kEligible:
-    case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
-        kOffboarded:
-      return false;
-    case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
-        kOnboarded:
-      return true;
+  if (tpcd::experiment::kDisable3PCookies.Get()) {
+    switch (tracking_protection_onboarding->GetOnboardingStatus()) {
+      case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
+          kIneligible:
+        return false;
+      case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
+          kOffboarded:
+      case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
+          kEligible:
+        return !tpcd::experiment::kNeedOnboardingForLabel.Get();
+      case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
+          kOnboardingRequested:
+      case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
+          kOnboarded:
+        return true;
+    }
+  } else if (tpcd::experiment::kEnableSilentOnboarding.Get()) {
+    switch (tracking_protection_onboarding->GetSilentOnboardingStatus()) {
+      case privacy_sandbox::TrackingProtectionOnboarding::
+          SilentOnboardingStatus::kIneligible:
+        return false;
+      case privacy_sandbox::TrackingProtectionOnboarding::
+          SilentOnboardingStatus::kEligible:
+        return !tpcd::experiment::kNeedOnboardingForLabel.Get();
+      case privacy_sandbox::TrackingProtectionOnboarding::
+          SilentOnboardingStatus::kOnboarded:
+        return true;
+    }
+  } else {
+    return true;
   }
 }
 
@@ -368,6 +383,8 @@ bool PrivacySandboxSettingsDelegate::
         kEligible:
     case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
         kOffboarded:
+    case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
+        kOnboardingRequested:
       return false;
     case privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus::
         kOnboarded:

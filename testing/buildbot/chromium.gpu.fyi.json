@@ -4914,11 +4914,11 @@
           "--stable-jobs",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --force_high_performance_gpu",
           "--enforce-browser-version",
-          "--expected-vendor-id",
-          "1af4",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
           "--magic-vm-cache=magic_cros_vm_cache",
+          "--expected-vendor-id",
+          "1af4",
           "--expected-device-id",
           "1050"
         ],
@@ -5393,9 +5393,14 @@
           "--jobs=1"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-        "name": "context_lost_passthrough_tests VOLTEER_RELEASE_LKGM",
+        "name": "context_lost_passthrough_tests VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5403,7 +5408,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5417,17 +5422,23 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--service-account=/creds/service_accounts/skylab-drone.json"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-        "name": "expected_color_pixel_passthrough_test VOLTEER_RELEASE_LKGM",
+        "name": "expected_color_pixel_passthrough_test VOLTEER_PUBLIC_RELEASE_LKGM",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
           "--buildbucket-id=${buildbucket_build_id}"
         ],
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5435,7 +5446,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5448,9 +5459,14 @@
           "--enforce-browser-version"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc",
-        "name": "gpu_process_launch_tests VOLTEER_RELEASE_LKGM",
+        "name": "gpu_process_launch_tests VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5458,7 +5474,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5471,9 +5487,14 @@
           "--enforce-browser-version"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc",
-        "name": "hardware_accelerated_feature_tests VOLTEER_RELEASE_LKGM",
+        "name": "hardware_accelerated_feature_tests VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5481,7 +5502,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5493,14 +5514,19 @@
           "--stable-jobs",
           "--enforce-browser-version",
           "--expected-vendor-id",
-          "0",
+          "8086",
           "--expected-device-id",
-          "0"
+          "9a49"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc --force_high_performance_gpu",
-        "name": "info_collection_tests VOLTEER_RELEASE_LKGM",
+        "name": "info_collection_tests VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5508,7 +5534,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5521,9 +5547,14 @@
           "--enforce-browser-version"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc --force_higher_performance_gpu --use-cmd-decoder=passthrough --use-gl=angle",
-        "name": "mediapipe_passthrough_tests VOLTEER_RELEASE_LKGM",
+        "name": "mediapipe_passthrough_tests VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5531,7 +5562,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5546,17 +5577,23 @@
           "--test-machine-name",
           "${buildername}",
           "--jobs=1",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--service-account=/creds/service_accounts/skylab-drone.json"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-        "name": "pixel_skia_gold_passthrough_test VOLTEER_RELEASE_LKGM",
+        "name": "pixel_skia_gold_passthrough_test VOLTEER_PUBLIC_RELEASE_LKGM",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
           "--buildbucket-id=${buildbucket_build_id}"
         ],
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5564,7 +5601,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5578,9 +5615,14 @@
           "--dont-restore-color-profile-after-test"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
-        "name": "screenshot_sync_passthrough_tests VOLTEER_RELEASE_LKGM",
+        "name": "screenshot_sync_passthrough_tests VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5588,7 +5630,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5602,9 +5644,14 @@
           "--jobs=1"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc",
-        "name": "trace_test VOLTEER_RELEASE_LKGM",
+        "name": "trace_test VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5612,7 +5659,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5626,9 +5673,14 @@
           "--jobs=1"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc",
-        "name": "webcodecs_tests VOLTEER_RELEASE_LKGM",
+        "name": "webcodecs_tests VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5636,7 +5688,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5652,9 +5704,14 @@
           "--jobs=1"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
-        "name": "webgl2_conformance_gles_passthrough_tests VOLTEER_RELEASE_LKGM",
+        "name": "webgl2_conformance_gles_passthrough_tests VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5663,7 +5720,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       },
       {
         "args": [
@@ -5678,9 +5735,14 @@
           "--jobs=1"
         ],
         "autotest_name": "chromium_Graphics",
+        "bucket": "chromiumos-image-archive",
         "cros_board": "volteer",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
         "extra_browser_args": "--log-level=0 --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
-        "name": "webgl_conformance_gles_passthrough_tests VOLTEER_RELEASE_LKGM",
+        "name": "webgl_conformance_gles_passthrough_tests VOLTEER_PUBLIC_RELEASE_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -5689,7 +5751,7 @@
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/",
         "use_lkgm": true,
-        "variant_id": "VOLTEER_RELEASE_LKGM"
+        "variant_id": "VOLTEER_PUBLIC_RELEASE_LKGM"
       }
     ]
   },
@@ -9959,6 +10021,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.4",
             "pool": "chromium.tests"
@@ -10097,6 +10160,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10124,6 +10188,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10155,6 +10220,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10179,6 +10245,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10200,6 +10267,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10225,6 +10293,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10252,6 +10321,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10290,6 +10360,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10327,6 +10398,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10364,6 +10436,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10409,6 +10482,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10454,6 +10528,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10499,6 +10574,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10535,6 +10611,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10571,6 +10648,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10611,6 +10689,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10647,6 +10726,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10693,6 +10773,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10739,6 +10820,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10785,6 +10867,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10822,6 +10905,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10859,6 +10943,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10896,6 +10981,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10933,6 +11019,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -10970,6 +11057,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -11009,6 +11097,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -11050,6 +11139,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -11089,6 +11179,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -11129,6 +11220,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -11167,6 +11259,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m1",
             "mac_model": "Macmini9,1",
             "os": "Mac-13.5.2",
             "pool": "chromium.tests"
@@ -13824,6 +13917,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -13852,6 +13946,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -13884,6 +13979,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -13909,6 +14005,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -13931,6 +14028,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -13957,6 +14055,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -13985,6 +14084,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14024,6 +14124,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14062,6 +14163,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14100,6 +14202,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14146,6 +14249,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14192,6 +14296,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14238,6 +14343,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14275,6 +14381,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14312,6 +14419,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14353,6 +14461,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14390,6 +14499,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14437,6 +14547,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14484,6 +14595,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14531,6 +14643,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14569,6 +14682,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14607,6 +14721,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14645,6 +14760,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14683,6 +14799,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14721,6 +14838,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14761,6 +14879,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14803,6 +14922,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14843,6 +14963,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14884,6 +15005,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",
@@ -14923,6 +15045,7 @@
           "dimensions": {
             "cpu": "arm64",
             "display_attached": "1",
+            "gpu": "apple:m2",
             "hidpi": "1",
             "mac_model": "Mac14,7",
             "os": "Mac-13.3.1",

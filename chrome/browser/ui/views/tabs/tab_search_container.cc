@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/tabs/tab_search_container.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_utils.h"
 #include "chrome/browser/ui/views/tabs/tab_organization_button.h"
 #include "chrome/browser/ui/views/tabs/tab_search_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -17,6 +19,17 @@
 #include "ui/views/view_class_properties.h"
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class TriggerOutcome {
+  kAccepted = 0,
+  kDismissed = 1,
+  kTimedOut = 2,
+  kMaxValue = kTimedOut,
+};
+
+constexpr char kTriggerOutcomeName[] = "TabOrganization.Trigger.Outcome";
 
 Edge GetFlatEdge(bool is_search_button, bool before_tab_strip) {
   const bool is_rtl = base::i18n::IsRTL();
@@ -39,7 +52,8 @@ TabSearchContainer::TabSearchContainer(TabStripController* tab_strip_controller,
                                                     gfx::Insets()),
       this);
 
-  if (features::IsTabOrganization()) {
+  Profile* profile = tab_strip_controller->GetProfile();
+  if (TabOrganizationUtils::GetInstance()->IsEnabled(profile)) {
     tab_organization_service_ = TabOrganizationServiceFactory::GetForProfile(
         tab_strip_controller->GetProfile());
   }
@@ -71,7 +85,7 @@ TabSearchContainer::TabSearchContainer(TabStripController* tab_strip_controller,
                                       : Edge::kNone));
     tab_organization_button_->SetProperty(views::kCrossAxisAlignmentKey,
                                           views::LayoutAlignment::kCenter);
-    const int space_between_buttons = 4;
+    const int space_between_buttons = 2;
     gfx::Insets margin = gfx::Insets();
     if (before_tab_strip) {
       margin.set_left(space_between_buttons);
@@ -120,17 +134,35 @@ void TabSearchContainer::SetLockedExpansionModeForTesting(
 }
 
 void TabSearchContainer::OnOrganizeButtonClicked() {
+  base::UmaHistogramEnumeration(kTriggerOutcomeName, TriggerOutcome::kAccepted);
   tab_organization_service_->OnActionUIAccepted(browser_);
+
+  UMA_HISTOGRAM_BOOLEAN("Tab.Organization.AllEntrypoints.Clicked", true);
+  UMA_HISTOGRAM_BOOLEAN("Tab.Organization.Proactive.Clicked", true);
 
   // Force hide the button when pressed, bypassing locked expansion mode.
   ExecuteHideTabOrganization();
 }
 
 void TabSearchContainer::OnOrganizeButtonDismissed() {
+  base::UmaHistogramEnumeration(kTriggerOutcomeName,
+                                TriggerOutcome::kDismissed);
   tab_organization_service_->OnActionUIDismissed(browser_);
+
+  UMA_HISTOGRAM_BOOLEAN("Tab.Organization.Proactive.Clicked", false);
 
   // Force hide the button when pressed, bypassing locked expansion mode.
   ExecuteHideTabOrganization();
+}
+
+void TabSearchContainer::OnOrganizeButtonTimeout() {
+  base::UmaHistogramEnumeration(kTriggerOutcomeName, TriggerOutcome::kTimedOut);
+
+  UMA_HISTOGRAM_BOOLEAN("Tab.Organization.Proactive.Clicked", false);
+
+  // Hide the button if not pressed. Use locked expansion mode to avoid
+  // disrupting the user.
+  HideTabOrganization();
 }
 
 void TabSearchContainer::SetLockedExpansionMode(LockedExpansionMode mode) {
@@ -150,8 +182,8 @@ void TabSearchContainer::ExecuteShowTabOrganization() {
   expansion_animation_.Show();
 
   const base::TimeDelta delta = base::Seconds(16);
-  hide_tab_organization_timer_.Start(FROM_HERE, delta, this,
-                                     &TabSearchContainer::HideTabOrganization);
+  hide_tab_organization_timer_.Start(
+      FROM_HERE, delta, this, &TabSearchContainer::OnOrganizeButtonTimeout);
 }
 
 void TabSearchContainer::ExecuteHideTabOrganization() {

@@ -120,8 +120,8 @@ TEST_P(CardMetadataFormEventMetricsTest, LogShownMetrics) {
 
   // Simulate activating the autofill popup for the credit card field.
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
-  autofill_manager().DidShowSuggestions(
-      /*has_autofill_suggestions=*/true, form(), form().fields.back());
+  DidShowAutofillSuggestions(form(), /*field_index=*/form().fields.size() - 1,
+                             PopupItemId::kCreditCardEntry);
 
   // Verify that:
   // 1. if the card suggestion shown had metadata,
@@ -160,8 +160,8 @@ TEST_P(CardMetadataFormEventMetricsTest, LogShownMetrics) {
 
   // Show the popup again.
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
-  autofill_manager().DidShowSuggestions(
-      /*has_autofill_suggestions=*/true, form(), form().fields.back());
+  DidShowAutofillSuggestions(form(), /*field_index=*/form().fields.size() - 1,
+                             PopupItemId::kCreditCardEntry);
 
   EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.FormEvents.CreditCard"),
               BucketsInclude(
@@ -184,15 +184,26 @@ TEST_P(CardMetadataFormEventMetricsTest, LogShownMetrics) {
 
 // Test metadata selected metrics are correctly logged.
 TEST_P(CardMetadataFormEventMetricsTest, LogSelectedMetrics) {
+  // Add a second card which won't be selected but will be logged in
+  // Autofill.CreditCard.Amex.SelectedWithIssuerMetadataPresentOnce.
+  CreditCard card2 = test::GetMaskedServerCard2();
+  card2.set_guid(kTestMaskedCardId);
+  card2.set_issuer_id("amex");
+  if (card_metadata_available()) {
+    card2.set_product_description(u"product description");
+    card2.set_card_art_url(GURL("https://www.example.com/cardarturl.png"));
+  }
+  personal_data().AddServerCreditCard(card2);
+
   base::HistogramTester histogram_tester;
 
   // Simulate selecting the card.
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
-  autofill_manager().DidShowSuggestions(
-      /*has_autofill_suggestions=*/true, form(), form().fields.back());
+  DidShowAutofillSuggestions(form(), /*field_index=*/form().fields.size() - 1,
+                             PopupItemId::kCreditCardEntry);
   autofill_manager().FillOrPreviewCreditCardForm(
       mojom::ActionPersistence::kFill, form(), form().fields.back(),
-      personal_data().GetCreditCardByGUID(kCardGuid),
+      *personal_data().GetCreditCardByGUID(kCardGuid),
       {.trigger_source = AutofillTriggerSource::kPopup});
 
   // Verify that:
@@ -235,7 +246,7 @@ TEST_P(CardMetadataFormEventMetricsTest, LogSelectedMetrics) {
   // Select the suggestion again.
   autofill_manager().FillOrPreviewCreditCardForm(
       mojom::ActionPersistence::kFill, form(), form().fields.back(),
-      personal_data().GetCreditCardByGUID(kCardGuid),
+      *personal_data().GetCreditCardByGUID(kCardGuid),
       {.trigger_source = AutofillTriggerSource::kPopup});
 
   EXPECT_THAT(
@@ -256,6 +267,18 @@ TEST_P(CardMetadataFormEventMetricsTest, LogSelectedMetrics) {
   histogram_tester.ExpectUniqueSample(
       GetHistogramName(".SelectedWithMetadataOnce"), card_metadata_available(),
       registered_card_issuer_available() ? 1 : 0);
+  histogram_tester.ExpectUniqueSample(
+      GetHistogramName(".SelectedWithIssuerMetadataPresentOnce"), true,
+      card_metadata_available() && registered_card_issuer_available() ? 1 : 0);
+
+  // Only test non-Amex because for Amex case it will log true in
+  // SelectedWithIssuerMetadataPresentOnce histogram.
+  if (issuer_id() != "amex") {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.CreditCard.Amex.SelectedWithIssuerMetadataPresentOnce", false,
+        card_metadata_available() && registered_card_issuer_available() ? 1
+                                                                        : 0);
+  }
 }
 
 // Test metadata filled metrics are correctly logged.
@@ -265,7 +288,7 @@ TEST_P(CardMetadataFormEventMetricsTest, LogFilledMetrics) {
   // Simulate filling the card.
   autofill_manager().FillOrPreviewCreditCardForm(
       mojom::ActionPersistence::kFill, form(), form().fields.back(),
-      personal_data().GetCreditCardByGUID(kCardGuid),
+      *personal_data().GetCreditCardByGUID(kCardGuid),
       {.trigger_source = AutofillTriggerSource::kPopup});
   test_api(autofill_manager())
       .OnCreditCardFetched(CreditCardFetchResult::kSuccess, &card());
@@ -338,7 +361,7 @@ TEST_P(CardMetadataFormEventMetricsTest, LogSubmitMetrics) {
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
   autofill_manager().FillOrPreviewCreditCardForm(
       mojom::ActionPersistence::kFill, form(), form().fields.back(),
-      personal_data().GetCreditCardByGUID(kCardGuid),
+      *personal_data().GetCreditCardByGUID(kCardGuid),
       {.trigger_source = AutofillTriggerSource::kPopup});
   test_api(autofill_manager())
       .OnCreditCardFetched(CreditCardFetchResult::kSuccess, &card());
@@ -460,12 +483,12 @@ TEST_P(CardMetadataLatencyMetricsTest, LogMetrics) {
 
   // Simulate activating the autofill popup for the credit card field.
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
-  autofill_manager().DidShowSuggestions(
-      /*has_autofill_suggestions=*/true, form(), form().fields.back());
+  DidShowAutofillSuggestions(form(), /*field_index=*/form().fields.size() - 1,
+                             PopupItemId::kCreditCardEntry);
   test_clock.SetNowTicks(now + base::Seconds(2));
   autofill_manager().FillOrPreviewCreditCardForm(
       mojom::ActionPersistence::kFill, form(), form().fields.front(),
-      personal_data().GetCreditCardByGUID(kTestMaskedCardId),
+      *personal_data().GetCreditCardByGUID(kTestMaskedCardId),
       {.trigger_source = AutofillTriggerSource::kPopup});
 
   std::string latency_histogram_prefix =

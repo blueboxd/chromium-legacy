@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/layout/inline/caret_position.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -146,7 +146,7 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const InlineCursor& cursor,
   }
   const PhysicalSize caret_size(caret_width, caret_height);
 
-  const NGPhysicalBoxFragment& fragment = cursor.ContainerFragment();
+  const PhysicalBoxFragment& fragment = cursor.ContainerFragment();
   InlineCursor line_box(cursor);
   line_box.MoveToContainingLine();
   const PhysicalOffset line_box_offset =
@@ -194,7 +194,7 @@ LocalCaretRect ComputeLocalCaretRect(const CaretPosition& caret_position) {
 
   const LayoutObject* const layout_object =
       caret_position.cursor.Current().GetLayoutObject();
-  const NGPhysicalBoxFragment& container_fragment =
+  const PhysicalBoxFragment& container_fragment =
       caret_position.cursor.ContainerFragment();
   switch (caret_position.position_type) {
     case CaretPositionType::kBeforeBox:

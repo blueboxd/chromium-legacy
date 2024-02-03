@@ -18,13 +18,14 @@
 namespace blink {
 class AuthenticationExtensionsClientInputs;
 class AuthenticationExtensionsClientOutputs;
-class AuthenticationExtensionsDevicePublicKeyInputs;
+class AuthenticationExtensionsSupplementalPubKeysInputs;
+class AuthenticationExtensionsSupplementalPubKeysOutputs;
 class AuthenticationExtensionsPRFInputs;
 class AuthenticationExtensionsPRFValues;
 class AuthenticatorSelectionCriteria;
 class CableAuthenticationData;
 class Credential;
-class IdentityCredentialRevokeOptions;
+class IdentityCredentialDisconnectOptions;
 class IdentityProviderConfig;
 class IdentityProviderRequestOptions;
 class IdentityUserInfo;
@@ -58,12 +59,22 @@ struct TypeConverter<blink::Credential*,
       const blink::mojom::blink::CredentialInfoPtr&);
 };
 
+// "Reverse" converters. These convert from from Mojo structures to
+// IDL-generated structures.
+
 template <>
 struct MODULES_EXPORT TypeConverter<
     blink::AuthenticationExtensionsClientOutputs*,
     blink::mojom::blink::AuthenticationExtensionsClientOutputsPtr> {
   static blink::AuthenticationExtensionsClientOutputs* Convert(
       const blink::mojom::blink::AuthenticationExtensionsClientOutputsPtr&);
+};
+
+template <>
+struct TypeConverter<blink::AuthenticationExtensionsSupplementalPubKeysOutputs*,
+                     blink::mojom::blink::SupplementalPubKeysResponsePtr> {
+  static blink::AuthenticationExtensionsSupplementalPubKeysOutputs* Convert(
+      const blink::mojom::blink::SupplementalPubKeysResponsePtr&);
 };
 
 // blink::mojom::blink::Authenticator ---------------------------------------
@@ -248,10 +259,11 @@ struct TypeConverter<blink::mojom::blink::IdentityUserInfoPtr,
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::DevicePublicKeyRequestPtr,
-                     blink::AuthenticationExtensionsDevicePublicKeyInputs> {
-  static blink::mojom::blink::DevicePublicKeyRequestPtr Convert(
-      const blink::AuthenticationExtensionsDevicePublicKeyInputs&);
+struct TypeConverter<
+    absl::optional<blink::mojom::blink::SupplementalPubKeysRequestPtr>,
+    blink::AuthenticationExtensionsSupplementalPubKeysInputs> {
+  static absl::optional<blink::mojom::blink::SupplementalPubKeysRequestPtr>
+  Convert(const blink::AuthenticationExtensionsSupplementalPubKeysInputs&);
 };
 
 template <>
@@ -269,10 +281,11 @@ struct TypeConverter<Vector<blink::mojom::blink::PRFValuesPtr>,
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::IdentityCredentialRevokeOptionsPtr,
-                     blink::IdentityCredentialRevokeOptions> {
-  static blink::mojom::blink::IdentityCredentialRevokeOptionsPtr Convert(
-      const blink::IdentityCredentialRevokeOptions&);
+struct TypeConverter<
+    blink::mojom::blink::IdentityCredentialDisconnectOptionsPtr,
+    blink::IdentityCredentialDisconnectOptions> {
+  static blink::mojom::blink::IdentityCredentialDisconnectOptionsPtr Convert(
+      const blink::IdentityCredentialDisconnectOptions&);
 };
 
 }  // namespace mojo

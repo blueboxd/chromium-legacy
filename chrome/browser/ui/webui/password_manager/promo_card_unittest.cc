@@ -74,6 +74,10 @@ class FakePromoCard : public PasswordPromoCardBase {
   // PasswordPromoCardBase implementation.
   std::string GetPromoID() const override { return kId; }
 
+  PromoCardType GetPromoCardType() const override {
+    return PromoCardType::kCheckup;
+  }
+
   bool ShouldShowPromo() const override { return true; }
 
   std::u16string GetTitle() const override { return u"Fake title"; }
@@ -491,5 +495,4 @@ TEST_F(PromoCardAccessAnyDeviceTest, PromoNotShownAfterDismiss) {
   histogram_tester.ExpectUniqueSample("PasswordManager.PromoCard.Dismissed", 3,
                                       1);
 }
-
 }  // namespace password_manager

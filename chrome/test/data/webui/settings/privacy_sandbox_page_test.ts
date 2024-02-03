@@ -39,6 +39,7 @@ suite('PrivacySandboxPage', function() {
     document.body.appendChild(settingsPrefs);
     page = document.createElement('settings-privacy-sandbox-page');
     page.prefs = settingsPrefs.prefs!;
+    Router.getInstance().navigateTo(routes.PRIVACY_SANDBOX);
     document.body.appendChild(page);
     return flushTasks();
   });
@@ -210,6 +211,7 @@ suite('TopicsSubpage', function() {
     document.body.appendChild(settingsPrefs);
     page = document.createElement('settings-privacy-sandbox-topics-subpage');
     page.prefs = settingsPrefs.prefs!;
+    Router.getInstance().navigateTo(routes.PRIVACY_SANDBOX_TOPICS);
     document.body.appendChild(page);
     await testPrivacySandboxBrowserProxy.whenCalled('getTopicsState');
     return flushTasks();
@@ -501,7 +503,8 @@ suite('TopicsSubpage', function() {
     assertEquals(links.length, 2, 'footer should contains two links');
     links.forEach(
         link => assertEquals(
-            link.title, loadTimeData.getString('opensInNewTab'),
+            link.getAttribute('aria-description'),
+            loadTimeData.getString('opensInNewTab'),
             'the link should indicate that it will be opened in a new tab'));
     const hrefs = Array.from<HTMLAnchorElement>(links).map(link => link.href);
     const expectedLinks =
@@ -627,6 +630,7 @@ suite('FledgeSubpage', function() {
     document.body.appendChild(settingsPrefs);
     page = document.createElement('settings-privacy-sandbox-fledge-subpage');
     page.prefs = settingsPrefs.prefs!;
+    Router.getInstance().navigateTo(routes.PRIVACY_SANDBOX_FLEDGE);
     document.body.appendChild(page);
     await testPrivacySandboxBrowserProxy.whenCalled('getFledgeState');
     return flushTasks();
@@ -900,7 +904,8 @@ suite('FledgeSubpage', function() {
     assertEquals(links.length, 2, 'footer should contains two links');
     links.forEach(
         link => assertEquals(
-            link.title, loadTimeData.getString('opensInNewTab'),
+            link.getAttribute('aria-description'),
+            loadTimeData.getString('opensInNewTab'),
             'the link should indicate that it will be opened in a new tab'));
     const hrefs = Array.from<HTMLAnchorElement>(links).map(link => link.href);
     const expectedLinks =
@@ -1206,6 +1211,7 @@ suite('AdMeasurementSubpage', function() {
     page = document.createElement(
         'settings-privacy-sandbox-ad-measurement-subpage');
     page.prefs = settingsPrefs.prefs!;
+    Router.getInstance().navigateTo(routes.PRIVACY_SANDBOX_AD_MEASUREMENT);
     document.body.appendChild(page);
     return flushTasks();
   });

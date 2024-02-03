@@ -135,20 +135,21 @@ class PopupViewViewsTest : public ChromeViewsTestBase {
   }
 
   void TearDown() override {
+    // Set to nullptr to avoid dangling pointers.
+    view_ = nullptr;
     generator_.reset();
-    view_.reset();
     widget_.reset();
     ChromeViewsTestBase::TearDown();
   }
 
-  void ShowView(PopupViewViews& view, views::Widget& widget) {
-    widget.SetContentsView(&view);
-    view.Show(AutoselectFirstSuggestion(false));
+  void ShowView(PopupViewViews* view, views::Widget& widget) {
+    widget.SetContentsView(view);
+    view->Show(AutoselectFirstSuggestion(false));
   }
 
   void CreateAndShowView() {
-    view_ = std::make_unique<PopupViewViews>(controller().GetWeakPtr());
-    ShowView(*view_, *widget_);
+    view_ = new PopupViewViews(controller().GetWeakPtr());
+    ShowView(view_, *widget_);
   }
 
   void CreateAndShowView(const std::vector<PopupItemId>& ids) {
@@ -254,7 +255,7 @@ class PopupViewViewsTest : public ChromeViewsTestBase {
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
-  std::unique_ptr<PopupViewViews> view_;
+  raw_ptr<PopupViewViews> view_;
   NiceMock<MockAutofillPopupController> autofill_popup_controller_;
   NiceMock<MockAutofillPopupController> autofill_popup_sub_controller_;
 };
@@ -747,7 +748,7 @@ TEST_F(PopupViewViewsTest, RemoveAutofillRecordsNoAutocompleteDeletionMetrics) {
   SimulateKeyPress(ui::VKEY_DELETE, /*shift_modifier_pressed=*/true);
   histogram_tester.ExpectTotalCount(
       "Autofill.Autocomplete.SingleEntryRemovalMethod", 0);
-  histogram_tester.ExpectTotalCount("Autocomplete.Events", 0);
+  histogram_tester.ExpectTotalCount("Autocomplete.Events2", 0);
 }
 
 TEST_F(PopupViewViewsTest, RemoveAutocompleteSuggestionRecordsMetrics) {
@@ -763,7 +764,7 @@ TEST_F(PopupViewViewsTest, RemoveAutocompleteSuggestionRecordsMetrics) {
   SimulateKeyPress(ui::VKEY_DELETE, /*shift_modifier_pressed=*/true);
   histogram_tester.ExpectTotalCount(
       "Autofill.Autocomplete.SingleEntryRemovalMethod", 0);
-  histogram_tester.ExpectTotalCount("Autocomplete.Events", 0);
+  histogram_tester.ExpectTotalCount("Autocomplete.Events2", 0);
 
   EXPECT_CALL(controller(), RemoveSuggestion(1)).WillOnce(Return(true));
   SimulateKeyPress(ui::VKEY_DELETE, /*shift_modifier_pressed=*/true);
@@ -773,7 +774,7 @@ TEST_F(PopupViewViewsTest, RemoveAutocompleteSuggestionRecordsMetrics) {
           kKeyboardShiftDeletePressed,
       1);
   histogram_tester.ExpectUniqueSample(
-      "Autocomplete.Events",
+      "Autocomplete.Events2",
       AutofillMetrics::AutocompleteEvent::AUTOCOMPLETE_SUGGESTION_DELETED, 1);
 }
 
@@ -874,7 +875,7 @@ TEST_F(PopupViewViewsTest, SubViewIsClosedWithParent) {
   controller().set_suggestions({PopupItemId::kAddressEntry});
   PopupViewViews view(controller().GetWeakPtr());
   views::Widget* widget = CreateTestWidget().release();
-  ShowView(view, *widget);
+  ShowView(&view, *widget);
 
   auto [sub_controller, sub_view] = OpenSubView(view);
   base::WeakPtr<views::Widget> sub_widget = sub_view->GetWidget()->GetWeakPtr();

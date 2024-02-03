@@ -25,13 +25,16 @@ BASE_DECLARE_FEATURE(kCacheOneGoogleBar);
 BASE_DECLARE_FEATURE(kCustomizeChromeColorExtraction);
 BASE_DECLARE_FEATURE(kCustomizeChromeSidePanelExtensionsCard);
 BASE_DECLARE_FEATURE(kCustomizeChromeWallpaperSearch);
+BASE_DECLARE_FEATURE(kCustomizeChromeWallpaperSearchInspirationCard);
 BASE_DECLARE_FEATURE(kCwsDarkLogo);
 BASE_DECLARE_FEATURE(kDismissPromos);
 BASE_DECLARE_FEATURE(kIframeOneGoogleBar);
 BASE_DECLARE_FEATURE(kOneGoogleBarModalOverlays);
 BASE_DECLARE_FEATURE(kRealboxCr23All);
+BASE_DECLARE_FEATURE(kRealboxCr23ConsistentRowHeight);
 BASE_DECLARE_FEATURE(kRealboxCr23ExpandedStateIcons);
 BASE_DECLARE_FEATURE(kRealboxCr23ExpandedStateLayout);
+BASE_DECLARE_FEATURE(kRealboxCr23Theming);
 BASE_DECLARE_FEATURE(kRealboxMatchOmniboxTheme);
 BASE_DECLARE_FEATURE(kRealboxMatchSearchboxTheme);
 BASE_DECLARE_FEATURE(kRealboxUseGoogleGIcon);
@@ -104,6 +107,11 @@ extern const base::FeatureParam<double>
 extern const base::FeatureParam<double>
     kNtpElementLuminosityChangeForDarkBackgroundParam;
 
+// Parameter determining the ignore based survey launch delay time.
+extern const char kNtpModuleIgnoredHaTSDelayTimeParam[];
+// Parameter determining the number of times a module must have loaded with no
+// interaction by the user before it's considered as ignored.
+extern const char kNtpModuleIgnoredCriteriaThreshold[];
 // Parameter determining the module load timeout.
 extern const char kNtpModulesLoadTimeoutMillisecondsParam[];
 // Parameter determining the module order.
@@ -136,8 +144,11 @@ extern const char kNtpHistoryClustersModuleDataParam[];
 extern const char kNtpChromeCartInHistoryClustersModuleDataParam[];
 // Parameter determining the type of middle slot promo data to render.
 extern const char kNtpMiddleSlotPromoDismissalParam[];
-// Parameter determining the modules that are eligigle for HATS.
+// Parameter determining the modules that are eligigle for HaTS.
 extern const char kNtpModulesEligibleForHappinessTrackingSurveyParam[];
+// Parameter determining module trigger ids for HaTS for eligible module ids for
+// a given module interaction type.
+extern const char kNtpModulesInteractionBasedSurveyEligibleIdsParam[];
 // Parameter determining the type of Photos data to render.
 extern const char kNtpPhotosModuleDataParam[];
 // Parameter determining the art work in opt-in card.
@@ -180,7 +191,9 @@ extern const char kNtpHistoryClustersModuleCategoriesBoostlistParam[];
 // Parameter for setting the maximum number of candidate clusters for the
 // History Clusters Service to return.
 extern const char kNtpHistoryClustersModuleMaxClustersParam[];
+extern const char kNtpHistoryClustersModuleScoreThresholdParam[];
 extern const char kNtpRealboxWidthBehaviorParam[];
+extern const char kNtpTabResumptionModuleDataParam[];
 
 // Returns the timeout after which the load of a module should be aborted.
 base::TimeDelta GetModulesLoadTimeout();

@@ -210,6 +210,7 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   void DisableAnimations();
   void EnableAnimations();
   bool animations_are_enabled() const { return animations_are_enabled_; }
+  bool IsAnimating() const { return animation_started_; }
 
   cc::AnimationTimeline* GetAnimationTimeline() const;
 
@@ -506,6 +507,11 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
 
   size_t saved_events_metrics_count_for_testing() const {
     return host_->saved_events_metrics_count_for_testing();
+  }
+
+  // Returns true if there are throughput trackers.
+  bool has_throughput_trackers_for_testing() const {
+    return !throughput_tracker_map_.empty();
   }
 
  private:

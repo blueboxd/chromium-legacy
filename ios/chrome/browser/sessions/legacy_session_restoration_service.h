@@ -13,8 +13,10 @@
 #include "base/sequence_checker.h"
 #include "ios/chrome/browser/sessions/session_restoration_observer.h"
 #include "ios/chrome/browser/sessions/session_restoration_service.h"
+#include "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer.h"
 
 @class SessionServiceIOS;
+@class WebSessionStateCache;
 namespace sessions {
 class TabRestoreService;
 }  // namespace sessions
@@ -24,14 +26,15 @@ class TabRestoreService;
 // feature is disabled.
 //
 // TODO(crbug.com/1383087): Remove when the feature is fully launched.
-class LegacySessionRestorationService final
-    : public SessionRestorationService,
-      public SessionRestorationObserver {
+class LegacySessionRestorationService final : public SessionRestorationService,
+                                              public SessionRestorationObserver,
+                                              public WebStateListObserver {
  public:
   LegacySessionRestorationService(
       bool is_pinned_tabs_enabled,
       const base::FilePath& storage_path,
       SessionServiceIOS* session_service_ios,
+      WebSessionStateCache* web_session_state_cache,
       sessions::TabRestoreService* tab_restore_service);
 
   ~LegacySessionRestorationService() final;
@@ -54,12 +57,18 @@ class LegacySessionRestorationService final
                                       base::OnceClosure closure) final;
   void InvokeClosureWhenBackgroundProcessingDone(
       base::OnceClosure closure) final;
+  void PurgeUnassociatedData(base::OnceClosure closure) final;
 
   // SessionRestorationObserver implementation.
   void WillStartSessionRestoration(Browser* browser) final;
   void SessionRestorationFinished(
       Browser* browser,
       const std::vector<web::WebState*>& restored_web_states) final;
+
+  // WebStateListObserver implementation.
+  void WebStateListDidChange(WebStateList* web_state_list,
+                             const WebStateListChange& change,
+                             const WebStateListStatus& status) final;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);
@@ -77,6 +86,9 @@ class LegacySessionRestorationService final
 
   // Service used to schedule and save the data to storage.
   __strong SessionServiceIOS* session_service_ios_ = nil;
+
+  // Service used to manage WKWebView native session storage.
+  __strong WebSessionStateCache* web_session_state_cache_ = nil;
 
   // Pointer to the TabRestoreService used to report closed tabs if the
   // session migration fails.

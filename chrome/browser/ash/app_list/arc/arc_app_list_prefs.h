@@ -38,6 +38,7 @@ class Profile;
 
 namespace arc {
 class ArcAppMetricsUtil;
+class ArcPackageInstallPriorityHandler;
 class ArcPackageSyncableService;
 template <typename InstanceType, typename HostType>
 class ConnectionHolder;
@@ -58,6 +59,13 @@ class PrefRegistrySyncable;
 namespace app_list::test {
 class ArcAppShortcutsSearchProviderTest;
 }  // namespace app_list::test
+
+// Indicates the source of updating package prefs.
+enum class UpdatePackagePrefsReason {
+  kOnPackageAdded,
+  kOnPackageModified,
+  kOnPackageListRefreshed
+};
 
 // Declares shareable ARC app specific preferences, that keep information
 // about app attributes (name, package_name, activity) and its state. This
@@ -487,6 +495,12 @@ class ArcAppListPrefs : public KeyedService,
 
   arc::mojom::AppCategory GetAppCategory(const std::string& app_id) const;
 
+  arc::ArcPackageInstallPriorityHandler* GetInstallPriorityHandler();
+
+  // Update package prefs with |selected_locale| and notify app states changed.
+  void SetAppLocale(const std::string& package_name,
+                    const std::string& selected_locale);
+
  private:
   friend class ChromeShelfControllerTestBase;
   friend class ArcAppModelBuilderTest;
@@ -585,7 +599,8 @@ class ArcAppListPrefs : public KeyedService,
                          const absl::optional<uint64_t> data_size_in_bytes,
                          const arc::mojom::AppCategory app_category);
   // Adds or updates local pref for given package.
-  void AddOrUpdatePackagePrefs(const arc::mojom::ArcPackageInfo& package);
+  void AddOrUpdatePackagePrefs(const arc::mojom::ArcPackageInfo& package,
+                               const UpdatePackagePrefsReason& update_reason);
   // Removes given package from local pref.
   void RemovePackageFromPrefs(const std::string& package_name);
 
@@ -743,6 +758,8 @@ class ArcAppListPrefs : public KeyedService,
 
   bool default_apps_ready_ = false;
   std::unique_ptr<ArcDefaultAppList> default_apps_;
+  std::unique_ptr<arc::ArcPackageInstallPriorityHandler>
+      install_priority_handler_;
   base::OnceClosure default_apps_ready_callback_;
   // Set of packages installed by policy in case of managed user.
   std::set<std::string> packages_by_policy_;

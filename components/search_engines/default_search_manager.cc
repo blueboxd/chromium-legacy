@@ -88,6 +88,7 @@ const char DefaultSearchManager::kCreatedByPolicy[] = "created_by_policy";
 const char DefaultSearchManager::kDisabledByPolicy[] = "disabled_by_policy";
 const char DefaultSearchManager::kCreatedFromPlayAPI[] =
     "created_from_play_api";
+const char DefaultSearchManager::kFeaturedByPolicy[] = "featured_by_policy";
 const char DefaultSearchManager::kPreconnectToSearchUrl[] =
     "preconnect_to_search_url";
 const char DefaultSearchManager::kPrefetchLikelyNavigations[] =
@@ -226,6 +227,10 @@ void DefaultSearchManager::SetUserSelectedDefaultSearchEngine(
 
   pref_service_->SetDict(kDefaultSearchProviderDataPrefName,
                          TemplateURLDataToDictionary(data));
+#if BUILDFLAG(IS_ANDROID)
+  // Commit the pref immediately so it isn't lost if the app is killed.
+  pref_service_->CommitPendingWrite();
+#endif
 }
 
 void DefaultSearchManager::ClearUserSelectedDefaultSearchEngine() {

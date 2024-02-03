@@ -30,11 +30,10 @@ namespace display {
 class ContentProtectionManager;
 class DisplayMode;
 class DisplaySnapshot;
+class GammaCurve;
 class ManagedDisplayMode;
 class NativeDisplayDelegate;
 class UpdateDisplayConfigurationTask;
-
-struct GammaRampRGBEntry;
 
 namespace test {
 class DisplayManagerTestApi;
@@ -274,8 +273,8 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // Sets the given |gamma_lut| and |degamma_lut| on the display with
   // |display_id|.
   bool SetGammaCorrection(int64_t display_id,
-                          const std::vector<GammaRampRGBEntry>& degamma_lut,
-                          const std::vector<GammaRampRGBEntry>& gamma_lut);
+                          const GammaCurve& degamma,
+                          const GammaCurve& gamma);
 
   // Enable/disable the privacy screen on display with |display_id|.
   // For this to succeed, privacy screen must be supported by the display.
@@ -389,10 +388,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // Returns whether a configuration should occur on account of a pending VRR
   // request.
   bool ShouldConfigureVrr() const;
-
-  // Returns whether variable refresh rates are enabled on the internal display
-  // (if there is one).
-  bool IsVrrEnabledOnInternalDisplay() const;
 
   raw_ptr<StateController> state_controller_;
   raw_ptr<SoftwareMirroringController> mirroring_controller_;

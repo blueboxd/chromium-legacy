@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -23,6 +24,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -4765,7 +4767,7 @@ void DiskCacheBackendTest::BackendOpenOrCreateEntry() {
     EntryResult result =
         cache_->OpenOrCreateEntry("first", net::HIGHEST, callback.callback());
     ASSERT_EQ(net::ERR_IO_PENDING, result.net_error());
-    cache_ = nullptr;
+    ResetCaches();
 
     // Callback is supposed to be cancelled, so have to flush everything
     // to check for any trouble.
@@ -5482,3 +5484,155 @@ TEST_F(DiskCacheBackendTest, BlockfileEmptyIndex) {
   ASSERT_TRUE(rv.backend);
 }
 #endif
+
+// See https://crbug.com/1486958
+TEST_F(DiskCacheBackendTest, SimpleDoomIter) {
+  const int kEntries = 1000;
+
+  SetSimpleCacheMode();
+  // Note: this test relies on InitCache() making sure the index is ready.
+  InitCache();
+
+  // We create a whole bunch of entries so that deleting them will hopefully
+  // finish after the iteration, in order to reproduce timing for the bug.
+  for (int i = 0; i < kEntries; ++i) {
+    disk_cache::Entry* entry = nullptr;
+    ASSERT_THAT(CreateEntry(base::NumberToString(i), &entry), IsOk());
+    entry->Close();
+  }
+  RunUntilIdle();  // Make sure close completes.
+
+  auto iterator = cache_->CreateIterator();
+  base::RunLoop run_loop;
+
+  disk_cache::EntryResult result = iterator->OpenNextEntry(
+      base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
+        ASSERT_EQ(result.net_error(), net::OK);
+        disk_cache::Entry* entry = result.ReleaseEntry();
+        entry->Doom();
+        entry->Close();
+        run_loop.Quit();
+      }));
+  ASSERT_EQ(result.net_error(), net::ERR_IO_PENDING);
+  cache_->DoomAllEntries(base::DoNothing());
+  run_loop.Run();
+}
+
+// See https://crbug.com/1486958
+TEST_F(DiskCacheBackendTest, SimpleOpenIter) {
+  constexpr int kEntries = 50;
+
+  SetSimpleCacheMode();
+  // Note: this test relies on InitCache() making sure the index is ready.
+  InitCache();
+
+  // We create a whole bunch of entries so that deleting them will hopefully
+  // finish after the iteration, in order to reproduce timing for the bug.
+  for (int i = 0; i < kEntries; ++i) {
+    disk_cache::Entry* entry = nullptr;
+    ASSERT_THAT(CreateEntry(base::NumberToString(i), &entry), IsOk());
+    entry->Close();
+  }
+  RunUntilIdle();  // Make sure close completes.
+  EXPECT_EQ(kEntries, cache_->GetEntryCount());
+
+  // Iterate once to get the order.
+  base::queue<std::string> keys;
+  auto iterator = cache_->CreateIterator();
+  base::RunLoop run_loop;
+  base::RepeatingCallback<void(EntryResult)> collect_entry_key =
+      base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
+        if (result.net_error() == net::ERR_FAILED) {
+          run_loop.Quit();
+          return;  // iteration complete.
+        }
+        ASSERT_EQ(result.net_error(), net::OK);
+        disk_cache::Entry* entry = result.ReleaseEntry();
+        keys.push(entry->GetKey());
+        entry->Close();
+        result = iterator->OpenNextEntry(collect_entry_key);
+        EXPECT_EQ(result.net_error(), net::ERR_IO_PENDING);
+      });
+
+  disk_cache::EntryResult result = iterator->OpenNextEntry(collect_entry_key);
+  ASSERT_EQ(result.net_error(), net::ERR_IO_PENDING);
+  run_loop.Run();
+
+  // Open all entries with iterator...
+  int opened = 0;
+  int iter_opened = 0;
+  bool iter_done = false;
+  auto all_done = [&]() { return opened == kEntries && iter_done; };
+
+  iterator = cache_->CreateIterator();
+  base::RunLoop run_loop2;
+  base::RepeatingCallback<void(EntryResult)> handle_entry =
+      base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
+        ++iter_opened;
+        if (result.net_error() == net::ERR_FAILED) {
+          EXPECT_EQ(iter_opened - 1, kEntries);
+          iter_done = true;
+          if (all_done()) {
+            run_loop2.Quit();
+          }
+          return;  // iteration complete.
+        }
+        EXPECT_EQ(result.net_error(), net::OK);
+        result = iterator->OpenNextEntry(handle_entry);
+        EXPECT_EQ(result.net_error(), net::ERR_IO_PENDING);
+      });
+
+  result = iterator->OpenNextEntry(handle_entry);
+  ASSERT_EQ(result.net_error(), net::ERR_IO_PENDING);
+
+  // ... while simultaneously opening them via name.
+  auto handle_open_result =
+      base::BindLambdaForTesting([&](disk_cache::EntryResult result) {
+        if (result.net_error() == net::OK) {
+          ++opened;
+        }
+        if (all_done()) {
+          run_loop2.Quit();
+        }
+      });
+
+  base::RepeatingClosure open_one_entry = base::BindLambdaForTesting([&]() {
+    std::string key = keys.front();
+    keys.pop();
+    disk_cache::EntryResult result =
+        cache_->OpenEntry(key, net::DEFAULT_PRIORITY, handle_open_result);
+    if (result.net_error() != net::ERR_IO_PENDING) {
+      handle_open_result.Run(std::move(result));
+    }
+
+    if (!keys.empty()) {
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                               open_one_entry);
+    }
+  });
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                           open_one_entry);
+
+  run_loop2.Run();
+
+  // Should not have eaten any entries.
+  EXPECT_EQ(kEntries, cache_->GetEntryCount());
+}
+
+// Make sure that if we close an entry in callback from open/create we do not
+// trigger dangling pointer warnings.
+TEST_F(DiskCacheBackendTest, BlockFileImmediateCloseNoDangle) {
+  InitCache();
+  base::RunLoop run_loop;
+  EntryResult result =
+      cache_->CreateEntry("some key", net::HIGHEST,
+                          base::BindLambdaForTesting([&](EntryResult result) {
+                            ASSERT_EQ(result.net_error(), net::OK);
+                            result.ReleaseEntry()->Close();
+                            // Make sure the close actually happens now.
+                            disk_cache::BackendImpl::FlushForTesting();
+                            run_loop.Quit();
+                          }));
+  EXPECT_EQ(result.net_error(), net::ERR_IO_PENDING);
+  run_loop.Run();
+}

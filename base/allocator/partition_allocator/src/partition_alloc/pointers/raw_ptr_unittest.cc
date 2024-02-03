@@ -168,6 +168,28 @@ static_assert([]() constexpr {
 }());
 #endif
 
+struct StructWithoutTypeBasedTraits {};
+struct BaseWithTypeBasedTraits {};
+struct DerivedWithTypeBasedTraits : BaseWithTypeBasedTraits {};
+
+namespace base::raw_ptr_traits {
+// `BaseWithTypeBasedTraits` and any derived classes have
+// `RawPtrTraits::kDummyForTest`.
+template <typename T>
+constexpr auto kTypeTraits<
+    T,
+    std::enable_if_t<std::is_base_of_v<BaseWithTypeBasedTraits, T>>> =
+    RawPtrTraits::kDummyForTest;
+}  // namespace base::raw_ptr_traits
+
+// `raw_ptr<T>` should have traits based on specialization of `kTypeTraits<T>`.
+static_assert(!ContainsFlags(raw_ptr<StructWithoutTypeBasedTraits>::Traits,
+                             base::RawPtrTraits::kDummyForTest));
+static_assert(ContainsFlags(raw_ptr<BaseWithTypeBasedTraits>::Traits,
+                            base::RawPtrTraits::kDummyForTest));
+static_assert(ContainsFlags(raw_ptr<DerivedWithTypeBasedTraits>::Traits,
+                            base::RawPtrTraits::kDummyForTest));
+
 // Don't use base::internal for testing raw_ptr API, to test if code outside
 // this namespace calls the correct functions from this namespace.
 namespace {
@@ -1585,12 +1607,15 @@ class BackupRefPtrTest : public testing::Test {
   }
 
   partition_alloc::PartitionAllocator allocator_ =
-      partition_alloc::PartitionAllocator(partition_alloc::PartitionOptions{
-          .backup_ref_ptr = partition_alloc::PartitionOptions::kEnabled,
-          .memory_tagging = {
-              .enabled = base::CPU::GetInstanceNoAllocation().has_mte()
-                             ? partition_alloc::PartitionOptions::kEnabled
-                             : partition_alloc::PartitionOptions::kDisabled}});
+      partition_alloc::PartitionAllocator([]() {
+        partition_alloc::PartitionOptions opts;
+        opts.backup_ref_ptr = partition_alloc::PartitionOptions::kEnabled;
+        opts.memory_tagging = {
+            .enabled = base::CPU::GetInstanceNoAllocation().has_mte()
+                           ? partition_alloc::PartitionOptions::kEnabled
+                           : partition_alloc::PartitionOptions::kDisabled};
+        return opts;
+      }());
 };
 
 TEST_F(BackupRefPtrTest, Basic) {
@@ -1720,7 +1745,7 @@ void RunBackupRefPtrImplAdvanceTest(
   protected_ptr += requested_size / 2;
   // end-of-allocation address should not cause an error immediately, but it may
   // result in the pointer being poisoned.
-  protected_ptr = protected_ptr + requested_size / 2;
+  protected_ptr = protected_ptr + (requested_size + 1) / 2;
 #if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
   EXPECT_DEATH_IF_SUPPORTED(*protected_ptr = ' ', "");
   protected_ptr -= 1;  // This brings the pointer back within
@@ -1736,7 +1761,7 @@ void RunBackupRefPtrImplAdvanceTest(
   // allocation, assign it explicitly to make sure the underlying implementation
   // doesn't "switch" to the next slot.
   protected_ptr = ptr + requested_size;
-  protected_ptr -= requested_size / 2;
+  protected_ptr -= (requested_size + 1) / 2;
   protected_ptr = protected_ptr - requested_size / 2;
   EXPECT_CHECK_DEATH(protected_ptr = protected_ptr - 1);
   EXPECT_CHECK_DEATH(protected_ptr -= 1);
@@ -1782,13 +1807,13 @@ TEST_F(BackupRefPtrTest, Advance) {
   size_t raw_size = 300003;
   ASSERT_GT(raw_size, partition_alloc::internal::MaxRegularSlotSpanSize());
   ASSERT_LE(raw_size, partition_alloc::internal::kMaxBucketed);
-  requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(slot_size);
+  requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(raw_size);
   RunBackupRefPtrImplAdvanceTest(allocator_, requested_size);
 
   // Same for direct map.
   raw_size = 1001001;
   ASSERT_GT(raw_size, partition_alloc::internal::kMaxBucketed);
-  requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(slot_size);
+  requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(raw_size);
   RunBackupRefPtrImplAdvanceTest(allocator_, requested_size);
 }
 

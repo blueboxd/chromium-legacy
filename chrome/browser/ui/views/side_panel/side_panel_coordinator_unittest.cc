@@ -52,6 +52,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/button_test_api.h"
@@ -80,11 +81,10 @@ std::unique_ptr<KeyedService> BuildSidePanelService(
 class SidePanelCoordinatorTest : public TestWithBrowserView {
  public:
   void SetUp() override {
-    SetUpFeatureList();
     TestWithBrowserView::SetUp();
 
-    AddTab(browser_view()->browser(), GURL("http://foo1.com"));
-    AddTab(browser_view()->browser(), GURL("http://foo2.com"));
+    AddTabToBrowser(GURL("http://foo1.com"));
+    AddTabToBrowser(GURL("http://foo2.com"));
 
     // Add a kSideSearch entry to the contextual registry for the first tab.
     browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
@@ -137,14 +137,6 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
               SidePanelEntry::Id::kSideSearch);
   }
 
-  virtual void SetUpFeatureList() {
-    // TODO(b/310047213): Fix tests from failing when companion enabled.
-    // Companion adds a contextual entry when the browser starts. Disable to
-    // prevent.
-    feature_list_.InitAndDisableFeature(
-        companion::features::internal::kSidePanelCompanion);
-  }
-
   void VerifyEntryExistenceAndValue(absl::optional<SidePanelEntry*> entry,
                                     SidePanelEntry::Id id) {
     ASSERT_TRUE(entry.has_value());
@@ -173,6 +165,15 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
 
   bool ComboboxViewExists() {
     return coordinator_->header_combobox_ != nullptr;
+  }
+
+  void AddTabToBrowser(const GURL& tab_url) {
+    AddTab(browser_view()->browser(), tab_url);
+    // Remove the companion entry if it present.
+    auto* registry =
+        SidePanelRegistry::Get(browser_view()->GetActiveWebContents());
+    registry->Deregister(
+        SidePanelEntry::Key(SidePanelEntry::Id::kSearchCompanion));
   }
 
  protected:
@@ -1763,6 +1764,8 @@ TEST_F(SidePanelCoordinatorTest, DeregisterAndReturnView) {
 class SidePanelPinningCoordinatorTest : public SidePanelCoordinatorTest {
  public:
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kSidePanelPinning, features::kChromeRefresh2023}, {});
     SidePanelCoordinatorTest::SetUp();
     content::WebContents* const web_contents =
         browser_view()->browser()->tab_strip_model()->GetWebContentsAt(0);
@@ -1800,13 +1803,6 @@ class SidePanelPinningCoordinatorTest : public SidePanelCoordinatorTest {
         base::BindRepeating(
             &SidePanelPinningCoordinatorTest::BuildPinnedToolbarActionsModel));
     return factories;
-  }
-
-  void SetUpFeatureList() override {
-    // TODO(b/310047213): Fix tests from failing when companion enabled.
-    scoped_feature_list_.InitWithFeatures(
-        {features::kSidePanelPinning},
-        {companion::features::internal::kSidePanelCompanion});
   }
 
   static std::unique_ptr<KeyedService> BuildPinnedToolbarActionsModel(
@@ -1964,8 +1960,8 @@ class SidePanelCoordinatorLoadingContentTest : public SidePanelCoordinatorTest {
   void SetUp() override {
     TestWithBrowserView::SetUp();
 
-    AddTab(browser_view()->browser(), GURL("http://foo1.com"));
-    AddTab(browser_view()->browser(), GURL("http://foo2.com"));
+    AddTabToBrowser(GURL("http://foo1.com"));
+    AddTabToBrowser(GURL("http://foo2.com"));
 
     coordinator_ = SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser());
     global_registry_ = SidePanelCoordinator::GetGlobalSidePanelRegistry(

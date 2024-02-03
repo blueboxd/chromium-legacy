@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Chromium'дун функцияларын жана өндүрүмдүүлүгүн өркүндөтүүгө жардам бериңиз</translation>
 <translation id="1513122820609681462">Chromium'ду демейки серепчи катары коюу</translation>
 <translation id="1531155317299575425">Chromium'га кирүү үчүн билдирмелерди көрсөтөт.</translation>
+<translation id="159029779861043703">Chromium Face ID'нин жардамы менен купуя маалыматтарыңызды коопсуз сактайт.</translation>
 <translation id="1591119736686995611">Chromium'дагы өтмөк торчосу ачылат.</translation>
+<translation id="1611584326765829247">Chromium'га топтомдоруңузга көз салууга уруксат бериңиз</translation>
 <translation id="1617663976202781617">Chromium шайкештирүүдөн алынган дайындар</translation>
 <translation id="1647558790457890304">Chromium'дун параметрлери</translation>
 <translation id="164952285225495380">Бул таңгакка мурунтан эле Chromium'да көз салынган.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">Chromium параметрлерин тескөө</translation>
 <translation id="2798503587425057129">Chromium'дагы окуу тизмесинде ачылат.</translation>
 <translation id="2843571538056574338">Автотолтуруу үчүн Chromium'ду колдонуу</translation>
-<translation id="2915596697727466327">Сырсөздөрүңүзгө уруксатсыз кирүүгө жол бербөө үчүн, Chromium кызматы Face ID функциясын колдонот.</translation>
 <translation id="2918709798697875261">Уюмуңуз Chromium'га кирбей турууңузду талап кылууда.</translation>
 <translation id="2942241131342758843">Шилтемелерди ачуу, виджеттерде издөө жана башка колдонмолордун сырсөздөрүн автоматтык түрдө толтуруу үчүн Chromium'ду демейки серепчи катары колдонуңуз</translation>
 <translation id="2977470724722393594">Chromium жаңырган</translation>
@@ -87,6 +88,7 @@
 <translation id="4195557071150719219">Chromium'дагы акыркы өтмөктөрдү көрүү</translation>
 <translation id="4408912345039114853">Chromium'да Коопсуздукту текшерүүнү иштетүү</translation>
 <translation id="4432744876818348753">Chromium'дун бардык мүмкүнчүлүктөрүн пайдалуу үчүн аккаунтуңузга кириңиз.</translation>
+<translation id="4498832288620833153">Киргизилген URL даректерин Chromium'дагы окуу тизмеңизге кошот.</translation>
 <translation id="452436063477828504">Google аккаунтуңуздагы Chromium маалыматын каалаган убакта колдоно аларыңызды текшериңиз</translation>
 <translation id="4555020257205549924">Бул функция иштетилгенде, Chromium Google Котормочу аркылуу башка тилдерде жазылган барактарды которууну сунуштайт. <ph name="BEGIN_LINK" />Көбүрөөк маалымат<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Төлөм ыкмаларынын параметрлерин Chromium'да ачат.</translation>
@@ -167,7 +169,6 @@
 <translation id="6911341667534646387">Google аккаунтуңуздагы Chromium маалыматын колдоно бериңиз</translation>
 <translation id="7006920032187763988">Сырсөздөрдү башкаргычка сакталган сырсөздөрдү iPad'дагы башка колдонмолордо колдонууга болот.</translation>
 <translation id="7018284295775193585">Chromium жаңырган жок</translation>
-<translation id="7025471822960602362">Chromium'да аныкталган таңгактарга көз салуу</translation>
 <translation id="7045244423563602563">Chromium'ду каалагандай ыңгайлаштырып алыңыз</translation>
 <translation id="7055269218854630176">Кирип жаткан аккаунтуңузду жана Chromium'дун колдонулушун уюмуңуз (<ph name="DOMAIN" />) тескейт. Администратор айрым функцияларды тууралап же чектеп коюшу мүмкүн.</translation>
 <translation id="7099326575020694068">Экранды бөлүп көрсөтүү режиминде Chromium камераны иштете албайт</translation>
@@ -197,6 +198,7 @@
 <translation id="7928628054454574139">Башка колдонмолордогу шилтемелер басылганда алар Chromium'да ачылсын</translation>
 <translation id="7931842119211730154">Chromium жабылганда, жашыруун өтмөктөрдү кулпулоо</translation>
 <translation id="7934404985878918282">Chromium'дагы окуу тизмесин көрүү</translation>
+<translation id="7971753607796745700">Окуу тизмесиндеги нерсени Chromium'га кошуу</translation>
 <translation id="7980860476903281594">Chromium кайда жүргөнүңүздү сиз уруксат берген сайттар менен бөлүшөт.</translation>
 <translation id="7995166854192397899">Сунуштар башка түзмөктөрүңүздө көргөн вебсайттардын негизинде көрсөтүлөт. Сунуштарды алуу үчүн бардык түзмөктөрүңүздө Chromium'га кириңиз.</translation>
 <translation id="800195749539500647">Chromium'дун бардык мүмкүнчүлүктөрүн колдонуңуз</translation>

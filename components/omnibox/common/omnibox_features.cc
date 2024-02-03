@@ -238,7 +238,7 @@ BASE_FEATURE(kDocumentProvider,
 // suggestions are available to all clients who meet the other requirements.
 BASE_FEATURE(kDocumentProviderNoSetting,
              "OmniboxDocumentProviderNoSetting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the requirement to be in an active Sync state is removed and
 // Drive suggestions are available to all clients who meet the other
@@ -272,12 +272,6 @@ BASE_FEATURE(kAdaptiveSuggestionsCount,
 BASE_FEATURE(kClipboardSuggestionContentHidden,
              "ClipboardSuggestionContentHidden",
              enabled_by_default_android_only);
-
-// If enabled, clipboard suggestion for distinct clip data will not show after
-// first use.
-BASE_FEATURE(kSuppressClipboardSuggestionAfterFirstUsed,
-             "SuppressClipboardSuggestionAfterFirstUsed",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, company entity icons may be replaced by a search loupe.
 BASE_FEATURE(kCompanyEntityIconAdjustment,

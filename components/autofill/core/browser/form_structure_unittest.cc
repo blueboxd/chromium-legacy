@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/functional/invoke.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -6731,8 +6731,7 @@ TEST_F(FormStructureTestImpl, ExperimentalServerPredictionsAreSeparate) {
 
 // Tests that ParseFieldTypesWithPatterns() sets (only) the PatternSource.
 TEST_P(FormStructureTest_ForPatternSource, ParseFieldTypesWithPatterns) {
-  FormData form;
-  test::CreateTestAddressFormData(&form);
+  FormData form = test::CreateTestAddressFormData();
   FormStructure form_structure(form);
   test_api(form_structure).ParseFieldTypesWithPatterns(pattern_source());
   ASSERT_THAT(form_structure.fields(), Not(IsEmpty()));
@@ -6788,7 +6787,7 @@ TEST_F(FormStructureTestImpl, DetermineRanks) {
   auto extract = [&form_structure](size_t (AutofillField::*fun)() const) {
     std::vector<size_t> result;
     for (const auto& field : form_structure.fields()) {
-      result.push_back(base::invoke(fun, *field));
+      result.push_back(std::invoke(fun, *field));
     }
     return result;
   };
@@ -6809,8 +6808,7 @@ TEST_F(FormStructureTestImpl, GetFormTypes_AutocompleteUnrecognized) {
   base::test::ScopedFeatureList feature(
       features::kAutofillPredictionsForAutocompleteUnrecognized);
 
-  FormData form;
-  test::CreateTestAddressFormData(&form);
+  FormData form = test::CreateTestAddressFormData();
   for (FormFieldData& field : form.fields) {
     field.parsed_autocomplete =
         AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized};
@@ -6871,13 +6869,26 @@ TEST_F(FormStructureTestImpl, SingleFieldEmailHeuristicsEnabled) {
 
 TEST_F(FormStructureTestImpl, EncodeUploadRequest_SetsInitialValueChanged) {
   FormData form = test::GetFormData(
-      {.fields = {{.role = NAME_FIRST},
-                  {.role = NAME_LAST, .value = u"Doe"},
-                  {.role = EMAIL_ADDRESS, .value = u"test@example.com"}}});
+      {.fields = {
+           // Field 1: Expect `initial_value_changed` not set because the field
+           // had no pre-filled value.
+           {.role = NAME_FIRST},
+           // Field 2: Expect `initial_value_changed == false` because `value`
+           // doesn't change.
+           {.role = NAME_LAST, .value = u"Doe"},
+           // Field 3: Expect `initial_value_changed == true` because `value` is
+           // changed (below).
+           {.role = EMAIL_ADDRESS, .value = u"test@example.com"},
+           // Field 4: Expect `initial_value_changed` not set because the field
+           // type resolves to `UNKNOWN_TYPE`.
+           {.role = USERNAME, .value = u"username"}}});
   // Form structure preserving the state from page load.
   FormStructure cached_form_structure(form);
   // Form structure containing the state on submit.
   FormStructure form_structure(form);
+
+  cached_form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                                nullptr);
 
   // Simulate user changed non-pre-filled field value.
   form_structure.field(0)->value = u"John";
@@ -6896,12 +6907,44 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_SetsInitialValueChanged) {
   ASSERT_EQ(uploads.size(), 1UL);
   const AutofillUploadContents& upload = uploads[0];
 
-  ASSERT_EQ(upload.field_size(), 3);
+  ASSERT_EQ(upload.field_size(), 4);
+  // Field 1.
   EXPECT_FALSE(upload.field(0).has_initial_value_changed());
+  // Field 2.
   EXPECT_TRUE(upload.field(1).has_initial_value_changed());
   EXPECT_FALSE(upload.field(1).initial_value_changed());
+  // Field 3.
   EXPECT_TRUE(upload.field(2).has_initial_value_changed());
   EXPECT_TRUE(upload.field(2).initial_value_changed());
+  // Field 4.
+  EXPECT_FALSE(upload.field(3).has_initial_value_changed());
+}
+
+// Tests that Autofill does not send votes for a field that was filled with
+// fallback.
+TEST_F(FormStructureTestImpl,
+       EncodeUploadRequest_SkipFieldsFilledWithFallback) {
+  FormData form = test::GetFormData({.fields = {{.role = NAME_FIRST}}});
+  FormStructure form_structure(form);
+
+  std::vector<AutofillUploadContents> uploads =
+      form_structure.EncodeUploadRequest(
+          /*available_field_types=*/{}, /*form_was_autofilled=*/false,
+          /*login_form_signature=*/"", /*observed_submission=*/true);
+  ASSERT_GE(uploads.size(), 1u);
+  AutofillUploadContents upload = uploads[0];
+  EXPECT_EQ(upload.field_size(), 1);
+
+  // Set the autofilled type of the field as something different from its
+  // classified type, representing that the field was filled using this type as
+  // fallback.
+  form_structure.field(0)->set_autofilled_type(NAME_FULL);
+  uploads = form_structure.EncodeUploadRequest(
+      /*available_field_types=*/{}, /*form_was_autofilled=*/false,
+      /*login_form_signature=*/"", /*observed_submission=*/true);
+  ASSERT_GE(uploads.size(), 1u);
+  upload = uploads[0];
+  EXPECT_EQ(upload.field_size(), 0);
 }
 
 }  // namespace autofill

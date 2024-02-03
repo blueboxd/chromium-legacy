@@ -807,7 +807,7 @@ class BrowserView : public BrowserWindow,
       const;
 
   // Create and open the tab search bubble.
-  void CreateTabSearchBubble() override;
+  void CreateTabSearchBubble(const int tab_index = -1) override;
   // Closes the tab search bubble if open for the given browser instance.
   void CloseTabSearchBubble() override;
 
@@ -996,6 +996,9 @@ class BrowserView : public BrowserWindow,
   // side panel. Should be called when the IPH backend is initialized or
   // whenever the touch mode changes.
   void MaybeShowReadingListInSidePanelIPH();
+
+  // Attempts to show IPH promo for experimental AI.
+  void MaybeShowExperimentalAIIPH();
 
   void UpdateWindowControlsOverlayEnabled();
 

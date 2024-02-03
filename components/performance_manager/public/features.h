@@ -127,6 +127,30 @@ enum class DiscardTabTreatmentOptions {
 // configuring performance settings.
 BASE_DECLARE_FEATURE(kPerformanceControlsSidePanel);
 
+// This enables the CPU performance interventions within the side panel.
+BASE_DECLARE_FEATURE(kPerformanceCPUIntervention);
+
+// This represents the duration that CPU must be over the threshold before
+// an intervention is triggered.
+extern const base::FeatureParam<base::TimeDelta> kCPUTimeOverThreshold;
+
+// If Chrome CPU utilization and System CPU utilization are both over the
+// specified percent thresholds then we will trigger an intervention.
+extern const base::FeatureParam<int> kCPUSystemPercentThreshold;
+extern const base::FeatureParam<int> kCPUChromePercentThreshold;
+
+// This enables the Memory performance interventions within the side panel.
+BASE_DECLARE_FEATURE(kPerformanceMemoryIntervention);
+
+// This represents the duration that Memory must be over the threshold before
+// an intervention is triggered.
+extern const base::FeatureParam<base::TimeDelta> kMemoryTimeOverThreshold;
+
+// If available Memory percent and bytes are both under the specified thresholds
+// then we will trigger an intervention.
+extern const base::FeatureParam<int> kMemoryFreePercentThreshold;
+extern const base::FeatureParam<int> kMemoryFreeBytesThreshold;
+
 #endif
 
 BASE_DECLARE_FEATURE(kPMProcessPriorityPolicy);
@@ -152,6 +176,13 @@ extern const base::FeatureParam<base::TimeDelta>
 // If true, runs the proactive discard policy in simulation mode (makes
 // discarding decisions and tracks success metrics but doesn't discard)
 extern const base::FeatureParam<bool> kProactiveDiscardingSimulationMode;
+
+// When enabled, Memory Saver supports the different modes defined in the
+// `ModalMemorySaverMode` enum.
+BASE_DECLARE_FEATURE(kModalMemorySaver);
+
+// When set, makes Memory Saver behave as the specified mode if it's  enabled.
+extern const base::FeatureParam<int> kModalMemorySaverMode;
 
 // Policy that evicts the BFCache of pages that become non visible or the
 // BFCache of all pages when the system is under memory pressure.

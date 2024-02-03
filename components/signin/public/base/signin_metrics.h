@@ -96,13 +96,19 @@ enum class ProfileSignout {
   // If the device lock is removed from an Android automotive device, the
   // current account is automatically signed out.
   kDeviceLockRemovedOnAutomotive = 28,
-
   // User revoked Sync from the Settings by pressing "Turn off" in the "Sync and
   // Google Services" page.
   kRevokeSyncFromSettings = 29,
-
+  // User was in the web-only signed in state in the UNO model and clicked to
+  // turn on sync, but cancelled the sync confirmation dialog so they are
+  // reverted to the initial state, signed out in the profile but keeping the
+  // account on the web only.
+  kCancelSyncConfirmationOnWebOnlySignedIn = 30,
+  // Profile signout when IdleTimeoutActions enterprise policy triggers sign
+  // out.
+  kIdleTimeoutPolicyTriggeredSignOut = 31,
   // Keep this as the last enum.
-  kMaxValue = kRevokeSyncFromSettings
+  kMaxValue = kIdleTimeoutPolicyTriggeredSignOut
 };
 
 // Enum values used for use with "Signin.AllAccessPointActions" histograms.
@@ -235,7 +241,7 @@ enum class ReauthAccessPoint {
   kPasswordSettings = 3,
   kGeneratePasswordDropdown = 4,
   kGeneratePasswordContextMenu = 5,
-  kPasswordMoveBubble = 6,
+  // kPasswordMoveBubble = 6, (deprecated)
   // The password save bubble *without* a destination picker, i.e. the password
   // was already saved locally.
   kPasswordSaveLocallyBubble = 7,

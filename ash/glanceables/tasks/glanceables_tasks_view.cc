@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/api/tasks/tasks_client.h"
+#include "ash/api/tasks/tasks_types.h"
 #include "ash/glanceables/common/glanceables_list_footer_view.h"
 #include "ash/glanceables/common/glanceables_progress_bar_view.h"
 #include "ash/glanceables/common/glanceables_view_id.h"
@@ -22,6 +23,7 @@
 #include "ash/style/icon_button.h"
 #include "ash/system/unified/glanceable_tray_child_bubble.h"
 #include "ash/system/unified/tasks_combobox_model.h"
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,6 +44,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "url/gurl.h"
 
@@ -199,13 +202,14 @@ void GlanceablesTasksView::ActionButtonPressed(TasksLaunchSource source) {
 }
 
 void GlanceablesTasksView::AddNewTaskButtonPressed() {
+  add_new_task_button_->SetState(views::Button::ButtonState::STATE_DISABLED);
   const auto* const active_task_list = tasks_combobox_model_->GetTaskListAt(
       task_list_combo_box_view_->GetSelectedIndex().value());
   // TODO(b/301253574): make sure there is only one view is in `kEdit` state.
-  auto* const pending_task = task_items_container_view_->AddChildViewAt(
+  pending_new_task_ = task_items_container_view_->AddChildViewAt(
       CreateTaskView(active_task_list->id, /*task=*/nullptr),
       /*index=*/0);
-  pending_task->UpdateTaskTitleViewForState(
+  pending_new_task_->UpdateTaskTitleViewForState(
       GlanceablesTaskView::TaskTitleViewState::kEdit);
   PreferredSizeChanged();
 }
@@ -328,16 +332,46 @@ void GlanceablesTasksView::MarkTaskAsCompleted(const std::string& task_list_id,
       task_list_id, task_id, completed);
 }
 
-void GlanceablesTasksView::SaveTask(const std::string& task_list_id,
-                                    const std::string& task_id,
-                                    const std::string& title) {
-  // TODO(b/301253574): show/hide `progress_bar_` and/or an error message.
-  auto* const client = Shell::Get()->glanceables_controller()->GetTasksClient();
+void GlanceablesTasksView::SaveTask(
+    const std::string& task_list_id,
+    const std::string& task_id,
+    const std::string& title,
+    api::TasksClient::OnTaskSavedCallback callback) {
   if (task_id.empty()) {
-    client->AddTask(task_list_id, title, base::DoNothing());
-  } else {
-    client->UpdateTask(task_list_id, task_id, title, base::DoNothing());
+    // Empty `task_id` applies only for `pending_new_task_`, meaning that the
+    // task has not yet been created. Verify that this task has a non-empty
+    // title, otherwise just delete the view from the scrollable container.
+    CHECK(pending_new_task_);
+    views::View* view_to_delete = pending_new_task_;
+    pending_new_task_ = nullptr;
+    add_new_task_button_->SetState(views::Button::ButtonState::STATE_NORMAL);
+    if (title.empty() && view_to_delete) {
+      task_items_container_view_->RemoveChildViewT(view_to_delete);
+      return;
+    }
   }
+
+  progress_bar_->UpdateProgressBarVisibility(/*visible=*/true);
+
+  auto* const client = Shell::Get()->glanceables_controller()->GetTasksClient();
+  auto on_task_saved =
+      base::BindOnce(&GlanceablesTasksView::OnTaskSaved,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+  if (task_id.empty()) {
+    client->AddTask(task_list_id, title, std::move(on_task_saved));
+  } else {
+    client->UpdateTask(task_list_id, task_id, title, std::move(on_task_saved));
+  }
+}
+
+void GlanceablesTasksView::OnTaskSaved(
+    api::TasksClient::OnTaskSavedCallback callback,
+    const api::Task* task) {
+  if (!task) {
+    // TODO(b/301253574): show error message.
+  }
+  progress_bar_->UpdateProgressBarVisibility(/*visible=*/false);
+  std::move(callback).Run(task);
 }
 
 BEGIN_METADATA(GlanceablesTasksView, views::View)

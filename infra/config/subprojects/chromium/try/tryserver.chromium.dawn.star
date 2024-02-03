@@ -4,7 +4,7 @@
 """Definitions of builders in the tryserver.chromium.swangle builder group."""
 
 load("//lib/branches.star", "branches")
-load("//lib/builders.star", "os", "reclient")
+load("//lib/builders.star", "cpu", "os", "reclient")
 load("//lib/consoles.star", "consoles")
 load("//lib/try.star", "try_")
 
@@ -125,6 +125,7 @@ try_.builder(
         "ci/Dawn Mac x64 DEPS Release (Intel)",
     ],
     os = os.MAC_ANY,
+    cpu = cpu.ARM64,
     gn_args = "ci/Dawn Mac x64 DEPS Builder",
     main_list_view = "try",
     test_presentation = resultdb.test_presentation(
@@ -293,11 +294,10 @@ try_.builder(
     mirrors = [
         "ci/Dawn Mac arm64 DEPS Release (Apple M2)",
     ],
-    # TODO(crbug.com/1435476): Switch to a dedicated M2 pool once we have
-    # allocated machines.
-    pool = "luci.chromium.gpu.mac.arm64.apple.m1.try",
+    pool = "luci.chromium.gpu.mac.arm64.apple.m2.try",
     builderless = True,
     os = os.MAC_ANY,
+    cpu = None,
     gn_args = "ci/Dawn Mac arm64 DEPS Release (Apple M2)",
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
@@ -309,11 +309,10 @@ try_.builder(
     mirrors = [
         "ci/Dawn Mac arm64 Release (Apple M2)",
     ],
-    # TODO(crbug.com/1435476): Switch to a dedicated M2 pool once we have
-    # allocated machines.
-    pool = "luci.chromium.gpu.mac.arm64.apple.m1.try",
+    pool = "luci.chromium.gpu.mac.arm64.apple.m2.try",
     builderless = True,
     os = os.MAC_ANY,
+    cpu = None,
     gn_args = "ci/Dawn Mac arm64 Release (Apple M2)",
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],

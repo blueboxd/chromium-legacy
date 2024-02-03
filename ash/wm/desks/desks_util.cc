@@ -7,7 +7,6 @@
 #include <array>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -22,6 +21,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 
@@ -172,7 +172,7 @@ const Desk* GetDeskForContext(aura::Window* context) {
 }
 
 bool ShouldDesksBarBeCreated() {
-  return !TabletMode::Get()->InTabletMode() ||
+  return !display::Screen::GetScreen()->InTabletMode() ||
          DesksController::Get()->desks().size() > 1;
 }
 
@@ -213,9 +213,8 @@ bool IsZOrderTracked(aura::Window* window) {
              ui::ZOrderLevel::kNormal;
 }
 
-absl::optional<size_t> GetWindowZOrder(
-    const std::vector<aura::Window*>& windows,
-    aura::Window* window) {
+std::optional<size_t> GetWindowZOrder(const std::vector<aura::Window*>& windows,
+                                      aura::Window* window) {
   size_t position = 0;
   for (aura::Window* w : base::Reversed(windows)) {
     if (IsZOrderTracked(w)) {
@@ -225,7 +224,7 @@ absl::optional<size_t> GetWindowZOrder(
     }
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 }  // namespace desks_util

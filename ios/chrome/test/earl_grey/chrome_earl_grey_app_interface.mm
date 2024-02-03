@@ -35,7 +35,7 @@
 #import "components/variations/variations_associated_data.h"
 #import "components/variations/variations_ids_provider.h"
 #import "ios/chrome/app/main_controller.h"
-#import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/default_browser/model/utils_test_support.h"
@@ -69,6 +69,7 @@
 #import "ios/chrome/test/app/window_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/public/provider/chrome/browser/lens/lens_api.h"
+#import "ios/public/provider/chrome/browser/signin/choice_api.h"
 #import "ios/testing/hardware_keyboard_util.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/testing/open_url_context.h"
@@ -1322,6 +1323,14 @@ base::RepeatingClosure ExpectNCall(uint32_t n, base::RepeatingClosure closure) {
       base::SysNSStringToUTF8(prefName).c_str(), value);
 }
 
++ (BOOL)prefWithNameIsDefaultValue:(NSString*)prefName {
+  std::string path = base::SysNSStringToUTF8(prefName);
+  const PrefService::Preference* pref =
+      chrome_test_util::GetOriginalBrowserState()->GetPrefs()->FindPreference(
+          path);
+  return pref->IsDefaultValue();
+}
+
 + (void)clearUserPrefWithName:(NSString*)prefName {
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->ClearPref(base::SysNSStringToUTF8(prefName));
@@ -1502,6 +1511,12 @@ int watchRunNumber = 0;
 + (void)copyURLToPasteBoard {
   UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
   pasteboard.URL = [NSURL URLWithString:@"chrome://version"];
+}
+
+#pragma mark - Default Search Engine Choice Screen Utilities
+
++ (BOOL)IsSearchEngineChoiceScreenEnabledFre {
+  return ios::provider::IsSearchEngineChoiceScreenEnabledFre();
 }
 
 #pragma mark - First Run Utilities

@@ -6,8 +6,11 @@
 #define MEDIA_GPU_V4L2_STATELESS_QUEUE_H_
 
 #include <set>
+#include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_frame.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/stateless/stateless_device.h"
@@ -35,6 +38,7 @@ class MEDIA_GPU_EXPORT BaseQueue {
  protected:
   bool AllocateBuffers(uint32_t num_planes);
   virtual std::string Description() = 0;
+  absl::optional<uint32_t> GetFreeBufferIndex();
 
   scoped_refptr<StatelessDevice> device_;
   const BufferType buffer_type_;
@@ -59,7 +63,12 @@ class MEDIA_GPU_EXPORT InputQueue : public BaseQueue {
       const gfx::Size resolution);
 
   InputQueue(scoped_refptr<StatelessDevice> device, VideoCodec codec);
+  bool SubmitCompressedFrameData(void* ctrls,
+                                 const void* data,
+                                 size_t length,
+                                 uint32_t frame_id);
   bool PrepareBuffers() override;
+  void Reclaim();
 
  private:
   bool SetupFormat(const gfx::Size resolution);
@@ -75,14 +84,24 @@ class MEDIA_GPU_EXPORT OutputQueue : public BaseQueue {
       scoped_refptr<StatelessDevice> device);
 
   OutputQueue(scoped_refptr<StatelessDevice> device);
+  ~OutputQueue() override;
+
   bool NegotiateFormat();
   bool PrepareBuffers() override;
 
+  Fourcc GetQueueFormat() const { return buffer_format_.fourcc; }
+  gfx::Size GetVideoResolution() const { return buffer_format_.resolution; }
+
  private:
+  scoped_refptr<VideoFrame> CreateVideoFrame(uint32_t index);
+
   std::string Description() override;
   uint32_t BufferMinimumCount() override;
 
   BufferFormat buffer_format_;
+
+  // Vector to hold |VideoFrame|s for the life of the queue.
+  std::vector<scoped_refptr<VideoFrame>> video_frames_;
 };
 
 }  // namespace media

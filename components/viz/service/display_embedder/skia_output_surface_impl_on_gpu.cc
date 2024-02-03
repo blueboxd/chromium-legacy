@@ -80,6 +80,7 @@
 #include "third_party/skia/include/gpu/graphite/Surface.h"
 #include "third_party/skia/include/private/chromium/GrDeferredDisplayList.h"
 #include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
+#include "ui/base/ozone_buildflags.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/gpu_fence_handle.h"
@@ -108,17 +109,13 @@
 #endif
 
 #if BUILDFLAG(IS_OZONE)
-#include "ui/ozone/buildflags.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
-#if BUILDFLAG(OZONE_PLATFORM_X11)
-#define USE_OZONE_PLATFORM_X11
-#endif
 #endif
 
 #if (BUILDFLAG(ENABLE_VULKAN) || BUILDFLAG(SKIA_USE_DAWN)) && \
-    defined(USE_OZONE_PLATFORM_X11)
+    BUILDFLAG(IS_OZONE_X11)
 #include "components/viz/service/display_embedder/skia_output_device_x11.h"
 #endif
 
@@ -1985,6 +1982,10 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       if (!gl_surface_) {
         return false;
       }
+
+      if (gl_surface_->SupportsSwapTimestamps()) {
+        gl_surface_->SetEnableSwapTimestamps();
+      }
     }
 
 #if BUILDFLAG(IS_MAC)
@@ -2112,7 +2113,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
         GetDidSwapBuffersCompleteCallback());
   }
   if (MayFallBackToSkiaOutputDeviceX11()) {
-#if defined(USE_OZONE_PLATFORM_X11)
+#if BUILDFLAG(IS_OZONE_X11)
     if (output_device) {
       output_device_ = std::move(output_device);
     } else {
@@ -2124,7 +2125,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     if (output_device_) {
       return true;
     }
-#endif  // BUILDFLAG(OZONE_PLATFORM_X11)
+#endif  // BUILDFLAG(IS_OZONE_X11)
   }
   if (!output_device) {
     return false;
@@ -2154,7 +2155,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
         shared_gpu_deps_->memory_tracker(),
         GetDidSwapBuffersCompleteCallback());
   } else {
-#if defined(USE_OZONE_PLATFORM_X11)
+#if BUILDFLAG(IS_OZONE_X11)
     // TODO(rivr): Set up a Vulkan swapchain so that Linux can also use
     // SkiaOutputDeviceDawn.
     if (MayFallBackToSkiaOutputDeviceX11()) {
@@ -2180,13 +2181,20 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
       }
       output_device_ = std::move(output_device);
     }
-#elif BUILDFLAG(IS_APPLE)
+#elif BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID)
     presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
+#if BUILDFLAG(IS_ANDROID)
+    // NOTE: The fallback case for SurfaceControl not being used is not yet
+    // supported.
+    // TODO(crbug.com/1505768): Get SkiaOutputDeviceDawn to work on Android and
+    // use it here if `presenter_` is null as is being done for Windows above.
+    CHECK(presenter_);
+#endif
 #if BUILDFLAG(IS_MAC)
     if (features::UseGpuVsync()) {
       presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
     }
-#endif
+#endif  // BUILDFLAG(IS_MAC)
     output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
         std::make_unique<OutputPresenterGL>(
             presenter_, dependency_, shared_image_factory_.get(),
@@ -2196,9 +2204,9 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
         GetDidSwapBuffersCompleteCallback());
 #else
     NOTREACHED_NORETURN();
-#endif
+#endif  // BUILDFLAG(IS_OZONE_X11)
   }
-#endif
+#endif  // BUILDFLAG(SKIA_USE_DAWN)
   return !!output_device_;
 }
 

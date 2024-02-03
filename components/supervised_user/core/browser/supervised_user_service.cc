@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/supervised_user/core/browser/kids_chrome_management_client.h"
@@ -120,16 +119,6 @@ std::string SupervisedUserService::GetSecondCustodianName() const {
   std::string name =
       user_prefs_->GetString(prefs::kSupervisedUserSecondCustodianName);
   return name.empty() ? GetSecondCustodianEmailAddress() : name;
-}
-
-bool SupervisedUserService::IsURLFilteringEnabled() const {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
-  return supervised_user::IsChildAccount(user_prefs_.get());
-#else
-  return supervised_user::IsChildAccount(user_prefs_.get()) &&
-         base::FeatureList::IsEnabled(
-             kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
-#endif
 }
 
 bool SupervisedUserService::HasACustodian() const {
@@ -395,20 +384,5 @@ bool SupervisedUserService::ShouldShowFirstTimeInterstitialBanner() const {
       static_cast<FirstTimeInterstitialBannerState>(
           user_prefs_->GetInteger(prefs::kFirstTimeInterstitialBannerState));
   return banner_state == FirstTimeInterstitialBannerState::kNeedToShow;
-}
-
-// Some Google-affiliated domains are not allowed to delete cookies for
-// supervised accounts.
-bool SupervisedUserService::IsCookieDeletionDisabled(const GURL& origin) const {
-  if (!base::FeatureList::IsEnabled(
-          supervised_user::kClearingCookiesKeepsSupervisedUsersSignedIn)) {
-    return false;
-  }
-
-  if (!supervised_user::IsChildAccount(user_prefs_.get())) {
-    return false;
-  }
-  return google_util::IsYoutubeDomainUrl(origin, google_util::ALLOW_SUBDOMAIN,
-                                         google_util::ALLOW_NON_STANDARD_PORTS);
 }
 }  // namespace supervised_user

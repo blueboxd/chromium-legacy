@@ -19,7 +19,6 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/base/features.h"
 #include "components/attribution_reporting/features.h"
-#include "components/permissions/features.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/features.h"
@@ -210,8 +209,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(features::kBrowserVerifiedUserActivationMouse)},
     {wf::EnableCompositeBGColorAnimation,
      raw_ref(features::kCompositeBGColorAnimation)},
-    {wf::EnableCompositeClipPathAnimation,
-     raw_ref(features::kCompositeClipPathAnimation)},
     {wf::EnableConsolidatedMovementXY,
      raw_ref(features::kConsolidatedMovementXY)},
     {wf::EnableCooperativeScheduling,
@@ -242,7 +239,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(blink::features::kSharedStorageAPIM118), kSetOnlyIfOverridden},
     {wf::EnableFedCmMultipleIdentityProviders,
      raw_ref(features::kFedCmMultipleIdentityProviders), kDefault},
-    {wf::EnableFedCmRevoke, raw_ref(features::kFedCmRevoke),
+    {wf::EnableFedCmDisconnect, raw_ref(features::kFedCmDisconnect),
      kSetOnlyIfOverridden},
     {wf::EnableFedCmSelectiveDisclosure,
      raw_ref(features::kFedCmSelectiveDisclosure), kDefault},
@@ -342,64 +339,78 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   // TODO(crbug/832393): Cleanup the inconsistency between custom WRF enabler
   // function and using feature string name with EnableFeatureFromString.
   const RuntimeFeatureToChromiumFeatureMap<const char*>
-      runtimeFeatureNameToChromiumFeatureMapping[] =
-  { {"AllowContentInitiatedDataUrlNavigations",
-     raw_ref(features::kAllowContentInitiatedDataUrlNavigations)},
-    {"AllowURNsInIframes", raw_ref(blink::features::kAllowURNsInIframes)},
-    {"AllowURNsInIframes", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-     kSetOnlyIfOverridden},
-    {"AllowURNsInIframes", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
-     kSetOnlyIfOverridden},
-    {"AttributionReporting", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-     kSetOnlyIfOverridden},
-    {"AttributionReporting",
-     raw_ref(features::kPrivacySandboxAdsAPIsM1Override), kSetOnlyIfOverridden},
-    {"AttributionReportingCrossAppWeb",
-     raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
-    {"AndroidDownloadableFontsMatching",
-     raw_ref(features::kAndroidDownloadableFontsMatching)},
+      runtimeFeatureNameToChromiumFeatureMapping[] = {
+          {"AllowContentInitiatedDataUrlNavigations",
+           raw_ref(features::kAllowContentInitiatedDataUrlNavigations)},
+          {"AllowURNsInIframes", raw_ref(blink::features::kAllowURNsInIframes)},
+          {"AllowURNsInIframes",
+           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+           kSetOnlyIfOverridden},
+          {"AllowURNsInIframes",
+           raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+           kSetOnlyIfOverridden},
+          {"AttributionReporting",
+           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+           kSetOnlyIfOverridden},
+          {"AttributionReporting",
+           raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+           kSetOnlyIfOverridden},
+          {"AttributionReportingCrossAppWeb",
+           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+           kSetOnlyIfOverridden},
+          {"AndroidDownloadableFontsMatching",
+           raw_ref(features::kAndroidDownloadableFontsMatching)},
 #if BUILDFLAG(IS_ANDROID)
-    {"CCTNewRFMPushBehavior", raw_ref(blink::features::kCCTNewRFMPushBehavior)},
+          {"CCTNewRFMPushBehavior",
+           raw_ref(blink::features::kCCTNewRFMPushBehavior)},
 #endif
-    {"CompressionDictionaryTransport",
-     raw_ref(network::features::kCompressionDictionaryTransport)},
-    {"CompressionDictionaryTransportBackend",
-     raw_ref(network::features::kCompressionDictionaryTransportBackend)},
-    {"CookieDeprecationFacilitatedTesting",
-     raw_ref(features::kCookieDeprecationFacilitatedTesting)},
-    {"Database", raw_ref(blink::features::kWebSQLAccess), kSetOnlyIfOverridden},
-    {"Fledge", raw_ref(blink::features::kFledge), kSetOnlyIfOverridden},
-    {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-     kSetOnlyIfOverridden},
-    {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
-     kSetOnlyIfOverridden},
+          {"CompressionDictionaryTransport",
+           raw_ref(network::features::kCompressionDictionaryTransport)},
+          {"CompressionDictionaryTransportBackend",
+           raw_ref(network::features::kCompressionDictionaryTransportBackend)},
+          {"CookieDeprecationFacilitatedTesting",
+           raw_ref(features::kCookieDeprecationFacilitatedTesting)},
+          {"Database", raw_ref(blink::features::kWebSQLAccess),
+           kSetOnlyIfOverridden},
+          {"Fledge", raw_ref(blink::features::kFledge), kSetOnlyIfOverridden},
+          {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+           kSetOnlyIfOverridden},
+          {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+           kSetOnlyIfOverridden},
 #if BUILDFLAG(USE_FONTATIONS_BACKEND)
-    {"FontationsFontBackend", raw_ref(blink::features::kFontationsFontBackend)},
+          {"FontationsFontBackend",
+           raw_ref(blink::features::kFontationsFontBackend)},
 #endif
-    {"FontSrcLocalMatching", raw_ref(features::kFontSrcLocalMatching)},
-    {"LegacyWindowsDWriteFontFallback",
-     raw_ref(features::kLegacyWindowsDWriteFontFallback)},
-    {"OriginIsolationHeader", raw_ref(features::kOriginIsolationHeader)},
-    {"PartitionedCookies", raw_ref(net::features::kPartitionedCookies)},
-    {"ReduceAcceptLanguage", raw_ref(network::features::kReduceAcceptLanguage)},
-    {"StorageAccessAPI", raw_ref(features::kFirstPartySets)},
-    {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-     kSetOnlyIfOverridden},
-    {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
-     kSetOnlyIfOverridden},
-    {"TopicsDocumentAPI", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-     kSetOnlyIfOverridden},
-    {"TopicsDocumentAPI", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
-     kSetOnlyIfOverridden},
-    {"TouchTextEditingRedesign", raw_ref(features::kTouchTextEditingRedesign)},
-    {"TrustedTypesFromLiteral", raw_ref(features::kTrustedTypesFromLiteral)},
-    {"WebSerialBluetooth",
-     raw_ref(features::kEnableBluetoothSerialPortProfileInSerialApi)},
-    {"MediaStreamTrackTransfer", raw_ref(features::kMediaStreamTrackTransfer)},
-    {"PrivateNetworkAccessPermissionPrompt",
-     raw_ref(network::features::kPrivateNetworkAccessPermissionPrompt),
-     kSetOnlyIfOverridden},
-    {"PermissionElement", raw_ref(permissions::features::kPermissionElement)} };
+          {"FontSrcLocalMatching", raw_ref(features::kFontSrcLocalMatching)},
+          {"LegacyWindowsDWriteFontFallback",
+           raw_ref(features::kLegacyWindowsDWriteFontFallback)},
+          {"OriginIsolationHeader", raw_ref(features::kOriginIsolationHeader)},
+          {"PartitionedCookies", raw_ref(net::features::kPartitionedCookies)},
+          {"ReduceAcceptLanguage",
+           raw_ref(network::features::kReduceAcceptLanguage)},
+          {"StorageAccessAPI", raw_ref(features::kFirstPartySets)},
+          {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+           kSetOnlyIfOverridden},
+          {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+           kSetOnlyIfOverridden},
+          {"TopicsDocumentAPI",
+           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+           kSetOnlyIfOverridden},
+          {"TopicsDocumentAPI",
+           raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+           kSetOnlyIfOverridden},
+          {"TouchTextEditingRedesign",
+           raw_ref(features::kTouchTextEditingRedesign)},
+          {"TrustedTypesFromLiteral",
+           raw_ref(features::kTrustedTypesFromLiteral)},
+          {"WebSerialBluetooth",
+           raw_ref(features::kEnableBluetoothSerialPortProfileInSerialApi)},
+          {"MediaStreamTrackTransfer",
+           raw_ref(features::kMediaStreamTrackTransfer)},
+          {"PrivateNetworkAccessPermissionPrompt",
+           raw_ref(network::features::kPrivateNetworkAccessPermissionPrompt),
+           kSetOnlyIfOverridden},
+          {"PermissionElement", raw_ref(features::kPermissionElement)}};
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
         *mapping.chromium_feature, mapping.option, [&mapping](bool enabled) {
@@ -589,16 +600,7 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
 // Ensures that the various ways of enabling/disabling features do not produce
 // an invalid configuration.
 void ResolveInvalidConfigurations() {
-  // Portals cannot be enabled without the support of the browser process.
-  if (!base::FeatureList::IsEnabled(blink::features::kPortals)) {
-    LOG_IF(WARNING, WebRuntimeFeatures::IsPortalsEnabled())
-        << "Portals cannot be enabled in this configuration. Use --"
-        << switches::kEnableFeatures << "=" << blink::features::kPortals.name
-        << " instead.";
-    WebRuntimeFeatures::EnablePortals(false);
-  }
-
-  // Fenced frames, like Portals, cannot be enabled without the support of the
+  // Fenced frames cannot be enabled without the support of the
   // browser process.
   if ((base::FeatureList::IsEnabled(features::kPrivacySandboxAdsAPIsOverride) ||
        base::FeatureList::IsEnabled(

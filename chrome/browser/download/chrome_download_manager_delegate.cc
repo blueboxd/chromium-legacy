@@ -30,6 +30,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -746,14 +747,12 @@ void ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal(
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item)
     return;
-  // This should be called only once.
-  base::RepeatingClosure callback = base::BindRepeating(
-      [](base::OnceClosure callback) { std::move(callback).Run(); },
-      base::Passed(&user_complete_callback));
-  if (ShouldCompleteDownload(item, callback)) {
-    // |callback| should not have run when ShouldCompleteDownload() returns
-    // true.
-    std::move(callback).Run();
+  auto [async_completion, sync_completion] =
+      base::SplitOnceCallback(std::move(user_complete_callback));
+  if (ShouldCompleteDownload(item, std::move(async_completion))) {
+    // If `ShouldCompleteDownload()` returns true, `async_completion` will never
+    // run.
+    std::move(sync_completion).Run();
   }
 }
 
@@ -1832,7 +1831,6 @@ void ChromeDownloadManagerDelegate::OnCheckDownloadAllowedComplete(
     bool storage_permission_granted,
     bool allow) {
   if (!storage_permission_granted) {
-    // UMA for this will be recorded in MobileDownload.StoragePermission.
   } else if (allow) {
     // Presumes all downloads initiated by navigation use this throttle and
     // nothing else does.
@@ -1893,6 +1891,9 @@ void ChromeDownloadManagerDelegate::OnManagerInitialized() {
 #if !BUILDFLAG(IS_ANDROID)
 void ChromeDownloadManagerDelegate::ScheduleCancelForEphemeralWarning(
     const std::string& guid) {
+  if (!download::IsDownloadBubbleEnabled()) {
+    return;
+  }
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ChromeDownloadManagerDelegate::CancelForEphemeralWarning,
@@ -1916,6 +1917,9 @@ void ChromeDownloadManagerDelegate::CancelForEphemeralWarning(
 }
 
 void ChromeDownloadManagerDelegate::CancelAllEphemeralWarnings() {
+  if (!download::IsDownloadBubbleEnabled()) {
+    return;
+  }
   content::DownloadManager::DownloadVector downloads;
   download_manager_->GetAllDownloads(&downloads);
   for (auto* download : downloads) {

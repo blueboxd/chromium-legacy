@@ -28,9 +28,10 @@
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/features.h"
+#include "ui/base/ui_base_features.h"
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/common/companion/visual_search/features.h"
+#include "chrome/common/companion/visual_query/features.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace {
@@ -169,13 +170,14 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
         {
 #if !BUILDFLAG(IS_ANDROID)
           features::kTrustSafetySentimentSurvey,
-          companion::visual_search::features::kVisualSearchSuggestions,
+          companion::visual_query::features::kVisualQuerySuggestions,
 #endif  // !BUILDFLAG(IS_ANDROID)
           blink::features::kBrowsingTopics,
           net::features::kTpcdMetadataGrants,
           net::features::kTpcdSupportSettings,
           features::kPersistentOriginTrials,
           features::kSidePanelPinning,
+          features::kChromeRefresh2023,
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
           omnibox::kOnDeviceTailModel,
           omnibox::kOnDeviceHeadProviderNonIncognito,

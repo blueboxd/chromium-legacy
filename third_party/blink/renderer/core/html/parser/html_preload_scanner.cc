@@ -196,7 +196,7 @@ class TokenPreloadScanner::StartTagScanner {
         Match(tag_impl_, html_names::kSourceTag) ||
         Match(tag_impl_, html_names::kLinkTag)) {
       source_size_ =
-          SizesAttributeParser(media_values_, String(), nullptr).length();
+          SizesAttributeParser(media_values_, String(), nullptr).Size();
       return;
     }
     if (!Match(tag_impl_, html_names::kInputTag) &&
@@ -738,7 +738,7 @@ class TokenPreloadScanner::StartTagScanner {
 
   void ParseSourceSize(const String& attribute_value) {
     source_size_ =
-        SizesAttributeParser(media_values_, attribute_value, nullptr).length();
+        SizesAttributeParser(media_values_, attribute_value, nullptr).Size();
     source_size_set_ = true;
   }
 
@@ -826,7 +826,6 @@ TokenPreloadScanner::TokenPreloadScanner(
       in_script_web_bundle_(false),
       seen_body_(false),
       seen_img_(false),
-      seen_potential_lcp_element_(false),
       template_count_(0),
       document_parameters_(std::move(document_parameters)),
       media_values_cached_data_(std::move(media_values_cached_data)),
@@ -963,7 +962,6 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
       const StringImpl* tag_impl = TagImplFor(token.Data());
       const bool potentially_lcp_element =
           lcp_element_matcher_.ObserveStartTagAndReportMatch(tag_impl, token);
-
       if (potentially_lcp_element) {
         seen_potential_lcp_element_ = true;
       }

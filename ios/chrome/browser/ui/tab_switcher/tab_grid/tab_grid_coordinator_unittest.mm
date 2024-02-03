@@ -79,10 +79,12 @@
 
 namespace {
 
+// Name of the directory where snapshots are saved.
+const char kIdentifier[] = "Identifier";
+
 void AddAgentsToBrowser(Browser* browser) {
   SnapshotBrowserAgent::CreateForBrowser(browser);
-  SnapshotBrowserAgent::FromBrowser(browser)->SetSessionID(
-      [[NSUUID UUID] UUIDString]);
+  SnapshotBrowserAgent::FromBrowser(browser)->SetSessionID(kIdentifier);
 }
 
 class TabGridCoordinatorTest : public BlockCleanupTest {
@@ -151,7 +153,6 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
 
     UIWindow* window = GetAnyKeyWindow();
 
-    // TODO(crbug.com/1414048): Add inactive browser.
     coordinator_ = [[TabGridCoordinator alloc]
                      initWithWindow:window
          applicationCommandEndpoint:OCMProtocolMock(
@@ -159,7 +160,7 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
         browsingDataCommandEndpoint:OCMProtocolMock(
                                         @protocol(BrowsingDataCommands))
                      regularBrowser:browser_.get()
-                    inactiveBrowser:nil
+                    inactiveBrowser:browser_->CreateInactiveBrowser()
                    incognitoBrowser:incognito_browser_.get()];
     coordinator_.animationsDisabledForTesting = YES;
 
@@ -202,7 +203,7 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
   // Browser for the coordinator.
   std::unique_ptr<Browser> browser_;
 
-  // Browser for the coordinator.
+  // Incognito browser for the coordinator.
   std::unique_ptr<Browser> incognito_browser_;
 
   // Scene state emulated in this test.

@@ -27,8 +27,9 @@ public class BoardingPassController {
         return new EmptyTabObserver() {
             @Override
             public void onPageLoadFinished(Tab tab, GURL url) {
-                Log.d(TAG, "page loaded for: " + url.getSpec());
-                // TODO(crbug/1502330): Trigger detection if url is in allowlist.
+                if (BoardingPassBridge.shouldDetect(url.getSpec())) {
+                    Log.d(TAG, "Detect boarding pass on url: %s", url.getSpec());
+                }
             }
         };
     }

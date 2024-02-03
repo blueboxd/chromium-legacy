@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include <atomic>
+#include <bit>
 #include <new>
 
 #include "build/build_config.h"
@@ -273,8 +274,7 @@ PA_ALWAYS_INLINE int ShimPosixMemalign(void** res,
                                        size_t size) {
   // posix_memalign is supposed to check the arguments. See tc_posix_memalign()
   // in tc_malloc.cc.
-  if (((alignment % sizeof(void*)) != 0) ||
-      !partition_alloc::internal::base::bits::IsPowerOfTwo(alignment)) {
+  if (((alignment % sizeof(void*)) != 0) || !std::has_single_bit(alignment)) {
     return EINVAL;
   }
   void* ptr = ShimMemalign(alignment, size, nullptr);
@@ -309,6 +309,11 @@ PA_ALWAYS_INLINE size_t ShimGetSizeEstimate(const void* address,
   const allocator_shim::AllocatorDispatch* const chain_head = GetChainHead();
   return chain_head->get_size_estimate_function(
       chain_head, const_cast<void*>(address), context);
+}
+
+PA_ALWAYS_INLINE size_t ShimGoodSize(size_t size, void* context) {
+  const allocator_shim::AllocatorDispatch* const chain_head = GetChainHead();
+  return chain_head->good_size_function(chain_head, size, context);
 }
 
 PA_ALWAYS_INLINE bool ShimClaimedAddress(void* address, void* context) {

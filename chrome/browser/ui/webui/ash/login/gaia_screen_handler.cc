@@ -16,6 +16,7 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -521,6 +522,13 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
           "isDeviceOwner",
           account_id == user_manager::UserManager::Get()->GetOwnerAccountId());
     }
+  } else if (gaia_path == WizardContext::GaiaPath::kReauth) {
+    // To ensure that no reauth request is sent when the email is unavailable,
+    // update the gaia path to the default.
+    gaia_path = WizardContext::GaiaPath::kDefault;
+    params.Set("gaiaPath", default_gaia_path);
+
+    base::debug::DumpWithoutCrashing();
   }
 
   if (!gaia_reauth_request_token_.empty()) {
@@ -741,20 +749,16 @@ void GaiaScreenHandler::HandleCompleteAuthenticationEvent(
   signin_artifacts.sync_trusted_vault_keys =
       GetSyncTrustedVaultKeysForUserContext(sync_trusted_vault_keys, gaia_id);
 
-  // Clear collected passwords if a client certificate was used.
-  if (IsSamlUserPasswordless()) {
-    // In the passwordless case, the user data will be protected by non password
-    // based mechanisms. Clear anything that got collected into passwords.
+  // Special case when client certificates are used (SmartCard flow)
+  if (using_saml && ClientCertificatesWereUsed()) {
+    // Clear anything that got collected into passwords since the user data will
+    // be protected via the certificates instead.
     signin_artifacts.scraped_saml_passwords.reset();
     signin_artifacts.password.reset();
-  }
 
-  // Retrieve ChallengeResponseKey from client certificates. Show signin fatal
-  // error if there is an issue retrieving.
-  if (using_saml && IsSamlUserPasswordless()) {
+    // Try to extract the certificate. Failure to do so is fatal at this point.
     auto challenge_response_key_or_error = login::ExtractClientCertificates(
         *extension_provided_client_cert_usage_observer_);
-    // Signin Fatal Error
     if (!challenge_response_key_or_error.has_value()) {
       LoginDisplayHost::default_host()->GetSigninUI()->ShowSigninError(
           challenge_response_key_or_error.error(), /*details=*/std::string());
@@ -789,8 +793,12 @@ void GaiaScreenHandler::CompleteAuthWithCookies(
 void GaiaScreenHandler::RecordCompleteAuthenticationMetrics(
     const ash::login::OnlineSigninArtifacts& signin_artifacts) {
   if (!signin_artifacts.using_saml) {
-    base::UmaHistogramEnumeration("OOBE.GaiaScreen.SuccessLoginRequests",
-                                  login_request_variant_);
+    if (LoginDisplayHost::default_host()) {
+      LoginDisplayHost::default_host()
+          ->GetOobeMetricsHelper()
+          ->RecordGaiaSignInCompleted(login_request_variant_);
+    }
+
     // Report whether the password has characters ignored by Gaia
     // (leading/trailing whitespaces).
     base::UmaHistogramBoolean(
@@ -800,7 +808,7 @@ void GaiaScreenHandler::RecordCompleteAuthenticationMetrics(
   }
 
   if (signin_artifacts.using_saml && !using_saml_api_ &&
-      !IsSamlUserPasswordless()) {
+      !signin_artifacts.challenge_response_key.has_value()) {
     RecordScrapedPasswordCount(
         signin_artifacts.scraped_saml_passwords.has_value()
             ? signin_artifacts.scraped_saml_passwords.value().size()
@@ -841,7 +849,7 @@ void GaiaScreenHandler::CompleteAuthentication(
   if (login::IsFamilyLinkAllowed() &&
       !LoginDisplayHost::default_host()->IsUserAllowlisted(account_id,
                                                            user_type)) {
-    ShowAllowlistCheckFailedError();
+    LoginDisplayHost::default_host()->ShowAllowlistCheckFailedError();
     return;
   }
 
@@ -865,9 +873,10 @@ void GaiaScreenHandler::CompleteAuthentication(
   signin_artifacts.cookies->TransferCookiesToUserContext(*user_context);
 
   // Finish the authentication
-  bool confirm_saml_password = signin_artifacts.using_saml &&
-                               !signin_artifacts.password.has_value() &&
-                               !IsSamlUserPasswordless();
+  bool confirm_saml_password =
+      signin_artifacts.using_saml && !signin_artifacts.password.has_value() &&
+      !signin_artifacts.challenge_response_key.has_value();
+
   bool need_password_gaia =
       !signin_artifacts.using_saml &&
       signin_artifacts.password.value_or(std::string()).empty() &&
@@ -879,7 +888,8 @@ void GaiaScreenHandler::CompleteAuthentication(
     auto scraped_saml_passwords =
         signin_artifacts.scraped_saml_passwords.value_or(::login::StringList{});
     CHECK_NE(scraped_saml_passwords.size(), 1u);
-    SAMLConfirmPassword(scraped_saml_passwords, std::move(user_context));
+    LoginDisplayHost::default_host()->GetSigninUI()->SAMLConfirmPassword(
+        std::move(scraped_saml_passwords), std::move(user_context));
   } else {
     LoginDisplayHost::default_host()->CompleteLogin(*user_context);
   }
@@ -1046,8 +1056,11 @@ void GaiaScreenHandler::HandleUserRemoved(const std::string& email) {
 }
 
 void GaiaScreenHandler::HandlePasswordEntered() {
-  base::UmaHistogramEnumeration("OOBE.GaiaScreen.LoginRequests",
-                                login_request_variant_);
+  if (LoginDisplayHost::default_host()) {
+    LoginDisplayHost::default_host()
+        ->GetOobeMetricsHelper()
+        ->RecordGaiaSignInRequested(login_request_variant_);
+  }
 }
 
 void GaiaScreenHandler::HandleShowLoadingTimeoutError() {
@@ -1070,7 +1083,7 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
   // Retrieve ChallengeResponseKey from client certificates. Show signin fatal
   // error if there is an issue retrieving.
   absl::optional<ChallengeResponseKey> challenge_response_key;
-  if (using_saml && IsSamlUserPasswordless()) {
+  if (using_saml && ClientCertificatesWereUsed()) {
     auto challenge_response_key_or_error = login::ExtractClientCertificates(
         *extension_provided_client_cert_usage_observer_);
     // Signin Fatal Error
@@ -1326,7 +1339,7 @@ void GaiaScreenHandler::RecordScrapedPasswordCount(int password_count) {
                                 password_count, 11);
 }
 
-bool GaiaScreenHandler::IsSamlUserPasswordless() {
+bool GaiaScreenHandler::ClientCertificatesWereUsed() {
   return extension_provided_client_cert_usage_observer_ &&
          extension_provided_client_cert_usage_observer_->ClientCertsWereUsed();
 }
@@ -1365,12 +1378,6 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     DCHECK(LoginDisplayHost::default_host());
     LoginDisplayHost::default_host()->StartWizard(ResetView::kScreenId);
   }
-}
-
-void GaiaScreenHandler::ShowAllowlistCheckFailedError() {
-  // TODO(b/292242156) - Replace with exit code flow.
-  Reset();
-  LoginDisplayHost::default_host()->ShowAllowlistCheckFailedError();
 }
 
 void GaiaScreenHandler::ReloadGaiaAuthenticator() {
@@ -1636,13 +1643,6 @@ bool GaiaScreenHandler::IsGaiaHiddenByError() {
          (error_screen_->GetParentScreen() == GaiaView::kScreenId);
 }
 
-void GaiaScreenHandler::SAMLConfirmPassword(
-    ::login::StringList scraped_saml_passwords,
-    std::unique_ptr<UserContext> user_context) {
-  LoginDisplayHost::default_host()->GetSigninUI()->SAMLConfirmPassword(
-      std::move(scraped_saml_passwords), std::move(user_context));
-}
-
 void GaiaScreenHandler::CheckIfAllowlisted(const std::string& user_email) {
   // We cannot tell a user type from the identifier, so we delay checking if
   // the account should be allowed.
@@ -1656,7 +1656,7 @@ void GaiaScreenHandler::CheckIfAllowlisted(const std::string& user_email) {
           known_user.GetAccountId(user_email, std::string() /* id */,
                                   AccountType::UNKNOWN),
           absl::nullopt)) {
-    ShowAllowlistCheckFailedError();
+    LoginDisplayHost::default_host()->ShowAllowlistCheckFailedError();
   }
 }
 

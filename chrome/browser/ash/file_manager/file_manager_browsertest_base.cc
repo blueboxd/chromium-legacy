@@ -114,6 +114,7 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/pref_names.h"
@@ -158,6 +159,7 @@
 #include "google_apis/drive/drive_api_parser.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "storage/browser/file_system/copy_or_move_operation_delegate.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -255,6 +257,7 @@ struct AddEntriesMessage {
   // Represents the various volumes available for adding entries.
   enum TargetVolume {
     LOCAL_VOLUME,
+    MY_FILES,  // Same as Local Volume above.
     DRIVE_VOLUME,
     CROSTINI_VOLUME,
     GUEST_OS_VOLUME_0,  // GuestOS volume with provider id 0 (i.e. the first).
@@ -320,6 +323,8 @@ struct AddEntriesMessage {
                                       TargetVolume* volume) {
     if (value == "local") {
       *volume = LOCAL_VOLUME;
+    } else if (value == "my_files") {
+      *volume = MY_FILES;
     } else if (value == "drive") {
       *volume = DRIVE_VOLUME;
     } else if (value == "crostini") {
@@ -1126,6 +1131,11 @@ class DownloadsTestVolume : public LocalTestVolume {
 
   void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) override {
     base::FilePath target_path = GetFilePath(entry.target_path);
+    CreateEntryImpl(entry, target_path);
+  }
+
+  void CreateEntryAtRoot(const AddEntriesMessage::TestEntryInfo& entry) {
+    base::FilePath target_path = root_path().Append(entry.target_path);
     CreateEntryImpl(entry, target_path);
   }
 
@@ -2585,6 +2595,9 @@ void FileManagerBrowserTestBase::TearDownOnMainThread() {
   file_tasks_observer_.reset();
   select_factory_ = nullptr;
   ui::SelectFileDialog::SetFactory(nullptr);
+  if (error_url_.is_valid()) {
+    storage::CopyOrMoveOperationDelegate::SetErrorUrlForTest(nullptr);
+  }
 }
 
 void FileManagerBrowserTestBase::TearDown() {
@@ -2983,6 +2996,10 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     base::Value::Dict dictionary;
     dictionary.Set("downloads", "/" + downloads_root);
 
+    base::FilePath my_files =
+        file_manager::util::GetMyFilesFolderForProfile(profile());
+    dictionary.Set("my_files", my_files.MaybeAsASCII());
+
     if (!profile()->IsGuestSession()) {
       auto* drive_integration_service =
           drive::DriveIntegrationServiceFactory::GetForProfile(profile());
@@ -3034,6 +3051,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       switch (message.volume) {
         case AddEntriesMessage::LOCAL_VOLUME:
           local_volume_->CreateEntry(*message.entries[i]);
+          break;
+        case AddEntriesMessage::MY_FILES:
+          local_volume_->CreateEntryAtRoot(*message.entries[i]);
           break;
         case AddEntriesMessage::CROSTINI_VOLUME:
           CHECK(crostini_volume_);
@@ -3929,6 +3949,25 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         << "Couldn't find the SWA WebContents for appId: " << *app_id;
     web_contents = swa_web_contents_[*app_id];
     web_contents->Focus();
+    return;
+  }
+
+  if (name == "mockDriveReadFailure") {
+    const std::string path = "v2/root/" + *value.FindString("path");
+    base::FilePath user_data_directory;
+    base::PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
+    error_url_ = storage::FileSystemURL::CreateForTest(
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(
+            GURL("chrome://file-manager/external/" + path))),
+        /*mount_type*/ storage::kFileSystemTypeExternal,
+        /*virtual_path*/ base::FilePath(path),
+        /*mount_filesystem_id*/ {},
+        /*cracked_type*/ storage::kFileSystemTypeDriveFs,
+        /*cracked_path*/
+        user_data_directory.Append(base::FilePath("user/drive/" + path)),
+        /*filesystem_id*/ "v2",
+        /*mount_option*/ {});
+    storage::CopyOrMoveOperationDelegate::SetErrorUrlForTest(&error_url_);
     return;
   }
 

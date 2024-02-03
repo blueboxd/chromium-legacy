@@ -339,6 +339,7 @@
   E_CPONLY(kColorPipWindowSkipAdButtonBackground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBorder) \
   /* Profile Menu colors. */ \
+  E_CPONLY(kColorProfileMenuBackground) \
   E_CPONLY(kColorProfileMenuHeaderBackground) \
   E_CPONLY(kColorProfileMenuHeaderLabel) \
   E_CPONLY(kColorProfileMenuIconButton) \
@@ -584,6 +585,10 @@
   E_CPONLY(kColorTabSearchCardBackground) \
   E_CPONLY(kColorTabSearchBackground) \
   E_CPONLY(kColorTabSearchDivider) \
+  E_CPONLY(kColorTabSearchImageTabContentBottom) \
+  E_CPONLY(kColorTabSearchImageTabContentTop) \
+  E_CPONLY(kColorTabSearchImageTabText) \
+  E_CPONLY(kColorTabSearchImageWindowFrame) \
   E_CPONLY(kColorTabSearchMediaIcon) \
   E_CPONLY(kColorTabSearchMediaRecordingIcon) \
   E_CPONLY(kColorTabSearchPrimaryForeground) \
@@ -649,6 +654,9 @@
   E_CPONLY(kColorWebAuthnPinTextfieldBottomBorder) \
   E_CPONLY(kColorWebAuthnProgressRingBackground) \
   E_CPONLY(kColorWebAuthnProgressRingForeground) \
+  /* Signin bubble colors. */ \
+  E_CPONLY(kColorChromeSigninBubbleBackground) \
+  E_CPONLY(kColorChromeSigninBubbleInfoBackground) \
   /* Web contents colors. */ \
   E_CPONLY(kColorWebContentsBackground) \
   E_CPONLY(kColorWebContentsBackgroundLetterboxing) \

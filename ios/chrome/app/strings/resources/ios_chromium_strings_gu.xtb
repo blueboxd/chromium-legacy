@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">Chromiumની સુવિધાઓ અને કાર્યપ્રદર્શનને બહેતર બનાવવામાં સહાય કરો</translation>
 <translation id="1513122820609681462">Chromiumને ડિફૉલ્ટ બ્રાઉઝર તરીકે સેટ કરો</translation>
 <translation id="1531155317299575425">Chromiumમાં સાઇન ઇન કરવા માટેના સંકેતો બતાવો.</translation>
+<translation id="159029779861043703">Chromium ચહેરાના ID વડે તમારો સંવેદનશીલ વ્યક્તિગત ડેટા સુરક્ષિત રાખે છે.</translation>
 <translation id="1591119736686995611">Chromium ટૅબ ગ્રિડ ખોલે છે.</translation>
+<translation id="1611584326765829247">તમારા પૅકેજને ટ્રૅક કરવામાં Chromiumને તમારી સહાય કરવા દો</translation>
 <translation id="1617663976202781617">Chromium સિંકમાંનો ડેટા</translation>
 <translation id="1647558790457890304">Chromiumના સેટિંગ</translation>
 <translation id="164952285225495380">આ પૅકેજને Chromium પર પહેલેથી જ ટ્રૅક કરવામાં આવ્યું છે.</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">Chromiumના સેટિંગ મેનેજ કરો</translation>
 <translation id="2798503587425057129">Chromium વાંચન સૂચિ ખોલે છે.</translation>
 <translation id="2843571538056574338">ઑટોમૅટિક રીતે ભરવાની સુવિધા માટે Chromiumનો ઉપયોગ કરો</translation>
-<translation id="2915596697727466327">તમારા પાસવર્ડની અધિકૃત ઍક્સેસની ખાતરી કરવા માટે, Chromium ચહેરાના IDનો ઉપયોગ કરે છે.</translation>
 <translation id="2918709798697875261">તમારી સંસ્થા માટે જરૂરી છે કે તમે Chromiumમાં સાઇન આઉટ કરીને રાખો.</translation>
 <translation id="2942241131342758843">લિંક ખોલવા, વિજેટથી શોધવા અને અન્ય ઍપમાં પાસવર્ડ ઑટોમૅટિક રીતે ભરવાની સુવિધા માટે ડિફૉલ્ટ તરીકે Chromiumનો ઉપયોગ કરો</translation>
 <translation id="2977470724722393594">Chromium અપ ટૂ ડેટ છે</translation>
@@ -87,6 +88,7 @@
 <translation id="4195557071150719219">Chromiumના તાજેતરના ટૅબ જુઓ</translation>
 <translation id="4408912345039114853">Chromiumમાં સલામતી માટે તપાસ ચલાવો</translation>
 <translation id="4432744876818348753">Chromiumનો સૌથી વધુ લાભ મેળવવા માટે સાઇન ઇન કરો.</translation>
+<translation id="4498832288620833153">Chromiumમાં તમારી વાંચન સૂચિમાં ઇનપુટ કરેલા URLs ઉમેરે છે.</translation>
 <translation id="452436063477828504">ખાતરી કરો કે તમે હંમેશાં તમારા Google એકાઉન્ટમાં Chromiumના ડેટાનો ઉપયોગ કરી શકો</translation>
 <translation id="4555020257205549924">જ્યારે આ સુવિધા ચાલુ કરી હોય, ત્યારે Chromium, Google Translateનો ઉપયોગ કરીને અન્ય ભાષાઓમાં લખેલા પેજના અનુવાદ ઑફર કરશે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Chromiumમાં ચુકવણી પદ્ધતિઓનું સેટિંગ પેજ ખોલે છે.</translation>
@@ -167,7 +169,6 @@
 <translation id="6911341667534646387">તમારા Google એકાઉન્ટમાં Chromiumના ડેટાનો ઉપયોગ કરવાનું ચાલુ રાખો</translation>
 <translation id="7006920032187763988">તમે પાસવર્ડ મેનેજરમાં સાચવેલા તમારા પાસવર્ડનો ઉપયોગ તમારા iPad પરની અન્ય ઍપમાં કરી શકો છો.</translation>
 <translation id="7018284295775193585">Chromium અપડેટ થઈ શકતું નથી</translation>
-<translation id="7025471822960602362">Chromium પર ભાળ મેળવેલા પૅકેજને ટ્રૅક કરો</translation>
 <translation id="7045244423563602563">Chromium કસ્ટમાઇઝ કરો</translation>
 <translation id="7055269218854630176">તમે જેમાં સાઇન ઇન કરી રહ્યાં હો તે એકાઉન્ટને અને Chromiumના વપરાશની રીતને તમારી સંસ્થા <ph name="DOMAIN" /> મેનેજ કરે છે. તમારા ઍડમિનિસ્ટ્રેટર અમુક સુવિધાઓનું સેટઅપ અથવા તેને પ્રતિબંધિત કરી શકે છે.</translation>
 <translation id="7099326575020694068">Chromium, વિભાજિત વ્યૂ મોડમાં તમારા કૅમેરાનો ઉપયોગ કરી શકતુંં નથી</translation>
@@ -197,6 +198,7 @@
 <translation id="7928628054454574139">કોઈપણ સમયે તમે અન્ય ઍપમાં લિંક પર ટૅપ કરો ત્યારે Chromium ખૂલશે</translation>
 <translation id="7931842119211730154">તમે Chromium બંધ કરો, ત્યારે છૂપી ટૅબ લૉક કરો</translation>
 <translation id="7934404985878918282">Chromium વાંચન સૂચિ જુઓ</translation>
+<translation id="7971753607796745700">Chromiumમાં વાંચન સૂચિની આઇટમ ઉમેરો</translation>
 <translation id="7980860476903281594">Chromium તમે મંજૂરી આપો છો તે સાઇટ સાથે તમારા સ્થાનની માહિતી શેર કરે છે.</translation>
 <translation id="7995166854192397899">તમારા અન્ય ડિવાઇસ પરની તમારી બ્રાઉઝિંગ પ્રવૃત્તિના આધારે સૂચનો બતાવવામાં આવે છે. સૂચનો મેળવવા માટે, તમારા બધા ડિવાઇસ પર Chromiumમાં સાઇન ઇન કરો.</translation>
 <translation id="800195749539500647">Chromiumનો વધુને વધુ લાભ મેળવો</translation>

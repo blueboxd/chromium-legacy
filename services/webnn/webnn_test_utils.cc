@@ -169,6 +169,12 @@ void GraphInfoBuilder::BuildElementWiseBinary(
       mojom::Operation::NewElementWiseBinary(std::move(binary)));
 }
 
+void GraphInfoBuilder::BuildExpand(uint64_t input_operand_id,
+                                   uint64_t output_operand_id) {
+  graph_info_->operations.push_back(mojom::Operation::NewExpand(
+      mojom::Expand::New(input_operand_id, output_operand_id)));
+}
+
 void GraphInfoBuilder::BuildMatmul(uint64_t a_operand_id,
                                    uint64_t b_operand_id,
                                    uint64_t output_operand_id) {
@@ -189,6 +195,19 @@ void GraphInfoBuilder::BuildElementWiseUnary(mojom::ElementWiseUnary::Kind kind,
   unary->output_operand_id = output_operand;
   graph_info_->operations.push_back(
       mojom::Operation::NewElementWiseUnary(std::move(unary)));
+}
+
+void GraphInfoBuilder::BuildGather(uint64_t input_operand_id,
+                                   uint64_t indices_operand_id,
+                                   uint64_t output_operand_id,
+                                   uint32_t axis) {
+  mojom::GatherPtr gather = mojom::Gather::New();
+  gather->input_operand_id = input_operand_id;
+  gather->output_operand_id = output_operand_id;
+  gather->indices_operand_id = indices_operand_id;
+  gather->axis = axis;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewGather(std::move(gather)));
 }
 
 void GraphInfoBuilder::BuildPrelu(uint64_t input_operand_id,
@@ -269,6 +288,19 @@ void GraphInfoBuilder::BuildTranspose(uint64_t input_operand_id,
   transpose->permutation = std::move(permutation);
   graph_info_->operations.push_back(
       mojom::Operation::NewTranspose(std::move(transpose)));
+}
+
+void GraphInfoBuilder::BuildWhere(uint64_t condition_operand_id,
+                                  uint64_t true_value_operand_id,
+                                  uint64_t false_value_operand_id,
+                                  uint64_t output_operand_id) {
+  mojom::WherePtr where = mojom::Where::New();
+  where->condition_operand_id = condition_operand_id;
+  where->true_value_operand_id = true_value_operand_id;
+  where->false_value_operand_id = false_value_operand_id;
+  where->output_operand_id = output_operand_id;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewWhere(std::move(where)));
 }
 
 void GraphInfoBuilder::BuildSlice(uint64_t input_operand_id,

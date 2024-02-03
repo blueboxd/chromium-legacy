@@ -407,10 +407,8 @@ TEST_P(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
       // A non-locked process cannot access URL (because with
       // site-per-process all the URLs need to be isolated).
       EXPECT_FALSE(p->CanCommitURL(kRendererID, commit_url)) << commit_url;
-      EXPECT_FALSE(handle.CanCommitURL(commit_url)) << commit_url;
     } else {
       EXPECT_TRUE(p->CanCommitURL(kRendererID, commit_url)) << commit_url;
-      EXPECT_TRUE(handle.CanCommitURL(commit_url)) << commit_url;
     }
   }
 
@@ -431,7 +429,6 @@ TEST_P(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
   for (const auto& url_string : kFailedCommitURLs) {
     const GURL commit_url(url_string);
     EXPECT_FALSE(p->CanCommitURL(kRendererID, commit_url)) << commit_url;
-    EXPECT_FALSE(handle.CanCommitURL(commit_url)) << commit_url;
   }
 
   p->Remove(kRendererID);
@@ -3082,9 +3079,11 @@ TEST_P(ChildProcessSecurityPolicyTest, NoBrowsingInstanceIDs_OriginKeyed) {
     UrlInfo url_info(UrlInfoInit(foo.GetURL())
                          .WithOriginIsolationRequest(origin_isolation_request));
     scoped_refptr<SiteInstanceImpl> foo_instance =
-        SiteInstanceImpl::CreateForUrlInfo(&context, url_info,
-                                           /*is_guest=*/false,
-                                           /*is_fenced=*/false);
+        SiteInstanceImpl::CreateForUrlInfo(
+            &context, url_info,
+            /*is_guest=*/false,
+            /*is_fenced=*/false,
+            /*is_fixed_storage_partition=*/false);
 
     p->Add(kRendererID, &context);
     p->LockProcess(foo_instance->GetIsolationContext(), kRendererID,
@@ -3140,9 +3139,11 @@ TEST_P(ChildProcessSecurityPolicyTest, NoBrowsingInstanceIDs_SiteKeyed) {
 
     UrlInfo url_info(UrlInfoInit(foo.GetURL()));
     scoped_refptr<SiteInstanceImpl> foo_instance =
-        SiteInstanceImpl::CreateForUrlInfo(&context, url_info,
-                                           /*is_guest=*/false,
-                                           /*is_fenced=*/false);
+        SiteInstanceImpl::CreateForUrlInfo(
+            &context, url_info,
+            /*is_guest=*/false,
+            /*is_fenced=*/false,
+            /*is_fixed_storage_partition=*/false);
     p->LockProcess(foo_instance->GetIsolationContext(), kRendererID,
                    /*is_process_used=*/false,
                    ProcessLock::FromSiteInfo(foo_instance->GetSiteInfo()));

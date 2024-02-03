@@ -544,7 +544,7 @@ class LocationBarMediator
         }
 
         if (currentTab != null) {
-            boolean isCurrentTabNtpUrl = UrlUtilities.isNTPUrl(currentTab.getUrl());
+            boolean isCurrentTabNtpUrl = UrlUtilities.isNtpUrl(currentTab.getUrl());
             if (currentTab.isNativePage() || isCurrentTabNtpUrl) {
                 mOmniboxUma.recordNavigationOnNtp(
                         url, transition, !currentTab.isIncognito() && isCurrentTabNtpUrl);
@@ -717,10 +717,7 @@ class LocationBarMediator
         if (mIsTablet) {
             float urlFocusChangeFraction = showExpandedState ? 1.0f : 0.0f;
             mLocationBarLayout.setUrlFocusChangePercent(
-                    urlFocusChangeFraction,
-                    urlFocusChangeFraction,
-                    urlFocusChangeFraction,
-                    mIsUrlFocusChangeInProgress);
+                    urlFocusChangeFraction, urlFocusChangeFraction, urlFocusChangeFraction, false);
             mLocationBarLayout.updateLayoutParams(
                     MeasureSpec.makeMeasureSpec(
                             mLocationBarLayout.getMeasuredWidth(), MeasureSpec.EXACTLY));
@@ -868,8 +865,7 @@ class LocationBarMediator
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         // Only reset values if the animation is ending because it's completely
-                        // finished
-                        // and not because it was canceled.
+                        // finished and not because it was canceled.
                         if (locationBarTablet.getWidthChangeFraction() == 0.f) {
                             locationBarTablet.finishAnimatingWidthChange();
                             locationBarTablet.resetValuesAfterAnimation();
@@ -942,8 +938,7 @@ class LocationBarMediator
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         // Only reset values if the animation is ending because it's completely
-                        // finished
-                        // and not because it was canceled.
+                        // finished and not because it was canceled.
                         if (locationBarTablet.getWidthChangeFraction() == 1.f) {
                             locationBarTablet.finishAnimatingWidthChange();
                             locationBarTablet.resetValuesAfterAnimation();
@@ -1253,7 +1248,7 @@ class LocationBarMediator
         }
     }
 
-    // LocationBarData.Observer implementation
+    // LocationBarData.Observer implementation.
     // Using the default empty onSecurityStateChanged.
     // Using the default empty onTitleChanged.
 

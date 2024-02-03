@@ -10,7 +10,7 @@ import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
 import {installMockChrome, MockMetrics} from '../../common/js/mock_chrome.js';
 import {MockDirectoryEntry, MockEntry} from '../../common/js/mock_entry.js';
 import {waitUntil} from '../../common/js/test_error_reporting.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {RootType, VolumeType} from '../../common/js/volume_manager_types.js';
 import {addVolume, convertVolumeInfoAndMetadataToVolume, updateIsInteractiveVolume} from '../../state/ducks/volumes.js';
 import {createMyFilesDataWithVolumeEntry} from '../../state/ducks/volumes_unittest.js';
 import {createFakeVolumeMetadata, setUpFileManagerOnWindow, setupStore, waitDeepEquals} from '../../state/for_tests.js';
@@ -31,9 +31,8 @@ function getMetricName(metricIndex) {
 /**
  * Checks that the `toggle-holding-space` command is appropriately enabled/
  * disabled given the current selection state and executes as expected.
- * @param {()=>void} done
  */
-export async function testToggleHoldingSpaceCommand(done) {
+export async function testToggleHoldingSpaceCommand() {
   // Verify `toggle-holding-space` command exists.
   const command = CommandHandler.getCommand('toggle-holding-space');
   assertNotEquals(command, undefined);
@@ -66,14 +65,12 @@ export async function testToggleHoldingSpaceCommand(done) {
 
   // Create `DOWNLOADS` volume.
   const downloadsVolumeInfo = volumeManager.createVolumeInfo(
-      VolumeManagerCommon.VolumeType.DOWNLOADS, 'downloadsVolumeId',
-      'Downloads volume');
+      VolumeType.DOWNLOADS, 'downloadsVolumeId', 'Downloads volume');
   const downloadsFileSystem = downloadsVolumeInfo.fileSystem;
 
   // Create `REMOVABLE` volume.
   const removableVolumeInfo = volumeManager.createVolumeInfo(
-      VolumeManagerCommon.VolumeType.REMOVABLE, 'removableVolumeId',
-      'Removable volume');
+      VolumeType.REMOVABLE, 'removableVolumeId', 'Removable volume');
   const removableFileSystem = removableVolumeInfo.fileSystem;
 
   // Mock file/folder entries.
@@ -89,9 +86,9 @@ export async function testToggleHoldingSpaceCommand(done) {
   const testCases = [
     {
       description: 'Tests empty selection in `Downloads`',
-      currentRootType: VolumeManagerCommon.RootType.DOWNLOADS,
+      currentRootType: RootType.DOWNLOADS,
       currentVolumeInfo: {
-        volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
+        volumeType: VolumeType.DOWNLOADS,
       },
       itemUrls: [],
       selection: [],
@@ -103,9 +100,9 @@ export async function testToggleHoldingSpaceCommand(done) {
     },
     {
       description: 'Tests selection from supported volume in `Downloads`',
-      currentRootType: VolumeManagerCommon.RootType.DOWNLOADS,
+      currentRootType: RootType.DOWNLOADS,
       currentVolumeInfo: {
-        volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
+        volumeType: VolumeType.DOWNLOADS,
       },
       itemUrls: [],
       selection: [downloadFileEntry],
@@ -119,9 +116,9 @@ export async function testToggleHoldingSpaceCommand(done) {
     {
       description:
           'Tests folder selection from supported volume in `Downloads`',
-      currentRootType: VolumeManagerCommon.RootType.DOWNLOADS,
+      currentRootType: RootType.DOWNLOADS,
       currentVolumeInfo: {
-        volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
+        volumeType: VolumeType.DOWNLOADS,
       },
       itemUrls: [],
       selection: [folderEntry],
@@ -135,9 +132,9 @@ export async function testToggleHoldingSpaceCommand(done) {
     {
       description:
           'Tests pinned selection from supported volume in `Downloads`',
-      currentRootType: VolumeManagerCommon.RootType.DOWNLOADS,
+      currentRootType: RootType.DOWNLOADS,
       currentVolumeInfo: {
-        volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
+        volumeType: VolumeType.DOWNLOADS,
       },
       itemUrls: entriesToURLs([downloadFileEntry]),
       selection: [downloadFileEntry],
@@ -150,7 +147,7 @@ export async function testToggleHoldingSpaceCommand(done) {
     },
     {
       description: 'Tests selection from supported volume in `Recent`',
-      currentRootType: VolumeManagerCommon.RootType.RECENT,
+      currentRootType: RootType.RECENT,
       currentVolumeInfo: null,
       selection: [downloadFileEntry],
       itemUrls: [],
@@ -163,7 +160,7 @@ export async function testToggleHoldingSpaceCommand(done) {
     },
     {
       description: 'Test selection from unsupported volume in `Recent`',
-      currentRootType: VolumeManagerCommon.RootType.RECENT,
+      currentRootType: RootType.RECENT,
       currentVolumeInfo: null,
       itemUrls: [],
       selection: [removableFileEntry],
@@ -175,7 +172,7 @@ export async function testToggleHoldingSpaceCommand(done) {
     },
     {
       description: 'Test selection from mix of volumes in `Recent`',
-      currentRootType: VolumeManagerCommon.RootType.RECENT,
+      currentRootType: RootType.RECENT,
       currentVolumeInfo: null,
       itemUrls: [],
       selection: [audioFileEntry, removableFileEntry, downloadFileEntry],
@@ -270,16 +267,13 @@ export async function testToggleHoldingSpaceCommand(done) {
         testCase.expect.isAdd ? 'pin-to-holding-space' :
                                 'unpin-from-holding-space');
   }
-
-  done();
 }
 
 /**
  * Checks that the 'extract-all' command is enabled or disabled
  * dependent on the current selection.
- * @param {()=>void} done
  */
-export async function testExtractAllCommand(done) {
+export async function testExtractAllCommand() {
   // Check: `extract-all` command exists.
   const command = CommandHandler.getCommand('extract-all');
   assertNotEquals(command, undefined);
@@ -308,8 +302,7 @@ export async function testExtractAllCommand(done) {
 
   // Create `DOWNLOADS` volume.
   const downloadsVolumeInfo = volumeManager.createVolumeInfo(
-      VolumeManagerCommon.VolumeType.DOWNLOADS, 'downloadsVolumeId',
-      'Downloads volume');
+      VolumeType.DOWNLOADS, 'downloadsVolumeId', 'Downloads volume');
   const downloadsFileSystem = downloadsVolumeInfo.fileSystem;
 
   // Mock file entries.
@@ -343,7 +336,7 @@ export async function testExtractAllCommand(done) {
     directoryModel: {
       isOnNative: () => true,
       isReadOnly: () => false,
-      getCurrentRootType: () => VolumeManagerCommon.RootType.DOWNLOADS,
+      getCurrentRootType: () => RootType.DOWNLOADS,
     },
     metadataModel: {
       getCache: () => [],
@@ -417,15 +410,12 @@ export async function testExtractAllCommand(done) {
   zipCommand.canExecute(event, fileManager);
   assertTrue(event.canExecute);
   assertFalse(event.command.hidden);
-
-  done();
 }
 
 /**
  * Tests that rename command should be disabled for Recent entry.
- * @param {()=>void} done
  */
-export async function testRenameCommand(done) {
+export async function testRenameCommand() {
   // Check: `rename` command exists.
   const command = CommandHandler.getCommand('rename');
   assertNotEquals(command, undefined);
@@ -435,12 +425,11 @@ export async function testRenameCommand(done) {
 
   // Create `documents_root` volume.
   const documentsRootVolumeInfo = volumeManager.createVolumeInfo(
-      VolumeManagerCommon.VolumeType.MEDIA_VIEW,
+      VolumeType.MEDIA_VIEW,
       'com.android.providers.media.documents:documents_root', 'Documents');
 
   // Mock file entries.
-  const recentEntry =
-      new FakeEntryImpl('Recent', VolumeManagerCommon.RootType.RECENT);
+  const recentEntry = new FakeEntryImpl('Recent', RootType.RECENT);
   const pdfEntry = MockDirectoryEntry.create(
       documentsRootVolumeInfo.fileSystem, 'Documents/abc.pdf');
 
@@ -487,8 +476,6 @@ export async function testRenameCommand(done) {
   command.canExecute(event, fileManager);
   assertFalse(event.canExecute);
   assertFalse(event.command.hidden);
-
-  done();
 }
 
 /**
@@ -549,9 +536,8 @@ async function createAndAddNonInteractiveDownloadsVolume() {
  * disabled and hidden when there are no selected entries but the current
  * directory is on a non-interactive volume (e.g. when the blank space in a
  * non-interactive directory is right clicked).
- * @param {()=>void} done
  */
-export async function testCommandsForNonInteractiveVolumeAndNoEntries(done) {
+export async function testCommandsForNonInteractiveVolumeAndNoEntries() {
   const nonInteractiveVolumeInfo =
       await createAndAddNonInteractiveDownloadsVolume();
 
@@ -569,7 +555,7 @@ export async function testCommandsForNonInteractiveVolumeAndNoEntries(done) {
     directoryModel: {
       getCurrentDirEntry: () => null,
       // Navigate to the non-interactive volume.
-      getCurrentRootType: () => VolumeManagerCommon.RootType.DOWNLOADS,
+      getCurrentRootType: () => RootType.DOWNLOADS,
       getCurrentVolumeInfo: () => nonInteractiveVolumeInfo,
     },
     document: {
@@ -628,17 +614,14 @@ export async function testCommandsForNonInteractiveVolumeAndNoEntries(done) {
     assertFalse(event.canExecute);
     assertTrue(event.command.hidden);
   }
-
-  done();
 }
 
 /**
  * Tests that the paste, cut, copy, new-folder, delete, move-to-trash,
  * paste-into-folder, rename, extract-all and zip-selection commands should be
  * disabled and hidden for an entry on a non-interactive volume.
- * @param {()=>void} done
  */
-export async function testCommandsForEntriesOnNonInteractiveVolume(done) {
+export async function testCommandsForEntriesOnNonInteractiveVolume() {
   // Create non-interactive volume.
   const nonInteractiveVolumeInfo =
       await createAndAddNonInteractiveDownloadsVolume();
@@ -725,6 +708,4 @@ export async function testCommandsForEntriesOnNonInteractiveVolume(done) {
     assertFalse(event.canExecute);
     assertTrue(event.command.hidden);
   }
-
-  done();
 }

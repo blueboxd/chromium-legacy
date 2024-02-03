@@ -6,7 +6,6 @@
 
 #include <array>
 
-#include "base/base64.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/json/json_writer.h"
@@ -109,6 +108,20 @@ void Connection::Close(
     return;
   }
 
+  if (authenticated_ &&
+      reason ==
+          TargetDeviceConnectionBroker::ConnectionClosedReason::kUserAborted) {
+    // TODO(b/306422046): Verify the message is received despite closing the
+    // NearbyConnection immediately after.
+    SendMessageWithoutResponse(requests::BuildBootstrapStateCancelMessage(),
+                               QuickStartResponseType::kBootstrapStateCancel);
+  } else if (authenticated_ && reason ==
+                                   TargetDeviceConnectionBroker::
+                                       ConnectionClosedReason::kComplete) {
+    SendMessageWithoutResponse(requests::BuildBootstrapStateCompleteMessage(),
+                               QuickStartResponseType::kBootstrapStateComplete);
+  }
+
   connection_state_ = State::kClosing;
 
   // Update the disconnect listener to treat disconnections as the reason listed
@@ -154,12 +167,17 @@ void Connection::NotifySourceOfUpdate(NotifySourceOfUpdateCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void Connection::RequestAccountInfo(base::OnceClosure callback) {
+void Connection::RequestAccountInfo(RequestAccountInfoCallback callback) {
+  // During this roundtrip the source device may prompt the user to select an
+  // account before responding, so we will provide a very generous timeout. (In
+  // case, for example, the user has walked away after the verification step.)
+  constexpr base::TimeDelta timeout = base::Minutes(30);
   SendMessageAndDecodeResponse(
       requests::BuildBootstrapOptionsRequest(),
       QuickStartResponseType::kBootstrapConfigurations,
       base::BindOnce(&Connection::OnBootstrapConfigurationsResponse,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      timeout);
 }
 
 void Connection::RequestAccountTransferAssertion(
@@ -236,12 +254,15 @@ void Connection::OnRequestAccountTransferAssertionResponse(
   FidoAssertionInfo assertion_info;
   assertion_info.email = fido_response->email;
 
-  // The credential_id response is sent to us as raw bytes, Base64 encode them.
-  assertion_info.credential_id =
-      Base64String(base::Base64Encode(fido_response->credential_id));
+  // The credential_id response is sent to us as raw bytes, Base64Url encode
+  // them.
+  assertion_info.credential_id = Base64UrlEncode(fido_response->credential_id);
 
   assertion_info.authenticator_data = fido_response->auth_data;
   assertion_info.signature = fido_response->signature;
+  std::string client_data = client_data_->CreateJson();
+  assertion_info.client_data =
+      std::vector<uint8_t>(client_data.begin(), client_data.end());
 
   quick_start_metrics_.RecordGaiaTransferResult(
       /*succeeded=*/true, /*failure_reason=*/absl::nullopt);
@@ -250,16 +271,19 @@ void Connection::OnRequestAccountTransferAssertionResponse(
 }
 
 void Connection::OnBootstrapConfigurationsResponse(
-    base::OnceClosure callback,
+    RequestAccountInfoCallback callback,
     mojom::QuickStartMessagePtr quick_start_message) {
   if (!quick_start_message ||
       !quick_start_message->is_bootstrap_configurations()) {
-    std::move(callback).Run();
+    std::move(callback).Run("");
     return;
   }
   phone_instance_id_ =
       quick_start_message->get_bootstrap_configurations()->instance_id;
-  std::move(callback).Run();
+  is_supervised_account_ = quick_start_message->get_bootstrap_configurations()
+                               ->is_supervised_account;
+  std::move(callback).Run(
+      quick_start_message->get_bootstrap_configurations()->email);
 }
 
 void Connection::SendMessageAndDecodeResponse(
@@ -296,6 +320,18 @@ void Connection::SendMessageAndDiscardResponse(
       base::IgnoreArgs<absl::optional<std::vector<uint8_t>>>(
           std::move(callback)),
       timeout);
+}
+
+void Connection::SendMessageWithoutResponse(
+    std::unique_ptr<QuickStartMessage> message,
+    QuickStartResponseType message_type) {
+  std::string json_serialized_payload;
+  CHECK(base::JSONWriter::Write(*message->GenerateEncodedMessage(),
+                                &json_serialized_payload));
+  quick_start_metrics_.RecordMessageSent(
+      QuickStartMetrics::MapResponseToMessageType(message_type));
+  nearby_connection_->Write(std::vector<uint8_t>(
+      json_serialized_payload.begin(), json_serialized_payload.end()));
 }
 
 void Connection::SendBytesAndReadResponse(std::vector<uint8_t>&& bytes,

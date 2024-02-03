@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_coordinator.h"
+#import "ios/chrome/browser/ui/promos_manager/promos_manager_coordinator+Testing.h"
 
 #import <Foundation/Foundation.h>
 
@@ -41,6 +42,7 @@
 #import "ios/chrome/browser/ui/default_promo/post_restore/post_restore_default_browser_promo_provider.h"
 #import "ios/chrome/browser/ui/default_promo/promo_handler/default_browser_promo_display_handler.h"
 #import "ios/chrome/browser/ui/default_promo/promo_handler/default_browser_remind_me_later_promo_display_handler.h"
+#import "ios/chrome/browser/ui/first_run/omnibox_position/promo/omnibox_position_choice_display_handler.h"
 #import "ios/chrome/browser/ui/post_restore_signin/post_restore_signin_provider.h"
 #import "ios/chrome/browser/ui/promos_manager/bannered_promo_view_provider.h"
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_mediator.h"
@@ -187,24 +189,6 @@
   if (nextPromoForDisplay.has_value()) {
     [self displayPromo:nextPromoForDisplay.value()];
   }
-}
-
-- (void)dismissViewControllers {
-  if (self.viewController) {
-    [self.viewController.presentingViewController
-        dismissViewControllerAnimated:YES
-                           completion:nil];
-    self.viewController = nil;
-  }
-
-  if (self.banneredViewController) {
-    [self.banneredViewController.presentingViewController
-        dismissViewControllerAnimated:YES
-                           completion:nil];
-    self.banneredViewController = nil;
-  }
-
-  [self promoWasDismissed];
 }
 
 - (void)promoWasDismissed {
@@ -542,6 +526,24 @@
 
 #pragma mark - Private
 
+- (void)dismissViewControllers {
+  if (self.viewController) {
+    [self.viewController.presentingViewController
+        dismissViewControllerAnimated:YES
+                           completion:nil];
+    self.viewController = nil;
+  }
+
+  if (self.banneredViewController) {
+    [self.banneredViewController.presentingViewController
+        dismissViewControllerAnimated:YES
+                           completion:nil];
+    self.banneredViewController = nil;
+  }
+
+  [self promoWasDismissed];
+}
+
 - (void)registerPromos {
   // Add StandardPromoDisplayHandler promos here. For example:
   if (IsAppStoreRatingEnabled()) {
@@ -583,10 +585,10 @@
   _displayHandlerPromos[promos_manager::Promo::DefaultBrowserRemindMeLater] =
       [[DefaultBrowserRemindMeLaterPromoDisplayHandler alloc] init];
 
-  // Choice Promo handler
-  if (ios::provider::IsChoiceEnabled()) {
-    _displayHandlerPromos[promos_manager::Promo::Choice] =
-        ios::provider::CreateChoiceDisplayHandler();
+  // Omnibox position choice promo handler.
+  if (IsBottomOmniboxPromoFlagEnabled(BottomOmniboxPromoType::kAppLaunch)) {
+    _displayHandlerPromos[promos_manager::Promo::OmniboxPosition] =
+        [[OmniboxPositionChoiceDisplayHandler alloc] init];
   }
 }
 

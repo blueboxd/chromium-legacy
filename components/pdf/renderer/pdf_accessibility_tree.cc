@@ -175,6 +175,10 @@ void PdfOcrService::ReceiveOcrResultsForImage(
     PdfOcrRequest request,
     const ui::AXTreeUpdate& tree_update) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::UmaHistogramEnumeration("Accessibility.PdfOcr.PDFImages",
+                                PdfOcrRequestStatus::kPerformed);
+
   const bool is_last_on_page = request.is_last_on_page;
   batch_requests_.push_back(std::move(request));
   batch_tree_updates_.push_back(tree_update);
@@ -1856,8 +1860,6 @@ void PdfAccessibilityTree::DoSetAccessibilityPageInfo(
         !did_have_an_image_) {
       // In this case, PDF OCR doesn't run. Thus, set the status node to notify
       // users that the PDF content has been loaded into an accessibility tree.
-      // TODO(crbug.com/1473176): Consider merging the code below with
-      // `SetOcrCompleteStatus()`.
       SetStatusMessage(IDS_PDF_LOADED_TO_A11Y_TREE);
 
       UnserializeNodes();
@@ -2311,9 +2313,6 @@ void PdfAccessibilityTree::AccessibilityModeChanged(const ui::AXMode& mode) {
   if (ocr_service_) {
     return;
   }
-  // TODO(crbug.com/1443341): Ensure that ui::AXMode::kPDFOcr is set in the
-  // AXMode on Windows, Linux, and macOS only when both the PDF OCR pref and
-  // screen reader are on.
   CreateOcrService();
   always_load_or_reload_accessibility = true;
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -2364,9 +2363,6 @@ void PdfAccessibilityTree::OnOcrDataReceived(
       // can be some updates after this empty update in `tree_updates`.
       continue;
     }
-
-    base::UmaHistogramEnumeration("Accessibility.PdfOcr.PDFImages",
-                                  PdfOcrRequestStatus::kPerformed);
 
     // Update the flag if OCR extracted text from any images. This flag will be
     // used to update the status node to notify users of it.

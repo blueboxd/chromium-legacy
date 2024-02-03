@@ -166,8 +166,9 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
 
   // If swiftshader is being used, the blocklist should be ignored.
   if (!use_swift_shader &&
-      blocklisted_features.count(GPU_FEATURE_TYPE_GPU_RASTERIZATION))
+      blocklisted_features.count(GPU_FEATURE_TYPE_GPU_TILE_RASTERIZATION)) {
     return kGpuFeatureStatusBlocklisted;
+  }
 
   // Enable gpu rasterization for vulkan, unless it is overridden by
   // commandline.
@@ -234,11 +235,18 @@ GpuFeatureStatus GetCanvasOopRasterizationFeatureStatus(
     const base::CommandLine& command_line,
     const GpuPreferences& gpu_preferences,
     bool use_swift_shader) {
-  // Requires GPU rasterization
   if (GetGpuRasterizationFeatureStatus(blocklisted_features, command_line,
                                        use_swift_shader) !=
       kGpuFeatureStatusEnabled) {
-    return kGpuFeatureStatusDisabled;
+    // Originally OOP-C required GPU tile raster to be enabled. There are
+    // different GPU blocklist entries for gpu_tile_rasterization vs
+    // accelerated_2d_canvas. Devices with gpu_tile_rasterization blocked but
+    // not accelerated_2d_canvas would end up using the deprecated GL
+    // accelerated path.
+    if (!base::FeatureList::IsEnabled(
+            features::kCanvasOopWithoutGpuTileRaster)) {
+      return kGpuFeatureStatusDisabled;
+    }
   }
 
   // VDA video decoder on ChromeOS uses legacy mailboxes which is not compatible
@@ -434,7 +442,7 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE] =
       kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_TILE_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
       kGpuFeatureStatusSoftware;
@@ -468,7 +476,7 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE] =
       kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_TILE_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
       kGpuFeatureStatusDisabled;
@@ -502,7 +510,7 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE] =
       kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_TILE_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2] =
       kGpuFeatureStatusSoftware;
@@ -580,13 +588,13 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   }
 
 #if !BUILDFLAG(IS_CHROMEOS)
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_TILE_RASTERIZATION] =
       GetGpuRasterizationFeatureStatus(blocklisted_features, *command_line,
                                        use_swift_shader);
 #else
   // TODO(penghuang): call GetGpuRasterizationFeatureStatus() with
   // |use_swift_shader|.
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_TILE_RASTERIZATION] =
       GetGpuRasterizationFeatureStatus(blocklisted_features, *command_line,
                                        /*use_swift_shader=*/false);
 #endif

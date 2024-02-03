@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
@@ -17,20 +18,25 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 
-/**
- * Utility methods for the Minimized Custom Tab feature.
- */
+/** Utility methods for the Minimized Custom Tab feature. */
 public class MinimizedFeatureUtils {
+    public static final IntCachedFieldTrialParameter ICON_VARIANT =
+            new IntCachedFieldTrialParameter(ChromeFeatureList.CCT_MINIMIZED, "icon_variant", 0);
+
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
-    @IntDef({MinimizedFeatureAvailability.AVAILABLE,
-            MinimizedFeatureAvailability.UNAVAILABLE_API_LEVEL,
-            MinimizedFeatureAvailability.UNAVAILABLE_LOW_END_DEVICE,
-            MinimizedFeatureAvailability.UNAVAILABLE_SYSTEM_FEATURE,
-            MinimizedFeatureAvailability.UNAVAILABLE_PIP_PERMISSION,
-            MinimizedFeatureAvailability.NUM_ENTRIES})
+    @IntDef({
+        MinimizedFeatureAvailability.AVAILABLE,
+        MinimizedFeatureAvailability.UNAVAILABLE_API_LEVEL,
+        MinimizedFeatureAvailability.UNAVAILABLE_LOW_END_DEVICE,
+        MinimizedFeatureAvailability.UNAVAILABLE_SYSTEM_FEATURE,
+        MinimizedFeatureAvailability.UNAVAILABLE_PIP_PERMISSION,
+        MinimizedFeatureAvailability.NUM_ENTRIES
+    })
     @VisibleForTesting
     @interface MinimizedFeatureAvailability {
         int AVAILABLE = 0;
@@ -59,8 +65,7 @@ public class MinimizedFeatureUtils {
             return sIsMinimizedCustomTabAvailable;
         }
 
-        @MinimizedFeatureAvailability
-        int availability;
+        @MinimizedFeatureAvailability int availability;
 
         if (VERSION.SDK_INT < VERSION_CODES.O) {
             availability = MinimizedFeatureAvailability.UNAVAILABLE_API_LEVEL;
@@ -80,8 +85,10 @@ public class MinimizedFeatureUtils {
             sIsMinimizedCustomTabAvailable = ChromeFeatureList.sCctMinimized.isEnabled();
         }
 
-        RecordHistogram.recordEnumeratedHistogram("CustomTabs.MinimizedFeatureAvailability",
-                availability, MinimizedFeatureAvailability.NUM_ENTRIES);
+        RecordHistogram.recordEnumeratedHistogram(
+                "CustomTabs.MinimizedFeatureAvailability",
+                availability,
+                MinimizedFeatureAvailability.NUM_ENTRIES);
         ResettersForTesting.register(() -> sIsMinimizedCustomTabAvailable = null);
         return sIsMinimizedCustomTabAvailable;
     }
@@ -101,5 +108,9 @@ public class MinimizedFeatureUtils {
     public static void setMinimizeCustomTabAvailableForTesting(boolean availability) {
         sMinimizedCustomTabAvailableForTesting = availability;
         ResettersForTesting.register(() -> sMinimizedCustomTabAvailableForTesting = false);
+    }
+
+    public static @DrawableRes int getMinimizeIcon() {
+        return ICON_VARIANT.getValue() == 1 ? R.drawable.ic_pip_24dp : R.drawable.ic_minimize;
     }
 }

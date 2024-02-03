@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/find_in_page/model/find_tab_helper.h"
 #import "ios/chrome/browser/find_in_page/model/util.h"
-#import "ios/chrome/browser/main/browser_util.h"
+#import "ios/chrome/browser/main/model/browser_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_browser_agent.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
@@ -335,7 +335,10 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 - (void)stopChildCoordinatorsWithCompletion:(ProceduralBlock)completion {
   // A modal may be presented on top of the Recent Tabs or tab grid.
   [self.baseViewController dismissModals];
-  self.baseViewController.tabGridMode = TabGridModeNormal;
+  [self setActiveMode:TabGridModeNormal];
+
+  [_incognitoGridCoordinator stopChildCoordinators];
+  [_regularGridCoordinator stopChildCoordinators];
 
   [self dismissPopovers];
 
@@ -360,7 +363,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 }
 
 - (void)setActiveMode:(TabGridMode)mode {
-  self.baseViewController.tabGridMode = mode;
+  [_mediator setModeOnCurrentPage:mode];
 }
 
 - (UIViewController*)activeViewController {
@@ -525,7 +528,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
       // In search mode, the tabgrid mode is not reset before the animation so
       // the animation can start from the correct cell. Once the animation is
       // complete, reset the tab grid mode.
-      self.baseViewController.tabGridMode = TabGridModeNormal;
+      [self setActiveMode:TabGridModeNormal];
     }
     Browser* browser = self.bvcContainer.incognito ? self.incognitoBrowser
                                                    : self.regularBrowser;
@@ -1337,7 +1340,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 - (void)selectTabs {
   base::RecordAction(
       base::UserMetricsAction("MobileTabGridTabContextMenuSelectTabs"));
-  self.baseViewController.tabGridMode = TabGridModeSelection;
+  [self setActiveMode:TabGridModeSelection];
 }
 
 - (void)removeSessionAtTableSectionWithIdentifier:(NSInteger)sectionIdentifier {

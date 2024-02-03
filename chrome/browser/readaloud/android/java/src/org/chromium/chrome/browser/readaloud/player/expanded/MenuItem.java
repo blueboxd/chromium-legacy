@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.readaloud.player.expanded;
 
 import android.content.Context;
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -50,11 +50,12 @@ public class MenuItem extends FrameLayout {
     private final @Action int mActionType;
     private final Menu mMenu;
     private final LinearLayout mLayout;
+    private final ImageView mPlayButton;
+    private final ProgressBar mPlayButtonSpinner;
     private Callback<Boolean> mToggleHandler;
 
     /**
      * @param context Context.
-     * @param attrs Attribute set (could be from parent view).
      * @param parentMenu Menu to which this item belongs.
      * @param itemId Menu item's identifying number, to be used for handling clicks.
      * @param iconId Resource ID of an icon drawable. Pass 0 to show no icon.
@@ -63,14 +64,13 @@ public class MenuItem extends FrameLayout {
      */
     public MenuItem(
             Context context,
-            AttributeSet attrs,
             Menu parentMenu,
             int itemId,
             int iconId,
             String label,
             @Action int action,
             String contentDescription) {
-        super(context, attrs);
+        super(context);
         mMenu = parentMenu;
         mId = itemId;
         mActionType = action;
@@ -127,6 +127,9 @@ public class MenuItem extends FrameLayout {
                 break;
         }
         addView(layout);
+
+        mPlayButton = (ImageView) findViewById(R.id.play_button);
+        mPlayButtonSpinner = (ProgressBar) findViewById(R.id.spinner);
     }
 
     void setToggleHandler(Callback<Boolean> handler) {
@@ -134,13 +137,13 @@ public class MenuItem extends FrameLayout {
     }
 
     void addPlayButton() {
-        ImageView playButton = (ImageView) findViewById(R.id.play_button);
-        playButton.setVisibility(View.VISIBLE);
-        playButton.setOnClickListener(
+        mPlayButton.setVisibility(View.VISIBLE);
+        mPlayButton.setOnClickListener(
                 (view) -> {
                     mMenu.onPlayButtonClicked(mId);
                 });
     }
+
     void setItemEnabled(boolean enabled) {
         mLayout.setClickable(enabled);
         mLayout.setFocusable(enabled);
@@ -152,6 +155,24 @@ public class MenuItem extends FrameLayout {
         } else if (mActionType == Action.RADIO) {
             getRadioButton().setChecked(value);
         }
+    }
+
+    void showPlayButtonSpinner() {
+        mPlayButton.setVisibility(View.GONE);
+        mPlayButtonSpinner.setVisibility(View.VISIBLE);
+    }
+
+    void showPlayButton() {
+        mPlayButtonSpinner.setVisibility(View.GONE);
+        mPlayButton.setVisibility(View.VISIBLE);
+    }
+
+    void setPlayButtonStopped() {
+        mPlayButton.setImageResource(R.drawable.mini_play_button);
+    }
+
+    void setPlayButtonPlaying() {
+        mPlayButton.setImageResource(R.drawable.mini_pause_button);
     }
 
     private void setEndView(LinearLayout layout, View view) {

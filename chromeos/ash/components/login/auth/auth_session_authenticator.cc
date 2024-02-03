@@ -7,6 +7,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
@@ -283,6 +284,9 @@ void AuthSessionAuthenticator::DoCompleteLogin(
       steps.push_back(
           base::BindOnce(&AuthFactorEditor::AddContextChallengeResponseKey,
                          auth_factor_editor_->AsWeakPtr()));
+      steps.push_back(
+          base::BindOnce(&AuthSessionAuthenticator::RecordFirstAuthFactorAdded,
+                         weak_factory_.GetWeakPtr()));
     } else {
       if (ash::switches::AreEmptyPasswordsAllowedForForTesting()) {
         // Empty passwords are currently not supported in ChromeOS, and
@@ -323,11 +327,11 @@ void AuthSessionAuthenticator::DoCompleteLogin(
       // Password-based login
       if (ash::features::AreLocalPasswordsEnabledForConsumers()) {
         const auto& factors = context->GetAuthFactorsData();
-        if (!factors.FindOnlinePasswordFactor() &&
-            !factors.FindRecoveryFactor()) {
-          // User has knowledge factor other than online password and recovery
-          // flow can't be used
-          NotifyLocalAuthenticationRequired(std::move(context));
+        if (!factors.FindOnlinePasswordFactor()) {
+          // User has knowledge factor other than online password need
+          // to go through custom flow.
+          NotifyOnlinePasswordUnusable(std::move(context),
+                                       /*online_password_mismatch=*/false);
           return;
         }
       }
@@ -415,8 +419,19 @@ void AuthSessionAuthenticator::AuthenticateToUnlock(
     }
   }
 
+  AuthSessionIntent intent = AuthSessionIntent::kVerifyOnly;
+
+  // Full authentication is needed to restore keyset. It is only for
+  // non-ephemeral user sessions.
+  if (switches::ShouldRestoreKeyOnLockScreen() && !ephemeral) {
+    LOGIN_LOG(EVENT)
+        << "AuthenticateToUnlock starts AuthSession for decrypt to "
+           "restore keyset.";
+    intent = AuthSessionIntent::kDecrypt;
+  }
+
   StartAuthSessionForLoggedIn(
-      ephemeral, std::move(user_context), AuthSessionIntent::kVerifyOnly,
+      ephemeral, std::move(user_context), intent,
       base::BindOnce(&AuthSessionAuthenticator::DoUnlock,
                      weak_factory_.GetWeakPtr(), ephemeral));
 }
@@ -528,6 +543,11 @@ void AuthSessionAuthenticator::DoUnlock(
         base::BindOnce(&AuthPerformer::AuthenticateUsingKnowledgeKey,
                        auth_performer_->AsWeakPtr()));
   }
+  if (switches::ShouldRestoreKeyOnLockScreen() && !ephemeral) {
+    steps.push_back(base::BindOnce(&MountPerformer::RestoreEvictedVaultKey,
+                                   mount_performer_->AsWeakPtr()));
+  }
+
   RunOperationChain(std::move(context), std::move(steps),
                     std::move(success_callback), std::move(error_callback));
 }
@@ -1002,26 +1022,22 @@ void AuthSessionAuthenticator::HandlePasswordChangeDetected(
           error.get_cryptohome_code(),
           user_data_auth::CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED)) {
     LOGIN_LOG(EVENT) << "Password change detected";
-    if (!consumer_) {
-      return;
-    }
-    if (ash::features::IsCryptohomeRecoveryEnabled()) {
-      consumer_->OnPasswordChangeDetected(std::move(context));
-    } else {
-      consumer_->OnPasswordChangeDetectedLegacy(*context);
-    }
+    NotifyOnlinePasswordUnusable(std::move(context),
+                                 /*online_password_mismatch=*/true);
     return;
   }
   std::move(fallback).Run(std::move(context), std::move(error));
 }
 
-void AuthSessionAuthenticator::NotifyLocalAuthenticationRequired(
-    std::unique_ptr<UserContext> context) {
-  LOGIN_LOG(EVENT) << "Local authentication required";
+void AuthSessionAuthenticator::NotifyOnlinePasswordUnusable(
+    std::unique_ptr<UserContext> context,
+    bool online_password_mismatch) {
+  LOGIN_LOG(EVENT) << "Online password unusable / " << online_password_mismatch;
   if (!consumer_) {
     return;
   }
-  consumer_->OnLocalAuthenticationRequired(std::move(context));
+  consumer_->OnOnlinePasswordUnusable(std::move(context),
+                                      online_password_mismatch);
 }
 
 void AuthSessionAuthenticator::HandleMigrationRequired(

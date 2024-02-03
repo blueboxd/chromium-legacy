@@ -122,6 +122,8 @@ import java.util.concurrent.TimeoutException;
     ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"
 })
 @Batch(PER_CLASS)
+// Disable TrackingProtection3pcd as we use prefs instead of the feature in these tests.
+@DisableFeatures(ChromeFeatureList.TRACKING_PROTECTION_3PCD)
 public class PageInfoViewTest {
     private static final String sSimpleHtml = "/chrome/test/data/android/simple.html";
     private static final String sSiteDataHtml = "/content/test/data/browsing_data/site_data.html";
@@ -658,6 +660,7 @@ public class PageInfoViewTest {
     @MediumTest
     @Feature({"RenderTest"})
     @EnableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    @DisabledTest(message = "https://crbug.com/1510968")
     public void testShowCookiesSubpageUserBypassOn() throws IOException {
         setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
@@ -685,6 +688,7 @@ public class PageInfoViewTest {
     @MediumTest
     @Feature({"RenderTest"})
     @EnableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    @DisabledTest(message = "https://crbug.com/1510968")
     public void testShowCookiesSubpageTrackingProtection() throws IOException {
         enableTrackingProtection();
         setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
@@ -713,6 +717,7 @@ public class PageInfoViewTest {
     @MediumTest
     @Feature({"RenderTest"})
     @EnableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    @DisabledTest(message = "https://crbug.com/1510968")
     public void testShowCookiesSubpageTrackingProtectionBlockAll() throws IOException {
         enableTrackingProtection();
         blockAll3PC();
@@ -1067,7 +1072,6 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
     public void testShowAdPersonalizationInfo() throws IOException {
         loadUrlAndOpenPageInfo(
                 mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
@@ -1078,7 +1082,6 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @DisabledTest(message = "crbug.com/1498268")
     public void testShowAdPersonalizationInfoSubPageV4() throws IOException {
         loadUrlAndOpenPageInfo(
                 mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));

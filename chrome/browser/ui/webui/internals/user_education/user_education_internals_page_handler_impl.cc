@@ -235,6 +235,9 @@ void UserEducationInternalsPageHandlerImpl::ShowFeaturePromo(
       case Failure::kFeatureDisabled:
       case Failure::kPermanentlyDismissed:
       case Failure::kSnoozed:
+      case Failure::kBlockedByGracePeriod:
+      case Failure::kBlockedByCooldown:
+      case Failure::kRecentlyAborted:
         reason = "Unexpected failure (should not happen for demo).";
     }
   }

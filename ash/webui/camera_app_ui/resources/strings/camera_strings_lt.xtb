@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5320594929574852403">Perkeliama kairėn</translation>
 <translation id="5374917190292010970">4K (2 160 tšk.)</translation>
+<translation id="539541037630043848">Atidaryti <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">Nuskaitomas <ph name="COUNT" /> psl.</translation>
 <translation id="5671277269877808209">Kvadratas</translation>
 <translation id="574392208103952083">Vidutinis</translation>
@@ -163,6 +164,7 @@ Jei atsiliepimas susijęs su vaizdo arba vaizdo įrašo kokybe, pridėkite nuotr
 <translation id="8870695351537079478">Nepavyko pradėti įrašymo</translation>
 <translation id="8880167521484863515">4 ir 3</translation>
 <translation id="8903921497873541725">Artinti</translation>
+<translation id="8926890870105777777">Prisijungti prie tinklo „<ph name="WIFINAME" />“</translation>
 <translation id="9045010116236796332">Visi dokumento kraštai turi būti rėmelyje.</translation>
 <translation id="9045155556724273246">10 sek.</translation>
 <translation id="906331135292332864">Apdorojamas vaizdas...</translation>

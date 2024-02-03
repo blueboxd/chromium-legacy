@@ -26,17 +26,24 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/component_updater/pref_names.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/metrics/metrics_log.h"
+#include "components/metrics/version_utils.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/optimization_guide/core/command_line_top_host_provider.h"
 #include "components/optimization_guide/core/hints_processing_util.h"
+#include "components/optimization_guide/core/model_execution/model_execution_features.h"
 #include "components/optimization_guide/core/model_execution/model_execution_features_controller.h"
 #include "components/optimization_guide/core/model_execution/model_execution_manager.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_service_controller.h"
 #include "components/optimization_guide/core/model_quality/model_quality_log_entry.h"
+#include "components/optimization_guide/core/model_quality/model_quality_logs_uploader_service.h"
 #include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
+#include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
 #include "components/optimization_guide/core/optimization_guide_navigation_data.h"
@@ -46,6 +53,8 @@
 #include "components/optimization_guide/core/prediction_model_store.h"
 #include "components/optimization_guide/core/tab_url_provider.h"
 #include "components/optimization_guide/core/top_host_provider.h"
+#include "components/optimization_guide/proto/model_execution.pb.h"
+#include "components/optimization_guide/proto/model_quality_service.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -66,28 +75,21 @@
 
 namespace {
 
-const char kOldOptimizationGuidePredictionModelAndFeaturesStore[] =
-    "optimization_guide_model_and_features_store";
+using ::optimization_guide::OnDeviceModelPerformanceClass;
 
 // Deletes old store paths that were written in incorrect locations.
 void DeleteOldStorePaths(const base::FilePath& profile_path) {
-  // Added 05/2022.
-
-  // Delete profile_path/optimization_guide_model_and_features_store/...
-  // as it contains pointers to the bad model download location.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::GetDeletePathRecursivelyCallback(profile_path.AppendASCII(
-          kOldOptimizationGuidePredictionModelAndFeaturesStore)));
-
-  // Delete the Chrome-wide model download location that wasn't previously
-  // getting cleaned up when profiles were getting deleted.
-  base::FilePath models_dir;
-  base::PathService::Get(chrome::DIR_OPTIMIZATION_GUIDE_PREDICTION_MODELS,
-                         &models_dir);
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::GetDeletePathRecursivelyCallback(models_dir));
+  // Added 11/2023
+  //
+  // Delete the old profile-wide model download store path, since
+  // the install-wide model store is enabled now.
+  if (optimization_guide::features::IsInstallWideModelStoreEnabled()) {
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::GetDeletePathRecursivelyCallback(profile_path.Append(
+            optimization_guide::
+                kOldOptimizationGuidePredictionModelDownloads)));
+  }
 }
 
 // Returns the profile to use for when setting up the keyed service when the
@@ -110,6 +112,101 @@ Profile* GetProfileForOTROptimizationGuide(Profile* profile) {
     }
   }
   return profile->GetOriginalProfile();
+}
+
+OnDeviceModelPerformanceClass ConvertToOnDeviceModelPerformanceClass(
+    std::optional<on_device_model::mojom::PerformanceClass> performance_class) {
+  if (!performance_class) {
+    return OnDeviceModelPerformanceClass::kServiceCrash;
+  }
+
+  switch (*performance_class) {
+    case on_device_model::mojom::PerformanceClass::kError:
+      return OnDeviceModelPerformanceClass::kError;
+    case on_device_model::mojom::PerformanceClass::kVeryLow:
+      return OnDeviceModelPerformanceClass::kVeryLow;
+    case on_device_model::mojom::PerformanceClass::kLow:
+      return OnDeviceModelPerformanceClass::kLow;
+    case on_device_model::mojom::PerformanceClass::kMedium:
+      return OnDeviceModelPerformanceClass::kMedium;
+    case on_device_model::mojom::PerformanceClass::kHigh:
+      return OnDeviceModelPerformanceClass::kHigh;
+    case on_device_model::mojom::PerformanceClass::kVeryHigh:
+      return OnDeviceModelPerformanceClass::kVeryHigh;
+    case on_device_model::mojom::PerformanceClass::kGpuBlocked:
+      return OnDeviceModelPerformanceClass::kGpuBlocked;
+    case on_device_model::mojom::PerformanceClass::kFailedToLoadLibrary:
+      return OnDeviceModelPerformanceClass::kFailedToLoadLibrary;
+  }
+}
+
+std::string OnDeviceModelPerformanceClassToString(
+    OnDeviceModelPerformanceClass performance_class) {
+  switch (performance_class) {
+    case OnDeviceModelPerformanceClass::kUnknown:
+      return "Unknown";
+    case OnDeviceModelPerformanceClass::kError:
+      return "Error";
+    case OnDeviceModelPerformanceClass::kVeryLow:
+      return "VeryLow";
+    case OnDeviceModelPerformanceClass::kLow:
+      return "Low";
+    case OnDeviceModelPerformanceClass::kMedium:
+      return "Medium";
+    case OnDeviceModelPerformanceClass::kHigh:
+      return "High";
+    case OnDeviceModelPerformanceClass::kVeryHigh:
+      return "VeryHigh";
+    case OnDeviceModelPerformanceClass::kGpuBlocked:
+      return "GpuBlocked";
+    case OnDeviceModelPerformanceClass::kFailedToLoadLibrary:
+      return "FailedToLoadLibrary";
+    case OnDeviceModelPerformanceClass::kServiceCrash:
+      return "ServiceCrash";
+  }
+}
+
+scoped_refptr<optimization_guide::OnDeviceModelServiceController>
+GetOnDeviceModelServiceController() {
+  scoped_refptr<optimization_guide::OnDeviceModelServiceController>
+      service_controller = optimization_guide::
+          ChromeOnDeviceModelServiceController::GetSingleInstanceMayBeNull();
+  if (!service_controller) {
+    service_controller = base::MakeRefCounted<
+        optimization_guide::ChromeOnDeviceModelServiceController>();
+    service_controller->Init();
+  }
+  return service_controller;
+}
+
+optimization_guide::proto::ModelExecutionFeature GetModelExecutionFeature(
+    optimization_guide::proto::LogAiDataRequest::FeatureCase feature) {
+  using optimization_guide::proto::ModelExecutionFeature;
+  using optimization_guide::proto::LogAiDataRequest;
+  switch (feature) {
+    case LogAiDataRequest::FeatureCase::kCompose:
+      return ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE;
+    case LogAiDataRequest::FeatureCase::kTabOrganization:
+      return ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION;
+    case LogAiDataRequest::FeatureCase::kWallpaperSearch:
+      return ModelExecutionFeature::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH;
+    case LogAiDataRequest::FeatureCase::kDefault:
+      NOTREACHED();
+      return ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED;
+    case LogAiDataRequest::FeatureCase::FEATURE_NOT_SET:
+      NOTREACHED();
+      return ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED;
+  }
+}
+
+void RecordUploadStatusHistogram(
+    optimization_guide::proto::ModelExecutionFeature feature,
+    optimization_guide::ModelQualityLogsUploadStatus status) {
+  base::UmaHistogramEnumeration(
+      base::StrCat(
+          {"OptimizationGuide.ModelQualityLogsUploadService.UploadStatus.",
+           optimization_guide::GetStringNameForModelExecutionFeature(feature)}),
+      status);
 }
 
 }  // namespace
@@ -138,6 +235,30 @@ void OptimizationGuideKeyedService::
   }
   model_execution_features_controller_
       ->SimulateBrowserRestartForTesting();  // IN-TEST
+}
+
+// static
+void OptimizationGuideKeyedService::LogOnDeviceMetrics() {
+  auto controller = GetOnDeviceModelServiceController();
+  controller->GetEstimatedPerformanceClass(base::BindOnce(
+      [](scoped_refptr<optimization_guide::OnDeviceModelServiceController>
+             controller,
+         std::optional<on_device_model::mojom::PerformanceClass>
+             performance_class) {
+        auto optimization_guide_performance_class =
+            ConvertToOnDeviceModelPerformanceClass(performance_class);
+        base::UmaHistogramEnumeration(
+            "OptimizationGuide.ModelExecution.OnDeviceModelPerformanceClass",
+            optimization_guide_performance_class);
+
+        ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+            "SyntheticOnDeviceModelPerformanceClass",
+            OnDeviceModelPerformanceClassToString(
+                optimization_guide_performance_class),
+            variations::SyntheticTrialAnnotationMode::kCurrentLog);
+        controller->ShutdownServiceIfNoModelLoaded();
+      },
+      controller));
 }
 
 OptimizationGuideKeyedService::OptimizationGuideKeyedService(
@@ -235,13 +356,13 @@ void OptimizationGuideKeyedService::Initialize() {
       // files to. Off-the-record profiles read the model locations from the
       // original profiles they are associated with.
       model_downloads_dir = profile_path.Append(
-          optimization_guide::kOptimizationGuidePredictionModelDownloads);
+          optimization_guide::kOldOptimizationGuidePredictionModelDownloads);
       prediction_model_and_features_store_ =
           std::make_unique<optimization_guide::OptimizationGuideStore>(
               proto_db_provider,
               profile_path.Append(
                   optimization_guide::
-                      kOptimizationGuidePredictionModelMetadataStore),
+                      kOldOptimizationGuidePredictionModelMetadataStore),
               model_downloads_dir,
               base::ThreadPool::CreateSequencedTaskRunner(
                   {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
@@ -278,15 +399,43 @@ void OptimizationGuideKeyedService::Initialize() {
           // |this| owns |prediction_manager_|.
           base::Unretained(this)));
 
+  // With multiple profiles we only want to fetch the performance class once.
+  // This bool helps avoid fetching multiple times.
+  static bool performance_class_fetched = false;
+  if (!performance_class_fetched && !profile->IsOffTheRecord() &&
+      base::FeatureList::IsEnabled(
+          optimization_guide::features::kLogOnDeviceMetricsOnStartup)) {
+    performance_class_fetched = true;
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&OptimizationGuideKeyedService::LogOnDeviceMetrics),
+        optimization_guide::features::GetOnDeviceStartupMetricDelay());
+  }
+
   if (!profile->IsOffTheRecord() &&
       base::FeatureList::IsEnabled(
           optimization_guide::features::kOptimizationGuideModelExecution)) {
+    scoped_refptr<optimization_guide::OnDeviceModelServiceController>
+        service_controller;
+    if (base::FeatureList::IsEnabled(
+            optimization_guide::features::kOptimizationGuideOnDeviceModel)) {
+      service_controller = GetOnDeviceModelServiceController();
+    }
     model_execution_manager_ =
         std::make_unique<optimization_guide::ModelExecutionManager>(
             url_loader_factory, IdentityManagerFactory::GetForProfile(profile),
-            std::make_unique<
-                optimization_guide::ChromeOnDeviceModelServiceController>(),
-            optimization_guide_logger_.get());
+            std::move(service_controller), optimization_guide_logger_.get());
+  }
+
+  if (!profile->IsOffTheRecord() &&
+      // Don't create logs uploader service when feature is disabled. All the
+      // logs upload get route through this service which exists one per
+      // session.
+      base::FeatureList::IsEnabled(
+          optimization_guide::features::kModelQualityLogging)) {
+    model_quality_logs_uploader_service_ =
+        std::make_unique<optimization_guide::ModelQualityLogsUploaderService>(
+            url_loader_factory, profile->GetPrefs());
   }
 
   // Register for profile initialization event to initialize the model
@@ -310,7 +459,9 @@ void OptimizationGuideKeyedService::Initialize() {
                                           profile->IsOffTheRecord(),
                                           profile->GetPrefs());
 
-  if (browser_context_ && !browser_context_->IsOffTheRecord() &&
+  if (base::FeatureList::IsEnabled(
+          optimization_guide::features::kOptimizationGuideModelExecution) &&
+      browser_context_ && !browser_context_->IsOffTheRecord() &&
       !profile->IsGuestSession()) {
     model_execution_features_controller_ =
         std::make_unique<optimization_guide::ModelExecutionFeaturesController>(
@@ -441,6 +592,7 @@ void OptimizationGuideKeyedService::ExecuteModel(
     return;
   }
   model_execution_manager_->ExecuteModel(feature, request_metadata,
+                                         /*log_ai_data_request=*/nullptr,
                                          std::move(callback));
 }
 
@@ -448,8 +600,49 @@ void OptimizationGuideKeyedService::UploadModelQualityLogs(
     std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(b/301301447): Uploads logs by passing the log entry's ownership to the
-  // server.
+  if (!model_quality_logs_uploader_service_) {
+    return;
+  }
+
+  // Don't trigger upload for an empty log entry.
+  if (!log_entry || !log_entry->log_ai_data_request()) {
+    return;
+  }
+
+  optimization_guide::proto::ModelExecutionFeature feature =
+      GetModelExecutionFeature(
+          log_entry->log_ai_data_request()->feature_case());
+
+  // Model quality logging requires user consent. Skip upload if consent is
+  // missing.
+  if (!g_browser_process->GetMetricsServicesManager()
+           ->IsMetricsConsentGiven()) {
+    RecordUploadStatusHistogram(
+        feature,
+        optimization_guide::ModelQualityLogsUploadStatus::kNoMetricsConsent);
+    return;
+  }
+
+  // Don't upload logs if logging is disabled by enterprise policy.
+  if (!ShouldFeatureBeCurrentlyAllowedForLogging(feature)) {
+    RecordUploadStatusHistogram(
+        feature, optimization_guide::ModelQualityLogsUploadStatus::
+                     kDisabledDueToEnterprisePolicy);
+    return;
+  }
+
+  // Set system profile proto before uploading.
+  metrics::MetricsLog::RecordCoreSystemProfile(
+      metrics::GetVersionString(),
+      metrics::AsProtobufChannel(chrome::GetChannel()),
+      chrome::IsExtendedStableChannel(),
+      g_browser_process->GetApplicationLocale(), metrics::GetAppPackageName(),
+      log_entry->logging_metadata()->mutable_system_profile());
+
+  CHECK(log_entry->logging_metadata()->has_system_profile())
+      << "System Profile Proto not set\n";
+  model_quality_logs_uploader_service_.get()->UploadModelQualityLogs(
+      std::move(log_entry));
 }
 
 void OptimizationGuideKeyedService::OnProfileInitializationComplete(
@@ -508,6 +701,48 @@ bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyEnabledForUser(
   }
   return model_execution_features_controller_
       ->ShouldFeatureBeCurrentlyEnabledForUser(feature);
+}
+
+bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyAllowedForLogging(
+    optimization_guide::proto::ModelExecutionFeature feature) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!model_execution_features_controller_) {
+    return false;
+  }
+  return model_execution_features_controller_
+      ->ShouldFeatureBeCurrentlyAllowedForLogging(feature);
+}
+
+bool OptimizationGuideKeyedService::ShouldShowExperimentalAIPromo() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!model_execution_features_controller_) {
+    return false;
+  }
+  if (!base::FeatureList::IsEnabled(optimization_guide::features::internal::
+                                        kExperimentalAIIPHPromoRampUp)) {
+    return false;
+  }
+  // At least one of the two features should be visible to user in settings, and
+  // not currently enabled.
+  if (model_execution_features_controller_->IsSettingVisible(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION) &&
+      !model_execution_features_controller_
+           ->ShouldFeatureBeCurrentlyEnabledForUser(
+               optimization_guide::proto::ModelExecutionFeature::
+                   MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION)) {
+    return true;
+  }
+  if (model_execution_features_controller_->IsSettingVisible(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH) &&
+      !model_execution_features_controller_
+           ->ShouldFeatureBeCurrentlyEnabledForUser(
+               optimization_guide::proto::ModelExecutionFeature::
+                   MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH)) {
+    return true;
+  }
+  return false;
 }
 
 void OptimizationGuideKeyedService::AddModelExecutionSettingsEnabledObserver(

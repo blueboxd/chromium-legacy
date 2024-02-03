@@ -15,7 +15,9 @@
 <translation id="1507010443238049608">ជួយ​កែលម្អ​មុខងារ និង​ប្រតិបត្តិការ​របស់ Chromium</translation>
 <translation id="1513122820609681462">កំណត់ Chromium ជាកម្មវិធីរុករក​តាមអ៊ីនធឺណិត​លំនាំដើម</translation>
 <translation id="1531155317299575425">បង្ហាញ​សារសម្រាប់​ចូល Chromium។</translation>
+<translation id="159029779861043703">Chromium រក្សាទិន្នន័យរសើបរបស់អ្នកឱ្យមានសុវត្ថិភាពដោយប្រើ Face ID។</translation>
 <translation id="1591119736686995611">បើកក្រឡាផ្ទាំងនៅក្នុង Chromium។</translation>
+<translation id="1611584326765829247">អនុញ្ញាតឱ្យ Chromium ជួយអ្នកតាមដានកញ្ចប់របស់អ្នក</translation>
 <translation id="1617663976202781617">ទិន្នន័យពី​សមកាលកម្ម Chromium</translation>
 <translation id="1647558790457890304">ការកំណត់ Chromium</translation>
 <translation id="164952285225495380">កញ្ចប់​នេះ​ត្រូវ​បាន​តាមដាន​រួច​ហើយ​នៅលើ Chromium។</translation>
@@ -53,7 +55,6 @@
 <translation id="2784449251446768092">គ្រប់គ្រង​ការកំណត់ Chromium</translation>
 <translation id="2798503587425057129">បើក​បញ្ជីអាន Chromium។</translation>
 <translation id="2843571538056574338">ប្រើ Chromium សម្រាប់​ការបំពេញ​ស្វ័យប្រវត្តិ</translation>
-<translation id="2915596697727466327">Chromium ប្រើប្រាស់ Face ID ដើម្បី​ធានាថា​ការចូលប្រើពាក្យសម្ងាត់របស់អ្នកមានការអនុញ្ញាត​។</translation>
 <translation id="2918709798697875261">ស្ថាប័នរបស់អ្នក​តម្រូវឱ្យអ្នក​នៅបន្តចេញពីគណនី​នៅលើ Chromium។</translation>
 <translation id="2942241131342758843">ប្រើ Chromium តាមលំនាំដើម ដើម្បីបើកតំណ ស្វែងរក​ពីធាតុក្រាហ្វិក និងបំពេញ​ពាក្យសម្ងាត់ដោយស្វ័យ​ប្រវត្តិនៅក្នុងកម្មវិធី​ផ្សេងទៀត</translation>
 <translation id="2977470724722393594">Chromium នេះជា​កំណែថ្មី​ហើយ</translation>
@@ -87,6 +88,7 @@
 <translation id="4195557071150719219">មើលផ្ទាំងថ្មីៗនៅក្នុង Chromium</translation>
 <translation id="4408912345039114853">ដំណើរការ​ការពិនិត្យ​សុវត្ថិភាព Chromium</translation>
 <translation id="4432744876818348753">ចូលគណនី ដើម្បីទទួលបាន​អត្ថប្រយោជន៍​ច្រើនបំផុតពី Chromium។</translation>
+<translation id="4498832288620833153">បញ្ចូល URL ដែលបាន​បញ្ចូលទៅ​បញ្ជីអាន​របស់អ្នក​នៅក្នុង Chromium។</translation>
 <translation id="452436063477828504">សូមប្រាកដថា អ្នកអាចប្រើទិន្នន័យ Chromium នៅក្នុងគណនី Google របស់អ្នកបានជានិច្ច</translation>
 <translation id="4555020257205549924">នៅពេលដែលមុខងារនេះបើក Chromium នឹងផ្តល់ជូនការបកប្រែទំព័រដែលសរសេរជាភាសាផ្សេងទៀតដោយប្រើ Google បកប្រែ។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">បើកទំព័រ​ការកំណត់​វិធីបង់ប្រាក់​នៅក្នុង Chromium។</translation>
@@ -167,7 +169,6 @@
 <translation id="6911341667534646387">បន្តប្រើទិន្នន័យ Chromium នៅក្នុងគណនី Google របស់អ្នក</translation>
 <translation id="7006920032187763988">អ្នកអាចប្រើពាក្យសម្ងាត់ ដែលអ្នកបានរក្សាទុកទៅក្នុងកម្មវិធីគ្រប់គ្រង​ពាក្យសម្ងាត់នៅក្នុងកម្មវិធីផ្សេងទៀតនៅលើ iPad របស់អ្នក។</translation>
 <translation id="7018284295775193585">Chromium មិនអាច​ដំឡើងកំណែបានទេ</translation>
-<translation id="7025471822960602362">តាមដាន​កញ្ចប់​ដែលបាន​រកឃើញ​នៅលើ Chromium</translation>
 <translation id="7045244423563602563">កំណត់​ឱ្យ Chromium ក្លាយជារបស់អ្នក</translation>
 <translation id="7055269218854630176">ស្ថាប័ន​របស់អ្នក <ph name="DOMAIN" /> គ្រប់គ្រង​គណនី​ដែលអ្នក​កំពុងចូល និង​របៀបដែល Chromium អាចត្រូវបានប្រើ។ អ្នកគ្រប់គ្រង​របស់អ្នក​អាចរៀបចំ ឬ​ដាក់កំហិត​លើមុខងារ​ជាក់លាក់បាន។</translation>
 <translation id="7099326575020694068">Chromium មិនអាចប្រើកាមេរ៉ារបស់អ្នកនៅក្នុងមុខងារបំបែកការមើលបានទេ</translation>
@@ -197,6 +198,7 @@
 <translation id="7928628054454574139">បើក Chromium រាល់ពេល​ដែលអ្នកចុចលើ​តំណនៅក្នុងកម្មវិធី​ផ្សេងទៀត</translation>
 <translation id="7931842119211730154">ចាក់សោ​ផ្ទាំងឯកជន នៅពេលអ្នកបិទ Chromium</translation>
 <translation id="7934404985878918282">មើល​បញ្ជីអាន Chromium</translation>
+<translation id="7971753607796745700">បញ្ចូល​ធាតុ​បញ្ជីអាន​ទៅ Chromium</translation>
 <translation id="7980860476903281594">Chromium ចែករំលែក​ទីតាំង​របស់អ្នក​ជាមួយគេហទំព័រ​ដែលអ្នកអនុញ្ញាត។</translation>
 <translation id="7995166854192397899">ការណែនាំ​គឺផ្អែកលើ​សកម្មភាព​រុករក​តាមអ៊ីនធឺណិត​របស់អ្នក​នៅលើ​ឧបករណ៍​ផ្សេងទៀត។ ដើម្បី​ទទួលបាន​ការណែនាំ សូមចូល Chromium នៅលើ​ឧបករណ៍​ទាំងអស់​របស់អ្នក។</translation>
 <translation id="800195749539500647">ទទួលបាន​អត្ថប្រយោជន៍​ច្រើនបំផុតពី Chromium</translation>

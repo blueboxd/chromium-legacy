@@ -17,6 +17,7 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/float/float_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
@@ -110,7 +111,7 @@ class WindowRestoreControllerTest : public AshTestBase,
     app_restore::WindowInfo* window_info = GetWindowInfo(window);
     if (!window_info)
       return -1;
-    absl::optional<int32_t> activation_index = window_info->activation_index;
+    std::optional<int32_t> activation_index = window_info->activation_index;
     return activation_index.value_or(-1);
   }
 
@@ -1381,6 +1382,24 @@ TEST_F(WindowRestoreControllerTest, WindowsSavedInOverview) {
   app_restore::WindowInfo* arc_window_info = GetWindowInfo(arc_window.get());
   ASSERT_TRUE(arc_window_info);
   EXPECT_EQ(window_bounds, arc_window_info->arc_extra_info->bounds_in_root);
+}
+
+// Tests that if overview is active, and a window gets launched because of full
+// restore, we exit overview.
+TEST_F(WindowRestoreControllerTest, WindowsRestoredWhileInOverview) {
+  AddEntryToFakeFile(
+      /*restore_id=*/1, gfx::Rect(900, 700, 300, 300),
+      chromeos::WindowStateType::kNormal);
+
+  ToggleOverview();
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
+
+  // Create a restored window. Test that we have exited overview.
+  CreateTestWindowRestoredWidgetFromRestoreId(
+      /*restore_id=*/1, AppType::BROWSER,
+      /*is_taskless_arc_app=*/false)
+      ->GetNativeWindow();
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
 }
 
 // Tests that a window whose bounds are offscreen (were on a disconnected

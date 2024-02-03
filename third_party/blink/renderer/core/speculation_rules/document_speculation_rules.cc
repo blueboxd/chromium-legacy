@@ -141,8 +141,8 @@ absl::optional<Referrer> GetReferrer(SpeculationRule* rule,
 }
 
 // The reason for calling |UpdateSpeculationCandidates| for metrics.
-// Currently, this is designed to measure the impact of
-// |kRetriggerPreloadingOnBFCacheRestoration|(crbug.com/1449163) so that
+// Currently, this is designed to measure the impact of the project of
+// retriggering preloading on BFCache restoration (crbug.com/1449163), so
 // other update reasons (such as ruleset insertion/removal etc...) will be
 // tentatively classified as |kOther|.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -233,6 +233,23 @@ void DocumentSpeculationRules::AddRuleSet(SpeculationRuleSet* rule_set) {
   QueueUpdateSpeculationCandidates();
 
   probe::DidAddSpeculationRuleSet(*GetSupplementable(), *rule_set);
+
+  if (!rule_set->source()->IsFromBrowserInjected()) {
+    HeapVector<Member<SpeculationRuleSet>> to_remove;
+    for (const auto& other_rule_set : rule_sets_) {
+      if (other_rule_set->source()->IsFromBrowserInjected()) {
+        to_remove.push_back(other_rule_set);
+      }
+    }
+
+    if (!to_remove.empty()) {
+      UseCounter::Count(GetSupplementable(),
+                        WebFeature::kAutoSpeculationRulesOptedOut);
+      for (const auto& to_remove_rule_set : to_remove) {
+        RemoveRuleSet(to_remove_rule_set);
+      }
+    }
+  }
 }
 
 void DocumentSpeculationRules::RemoveRuleSet(SpeculationRuleSet* rule_set) {
@@ -471,8 +488,6 @@ void DocumentSpeculationRules::DisplayLockedElementDisconnected(Element* root) {
 }
 
 void DocumentSpeculationRules::DocumentRestoredFromBFCache() {
-  CHECK(base::FeatureList::IsEnabled(
-      blink::features::kRetriggerPreloadingOnBFCacheRestoration));
   first_update_after_restored_from_bfcache_ = true;
   QueueUpdateSpeculationCandidates();
 }
@@ -674,16 +689,13 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
                       WebFeature::kSpeculationRulesEagernessEager);
   }
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kRetriggerPreloadingOnBFCacheRestoration)) {
-    base::UmaHistogramEnumeration(
-        "Preloading.Experimental.UpdateSpeculationCandidatesReason",
-        first_update_after_restored_from_bfcache_
-            ? UpdateSpeculationCandidatesReason::kRestoredFromBFCache
-            : UpdateSpeculationCandidatesReason::kOther);
+  base::UmaHistogramEnumeration(
+      "Preloading.Experimental.UpdateSpeculationCandidatesReason",
+      first_update_after_restored_from_bfcache_
+          ? UpdateSpeculationCandidatesReason::kRestoredFromBFCache
+          : UpdateSpeculationCandidatesReason::kOther);
 
-    first_update_after_restored_from_bfcache_ = false;
-  }
+  first_update_after_restored_from_bfcache_ = false;
 }
 
 void DocumentSpeculationRules::AddLinkBasedSpeculationCandidates(

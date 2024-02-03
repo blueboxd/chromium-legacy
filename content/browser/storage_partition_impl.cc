@@ -1546,7 +1546,10 @@ void StoragePartitionImpl::Initialize(
         InterestGroupManagerImpl::ProcessMode::kDedicated,
 #endif
         GetURLLoaderFactoryForBrowserProcess(),
-        browser_context_->GetKAnonymityServiceDelegate());
+        base::BindRepeating(&BrowserContext::GetKAnonymityServiceDelegate,
+                            // This use of Unretained is safe since the browser
+                            // context owns this storage partition.
+                            base::Unretained(browser_context_)));
   }
 
   // The Topics API is not available in Incognito mode.
@@ -1648,15 +1651,15 @@ void StoragePartitionImpl::OnStorageServiceDisconnected() {
   }
 }
 
-const StoragePartitionConfig& StoragePartitionImpl::GetConfig() {
+const StoragePartitionConfig& StoragePartitionImpl::GetConfig() const {
   return config_;
 }
 
-base::FilePath StoragePartitionImpl::GetPath() {
+const base::FilePath& StoragePartitionImpl::GetPath() const {
   return partition_path_;
 }
 
-std::string StoragePartitionImpl::GetPartitionDomain() {
+const std::string& StoragePartitionImpl::GetPartitionDomain() const {
   return config_.partition_domain();
 }
 

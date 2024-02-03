@@ -32,7 +32,7 @@ class MockSingleFieldFormFillRouter : public SingleFieldFormFillRouter {
               (AutofillSuggestionTriggerSource trigger_source,
                const FormFieldData& field,
                const AutofillClient& client,
-               base::WeakPtr<SingleFieldFormFiller::SuggestionsHandler> handler,
+               SingleFieldFormFiller::OnSuggestionsReturnedCallback callback,
                const SuggestionsContext& context),
               (override));
   MOCK_METHOD(void,
@@ -40,10 +40,7 @@ class MockSingleFieldFormFillRouter : public SingleFieldFormFillRouter {
               (const std::vector<FormFieldData>& fields,
                bool is_autocomplete_enabled),
               (override));
-  MOCK_METHOD(void,
-              CancelPendingQueries,
-              (const SingleFieldFormFiller::SuggestionsHandler*),
-              (override));
+  MOCK_METHOD(void, CancelPendingQueries, (), (override));
   MOCK_METHOD(void,
               OnRemoveCurrentSingleFieldSuggestion,
               (const std::u16string&, const std::u16string&, PopupItemId),

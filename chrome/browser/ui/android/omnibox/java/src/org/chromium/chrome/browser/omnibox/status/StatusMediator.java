@@ -21,6 +21,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.R;
@@ -45,6 +46,8 @@ import org.chromium.components.content_settings.CookieControlsBreakageConfidence
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.content_settings.CookieControlsStatus;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -114,9 +117,10 @@ public class StatusMediator
     private int mPermissionIconDisplayTimeoutMs = PERMISSION_ICON_DEFAULT_DISPLAY_TIMEOUT_MS;
 
     private CookieControlsBridge mCookieControlsBridge;
-    private boolean mHighConfidenceBreakageReceived;
     private int mCookieBlockingStatus;
     private int mBlockingStatus3pcd;
+    private int mLastTabId;
+    private boolean mCurrentTabCrashed;
 
     /**
      * @param model The {@link PropertyModel} for this mediator.
@@ -554,11 +558,11 @@ public class StatusMediator
             return SearchEngineUtils.getFallbackNavigationIcon(mBrandedColorScheme);
         }
 
-        var profile = mProfileSupplier.get();
-        if (profile == null) {
+        if (!mProfileSupplier.hasValue()) {
             return SearchEngineUtils.getFallbackSearchIcon(mBrandedColorScheme);
         }
 
+        var profile = mProfileSupplier.get();
         return SearchEngineUtils.getForProfile(profile).getSearchEngineLogo(mBrandedColorScheme);
     }
 
@@ -646,8 +650,15 @@ public class StatusMediator
     // CookieControlsObserver interface
     @Override
     public void onBreakageConfidenceLevelChanged(int level) {
-        if (mHighConfidenceBreakageReceived) return;
-        mHighConfidenceBreakageReceived = level == CookieControlsBreakageConfidenceLevel.HIGH;
+        if (level == CookieControlsBreakageConfidenceLevel.HIGH) {
+            animateCookieControlsIcon(
+                    () -> {
+                        if (mBlockingStatus3pcd == CookieBlocking3pcdStatus.NOT_IN3PCD) {
+                            mPageInfoIPHController.showCookieControlsIPH(
+                                    getIPHTimeout(), R.string.cookie_controls_iph_message);
+                        }
+                    });
+        }
     }
 
     @Override
@@ -656,7 +667,7 @@ public class StatusMediator
         mBlockingStatus3pcd = blockingStatus;
     }
 
-    private void animateCookieControlsIcon() {
+    private void animateCookieControlsIcon(Runnable onAnimationFinished) {
         resetCustomIconsStatus();
 
         boolean isIncognito = mLocationBarDataProvider.isIncognito();
@@ -676,6 +687,7 @@ public class StatusMediator
                     if (mCookieControlsBridge != null) {
                         mCookieControlsBridge.onEntryPointAnimated();
                     }
+                    onAnimationFinished.run();
                 });
 
         // Set the timer to switch the icon back afterwards.
@@ -801,13 +813,15 @@ public class StatusMediator
             if (webContents != null && profile != null) {
                 BrowserContextHandle originalBrowserContext =
                         profile.isOffTheRecord() ? profile.getOriginalProfile() : null;
-                if (mCookieControlsBridge != null) {
-                    mCookieControlsBridge.updateWebContents(webContents, originalBrowserContext);
-                } else {
+                if (mCookieControlsBridge == null) {
                     mCookieControlsBridge =
                             new CookieControlsBridge(this, webContents, originalBrowserContext);
+                } else if (mLastTabId != currentTab.getId() || mCurrentTabCrashed) {
+                    mCookieControlsBridge.updateWebContents(webContents, originalBrowserContext);
+                    mCurrentTabCrashed = false;
                 }
             }
+            mLastTabId = currentTab.getId();
         }
     }
 
@@ -816,22 +830,29 @@ public class StatusMediator
         if (profile == null) {
             return;
         }
-        if (UserPrefs.get(profile).getInteger(Pref.TRACKING_PROTECTION_ONBOARDING_ACK_ACTION)
-                == 0) {
-            return;
-        }
         if (mPageSecurityLevel != ConnectionSecurityLevel.SECURE) {
             return;
         }
         if (mBlockingStatus3pcd != CookieBlocking3pcdStatus.NOT_IN3PCD) {
             if (mCookieBlockingStatus != CookieControlsStatus.ENABLED) return;
-            mPageInfoIPHController.showCookieControlsReminderIPH(
-                    getIPHTimeout(), R.string.cookie_controls_reminder_iph_message);
-        } else if (mHighConfidenceBreakageReceived) {
-            mPageInfoIPHController.showCookieControlsIPH(
-                    getIPHTimeout(), R.string.cookie_controls_iph_message);
-            animateCookieControlsIcon();
-            mHighConfidenceBreakageReceived = false;
+
+            if (UserPrefs.get(profile).getInteger(Pref.TRACKING_PROTECTION_ONBOARDING_ACK_ACTION)
+                    == 0) {
+                return;
+            }
+
+            Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
+            if (!tracker.wouldTriggerHelpUI(FeatureConstants.COOKIE_CONTROLS_3PCD_FEATURE)) return;
+
+            animateCookieControlsIcon(
+                    () ->
+                            mPageInfoIPHController.showCookieControlsReminderIPH(
+                                    getIPHTimeout(),
+                                    R.string.cookie_controls_reminder_iph_message));
         }
+    }
+
+    public void onTabCrashed() {
+        mCurrentTabCrashed = true;
     }
 }

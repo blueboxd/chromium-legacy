@@ -44,8 +44,8 @@ if (use_typeface_fontations) {
     deps = [
       ":path_bridge",
       "//third_party/rust/font_types/v0_4:lib",
-      "//third_party/rust/read_fonts/v0_11:lib",
-      "//third_party/rust/skrifa/v0_10:lib",
+      "//third_party/rust/read_fonts/v0_13:lib",
+      "//third_party/rust/skrifa/v0_13:lib",
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
@@ -430,12 +430,15 @@ component("skia") {
   # Select Skia ports.
 
   # FreeType is needed everywhere where blink is used, on Linux and Android as main
-  # font backend, on Windows and Mac as fallback backend for Variations.
+  # font backend, on Windows and Mac as fallback backend for Variations. Pdfium
+  # also uses this when decoding data out of the device cache.
   if (use_blink) {
     # See SK_TYPEFACE_FACTORY_FREETYPE
     sources += [
       "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
     ]
   }
 
@@ -495,20 +498,16 @@ component("skia") {
     ]
   }
 
-  if (is_win || (is_apple && use_blink)) {
-    sources += [
-      # Add the FreeType custom font manager as a fallback backend for variable fonts.
-      "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
-      "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
-    ]
-  }
-
   if (is_fuchsia) {
     sources += [
-      "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
       "//third_party/skia/src/ports/SkFontMgr_fuchsia.cpp",
       "ext/fontmgr_default_fuchsia.cc",
     ]
+
+    # This is already here if use_blink is set
+    if (!use_blink) {
+      sources += [ "//third_party/skia/src/ports/SkFontMgr_custom.cpp" ]
+    }
     deps += [
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts:fuchsia.fonts_hlcpp",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io:fuchsia.io_hlcpp",
@@ -648,6 +647,7 @@ component("skia") {
     sources += skia_skresources_sources
     sources += skia_sksg_sources
     sources += skia_shaper_primitive_sources
+    defines += [ "SKOTTIE_TRIVIAL_FONTRUN_ITER" ]
   }
 }
 
@@ -788,7 +788,8 @@ if (current_cpu == "x64") {
     if (!is_win) {
       cflags = [
         "-w",
-        "-march=haswell",
+        "-mavx2",
+        "-mf16c",
         "-std=c11",
       ]
     } else {
@@ -801,7 +802,11 @@ if (current_cpu == "x64") {
     if (!is_win) {
       cflags = [
         "-w",
-        "-march=skylake-avx512",
+        "-mavx512f",
+        "-mavx512dq",
+        "-mavx512cd",
+        "-mavx512bw",
+        "-mavx512vl",
         "-std=c11",
       ]
     } else {

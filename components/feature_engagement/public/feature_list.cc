@@ -135,6 +135,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHiOSPromoCredentialProviderExtensionFeature,
     &kIPHiOSPromoDefaultBrowserFeature,
     &kIPHiOSPromoDefaultBrowserReminderFeature,
+    &kIPHiOSPromoOmniboxPositionFeature,
     &kIPHiOSNewTabToolbarItemFeature,
     &kIPHiOSTabGridToolbarItemFeature,
     &kIPHiOSHistoryOnOverflowMenuFeature,
@@ -144,6 +145,9 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHiOSPromoPasswordManagerWidgetFeature,
     &kIPHiOSChoiceScreenFeature,
     &kIPHiOSParcelTrackingFeature,
+    &kIPHiOSPullToRefreshFeature,
+    &kIPHiOSReplaceSyncPromosWithSignInPromos,
+    &kIPHiOSBlueDotPromoEnhancedSafeBrowsingFeature,
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
@@ -156,6 +160,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDesktopCustomizeChromeRefreshFeature,
     &kIPHDesktopNewTabPageModulesCustomizeFeature,
     &kIPHDownloadToolbarButtonFeature,
+    &kIPHExperimentalAIPromoFeature,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     &kIPHExtensionsMenuFeature,
     &kIPHExtensionsRequestAccessButtonFeature,
@@ -174,7 +179,6 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHPasswordSharingFeature,
     &kIPHPowerBookmarksSidePanelFeature,
     &kIPHPriceInsightsPageActionIconLabelFeature,
-    &kIPHPriceTrackingChipFeature,
     &kIPHPriceTrackingEmailConsentFeature,
     &kIPHPriceTrackingPageActionIconLabelFeature,
     &kIPHReadingListDiscoveryFeature,
@@ -187,6 +191,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHSideSearchAutoTriggeringFeature,
     &kIPHSideSearchFeature,
     &kIPHSideSearchPageActionLabelFeature,
+    &kIPHTabOrganizationSuccessFeature,
     &kIPHTabSearchFeature,
     &kIPHTrackingProtectionOffboardingFeature,
     &kIPHTrackingProtectionOnboardingFeature,
@@ -247,6 +252,10 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHScalableIphHelpAppBasedTenFeature,
     &kIPHScalableIphGamingFeature,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+    &kIPHDesktopPWAsLinkCapturingLaunch,
+#endif  // BUILDFLAG(IS_WIN) ||  BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     &kIPHiOSPasswordPromoDesktopFeature,

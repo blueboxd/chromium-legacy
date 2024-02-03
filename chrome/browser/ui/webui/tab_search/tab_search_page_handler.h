@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -79,12 +80,21 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
       tab_search::mojom::SwitchToTabInfoPtr switch_to_tab_info) override;
   void OpenRecentlyClosedEntry(int32_t session_id) override;
   void RequestTabOrganization() override;
+  void RemoveTabFromOrganization(int32_t session_id,
+                                 int32_t organization_id,
+                                 tab_search::mojom::TabPtr tab) override;
+  void RestartSession() override;
   void SaveRecentlyClosedExpandedPref(bool expanded) override;
   void SetTabIndex(int32_t index) override;
   void StartTabGroupTutorial() override;
+  void TriggerFeedback(int32_t session_id) override;
   void TriggerSync() override;
   void TriggerSignIn() override;
+  void OpenHelpPage() override;
   void OpenSyncSettings() override;
+  void SetUserFeedback(int32_t session_id,
+                       int32_t organization_id,
+                       tab_search::mojom::UserFeedback feedback) override;
   void ShowUI() override;
 
   // TabStripModelObserver:
@@ -184,6 +194,8 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   // Call TabsChanged() and stop the timer if it's running.
   void NotifyTabsChanged();
 
+  void NotifyTabIndexPrefChanged(const Profile* profile);
+
   mojo::Receiver<tab_search::mojom::PageHandler> receiver_;
   mojo::Remote<tab_search::mojom::Page> page_;
   const raw_ptr<content::WebUI> web_ui_;
@@ -193,6 +205,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   BrowserTabStripTracker browser_tab_strip_tracker_{this, this};
   std::unique_ptr<base::RetainingOneShotTimer> debounce_timer_;
   raw_ptr<TabOrganizationService> organization_service_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Tracks how many times |CloseTab()| has been evoked for the currently open
   // instance of Tab Search for logging in UMA.
@@ -205,6 +218,9 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   // Tracks whether the user has evoked |SwitchToTab()| for metric collection
   // purposes.
   bool called_switch_to_tab_ = false;
+
+  // Tracks whether a session restart is currently in progress.
+  bool restarting_ = false;
 
   // Listened TabOrganization sessions.
   std::vector<TabOrganizationSession*> listened_sessions_;

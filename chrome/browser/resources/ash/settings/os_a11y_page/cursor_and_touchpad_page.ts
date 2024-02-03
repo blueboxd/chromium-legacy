@@ -34,7 +34,7 @@ import {Route, Router, routes} from '../router.js';
 import {getTemplate} from './cursor_and_touchpad_page.html.js';
 import {CursorAndTouchpadPageBrowserProxy, CursorAndTouchpadPageBrowserProxyImpl} from './cursor_and_touchpad_page_browser_proxy.js';
 
-const DEFAULT_BLACK_CURSOR_COLOR: number = 0;
+const DEFAULT_BLACK_CURSOR_COLOR = 0;
 
 interface Option {
   name: string;
@@ -229,6 +229,21 @@ export class SettingsCursorAndTouchpadPageElement extends
       },
 
       /**
+       * The maximum size in density-independent pixels of the large mouse
+       * cursor. Note that this has no effect if it is larger than the maximum
+       * set in CursorWindowController.
+       */
+      largeCursorMaxSize_: {
+        type: Number,
+        value() {
+          return loadTimeData.getBoolean(
+                     'isAccessibilityExtraLargeCursorEnabled') ?
+              128 :
+              64;
+        },
+      },
+
+      /**
        * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
@@ -262,6 +277,7 @@ export class SettingsCursorAndTouchpadPageElement extends
       chrome.settingsPrivate.PrefObject<boolean>;
   private showShelfNavigationButtonsSettings_: boolean;
   private isAccessibilityFaceGazeEnabled_: boolean;
+  private readonly largeCursorMaxSize_: number;
 
   constructor() {
     super();

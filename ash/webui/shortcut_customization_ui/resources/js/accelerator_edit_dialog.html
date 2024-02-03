@@ -32,10 +32,6 @@
     padding-block-start: 8px;
   }
 
-  #pendingAccelerator {
-    padding-top: 8px;
-  }
-
   [slot='button-container'] {
     --cr-dialog-button-container-padding-bottom: 28px;
     --cr-dialog-button-container-padding-horizontal: 32px;
@@ -119,8 +115,8 @@
         </accelerator-edit-view>
       </template>
       <template id="newAccelerator" is="dom-if"
-          if="[[showNewAccelerator(pendingNewAcceleratorState, acceleratorInfos)]]"
-          restamp>
+          if="[[showNewAccelerator(pendingNewAcceleratorState,
+                                   acceleratorInfos)]]">
         <accelerator-edit-view id="pendingAccelerator"
             view-state="{{pendingNewAcceleratorState}}"
             action="[[action]]"

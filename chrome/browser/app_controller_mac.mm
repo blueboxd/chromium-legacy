@@ -25,7 +25,6 @@
 #include "base/functional/bind.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
@@ -52,7 +51,6 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/mac/auth_session_request.h"
 #include "chrome/browser/mac/key_window_notifier.h"
-#include "chrome/browser/mac/mac_startup_profiler.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
@@ -734,19 +732,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 // the profile is loaded or any preferences have been registered). Defer any
 // user-data initialization until -applicationDidFinishLaunching:.
 - (void)mainMenuCreated {
-  MacStartupProfiler::GetInstance()->Profile(
-      MacStartupProfiler::AWAKE_FROM_NIB);
-  // We need to register the handlers early to catch events fired on launch.
-  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
-  [em setEventHandler:self
-          andSelector:@selector(getUrl:withReply:)
-        forEventClass:kInternetEventClass
-           andEventID:kAEGetURL];
-  [em setEventHandler:self
-          andSelector:@selector(getUrl:withReply:)
-        forEventClass:'WWW!'    // A particularly ancient AppleEvent that dates
-           andEventID:'OURL'];  // back to the Spyglass days.
-
   NSNotificationCenter* notificationCenter = NSNotificationCenter.defaultCenter;
   [notificationCenter
       addObserver:self
@@ -788,8 +773,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
 // the default handlers.
 - (void)applicationWillFinishLaunching:(NSNotification*)notification {
-  MacStartupProfiler::GetInstance()->Profile(
-      MacStartupProfiler::WILL_FINISH_LAUNCHING);
 
   if (@available(macOS 10.12, *)) {
     NSWindow.allowsAutomaticWindowTabbing = NO;
@@ -1055,10 +1038,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
     // Store the notification as it will be reposted when the dialog is closed.
     return;
   }
-
-  MacStartupProfiler::GetInstance()->Profile(
-      MacStartupProfiler::DID_FINISH_LAUNCHING);
-  MacStartupProfiler::GetInstance()->RecordMetrics();
 
   // Notify BrowserList to keep the application running so it doesn't go away
   // when all the browser windows get closed.
@@ -2090,12 +2069,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
           isEqualToString:*NSUserActivityTypeBrowsingWebStr]) {
     return NO;
   }
-
-  NSString* originString = base::apple::ObjCCast<NSString>(
-      (userActivity.userInfo)[handoff::kOriginKey]);
-  handoff::Origin origin = handoff::OriginFromString(originString);
-  UMA_HISTOGRAM_ENUMERATION(
-      "OSX.Handoff.Origin", origin, handoff::ORIGIN_COUNT);
 
   NSURL* url = userActivity.webpageURL;
   if (!url)

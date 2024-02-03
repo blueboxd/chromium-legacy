@@ -1615,6 +1615,7 @@ TEST_P(FrameThrottlingTest, LifecycleThrottledFrameNeedsRepaint) {
       GetDocument().getElementById(AtomicString("frame")));
   auto* frame_document = frame_element->contentDocument();
   frame_document->View()->SetLifecycleUpdatesThrottledForTesting(true);
+  GetDocument().View()->GetLayoutView()->Layer()->SetNeedsRepaint();
   GetDocument().View()->ScheduleAnimation();
   EXPECT_TRUE(frame_document->View()->ShouldThrottleRenderingForTest());
 
@@ -2017,7 +2018,7 @@ TEST_P(FrameThrottlingTest, ClearPaintArtifactOnThrottlingLocalRoot) {
 
   // This emulates javascript.
   div->setAttribute(html_names::kStyleAttr, g_empty_atom);
-  div->getBoundingClientRect();
+  div->GetBoundingClientRect();
   // This emulates WebFrameWidgetImpl::UpdateRenderThrottlingStatusForSubFrame.
   view->UpdateRenderThrottlingStatus(true, false, false, true);
   // UpdateRenderThrottlingStatus should have cleared out previous paint

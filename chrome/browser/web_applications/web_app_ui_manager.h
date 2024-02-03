@@ -42,6 +42,12 @@ class AppLock;
 // WebAppUiManagerImpl can be used only in UI code.
 class WebAppUiManagerImpl;
 
+enum class AppRelaunchState {
+  kAppClosingForRelaunch,
+  kAppAboutToRelaunch,
+  kAppRelaunched
+};
+
 using UninstallScheduledCallback = base::OnceCallback<void(bool)>;
 using UninstallCompleteCallback =
     base::OnceCallback<void(webapps::UninstallResultCode code)>;
@@ -211,6 +217,15 @@ class WebAppUiManager {
       base::WeakPtr<Profile> profile) = 0;
 #endif
 
+  // Displays the user about the status of a force app relaunch. This happens
+  // when a placeholder with `placeholder_app_id` is installed and running, and
+  // then is updated with an app with `final_app_id`.
+  virtual void NotifyAppRelaunchState(const webapps::AppId& placeholder_app_id,
+                                      const webapps::AppId& final_app_id,
+                                      const std::u16string& final_app_name,
+                                      base::WeakPtr<Profile> profile,
+                                      AppRelaunchState relaunch_state) = 0;
+
   // Creates a new Browser tab on the "about:blank" URL. Creates a new browser
   // if there isn't one that is already open.
   virtual content::WebContents* CreateNewTab() = 0;
@@ -259,6 +274,13 @@ class WebAppUiManager {
   virtual void MaybeCreateEnableSupportedLinksInfobar(
       content::WebContents* web_contents,
       const std::string& launch_name) = 0;
+
+  // Creates the IPH bubble for apps that are launched via link capturing being
+  // enabled.
+  virtual void MaybeShowIPHPromoForAppsLaunchedViaLinkCapturing(
+      content::WebContents* web_contents,
+      Profile* profile,
+      const std::string& app_id) = 0;
 
  private:
   base::ObserverList<WebAppUiManagerObserver, /*check_empty=*/true> observers_;

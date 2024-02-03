@@ -10,12 +10,12 @@ import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
 import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
-import {DialogType} from '../../common/js/dialog_type.js';
+import {decorate} from '../../common/js/cr_ui.js';
 import {MockDirectoryEntry, MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.js';
-import {decorate} from '../../common/js/ui.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {VolumeType} from '../../common/js/volume_manager_types.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
-import {VolumeManager} from '../../externs/volume_manager.js';
+import {DialogType} from '../../externs/ts/state.js';
+import type {VolumeManager} from '../../externs/volume_manager.js';
 import {FilesToast} from '../elements/files_toast.js';
 
 import {FakeFileSelectionHandler} from './fake_file_selection_handler.js';
@@ -79,8 +79,9 @@ export function setUp() {
   `;
 
   // Initialize Command with the <command>s.
-  decorate('command', Command);
-
+  for (const command of document.querySelectorAll<Command>('command')) {
+    decorate(command, Command);
+  }
   // Fake confirmation callback.
   const confirmationDialog = () => Promise.resolve(true);
 
@@ -96,7 +97,7 @@ export function setUp() {
   // Create fake VolumeManager and install webkitResolveLocalFileSystemURL.
   volumeManager = new MockVolumeManager();
   window.webkitResolveLocalFileSystemURL =
-      MockVolumeManager.resolveLocalFileSystemURL.bind(null, volumeManager) as
+      MockVolumeManager.resolveLocalFileSystemUrl.bind(null, volumeManager) as
       unknown as Window['webkitResolveLocalFileSystemURL'];
 
 
@@ -156,9 +157,6 @@ export function setUp() {
 
 /**
  * Tests isDocumentWideEvent_.
- *
- * @suppress {accessControls} To be able to access private method
- * isDocumentWideEvent_
  */
 export function testIsDocumentWideEvent() {
   const input = document.querySelector<HTMLInputElement>('#free-text')!;
@@ -203,8 +201,7 @@ export function testIsDocumentWideEvent() {
 export function testCanMoveDownloads() {
   // Item 1 of the volume info list should be Downloads volume type.
   assertEquals(
-      VolumeManagerCommon.VolumeType.DOWNLOADS,
-      volumeManager.volumeInfoList.item(1).volumeType);
+      VolumeType.DOWNLOADS, volumeManager.volumeInfoList.item(1).volumeType);
 
   // Create a downloads folder inside the item.
   const myFilesVolume = volumeManager.volumeInfoList.item(1);

@@ -10,6 +10,7 @@
 #include "Availability.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#import "ios/chrome/browser/ui/ntp/feed_top_section/notifications_promo_view_constants.h"
 
 namespace base {
 class TimeDelta;
@@ -49,9 +50,6 @@ BASE_DECLARE_FEATURE(kIOSBrowserEditMenuMetrics);
 // the cooldown periods for full screen and non-modal promos, as well as
 // Finchable cooldown period for non-modal promos.
 BASE_DECLARE_FEATURE(kNonModalDefaultBrowserPromoCooldownRefactor);
-
-// Feature flag to enable Set Up List Content Notification.
-BASE_DECLARE_FEATURE(kSetUpListContentNotification);
 
 // The default param value for the non-modal promo cooldown period, in days,
 // overridable through Finch.
@@ -209,6 +207,39 @@ bool IsBottomOmniboxSteadyStateEnabled();
 // enabled.
 bool IsBottomOmniboxDeviceSwitcherResultsEnabled();
 
+// Feature flag to enable the bottom omnibox FRE promo.
+BASE_DECLARE_FEATURE(kBottomOmniboxPromoFRE);
+
+// Feature flag to enable the bottom omnibox app-launch promo.
+BASE_DECLARE_FEATURE(kBottomOmniboxPromoAppLaunch);
+
+// Feature param under kBottomOmniboxPromoFRE or kBottomOmniboxPromoAppLaunch to
+// skip the promo conditions for testing.
+extern const char kBottomOmniboxPromoParam[];
+extern const char kBottomOmniboxPromoParamForced[];
+
+// Type of bottom omnibox promo.
+enum class BottomOmniboxPromoType {
+  // kBottomOmniboxPromoFRE.
+  kFRE,
+  // kBottomOmniboxPromoAppLaunch.
+  kAppLaunch,
+  // Any promo type.
+  kAny,
+};
+
+// Whether the bottom omnibox promo of `type` is enabled.
+bool IsBottomOmniboxPromoFlagEnabled(BottomOmniboxPromoType type);
+
+// Feature flag to change the default proposed position in omnibox promos.
+BASE_DECLARE_FEATURE(kBottomOmniboxPromoDefaultPosition);
+
+// Feature param under kBottomOmniboxPromoDefaultPosition to select the default
+// position.
+extern const char kBottomOmniboxPromoDefaultPositionParam[];
+extern const char kBottomOmniboxPromoDefaultPositionParamTop[];
+extern const char kBottomOmniboxPromoDefaultPositionParamBottom[];
+
 // Feature flag to put all clipboard access onto a background thread. Any
 // synchronous clipboard access will always return nil/false.
 BASE_DECLARE_FEATURE(kOnlyAccessClipboardAsync);
@@ -238,6 +269,12 @@ BASE_DECLARE_FEATURE(kDynamicBackgroundColor);
 
 // Feature flag enabling tab grid refactoring.
 BASE_DECLARE_FEATURE(kTabGridRefactoring);
+
+// Feature flag enabling the tab grid new compositional layout.
+BASE_DECLARE_FEATURE(kTabGridCompositionalLayout);
+
+// Whether the Tab Grid should use its compositional layout.
+bool IsTabGridCompositionalLayoutEnabled();
 
 // Whether the Safety Check module should be shown in the Magic Stack.
 bool IsSafetyCheckMagicStackEnabled();
@@ -307,6 +344,9 @@ BASE_DECLARE_FEATURE(kEnableFollowUIUpdate);
 // Feature flag to enable the live sport card in the Discover feed.
 BASE_DECLARE_FEATURE(kDiscoverFeedSportCard);
 
+// Content Push Notifications Variations.
+extern const char kContentPushNotificationsExperimentType[];
+
 // Feature flag to enable the content notifications.
 BASE_DECLARE_FEATURE(kContentPushNotifications);
 
@@ -322,6 +362,10 @@ BASE_DECLARE_FEATURE(kFullscreenImprovement);
 
 // Feature flag to enable Tab Groups in Grid.
 BASE_DECLARE_FEATURE(kTabGroupsInGrid);
+
+// Feature flag to enable the handling of external actions passed to Chrome.
+// Enabled by default.
+BASE_DECLARE_FEATURE(kIOSExternalActionURLs);
 
 // Feature param under `kEnableFeedBackgroundRefresh` to also enable background
 // refresh for the Following feed.
@@ -511,14 +555,26 @@ bool IsFeedHotStartRefreshDisabled();
 // YES when Follow UI Update is enabled.
 bool IsFollowUIUpdateEnabled();
 
-// YES when the Content Push Notifications are enabled.
+// YES when any of the content push notification variations are enabled.
 bool IsContentPushNotificationsEnabled();
+
+// Returns the Experiment type from the content push notifications flag.
+NotificationsExperimentType ContentNotificationsExperimentTypeEnabled();
+
+// YES when the Content Push Notifications Promo is enabled.
+bool IsContentPushNotificationsPromoEnabled();
+
+// YES when the Content Push Notifications Setup List is enabled.
+bool IsContentPushNotificationsSetUpListEnabled();
 
 // Returns true when the IOSLargeFakebox feature is enabled.
 bool IsIOSLargeFakeboxEnabled();
 
 // Returns true when the IOSHideFeedWithSearchChoice feature is enabled.
 bool IsIOSHideFeedWithSearchChoiceEnabled();
+
+// Whether or not the kIOSKeyboardAccessoryUpgrade feature is enabled.
+bool IsKeyboardAccessoryUpgradeEnabled();
 
 // Feature for the Magic Stack.
 BASE_DECLARE_FEATURE(kMagicStack);
@@ -591,7 +647,7 @@ bool ShouldHideIrrelevantModules();
 // in the Magic Stack.
 int TimeUntilShowingCompactedSetUpList();
 
-// Yes if the Set Up List Content Notification is enabled.
-bool IsSetUpListContentNotificationEnabled();
+// Helper for whether the external action handling flag is enabled.
+bool IsExternalActionSchemeHandlingEnabled();
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

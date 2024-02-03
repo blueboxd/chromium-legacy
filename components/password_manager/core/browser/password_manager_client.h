@@ -31,7 +31,7 @@
 class PrefService;
 
 namespace autofill {
-class AutofillDownloadManager;
+class AutofillCrowdsourcingManager;
 class LogManager;
 }  // namespace autofill
 
@@ -252,6 +252,9 @@ class PasswordManagerClient {
   virtual void NotifyOnSuccessfulLogin(
       const std::u16string& submitted_username) {}
 
+  // Informs that that Keychain is not available.
+  virtual void NotifyKeychainError() = 0;
+
   // Informs that a credential filled by Touch To Fill can be submitted.
   // TODO(crbug.com/1299394): Remove when the TimeToSuccessfulLogin metric is
   // deprecated.
@@ -369,8 +372,9 @@ class PasswordManagerClient {
   // Returns the HttpAuthManager associated with this client.
   virtual HttpAuthManager* GetHttpAuthManager();
 
-  // Returns the AutofillDownloadManager for votes uploading.
-  virtual autofill::AutofillDownloadManager* GetAutofillDownloadManager();
+  // Returns the AutofillCrowdsourcingManager for votes uploading.
+  virtual autofill::AutofillCrowdsourcingManager*
+  GetAutofillCrowdsourcingManager();
 
   // Returns true if the main frame URL has a secure origin.
   // The WebContents only has a primary main frame, so MainFrame here refers to

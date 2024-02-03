@@ -19,6 +19,8 @@ const char kCredentialProviderEnabledOnStartup[] =
 
 #if BUILDFLAG(IS_ANDROID)
 const char kAutoSignInEnabledGMS[] = "profile.auto_sign_in_enabled_gms";
+const char kEmptyProfileStoreLoginDatabase[] =
+    "password_manager.empty_profile_store_login_database";
 const char kOfferToSavePasswordsEnabledGMS[] =
     "profile.save_passwords_enabed_gms";
 const char kSavePasswordsSuspendedByError[] =
@@ -140,6 +142,9 @@ const char kAccountStorageNewFeatureIconImpressions[] =
 #endif  // BUILDFLAG(IS_IOS)
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+const char kPasswordGenerationNudgePasswordDismissCount[] =
+    "password_generation_nudge_password_dismiss_count";
+
 const char kPasswordManagerPromoCardsList[] =
     "password_manager.password_promo_cards_list";
 #endif

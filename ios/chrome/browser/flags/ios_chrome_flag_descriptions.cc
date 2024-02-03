@@ -166,6 +166,20 @@ const char kBottomOmniboxDeviceSwitcherResultsDescription[] =
     "Enabled by default. Retrieve device switcher results for the default "
     "omnibox position.";
 
+const char kBottomOmniboxPromoAppLaunchName[] =
+    "Bottom omnibox promo app-launch";
+const char kBottomOmniboxPromoAppLaunchDescription[] =
+    "Enables the app-launch promo for the bottom omnibox.";
+
+const char kBottomOmniboxPromoDefaultPositionName[] =
+    "Bottom omnibox promo default position";
+const char kBottomOmniboxPromoDefaultPositionDescription[] =
+    "Changes the default omnibox position in the FRE and app-launch promos.";
+
+const char kBottomOmniboxPromoFREName[] = "Bottom omnibox promo FRE";
+const char kBottomOmniboxPromoFREDescription[] =
+    "Enables the FRE promo for the bottom omnibox.";
+
 const char kBottomOmniboxSteadyStateName[] = "Bottom Omnibox (Steady)";
 const char kBottomOmniboxSteadyStateDescription[] =
     "Move the omnibox to the bottom in steady state";
@@ -249,12 +263,6 @@ const char kDefaultBrowserVideoInSettingsName[] =
 const char kDefaultBrowserVideoInSettingsDescription[] =
     "When enabled, default browser video will be displayed to user in "
     "settings.";
-
-const char kDefaultBrowserFullscreenPromoExperimentName[] =
-    "Default Browser Fullscreen modal experiment";
-const char kDefaultBrowserFullscreenPromoExperimentDescription[] =
-    "When enabled, will show a modified default browser fullscreen modal promo "
-    "UI.";
 
 const char kDefaultBrowserIntentsShowSettingsName[] =
     "Default Browser Intents show settings";
@@ -425,18 +433,6 @@ const char kEnableUIButtonConfigurationName[] =
 const char kEnableUIButtonConfigurationDescription[] =
     "Enable UIButtonConfiguration usage for UIButtons.";
 
-const char kEnableUserPolicyForSigninAndNoSyncConsentLevelName[] =
-    "Enable user policies when signed-in only without sync";
-const char kEnableUserPolicyForSigninAndNoSyncConsentLevelDescription[] =
-    "Enable the fetch and application of user policies when signed-in only with"
-    "a managed account, excluding signed-in+sync.";
-
-const char kEnableUserPolicyForSigninOrSyncConsentLevelName[] =
-    "Enable user policies when signed-in only or signed-in+sync";
-const char kEnableUserPolicyForSigninOrSyncConsentLevelDescription[] =
-    "Enable the fetch and application of user policies when signed-in only or "
-    "signed-in+sync with a managed account.";
-
 const char kEnableWebChannelsName[] = "Enable WebFeed";
 const char kEnableWebChannelsDescription[] =
     "Enable folowing content from web and display Following feed on NTP based "
@@ -539,11 +535,6 @@ const char kIOSKeyboardAccessoryUpgradeName[] =
 const char kIOSKeyboardAccessoryUpgradeDescription[] =
     "When enabled, the upgraded keyboard accessory UI will be presented.";
 
-const char kIOSNewPostRestoreExperienceName[] = "New Post Restore Experience";
-const char kIOSNewPostRestoreExperienceDescription[] =
-    "When enabled, a prompt will be presented after a device restore to "
-    "allow the user to sign in again.";
-
 const char kIOSParcelTrackingName[] = "Parcel Tracking";
 const char kIOSParcelTrackingDescription[] =
     "When enabled, the user will be able to track their packages.";
@@ -561,11 +552,6 @@ const char kIOSPasswordAuthOnEntryV2Description[] =
     "Password Manager subpages. Supersedes `Password Manager Auth on Entry` if "
     "enabled.";
 
-const char kIOSPasswordUISplitName[] = "Password Manager UI Split";
-const char kIOSPasswordUISplitDescription[] =
-    "Splits Password Settings and "
-    "Password Manager into two separate UIs.";
-
 const char kIOSSaveToDriveName[] = "IOS Save to Drive";
 const char kIOSSaveToDriveDescription[] =
     "Enables the Save to Drive feature on iOS.";
@@ -577,6 +563,11 @@ const char kIOSSaveToPhotosDescription[] =
 const char kIOSPasswordBottomSheetName[] = "IOS Password Manager Bottom Sheet";
 const char kIOSPasswordBottomSheetDescription[] =
     "Enables the display of the password bottom sheet on IOS.";
+
+const char kIOSPasswordBottomSheetAutofocusName[] =
+    "IOS Password Manager Bottom Sheet Autofocus";
+const char kIOSPasswordBottomSheetAutofocusDescription[] =
+    "Enables triggering the password bottom sheet on autofocus on IOS.";
 
 const char kIOSPasswordSettingsBulkUploadLocalPasswordsName[] =
     "iOS Bulk Upload Local Passwords";
@@ -735,13 +726,6 @@ const char kOmniboxNewImplementationName[] =
 const char kOmniboxNewImplementationDescription[] =
     "Uses a textfield implementation that doesn't use UILabels internally";
 
-const char kOmniboxFocusTriggersSRPZeroSuggestName[] =
-    "Allow Omnibox contextual web on-focus suggestions on the SRP";
-const char kOmniboxFocusTriggersSRPZeroSuggestDescription[] =
-    "Enables on-focus suggestions on the Search Results page. Requires "
-    "on-focus suggestions for the contextual web to be enabled. Will only work "
-    "if user is signed-in and syncing.";
-
 const char kOmniboxLocalHistoryZeroSuggestBeyondNTPName[] =
     "Allow local history zero-prefix suggestions beyond NTP";
 const char kOmniboxLocalHistoryZeroSuggestBeyondNTPDescription[] =
@@ -878,12 +862,6 @@ const char kReplaceSyncPromosWithSignInPromosName[] =
 const char kReplaceSyncPromosWithSignInPromosDescription[] =
     "When enabled, all sync-related promos will be replaced by sign-in ones.";
 
-const char kRestoreSessionFromCacheName[] =
-    "Use native WKWebView sesion restoration (iOS15 only).";
-const char kRestoreSessionFromCacheDescription[] =
-    "Enable instant session restoration for faster web session restoration "
-    "(iOS15 only).";
-
 const char kSafeBrowsingAvailableName[] = "Make Safe Browsing available";
 const char kSafeBrowsingAvailableDescription[] =
     "When enabled, navigation URLs are compared to Safe Browsing blocklists, "
@@ -913,12 +891,6 @@ const char kSendUmaOverAnyNetwork[] =
 const char kSendUmaOverAnyNetworkDescription[] =
     "When enabled, will send UMA data over either WiFi or cellular by default.";
 
-const char kSetUpListContentNotificationName[] =
-    "Set Up List Content Notification Opt-in";
-const char kSetUpListContentNotificationDescription[] =
-    "Displays an content notification opt-in entry point in list of set up "
-    "tasks on Home for a new user.";
-
 const char kSharedHighlightingIOSName[] = "Enable Shared Highlighting features";
 const char kSharedHighlightingIOSDescription[] =
     "Adds a Link to Text option in the Edit Menu which generates URLs with a "
@@ -934,12 +906,6 @@ const char kShowInactiveTabsCountName[] =
 const char kShowInactiveTabsCountDescription[] =
     "When enabled, the count of Inactive Tabs is shown in the Inactive Tabs "
     "button that appears in the Tab Grid.";
-
-extern const char  kShowUserPolicyNotificationAtStartupIfNeededName[] =
-    "Show User Policy notif at startup if needed";
-extern const char  kShowUserPolicyNotificationAtStartupIfNeededDescription[] =
-    "When enabled, evaluate if the User Policy notification should be shown "
-    "during startup.";
 
 const char kSkipUndecryptablePasswordsName[] =
     "Enable silent ignoring of undecryptable passwords";
@@ -1018,10 +984,16 @@ const char kEnableSessionSerializationOptimizationsDescription[] =
     "and the ability to load only the minimum amount of data when restoring "
     "the session from disk.";
 
+const char kTabGridCompositionalLayoutName[] =
+    "Enable tab grid with the new compositional layout";
+const char kTabGridCompositionalLayoutDescription[] =
+    "When enabled, the Tab Grid uses the new compositional layout. Items sizes "
+    "are different and more dynamic than before.";
+
 const char kTabGridRefactoringName[] = "Enable tab grid refactoring";
 const char kTabGridRefactoringDescription[] =
-    "When enabled, the Tab Grid use the refactored version, it should not have "
-    "any visual difference nor different feature with the legacy one.";
+    "When enabled, the Tab Grid uses the refactored version, it should not "
+    "have any visual difference nor different feature with the legacy one.";
 
 const char kTabGridNewTransitionsName[] = "Enable new TabGrid transitions";
 const char kTabGridNewTransitionsDescription[] =
@@ -1092,10 +1064,6 @@ const char kWebPageAlternativeTextZoomDescription[] =
 const char kWebPageTextZoomIPadName[] = "Enable text zoom on iPad";
 const char kWebPageTextZoomIPadDescription[] =
     "When enabled, text zoom works again on iPad";
-
-const char kWhatsNewIOSM116Name[] = "Enable What's New M116.";
-const char kWhatsNewIOSM116Description[] =
-    "When enabled, What's New will display new features and a chrome tip.";
 
 // Please insert your name/description above in alphabetical order.
 

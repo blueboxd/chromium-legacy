@@ -5,18 +5,18 @@
 #ifndef ASH_PUBLIC_CPP_SHELF_CONFIG_H_
 #define ASH_PUBLIC_CPP_SHELF_CONFIG_H_
 
+#include <optional>
+
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_observer.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/color/color_id.h"
 #include "ui/display/display_observer.h"
@@ -34,8 +34,7 @@ namespace ash {
 
 // Provides layout and drawing config for the Shelf. Note That some of these
 // values could change at runtime.
-class ASH_EXPORT ShelfConfig : public TabletModeObserver,
-                               public SessionObserver,
+class ASH_EXPORT ShelfConfig : public SessionObserver,
                                public AppListControllerObserver,
                                public display::DisplayObserver,
                                public VirtualKeyboardModel::Observer,
@@ -72,14 +71,11 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
                                SplitViewController::State state);
 
-  // TabletModeObserver:
-  void OnTabletModeStarting() override;
-  void OnTabletModeEnding() override;
-
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // DisplayObserver:
+  void OnDisplayTabletStateChanged(display::TabletState state) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
@@ -296,7 +292,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Whether an elevated app bar has been rendered (stacked hotseat). This
   // boolean is used for logging UMA metrics.
-  absl::optional<bool> has_shown_elevated_app_bar_;
+  std::optional<bool> has_shown_elevated_app_bar_;
 
   // Whether tablet mode homecher should use elevated app bar.
   bool elevate_tablet_mode_app_bar_ = false;
@@ -409,7 +405,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   std::unique_ptr<ShelfSplitViewObserver> split_view_observer_;
 
   // Receive callbacks from DisplayObserver.
-  absl::optional<display::ScopedDisplayObserver> display_observer_;
+  display::ScopedDisplayObserver display_observer_{this};
 
   base::ObserverList<Observer> observers_;
 };

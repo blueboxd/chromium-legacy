@@ -99,7 +99,6 @@ import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.logo.LogoBridge;
 import org.chromium.chrome.browser.logo.LogoBridgeJni;
 import org.chromium.chrome.browser.logo.LogoView;
-import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
@@ -164,7 +163,6 @@ public class StartSurfaceMediatorUnitTest {
     @Mock private OmniboxStub mOmniboxStub;
     @Mock private ExploreSurfaceCoordinator mExploreSurfaceCoordinator;
     @Mock private ExploreSurfaceCoordinatorFactory mExploreSurfaceCoordinatorFactory;
-    @Mock private NightModeStateProvider mNightModeStateProvider;
     @Mock private BrowserControlsStateProvider mBrowserControlsStateProvider;
     @Mock private StartSurfaceMediator.ActivityStateChecker mActivityStateChecker;
     @Mock private VoiceRecognitionHandler mVoiceRecognitionHandler;
@@ -178,7 +176,7 @@ public class StartSurfaceMediatorUnitTest {
     @Mock private Supplier<Tab> mParentTabSupplier;
     @Mock private View mLogoContainerView;
     @Mock private LogoView mLogoView;
-    @Mock LogoBridge.Natives mLogoBridge;
+    @Mock private LogoBridge.Natives mLogoBridge;
     @Mock private Profile mProfile;
     @Mock private TemplateUrlService mTemplateUrlService;
     @Mock private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
@@ -205,15 +203,15 @@ public class StartSurfaceMediatorUnitTest {
 
     @Captor private ArgumentCaptor<TemplateUrlServiceObserver> mTemplateUrlServiceObserverCaptor;
 
-    private ObservableSupplierImpl<Boolean>
+    private final ObservableSupplierImpl<Boolean>
             mCarouselTabSwitcherModuleControllerBackPressStateSupplier =
                     new ObservableSupplierImpl<>();
-    private ObservableSupplierImpl<Boolean>
+    private final ObservableSupplierImpl<Boolean>
             mCarouselTabSwitcherModuleControllerDialogVisibleSupplier =
                     new ObservableSupplierImpl<>();
-    private ObservableSupplierImpl<Boolean> mSecondaryControllerBackPressStateSupplier =
+    private final ObservableSupplierImpl<Boolean> mSecondaryControllerBackPressStateSupplier =
             new ObservableSupplierImpl<>();
-    private ObservableSupplierImpl<Boolean> mSecondaryControllerDialogVisibleSupplier =
+    private final ObservableSupplierImpl<Boolean> mSecondaryControllerDialogVisibleSupplier =
             new ObservableSupplierImpl<>();
     private ObservableSupplierImpl<Profile> mProfileSupplier = new ObservableSupplierImpl<>();
 
@@ -413,7 +411,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    public void hideTabCarouselWhenClosingAndSelectingNTPTab() {
+    public void hideTabCarouselWhenClosingAndSelectingNtpTab() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
         doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
@@ -436,9 +434,9 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_TITLE_VISIBLE), equalTo(true));
 
-        Tab NTPTab = mock(Tab.class);
-        doReturn(JUnitTestGURLs.NTP_URL).when(NTPTab).getUrl();
-        mTabModelObserverCaptor.getValue().didSelectTab(NTPTab, TabSelectionType.FROM_CLOSE, 2);
+        Tab ntpTab = mock(Tab.class);
+        doReturn(JUnitTestGURLs.NTP_URL).when(ntpTab).getUrl();
+        mTabModelObserverCaptor.getValue().didSelectTab(ntpTab, TabSelectionType.FROM_CLOSE, 2);
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_TITLE_VISIBLE), equalTo(false));
@@ -1321,7 +1319,6 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(false));
         verify(mCarouselOrSingleTabSwitcherModuleController).showTabSwitcherView(eq(false));
 
-        when(mCarouselOrSingleTabSwitcherModuleController.overviewVisible()).thenReturn(true);
         mediator.initWithNative(
                 mOmniboxStub, mExploreSurfaceCoordinatorFactory, mPrefService, null);
         assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(true));
@@ -1510,7 +1507,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    public void hideSingleTabSwitcherWhenCurrentSelectedTabIsNTP() {
+    public void hideSingleTabSwitcherWhenCurrentSelectedTabIsNtp() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
         doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
@@ -2067,14 +2064,14 @@ public class StartSurfaceMediatorUnitTest {
         OnTabSelectingListener onTabSelectingListener = Mockito.mock(OnTabSelectingListener.class);
         mediator.setOnTabSelectingListener(onTabSelectingListener);
         mTabModelObserverCaptor.getValue().didSelectTab(mTab, TabSelectionType.FROM_USER, lastId);
-        verify(onTabSelectingListener).onTabSelecting(anyLong(), eq(currentId));
+        verify(onTabSelectingListener).onTabSelecting(eq(currentId));
 
         doReturn(true).when(mTab).isIncognito();
         mTabModelObserverCaptor.getValue().didSelectTab(mTab, TabSelectionType.FROM_USER, lastId);
-        verify(onTabSelectingListener, times(2)).onTabSelecting(anyLong(), eq(currentId));
+        verify(onTabSelectingListener, times(2)).onTabSelecting(eq(currentId));
 
         mTabModelObserverCaptor.getValue().didSelectTab(mTab, TabSelectionType.FROM_CLOSE, lastId);
-        verify(onTabSelectingListener, times(2)).onTabSelecting(anyLong(), eq(currentId));
+        verify(onTabSelectingListener, times(2)).onTabSelecting(eq(currentId));
     }
 
     @Test

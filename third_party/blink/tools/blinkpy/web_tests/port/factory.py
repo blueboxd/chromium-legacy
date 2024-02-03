@@ -219,6 +219,9 @@ def add_configuration_options_group(parser: argparse.ArgumentParser,
                        const='Release',
                        dest='configuration',
                        help='Set the configuration to Release')
+    group.add_argument('--chrome-branded',
+                       action='store_true',
+                       help='Set the configuration as chrome_branded.')
     add_common_wpt_options(group)
     if rwt:
         group.add_argument('--no-xvfb',
@@ -830,6 +833,12 @@ def _read_configuration_from_gn(fs, options):
     args = fs.read_text_file(path)
     for line in args.splitlines():
         if re.match(r'^\s*is_debug\s*=\s*false(\s*$|\s*#.*$)', line):
+            return 'Release'
+
+    # If is_debug is not set, the default is based on if is_official_build
+    # is set to true.
+    for line in args.splitlines():
+        if re.match(r'^\s*is_official_build\s*=\s*true(\s*$|\s*#.*$)', line):
             return 'Release'
 
     # If is_debug is set to anything other than false, or if it

@@ -130,13 +130,15 @@ class BeginMainFrameWaiter : public ui::CompositorObserver {
   void OnDidBeginMainFrame(ui::Compositor* compositor) override {
     DCHECK_EQ(compositor_, compositor);
     done_ = true;
-    if (run_loop_)
+    if (run_loop_) {
       run_loop_->Quit();
+    }
   }
 
   void Wait() {
-    if (done_)
+    if (done_) {
       return;
+    }
 
     run_loop_ = std::make_unique<base::RunLoop>(
         base::RunLoop::Type::kNestableTasksAllowed);

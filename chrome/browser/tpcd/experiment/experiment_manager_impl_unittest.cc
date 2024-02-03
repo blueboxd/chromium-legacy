@@ -7,22 +7,34 @@
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/tpcd/experiment/tpcd_experiment_features.h"
 #include "chrome/browser/tpcd/experiment/tpcd_pref_names.h"
 #include "chrome/browser/tpcd/experiment/tpcd_utils.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace tpcd::experiment {
 namespace {
 
-class TestingExperimentManagerImpl : public ExperimentManagerImpl {};
+class TestingExperimentManagerImpl : public ExperimentManagerImpl {
+ public:
+  bool CanRegisterSyntheticTrialForTesting() const {
+    return CanRegisterSyntheticTrial();
+  }
+};
 
 using ::testing::InSequence;
 using ::testing::Optional;
@@ -33,12 +45,11 @@ using Checkpoint = ::testing::MockFunction<void(int step)>;
 
 class ExperimentManagerImplTestBase : public testing::Test {
  public:
-  ExperimentManagerImplTestBase()
-      : local_state_(TestingBrowserProcess::GetGlobal()) {}
-
-  PrefService& prefs() { return *local_state_.Get(); }
+  PrefService& prefs() { return *profile_manager_.local_state()->Get(); }
 
   void SetUp() override {
+    ASSERT_TRUE(profile_manager_.SetUp());
+
     prefs().SetInteger(
         prefs::kTPCDExperimentClientState,
         static_cast<int>(utils::ExperimentState::kUnknownEligibility));
@@ -46,9 +57,9 @@ class ExperimentManagerImplTestBase : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
+  content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  ScopedTestingLocalState local_state_;
+  TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   base::MockCallback<ExperimentManager::EligibilityDecisionCallback>
       mock_callback_;
   base::TimeDelta delay_time_;
@@ -139,25 +150,6 @@ TEST_F(ExperimentManagerImplTestBase, ForceEligibleForTesting) {
 
   task_environment_.FastForwardBy(delay_time_);
   EXPECT_THAT(test_manager.IsClientEligible(), testing::Optional(true));
-}
-
-TEST_F(ExperimentManagerImplTestBase, ProfileOnboardedSetsPref) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kCookieDeprecationFacilitatedTesting,
-      {{kDisable3PCookiesName, "true"}});
-
-  TestingExperimentManagerImpl test_manager;
-  test_manager.SetClientEligibility(/*is_eligible=*/true, mock_callback_.Get());
-  EXPECT_CALL(mock_callback_, Run(true)).Times(1);
-  task_environment_.FastForwardBy(delay_time_);
-
-  EXPECT_EQ(prefs().GetInteger(prefs::kTPCDExperimentClientState),
-            static_cast<int>(utils::ExperimentState::kEligible));
-
-  test_manager.NotifyProfileTrackingProtectionOnboarded();
-  EXPECT_EQ(prefs().GetInteger(prefs::kTPCDExperimentClientState),
-            static_cast<int>(utils::ExperimentState::kOnboarded));
 }
 
 class ExperimentManagerImplTest : public ExperimentManagerImplTestBase {
@@ -330,5 +322,102 @@ TEST_F(ExperimentManagerImplTest, IsClientEligible_PrefIsUnknownReturnsEmpty) {
 
   EXPECT_EQ(TestingExperimentManagerImpl().IsClientEligible(), absl::nullopt);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(ExperimentManagerImplTest, AshInternalProfile_NotCreated) {
+  auto* internal_profile =
+      profile_manager_.CreateTestingProfile(ash::kSigninBrowserContextBaseName);
+  EXPECT_FALSE(ExperimentManagerImpl::GetForProfile(internal_profile));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// The parameter indicates whether to disable 3pcs.
+class ExperimentManagerImplSyntheticTrialTest
+    : public ExperimentManagerImplTestBase,
+      public testing::WithParamInterface<bool> {};
+
+TEST_P(ExperimentManagerImplSyntheticTrialTest, ProfileOnboardedSetsPref) {
+  const bool disable_3p_cookies = GetParam();
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kCookieDeprecationFacilitatedTesting,
+      {{kDisable3PCookiesName, disable_3p_cookies ? "true" : "false"},
+       {kNeedOnboardingForSyntheticTrialName, "true"},
+       {kEnableSilentOnboardingName, "true"}});
+
+  TestingExperimentManagerImpl test_manager;
+  test_manager.SetClientEligibility(/*is_eligible=*/true, mock_callback_.Get());
+  EXPECT_CALL(mock_callback_, Run(true)).Times(1);
+  task_environment_.FastForwardBy(delay_time_);
+
+  EXPECT_EQ(prefs().GetInteger(prefs::kTPCDExperimentClientState),
+            static_cast<int>(utils::ExperimentState::kEligible));
+
+  test_manager.NotifyProfileTrackingProtectionOnboarded();
+  EXPECT_EQ(prefs().GetInteger(prefs::kTPCDExperimentClientState),
+            static_cast<int>(utils::ExperimentState::kOnboarded));
+}
+
+TEST_P(ExperimentManagerImplSyntheticTrialTest, CanRegister) {
+  const bool disable_3p_cookies = GetParam();
+
+  const struct {
+    utils::ExperimentState experiment_state;
+    bool expected;
+    bool need_onboarding = false;
+    bool enable_silent_onboarding = false;
+  } kTestCases[] = {
+      {
+          .experiment_state = utils::ExperimentState::kUnknownEligibility,
+          .expected = false,
+      },
+      {
+          .experiment_state = utils::ExperimentState::kIneligible,
+          .expected = true,
+      },
+      {
+          .experiment_state = utils::ExperimentState::kEligible,
+          .expected = true,
+          .need_onboarding = false,
+      },
+      {
+          .experiment_state = utils::ExperimentState::kEligible,
+          .expected = !disable_3p_cookies,
+          .need_onboarding = true,
+      },
+      {
+          .experiment_state = utils::ExperimentState::kEligible,
+          .expected = false,
+          .need_onboarding = true,
+          .enable_silent_onboarding = true,
+      },
+      {
+          .experiment_state = utils::ExperimentState::kOnboarded,
+          .expected = true,
+      },
+  };
+
+  for (const auto& test_case : kTestCases) {
+    base::test::ScopedFeatureList scope_feature_list;
+    scope_feature_list.InitAndEnableFeatureWithParameters(
+        features::kCookieDeprecationFacilitatedTesting,
+        {{kDisable3PCookiesName, disable_3p_cookies ? "true" : "false"},
+         {kNeedOnboardingForSyntheticTrialName,
+          test_case.need_onboarding ? "true" : "false"},
+         {kEnableSilentOnboardingName,
+          test_case.enable_silent_onboarding ? "true" : "false"}});
+
+    prefs().SetInteger(prefs::kTPCDExperimentClientState,
+                       static_cast<int>(test_case.experiment_state));
+    EXPECT_EQ(
+        TestingExperimentManagerImpl().CanRegisterSyntheticTrialForTesting(),
+        test_case.expected);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ExperimentManagerImplSyntheticTrialTest,
+                         testing::Bool());
 
 }  // namespace tpcd::experiment

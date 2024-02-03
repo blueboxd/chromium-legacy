@@ -17190,10 +17190,10 @@ IN_PROC_BROWSER_TEST_P(
 
   RenderFrameHost* frame = shell()->web_contents()->GetPrimaryMainFrame();
 
-  // Create an unload handler and force the browser process to wait before
+  // Create a pagehide handler and force the browser process to wait before
   // deleting |frame|.
   EXPECT_TRUE(ExecJs(frame, R"(
-             window.onunload=function(e){
+             window.onpagehide=function(e){
                window.domAutomationController.send('done');
              };)"));
 
@@ -22071,6 +22071,20 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   url::Origin committed_origin =
       shell()->web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin();
   EXPECT_EQ(origin_to_commit.value(), committed_origin);
+
+  GURL site_url = contents()->GetSiteInstance()->GetSiteURL();
+  if (AreAllSitesIsolatedForTesting()) {
+    if (base::FeatureList::IsEnabled(features::kDataUrlsHaveOriginAsUrl)) {
+      EXPECT_EQ(site_url.spec(),
+                "data:" + origin_to_commit->GetNonceForTesting()->ToString());
+    } else {
+      EXPECT_EQ(site_url, data_url);
+    }
+  } else {
+    // Without site isolation, the data: URL ends up in the default
+    // SiteInstance.
+    EXPECT_EQ(site_url.spec(), "http://unisolated.invalid/");
+  }
 }
 
 // This tests a regression found in https://crbug.com/1487803.

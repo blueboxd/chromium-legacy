@@ -46,6 +46,7 @@
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -177,12 +178,19 @@ std::string GetSyncErrorAction(SyncStatusActionType action_type) {
 
 // Returns the base::Value associated with the account, to use in the stored
 // accounts list.
-base::Value::Dict GetAccountValue(const AccountInfo& account) {
+base::Value::Dict GetAccountValue(signin::IdentityManager* identity_manager,
+                                  const AccountInfo& account) {
   DCHECK(!account.IsEmpty());
-  auto dict = base::Value::Dict()
-                  .Set("email", account.email)
-                  .Set("fullName", account.full_name)
-                  .Set("givenName", account.given_name);
+  auto dict =
+      base::Value::Dict()
+          .Set("email", account.email)
+          .Set("fullName", account.full_name)
+          .Set("givenName", account.given_name)
+          .Set("isPrimaryAccount",
+               account.account_id ==
+                   identity_manager
+                       ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
+                       .account_id);
   if (!account.account_image.IsEmpty()) {
     dict.Set("avatarImage",
              webui::GetBitmapDataUrl(account.account_image.AsBitmap()));
@@ -458,7 +466,7 @@ base::Value::List PeopleHandler::GetStoredAccountsList() {
     for (const auto& account : signin_ui_util::GetOrderedAccountsForDisplay(
              identity_manager,
              /*restrict_to_accounts_eligible_for_sync=*/true)) {
-      accounts.Append(GetAccountValue(account));
+      accounts.Append(GetAccountValue(identity_manager, account));
     }
     return accounts;
   }
@@ -473,7 +481,7 @@ base::Value::List PeopleHandler::GetStoredAccountsList() {
   AccountInfo primary_account_info = identity_manager->FindExtendedAccountInfo(
       identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   if (!primary_account_info.IsEmpty())
-    accounts.Append(GetAccountValue(primary_account_info));
+    accounts.Append(GetAccountValue(identity_manager, primary_account_info));
   return accounts;
 }
 
@@ -658,7 +666,8 @@ void PeopleHandler::HandleSignout(const base::Value::List& args) {
 
   bool is_clear_primary_account_allowed =
       signin_client->IsClearPrimaryAccountAllowed(is_syncing);
-  if (!is_syncing && !is_clear_primary_account_allowed) {
+  if (!is_syncing && !is_clear_primary_account_allowed &&
+      !base::FeatureList::IsEnabled(switches::kUnoDesktop)) {
     // 'Signout' should not be offered in the UI if clear primary account is not
     // allowed.
     NOTREACHED()
@@ -771,6 +780,12 @@ void PeopleHandler::CloseSyncSetup() {
   LoginUIService* service = GetLoginUIService();
   if (service) {
     auto self_weak_ptr = weak_factory_.GetWeakPtr();
+
+    // ChromeOS Ash doesn't support signing out and hence the code below
+    // cannot build (RevokeSyncConsent() doesn't exist). However, the code is
+    // unreachable on Ash because IsInitialSyncFeatureSetupComplete() in the
+    // condition below always returns true.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     syncer::SyncService* sync_service = GetSyncService();
 
     // Don't log a cancel event if the sync setup dialog is being
@@ -779,18 +794,7 @@ void PeopleHandler::CloseSyncSetup() {
         configuring_sync_ &&
         !sync_service->GetUserSettings()->IsInitialSyncFeatureSetupComplete() &&
         sync_service->GetAuthError().state() == GoogleServiceAuthError::NONE) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      // ChromeOS Ash doesn't support signing out and hence the code below
-      // cannot build (RevokeSyncConsent() doesn't exist). However, this code is
-      // unreachable on Ash because IsInitialSyncFeatureSetupComplete() always
-      // returns true.
-      NOTREACHED_NORETURN();
-#else   // BUILDFLAG(IS_CHROMEOS_ASH)
-      // If the user clicked "Cancel" while setting up sync, disable sync
-      // because we don't want the sync engine to remain in the
-      // first-setup-incomplete state.
       DVLOG(1) << "Sync setup aborted by user action";
-      sync_service->StopAndClear();
 
       // Revoke sync consent on desktop Chrome if they click cancel during
       // initial setup or close sync setup without confirming sync.
@@ -798,8 +802,8 @@ void PeopleHandler::CloseSyncSetup() {
           ->GetPrimaryAccountMutator()
           ->RevokeSyncConsent(signin_metrics::ProfileSignout::kAbortSignin,
                               signin_metrics::SignoutDelete::kIgnoreMetric);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     }
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
     service->LoginUIClosed(this);
 
@@ -1012,7 +1016,12 @@ void PeopleHandler::PushSyncPrefs() {
   // We call IsPassphraseRequired() here, instead of calling
   // IsPassphraseRequiredForPreferredDataTypes(), because we want to show the
   // passphrase UI even if no encrypted data types are enabled.
-  args.Set("passphraseRequired", sync_user_settings->IsPassphraseRequired());
+  // IsInitialSyncFeatureSetupComplete()==false is special-cased to avoid that
+  // the user enters the custom passphrase before confirming they want to
+  // complete the sync setup flow.
+  args.Set("passphraseRequired",
+           sync_user_settings->IsPassphraseRequired() &&
+               sync_user_settings->IsInitialSyncFeatureSetupComplete());
 
   // Same as above, we call IsTrustedVaultKeyRequired() here instead of.
   // IsTrustedVaultKeyRequiredForPreferredDataTypes().

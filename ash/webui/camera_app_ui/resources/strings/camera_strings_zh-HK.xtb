@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5320594929574852403">向左移</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
+<translation id="539541037630043848">開啟 <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">正在掃瞄第 <ph name="COUNT" /> 頁</translation>
 <translation id="5671277269877808209">正方形</translation>
 <translation id="574392208103952083">中</translation>
@@ -163,6 +164,7 @@
 <translation id="8870695351537079478">無法開始錄影</translation>
 <translation id="8880167521484863515">4:3</translation>
 <translation id="8903921497873541725">放大</translation>
+<translation id="8926890870105777777">加入「<ph name="WIFINAME" />」網絡</translation>
 <translation id="9045010116236796332">將鏡頭對準文件，確認各邊都在方框內</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="906331135292332864">正在處理圖片…</translation>

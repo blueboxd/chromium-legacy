@@ -93,6 +93,7 @@
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5320594929574852403">Đang di chuyển theo hướng sang trái</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
+<translation id="539541037630043848">Mở <ph name="HOSTNAME" /></translation>
 <translation id="5662366948659129155">Đang quét trang <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">Vuông</translation>
 <translation id="574392208103952083">Trung bình</translation>
@@ -163,6 +164,7 @@ Nếu ý kiến phản hồi của bạn là về chất lượng ảnh hoặc v
 <translation id="8870695351537079478">Không thể bắt đầu quay</translation>
 <translation id="8880167521484863515">4:3</translation>
 <translation id="8903921497873541725">Phóng to</translation>
+<translation id="8926890870105777777">Kết nối với mạng "<ph name="WIFINAME" />"</translation>
 <translation id="9045010116236796332">Đặt tất cả cạnh của tài liệu vào trong khung</translation>
 <translation id="9045155556724273246">10 giây</translation>
 <translation id="906331135292332864">Đang xử lý hình ảnh...</translation>

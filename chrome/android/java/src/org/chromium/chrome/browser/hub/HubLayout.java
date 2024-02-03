@@ -47,7 +47,7 @@ import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -136,17 +136,8 @@ public class HubLayout extends Layout implements HubLayoutController {
 
     @Override
     public void selectTabAndHideHubLayout(int tabId) {
-        if (tabId != Tab.INVALID_TAB_ID) {
-            TabModel model = mTabModelSelector.getModelForTabId(tabId);
-            if (model != null) {
-                TabModelUtils.setIndex(model, TabModelUtils.getTabIndexById(model, tabId), false);
-            }
-        }
-
-        // Don't forward a tabId as it is only used to select the tab again in doneHiding() which is
-        // redundant work.
-        // TODO(crbug/1495121): Find a way to remove the tabId parameter from start hiding.
-        startHiding(Tab.INVALID_TAB_ID);
+        TabModelUtils.selectTabById(mTabModelSelector, tabId, TabSelectionType.FROM_USER, false);
+        startHiding();
     }
 
     @Override
@@ -267,10 +258,10 @@ public class HubLayout extends Layout implements HubLayoutController {
     }
 
     @Override
-    public void startHiding(int nextTabId) {
+    public void startHiding() {
         if (isStartingToHide()) return;
 
-        super.startHiding(nextTabId);
+        super.startHiding();
 
         // Use the EXPAND_NEW_TAB animation if it is already prepared.
         if (getCurrentAnimationType() == HubLayoutAnimationType.EXPAND_NEW_TAB) {
@@ -280,12 +271,8 @@ public class HubLayout extends Layout implements HubLayoutController {
 
         forceAnimationToFinish();
 
-        // TODO(crbug/1495121): Remove the need for this logic if feasible and just get the value
-        // from TabModelSelector.
-        int tabId =
-                nextTabId != Tab.INVALID_TAB_ID ? nextTabId : mTabModelSelector.getCurrentTabId();
-        @LayoutType
-        int nextLayoutType = mLayoutStateProvider.getNextLayoutType();
+        int tabId = mTabModelSelector.getCurrentTabId();
+        @LayoutType int nextLayoutType = mLayoutStateProvider.getNextLayoutType();
         if (nextLayoutType == LayoutType.BROWSING) {
             // During fade and translate animations the composited scene layer is visible. At the
             // end of the animation a composited tab will be fully visible. To ensure continuity
@@ -362,8 +349,15 @@ public class HubLayout extends Layout implements HubLayoutController {
     }
 
     @Override
-    public void onTabCreated(long time, int tabId, int tabIndex, int sourceTabId,
-            boolean newIsIncognito, boolean background, float originX, float originY) {
+    public void onTabCreated(
+            long time,
+            int tabId,
+            int tabIndex,
+            int sourceTabId,
+            boolean newIsIncognito,
+            boolean background,
+            float originX,
+            float originY) {
         super.onTabCreated(
                 time, tabId, tabIndex, sourceTabId, newIsIncognito, background, originX, originY);
 
@@ -463,8 +457,11 @@ public class HubLayout extends Layout implements HubLayoutController {
     }
 
     @Override
-    protected void updateSceneLayer(RectF viewport, RectF contentViewport,
-            TabContentManager tabContentManager, ResourceManager resourceManager,
+    protected void updateSceneLayer(
+            RectF viewport,
+            RectF contentViewport,
+            TabContentManager tabContentManager,
+            ResourceManager resourceManager,
             BrowserControlsStateProvider browserControls) {
         ensureSceneLayersExist();
         super.updateSceneLayer(

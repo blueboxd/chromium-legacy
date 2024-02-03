@@ -1075,11 +1075,8 @@ IOSurfaceImageBacking::ProduceSkiaGanesh(
 
   for (int plane_index = 0; plane_index < format().NumberOfPlanes();
        plane_index++) {
-    bool angle_rgbx_internal_format = context_state->feature_info()
-                                          ->feature_flags()
-                                          .angle_rgbx_internal_format;
     GLFormatDesc format_desc =
-        ToGLFormatDesc(format(), plane_index, angle_rgbx_internal_format);
+        context_state->GetGLFormatCaps().ToGLFormatDesc(format(), plane_index);
     GrBackendTexture backend_texture;
     auto plane_size = format().GetPlaneSize(plane_index, size());
     GetGrBackendTexture(context_state->feature_info(), egl_state->GetGLTarget(),
@@ -1123,7 +1120,7 @@ IOSurfaceImageBacking::ProduceSkiaGraphite(
     return SkiaGraphiteDawnImageRepresentation::Create(
         std::move(dawn_representation), context_state,
         context_state->gpu_main_graphite_recorder(), manager, this, tracker,
-        is_yuv_plane);
+        is_yuv_plane, static_cast<int>(io_surface_plane_));
 #endif
   } else {
     CHECK_EQ(context_state->gr_context_type(), GrContextType::kGraphiteMetal);

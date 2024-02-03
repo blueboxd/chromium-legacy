@@ -22,6 +22,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -47,6 +48,7 @@ namespace {
 
 const int kMinLargeCursorSize = 25;
 const int kMaxLargeCursorSize = 64;
+const int kMaxExtraLargeCursorSize = 128;
 
 SkBitmap GetColorAdjustedBitmap(const gfx::ImageSkiaRep& image_rep,
                                 SkColor cursor_color) {
@@ -265,7 +267,10 @@ void CursorWindowController::RemoveObserver(Observer* observer) {
 void CursorWindowController::SetLargeCursorSizeInDip(
     int large_cursor_size_in_dip) {
   large_cursor_size_in_dip =
-      std::min(large_cursor_size_in_dip, kMaxLargeCursorSize);
+      std::min(large_cursor_size_in_dip,
+               ::features::IsAccessibilityExtraLargeCursorEnabled()
+                   ? kMaxExtraLargeCursorSize
+                   : kMaxLargeCursorSize);
   large_cursor_size_in_dip =
       std::max(large_cursor_size_in_dip, kMinLargeCursorSize);
 
@@ -535,13 +540,22 @@ void CursorWindowController::UpdateCursorImage() {
   std::vector<gfx::ImageSkia> images;
   gfx::Point hot_point_in_physical_pixels;
   if (cursor_.type() == ui::mojom::CursorType::kCustom) {
-    const SkBitmap& bitmap = cursor_.custom_bitmap();
+    SkBitmap bitmap = cursor_.custom_bitmap();
+    gfx::Point hotspot = cursor_.custom_hotspot();
     if (bitmap.isNull()) {
       return;
     }
     cursor_scale = cursor_.image_scale_factor();
+
+    // Custom cursor's bitmap is already rotated. Revert the rotation because
+    // software cursor's rotation is handled by viz.
+    const display::Display::Rotation inverted_rotation =
+        static_cast<display::Display::Rotation>(
+            (4 - static_cast<int>(display_.rotation())) % 4);
+    wm::ScaleAndRotateCursorBitmapAndHotpoint(1.0f, inverted_rotation, &bitmap,
+                                              &hotspot);
     images.push_back(gfx::ImageSkia::CreateFromBitmap(bitmap, cursor_scale));
-    hot_point_in_physical_pixels = cursor_.custom_hotspot();
+    hot_point_in_physical_pixels = hotspot;
   } else {
     // Do not use the device scale factor, as the cursor will be scaled
     // by compositor. HW cursor will not be scaled by display zoom, so the

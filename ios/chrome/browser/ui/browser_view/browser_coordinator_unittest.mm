@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 
 #import "base/files/file_util.h"
+#import "base/test/scoped_feature_list.h"
 #import "components/bookmarks/test/bookmark_test_helpers.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/download/model/download_directory_util.h"
@@ -12,9 +13,9 @@
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#import "ios/chrome/browser/history/history_service_factory.h"
-#import "ios/chrome/browser/lens/lens_browser_agent.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/history/model/history_service_factory.h"
+#import "ios/chrome/browser/lens/model/lens_browser_agent.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/prerender/model/prerender_service_factory.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
@@ -59,6 +60,7 @@
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#import "ui/base/device_form_factor.h"
 
 // Test fixture for BrowserCoordinator testing.
 class BrowserCoordinatorTest : public PlatformTest {
@@ -401,6 +403,30 @@ TEST_F(BrowserCoordinatorTest, DisplayDefaultBrowserPromoAfterRemindMeLater) {
       HandlerForProtocol(dispatcher, PromosManagerCommands);
 
   [handler displayDefaultBrowserPromoAfterRemindMeLater];
+
+  [browser_coordinator stop];
+}
+
+// Tests that the showOmniboxPositionChoice command does not
+// crash.
+TEST_F(BrowserCoordinatorTest, ShowOmniboxPositionChoice) {
+  // OmniboxPositionChoice is only available on phones.
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE) {
+    return;
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBottomOmniboxPromoAppLaunch);
+
+  // Start the BrowserCoordinator
+  BrowserCoordinator* browser_coordinator = GetBrowserCoordinator();
+  [browser_coordinator start];
+
+  CommandDispatcher* dispatcher = browser_->GetCommandDispatcher();
+  id<PromosManagerCommands> handler =
+      HandlerForProtocol(dispatcher, PromosManagerCommands);
+
+  [handler showOmniboxPositionChoicePromo];
 
   [browser_coordinator stop];
 }

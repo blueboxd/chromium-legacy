@@ -7,17 +7,18 @@
 
 #include <limits>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_metrics.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_types.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
+#include "ash/wm/splitview/layout_divider_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/wm_event.h"
@@ -26,11 +27,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
+
+namespace display {
+enum class TabletState;
+}  // namespace display
 
 namespace gfx {
 class Point;
@@ -93,11 +97,11 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                                        public ShellObserver,
                                        public OverviewObserver,
                                        public display::DisplayObserver,
-                                       public TabletModeObserver,
                                        public AccessibilityObserver,
                                        public ash::KeyboardControllerObserver,
                                        public wm::ActivationChangeObserver,
-                                       public SnapGroupController::Observer {
+                                       public SnapGroupController::Observer,
+                                       public LayoutDividerController {
  public:
   // `LEFT` and `RIGHT` are named for the positions to which they correspond in
   // clamshell mode or primary-landscape-oriented tablet mode. In portrait-
@@ -195,7 +199,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   aura::Window* root_window() { return root_window_; }
   aura::Window* primary_window() { return primary_window_; }
   aura::Window* secondary_window() { return secondary_window_; }
-  int divider_position() const { return divider_position_; }
+
   State state() const { return state_; }
   SnapPosition default_snap_position() const { return default_snap_position_; }
   SplitViewDivider* split_view_divider() { return split_view_divider_.get(); }
@@ -204,6 +208,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
     return split_view_metrics_controller_.get();
   }
   aura::Window* to_be_activated_window() { return to_be_activated_window_; }
+  int divider_position() const;
 
   // Returns true if the divider is resizing (not animating) in tablet mode
   // split view, or between two windows in Snap Groups.
@@ -239,7 +244,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // if `window` can be snapped opposite of the default window. If default
   // window is 2/3 and `window` cannot be snapped 1/3 but can be snapped 1/2, it
   // will be snapped 1/2 unless default window cannot be snapped 1/2.
-  absl::optional<float> ComputeSnapRatio(aura::Window* window);
+  std::optional<float> ComputeSnapRatio(aura::Window* window);
 
   // Snap `window` in the split view at `snap_position`. It will send snap
   // WMEvent to `window` and rely on WindowState to do the actual work to
@@ -408,10 +413,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
   void OnWindowDestroyed(aura::Window* window) override;
 
   // WindowStateObserver:
@@ -430,12 +431,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
-
-  // TabletModeObserver:
-  void OnTabletModeStarting() override;
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnding() override;
-  void OnTabletModeEnded() override;
+  void OnDisplayTabletStateChanged(display::TabletState state) override;
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
@@ -452,6 +448,12 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // SnapGroupController::Observer:
   void OnSnapGroupCreated() override;
   void OnSnapGroupRemoved() override;
+
+  // LayoutDividerController:
+  void StartResizeWithDivider(const gfx::Point& location_in_screen) override;
+  void UpdateResizeWithDivider(const gfx::Point& location_in_screen) override;
+  void EndResizeWithDivider(const gfx::Point& location_in_screen) override;
+  aura::Window::Windows GetLayoutWindows() const override;
 
  private:
   friend class SplitViewControllerTest;
@@ -551,10 +553,10 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // needs to be activated. Returns nullptr if there is no such window.
   aura::Window* GetActiveWindowAfterResizingUponExit();
 
-  // Returns the maximum value of the |divider_position_|. It is the width of
+  // Returns the maximum value of the `divider_position_`, which is the width of
   // the current display's work area bounds in landscape orientation, or height
   // of the current display's work area bounds in portrait orientation.
-  int GetDividerEndPosition() const;
+  int GetDividerPositionUpperLimit() const;
 
   // Called after a to-be-snapped window `window` got snapped. It updates the
   // split view states and notifies observers about the change. It also restore
@@ -563,7 +565,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // next MRU window if possible. `snap_action_source` specifies the source for
   // this snap event.
   void OnWindowSnapped(aura::Window* window,
-                       absl::optional<chromeos::WindowStateType> previous_state,
+                       std::optional<chromeos::WindowStateType> previous_state,
                        WindowSnapActionSource snap_action_source);
 
   // If there are two snapped windows, closing/minimizing/tab-dragging one of
@@ -647,6 +649,12 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // speed at which the divider is dragged.
   void UpdateTabletResizeMode(base::TimeTicks event_time_ticks,
                               const gfx::Point& event_location);
+
+  // Called when the display tablet state is changed.
+  void OnTabletModeStarting();
+  void OnTabletModeStarted();
+  void OnTabletModeEnding();
+  void OnTabletModeEnded();
 
   // Called by `OnWindowDragEnded()` to do the actual work of finishing the
   // window dragging. If `is_being_destroyed` equals true, the dragged window is
@@ -735,8 +743,8 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   EndReason end_reason_ = EndReason::kNormal;
 
   // Stores the overview start and enter/exit type.
-  absl::optional<OverviewStartAction> overview_start_action_;
-  absl::optional<OverviewEnterExitType> enter_exit_overview_type_;
+  std::optional<OverviewStartAction> overview_start_action_;
+  std::optional<OverviewEnterExitType> enter_exit_overview_type_;
 
   // The split view type. See SplitViewType for the differences between tablet
   // split view and clamshell split view.

@@ -4,13 +4,16 @@
 
 package org.chromium.net.impl;
 
+import static org.chromium.net.impl.HttpEngineNativeProvider.EXT_API_LEVEL;
+import static org.chromium.net.impl.HttpEngineNativeProvider.EXT_VERSION;
+
 import android.net.Network;
 
-import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresExtension;
 
 import org.chromium.net.CronetEngine;
 
-@RequiresApi(api = 34)
+@RequiresExtension(extension = EXT_API_LEVEL, version = EXT_VERSION)
 class AndroidBidirectionalStreamBuilderWrapper
         extends org.chromium.net.ExperimentalBidirectionalStream.Builder {
     private final android.net.http.BidirectionalStream.Builder mBackend;
@@ -55,7 +58,7 @@ class AndroidBidirectionalStreamBuilderWrapper
 
     @Override
     public org.chromium.net.ExperimentalBidirectionalStream.Builder
-    delayRequestHeadersUntilFirstFlush(boolean delayRequestHeadersUntilFirstFlush) {
+            delayRequestHeadersUntilFirstFlush(boolean delayRequestHeadersUntilFirstFlush) {
         mBackend.setDelayRequestHeadersUntilFirstFlushEnabled(delayRequestHeadersUntilFirstFlush);
         return this;
     }

@@ -6,14 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_GRID_LAYOUT_ALGORITHM_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/block_break_token.h"
+#include "third_party/blink/renderer/core/layout/box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/constraint_space.h"
 #include "third_party/blink/renderer/core/layout/grid/grid_break_token_data.h"
 #include "third_party/blink/renderer/core/layout/grid/grid_node.h"
 #include "third_party/blink/renderer/core/layout/grid/grid_placement.h"
 #include "third_party/blink/renderer/core/layout/grid/grid_sizing_tree.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/layout_algorithm.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -34,14 +34,14 @@ using GridItemDataPtrVector = Vector<GridItemData*, 16>;
 using GridSetPtrVector = Vector<GridSet*, 16>;
 
 class CORE_EXPORT GridLayoutAlgorithm
-    : public LayoutAlgorithm<GridNode,
-                             NGBoxFragmentBuilder,
-                             NGBlockBreakToken> {
+    : public LayoutAlgorithm<GridNode, BoxFragmentBuilder, BlockBreakToken> {
  public:
   explicit GridLayoutAlgorithm(const LayoutAlgorithmParams& params);
 
-  const NGLayoutResult* Layout() override;
+  const LayoutResult* Layout() override;
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) override;
+
+  MinMaxSizesResult ComputeMinMaxSizes(const GridSizingSubtree& sizing_subtree);
 
   // Computes the containing block rect of out of flow items from stored data in
   // |GridLayoutData|.
@@ -75,7 +75,7 @@ class CORE_EXPORT GridLayoutAlgorithm
       HeapVector<Member<LayoutBox>>* oof_children = nullptr) const;
   GridSizingTree BuildGridSizingTreeIgnoringChildren() const;
 
-  const NGLayoutResult* LayoutInternal();
+  const LayoutResult* LayoutInternal();
 
   LayoutUnit Baseline(const GridLayoutData& layout_data,
                       const GridItemData& grid_item,
@@ -167,7 +167,8 @@ class CORE_EXPORT GridLayoutAlgorithm
   // algorithm to invoke the callback with.
   template <typename CallbackFunc>
   void ForEachSubgrid(const GridSizingSubtree& sizing_subtree,
-                      const CallbackFunc& callback_func) const;
+                      const CallbackFunc& callback_func,
+                      bool should_compute_min_max_sizes = true) const;
 
   LayoutUnit ComputeSubgridContributionSize(
       const GridSizingSubtree& sizing_subtree,
@@ -208,8 +209,8 @@ class CORE_EXPORT GridLayoutAlgorithm
       SizingConstraint sizing_constraint,
       const GridSizingTrackCollection& track_collection) const;
 
-  NGConstraintSpace CreateConstraintSpace(
-      NGCacheSlot cache_slot,
+  ConstraintSpace CreateConstraintSpace(
+      LayoutResultCacheSlot cache_slot,
       const GridItemData& grid_item,
       const LogicalSize& containing_grid_area_size,
       const LogicalSize& fixed_available_size,
@@ -220,7 +221,7 @@ class CORE_EXPORT GridLayoutAlgorithm
 
   // `containing_grid_area` is an optional out parameter that holds the computed
   // grid area (offset and size) of the specified grid item.
-  NGConstraintSpace CreateConstraintSpaceForLayout(
+  ConstraintSpace CreateConstraintSpaceForLayout(
       const GridItemData& grid_item,
       const GridLayoutData& layout_data,
       GridLayoutSubtree&& opt_layout_subtree = GridLayoutSubtree(),
@@ -230,13 +231,10 @@ class CORE_EXPORT GridLayoutAlgorithm
       absl::optional<LayoutUnit> opt_fragment_relative_block_offset =
           absl::nullopt) const;
 
-  NGConstraintSpace CreateConstraintSpaceForMeasure(
+  ConstraintSpace CreateConstraintSpaceForMeasure(
       const SubgriddedItemData& subgridded_item,
       GridTrackSizingDirection track_direction,
-      const LogicalSize& fixed_available_size = kIndefiniteLogicalSize) const;
-
-  NGConstraintSpace CreateConstraintSpaceForSubgridAlgorithm(
-      const SubgriddedItemData& subgrid_data) const;
+      absl::optional<LayoutUnit> opt_fixed_inline_size = absl::nullopt) const;
 
   // Layout the |grid_items|, and add them to the builder.
   //

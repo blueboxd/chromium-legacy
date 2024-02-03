@@ -22,8 +22,13 @@ PlusAddressCreationControllerDesktop::PlusAddressCreationControllerDesktop(
     : content::WebContentsUserData<PlusAddressCreationControllerDesktop>(
           *web_contents) {}
 
-PlusAddressCreationControllerDesktop::~PlusAddressCreationControllerDesktop() =
-    default;
+PlusAddressCreationControllerDesktop::~PlusAddressCreationControllerDesktop() {
+  // If the dialog is still open, ensure it gets cleaned up.
+  if (dialog_delegate_ && dialog_delegate_->GetWidget()) {
+    dialog_delegate_->GetWidget()->CloseNow();
+  }
+}
+
 void PlusAddressCreationControllerDesktop::OfferCreation(
     const url::Origin& main_frame_origin,
     PlusAddressCallback callback) {
@@ -96,6 +101,11 @@ void PlusAddressCreationControllerDesktop::OnCanceled() {
 void PlusAddressCreationControllerDesktop::OnDialogDestroyed() {
   dialog_delegate_.reset();
   plus_profile_.reset();
+}
+
+PlusAddressCreationView*
+PlusAddressCreationControllerDesktop::get_view_for_testing() {
+  return dialog_delegate_.get();
 }
 
 void PlusAddressCreationControllerDesktop::set_suppress_ui_for_testing(

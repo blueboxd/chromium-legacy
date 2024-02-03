@@ -9,12 +9,13 @@
 
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import '../../../css/common.css.js';
+import './sparkle_placeholder_element.js';
 
 import {SeaPenThumbnail} from '../../../sea_pen.mojom-webui.js';
 import {WithPersonalizationStore} from '../../personalization_store.js';
 import {getZerosArray, isNonEmptyArray, isSelectionEvent} from '../../utils.js';
-import {selectSeaPenWallpaper} from '../wallpaper_controller.js';
 
+import {selectSeaPenWallpaper} from './sea_pen_controller.js';
 import {getTemplate} from './sea_pen_images_element.html.js';
 import {getSeaPenProvider} from './sea_pen_interface_provider.js';
 
@@ -31,8 +32,6 @@ export class SeaPenImagesElement extends WithPersonalizationStore {
     return {
       templateId: String,
 
-      query_: String,
-
       thumbnails_: Object,
 
       thumbnailsLoading_: Boolean,
@@ -40,14 +39,11 @@ export class SeaPenImagesElement extends WithPersonalizationStore {
   }
 
   private templateId: string;
-  private query_: string|null;
   private thumbnails_: SeaPenThumbnail[]|null;
   private thumbnailsLoading_: boolean;
 
   override connectedCallback() {
     super.connectedCallback();
-    this.watch<SeaPenImagesElement['query_']>(
-        'query_', state => state.wallpaper.seaPen.query);
     this.watch<SeaPenImagesElement['thumbnails_']>(
         'thumbnails_', state => state.wallpaper.seaPen.thumbnails);
     this.watch<SeaPenImagesElement['thumbnailsLoading_']>(
@@ -66,7 +62,7 @@ export class SeaPenImagesElement extends WithPersonalizationStore {
   private shouldShowThumbnailPlaceholders_(
       thumbnailsLoading: boolean, thumbnails: SeaPenThumbnail[]|null): boolean {
     // Use placeholders before and during loading thumbnails.
-    return !thumbnails || thumbnailsLoading;
+    return !thumbnails && !thumbnailsLoading;
   }
 
   private shouldShowImageThumbnails_(

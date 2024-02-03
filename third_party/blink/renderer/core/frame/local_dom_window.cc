@@ -268,8 +268,8 @@ void LocalDOMWindow::ResetWindowAgent(WindowAgent* agent) {
   auto* microtask_queue = agent->event_loop()->microtask_queue();
   if (microtask_queue) {
     v8::HandleScope handle_scope(GetIsolate());
-    v8::Local<v8::Context> main_world_context =
-        ToV8ContextMaybeEmpty(GetFrame(), DOMWrapperWorld::MainWorld());
+    v8::Local<v8::Context> main_world_context = ToV8ContextMaybeEmpty(
+        GetFrame(), DOMWrapperWorld::MainWorld(GetIsolate()));
     if (!main_world_context.IsEmpty())
       main_world_context->SetMicrotaskQueue(microtask_queue);
   }
@@ -554,7 +554,7 @@ FrameOrWorkerScheduler* LocalDOMWindow::GetScheduler() {
   if (GetFrame())
     return GetFrame()->GetFrameScheduler();
   if (!detached_scheduler_)
-    detached_scheduler_ = scheduler::CreateDummyFrameScheduler();
+    detached_scheduler_ = scheduler::CreateDummyFrameScheduler(GetIsolate());
   return detached_scheduler_.get();
 }
 
@@ -1869,14 +1869,22 @@ void LocalDOMWindow::moveTo(int x, int y) const {
   page->GetChromeClient().SetWindowRect(window_rect, *frame);
 }
 
-void LocalDOMWindow::resizeBy(int x, int y) const {
+void LocalDOMWindow::resizeBy(int x,
+                              int y,
+                              ExceptionState& exception_state) const {
   if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
       document()->IsPrerendering()) {
     return;
   }
 
-  if (IsPictureInPictureWindow())
-    return;
+  if (IsPictureInPictureWindow()) {
+    if (!LocalFrame::ConsumeTransientUserActivation(GetFrame())) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotAllowedError,
+          "resizeBy() requires user activation in document picture-in-picture");
+      return;
+    }
+  }
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -1889,14 +1897,22 @@ void LocalDOMWindow::resizeBy(int x, int y) const {
   page->GetChromeClient().SetWindowRect(update, *frame);
 }
 
-void LocalDOMWindow::resizeTo(int width, int height) const {
+void LocalDOMWindow::resizeTo(int width,
+                              int height,
+                              ExceptionState& exception_state) const {
   if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
       document()->IsPrerendering()) {
     return;
   }
 
-  if (IsPictureInPictureWindow())
-    return;
+  if (IsPictureInPictureWindow()) {
+    if (!LocalFrame::ConsumeTransientUserActivation(GetFrame())) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotAllowedError,
+          "resizeTo() requires user activation in document picture-in-picture");
+      return;
+    }
+  }
 
   LocalFrame* frame = GetFrame();
   Page* page = frame->GetPage();
@@ -2069,7 +2085,8 @@ DispatchEventResult LocalDOMWindow::DispatchEvent(Event& event,
   event.SetEventPhase(Event::PhaseType::kAtTarget);
 
   DEVTOOLS_TIMELINE_TRACE_EVENT("EventDispatch",
-                                inspector_event_dispatch_event::Data, event);
+                                inspector_event_dispatch_event::Data, event,
+                                GetIsolate());
   return FireEventListeners(event);
 }
 

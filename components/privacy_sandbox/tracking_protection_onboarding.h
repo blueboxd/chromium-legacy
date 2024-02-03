@@ -6,6 +6,7 @@
 #define COMPONENTS_PRIVACY_SANDBOX_TRACKING_PROTECTION_ONBOARDING_H_
 
 #include <optional>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
@@ -34,7 +35,17 @@ class TrackingProtectionOnboarding : public KeyedService {
     kEligible = 1,
     kOnboarded = 2,
     kOffboarded = 3,
-    kMaxValue = kOffboarded,
+    kOnboardingRequested = 4,
+    kMaxValue = kOnboardingRequested,
+  };
+
+  // Enum value interfacing with the TrackingProtectionOnboarding service
+  // callers, to indicate the status the silent onboarding is at.
+  enum class SilentOnboardingStatus {
+    kIneligible = 0,
+    kEligible = 1,
+    kOnboarded = 2,
+    kMaxValue = kOnboarded,
   };
 
   // Enum used for interfacing with the onboarding service to indicate the HaTS
@@ -78,7 +89,9 @@ class TrackingProtectionOnboarding : public KeyedService {
     // The notice in question is an Onboarding Notice.
     kOnboarding,
     // The notice in question is an offboarding/rollback notice.
-    kOffboarding
+    kOffboarding,
+    // The notice in question is a silent onboarding notice.
+    kSilentOnboarding,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -105,6 +118,19 @@ class TrackingProtectionOnboarding : public KeyedService {
     kMaxValue = kAckedOther,
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  // Enum value to indicate the state of silent onboarding on startup.
+  enum class SilentOnboardingStartupState {
+    // User was ineligible on startup.
+    kIneligible = 0,
+    // User was eligible on startup but hasn't been onboarded yet on startup.
+    kEligibleWaitingToOnboard = 1,
+    // User was onboarded on startup.
+    kOnboarded = 2,
+    kMaxValue = kOnboarded,
+  };
+
   class Observer {
    public:
     // Fired when a profile's tracking protection onboarding state is changed.
@@ -113,10 +139,16 @@ class TrackingProtectionOnboarding : public KeyedService {
 
     // Fired when the ShouldShowNotice is updated (to True or False).
     virtual void OnShouldShowNoticeUpdated() {}
+
+    // Fired when a profile's tracking protection silent onboarding state is
+    // changed.
+    virtual void OnTrackingProtectionSilentOnboardingUpdated(
+        SilentOnboardingStatus onboarding_status) {}
   };
 
   TrackingProtectionOnboarding(PrefService* pref_service,
-                               version_info::Channel channel);
+                               version_info::Channel channel,
+                               bool is_silent_onboarding_enabled = false);
   ~TrackingProtectionOnboarding() override;
 
   virtual void AddObserver(Observer* observer);
@@ -130,6 +162,14 @@ class TrackingProtectionOnboarding : public KeyedService {
   // is no longer eligible for onboarding.
   void MaybeMarkIneligible();
 
+  // To be called by the experiment service to indicate that the profile is
+  // eligible for silent onboarding.
+  void MaybeMarkSilentEligible();
+
+  // To be called by the experiment service to indicate that the profile is no
+  // longer eligible for silent onboarding.
+  void MaybeMarkSilentIneligible();
+
   // To be called by the Mode B experiment service in BETA, DEV and CANARY only
   // to reset the user's prefs for testing.
   void MaybeResetOnboardingPrefs();
@@ -138,8 +178,18 @@ class TrackingProtectionOnboarding : public KeyedService {
   // defined above.
   OnboardingStatus GetOnboardingStatus() const;
 
+  // Indicates the silent onboarding status for the user. Return value is the
+  // enum defined above.
+  SilentOnboardingStatus GetSilentOnboardingStatus() const;
+
   // Returns whether the profile has been offboarded.
   bool IsOffboarded() const;
+
+  // To be called by UI code when we've requested the onboarding notice.
+  void OnboardingNoticeRequested();
+
+  // To be called by UI code when we've requested the notice.
+  void NoticeRequested(NoticeType notice_type);
 
   // To be Called by UI code when the user has been shown the notice.
   void NoticeShown(NoticeType notice_type);
@@ -156,6 +206,10 @@ class TrackingProtectionOnboarding : public KeyedService {
 
   // To be Called by UI code when the user has been shown the onboarding notice.
   void OnboardingNoticeShown();
+
+  // To be Called by UI code when the user has been "shown" the silent
+  // onboarding notice.
+  void SilentOnboardingNoticeShown();
 
   // Called by UI code to determine if we should show the onboarding notice to
   // the user.
@@ -190,10 +244,14 @@ class TrackingProtectionOnboarding : public KeyedService {
   virtual void OnOnboardingAckedChanged() const;
   // Called when the underlying offboarding pref is changed.
   virtual void OnOffboardingPrefChanged() const;
+  // Called when the underlying silent onboarding pref is changed.
+  virtual void OnSilentOnboardingPrefChanged() const;
+
   base::ObserverList<Observer>::Unchecked observers_;
   raw_ptr<PrefService> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
   version_info::Channel channel_;
+  bool is_silent_onboarding_enabled_;
 };
 
 }  // namespace privacy_sandbox

@@ -148,23 +148,28 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Freeze that AXObject tree and do not allow changes until Thaw() is called.
   // Prefer ScopedFreezeAXCache where possible.
   void Freeze() override {
+    if (frozen_count_++) {
+      // Already frozen.
+      return;
+    }
     // TODO(crbug.com/1477047): Remove this case once post lifecycle
     // serialization is the only remaining code path. It's unclear why the
     // document lifecycle check is necessary but this is short-lived code.
-    if (!serialize_post_lifecycle_ && GetDocument().Lifecycle().GetState() <
-                                          DocumentLifecycle::kPrePaintClean) {
-      pause_tree_updates_until_more_loaded_content_ = false;
+    if (!serialize_post_lifecycle_ && frozen_count_ == 1 &&
+        GetDocument().Lifecycle().GetState() <
+            DocumentLifecycle::kPrePaintClean) {
       UpdateAXForAllDocuments();
     }
     ax_tree_source_->Freeze();
-    is_frozen_ = true;
     CHECK(FocusedObject());
   }
   void Thaw() override {
-    is_frozen_ = false;
-    ax_tree_source_->Thaw();
+    CHECK_GE(frozen_count_, 1);
+    if (--frozen_count_ == 0) {
+      ax_tree_source_->Thaw();
+    }
   }
-  bool IsFrozen() const override { return is_frozen_; }
+  bool IsFrozen() const override { return frozen_count_; }
 
   //
   // Iterators.
@@ -194,7 +199,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   // It will also notify the parent that its children have changed, so that the
   // parent will recompute its children and be reserialized.
   void Remove(AccessibleNode*) override;
-  void Remove(LayoutObject*) override;
   void Remove(Node*) override;
   void RemovePopup(Document*) override;
   void Remove(AbstractInlineTextBox*) override;
@@ -224,6 +228,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   // If |remove_root|, remove the root of the subtree, otherwise only
   // descendants are removed.
   void RemoveIncludedSubtree(AXObject* object, bool remove_root);
+  // Remove all AXObjects in the layout subtree of node, and notify the parent.
+  void RemoveAXObjectsInLayoutSubtree(LayoutObject* layout_object) override;
+  void RemoveAXObjectsInLayoutSubtree(Node* node) override;
 
   // For any ancestor that could contain the passed-in AXObject* in their cached
   // children, clear their children and set needs to update children on them.
@@ -254,7 +261,6 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void HandleAttributeChanged(const QualifiedName& attr_name,
                               Element*) override;
-  void FinishedParsingTable(HTMLTableElement*) override;
   void HandleValidationMessageVisibilityChanged(Node* form_control) override;
   void HandleEventListenerAdded(Node& node,
                                 const AtomicString& event_type) override;
@@ -286,7 +292,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void InlineTextBoxesUpdated(LayoutObject*) override;
   // Called during the accessibility lifecycle to refresh the AX tree.
-  void ProcessDeferredAccessibilityEvents(Document&) override;
+  void ProcessDeferredAccessibilityEvents(Document&, bool force) override;
   // Remove AXObject subtrees (once flat tree traversal is safe).
   void ProcessSubtreeRemovals() override;
   // Is there work to be done when layout becomes clean?
@@ -491,6 +497,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   static bool IsRelevantPseudoElementDescendant(
       const LayoutObject& layout_object);
   static bool IsRelevantSlotElement(const HTMLSlotElement& slot);
+  static Node* GetClosestNodeForLayoutObject(const LayoutObject* layout_object);
 
   // Retrieves a vector of all AXObjects whose bounding boxes may have changed
   // since the last query. Sends the resulting vector over mojo to the browser
@@ -737,20 +744,21 @@ class MODULES_EXPORT AXObjectCacheImpl
     kSectionOrRegionRoleMaybeChangedFromLabel = 26,
     kSectionOrRegionRoleMaybeChangedFromLabelledBy = 27,
     kSectionOrRegionRoleMaybeChangedFromTitle = 28,
-    kTextChangedFromTextChangedNode = 29,
-    kTextMarkerDataAdded = 30,
-    kUpdateActiveMenuOption = 31,
-    kNodeIsAttached = 32,
-    kUpdateAriaOwns = 33,
-    kUpdateTableRole = 34,
-    kUseMapAttributeChanged = 35,
-    kValidationMessageVisibilityChanged = 36,
+    kTextChangedOnNode = 29,
+    kTextChangedOnClosestNodeForLayoutObject = 30,
+    kTextMarkerDataAdded = 31,
+    kUpdateActiveMenuOption = 32,
+    kNodeIsAttached = 33,
+    kUpdateAriaOwns = 34,
+    kUpdateTableRole = 35,
+    kUseMapAttributeChanged = 36,
+    kValidationMessageVisibilityChanged = 37,
 
     // These updates are associated with an AXID:
     kChildrenChanged = 100,
     kMarkAXObjectDirty = 101,
     kMarkAXSubtreeDirty = 102,
-    kTextChangedFromTextChangedAXObject = 103
+    kTextChangedOnLayoutObject = 103
   };
 
   struct TreeUpdateParams final : public GarbageCollected<TreeUpdateParams> {
@@ -848,8 +856,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   // TODO(accessibility) Replace these with something like a document lifecycle.
   // Tree is being updated.
   bool processing_deferred_events_ = false;
-  // Tree is frozen and beign serialized.
-  bool is_frozen_ = false;  // Used with Freeze(), Thaw() and IsFrozen() above.
+  // If > 0, tree is frozen and beign serialized.
+  int frozen_count_ = 0;  // Used with Freeze(), Thaw() and IsFrozen() above.
   // Tree and cache are being destroyed.
   bool has_been_disposed_ = false;
 
@@ -861,6 +869,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   // ProcessDeferredAccessibilityEvents(). Will be set to false when more
   // content is loaded or the load is completed.
   bool pause_tree_updates_until_more_loaded_content_ = false;
+  // If null, then any new connected node will unpause tree updates.
+  // Otherwise, tree updates will unpause once the node is fully parsed.
+  WeakMember<Node> node_to_parse_before_more_tree_updates_;
 
   HeapVector<Member<AXEventParams>> notifications_to_post_main_;
   HeapVector<Member<AXEventParams>> notifications_to_post_popup_;

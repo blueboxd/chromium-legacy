@@ -14,17 +14,19 @@
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/time/time.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/screen.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -194,8 +196,9 @@ const char* GetSnapActionSourceMetricComponent(
 }
 
 void AppendUIModeToHistogram(std::string& histogram_name) {
-  histogram_name.append(Shell::Get()->IsInTabletMode() ? ".TabletMode"
-                                                       : ".ClamshellMode");
+  histogram_name.append(display::Screen::GetScreen()->InTabletMode()
+                            ? ".TabletMode"
+                            : ".ClamshellMode");
 }
 
 }  // namespace
@@ -362,13 +365,55 @@ void DoSplitviewClipRectAnimation(
   layer->SetClipRect(target_clip_rect);
 }
 
+bool IsPhysicalLeftOrTop(aura::Window* window) {
+  chromeos::WindowStateType state_type =
+      WindowState::Get(window)->GetStateType();
+  if (SplitViewController::IsLayoutPrimary(window)) {
+    return state_type == chromeos::WindowStateType::kPrimarySnapped;
+  }
+  return state_type == chromeos::WindowStateType::kSecondarySnapped;
+}
+
+int GetDividerPositionUpperLimit(aura::Window* root_window) {
+  const gfx::Rect work_area_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          root_window);
+  return SplitViewController::IsLayoutHorizontal(root_window)
+             ? work_area_bounds.width()
+             : work_area_bounds.height();
+}
+
+int GetWindowLength(aura::Window* window, bool horizontal) {
+  const auto& bounds = window->bounds();
+  return horizontal ? bounds.width() : bounds.height();
+}
+
+void SetWindowTransformDuringResizing(aura::Window* window,
+                                      int divider_position) {
+  const bool is_primary_window = IsPhysicalLeftOrTop(window);
+  aura::Window* root_window = window->GetRootWindow();
+  const int window_size = is_primary_window
+                              ? divider_position
+                              : GetDividerPositionUpperLimit(root_window) -
+                                    divider_position -
+                                    kSplitviewDividerShortSideLength;
+  const bool horizontal = SplitViewController::IsLayoutHorizontal(root_window);
+  int distance = window_size - GetWindowLength(window, horizontal);
+  gfx::Transform transform;
+  if (distance < 0) {
+    // If this is the secondary window, translate the other direction.
+    distance = is_primary_window ? distance : -distance;
+    transform.Translate(horizontal ? distance : 0, horizontal ? 0 : distance);
+  }
+  SetTransform(window, transform);
+}
+
 // TODO(michelefan): Revisit the logics when split view refactor is ready to
 // make everything works with `kSnapGroup` enabled.
 void MaybeRestoreSplitView(bool refresh_snapped_windows) {
   const bool should_restore =
-      ShouldAllowSplitView() &&
-      (Shell::Get()->tablet_mode_controller()->InTabletMode() ||
-       SnapGroupController::Get());
+      ShouldAllowSplitView() && (display::Screen::GetScreen()->InTabletMode() ||
+                                 SnapGroupController::Get());
   if (!should_restore) {
     return;
   }
@@ -466,7 +511,7 @@ void ShowAppCannotSnapToast() {
 SplitViewController::SnapPosition GetSnapPositionForLocation(
     aura::Window* root_window,
     const gfx::Point& location_in_screen,
-    const absl::optional<gfx::Point>& initial_location_in_screen,
+    const std::optional<gfx::Point>& initial_location_in_screen,
     int snap_distance_from_edge,
     int minimum_drag_distance,
     int horizontal_edge_inset,
@@ -557,7 +602,7 @@ SplitViewController::SnapPosition GetSnapPosition(
     return SplitViewController::SnapPosition::kNone;
   }
 
-  absl::optional<gfx::Point> initial_location_in_current_screen = absl::nullopt;
+  std::optional<gfx::Point> initial_location_in_current_screen = std::nullopt;
   if (window->GetRootWindow() == root_window)
     initial_location_in_current_screen = initial_location_in_screen;
 
@@ -569,11 +614,7 @@ SplitViewController::SnapPosition GetSnapPosition(
 
 bool IsSnapGroupEnabledInClamshellMode() {
   auto* snap_group_controller = SnapGroupController::Get();
-  TabletModeController* tablet_mode_controller =
-      Shell::Get()->tablet_mode_controller();
-  const bool in_tablet_mode =
-      tablet_mode_controller && tablet_mode_controller->InTabletMode();
-  return snap_group_controller && !in_tablet_mode;
+  return snap_group_controller && !display::Screen::GetScreen()->InTabletMode();
 }
 
 int GetWindowComponentForResize(aura::Window* window) {

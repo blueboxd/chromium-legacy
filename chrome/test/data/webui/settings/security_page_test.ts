@@ -5,7 +5,7 @@
 // clang-format off
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {SafeBrowsingSetting, SettingsSecurityPageElement} from 'chrome://settings/lazy_load.js';
+import {HttpsFirstModeSetting, SafeBrowsingSetting, SettingsSecurityPageElement} from 'chrome://settings/lazy_load.js';
 import {HatsBrowserProxyImpl, CrSettingsPrefs, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SafeBrowsingInteractions, SecureDnsMode, SecurityPageInteraction, SettingsPrefsElement, SettingsToggleButtonElement} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isChildVisible} from 'chrome://webui-test/test_util.js';
@@ -32,11 +32,17 @@ function pagePrefs() {
         value: SafeBrowsingSetting.STANDARD,
       },
       password_leak_detection: {value: false},
-      https_first_mode_enabled: {value: false},
+      https_first_mode_enabled: {
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: HttpsFirstModeSetting.DISABLED,
+      },
     },
     dns_over_https:
         {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
-    https_only_mode_enabled: {value: false},
+    https_only_mode_enabled: {
+      type: chrome.settingsPrivate.PrefType.NUMBER,
+      value: HttpsFirstModeSetting.DISABLED,
+    },
   };
 }
 
@@ -50,6 +56,7 @@ suite('Main', function() {
     loadTimeData.overrideValues({
       enableSecurityKeysSubpage: true,
       showChromeRootStoreCertificates: true,
+      enableHttpsFirstModeNewSettings: true,
     });
   });
 
@@ -112,37 +119,35 @@ suite('Main', function() {
     assertFalse(isChildVisible(page, '#security-keys-phones-subpage-trigger'));
   });
 
-  // Tests that toggling the HTTPS-Only Mode setting sets the associated pref.
-  test('httpsOnlyModeToggle', function() {
-    const httpsOnlyModeToggle =
-        page.shadowRoot!.querySelector<HTMLElement>('#httpsOnlyModeToggle')!;
-    assertFalse(page.prefs.generated.https_first_mode_enabled.value);
+  // Tests that changing the HTTPS-First Mode setting sets the associated pref.
+  test('HttpsFirstModeRadioButtons', function() {
+    let radioButton = page.shadowRoot!.querySelector<HTMLElement>(
+        '#httpsFirstModeEnabledFull');
+    assertTrue(!!radioButton);
+    radioButton.click();
+    assertEquals(
+        HttpsFirstModeSetting.ENABLED_FULL,
+        page.getPref('generated.https_first_mode_enabled').value);
 
-    httpsOnlyModeToggle.click();
-    assertTrue(page.prefs.generated.https_first_mode_enabled.value);
+    radioButton = page.shadowRoot!.querySelector<HTMLElement>(
+        '#httpsFirstModeEnabledIncognito');
+    assertTrue(!!radioButton);
+    radioButton.click();
+    assertEquals(
+        HttpsFirstModeSetting.ENABLED_INCOGNITO,
+        page.getPref('generated.https_first_mode_enabled').value);
+
+    radioButton =
+        page.shadowRoot!.querySelector<HTMLElement>('#httpsFirstModeDisabled');
+    assertTrue(!!radioButton);
+    radioButton.click();
+    assertEquals(
+        HttpsFirstModeSetting.DISABLED,
+        page.getPref('generated.https_first_mode_enabled').value);
   });
 
-  test('HttpsOnlyModeSettingSubLabel', function() {
-    const toggle = page.shadowRoot!.querySelector<SettingsToggleButtonElement>(
-        '#httpsOnlyModeToggle');
-    assertTrue(!!toggle);
-    const defaultSubLabel = loadTimeData.getString('httpsOnlyModeDescription');
-    assertEquals(defaultSubLabel, toggle.subLabel);
-
-    page.set('prefs.https_only_mode_enabled.value', false);
-    page.set(
-        'prefs.generated.https_first_mode_enabled.userControlDisabled', true);
-    flush();
-    const lockedSubLabel =
-        loadTimeData.getString('httpsOnlyModeDescriptionAdvancedProtection');
-    assertEquals(lockedSubLabel, toggle.subLabel);
-
-    page.set('prefs.https_only_mode_enabled.value', true);
-    page.set(
-        'prefs.generated.https_first_mode_enabled.userControlDisabled', true);
-    flush();
-    assertEquals(lockedSubLabel, toggle.subLabel);
-  });
+  // TODO(crbug.com/1494186): Add test for alternate sub-label when Advanced
+  // Protection is enabled.
 });
 
 suite('SecurityPageHappinessTrackingSurveys', function() {
@@ -162,6 +167,7 @@ suite('SecurityPageHappinessTrackingSurveys', function() {
     page = document.createElement('settings-security-page');
     page.prefs = settingsPrefs.prefs;
     document.body.appendChild(page);
+    Router.getInstance().navigateTo(routes.SECURITY);
     return flushTasks();
   });
 
@@ -170,21 +176,41 @@ suite('SecurityPageHappinessTrackingSurveys', function() {
     Router.getInstance().navigateTo(routes.BASIC);
   });
 
-  test('SecurityPageRadioButtonTriggerTest', async function() {
+  test('SecurityPageBeforeUnloadCallsHatsProxy', async function() {
+    // Interact with the security page.
     page.$.safeBrowsingEnhanced.click();
-    const args = await testHatsBrowserProxy.whenCalled(
-        'securityPageInteractionOccurred');
-    assertEquals(SecurityPageInteraction.RADIO_BUTTON_ENHANCED_CLICK, args[0]);
-    assertEquals(SafeBrowsingSetting.STANDARD, args[1]);
-  });
+    flush();
 
-  test('SecurityPageExpandButtonTriggerTest', async function() {
-    const radioButton = page.$.safeBrowsingEnhanced;
-    radioButton.$.expandButton.click();
-    const args = await testHatsBrowserProxy.whenCalled(
-        'securityPageInteractionOccurred');
-    assertEquals(SecurityPageInteraction.EXPAND_BUTTON_ENHANCED_CLICK, args[0]);
-    assertEquals(SafeBrowsingSetting.ENHANCED, args[1]);
+    const t1 = 10000;
+    testHatsBrowserProxy.setNow(t1);
+    window.dispatchEvent(new Event('focus'));
+
+    const t2 = 20000;
+    testHatsBrowserProxy.setNow(t2);
+    window.dispatchEvent(new Event('blur'));
+
+    const t3 = 60000;
+    testHatsBrowserProxy.setNow(t3);
+    window.dispatchEvent(new Event('focus'));
+
+    const t4 = 80000;
+    testHatsBrowserProxy.setNow(t4);
+    window.dispatchEvent(new Event('blur'));
+
+    // Fire the beforeunload event to simulate closing the page.
+    window.dispatchEvent(new Event('beforeunload'));
+    const args =
+        await testHatsBrowserProxy.whenCalled('securityPageHatsRequest');
+
+    // Verify the latest interaction type.
+    assertEquals(SecurityPageInteraction.RADIO_BUTTON_ENHANCED_CLICK, args[0]);
+
+    // Verify the safe browsing state on open.
+    assertEquals(SafeBrowsingSetting.STANDARD, args[1]);
+
+    // Verify the time the user spend on the security page.
+    const expectedTotalTimeInFocus = t2 - t1 + t4 - t3;
+    assertEquals(expectedTotalTimeInFocus, args[2]);
   });
 });
 
@@ -196,6 +222,7 @@ suite('FlagsDisabled', function() {
       enableSecurityKeysSubpage: false,
       enableFriendlierSafeBrowsingSettings: false,
       enableHashPrefixRealTimeLookups: false,
+      enableHttpsFirstModeNewSettings: false,
     });
   });
 
@@ -299,6 +326,49 @@ suite('FlagsDisabled', function() {
     page.set('prefs.profile.password_manager_leak_detection.value', false);
     flush();
     assertEquals(defaultSubLabel, toggle.subLabel);
+  });
+
+  // Tests that toggling the HTTPS-Only Mode setting sets the associated pref.
+  test('HttpsOnlyModeToggle', function() {
+    const httpsOnlyModeToggle =
+        page.shadowRoot!.querySelector<HTMLElement>('#httpsOnlyModeToggle');
+    assertTrue(!!httpsOnlyModeToggle);
+
+    assertEquals(
+        HttpsFirstModeSetting.DISABLED,
+        page.getPref('generated.https_first_mode_enabled').value);
+
+    httpsOnlyModeToggle.click();
+    assertEquals(
+        HttpsFirstModeSetting.ENABLED_FULL,
+        page.getPref('generated.https_first_mode_enabled').value);
+  });
+
+  // Tests that the correct Advanced Protection sublabel is used when the
+  // HTTPS-Only Mode setting toggle has user control disabled.
+  test('HttpsOnlyModeSettingSubLabel', function() {
+    const toggle = page.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+        '#httpsOnlyModeToggle');
+    assertTrue(!!toggle);
+    const defaultSubLabel = loadTimeData.getString('httpsOnlyModeDescription');
+    assertEquals(defaultSubLabel, toggle.subLabel);
+
+    page.setPrefValue(
+        'generated.https_first_mode_enabled', HttpsFirstModeSetting.DISABLED);
+    page.set(
+        'prefs.generated.https_first_mode_enabled.userControlDisabled', true);
+    flush();
+    const lockedSubLabel =
+        loadTimeData.getString('httpsOnlyModeDescriptionAdvancedProtection');
+    assertEquals(lockedSubLabel, toggle.subLabel);
+
+    page.setPrefValue(
+        'generated.https_first_mode_enabled',
+        HttpsFirstModeSetting.ENABLED_FULL);
+    page.set(
+        'prefs.generated.https_first_mode_enabled.userControlDisabled', true);
+    flush();
+    assertEquals(lockedSubLabel, toggle.subLabel);
   });
 });
 

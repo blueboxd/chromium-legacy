@@ -62,7 +62,7 @@ SetValueEffectSlider::SetValueEffectSlider(const VcHostedEffect* effect)
 
   // `effect` is expected to provide the current state of the effect, and
   // a `current_state` with no value means it couldn't be obtained.
-  absl::optional<int> current_state = effect->get_state_callback().Run();
+  std::optional<int> current_state = effect->get_state_callback().Run();
   DCHECK(current_state.has_value());
 
   const int num_states = effect->GetNumStates();
@@ -77,15 +77,13 @@ SetValueEffectSlider::SetValueEffectSlider(const VcHostedEffect* effect)
     auto* slider_button =
         tab_slider->AddButton(std::make_unique<IconLabelSliderButton>(
             base::BindRepeating(
-                [](const VcHostedEffect* effect, const VcEffectState* state,
-                   const ui::Event& event) {
+                [](const VcHostedEffect* effect, const VcEffectState* state) {
                   if (effect->delegate()) {
                     effect->delegate()->RecordMetricsForSetValueEffectOnClick(
                         effect->id(), state->state_value().value());
                   }
 
-                  auto callback = state->button_callback();
-                  callback.Run(event);
+                  state->button_callback().Run();
                 },
                 base::Unretained(effect), base::Unretained(state)),
             state->icon(), state->label_text()));

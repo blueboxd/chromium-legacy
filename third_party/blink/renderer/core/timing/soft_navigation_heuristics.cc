@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -44,8 +45,40 @@ void LogAndTraceDetectedSoftNavigation(LocalFrame* frame,
                       GetFrameIdForTracing(frame), "url", url, "navigationId",
                       window->GetNavigationId());
 }
-
 }  // namespace
+
+namespace internal {
+void RecordUmaForPageLoadInternalSoftNavigationFromReferenceInvalidTiming(
+    base::TimeTicks user_interaction_ts,
+    base::TimeTicks reference_ts) {
+  if (user_interaction_ts.is_null()) {
+    if (reference_ts.is_null()) {
+      base::UmaHistogramEnumeration(
+          kPageLoadInternalSoftNavigationFromReferenceInvalidTiming,
+          SoftNavigationFromReferenceInvalidTimingReasons::
+              kUserInteractionTsAndReferenceTsBothNull);
+    } else {
+      base::UmaHistogramEnumeration(
+          kPageLoadInternalSoftNavigationFromReferenceInvalidTiming,
+          SoftNavigationFromReferenceInvalidTimingReasons::
+              kNullUserInteractionTsAndNotNullReferenceTs);
+    }
+  } else {
+    if (reference_ts.is_null()) {
+      base::UmaHistogramEnumeration(
+          kPageLoadInternalSoftNavigationFromReferenceInvalidTiming,
+          SoftNavigationFromReferenceInvalidTimingReasons::
+              kNullReferenceTsAndNotNullUserInteractionTs);
+
+    } else {
+      base::UmaHistogramEnumeration(
+          kPageLoadInternalSoftNavigationFromReferenceInvalidTiming,
+          SoftNavigationFromReferenceInvalidTimingReasons::
+              kUserInteractionTsAndReferenceTsBothNotNull);
+    }
+  }
+}
+}  // namespace internal
 
 // static
 const char SoftNavigationHeuristics::kSupplementName[] =
@@ -104,6 +137,13 @@ void SoftNavigationHeuristics::InteractionCallbackCalled(
     ScriptState* script_state,
     EventScopeType type,
     bool is_new_interaction) {
+  // TODO(crbug.com/1503284): return early to avoid check failure crashes.
+  if (is_new_interaction || !last_interaction_task_id_) {
+    if (pending_interaction_timestamp_.is_null()) {
+      return;
+    }
+  }
+
   // Set task ID to the current one.
   initial_interaction_encountered_ = true;
   ThreadScheduler* scheduler = ThreadScheduler::Current();
@@ -132,7 +172,7 @@ void SoftNavigationHeuristics::InteractionCallbackCalled(
                                            last_interaction_task_id_);
   }
 
-  tracker->RegisterObserver(this);
+  tracker->RegisterObserverIfNeeded(this);
   SetIsTrackingSoftNavigationHeuristicsOnDocument(true);
   TRACE_EVENT_INSTANT("scheduler",
                       "SoftNavigationHeuristics::UserInitiatedInteraction");
@@ -310,15 +350,37 @@ void SoftNavigationHeuristics::RecordPaint(
   }
 }
 
-void SoftNavigationHeuristics::SetCurrentEventParameters(
+void SoftNavigationHeuristics::SetEventParametersAndQueueNestedOnes(
     EventScopeType type,
-    bool is_new_interaction) {
-  is_current_event_new_interaction_ = is_new_interaction;
-  current_event_type_ = type;
+    bool is_new_interaction,
+    bool is_nested) {
+  if (is_nested) {
+    nested_event_parameters_.push_back(
+        EventParameters(is_new_interaction, type));
+    current_event_parameters_ = &nested_event_parameters_.back();
+  } else {
+    top_event_parameters_ = EventParameters(is_new_interaction, type);
+    current_event_parameters_ = &top_event_parameters_;
+    nested_event_parameters_.clear();
+  }
+
   pending_interaction_timestamp_ =
       (is_new_interaction || !last_interaction_task_id_)
           ? base::TimeTicks::Now()
           : base::TimeTicks();
+}
+
+bool SoftNavigationHeuristics::PopNestedEventParametersIfNeeded() {
+  if (nested_event_parameters_.empty()) {
+    return false;
+  }
+  nested_event_parameters_.pop_back();
+  if (!nested_event_parameters_.empty()) {
+    current_event_parameters_ = &nested_event_parameters_.back();
+    return true;
+  }
+  current_event_parameters_ = &top_event_parameters_;
+  return true;
 }
 
 void SoftNavigationHeuristics::ReportSoftNavigationToMetrics(
@@ -332,6 +394,13 @@ void SoftNavigationHeuristics::ReportSoftNavigationToMetrics(
   auto soft_navigation_start_time =
       loader->GetTiming().MonotonicTimeToPseudoWallTime(
           soft_navigation_interaction_data_.user_interaction_timestamp);
+
+  if (soft_navigation_start_time.is_zero()) {
+    internal::
+        RecordUmaForPageLoadInternalSoftNavigationFromReferenceInvalidTiming(
+            soft_navigation_interaction_data_.user_interaction_timestamp,
+            loader->GetTiming().ReferenceMonotonicTime());
+  }
 
   LocalDOMWindow* window = frame->DomWindow();
 
@@ -429,9 +498,10 @@ void SoftNavigationHeuristics::OnCreateTaskScope(
   soft_navigation_descendant_cache_.clear();
 
   // Create a user initiated interaction
-  InteractionCallbackCalled(script_state, current_event_type_,
-                            is_current_event_new_interaction_);
-  if (current_event_type_ ==
+  CHECK(current_event_parameters_);
+  InteractionCallbackCalled(script_state, current_event_parameters_->type,
+                            current_event_parameters_->is_new_interaction);
+  if (current_event_parameters_->type ==
       SoftNavigationHeuristics::EventScopeType::Navigate) {
     SameDocumentNavigationStarted(script_state);
   }
@@ -469,19 +539,33 @@ SoftNavigationEventScope::SoftNavigationEventScope(
   if (!tracker) {
     return;
   }
-  heuristics_->SetCurrentEventParameters(type, is_new_interaction);
-  tracker->RegisterObserver(heuristics_);
+  // EventScope can be nested in case a click/keyboard event synchronously
+  // initiates a navigation.
+  bool nested = !tracker->RegisterObserverIfNeeded(heuristics_);
 
-  heuristics->UserInitiatedInteraction(script_state);
-}
-SoftNavigationEventScope::~SoftNavigationEventScope() {
-  ThreadScheduler* scheduler = ThreadScheduler::Current();
-  DCHECK(scheduler);
-  auto* tracker = scheduler->GetTaskAttributionTracker();
-  if (!tracker) {
-    return;
+  // Even for nested event scopes, we need to set these parameters, to ensure
+  // that created tasks know they were initiated by the correct event type.
+  heuristics_->SetEventParametersAndQueueNestedOnes(type, is_new_interaction,
+                                                    nested);
+
+  if (!nested) {
+    heuristics_->UserInitiatedInteraction(script_state);
   }
-  tracker->UnregisterObserver(heuristics_);
+}
+
+SoftNavigationEventScope::~SoftNavigationEventScope() {
+  bool nested = heuristics_->PopNestedEventParametersIfNeeded();
+
+  // Only the top level EventScope should unregister the observer.
+  if (!nested) {
+    ThreadScheduler* scheduler = ThreadScheduler::Current();
+    DCHECK(scheduler);
+    auto* tracker = scheduler->GetTaskAttributionTracker();
+    if (!tracker) {
+      return;
+    }
+    tracker->UnregisterObserver(heuristics_);
+  }
   // TODO(crbug.com/1502640): We should also reset the heuristic a few seconds
   // after a click event handler is done, to reduce potential cycles.
 }

@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Session.Background.TotalDuration" units="ms"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -53,7 +53,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Session.IsActive" enum="BooleanActive"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>rogerm@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -941,17 +941,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Session.WebStates.NavigationItem" units="KB"
-    expires_after="2022-07-03">
-  <owner>djean@chromium.org</owner>
-  <owner>sdefresne@chromium.org</owner>
-  <summary>
-    Recorded when CRWNavigationItemStorage encodes the data, which happens on
-    page loads, tab changes and app backgrounding. Estimated size, the actual
-    size can be larger than recorded number.
-  </summary>
-</histogram>
-
 <histogram name="Session.WebStates.ReadFromFileTime" units="ms"
     expires_after="2024-09-15">
   <owner>justincohen@chromium.org</owner>
@@ -1010,12 +999,6 @@ chromium-metrics-reviews@google.com.
     every time the file is written to storage, which happens on page loads, tab
     changes and app backgrounding.
   </summary>
-</histogram>
-
-<histogram name="SessionCrashed.Bubble" enum="SessionCrashedBubbleUserAction"
-    expires_after="M77">
-  <owner>yiyaoliu@chromium.org</owner>
-  <summary>How did the user interact with the SessionCrashed Bubble?</summary>
 </histogram>
 
 <histogram name="SessionRestore.ForegroundTabFirstPaint4" units="ms"

@@ -317,7 +317,8 @@ public class SearchActivity extends AsyncInitializationActivity
                             @Override
                             public void openHistoryClustersUi(String query) {}
                         },
-                        /* tabModelSelectorSupplier= */ null);
+                        /* tabModelSelectorSupplier= */ null,
+                        /* forcePhoneStyleOmnibox= */ true);
         mLocationBarCoordinator.setUrlBarFocusable(true);
         mLocationBarCoordinator.setShouldShowMicButtonWhenUnfocused(true);
         mLocationBarCoordinator.getOmniboxStub().addUrlFocusChangeListener(this);
@@ -344,9 +345,10 @@ public class SearchActivity extends AsyncInitializationActivity
                                 "Attempting to access incognito from the search activity");
                     }
                 };
-        profileProvider.onAvailable((provider) -> {
-            mProfileSupplier.set(profileProvider.get().getOriginalProfile());
-        });
+        profileProvider.onAvailable(
+                (provider) -> {
+                    mProfileSupplier.set(profileProvider.get().getOriginalProfile());
+                });
         return profileProvider;
     }
 

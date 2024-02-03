@@ -5,11 +5,13 @@
 #include "components/plus_addresses/plus_address_service.h"
 
 #include "base/scoped_observation.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/plus_addresses/features.h"
 #include "components/plus_addresses/plus_address_client.h"
 #include "components/plus_addresses/plus_address_prefs.h"
 #include "components/plus_addresses/plus_address_types.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/persistent_repeating_timer.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -50,9 +52,13 @@ PlusAddressService::PlusAddressService(
     PlusAddressClient plus_address_client)
     : identity_manager_(identity_manager),
       pref_service_(pref_service),
-      plus_address_client_(std::move(plus_address_client)) {
-  // Begin PlusAddress periodic actions at construction.
-  CreateAndStartTimer();
+      plus_address_client_(std::move(plus_address_client)),
+      excluded_sites_(GetAndParseExcludedSites()) {
+  if (pref_service) {
+    // Clear the pref to always force a poll on service construction.
+    pref_service->ClearPref(prefs::kPlusAddressLastFetchedTime);
+    CreateAndStartTimer();
+  }
   if (identity_manager) {
     identity_manager_observation_.Observe(identity_manager);
   }
@@ -60,9 +66,14 @@ PlusAddressService::PlusAddressService(
 
 bool PlusAddressService::SupportsPlusAddresses(url::Origin origin,
                                                bool is_off_the_record) {
-  // TODO(b/295187452): Also check `origin` here.
-  // First, check prerequisites (the feature enabled, etc.)
+  // First, check prerequisites (the feature enabled, etc.).
   if (!is_enabled()) {
+    return false;
+  }
+
+  // Check if origin is supported (Not opaque, in the `excluded_sites_`, or is
+  // non http/https scheme).
+  if (!IsSupportedOrigin(origin)) {
     return false;
   }
   // We've met the prerequisites. If this isn't an OTR session, plus_addresses
@@ -297,6 +308,25 @@ void PlusAddressService::HandleSignout() {
   plus_address_by_site_.clear();
   plus_addresses_.clear();
   repeating_timer_.reset();
+}
+
+std::set<std::string> PlusAddressService::GetAndParseExcludedSites() {
+  std::set<std::string> parsed_excluded_sites;
+  for (const std::string& site :
+       base::SplitString(kPlusAddressExcludedSites.Get(), ",",
+                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    parsed_excluded_sites.insert(site);
+  }
+  return parsed_excluded_sites;
+}
+
+bool PlusAddressService::IsSupportedOrigin(const url::Origin& origin) const {
+  if (origin.opaque() || excluded_sites_.contains(GetEtldPlusOne(origin))) {
+    return false;
+  }
+
+  return origin.scheme() == url::kHttpsScheme ||
+         origin.scheme() == url::kHttpScheme;
 }
 
 }  // namespace plus_addresses

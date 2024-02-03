@@ -50,6 +50,7 @@
 #include "components/password_manager/core/browser/form_parsing/form_data_parser.h"
 #include "components/password_manager/core/browser/insecure_credentials_helper.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -414,7 +415,7 @@ void ChromePasswordProtectionService::ShowModalWarning(
 
   // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
   if (web_contents->IsFullscreen())
-    web_contents->ExitFullscreen();
+    web_contents->ExitFullscreen(true);
 
 #if BUILDFLAG(IS_ANDROID)
   (new PasswordReuseControllerAndroid(
@@ -510,7 +511,7 @@ void ChromePasswordProtectionService::ShowInterstitial(
          password_type.account_type() == ReusedPasswordAccountType::GSUITE);
   // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
   if (web_contents->IsFullscreen())
-    web_contents->ExitFullscreen();
+    web_contents->ExitFullscreen(/*will_cause_resize=*/true);
 
   content::OpenURLParams params(
       GURL(chrome::kChromeUIResetPasswordURL), content::Referrer(),
@@ -1050,9 +1051,14 @@ void ChromePasswordProtectionService::OpenChangePasswordUrl(
 #if BUILDFLAG(IS_ANDROID)
     JNIEnv* env = base::android::AttachCurrentThread();
     PasswordCheckupLauncherHelperImpl checkup_launcher;
+    const syncer::SyncService* sync_service =
+        SyncServiceFactory::GetForProfile(profile_);
+    std::string account = password_manager::sync_util::
+        GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(sync_service);
     checkup_launcher.LaunchCheckupOnDevice(
         env, web_contents->GetTopLevelNativeWindow(),
-        password_manager::PasswordCheckReferrerAndroid::kPhishedWarningDialog);
+        password_manager::PasswordCheckReferrerAndroid::kPhishedWarningDialog,
+        account);
 #endif
 #if BUILDFLAG(FULL_SAFE_BROWSING)
     // Opens chrome://settings/passwords/check in a new tab.

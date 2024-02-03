@@ -26,6 +26,7 @@
 #include "services/accessibility/features/speech_recognition_interface_binder.h"
 #include "services/accessibility/features/sync_os_state_api_bindings.h"
 #include "services/accessibility/features/tts_interface_binder.h"
+#include "services/accessibility/features/user_input_interface_binder.h"
 #include "services/accessibility/features/user_interface_interface_binder.h"
 #include "services/accessibility/features/v8_bindings_utils.h"
 #include "services/accessibility/public/mojom/accessibility_service.mojom-forward.h"
@@ -188,6 +189,11 @@ void V8Environment::AddV8Bindings() {
                          automation_internal_template);
   }
 
+  // Add chrome.runtime.
+  v8::Local<v8::ObjectTemplate> runtime_template =
+      v8::ObjectTemplate::New(isolate);
+  chrome_template->Set(isolate, "runtime", runtime_template);
+
   // Adds atpconsole.log/warn/error.
   // TODO(crbug.com/1355633): Deprecate and use console.log/warn/error instead.
   BindingsUtils::AddAtpConsoleTemplate(isolate, global_template);
@@ -283,11 +289,20 @@ void V8Manager::ConfigureTts(
       std::make_unique<TtsInterfaceBinder>(ax_service_client));
 }
 
+void V8Manager::ConfigureUserInput(
+    mojom::AccessibilityServiceClient* ax_service_client) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(b/262637071): load the AccessibilityPrivate JS shim into V8 using
+  // v8_env_.AsyncCall if it isn't already loaded.
+  interface_binders_.push_back(
+      std::make_unique<UserInputInterfaceBinder>(ax_service_client));
+}
+
 void V8Manager::ConfigureUserInterface(
     mojom::AccessibilityServiceClient* ax_service_client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(b/262637071): load the AccessibilityPrivate JS shim into V8 using
-  // v8_env_.AsyncCall.
+  // v8_env_.AsyncCall if it isn't already loaded.
   interface_binders_.push_back(
       std::make_unique<UserInterfaceInterfaceBinder>(ax_service_client));
 }

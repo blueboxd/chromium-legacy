@@ -136,8 +136,8 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/language/core/common/language_util.h"
-#include "components/metrics/call_stack_profile_metrics_provider.h"
-#include "components/metrics/call_stack_profile_params.h"
+#include "components/metrics/call_stacks/call_stack_profile_metrics_provider.h"
+#include "components/metrics/call_stacks/call_stack_profile_params.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_reporting_default_state.h"
@@ -176,6 +176,7 @@
 #include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/synthetic_trial_syncer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -352,7 +353,26 @@
 #include "components/spellcheck/common/spellcheck_features.h"
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+#include "sql/database.h"
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+
 namespace {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+constexpr base::FilePath::CharType kMediaHistoryDatabaseName[] =
+    FILE_PATH_LITERAL("Media History");
+
+void DeleteMediaHistoryDatabase(const base::FilePath& profile_path) {
+  auto db_path = profile_path.Append(kMediaHistoryDatabaseName);
+  base::UmaHistogramBoolean("Media.MediaHistory.DatabaseExists",
+                            base::PathExists(db_path));
+  sql::Database::Delete(db_path);
+}
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
 // Initialized in PreMainMessageLoopRun() and handed off to content:: in
@@ -495,8 +515,6 @@ void ProcessSingletonNotificationCallbackImpl(
     return;
   }
 #endif
-
-  g_browser_process->platform_part()->OnBrowserLaunch();
 
   StartupProfilePathInfo startup_profile_path_info =
       GetStartupProfilePath(current_directory, command_line,
@@ -658,6 +676,8 @@ void ChromeBrowserMainParts::SetupMetrics() {
       variations::VariationsIdsProvider::GetInstance());
   metrics->GetSyntheticTrialRegistry()->AddObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
+  synthetic_trial_syncer_ = content::SyntheticTrialSyncer::Create(
+      metrics->GetSyntheticTrialRegistry());
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
 
@@ -749,6 +769,10 @@ int ChromeBrowserMainParts::PreEarlyInitialization() {
   // Create BrowserProcess in PreEarlyInitialization() so that we can load
   // field trials (and all it depends upon).
   browser_process_ = std::make_unique<BrowserProcessImpl>(startup_data_);
+
+#if BUILDFLAG(IS_ANDROID)
+  startup_data_->CreateProfilePrefService();
+#endif
 
   bool failed_to_load_resource_bundle = false;
   const int load_local_state_result =
@@ -1297,6 +1321,18 @@ void ChromeBrowserMainParts::PostProfileInit(Profile* profile,
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #endif  // BUILDFLAG(IS_WIN)
 
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+  // Delete the media history database if it still exists.
+  // TODO(crbug.com/1198344): Remove this.
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&DeleteMediaHistoryDatabase, profile->GetPath()));
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+
 #if !BUILDFLAG(IS_ANDROID)
   if (ShouldInstallSodaDuringPostProfileInit(
           *base::CommandLine::ForCurrentProcess())) {
@@ -1712,9 +1748,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         g_browser_process->profile_manager()->GetLastOpenedProfiles();
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  // This step is costly and is already measured in
-  // Startup.StartupBrowserCreator_Start.
+  // This step is costly.
   if (browser_creator_->Start(*base::CommandLine::ForCurrentProcess(),
                               base::FilePath(), profile_info,
                               last_opened_profiles)) {
@@ -1867,6 +1901,11 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 #endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   browser_process_->metrics_service()->Stop();
+
+  // BrowserProcessImpl::StartTearDown() makes SyntheticTrialRegistry
+  // unavailable. Since SyntheticTrialSyncer depends on SyntheticTrialRegistry,
+  // destroy before the tear-down.
+  synthetic_trial_syncer_.reset();
 
   restart_last_session_ = browser_shutdown::ShutdownPreThreadsStop();
   browser_process_->StartTearDown();

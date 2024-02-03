@@ -200,7 +200,11 @@ void PaintOpReader::ReadSize(size_t* size) {
   // reading as two uint32_ts and combining the result.
   // https://crbug.com/1429994
   uint64_t size64 = static_cast<uint64_t>(hi) << 32 | lo;
-  *size = base::checked_cast<size_t>(size64);
+  if (!base::IsValueInRangeForNumericType<size_t>(size64)) {
+    valid_ = false;
+    return;
+  }
+  *size = static_cast<size_t>(size64);
 }
 
 void PaintOpReader::Read(SkScalar* data) {
@@ -303,8 +307,6 @@ void PaintOpReader::Read(PaintFlags* flags) {
   Read(&flags->color_);
   Read(&flags->width_);
   Read(&flags->miter_limit_);
-
-  Read(&flags->blend_mode_);
 
   ReadSimple(&flags->bitfields_uint_);
 

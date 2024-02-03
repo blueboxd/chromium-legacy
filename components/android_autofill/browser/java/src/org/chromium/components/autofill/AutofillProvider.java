@@ -9,6 +9,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.SparseArray;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.autofill.AutofillValue;
 
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import org.jni_zero.CalledByNative;
@@ -75,8 +77,15 @@ public class AutofillProvider {
     private AutofillSuggestion[] mDatalistSuggestions;
     private WebContentsAccessibility mWebContentsAccessibility;
     private View mAnchorView;
+    private PrefillRequest mPrefillRequest;
+    // Whether onProvideAutofillVirtualStructure has been called for the current PrefillRequest.
+    // Used solely for metrics.
+    private boolean mStructureProvidedForPrefillRequest;
 
-    public AutofillProvider(Context context, ViewGroup containerView, WebContents webContents,
+    public AutofillProvider(
+            Context context,
+            ViewGroup containerView,
+            WebContents webContents,
             String providerName) {
         mWebContents = webContents;
         mProviderName = providerName;
@@ -87,18 +96,20 @@ public class AutofillProvider {
                 mAutofillManager = new AutofillManagerWrapper(context);
             }
             mContainerView = containerView;
-            mAutofillUMA = new AutofillProviderUMA(
-                    context, mAutofillManager.isAwGCurrentAutofillService());
-            mInputUIObserver = new AutofillManagerWrapper.InputUIObserver() {
-                @Override
-                public void onInputUIShown() {
-                    // Not need to report suggestion window displayed if there is no live autofill
-                    // session.
-                    if (mRequest == null) return;
-                    mAutofillUMA.onSuggestionDisplayed(
-                            System.currentTimeMillis() - mAutofillTriggeredTimeMillis);
-                }
-            };
+            mAutofillUMA =
+                    new AutofillProviderUMA(
+                            context, mAutofillManager.isAwGCurrentAutofillService());
+            mInputUIObserver =
+                    new AutofillManagerWrapper.InputUIObserver() {
+                        @Override
+                        public void onInputUIShown() {
+                            // Not need to report suggestion window displayed if there is no live
+                            // autofill session.
+                            if (mRequest == null) return;
+                            mAutofillUMA.onSuggestionDisplayed(
+                                    System.currentTimeMillis() - mAutofillTriggeredTimeMillis);
+                        }
+                    };
             mAutofillManager.addInputUIObserver(mInputUIObserver);
             mContext = context;
         }
@@ -106,7 +117,7 @@ public class AutofillProvider {
     }
 
     public void destroy() {
-        mAutofillUMA.recordSession();
+        mAutofillUMA.recordSession(mAutofillManager.isDisabled());
         detachFromJavaAutofillProvider();
         mAutofillManager.destroy();
     }
@@ -130,24 +141,34 @@ public class AutofillProvider {
         // This method could be called for the session started by the native
         // control outside of the scope of autofill, e.g. the URL bar, in this case, we simply
         // return.
-        if (mRequest == null) return;
+        if (mRequest == null && mPrefillRequest == null) return;
 
         Bundle bundle = structure.getExtras();
         if (bundle != null) {
             bundle.putCharSequence("VIRTUAL_STRUCTURE_PROVIDER_NAME", mProviderName);
             bundle.putCharSequence(
                     "VIRTUAL_STRUCTURE_PROVIDER_VERSION", VersionConstants.PRODUCT_VERSION);
-            AutofillHintsService autofillHintsService = mRequest.getAutofillHintsService();
-            if (autofillHintsService != null) {
-                bundle.putBinder("AUTOFILL_HINTS_SERVICE", autofillHintsService.getBinder());
+
+            if (mRequest != null && mRequest.getAutofillHintsService() != null) {
+                bundle.putBinder(
+                        "AUTOFILL_HINTS_SERVICE", mRequest.getAutofillHintsService().getBinder());
             }
         }
-        mRequest.fillViewStructure(structure);
+        // We should have one of them available here, we start with AutofillRequest as it should be
+        // available only if we started a session.
+        FormData form;
+        if (mRequest != null) {
+            form = mRequest.getForm();
+            mAutofillUMA.onVirtualStructureProvided();
+        } else {
+            form = mPrefillRequest.getForm();
+            mStructureProvidedForPrefillRequest = true;
+        }
+        form.fillViewStructure(structure);
         if (AutofillManagerWrapper.isLoggable()) {
             AutofillManagerWrapper.log(
                     "onProvideAutoFillVirtualStructure fields:" + structure.getChildCount());
         }
-        mAutofillUMA.onVirtualStructureProvided();
     }
 
     /**
@@ -167,11 +188,10 @@ public class AutofillProvider {
         }
     }
 
-    /**
-     * @return whether query autofill suggestion.
-     */
+    /** @return whether query autofill suggestion. */
     public boolean shouldQueryAutofillSuggestion() {
-        return mRequest != null && mRequest.getFocusField() != null
+        return mRequest != null
+                && mRequest.getFocusField() != null
                 && !mAutofillManager.isAutofillInputUIShowing();
     }
 
@@ -209,14 +229,15 @@ public class AutofillProvider {
         }
 
         transformFormFieldToContainViewCoordinates(form);
-        PrefillRequest prefillRequest = new PrefillRequest(form);
+        mPrefillRequest = new PrefillRequest(form);
+        mStructureProvidedForPrefillRequest = false;
 
-        mAutofillManager.notifyVirtualViewsReady(mContainerView, prefillRequest.getPrefillHints());
+        mAutofillManager.notifyVirtualViewsReady(mContainerView, mPrefillRequest.getPrefillHints());
     }
 
     /**
-     * Invoked when filling form is need. AutofillProvider shall ask autofill
-     * service for the values with which to fill the form.
+     * Invoked when filling form is need. AutofillProvider shall ask autofill service for the values
+     * with which to fill the form.
      *
      * @param formData the form needs to fill.
      * @param focus the index of focus field in formData
@@ -227,11 +248,16 @@ public class AutofillProvider {
      * @param hasServerPrediction whether the server prediction arrived.
      */
     @CalledByNative
-    public void startAutofillSession(FormData formData, int focus, float x, float y, float width,
-            float height, boolean hasServerPrediction) {
-        // Check focusField inside short value?
-        // Autofill Manager might have session that wasn't started by AutofillProvider,
-        // we just always cancel existing session here.
+    public void startAutofillSession(
+            FormData formData,
+            int focus,
+            float x,
+            float y,
+            float width,
+            float height,
+            boolean hasServerPrediction) {
+        // Check focusField inside short value? Autofill Manager might have session that wasn't
+        // started by AutofillProvider, we just always cancel existing session here.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             mAutofillManager.cancel();
         }
@@ -239,16 +265,46 @@ public class AutofillProvider {
         Rect absBound = transformToWindowBounds(new RectF(x, y, x + width, y + height));
         if (mRequest != null) notifyViewExitBeforeDestroyRequest();
         transformFormFieldToContainViewCoordinates(formData);
-        mRequest = new AutofillRequest(
-                formData, new FocusField((short) focus, absBound), hasServerPrediction);
-        notifyVirtualViewEntered(mContainerView, focus, absBound);
         mAutofillUMA.onSessionStarted(mAutofillManager.isDisabled());
+        mRequest =
+                new AutofillRequest(
+                        formData, new FocusField((short) focus, absBound), hasServerPrediction);
+        if (maybeShowBottomSheet(focus)) {
+            mAutofillUMA.onBottomSheetShown();
+        } else {
+            notifyVirtualViewEntered(mContainerView, focus, absBound);
+        }
         if (hasServerPrediction) {
-            mAutofillUMA.onServerTypeAvailable(formData, /*afterSessionStarted=*/false);
+            mAutofillUMA.onServerTypeAvailable(formData, /* afterSessionStarted= */ false);
         }
         mAutofillTriggeredTimeMillis = System.currentTimeMillis();
 
         mAutofillManager.notifyNewSessionStarted(hasServerPrediction);
+    }
+
+    /**
+     * Attempts to show a bottom sheet if the Android version is U+ and there has been a prefill
+     * request for the form in mRequest.
+     *
+     * @param focus the index of the focused field in mRequest.
+     * @return whether the bottom sheet was shown.
+     */
+    boolean maybeShowBottomSheet(int focus) {
+        if (Build.VERSION.SDK_INT < VERSION_CODES.UPSIDE_DOWN_CAKE) return false;
+        if (mPrefillRequest == null
+                || mPrefillRequest.getForm().mSessionId != mRequest.getForm().mSessionId) {
+            return false;
+        }
+
+        boolean bottomSheetShown = showAutofillDialog(mContainerView, focus);
+        if (mNativeAutofillProvider != 0) {
+            AutofillProviderJni.get()
+                    .onShowBottomSheetResult(
+                            mNativeAutofillProvider,
+                            bottomSheetShown,
+                            mStructureProvidedForPrefillRequest);
+        }
+        return bottomSheetShown;
     }
 
     /**
@@ -269,7 +325,7 @@ public class AutofillProvider {
         short sIndex = (short) index;
         FocusField focusField = mRequest.getFocusField();
         if (focusField == null || sIndex != focusField.fieldIndex) {
-            onFocusChangedImpl(true, index, x, y, width, height, true /*causedByValueChange*/);
+            onFocusChangedImpl(true, index, x, y, width, height, /* causedByValueChange= */ true);
         } else {
             // Currently there is no api to notify both value and position
             // change, before the API is available, we still need to call
@@ -283,7 +339,7 @@ public class AutofillProvider {
                 mRequest.setFocusField(new FocusField(focusField.fieldIndex, absBound));
             }
         }
-        notifyVirtualValueChanged(index, /* forceNotify = */ false);
+        notifyVirtualValueChanged(index, /* forceNotify= */ false);
         mAutofillUMA.onUserChangeFieldValue(mRequest.getField(sIndex).hasPreviouslyAutofilled());
     }
 
@@ -372,6 +428,15 @@ public class AutofillProvider {
                 mContainerView, mRequest.getFieldVirtualId((short) index), isVisible);
     }
 
+    @RequiresApi(VERSION_CODES.TIRAMISU)
+    private boolean showAutofillDialog(View parent, int index) {
+        // Refer to notifyVirtualValueChanged() for the reason of the datalist's special handling.
+        if (isDatalistField(index)) return false;
+
+        return mAutofillManager.showAutofillDialog(
+                parent, mRequest.getFieldVirtualId((short) index));
+    }
+
     private void notifyVirtualViewEntered(View parent, int index, Rect absBounds) {
         // Refer to notifyVirtualValueChanged() for the reason of the datalist's special handling.
         if (isDatalistField(index)) return;
@@ -397,14 +462,14 @@ public class AutofillProvider {
         forceNotifyFormValues();
         mAutofillManager.commit(submissionSource);
         mRequest = null;
-        mAutofillUMA.onFormSubmitted(submissionSource);
+        mAutofillUMA.onFormSubmitted(submissionSource, mAutofillManager.isDisabled());
     }
 
     /**
      * Invoked when focus field changed.
      *
      * @param focusOnForm whether focus is still on form.
-     * @param focusItem the index of field has focus
+     * @param focusField the index of field has focus
      * @param x the boundary of focus field.
      * @param y the boundary of focus field.
      * @param width the boundary of focus field.
@@ -414,7 +479,7 @@ public class AutofillProvider {
     public void onFocusChanged(
             boolean focusOnForm, int focusField, float x, float y, float width, float height) {
         onFocusChangedImpl(
-                focusOnForm, focusField, x, y, width, height, false /*causedByValueChange*/);
+                focusOnForm, focusField, x, y, width, height, /* causedByValueChange= */ false);
     }
 
     @CalledByNative
@@ -437,10 +502,16 @@ public class AutofillProvider {
         mRequest.setFocusField(null);
     }
 
-    private void onFocusChangedImpl(boolean focusOnForm, int focusField, float x, float y,
-            float width, float height, boolean causedByValueChange) {
-        // Check focusField inside short value?
-        // FocusNoLongerOnForm is called after form submitted.
+    private void onFocusChangedImpl(
+            boolean focusOnForm,
+            int focusField,
+            float x,
+            float y,
+            float width,
+            float height,
+            boolean causedByValueChange) {
+        // Check focusField inside short value? FocusNoLongerOnForm is called after form
+        // submitted.
         if (mRequest == null) return;
         FocusField prev = mRequest.getFocusField();
         if (focusOnForm) {
@@ -459,7 +530,7 @@ public class AutofillProvider {
             if (!causedByValueChange) {
                 // The focus field value might not sync with platform's
                 // AutofillManager, just notify it value changed.
-                notifyVirtualValueChanged(focusField, /* forceNotify = */ false);
+                notifyVirtualValueChanged(focusField, /* forceNotify= */ false);
                 mAutofillTriggeredTimeMillis = System.currentTimeMillis();
             }
             mRequest.setFocusField(new FocusField((short) focusField, absBound));
@@ -477,8 +548,11 @@ public class AutofillProvider {
         if (mRequest == null) return;
         FocusField focusField = mRequest.getFocusField();
         if (focusField != null) {
-            showDatalistPopup(datalistValues, datalistLabels,
-                    mRequest.getField(focusField.fieldIndex).getBounds(), isRtl);
+            showDatalistPopup(
+                    datalistValues,
+                    datalistLabels,
+                    mRequest.getField(focusField.fieldIndex).getBounds(),
+                    isRtl);
         }
     }
 
@@ -509,25 +583,32 @@ public class AutofillProvider {
             if (mAnchorView == null) mAnchorView = delegate.acquireView();
             setAnchorViewRect(bounds);
             try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                mDatalistPopup = new AutofillPopup(mContext, mAnchorView, new AutofillDelegate() {
-                    @Override
-                    public void dismissed() {
-                        onDatalistPopupDismissed();
-                    }
+                mDatalistPopup =
+                        new AutofillPopup(
+                                mContext,
+                                mAnchorView,
+                                new AutofillDelegate() {
+                                    @Override
+                                    public void dismissed() {
+                                        onDatalistPopupDismissed();
+                                    }
 
-                    @Override
-                    public void suggestionSelected(int listIndex) {
-                        onSuggestionSelected(mDatalistSuggestions[listIndex].getLabel());
-                    }
+                                    @Override
+                                    public void suggestionSelected(int listIndex) {
+                                        onSuggestionSelected(
+                                                mDatalistSuggestions[listIndex].getLabel());
+                                    }
 
-                    @Override
-                    public void deleteSuggestion(int listIndex) {}
+                                    @Override
+                                    public void deleteSuggestion(int listIndex) {}
 
-                    @Override
-                    public void accessibilityFocusCleared() {
-                        mWebContentsAccessibility.onAutofillPopupAccessibilityFocusCleared();
-                    }
-                }, null);
+                                    @Override
+                                    public void accessibilityFocusCleared() {
+                                        mWebContentsAccessibility
+                                                .onAutofillPopupAccessibilityFocusCleared();
+                                    }
+                                },
+                                null);
             } catch (RuntimeException e) {
                 // Deliberately swallowing exception because bad framework implementation can
                 // throw exceptions in ListPopupWindow constructor.
@@ -585,7 +666,7 @@ public class AutofillProvider {
 
     public void setWebContents(WebContents webContents) {
         if (webContents == mWebContents) return;
-        mAutofillUMA.recordSession();
+        mAutofillUMA.recordSession(mAutofillManager.isDisabled());
         if (mWebContents != null) mRequest = null;
         mWebContents = webContents;
         detachFromJavaAutofillProvider();
@@ -613,7 +694,7 @@ public class AutofillProvider {
     private void forceNotifyFormValues() {
         if (mRequest == null) return;
         for (int i = 0; i < mRequest.getFieldCount(); ++i) {
-            notifyVirtualValueChanged(i, /* forceNotify = */ true);
+            notifyVirtualValueChanged(i, /* forceNotify= */ true);
         }
     }
 
@@ -675,30 +756,60 @@ public class AutofillProvider {
      * @param nativeAutofillProvider the native autofill provider.
      */
     private void autofill(long nativeAutofillProvider) {
-        AutofillProviderJni.get().onAutofillAvailable(
-                nativeAutofillProvider, AutofillProvider.this);
+        AutofillProviderJni.get()
+                .onAutofillAvailable(nativeAutofillProvider, AutofillProvider.this);
     }
 
     private void acceptDataListSuggestion(long nativeAutofillProvider, String value) {
-        AutofillProviderJni.get().onAcceptDataListSuggestion(
-                nativeAutofillProvider, AutofillProvider.this, value);
+        AutofillProviderJni.get()
+                .onAcceptDataListSuggestion(nativeAutofillProvider, AutofillProvider.this, value);
     }
 
     private void setAnchorViewRect(long nativeAutofillProvider, View anchorView, RectF rect) {
-        AutofillProviderJni.get().setAnchorViewRect(nativeAutofillProvider, AutofillProvider.this,
-                anchorView, rect.left, rect.top, rect.width(), rect.height());
+        AutofillProviderJni.get()
+                .setAnchorViewRect(
+                        nativeAutofillProvider,
+                        AutofillProvider.this,
+                        anchorView,
+                        rect.left,
+                        rect.top,
+                        rect.width(),
+                        rect.height());
+    }
+
+    @CalledByNative
+    public void reset() {
+        hideDatalistPopup();
+        mPrefillRequest = null;
+        mRequest = null;
     }
 
     @NativeMethods
     interface Natives {
         void init(AutofillProvider caller, WebContents webContents);
+
         void detachFromJavaAutofillProvider(long nativeAutofillProviderAndroidBridgeImpl);
+
         void onAutofillAvailable(
                 long nativeAutofillProviderAndroidBridgeImpl, AutofillProvider caller);
-        void onAcceptDataListSuggestion(long nativeAutofillProviderAndroidBridgeImpl,
-                AutofillProvider caller, String value);
-        void setAnchorViewRect(long nativeAutofillProviderAndroidBridgeImpl,
-                AutofillProvider caller, View anchorView, float x, float y, float width,
+
+        void onAcceptDataListSuggestion(
+                long nativeAutofillProviderAndroidBridgeImpl,
+                AutofillProvider caller,
+                String value);
+
+        void setAnchorViewRect(
+                long nativeAutofillProviderAndroidBridgeImpl,
+                AutofillProvider caller,
+                View anchorView,
+                float x,
+                float y,
+                float width,
                 float height);
+
+        void onShowBottomSheetResult(
+                long nativeAutofillProviderAndroidBridgeImpl,
+                boolean isShown,
+                boolean providedAutofillStructure);
     }
 }

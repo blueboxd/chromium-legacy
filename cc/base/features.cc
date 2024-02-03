@@ -100,7 +100,7 @@ BASE_FEATURE(kUseDMSAAForTiles,
 // above flag UseDMSAAForTiles controls the launch on Vulkan backend.
 BASE_FEATURE(kUseDMSAAForTilesAndroidGL,
              "UseDMSAAForTilesAndroidGL",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kUpdateBrowserControlsWithoutProxy,
@@ -172,5 +172,9 @@ BASE_FEATURE(kUseMapRectForPixelMovement,
 BASE_FEATURE(kEvictionThrottlesDraw,
              "EvictionThrottlesDraw",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kResetTimerWhenNoActiveTreeLikely,
+             "ResetTimerWhenNoActiveTreeLikely",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

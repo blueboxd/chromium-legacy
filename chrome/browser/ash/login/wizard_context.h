@@ -77,8 +77,8 @@ class WizardContext {
   // This helps screens that modify auth factors such as local password and
   // pin to easily determine if we're adding a new auth factor as part of
   // first user setup or updating an existing auth factor, for instance, as
-  // part of recovery flow.
-  enum class AuthChangeFlow { kInitialSetup, kRecovery };
+  // part of recovery flow, or it it just an reauthentication flow.
+  enum class AuthChangeFlow { kInitialSetup, kReauthentication, kRecovery };
 
   struct KnowledgeFactorSetup {
     // Whether usage of local password is forced.
@@ -87,6 +87,11 @@ class WizardContext {
     AuthChangeFlow auth_setup_flow = AuthChangeFlow::kInitialSetup;
 
     AuthFactorsSet modified_factors;
+  };
+
+  enum class OSAuthErrorKind {
+    // Most of the errors
+    kFatal,
   };
 
   // Configuration for automating OOBE screen actions, e.g. during device
@@ -163,6 +168,8 @@ class WizardContext {
   RecoverySetup recovery_setup;
 
   KnowledgeFactorSetup knowledge_factor_setup;
+
+  absl::optional<OSAuthErrorKind> osauth_error;
 
   // Same as above, but the actual context is stored in AuthSessionStorage,
   // and the token can be used to retrieve it.

@@ -331,17 +331,6 @@ void AddStrings(content::WebUIDataSource* source) {
       {"googlePhotosAlbumZeroStateMessage",
        IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUM_ZERO_STATE_MESSAGE},
 
-      // SeaPen strings
-      {"templatePark", IDS_PERSONALIZATION_APP_SEA_PEN_TEMPLATE_PARK},
-      {"templateOptionParis",
-       IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_CITY_OPTION_PARIS},
-      {"templateOptionNewYork",
-       IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_CITY_OPTION_NEW_YORK},
-      {"templateOptionPhotography",
-       IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_STYLE_OPTION_PHOTOGRAPHY},
-      {"templateOptionWatercolor",
-       IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_STYLE_OPTION_WATERCOLOR},
-
       // Time of day Wallpaper/Screen saver strings
       {"timeOfDayBannerDescription",
        IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_DESCRIPTION},
@@ -349,8 +338,6 @@ void AddStrings(content::WebUIDataSource* source) {
        IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_DESCRIPTION_NO_SCREENSAVER},
       {"timeOfDayWallpaperCollectionSublabel",
        IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_COLLECTION_SUBLABEL},
-
-      // TODO(b/309715996): Add finalized strings.
       {"timeOfDayWallpaperDialogTitle",
        IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_TITLE},
       {"timeOfDayWallpaperDialogContent",

@@ -39,13 +39,10 @@ extern const char kMediaBackgrounded[];
 // The user opened the Global Media Controls dialog.
 extern const char kGlobalMediaControlsOpened[];
 
-// All the events declared below are the string names of deferred onboarding
-// events for the Focus Mode feature.
-
-// The user has opened a Focus Mode window.
-extern const char kFocusModeOpened[];
-// All conditions for show Focus Mode IPH were met.
-extern const char kFocusModeConditionsMet[];
+// A side panel has been pinned.
+extern const char kSidePanelPinned[];
+// A side panel has been opened from the app menu.
+extern const char kSidePanelFromMenuShown[];
 
 // The side search panel was automatically triggered.
 extern const char kSideSearchAutoTriggered[];
@@ -208,6 +205,18 @@ extern const char kParcelTrackingTriggered[];
 
 // The user has tracked a parcel.
 extern const char kParcelTracked[];
+
+// The user has more than one gesture to refresh a page in iOS. This includes
+// but not limited to re-typing the URL in omnibox and refreshing from context
+// menu.
+extern const char kIOSMultiGestureRefreshUsed[];
+
+// The user has used the pull-to-refresh feature in iOS.
+extern const char kIOSPullToRefreshUsed[];
+
+// The user has met a condition that makes the Enhanced Safe Browsing
+// inline and blue-dot promos eligible to be displayed.
+extern const char kEnhancedSafeBrowsingPromoCriterionMet[];
 
 #endif  // BUILDFLAG(IS_IOS)
 

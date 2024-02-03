@@ -40,7 +40,7 @@ class InterestGroupPermissionsBrowserTest
          privacy_sandbox::kPrivacySandboxSettings4},
         /*disabled_features=*/
         {blink::features::kFencedFrames,
-         privacy_sandbox::kPrivacySandboxSettings3});
+         blink::features::kFledgeEnforceKAnonymity});
   }
 
   void SetUpOnMainThread() override {

@@ -26,6 +26,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
 
@@ -82,6 +83,10 @@ std::vector<content::WebContents*> GetPdfHtmlWebContentses(Profile* profile) {
 
 // Invoke screen reader alert to notify the user of the state.
 void AnnounceToScreenReader(const int message_id) {
+// TODO(crbug.com/1442928): Sending announcements results in a failure in
+// `AuraLinuxAccessibilityInProcessBrowserTest::IndexInParentWithModal` and
+// flaky fail when running Chrome.
+#if !BUILDFLAG(IS_LINUX)
   const Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (!browser) {
     VLOG(2) << "Browser is not ready to announce";
@@ -95,6 +100,7 @@ void AnnounceToScreenReader(const int message_id) {
 
   browser_view->GetViewAccessibility().AnnounceText(
       l10n_util::GetStringUTF16(message_id));
+#endif
 }
 
 void RecordAcceptLanguages(const std::string& accept_languages) {
@@ -124,10 +130,13 @@ PdfOcrController::PdfOcrController(Profile* profile) : profile_(profile) {
       base::BindRepeating(&PdfOcrController::OnPdfOcrAlwaysActiveChanged,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  // Trigger if the preference is already set and a screen reader is enabled.
+  // Trigger if the preference is already set, and a screen reader or Select-to-
+  // Speak on ChromeOS is enabled.
   if (profile_->GetPrefs()->GetBoolean(
           prefs::kAccessibilityPdfOcrAlwaysActive) &&
-      accessibility_state_utils::IsScreenReaderEnabled()) {
+      (accessibility_state_utils::IsScreenReaderEnabled() ||
+       (features::IsAccessibilityPdfOcrForSelectToSpeakEnabled() &&
+        accessibility_state_utils::IsSelectToSpeakEnabled()))) {
     OnPdfOcrAlwaysActiveChanged();
   }
 }
@@ -188,6 +197,11 @@ void PdfOcrController::OnPdfOcrAlwaysActiveChanged() {
 }
 
 void PdfOcrController::SendPdfOcrAlwaysActiveToAll(bool is_always_active) {
+  if (is_always_active) {
+    CHECK_EQ(ScreenAIInstallState::GetInstance()->get_state(),
+             ScreenAIInstallState::State::kReady);
+  }
+
   std::vector<content::WebContents*> html_web_contents_vector =
       GetPdfHtmlWebContentses(profile_);
   // Iterate over all WebContentses associated with PDF Viewer Mimehandlers and
@@ -238,11 +252,11 @@ void PdfOcrController::StateChanged(ScreenAIInstallState::State state) {
     case ScreenAIInstallState::State::kFailed:
       AnnounceToScreenReader(IDS_SETTINGS_PDF_OCR_DOWNLOAD_ERROR);
       if (send_always_active_state_when_service_is_ready_) {
-        // Update the PDF OCR pref to be false to toggle off the button.
-        profile_->GetPrefs()->SetBoolean(
-            prefs::kAccessibilityPdfOcrAlwaysActive, false);
         send_always_active_state_when_service_is_ready_ = false;
       }
+      // Update the PDF OCR pref to be false to toggle off the button.
+      profile_->GetPrefs()->SetBoolean(prefs::kAccessibilityPdfOcrAlwaysActive,
+                                       false);
       break;
 
     case ScreenAIInstallState::State::kDownloaded:

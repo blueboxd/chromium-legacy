@@ -40,7 +40,7 @@ source_set("promos_manager_scene_agent") {
 
 source_set("promos_manager") {
   sources = [
-    "promos_manager_coordinator+internal.h",
+    "promos_manager_coordinator+Testing.h",
     "promos_manager_coordinator.h",
     "promos_manager_coordinator.mm",
     "promos_manager_mediator.h",
@@ -79,6 +79,7 @@ source_set("promos_manager") {
     "//ios/chrome/browser/ui/default_promo/post_restore:features",
     "//ios/chrome/browser/ui/default_promo/post_restore:post_restore_default_browser",
     "//ios/chrome/browser/ui/default_promo/promo_handler",
+    "//ios/chrome/browser/ui/first_run/omnibox_position/promo",
     "//ios/chrome/browser/ui/post_restore_signin",
     "//ios/chrome/browser/ui/whats_new:util",
     "//ios/chrome/browser/ui/whats_new/promo",

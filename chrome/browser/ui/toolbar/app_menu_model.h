@@ -172,6 +172,7 @@ class AppMenuModel : public ui::SimpleMenuModel,
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kPasswordAndAutofillMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kPasswordManagerMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kShowSearchCompanion);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kPerformanceMenuItem);
 
   // Number of menus within the app menu with an arbitrarily high (variable)
   // number of menu items. For example, the number of bookmarks menu items
@@ -260,6 +261,10 @@ class AppMenuModel : public ui::SimpleMenuModel,
   // Examples: Extension permissions and sign in errors.
   // Returns a boolean indicating whether any menu items were added.
   bool AddGlobalErrorMenuItems();
+
+  // Adds the Safety Hub menu notifications to the menu. Returns a boolean
+  // indicating whether any menu items were added.
+  [[nodiscard]] bool AddSafetyHubMenuItem();
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Disables/Enables the settings item based on kSystemFeaturesDisableList

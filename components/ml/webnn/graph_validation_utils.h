@@ -21,13 +21,15 @@ namespace webnn {
 // Represents the `MLOperand` which describes not only input and constant
 // operand, but also the output operand of operator.
 struct Operand {
-  // Represents the `MLOperandType` in the WebIDL definition.
+  // Represents the `MLOperandDataType` in the WebIDL definition.
   enum DataType {
     kMinValue = 0,
     kFloat32 = 0,
     kFloat16,
     kInt32,
     kUint32,
+    kInt64,
+    kUint64,
     kInt8,
     kUint8,
     kMaxValue = kUint8,
@@ -63,7 +65,16 @@ static constexpr DataTypeConstraintSet kFloat = {Operand::DataType::kFloat32,
                                                  Operand::DataType::kFloat16};
 
 static constexpr DataTypeConstraintSet kSignedInteger = {
+    Operand::DataType::kInt32, Operand::DataType::kInt64,
+    Operand::DataType::kInt8};
+
+static constexpr DataTypeConstraintSet kSignedNumber = {
+    Operand::DataType::kFloat32, Operand::DataType::kFloat16,
     Operand::DataType::kInt32, Operand::DataType::kInt8};
+
+static constexpr DataTypeConstraintSet kGatherOperatorIndexDataTypes = {
+    Operand::DataType::kInt32, Operand::DataType::kUint32,
+    Operand::DataType::kInt64, Operand::DataType::kUint64};
 
 }  // namespace DataTypeConstraint
 
@@ -120,6 +131,27 @@ struct Padding2d {
   Size2d<uint32_t> beginning;
   // The height and width padding at the ending of input tensor.
   Size2d<uint32_t> ending;
+};
+
+// Contains the attributes of batchNormalization operator.
+struct BatchNormalizationAttributes {
+  BatchNormalizationAttributes();
+  ~BatchNormalizationAttributes();
+
+  BatchNormalizationAttributes(BatchNormalizationAttributes&& other);
+  BatchNormalizationAttributes& operator=(BatchNormalizationAttributes&& other);
+
+  BatchNormalizationAttributes(const BatchNormalizationAttributes&) = delete;
+  BatchNormalizationAttributes& operator=(const BatchNormalizationAttributes&) =
+      delete;
+
+  // The 1-D tensor of the scaling values.
+  absl::optional<Operand> scale;
+  // The 1-D tensor of the bias values.
+  absl::optional<Operand> bias;
+  // The number which specifies the index to the feature count dimension of the
+  // input shape for which the mean and variance values are.
+  uint32_t axis = 1;
 };
 
 // Contains the attributes of conv2d operator.
@@ -275,6 +307,14 @@ base::expected<std::vector<Operand>, std::string> ValidateSplitAndInferOutput(
     const Operand& input,
     const SplitAttribute& attributes);
 
+// Validate and infer output information of batchNormalization operator defined
+// in WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-batchnorm.
+base::expected<Operand, std::string> ValidateBatchNormalizationAndInferOutput(
+    const Operand& input,
+    const Operand& mean,
+    const Operand& variance,
+    const BatchNormalizationAttributes& attributes);
+
 // Validate and infer output information of 2-D convolution operator defined in
 // WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-conv2d
 base::expected<Operand, std::string> ValidateConv2dAndInferOutput(
@@ -317,6 +357,13 @@ base::expected<Operand, std::string> ValidateResample2dAndInferOutput(
         scales_or_sizes,
     base::span<const uint32_t> axes);
 
+// Validate and infer output information of gather operator defined in
+// WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-gather
+base::expected<Operand, std::string> ValidateGatherAndInferOutput(
+    const Operand& input,
+    const Operand& indices,
+    const uint32_t axis);
+
 // Validate gemm operator defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-gemm
 base::expected<Operand, std::string> ValidateGemmAndInferOutput(
@@ -355,6 +402,14 @@ base::expected<Operand, std::string> ValidateReduceAndInferOutput(
     const Operand& input,
     base::span<const uint32_t> axes,
     bool keepDimensions = false);
+
+// TODO(crbug.com/1273291): Add the link of the where operator definition in
+// WebIDL.
+// Validate where operator.
+base::expected<Operand, std::string> ValidateWhereAndInferOutput(
+    const Operand& condition,
+    const Operand& true_value,
+    const Operand& false_value);
 
 base::expected<size_t, std::string> ValidateAndCalculateElementsNumber(
     base::span<const uint32_t> dimensions);

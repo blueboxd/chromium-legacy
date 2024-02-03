@@ -11,11 +11,14 @@
 #include "base/check_op.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/osauth/base_osauth_setup_screen.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ui/webui/ash/login/osauth/factor_setup_success_screen_handler.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/ash/components/osauth/public/auth_session_storage.h"
 #include "chromeos/ash/components/osauth/public/common_types.h"
 
@@ -28,6 +31,7 @@ constexpr const char kUserActionProceed[] = "proceed";
 std::string GetChangeModeString(WizardContext::AuthChangeFlow flow) {
   switch (flow) {
     case WizardContext::AuthChangeFlow::kRecovery:
+    case WizardContext::AuthChangeFlow::kReauthentication:
       return "update";
     case WizardContext::AuthChangeFlow::kInitialSetup:
       return "set";
@@ -53,6 +57,8 @@ std::string GetModifiedFactorsString(AuthFactorsSet factors) {
 }
 // LINT.ThenChange(/chrome/browser/resources/chromeos/login/screens/osauth/factor_setup_success.js)
 
+const base::TimeDelta kTimeoutDiff = base::Seconds(10);
+
 }  // namespace
 
 // static
@@ -62,14 +68,16 @@ std::string FactorSetupSuccessScreen::GetResultString(Result result) {
       return BaseScreen::kNotApplicable;
     case Result::kProceed:
       return "Proceed";
+    case Result::kTimedOut:
+      return "TimedOut";
   }
 }
 
 FactorSetupSuccessScreen::FactorSetupSuccessScreen(
     base::WeakPtr<FactorSetupSuccessScreenView> view,
     ScreenExitCallback exit_callback)
-    : BaseScreen(FactorSetupSuccessScreenView::kScreenId,
-                 OobeScreenPriority::DEFAULT),
+    : BaseOSAuthSetupScreen(FactorSetupSuccessScreenView::kScreenId,
+                            OobeScreenPriority::DEFAULT),
       view_(std::move(view)),
       exit_callback_(std::move(exit_callback)) {}
 
@@ -87,12 +95,42 @@ bool FactorSetupSuccessScreen::MaybeSkip(WizardContext& wizard_context) {
   return false;
 }
 
-void FactorSetupSuccessScreen::HideImpl() {}
+void FactorSetupSuccessScreen::HideImpl() {
+  expiration_timer_.reset();
+  BaseOSAuthSetupScreen::HideImpl();
+}
 
 void FactorSetupSuccessScreen::ShowImpl() {
   if (!view_) {
     return;
   }
+  InspectContextAndContinue(
+      base::BindOnce(&FactorSetupSuccessScreen::InspectContext,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&FactorSetupSuccessScreen::DoShow,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FactorSetupSuccessScreen::InspectContext(UserContext* user_context) {
+  if (!user_context) {
+    return;
+  }
+  base::Time valid_until = user_context->GetSessionLifetime();
+  if (valid_until.is_null()) {
+    return;
+  }
+  base::Time timeout = valid_until - kTimeoutDiff;
+  base::TimeDelta delta = timeout - base::Time::Now();
+  if (delta.is_negative()) {
+    delta = base::Seconds(0);
+  }
+
+  expiration_timer_ = std::make_unique<base::OneShotTimer>();
+  expiration_timer_->Start(FROM_HERE, delta, this,
+                           &FactorSetupSuccessScreen::OnTimeout);
+}
+
+void FactorSetupSuccessScreen::DoShow() {
   base::Value::Dict params;
   params.Set("modifiedFactors",
              GetModifiedFactorsString(
@@ -111,6 +149,10 @@ void FactorSetupSuccessScreen::OnUserAction(const base::Value::List& args) {
     return;
   }
   BaseScreen::OnUserAction(args);
+}
+
+void FactorSetupSuccessScreen::OnTimeout() {
+  exit_callback_.Run(Result::kTimedOut);
 }
 
 }  // namespace ash

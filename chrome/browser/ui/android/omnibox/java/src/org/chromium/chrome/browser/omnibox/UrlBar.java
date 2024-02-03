@@ -47,7 +47,6 @@ import org.chromium.base.metrics.TimingMetric;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 import org.chromium.components.browser_ui.share.ShareHelper;
 import org.chromium.components.browser_ui.util.FirstDrawDetector;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -80,9 +79,6 @@ public abstract class UrlBar extends AutocompleteEditText {
     // over truncating text for large tablets and external displays. Also, tests can continue to
     // check for text equality, instead of worrying about partial equality with truncated text.
     static final int MIN_LENGTH_FOR_TRUNCATION = 500;
-
-    static final MutableFlagWithSafeDefault sScrollToTLDOptimizationsFlag =
-            new MutableFlagWithSafeDefault(ChromeFeatureList.SCROLL_TO_TLD_OPTIMIZATION, false);
 
     /**
      * The text direction of the URL or query: LAYOUT_DIRECTION_LOCALE, LAYOUT_DIRECTION_LTR, or
@@ -229,8 +225,7 @@ public abstract class UrlBar extends AutocompleteEditText {
                 this,
                 () -> {
                     // We have now avoided the first draw problem (see the comments above) so we
-                    // want to
-                    // make the URL bar focusable so that touches etc. activate it.
+                    // want to make the URL bar focusable so that touches etc. activate it.
                     setFocusable(mAllowFocus);
                     setFocusableInTouchMode(mAllowFocus);
                 });
@@ -654,7 +649,8 @@ public abstract class UrlBar extends AutocompleteEditText {
             return false;
         }
 
-        if (mVisibleTextPrefixHint != null && sScrollToTLDOptimizationsFlag.isEnabled()) {
+        if (mVisibleTextPrefixHint != null
+                && ChromeFeatureList.sScrollToTLDOptimizations.isEnabled()) {
             return TextUtils.indexOf(text, mVisibleTextPrefixHint) == 0;
         }
 
@@ -773,7 +769,7 @@ public abstract class UrlBar extends AutocompleteEditText {
             Layout textLayout = getLayout();
 
             int finalVisibleCharIndex;
-            if (sScrollToTLDOptimizationsFlag.isEnabled()) {
+            if (ChromeFeatureList.sScrollToTLDOptimizations.isEnabled()) {
                 // getOffsetForHorizontal is very slow. getOffsetForAdvance is much faster.
                 finalVisibleCharIndex =
                         textLayout
@@ -913,8 +909,9 @@ public abstract class UrlBar extends AutocompleteEditText {
             }
         } else {
             // RTL
-            // Clear the visible text hint due to the complexities of Bi-Di text handling. If RTL or
-            // Bi-Di URLs become more prevalant, update this to correctly calculate the hint.
+            // Clear the visible text hint due to the complexities of Bi-Di text handling. If
+            // RTL or Bi-Di URLs become more prevalant, update this to correctly calculate the
+            // hint.
             mVisibleTextPrefixHint = null;
 
             // To handle BiDirectional text, search backward from the two existing offsets to find

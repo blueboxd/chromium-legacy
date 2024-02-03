@@ -45,7 +45,7 @@ async def test_remote_value_promise(bidi_session, top_context, await_promise):
 @pytest.mark.parametrize("await_promise", [True, False])
 async def test_window_context_top_level(bidi_session, top_context,
                                         await_promise):
-    function_declaration = f"() => window"
+    function_declaration = "() => window"
     if await_promise:
         function_declaration = "async" + function_declaration
 
@@ -65,21 +65,24 @@ async def test_window_context_top_level(bidi_session, top_context,
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("domain", ["", "alt"],
+                         ids=["same_origin", "cross_origin"])
 @pytest.mark.parametrize("await_promise", [True, False])
 async def test_window_context_iframe_window(bidi_session, top_context,
-                                            test_page_same_origin_frame,
-                                            await_promise):
+                                            inline, domain, await_promise):
 
+    frame_url = inline("<div>foo</div>")
+    url = inline(f"<iframe src='{frame_url}'></iframe>", domain=domain)
     await bidi_session.browsing_context.navigate(
         context=top_context["context"],
-        url=test_page_same_origin_frame,
+        url=url,
         wait="complete",
     )
 
     all_contexts = await bidi_session.browsing_context.get_tree()
     iframe_context = all_contexts[0]["children"][0]
 
-    function_declaration = f"() => window"
+    function_declaration = "() => window"
     if await_promise:
         function_declaration = "async" + function_declaration
 
@@ -99,13 +102,17 @@ async def test_window_context_iframe_window(bidi_session, top_context,
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("domain", ["", "alt"],
+                         ids=["same_origin", "cross_origin"])
 @pytest.mark.parametrize("await_promise", [True, False])
 async def test_window_context_iframe_content_window(
-        bidi_session, top_context, test_page_same_origin_frame, await_promise):
+        bidi_session, top_context, inline, domain, await_promise):
 
+    frame_url = inline("<div>foo</div>")
+    url = inline(f"<iframe src='{frame_url}'></iframe>", domain=domain)
     await bidi_session.browsing_context.navigate(
         context=top_context["context"],
-        url=test_page_same_origin_frame,
+        url=url,
         wait="complete",
     )
 
@@ -113,7 +120,7 @@ async def test_window_context_iframe_content_window(
     iframe_context = all_contexts[0]["children"][0]
 
     # This is equivalent to `document.getElementsByTagName("iframe")[0].contentWindow`
-    function_declaration = f"() => window.frames[0]"
+    function_declaration = "() => window.frames[0]"
     if await_promise:
         function_declaration = "async" + function_declaration
 
@@ -146,7 +153,7 @@ async def test_window_context_same_id_after_navigation(bidi_session,
 
     url = inline(f"{domain}", domain=domain)
 
-    function_declaration = f"() => window"
+    function_declaration = "() => window"
     if await_promise:
         function_declaration = "async" + function_declaration
 

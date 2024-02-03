@@ -91,7 +91,9 @@ class MODULES_EXPORT PaintRenderingContext2D
   void resetTransform() final;
   void reset() final;
 
-  void FlushCanvas(FlushReason) final {}
+  absl::optional<cc::PaintRecord> FlushCanvas(FlushReason) final {
+    return absl::nullopt;
+  }
 
   PaintRecord GetRecord();
 
@@ -103,6 +105,9 @@ class MODULES_EXPORT PaintRenderingContext2D
   PredefinedColorSpace GetDefaultImageDataColorSpace() const final;
   bool IsPaint2D() const override { return true; }
   void WillOverwriteCanvas() override;
+
+  // PaintRenderingContext2D is unable to resolve fonts.
+  bool ResolveFont(const String& new_font) final { return false; }
 
  private:
   void InitializeForRecording(cc::PaintCanvas* canvas) const override;

@@ -93,6 +93,9 @@ class FloatingWorkspaceService : public KeyedService,
   void CaptureAndUploadActiveDeskForTest(
       std::unique_ptr<DeskTemplate> desk_template);
 
+  // Get latest Floating Workspace Template from DeskSyncBridge.
+  const DeskTemplate* GetLatestFloatingWorkspaceTemplate();
+
   // syncer::SyncServiceObserver overrides:
   void OnStateChanged(syncer::SyncService* sync) override;
   void OnSyncShutdown(syncer::SyncService* sync) override;
@@ -101,19 +104,17 @@ class FloatingWorkspaceService : public KeyedService,
   void Click(const absl::optional<int>& button_index,
              const absl::optional<std::u16string>& reply) override;
 
+  // ash::SessionObserver:
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+
   void MaybeCloseNotification();
 
   std::vector<const ash::DeskTemplate*> GetFloatingWorkspaceTemplateEntries();
 
  protected:
   std::unique_ptr<DeskTemplate> previously_captured_desk_template_;
-  // Indicate if it is a testing class.
-  bool is_testing_ = false;
 
  private:
-  // ash::SessionObserver:
-  void OnActiveUserSessionChanged(const AccountId& account_id) override;
-
   // AppRegistryCache::Observer
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
@@ -150,9 +151,6 @@ class FloatingWorkspaceService : public KeyedService,
 
   // Handles the updating of progress bar notification.
   void HandleProgressBarStatus();
-
-  // Get latest Floating Workspace Template from DeskSyncBridge.
-  const DeskTemplate* GetLatestFloatingWorkspaceTemplate();
 
   // Capture the current active desk task, running every ~30(TBD) seconds.
   // Upload captured desk to chrome sync and record the randomly generated
@@ -271,6 +269,9 @@ class FloatingWorkspaceService : public KeyedService,
 
   // Time when we first received `kUpToDate` status from `sync_service_`
   absl::optional<base::TimeTicks> first_uptodate_download_timeticks_;
+
+  // Time when the last template was uploaded.
+  base::TimeTicks last_uploaded_timeticks_;
 
   // Timer used for periodic capturing and uploading.
   base::RepeatingTimer timer_;

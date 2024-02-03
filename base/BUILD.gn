@@ -266,10 +266,7 @@ component("base") {
     "containers/contains.h",
     "containers/cxx20_erase.h",
     "containers/cxx20_erase_internal.h",
-    "containers/cxx20_erase_list.h",
     "containers/cxx20_erase_map.h",
-    "containers/cxx20_erase_set.h",
-    "containers/cxx20_erase_string.h",
     "containers/cxx20_erase_vector.h",
     "containers/enum_set.h",
     "containers/extend.h",
@@ -294,7 +291,6 @@ component("base") {
     "cpu_reduction_experiment.cc",
     "cpu_reduction_experiment.h",
     "critical_closure.h",
-    "cxx20_is_constant_evaluated.h",
     "dcheck_is_on.h",
     "debug/alias.cc",
     "debug/alias.h",
@@ -352,8 +348,6 @@ component("base") {
     "functional/callback_tags.h",
     "functional/disallow_unretained.h",
     "functional/function_ref.h",
-    "functional/identity.h",
-    "functional/invoke.h",
     "functional/not_fn.h",
     "functional/overloaded.h",
     "functional/unretained_traits.h",
@@ -779,6 +773,9 @@ component("base") {
     "task/thread_pool/environment_config.h",
     "task/thread_pool/job_task_source.cc",
     "task/thread_pool/job_task_source.h",
+    "task/thread_pool/job_task_source_interface.h",
+    "task/thread_pool/job_task_source_old.cc",
+    "task/thread_pool/job_task_source_old.h",
     "task/thread_pool/pooled_parallel_task_runner.cc",
     "task/thread_pool/pooled_parallel_task_runner.h",
     "task/thread_pool/pooled_sequenced_task_runner.cc",
@@ -1852,6 +1849,8 @@ component("base") {
       "win/scoped_hstring.cc",
       "win/scoped_hstring.h",
       "win/scoped_localalloc.h",
+      "win/scoped_pdh_query.cc",
+      "win/scoped_pdh_query.h",
       "win/scoped_process_information.cc",
       "win/scoped_process_information.h",
       "win/scoped_propvariant.h",
@@ -1912,6 +1911,7 @@ component("base") {
       "cfgmgr32.lib",
       "ntdll.lib",
       "onecore.lib",
+      "pdh.lib",
       "powrprof.lib",
       "propsys.lib",
       "setupapi.lib",
@@ -2114,7 +2114,7 @@ component("base") {
         "process/port_provider_mac.cc",
         "process/port_provider_mac.h",
         "process/process_handle_mac.cc",
-        "process/process_iterator_ios.mm",
+        "process/process_iterator_mac.cc",
         "process/process_mac.cc",
         "process/process_posix.cc",
         "sync_socket_posix.cc",
@@ -2575,6 +2575,11 @@ buildflag_header("power_monitor_buildflags") {
   flags = [ "HAS_BATTERY_LEVEL_PROVIDER_IMPL=$_has_battery_provider_impl" ]
 }
 
+buildflag_header("fuzzing_buildflags") {
+  header = "fuzzing_buildflags.h"
+  flags = [ "USE_FUZZING_ENGINE=$use_fuzzing_engine" ]
+}
+
 # This is the subset of files from base that should not be used with a dynamic
 # library. Note that this library cannot depend on base because base depends on
 # base_static.
@@ -2586,7 +2591,10 @@ static_library("base_static") {
     "immediate_crash.h",
   ]
 
-  deps = [ "//build:chromeos_buildflags" ]
+  deps = [
+    ":fuzzing_buildflags",
+    "//build:chromeos_buildflags",
+  ]
 
   if (is_win) {
     sources += [
@@ -3130,7 +3138,6 @@ test("base_unittests") {
     "containers/unique_ptr_adapters_unittest.cc",
     "containers/vector_buffer_unittest.cc",
     "cpu_unittest.cc",
-    "cxx20_is_constant_evaluated_unittest.cc",
     "debug/alias_unittest.cc",
     "debug/asan_service_unittest.cc",
     "debug/crash_logging_unittest.cc",
@@ -3158,8 +3165,6 @@ test("base_unittests") {
     "functional/callback_helpers_unittest.cc",
     "functional/callback_unittest.cc",
     "functional/function_ref_unittest.cc",
-    "functional/identity_unittest.cc",
-    "functional/invoke_unittest.cc",
     "functional/not_fn_unittest.cc",
     "functional/overloaded_unittest.cc",
     "gmock_unittest.cc",
@@ -4252,15 +4257,6 @@ if (is_android || is_robolectric) {
 }  # is_android || is_robolectric
 
 if (is_android) {
-  # TODO(smaier): delete this once deps have been correctly added everywhere.
-  java_group("jni_java") {
-    public_deps = [
-      # Public because @CheckDiscard is added to generated *Jni.java files.
-      "//build/android:build_java",
-      "//third_party/jni_zero:jni_zero_java",
-    ]
-  }
-
   java_cpp_features("java_features_srcjar") {
     # External code should depend on ":base_java" instead.
     visibility = [ ":*" ]
@@ -4287,13 +4283,13 @@ if (is_android) {
     ]
     deps = [
       ":base_java",
-      ":jni_java",
       "//build/android:build_java",
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
       "//third_party/androidx:androidx_annotation_annotation_experimental_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_collection_collection_java",
       "//third_party/androidx:androidx_core_core_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
     sources = [
       "android/java/src/org/chromium/base/process_launcher/BindService.java",
@@ -4320,7 +4316,6 @@ if (is_android) {
     ]
 
     deps = [
-      ":jni_java",
       "//build/android:build_java",
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
       "//third_party/android_deps:com_google_errorprone_error_prone_annotations_java",
@@ -4367,6 +4362,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/Log.java",
       "android/java/src/org/chromium/base/MathUtils.java",
       "android/java/src/org/chromium/base/MemoryPressureListener.java",
+      "android/java/src/org/chromium/base/MutableFlagWithSafeDefault.java",
       "android/java/src/org/chromium/base/ObserverList.java",
       "android/java/src/org/chromium/base/PackageManagerUtils.java",
       "android/java/src/org/chromium/base/PackageUtils.java",
@@ -4449,6 +4445,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/supplier/OneshotSupplier.java",
       "android/java/src/org/chromium/base/supplier/OneshotSupplierImpl.java",
       "android/java/src/org/chromium/base/supplier/Supplier.java",
+      "android/java/src/org/chromium/base/supplier/SupplierUtils.java",
       "android/java/src/org/chromium/base/supplier/SyncOneshotSupplier.java",
       "android/java/src/org/chromium/base/supplier/SyncOneshotSupplierImpl.java",
       "android/java/src/org/chromium/base/supplier/TransitiveObservableSupplier.java",
@@ -4480,19 +4477,22 @@ if (is_android) {
 
     resources_package = "org.chromium.base"
 
-    proguard_configs = [
-      "android/proguard/chromium_apk.flags",
-      "android/proguard/chromium_code.flags",
-      "android/proguard/remove_logging.flags",
-    ]
+    proguard_configs = [ "android/proguard/chromium_code.flags" ]
+    if (!is_cronet_build) {
+      proguard_configs += [
+        "android/proguard/chromium_apk.flags",
+        "android/proguard/remove_logging.flags",
+      ]
+    }
   }
 
   android_library("base_shared_preferences_java") {
     deps = [
       ":base_java",
-      ":jni_java",
+      "//build/android:build_java",
       "//third_party/android_deps:guava_android_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
 
     sources = [
@@ -4783,6 +4783,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/LifetimeAssertTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
       "android/junit/src/org/chromium/base/MathUtilsTest.java",
+      "android/junit/src/org/chromium/base/MutableFlagWithSafeDefaultUnitTest.java",
       "android/junit/src/org/chromium/base/PathUtilsTest.java",
       "android/junit/src/org/chromium/base/PiiEliderTest.java",
       "android/junit/src/org/chromium/base/PromiseTest.java",
@@ -4812,6 +4813,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/supplier/ObservableSupplierImplTest.java",
       "android/junit/src/org/chromium/base/supplier/OneShotCallbackTest.java",
       "android/junit/src/org/chromium/base/supplier/OneshotSupplierImplTest.java",
+      "android/junit/src/org/chromium/base/supplier/SupplierUtilsTest.java",
       "android/junit/src/org/chromium/base/supplier/SyncOneshotSupplierImplTest.java",
       "android/junit/src/org/chromium/base/supplier/TransitiveObservableSupplierTest.java",
       "android/junit/src/org/chromium/base/supplier/UnownedUserDataSupplierTest.java",

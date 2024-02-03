@@ -35,7 +35,6 @@
 
 @implementation HandoffManager {
   GURL _activeURL;
-  handoff::Origin _origin;
 }
 
 @synthesize userActivity = _userActivity;
@@ -49,17 +48,7 @@
 #endif
 
 - (instancetype)init {
-  self = [super init];
-  if (self) {
-#if BUILDFLAG(IS_MAC)
-    _origin = handoff::ORIGIN_MAC;
-#elif BUILDFLAG(IS_IOS)
-    _origin = handoff::ORIGIN_IOS;
-#else
-    NOTREACHED();
-#endif
-  }
-  return self;
+  return [super init];
 }
 
 - (void)updateActiveURL:(const GURL&)url {

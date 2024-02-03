@@ -94,6 +94,14 @@ SafetyHubMenuNotificationService::SafetyHubMenuNotificationService(
           base::Unretained(this)));
 }
 
+void SafetyHubMenuNotificationService::UpdateResultGetterForTesting(
+    safety_hub::SafetyHubModuleType type,
+    base::RepeatingCallback<
+        std::optional<std::unique_ptr<SafetyHubService::Result>>()>
+        result_getter) {
+  module_info_map_[type]->result_getter = result_getter;
+}
+
 SafetyHubMenuNotificationService::~SafetyHubMenuNotificationService() {
   registrar_.RemoveAll();
 }
@@ -106,11 +114,13 @@ SafetyHubMenuNotificationService::GetNotificationToShow() {
   }
   std::list<SafetyHubMenuNotification*> notifications_to_be_shown;
   MenuNotificationPriority cur_highest_priority = MenuNotificationPriority::LOW;
-  for (auto const& item : result_map.value()) {
-    SafetyHubModuleInfoElement* info_element =
+  for (auto& item : result_map.value()) {
+    const SafetyHubModuleInfoElement* info_element =
         module_info_map_[item.first].get();
     SafetyHubMenuNotification* notification = info_element->notification.get();
-    notification->UpdateResult(std::move(result_map.value()[item.first]));
+    // The result in the ResultMap (item.second) is being moved away from and
+    // thus shouldn't be used again in this method.
+    notification->UpdateResult(std::move(item.second));
     int max_all_time_impressions =
         item.first == safety_hub::SafetyHubModuleType::SAFE_BROWSING ? 3 : 0;
     if (notification->ShouldBeShown(info_element->interval,
@@ -163,7 +173,7 @@ SafetyHubMenuNotificationService::GetResultsFromAllModules() {
     if (!result.has_value()) {
       return absl::nullopt;
     }
-    result_map[item.first] = std::move(result.value());
+    result_map.try_emplace(item.first, std::move(result.value()));
   }
   return result_map;
 }
@@ -232,15 +242,13 @@ void SafetyHubMenuNotificationService::DismissActiveNotification() {
   }
 }
 
-void SafetyHubMenuNotificationService::DismissPasswordNotification() {
-  // TODO(crbug.com/1443466): Uncomment the following lines in
-  // crrev.com/c/4982626.
-  // SafetyHubMenuNotification* notification =
-  //     module_info_map_.at(safety_hub::SafetyHubModuleType::PASSWORDS)
-  //         ->notification.get();
-  // if (notification->IsCurrentlyActive()) {
-  //   notification->Dismiss();
-  // }
+void SafetyHubMenuNotificationService::DismissActiveNotificationOfModule(
+    safety_hub::SafetyHubModuleType module) {
+  SafetyHubMenuNotification* notification =
+      module_info_map_.at(module)->notification.get();
+  if (notification->IsCurrentlyActive()) {
+    notification->Dismiss();
+  }
 }
 
 absl::optional<safety_hub::SafetyHubModuleType>

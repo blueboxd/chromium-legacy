@@ -56,10 +56,15 @@ PRUNE_PATHS = set([
     # Only binaries, used during development.
     os.path.join('third_party', 'valgrind'),
 
+    # Not actually a third party dependency. Supplies configuration for
+    # enabling or disabling field trials and features in Chromium projects.
+    os.path.join('third_party', 'chromium-variations'),
+
     # Used for development and test, not in the shipping product.
     os.path.join('build', 'secondary'),
     os.path.join('third_party', 'bison'),
     os.path.join('third_party', 'chromite'),
+    os.path.join('third_party', 'clang-format'),
     os.path.join('third_party', 'cygwin'),
     os.path.join('third_party', 'gles2_conform'),
     os.path.join('third_party', 'gnu_binutils'),

@@ -55,7 +55,7 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
-import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
+import org.chromium.chrome.browser.omnibox.SearchEngineUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
@@ -1116,8 +1116,9 @@ public class ToolbarPhone extends ToolbarLayout
         // for the dse icon being laid out when focused. This also affects the UrlBar, which is
         // handled below. See comments in LocationBar#getLocationBarOffsetForFocusAnimation() for
         // implementation details.
-        boolean isIncognito = getToolbarDataProvider().isIncognito();
-        if (SearchEngineLogoUtils.getInstance().shouldShowSearchEngineLogo(isIncognito)) {
+        var profile = getToolbarDataProvider().getProfile();
+        if (profile == null
+                || SearchEngineUtils.getForProfile(profile).shouldShowSearchEngineLogo()) {
             locationBarBaseTranslationX += getLocationBarOffsetForFocusAnimation(hasFocus());
         }
 
@@ -1670,8 +1671,13 @@ public class ToolbarPhone extends ToolbarLayout
 
             // Offset the clip rect by a set amount to ensure the Google G is completely inside the
             // omnibox background when animating in.
-            if (SearchEngineLogoUtils.getInstance().shouldShowSearchEngineLogo(isIncognito())
-                    && isLocationBarShownInNTP() && urlHasFocus() && mUrlFocusChangeInProgress) {
+            var profile = getToolbarDataProvider().getProfile();
+            if ((profile == null
+                            || SearchEngineUtils.getForProfile(profile)
+                                    .shouldShowSearchEngineLogo())
+                    && isLocationBarShownInNTP()
+                    && urlHasFocus()
+                    && mUrlFocusChangeInProgress) {
                 if (locationBarDirection == LAYOUT_DIRECTION_RTL) {
                     locationBarClipRight -= locationBarPaddingStart;
                 } else {
@@ -2994,9 +3000,9 @@ public class ToolbarPhone extends ToolbarLayout
         StatusCoordinator statusCoordinator = mLocationBar.getStatusCoordinator();
         if (statusCoordinator == null) return 0;
 
-        // No offset is required if the experiment is disabled.
-        if (!SearchEngineLogoUtils.getInstance().shouldShowSearchEngineLogo(
-                    getToolbarDataProvider().isIncognito())) {
+        var profile = getToolbarDataProvider().getProfile();
+        if (profile == null
+                || SearchEngineUtils.getForProfile(profile).shouldShowSearchEngineLogo()) {
             return 0;
         }
 

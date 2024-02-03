@@ -236,13 +236,13 @@ InlineLayoutAlgorithm::InlineLayoutAlgorithm(
     const InlineBreakToken* break_token,
     const NGColumnSpannerPath* column_spanner_path,
     InlineChildLayoutContext* context)
-    : NGLayoutAlgorithm(inline_node,
-                        &inline_node.Style(),
-                        space,
-                        // Use LTR direction since inline layout handles bidi by
-                        // itself and lays out in visual order.
-                        TextDirection::kLtr,
-                        break_token),
+    : LayoutAlgorithm(inline_node,
+                      &inline_node.Style(),
+                      space,
+                      // Use LTR direction since inline layout handles bidi by
+                      // itself and lays out in visual order.
+                      TextDirection::kLtr,
+                      break_token),
       box_states_(nullptr),
       context_(context),
       column_spanner_path_(column_spanner_path),
@@ -691,7 +691,7 @@ void InlineLayoutAlgorithm::CreateLine(const LineLayoutOpportunity& opportunity,
                          line_info->EndItemIndex());
 
   if (line_info->UseFirstLineStyle())
-    container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
+    container_builder_.SetStyleVariant(StyleVariant::kFirstLine);
 
   // Even if we have something in-flow, it may just be empty items that
   // shouldn't trigger creation of a line. Exit now if that's the case.
@@ -836,9 +836,9 @@ void InlineLayoutAlgorithm::PlaceLayoutResult(InlineItemResult* item_result,
   const InlineItem& item = *item_result->item;
   DCHECK(item.Style());
   FontHeight metrics =
-      NGBoxFragment(ConstraintSpace().GetWritingDirection(),
-                    To<NGPhysicalBoxFragment>(
-                        item_result->layout_result->PhysicalFragment()))
+      LogicalBoxFragment(ConstraintSpace().GetWritingDirection(),
+                         To<NGPhysicalBoxFragment>(
+                             item_result->layout_result->PhysicalFragment()))
           .BaselineMetrics(item_result->margins, baseline_type_);
   if (box)
     box->metrics.Unite(metrics);
@@ -863,7 +863,8 @@ void InlineLayoutAlgorithm::PlaceBlockInInline(const InlineItem& item,
   const NGLayoutResult& result = *item_result->layout_result;
   const auto& box_fragment =
       To<NGPhysicalBoxFragment>(result.PhysicalFragment());
-  NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(), box_fragment);
+  LogicalBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
+                              box_fragment);
 
   // Setup |container_builder_|. Set it up here instead of in |CreateLine|,
   // because there should be only one block-in-inline, and we need data from the
@@ -1046,7 +1047,7 @@ void InlineLayoutAlgorithm::PlaceFloatingObjects(
       // should not leave any unpositioned floats behind.
       DCHECK(!BreakToken() || !BreakToken()->IsInParallelBlockFlow());
 
-      NGPositionedFloat positioned_float =
+      PositionedFloat positioned_float =
           PositionFloat(origin_bfc_block_offset, child.unpositioned_float,
                         &GetExclusionSpace());
       const NGBlockBreakToken* break_token = positioned_float.BreakToken();
@@ -1077,8 +1078,8 @@ void InlineLayoutAlgorithm::PlaceFloatingObjects(
 
     // We need to manually account for the flipped-lines writing mode here :(.
     if (IsFlippedLinesWritingMode(ConstraintSpace().GetWritingMode())) {
-      NGFragment fragment(ConstraintSpace().GetWritingDirection(),
-                          child.layout_result->PhysicalFragment());
+      LogicalFragment fragment(ConstraintSpace().GetWritingDirection(),
+                               child.layout_result->PhysicalFragment());
 
       block_offset = -fragment.BlockSize() - block_offset;
     }
@@ -1736,7 +1737,7 @@ void InlineLayoutAlgorithm::PositionLeadingFloats(
       Node().ItemsData(/* is_first_line */ false).items;
 
   unsigned index = BreakToken() ? BreakToken()->StartItemIndex() : 0;
-  NGPositionedFloatVector& positioned_floats = leading_floats.floats;
+  PositionedFloatVector& positioned_floats = leading_floats.floats;
   for (; index < items.size(); ++index) {
     const InlineItem& item = items[index];
 
@@ -1758,7 +1759,7 @@ void InlineLayoutAlgorithm::PositionLeadingFloats(
     // optimistic guess.
     const LayoutUnit origin_bfc_block_offset =
         ConstraintSpace().ExpectedBfcBlockOffset();
-    NGPositionedFloat positioned_float = PositionFloat(
+    PositionedFloat positioned_float = PositionFloat(
         origin_bfc_block_offset, item.GetLayoutObject(), &exclusion_space);
 
     if (ConstraintSpace().HasBlockFragmentation()) {
@@ -1777,21 +1778,21 @@ void InlineLayoutAlgorithm::PositionLeadingFloats(
   leading_floats.handled_index = index;
 }
 
-NGPositionedFloat InlineLayoutAlgorithm::PositionFloat(
+PositionedFloat InlineLayoutAlgorithm::PositionFloat(
     LayoutUnit origin_bfc_block_offset,
     LayoutObject* floating_object,
     ExclusionSpace* exclusion_space) {
   BfcOffset origin_bfc_offset = {ConstraintSpace().GetBfcOffset().line_offset,
                                  origin_bfc_block_offset};
 
-  NGUnpositionedFloat unpositioned_float(
+  UnpositionedFloat unpositioned_float(
       NGBlockNode(To<LayoutBox>(floating_object)),
       /* break_token */ nullptr, ConstraintSpace().AvailableSize(),
       ConstraintSpace().PercentageResolutionSize(),
       ConstraintSpace().ReplacedPercentageResolutionSize(), origin_bfc_offset,
       ConstraintSpace(), Style());
 
-  NGPositionedFloat positioned_float =
+  PositionedFloat positioned_float =
       ::blink::PositionFloat(&unpositioned_float, exclusion_space);
 
   if (positioned_float.minimum_space_shortage) {

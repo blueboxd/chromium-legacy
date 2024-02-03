@@ -161,6 +161,9 @@ struct CreateViewParams {
   // Base background color of this view. Only used by a local main frame.
   skia.mojom.SkColor? base_background_color;
 
+  // The ColorProviderColorMaps for this view.
+  blink.mojom.ColorProviderColorMaps color_provider_colors;
+
   // Indicates which browsing context group the page in this view belongs to.
   blink.mojom.BrowsingContextGroupInfo browsing_context_group_info;
 
@@ -336,6 +339,10 @@ struct CreateFrameParams {
   // request associated interfaces from its corresponding `RenderFrameHostImpl`.
   pending_associated_remote<blink.mojom.AssociatedInterfaceProvider>
       associated_interface_provider_remote;
+
+  // Set if this frame corresponds to the main frame for a non top-level
+  // FrameTree (GuestView, fenced frame etc.).
+  bool is_for_nested_main_frame;
 };
 
 // Provided with each call to Frame::GetSerializedHtmlWithLocalLinks() so that
@@ -668,6 +675,9 @@ struct CreateNewWindowReply {
 
   // Indicates which browsing context group the page in this view belongs to.
   blink.mojom.BrowsingContextGroupInfo browsing_context_group_info;
+
+  // The ColorProviderColorMaps for this view.
+  blink.mojom.ColorProviderColorMaps color_provider_colors;
 };
 
 // A per-navigation interface passed along with the BeginNavigation call, used

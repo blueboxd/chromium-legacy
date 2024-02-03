@@ -59,6 +59,12 @@ BASE_FEATURE(kCrosComponents,
              "CrosComponents",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the behaviour difference between web apps and browser created
+// shortcut backed by the web app system on Chrome OS.
+BASE_FEATURE(kCrosShortstand,
+             "CrosShortstand",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the more detailed, OS-level dialog for web app installs.
 BASE_FEATURE(kCrosWebAppInstallDialog,
              "CrosWebAppInstallDialog",
@@ -77,6 +83,11 @@ BASE_FEATURE(kCrosWebAppShortcutUiUpdate,
              "CrosWebAppShortcutUiUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Enables denying file access to dlp protected files in MyFiles.
+BASE_FEATURE(kDataControlsFileAccessDefaultDeny,
+             "DataControlsFileAccessDefaultDeny",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the desk profiles feature.
 BASE_FEATURE(kDeskProfiles, "DeskProfiles", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -119,6 +130,13 @@ BASE_FEATURE(kJelly, "Jelly", base::FEATURE_ENABLED_BY_DEFAULT);
 // controls all system UI updates and new system components. go/jelly-flags
 BASE_FEATURE(kJellyroll, "Jellyroll", base::FEATURE_ENABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Enables Kiosk Heartbeats to be sent via Encrypted Reporting Pipeline
+BASE_FEATURE(kKioskHeartbeatsViaERP,
+             "KioskHeartbeatsViaERP",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Controls enabling / disabling the orca feature.
 BASE_FEATURE(kOrca, "Orca", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -144,6 +162,12 @@ BASE_FEATURE(kUploadOfficeToCloud,
 // Office files support.
 BASE_FEATURE(kUploadOfficeToCloudForEnterprise,
              "UploadOfficeToCloudForEnterprise",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the Microsoft OneDrive integration workflow for enterprise users to
+// cloud integration support.
+BASE_FEATURE(kMicrosoftOneDriveIntegrationForEnterprise,
+             "MicrosoftOneDriveIntegrationForEnterprise",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRoundedWindows,
@@ -199,6 +223,14 @@ bool IsSeparateWebAppShortcutBadgeIconEnabled() {
 #endif
 }
 
+bool IsCrosShortstandEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()->IsCrosShortstandEnabled();
+#else
+  return base::FeatureList::IsEnabled(kCrosShortstand);
+#endif
+}
+
 bool IsCrosWebAppShortcutUiUpdateEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return chromeos::BrowserParamsProxy::Get()
@@ -206,6 +238,10 @@ bool IsCrosWebAppShortcutUiUpdateEnabled() {
 #else
   return base::FeatureList::IsEnabled(kCrosWebAppShortcutUiUpdate);
 #endif
+}
+
+bool IsDataControlsFileAccessDefaultDenyEnabled() {
+  return base::FeatureList::IsEnabled(kDataControlsFileAccessDefaultDeny);
 }
 
 bool IsDeskProfilesEnabled() {
@@ -263,6 +299,11 @@ bool IsUploadOfficeToCloudForEnterpriseEnabled() {
   return base::FeatureList::IsEnabled(kUploadOfficeToCloud) &&
          base::FeatureList::IsEnabled(kUploadOfficeToCloudForEnterprise);
 #endif
+}
+
+bool IsMicrosoftOneDriveIntegrationForEnterpriseEnabled() {
+  return base::FeatureList::IsEnabled(
+      kMicrosoftOneDriveIntegrationForEnterprise);
 }
 
 bool IsRoundedWindowsEnabled() {

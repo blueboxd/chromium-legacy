@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/html_field_types.h"
@@ -125,6 +125,9 @@ namespace autofill {
 //
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.autofill
+//
+// LINT.IfChange
+// This enum set must be kept in sync with IDL enum used by JS code.
 enum ServerFieldType {
   // Server indication that it has no data for the requested field.
   NO_SERVER_DATA = 0,
@@ -159,6 +162,8 @@ enum ServerFieldType {
 
   ADDRESS_HOME_LINE1 = 30,
   ADDRESS_HOME_LINE2 = 31,
+  // The raw number (or identifier) of an apartment (e.g. "5") but without a
+  // prefix. The value "apt 5" would correspond to an ADDRESS_HOME_APT.
   ADDRESS_HOME_APT_NUM = 32,
   ADDRESS_HOME_CITY = 33,
   ADDRESS_HOME_STATE = 34,
@@ -418,13 +423,20 @@ enum ServerFieldType {
   // example. There is a risk that "Apt 5" votes might turn ADDRESS_HOME_LINE2
   // into ADDRESS_HOME_APT entries. We'd need to be very intentional with such a
   // change as it affects the US for example.
-  // ADDRESS_HOME_APT = 156 is server-side only.
+  ADDRESS_HOME_APT = 156,
 
   // Information describing the type of apartment (e.g. Apt, Apartamento, Sala,
   // Departamento).
-  // ADDRESS_HOME_APT_TYPE = 157 is server-side only.
+  ADDRESS_HOME_APT_TYPE = 157,
 
-  // Reserved for a server-side-only use: 158
+  // Reserved for a server-side-only use: 158-159
+
+  // Similar to `SINGLE_USERNAME`, but for the case when there are additional
+  // fields between single username and password forms.
+  // Will be used to rollout new predictions based on new votes of Username
+  // First Flow with intermediate values.
+  // TODO(b/294195764): Deprecate after fully rolling out new predictions.
+  SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES = 160,
 
   // No new types can be added without a corresponding change to the Autofill
   // server.
@@ -433,8 +445,12 @@ enum ServerFieldType {
   // * tools/typescript/definitions/autofill_private.d.ts
   // Please update `tools/metrics/histograms/enums.xml` by executing
   // `tools/metrics/histograms/update_autofill_enums.py`.
-  MAX_VALID_FIELD_TYPE = 159,
+  // If the newly added type is a storable type of AutofillProfile, update
+  // AutofillProfile.StorableTypes in
+  // tools/metrics/histograms/metadata/autofill/histograms.xml.
+  MAX_VALID_FIELD_TYPE = 161,
 };
+// LINT.ThenChange(//chrome/common/extensions/api/autofill_private.idl)
 
 enum class FieldTypeGroup {
   kNoGroup,
@@ -525,7 +541,7 @@ constexpr ServerFieldType ToSafeServerFieldType(
            // Reserved for server-side only use.
            !(111 <= t && t <= 113) && t != 127 && !(130 <= t && t <= 132) &&
            t != 134 && !(137 <= t && t <= 139) && !(145 <= t && t <= 150) &&
-           t != 153 && !(155 <= t && t <= 158);
+           t != 153 && t != 155 && t != 158 && t != 159;
   };
   return IsValid(raw_value) ? static_cast<ServerFieldType>(raw_value)
                             : fallback_value;

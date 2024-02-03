@@ -70,6 +70,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) override;
   void MediaPlayerActionAt(const gfx::Point& location,
                            blink::mojom::MediaPlayerActionPtr action) override;
+  void RequestVideoFrameAt(const gfx::Point& window_point,
+                           RequestVideoFrameAtCallback callback) override;
   void PluginActionAt(const gfx::Point& location,
                       blink::mojom::PluginActionType action) override;
   void AdvanceFocusInFrame(blink::mojom::FocusType focus_type,
@@ -139,7 +141,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void GetOpenGraphMetadata(
       base::OnceCallback<void(blink::mojom::OpenGraphMetadataPtr)>) override;
   void SetNavigationApiHistoryEntriesForRestore(
-      blink::mojom::NavigationApiHistoryEntryArraysPtr entry_arrays) override;
+      blink::mojom::NavigationApiHistoryEntryArraysPtr entry_arrays,
+      blink::mojom::NavigationApiEntryRestoreReason restore_reason) override;
   void NotifyNavigationApiOfDisposedEntries(
       const std::vector<std::string>& keys) override;
   void TraverseCancelled(const std::string& navigation_api_key,

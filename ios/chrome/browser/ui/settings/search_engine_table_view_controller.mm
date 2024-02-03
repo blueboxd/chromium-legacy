@@ -217,7 +217,7 @@ const char kUmaSelectDefaultSearchEngine[] =
   [self updateUIForEditState];
 }
 
-#pragma mark - ChromeTableViewController
+#pragma mark - LegacyChromeTableViewController
 
 - (void)loadModel {
   [super loadModel];
@@ -403,7 +403,8 @@ const char kUmaSelectDefaultSearchEngine[] =
   // For choice screen eligible users, set the corresponding timestamp pref if
   // it wasn't already set before.
   search_engines::RecordChoiceMade(
-      _prefService, search_engines::ChoiceMadeLocation::kSearchEngineSettings);
+      _prefService, search_engines::ChoiceMadeLocation::kSearchEngineSettings,
+      _templateURLService);
 }
 
 - (void)tableView:(UITableView*)tableView

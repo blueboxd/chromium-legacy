@@ -57,7 +57,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
       AutofillSuggestionTriggerSource trigger_source) override;
   void DidAcceptSuggestion(
       const Suggestion& suggestion,
-      int position,
+      const SuggestionPosition& position,
       AutofillSuggestionTriggerSource trigger_source) override;
   void DidPerformButtonActionForSuggestion(
       const Suggestion& suggestion) override;
@@ -117,8 +117,10 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   virtual bool HasActiveScreenReader() const;
 
   // Indicates on focus changed if autofill/autocomplete is available or
-  // unavailable, so state can be announced by screen readers.
-  virtual void OnAutofillAvailabilityEvent(const mojom::AutofillState state);
+  // unavailable, so `suggestion_availability` can be announced by screen
+  // readers.
+  virtual void OnAutofillAvailabilityEvent(
+      mojom::AutofillSuggestionAvailability suggestion_availability);
 
   // Set the data list value associated with the current field.
   void SetCurrentDataListValues(std::vector<SelectOption> datalist);
@@ -164,7 +166,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   // Returns the last Autofill triggering field. Derived from the `form` and
   // `field` parameters of `OnQuery(). Returns nullptr if called before
   // `OnQuery()` or if the `form` becomes outdated, see crbug.com/1117028.
-  AutofillField* GetQueriedAutofillField() const;
+  const AutofillField* GetQueriedAutofillField() const;
 
   // Fills the form with the Autofill data corresponding to `backend_id`.
   // If `is_preview` is true then this is just a preview to show the user what

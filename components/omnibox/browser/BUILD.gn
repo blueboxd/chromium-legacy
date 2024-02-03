@@ -326,6 +326,7 @@ static_library("browser") {
   ]
 
   deps = [
+    "//build:branding_buildflags",
     "//components/bookmarks/browser",
     "//components/component_updater",
     "//components/dom_distiller/core:core",
@@ -789,6 +790,7 @@ source_set("unit_tests") {
     "omnibox_edit_model_unittest.cc",
     "omnibox_field_trial_unittest.cc",
     "omnibox_metrics_provider_unittest.cc",
+    "omnibox_popup_selection_unittest.cc",
     "omnibox_prefs_unittest.cc",
     "omnibox_triggered_feature_service_unittest.cc",
     "omnibox_view_unittest.cc",
@@ -928,7 +930,6 @@ fuzzer_test("search_suggestion_parser_fuzzer") {
 mojom("mojo_bindings") {
   sources = [ "omnibox.mojom" ]
   webui_module_path = "/"
-  use_typescript_sources = true
 
   public_deps = [
     "//mojo/public/mojom/base",

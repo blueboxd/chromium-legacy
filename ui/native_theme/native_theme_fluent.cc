@@ -8,6 +8,7 @@
 #include "base/notreached.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "skia/ext/font_utils.h"
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
@@ -25,7 +26,7 @@ NativeThemeFluent::NativeThemeFluent(bool should_only_use_dark_colors)
     : NativeThemeBase(should_only_use_dark_colors) {
   scrollbar_width_ = kFluentScrollbarThickness;
 
-  const sk_sp<SkFontMgr> font_manager(SkFontMgr::RefDefault());
+  const sk_sp<SkFontMgr> font_manager(skia::DefaultFontMgr());
   typeface_ = sk_sp<SkTypeface>(
       font_manager->matchFamilyStyle(kFluentScrollbarFont, SkFontStyle()));
 }
@@ -117,13 +118,18 @@ void NativeThemeFluent::PaintScrollbarThumb(
   path.addRRect(rrect);
   canvas->clipPath(path, true);
 
-  ColorId thumb_color_id = kColorWebNativeControlScrollbarThumb;
-  if (state == NativeTheme::kPressed) {
-    thumb_color_id = kColorWebNativeControlScrollbarThumbPressed;
-  } else if (state == NativeTheme::kHovered) {
-    thumb_color_id = kColorWebNativeControlScrollbarThumbHovered;
-  }
-  const SkColor thumb_color = color_provider->GetColor(thumb_color_id);
+  auto get_color = [color_provider, state]() {
+    ColorId thumb_color_id = kColorWebNativeControlScrollbarThumb;
+    if (state == NativeTheme::kPressed) {
+      thumb_color_id = kColorWebNativeControlScrollbarThumbPressed;
+    } else if (state == NativeTheme::kHovered) {
+      thumb_color_id = kColorWebNativeControlScrollbarThumbHovered;
+    }
+    return color_provider->GetColor(thumb_color_id);
+  };
+  // TODO(crbug.com/891944): Adjust extra param `thumb_color` based on `state`.
+  const SkColor thumb_color = extra_params.thumb_color.value_or(get_color());
+
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(thumb_color);

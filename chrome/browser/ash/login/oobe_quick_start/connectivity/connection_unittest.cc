@@ -123,9 +123,11 @@ class ConnectionTest : public testing::Test {
             }));
   }
 
-  void MarkConnectionAuthenticated() {
+  void MarkConnectionAuthenticated(
+      Connection::AuthenticationMethod auth_method =
+          Connection::AuthenticationMethod::kQR) {
     ASSERT_FALSE(ran_connection_authenticated_callback_);
-    connection_->MarkConnectionAuthenticated();
+    connection_->MarkConnectionAuthenticated(auth_method);
     ASSERT_TRUE(ran_connection_authenticated_callback_);
     ASSERT_TRUE(authenticated_connection_);
   }
@@ -279,8 +281,11 @@ class ConnectionTest : public testing::Test {
   }
 
   void TestHandshakeMetrics(
+      bool handshake_started,
       bool should_succeed,
       absl::optional<QuickStartMetrics::HandshakeErrorCode> error_code) {
+    histogram_tester_.ExpectBucketCount("QuickStart.HandshakeStarted",
+                                        handshake_started, 1);
     if (!should_succeed) {
       histogram_tester_.ExpectBucketCount(
           "QuickStart.HandshakeResult.ErrorCode", error_code.value(), 1);
@@ -477,8 +482,10 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
 
   // Emulate a GetAssertion response.
   std::vector<uint8_t> credential_id = {0x01, 0x02, 0x03};
-  std::string expected_credential_id(credential_id.begin(),
-                                     credential_id.end());
+
+  // The credential ID should be Base64 encoded.
+  Base64String expected_credential_id(base::Base64Encode(credential_id));
+
   std::vector<uint8_t> auth_data = {0x02, 0x03, 0x04};
   std::vector<uint8_t> signature = {0x03, 0x04, 0x05};
   std::string email = "testcase@google.com";
@@ -491,7 +498,8 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
   fake_quick_start_decoder_->SetAssertionResponse(
       mojom::FidoAssertionResponse::New(
           /*email=*/email,
-          /*credential_id=*/expected_credential_id,
+          /*credential_id=*/
+          std::string(credential_id.begin(), credential_id.end()),
           /*auth_data=*/auth_data,
           /*signature=*/signature));
   fake_nearby_connection_->AppendReadableData(data);
@@ -737,7 +745,8 @@ TEST_F(ConnectionTest, InitiateHandshake) {
       /*should_succeed=*/true,
       /*message_type=*/QuickStartMetrics::MessageType::kHandshake,
       /*error_code=*/absl::nullopt);
-  TestHandshakeMetrics(/*should_succeed=*/true, /*error_code=*/absl::nullopt);
+  TestHandshakeMetrics(/*handshake_started=*/true, /*should_succeed=*/true,
+                       /*error_code=*/absl::nullopt);
 }
 
 TEST_F(ConnectionTest, InitiateHandshake_BadResponse) {
@@ -750,18 +759,20 @@ TEST_F(ConnectionTest, InitiateHandshake_BadResponse) {
   // the target device. Should fail because it uses the wrong role.
   fake_nearby_connection_->AppendReadableData(written_payload);
   EXPECT_FALSE(future.Get());
-  TestHandshakeMetrics(/*should_succeed=*/false,
-                       /*error_code=*/QuickStartMetrics::HandshakeErrorCode::
-                           kUnexpectedAuthPayloadRole);
+  TestHandshakeMetrics(
+      /*handshake_started=*/true, /*should_succeed=*/false,
+      /*error_code=*/
+      QuickStartMetrics::HandshakeErrorCode::kUnexpectedAuthPayloadRole);
 }
 
 TEST_F(ConnectionTest, EmptyHandshakeResponse) {
   base::test::TestFuture<bool> future;
   connection_->InitiateHandshake(kAuthToken, future.GetCallback());
   OnHandshakeResponse(future.GetCallback());
-  TestHandshakeMetrics(/*should_succeed=*/false,
-                       /*error_code=*/QuickStartMetrics::HandshakeErrorCode::
-                           kFailedToReadResponse);
+  TestHandshakeMetrics(
+      /*handshake_started=*/true, /*should_succeed=*/false,
+      /*error_code=*/
+      QuickStartMetrics::HandshakeErrorCode::kFailedToReadResponse);
 }
 
 TEST_F(ConnectionTest, TestUserVerificationRequested_ReturnsResult) {

@@ -669,7 +669,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
         {
           id: 'online-gaia',
           trigger: (screen) => {
-            screen.loadAuthExtension({
+            screen.loadAuthenticator({
               chromeType: 'chromedevice',
               enterpriseManagedDevice: false,
               forceReload: true,
@@ -856,6 +856,10 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
       ],
     },
     {
+      id: 'apply-online-password',
+      kind: ScreenKind.NORMAL,
+    },
+    {
       id: 'local-password-setup',
       kind: ScreenKind.NORMAL,
       states: [
@@ -875,6 +879,30 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
             screen.onBeforeShow({
               showBackButton: true,
             });
+          },
+        },
+      ],
+    },
+    {
+      id: 'osauth-error',
+      kind: ScreenKind.ERROR,
+    },
+    {
+      id: 'factor-setup-success',
+      kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'local-set',
+          data: {
+            modifiedFactors: 'local',
+            changeMode: 'set',
+          },
+        },
+        {
+          id: 'local-update',
+          data: {
+            modifiedFactors: 'local',
+            changeMode: 'update',
           },
         },
       ],
@@ -1767,7 +1795,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
       id: 'quick-start',
       kind: ScreenKind.NORMAL,
       handledSteps:
-          'verification,connecting_to_wifi,connected_to_wifi,gaia_credentials,fido_assertion_received',
+          'verification,connecting_to_wifi,gaia_credentials,fido_assertion_received',
       states: [
         {
           id: 'PinVerification',
@@ -1786,12 +1814,6 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
           id: 'ConnectingToWifi',
           trigger: (screen) => {
             screen.showConnectingToWifi();
-          },
-        },
-        {
-          id: 'ConnectedToWifi',
-          trigger: (screen) => {
-            screen.showConnectedToWifi('TestNetwork', 'TestPassword');
           },
         },
         {
@@ -1929,7 +1951,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
     }
 
     getScreenshotId() {
-      var result = 'unknown';
+      let result = 'unknown';
       if (this.currentScreenId_) {
         result = this.currentScreenId_;
       }
@@ -2139,7 +2161,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
       new DebugButton(panel.content, 'Toggle color mode', function() {
         chrome.send('debug.toggleColorMode');
       });
-      var button = new DebugButton(
+      const button = new DebugButton(
           panel.content, 'Toggle gaming mode', this.toggleGameMode.bind(this));
 
       button.element.classList.add('gametoggle-button');
@@ -2188,7 +2210,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
       // Disable userActed from triggering chrome.send() and crashing.
       document.getElementById(screenId).userActed = function(){};
       const state = screen.stateMap_[stateId];
-      var data = {};
+      let data = {};
       if (state.data) {
         data = state.data;
       }
@@ -2210,7 +2232,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
       this.knownScreens = [];
       this.screenButtons = {};
       /** @suppress {visibility} */
-      for (var id of Oobe.getInstance().screens_) {
+      for (const id of Oobe.getInstance().screens_) {
         if (id in this.screenMap) {
           const screenDef = this.screenMap[id];
           const screenElement = $(id);
@@ -2265,11 +2287,11 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
       this.knownScreens = this.knownScreens.sort((a, b) => a.index - b.index);
       const content = this.screensPanel.content;
       this.knownScreens.forEach((screen) => {
-        var name = screen.id;
+        let name = screen.id;
         if (screen.suffix) {
           name = name + ' (' + screen.suffix + ')';
         }
-        var button = new DebugButton(
+        const button = new DebugButton(
             content, name, this.switchToScreen.bind(this, screen));
         button.element.classList.add('debug-button-' + screen.kind);
         this.screenButtons[screen.id] = button;
@@ -2322,7 +2344,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
     }
 
     createCssStyle(name, styleSpec) {
-      var style = document.createElement('style');
+      const style = document.createElement('style');
       style.type = 'text/css';
       style.innerHTML = sanitizeInnerHtml('.' + name + ' {' + styleSpec + '}');
       document.getElementsByTagName('head')[0].appendChild(style);

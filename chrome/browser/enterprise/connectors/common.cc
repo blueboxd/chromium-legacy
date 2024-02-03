@@ -28,6 +28,8 @@
 #include "components/policy/core/common/policy_loader_lacros.h"
 #endif
 
+using safe_browsing::BinaryUploadService;
+
 namespace enterprise_connectors {
 
 namespace {
@@ -59,40 +61,46 @@ ContentAnalysisAcknowledgement::FinalAction RuleActionToAckAction(
 
 }  // namespace
 
-bool ResultShouldAllowDataUse(
-    const AnalysisSettings& settings,
-    safe_browsing::BinaryUploadService::Result upload_result) {
-  using safe_browsing::BinaryUploadService;
+bool ResultShouldAllowDataUse(const AnalysisSettings& settings,
+                              BinaryUploadService::Result upload_result) {
+  bool default_action_allow_data_use =
+      settings.default_action == DefaultAction::kAllow;
+
   // Keep this implemented as a switch instead of a simpler if statement so that
   // new values added to BinaryUploadService::Result cause a compiler error.
   switch (upload_result) {
     case BinaryUploadService::Result::SUCCESS:
-    case BinaryUploadService::Result::UPLOAD_FAILURE:
-    case BinaryUploadService::Result::TIMEOUT:
-    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
-    case BinaryUploadService::Result::TOO_MANY_REQUESTS:
     // UNAUTHORIZED allows data usage since it's a result only obtained if the
     // browser is not authorized to perform deep scanning. It does not make
     // sense to block data in this situation since no actual scanning of the
     // data was performed, so it's allowed.
     case BinaryUploadService::Result::UNAUTHORIZED:
-    case BinaryUploadService::Result::UNKNOWN:
       return true;
 
+    case BinaryUploadService::Result::UPLOAD_FAILURE:
+    case BinaryUploadService::Result::TIMEOUT:
+    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
+    case BinaryUploadService::Result::TOO_MANY_REQUESTS:
+    case BinaryUploadService::Result::UNKNOWN:
+      DVLOG(1) << __func__
+               << ": handled by fail-closed settings, "
+                  "default_action_allow_data_use="
+               << default_action_allow_data_use;
+      return default_action_allow_data_use;
+
+    // TODO(b/301996227): Decide if fail-closed should precede over file
+    // handling.
     case BinaryUploadService::Result::FILE_TOO_LARGE:
       return !settings.block_large_files;
 
     case BinaryUploadService::Result::FILE_ENCRYPTED:
       return !settings.block_password_protected_files;
-
-    case BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
-      return !settings.block_unsupported_file_types;
   }
 }
 
 RequestHandlerResult CalculateRequestHandlerResult(
     const AnalysisSettings& settings,
-    safe_browsing::BinaryUploadService::Result upload_result,
+    BinaryUploadService::Result upload_result,
     const ContentAnalysisResponse& response) {
   std::string tag;
   auto action = GetHighestPrecedenceAction(response, &tag);
@@ -104,21 +112,26 @@ RequestHandlerResult CalculateRequestHandlerResult(
   result.complies = file_complies;
   result.request_token = response.request_token();
   result.tag = tag;
-  if (!file_complies) {
-    if (upload_result ==
-        safe_browsing::BinaryUploadService::Result::FILE_TOO_LARGE) {
-      result.final_result = FinalContentAnalysisResult::LARGE_FILES;
-    } else if (upload_result ==
-               safe_browsing::BinaryUploadService::Result::FILE_ENCRYPTED) {
-      result.final_result = FinalContentAnalysisResult::ENCRYPTED_FILES;
-    } else if (action == TriggeredRule::WARN) {
-      result.final_result = FinalContentAnalysisResult::WARNING;
-    } else {
-      result.final_result = FinalContentAnalysisResult::FAILURE;
-    }
-  } else {
+
+  if (file_complies) {
     result.final_result = FinalContentAnalysisResult::SUCCESS;
+    return result;
   }
+
+  // If file is non-compliant, map it to the specific case.
+  if (ResultIsFailClosed(upload_result)) {
+    DVLOG(1) << __func__ << ": result mapped to fail-closed.";
+    result.final_result = FinalContentAnalysisResult::FAIL_CLOSED;
+  } else if (upload_result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+    result.final_result = FinalContentAnalysisResult::LARGE_FILES;
+  } else if (upload_result == BinaryUploadService::Result::FILE_ENCRYPTED) {
+    result.final_result = FinalContentAnalysisResult::ENCRYPTED_FILES;
+  } else if (action == TriggeredRule::WARN) {
+    result.final_result = FinalContentAnalysisResult::WARNING;
+  } else {
+    result.final_result = FinalContentAnalysisResult::FAILURE;
+  }
+
   return result;
 }
 
@@ -428,16 +441,22 @@ void ShowDownloadReviewDialog(const std::u16string& filename,
       /* file_count */ 1, state, download_item);
 }
 
-bool CloudResultIsFailure(safe_browsing::BinaryUploadService::Result result) {
-  return result != safe_browsing::BinaryUploadService::Result::SUCCESS;
+bool CloudResultIsFailure(BinaryUploadService::Result result) {
+  return result != BinaryUploadService::Result::SUCCESS;
 }
 
-bool LocalResultIsFailure(safe_browsing::BinaryUploadService::Result result) {
-  return result != safe_browsing::BinaryUploadService::Result::SUCCESS &&
-         result != safe_browsing::BinaryUploadService::Result::FILE_TOO_LARGE &&
-         result != safe_browsing::BinaryUploadService::Result::FILE_ENCRYPTED &&
-         result != safe_browsing::BinaryUploadService::Result::
-                       DLP_SCAN_UNSUPPORTED_FILE_TYPE;
+bool LocalResultIsFailure(BinaryUploadService::Result result) {
+  return result != BinaryUploadService::Result::SUCCESS &&
+         result != BinaryUploadService::Result::FILE_TOO_LARGE &&
+         result != BinaryUploadService::Result::FILE_ENCRYPTED;
+}
+
+bool ResultIsFailClosed(BinaryUploadService::Result result) {
+  return result == BinaryUploadService::Result::UPLOAD_FAILURE ||
+         result == BinaryUploadService::Result::TIMEOUT ||
+         result == BinaryUploadService::Result::FAILED_TO_GET_TOKEN ||
+         result == BinaryUploadService::Result::TOO_MANY_REQUESTS ||
+         result == BinaryUploadService::Result::UNKNOWN;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

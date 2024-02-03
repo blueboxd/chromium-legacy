@@ -109,6 +109,7 @@ import org.chromium.chrome.browser.ui.signin.FullScreenSyncPromoUtil;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
 import org.chromium.chrome.browser.webapps.AddToHomescreenIPHController;
 import org.chromium.chrome.browser.webapps.AddToHomescreenMostVisitedTileClickObserver;
+import org.chromium.chrome.browser.webapps.PwaRestorePromoUtils;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
@@ -649,10 +650,17 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
     private void initializeIPH(boolean intentWithEffect) {
         if (mActivity == null) return;
-        mToolbarButtonInProductHelpController = new ToolbarButtonInProductHelpController(mActivity,
-                mWindowAndroid, mAppMenuCoordinator, mActivityLifecycleDispatcher,
-                mActivityTabProvider, mIsInOverviewModeSupplier,
-                mToolbarManager.getMenuButtonView(), mToolbarManager.getSecurityIconView());
+        mToolbarButtonInProductHelpController =
+                new ToolbarButtonInProductHelpController(
+                        mActivity,
+                        mWindowAndroid,
+                        mAppMenuCoordinator,
+                        mActivityLifecycleDispatcher,
+                        mProfileSupplier,
+                        mActivityTabProvider,
+                        mIsInOverviewModeSupplier,
+                        mToolbarManager.getMenuButtonView(),
+                        mToolbarManager.getSecurityIconView());
         mReadLaterIPHController = new ReadLaterIPHController(mActivity,
                 getToolbarManager().getMenuButtonView(), mAppMenuCoordinator.getAppMenuHandler());
 
@@ -671,10 +679,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 isTabLaunchedFromExternalApp && shouldSuppressPSDialogForExternalAppLaunches;
 
         if (!shouldSuppressPSDialog) {
-            didTriggerPromo = PrivacySandboxDialogController.maybeLaunchPrivacySandboxDialog(
-                    mActivity, new SettingsLauncherImpl(),
-                    mTabModelSelectorSupplier.get().isIncognitoSelected(),
-                    getBottomSheetController());
+            didTriggerPromo =
+                    PrivacySandboxDialogController.maybeLaunchPrivacySandboxDialog(
+                            mActivity,
+                            new SettingsLauncherImpl(),
+                            mTabModelSelectorSupplier.get().isIncognitoSelected());
         }
         RecordHistogram.recordBooleanHistogram(histogramName, shouldSuppressPSDialog);
 
@@ -894,6 +903,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         }
     }
 
+    @Override
+    protected boolean supportsEdgeToEdge() {
+        return true;
+    }
+
     /**
      * @return {@link ComposedBrowserControlsVisibilityDelegate} object for tabbed activity.
      */
@@ -951,12 +965,32 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 preferenceManager.writeBoolean(
                         ChromePreferenceKeys.PROMOS_SKIPPED_ON_FIRST_START, true);
             }
+
+            if (FirstRunStatus.isFirstRunTriggered()) {
+                notifyPromosOfFirstRunTriggered();
+            }
+
             return isShowingPromo;
         }
     }
 
+    /** Notifies promos of the First Run Experience having triggered during this launch. */
+    private void notifyPromosOfFirstRunTriggered() {
+        PwaRestorePromoUtils.notifyFirstRunPromoTriggered();
+    }
+
     private boolean maybeShowPromo() {
-        // Only one promo can be shown in one run to avoid nagging users too much.
+        // NOTE: Only one promo can be shown in one run to avoid nagging users too much.
+
+        // The PWA Restore promotion runs when we've detected that a user has switched to a new
+        // device but is leaving behind web apps on the old device. It promotes the idea that the
+        // user can restore their web apps from their old device (if they have any), and as such it
+        // is most effective when shown shortly after the first-run experience. It is therefore
+        // at the front of the list of promotions.
+        if (PwaRestorePromoUtils.launchPromoIfNeeded(
+                mActivity, mWindowAndroid, R.drawable.ic_arrow_back_24dp)) {
+            return true;
+        }
         if (FullScreenSyncPromoUtil.launchPromoIfNeeded(mActivity,
                     SyncConsentActivityLauncherImpl.get(), VersionInfo.getProductMajorVersion())) {
             return true;

@@ -18,7 +18,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
-#include "components/version_info/version_info.h"
+#include "components/version_info/channel.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "extensions/common/event_filter.h"
 #include "extensions/common/extension_id.h"
@@ -107,7 +107,7 @@ class Dispatcher : public content::RenderThreadObserver,
 
   V8SchemaRegistry* v8_schema_registry() { return v8_schema_registry_.get(); }
 
-  const absl::optional<std::string>& webview_partition_id() {
+  const std::optional<std::string>& webview_partition_id() {
     return webview_partition_id_;
   }
 
@@ -394,7 +394,7 @@ class Dispatcher : public content::RenderThreadObserver,
   // if this renderer is a WebView guest render process, otherwise unset.
   // Note that this may be an empty string, even if it's set (if the webview
   // doesn't have a set partition ID).
-  absl::optional<std::string> webview_partition_id_;
+  std::optional<std::string> webview_partition_id_;
 
   // Extensions renderer receiver. This is an associated receiver because
   // it is dependent on other messages sent on other associated channels.

@@ -7,14 +7,14 @@ import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.j
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 
 import {Aggregator, AsyncQueue} from '../../common/js/async_util.js';
+import {isModal} from '../../common/js/dialog_type.js';
 import {convertURLsToEntries, entriesToURLs, isFakeEntry, isGuestOs, isNativeEntry, isOneDriveId, isRecentRootType, isSameEntry, urlToEntry} from '../../common/js/entry_utils.js';
 import {EntryList, GuestOsPlaceholder, VolumeEntry} from '../../common/js/files_app_entry_types.js';
 import {isDlpEnabled, isDriveFsBulkPinningEnabled} from '../../common/js/flags.js';
-import {recordMediumCount} from '../../common/js/metrics.js';
+import {recordMediumCount, recordUserAction} from '../../common/js/metrics.js';
 import {getEntryLabel} from '../../common/js/translations.js';
 import {testSendMessage} from '../../common/js/util.js';
 import {isNative, VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
-import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {PropStatus, SearchLocation, SearchOptions, State, Volume, VolumeId} from '../../externs/ts/state.js';
 // @ts-ignore: error TS6133: 'Store' is declared but its value is never read.
@@ -91,13 +91,8 @@ export class DirectoryModel extends EventTarget {
    * @param {!MetadataModel} metadataModel Metadata model.
    *     service.
    * @param {!VolumeManager} volumeManager The volume manager.
-   * @param {!FileOperationManager} fileOperationManager File operation manager.
    */
-  constructor(
-      singleSelection, fileFilter, metadataModel, volumeManager,
-      // @ts-ignore: error TS6133: 'fileOperationManager' is declared but its
-      // value is never read.
-      fileOperationManager) {
+  constructor(singleSelection, fileFilter, metadataModel, volumeManager) {
     super();
 
     this.fileListSelection_ = singleSelection ?
@@ -216,7 +211,7 @@ export class DirectoryModel extends EventTarget {
     if (state.currentDirectory?.status === PropStatus.STARTED) {
       newURL = /** @type {string} */ (newURL);
       const entry =
-          state.allEntries[newURL] ? state.allEntries[newURL].entry : null;
+          state.allEntries[newURL] ? state.allEntries[newURL]?.entry : null;
 
       if (!entry) {
         // TODO(lucmult): Fix potential race condition in this await/then.
@@ -272,6 +267,11 @@ export class DirectoryModel extends EventTarget {
         // @ts-ignore: error TS2339: Property 'options' does not exist on type
         // '{}'.
         lastSearch.options !== search.options) {
+      const dialogType = state.launchParams.dialogType;
+      if (dialogType) {
+        recordUserAction(
+            `Search.${isModal(dialogType) ? 'Picker' : 'Standalone'}.Open`);
+      }
       this.search_(
           search.query || '', search.options || getDefaultSearchOptions());
     }
@@ -1682,7 +1682,8 @@ export class DirectoryModel extends EventTarget {
       const fakeEntry = /** @type {!FakeEntry} */ (entry);
       return () => {
         return new RecentContentScanner(
-            sanitizedQuery, this.volumeManager_, fakeEntry.sourceRestriction,
+            sanitizedQuery, 30, this.volumeManager_,
+            fakeEntry.sourceRestriction,
             getFileCategory(fakeEntry, sanitizedQuery, options));
       };
     }

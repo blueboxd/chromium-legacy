@@ -538,12 +538,10 @@ void NavigationURLLoaderImpl::CreateInterceptors(
   }
 
   // Set up an interceptor for prefetch.
-  std::unique_ptr<PrefetchURLLoaderInterceptor> prefetch_interceptor =
-      content::PrefetchURLLoaderInterceptor::MaybeCreateInterceptor(
-          frame_tree_node_id_, request_info_->initiator_document_token);
-  if (prefetch_interceptor) {
-    interceptors_.push_back(std::move(prefetch_interceptor));
-  }
+  interceptors_.push_back(
+      std::make_unique<PrefetchURLLoaderInterceptor>(
+          frame_tree_node_id_, request_info_->initiator_document_token,
+          request_info_->prefetch_serving_page_metrics_container));
 
   // See if embedders want to add interceptors.
   std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
@@ -1394,7 +1392,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       &bypass_redirect_checks_);
 
   GetContentClient()->browser()->RegisterNonNetworkNavigationURLLoaderFactories(
-      frame_tree_node_id_, ukm_id, &non_network_url_loader_factories_);
+      frame_tree_node_id_, &non_network_url_loader_factories_);
 
   bool is_nav_allowed =
       base::FeatureList::IsEnabled(

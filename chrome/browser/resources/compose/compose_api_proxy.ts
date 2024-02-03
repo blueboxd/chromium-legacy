@@ -2,32 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloseReason, ComposeDialogCallbackRouter, ComposeDialogClosePageHandlerRemote, ComposeDialogPageHandlerFactory, ComposeDialogPageHandlerRemote, ComposeState, OpenMetadata, StyleModifiers} from './compose.mojom-webui.js';
+import {CloseReason, ComposeClientPageHandlerRemote, ComposeDialogCallbackRouter, ComposeSessionPageHandlerFactory, ComposeSessionPageHandlerRemote, ComposeState, OpenMetadata, StyleModifiers, UserFeedback} from './compose.mojom-webui.js';
 
 /** @interface */
 export interface ComposeApiProxy {
   acceptComposeResult(): Promise<boolean>;
   closeUi(reason: CloseReason): void;
-  compose(style: StyleModifiers, input: string): void;
+  compose(style: StyleModifiers, input: string, rewrite: boolean): void;
   getRouter(): ComposeDialogCallbackRouter;
   openBugReportingLink(): void;
+  openComposeSettings(): void;
+  setUserFeedback(reason: UserFeedback): void;
   requestInitialState(): Promise<OpenMetadata>;
   saveWebuiState(state: string): void;
+  showUi(): void;
   undo(): Promise<(ComposeState | null)>;
 }
 
 export class ComposeApiProxyImpl implements ComposeApiProxy {
   static instance: ComposeApiProxy|null = null;
 
-  composeDialogPageHandler = new ComposeDialogPageHandlerRemote();
-  composeDialogClosePageHandler = new ComposeDialogClosePageHandlerRemote();
+  composeSessionPageHandler = new ComposeSessionPageHandlerRemote();
+  composeClientPageHandler = new ComposeClientPageHandlerRemote();
   router = new ComposeDialogCallbackRouter();
 
   constructor() {
-    const factoryRemote = ComposeDialogPageHandlerFactory.getRemote();
-    factoryRemote.createComposeDialogPageHandler(
-        this.composeDialogClosePageHandler.$.bindNewPipeAndPassReceiver(),
-        this.composeDialogPageHandler.$.bindNewPipeAndPassReceiver(),
+    const factoryRemote = ComposeSessionPageHandlerFactory.getRemote();
+    factoryRemote.createComposeSessionPageHandler(
+        this.composeClientPageHandler.$.bindNewPipeAndPassReceiver(),
+        this.composeSessionPageHandler.$.bindNewPipeAndPassReceiver(),
         this.router.$.bindNewPipeAndPassRemote());
   }
 
@@ -41,16 +44,16 @@ export class ComposeApiProxyImpl implements ComposeApiProxy {
   }
 
   acceptComposeResult(): Promise<boolean> {
-    return this.composeDialogPageHandler.acceptComposeResult().then(
+    return this.composeSessionPageHandler.acceptComposeResult().then(
         res => res.success);
   }
 
   closeUi(reason: CloseReason): void {
-    this.composeDialogClosePageHandler.closeUI(reason);
+    this.composeClientPageHandler.closeUI(reason);
   }
 
-  compose(style: StyleModifiers, input: string): void {
-    this.composeDialogPageHandler.compose(style, input);
+  compose(style: StyleModifiers, input: string, rewrite: boolean): void {
+    this.composeSessionPageHandler.compose(style, input, rewrite);
   }
 
   getRouter() {
@@ -58,20 +61,32 @@ export class ComposeApiProxyImpl implements ComposeApiProxy {
   }
 
   openBugReportingLink() {
-    this.composeDialogPageHandler.openBugReportingLink();
+    this.composeSessionPageHandler.openBugReportingLink();
+  }
+
+  openComposeSettings() {
+    this.composeSessionPageHandler.openComposeSettings();
   }
 
   requestInitialState(): Promise<OpenMetadata> {
-    return this.composeDialogPageHandler.requestInitialState().then(
+    return this.composeSessionPageHandler.requestInitialState().then(
         res => res.initialState);
   }
 
   saveWebuiState(state: string): void {
-    this.composeDialogPageHandler.saveWebUIState(state);
+    this.composeSessionPageHandler.saveWebUIState(state);
+  }
+
+  showUi() {
+    this.composeClientPageHandler.showUI();
+  }
+
+  setUserFeedback(reason: UserFeedback) {
+    this.composeSessionPageHandler.setUserFeedback(reason);
   }
 
   undo(): Promise<(ComposeState | null)> {
-    return this.composeDialogPageHandler.undo().then(
+    return this.composeSessionPageHandler.undo().then(
         composeState => composeState.lastState);
   }
 }

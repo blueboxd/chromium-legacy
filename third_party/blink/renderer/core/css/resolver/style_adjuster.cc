@@ -69,7 +69,6 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_intrinsic_length.h"
-#include "third_party/blink/renderer/core/style/style_svg_mask_reference_image.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -126,16 +125,6 @@ bool HostIsInputFile(const Element* element) {
   return false;
 }
 
-StyleSVGResource* GetFirstMaskImageAsSVGResource(const SVGElement& element,
-                                                 FillLayer& first_layer) {
-  auto* svg_mask_reference =
-      DynamicTo<StyleSVGMaskReferenceImage>(first_layer.GetImage());
-  if (!svg_mask_reference) {
-    return nullptr;
-  }
-  return svg_mask_reference->CreateSVGResourceWrapper();
-}
-
 void AdjustStyleForSvgElement(const SVGElement& element,
                               ComputedStyleBuilder& builder) {
   // Disable some of text decoration properties.
@@ -149,11 +138,6 @@ void AdjustStyleForSvgElement(const SVGElement& element,
   builder.SetTextEmphasisMark(TextEmphasisMark::kNone);
   builder.SetTextUnderlineOffset(Length());  // crbug.com/1247912
   builder.SetTextUnderlinePosition(TextUnderlinePosition::kAuto);
-
-  if (RuntimeEnabledFeatures::CSSMaskingInteropEnabled()) {
-    builder.SetMaskerResource(
-        GetFirstMaskImageAsSVGResource(element, builder.AccessMaskLayers()));
-  }
 }
 
 bool ElementForcesStackingContext(Element* element) {
@@ -181,6 +165,7 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
     case EDisplay::kFlex:
     case EDisplay::kGrid:
     case EDisplay::kBlockMath:
+    case EDisplay::kBlockRuby:
     case EDisplay::kListItem:
     case EDisplay::kFlowRoot:
     case EDisplay::kLayoutCustom:
@@ -195,6 +180,8 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
       return EDisplay::kGrid;
     case EDisplay::kMath:
       return EDisplay::kBlockMath;
+    case EDisplay::kRuby:
+      return EDisplay::kBlockRuby;
     case EDisplay::kInlineLayoutCustom:
       return EDisplay::kLayoutCustom;
     case EDisplay::kInlineListItem:
@@ -213,7 +200,65 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
     case EDisplay::kTableColumn:
     case EDisplay::kTableCell:
     case EDisplay::kTableCaption:
+    case EDisplay::kRubyText:
       return EDisplay::kBlock;
+    case EDisplay::kNone:
+      NOTREACHED();
+      return display;
+  }
+  NOTREACHED();
+  return EDisplay::kBlock;
+}
+
+// https://drafts.csswg.org/css-display/#inlinify
+static EDisplay EquivalentInlineDisplay(EDisplay display) {
+  switch (display) {
+    case EDisplay::kFlowRootListItem:
+      return EDisplay::kInlineFlowRootListItem;
+    case EDisplay::kBlock:
+    case EDisplay::kFlowRoot:
+      return EDisplay::kInlineBlock;
+    case EDisplay::kTable:
+      return EDisplay::kInlineTable;
+    case EDisplay::kWebkitBox:
+      return EDisplay::kWebkitInlineBox;
+    case EDisplay::kFlex:
+      return EDisplay::kInlineFlex;
+    case EDisplay::kGrid:
+      return EDisplay::kInlineGrid;
+    case EDisplay::kBlockMath:
+      return EDisplay::kMath;
+    case EDisplay::kBlockRuby:
+      return EDisplay::kRuby;
+    case EDisplay::kListItem:
+      return EDisplay::kInlineListItem;
+    case EDisplay::kLayoutCustom:
+      return EDisplay::kInlineLayoutCustom;
+
+    case EDisplay::kInlineFlex:
+    case EDisplay::kInlineFlowRootListItem:
+    case EDisplay::kInlineGrid:
+    case EDisplay::kInlineLayoutCustom:
+    case EDisplay::kInlineListItem:
+    case EDisplay::kInlineTable:
+    case EDisplay::kMath:
+    case EDisplay::kRuby:
+    case EDisplay::kWebkitInlineBox:
+
+    case EDisplay::kContents:
+    case EDisplay::kInline:
+    case EDisplay::kInlineBlock:
+    case EDisplay::kTableRowGroup:
+    case EDisplay::kTableHeaderGroup:
+    case EDisplay::kTableFooterGroup:
+    case EDisplay::kTableRow:
+    case EDisplay::kTableColumnGroup:
+    case EDisplay::kTableColumn:
+    case EDisplay::kTableCell:
+    case EDisplay::kTableCaption:
+    case EDisplay::kRubyText:
+      return display;
+
     case EDisplay::kNone:
       NOTREACHED();
       return display;
@@ -247,10 +292,13 @@ static bool IsAtMediaUAShadowBoundary(const Element* element) {
 // to manually stop text-decorations to apply to text inside media controls.
 static bool StopPropagateTextDecorations(const ComputedStyleBuilder& builder,
                                          const Element* element) {
+  const bool is_ruby_text = RuntimeEnabledFeatures::CssDisplayRubyEnabled()
+                                ? (builder.Display() == EDisplay::kRubyText)
+                                : IsA<HTMLRTElement>(element);
   return builder.IsDisplayReplacedType() ||
          IsAtMediaUAShadowBoundary(element) || builder.IsFloating() ||
          builder.HasOutOfFlowPosition() || IsOutermostSVGElement(element) ||
-         IsA<HTMLRTElement>(element);
+         is_ruby_text;
 }
 
 static bool LayoutParentStyleForcesZIndexToCreateStackingContext(
@@ -421,7 +469,8 @@ static void AdjustStyleForHTMLElement(ComputedStyleBuilder& builder,
         element.GetDocument().GetStyleResolver().InitialZoom());
   }
 
-  if (IsA<HTMLRTElement>(element)) {
+  if (IsA<HTMLRTElement>(element) &&
+      !RuntimeEnabledFeatures::CssDisplayRubyEnabled()) {
     // Ruby text does not support float or position. This might change with
     // evolution of the specification.
     builder.SetPosition(EPosition::kStatic);
@@ -575,6 +624,16 @@ static void AdjustStyleForDisplay(ComputedStyleBuilder& builder,
         layout_parent_style.IsDisplayMathType()) {
       builder.SetIsInsideDisplayIgnoringFloatingChildren();
     }
+  }
+
+  // We need to avoid to inlinify children of a <fieldset>, which creates a
+  // dedicated LayoutObject and it assumes only block children.
+  if (RuntimeEnabledFeatures::RubyInlinifyEnabled() &&
+      layout_parent_style.InlinifiesChildren() &&
+      !builder.HasOutOfFlowPosition() && !builder.IsFloating() &&
+      !(element && IsA<HTMLFieldSetElement>(element->parentNode()))) {
+    builder.SetIsInInlinifyingDisplay();
+    builder.SetDisplay(EquivalentInlineDisplay(builder.Display()));
   }
 
   if (builder.Display() == EDisplay::kBlock) {
@@ -842,12 +901,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (builder.Display() != EDisplay::kNone) {
     if (svg_element) {
       AdjustStyleForSvgElement(*svg_element, builder);
-    }
-
-    if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
-      if (element && element->IsInTopLayer()) {
-        builder.SetOverlay(EOverlay::kAuto);
-      }
     }
 
     bool is_document_element =

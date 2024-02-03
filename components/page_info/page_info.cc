@@ -1159,9 +1159,8 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
   // revocation button for HTTP allowlist entries added because HTTPS was
   // enforced by HTTPS-First Mode.
   bool is_https_enforced =
-      delegate->IsHttpsEnforcedForHost(
-          url.host(),
-          web_contents_->GetPrimaryMainFrame()->GetStoragePartition()) ||
+      delegate->IsHttpsEnforcedForUrl(
+          url, web_contents_->GetPrimaryMainFrame()->GetStoragePartition()) ||
       delegate_->IsHttpsFirstModeEnabled();
 
   bool has_warning_bypass_exception =
@@ -1334,8 +1333,7 @@ bool PageInfo::ShouldShowPermission(
     return true;
   }
 
-  if (base::FeatureList::IsEnabled(
-          permissions::features::kBlockMidiByDefault)) {
+  if (base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
     ContentSetting midi_sysex_setting = GetContentSettings()->GetContentSetting(
         site_url_, site_url_, ContentSettingsType::MIDI_SYSEX);
     // At most one of MIDI and MIDI-SysEx should be displayed in the page info

@@ -26,6 +26,7 @@ PinnedToolbarActionsModelFactory::PinnedToolbarActionsModelFactory()
           "PinnedToolbarActionsModel",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOwnInstance)
+              .WithGuest(ProfileSelection::kOwnInstance)
               .Build()) {}
 
 PinnedToolbarActionsModelFactory::~PinnedToolbarActionsModelFactory() = default;
@@ -43,5 +44,5 @@ bool PinnedToolbarActionsModelFactory::ServiceIsCreatedWithBrowserContext()
 }
 
 bool PinnedToolbarActionsModelFactory::ServiceIsNULLWhileTesting() const {
-  return true;
+  return false;
 }

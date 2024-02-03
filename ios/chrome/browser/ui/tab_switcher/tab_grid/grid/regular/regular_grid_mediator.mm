@@ -170,11 +170,17 @@
   [self.gridConsumer setPageIdleStatus:NO];
   base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
   [self.gridConsumer prepareForDismissal];
-  [self addNewItem];
-  [self.gridConsumer setActivePageFromPage:TabGridPageRegularTabs];
-  [self.tabPresentationDelegate showActiveTabInPage:TabGridPageRegularTabs
-                                       focusOmnibox:NO];
-  base::RecordAction(base::UserMetricsAction("MobileTabGridCreateRegularTab"));
+  // Shows the tab only if has been created.
+  if ([self addNewItem]) {
+    [self.gridConsumer setActivePageFromPage:TabGridPageRegularTabs];
+    [self.tabPresentationDelegate showActiveTabInPage:TabGridPageRegularTabs
+                                         focusOmnibox:NO];
+    base::RecordAction(
+        base::UserMetricsAction("MobileTabGridCreateRegularTab"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("MobileTabGridFailedCreateRegularTab"));
+  }
 }
 
 #pragma mark - Parent's function
@@ -199,7 +205,7 @@
   TabGridToolbarsConfiguration* toolbarsConfiguration =
       [[TabGridToolbarsConfiguration alloc] init];
   toolbarsConfiguration.closeAllButton = [self canCloseAll];
-  toolbarsConfiguration.doneButton = YES;
+  toolbarsConfiguration.doneButton = !self.webStateList->empty();
   toolbarsConfiguration.newTabButton = YES;
   toolbarsConfiguration.searchButton = YES;
   toolbarsConfiguration.selectTabsButton = [self isTabsInGrid];

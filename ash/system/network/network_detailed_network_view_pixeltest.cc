@@ -107,7 +107,7 @@ TEST_F(NetworkDetailedNetworkViewPixelTest, Basics) {
   // Show the detailed view.
   system_tray->bubble()
       ->unified_system_tray_controller()
-      ->ShowNetworkDetailedView(/*force=*/true);
+      ->ShowNetworkDetailedView();
   TrayDetailedView* detailed_view =
       system_tray->bubble()
           ->quick_settings_view()
@@ -129,7 +129,7 @@ TEST_F(NetworkDetailedNetworkViewPixelTest, Basics) {
   // Compare pixels.
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_view",
-      /*revision_number=*/9, detailed_view));
+      /*revision_number=*/10, detailed_view));
 }
 
 }  // namespace

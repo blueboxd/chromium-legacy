@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="si">
+<translation id="1003363546227723021">ඔබගේ තිරය අක්‍රිය වූ විට, ඡායාරූප, වේලාව, කාලගුණය සහ මාධ්‍ය තොරතුරු පෙන්වන්න</translation>
 <translation id="1014750484722996375">මේස</translation>
 <translation id="1018219910092211213">DNS විසඳිය නොහැකිය</translation>
 <translation id="1018656279737460067">අවලංගු විය</translation>
@@ -29,6 +30,7 @@
 <translation id="1175951029573070619">සාමාන්‍යයි (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">ඉවත් කරන්න</translation>
 <translation id="1195447618553298278">නොදන්නා දෝෂය.</translation>
+<translation id="1195784767091936222">ස්වයං අඳුරු ප්‍රකාරය ක්‍රියාත්මක කරන්න</translation>
 <translation id="1196959502276349371">අනුවාදය <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">වාදනය කරන්න/විරාම කරන්න</translation>
 <translation id="1201402288615127009">ඊළඟ</translation>
@@ -134,6 +136,7 @@
 <translation id="1852934301711881861">ChromeOS Flex ස්ථාපනය කරන්න</translation>
 <translation id="1856388568474281774">පහළ ඊතලය</translation>
 <translation id="1858620243986915808">තිර රුව අමුණන්න</translation>
+<translation id="1871413952174074704">APN හි අනුලකුණු <ph name="CHAR_LIMIT" />කට වඩා තිබිය නොහැක</translation>
 <translation id="1871569928317311284">අඳුරු තේමාව ක්‍රියාවිරහිත කරන්න</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">අඳුරු ප්‍රකාරය ක්‍රියාවිරහිත කරන්න</translation>
@@ -147,6 +150,7 @@
 <translation id="1923388006036088459">අවධාරණ වර්ණ</translation>
 <translation id="1947737735496445907">මුද්‍රණය කරන ලදි</translation>
 <translation id="1951012854035635156">සහායක</translation>
+<translation id="1954687945444914660">ඡායාරූපකරණය</translation>
 <translation id="1962550982027027473">පෙරනිමි APN එකක් අවශ්‍යයි</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1977994649430373166">Google පැතිකඩ ඡායාරූපය</translation>
@@ -275,6 +279,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">උපාංගය සබැඳී ඇත.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{පිටුව ඉවත් කරන්නද?}=1{{PAGE_NUMBER} පිටුව ඉවත් කරන්නද?}one{{PAGE_NUMBER} පිටුව ඉවත් කරන්නද?}other{{PAGE_NUMBER} පිටුව ඉවත් කරන්නද?}}</translation>
+<translation id="3136905423678675159">ස්වයං අඳුරු ප්‍රකාරය ක්‍රියාත්මක කරන්න ද?</translation>
 <translation id="3146655726035122603"><ph name="PRODUCT_NAME" /> වෙත සුවිශේෂී</translation>
 <translation id="315116470104423982">ජංගම දත්ත</translation>
 <translation id="3156846309055100599"><ph name="PAGE_NUMBER" /> පිටුව ස්කෑන් කරමින්...</translation>
@@ -354,6 +359,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (සමාලෝචන <ph name="AGGREGATED_COUNT" />)</translation>
 <translation id="3748026146096797577">සබැඳී නැත</translation>
 <translation id="3749289110408117711">ගොනුවේ නම</translation>
+<translation id="3754384069690464321">මෙම වෝල්පේපරය සමගින් හොඳම ප්‍රතිඵල සඳහා, ස්වයං අඳුරු ප්‍රකාරය ක්‍රියාත්මක කරන්න. ඔබට එය ඕනෑම වේලාවක යෙදුම තුළ නැවත වෙනස් කළ හැක.</translation>
 <translation id="3771294271822695279">වීඩියෝ ගොනු</translation>
 <translation id="3784455785234192852">අගුලු ලන්න</translation>
 <translation id="380097101658023925">rgb පාලන</translation>
@@ -434,7 +440,6 @@
 <translation id="4300073214558989">රූප <ph name="IMAGE_COUNT" /></translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> යතුර ඔබන ලදි</translation>
 <translation id="4354430579665871434">යතුර</translation>
-<translation id="435692326371619097">ජාල APN සැකසීම් කළමනාකරණය කරන්න. APN සෙලියුලර් ජාලයක් සහ අන්තර්ජාලය අතර සම්බන්ධතාවයක් ඇති කරයි. <ph name="BEGIN_LINK" />තව දැන ගන්න<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">සියලු කෙටිමං යළි සකසන්න</translation>
 <translation id="4378373042927530923">ධාවනය නොවේ</translation>
 <translation id="4378551569595875038">සම්බන්ධ වෙමින්...</translation>
@@ -534,7 +539,6 @@
 <translation id="4999333166442584738">වාර්තාව සඟවන්න</translation>
 <translation id="500920857929044050">පරීක්ෂණය නවත්වන්න</translation>
 <translation id="5017508259293544172">LEAP</translation>
-<translation id="5019310272469539976">ඔබගේ තිරය අක්‍රිය වූ විට, ඡායාරූප, වේලාව, කාලගුණය සහ මාධ්‍ය තොරතුරු පෙන්වීම.</translation>
 <translation id="5035083460461104704">තේමා වර්ණය</translation>
 <translation id="5038292761217083259">යතුරු පුවරු බහු වර්ණ</translation>
 <translation id="5039804452771397117">ඉඩදෙන්න</translation>
@@ -588,6 +592,7 @@
 <translation id="5389224261615877010">දේදුන්න</translation>
 <translation id="5400907029458559844">උපාංගය සම්බන්ධ වෙමින් පවතී.</translation>
 <translation id="5401938042319910061">සියලු දින චර්යා ධාවනය කරන්න</translation>
+<translation id="540604120278030498">නිව් යෝර්ක්</translation>
 <translation id="5423849171846380976">සක්‍රිය කෙරිණි</translation>
 <translation id="5430931332414098647">ක්ෂණික ටෙදරින්</translation>
 <translation id="5431318178759467895">වර්ණය</translation>
@@ -796,6 +801,7 @@
 <translation id="7046522406494308071">කෙටිමං සියල්ල පෙරනිමිවලට යළි සකසන්නද?</translation>
 <translation id="7058278511608979688">අවසන් කර සුරකින්න</translation>
 <translation id="7059230779847288458">ආරෝපණය වෙමින්, සම්පූර්ණ වන තෙක් <ph name="TIME_VALUE" /></translation>
+<translation id="7065364575846974659">පැරිස්</translation>
 <translation id="7066538517128343186"><ph name="KEY" /> යතුර</translation>
 <translation id="7068619307603204412">ඔබගේ උපාංගය සූදානම් කරන්න</translation>
 <translation id="708426984172631313">නවත්වන ලදි</translation>
@@ -935,6 +941,7 @@
 <translation id="8094062939584182041">මෙම ගැටලුව පිළිබඳව ඔබට ඉ-තැපැල් කිරීමට Google හට ඉඩ දෙන්න</translation>
 <translation id="8104083085214006426">ඔබ විවෘත සහ අනාරක්ෂිත ජාලයක් භාවිත කරමින් සිටියි</translation>
 <translation id="8111706652656628199">කෙටිමඟ නොලැබේ. shift + තව 1 සංස්කාරක යතුරක් (ctrl, alt, සෙවීම, හෝ දියත්කරණය) භාවිත කර නව කෙටිමඟක් ඔබන්න.</translation>
+<translation id="8112538018114444149"><ph name="CHIP_STYLE" /> විලාසයෙන් <ph name="CHIP_CITY" /> හි උද්‍යානයක්.</translation>
 <translation id="811820734797650957">(Android) වාහල පින් කළ හැකිය</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8132480444149501833">තදබදය ගණනය කිරීම් ඉල්ලන්න</translation>
@@ -1069,6 +1076,7 @@
 <translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS විභේදනයට ඉහළ පමාවක් ඇත</translation>
 <translation id="9065203028668620118">සංස්කරණය කරන්න</translation>
+<translation id="9068296451330120661">දියසායම</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9082718469794970195">මෙම වීඩියෝව භාවිත කරන්න</translation>
@@ -1103,4 +1111,5 @@
 <translation id="979450713603643090">ලා රෝස</translation>
 <translation id="982713511914535780">විසර්ජන පරීක්ෂණය ධාවනය කරන්න</translation>
 <translation id="987264212798334818">සාමාන්‍ය</translation>
+<translation id="995062385528875723">උච්චාරණ අකුරු, ලතින් නොවන හෝඩිය, හෝ සංකේත භාවිතා කළ නොහැක</translation>
 </translationbundle>

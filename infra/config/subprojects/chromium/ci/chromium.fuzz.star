@@ -378,6 +378,11 @@ ci.builder(
         short_name = "rel",
     ),
     contact_team_email = "chrome-sanitizer-builder-owners@google.com",
+    health_spec = health_spec.modified_default(
+        pending_time = struct(
+            p50_mins = None,  # exception added because this builder has a pool of 1 machine and 2 concurrent invocations
+        ),
+    ),
 )
 
 ci.builder(
@@ -770,6 +775,7 @@ ci.builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 3,
     ),
+    builderless = False,
     os = os.WINDOWS_DEFAULT,
     console_view_entry = consoles.console_view_entry(
         category = "libfuzz",

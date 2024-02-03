@@ -60,6 +60,9 @@ class EnterpriseConnectorsResultShouldAllowDataUseTest
 
   bool allowed() const { return !GetParam(); }
   const char* bool_setting() const { return GetParam() ? "true" : "false"; }
+  const char* default_action_setting() const {
+    return GetParam() ? "block" : "allow";
+  }
 
   AnalysisSettings settings() {
     absl::optional<AnalysisSettings> settings =
@@ -105,20 +108,20 @@ TEST_P(EnterpriseConnectorsResultShouldAllowDataUseTest,
                 safe_browsing::BinaryUploadService::Result::FILE_ENCRYPTED));
 }
 
-TEST_P(EnterpriseConnectorsResultShouldAllowDataUseTest,
-       BlockUnsupportedFileTypes) {
+TEST_P(EnterpriseConnectorsResultShouldAllowDataUseTest, BlockUploadFailure) {
   auto pref = base::StringPrintf(R"(
     {
       "service_provider": "google",
       "enable": [{"url_list": ["*"], "tags": ["dlp"]}],
-      "block_unsupported_file_types": %s
+      "default_action": "%s"
     })",
-                                 bool_setting());
+                                 default_action_setting());
+
   test::SetAnalysisConnector(profile()->GetPrefs(), FILE_ATTACHED, pref);
   EXPECT_EQ(allowed(),
             ResultShouldAllowDataUse(
-                settings(), safe_browsing::BinaryUploadService::Result::
-                                DLP_SCAN_UNSUPPORTED_FILE_TYPE));
+                settings(),
+                safe_browsing::BinaryUploadService::Result::UPLOAD_FAILURE));
 }
 
 }  // namespace enterprise_connectors

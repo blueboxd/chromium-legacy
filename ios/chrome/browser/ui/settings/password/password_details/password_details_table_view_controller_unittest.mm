@@ -15,14 +15,13 @@
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
-#import "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_multi_line_text_edit_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_edit_item.h"
-#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller_test.h"
+#import "ios/chrome/browser/shared/ui/table_view/legacy_chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/cells/table_view_stacked_details_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
@@ -201,7 +200,7 @@ constexpr char kNote[] = "note";
 
 // Unit tests for PasswordIssuesTableViewController.
 class PasswordDetailsTableViewControllerTest
-    : public ChromeTableViewControllerTest {
+    : public LegacyChromeTableViewControllerTest {
  protected:
   PasswordDetailsTableViewControllerTest() {
     feature_list_.InitWithFeatures(
@@ -215,7 +214,7 @@ class PasswordDetailsTableViewControllerTest
     snack_bar_ = [[FakeSnackbarImplementation alloc] init];
   }
 
-  ChromeTableViewController* InstantiateController() override {
+  LegacyChromeTableViewController* InstantiateController() override {
     PasswordDetailsTableViewController* controller =
         [[PasswordDetailsTableViewController alloc] init];
     controller.handler = handler_;
@@ -496,37 +495,8 @@ TEST_F(PasswordDetailsTableViewControllerTest,
       password_manager::metrics_util::PasswordNoteAction::kNoteNotChanged, 1);
 }
 
-// Tests that compromised password is displayed properly when
-// kIOSPasswordCheckup feature is disabled.
-TEST_F(PasswordDetailsTableViewControllerTest,
-       TestCompromisedPasswordWithoutKIOSPasswordCheckup) {
-  // Disable Password Checkup feature.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      password_manager::features::kIOSPasswordCheckup);
-
-  SetPassword(kExampleCom, kUsername, kPassword, kNote,
-              /*is_compromised=*/true);
-  EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(6, NumberOfItemsInSection(0));
-  CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
-  CheckEditCellText(kMaskedPassword, 0, 2);
-  CheckEditCellMultiLineText(@"note", 0, 3);
-
-  CheckDetailItemTextWithId(
-      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 4);
-  CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 0, 5);
-}
-
-// Tests that compromised password is displayed properly when
-// kIOSPasswordCheckup feature is enabled.
-TEST_F(PasswordDetailsTableViewControllerTest,
-       TestCompromisedPasswordWithKIOSPasswordCheckup) {
-  // Enable Password Checkup feature.
-  base::test::ScopedFeatureList feature_list(
-      password_manager::features::kIOSPasswordCheckup);
-
+// Tests that compromised password is displayed properly.
+TEST_F(PasswordDetailsTableViewControllerTest, TestCompromisedPassword) {
   SetPassword(kExampleCom, kUsername, kPassword, kNote,
               /*is_compromised=*/true);
   EXPECT_EQ(1, NumberOfSections());
@@ -544,13 +514,7 @@ TEST_F(PasswordDetailsTableViewControllerTest,
 }
 
 // Tests that muted compromised password is displayed properly.
-// kIOSPasswordCheckup feature needs to be enabled.
-TEST_F(PasswordDetailsTableViewControllerTest,
-       TestMutedCompromisedPasswordWithKIOSPasswordCheckup) {
-  // Enable Password Checkup feature.
-  base::test::ScopedFeatureList feature_list(
-      password_manager::features::kIOSPasswordCheckup);
-
+TEST_F(PasswordDetailsTableViewControllerTest, TestMutedCompromisedPassword) {
   SetPassword(kExampleCom, kUsername, kPassword, kNote,
               /*is_compromised=*/false, /*is_muted=*/true,
               DetailsContext::kDismissedWarnings);
@@ -597,13 +561,8 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestChangePasswordOnWebsite) {
   EXPECT_OCMOCK_VERIFY(applicationCommandsMock);
 }
 
-// Tests the “Dismiss Warning” button. kIOSPasswordCheckup feature needs to be
-// enabled.
+// Tests the “Dismiss Warning” button.
 TEST_F(PasswordDetailsTableViewControllerTest, TestDismissWarning) {
-  // Enable Password Checkup feature.
-  base::test::ScopedFeatureList feature_list(
-      password_manager::features::kIOSPasswordCheckup);
-
   SetPassword(kExampleCom, kUsername, kPassword, kNote,
               /*is_compromised=*/true);
   PasswordDetailsTableViewController* password_details =
@@ -621,13 +580,8 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestDismissWarning) {
   EXPECT_TRUE(delegate().dismissWarningCalled);
 }
 
-// Tests the “Restore Warning” button. kIOSPasswordCheckup feature needs to be
-// enabled.
+// Tests the “Restore Warning” button.
 TEST_F(PasswordDetailsTableViewControllerTest, TestRestoreWarning) {
-  // Enable Password Checkup feature.
-  base::test::ScopedFeatureList feature_list(
-      password_manager::features::kIOSPasswordCheckup);
-
   SetPassword(kExampleCom, kUsername, kPassword, kNote,
               /*is_compromised=*/false, /*is_muted=*/true,
               DetailsContext::kDismissedWarnings);
@@ -764,36 +718,9 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditPasswordCancel) {
 }
 
 // Tests android compromised credential is displayed without change password
-// button when kIOSPasswordCheckup feature is disabled.
+// button.
 TEST_F(PasswordDetailsTableViewControllerTest,
-       TestAndroidCompromisedCredentialWithoutKIOSPasswordCheckup) {
-  // Disable Password Checkup feature.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      password_manager::features::kIOSPasswordCheckup);
-
-  SetPassword(kAndroid, kUsername, kPassword, kNote, /*is_compromised=*/true);
-
-  EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(5, NumberOfItemsInSection(0));
-
-  CheckStackedDetailsCellDetails(@[ @"app.my.example.com" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
-  CheckEditCellText(kMaskedPassword, 0, 2);
-  CheckEditCellMultiLineText(@"note", 0, 3);
-
-  CheckDetailItemTextWithId(
-      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 4);
-}
-
-// Tests android compromised credential is displayed without change password
-// button when kIOSPasswordCheckup feature is enabled.
-TEST_F(PasswordDetailsTableViewControllerTest,
-       TestAndroidCompromisedCredentialWithKIOSPasswordCheckup) {
-  // Enable Password Checkup feature.
-  base::test::ScopedFeatureList feature_list(
-      password_manager::features::kIOSPasswordCheckup);
-
+       TestAndroidCompromisedCredential) {
   SetPassword(kAndroid, kUsername, kPassword, kNote, /*is_compromised=*/true);
 
   EXPECT_EQ(1, NumberOfSections());

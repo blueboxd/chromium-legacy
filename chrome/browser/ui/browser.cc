@@ -493,7 +493,7 @@ Browser::Browser(const CreateParams& params)
       user_title_(params.user_title),
       signin_view_controller_(this),
       breadcrumb_manager_browser_agent_(
-          breadcrumbs::IsEnabled()
+          breadcrumbs::IsEnabled(g_browser_process->local_state())
               ? std::make_unique<BreadcrumbManagerBrowserAgent>(this)
               : nullptr)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -660,6 +660,10 @@ Browser::~Browser() {
 // Getters & Setters
 
 base::WeakPtr<Browser> Browser::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+base::WeakPtr<const Browser> Browser::AsWeakPtr() const {
   return weak_factory_.GetWeakPtr();
 }
 
@@ -2050,8 +2054,8 @@ bool Browser::CanUseWindowingControls(
   return true;
 }
 
-void Browser::SetCanResizeFromWebAPI(absl::optional<bool> can_resize) {
-  window_->SetCanResizeFromWebAPI(can_resize);
+void Browser::OnCanResizeFromWebAPIChanged() {
+  window_->OnCanResizeFromWebAPIChanged();
 }
 
 bool Browser::GetCanResize() {
@@ -2068,6 +2072,10 @@ void Browser::MaximizeFromWebAPI() {
 
 void Browser::RestoreFromWebAPI() {
   window_->Restore();
+}
+
+ui::WindowShowState Browser::GetWindowShowState() const {
+  return window_->GetWindowShowState();
 }
 
 bool Browser::CanEnterFullscreenModeForTab(
@@ -2367,7 +2375,7 @@ void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
     // class-level comments for further details.
     if (!exclusive_access_manager_->fullscreen_controller()
              ->IsFullscreenWithinTab(web_contents)) {
-      web_contents->ExitFullscreen(true);
+      web_contents->ExitFullscreen();
     }
   }
 

@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/lacros-arm64-generic-rel-skylab/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "lacros-arm64-generic-rel-skylab",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -45,7 +48,7 @@
         {
           "bucket": "ci",
           "builder": "lacros-arm64-generic-rel-skylab",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ]
     }

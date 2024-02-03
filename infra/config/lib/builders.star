@@ -178,7 +178,7 @@ xcode = struct(
     # Default Xcode 15 for chromium iOS
     x15main = xcode_enum("15a507"),
     # A newer Xcode 15 version used on beta bots.
-    x15betabots = xcode_enum("15c5028h"),
+    x15betabots = xcode_enum("15c5042i"),
     # in use by ios-webkit-tot
     x14wk = xcode_enum("14c18wk"),
 )
@@ -196,7 +196,7 @@ free_space = struct(
 # Implementation details                                                       #
 ################################################################################
 
-_DEFAULT_BUILDERLESS_OS_CATEGORIES = [os_category.LINUX]
+_DEFAULT_BUILDERLESS_OS_CATEGORIES = [os_category.LINUX, os_category.WINDOWS]
 
 # Macs all have SSDs, so it doesn't make sense to use the default behavior of
 # setting ssd:0 dimension

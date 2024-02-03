@@ -20,7 +20,7 @@
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
-#include "components/attribution_reporting/trigger_data_matching.mojom.h"
+#include "components/attribution_reporting/trigger_data_matching.mojom-forward.h"
 
 namespace base {
 class TimeDelta;
@@ -30,6 +30,8 @@ namespace attribution_reporting {
 
 class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpec {
  public:
+  TriggerSpec();
+
   explicit TriggerSpec(EventReportWindows);
 
   ~TriggerSpec();
@@ -45,6 +47,8 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpec {
   }
 
   base::Value::Dict ToJson() const;
+
+  friend bool operator==(const TriggerSpec&, const TriggerSpec&) = default;
 
  private:
   EventReportWindows event_report_windows_;
@@ -67,6 +71,9 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpecs {
   // source type.
   static TriggerSpecs Default(mojom::SourceType, EventReportWindows);
 
+  static absl::optional<TriggerSpecs> Create(TriggerDataIndices,
+                                             std::vector<TriggerSpec>);
+
   static TriggerSpecs CreateForTesting(TriggerDataIndices,
                                        std::vector<TriggerSpec>);
 
@@ -85,9 +92,10 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpecs {
 
   size_t size() const { return trigger_data_indices_.size(); }
 
-  // TODO(apaseltiner): Add a `find(uint32_t)` method that performs an optimized
-  // lookup for a given trigger data value and use it in
-  // `content::AttributionStorageSql`.
+  // Will return nullptr if there is not a single shared spec.
+  const TriggerSpec* SingleSharedSpec() const;
+
+  base::Value::List ToJson() const;
 
   void Serialize(base::Value::Dict&) const;
 
@@ -101,7 +109,7 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpecs {
     using pointer = void;
 
     reference operator*() const {
-      return value_type(it_->first, specs_->specs_[it_->second]);
+      return value_type(it_->first, specs_->specs()[it_->second]);
     }
 
     Iterator& operator++() {
@@ -119,7 +127,11 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpecs {
     // trigger_data.
     uint8_t index() const {
       return base::checked_cast<uint8_t>(
-          std::distance(specs_->trigger_data_indices_.cbegin(), it_));
+          std::distance(specs_->trigger_data_indices().cbegin(), it_));
+    }
+
+    explicit operator bool() const {
+      return it_ != specs_->trigger_data_indices().end();
     }
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
@@ -149,9 +161,28 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpecs {
     return Iterator(*this, trigger_data_indices_.cend());
   }
 
- private:
-  friend Iterator;
+  // Returns the matching trigger spec and its associated trigger data, if any.
+  // Returns `TriggerSpecs::end()` if there is no match.
+  //
+  // Accepts a 64-bit integer instead of a 32-bit one for backward
+  // compatibility with pre-Flex triggers that supply the full range.
+  //
+  // Note: `TriggerDataMatching::kModulus` can still be applied
+  // even if the trigger data does not form a contiguous range starting at 0.
+  // Such a combination is prohibited by `TriggerSpecs::Parse()`, but there is
+  // still a well-defined meaning for it for arbitrary trigger data, so we do
+  // not bother preventing it here, though we may do so in the future.
+  const_iterator find(uint64_t trigger_data, mojom::TriggerDataMatching) const;
 
+  const TriggerDataIndices& trigger_data_indices() const {
+    return trigger_data_indices_;
+  }
+
+  const std::vector<TriggerSpec>& specs() const { return specs_; }
+
+  friend bool operator==(const TriggerSpecs&, const TriggerSpecs&) = default;
+
+ private:
   TriggerSpecs(TriggerDataIndices, std::vector<TriggerSpec>);
 
   // These two fields effectively act as a compressed `base::flat_map<uint32_t,
@@ -167,38 +198,12 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerSpecs {
   std::vector<TriggerSpec> specs_;
 };
 
-class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerConfig {
- public:
-  static base::expected<TriggerConfig, mojom::SourceRegistrationError> Parse(
-      const base::Value::Dict&);
+COMPONENT_EXPORT(ATTRIBUTION_REPORTING)
+base::expected<mojom::TriggerDataMatching, mojom::SourceRegistrationError>
+ParseTriggerDataMatching(const base::Value::Dict&);
 
-  TriggerConfig();
-
-  explicit TriggerConfig(mojom::TriggerDataMatching);
-
-  ~TriggerConfig();
-
-  TriggerConfig(const TriggerConfig&);
-  TriggerConfig& operator=(const TriggerConfig&);
-
-  TriggerConfig(TriggerConfig&&);
-  TriggerConfig& operator=(TriggerConfig&&);
-
-  mojom::TriggerDataMatching trigger_data_matching() const {
-    return trigger_data_matching_;
-  }
-
-  // Serializes into the given dictionary iff
-  // `features::kAttributionReportingTriggerConfig` is enabled.
-  void Serialize(base::Value::Dict&) const;
-
-  // Always serializes regardless of the above feature status.
-  void SerializeForTesting(base::Value::Dict&) const;
-
- private:
-  mojom::TriggerDataMatching trigger_data_matching_ =
-      mojom::TriggerDataMatching::kModulus;
-};
+COMPONENT_EXPORT(ATTRIBUTION_REPORTING)
+void Serialize(base::Value::Dict&, mojom::TriggerDataMatching);
 
 }  // namespace attribution_reporting
 

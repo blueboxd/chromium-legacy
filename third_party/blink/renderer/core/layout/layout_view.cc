@@ -532,10 +532,15 @@ PhysicalRect LayoutView::ViewRect() const {
 
       // This adjustment should always be an expansion of the current
       // viewport.
-      DCHECK_GE(transition->GetSnapshotRootSize().width(),
-                frame_view_->Size().width());
-      DCHECK_GE(transition->GetSnapshotRootSize().height(),
-                frame_view_->Size().height());
+
+      // TODO(https://crbug.com/1495157): The snapshot size can be smaller (by
+      // one pixel) than the frame on mobile viewport. Investigate why. Consider
+      // adding `<meta name="viewport" content="width=device-width">` to the
+      // HTML if this occurs.
+      CHECK_GE(transition->GetSnapshotRootSize().width(),
+               frame_view_->Size().width());
+      CHECK_GE(transition->GetSnapshotRootSize().height(),
+               frame_view_->Size().height());
 
       return PhysicalRect(
           PhysicalOffset(transition->GetFrameToSnapshotRootOffset()),
@@ -796,6 +801,14 @@ const LayoutBox& LayoutView::RootBox() const {
   return To<LayoutBox>(*document_element->GetLayoutObject());
 }
 
+void LayoutView::InvalidateSvgRootsWithRelativeLengthDescendents() {
+  if (GetDocument().SvgExtensions() && !ShouldUsePrintingLayout()) {
+    GetDocument()
+        .AccessSVGExtensions()
+        .InvalidateSVGRootsWithRelativeLengthDescendents();
+  }
+}
+
 void LayoutView::UpdateLayout() {
   NOT_DESTROYED();
   if (ShouldUsePrintingLayout()) {
@@ -825,17 +838,9 @@ void LayoutView::UpdateLayout() {
   bool is_resizing_initial_containing_block =
       LogicalWidth() != ViewLogicalWidthForBoxSizing() ||
       LogicalHeight() != ViewLogicalHeightForBoxSizing();
-  bool invalidate_svg_roots =
-      GetDocument().SvgExtensions() && !ShouldUsePrintingLayout() &&
-      (!GetFrameView() || is_resizing_initial_containing_block);
-  if (invalidate_svg_roots) {
-    GetDocument()
-        .AccessSVGExtensions()
-        .InvalidateSVGRootsWithRelativeLengthDescendents();
-  }
-
   DCHECK(!initial_containing_block_resize_handled_list_);
   if (is_resizing_initial_containing_block) {
+    InvalidateSvgRootsWithRelativeLengthDescendents();
     initial_containing_block_resize_handled_list_ =
         MakeGarbageCollected<HeapHashSet<Member<const LayoutObject>>>();
   }

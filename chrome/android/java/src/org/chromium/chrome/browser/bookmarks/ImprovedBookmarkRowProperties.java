@@ -12,7 +12,7 @@ import android.view.View;
 import androidx.annotation.IntDef;
 
 import org.chromium.base.supplier.LazyOneshotSupplier;
-import org.chromium.components.browser_ui.widget.listmenu.ListMenuButtonDelegate;
+import org.chromium.ui.listmenu.ListMenuButtonDelegate;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
@@ -21,6 +21,7 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.function.BooleanSupplier;
 
 /** Responsible for hosting properties of the improved bookmark row. */
 public class ImprovedBookmarkRowProperties {
@@ -74,10 +75,11 @@ public class ImprovedBookmarkRowProperties {
     public static final WritableBooleanPropertyKey DRAG_ENABLED = new WritableBooleanPropertyKey();
     public static final WritableBooleanPropertyKey EDITABLE = new WritableBooleanPropertyKey();
 
-    public static final WritableObjectPropertyKey<View.OnClickListener> ROW_CLICK_LISTENER =
+    public static final WritableObjectPropertyKey<Runnable> ROW_CLICK_LISTENER =
             new WritableObjectPropertyKey<>();
-    public static final WritableObjectPropertyKey<View.OnLongClickListener>
-            ROW_LONG_CLICK_LISTENER = new WritableObjectPropertyKey<>();
+    // Supplier should return true if the callback consumed the long click, false otherwise.
+    public static final WritableObjectPropertyKey<BooleanSupplier> ROW_LONG_CLICK_LISTENER =
+            new WritableObjectPropertyKey<>();
 
     public static final WritableIntPropertyKey END_IMAGE_VISIBILITY = new WritableIntPropertyKey();
     public static final WritableIntPropertyKey END_IMAGE_RES = new WritableIntPropertyKey();

@@ -233,6 +233,59 @@ var availableTests = [
           'Fake DLC file content', new TextDecoder().decode(contents));
       chrome.test.succeed();
     });
+  },
+
+  function testGetTtsDlcContentsDlcNotOnDevice() {
+    const ttsDlc = chrome.accessibilityPrivate.DlcType.TTS_ES_US;
+    const ttsVariant = chrome.accessibilityPrivate.TtsVariant.LITE;
+    const error = 'Error: TTS language pack with locale is not installed: ' +
+        'es-us';
+    chrome.accessibilityPrivate.getTtsDlcContents(
+        ttsDlc, ttsVariant, (contents) => {
+      chrome.test.assertLastError(error);
+      chrome.test.succeed();
+    });
+  },
+
+  function testGetTtsDlcContentsSuccess() {
+    const ttsDlc = chrome.accessibilityPrivate.DlcType.TTS_ES_US;
+    const ttsVariant = chrome.accessibilityPrivate.TtsVariant.LITE;
+    chrome.accessibilityPrivate.getTtsDlcContents(
+        ttsDlc, ttsVariant, (contents) => {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq(
+          'Fake DLC file content', new TextDecoder().decode(contents));
+      chrome.test.succeed();
+    });
+  },
+
+  function testGetVariantTtsDlcContentsDlcNotOnDevice() {
+    const ttsDlc = chrome.accessibilityPrivate.DlcType.TTS_ES_US;
+    const ttsVariant = chrome.accessibilityPrivate.TtsVariant.STANDARD;
+    const error = 'Error: TTS language pack with locale is not installed: ' +
+        'es-us';
+    chrome.accessibilityPrivate.getTtsDlcContents(
+        ttsDlc, ttsVariant, (contents) => {
+      chrome.test.assertLastError(error);
+      chrome.test.succeed();
+    });
+  },
+
+  function testGetVariantTtsDlcContentsSuccess() {
+    const ttsDlc = chrome.accessibilityPrivate.DlcType.TTS_ES_US;
+    const ttsVariant = chrome.accessibilityPrivate.TtsVariant.STANDARD;
+    chrome.accessibilityPrivate.getTtsDlcContents(
+        ttsDlc, ttsVariant, (contents) => {
+      chrome.test.assertNoLastError();
+      chrome.test.assertEq(
+          'Fake DLC file content', new TextDecoder().decode(contents));
+      chrome.test.succeed();
+    });
+  },
+
+  function testSetCursorPosition() {
+    chrome.accessibilityPrivate.setCursorPosition({x: 450, y: 350});
+    chrome.test.succeed();
   }
 ];
 

@@ -1331,7 +1331,7 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
   CompositeFrame();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
 
-  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::HandleScope scope(Window().GetIsolate());
   v8::Local<v8::Value> result =
       ClassicScript::CreateUnspecifiedScript("window.didRaf;")
           ->RunScriptAndReturnValue(
@@ -1576,7 +1576,7 @@ TEST_P(FrameThrottlingTest, NestedFramesInRemoteFrameHiddenAndShown) {
   frame_document->documentElement()->setAttribute(html_names::kStyleAttr,
                                                   AtomicString("color: blue"));
   // This is needed to reproduce crbug.com/1054644 before the fix.
-  frame_view->SetNeedsPaintPropertyUpdate();
+  frame_view->SetIntersectionObservationState(LocalFrameView::kDesired);
 
   // Show the frame without any other change.
   LocalFrameRoot().WasShown();

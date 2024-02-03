@@ -173,10 +173,6 @@ template("chrome_common_apk_or_module_tmpl") {
     _version_code = chrome_version_code
   }
 
-  if (defined(invoker.version_code)) {
-    _version_code = invoker.version_code
-  }
-
   # Need to apply override explicitly to have it apply to library version.
   if (android_override_version_code != "") {
     _version_code = android_override_version_code
@@ -479,7 +475,6 @@ template("chrome_common_apk_or_module_tmpl") {
         if (_is_monochrome) {
           # WebView needs these in the base module.
           deps += [
-            "//components/environment_integrity/android:integrity_service_bridge_public_impl_java",
             "//content/public/android:identity_credentials_public_impl_java",
           ]
         }

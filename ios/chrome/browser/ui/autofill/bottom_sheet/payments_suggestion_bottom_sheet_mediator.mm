@@ -425,12 +425,13 @@
   }
 
   // Otherwise, try to get the default card icon
-  std::string icon = creditCard->CardIconStringForAutofillSuggestion();
-  return icon.empty() ? nil
-                      : ui::ResourceBundle::GetSharedInstance()
-                            .GetNativeImageNamed(
-                                autofill::CreditCard::IconResourceId(icon))
-                            .ToUIImage();
+  autofill::Suggestion::Icon icon = creditCard->CardIconForAutofillSuggestion();
+  return icon == autofill::Suggestion::Icon::kNoIcon
+             ? nil
+             : ui::ResourceBundle::GetSharedInstance()
+                   .GetNativeImageNamed(
+                       autofill::CreditCard::IconResourceId(icon))
+                   .ToUIImage();
 }
 
 @end

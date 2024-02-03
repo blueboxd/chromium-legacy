@@ -4,14 +4,18 @@
 
 #include "chrome/updater/update_service_impl.h"
 
+#include <optional>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chrome/updater/configurator.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/external_constants.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
@@ -23,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_WIN)
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/ui/l10n_util.h"
 #include "chrome/updater/win/ui/resources/updater_installer_strings.h"
 #endif  // BUILDFLAG(IS_WIN)
@@ -74,7 +79,7 @@ TEST(UpdateServiceImplTest, TestGetComponentsInOrder) {
   metadata->SetAPKey("id1", "brand_key");
   metadata->SetBrandCode("id1", "BRND");
 
-  std::vector<absl::optional<update_client::CrxComponent>> crxs;
+  std::vector<std::optional<update_client::CrxComponent>> crxs;
   base::RunLoop loop;
   internal::GetComponents(
       base::MakeRefCounted<Configurator>(nullptr, CreateExternalConstants()),
@@ -82,7 +87,7 @@ TEST(UpdateServiceImplTest, TestGetComponentsInOrder) {
       UpdateService::PolicySameVersionUpdate::kNotAllowed,
       {"id1", "id2", "id3", "id4"},
       base::BindLambdaForTesting(
-          [&](const std::vector<absl::optional<update_client::CrxComponent>>&
+          [&](const std::vector<std::optional<update_client::CrxComponent>>&
                   out) {
             crxs = out;
             loop.Quit();
@@ -101,7 +106,8 @@ struct UpdateServiceImplGetInstallerTextTestCase {
   const UpdateService::ErrorCategory error_category;
   const int error_code;
   const std::string expected_completion_message;
-  absl::optional<bool> is_installer_error;
+  std::optional<int> extra_code;
+  std::optional<bool> is_installer_error;
 };
 
 class UpdateServiceImplGetInstallerTextTest
@@ -389,15 +395,81 @@ INSTANTIATE_TEST_SUITE_P(
         // `update_client::InstallError::FINGERPRINT_WRITE_FAILED`, but since
         // this is coded as an "installer_error", the error will be interpreted
         // as the Windows error code for `ERROR_FILE_NOT_FOUND` instead.
-        {UpdateService::ErrorCategory::kInstall, 2,
+        {UpdateService::ErrorCategory::kInstall,
+         2,
          base::WideToUTF8(GetLocalizedStringF(
              IDS_GENERIC_INSTALL_ERROR_BASE,
              L"The system cannot find the file specified. ")),
+         {},
+         true},
+        {UpdateService::ErrorCategory::kInstall,
+         GOOPDATE_E_APP_INSTALL_DISABLED_BY_POLICY,
+         base::WideToUTF8(
+             GetLocalizedStringF(IDS_APP_INSTALL_DISABLED_BY_GROUP_POLICY_BASE,
+                                 L"GOOPDATE_E_APP_INSTALL_DISABLED_BY_POLICY")),
+         {},
+         true},
+        {UpdateService::ErrorCategory::kInstall,
+         GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY,
+         base::WideToUTF8(
+             GetLocalizedStringF(IDS_APP_INSTALL_DISABLED_BY_GROUP_POLICY_BASE,
+                                 L"GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY")),
+         {},
+         true},
+        {UpdateService::ErrorCategory::kInstall,
+         GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL,
+         base::WideToUTF8(GetLocalizedStringF(
+             IDS_APP_INSTALL_DISABLED_BY_GROUP_POLICY_BASE,
+             L"GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL")),
+         {},
+         true},
+        {UpdateService::ErrorCategory::kInstall,
+         GOOPDATEINSTALL_E_FILENAME_INVALID,
+         base::WideToUTF8(base::StrCat(
+             {GetLocalizedString(IDS_INVALID_INSTALLER_FILENAME_BASE), L"\n",
+              GetLocalizedStringF(IDS_EXTRA_CODE_BASE,
+                                  base::UTF8ToWide(base::StringPrintf(
+                                      "%#x",
+                                      kErrorMissingInstallParams)))})),
+         kErrorMissingInstallParams, true},
+        {UpdateService::ErrorCategory::kInstall,
+         GOOPDATEINSTALL_E_INSTALLER_FAILED_START,
+         base::WideToUTF8(base::StrCat(
+             {GetLocalizedString(IDS_INSTALLER_FAILED_TO_START_BASE), L"\n",
+              GetLocalizedStringF(IDS_EXTRA_CODE_BASE, L"0x2")})),
+         ERROR_FILE_NOT_FOUND, true},
+        {UpdateService::ErrorCategory::kInstall,
+         GOOPDATEINSTALL_E_INSTALLER_TIMED_OUT,
+         base::WideToUTF8(GetLocalizedString(IDS_INSTALLER_TIMED_OUT_BASE)),
+         {},
+         true},
+
+        {UpdateService::ErrorCategory::kInstall,
+         ERROR_SUCCESS_REBOOT_INITIATED,
+         base::WideToUTF8(GetLocalizedStringF(
+             IDS_INSTALL_REBOOT_BASE,
+             GetTextForSystemError(ERROR_SUCCESS_REBOOT_INITIATED))),
+         {},
+         true},
+        {UpdateService::ErrorCategory::kInstall,
+         ERROR_SUCCESS_REBOOT_REQUIRED,
+         base::WideToUTF8(GetLocalizedStringF(
+             IDS_INSTALL_REBOOT_BASE,
+             GetTextForSystemError(ERROR_SUCCESS_REBOOT_REQUIRED))),
+         {},
+         true},
+        {UpdateService::ErrorCategory::kInstall,
+         ERROR_SUCCESS_RESTART_REQUIRED,
+         base::WideToUTF8(GetLocalizedStringF(
+             IDS_INSTALL_REBOOT_BASE,
+             GetTextForSystemError(ERROR_SUCCESS_RESTART_REQUIRED))),
+         {},
          true},
     }));
 
 TEST_P(UpdateServiceImplGetInstallerTextTest, TestCases) {
   ASSERT_EQ(GetInstallerText(GetParam().error_category, GetParam().error_code,
+                             GetParam().extra_code.value_or(0),
                              GetParam().is_installer_error.value_or(false)),
             GetParam().expected_completion_message);
 }

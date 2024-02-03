@@ -56,10 +56,6 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   const crosapi::mojom::AccountPtr& DeviceAccount() const;
 
-  bool WebAppsEnabled() const;
-
-  bool StandaloneBrowserIsPrimary() const;
-
   const crosapi::mojom::NativeThemeInfoPtr& NativeThemeInfo() const;
 
   const crosapi::mojom::DevicePropertiesPtr& DeviceProperties() const;
@@ -78,8 +74,6 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
   const crosapi::mojom::EntropySourcePtr& EntropySource() const;
 
   uint64_t UkmClientId() const;
-
-  bool StandaloneBrowserIsOnlyBrowser() const;
 
   bool PublishChromeApps() const;
 
@@ -120,8 +114,6 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   crosapi::mojom::BrowserInitParams::LacrosSelection LacrosSelection() const;
 
-  bool IsWindowLayoutMenuEnabled() const;
-
   bool IsCloudGamingDevice() const;
 
   crosapi::mojom::BrowserInitParams::GpuSandboxStartMode GpuSandboxStartMode()
@@ -157,6 +149,8 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
   bool IsDeskProfilesEnabled() const;
 
   bool IsCrosWebAppShortcutUiUpdateEnabled() const;
+
+  bool IsCrosShortstandEnabled() const;
 
  private:
   friend base::NoDestructor<BrowserParamsProxy>;

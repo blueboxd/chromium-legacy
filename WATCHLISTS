@@ -1073,7 +1073,7 @@
       'filepath': 'chrome/renderer/media/.*key_system|' \
                   'chrome/browser/media/.*(cdm|encrypted)|' \
                   'components/cdm/|' \
-                  'content/browser/media/cdm/|' \
+                  'content/browser/media/.*(cdm|key_system|media_license|encrypted)|' \
                   'media/base/android/.*drm|' \
                   'media/cdm/|' \
                   'third_party/widevine/cdm/'
@@ -1339,6 +1339,11 @@
                   'ios/chrome/browser/widget_kit|'\
                   'ios/chrome/widget_kit_extension',
     },
+    'ip_protection': {
+      'filepath': 'chrome/browser/ip_protection/' \
+                  '|services/network/ip_protection_' \
+                  '|services/network/network_service_proxy_delegate',
+    },
     'kiosk': {
       'filepath': 'chrome/browser/chromeos/app_mode/'\
                   '|chrome/browser/ash/app_mode/'\
@@ -1486,11 +1491,12 @@
       'filepath': 'tools/perf/core/minidump_unittest.py',
     },
     'multi_apps': {
-      'filepath': 'chrome/test/data/webapps_integration/has_sub_apps/'\
-                  '|third_party/blink/renderer/modules/subapps/'\
-                  '|chrome/browser/ui/web_applications/.*sub_app'\
-                  '|third_party/blink/public/mojom/subapps/'\
+      'filepath': 'chrome/browser/ui/web_applications/.*sub_app'\
                   '|chrome/browser/web_applications/commands/.*sub_app'\
+                  '|chrome/test/data/web_apps/subapps_isolated_app/'\
+                  '|chrome/test/data/webapps_integration/has_sub_apps/'\
+                  '|third_party/blink/public/mojom/subapps/'\
+                  '|third_party/blink/renderer/modules/subapps/'\
                   '|third_party/blink/web_tests/external/wpt/resources/chromium/mock-subapps.js'\
                   '|third_party/blink/web_tests/external/wpt/subapps/',
     },
@@ -2417,7 +2423,8 @@
     'arc_ime': ['yhanada+watch@chromium.org'],
     'arc_kiosk': ['poromov+watch@chromium.org'],
     'arc_mojom': ['hashimoto+watch@chromium.org'],
-    'arc_nearby_share': ['alanding+watch@chromium.org'],
+    'arc_nearby_share': ['alanding+watch@chromium.org',
+                         'phshah+watch@chromium.org'],
     'arc_net': ['abhishekbh@chromium.org',
                 'cernekee@chromium.org',
                 'snanda@chromium.org'],
@@ -2437,6 +2444,7 @@
     'aura': ['sadrul@chromium.org'],
     'aura_compositor': ['jbauman+watch@chromium.org'],
     'autofill_payments': ['armalhotra+autofillwatch@google.com',
+                          'feliciac+autofillwatch@google.com',
                           'jsaul+autofillwatch@google.com',
                           'shgar+autofillwatch@google.com',
                           'siashah+autofillwatch@chromium.org',
@@ -2889,6 +2897,9 @@
                      'marq+watch@chromium.org'],
     'ios_web': ['ios-reviews+web@chromium.org'],
     'ios_widget_kit': ['rkgibson+watch@chromium.org'],
+    'ip_protection': ['djmitche@chromium.org',
+                      'awillia@chromium.org',
+                      'brgoldstein@google.com'],
     'kiosk': ['chromeos-kiosk-eng+watch@google.com'],
     'language': ['language-reviews@chromium.org'],
     'libaom': ['fgalligan@chromium.org',
@@ -2942,7 +2953,7 @@
     'midi': ['toyoshim+midi@chromium.org'],
     'minidump_tests': ['bsheedy@chromium.org'],
     'multi_apps': ['samicolon+watch@google.com',
-                   'isandrk+watch@chromium.org',
+                   'giovax+watch@chromium.org',
                    'phweiss+watch@chromium.org'],
     'multidevice': ['ajayramamurthy+watch-multidevice@google.com',
                     'hansberry+watch-multidevice@chromium.org',
@@ -3216,7 +3227,8 @@
                 'spang+watch@chromium.org'],
     'traffic_annotation': ['nicolaso+watch@chromium.org',
                            'ramyagopalan+watch@google.com',
-			   'jorgelo+watch@chromium.org'],
+			   'jorgelo+watch@chromium.org',
+			   'crmullins+watch@chromium.org'],
     'translate': ['translate-reviews@chromium.org'],
     'turtledove': [],
     'ui_compositor': ['cc-bugs@chromium.org'],

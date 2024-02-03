@@ -16,9 +16,10 @@
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
@@ -114,8 +115,11 @@
       const std::string lastSignedInGaiaId =
           prefs->GetString(prefs::kGoogleServicesLastSyncingGaiaId);
       // If the last signed-in user did not remove data during sign-out, don't
-      // show the signin promo.
-      if (lastSignedInGaiaId.empty()) {
+      // show the signin promo if kEnableBatchUploadFromBookmarksManager is not
+      // enabled.
+      if (lastSignedInGaiaId.empty() ||
+          base::FeatureList::IsEnabled(
+              kEnableBatchUploadFromBookmarksManager)) {
         self.shouldShowSigninPromo = YES;
         _signinPromoViewMediator.signinPromoAction =
             SigninPromoAction::kInstantSignin;

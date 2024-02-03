@@ -106,8 +106,8 @@
 #include <iosfwd>
 #include <string>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
 
 // Windows-style drive letter support and pathname separator characters can be
 // enabled and disabled independently, to aid testing.  These #defines are
@@ -129,7 +129,7 @@ namespace partition_alloc::internal::base {
 
 // An abstraction to isolate users from the differences between native
 // pathnames on different platforms.
-class PA_COMPONENT_EXPORT(PARTITION_ALLOC) FilePath {
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) FilePath {
  public:
 #if BUILDFLAG(IS_WIN)
   // On Windows, for Unicode-aware applications, native pathnames are wchar_t

@@ -324,6 +324,7 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (kIPHExtensionsMenuFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -354,6 +355,7 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
                                Comparator(EQUAL, 0), 360, 360);
     return config;
   }
+#endif
 
   if (kIPHCompanionSidePanelFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
@@ -1414,7 +1416,7 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->availability = Comparator(LESS_THAN_OR_EQUAL, 14);
     config->session_rate = Comparator(ANY, 0);
     config->trigger =
-        EventConfig("restore_tabs_promo_trigger", Comparator(EQUAL, 0), 7, 7);
+        EventConfig("restore_tabs_promo_trigger", Comparator(EQUAL, 0), 7, 14);
     config->used =
         EventConfig("restore_tabs_promo_used", Comparator(EQUAL, 0), 14, 14);
     config->event_configs.insert(EventConfig(

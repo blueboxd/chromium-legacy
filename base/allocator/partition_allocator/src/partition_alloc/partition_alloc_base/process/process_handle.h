@@ -8,11 +8,11 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
 
 #if BUILDFLAG(IS_WIN)
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/win/windows_types.h"
+#include "partition_alloc/partition_alloc_base/win/windows_types.h"
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -39,7 +39,7 @@ const ProcessId kNullProcessId = 0;
 // Returns the id of the current process.
 // Note that on some platforms, this is not guaranteed to be unique across
 // processes (use GetUniqueIdForProcess if uniqueness is required).
-PA_COMPONENT_EXPORT(PARTITION_ALLOC) ProcessId GetCurrentProcId();
+PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) ProcessId GetCurrentProcId();
 
 }  // namespace partition_alloc::internal::base
 

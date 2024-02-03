@@ -88,6 +88,7 @@
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/animation/animation_builder.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -124,13 +125,6 @@ constexpr int kScrollingLayoutRow = 2;
 constexpr int kMinimumItemsForScrollingLayout = 6;
 
 constexpr int kTabletModeOverviewItemTopPaddingDp = 16;
-
-// The threshold for expanding desks bar while dragging the window. When the
-// length between the center point of the window being dragged and the center
-// point of the `zero_state_new_desk_button_` is smaller than
-// `kExpandDesksBarThreshold`, desks bar will be transformed from zero state to
-// expanded state to help user dropping the dragged window on the new desk.
-constexpr int kExpandDesksBarThreshold = 130;
 
 // Wait a while before unpausing the occlusion tracker after a scroll has
 // completed as the user may start another scroll.
@@ -874,14 +868,14 @@ void OverviewGrid::RemoveItem(OverviewItemBase* overview_item,
   UpdateNumSavedDeskUnsupportedWindows(overview_item->GetWindows(),
                                        /*increment=*/false);
 
-  // This can also be called when shutting down |this|, at which the item will
-  // be cleaning up and its associated view may be nullptr. |overview_item|
-  // needs to still be in |window_list_| so we can compute what the deleted
-  // index is.
-  if (OverviewFocusableView* focusable_view = (*iter)->GetFocusableView();
-      overview_session_ && focusable_view) {
-    overview_session_->focus_cycler()->OnViewDestroyingOrDisabling(
-        focusable_view);
+  // This can also be called when shutting down `this`, at which point the item
+  // will be cleaned up and its associated view may be nullptr. `overview_item`
+  // still needs to be in `window_list_` to compute the corresponding index.
+  if (overview_session_) {
+    for (auto* focusable_view : overview_item->GetFocusableViews()) {
+      overview_session_->focus_cycler()->OnViewDestroyingOrDisabling(
+          focusable_view);
+    }
   }
 
   // Erase from the list first because deleting OverviewItem can lead to
@@ -1617,13 +1611,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     return false;
   }
 
-  const bool is_point_on_new_desk_button =
-      is_jellyroll_enabled
-          ? desks_bar_view_->new_desk_button()->IsPointOnButton(screen_location)
-          : desks_bar_view_->expanded_state_new_desk_button()->IsPointOnButton(
-                screen_location);
-
-  if (!is_point_on_new_desk_button) {
+  if (!desks_bar_view_->new_desk_button()->IsPointOnButton(screen_location)) {
     return false;
   }
 
@@ -1631,28 +1619,6 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
       DesksCreationRemovalSource::kDragToNewDeskButton);
 
   return move_windows_to_target_desk(desks_controller->desks().back().get());
-}
-
-void OverviewGrid::MaybeExpandDesksBarView(const gfx::PointF& screen_location) {
-  if (desks_bar_view_ && desks_bar_view_->IsZeroState()) {
-    if ((gfx::ToRoundedPoint(screen_location) -
-         desks_bar_view_->zero_state_new_desk_button()
-             ->GetBoundsInScreen()
-             .CenterPoint())
-            .LengthSquared() <=
-        kExpandDesksBarThreshold * kExpandDesksBarThreshold) {
-      desks_bar_view_->UpdateNewMiniViews(/*initializing_bar_view=*/false,
-                                          /*expanding_bar_view=*/true);
-    }
-  }
-}
-
-void OverviewGrid::MaybeShrinkDesksBarView() {
-  if (desks_bar_view_ && !desks_bar_view_->IsZeroState() &&
-      !IsShowingSavedDeskLibrary() &&
-      desks_bar_view_->mini_views().size() == 1) {
-    desks_bar_view_->SwitchToZeroState();
-  }
 }
 
 void OverviewGrid::StartScroll() {
@@ -1890,8 +1856,8 @@ void OverviewGrid::ShowSavedDeskLibrary() {
         /*desks=*/DesksController::Get()->desks(),
         /*notify_when_destroyed=*/true);
 
-    for (auto& overview_mode_item : window_list_) {
-      overview_mode_item->HideForSavedDeskLibrary(/*animate=*/true);
+    for (auto& overview_item : window_list_) {
+      overview_item->HideForSavedDeskLibrary(/*animate=*/true);
     }
   }
 
@@ -1905,8 +1871,7 @@ void OverviewGrid::ShowSavedDeskLibrary() {
   saved_desk_library_widget_->Show();
 
   // Fade in the widget from its current opacity.
-  PerformFadeInLayer(saved_desk_library_widget_->GetLayer(),
-                     /*animate=*/true);
+  PerformFadeInLayer(saved_desk_library_widget_->GetLayer(), /*animate=*/true);
 
   UpdateSaveDeskButtons();
 
@@ -1996,7 +1961,7 @@ bool OverviewGrid::IsShowingSavedDeskLibrary() const {
 }
 
 bool OverviewGrid::IsSavedDeskNameBeingModified() const {
-  if (auto* library_view = GetSavedDeskLibraryView()) {
+  if (const SavedDeskLibraryView* library_view = GetSavedDeskLibraryView()) {
     for (auto* grid_view : library_view->grid_views()) {
       if (grid_view->IsSavedDeskNameBeingModified()) {
         return true;
@@ -2014,7 +1979,7 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items,
   // overview or the saved desk grid is visible.
   // TODO(b/307812315): Rename to `faster_splitscreen_widget_` if we'll always
   // show this.
-  if (window_util::IsFasterSplitScreenOrSnapGroupArm1Enabled()
+  if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()
           ? !RootWindowController::ForWindow(root_window())
                  ->split_view_overview_session()
           : !no_items || IsShowingSavedDeskLibrary()) {
@@ -2031,7 +1996,7 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items,
     params.rounding_dp = kNoItemsIndicatorRoundingDp;
     params.preferred_height = kNoItemsIndicatorHeightDp;
     params.message = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
-    if (window_util::IsFasterSplitScreenOrSnapGroupArm1Enabled()) {
+    if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
       params.message =
           no_items ? kFasterSplitScreenToastNoWindows : kFasterSplitScreenToast;
     }
@@ -2065,7 +2030,7 @@ void OverviewGrid::RefreshNoWindowsWidgetBounds(bool animate) {
   const gfx::Rect grid_bounds(GetGridEffectiveBounds());
   no_windows_widget_->SetBoundsCenteredIn(grid_bounds, animate);
 
-  if (window_util::IsFasterSplitScreenOrSnapGroupArm1Enabled()) {
+  if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
     // If there are no windows, set it in the center of the grid.
     if (window_list_.empty()) {
       return;
@@ -2190,9 +2155,9 @@ void OverviewGrid::UpdateSaveDeskButtons() {
   // Enable/disable button and update tooltip.
   const SavedDeskPresenter* saved_desk_presenter =
       overview_session_->saved_desk_presenter();
-  SavedDeskSaveDeskButtonContainer* container =
-      static_cast<SavedDeskSaveDeskButtonContainer*>(
-          save_desk_button_container_widget_->GetContentsView());
+  auto* container = views::AsViewClass<SavedDeskSaveDeskButtonContainer>(
+      save_desk_button_container_widget_->GetContentsView());
+  CHECK(container);
   container->UpdateButtonEnableStateAndTooltip(
       SavedDeskSaveDeskButton::Type::kSaveAsTemplate,
       saved_desk_presenter->GetEntryCount(DeskTemplateType::kTemplate),
@@ -2258,43 +2223,40 @@ bool OverviewGrid::IsSaveDeskButtonContainerVisible() const {
 bool OverviewGrid::IsSaveDeskAsTemplateButtonVisible() const {
   if (!IsSaveDeskButtonContainerVisible())
     return false;
-  SavedDeskSaveDeskButtonContainer* container =
-      static_cast<SavedDeskSaveDeskButtonContainer*>(
-          save_desk_button_container_widget_->GetContentsView());
-  return container->save_desk_as_template_button() &&
+  const auto* container = GetSaveDeskButtonContainer();
+  return container && container->save_desk_as_template_button() &&
          container->save_desk_as_template_button()->GetVisible();
 }
 
 bool OverviewGrid::IsSaveDeskForLaterButtonVisible() const {
   if (!IsSaveDeskButtonContainerVisible())
     return false;
-  SavedDeskSaveDeskButtonContainer* container =
-      static_cast<SavedDeskSaveDeskButtonContainer*>(
-          save_desk_button_container_widget_->GetContentsView());
-  return container->save_desk_for_later_button() &&
+  const auto* container = GetSaveDeskButtonContainer();
+  return container && container->save_desk_for_later_button() &&
          container->save_desk_for_later_button()->GetVisible();
 }
 
-SavedDeskSaveDeskButton* OverviewGrid::GetSaveDeskAsTemplateButton() const {
+SavedDeskSaveDeskButton* OverviewGrid::GetSaveDeskAsTemplateButton() {
+  auto* container = GetSaveDeskButtonContainer();
+  return container ? container->save_desk_as_template_button() : nullptr;
+}
+
+SavedDeskSaveDeskButton* OverviewGrid::GetSaveDeskForLaterButton() {
+  auto* container = GetSaveDeskButtonContainer();
+  return container ? container->save_desk_for_later_button() : nullptr;
+}
+
+SavedDeskSaveDeskButtonContainer* OverviewGrid::GetSaveDeskButtonContainer() {
   return save_desk_button_container_widget_
-             ? static_cast<SavedDeskSaveDeskButtonContainer*>(
+             ? views::AsViewClass<SavedDeskSaveDeskButtonContainer>(
                    save_desk_button_container_widget_->GetContentsView())
-                   ->save_desk_as_template_button()
              : nullptr;
 }
 
-SavedDeskSaveDeskButton* OverviewGrid::GetSaveDeskForLaterButton() const {
+const SavedDeskSaveDeskButtonContainer*
+OverviewGrid::GetSaveDeskButtonContainer() const {
   return save_desk_button_container_widget_
-             ? static_cast<SavedDeskSaveDeskButtonContainer*>(
-                   save_desk_button_container_widget_->GetContentsView())
-                   ->save_desk_for_later_button()
-             : nullptr;
-}
-
-SavedDeskSaveDeskButtonContainer* OverviewGrid::GetSaveDeskButtonContainer()
-    const {
-  return save_desk_button_container_widget_
-             ? static_cast<SavedDeskSaveDeskButtonContainer*>(
+             ? views::AsViewClass<SavedDeskSaveDeskButtonContainer>(
                    save_desk_button_container_widget_->GetContentsView())
              : nullptr;
 }
@@ -2308,10 +2270,10 @@ void OverviewGrid::OnSplitViewStateChanged(
     return;
   }
 
-  if (window_util::IsFasterSplitScreenOrSnapGroupArm1Enabled()) {
+  if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
     // When an activated window is auto snapped, it will send a state change and
     // try to end overview here. Ignore split view state when
-    // `kFasterSplitScreenSetup` or `kSnapGroup` arm1 is enabled.
+    // `kFasterSplitScreenSetup` or `kSnapGroup` is enabled.
     return;
   }
 
@@ -2345,8 +2307,8 @@ void OverviewGrid::OnSplitViewStateChanged(
 }
 
 void OverviewGrid::OnSplitViewDividerPositionChanged() {
-  if (window_util::IsFasterSplitScreenOrSnapGroupArm1Enabled()) {
-    // If `IsFasterSplitScreenOrSnapGroupArm1Enabled` is true,
+  if (window_util::IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
+    // If `IsFasterSplitScreenOrSnapGroupEnabledInClamshell()` is true,
     // `SplitViewOverviewSession` will manually update the bounds so we don't
     // need to update here.
     return;
@@ -2404,9 +2366,16 @@ void OverviewGrid::OnOverviewItemWindowDestroying(OverviewItem* overview_item,
   }
 }
 
-SavedDeskLibraryView* OverviewGrid::GetSavedDeskLibraryView() const {
+SavedDeskLibraryView* OverviewGrid::GetSavedDeskLibraryView() {
   return saved_desk_library_widget_
-             ? static_cast<SavedDeskLibraryView*>(
+             ? views::AsViewClass<SavedDeskLibraryView>(
+                   saved_desk_library_widget_->GetContentsView())
+             : nullptr;
+}
+
+const SavedDeskLibraryView* OverviewGrid::GetSavedDeskLibraryView() const {
+  return saved_desk_library_widget_
+             ? views::AsViewClass<SavedDeskLibraryView>(
                    saved_desk_library_widget_->GetContentsView())
              : nullptr;
 }
@@ -2704,7 +2673,7 @@ size_t OverviewGrid::GetOverviewItemIndex(OverviewItemBase* item) const {
   return iter - window_list_.begin();
 }
 
-size_t OverviewGrid::FindInsertionIndex(const aura::Window* window) {
+size_t OverviewGrid::FindInsertionIndex(const aura::Window* window) const {
   const auto mru_windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
 
@@ -2799,7 +2768,6 @@ void OverviewGrid::OnSavedDeskGridFadedOut() {
   saved_desk_library_widget_->Hide();
 
   desks_bar_view_->UpdateButtonsForSavedDeskGrid();
-  desks_bar_view_->OnSavedDeskLibraryHidden();
   UpdateSaveDeskButtons();
   UpdateNoWindowsWidget(/*no_items=*/empty(), /*animate=*/true,
                         /*is_continuous_enter=*/false);

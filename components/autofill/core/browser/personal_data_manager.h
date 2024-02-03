@@ -300,7 +300,7 @@ class PersonalDataManager : public KeyedService,
   // 1) IBAN saving must be enabled.
   // 2) No IBAN exists in `local_ibans_` which has the same guid as`iban`.
   // 3) Local database is available.
-  virtual std::string AddIban(Iban iban);
+  virtual std::string AddAsLocalIban(Iban iban);
 
   // Updates `iban` which already exists in the web database. This can only
   // be used on local ibans. Returns the guid of `iban` if the update is
@@ -326,9 +326,6 @@ class PersonalDataManager : public KeyedService,
   virtual void UpdateLocalCvc(const std::string& guid,
                               const std::u16string& cvc);
 
-  // Adds |credit_card| to the web database as a full server card.
-  virtual void AddFullServerCreditCard(const CreditCard& credit_card);
-
   // Update a server card. Only the full number and masked/unmasked
   // status can be changed. Looks up the card by server ID.
   virtual void UpdateServerCreditCard(const CreditCard& credit_card);
@@ -343,7 +340,10 @@ class PersonalDataManager : public KeyedService,
   virtual void UpdateServerCvc(int64_t instrument_id,
                                const std::u16string& cvc);
   void RemoveServerCvc(int64_t instrument_id);
-  void ClearServerCvcs();
+  virtual void ClearServerCvcs();
+
+  // Method to clear all local CVCs from the local web database.
+  virtual void ClearLocalCvcs();
 
   // Resets the card for |guid| to the masked state.
   void ResetFullServerCard(const std::string& guid);
@@ -378,6 +378,10 @@ class PersonalDataManager : public KeyedService,
   // Returns the IBAN with the specified |guid|, or nullptr if there is no IBAN
   // with the specified |guid|.
   virtual Iban* GetIbanByGUID(const std::string& guid);
+
+  // Returns the IBAN if any cached IBAN in `server_ibans_` has the same
+  // `instrument_id` as the given `instrument_id`, otherwise returns nullptr.
+  const Iban* GetIbanByInstrumentId(int64_t instrument_id) const;
 
   // Returns the credit card with the specified |guid|, or nullptr if there is
   // no credit card with the specified |guid|.
@@ -417,10 +421,6 @@ class PersonalDataManager : public KeyedService,
   virtual std::vector<AutofillProfile*> GetProfilesFromSource(
       AutofillProfile::Source profile_source,
       ProfileOrder order = ProfileOrder::kNone) const;
-  // Returns just SERVER_PROFILES.
-  // TODO(crbug.com/1348294): Server profiles are only accessed in tests and the
-  // concept should be removed.
-  virtual std::vector<AutofillProfile*> GetServerProfiles() const;
   // Returns just LOCAL_CARD cards.
   virtual std::vector<CreditCard*> GetLocalCreditCards() const;
   // Returns just server cards.
@@ -719,6 +719,13 @@ class PersonalDataManager : public KeyedService,
     return test_addresses_;
   }
 
+  // Adds `credit_card` to the web database as a full server card.
+  //
+  // It is no longer possible for users to reach this path as full server cards
+  // have been deprecated, however tests still use this when testing
+  // still-supported paths (filling, editing, and deleting full server cards).
+  void AddFullServerCreditCardForTesting(const CreditCard& credit_card);
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
@@ -838,9 +845,6 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<AutofillProfile>> synced_local_profiles_;
   std::vector<std::unique_ptr<AutofillProfile>> account_profiles_;
 
-  // Address profiles associated to the user's payment profile.
-  std::vector<std::unique_ptr<AutofillProfile>> credit_card_billing_addresses_;
-
   // Stores the PaymentsCustomerData obtained from the database.
   std::unique_ptr<PaymentsCustomerData> payments_customer_data_;
 
@@ -874,7 +878,6 @@ class PersonalDataManager : public KeyedService,
   // so they can be loaded at the same time.
   WebDataServiceBase::Handle pending_synced_local_profiles_query_ = 0;
   WebDataServiceBase::Handle pending_account_profiles_query_ = 0;
-  WebDataServiceBase::Handle pending_creditcard_billing_addresses_query_ = 0;
   WebDataServiceBase::Handle pending_creditcards_query_ = 0;
   WebDataServiceBase::Handle pending_server_creditcards_query_ = 0;
   WebDataServiceBase::Handle pending_server_creditcard_cloud_token_data_query_ =

@@ -5,19 +5,52 @@
 #include "components/optimization_guide/core/model_execution/model_execution_manager.h"
 
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "components/optimization_guide/core/model_execution/model_execution_fetcher.h"
+#include "components/optimization_guide/core/model_execution/on_device_model_execution_config_interpreter.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_service_controller.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_stream_receiver.h"
 #include "components/optimization_guide/core/model_execution/optimization_guide_model_execution_error.h"
 #include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
+#include "components/optimization_guide/core/optimization_metadata.h"
+#include "components/optimization_guide/proto/common_types.pb.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace optimization_guide {
 
 namespace {
+
+class ScopedModelExecutionResponseLogger {
+ public:
+  ScopedModelExecutionResponseLogger(
+      proto::ModelExecutionFeature feature,
+      OptimizationGuideLogger* optimization_guide_logger)
+      : feature_(feature),
+        optimization_guide_logger_(optimization_guide_logger) {}
+
+  ~ScopedModelExecutionResponseLogger() {
+    if (!optimization_guide_logger_->ShouldEnableDebugLogs()) {
+      return;
+    }
+    OPTIMIZATION_GUIDE_LOGGER(
+        optimization_guide_common::mojom::LogSource::MODEL_EXECUTION,
+        optimization_guide_logger_)
+        << "OnModelExecutionResponse - Feature : "
+        << proto::ModelExecutionFeature_Name(feature_) << " " << message_;
+  }
+
+  void set_message(const std::string& message) { message_ = message; }
+
+ private:
+  proto::ModelExecutionFeature feature_;
+  std::string message_;
+
+  // Not owned. Guaranteed to outlive |this| scoped object.
+  raw_ptr<OptimizationGuideLogger> optimization_guide_logger_;
+};
 
 // Returns the URL endpoint for the model execution service.
 GURL GetModelExecutionServiceURL() {
@@ -29,6 +62,51 @@ GURL GetModelExecutionServiceURL() {
   }
   return GURL(kOptimizationGuideServiceModelExecutionDefaultURL);
 }
+
+// Session which passes through all ExecuteModel() calls to the underlying
+// ModelExecutionManager and saves context passed to AddContext().
+class PassthroughSession : public OptimizationGuideModelExecutor::Session {
+ public:
+  PassthroughSession(proto::ModelExecutionFeature feature,
+                     ModelExecutionManager& execution_manager)
+      : feature_(feature), execution_manager_(execution_manager) {}
+
+  // OptimizationGuideModelExecutor::Session:
+  void SetDisconnectHandler(base::OnceClosure on_disconnect) override {}
+  void AddContext(
+      const google::protobuf::MessageLite& request_metadata) override {
+    context_.reset(request_metadata.New());
+    context_->CheckTypeAndMergeFrom(request_metadata);
+  }
+  void ExecuteModel(const google::protobuf::MessageLite& request_metadata,
+                    OptimizationGuideModelExecutionResultStreamingCallback
+                        callback) override {
+    auto request = MergeContext(request_metadata);
+    execution_manager_->ExecuteModel(
+        feature_, *request,
+        base::BindOnce(
+            [](OptimizationGuideModelExecutionResultStreamingCallback callback,
+               OptimizationGuideModelExecutionResult result,
+               std::unique_ptr<ModelQualityLogEntry> log_entry) {
+              if (result.has_value()) {
+                callback.Run(
+                    StreamingResponse{
+                        .response = *result,
+                        .is_complete = true,
+                    },
+                    std::move(log_entry));
+              } else {
+                callback.Run(base::unexpected(result.error()),
+                             std::move(log_entry));
+              }
+            },
+            callback));
+  }
+
+ private:
+  proto::ModelExecutionFeature feature_;
+  raw_ref<ModelExecutionManager> execution_manager_;
+};
 
 }  // namespace
 
@@ -56,7 +134,9 @@ ModelExecutionManager::ModelExecutionManager(
   if (model_path_override_switch) {
     auto file_path = StringToFilePath(*model_path_override_switch);
     if (file_path) {
-      on_device_model_path_ = *file_path;
+      on_device_model_service_controller_->Init(
+          *file_path,
+          std::make_unique<OnDeviceModelExecutionConfigInterpreter>());
     }
   }
 }
@@ -71,10 +151,53 @@ void ModelExecutionManager::ExecuteModel(
 
   if (active_model_execution_fetchers_.find(feature) !=
       active_model_execution_fetchers_.end()) {
-    std::move(callback).Run(base::unexpected(
-        OptimizationGuideModelExecutionError::FromModelExecutionError(
-            ModelExecutionError::kGenericFailure)));
+    std::move(callback).Run(
+        base::unexpected(
+            OptimizationGuideModelExecutionError::FromModelExecutionError(
+                ModelExecutionError::kGenericFailure)),
+        nullptr);
     return;
+  }
+
+  if (optimization_guide_logger_->ShouldEnableDebugLogs()) {
+    OPTIMIZATION_GUIDE_LOGGER(
+        optimization_guide_common::mojom::LogSource::MODEL_EXECUTION,
+        optimization_guide_logger_)
+        << "ExecuteModel: " << proto::ModelExecutionFeature_Name(feature);
+    switch (feature) {
+      case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED: {
+        break;
+      }
+      case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE: {
+        // TOOD(b/309486492): Add logging for request/response for compose.
+        break;
+      }
+      case proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION: {
+        proto::Any any;
+        any.set_type_url(request_metadata.GetTypeName());
+        request_metadata.SerializeToString(any.mutable_value());
+        auto tab_request = optimization_guide::ParsedAnyMetadata<
+            optimization_guide::proto::TabOrganizationRequest>(any);
+        std::string titles = "";
+        for (const auto& tab : tab_request->tabs()) {
+          titles += base::StringPrintf("%s\"%s\"", titles.empty() ? "" : ",",
+                                       tab.title().c_str());
+        }
+        OPTIMIZATION_GUIDE_LOGGER(
+            optimization_guide_common::mojom::LogSource::MODEL_EXECUTION,
+            optimization_guide_logger_)
+            << "TabOrganization Request: "
+            << base::StringPrintf("{\"titles\" : [%s]}", titles.c_str());
+
+        break;
+      }
+      case proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH: {
+        // TOOD(b/309486807): Add logging for request/response for wallpapers.
+        break;
+      }
+    }
   }
 
   auto fetcher_it = active_model_execution_fetchers_.emplace(
@@ -88,23 +211,98 @@ void ModelExecutionManager::ExecuteModel(
                      std::move(callback)));
 }
 
+std::unique_ptr<OptimizationGuideModelExecutor::Session>
+ModelExecutionManager::StartSession(proto::ModelExecutionFeature feature) {
+  if (on_device_model_service_controller_) {
+    auto session = on_device_model_service_controller_->StartSession(feature);
+    if (session) {
+      return session;
+    }
+  }
+
+  return std::make_unique<PassthroughSession>(feature, *this);
+}
+
 void ModelExecutionManager::OnModelExecuteResponse(
     proto::ModelExecutionFeature feature,
     OptimizationGuideModelExecutionResultCallback callback,
     base::expected<const proto::ExecuteResponse,
                    OptimizationGuideModelExecutionError> execute_response) {
   active_model_execution_fetchers_.erase(feature);
+  ScopedModelExecutionResponseLogger scoped_logger(feature,
+                                                   optimization_guide_logger_);
   if (!execute_response.has_value()) {
-    std::move(callback).Run(base::unexpected(execute_response.error()));
+    scoped_logger.set_message("Error: No Response");
+    std::move(callback).Run(base::unexpected(execute_response.error()),
+                            nullptr);
     return;
   }
+
+  if (execute_response->has_error_response()) {
+    scoped_logger.set_message("Error: No Response Metadata");
+    std::move(callback).Run(
+        base::unexpected(
+            OptimizationGuideModelExecutionError::FromModelExecutionServerError(
+                execute_response->error_response())),
+        nullptr);
+    return;
+  }
+
   if (!execute_response->has_response_metadata()) {
-    std::move(callback).Run(base::unexpected(
-        OptimizationGuideModelExecutionError::FromModelExecutionError(
-            ModelExecutionError::kGenericFailure)));
+    scoped_logger.set_message("Error: No Response Metadata");
+    std::move(callback).Run(
+        base::unexpected(
+            OptimizationGuideModelExecutionError::FromModelExecutionError(
+                ModelExecutionError::kGenericFailure)),
+        nullptr);
     return;
   }
-  std::move(callback).Run(base::ok(execute_response->response_metadata()));
+
+  if (optimization_guide_logger_->ShouldEnableDebugLogs()) {
+    switch (feature) {
+      case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED: {
+        break;
+      }
+      case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE: {
+        // TOOD(b/309486492): Add logging for request/response for compose.
+        break;
+      }
+      case proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION: {
+        std::string message = "";
+        auto tab_response = optimization_guide::ParsedAnyMetadata<
+            optimization_guide::proto::TabOrganizationResponse>(
+            execute_response->response_metadata());
+        message += "Response: [";
+        int group_cnt = 0;
+        for (const auto& tab_organization : tab_response->tab_organizations()) {
+          std::string tab_titles = "";
+          for (const auto& tab : tab_organization.tabs()) {
+            tab_titles +=
+                base::StringPrintf("%s\" %s \"", tab_titles.empty() ? "" : ",",
+                                   tab.title().c_str());
+          }
+          message += base::StringPrintf(
+              "%s{"
+              "\"label\": \"%s\", "
+              "\"tabs\": [%s] }",
+              group_cnt > 0 ? "," : "", tab_organization.label().c_str(),
+              tab_titles.c_str());
+          group_cnt += 1;
+        }
+        message += "]";
+        scoped_logger.set_message(message);
+        break;
+      }
+      case proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH: {
+        // TOOD(b/309486807): Add logging for request/response for wallpapers.
+        break;
+      }
+    }
+  }
+  std::move(callback).Run(base::ok(execute_response->response_metadata()),
+                          nullptr);
 }
 
 }  // namespace optimization_guide

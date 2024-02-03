@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/common/features.h"
@@ -305,23 +306,13 @@ void ClipboardPromise::HandleWrite(
     return;
   }
 
-  bool has_unsanitized_html =
-      RuntimeEnabledFeatures::ClipboardUnsanitizedContentEnabled() &&
-      base::ranges::any_of(clipboard_item_data_with_promises_,
-                           [](const auto& type_and_promise_to_blob) {
-                             return type_and_promise_to_blob.first ==
-                                    kMimeTypeTextHTML;
-                           });
-
-  DCHECK(has_unsanitized_html ||
-         RuntimeEnabledFeatures::ClipboardCustomFormatsEnabled() ||
+  DCHECK(RuntimeEnabledFeatures::ClipboardCustomFormatsEnabled() ||
          custom_format_items_.empty());
 
   // Input in standard formats is sanitized, so the write will be sanitized
-  // unless the HTML is unsanitized or there are custom formats.
+  // unless there are custom formats.
   RequestPermission(mojom::blink::PermissionName::CLIPBOARD_WRITE,
-                    /*will_be_sanitized=*/
-                    !has_unsanitized_html && custom_format_items_.empty(),
+                    /*will_be_sanitized=*/custom_format_items_.empty(),
                     WTF::BindOnce(&ClipboardPromise::HandleWriteWithPermission,
                                   WrapPersistent(this)));
 }
@@ -361,6 +352,8 @@ void ClipboardPromise::ResolveRead() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(GetExecutionContext());
 
+  base::UmaHistogramCounts100("Blink.Clipboard.Read.NumberOfFormats",
+                              clipboard_item_data_.size());
   if (!clipboard_item_data_.size()) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kDataError, "No valid data on clipboard."));

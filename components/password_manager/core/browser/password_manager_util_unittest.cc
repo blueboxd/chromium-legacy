@@ -30,8 +30,8 @@
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_store/test_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -110,8 +110,8 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(syncer::SyncService*, GetSyncService, (), (override));
   MOCK_METHOD(signin::IdentityManager*, GetIdentityManager, (), (override));
   MOCK_METHOD(autofill::FormDataImporter*, GetFormDataImporter, (), (override));
-  MOCK_METHOD(autofill::payments::PaymentsClient*,
-              GetPaymentsClient,
+  MOCK_METHOD(autofill::payments::PaymentsNetworkInterface*,
+              GetPaymentsNetworkInterface,
               (),
               (override));
   MOCK_METHOD(autofill::StrikeDatabase*, GetStrikeDatabase, (), (override));
@@ -139,24 +139,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               (override));
   MOCK_METHOD(translate::TranslateDriver*, GetTranslateDriver, (), (override));
   MOCK_METHOD(void, ShowAutofillSettings, (autofill::PopupType), (override));
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  MOCK_METHOD(void,
-              ConfirmSaveIbanLocally,
-              (const autofill::Iban&, bool, SaveIbanPromptCallback),
-              (override));
-  MOCK_METHOD(void,
-              ConfirmUploadIbanToCloud,
-              (const autofill::Iban&,
-               const autofill::LegalMessageLines& legal_message_lines,
-               bool,
-               SaveIbanPromptCallback),
-              (override));
-  MOCK_METHOD(void,
-              OfferVirtualCardOptions,
-              (const std::vector<autofill::CreditCard*>&,
-               base::OnceCallback<void(const std::string&)>),
-              (override));
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   MOCK_METHOD(void,
               ConfirmCreditCardFillAssist,
               (const autofill::CreditCard&, base::OnceClosure),
@@ -240,10 +222,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               LoadRiskData,
               (base::OnceCallback<void(const std::string&)>),
               (override));
-  MOCK_METHOD(void,
-              OpenPromoCodeOfferDetailsURL,
-              (const GURL& url),
-              (override));
   MOCK_METHOD(autofill::FormInteractionsFlowId,
               GetCurrentFormInteractionsFlowId,
               (),
@@ -302,6 +280,9 @@ class PasswordManagerUtilTest : public testing::Test {
         password_manager::prefs::kSavePasswordsSuspendedByError, false);
     pref_service_.registry()->RegisterBooleanPref(
         password_manager::prefs::kAutoSignInEnabledGMS, true);
+    pref_service_.registry()->RegisterBooleanPref(
+        password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
+        false);
 #endif
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
     pref_service_.registry()->RegisterBooleanPref(
@@ -890,24 +871,6 @@ TEST_F(PasswordManagerUtilTest, CanUseBiometricAuthAndroidAutomotive) {
   }
 
   EXPECT_TRUE(CanUseBiometricAuth(authenticator_.get(), &mock_client_));
-}
-
-TEST_F(PasswordManagerUtilTest, UsesUPMForLocalM2FalseWhenFeatureDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      password_manager::features::
-          kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
-
-  EXPECT_FALSE(UsesUPMForLocalM2(&pref_service_));
-}
-
-TEST_F(PasswordManagerUtilTest, UsesUPMForLocalM2TrueWhenFeatureEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::
-          kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration);
-
-  EXPECT_TRUE(UsesUPMForLocalM2(&pref_service_));
 }
 
 #endif

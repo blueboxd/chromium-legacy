@@ -273,14 +273,12 @@ void RecordClassificationResultComputed(
 
 void RecordClassificationResultUpdated(
     const Config& config,
-    const absl::optional<proto::PredictionResult>& old_result,
+    const proto::PredictionResult* old_result,
     const proto::PredictionResult& new_result) {
   PostProcessor post_processor;
   int new_result_top_label = post_processor.GetIndexOfTopLabel(new_result);
   int old_result_top_label =
-      old_result.has_value()
-          ? post_processor.GetIndexOfTopLabel(old_result.value())
-          : -2;
+      old_result ? post_processor.GetIndexOfTopLabel(*old_result) : -2;
   if (old_result_top_label == new_result_top_label) {
     return;
   }
@@ -690,6 +688,12 @@ std::string TrainingDataCollectionEventToErrorMsg(
       return "On Decision Time Type Mismatch";
     case TrainingDataCollectionEvent::kDelayTriggerSampled:
       return "Delay Trigger Sampled";
+    case TrainingDataCollectionEvent::
+        kContinousExactPredictionTimeCollectionStart:
+      return "Continuous Exact Prediction Time Collection Start";
+    case TrainingDataCollectionEvent::
+        kContinousExactPredictionTimeCollectionSuccess:
+      return "Continuous Exact Prediction Time Collection Success";
     default:
       return "";
   }

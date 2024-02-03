@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
@@ -31,8 +32,8 @@ import java.util.List;
 /**
  * The view portion of the PWA Install bottom sheet.
  *
- * The class is suppressing lint error for 'missing performClick override' because we don't need the
- * override. We're forwarding the event along (and the implementation of the override would be a
+ * <p>The class is suppressing lint error for 'missing performClick override' because we don't need
+ * the override. We're forwarding the event along (and the implementation of the override would be a
  * no-op for us).
  */
 @SuppressLint("ClickableViewAccessibility")
@@ -56,6 +57,9 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
     // The listener to notify when the Back button is clicked.
     private OnClickListener mBackButtonListener;
 
+    // The listener to notify when an app checkbox is toggled in the app list.
+    private OnClickListener mSelectionToggleButtonListener;
+
     // The back button arrow in the top bar of the content view.
     private Drawable mBackArrow;
 
@@ -64,17 +68,21 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
     }
 
     public void initialize(int backArrowId) {
-        mPreviewView = LayoutInflater.from(mContext).inflate(
-                R.layout.pwa_restore_bottom_sheet_preview, /* root= */ null);
-        mContentView = LayoutInflater.from(mContext).inflate(
-                R.layout.pwa_restore_bottom_sheet_content, /* root= */ null);
+        mPreviewView =
+                LayoutInflater.from(mContext)
+                        .inflate(R.layout.pwa_restore_bottom_sheet_preview, /* root= */ null);
+        mContentView =
+                LayoutInflater.from(mContext)
+                        .inflate(R.layout.pwa_restore_bottom_sheet_content, /* root= */ null);
 
         int backgroundId = R.drawable.pwa_restore_icon;
         mPreviewView.findViewById(R.id.icon).setBackgroundResource(backgroundId);
         mPreviewView.findViewById(R.id.icon).setTag(backgroundId);
-        mBackArrow = backArrowId != 0 ? ResourcesCompat.getDrawable(
-                             mContext.getResources(), backArrowId, mContext.getTheme())
-                                      : null;
+        mBackArrow =
+                backArrowId != 0
+                        ? ResourcesCompat.getDrawable(
+                                mContext.getResources(), backArrowId, mContext.getTheme())
+                        : null;
         TextView contentViewTitle = (TextView) mContentView.findViewById(R.id.title);
         contentViewTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 mBackArrow, null, null, null);
@@ -107,6 +115,7 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
     protected void setAppList(
             List<PwaRestoreProperties.AppInfo> appList, String recentAppLabel, String oldAppLabel) {
         LinearLayout scrollViewContent = getContentView().findViewById(R.id.scroll_view_content);
+        scrollViewContent.removeAllViews();
 
         // Set the heading for the app list.
         View label =
@@ -136,7 +145,16 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
             item += 1;
 
             ((ImageView) appView.findViewById(R.id.app_icon)).setImageBitmap(placeholder);
-            ((TextView) appView.findViewById(R.id.app_name)).setText(app.appName());
+            ((TextView) appView.findViewById(R.id.app_name)).setText(app.getName());
+            CheckBox checkBox = (CheckBox) appView.findViewById(R.id.checkbox);
+            checkBox.setTag(app.getId());
+            checkBox.setChecked(app.isSelected());
+            checkBox.setOnClickListener(this::onClick);
+
+            // Any click on an app item, that is not handled by the view itself, should be treated
+            // as an attempt to toggle the checkbox.
+            appView.setOnClickListener(this::onClick);
+
             scrollViewContent.addView(appView);
 
             // Add a 2pt separator view as a separate item in the ScrollView so as to not affect the
@@ -154,8 +172,27 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
         }
     }
 
+    public void onClick(View view) {
+        CheckBox checkBox = null;
+        if (view instanceof CheckBox) {
+            checkBox = (CheckBox) view;
+        } else {
+            // Clicks outside the checkbox, that are not handled by the corresponding view, are
+            // forwarded to the checkbox.
+            checkBox = (CheckBox) view.findViewById(R.id.checkbox);
+            checkBox.toggle();
+        }
+
+        // Notify of the change.
+        mSelectionToggleButtonListener.onClick(checkBox);
+    }
+
     protected void setBackButtonListener(OnClickListener listener) {
         mBackButtonListener = listener;
+    }
+
+    protected void setSelectionToggleButtonListener(OnClickListener listener) {
+        mSelectionToggleButtonListener = listener;
     }
 
     // Called through the {@link PwaRestoreBottomSheetViewBinder} bindings when the property model

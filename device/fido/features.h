@@ -23,12 +23,6 @@ COMPONENT_EXPORT(DEVICE_FIDO) BASE_DECLARE_FEATURE(kWebAuthUseNativeWinApi);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthCableExtensionAnywhere);
 
-#if BUILDFLAG(IS_CHROMEOS)
-// Enable a ChromeOS platform authenticator
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthCrosPlatformAuthenticator);
-#endif  // BUILDFLAG(IS_CHROMEOS)
-
 #if BUILDFLAG(IS_ANDROID)
 // Enable UI options to explicitly invoke hybrid CTAP authentication on
 // Android.
@@ -103,10 +97,6 @@ BASE_DECLARE_FEATURE(kWebAuthnICloudKeychainForInactiveWithoutDrive);
 // Enable new hybrid UI
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnNewHybridUI);
-
-// Get caBLE pre-linking information from Play Services
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnPrelinkPlayServices);
 
 // Don't show the single-account sheet on macOS if Touch ID is available.
 COMPONENT_EXPORT(DEVICE_FIDO)
@@ -195,6 +185,10 @@ BASE_DECLARE_FEATURE(kWebAuthnScreenReaderMode);
 // to be more generous and meet https://www.w3.org/TR/WCAG21/#enough-time.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnAccessibleTimeouts);
+
+// Support cross-domain RP ID assertions.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnRelatedOrigin);
 
 }  // namespace device
 

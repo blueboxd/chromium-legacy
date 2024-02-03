@@ -35,19 +35,6 @@ namespace content {
 class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
 
-namespace indexed_db_transaction_unittest {
-class IndexedDBTransactionTestMode;
-class IndexedDBTransactionTest;
-FORWARD_DECLARE_TEST(IndexedDBTransactionTestMode, AbortPreemptive);
-FORWARD_DECLARE_TEST(IndexedDBTransactionTestMode, AbortTasks);
-FORWARD_DECLARE_TEST(IndexedDBTransactionTest, NoTimeoutReadOnly);
-FORWARD_DECLARE_TEST(IndexedDBTransactionTest, SchedulePreemptiveTask);
-FORWARD_DECLARE_TEST(IndexedDBTransactionTestMode, ScheduleNormalTask);
-FORWARD_DECLARE_TEST(IndexedDBTransactionTestMode, TaskFails);
-FORWARD_DECLARE_TEST(IndexedDBTransactionTest, Timeout);
-FORWARD_DECLARE_TEST(IndexedDBTransactionTest, TimeoutPreemptive);
-}  // namespace indexed_db_transaction_unittest
-
 class CONTENT_EXPORT IndexedDBTransaction
     : public blink::mojom::IDBTransaction {
  public:
@@ -128,7 +115,9 @@ class CONTENT_EXPORT IndexedDBTransaction
   int64_t id() const { return id_; }
 
   base::WeakPtr<IndexedDBDatabase> database() const { return database_; }
-  IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
+  IndexedDBDatabaseCallbacks* callbacks() const {
+    return connection()->callbacks();
+  }
   IndexedDBConnection* connection() const { return connection_.get(); }
   bool is_commit_pending() const { return is_commit_pending_; }
   int64_t num_errors_sent() const { return num_errors_sent_; }
@@ -168,30 +157,14 @@ class CONTENT_EXPORT IndexedDBTransaction
   friend class IndexedDBConnection;
   friend class base::RefCounted<IndexedDBTransaction>;
 
-  FRIEND_TEST_ALL_PREFIXES(
-      indexed_db_transaction_unittest::IndexedDBTransactionTestMode,
-      AbortPreemptive);
-  FRIEND_TEST_ALL_PREFIXES(
-      indexed_db_transaction_unittest::IndexedDBTransactionTestMode,
-      AbortTasks);
-  FRIEND_TEST_ALL_PREFIXES(
-      indexed_db_transaction_unittest::IndexedDBTransactionTest,
-      NoTimeoutReadOnly);
-  FRIEND_TEST_ALL_PREFIXES(
-      indexed_db_transaction_unittest::IndexedDBTransactionTest,
-      SchedulePreemptiveTask);
-  FRIEND_TEST_ALL_PREFIXES(
-      indexed_db_transaction_unittest::IndexedDBTransactionTestMode,
-      ScheduleNormalTask);
-  FRIEND_TEST_ALL_PREFIXES(
-      indexed_db_transaction_unittest::IndexedDBTransactionTestMode,
-      TaskFails);
-  FRIEND_TEST_ALL_PREFIXES(
-      indexed_db_transaction_unittest::IndexedDBTransactionTest,
-      Timeout);
-  FRIEND_TEST_ALL_PREFIXES(
-      indexed_db_transaction_unittest::IndexedDBTransactionTest,
-      TimeoutPreemptive);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode, AbortPreemptive);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode, AbortTasks);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, NoTimeoutReadOnly);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, SchedulePreemptiveTask);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode, ScheduleNormalTask);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode, TaskFails);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, Timeout);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, TimeoutPreemptive);
 
   // blink::mojom::IDBTransaction:
   void CreateObjectStore(int64_t object_store_id,
@@ -245,7 +218,6 @@ class CONTENT_EXPORT IndexedDBTransaction
   // We are owned by the connection object, but during force closes sometimes
   // there are issues if there is a pending OpenRequest. So use a WeakPtr.
   base::WeakPtr<IndexedDBConnection> connection_;
-  scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   base::WeakPtr<IndexedDBDatabase> database_;
 
   IndexedDBBucketContextHandle bucket_context_;

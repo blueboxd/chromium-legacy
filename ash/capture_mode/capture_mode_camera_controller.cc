@@ -14,13 +14,11 @@
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_util.h"
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/capture_mode/capture_mode_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -211,16 +209,6 @@ gfx::Rect GetCollisionAvoidanceRect(aura::Window* root_window) {
           status_area_widget->unified_system_tray();
       unified_system_tray->IsBubbleShown()) {
     collision_avoidance_rect = unified_system_tray->GetBubbleBoundsInScreen();
-
-    if (!features::IsQsRevampEnabled()) {
-      auto* message_center_bubble =
-          unified_system_tray->message_center_bubble();
-
-      if (message_center_bubble->IsMessageCenterVisible()) {
-        collision_avoidance_rect.Union(
-            message_center_bubble->GetBoundsInScreen());
-      }
-    }
   } else {
     const std::vector<TrayBackgroundView*> tray_buttons =
         status_area_widget->tray_buttons();

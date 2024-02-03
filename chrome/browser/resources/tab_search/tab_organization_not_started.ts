@@ -65,6 +65,8 @@ export class TabOrganizationNotStartedElement extends
 
   private setSync_(sync: SyncInfo) {
     this.sync_ = sync;
+    this.dispatchEvent(
+        new CustomEvent('sync-change', {bubbles: true, composed: true}));
   }
 
   private getSyncState_(): SyncState {
@@ -124,7 +126,7 @@ export class TabOrganizationNotStartedElement extends
       case SyncState.UNSYNCED:
         return loadTimeData.getString('notStartedButtonUnsynced');
       case SyncState.SYNC_PAUSED:
-        return loadTimeData.getString('notStartedButtonPaused');
+        return loadTimeData.getString('notStartedButtonSyncPaused');
       case SyncState.UNSYNCED_HISTORY:
         return loadTimeData.getString('notStartedButtonUnsyncedHistory');
       case SyncState.SYNCED:
@@ -135,16 +137,17 @@ export class TabOrganizationNotStartedElement extends
   private onButtonClick_() {
     switch (this.getSyncState_()) {
       case SyncState.SIGNED_OUT:
-        // TODO(emshack): Trigger sign in & sync flow
-        break;
       case SyncState.UNSYNCED:
-        // TODO(emshack): Trigger sync flow
+        this.dispatchEvent(
+            new CustomEvent('sync-click', {bubbles: true, composed: true}));
         break;
       case SyncState.SYNC_PAUSED:
-        // TODO(emshack): Trigger sign in flow
+        this.dispatchEvent(
+            new CustomEvent('sign-in-click', {bubbles: true, composed: true}));
         break;
       case SyncState.UNSYNCED_HISTORY:
-        // TODO(emshack): Trigger opening sync settings
+        this.dispatchEvent(
+            new CustomEvent('settings-click', {bubbles: true, composed: true}));
         break;
       case SyncState.SYNCED:
         // Start a tab organization

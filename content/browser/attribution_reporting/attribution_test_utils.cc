@@ -16,15 +16,16 @@
 #include "base/time/time.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
-#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/max_event_level_reports.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
 #include "components/attribution_reporting/trigger_config.h"
+#include "components/attribution_reporting/trigger_data_matching.mojom-forward.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
@@ -73,7 +74,7 @@ SourceBuilder::SourceBuilder(base::Time time)
       reporting_origin_(*SuitableOrigin::Deserialize(kDefaultReportOrigin)) {
   registration_.source_event_id = 123;
   registration_.max_event_level_reports =
-      attribution_reporting::kMaxSettableEventLevelAttributions;
+      attribution_reporting::MaxEventLevelReports::Max();
 }
 
 SourceBuilder::~SourceBuilder() = default;
@@ -205,13 +206,14 @@ SourceBuilder& SourceBuilder::SetEventReportWindows(
 
 SourceBuilder& SourceBuilder::SetMaxEventLevelReports(
     int max_event_level_reports) {
-  registration_.max_event_level_reports = max_event_level_reports;
+  registration_.max_event_level_reports =
+      attribution_reporting::MaxEventLevelReports(max_event_level_reports);
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetTriggerConfig(
-    attribution_reporting::TriggerConfig config) {
-  registration_.trigger_config = std::move(config);
+SourceBuilder& SourceBuilder::SetTriggerDataMatching(
+    attribution_reporting::mojom::TriggerDataMatching trigger_data_matching) {
+  registration_.trigger_data_matching = trigger_data_matching;
   return *this;
 }
 
@@ -230,13 +232,15 @@ StoredSource SourceBuilder::BuildStored() const {
   StoredSource source = *StoredSource::Create(
       CommonSourceInfo(source_origin_, reporting_origin_, source_type_),
       registration_.source_event_id, registration_.destination_set,
-      source_time_, expiry_time, registration_.event_report_windows,
+      source_time_, expiry_time,
+      attribution_reporting::TriggerSpecs::Default(
+          source_type_, registration_.event_report_windows),
       source_time_ + registration_.aggregatable_report_window,
       registration_.max_event_level_reports, registration_.priority,
       registration_.filter_data, registration_.debug_key,
       registration_.aggregation_keys, attribution_logic_, active_state_,
       source_id_, aggregatable_budget_consumed_, randomized_response_rate_,
-      registration_.trigger_config, debug_cookie_set_);
+      registration_.trigger_data_matching, debug_cookie_set_);
   source.SetDedupKeys(dedup_keys_);
   source.SetAggregatableDedupKeys(aggregatable_dedup_keys_);
   return source;
@@ -488,52 +492,6 @@ AttributionReport ReportBuilder::BuildNullAggregatable() const {
           source_.common_info().reporting_origin(), source_.source_time()));
 }
 
-bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
-  const auto tie = [](const AttributionTrigger& t) {
-    return std::make_tuple(t.registration(), t.destination_origin(),
-                           t.is_within_fenced_frame());
-  };
-  return tie(a) == tie(b);
-}
-
-bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b) {
-  const auto tie = [](const CommonSourceInfo& source) {
-    return std::make_tuple(source.source_origin(), source.reporting_origin(),
-                           source.source_type());
-  };
-  return tie(a) == tie(b);
-}
-
-bool operator==(const AttributionInfo& a, const AttributionInfo& b) {
-  const auto tie = [](const AttributionInfo& attribution_info) {
-    return std::make_tuple(attribution_info.debug_key,
-                           attribution_info.context_origin);
-  };
-  return tie(a) == tie(b);
-}
-
-bool operator==(const FakeEventLevelReport& a, const FakeEventLevelReport& b) {
-  const auto tie = [](const FakeEventLevelReport& r) {
-    return std::make_tuple(r.trigger_data, r.window_index);
-  };
-  return tie(a) == tie(b);
-}
-
-bool operator<(const FakeEventLevelReport& a, const FakeEventLevelReport& b) {
-  const auto tie = [](const FakeEventLevelReport& r) {
-    return std::make_tuple(r.trigger_data, r.window_index);
-  };
-  return tie(a) < tie(b);
-}
-
-bool operator==(const StorableSource& a, const StorableSource& b) {
-  const auto tie = [](const StorableSource& source) {
-    return std::make_tuple(source.registration(), source.common_info(),
-                           source.is_within_fenced_frame());
-  };
-  return tie(a) == tie(b);
-}
-
 // Does not compare source IDs, as they are set by the underlying sqlite DB and
 // should not be tested.
 bool operator==(const StoredSource& a, const StoredSource& b) {
@@ -541,21 +499,13 @@ bool operator==(const StoredSource& a, const StoredSource& b) {
     return std::make_tuple(
         source.common_info(), source.source_event_id(),
         source.destination_sites(), source.source_time(), source.expiry_time(),
-        source.event_report_windows(), source.aggregatable_report_window_time(),
+        source.trigger_specs(), source.aggregatable_report_window_time(),
         source.max_event_level_reports(), source.priority(),
         source.filter_data(), source.debug_key(), source.aggregation_keys(),
         source.attribution_logic(), source.active_state(), source.dedup_keys(),
         source.aggregatable_budget_consumed(), source.aggregatable_dedup_keys(),
-        source.randomized_response_rate(), source.trigger_config(),
+        source.randomized_response_rate(), source.trigger_data_matching(),
         source.debug_cookie_set());
-  };
-  return tie(a) == tie(b);
-}
-
-bool operator==(const AggregatableHistogramContribution& a,
-                const AggregatableHistogramContribution& b) {
-  const auto tie = [](const AggregatableHistogramContribution& contribution) {
-    return std::make_tuple(contribution.key(), contribution.value());
   };
   return tie(a) == tie(b);
 }
@@ -607,14 +557,6 @@ bool operator==(const AttributionReport& a, const AttributionReport& b) {
                            report.initial_report_time(),
                            report.external_report_id(),
                            report.failed_send_attempts(), report.data());
-  };
-  return tie(a) == tie(b);
-}
-
-bool operator==(const SendResult& a, const SendResult& b) {
-  const auto tie = [](const SendResult& info) {
-    return std::make_tuple(info.status, info.network_error,
-                           info.http_response_code);
   };
   return tie(a) == tie(b);
 }
@@ -703,7 +645,7 @@ std::ostream& operator<<(std::ostream& out, const StoredSource& source) {
       << ",destination_sites=" << source.destination_sites()
       << ",source_time=" << source.source_time()
       << ",expiry_time=" << source.expiry_time()
-      << ",event_report_windows=" << source.event_report_windows()
+      << ",trigger_specs=" << source.trigger_specs()
       << ",aggregatable_report_window_time="
       << source.aggregatable_report_window_time()
       << ",max_event_level_reports=" << source.max_event_level_reports()
@@ -718,7 +660,8 @@ std::ostream& operator<<(std::ostream& out, const StoredSource& source) {
       << ",aggregatable_budget_consumed="
       << source.aggregatable_budget_consumed()
       << ",randomized_response_rate=" << source.randomized_response_rate()
-      << ",trigger_config=" << source.trigger_config() << ",dedup_keys=[";
+      << ",trigger_data_matching=" << source.trigger_data_matching()
+      << ",dedup_keys=[";
 
   const char* separator = "";
   for (int64_t dedup_key : source.dedup_keys()) {

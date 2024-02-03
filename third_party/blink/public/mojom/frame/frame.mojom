@@ -72,6 +72,7 @@ import "ui/base/ime/mojom/virtual_keyboard_types.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
 import "ui/events/mojom/scroll_granularity.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "ui/gfx/image/mojom/image.mojom";
 import "ui/gfx/range/mojom/range.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -176,6 +177,12 @@ enum FrameOwnerElementType {
   kFencedframe
 };
 
+enum NavigationApiEntryRestoreReason {
+  kBFCache,
+  kPrerenderActivationPush,
+  kPrerenderActivationReplace
+};
+
 // The maximum number of characters of the document's title that we're willing
 // to accept in the browser process.
 const uint16 kMaxTitleChars = 4096; // 4 * 1024;
@@ -193,8 +200,10 @@ struct IframeAttributes {
   bool credentialless;
   // 'browsingtopics' attribute of the iframe.
   bool browsing_topics;
+  // 'adauctionheaders' attribute of the iframe.
+  bool ad_auction_headers;
   // 'sharedstoragewritable' attribute of the iframe.
-  bool shared_storage_writable;
+  bool shared_storage_writable_opted_in;
   // 'id' attribute of the iframe. This can be optional because id might not be set.
   string? id;
   // 'name' attribute of the iframe. This is different from window.name, which is
@@ -911,6 +920,10 @@ interface LocalFrame {
   // at the given point in the view coordinate space.
   MediaPlayerActionAt(gfx.mojom.Point location, blink.mojom.MediaPlayerAction action);
 
+  // Requests the current video frame (as `image`) from the media player at the
+  // given `location`.
+  RequestVideoFrameAt(gfx.mojom.Point location) => (gfx.mojom.ImageSkia image);
+
   // Tells the renderer to perform the given action on the plugin location at
   // the given point in the view coordinate space.
   PluginActionAt(gfx.mojom.Point location, blink.mojom.PluginActionType action);
@@ -1073,7 +1086,8 @@ interface LocalFrame {
   // to this frame, and that subset may have changed while the page was in
   // bfcache.
   SetNavigationApiHistoryEntriesForRestore(
-      NavigationApiHistoryEntryArrays entry_arrays);
+      NavigationApiHistoryEntryArrays entry_arrays,
+      NavigationApiEntryRestoreReason restore_reason);
 
   // Updates navigation.entries() when entries are disposed from the session
   // history.

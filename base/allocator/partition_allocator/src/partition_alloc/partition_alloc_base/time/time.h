@@ -68,14 +68,14 @@
 #include <iosfwd>
 #include <limits>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/chromeos_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/check.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/numerics/clamped_math.h"
 #include "build/build_config.h"
+#include "partition_alloc/chromeos_buildflags.h"
+#include "partition_alloc/partition_alloc_base/check.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
+#include "partition_alloc/partition_alloc_base/numerics/clamped_math.h"
 
 #if BUILDFLAG(IS_APPLE)
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
 #endif  // BUILDFLAG(IS_APPLE)
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -99,7 +99,7 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/win/windows_types.h"
+#include "partition_alloc/partition_alloc_base/win/windows_types.h"
 
 namespace ABI {
 namespace Windows {
@@ -123,7 +123,7 @@ class PlatformThreadHandle;
 
 // TimeDelta ------------------------------------------------------------------
 
-class PA_COMPONENT_EXPORT(PARTITION_ALLOC) TimeDelta {
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) TimeDelta {
  public:
   constexpr TimeDelta() = default;
 
@@ -498,11 +498,13 @@ class TimeBase {
 // incrementing counter.
 #else
 // Returns true if the CPU support constant rate TSC.
-[[nodiscard]] PA_COMPONENT_EXPORT(PARTITION_ALLOC) bool HasConstantRateTSC();
+[[nodiscard]] PA_COMPONENT_EXPORT(
+    PARTITION_ALLOC_BASE) bool HasConstantRateTSC();
 
 // Returns the frequency of the TSC in ticks per second, or 0 if it hasn't
 // been measured yet. Needs to be guarded with a call to HasConstantRateTSC().
-[[nodiscard]] PA_COMPONENT_EXPORT(PARTITION_ALLOC) double TSCTicksPerSecond();
+[[nodiscard]] PA_COMPONENT_EXPORT(
+    PARTITION_ALLOC_BASE) double TSCTicksPerSecond();
 #endif
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -518,7 +520,7 @@ inline constexpr TimeClass operator+(TimeDelta delta, TimeClass t) {
 // Represents a wall clock time in UTC. Values are not guaranteed to be
 // monotonically non-decreasing and are subject to large amounts of skew.
 // Time is stored internally as microseconds since the Windows epoch (1601).
-class PA_COMPONENT_EXPORT(PARTITION_ALLOC) Time
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) Time
     : public time_internal::TimeBase<Time> {
  public:
   // Offset of UNIX epoch (1970-01-01 00:00:00 UTC) from Windows FILETIME epoch
@@ -809,7 +811,7 @@ constexpr Time Time::FromTimeT(time_t tt) {
 // TimeTicks ------------------------------------------------------------------
 
 // Represents monotonically non-decreasing clock time.
-class PA_COMPONENT_EXPORT(PARTITION_ALLOC) TimeTicks
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) TimeTicks
     : public time_internal::TimeBase<TimeTicks> {
  public:
   // The underlying clock used to generate new TimeTicks.
@@ -948,7 +950,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) TimeTicks
 
 // Represents a clock, specific to a particular thread, than runs only while the
 // thread is running.
-class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ThreadTicks
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) ThreadTicks
     : public time_internal::TimeBase<ThreadTicks> {
  public:
   constexpr ThreadTicks() : TimeBase(0) {}

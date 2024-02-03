@@ -49,6 +49,7 @@
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
+#import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
@@ -72,6 +73,7 @@ using autofill::FieldRendererId;
 using autofill::FormGlobalId;
 using autofill::FormHandlersJavaScriptFeature;
 using autofill::FormRendererId;
+using autofill::FormUtilJavaScriptFeature;
 using autofill::FieldPropertiesFlags::kAutofilledOnUserTrigger;
 using base::NumberToString;
 using base::SysNSStringToUTF16;
@@ -474,13 +476,14 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
       if (!suggestion.backendIdentifier.length) {
         autofill_suggestion.payload = autofill::Suggestion::BackendId();
       } else {
-        autofill_suggestion.payload = autofill::Suggestion::BackendId(
-            SysNSStringToUTF8(suggestion.backendIdentifier));
+        autofill_suggestion.payload =
+            autofill::Suggestion::BackendId(autofill::Suggestion::Guid(
+                SysNSStringToUTF8(suggestion.backendIdentifier)));
       }
 
       // On iOS, only a single trigger source exists. See crbug.com/1448447.
       _popupDelegate->DidAcceptSuggestion(
-          autofill_suggestion, 0,
+          autofill_suggestion, {0, 0},
           autofill::AutofillSuggestionTriggerSource::kiOS);
     }
     return;
@@ -713,7 +716,8 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
                                        scale:icon.scale * ratio
                                  orientation:icon.imageOrientation];
           }
-        } else if (!popup_suggestion.icon.empty()) {
+        } else if (popup_suggestion.icon !=
+                   autofill::Suggestion::Icon::kNoIcon) {
           const int resourceID =
               autofill::CreditCard::IconResourceId(popup_suggestion.icon);
           icon = ui::ResourceBundle::GetSharedInstance()
@@ -750,11 +754,11 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
                 displayDescription:displayDescription
                               icon:icon
                        popupItemId:popup_suggestion.popup_item_id
-                 backendIdentifier:
-                     SysUTF8ToNSString(
-                         popup_suggestion
-                             .GetPayload<autofill::Suggestion::BackendId>()
-                             .value())
+                 backendIdentifier:SysUTF8ToNSString(
+                                       popup_suggestion
+                                           .GetBackendId<
+                                               autofill::Suggestion::Guid>()
+                                           .value())
                     requiresReauth:NO
         acceptanceA11yAnnouncement:acceptanceA11yAnnouncement];
 
@@ -884,7 +888,10 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
   if (driver->is_processed())
     return;
   driver->set_processed(true);
-  AutofillJavaScriptFeature::GetInstance()->AddJSDelayInFrame(frame);
+
+  FormUtilJavaScriptFeature::GetInstance()->SetAutofillAcrossIframes(
+      frame, base::FeatureList::IsEnabled(
+                 autofill::features::kAutofillAcrossIframesIos));
 
   if (frame->IsMainFrame()) {
     _popupDelegate.reset();
@@ -1081,8 +1088,8 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
         if (!strongSelf)
           return;
         if (success) {
-          strongSelf->_fieldDataManager->UpdateFieldDataMap(
-              uniqueFieldID, value, kAutofilledOnUserTrigger);
+          [strongSelf updateFieldManagerForSpecificField:uniqueFieldID
+                                               withValue:value];
         }
         suggestionHandledCompletionCopy();
       }));

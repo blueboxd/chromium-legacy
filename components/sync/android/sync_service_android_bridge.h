@@ -24,6 +24,7 @@ class SyncSetupInProgressHandle;
 // Must only be accessed from the UI thread.
 class SyncServiceAndroidBridge : public syncer::SyncServiceObserver {
  public:
+  // `native_sync_service` must be non-null and outlive this object.
   explicit SyncServiceAndroidBridge(syncer::SyncService* native_sync_service);
   ~SyncServiceAndroidBridge() override;
 
@@ -34,6 +35,7 @@ class SyncServiceAndroidBridge : public syncer::SyncServiceObserver {
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncShutdown(syncer::SyncService* sync) override;
 
   // Please keep all methods below in the same order as the @NativeMethods in
   // SyncServiceImpl.java.

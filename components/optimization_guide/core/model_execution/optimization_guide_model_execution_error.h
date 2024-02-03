@@ -4,6 +4,7 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTION_OPTIMIZATION_GUIDE_MODEL_EXECUTION_ERROR_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTION_OPTIMIZATION_GUIDE_MODEL_EXECUTION_ERROR_H_
 
+#include "components/optimization_guide/proto/model_execution.pb.h"
 #include "net/http/http_status_code.h"
 
 namespace optimization_guide {
@@ -22,13 +23,28 @@ class OptimizationGuideModelExecutionError {
     kPermissionDenied,
     // Other generic failures.
     kGenericFailure,
+    // Retryable error occurred in server.
+    kRetryableError,
+    // Non-retryable error occurred in server.
+    kNonRetryableError,
+    // Unsupported language.
+    kUnsupportedLanguage,
+    // Request was filtered.
+    kFiltered,
+    // Response was disabled.
+    kDisabled,
+    // The request was cancelled.
+    kCancelled,
 
     // Insert new values before this line.
-    kMaxValue = kGenericFailure
+    kMaxValue = kCancelled
   };
 
   static OptimizationGuideModelExecutionError FromHttpStatusCode(
       net::HttpStatusCode response_code);
+
+  static OptimizationGuideModelExecutionError FromModelExecutionServerError(
+      proto::ErrorResponse error);
 
   static OptimizationGuideModelExecutionError FromModelExecutionError(
       ModelExecutionError error);
@@ -38,6 +54,9 @@ class OptimizationGuideModelExecutionError {
   // Returns whether the error is transient and may succeed if the request was
   // retried.
   bool transient() const;
+
+  // Returns whether model quality log entry should be added for the error.
+  bool ShouldLogModelQuality() const;
 
  private:
   explicit OptimizationGuideModelExecutionError(ModelExecutionError error);

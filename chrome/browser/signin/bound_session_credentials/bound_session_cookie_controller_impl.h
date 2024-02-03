@@ -66,7 +66,7 @@ class BoundSessionCookieControllerImpl
   // BoundSessionCookieController:
   void Initialize() override;
 
-  void OnRequestBlockedOnCookie(
+  void HandleRequestBlockedOnCookie(
       base::OnceClosure resume_blocked_request) override;
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
@@ -126,6 +126,7 @@ class BoundSessionCookieControllerImpl
   base::OneShotTimer preemptive_cookie_refresh_timer_;
   // Used to release blocked requests after a timeout.
   base::OneShotTimer resume_blocked_requests_timer_;
+  size_t successive_timeout_ = 0;
 
   RefreshCookieFetcherFactoryForTesting
       refresh_cookie_fetcher_factory_for_testing_;

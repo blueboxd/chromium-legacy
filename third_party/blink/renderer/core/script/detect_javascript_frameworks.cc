@@ -119,7 +119,7 @@ inline void CheckPropertyMatches(Element& element,
     if (!property_names->Get(context, i).ToLocal(&key) || !key->IsString()) {
       continue;
     }
-    AtomicString key_value = ToCoreAtomicString(key.As<v8::String>());
+    AtomicString key_value = ToCoreAtomicString(isolate, key.As<v8::String>());
     if (key_value == vue_string || key_value == vue_app_string) {
       result.detected_versions[JavaScriptFramework::kVue] =
           kNoFrameworkVersionDetected;
@@ -288,11 +288,13 @@ void DetectFrameworkVersions(Document& document,
 
   HTMLMetaElement* generator_meta = nullptr;
 
-  for (HTMLMetaElement& meta_element :
-       Traversal<HTMLMetaElement>::DescendantsOf(*document.head())) {
-    if (EqualIgnoringASCIICase(meta_element.GetName(), "generator")) {
-      generator_meta = &meta_element;
-      break;
+  if (document.head()) {
+    for (HTMLMetaElement& meta_element :
+         Traversal<HTMLMetaElement>::DescendantsOf(*document.head())) {
+      if (EqualIgnoringASCIICase(meta_element.GetName(), "generator")) {
+        generator_meta = &meta_element;
+        break;
+      }
     }
   }
 

@@ -16,8 +16,20 @@ import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
  * A base interface representing a UI that will be displayed as a Pane in the Hub.
  */
 public interface Pane extends BackPressHandler {
+    /** Returns the {@link PaneId} corresponding to this Pane. */
+    @PaneId
+    int getPaneId();
+
     /** Returns the {@link View} containing the contents of the Pane. */
     View getRootView();
+
+    /**
+     * Notifies of a change to the Hub's or the pane's lifecycle. See {@link LoadHint} for possible
+     * values and what the pane could or should do in response to a notification.
+     *
+     * @param loadHint The {@link LoadHint} for the latest change.
+     */
+    void notifyLoadHint(@LoadHint int loadHint);
 
     /** Returns button data for the primary action on the page, such as adding a tab. */
     @Nullable

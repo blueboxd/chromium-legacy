@@ -147,11 +147,15 @@ void OnDone(HostStarter::Result result) {
     case HostStarter::OAUTH_ERROR:
       fprintf(stderr, "Couldn't start host: OAuth error.\n");
       break;
+    case HostStarter::PERMISSION_DENIED:
+      fprintf(stderr, "Couldn't start host: Permission denied.\n");
+      break;
+    case HostStarter::REGISTRATION_ERROR:
+      fprintf(stderr, "Couldn't start host: Registration error.\n");
+      break;
     case HostStarter::START_ERROR:
       fprintf(stderr, "Couldn't start host.\n");
       break;
-    default:
-      NOTREACHED() << "Unexpected HostStarter result: " << result;
   }
 
   g_active_run_loop->Quit();
@@ -251,8 +255,7 @@ int StartHostMain(int argc, char** argv) {
 
   // google_apis::GetOAuth2ClientID/Secret need a static CommandLine.
   base::CommandLine::Init(argc, argv);
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // This object instance is required by Chrome code (for example,
   // FilePath, LazyInstance, MessageLoop).
@@ -283,6 +286,8 @@ int StartHostMain(int argc, char** argv) {
     // Linux-specific, it isn't plumbed through the platform-independent daemon
     // controller code, and must be configured on the Linux delegate explicitly.
     DaemonControllerDelegateLinux::set_start_host_after_setup(false);
+    // Remove the switch from the command line to simplify arg count checks.
+    command_line->RemoveSwitch("no-start");
   }
 #endif  // BUILDFLAG(IS_LINUX)
 #if BUILDFLAG(IS_WIN)

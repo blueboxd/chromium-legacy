@@ -21,10 +21,10 @@ import {getBulkPinProgress, getDialogCaller, getDlpBlockedComponents, getDriveCo
 import {ArrayDataModel} from '../../common/js/array_data_model.js';
 import {DialogType, isFolderDialogType} from '../../common/js/dialog_type.js';
 import {getKeyModifiers, queryDecoratedElement, queryRequiredElement} from '../../common/js/dom_utils.js';
-import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
+import {EntryList, FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
 import {FilesAppState} from '../../common/js/files_app_state.js';
 import {FilteredVolumeManager} from '../../common/js/filtered_volume_manager.js';
-import {isDlpEnabled, isDriveFsBulkPinningEnabled, isGuestOsEnabled, isInlineSyncStatusEnabled, isJellyEnabled, isNewDirectoryTreeEnabled} from '../../common/js/flags.js';
+import {isDlpEnabled, isGuestOsEnabled, isNewDirectoryTreeEnabled} from '../../common/js/flags.js';
 import {recordEnum, recordInterval, startInterval} from '../../common/js/metrics.js';
 import {ProgressItemState} from '../../common/js/progress_center_common.js';
 import {str} from '../../common/js/translations.js';
@@ -35,7 +35,6 @@ import {DirectoryTreeContainer} from '../../containers/directory_tree_container.
 import {NudgeType} from '../../containers/nudge_container.js';
 import {Crostini} from '../../externs/background/crostini.js';
 import {FileManagerBaseInterface} from '../../externs/background/file_manager_base.js';
-import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
@@ -46,17 +45,18 @@ import {getMyFiles} from '../../state/ducks/all_entries.js';
 import {updateBulkPinProgress} from '../../state/ducks/bulk_pinning.js';
 import {updateDeviceConnectionState} from '../../state/ducks/device.js';
 import {updateDriveConnectionStatus} from '../../state/ducks/drive.js';
+import {setLaunchParameters} from '../../state/ducks/launch_params.js';
 import {updatePreferences} from '../../state/ducks/preferences.js';
 import {getDefaultSearchOptions, updateSearch} from '../../state/ducks/search.js';
 import {addUiEntry, removeUiEntry} from '../../state/ducks/ui_entries.js';
-import {trashRootKey} from '../../state/ducks/volumes.js';
-import {getEmptyState, getStore} from '../../state/store.js';
+import {driveRootEntryListKey, trashRootKey} from '../../state/ducks/volumes.js';
+import {getEmptyState, getEntry, getStore} from '../../state/store.js';
 
 import {ActionsController} from './actions_controller.js';
 import {AndroidAppListModel} from './android_app_list_model.js';
 import {AppStateController} from './app_state_controller.js';
 import {BannerController} from './banner_controller.js';
-import {crossoverSearchUtils} from './crossover_search_utils.js';
+import {findQueryMatchedDirectoryEntry} from './crossover_search_utils.js';
 import {CrostiniController} from './crostini_controller.js';
 import {DialogActionController} from './dialog_action_controller.js';
 import {FileFilter} from './directory_contents.js';
@@ -143,12 +143,6 @@ export class FileManager extends EventTarget {
 
     /** @private @type {?ThumbnailModel} */
     this.thumbnailModel_ = null;
-
-    /**
-     * File operation manager.
-     * @private @type {?FileOperationManager}
-     */
-    this.fileOperationManager_ = null;
 
     /**
      * File filter.
@@ -384,9 +378,22 @@ export class FileManager extends EventTarget {
 
     /**
      * Whether Drive is enabled. Retrieved from user preferences.
-     * @private @type {?boolean}
+     * @private @type {boolean}
      */
     this.driveEnabled_ = false;
+
+    /**
+     * Whether Drive bulk-pinning is available on this device. Retrieved from
+     * user preferences.
+     * @private @type {boolean}
+     */
+    this.bulkPinningAvailable_ = false;
+
+    /**
+     * Whether Drive bulk-pinning has been initialized in Files App.
+     * @private @type {boolean}
+     */
+    this.bulkPinningInitialized_ = false;
 
     /**
      * A fake Drive placeholder item.
@@ -556,15 +563,6 @@ export class FileManager extends EventTarget {
   }
 
   /**
-   * @return {FileOperationManager}
-   */
-  get fileOperationManager() {
-    // @ts-ignore: error TS2322: Type 'FileOperationManager | null' is not
-    // assignable to type 'FileOperationManager'.
-    return this.fileOperationManager_;
-  }
-
-  /**
    * @return {!FilteredVolumeManager}
    */
   get volumeManager() {
@@ -721,15 +719,12 @@ export class FileManager extends EventTarget {
     assert(this.selectionHandler_);
     assert(this.launchParams_);
     assert(this.volumeManager_);
-    assert(this.fileOperationManager_);
     assert(this.dialogDom_);
 
-    if (isInlineSyncStatusEnabled()) {
-      // @ts-ignore: error TS2322: Type 'MetadataModel | null' is not assignable
-      // to type 'Object'.
-      this.fileBrowserBackground_.driveSyncHandler.metadataModel =
-          assert(this.metadataModel_);
-    }
+    // @ts-ignore: error TS2322: Type 'MetadataModel | null' is not assignable
+    // to type 'Object'.
+    this.fileBrowserBackground_.driveSyncHandler.metadataModel =
+        assert(this.metadataModel_);
     this.scanController_ = new ScanController(
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         this.directoryModel_, this.ui_.listContainer, this.spinnerController_,
@@ -755,7 +750,6 @@ export class FileManager extends EventTarget {
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         this.ui_.toolbar, this.ui_.dialogNavigationList, this.ui_.listContainer,
         this.selectionHandler_, this.directoryModel_, this.volumeManager_,
-        this.fileOperationManager_,
         /** @type {!A11yAnnounce} */ (this.ui_));
     this.actionsController_ = new ActionsController(
         // @ts-ignore: error TS2345: Argument of type 'MetadataModel | null' is
@@ -836,30 +830,28 @@ export class FileManager extends EventTarget {
       fileListPromise,
       currentDirectoryPromise,
       this.setGuestMode_(),
-      this.initBulkPinning_(),
     ]);
   }
 
   /**
    * Subscribes to bulk-pinning events to ensure the store is kept up to date.
    * Also tries to retrieve a first bulk pinning progress to populate the store.
-   * Does nothing if bulk-pinning is disabled.
    * @private
    */
   async initBulkPinning_() {
-    if (!isDriveFsBulkPinningEnabled()) {
-      return;
-    }
-
     try {
       const promise = getBulkPinProgress();
 
-      // @ts-ignore: error TS7006: Parameter 'progress' implicitly has an 'any'
-      // type.
-      chrome.fileManagerPrivate.onBulkPinProgress.addListener((progress) => {
-        console.debug('Got bulk-pinning event:', progress);
-        this.store_.dispatch(updateBulkPinProgress(progress));
-      });
+      if (!this.bulkPinningInitialized_) {
+        // @ts-ignore: error TS7006: Parameter 'progress' implicitly has an
+        // 'any' type.
+        chrome.fileManagerPrivate.onBulkPinProgress.addListener((progress) => {
+          console.debug('Got bulk-pinning event:', progress);
+          this.store_.dispatch(updateBulkPinProgress(progress));
+        });
+
+        this.bulkPinningInitialized_ = true;
+      }
 
       const progress = await promise;
       if (progress) {
@@ -888,8 +880,8 @@ export class FileManager extends EventTarget {
         assert(this.ui_.directoryTree),
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         this.ui_.showConfirmationDialog.bind(this.ui_), this.progressCenter,
-        assert(this.fileOperationManager_), assert(this.metadataModel_),
-        assert(this.directoryModel_), assert(this.volumeManager_),
+        assert(this.metadataModel_), assert(this.directoryModel_),
+        assert(this.volumeManager_),
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         assert(this.selectionHandler_), this.ui_.toast);
   }
@@ -1032,14 +1024,6 @@ export class FileManager extends EventTarget {
     // @ts-ignore: error TS2531: Object is possibly 'null'.
     this.dialogDom_.classList.add('files-ng');
 
-    // Add theme attribute so widgets can render different styles based on
-    // this attribute:
-    // [theme="legacy"] -> Legacy style, [theme="refresh23"] -> Refresh23 style
-    const theme = isJellyEnabled() ? 'refresh23' : 'legacy';
-    this.document_.documentElement.setAttribute('theme', theme);
-    // @ts-ignore: error TS2531: Object is possibly 'null'.
-    this.dialogDom_.setAttribute('theme', theme);
-
     chrome.fileManagerPrivate.isTabletModeEnabled(
         this.onTabletModeChanged_.bind(this));
     chrome.fileManagerPrivate.onTabletModeChanged.addListener(
@@ -1103,6 +1087,8 @@ export class FileManager extends EventTarget {
       // parameter of type 'FilesAppState'.
       this.launchParams_ = new LaunchParam(json);
     }
+    this.store_.dispatch(
+        setLaunchParameters({dialogType: this.launchParams_.type}));
 
     // Initialize the member variables that depend this.launchParams_.
     this.dialogType = this.launchParams_.type;
@@ -1135,8 +1121,6 @@ export class FileManager extends EventTarget {
     if (runningInBrowser()) {
       this.fileBrowserBackground_.registerDialog(window);
     }
-    this.fileOperationManager_ =
-        this.fileBrowserBackground_.fileOperationManager;
     this.crostini_ = this.fileBrowserBackground_.crostini;
 
     recordInterval('Load.InitBackgroundPage');
@@ -1290,13 +1274,12 @@ export class FileManager extends EventTarget {
         this.dialogType == DialogType.SELECT_SAVEAS_FILE;
 
     assert(this.volumeManager_);
-    assert(this.fileOperationManager_);
     assert(this.metadataModel_);
     this.directoryModel_ = new DirectoryModel(
         // @ts-ignore: error TS2345: Argument of type 'FileFilter | null' is not
         // assignable to parameter of type 'FileFilter'.
         singleSelection, this.fileFilter_, this.metadataModel_,
-        this.volumeManager_, this.fileOperationManager_);
+        this.volumeManager_);
 
     this.folderShortcutsModel_ =
         new FolderShortcutsDataModel(this.volumeManager_);
@@ -1316,9 +1299,7 @@ export class FileManager extends EventTarget {
     this.store_.dispatch(addUiEntry({entry: this.recentEntry_}));
     assert(this.launchParams_);
     this.selectionHandler_ = new FileSelectionHandler(
-        // @ts-ignore: error TS2345: Argument of type 'FileOperationManager |
-        // null' is not assignable to parameter of type 'FileOperationManager'.
-        assert(this.directoryModel_), assert(this.fileOperationManager_),
+        assert(this.directoryModel_),
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         assert(this.ui_.listContainer), assert(this.metadataModel_),
         // @ts-ignore: error TS2531: Object is possibly 'null'.
@@ -1449,8 +1430,7 @@ export class FileManager extends EventTarget {
       const directoryTreeContainer = new DirectoryTreeContainer(
           // @ts-ignore: error TS2345: Argument of type 'HTMLElement | null' is
           // not assignable to parameter of type 'HTMLElement'.
-          treeContainer, this.directoryModel_, this.volumeManager_,
-          this.metadataModel_);
+          treeContainer, this.directoryModel_, this.volumeManager_);
       // @ts-ignore: error TS2531: Object is possibly 'null'.
       this.ui_.initDirectoryTree(directoryTreeContainer);
     } else {
@@ -1462,7 +1442,7 @@ export class FileManager extends EventTarget {
           // is not assignable to parameter of type 'DirectoryModel'.
           directoryTree, assert(this.directoryModel_),
           assert(this.volumeManager_), assert(this.metadataModel_),
-          assert(this.fileOperationManager_), fakeEntriesVisible);
+          fakeEntriesVisible);
 
       directoryTree.dataModel = new NavigationListModel(
           // @ts-ignore: error TS2345: Argument of type
@@ -1681,12 +1661,10 @@ export class FileManager extends EventTarget {
       // Show a spinner, as the crossover search function call could be slow.
       // @ts-ignore: error TS2531: Object is possibly 'null'.
       const hideSpinnerCallback = this.spinnerController_.show();
-      const queryMatchedDirEntry =
-          await crossoverSearchUtils.findQueryMatchedDirectoryEntry(
-              // @ts-ignore: error TS2345: Argument of type 'DirectoryModel |
-              // null' is not assignable to parameter of type 'DirectoryModel'.
-              this.ui_.directoryTree.dataModel_, this.directoryModel_,
-              searchQuery);
+      const queryMatchedDirEntry = await findQueryMatchedDirectoryEntry(
+          // @ts-ignore: error TS2345: Argument of type 'DirectoryModel |
+          // null' is not assignable to parameter of type 'DirectoryModel'.
+          this.volumeManager_, this.directoryModel_, searchQuery);
       if (queryMatchedDirEntry) {
         nextCurrentDirEntry = queryMatchedDirEntry;
       }
@@ -1820,7 +1798,15 @@ export class FileManager extends EventTarget {
     if (!nextCurrentDirEntry) {
       if (isNewDirectoryTreeEnabled()) {
         const myFiles = getMyFiles(this.store_.getState());
-        nextCurrentDirEntry = myFiles.myFilesEntry;
+        // When MyFiles volume is mounted, we rely on the current directory
+        // change to make it as selected (controlled by DirectoryModel),
+        // that's why we can't set MyFiles entry list as the current directory
+        // here.
+        // TODO(b/308504417): MyFiles entry list should be selected before
+        // MyFiles volume mounts.
+        if (myFiles.myFilesVolume) {
+          nextCurrentDirEntry = myFiles.myFilesEntry;
+        }
         // @ts-ignore: error TS2339: Property 'dataModel' does not exist on type
         // 'XfTree | DirectoryTree'.
       } else if (this.ui_.directoryTree.dataModel.myFilesModel_) {
@@ -2007,7 +1993,7 @@ export class FileManager extends EventTarget {
     try {
       prefs = await getPreferences();
     } catch (e) {
-      console.error('Failed to retrieve preferences:', e);
+      console.error('Cannot get preferences:', e);
       return;
     }
 
@@ -2018,6 +2004,15 @@ export class FileManager extends EventTarget {
       this.driveEnabled_ = prefs.driveEnabled;
       this.toggleDriveRootOnPreferencesUpdate_();
       redraw = true;
+    }
+
+    if (this.bulkPinningAvailable_ !== prefs.driveFsBulkPinningAvailable) {
+      this.bulkPinningAvailable_ = prefs.driveFsBulkPinningAvailable;
+      console.debug(`Bulk-pinning is now ${
+          this.bulkPinningAvailable_ ? 'available' : 'unavailable'}`);
+      if (this.bulkPinningAvailable_) {
+        await this.initBulkPinning_();
+      }
     }
 
     if (this.trashEnabled !== prefs.trashEnabled) {
@@ -2032,7 +2027,7 @@ export class FileManager extends EventTarget {
       redraw = true;
     }
 
-    this.updateOfficePrefs_(prefs);
+    await this.updateOfficePrefs_(prefs);
 
     if (redraw && !isNewDirectoryTreeEnabled()) {
       // @ts-ignore: error TS2339: Property 'redraw' does not exist on type
@@ -2139,23 +2134,33 @@ export class FileManager extends EventTarget {
    */
   toggleDriveRootOnPreferencesUpdate_() {
     if (this.driveEnabled_) {
-      const driveFakeRoot = new FakeEntryImpl(
-          str('DRIVE_DIRECTORY_LABEL'),
-          VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
-      if (!this.fakeDriveItem_) {
-        this.fakeDriveItem_ = new NavigationModelFakeItem(
-            str('DRIVE_DIRECTORY_LABEL'), NavigationModelItemType.DRIVE,
-            driveFakeRoot);
-        this.fakeDriveItem_.disabled = this.volumeManager_.isDisabled(
-            VolumeManagerCommon.VolumeType.DRIVE);
+      let driveFakeRoot = /** @type {?EntryList} */
+          (getEntry(this.store_.getState(), driveRootEntryListKey));
+      if (!driveFakeRoot) {
+        driveFakeRoot = new EntryList(
+            str('DRIVE_DIRECTORY_LABEL'),
+            VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
+        this.store_.dispatch(addUiEntry({entry: driveFakeRoot}));
       }
       if (!isNewDirectoryTreeEnabled()) {
-        // @ts-ignore: error TS2339: Property 'dataModel' does not exist on type
-        // 'XfTree | DirectoryTree'.
+        // TODO(b/285977941): Remove the old FakeEntry based drive root.
+        const driveFakeRoot = new FakeEntryImpl(
+            str('DRIVE_DIRECTORY_LABEL'),
+            VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
+        if (!this.fakeDriveItem_) {
+          this.fakeDriveItem_ = new NavigationModelFakeItem(
+              str('DRIVE_DIRECTORY_LABEL'), NavigationModelItemType.DRIVE,
+              driveFakeRoot);
+          this.fakeDriveItem_.disabled = this.volumeManager_.isDisabled(
+              VolumeManagerCommon.VolumeType.DRIVE);
+        }
+        // @ts-ignore: error TS2339: Property 'dataModel' does not exist on
+        // type 'XfTree | DirectoryTree'.
         this.ui_.directoryTree.dataModel.fakeDriveItem = this.fakeDriveItem_;
       }
       return;
     }
+    this.store_.dispatch(removeUiEntry({key: driveRootEntryListKey}));
     if (!isNewDirectoryTreeEnabled()) {
       // @ts-ignore: error TS2339: Property 'dataModel' does not exist on type
       // 'XfTree | DirectoryTree'.
@@ -2167,7 +2172,8 @@ export class FileManager extends EventTarget {
   /**
    * If the root item has been disabled but it is the current visible entry,
    * navigate away from it to the default display root.
-   * @param {?NavigationModelFakeItem} rootItem The item to navigate away from.
+   * @param {?NavigationModelFakeItem} rootItem The item to navigate away
+   *     from.
    * @private
    */
   navigateAwayFromDisabledRoot_(rootItem) {

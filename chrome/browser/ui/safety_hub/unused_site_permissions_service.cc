@@ -193,14 +193,7 @@ UnusedSitePermissionsService::UnusedSitePermissionsResult::ToDictValue() const {
     permission_dict.Set(kSafetyHubOriginKey, permission.origin.ToString());
     base::Value::List permission_types;
     for (ContentSettingsType cst : permission.permission_types) {
-      const content_settings::WebsiteSettingsInfo* website_info =
-          registry->Get(cst);
-      if (website_info) {
-        permission_types.Append(website_info->name());
-      }
-    }
-    if (permission_types.empty()) {
-      continue;
+      permission_types.Append(registry->Get(cst)->name());
     }
     permission_dict.Set(kUnusedSitePermissionsResultPermissionTypesKey,
                         std::move(permission_types));

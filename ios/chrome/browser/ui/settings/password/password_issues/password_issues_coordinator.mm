@@ -11,6 +11,8 @@
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/passwords/model/metrics/ios_password_manager_metrics.h"
+#import "ios/chrome/browser/passwords/model/metrics/ios_password_manager_visits_recorder.h"
 #import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -94,6 +96,9 @@ DetailsContext ComputeDetailsContextFromWarningType(WarningType warning_type) {
   // from outside the Password Manager and when the app is
   // backgrounded/foregrounded with Password Issues opened.
   ReauthenticationCoordinator* _reauthCoordinator;
+
+  // For recording visits after successful authentication.
+  IOSPasswordManagerVisitsRecorder* _visitsRecorder;
 }
 
 @synthesize baseNavigationController = _baseNavigationController;
@@ -142,6 +147,16 @@ DetailsContext ComputeDetailsContextFromWarningType(WarningType warning_type) {
 
   _mediator.consumer = _viewController;
   _viewController.presenter = self;
+
+  _visitsRecorder = [[IOSPasswordManagerVisitsRecorder alloc]
+      initWithPasswordManagerSurface:password_manager::PasswordManagerSurface::
+                                         kPasswordIssues];
+
+  // Only record visit if no auth is required, otherwise wait for successful
+  // auth.
+  if (_skipAuthenticationOnStart) {
+    [_visitsRecorder maybeRecordVisitMetric];
+  }
 
   // Disable animation when content will be blocked for reauth to prevent
   // flickering in navigation bar.
@@ -246,7 +261,7 @@ DetailsContext ComputeDetailsContextFromWarningType(WarningType warning_type) {
 
 - (void)successfulReauthenticationWithCoordinator:
     (ReauthenticationCoordinator*)coordinator {
-  // No-op.
+  [_visitsRecorder maybeRecordVisitMetric];
 }
 
 - (void)willPushReauthenticationViewController {

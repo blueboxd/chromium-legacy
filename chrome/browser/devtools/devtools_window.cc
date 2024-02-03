@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
 #include "chrome/browser/ui/webui/devtools/devtools_ui.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -85,11 +84,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "components/version_info/channel.h"
-#include "third_party/cros_system_api/switches/chrome_switches.h"
-#endif
 
 // This should be after all other #includes.
 #if defined(_WINDOWS_)  // Detect whether windows.h was included.
@@ -1179,9 +1173,8 @@ DevToolsWindow* DevToolsWindow::Create(
   }
 
   // Create WebContents with devtools.
-  GURL url(GetDevToolsURL(profile, frontend_type, chrome::GetChannel(),
-                          frontend_url, can_dock, panel, has_other_clients,
-                          browser_connection));
+  GURL url(GetDevToolsURL(profile, frontend_type, frontend_url, can_dock, panel,
+                          has_other_clients, browser_connection));
   std::unique_ptr<WebContents> main_web_contents =
       WebContents::Create(WebContents::CreateParams(profile));
   main_web_contents->GetController().LoadURL(
@@ -1202,7 +1195,6 @@ DevToolsWindow* DevToolsWindow::Create(
 // static
 GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     FrontendType frontend_type,
-                                    version_info::Channel channel,
                                     const std::string& frontend_url,
                                     bool can_dock,
                                     const std::string& panel,
@@ -1234,14 +1226,10 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       if (base::FeatureList::IsEnabled(::features::kDevToolsVeLogging)) {
         url += "&veLogging=true";
       }
-#if defined(AIDA_SCOPE)
-        url += "&enableAida=true";
-#endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      if (channel >= version_info::Channel::DEV &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              chromeos::switches::kSystemInDevMode)) {
-        url += "&consolePaste=blockwebui";
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      if (base::FeatureList::IsEnabled(::features::kDevToolsConsoleInsights)) {
+        url += "&enableAida=true&aidaApiKey=" +
+               features::kDevToolsConsoleInsightsApiKey.Get();
       }
 #endif
       break;
@@ -1268,7 +1256,7 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
   if (browser_connection)
     url += "&browserConnection=true";
 
-#if BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
+#if BUILDFLAG(CHROME_FOR_TESTING)
   url += "&isChromeForTesting=true";
 #endif
 

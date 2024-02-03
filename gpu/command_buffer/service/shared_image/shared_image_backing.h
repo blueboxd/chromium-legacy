@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include <optional>
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,7 +21,6 @@
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_gles2_export.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
@@ -42,6 +42,7 @@ class ProcessMemoryDump;
 }  // namespace base
 
 namespace gfx {
+class D3DSharedFence;
 class GpuFence;
 }  // namespace gfx
 
@@ -113,7 +114,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       uint32_t usage,
       size_t estimated_size,
       bool is_thread_safe,
-      absl::optional<gfx::BufferUsage> buffer_usage = absl::nullopt);
+      std::optional<gfx::BufferUsage> buffer_usage = std::nullopt);
 
   virtual ~SharedImageBacking();
 
@@ -300,6 +301,11 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   ProduceLegacyOverlay(SharedImageManager* manager, MemoryTypeTracker* tracker);
 #endif
 
+#if BUILDFLAG(IS_WIN)
+  virtual void UpdateExternalFence(
+      scoped_refptr<gfx::D3DSharedFence> external_fence);
+#endif
+
   // Updates the estimated size if memory usage changes after creation.
   void UpdateEstimatedSize(size_t estimated_size_bytes)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -333,7 +339,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Protects non-const members here and in derived classes. Protected access
   // to allow GUARDED_BY macros in derived classes. Should not be used
   // directly. Use AutoLock instead.
-  mutable absl::optional<base::Lock> lock_;
+  mutable std::optional<base::Lock> lock_;
 
  private:
   class ScopedWriteUMA {
@@ -365,7 +371,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   size_t estimated_size_ GUARDED_BY(lock_);
 
   // Note that this will be eventually removed and merged into SharedImageUsage.
-  const absl::optional<gfx::BufferUsage> buffer_usage_;
+  const std::optional<gfx::BufferUsage> buffer_usage_;
 
   bool is_ref_counted_ = true;
 
@@ -378,7 +384,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   bool have_context_ GUARDED_BY(lock_) = true;
 
   // A scoped object for recording write UMA.
-  absl::optional<ScopedWriteUMA> scoped_write_uma_ GUARDED_BY(lock_);
+  std::optional<ScopedWriteUMA> scoped_write_uma_ GUARDED_BY(lock_);
 
   // A vector of SharedImageRepresentations which hold references to this
   // backing. The first reference is considered the owner, and the vector is
@@ -402,7 +408,7 @@ class GPU_GLES2_EXPORT ClearTrackingSharedImageBacking
       uint32_t usage,
       size_t estimated_size,
       bool is_thread_safe,
-      absl::optional<gfx::BufferUsage> buffer_usage = absl::nullopt);
+      std::optional<gfx::BufferUsage> buffer_usage = std::nullopt);
 
   gfx::Rect ClearedRect() const override;
   void SetClearedRect(const gfx::Rect& cleared_rect) override;

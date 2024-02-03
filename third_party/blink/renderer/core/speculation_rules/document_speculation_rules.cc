@@ -185,7 +185,32 @@ DocumentSpeculationRules::DocumentSpeculationRules(Document& document)
     : Supplement(document), host_(document.GetExecutionContext()) {}
 
 void DocumentSpeculationRules::AddRuleSet(SpeculationRuleSet* rule_set) {
-  CountSpeculationRulesLoadOutcome(SpeculationRulesLoadOutcome::kSuccess);
+  SpeculationRulesLoadOutcome outcome = SpeculationRulesLoadOutcome::kSuccess;
+  if (rule_set->ShouldReportUMAForError()) {
+    if (rule_set->source()->IsFromRequest()) {
+      outcome = SpeculationRulesLoadOutcome::kParseErrorFetched;
+    } else if (rule_set->source()->IsFromInlineScript()) {
+      outcome = SpeculationRulesLoadOutcome::kParseErrorInline;
+    } else if (rule_set->source()->IsFromBrowserInjected()) {
+      outcome = SpeculationRulesLoadOutcome::kParseErrorBrowserInjected;
+    } else {
+      NOTREACHED() << "error with unknown rule source";
+    }
+  } else if (rule_set->source()->IsFromBrowserInjected()) {
+    // Don't insert browser-injected rule sets on pages that have other rules.
+    for (const auto& other_rule_set : rule_sets_) {
+      if (!other_rule_set->source()->IsFromBrowserInjected()) {
+        CountSpeculationRulesLoadOutcome(
+            SpeculationRulesLoadOutcome::kAutoSpeculationRulesOptedOut);
+        UseCounter::Count(GetSupplementable(),
+                          WebFeature::kAutoSpeculationRulesOptedOut);
+        return;
+      }
+    }
+  }
+
+  CountSpeculationRulesLoadOutcome(outcome);
+
   DCHECK(!base::Contains(rule_sets_, rule_set));
   rule_sets_.push_back(rule_set);
   if (rule_set->has_document_rule()) {
@@ -565,21 +590,15 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
             rule->target_browsing_context_name_hint().value_or(
                 mojom::blink::SpeculationTargetHint::kNoHint),
             rule->eagerness(), rule->no_vary_search_expected().Clone(),
-            rule->injection_world(), rule_set, /*anchor=*/nullptr));
+            rule->injection_type(), rule_set, /*anchor=*/nullptr));
       }
     }
   };
 
   for (SpeculationRuleSet* rule_set : rule_sets_) {
-    // If kSpeculationRulesPrefetchProxy is enabled, collect all prefetch
-    // speculation rules.
-    if (RuntimeEnabledFeatures::SpeculationRulesPrefetchProxyEnabled(
-            execution_context)) {
-      push_candidates(mojom::blink::SpeculationAction::kPrefetch, rule_set,
-                      rule_set->prefetch_rules());
-    }
+    push_candidates(mojom::blink::SpeculationAction::kPrefetch, rule_set,
+                    rule_set->prefetch_rules());
 
-    // Ditto for SpeculationRulesPrefetchWithSubresources.
     if (RuntimeEnabledFeatures::SpeculationRulesPrefetchWithSubresourcesEnabled(
             execution_context)) {
       push_candidates(
@@ -737,17 +756,14 @@ void DocumentSpeculationRules::AddLinkBasedSpeculationCandidates(
                     rule->requires_anonymous_client_ip_when_cross_origin(),
                     target_hint, rule->eagerness(),
                     rule->no_vary_search_expected().Clone(),
-                    rule->injection_world(), rule_set, link);
+                    rule->injection_type(), rule_set, link);
             link_candidates->push_back(std::move(candidate));
           }
         };
 
     for (SpeculationRuleSet* rule_set : rule_sets_) {
-      if (RuntimeEnabledFeatures::SpeculationRulesPrefetchProxyEnabled(
-              execution_context)) {
-        push_link_candidates(mojom::blink::SpeculationAction::kPrefetch,
-                             rule_set, rule_set->prefetch_rules());
-      }
+      push_link_candidates(mojom::blink::SpeculationAction::kPrefetch, rule_set,
+                           rule_set->prefetch_rules());
 
       if (RuntimeEnabledFeatures::
               SpeculationRulesPrefetchWithSubresourcesEnabled(

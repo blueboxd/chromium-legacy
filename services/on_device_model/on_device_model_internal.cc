@@ -4,51 +4,30 @@
 
 #include <memory>
 
+#include "components/optimization_guide/internal/public/on_device_model_executor.h"
+#include "components/optimization_guide/internal/public/utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/on_device_model/chrome_ml_instance.h"
 #include "services/on_device_model/on_device_model_service.h"
 #include "services/on_device_model/public/cpp/model_assets.h"
-#include "third_party/ml/public/on_device_model_executor.h"
-#include "third_party/ml/public/utils.h"
+#include "services/on_device_model/public/cpp/on_device_model.h"
 
 namespace on_device_model {
 
-namespace {
-
-class OnDeviceModel : public mojom::OnDeviceModel {
- public:
-  explicit OnDeviceModel(std::unique_ptr<ml::OnDeviceModelExecutor> executor)
-      : executor_(std::move(executor)) {}
-  ~OnDeviceModel() override = default;
-
-  OnDeviceModel(const OnDeviceModel&) = delete;
-  OnDeviceModel& operator=(const OnDeviceModel&) = delete;
-
-  void Execute(
-      const std::string& input,
-      mojo::PendingRemote<mojom::StreamingResponder> response) override {
-    executor_->Execute(input, std::move(response));
-  }
-
- private:
-  std::unique_ptr<ml::OnDeviceModelExecutor> executor_;
-};
-
-}  // namespace
-
 // static
-std::unique_ptr<mojom::OnDeviceModel> OnDeviceModelService::CreateModel(
-    ModelAssets assets) {
+base::expected<std::unique_ptr<OnDeviceModel>, mojom::LoadModelResult>
+OnDeviceModelService::CreateModel(mojom::LoadModelParamsPtr params) {
   if (!GetChromeMLInstance()) {
-    return nullptr;
+    return base::unexpected(mojom::LoadModelResult::kFailedToLoadLibrary);
   }
 
-  auto executor = ml::OnDeviceModelExecutor::Create(*GetChromeMLInstance(),
-                                                    std::move(assets));
-  if (!executor) {
-    return nullptr;
+  // TODO(sky): make Create() return base::expected.
+  auto result = ml::OnDeviceModelExecutor::Create(*GetChromeMLInstance(),
+                                                  std::move(params));
+  if (result) {
+    return base::ok<std::unique_ptr<OnDeviceModel>>(std::move(result));
   }
-  return std::make_unique<OnDeviceModel>(std::move(executor));
+  return base::unexpected(mojom::LoadModelResult::kFailedToLoadLibrary);
 }
 
 // static

@@ -8,7 +8,7 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 
 class Profile;
 
@@ -26,6 +26,10 @@ class AccountPasswordStoreFactory
   AccountPasswordStoreFactory(const AccountPasswordStoreFactory&) = delete;
   AccountPasswordStoreFactory& operator=(const AccountPasswordStoreFactory&) =
       delete;
+
+  // Returns the default factory, useful in tests where the service is null by
+  // default.
+  static TestingFactory GetDefaultFactoryForTesting();
 
  private:
   friend base::NoDestructor<AccountPasswordStoreFactory>;

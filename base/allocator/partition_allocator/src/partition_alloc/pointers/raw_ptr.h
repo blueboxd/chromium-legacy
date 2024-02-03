@@ -13,25 +13,25 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/flags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/compiler_specific.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/cxx20_is_constant_evaluated.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_forward.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr_exclusion.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/raw_ptr_buildflags.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "partition_alloc/flags.h"
+#include "partition_alloc/partition_alloc_base/compiler_specific.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
+#include "partition_alloc/partition_alloc_base/cxx20_is_constant_evaluated.h"
+#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_config.h"
+#include "partition_alloc/partition_alloc_forward.h"
+#include "partition_alloc/pointers/raw_ptr_exclusion.h"
+#include "partition_alloc/raw_ptr_buildflags.h"
 
 #if BUILDFLAG(IS_WIN)
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/win/win_handle_types.h"
+#include "partition_alloc/partition_alloc_base/win/win_handle_types.h"
 #endif
 
 #if BUILDFLAG(USE_PARTITION_ALLOC)
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/check.h"
+#include "partition_alloc/partition_alloc_base/check.h"
 // Live implementation of MiraclePtr being built.
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
     BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
@@ -50,13 +50,13 @@
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr_backup_ref_impl.h"
+#include "partition_alloc/pointers/raw_ptr_backup_ref_impl.h"
 #elif BUILDFLAG(USE_ASAN_UNOWNED_PTR)
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr_asan_unowned_impl.h"
+#include "partition_alloc/pointers/raw_ptr_asan_unowned_impl.h"
 #elif BUILDFLAG(USE_HOOKABLE_RAW_PTR)
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr_hookable_impl.h"
+#include "partition_alloc/pointers/raw_ptr_hookable_impl.h"
 #else
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr_noop_impl.h"
+#include "partition_alloc/pointers/raw_ptr_noop_impl.h"
 #endif
 
 namespace cc {
@@ -64,6 +64,9 @@ class Scheduler;
 }
 namespace base::internal {
 class DelayTimerBase;
+}
+namespace base::test {
+struct RawPtrCountingImplForTest;
 }
 namespace content::responsiveness {
 class Calculator;
@@ -136,6 +139,7 @@ enum class RawPtrTraits : unsigned {
 // |kMaxValue| declaration.
 template <>
 constexpr inline RawPtrTraits kAllFlags<RawPtrTraits> = RawPtrTraits::kAllMask;
+
 PA_DEFINE_OPERATORS_FOR_FLAGS(RawPtrTraits);
 
 }  // namespace partition_alloc::internal
@@ -213,26 +217,33 @@ struct IsSupportedType<T, std::enable_if_t<std::is_convertible_v<T*, id>>> {
   struct IsSupportedType<name##__, void> { \
     static constexpr bool value = false;   \
   };
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/win/win_handle_types_list.inc"
+#include "partition_alloc/partition_alloc_base/win/win_handle_types_list.inc"
 #undef PA_WINDOWS_HANDLE_TYPE
 #endif
 
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 template <RawPtrTraits Traits>
 using UnderlyingImplForTraits = internal::RawPtrBackupRefImpl<
-    /*AllowDangling=*/ContainsFlags(Traits, RawPtrTraits::kMayDangle),
-    /*ExperimentalAsh=*/ContainsFlags(Traits, RawPtrTraits::kExperimentalAsh)>;
+    /*AllowDangling=*/partition_alloc::internal::ContainsFlags(
+        Traits,
+        RawPtrTraits::kMayDangle),
+    /*ExperimentalAsh=*/partition_alloc::internal::ContainsFlags(
+        Traits,
+        RawPtrTraits::kExperimentalAsh)>;
 
 #elif BUILDFLAG(USE_ASAN_UNOWNED_PTR)
 template <RawPtrTraits Traits>
 using UnderlyingImplForTraits = internal::RawPtrAsanUnownedImpl<
-    ContainsFlags(Traits, RawPtrTraits::kAllowPtrArithmetic),
-    ContainsFlags(Traits, RawPtrTraits::kMayDangle)>;
+    partition_alloc::internal::ContainsFlags(Traits,
+                                             RawPtrTraits::kAllowPtrArithmetic),
+    partition_alloc::internal::ContainsFlags(Traits, RawPtrTraits::kMayDangle)>;
 
 #elif BUILDFLAG(USE_HOOKABLE_RAW_PTR)
 template <RawPtrTraits Traits>
 using UnderlyingImplForTraits = internal::RawPtrHookableImpl<
-    /*EnableHooks=*/!ContainsFlags(Traits, RawPtrTraits::kDisableHooks)>;
+    /*EnableHooks=*/!partition_alloc::internal::ContainsFlags(
+        Traits,
+        RawPtrTraits::kDisableHooks)>;
 
 #else
 template <RawPtrTraits Traits>
@@ -241,21 +252,12 @@ using UnderlyingImplForTraits = internal::RawPtrNoOpImpl;
 
 constexpr bool IsPtrArithmeticAllowed(RawPtrTraits Traits) {
 #if BUILDFLAG(ENABLE_POINTER_ARITHMETIC_TRAIT_CHECK)
-  return ContainsFlags(Traits, RawPtrTraits::kAllowPtrArithmetic);
+  return partition_alloc::internal::ContainsFlags(
+      Traits, RawPtrTraits::kAllowPtrArithmetic);
 #else
   return true;
 #endif
 }
-
-}  // namespace raw_ptr_traits
-
-namespace test {
-
-struct RawPtrCountingImplForTest;
-
-}  // namespace test
-
-namespace raw_ptr_traits {
 
 // ImplForTraits is the struct that implements raw_ptr functions. Think of
 // raw_ptr as a thin wrapper, that directs calls to ImplForTraits. ImplForTraits
@@ -263,8 +265,9 @@ namespace raw_ptr_traits {
 // test impl instead.
 template <RawPtrTraits Traits>
 using ImplForTraits =
-    std::conditional_t<ContainsFlags(Traits,
-                                     RawPtrTraits::kUseCountingImplForTest),
+    std::conditional_t<partition_alloc::internal::ContainsFlags(
+                           Traits,
+                           RawPtrTraits::kUseCountingImplForTest),
                        test::RawPtrCountingImplForTest,
                        UnderlyingImplForTraits<Traits>>;
 
@@ -293,14 +296,16 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
   static_assert(std::is_same_v<Impl, internal::RawPtrNoOpImpl>);
 #endif  // !BUILDFLAG(USE_PARTITION_ALLOC)
 
-  static_assert(AreValidFlags(Traits), "Unknown raw_ptr trait(s)");
+  static_assert(partition_alloc::internal::AreValidFlags(Traits),
+                "Unknown raw_ptr trait(s)");
   static_assert(raw_ptr_traits::IsSupportedType<T>::value,
                 "raw_ptr<T> doesn't work with this kind of pointee type T");
 
   static constexpr bool kZeroOnConstruct =
-      Impl::kMustZeroOnConstruct ||
-      (BUILDFLAG(RAW_PTR_ZERO_ON_CONSTRUCT) &&
-       !ContainsFlags(Traits, RawPtrTraits::kAllowUninitialized));
+      Impl::kMustZeroOnConstruct || (BUILDFLAG(RAW_PTR_ZERO_ON_CONSTRUCT) &&
+                                     !partition_alloc::internal::ContainsFlags(
+                                         Traits,
+                                         RawPtrTraits::kAllowUninitialized));
   static constexpr bool kZeroOnMove =
       Impl::kMustZeroOnMove || BUILDFLAG(RAW_PTR_ZERO_ON_MOVE);
   static constexpr bool kZeroOnDestruct =
@@ -633,7 +638,7 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
   PA_ALWAYS_INLINE constexpr raw_ptr& operator-=(Z delta_elems) {
     static_assert(
         raw_ptr_traits::IsPtrArithmeticAllowed(Traits),
-        "cannot increment raw_ptr unless AllowPtrArithmetic trait is present.");
+        "cannot decrement raw_ptr unless AllowPtrArithmetic trait is present.");
     wrapped_ptr_ = Impl::Retreat(wrapped_ptr_, delta_elems);
     return *this;
   }
@@ -664,6 +669,11 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
                                                       Z delta_elems) {
     raw_ptr result = p;
     return result += delta_elems;
+  }
+  template <typename Z>
+  PA_ALWAYS_INLINE friend constexpr raw_ptr operator+(Z delta_elems,
+                                                      const raw_ptr& p) {
+    return p + delta_elems;
   }
   template <typename Z>
   PA_ALWAYS_INLINE friend constexpr raw_ptr operator-(const raw_ptr& p,
@@ -909,7 +919,7 @@ inline constexpr bool IsRawPtrMayDangleV = false;
 
 template <typename T, RawPtrTraits Traits>
 inline constexpr bool IsRawPtrMayDangleV<raw_ptr<T, Traits>> =
-    ContainsFlags(Traits, RawPtrTraits::kMayDangle);
+    partition_alloc::internal::ContainsFlags(Traits, RawPtrTraits::kMayDangle);
 
 // Template helpers for working with T* or raw_ptr<T>.
 template <typename T>

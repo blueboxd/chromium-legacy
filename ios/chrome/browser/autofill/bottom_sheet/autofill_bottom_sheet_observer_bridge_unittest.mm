@@ -40,23 +40,22 @@ class AutofillBottomSheetObserverBridgeTest : public PlatformTest {
   AutofillBottomSheetObserverBridgeTest() {
     observer_ = [[FakeAutofillBottomSheetObserving alloc] init];
 
-    auto fake_web_state = std::make_unique<web::FakeWebState>();
     auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
     web::ContentWorld content_world =
         AutofillBottomSheetJavaScriptFeature::GetInstance()
             ->GetSupportedContentWorld();
-    fake_web_state->SetWebFramesManager(content_world,
+    fake_web_state_.SetWebFramesManager(content_world,
                                         std::move(frames_manager));
 
-    AutofillBottomSheetTabHelper::CreateForWebState(fake_web_state.get(), nil);
+    AutofillBottomSheetTabHelper::CreateForWebState(&fake_web_state_, nil);
     AutofillBottomSheetTabHelper* helper =
-        AutofillBottomSheetTabHelper::FromWebState(fake_web_state.get());
+        AutofillBottomSheetTabHelper::FromWebState(&fake_web_state_);
 
     observer_bridge_ =
         std::make_unique<autofill::AutofillBottomSheetObserverBridge>(observer_,
                                                                       helper);
   }
-
+  web::FakeWebState fake_web_state_;
   FakeAutofillBottomSheetObserving* observer_;
   std::unique_ptr<autofill::AutofillBottomSheetObserverBridge> observer_bridge_;
 };

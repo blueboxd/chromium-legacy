@@ -21,7 +21,6 @@
 #include "base/check_op.h"
 #include "base/containers/enum_set.h"
 #include "base/containers/flat_set.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
@@ -36,7 +35,6 @@
 #include "base/types/expected.h"
 #include "base/types/expected_macros.h"
 #include "base/uuid.h"
-#include "components/aggregation_service/features.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregation_keys.h"
@@ -47,7 +45,6 @@
 #include "components/attribution_reporting/features.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
-#include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_config.h"
@@ -62,7 +59,6 @@
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_storage_sql_migrations.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
-#include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/privacy_math.h"
@@ -97,7 +93,6 @@ using EventLevelResult = ::content::AttributionTrigger::EventLevelResult;
 
 using ::attribution_reporting::EventReportWindows;
 using ::attribution_reporting::SuitableOrigin;
-using ::attribution_reporting::mojom::SourceRegistrationTimeConfig;
 using ::attribution_reporting::mojom::SourceType;
 using ::attribution_reporting::mojom::TriggerDataMatching;
 
@@ -187,266 +182,6 @@ absl::optional<AttributionReport::Type> DeserializeReportType(int val) {
   }
 }
 
-std::string SerializeFilterData(
-    const attribution_reporting::FilterData& filter_data) {
-  proto::AttributionFilterData msg;
-
-  for (const auto& [filter, values] : filter_data.filter_values()) {
-    proto::AttributionFilterValues filter_values_msg;
-    filter_values_msg.mutable_values()->Add(values.begin(), values.end());
-    (*msg.mutable_filter_values())[filter] = std::move(filter_values_msg);
-  }
-
-  return msg.SerializeAsString();
-}
-
-absl::optional<attribution_reporting::FilterData> DeserializeFilterData(
-    sql::Statement& stmt,
-    int col) {
-  std::string string;
-  if (!stmt.ColumnBlobAsString(col, &string)) {
-    return absl::nullopt;
-  }
-
-  proto::AttributionFilterData msg;
-  if (!msg.ParseFromString(string)) {
-    return absl::nullopt;
-  }
-
-  attribution_reporting::FilterValues::container_type filter_values;
-  filter_values.reserve(msg.filter_values().size());
-
-  for (google::protobuf::MapPair<std::string, proto::AttributionFilterValues>&
-           entry : *msg.mutable_filter_values()) {
-    // Serialized source filter data can only contain these keys due to DB
-    // corruption or deliberate modification.
-    if (entry.first ==
-            attribution_reporting::FilterData::kSourceTypeFilterKey ||
-        entry.first ==
-            attribution_reporting::FilterConfig::kLookbackWindowKey) {
-      continue;
-    }
-
-    google::protobuf::RepeatedPtrField<std::string>* values =
-        entry.second.mutable_values();
-
-    filter_values.emplace_back(
-        entry.first,
-        std::vector<std::string>(std::make_move_iterator(values->begin()),
-                                 std::make_move_iterator(values->end())));
-  }
-
-  return attribution_reporting::FilterData::Create(std::move(filter_values));
-}
-
-std::string SerializeAggregationKeys(
-    const attribution_reporting::AggregationKeys& keys) {
-  proto::AttributionAggregatableSource msg;
-
-  for (const auto& [id, key] : keys.keys()) {
-    proto::AttributionAggregationKey key_msg;
-    key_msg.set_high_bits(absl::Uint128High64(key));
-    key_msg.set_low_bits(absl::Uint128Low64(key));
-    (*msg.mutable_keys())[id] = std::move(key_msg);
-  }
-
-  return msg.SerializeAsString();
-}
-
-bool IsValid(const proto::AttributionAggregationKey& key) {
-  return key.has_high_bits() && key.has_low_bits();
-}
-
-absl::optional<attribution_reporting::AggregationKeys>
-DeserializeAggregationKeys(sql::Statement& stmt, int col) {
-  std::string str;
-  if (!stmt.ColumnBlobAsString(col, &str)) {
-    return absl::nullopt;
-  }
-
-  proto::AttributionAggregatableSource msg;
-  if (!msg.ParseFromString(str)) {
-    return absl::nullopt;
-  }
-
-  attribution_reporting::AggregationKeys::Keys::container_type keys;
-  keys.reserve(msg.keys().size());
-
-  for (const auto& [id, key] : msg.keys()) {
-    if (!IsValid(key)) {
-      return absl::nullopt;
-    }
-
-    keys.emplace_back(id, absl::MakeUint128(key.high_bits(), key.low_bits()));
-  }
-
-  return attribution_reporting::AggregationKeys::FromKeys(std::move(keys));
-}
-
-std::string SerializeReportMetadata(
-    const AttributionReport::EventLevelData& data) {
-  proto::AttributionEventLevelMetadata msg;
-  msg.set_trigger_data(data.trigger_data);
-  msg.set_priority(data.priority);
-
-  return msg.SerializeAsString();
-}
-
-[[nodiscard]] bool DeserializeReportMetadata(const std::string& str,
-                                             uint64_t& trigger_data,
-                                             int64_t& priority) {
-  proto::AttributionEventLevelMetadata msg;
-  if (!msg.ParseFromString(str) || !msg.has_trigger_data() ||
-      !msg.has_priority()) {
-    return false;
-  }
-
-  trigger_data = msg.trigger_data();
-  priority = msg.priority();
-  return true;
-}
-
-void SerializeCommonAggregatableData(
-    const AttributionReport::CommonAggregatableData& data,
-    proto::AttributionCommonAggregatableMetadata& msg) {
-  if (base::FeatureList::IsEnabled(
-          aggregation_service::kAggregationServiceMultipleCloudProviders) &&
-      data.aggregation_coordinator_origin.has_value()) {
-    msg.set_coordinator_origin(
-        data.aggregation_coordinator_origin->Serialize());
-  }
-
-  if (const auto& verification_token = data.verification_token;
-      verification_token.has_value()) {
-    msg.set_verification_token(*verification_token);
-  }
-
-  switch (data.source_registration_time_config) {
-    case SourceRegistrationTimeConfig::kInclude:
-      msg.set_source_registration_time_config(
-          proto::AttributionCommonAggregatableMetadata::INCLUDE);
-      break;
-    case SourceRegistrationTimeConfig::kExclude:
-      msg.set_source_registration_time_config(
-          proto::AttributionCommonAggregatableMetadata::EXCLUDE);
-      break;
-  }
-}
-
-[[nodiscard]] bool DeserializeCommonAggregatableData(
-    const proto::AttributionCommonAggregatableMetadata& msg,
-    AttributionReport::CommonAggregatableData& data) {
-  if (!msg.has_source_registration_time_config()) {
-    return false;
-  }
-
-  if (base::FeatureList::IsEnabled(
-          ::aggregation_service::kAggregationServiceMultipleCloudProviders) &&
-      msg.has_coordinator_origin()) {
-    absl::optional<SuitableOrigin> aggregation_coordinator_origin =
-        SuitableOrigin::Deserialize(msg.coordinator_origin());
-    if (!aggregation_coordinator_origin.has_value()) {
-      return false;
-    }
-    data.aggregation_coordinator_origin =
-        std::move(aggregation_coordinator_origin);
-  }
-
-  switch (msg.source_registration_time_config()) {
-    case proto::AttributionCommonAggregatableMetadata::INCLUDE:
-      data.source_registration_time_config =
-          SourceRegistrationTimeConfig::kInclude;
-      break;
-    case proto::AttributionCommonAggregatableMetadata::EXCLUDE:
-      data.source_registration_time_config =
-          SourceRegistrationTimeConfig::kExclude;
-      break;
-    default:
-      return false;
-  }
-
-  if (msg.has_verification_token()) {
-    data.verification_token = msg.verification_token();
-  }
-
-  return true;
-}
-
-std::string SerializeReportMetadata(
-    const AttributionReport::AggregatableAttributionData& data) {
-  proto::AttributionAggregatableMetadata msg;
-
-  SerializeCommonAggregatableData(data.common_data, *msg.mutable_common_data());
-
-  msg.mutable_contributions()->Reserve(data.contributions.size());
-  for (const auto& contribution : data.contributions) {
-    proto::AttributionAggregatableMetadata_Contribution* contribution_msg =
-        msg.add_contributions();
-    contribution_msg->mutable_key()->set_high_bits(
-        absl::Uint128High64(contribution.key()));
-    contribution_msg->mutable_key()->set_low_bits(
-        absl::Uint128Low64(contribution.key()));
-    contribution_msg->set_value(contribution.value());
-  }
-
-  return msg.SerializeAsString();
-}
-
-[[nodiscard]] bool DeserializeReportMetadata(
-    const std::string& str,
-    AttributionReport::AggregatableAttributionData& data) {
-  proto::AttributionAggregatableMetadata msg;
-  if (!msg.ParseFromString(str) || msg.contributions().empty() ||
-      !msg.has_common_data() ||
-      !DeserializeCommonAggregatableData(msg.common_data(), data.common_data)) {
-    return false;
-  }
-
-  data.contributions.reserve(msg.contributions().size());
-  for (const auto& contribution_msg : msg.contributions()) {
-    if (!contribution_msg.has_key() || !contribution_msg.has_value() ||
-        !IsValid(contribution_msg.key()) || contribution_msg.value() == 0 ||
-        contribution_msg.value() >
-            attribution_reporting::kMaxAggregatableValue) {
-      return false;
-    }
-    data.contributions.emplace_back(
-        absl::MakeUint128(contribution_msg.key().high_bits(),
-                          contribution_msg.key().low_bits()),
-        contribution_msg.value());
-  }
-
-  return true;
-}
-
-std::string SerializeReportMetadata(
-    const AttributionReport::NullAggregatableData& data) {
-  proto::AttributionNullAggregatableMetadata msg;
-
-  SerializeCommonAggregatableData(data.common_data, *msg.mutable_common_data());
-
-  msg.set_fake_source_time(
-      data.fake_source_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
-
-  return msg.SerializeAsString();
-}
-
-[[nodiscard]] bool DeserializeReportMetadata(
-    const std::string& str,
-    AttributionReport::NullAggregatableData& data) {
-  proto::AttributionNullAggregatableMetadata msg;
-  if (!msg.ParseFromString(str) || !msg.has_fake_source_time() ||
-      !msg.has_common_data() ||
-      !DeserializeCommonAggregatableData(msg.common_data(), data.common_data)) {
-    return false;
-  }
-
-  data.fake_source_time = base::Time::FromDeltaSinceWindowsEpoch(
-      base::Microseconds(msg.fake_source_time()));
-
-  return true;
-}
-
 absl::optional<StoredSource::ActiveState> GetSourceActiveState(
     bool event_level_active,
     bool aggregatable_active) {
@@ -493,11 +228,6 @@ int64_t StorageFileSizeKB(const base::FilePath& path_to_database) {
     file_size = file_size / 1024;
   }
   return file_size;
-}
-
-uint64_t SanitizeTriggerData(uint64_t trigger_data, SourceType source_type) {
-  return trigger_data %
-         attribution_reporting::DefaultTriggerDataCardinality(source_type);
 }
 
 }  // namespace
@@ -568,29 +298,26 @@ AttributionStorageSql::ReadSourceFromStatement(sql::Statement& statement) {
     return absl::nullopt;
   }
 
-  int max_event_level_reports =
-      read_only_source_data_msg->max_event_level_reports();
-
-  std::vector<base::TimeDelta> end_times;
-  for (int64_t time :
-       read_only_source_data_msg->event_level_report_window_end_times()) {
-    end_times.push_back(base::Microseconds(time));
+  attribution_reporting::MaxEventLevelReports max_event_level_reports;
+  if (!max_event_level_reports.SetIfValid(
+          read_only_source_data_msg->max_event_level_reports())) {
+    return absl::nullopt;
   }
 
   absl::optional<EventReportWindows> event_report_windows =
-      EventReportWindows::Create(
-          base::Microseconds(read_only_source_data_msg
-                                 ->event_level_report_window_start_time()),
-          std::move(end_times));
+      DeserializeEventReportWindows(*read_only_source_data_msg);
   if (!event_report_windows.has_value()) {
     return absl::nullopt;
   }
 
+  auto trigger_specs = attribution_reporting::TriggerSpecs::Default(
+      *source_type, std::move(*event_report_windows));
+
   double randomized_response_rate =
       read_only_source_data_msg->has_randomized_response_rate()
           ? read_only_source_data_msg->randomized_response_rate()
-          : delegate_->GetRandomizedResponseRate(
-                *source_type, *event_report_windows, max_event_level_reports);
+          : delegate_->GetRandomizedResponseRate(trigger_specs,
+                                                 max_event_level_reports);
 
   // If "debug_cookie_set" field was not set in earlier versions, set the value
   // to whether the debug key was set for the source.
@@ -636,12 +363,11 @@ AttributionStorageSql::ReadSourceFromStatement(sql::Statement& statement) {
       CommonSourceInfo(std::move(*source_origin), std::move(*reporting_origin),
                        *source_type),
       source_event_id, std::move(*destination_set), source_time, expiry_time,
-      std::move(*event_report_windows), aggregatable_report_window_time,
+      std::move(trigger_specs), aggregatable_report_window_time,
       max_event_level_reports, priority, std::move(*filter_data), debug_key,
       std::move(*aggregation_keys), *attribution_logic, *active_state,
       source_id, aggregatable_budget_consumed, randomized_response_rate,
-      attribution_reporting::TriggerConfig(trigger_data_matching),
-      debug_cookie_set);
+      trigger_data_matching, debug_cookie_set);
   if (!stored_source.has_value()) {
     return absl::nullopt;
   }
@@ -667,22 +393,6 @@ namespace {
 
 base::FilePath DatabasePath(const base::FilePath& user_data_directory) {
   return user_data_directory.Append(kDatabasePath);
-}
-
-StorableSource::Result DestinationRateLimitResultToStorableSourceResult(
-    RateLimitTable::DestinationRateLimitResult r) {
-  switch (r) {
-    case RateLimitTable::DestinationRateLimitResult::kAllowed:
-      return StorableSource::Result::kSuccess;
-    case RateLimitTable::DestinationRateLimitResult::kHitGlobalLimit:
-      return StorableSource::Result::kDestinationGlobalLimitReached;
-    case RateLimitTable::DestinationRateLimitResult::kHitReportingLimit:
-      return StorableSource::Result::kDestinationReportingLimitReached;
-    case RateLimitTable::DestinationRateLimitResult::kHitBothLimits:
-      return StorableSource::Result::kDestinationBothLimitsReached;
-    case RateLimitTable::DestinationRateLimitResult::kError:
-      return StorableSource::Result::kInternalError;
-  }
 }
 
 }  // namespace
@@ -742,20 +452,14 @@ StoreSourceResult AttributionStorageSql::StoreSource(
   // Force the creation of the database if it doesn't exist, as we need to
   // persist the source.
   if (!LazyInit(DbCreationPolicy::kCreateIfAbsent)) {
-    return StoreSourceResult(StorableSource::Result::kInternalError);
+    return StoreSourceResult::InternalError();
   }
 
   const base::Time source_time = base::Time::Now();
 
-  if (StorableSource::Result result =
-          CheckDestinationRateLimit(source, source_time);
-      result != StorableSource::Result::kSuccess) {
-    StoreSourceResult store_result(result);
-    if (result != StorableSource::Result::kInternalError) {
-      store_result.max_destinations_per_rate_limit_window_reporting_origin =
-          delegate_->GetDestinationRateLimit().max_per_reporting_site;
-    }
-    return store_result;
+  if (StoreSourceResult result = CheckDestinationRateLimit(source, source_time);
+      !absl::holds_alternative<StoreSourceResult::Success>(result.result())) {
+    return result;
   }
 
   // Only delete expired impressions periodically to avoid excessive DB
@@ -765,7 +469,7 @@ StoreSourceResult AttributionStorageSql::StoreSource(
   DCHECK_GE(delete_frequency, base::TimeDelta());
   if (source_time - last_deleted_expired_sources_ >= delete_frequency) {
     if (!DeleteExpiredSources()) {
-      return StoreSourceResult(StorableSource::Result::kInternalError);
+      return StoreSourceResult::InternalError();
     }
     last_deleted_expired_sources_ = source_time;
   }
@@ -789,10 +493,7 @@ StoreSourceResult AttributionStorageSql::StoreSource(
             file_size * 1024 / *number_of_sources);
       }
     }
-    return StoreSourceResult(
-        StorableSource::Result::kInsufficientSourceCapacity,
-        /*min_fake_report_time=*/absl::nullopt,
-        /*max_destinations_per_source_site_reporting_site=*/absl::nullopt,
+    return StoreSourceResult::InsufficientSourceCapacity(
         delegate_->GetMaxSourcesPerOrigin());
   }
 
@@ -801,12 +502,10 @@ StoreSourceResult AttributionStorageSql::StoreSource(
     case RateLimitResult::kAllowed:
       break;
     case RateLimitResult::kNotAllowed:
-      return StoreSourceResult(
-          StorableSource::Result::kInsufficientUniqueDestinationCapacity,
-          /*min_fake_report_time=*/absl::nullopt,
+      return StoreSourceResult::InsufficientUniqueDestinationCapacity(
           delegate_->GetMaxDestinationsPerSourceSiteReportingSite());
     case RateLimitResult::kError:
-      return StoreSourceResult(StorableSource::Result::kInternalError);
+      return StoreSourceResult::InternalError();
   }
 
   switch (rate_limit_table_.SourceAllowedForReportingOriginLimit(&db_, source,
@@ -814,10 +513,9 @@ StoreSourceResult AttributionStorageSql::StoreSource(
     case RateLimitResult::kAllowed:
       break;
     case RateLimitResult::kNotAllowed:
-      return StoreSourceResult(
-          StorableSource::Result::kExcessiveReportingOrigins);
+      return StoreSourceResult::ExcessiveReportingOrigins();
     case RateLimitResult::kError:
-      return StoreSourceResult(StorableSource::Result::kInternalError);
+      return StoreSourceResult::InternalError();
   }
 
   switch (rate_limit_table_.SourceAllowedForReportingOriginPerSiteLimit(
@@ -825,15 +523,14 @@ StoreSourceResult AttributionStorageSql::StoreSource(
     case RateLimitResult::kAllowed:
       break;
     case RateLimitResult::kNotAllowed:
-      return StoreSourceResult(
-          StorableSource::Result::kReportingOriginsPerSiteLimitReached);
+      return StoreSourceResult::ReportingOriginsPerSiteLimitReached();
     case RateLimitResult::kError:
-      return StoreSourceResult(StorableSource::Result::kInternalError);
+      return StoreSourceResult::InternalError();
   }
 
   sql::Transaction transaction(&db_);
   if (!transaction.Begin()) {
-    return StoreSourceResult(StorableSource::Result::kInternalError);
+    return StoreSourceResult::InternalError();
   }
 
   const attribution_reporting::SourceRegistration& reg = source.registration();
@@ -843,13 +540,15 @@ StoreSourceResult AttributionStorageSql::StoreSource(
   const base::Time aggregatable_report_window_time =
       source_time + reg.aggregatable_report_window;
 
+  auto trigger_specs = attribution_reporting::TriggerSpecs::Default(
+      common_info.source_type(), reg.event_report_windows);
+
   ASSIGN_OR_RETURN(const auto randomized_response_data,
                    delegate_->GetRandomizedResponse(
-                       common_info.source_type(), reg.event_report_windows,
+                       common_info.source_type(), trigger_specs,
                        reg.max_event_level_reports, source_time),
-                   [](auto) {
-                     return StoreSourceResult(
-                         StorableSource::Result::kExceedsMaxChannelCapacity);
+                   [](auto) -> StoreSourceResult {
+                     return StoreSourceResult::ExceedsMaxChannelCapacity();
                    });
 
   int num_conversions = 0;
@@ -900,13 +599,13 @@ StoreSourceResult AttributionStorageSql::StoreSource(
   statement.BindBlob(14, SerializeAggregationKeys(reg.aggregation_keys));
   statement.BindBlob(15, SerializeFilterData(reg.filter_data));
   statement.BindBlob(
-      16, SerializeReadOnlySourceData(reg.event_report_windows,
-                                      reg.max_event_level_reports,
-                                      randomized_response_data.rate(),
-                                      &reg.trigger_config, &debug_cookie_set));
+      16, SerializeReadOnlySourceData(
+              reg.event_report_windows, reg.max_event_level_reports,
+              randomized_response_data.rate(), reg.trigger_data_matching,
+              debug_cookie_set));
 
   if (!statement.Run()) {
-    return StoreSourceResult(StorableSource::Result::kInternalError);
+    return StoreSourceResult::InternalError();
   }
 
   const StoredSource::Id source_id(db_.GetLastInsertRowId());
@@ -921,33 +620,34 @@ StoreSourceResult AttributionStorageSql::StoreSource(
     insert_destination_statement.Reset(/*clear_bound_vars=*/false);
     insert_destination_statement.BindString(1, site.Serialize());
     if (!insert_destination_statement.Run()) {
-      return StoreSourceResult(StorableSource::Result::kInternalError);
+      return StoreSourceResult::InternalError();
     }
   }
 
   absl::optional<StoredSource> stored_source = StoredSource::Create(
       source.common_info(), reg.source_event_id, reg.destination_set,
-      source_time, expiry_time, reg.event_report_windows,
+      source_time, expiry_time, std::move(trigger_specs),
       aggregatable_report_window_time, reg.max_event_level_reports,
       reg.priority, reg.filter_data, reg.debug_key, reg.aggregation_keys,
       attribution_logic, *active_state, source_id,
       /*aggregatable_budget_consumed=*/0, randomized_response_data.rate(),
-      reg.trigger_config, debug_cookie_set);
+      reg.trigger_data_matching, debug_cookie_set);
 
   if (!stored_source.has_value() ||
       !rate_limit_table_.AddRateLimitForSource(&db_, *stored_source)) {
-    return StoreSourceResult(StorableSource::Result::kInternalError);
+    return StoreSourceResult::InternalError();
   }
 
   absl::optional<base::Time> min_fake_report_time;
 
   if (attribution_logic == StoredSource::AttributionLogic::kFalsely) {
     for (const auto& fake_report : *randomized_response_data.response()) {
-      DCHECK_EQ(fake_report.trigger_data,
-                SanitizeTriggerData(fake_report.trigger_data,
-                                    common_info.source_type()));
+      auto trigger_spec_it = stored_source->trigger_specs().find(
+          fake_report.trigger_data, TriggerDataMatching::kExact);
+      DCHECK(trigger_spec_it);
 
-      const EventReportWindows& windows = reg.event_report_windows;
+      const EventReportWindows& windows =
+          (*trigger_spec_it).second.event_report_windows();
       DCHECK_LT(fake_report.window_index,
                 static_cast<int>(windows.end_times().size()));
 
@@ -955,7 +655,8 @@ StoreSourceResult AttributionStorageSql::StoreSource(
           windows.ReportTimeAtWindow(source_time, fake_report.window_index);
       // The last trigger time will always fall within a report window, no
       // matter the report window's start time.
-      base::Time trigger_time = LastTriggerTimeForReportTime(report_time);
+      base::Time trigger_time =
+          attribution_reporting::LastTriggerTimeForReportTime(report_time);
       DCHECK_EQ(windows.ComputeReportTime(source_time, trigger_time),
                 report_time);
 
@@ -973,7 +674,7 @@ StoreSourceResult AttributionStorageSql::StoreSource(
           AttributionReport::EventLevelData(fake_report.trigger_data,
                                             /*priority=*/0, *stored_source));
       if (!StoreAttributionReport(fake_attribution_report)) {
-        return StoreSourceResult(StorableSource::Result::kInternalError);
+        return StoreSourceResult::InternalError();
       }
 
       if (!min_fake_report_time.has_value() ||
@@ -990,22 +691,21 @@ StoreSourceResult AttributionStorageSql::StoreSource(
                             /*debug_key=*/absl::nullopt,
                             /*context_origin=*/common_info.source_origin()),
             *stored_source)) {
-      return StoreSourceResult(StorableSource::Result::kInternalError);
+      return StoreSourceResult::InternalError();
     }
   }
 
   if (!transaction.Commit()) {
-    return StoreSourceResult(StorableSource::Result::kInternalError);
+    return StoreSourceResult::InternalError();
   }
 
-  return StoreSourceResult(
-      attribution_logic == StoredSource::AttributionLogic::kTruthfully
-          ? StorableSource::Result::kSuccess
-          : StorableSource::Result::kSuccessNoised,
-      min_fake_report_time);
+  if (attribution_logic == StoredSource::AttributionLogic::kTruthfully) {
+    return StoreSourceResult::Success();
+  }
+  return StoreSourceResult::SuccessNoised(min_fake_report_time);
 }
 
-StorableSource::Result AttributionStorageSql::CheckDestinationRateLimit(
+StoreSourceResult AttributionStorageSql::CheckDestinationRateLimit(
     const StorableSource& source,
     base::Time source_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1015,7 +715,20 @@ StorableSource::Result AttributionStorageSql::CheckDestinationRateLimit(
   base::UmaHistogramEnumeration("Conversions.DestinationRateLimitResult",
                                 rate_limit_result);
 
-  return DestinationRateLimitResultToStorableSourceResult(rate_limit_result);
+  switch (rate_limit_result) {
+    case RateLimitTable::DestinationRateLimitResult::kAllowed:
+      return StoreSourceResult::Success();
+    case RateLimitTable::DestinationRateLimitResult::kHitGlobalLimit:
+      return StoreSourceResult::DestinationGlobalLimitReached();
+    case RateLimitTable::DestinationRateLimitResult::kHitReportingLimit:
+      return StoreSourceResult::DestinationReportingLimitReached(
+          delegate_->GetDestinationRateLimit().max_per_reporting_site);
+    case RateLimitTable::DestinationRateLimitResult::kHitBothLimits:
+      return StoreSourceResult::DestinationBothLimitsReached(
+          delegate_->GetDestinationRateLimit().max_per_reporting_site);
+    case RateLimitTable::DestinationRateLimitResult::kError:
+      return StoreSourceResult::InternalError();
+  }
 }
 
 // Checks whether a new report is allowed to be stored for the given source
@@ -1031,20 +744,23 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReportResult
 AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
     const AttributionReport& report,
     int num_conversions,
-    int max_event_level_reports,
     int64_t conversion_priority,
     absl::optional<AttributionReport>& replaced_report) {
   DCHECK_GE(num_conversions, 0);
-  DCHECK_GE(max_event_level_reports, 0);
 
   const auto* data =
       absl::get_if<AttributionReport::EventLevelData>(&report.data());
   DCHECK(data);
 
   const StoredSource& source = data->source;
+  // TODO(crbug.com/1499890): The logic in this method doesn't properly handle
+  // the case in which there are different report windows for different trigger
+  // data. Prior to enabling `attribution_reporting::features::kTriggerConfig`,
+  // this must be fixed.
+  DCHECK(source.trigger_specs().SingleSharedSpec());
 
   // If there's already capacity for the new report, there's nothing to do.
-  if (num_conversions < max_event_level_reports) {
+  if (num_conversions < source.max_event_level_reports()) {
     return MaybeReplaceLowerPriorityEventLevelReportResult::kAddNewReport;
   }
 
@@ -1060,7 +776,7 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
   sql::Statement min_priority_statement(db_.GetCachedStatement(
       SQL_FROM_HERE, attribution_queries::kMinPrioritySql));
   min_priority_statement.BindInt64(0, *source.source_id());
-  min_priority_statement.BindTime(1, report.report_time());
+  min_priority_statement.BindTime(1, report.initial_report_time());
 
   absl::optional<AttributionReport::Id> conversion_id_with_min_priority;
   int64_t min_priority;
@@ -1540,16 +1256,6 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
 
   const CommonSourceInfo& common_info = source.common_info();
 
-  switch (source.event_report_windows().FallsWithin(attribution_info.time -
-                                                    source.source_time())) {
-    case EventReportWindows::WindowResult::kFallsWithin:
-      break;
-    case EventReportWindows::WindowResult::kNotStarted:
-      return EventLevelResult::kReportWindowNotStarted;
-    case EventReportWindows::WindowResult::kPassed:
-      return EventLevelResult::kReportWindowPassed;
-  }
-
   const SourceType source_type = common_info.source_type();
 
   auto event_trigger = base::ranges::find_if(
@@ -1574,20 +1280,22 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
       return EventLevelResult::kInternalError;
   }
 
-  uint64_t trigger_data;
-  switch (source.trigger_config().trigger_data_matching()) {
-    case TriggerDataMatching::kExact: {
-      uint64_t cardinality =
-          attribution_reporting::DefaultTriggerDataCardinality(source_type);
-      if (event_trigger->data >= cardinality) {
-        return EventLevelResult::kNoMatchingTriggerData;
-      }
-      trigger_data = event_trigger->data;
+  auto trigger_spec_it = source.trigger_specs().find(
+      event_trigger->data, source.trigger_data_matching());
+  if (!trigger_spec_it) {
+    return EventLevelResult::kNoMatchingTriggerData;
+  }
+
+  auto [trigger_data, trigger_spec] = *trigger_spec_it;
+
+  switch (trigger_spec.event_report_windows().FallsWithin(
+      attribution_info.time - source.source_time())) {
+    case EventReportWindows::WindowResult::kFallsWithin:
       break;
-    }
-    case TriggerDataMatching::kModulus:
-      trigger_data = SanitizeTriggerData(event_trigger->data, source_type);
-      break;
+    case EventReportWindows::WindowResult::kNotStarted:
+      return EventLevelResult::kReportWindowNotStarted;
+    case EventReportWindows::WindowResult::kPassed:
+      return EventLevelResult::kReportWindowPassed;
   }
 
   switch (
@@ -1603,11 +1311,9 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
       return EventLevelResult::kInternalError;
   }
 
-  const EventReportWindows& event_report_windows =
-      source.event_report_windows();
-
   const base::Time report_time = delegate_->GetEventLevelReportTime(
-      event_report_windows, source.source_time(), attribution_info.time);
+      trigger_spec.event_report_windows(), source.source_time(),
+      attribution_info.time);
 
   // TODO(apaseltiner): Consider informing the manager if the trigger
   // data was out of range for DevTools issue reporting.
@@ -1647,8 +1353,7 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
 
   const auto maybe_replace_lower_priority_report_result =
       MaybeReplaceLowerPriorityEventLevelReport(
-          report, num_conversions, source.max_event_level_reports(),
-          event_level_data->priority, replaced_report);
+          report, num_conversions, event_level_data->priority, replaced_report);
   if (maybe_replace_lower_priority_report_result ==
       MaybeReplaceLowerPriorityEventLevelReportResult::kError) {
     return EventLevelResult::kInternalError;

@@ -123,6 +123,9 @@ const char kSearchEngineChoiceScreenProfileInitConditionsHistogram[] =
 const char kSearchEngineChoiceScreenEventsHistogram[] =
     "Search.ChoiceScreenEvents";
 
+const char kDefaultSearchEngineChoiceLocationHistogram[] =
+    "Search.DefaultSearchEngineChoiceLocation";
+
 const char kSearchEngineChoiceScreenDefaultSearchEngineTypeHistogram[] =
     "Search.ChoiceScreenDefaultSearchEngineType";
 
@@ -288,6 +291,11 @@ void RecordChoiceScreenDefaultSearchProviderType(SearchEngineType engine_type) {
 void RecordChoiceMade(PrefService* profile_prefs,
                       ChoiceMadeLocation choice_location,
                       TemplateURLService* template_url_service) {
+  // Record the histogram even if the feature is not enabled.
+  base::UmaHistogramEnumeration(
+      search_engines::kDefaultSearchEngineChoiceLocationHistogram,
+      choice_location);
+
   if (!IsChoiceScreenFlagEnabled(ChoicePromo::kAny)) {
     return;
   }
@@ -304,13 +312,8 @@ void RecordChoiceMade(PrefService* profile_prefs,
     return;
   }
 
-  // TODO(b/307713013): Remove the check for `template_url_service` when the
-  // function is used on the iOS side.
-  if (template_url_service) {
-    search_engines::RecordChoiceScreenDefaultSearchProviderType(
-        GetDefaultSearchEngineType(*template_url_service));
-  }
-
+  search_engines::RecordChoiceScreenDefaultSearchProviderType(
+      GetDefaultSearchEngineType(CHECK_DEREF(template_url_service)));
   profile_prefs->SetInt64(
       prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp,
       base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());

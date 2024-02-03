@@ -395,8 +395,20 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "cast_junit_tests",
     tests = {
-        "cast_base_junit_tests": None,
-        "cast_shell_junit_tests": None,
+        "cast_base_junit_tests": targets.legacy_test_config(
+            mixins = [
+                "x86-64",
+                "linux-jammy",
+                "junit-swarming-emulator",
+            ],
+        ),
+        "cast_shell_junit_tests": targets.legacy_test_config(
+            mixins = [
+                "x86-64",
+                "linux-jammy",
+                "junit-swarming-emulator",
+            ],
+        ),
     },
 )
 
@@ -602,6 +614,14 @@ targets.legacy_basic_suite(
                 enable = True,
             ),
         ),
+        "chromedriver_py_tests_headless_shell": targets.legacy_test_config(
+            args = [
+                "--test-type=integration",
+            ],
+            resultdb = targets.resultdb(
+                enable = True,
+            ),
+        ),
         "chromedriver_replay_unittests": None,
     },
 )
@@ -682,7 +702,7 @@ targets.legacy_basic_suite(
             tast_expr = "STUB_STRING_TO_RUN_TAST_TESTS",
             test_level_retries = 2,
             ci_only = True,
-            timeout_sec = 7200,
+            timeout_sec = 14400,
             experiment_percentage = 100,
             shards = 3,
         ),
@@ -701,7 +721,7 @@ targets.legacy_basic_suite(
             tast_expr = "STUB_STRING_TO_RUN_TAST_TESTS",
             test_level_retries = 1,
             ci_only = True,
-            timeout_sec = 7200,
+            timeout_sec = 14400,
             experiment_percentage = 100,
             shards = 2,
         ),
@@ -725,9 +745,7 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "chromeos_integration_tests",
     tests = {
-        "chromeos_integration_tests": targets.legacy_test_config(
-            ci_only = True,
-        ),
+        "chromeos_integration_tests": targets.legacy_test_config(),
     },
 )
 
@@ -1146,134 +1164,20 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
-    name = "chromium_junit_tests_no_swarming",
-    tests = {
-        "android_webview_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "base_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "build_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "chrome_java_test_pagecontroller_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "chrome_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "components_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "content_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "device_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "junit_unit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "keyboard_accessory_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "media_base_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "module_installer_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "net_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "paint_preview_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "password_check_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "password_manager_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "services_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "touch_to_fill_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "ui_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "webapk_client_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "webapk_shell_apk_h2o_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-        "webapk_shell_apk_junit_tests": targets.legacy_test_config(
-            remove_mixins = [
-                "nougat-x86-emulator",
-            ],
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
     name = "chromium_junit_tests_scripts",
     tests = {
         "android_webview_junit_tests": targets.legacy_test_config(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1281,12 +1185,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1294,12 +1200,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1307,12 +1215,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1320,12 +1230,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1333,12 +1245,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1346,12 +1260,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1359,12 +1275,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1372,12 +1290,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1385,12 +1305,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1398,12 +1320,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1411,12 +1335,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1424,12 +1350,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1437,12 +1365,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1450,12 +1380,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1463,12 +1395,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1476,12 +1410,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1489,12 +1425,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1502,12 +1440,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1515,12 +1455,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1528,12 +1470,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1541,12 +1485,14 @@ targets.legacy_basic_suite(
             mixins = [
                 "x86-64",
                 "linux-jammy",
-                "junit-swarming",
+                "junit-swarming-emulator",
             ],
             remove_mixins = [
                 "emulator-4-cores",
                 "nougat-x86-emulator",
                 "oreo-x86-emulator",
+                "walleye",
+                "pie_fleet",
             ],
             use_isolated_scripts_api = True,
         ),
@@ -1602,6 +1548,70 @@ targets.legacy_basic_suite(
     name = "chromium_tracing_gtests",
     tests = {
         "services_unittests": None,
+    },
+)
+
+targets.legacy_basic_suite(
+    name = "chromium_web_tests_brfetch_isolated_scripts",
+    tests = {
+        # brfetch_blink_web_tests provides coverage for
+        # running Layout Tests with BackgroundResourceFetch feature.
+        "brfetch_blink_web_tests": targets.legacy_test_config(
+            test = "blink_web_tests",
+            results_handler = "layout tests",
+            mixins = [
+                "has_native_resultdb_integration",
+                "blink_tests_write_run_histories",
+            ],
+            args = [
+                "--flag-specific=background-resource-fetch",
+                "--skipped=always",
+                # layout test failures are retried 3 times when '--test-list' is not
+                # passed, but 0 times when '--test-list' is passed. We want to always
+                # retry 3 times, so we explicitly specify it.
+                "--num-retries=3",
+            ],
+            ci_only = True,
+            swarming = targets.swarming(
+                shards = 1,
+            ),
+            merge = targets.merge(
+                script = "//third_party/blink/tools/merge_web_test_results.py",
+                args = [
+                    "--verbose",
+                ],
+            ),
+            experiment_percentage = 100,
+        ),
+        # brfetch_blink_wpt_tests provides coverage for
+        # running Layout Tests with BackgroundResourceFetch feature.
+        "brfetch_blink_wpt_tests": targets.legacy_test_config(
+            test = "blink_wpt_tests",
+            results_handler = "layout tests",
+            mixins = [
+                "has_native_resultdb_integration",
+                "blink_tests_write_run_histories",
+            ],
+            args = [
+                "--flag-specific=background-resource-fetch",
+                "--skipped=always",
+                # layout test failures are retried 3 times when '--test-list' is not
+                # passed, but 0 times when '--test-list' is passed. We want to always
+                # retry 3 times, so we explicitly specify it.
+                "--num-retries=3",
+            ],
+            ci_only = True,
+            swarming = targets.swarming(
+                shards = 3,
+            ),
+            merge = targets.merge(
+                script = "//third_party/blink/tools/merge_web_test_results.py",
+                args = [
+                    "--verbose",
+                ],
+            ),
+            experiment_percentage = 100,
+        ),
     },
 )
 
@@ -1733,6 +1743,32 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "chromium_wpt_tests_isolated_scripts",
+    tests = {
+        "chrome_wpt_tests": targets.legacy_test_config(
+            test = "chrome_wpt_tests",
+            results_handler = "layout tests",
+            args = [
+                "--test-type",
+                "testharness",
+                "reftest",
+                "crashtest",
+                "print-reftest",
+            ],
+            swarming = targets.swarming(
+                shards = 15,
+            ),
+            merge = targets.merge(
+                script = "//third_party/blink/tools/merge_web_test_results.py",
+                args = [
+                    "--verbose",
+                ],
+            ),
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "clang_tot_gtests",
     tests = {
         "base_unittests": None,
@@ -1765,7 +1801,6 @@ targets.legacy_basic_suite(
         "headless_browsertests": None,
         "headless_unittests": None,
         "interactive_ui_tests": None,
-        "nacl_loader_unittests": None,
         "net_unittests": None,
         "pdf_unittests": None,
         "ppapi_unittests": None,
@@ -2994,6 +3029,7 @@ targets.legacy_basic_suite(
             mixins = [
                 "has_native_resultdb_integration",
                 "webgpu_telemetry_cts",
+                "linux_vulkan",
             ],
             args = [
                 "--use-webgpu-adapter=swiftshader",
@@ -3008,6 +3044,7 @@ targets.legacy_basic_suite(
             mixins = [
                 "has_native_resultdb_integration",
                 "webgpu_telemetry_cts",
+                "linux_vulkan",
             ],
             args = [
                 "--use-webgpu-adapter=swiftshader",
@@ -3089,7 +3126,6 @@ targets.legacy_basic_suite(
             args = [
                 "--extra-browser-args=--use-angle=gl --use-webgpu-adapter=opengles --enable-webgpu-developer-features",
             ],
-            ci_only = True,
             swarming = targets.swarming(
                 shards = 14,
             ),
@@ -3109,6 +3145,7 @@ targets.legacy_basic_suite(
             mixins = [
                 "has_native_resultdb_integration",
                 "webgpu_telemetry_cts",
+                "linux_vulkan",
             ],
             swarming = targets.swarming(
                 shards = 14,
@@ -3122,6 +3159,7 @@ targets.legacy_basic_suite(
             mixins = [
                 "has_native_resultdb_integration",
                 "webgpu_telemetry_cts",
+                "linux_vulkan",
             ],
             args = [
                 "--enable-dawn-backend-validation",
@@ -3144,6 +3182,7 @@ targets.legacy_basic_suite(
             mixins = [
                 "has_native_resultdb_integration",
                 "webgpu_telemetry_cts",
+                "linux_vulkan",
             ],
             swarming = targets.swarming(
                 shards = 8,
@@ -3160,6 +3199,7 @@ targets.legacy_basic_suite(
             mixins = [
                 "has_native_resultdb_integration",
                 "webgpu_telemetry_cts",
+                "linux_vulkan",
             ],
             args = [
                 "--use-dxc",
@@ -3174,6 +3214,7 @@ targets.legacy_basic_suite(
             mixins = [
                 "has_native_resultdb_integration",
                 "webgpu_telemetry_cts",
+                "linux_vulkan",
             ],
             args = [
                 "--enable-dawn-backend-validation",
@@ -4493,7 +4534,14 @@ targets.legacy_basic_suite(
         "boringssl_ssl_tests": None,
         "capture_unittests": None,
         "cast_unittests": None,
-        "cc_unittests": None,
+        "cc_unittests": targets.legacy_test_config(
+            test = "cc_unittests",
+            args = [
+                "--test-launcher-bot-mode",
+                "--test-launcher-filter-file=testing/buildbot/filters/ios.cc_unittests.filter",
+                "--use-gpu-in-tests",
+            ],
+        ),
         "components_browsertests": None,
         "components_unittests": None,
         "content_browsertests": targets.legacy_test_config(
@@ -4528,6 +4576,24 @@ targets.legacy_basic_suite(
         "libjingle_xmpp_unittests": None,
         "liburlpattern_unittests": None,
         "media_unittests": None,
+        "media_unittests_skia_graphite_dawn": targets.legacy_test_config(
+            test = "media_unittests",
+            args = [
+                "--test-launcher-bot-mode",
+                "--enable-features=SkiaGraphite",
+                "--skia-graphite-backend=dawn",
+                "--use-gpu-in-tests",
+            ],
+        ),
+        "media_unittests_skia_graphite_metal": targets.legacy_test_config(
+            test = "media_unittests",
+            args = [
+                "--test-launcher-bot-mode",
+                "--enable-features=SkiaGraphite",
+                "--skia-graphite-backend=metal",
+                "--use-gpu-in-tests",
+            ],
+        ),
         "midi_unittests": None,
         "mojo_unittests": None,
         "net_unittests": None,
@@ -4546,7 +4612,14 @@ targets.legacy_basic_suite(
         "ui_touch_selection_unittests": None,
         "ui_unittests": None,
         "url_unittests": None,
-        "viz_unittests": None,
+        "viz_unittests": targets.legacy_test_config(
+            test = "viz_unittests",
+            args = [
+                "--test-launcher-bot-mode",
+                "--test-launcher-filter-file=testing/buildbot/filters/ios.viz_unittests.filter",
+                "--use-gpu-in-tests",
+            ],
+        ),
         "wtf_unittests": None,
         "zlib_unittests": None,
     },
@@ -4582,13 +4655,6 @@ targets.legacy_basic_suite(
     name = "ios_crash_xcuitests",
     tests = {
         "ios_crash_xcuitests_module": None,
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "ios_cronet_tests",
-    tests = {
-        "cronet_test": None,
     },
 )
 
@@ -4807,6 +4873,26 @@ targets.legacy_basic_suite(
     },
 )
 
+# This target should usually be the same as `lacros_skylab_tests`. We use
+# a different target for version skew so we can easily disable all version skew
+# tests during an outage.
+targets.legacy_basic_suite(
+    name = "lacros_skylab_tests_version_skew",
+    tests = {
+        "lacros_all_tast_tests": targets.legacy_test_config(
+            tast_expr = "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
+            test_level_retries = 2,
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
+            timeout_sec = 10800,
+            # TODO(crbug.com/1499803) re-enable when we have the required OS versions.
+            experiment_percentage = 100,
+            shards = 2,
+        ),
+    },
+)
+
 targets.legacy_basic_suite(
     name = "lacros_skylab_tests_with_gtests",
     tests = {
@@ -4826,9 +4912,6 @@ targets.legacy_basic_suite(
     tests = {
         "memory.leak_detection": targets.legacy_test_config(
             test = "performance_test_suite",
-            override_compile_targets = [
-                "performance_test_suite",
-            ],
             args = [
                 "--pageset-repeat=1",
                 "--test-shard-map-filename=linux_leak_detection_shard_map.json",
@@ -5094,7 +5177,7 @@ targets.legacy_basic_suite(
                 ],
             ),
         ),
-        "webdriver_tests_suite": targets.legacy_test_config(
+        "webdriver_wpt_tests": targets.legacy_test_config(
             test = "chrome_wpt_tests",
             results_handler = "layout tests",
             mixins = [
@@ -5121,34 +5204,6 @@ targets.legacy_basic_suite(
     tests = {
         "xr_browser_tests": targets.legacy_test_config(
             test = "xr_browser_tests",
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "live_companion_tests",
-    tests = {
-        "live_companion_tests": targets.legacy_test_config(
-            test = "browser_tests",
-            override_compile_targets = [
-                "browser_tests",
-            ],
-            args = [
-                "--gtest_filter=CompanionLiveTest.*",
-                "--run-live-tests",
-                "--run-manual",
-                "--sync-status-change-checker-timeout=600",
-                # Timeout values below are in milliseconds.
-                "--test-tiny-timeout=85000",
-                "--ui-test-action-timeout=90000",
-                "--ui-test-action-max-timeout=95000",
-                "--test-launcher-timeout=100000",
-                "--isolated-script-test-launcher-retry-limit=5",
-            ],
-            swarming = targets.swarming(
-                expiration_sec = 3600,
-                hard_timeout_sec = 3600,
-            ),
         ),
     },
 )
@@ -6315,6 +6370,22 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "webview_bot_instrumentation_test_apk_mutations_gtest",
+    tests = {
+        "webview_instrumentation_test_apk_mutations": targets.legacy_test_config(
+            test = "webview_instrumentation_test_apk",
+            args = [
+                "--use-apk-under-test-flags-file",
+                "--webview-mutations-enabled",
+            ],
+            swarming = targets.swarming(
+                shards = 12,
+            ),
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "webview_bot_instrumentation_test_apk_no_field_trial_gtest",
     tests = {
         "webview_instrumentation_test_apk_no_field_trial": targets.legacy_test_config(
@@ -6549,25 +6620,6 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
-    name = "wpt_web_tests",
-    tests = {
-        "wpt_tests_suite": targets.legacy_test_config(
-            test = "chrome_wpt_tests",
-            results_handler = "layout tests",
-            swarming = targets.swarming(
-                shards = 15,
-            ),
-            merge = targets.merge(
-                script = "//third_party/blink/tools/merge_web_test_results.py",
-                args = [
-                    "--verbose",
-                ],
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
     name = "wpt_web_tests_android",
     tests = {
         "chrome_public_wpt": targets.legacy_test_config(
@@ -6658,57 +6710,6 @@ targets.legacy_basic_suite(
                     "--verbose",
                 ],
             ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "wpt_web_tests_identity",
-    tests = {
-        "wpt_tests_suite": targets.legacy_test_config(
-            test = "chrome_wpt_tests",
-            results_handler = "layout tests",
-            args = [
-                "--no-wpt-internal",
-                "webauthn/",
-            ],
-            swarming = targets.swarming(
-                shards = 1,
-            ),
-            merge = targets.merge(
-                script = "//third_party/blink/tools/merge_web_test_results.py",
-                args = [
-                    "--verbose",
-                ],
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "wpt_web_tests_input",
-    tests = {
-        "wpt_tests_suite": targets.legacy_test_config(
-            test = "chrome_wpt_tests",
-            results_handler = "layout tests",
-            args = [
-                "--no-wpt-internal",
-                "infrastructure/testdriver/actions/",
-                "input-events/",
-                "pointerevents/",
-                "touch-events/",
-                "uievents/",
-            ],
-            swarming = targets.swarming(
-                shards = 1,
-            ),
-            merge = targets.merge(
-                script = "//third_party/blink/tools/merge_web_test_results.py",
-                args = [
-                    "--verbose",
-                ],
-            ),
-            experiment_percentage = 100,
         ),
     },
 )

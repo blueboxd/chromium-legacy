@@ -31,8 +31,8 @@
 #include "content/public/browser/page.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/preloading.h"
+#include "content/public/browser/preloading_trigger_type.h"
 #include "content/public/browser/prerender_handle.h"
-#include "content/public/browser/prerender_trigger_type.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/common/stop_find_action.h"
@@ -275,6 +275,14 @@ class WebContents : public PageNavigator,
     // Options specific to WebContents created for picture-in-picture windows.
     absl::optional<blink::mojom::PictureInPictureWindowOptions>
         picture_in_picture_options;
+
+    // WebContentsDelegate given for the case early initialization code depends
+    // on the delegate callbacks.
+    // For instance, WebContentsDelegate::IsInPreviewMode() will be called in
+    // RenderFrameHostImpl::ctor for the initial instance that is constructed
+    // in WebContents::Create() call, and callers have no chance to set their
+    // delegates.
+    raw_ptr<WebContentsDelegate> delegate = nullptr;
   };
 
   // Token that causes input to be blocked on this WebContents for at least as
@@ -1260,11 +1268,8 @@ class WebContents : public PageNavigator,
   // changed so that it can be recomputed and sent to the renderer.
   virtual void OnWebPreferencesChanged() = 0;
 
-  // Requests the renderer to exit fullscreen.
-  // |will_cause_resize| indicates whether the fullscreen change causes a
-  // view resize. e.g. This will be false when going from tab fullscreen to
-  // browser fullscreen.
-  virtual void ExitFullscreen(bool will_cause_resize) = 0;
+  // Requests the renderer to exit fullscreen and sends a resize message.
+  virtual void ExitFullscreen() = 0;
 
   // The WebContents is trying to take some action that would cause user
   // confusion if taken while in fullscreen. If this WebContents or any outer
@@ -1416,9 +1421,11 @@ class WebContents : public PageNavigator,
   // Activates the primary page that is shown in preview mode. This will relax
   // capability restriction in the browser process, and notify the renderer to
   // process the prerendering activation algorithm.
+  // This all processes happens asynchronously, and
+  // `WebContentsDelegate::DidActivatePreviewedPage` will be called once it's
+  // done.
   // Should be called while WebContentsDelegate::IsInPreviewMode returns true.
-  virtual void ActivatePreviewPage(base::TimeTicks activation_start,
-                                   base::OnceClosure completion_callback) = 0;
+  virtual void ActivatePreviewPage() = 0;
 
   // Starts an embedder triggered (browser-initiated) prerendering page and
   // returns the unique_ptr<PrerenderHandle>, which cancels prerendering on its
@@ -1437,7 +1444,7 @@ class WebContents : public PageNavigator,
   // used for identifying the types of embedder for metrics logging.
   virtual std::unique_ptr<PrerenderHandle> StartPrerendering(
       const GURL& prerendering_url,
-      PrerenderTriggerType trigger_type,
+      PreloadingTriggerType trigger_type,
       const std::string& embedder_histogram_suffix,
       ui::PageTransition page_transition,
       PreloadingHoldbackStatus holdback_status_override,

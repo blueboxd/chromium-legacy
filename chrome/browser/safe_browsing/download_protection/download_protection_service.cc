@@ -123,6 +123,7 @@ bool IsDownloadSecuritySensitive(safe_browsing::DownloadCheckResult result) {
     case Result::SAFE:
     case Result::ALLOWLISTED_BY_POLICY:
     case Result::ASYNC_SCANNING:
+    case Result::ASYNC_LOCAL_PASSWORD_SCANNING:
     case Result::BLOCKED_PASSWORD_PROTECTED:
     case Result::BLOCKED_TOO_LARGE:
     case Result::SENSITIVE_CONTENT_BLOCK:
@@ -283,6 +284,23 @@ bool DownloadProtectionService::MaybeCheckClientDownload(
   }
 
   return false;
+}
+
+void DownloadProtectionService::CancelChecksForDownload(
+    download::DownloadItem* item) {
+  if (!item) {
+    return;
+  }
+
+  content::BrowserContext* context =
+      content::DownloadItemUtils::GetBrowserContext(item);
+  for (auto it = context_download_requests_[context].begin();
+       it != context_download_requests_[context].end(); ++it) {
+    if (it->first->item() == item) {
+      context_download_requests_[context].erase(it);
+      break;
+    }
+  }
 }
 
 bool DownloadProtectionService::ShouldCheckDownloadUrl(
@@ -862,8 +880,11 @@ void DownloadProtectionService::CheckDownloadWithLocalDecryption(
       download_core_service->GetDownloadManagerDelegate();
   DCHECK(delegate);
 
+  DownloadItemWarningData::SetHasShownLocalDecryptionPrompt(item, true);
+
   delegate->CheckClientDownloadDone(
-      item->GetId(), safe_browsing::DownloadCheckResult::ASYNC_SCANNING);
+      item->GetId(),
+      safe_browsing::DownloadCheckResult::ASYNC_LOCAL_PASSWORD_SCANNING);
   protection_service->CheckClientDownload(
       item,
       base::BindRepeating(

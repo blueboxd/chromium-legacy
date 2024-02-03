@@ -14,6 +14,7 @@
 #include "base/task/task_runner.h"
 #include "components/services/app_service/public/cpp/app_storage/app_storage_file_handler.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/icon_effects.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 
 namespace apps {
@@ -133,6 +134,7 @@ bool AppStorage::IsAppChanged(const apps::AppUpdate& update) {
 
   IS_APP_VALUE_CHANGED(name);
   IS_APP_VALUE_CHANGED(short_name);
+  IS_APP_VALUE_CHANGED(publisher_id);
   IS_APP_VALUE_CHANGED(description);
   IS_APP_VALUE_CHANGED(version);
 
@@ -141,11 +143,21 @@ bool AppStorage::IsAppChanged(const apps::AppUpdate& update) {
     return true;
   }
 
-  if (app->icon_key.has_value() &&
-      (!it->second->icon_key.has_value() ||
-       app->icon_key.value().resource_id !=
-           it->second->icon_key.value().resource_id)) {
-    return true;
+  if (app->icon_key.has_value()) {
+    if (!it->second->icon_key.has_value()) {
+      return true;
+    }
+    if (app->icon_key.value().resource_id !=
+        it->second->icon_key.value().resource_id) {
+      return true;
+    }
+    // Skip the kPaused icon effect, because we don't save the paused status,
+    // and we wait for the family link to set the paused status and apply the
+    // kPaused icon effect.
+    if ((app->icon_key.value().icon_effects & (~IconEffects::kPaused)) !=
+        (it->second->icon_key.value().icon_effects & (~IconEffects::kPaused))) {
+      return true;
+    }
   }
 
   IS_APP_VALUE_CHANGED(last_launch_time);
@@ -179,6 +191,18 @@ bool AppStorage::IsAppChanged(const apps::AppUpdate& update) {
   }
 
   IS_APP_VALUE_CHANGED_FOR_ENUM(window_mode, WindowMode::kUnknown)
+
+  IS_APP_VALUE_CHANGED(run_on_os_login)
+  IS_APP_VALUE_CHANGED(allow_close)
+  IS_APP_VALUE_CHANGED(app_size_in_bytes)
+  IS_APP_VALUE_CHANGED(data_size_in_bytes)
+
+  if (!app->supported_locales.empty() &&
+      app->supported_locales != it->second->supported_locales) {
+    return true;
+  }
+
+  IS_APP_VALUE_CHANGED(selected_locale);
 
   // TODO(crbug.com/1385932): Add other files in the App structure.
   return false;

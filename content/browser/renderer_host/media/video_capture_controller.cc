@@ -271,8 +271,6 @@ void VideoCaptureController::AddClient(
   // client.
   if (state_ != blink::VIDEO_CAPTURE_STATE_ERROR) {
     controller_clients_.push_back(std::move(client));
-    base::UmaHistogramCounts100("Media.VideoCapture.NumberOfClients",
-                                controller_clients_.size());
   }
 }
 
@@ -738,8 +736,9 @@ void VideoCaptureController::Resume() {
   launched_device_->ResumeDevice();
 }
 
-void VideoCaptureController::Crop(
-    const base::Token& crop_id,
+void VideoCaptureController::ApplySubCaptureTarget(
+    media::mojom::SubCaptureTargetType type,
+    const base::Token& target,
     uint32_t sub_capture_target_version,
     base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>
         callback) {
@@ -756,8 +755,8 @@ void VideoCaptureController::Crop(
     return;
   }
 
-  launched_device_->Crop(crop_id, sub_capture_target_version,
-                         std::move(callback));
+  launched_device_->ApplySubCaptureTarget(
+      type, target, sub_capture_target_version, std::move(callback));
 }
 
 void VideoCaptureController::RequestRefreshFrame() {

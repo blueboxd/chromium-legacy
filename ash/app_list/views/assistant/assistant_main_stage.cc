@@ -24,6 +24,7 @@
 #include "ash/public/cpp/style/color_provider.h"
 #include "base/functional/bind.h"
 #include "base/time/time.h"
+#include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
@@ -119,7 +120,11 @@ AppListAssistantMainStage::AppListAssistantMainStage(
     AssistantViewDelegate* delegate)
     : delegate_(delegate) {
   SetID(AssistantViewID::kMainStage);
-  InitLayout();
+  if (assistant::features::IsAssistantLearnMoreEnabled()) {
+    InitLayoutWithIph();
+  } else {
+    InitLayout();
+  }
 
   assistant_controller_observation_.Observe(AssistantController::Get());
   AssistantInteractionController::Get()->GetModel()->AddObserver(this);
@@ -166,6 +171,42 @@ void AppListAssistantMainStage::InitLayout() {
   layout->SetFlexForView(AddChildView(CreateContentLayoutContainer()), 1);
 
   AddChildView(CreateFooterLayoutContainer());
+}
+
+void AppListAssistantMainStage::InitLayoutWithIph() {
+  // The children of AppListAssistantMainStage will be animated on their own
+  // layers and we want them to be clipped by their parent layer.
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetMasksToBounds(true);
+
+  // The layout container stacks two views.
+  // On top is a main content container including the line separator, progress
+  // indicator query view, `ui_element_container_` and `footer_`.
+  // The `zero_state_view_` is laid out above of the main content container. As
+  // such, it floats above and does not cause repositioning to any of content
+  // layout's underlying views.
+  auto* stack_layout = SetLayoutManager(std::make_unique<StackLayout>());
+
+  auto* main_content_layout_container =
+      AddChildView(CreateMainContentLayoutContainer());
+  // Currently `CreateMainContentLayoutContainer()` is reused for both layouts
+  // with/without IPH. So add the footer here separately.
+  main_content_layout_container->AddChildView(CreateFooterLayoutContainer());
+
+  // Do not respect height, otherwise bounds will not be set correctly for
+  // scrolling.
+  stack_layout->SetRespectDimensionForView(
+      main_content_layout_container, StackLayout::RespectDimension::kWidth);
+
+  // Zero state, which will be animated on its own layer.
+  zero_state_view_ =
+      AddChildView(std::make_unique<AssistantZeroStateView>(delegate_));
+  zero_state_view_->SetPaintToLayer();
+  zero_state_view_->layer()->SetFillsBoundsOpaquely(false);
+  // Expand the height of the `zero_state_view_` to the host height.
+  stack_layout->SetRespectDimensionForView(
+      zero_state_view_, StackLayout::RespectDimension::kWidth);
 }
 
 std::unique_ptr<views::View>
@@ -315,6 +356,7 @@ void AppListAssistantMainStage::AnimateInZeroState() {
 void AppListAssistantMainStage::AnimateInFooter() {
   // Set up our pre-animation values.
   footer_->layer()->SetOpacity(0.f);
+  footer_->SetVisible(true);
 
   // Animate the footer to 100% opacity with delay.
   footer_->layer()->GetAnimator()->StartAnimation(CreateLayerAnimationSequence(
@@ -356,7 +398,7 @@ void AppListAssistantMainStage::OnCommittedQueryChanged(
           // ...then fade in.
           CreateOpacityElement(1.f, kDividerAnimationFadeInDuration)));
 
-  MaybeHideZeroState();
+  MaybeHideZeroStateAndShowFooter();
 }
 
 void AppListAssistantMainStage::OnPendingQueryChanged(
@@ -380,7 +422,7 @@ void AppListAssistantMainStage::OnPendingQueryChanged(
           CreateOpacityElement(1.f, kQueryAnimationFadeInDuration)));
 
   if (!query.Empty())
-    MaybeHideZeroState();
+    MaybeHideZeroStateAndShowFooter();
 }
 
 void AppListAssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
@@ -394,7 +436,7 @@ void AppListAssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
 
 void AppListAssistantMainStage::OnResponseChanged(
     const scoped_refptr<AssistantResponse>& response) {
-  MaybeHideZeroState();
+  MaybeHideZeroStateAndShowFooter();
 
   // Show the horizontal separator.
   horizontal_separator_->layer()->GetAnimator()->StartAnimation(
@@ -425,22 +467,22 @@ void AppListAssistantMainStage::OnUiVisibilityChanged(
   }
 
   query_view_->SetQuery(AssistantNullQuery());
-
-  footer_->SetVisible(true);
-  footer_->layer()->SetOpacity(1.f);
-  footer_->SetCanProcessEventsWithinSubtree(true);
 }
 
 void AppListAssistantMainStage::InitializeUIForBubbleView() {
   InitializeUIForStartingSession(/*from_search=*/false);
 }
 
-void AppListAssistantMainStage::MaybeHideZeroState() {
+void AppListAssistantMainStage::MaybeHideZeroStateAndShowFooter() {
   if (!IsShown(zero_state_view_))
     return;
 
   assistant::util::FadeOutAndHide(zero_state_view_,
                                   kZeroStateAnimationFadeOutDuration);
+
+  if (assistant::features::IsAssistantLearnMoreEnabled()) {
+    AnimateInFooter();
+  }
 }
 
 void AppListAssistantMainStage::InitializeUIForStartingSession(
@@ -450,13 +492,19 @@ void AppListAssistantMainStage::InitializeUIForStartingSession(
   progress_indicator_->layer()->SetOpacity(0.f);
   horizontal_separator_->layer()->SetOpacity(from_search ? 1.f : 0.f);
 
-  if (!from_search)
-    AnimateInZeroState();
-  else
-    zero_state_view_->SetVisible(false);
-
   footer_->InitializeUIForBubbleView();
-  AnimateInFooter();
+  if (from_search) {
+    zero_state_view_->SetVisible(false);
+    AnimateInFooter();
+  } else {
+    AnimateInZeroState();
+
+    if (assistant::features::IsAssistantLearnMoreEnabled()) {
+      footer_->SetVisible(false);
+    } else {
+      AnimateInFooter();
+    }
+  }
 }
 
 BEGIN_METADATA(AppListAssistantMainStage, views::View)

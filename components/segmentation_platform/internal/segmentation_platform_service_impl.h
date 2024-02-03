@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/segmentation_platform/internal/database/storage_service.h"
+#include "components/segmentation_platform/internal/database_client_impl.h"
 #include "components/segmentation_platform/internal/metrics/field_trial_recorder.h"
 #include "components/segmentation_platform/internal/migration/prefs_migrator.h"
 #include "components/segmentation_platform/internal/platform_options.h"
@@ -64,6 +65,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
     bool IsValid();
 
     // Profile data:
+    std::string profile_id;
     raw_ptr<leveldb_proto::ProtoDatabaseProvider> db_provider = nullptr;
     raw_ptr<history::HistoryService> history_service = nullptr;
     base::FilePath storage_dir;
@@ -122,6 +124,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
                            SuccessCallback callback) override;
   void EnableMetrics(bool signal_collection_allowed) override;
   ServiceProxy* GetServiceProxy() override;
+  DatabaseClient* GetDatabaseClient() override;
   bool IsPlatformInitialized() override;
 
  private:
@@ -169,6 +172,8 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   SignalHandler signal_handler_;
 
   ExecutionService execution_service_;
+
+  std::unique_ptr<DatabaseClientImpl> database_client_;
 
   // Segment selection.
   // TODO(shaktisahu): Determine safe destruction ordering between

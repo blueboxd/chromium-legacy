@@ -295,12 +295,6 @@ void OptOutOfAccountStorageAndClearSettings(
     return;
   }
 
-  OptOutOfAccountStorageAndClearSettingsForAccount(pref_service, gaia_id);
-}
-
-void OptOutOfAccountStorageAndClearSettingsForAccount(
-    PrefService* pref_service,
-    const std::string& gaia_id) {
   ScopedAccountStorageSettingsUpdate(pref_service,
                                      GaiaIdHash::FromGaiaId(gaia_id))
       .ClearAllSettings();
@@ -359,11 +353,6 @@ void KeepAccountStorageSettingsOnlyForUsers(
   for (const std::string& key_to_remove : keys_to_remove) {
     update->Remove(key_to_remove);
   }
-}
-
-void ClearAccountStorageSettingsForAllUsers(PrefService* pref_service) {
-  DCHECK(pref_service);
-  pref_service->ClearPref(prefs::kAccountStoragePerAccountSettings);
 }
 
 void RecordMoveOfferedToNonOptedInUser(

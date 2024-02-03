@@ -5,6 +5,7 @@
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTION_MODEL_EXECUTION_MANAGER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
@@ -14,6 +15,8 @@
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/on_device_model/public/mojom/on_device_model.mojom.h"
 #include "url/gurl.h"
 
 class OptimizationGuideLogger;
@@ -49,6 +52,9 @@ class ModelExecutionManager {
                     const google::protobuf::MessageLite& request_metadata,
                     OptimizationGuideModelExecutionResultCallback callback);
 
+  std::unique_ptr<OptimizationGuideModelExecutor::Session> StartSession(
+      proto::ModelExecutionFeature feature);
+
  private:
   // Invoked when the model execution result is available.
   void OnModelExecuteResponse(
@@ -80,10 +86,6 @@ class ModelExecutionManager {
   // Controller for the on-device service.
   std::unique_ptr<OnDeviceModelServiceController>
       on_device_model_service_controller_;
-
-  // The path for the on-device model. Can be empty when it was not populated
-  // yet. Can be overridden from command-line.
-  base::FilePath on_device_model_path_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

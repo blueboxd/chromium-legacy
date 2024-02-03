@@ -724,10 +724,10 @@ scoped_refptr<gfx::NativePixmap> OverlayImageRepresentation::GetNativePixmap() {
   return backing()->GetNativePixmap();
 }
 #elif BUILDFLAG(IS_WIN)
-absl::optional<gl::DCLayerOverlayImage>
+std::optional<gl::DCLayerOverlayImage>
 OverlayImageRepresentation::GetDCLayerOverlayImage() {
   NOTREACHED();
-  return absl::nullopt;
+  return std::nullopt;
 }
 #elif BUILDFLAG(IS_APPLE)
 gfx::ScopedIOSurface OverlayImageRepresentation::GetIOSurface() const {
@@ -822,9 +822,14 @@ DawnImageRepresentation::BeginScopedAccess(wgpu::TextureUsage usage,
 wgpu::Texture DawnImageRepresentation::BeginAccess(
     wgpu::TextureUsage usage,
     const gfx::Rect& update_rect) {
-  // If the implementation doesn't support partial updates, we need to update
-  // the whole image.
+#if BUILDFLAG(IS_WIN)
+  // The `update_rect` is a hint to update only certain portion
+  // of shared image but it doesn't have to match the size of shared image for
+  // eg. CopyOutput cases where an empty rect is passed to as there is no intent
+  // to update the shared image. Keeping this windows only for helping compare
+  // with DComp/DXGI cases.
   DCHECK_EQ(update_rect, gfx::Rect(size()));
+#endif
   return this->BeginAccess(usage);
 }
 
@@ -911,7 +916,7 @@ RasterImageRepresentation::ScopedReadAccess::ScopedReadAccess(
     base::PassKey<RasterImageRepresentation> pass_key,
     RasterImageRepresentation* representation,
     const cc::PaintOpBuffer* paint_op_buffer,
-    const absl::optional<SkColor4f>& clear_color)
+    const std::optional<SkColor4f>& clear_color)
     : ScopedAccessBase(representation, AccessMode::kRead),
       paint_op_buffer_(paint_op_buffer),
       clear_color_(clear_color) {}
@@ -933,7 +938,7 @@ RasterImageRepresentation::ScopedWriteAccess::~ScopedWriteAccess() {
 
 std::unique_ptr<RasterImageRepresentation::ScopedReadAccess>
 RasterImageRepresentation::BeginScopedReadAccess() {
-  absl::optional<SkColor4f> clear_color;
+  std::optional<SkColor4f> clear_color;
   auto* paint_op_buffer = BeginReadAccess(clear_color);
   if (!paint_op_buffer) {
     return nullptr;
@@ -948,7 +953,7 @@ RasterImageRepresentation::BeginScopedWriteAccess(
     scoped_refptr<SharedContextState> context_state,
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
-    const absl::optional<SkColor4f>& clear_color,
+    const std::optional<SkColor4f>& clear_color,
     bool visible) {
   return std::make_unique<ScopedWriteAccess>(
       base::PassKey<RasterImageRepresentation>(), this,

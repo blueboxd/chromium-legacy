@@ -12,6 +12,7 @@
 
 #include "base/check.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/data_model/autofill_i18n_api.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/browser/form_parsing/regex_patterns.h"
@@ -204,7 +205,9 @@ std::unique_ptr<FormField> AddressField::Parse(
       address_field->street_name_ || address_field->house_number_ ||
       address_field->country_ || address_field->apartment_number_ ||
       address_field->dependent_locality_ || address_field->landmark_ ||
-      address_field->between_streets_ || address_field->admin_level2_ ||
+      address_field->between_streets_ ||
+      address_field->between_streets_line_1_ ||
+      address_field->between_streets_line_2_ || address_field->admin_level2_ ||
       address_field->between_streets_or_landmark_ ||
       address_field->overflow_and_landmark_ || address_field->overflow_ ||
       address_field->street_location_) {
@@ -297,6 +300,10 @@ void AddressField::AddClassifications(
                     field_candidates);
   AddClassification(between_streets_, ADDRESS_HOME_BETWEEN_STREETS,
                     kBaseAddressParserScore, field_candidates);
+  AddClassification(between_streets_line_1_, ADDRESS_HOME_BETWEEN_STREETS_1,
+                    kBaseAddressParserScore, field_candidates);
+  AddClassification(between_streets_line_2_, ADDRESS_HOME_BETWEEN_STREETS_2,
+                    kBaseAddressParserScore, field_candidates);
   AddClassification(admin_level2_, ADDRESS_HOME_ADMIN_LEVEL2,
                     kBaseAddressParserScore, field_candidates);
   AddClassification(between_streets_or_landmark_,
@@ -373,6 +380,10 @@ bool AddressField::ParseAddressFieldSequence(
                        pattern_source);
   base::span<const MatchPatternRef> between_streets_patterns =
       GetMatchPatterns("BETWEEN_STREETS", page_language, pattern_source);
+  base::span<const MatchPatternRef> between_streets_line_1_patterns =
+      GetMatchPatterns("BETWEEN_STREETS_LINE_1", page_language, pattern_source);
+  base::span<const MatchPatternRef> between_streets_line_2_patterns =
+      GetMatchPatterns("BETWEEN_STREETS_LINE_2", page_language, pattern_source);
 
   AutofillField* old_street_location = street_location_;
   AutofillField* old_street_name = street_name_;
@@ -380,16 +391,27 @@ bool AddressField::ParseAddressFieldSequence(
   AutofillField* old_between_streets_or_landmark = between_streets_or_landmark_;
   AutofillField* old_overflow_and_landmark = overflow_and_landmark_;
   AutofillField* old_between_streets = between_streets_;
+  AutofillField* old_between_streets_line_1 = between_streets_line_1_;
+  AutofillField* old_between_streets_line_2 = between_streets_line_2_;
   AutofillField* old_house_number = house_number_;
   AutofillField* old_zip = zip_;
   AutofillField* old_zip4 = zip4_;
   AutofillField* old_apartment_number = apartment_number_;
 
+  AddressCountryCode country_code = AddressCountryCode(client_country.value());
+
   while (!scanner->IsEnd()) {
     // We look for street location before street name, because the name/label of
     // a street location typically contains strings that match the regular
     // expressions for a street name as well.
-    if (!street_location_ && client_country == GeoIpCountryCode("MX") &&
+    if (!street_location_ &&
+        // TODO(crbug.com/1474308) Find a better way to gate street location
+        // support. This is easy to confuse with with an address line 1 field.
+        // This is currently allowlisted for MX which prefers pairs of
+        // street location and address overflow fields.
+        base::FeatureList::IsEnabled(
+            features::kAutofillEnableParsingOfStreetLocation) &&
+        client_country == GeoIpCountryCode("MX") &&
         ParseFieldSpecifics(scanner, kStreetLocationRe,
                             kStreetLocationMatchType, street_location_patterns,
                             &street_location_,
@@ -410,10 +432,12 @@ bool AddressField::ParseAddressFieldSequence(
     if (ParseZipCode(scanner, page_language, pattern_source)) {
       continue;
     }
-
-    if (!(between_streets_or_landmark_ || between_streets_) &&
+    if (!(between_streets_or_landmark_ || between_streets_ ||
+          between_streets_line_1_ || between_streets_line_2_) &&
         base::FeatureList::IsEnabled(
             features::kAutofillEnableSupportForBetweenStreetsOrLandmark) &&
+        i18n_model_definition::IsTypeEnabledForCountry(
+            ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK, country_code) &&
         ParseFieldSpecifics(scanner, kBetweenStreetsOrLandmarkRe,
                             kBetweenStreetsOrLandmarkMatchType,
                             between_streets_or_landmark_patterns,
@@ -425,6 +449,8 @@ bool AddressField::ParseAddressFieldSequence(
     if (!(overflow_and_landmark_ || overflow_) &&
         base::FeatureList::IsEnabled(
             features::kAutofillEnableSupportForAddressOverflowAndLandmark) &&
+        i18n_model_definition::IsTypeEnabledForCountry(
+            ADDRESS_HOME_OVERFLOW_AND_LANDMARK, country_code) &&
         ParseFieldSpecifics(
             scanner, kOverflowAndLandmarkRe, kOverflowAndLandmarkMatchType,
             overflow_and_landmark_patterns, &overflow_and_landmark_,
@@ -438,6 +464,8 @@ bool AddressField::ParseAddressFieldSequence(
     if (!(overflow_and_landmark_ || overflow_) &&
         base::FeatureList::IsEnabled(
             features::kAutofillEnableSupportForAddressOverflow) &&
+        i18n_model_definition::IsTypeEnabledForCountry(ADDRESS_HOME_OVERFLOW,
+                                                       country_code) &&
         ParseFieldSpecifics(scanner, kOverflowRe, kOverflowMatchType,
                             overflow_patterns, &overflow_,
                             {log_manager_, "kOverflowRe"})) {
@@ -457,6 +485,8 @@ bool AddressField::ParseAddressFieldSequence(
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableSupportForApartmentNumbers) &&
         !apartment_number_ &&
+        i18n_model_definition::IsTypeEnabledForCountry(ADDRESS_HOME_APT_NUM,
+                                                       country_code) &&
         ParseFieldSpecifics(scanner, kApartmentNumberRe,
                             kDefaultMatchParamsWith<MatchFieldType::kNumber,
                                                     MatchFieldType::kTelephone>,
@@ -467,12 +497,32 @@ bool AddressField::ParseAddressFieldSequence(
 
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableSupportForBetweenStreets) &&
-        !between_streets_ &&
-        ParseFieldSpecifics(scanner, kBetweenStreetsRe,
-                            kBetweenStreetsMatchType, between_streets_patterns,
-                            &between_streets_,
-                            {log_manager_, "kBetweenStreetsRe"})) {
-      continue;
+        i18n_model_definition::IsTypeEnabledForCountry(
+            ADDRESS_HOME_BETWEEN_STREETS, country_code)) {
+      if (!between_streets_ && !between_streets_line_1_ &&
+          ParseFieldSpecifics(scanner, kBetweenStreetsRe,
+                              kBetweenStreetsMatchType,
+                              between_streets_patterns, &between_streets_,
+                              {log_manager_, "kBetweenStreetsRe"})) {
+        continue;
+      }
+
+      if (!between_streets_line_1_ &&
+          ParseFieldSpecifics(
+              scanner, kBetweenStreetsLine1Re, kBetweenStreetsMatchType,
+              between_streets_line_1_patterns, &between_streets_line_1_,
+              {log_manager_, "kBetweenStreetsLine1Re"})) {
+        continue;
+      }
+
+      if ((between_streets_ || between_streets_line_1_) &&
+          !between_streets_line_2_ &&
+          ParseFieldSpecifics(
+              scanner, kBetweenStreetsLine2Re, kBetweenStreetsMatchType,
+              between_streets_line_2_patterns, &between_streets_line_2_,
+              {log_manager_, "kBetweenStreetsLine2Re"})) {
+        continue;
+      }
     }
 
     break;
@@ -485,20 +535,7 @@ bool AddressField::ParseAddressFieldSequence(
     return false;
   }
 
-  // Record success if the house number and at least one of the other
-  // fields were found because that indicates a structured address form.
-  if (house_number_ &&
-      (street_name_ || zip_ || overflow_ || overflow_and_landmark_ ||
-       between_streets_or_landmark_ || apartment_number_ || between_streets_)) {
-    // Keep this in sync with the corresponding if-statement in
-    // AddressField::ParseAddress to prevent repetitive work.
-    return true;
-  }
-  if (street_location_ &&
-      (apartment_number_ || overflow_ || overflow_and_landmark_ ||
-       between_streets_or_landmark_ || between_streets_)) {
-    // Keep this in sync with the corresponding if-statement in
-    // AddressField::ParseAddress to prevent repetitive work.
+  if (PossiblyAStructuredAddressForm()) {
     return true;
   }
 
@@ -510,6 +547,8 @@ bool AddressField::ParseAddressFieldSequence(
   between_streets_or_landmark_ = old_between_streets_or_landmark;
   overflow_and_landmark_ = old_overflow_and_landmark;
   between_streets_ = old_between_streets;
+  between_streets_line_1_ = old_between_streets_line_1;
+  between_streets_line_2_ = old_between_streets_line_2;
   zip_ = old_zip;
   zip4_ = old_zip4;
   apartment_number_ = old_apartment_number;
@@ -527,16 +566,10 @@ bool AddressField::ParseAddress(AutofillScanner* scanner,
   // evidence that the current form is a structured form. If structured form
   // fields are missing, they will be discovered later via
   // AddressField::ParseAddressField.
-  if (house_number_ &&
-      (street_name_ || zip_ || overflow_ || overflow_and_landmark_ ||
-       between_streets_or_landmark_ || apartment_number_ || between_streets_)) {
+  if (PossiblyAStructuredAddressForm()) {
     return false;
   }
-  if (street_location_ &&
-      (apartment_number_ || overflow_ || overflow_and_landmark_ ||
-       between_streets_or_landmark_ || between_streets_)) {
-    return false;
-  }
+
   // Do not inline these calls: After passing an address field sequence, there
   // might be an additional address line 2 to parse afterwards.
   bool has_field_sequence = ParseAddressFieldSequence(
@@ -771,14 +804,14 @@ bool AddressField::ParseAddressField(AutofillScanner* scanner,
   if (country_result == RESULT_MATCH_NAME_LABEL)
     return true;
   ParseNameLabelResult between_streets_or_landmark_result =
-      ParseNameAndLabelForBetweenStreetsOrLandmark(scanner, page_language,
-                                                   pattern_source);
+      ParseNameAndLabelForBetweenStreetsOrLandmark(
+          scanner, client_country, page_language, pattern_source);
   if (between_streets_or_landmark_result == RESULT_MATCH_NAME_LABEL) {
     return true;
   }
   ParseNameLabelResult overflow_and_landmark_result =
-      ParseNameAndLabelForOverflowAndLandmark(scanner, page_language,
-                                              pattern_source);
+      ParseNameAndLabelForOverflowAndLandmark(scanner, client_country,
+                                              page_language, pattern_source);
   if (overflow_and_landmark_result == RESULT_MATCH_NAME_LABEL) {
     return true;
   }
@@ -787,24 +820,30 @@ bool AddressField::ParseAddressField(AutofillScanner* scanner,
   // will match the "overflow" in the label and name. The function would
   // exit here. Instead of later recognizing that "Complemento e referência"
   // points to a different type.
-  ParseNameLabelResult overflow_result =
-      ParseNameAndLabelForOverflow(scanner, page_language, pattern_source);
+  ParseNameLabelResult overflow_result = ParseNameAndLabelForOverflow(
+      scanner, client_country, page_language, pattern_source);
   if (overflow_result == RESULT_MATCH_NAME_LABEL) {
     return true;
   }
-  ParseNameLabelResult landmark_result =
-      ParseNameAndLabelForLandmark(scanner, page_language, pattern_source);
+  ParseNameLabelResult landmark_result = ParseNameAndLabelForLandmark(
+      scanner, client_country, page_language, pattern_source);
   if (landmark_result == RESULT_MATCH_NAME_LABEL) {
     return true;
   }
   ParseNameLabelResult between_streets_result =
-      ParseNameAndLabelForBetweenStreets(scanner, page_language,
+      ParseNameAndLabelForBetweenStreets(scanner, client_country, page_language,
                                          pattern_source);
   if (between_streets_result == RESULT_MATCH_NAME_LABEL) {
     return true;
   }
-  ParseNameLabelResult admin_level2_result =
-      ParseNameAndLabelForAdminLevel2(scanner, page_language, pattern_source);
+  ParseNameLabelResult between_street_lines12_result =
+      ParseNameAndLabelForBetweenStreetsLines12(scanner, client_country,
+                                                page_language, pattern_source);
+  if (between_street_lines12_result == RESULT_MATCH_NAME_LABEL) {
+    return true;
+  }
+  ParseNameLabelResult admin_level2_result = ParseNameAndLabelForAdminLevel2(
+      scanner, client_country, page_language, pattern_source);
   if (admin_level2_result == RESULT_MATCH_NAME_LABEL) {
     return true;
   }
@@ -817,8 +856,9 @@ bool AddressField::ParseAddressField(AutofillScanner* scanner,
   for (const auto result :
        {dependent_locality_result, city_result, state_result, country_result,
         zip_result, landmark_result, between_streets_result,
-        admin_level2_result, between_streets_or_landmark_result,
-        overflow_and_landmark_result, overflow_result}) {
+        between_street_lines12_result, admin_level2_result,
+        between_streets_or_landmark_result, overflow_and_landmark_result,
+        overflow_result}) {
     if (result != RESULT_MATCH_NONE)
       ++num_of_matches;
   }
@@ -847,6 +887,14 @@ bool AddressField::ParseAddressField(AutofillScanner* scanner,
     }
     if (between_streets_result != RESULT_MATCH_NONE) {
       return SetFieldAndAdvanceCursor(scanner, &between_streets_);
+    }
+    if (between_street_lines12_result != RESULT_MATCH_NONE &&
+        !between_streets_line_1_) {
+      return SetFieldAndAdvanceCursor(scanner, &between_streets_line_1_);
+    }
+    if (between_street_lines12_result != RESULT_MATCH_NONE &&
+        !between_streets_line_2_) {
+      return SetFieldAndAdvanceCursor(scanner, &between_streets_line_2_);
     }
     if (admin_level2_result != RESULT_MATCH_NONE) {
       return SetFieldAndAdvanceCursor(scanner, &admin_level2_);
@@ -908,6 +956,12 @@ bool AddressField::ParseAddressField(AutofillScanner* scanner,
     }
     if (between_streets_result == result) {
       return SetFieldAndAdvanceCursor(scanner, &between_streets_);
+    }
+    if (between_street_lines12_result == result && !between_streets_line_1_) {
+      return SetFieldAndAdvanceCursor(scanner, &between_streets_line_1_);
+    }
+    if (between_street_lines12_result == result && !between_streets_line_2_) {
+      return SetFieldAndAdvanceCursor(scanner, &between_streets_line_2_);
     }
     if (admin_level2_result == result) {
       return SetFieldAndAdvanceCursor(scanner, &admin_level2_);
@@ -1043,11 +1097,16 @@ AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForCountry(
 AddressField::ParseNameLabelResult
 AddressField::ParseNameAndLabelForBetweenStreetsOrLandmark(
     AutofillScanner* scanner,
+    const GeoIpCountryCode& client_country,
     const LanguageCode& page_language,
     PatternSource pattern_source) {
+  AddressCountryCode country_code = AddressCountryCode(client_country.value());
   if (between_streets_or_landmark_ || landmark_ || between_streets_ ||
+      between_streets_line_1_ || between_streets_line_2_ ||
       !base::FeatureList::IsEnabled(
-          features::kAutofillEnableSupportForBetweenStreetsOrLandmark)) {
+          features::kAutofillEnableSupportForBetweenStreetsOrLandmark) ||
+      !i18n_model_definition::IsTypeEnabledForCountry(
+          ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK, country_code)) {
     return RESULT_MATCH_NONE;
   }
 
@@ -1065,12 +1124,16 @@ AddressField::ParseNameAndLabelForBetweenStreetsOrLandmark(
 AddressField::ParseNameLabelResult
 AddressField::ParseNameAndLabelForOverflowAndLandmark(
     AutofillScanner* scanner,
+    const GeoIpCountryCode& client_country,
     const LanguageCode& page_language,
     PatternSource pattern_source) {
+  AddressCountryCode country_code = AddressCountryCode(client_country.value());
   //  TODO(crbug.com/1441904) Remove feature check when launched.
   if (overflow_and_landmark_ || overflow_ ||
       !base::FeatureList::IsEnabled(
-          features::kAutofillEnableSupportForAddressOverflowAndLandmark)) {
+          features::kAutofillEnableSupportForAddressOverflowAndLandmark) ||
+      !i18n_model_definition::IsTypeEnabledForCountry(
+          ADDRESS_HOME_OVERFLOW_AND_LANDMARK, country_code)) {
     return RESULT_MATCH_NONE;
   }
 
@@ -1085,12 +1148,16 @@ AddressField::ParseNameAndLabelForOverflowAndLandmark(
 
 AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForOverflow(
     AutofillScanner* scanner,
+    const GeoIpCountryCode& client_country,
     const LanguageCode& page_language,
     PatternSource pattern_source) {
+  AddressCountryCode country_code = AddressCountryCode(client_country.value());
   // TODO(crbug.com/1441904) Remove feature check when launched.
   if (overflow_and_landmark_ || overflow_ ||
       !base::FeatureList::IsEnabled(
-          features::kAutofillEnableSupportForAddressOverflow)) {
+          features::kAutofillEnableSupportForAddressOverflow) ||
+      !i18n_model_definition::IsTypeEnabledForCountry(ADDRESS_HOME_OVERFLOW,
+                                                      country_code)) {
     return RESULT_MATCH_NONE;
   }
 
@@ -1103,11 +1170,16 @@ AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForOverflow(
 
 AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForLandmark(
     AutofillScanner* scanner,
+    const GeoIpCountryCode& client_country,
     const LanguageCode& page_language,
     PatternSource pattern_source) {
+  AddressCountryCode country_code = AddressCountryCode(client_country.value());
   // TODO(crbug.com/1441904) Remove feature check when launched.
-  if (landmark_ || !base::FeatureList::IsEnabled(
-                       features::kAutofillEnableSupportForLandmark)) {
+  if (landmark_ ||
+      !base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForLandmark) ||
+      !i18n_model_definition::IsTypeEnabledForCountry(ADDRESS_HOME_LANDMARK,
+                                                      country_code)) {
     return RESULT_MATCH_NONE;
   }
 
@@ -1121,12 +1193,16 @@ AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelForLandmark(
 AddressField::ParseNameLabelResult
 AddressField::ParseNameAndLabelForBetweenStreets(
     AutofillScanner* scanner,
+    const GeoIpCountryCode& client_country,
     const LanguageCode& page_language,
     PatternSource pattern_source) {
+  AddressCountryCode country_code = AddressCountryCode(client_country.value());
   // TODO(crbug.com/1441904) Remove feature check when launched.
-  if (between_streets_ ||
+  if (between_streets_ || between_streets_line_1_ ||
       !base::FeatureList::IsEnabled(
-          features::kAutofillEnableSupportForBetweenStreets)) {
+          features::kAutofillEnableSupportForBetweenStreets) ||
+      !i18n_model_definition::IsTypeEnabledForCountry(
+          ADDRESS_HOME_BETWEEN_STREETS, country_code)) {
     return RESULT_MATCH_NONE;
   }
 
@@ -1139,12 +1215,55 @@ AddressField::ParseNameAndLabelForBetweenStreets(
 }
 
 AddressField::ParseNameLabelResult
-AddressField::ParseNameAndLabelForAdminLevel2(AutofillScanner* scanner,
-                                              const LanguageCode& page_language,
-                                              PatternSource pattern_source) {
+AddressField::ParseNameAndLabelForBetweenStreetsLines12(
+    AutofillScanner* scanner,
+    const GeoIpCountryCode& client_country,
+    const LanguageCode& page_language,
+    PatternSource pattern_source) {
+  AddressCountryCode country_code = AddressCountryCode(client_country.value());
   // TODO(crbug.com/1441904) Remove feature check when launched.
-  if (admin_level2_ || !base::FeatureList::IsEnabled(
-                           features::kAutofillEnableSupportForAdminLevel2)) {
+  if (between_streets_line_2_ ||
+      !base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForBetweenStreets) ||
+      !i18n_model_definition::IsTypeEnabledForCountry(
+          ADDRESS_HOME_BETWEEN_STREETS, country_code)) {
+    return RESULT_MATCH_NONE;
+  }
+
+  if (!between_streets_line_1_) {
+    base::span<const MatchPatternRef> between_streets_patterns_line_1 =
+        GetMatchPatterns("BETWEEN_STREETS_LINE_1", page_language,
+                         pattern_source);
+    return ParseNameAndLabelSeparately(
+        scanner, kBetweenStreetsLine1Re, kBetweenStreetsMatchType,
+        between_streets_patterns_line_1, &between_streets_line_1_,
+        {log_manager_, "kBetweenStreetsLine1Re"});
+  } else if (!between_streets_line_2_) {
+    base::span<const MatchPatternRef> between_streets_patterns_line_2 =
+        GetMatchPatterns("BETWEEN_STREETS_LINE_2", page_language,
+                         pattern_source);
+    return ParseNameAndLabelSeparately(
+        scanner, kBetweenStreetsLine2Re, kBetweenStreetsMatchType,
+        between_streets_patterns_line_2, &between_streets_line_2_,
+        {log_manager_, "kBetweenStreetsLine2Re"});
+  }
+
+  return RESULT_MATCH_NONE;
+}
+
+AddressField::ParseNameLabelResult
+AddressField::ParseNameAndLabelForAdminLevel2(
+    AutofillScanner* scanner,
+    const GeoIpCountryCode& client_country,
+    const LanguageCode& page_language,
+    PatternSource pattern_source) {
+  AddressCountryCode country_code = AddressCountryCode(client_country.value());
+  // TODO(crbug.com/1441904) Remove feature check when launched.
+  if (admin_level2_ ||
+      !base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForAdminLevel2) ||
+      !i18n_model_definition::IsTypeEnabledForCountry(ADDRESS_HOME_ADMIN_LEVEL2,
+                                                      country_code)) {
     return RESULT_MATCH_NONE;
   }
 
@@ -1153,6 +1272,22 @@ AddressField::ParseNameAndLabelForAdminLevel2(AutofillScanner* scanner,
   return ParseNameAndLabelSeparately(
       scanner, kAdminLevel2Re, kAdminLevel2MatchType, admin_level2_patterns,
       &admin_level2_, {log_manager_, "kAdminLevel2Re"});
+}
+
+bool AddressField::PossiblyAStructuredAddressForm() const {
+  // Record success if the house number and at least one of the other
+  // fields were found because that indicates a structured address form.
+  if (house_number_ &&
+      (street_name_ || zip_ || overflow_ || overflow_and_landmark_ ||
+       between_streets_or_landmark_ || apartment_number_ || between_streets_ ||
+       between_streets_line_1_ || between_streets_line_2_)) {
+    return true;
+  }
+
+  return street_location_ &&
+         (apartment_number_ || overflow_ || overflow_and_landmark_ ||
+          between_streets_or_landmark_ || between_streets_ ||
+          between_streets_line_1_ || between_streets_line_2_);
 }
 
 }  // namespace autofill

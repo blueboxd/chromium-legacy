@@ -42,6 +42,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwRenderProcess;
@@ -87,21 +89,24 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 /** AwContents tests. */
-@RunWith(AwJUnit4ClassRunner.class)
+@RunWith(Parameterized.class)
+@UseParametersRunnerFactory(AwJUnit4ClassRunnerWithParameters.Factory.class)
 @DoNotBatch(reason = "Tests that need browser start are incompatible with @Batch")
-public class AwContentsTest {
-
+public class AwContentsTest extends AwParameterizedTest {
     private static final String TAG = "AwContentsTest";
 
     @Rule
-    public AwActivityTestRule mActivityTestRule =
-            new AwActivityTestRule() {
-                // Allow specific tests to use vulkan.
-                @Override
-                public boolean needsBrowserProcessStarted() {
-                    return false;
-                }
-            };
+    public AwActivityTestRule mActivityTestRule;
+
+    public AwContentsTest(AwSettingsMutation param) {
+            mActivityTestRule = new AwActivityTestRule(param.getMutation()) {
+            // Allow specific tests to use vulkan.
+            @Override
+            public boolean needsBrowserProcessStarted() {
+                return false;
+            }
+        };
+    }
 
     @Rule public FakeTimeTestRule mFakeTimeTestRule = new FakeTimeTestRule();
     @Rule public TestRule mProcessor = new Features.InstrumentationProcessor();
@@ -358,6 +363,7 @@ public class AwContentsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @SkipMutations(reason = "This test depends on AwSettings.setCacheMode()")
     public void testClearCacheMemoryAndDisk() throws Throwable {
         mActivityTestRule.startBrowserProcess();
         final AwTestContainerView testContainer =
@@ -475,6 +481,7 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView", "Downloads"})
     @SmallTest
+    @SkipMutations(reason = "This test depends on AwSettings.setUserAgentString()")
     public void testDownload() throws Throwable {
         downloadAndCheck(null);
     }

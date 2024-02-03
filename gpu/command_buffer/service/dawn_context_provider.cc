@@ -9,6 +9,7 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -31,6 +32,8 @@
 #include "ui/gl/gl_implementation.h"
 
 #if BUILDFLAG(IS_WIN)
+#include <d3d11_4.h>
+
 #include "third_party/dawn/include/dawn/native/D3D11Backend.h"
 #include "ui/gl/direct_composition_support.h"
 #include "ui/gl/gl_angle_util_win.h"
@@ -103,6 +106,12 @@ bool GetANGLED3D11DeviceLUID(LUID* luid) {
   return true;
 }
 
+bool IsD3D11DebugLayerEnabled(
+    const Microsoft::WRL::ComPtr<ID3D11Device>& d3d11_device) {
+  Microsoft::WRL::ComPtr<ID3D11Debug> d3d11_debug;
+  return SUCCEEDED(d3d11_device.As(&d3d11_debug));
+}
+
 const char* HRESULTToString(HRESULT result) {
   switch (result) {
 #define ERROR_CASE(E) \
@@ -119,7 +128,6 @@ const char* HRESULTToString(HRESULT result) {
       return nullptr;
   }
 }
-
 #endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
@@ -245,6 +253,8 @@ bool DawnContextProvider::Initialize(
   enabled_toggles.push_back("disable_robustness");
 #endif
 
+  enabled_toggles.push_back("disable_lazy_clear_for_mapped_at_creation_buffer");
+
 #if BUILDFLAG(IS_APPLE)
   // We need MultiPlanarFormatExtendedUsages to copy to/from multiplanar
   // texture. And this feature is currently experimental.
@@ -283,10 +293,35 @@ bool DawnContextProvider::Initialize(
     features.push_back(wgpu::FeatureName::D3D11MultithreadProtected);
   }
 
-  // Request the GPU that ANGLE is using if possible.
   dawn::native::d3d::RequestAdapterOptionsLUID adapter_options_luid;
   if (GetANGLED3D11DeviceLUID(&adapter_options_luid.adapterLUID)) {
+    // Request the GPU that ANGLE is using if possible.
     adapter_options.nextInChain = &adapter_options_luid;
+  }
+
+  dawn::native::d3d11::RequestAdapterOptionsD3D11Device
+      adapter_options_d3d11_device;
+  bool share_d3d11_device =
+      adapter_options.backendType == wgpu::BackendType::D3D11 &&
+      features::kSkiaGraphiteDawnShareDevice.Get();
+  if (share_d3d11_device) {
+    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+        gl::QueryD3D11DeviceObjectFromANGLE();
+    CHECK(d3d11_device) << "Query d3d11 device from ANGLE failed.";
+
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d11_device_context;
+    d3d11_device->GetImmediateContext(&d3d11_device_context);
+
+    Microsoft::WRL::ComPtr<ID3D11Multithread> d3d11_multithread;
+    HRESULT hr = d3d11_device_context.As(&d3d11_multithread);
+    CHECK(SUCCEEDED(hr)) << "Query ID3D11Multithread interface failed: 0x"
+                         << std::hex << hr;
+
+    // Dawn requires enable multithread protection for d3d11 device.
+    d3d11_multithread->SetMultithreadProtected(TRUE);
+    adapter_options_d3d11_device.device = std::move(d3d11_device);
+    adapter_options_d3d11_device.nextInChain = adapter_options.nextInChain;
+    adapter_options.nextInChain = &adapter_options_d3d11_device;
   }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -301,6 +336,9 @@ bool DawnContextProvider::Initialize(
       wgpu::FeatureName::DualSourceBlending,
       wgpu::FeatureName::MultiPlanarFormatExtendedUsages,
       wgpu::FeatureName::MultiPlanarFormatP010,
+#if BUILDFLAG(IS_MAC)
+      wgpu::FeatureName::MultiPlanarFormatNv12a,
+#endif  // BUILDFLAG(IS_MAC)
       wgpu::FeatureName::MultiPlanarRenderTargets,
       wgpu::FeatureName::Norm16TextureFormats,
       wgpu::FeatureName::TransientAttachments,
@@ -324,9 +362,15 @@ bool DawnContextProvider::Initialize(
   descriptor.requiredFeatures = features.data();
   descriptor.requiredFeatureCount = std::size(features);
 
+  // ANGLE always tries creating D3D11 device with debug layer when dcheck is
+  // on, so tries creating dawn device with backend validation as well.
+  constexpr bool enable_backend_validation =
+      DCHECK_IS_ON() && BUILDFLAG(IS_WIN);
+
   std::vector<dawn::native::BackendValidationLevel> backend_validation_levels =
       {dawn::native::BackendValidationLevel::Disabled};
-  if (features::kSkiaGraphiteDawnBackendValidation.Get()) {
+  if (features::kSkiaGraphiteDawnBackendValidation.Get() ||
+      enable_backend_validation) {
     backend_validation_levels.push_back(
         dawn::native::BackendValidationLevel::Partial);
     backend_validation_levels.push_back(
@@ -337,7 +381,8 @@ bool DawnContextProvider::Initialize(
   // Try create device with backend validation level.
   for (auto it = backend_validation_levels.rbegin();
        it != backend_validation_levels.rend(); ++it) {
-    instance_->SetBackendValidationLevel(*it);
+    auto level = *it;
+    instance_->SetBackendValidationLevel(level);
     device = adapter.CreateDevice(&descriptor);
     if (device) {
       break;
@@ -359,13 +404,22 @@ bool DawnContextProvider::Initialize(
       backend_type == wgpu::BackendType::Vulkan && force_fallback_adapter;
 
 #if BUILDFLAG(IS_WIN)
+  auto d3d11_device = GetD3D11Device();
+
   // DirectComposition is initialized in ui/gl/init/gl_initializer_win.cc while
   // initializing GL. So we need to shutdown it and re-initialize it here with
   // the D3D11 device from dawn device.
   // TODO(crbug.com/1469283): avoid initializing DirectComposition twice.
-  gl::ShutdownDirectComposition();
-  if (auto d3d11_device = GetD3D11Device()) {
-    gl::InitializeDirectComposition(std::move(d3d11_device));
+  if (!share_d3d11_device && d3d11_device) {
+    gl::ShutdownDirectComposition();
+    gl::InitializeDirectComposition(d3d11_device);
+  }
+
+  if (d3d11_device) {
+    static auto* crash_key = base::debug::AllocateCrashKeyString(
+        "d3d11-debug-layer", base::debug::CrashKeySize::Size32);
+    const bool enabled = IsD3D11DebugLayerEnabled(d3d11_device);
+    base::debug::SetCrashKeyString(crash_key, enabled ? "enabled" : "disabled");
   }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -409,7 +463,7 @@ bool DawnContextProvider::SupportsFeature(wgpu::FeatureName feature) {
   return device_.HasFeature(feature);
 }
 
-absl::optional<error::ContextLostReason> DawnContextProvider::GetResetStatus()
+std::optional<error::ContextLostReason> DawnContextProvider::GetResetStatus()
     const {
   base::AutoLock auto_lock(context_lost_lock_);
   return context_lost_reason_;

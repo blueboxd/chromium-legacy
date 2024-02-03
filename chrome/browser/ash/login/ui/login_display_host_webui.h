@@ -81,8 +81,10 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnStartAppLaunch() override;
   void OnBrowserCreated() override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
+  void StartUserRecovery(const AccountId& account_to_recover) override;
   void ShowOsInstallScreen() override;
   void ShowGuestTosScreen() override;
+  void ShowRemoteActivityNotificationScreen() override;
   void HideOobeDialog(bool saml_page_closed = false) override;
   void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(OobeDialogState state) override;
@@ -92,10 +94,11 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnCancelPasswordChangedFlow() override;
   void ShowEnableConsumerKioskScreen() override;
   bool HasUserPods() override;
-  void VerifyOwnerForKiosk(base::OnceClosure) override;
   void ShowPasswordChangedDialogLegacy(const AccountId& account_id,
                                        bool show_password_error) override;
   void StartCryptohomeRecovery(
+      std::unique_ptr<UserContext> user_context) override;
+  void RunLocalAuthentication(
       std::unique_ptr<UserContext> user_context) override;
   void StartBrowserDataMigration() override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;

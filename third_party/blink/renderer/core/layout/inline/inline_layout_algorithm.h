@@ -39,9 +39,9 @@ struct LeadingFloats;
 //
 // Uses LineBreaker to find InlineItems to form a line.
 class CORE_EXPORT InlineLayoutAlgorithm final
-    : public NGLayoutAlgorithm<InlineNode,
-                               LineBoxFragmentBuilder,
-                               InlineBreakToken> {
+    : public LayoutAlgorithm<InlineNode,
+                             LineBoxFragmentBuilder,
+                             InlineBreakToken> {
  public:
   InlineLayoutAlgorithm(InlineNode,
                         const NGConstraintSpace&,
@@ -65,9 +65,9 @@ class CORE_EXPORT InlineLayoutAlgorithm final
   friend class LineWidthsTest;
 
   void PositionLeadingFloats(ExclusionSpace&, LeadingFloats&);
-  NGPositionedFloat PositionFloat(LayoutUnit origin_block_bfc_offset,
-                                  LayoutObject* floating_object,
-                                  ExclusionSpace*);
+  PositionedFloat PositionFloat(LayoutUnit origin_block_bfc_offset,
+                                LayoutObject* floating_object,
+                                ExclusionSpace*);
 
   void PrepareBoxStates(const LineInfo&, const InlineBreakToken*);
   void RebuildBoxStates(const LineInfo&,

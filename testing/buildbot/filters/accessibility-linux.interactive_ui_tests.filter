@@ -1,6 +1,7 @@
 # These tests still need to be triaged and either okayed to skip or fixed.
 -AutofillInteractiveDisableAutofillSelectListTest.DisableSelectListAutofilling
 -AutofillInteractiveTest/AutofillInteractiveFencedFrameTest.*
+-AutofillInteractiveTest_ClearForm.*
 -AutofillInteractiveTest.*
 -AutofillInteractiveTestBase.*
 -AutofillInteractiveTestDynamicForm.*
@@ -8,7 +9,6 @@
 -AutofillInteractiveTest_UndoAutofill.BasicUndoAutofill
 -CaptionBubbleControllerViewsTest.AccessibleTextIsSometimesFocusable
 -CookieControlsInteractiveUiTest.*
--CrComponentsFocusTest.ThemeColorPicker
 -ExtensionsToolbarContainerUITest.ClickingOnASecondActionClosesTheFirst
 -FeaturePromoDialogWebUITabStripTest.InvokeUi_IPH_WebUITabStrip
 -HighEfficiencyChipInteractiveTest.*

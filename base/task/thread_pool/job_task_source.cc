@@ -4,10 +4,10 @@
 
 #include "base/task/thread_pool/job_task_source.h"
 
+#include <bit>
 #include <type_traits>
 #include <utility>
 
-#include "base/bits.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -93,7 +93,6 @@ JobTaskSource::JobTaskSource(const Location& from_here,
                              MaxConcurrencyCallback max_concurrency_callback,
                              PooledTaskRunnerDelegate* delegate)
     : TaskSource(traits, nullptr, TaskSourceExecutionMode::kJob),
-      from_here_(from_here),
       max_concurrency_callback_(std::move(max_concurrency_callback)),
       worker_task_(std::move(worker_task)),
       primary_task_(base::BindRepeating(
@@ -104,9 +103,11 @@ JobTaskSource::JobTaskSource(const Location& from_here,
             self->worker_task_.Run(&job_delegate);
           },
           base::Unretained(this))),
+      task_metadata_(from_here),
       ready_time_(TimeTicks::Now()),
       delegate_(delegate) {
   DCHECK(delegate_);
+  task_metadata_.sequence_num = -1;
 }
 
 JobTaskSource::~JobTaskSource() {
@@ -116,6 +117,15 @@ JobTaskSource::~JobTaskSource() {
 
 ExecutionEnvironment JobTaskSource::GetExecutionEnvironment() {
   return {SequenceToken::Create(), nullptr};
+}
+
+void JobTaskSource::WillEnqueue(int sequence_num, TaskAnnotator& annotator) {
+  if (task_metadata_.sequence_num != -1) {
+    // WillEnqueue() was already called.
+    return;
+  }
+  task_metadata_.sequence_num = sequence_num;
+  annotator.WillQueueTask("ThreadPool_PostJob", &task_metadata_);
 }
 
 bool JobTaskSource::WillJoin() {
@@ -306,7 +316,7 @@ uint8_t JobTaskSource::AcquireTaskId() {
   do {
     // Count trailing one bits. This is the id of the right-most 0-bit in
     // |assigned_task_ids|.
-    task_id = bits::CountTrailingZeroBits(~assigned_task_ids);
+    task_id = std::countr_one(assigned_task_ids);
     new_assigned_task_ids = assigned_task_ids | (uint32_t(1) << task_id);
   } while (!assigned_task_ids_.compare_exchange_weak(
       assigned_task_ids, new_assigned_task_ids, std::memory_order_acquire,
@@ -334,7 +344,7 @@ Task JobTaskSource::TakeTask(TaskSource::Transaction* transaction) {
   // if |transaction| is nullptr.
   DCHECK_GT(TS_UNCHECKED_READ(state_).Load().worker_count(), 0U);
   DCHECK(primary_task_);
-  return Task(from_here_, primary_task_, TimeTicks(), TimeDelta());
+  return {task_metadata_, primary_task_};
 }
 
 bool JobTaskSource::DidProcessTask(TaskSource::Transaction* /*transaction*/) {
@@ -388,12 +398,14 @@ bool JobTaskSource::HasReadyTasks(TimeTicks now) const {
   return true;
 }
 
-Task JobTaskSource::Clear(TaskSource::Transaction* transaction) {
+absl::optional<Task> JobTaskSource::Clear(
+    TaskSource::Transaction* transaction) {
   Cancel();
+
   // Nothing is cleared since other workers might still racily run tasks. For
   // simplicity, the destructor will take care of it once all references are
   // released.
-  return Task(from_here_, DoNothing(), TimeTicks(), TimeDelta());
+  return absl::nullopt;
 }
 
 }  // namespace internal

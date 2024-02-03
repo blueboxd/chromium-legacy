@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
+#include "partition_alloc/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
 
 #include <atomic>
 #include <cstddef>
@@ -10,23 +10,23 @@
 #include <string>
 #include <tuple>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/allocation_guard.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/chromecast_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/memory_reclaimer.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/bits.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/compiler_specific.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/no_destructor.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/numerics/checked_math.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/numerics/safe_conversions.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_check.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_root.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_stats.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim_internals.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/nonscannable_allocator.h"
 #include "build/build_config.h"
+#include "partition_alloc/allocation_guard.h"
+#include "partition_alloc/chromecast_buildflags.h"
+#include "partition_alloc/memory_reclaimer.h"
+#include "partition_alloc/partition_alloc.h"
+#include "partition_alloc/partition_alloc_base/bits.h"
+#include "partition_alloc/partition_alloc_base/compiler_specific.h"
+#include "partition_alloc/partition_alloc_base/no_destructor.h"
+#include "partition_alloc/partition_alloc_base/numerics/checked_math.h"
+#include "partition_alloc/partition_alloc_base/numerics/safe_conversions.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_check.h"
+#include "partition_alloc/partition_alloc_constants.h"
+#include "partition_alloc/partition_root.h"
+#include "partition_alloc/partition_stats.h"
+#include "partition_alloc/shim/allocator_shim_internals.h"
+#include "partition_alloc/shim/nonscannable_allocator.h"
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include <malloc.h>
@@ -529,7 +529,8 @@ void ConfigurePartitions(
     SplitMainPartition split_main_partition,
     UseDedicatedAlignedPartition use_dedicated_aligned_partition,
     size_t ref_count_size,
-    BucketDistribution distribution) {
+    BucketDistribution distribution,
+    size_t scheduler_loop_quarantine_capacity_in_bytes) {
   // BRP cannot be enabled without splitting the main partition. Furthermore, in
   // the "before allocation" mode, it can't be enabled without further splitting
   // out the aligned partition.
@@ -581,6 +582,8 @@ void ConfigurePartitions(
                                 ? partition_alloc::PartitionOptions::kEnabled
                                 : partition_alloc::PartitionOptions::kDisabled,
           .ref_count_size = ref_count_size,
+          .scheduler_loop_quarantine_capacity_in_bytes =
+              scheduler_loop_quarantine_capacity_in_bytes,
           .memory_tagging = {
               .enabled = enable_memory_tagging
                              ? partition_alloc::PartitionOptions::kEnabled
@@ -635,7 +638,9 @@ void ConfigurePartitions(
   PA_CHECK(!g_roots_finalized.exchange(true));  // Ensure configured once.
 }
 
-PA_COMPONENT_EXPORT(PARTITION_ALLOC)
+// TODO(crbug.com/1137393): Remove this functions once pdfium has switched to
+// the new version.
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
 void ConfigurePartitions(
     EnableBrp enable_brp,
     EnableMemoryTagging enable_memory_tagging,
@@ -651,10 +656,13 @@ void ConfigurePartitions(
               ? partition_alloc::TagViolationReportingMode::kSynchronous
               : partition_alloc::TagViolationReportingMode::kDisabled;
 
-  ConfigurePartitions(enable_brp, enable_memory_tagging,
-                      memory_tagging_reporting_mode, split_main_partition,
-                      use_dedicated_aligned_partition, ref_count_size,
-                      distribution);
+  // We don't use this feature in PDFium.
+  size_t scheduler_loop_quarantine_capacity_in_bytes = 0;
+
+  ConfigurePartitions(
+      enable_brp, enable_memory_tagging, memory_tagging_reporting_mode,
+      split_main_partition, use_dedicated_aligned_partition, ref_count_size,
+      distribution, scheduler_loop_quarantine_capacity_in_bytes);
 }
 
 // No synchronization provided: `PartitionRoot.flags` is only written

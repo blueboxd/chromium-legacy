@@ -70,7 +70,9 @@ TabSearchBubbleHost::TabSearchBubbleHost(views::Button* button,
   if (features::IsTabOrganization()) {
     auto* const tab_organization_service =
         TabOrganizationServiceFactory::GetForProfile(profile);
-    tab_organization_service->AddObserver(this);
+    if (tab_organization_service) {
+      tab_organization_service->AddObserver(this);
+    }
   }
   auto menu_button_controller = std::make_unique<views::MenuButtonController>(
       button,
@@ -85,7 +87,9 @@ TabSearchBubbleHost::~TabSearchBubbleHost() {
   if (features::IsTabOrganization()) {
     auto* const tab_organization_service =
         TabOrganizationServiceFactory::GetForProfile(profile_);
-    tab_organization_service->RemoveObserver(this);
+    if (tab_organization_service) {
+      tab_organization_service->RemoveObserver(this);
+    }
   }
 }
 
@@ -118,7 +122,7 @@ void TabSearchBubbleHost::OnWidgetDestroying(views::Widget* widget) {
   pressed_lock_.reset();
 }
 
-void TabSearchBubbleHost::OnStartRequest(const Browser* browser) {
+void TabSearchBubbleHost::OnUserInvokedFeature(const Browser* browser) {
   if (browser == GetBrowser()) {
     profile_->GetPrefs()->SetInteger(tab_search_prefs::kTabSearchTabIndex, 1);
     ShowTabSearchBubble(false);
@@ -136,7 +140,7 @@ bool TabSearchBubbleHost::ShowTabSearchBubble(
   if (controller)
     controller->EndPromo(
         feature_engagement::kIPHTabSearchFeature,
-        user_education::FeaturePromoCloseReason::kFeatureEngaged);
+        user_education::EndFeaturePromoReason::kFeatureEngaged);
 
   absl::optional<gfx::Rect> anchor;
   if (button_->GetWidget()->IsFullscreen() && !button_->IsDrawn()) {

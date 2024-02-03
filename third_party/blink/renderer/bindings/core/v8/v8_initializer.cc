@@ -184,7 +184,8 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
     context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
-        ToCoreStringWithNullCheck(message->Get()), std::move(location)));
+        ToCoreStringWithNullCheck(isolate, message->Get()),
+        std::move(location)));
     return;
   }
 
@@ -193,7 +194,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
                                           : SanitizeScriptErrors::kSanitize;
 
   ErrorEvent* event = ErrorEvent::Create(
-      ToCoreStringWithNullCheck(message->Get()), std::move(location),
+      ToCoreStringWithNullCheck(isolate, message->Get()), std::move(location),
       ScriptValue::From(script_state, data), &script_state->World());
 
   String message_for_console = ExtractMessageForConsole(isolate, data);
@@ -224,12 +225,13 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
     context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
-        ToCoreStringWithNullCheck(message->Get()), std::move(location)));
+        ToCoreStringWithNullCheck(isolate, message->Get()),
+        std::move(location)));
     return;
   }
 
   ErrorEvent* event = ErrorEvent::Create(
-      ToCoreStringWithNullCheck(message->Get()), std::move(location),
+      ToCoreStringWithNullCheck(isolate, message->Get()), std::move(location),
       ScriptValue::From(script_state, data), &script_state->World());
 
   const auto sanitize_script_errors = message->IsSharedCrossOrigin()
@@ -284,7 +286,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
       v8::Exception::CreateMessage(isolate, exception);
   if (!message.IsEmpty()) {
     // message->Get() can be empty here. https://crbug.com/450330
-    error_message = ToCoreStringWithNullCheck(message->Get());
+    error_message = ToCoreStringWithNullCheck(isolate, message->Get());
     location = CaptureSourceLocation(isolate, message, context);
     if (message->IsSharedCrossOrigin())
       sanitize_script_errors = SanitizeScriptErrors::kDoNotSanitize;
@@ -486,8 +488,10 @@ void V8Initializer::WasmAsyncResolvePromiseCallback(
     v8::Local<v8::Promise::Resolver> resolver,
     v8::Local<v8::Value> compilation_result,
     v8::WasmAsyncSuccess success) {
-  if (!IsInParallelAlgorithmRunnable(ExecutionContext::From(context),
-                                     ScriptState::From(context))) {
+  ScriptState* script_state = ScriptState::MaybeFrom(context);
+  if (!script_state ||
+      !IsInParallelAlgorithmRunnable(ExecutionContext::From(script_state),
+                                     script_state)) {
     return;
   }
   v8::MicrotasksScope microtasks_scope(
@@ -642,11 +646,13 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     return promise;
   }
 
-  String specifier = ToCoreStringWithNullCheck(v8_specifier);
+  String specifier =
+      ToCoreStringWithNullCheck(script_state->GetIsolate(), v8_specifier);
   KURL referrer_resource_url;
   if (v8_referrer_resource_url->IsString()) {
     String referrer_resource_url_str =
-        ToCoreString(v8::Local<v8::String>::Cast(v8_referrer_resource_url));
+        ToCoreString(script_state->GetIsolate(),
+                     v8::Local<v8::String>::Cast(v8_referrer_resource_url));
     if (!referrer_resource_url_str.empty())
       referrer_resource_url = KURL(NullURL(), referrer_resource_url_str);
   }

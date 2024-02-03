@@ -129,28 +129,28 @@ class ChromeDriver(object):
     elif chrome_binary:
       options['binary'] = chrome_binary
 
+    if chrome_switches is None:
+      chrome_switches = []
+
     if sys.platform.startswith('linux') and android_package is None:
-      if chrome_switches is None:
-        chrome_switches = []
       # Workaround for crbug.com/611886.
       chrome_switches.append('no-sandbox')
       # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
       chrome_switches.append('disable-gpu')
 
-    if chrome_switches is None:
-      chrome_switches = []
     chrome_switches.append('force-color-profile=srgb')
 
     # Resampling can change the distance of a synthetic scroll.
     chrome_switches.append('disable-features=ResamplingScrollEvents')
 
-    if chrome_switches:
-      assert type(chrome_switches) is list
-      options['args'] = chrome_switches
+    assert type(chrome_switches) is list
+    options['args'] = chrome_switches
 
-      # TODO(crbug.com/1011000): Work around a bug with headless on Mac.
-      if util.GetPlatformName() == 'mac' and '--headless' in chrome_switches:
-        options['excludeSwitches'] = ['--enable-logging']
+    # TODO(crbug.com/1011000): Work around a bug with headless on Mac.
+    if (util.GetPlatformName() == 'mac' and
+        browser_name == 'chrome-headless-shell' and
+        debugger_address is None):
+      options['excludeSwitches'] = ['--enable-logging']
 
     if mobile_emulation:
       assert type(mobile_emulation) is dict
@@ -748,9 +748,9 @@ class ChromeDriver(object):
     params = {'accountIndex': index}
     return self.ExecuteCommand(Command.SELECT_ACCOUNT, params)
 
-  def ConfirmIdpLogin(self, vendorId):
-    params = {'vendorId': vendorId}
-    return self.ExecuteCommand(Command.CONFIRM_IDP_LOGIN, params)
+  def ClickFedCmDialogButton(self, vendorId, dialogButton):
+    params = {'vendorId': vendorId, 'dialogButton': dialogButton}
+    return self.ExecuteCommand(Command.CLICK_FEDCM_DIALOG_BUTTON, params)
 
   def GetAccounts(self):
     return self.ExecuteCommand(Command.GET_ACCOUNTS, {})

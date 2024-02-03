@@ -36,7 +36,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/omnibox/OmniboxSuggestionsDropdownEmbedderImpl.java",
     "java/src/org/chromium/chrome/browser/omnibox/OmniboxViewUtil.java",
     "java/src/org/chromium/chrome/browser/omnibox/OverrideUrlLoadingDelegate.java",
-    "java/src/org/chromium/chrome/browser/omnibox/SearchEngineLogoUtils.java",
+    "java/src/org/chromium/chrome/browser/omnibox/SearchEngineUtils.java",
     "java/src/org/chromium/chrome/browser/omnibox/SpannableAutocompleteEditTextModel.java",
     "java/src/org/chromium/chrome/browser/omnibox/UrlBar.java",
     "java/src/org/chromium/chrome/browser/omnibox/UrlBarApi26.java",
@@ -105,6 +105,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewBinder.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewProcessor.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewProperties.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/DynamicSpacingRecyclerViewItemDecoration.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SimpleHorizontalLayoutView.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SimpleVerticalLayoutView.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SpacingRecyclerViewItemDecoration.java",
@@ -251,26 +252,6 @@ android_library("util_java") {
   ]
 }
 
-android_library("javatests") {
-  testonly = true
-  sources = [ "java/src/org/chromium/chrome/browser/omnibox/voice/VoiceRecognitionUtilTest.java" ]
-
-  deps = [
-    ":util_java",
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//base/test:test_support_java",
-    "//chrome/test/android:chrome_java_unit_test_support",
-    "//content/public/test/android:content_java_test_support",
-    "//third_party/android_sdk:android_test_mock_java",
-    "//third_party/androidx:androidx_test_core_java",
-    "//third_party/androidx:androidx_test_monitor_java",
-    "//third_party/androidx:androidx_test_runner_java",
-    "//third_party/junit",
-    "//third_party/mockito:mockito_java",
-  ]
-}
-
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/omnibox/ChromeAutocompleteProviderClient.java",
@@ -386,6 +367,7 @@ android_library("unit_device_javatests") {
     ":java",
     ":java_resources",
     "//base:base_java_test_support",
+    "//base:jni_java",
     "//chrome/android:chrome_app_java_resources",
     "//chrome/browser/flags:java",
     "//chrome/browser/profiles/android:java",
@@ -421,7 +403,7 @@ robolectric_library("junit") {
     "java/src/org/chromium/chrome/browser/omnibox/KeyboardHideHelperUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/LocationBarMediatorTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/OmniboxSuggestionsDropdownEmbedderImplTest.java",
-    "java/src/org/chromium/chrome/browser/omnibox/SearchEngineLogoUtilsUnitTest.java",
+    "java/src/org/chromium/chrome/browser/omnibox/SearchEngineUtilsUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/ShadowUrlBarData.java",
     "java/src/org/chromium/chrome/browser/omnibox/SpannableAutocompleteEditTextModelUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/UrlBarDataTest.java",
@@ -460,9 +442,11 @@ robolectric_library("junit") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewProcessorUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewUnitTest.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/DynamicSpacingRecyclerViewItemDecorationUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SimpleHorizontalLayoutViewTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SimpleVerticalLayoutViewTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SpacingRecyclerViewItemDecorationUnitTest.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SuggestionLayoutUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/BasicSuggestionProcessorUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/carousel/BaseCarouselSuggestionProcessorUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/carousel/BaseCarouselSuggestionViewBinderUnitTest.java",
@@ -484,6 +468,7 @@ robolectric_library("junit") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/tail/TailSuggestionViewBinderUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/voice/RecognitionTestHelper.java",
     "java/src/org/chromium/chrome/browser/omnibox/voice/VoiceRecognitionHandlerUnitTest.java",
+    "java/src/org/chromium/chrome/browser/omnibox/voice/VoiceRecognitionUtilTest.java",
   ]
   deps = [
     ":java",

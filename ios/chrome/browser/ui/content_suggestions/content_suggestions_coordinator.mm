@@ -27,7 +27,7 @@
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/favicon/large_icon_cache.h"
-#import "ios/chrome/browser/ntp/home/features.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
@@ -43,7 +43,6 @@
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
-#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -61,11 +60,11 @@
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
@@ -268,6 +267,7 @@
   self.contentSuggestionsViewController.parcelTrackingCommandHandler =
       HandlerForProtocol(self.browser->GetCommandDispatcher(),
                          ParcelTrackingOptInCommands);
+  self.contentSuggestionsViewController.NTPViewDelegate = self.NTPViewDelegate;
 
   self.contentSuggestionsMediator.consumer =
       self.contentSuggestionsViewController;
@@ -332,8 +332,7 @@
 }
 
 - (UIEdgeInsets)safeAreaInsetsForDiscoverFeed {
-  return [SceneStateBrowserAgent::FromBrowser(self.browser)
-              ->GetSceneState()
+  return [self.browser->GetSceneState()
               .window.rootViewController.view safeAreaInsets];
 }
 
@@ -481,11 +480,11 @@
         ContentSuggestionsCoordinator* strongSelf = weakSelf;
 
         // Record that this context menu was shown to the user.
-        RecordMenuShown(MenuScenarioHistogram::kMostVisitedEntry);
+        RecordMenuShown(kMenuScenarioHistogramMostVisitedEntry);
 
         BrowserActionFactory* actionFactory = [[BrowserActionFactory alloc]
             initWithBrowser:strongSelf.browser
-                   scenario:MenuScenarioHistogram::kMostVisitedEntry];
+                   scenario:kMenuScenarioHistogramMostVisitedEntry];
 
         NSMutableArray<UIMenuElement*>* menuElements =
             [[NSMutableArray alloc] init];
@@ -527,7 +526,8 @@
           [menuElements addObject:newWindowAction];
         }
 
-        [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
+        CrURL* URL = [[CrURL alloc] initWithGURL:item.URL];
+        [menuElements addObject:[actionFactory actionToCopyURL:URL]];
 
         [menuElements addObject:[actionFactory actionToShareWithBlock:^{
                         [weakSelf shareURL:item.URL
@@ -637,6 +637,9 @@
         break;
       case SetUpListItemType::kAutofill:
         [weakSelf showCredentialProviderPromo];
+        break;
+      case SetUpListItemType::kContentNotification:
+        // TODO(b/311068390): handle notification opt-in
         break;
       case SetUpListItemType::kFollow:
       case SetUpListItemType::kAllSet:
@@ -785,8 +788,7 @@
 #pragma mark - Helpers
 
 - (void)configureStartSurfaceIfNeeded {
-  SceneState* scene =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  SceneState* scene = self.browser->GetSceneState();
   if (!NewTabPageTabHelper::FromWebState(self.webState)
            ->ShouldShowStartSurface()) {
     return;

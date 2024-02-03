@@ -190,15 +190,15 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
 
 UserScriptLoader::UserScriptLoader(BrowserContext* browser_context,
                                    const mojom::HostID& host_id)
-    : loaded_scripts_(new UserScriptList()),
+    : loaded_scripts_(UserScriptList()),
       ready_(false),
       queued_load_(false),
       browser_context_(browser_context),
       host_id_(host_id) {}
 
 UserScriptLoader::~UserScriptLoader() {
-  absl::optional<std::string> error =
-      absl::make_optional(kUserScriptLoaderDestroyedErrorMsg);
+  std::optional<std::string> error =
+      std::make_optional(kUserScriptLoaderDestroyedErrorMsg);
 
   // Clean up state by firing all remaining callbacks with |error| populated to
   // alert consumers that scripts are not loaded.
@@ -213,15 +213,15 @@ UserScriptLoader::~UserScriptLoader() {
     observer.OnUserScriptLoaderDestroyed(this);
 }
 
-void UserScriptLoader::AddScripts(std::unique_ptr<UserScriptList> scripts,
+void UserScriptLoader::AddScripts(UserScriptList scripts,
                                   ScriptsLoadedCallback callback) {
 #if DCHECK_IS_ON()
   // |scripts| with non-unique IDs will work, but that would indicate we are
   // doing something wrong somewhere, so DCHECK that.
-  DCHECK(AreScriptsUnique(*scripts))
+  DCHECK(AreScriptsUnique(scripts))
       << "AddScripts() expects scripts with unique IDs.";
 #endif  // DCHECK_IS_ON()
-  for (std::unique_ptr<UserScript>& user_script : *scripts) {
+  for (std::unique_ptr<UserScript>& user_script : scripts) {
     const std::string& id = user_script->id();
     removed_script_ids_.erase(id);
     if (added_scripts_map_.count(id) == 0)
@@ -231,7 +231,7 @@ void UserScriptLoader::AddScripts(std::unique_ptr<UserScriptList> scripts,
   AttemptLoad(std::move(callback));
 }
 
-void UserScriptLoader::AddScripts(std::unique_ptr<UserScriptList> scripts,
+void UserScriptLoader::AddScripts(UserScriptList scripts,
                                   int render_process_id,
                                   int render_frame_id,
                                   ScriptsLoadedCallback callback) {
@@ -279,17 +279,18 @@ void UserScriptLoader::AttemptLoad(ScriptsLoadedCallback callback) {
       queued_load_callbacks_.push_back(std::move(callback));
     } else {
       std::move(callback).Run(this,
-                              absl::make_optional(kNoScriptChangesErrorMsg));
+                              std::make_optional(kNoScriptChangesErrorMsg));
     }
   }
 
   // If the loader isn't ready yet, the load will be kicked off when it becomes
   // ready.
   if (ready_ && scripts_changed) {
-    if (is_loading())
+    if (is_loading()) {
       queued_load_ = true;
-    else
+    } else {
       StartLoad();
+    }
   }
 }
 
@@ -299,10 +300,11 @@ void UserScriptLoader::StartLoad() {
 
   // Reload any loaded scripts, and clear out |loaded_scripts_| to indicate that
   // the scripts aren't currently ready.
-  std::unique_ptr<UserScriptList> scripts_to_load = std::move(loaded_scripts_);
+  UserScriptList scripts_to_load = std::move(*loaded_scripts_);
+  loaded_scripts_.reset();
 
   // Filter out any scripts that are queued for removal.
-  base::EraseIf(*scripts_to_load,
+  base::EraseIf(scripts_to_load,
                 [this](const std::unique_ptr<UserScript>& script) {
                   return removed_script_ids_.count(script->id()) > 0u;
                 });
@@ -310,18 +312,18 @@ void UserScriptLoader::StartLoad() {
   // Since all scripts managed by an instance of this class should have unique
   // IDs, remove any already loaded scripts from `scripts_to_load` that will be
   // updated from `added_scripts_map_`.
-  base::EraseIf(*scripts_to_load,
+  base::EraseIf(scripts_to_load,
                 [this](const std::unique_ptr<UserScript>& script) {
                   return added_scripts_map_.count(script->id()) > 0u;
                 });
 
   std::set<std::string> added_script_ids;
-  scripts_to_load->reserve(scripts_to_load->size() + added_scripts_map_.size());
+  scripts_to_load.reserve(scripts_to_load.size() + added_scripts_map_.size());
   for (auto& id_and_script : added_scripts_map_) {
     std::unique_ptr<UserScript>& script = id_and_script.second;
     added_script_ids.insert(script->id());
     // Move script from |added_scripts_map_| into |scripts_to_load|.
-    scripts_to_load->push_back(std::move(script));
+    scripts_to_load.push_back(std::move(script));
   }
 
   // All queued updates are now being loaded. Similarly, move all
@@ -390,10 +392,11 @@ void UserScriptLoader::RemoveObserver(Observer* observer) {
 void UserScriptLoader::StartLoadForTesting(ScriptsLoadedCallback callback) {
   if (!callback.is_null())
     queued_load_callbacks_.push_back(std::move(callback));
-  if (is_loading())
+  if (is_loading()) {
     queued_load_ = true;
-  else
+  } else {
     StartLoad();
+  }
 }
 
 void UserScriptLoader::SetReady(bool ready) {
@@ -404,7 +407,7 @@ void UserScriptLoader::SetReady(bool ready) {
 }
 
 void UserScriptLoader::OnScriptsLoaded(
-    std::unique_ptr<UserScriptList> user_scripts,
+    UserScriptList user_scripts,
     base::ReadOnlySharedMemoryRegion shared_memory) {
   loaded_scripts_ = std::move(user_scripts);
 
@@ -450,7 +453,7 @@ void UserScriptLoader::OnScriptsLoaded(
   std::list<ScriptsLoadedCallback> loaded_callbacks;
   loaded_callbacks.splice(loaded_callbacks.end(), loading_callbacks_);
   for (auto& callback : loaded_callbacks)
-    std::move(callback).Run(this, /*error=*/absl::nullopt);
+    std::move(callback).Run(this, /*error=*/std::nullopt);
 
   // Notify `ScriptInjectionTracker` at the very end - *after* all the observers
   // and callbacks above have already been run. In particular, this needs to

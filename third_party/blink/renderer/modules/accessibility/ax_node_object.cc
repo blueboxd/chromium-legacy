@@ -333,55 +333,14 @@ bool CanHaveInlineTextBoxChildren(const blink::AXObject* obj) {
     return false;
   }
 
-  // Requires a layout object for there to be any inline text boxes.
-  if (!obj->GetLayoutObject()) {
-    return false;
-  }
-
-  // Inline text boxes are included if and only if the parent is unignored.
+  // Inline textboxes are included if and only if the parent is unignored.
   // If the parent is ignored but included in tree, the inline textbox is
   // still withheld.
-  return !obj->LastKnownIsIgnoredValue();
-}
-
-bool HasLayoutText(const blink::AXObject* obj) {
-  // This method should only be used when layout is clean.
-#if DCHECK_IS_ON()
-  DCHECK(obj->GetDocument()->Lifecycle().GetState() >=
-         blink::DocumentLifecycle::kLayoutClean)
-      << "Unclean document at lifecycle "
-      << obj->GetDocument()->Lifecycle().ToString();
-#endif
-
-  // If no layout object, could be display:none or display locked.
-  if (!obj->GetLayoutObject()) {
+  if (obj->LastKnownIsIgnoredValue()) {
     return false;
   }
 
-  // Display-locked nodes do not have layout objects with which to use for
-  // retrieving inline textbox children.
-  const blink::AXObject* ax_ancestor_with_node = obj;
-  while (!ax_ancestor_with_node->GetNode()) {
-    ax_ancestor_with_node = ax_ancestor_with_node->CachedParentObject();
-  }
-  if (blink::DisplayLockUtilities::LockedAncestorPreventingPaint(
-          *ax_ancestor_with_node->GetNode())) {
-    return false;
-  }
-
-  // Only text has inline textbox children.
-  if (!obj->GetLayoutObject()->IsText()) {
-    return false;
-  }
-
-  // Layout for this node must be clean, since we are in clean layout, and any
-  // node that needs layout because of display locking would have returned early
-  // above.
-  DUMP_WILL_BE_CHECK(!obj->GetLayoutObject()->NeedsLayout())
-      << "LayoutText needed layout but was not display locked: "
-      << obj->ToString(true, true);
-
-  return true;
+  return obj->GetLayoutObject() && obj->GetLayoutObject()->IsText();
 }
 
 }  // namespace
@@ -876,13 +835,29 @@ absl::optional<String> AXNodeObject::GetCSSAltText(const Node* node) {
 
 // The following lists are for deciding whether the tags aside,
 // header and footer can be interpreted as roles complementary, banner and
-// contentInfo or if they should be interpreted as generic. This list
-// includes all roles that correspond to the html sectioning content elements.
+// contentInfo or if they should be interpreted as generic.
+// This function only handles the complementary, banner, and contentInfo roles,
+// which belong to the landmark roles set.
 static HashSet<ax::mojom::blink::Role>& GetLandmarkIsNotAllowedAncestorRoles(
     ax::mojom::blink::Role landmark) {
   // clang-format off
   DEFINE_STATIC_LOCAL(
-      HashSet<ax::mojom::blink::Role>, sectioning_content_roles,
+      // https://html.spec.whatwg.org/multipage/dom.html#sectioning-content-2
+      // The aside element should not assume the complementary role when nested
+      // within the following sectioning content elements.
+      HashSet<ax::mojom::blink::Role>, complementary_is_not_allowed_roles,
+      ({
+        ax::mojom::blink::Role::kArticle,
+        ax::mojom::blink::Role::kComplementary,
+        ax::mojom::blink::Role::kNavigation,
+        ax::mojom::blink::Role::kSection
+      }));
+      // https://w3c.github.io/html-aam/#el-header-ancestorbody
+      // The header and footer elements should not assume the banner and
+      // contentInfo roles, respectively, when nested within any of the
+      // sectioning content elements or the main element.
+  DEFINE_STATIC_LOCAL(
+      HashSet<ax::mojom::blink::Role>, landmark_is_not_allowed_roles,
       ({
         ax::mojom::blink::Role::kArticle,
         ax::mojom::blink::Role::kComplementary,
@@ -892,26 +867,19 @@ static HashSet<ax::mojom::blink::Role>& GetLandmarkIsNotAllowedAncestorRoles(
       }));
   // clang-format on
 
-  DEFINE_STATIC_LOCAL(HashSet<ax::mojom::blink::Role>,
-                      aside_is_not_allowed_roles, ());
-
-  // Main can contain complementary element but not header or footer.
   if (landmark == ax::mojom::blink::Role::kComplementary) {
-    if (aside_is_not_allowed_roles.empty()) {
-      for (const auto& role : sectioning_content_roles) {
-        if (role != ax::mojom::blink::Role::kMain) {
-          aside_is_not_allowed_roles.insert(role);
-        }
-      }
-    }
-    return aside_is_not_allowed_roles;
+    return complementary_is_not_allowed_roles;
   }
-  return sectioning_content_roles;
+  return landmark_is_not_allowed_roles;
 }
 
 bool AXNodeObject::IsDescendantOfLandmarkDisallowedElement() const {
   if (!GetNode())
     return false;
+
+  if (AriaRoleAttribute() == ax::mojom::blink::Role::kComplementary) {
+    return false;
+  }
 
   auto role_names = GetLandmarkIsNotAllowedAncestorRoles(RoleValue());
 
@@ -1773,9 +1741,11 @@ bool AXNodeObject::IsControl() const {
 }
 
 bool AXNodeObject::IsAutofillAvailable() const {
-  // Autofill state is stored in AXObjectCache.
-  WebAXAutofillState state = AXObjectCache().GetAutofillState(AXObjectID());
-  return state == WebAXAutofillState::kAutofillAvailable;
+  // Autofill suggestion availability is stored in AXObjectCache.
+  WebAXAutofillSuggestionAvailability suggestion_availability =
+      AXObjectCache().GetAutofillSuggestionAvailability(AXObjectID());
+  return suggestion_availability ==
+         WebAXAutofillSuggestionAvailability::kAutofillAvailable;
 }
 
 bool AXNodeObject::IsDefault() const {
@@ -2350,9 +2320,10 @@ unsigned AXNodeObject::HierarchicalLevel() const {
 
 String AXNodeObject::AutoComplete() const {
   // Check cache for auto complete state.
-  if (AXObjectCache().GetAutofillState(AXObjectID()) ==
-      WebAXAutofillState::kAutocompleteAvailable)
+  if (AXObjectCache().GetAutofillSuggestionAvailability(AXObjectID()) ==
+      WebAXAutofillSuggestionAvailability::kAutocompleteAvailable) {
     return "list";
+  }
 
   if (IsAtomicTextField() || IsARIATextField()) {
     const AtomicString& aria_auto_complete =
@@ -3267,7 +3238,7 @@ bool AXNodeObject::StepValueForRange(float* out_value) const {
     // less than stops in the slider, otherwise, move by 5%.
     float max = step_range.Maximum().ToString().ToFloat();
     float min = step_range.Minimum().ToString().ToFloat();
-    int num_stops = (max - min) / step;
+    int num_stops = base::saturated_cast<int>((max - min) / step);
     constexpr int kNumStopsForFivePercentRule = 40;
     if (num_stops >= kNumStopsForFivePercentRule) {
       // No explicit step, and the step is very small -- don't expose a step
@@ -3569,8 +3540,8 @@ ax::mojom::blink::HasPopup AXNodeObject::HasPopup() const {
     return ax::mojom::blink::HasPopup::kListbox;
   }
 
-  if (AXObjectCache().GetAutofillState(AXObjectID()) !=
-      WebAXAutofillState::kNoSuggestions) {
+  if (AXObjectCache().GetAutofillSuggestionAvailability(AXObjectID()) !=
+      WebAXAutofillSuggestionAvailability::kNoSuggestions) {
     return ax::mojom::blink::HasPopup::kMenu;
   }
 
@@ -3977,7 +3948,7 @@ String AXNodeObject::TextFromDescendants(
     }
     AXObject* child = children[index];
     DCHECK(child);
-    DCHECK(!child->IsDetached());
+    DCHECK(!child->IsDetached()) << child->ToString(true, true);
     constexpr size_t kMaxDescendantsForTextAlternativeComputation = 100;
     if (visited.size() > kMaxDescendantsForTextAlternativeComputation)
       break;
@@ -4355,13 +4326,6 @@ bool AXNodeObject::ShouldLoadInlineTextBoxes() const {
 }
 
 void AXNodeObject::LoadInlineTextBoxes() {
-#if DCHECK_IS_ON()
-  DCHECK(GetDocument()->Lifecycle().GetState() >=
-         DocumentLifecycle::kLayoutClean)
-      << "Unclean document at lifecycle "
-      << GetDocument()->Lifecycle().ToString();
-#endif
-
   std::queue<AXID> work_queue;
   work_queue.push(AXObjectID());
 
@@ -4426,9 +4390,6 @@ void AXNodeObject::LoadInlineTextBoxesHelper() {
 void AXNodeObject::AddInlineTextBoxChildren() {
   CHECK(GetDocument());
   CHECK(ShouldLoadInlineTextBoxes());
-  CHECK(GetLayoutObject());
-  GetLayoutObject()->CheckIsNotDestroyed();
-  CHECK(GetLayoutObject()->IsText());
   CHECK(!GetLayoutObject()->NeedsLayout());
   CHECK(AXObjectCache().GetAXMode().has_mode(ui::AXMode::kInlineTextBoxes));
   CHECK(!AXObjectCache().GetAXMode().HasExperimentalFlags(
@@ -4595,7 +4556,7 @@ void AXNodeObject::AddChildrenImpl() {
     return;
   }
 
-  if (ShouldLoadInlineTextBoxes() && HasLayoutText(this)) {
+  if (ShouldLoadInlineTextBoxes()) {
     AddInlineTextBoxChildren();
     CHECK_ATTACHED();
     return;
@@ -4650,7 +4611,7 @@ void AXNodeObject::AddChildren() {
          "and add children on: "
       << ToString(true, true);
   SANITIZER_CHECK(!is_adding_children_)
-      << " Reentering method on " << GetNode();
+      << " Reentering method on " << ToString(true, true);
   base::AutoReset<bool> reentrancy_protector(&is_adding_children_, true);
 #endif
 
@@ -4673,6 +4634,7 @@ void AXNodeObject::AddNodeChild(Node* node) {
     return;
 
   AXObject* ax_child = AXObjectCache().Get(node);
+  CHECK(!ax_child || !ax_child->IsDetached());
   // Should not have another parent unless owned.
   if (AXObjectCache().IsAriaOwned(ax_child))
     return;  // Do not add owned children to their natural parent.
@@ -4684,9 +4646,12 @@ void AXNodeObject::AddNodeChild(Node* node) {
 #endif
 
   if (!ax_child) {
-    ax_child = AXObjectCache().GetOrCreate(node, this);
-    if (!ax_child)
+    ax_child =
+        AXObjectCache().CreateAndInit(node, node->GetLayoutObject(), this);
+    if (!ax_child) {
       return;
+    }
+    CHECK(!ax_child->IsDetached());
   }
 
   AddChild(ax_child);
@@ -4790,10 +4755,6 @@ void AXNodeObject::InsertChild(AXObject* child,
   // - For a new object it will have already been set.
   // - For a reused, older object, it may need to be changed to a new parent.
   child->SetParent(this);
-
-#if DCHECK_IS_ON()
-  child->EnsureCorrectParentComputation();
-#endif
 
   // Update cached values preemptively, but don't allow children changed to be
   // called if ignored change, we are already recomputing children and don't

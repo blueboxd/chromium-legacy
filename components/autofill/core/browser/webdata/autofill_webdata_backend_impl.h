@@ -72,6 +72,7 @@ class AutofillWebDataBackendImpl
   void NotifyOfAutofillProfileChanged(
       const AutofillProfileChange& change) override;
   void NotifyOfCreditCardChanged(const CreditCardChange& change) override;
+  void NotifyOfIbanChanged(const IbanChange& change) override;
   void NotifyOnAutofillChangedBySync(syncer::ModelType model_type) override;
   void CommitChanges() override;
 
@@ -130,11 +131,10 @@ class AutofillWebDataBackendImpl
       AutofillProfile::Source profile_source,
       WebDatabase* db);
 
-  // Returns the local/server Autofill profiles from the web database.
+  // Returns the Autofill profiles from the web database.
   std::unique_ptr<WDTypedResult> GetAutofillProfiles(
       AutofillProfile::Source profile_source,
       WebDatabase* db);
-  std::unique_ptr<WDTypedResult> GetServerProfiles(WebDatabase* db);
 
   // Returns the number of values such that all for autofill entries with that
   // value, the interval between creation date and last usage is entirely
@@ -197,9 +197,6 @@ class AutofillWebDataBackendImpl
   WebDatabase::State UpdateServerCardMetadata(const CreditCard& credit_card,
                                               WebDatabase* db);
 
-  WebDatabase::State UpdateServerAddressMetadata(const AutofillProfile& profile,
-                                                 WebDatabase* db);
-
   // Methods to add, update, remove, clear server cvc in the web database.
   WebDatabase::State AddServerCvc(int64_t instrument_id,
                                   const std::u16string& cvc,
@@ -209,6 +206,9 @@ class AutofillWebDataBackendImpl
                                      WebDatabase* db);
   WebDatabase::State RemoveServerCvc(int64_t instrument_id, WebDatabase* db);
   WebDatabase::State ClearServerCvcs(WebDatabase* db);
+
+  // Method to clear all the local CVCs from the web database.
+  WebDatabase::State ClearLocalCvcs(WebDatabase* db);
 
   // Returns the PaymentsCustomerData from the database.
   std::unique_ptr<WDTypedResult> GetPaymentsCustomerData(WebDatabase* db);

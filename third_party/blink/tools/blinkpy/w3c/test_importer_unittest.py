@@ -63,7 +63,6 @@ class TestImporterTest(LoggingTestCase):
                 'is_try_builder': True,
                 'steps': {
                     'wpt_tests_suite (with patch)': {
-                        'uses_wptrunner': True,
                     },
                 }
             },
@@ -95,11 +94,9 @@ class TestImporterTest(LoggingTestCase):
         success = importer.update_expectations_for_cl()
         self.assertFalse(success)
         self.assertLog([
-            'INFO: Triggering try jobs for updating expectations.\n',
-            'INFO: For rebaselining:\n',
+            'INFO: Triggering try jobs for updating expectations:\n',
             'INFO:   cq-builder-a\n',
             'INFO:   cq-builder-b\n',
-            'INFO: For updating WPT metadata:\n',
             'INFO:   cq-wpt-builder-c\n',
             'ERROR: No initial try job results, aborting.\n',
         ])
@@ -119,11 +116,9 @@ class TestImporterTest(LoggingTestCase):
         success = importer.update_expectations_for_cl()
         self.assertFalse(success)
         self.assertLog([
-            'INFO: Triggering try jobs for updating expectations.\n',
-            'INFO: For rebaselining:\n',
+            'INFO: Triggering try jobs for updating expectations:\n',
             'INFO:   cq-builder-a\n',
             'INFO:   cq-builder-b\n',
-            'INFO: For updating WPT metadata:\n',
             'INFO:   cq-wpt-builder-c\n',
             'ERROR: The CL was closed, aborting.\n',
         ])
@@ -141,11 +136,9 @@ class TestImporterTest(LoggingTestCase):
             })
         success = importer.update_expectations_for_cl()
         self.assertLog([
-            'INFO: Triggering try jobs for updating expectations.\n',
-            'INFO: For rebaselining:\n',
+            'INFO: Triggering try jobs for updating expectations:\n',
             'INFO:   cq-builder-a\n',
             'INFO:   cq-builder-b\n',
-            'INFO: For updating WPT metadata:\n',
             'INFO:   cq-wpt-builder-c\n',
             'INFO: All jobs finished.\n',
         ])
@@ -166,21 +159,14 @@ class TestImporterTest(LoggingTestCase):
         success = importer.update_expectations_for_cl()
         self.assertTrue(success)
         self.assertLog([
-            'INFO: Triggering try jobs for updating expectations.\n',
-            'INFO: For rebaselining:\n',
+            'INFO: Triggering try jobs for updating expectations:\n',
             'INFO:   cq-builder-a\n',
             'INFO:   cq-builder-b\n',
-            'INFO: For updating WPT metadata:\n',
             'INFO:   cq-wpt-builder-c\n',
             'INFO: All jobs finished.\n',
-            'INFO: Output of update-metadata:\n',
-            'INFO:   update-metadata: MOCK output of child process\n',
-            'INFO: -- end of update-metadata output --\n',
+            'INFO: Skip Slow and Timeout tests.\n',
+            'INFO: Generating MANIFEST.json\n',
         ])
-        self.assertIn([
-            'python', '/mock-checkout/third_party/blink/tools/blink_tool.py',
-            'update-metadata', '--no-trigger-jobs'
-        ], host.executive.calls)
 
     def test_run_commit_queue_for_cl_pass(self):
         host = self.mock_host()
@@ -496,8 +482,8 @@ class TestImporterTest(LoggingTestCase):
             'NOAUTOREVERT=true\n'
             'No-Export: true\n'
             'Validate-Test-Flakiness: skip\n'
-            'Cq-Include-Trybots: luci.chromium.try:linux-wpt-identity-fyi-rel,'
-            'linux-wpt-input-fyi-rel,linux-blink-rel')
+            'Cq-Include-Trybots: luci.chromium.try:linux-blink-rel\n'
+            'Cq-Include-Trybots: luci.chromium.try:linux-wpt-chromium-rel\n')
         self.assertEqual(host.executive.calls,
                          [MANIFEST_INSTALL_CMD] +
                          [['git', 'log', '-1', '--format=%B']])

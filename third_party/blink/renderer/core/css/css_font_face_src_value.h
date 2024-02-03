@@ -31,57 +31,43 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_origin_clean.h"
-#include "third_party/blink/renderer/core/css/css_url_data.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
+namespace cssvalue {
+class CSSURIValue;
+}  // namespace cssvalue
+
 class ExecutionContext;
 
 class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
  public:
-  static CSSFontFaceSrcValue* Create(CSSUrlData url_data,
-                                     const Referrer& referrer,
-                                     scoped_refptr<const DOMWrapperWorld> world,
-                                     OriginClean origin_clean,
-                                     bool is_ad_related) {
-    return MakeGarbageCollected<CSSFontFaceSrcValue>(
-        std::move(url_data), referrer, false, std::move(world), origin_clean,
-        is_ad_related);
+  static CSSFontFaceSrcValue* Create(
+      cssvalue::CSSURIValue* src_value,
+      scoped_refptr<const DOMWrapperWorld> world) {
+    return MakeGarbageCollected<CSSFontFaceSrcValue>(src_value,
+                                                     std::move(world));
   }
-  static CSSFontFaceSrcValue* CreateLocal(
-      const String& absolute_resource,
-      scoped_refptr<const DOMWrapperWorld> world,
-      OriginClean origin_clean,
-      bool is_ad_related) {
-    return MakeGarbageCollected<CSSFontFaceSrcValue>(
-        CSSUrlData(AtomicString(absolute_resource), KURL()), Referrer(), true,
-        std::move(world), origin_clean, is_ad_related);
+  static CSSFontFaceSrcValue* CreateLocal(const String& local_resource) {
+    return MakeGarbageCollected<CSSFontFaceSrcValue>(local_resource);
   }
 
-  CSSFontFaceSrcValue(CSSUrlData url_data,
-                      const Referrer& referrer,
-                      bool local,
-                      scoped_refptr<const DOMWrapperWorld> world,
-                      OriginClean origin_clean,
-                      bool is_ad_related)
+  explicit CSSFontFaceSrcValue(const String& local_resource)
+      : CSSValue(kFontFaceSrcClass), local_resource_(local_resource) {}
+  CSSFontFaceSrcValue(cssvalue::CSSURIValue* src_value,
+                      scoped_refptr<const DOMWrapperWorld> world)
       : CSSValue(kFontFaceSrcClass),
-        url_data_(std::move(url_data)),
-        referrer_(referrer),
-        world_(std::move(world)),
-        is_local_(local),
-        origin_clean_(origin_clean),
-        is_ad_related_(is_ad_related) {}
+        src_value_(src_value),
+        world_(std::move(world)) {}
 
   // Returns the local() resource name. Only usable if IsLocal() returns true.
-  const String& LocalResource() const { return url_data_.UnresolvedUrl(); }
-  bool IsLocal() const { return is_local_; }
+  const String& LocalResource() const { return local_resource_; }
+  bool IsLocal() const { return !src_value_; }
 
   /* Format is serialized as string, so we can set this to string internally. It
    * does not affect functionality downstream - i.e. the font face is handled
@@ -114,23 +100,17 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
 
   bool Equals(const CSSFontFaceSrcValue&) const;
 
-  void TraceAfterDispatch(blink::Visitor* visitor) const {
-    visitor->Trace(fetched_);
-    CSSValue::TraceAfterDispatch(visitor);
-  }
+  void TraceAfterDispatch(Visitor* visitor) const;
 
  private:
   void RestoreCachedResourceIfNeeded(ExecutionContext*) const;
 
   Vector<FontTechnology> technologies_;
-  CSSUrlData url_data_;
+  Member<cssvalue::CSSURIValue> src_value_;  // Non-null if remote (src()).
+  String local_resource_;                    // Non-null if local (local()).
   String format_;
-  const Referrer referrer_;
   const scoped_refptr<const DOMWrapperWorld> world_;
   mutable Member<FontResource> fetched_;
-  const bool is_local_;
-  const OriginClean origin_clean_;
-  bool is_ad_related_;
 };
 
 template <>

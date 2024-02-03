@@ -83,10 +83,23 @@ struct Padding2d {
 
 // Represents a 2-D convolution given the input and filter tensors.
 //
-// Only `oihw` (output_channels, input_channels/groups, height, width) filter
-// layout is supported, other variants are being discussed in the working group
+// * conv2d (Type == kDirect) only supports `oihw` (output_channels,
+//   input_channels/groups, height, width) filter layout
+// * convTranspose2d (Type == kTransposed) only supports `iohw` (input_channels,
+//   output_channels/groups, height, width) filter layout
+// Support for other layouts are being discussed in the working group
 // https://github.com/webmachinelearning/webnn/issues/324.
 struct Conv2d {
+  enum Type {
+    // Represents a 2-D convolution given 4-D input and filter tensors.
+    kDirect,
+    // Represents a 2-D transposed convolution given 4-D input and filter
+    // tensors.
+    kTransposed,
+  };
+
+  // The type of 2-D convolution.
+  Type type;
   // The id of input operand is used to get the `Operand` description from
   // `GraphInfo.id_to_operand_map`.
   uint64 input_operand_id;
@@ -131,6 +144,9 @@ struct ElementWiseBinary  {
     kMax,
     kMin,
     kPow,
+    kEqual,
+    kGreater,
+    kLesser,
   };
 
   // The kind of binary operation.
@@ -144,6 +160,27 @@ struct ElementWiseBinary  {
   // The id of output operand is used to get the `Operand` description from
   // `GraphInfo.id_to_operand_map`.
   uint64 output_operand;
+};
+
+// Represents an element-wise unary operation, mathematically equivalent to:
+// <output_operand> = <operation_kind>(<input_operand>);
+struct ElementWiseUnary  {
+  enum Kind {
+    kLogicalNot,
+    kIdentity,
+    kSqrt,
+    kErf,
+    kReciprocal,
+  };
+
+  // The kind of unary operation.
+  Kind kind;
+  // The id of input operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 input_operand_id;
+  // The id of output operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 output_operand_id;
 };
 
 // Specifies the different ways to pad a tensor. The padding value is only
@@ -160,6 +197,19 @@ union PaddingMode {
   EdgePadding edge;
   ReflectionPadding reflection;
   SymmetricPadding symmetric;
+};
+
+// Represents matmul operation which compute the matrix product of two input tensors.
+struct Matmul {
+  // The id of `a` operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 a_operand_id;
+  // The id of `b` operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 b_operand_id;
+  // The id of output operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 output_operand_id;
 };
 
 // Represents a pad operation which inflates the input tensor with constant or
@@ -179,6 +229,37 @@ struct Pad {
   array<uint32> ending_padding;
 
   PaddingMode mode;
+};
+
+struct Reduce  {
+  enum Kind {
+    kL1,
+    kL2,
+    kLogSum,
+    kLogSumExp,
+    kMax,
+    kMean,
+    kMin,
+    kProduct,
+    kSum,
+    kSumSquare,
+  };
+
+  // The kind of reduce operation.
+  Kind kind;
+  // The id of input operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 input_operand_id;
+  // The id of output operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 output_operand_id;
+
+  // Axes indicates the dimensions to reduce. The values in the sequence
+  // must be in the range [0, N-1] where N is the rank of the input tensor.
+  // The length of the sequence should be less than or equal to N.
+  array<uint32> axes;
+  // If true, retains reduced dimensions with size 1.
+  bool keep_dimensions = false;
 };
 
 // Represents an average or max pooling operation across all the elements with
@@ -234,6 +315,19 @@ struct Slice {
   array<StartAndSize> starts_and_sizes;
 };
 
+// Represents an operation of exponential linear unit function in the
+// expression max(0, x) + alpha * (exp(min(0, x)) - 1).
+struct Elu {
+  // The id of input operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 input_operand_id;
+  // The id of output operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 output_operand_id;
+  // A float scalar multiplier for (exp(min(0, x)) - 1).
+  float alpha = 1.0;
+};
+
 // Represents general matrix multiplication (gemm) operation in the expression
 // `alpha * A * B + beta * C`.
 struct Gemm {
@@ -258,6 +352,19 @@ struct Gemm {
   bool a_transpose = false;
   // True is to transpose the second tensor before matrix multiplication.
   bool b_transpose = false;
+};
+
+// Represents a leaky version of relu operation whose calculation follows the
+// expression max(0, x) + alpha ∗ min(0, x).
+struct LeakyRelu {
+  // The id of input operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 input_operand_id;
+  // The id of output operand is used to get the `Operand` description from
+  // `GraphInfo.id_to_operand_map`.
+  uint64 output_operand_id;
+  // A float scalar multiplier for min(0, x).
+  float alpha = 0.01;
 };
 
 // Represents a parametric relu operation whose calculation follows the
@@ -379,12 +486,21 @@ struct Resample2d {
   };
 
   InterpolationMode mode;
+  // Specifies the scaling factor in each spatial dimensions of the input.
+  // The scale may not be exactly output size / input size. The backend
+  // needs this information, e.g., for linear interpolation algorithm.
+  array<float, 2>? scales;
+  // Specifies the two consecutive dimensions of the input tensor to which
+  // the interpolation algorithm applies.
+  array<uint32, 2> axes;
 };
 
 // Represents the `MLActivation` which describes an activation function type
 // to create other operations (Conv2d, BatchNormalization, for example).
 union Activation {
   Clamp clamp;
+  Elu elu;
+  LeakyRelu leaky_relu;
   Relu relu;
   Sigmoid sigmoid;
   Softmax softmax;
@@ -398,10 +514,15 @@ union Operation {
   Concat concat;
   Conv2d conv2d;
   ElementWiseBinary element_wise_binary;
+  Elu elu;
+  ElementWiseUnary element_wise_unary;
   Gemm gemm;
+  LeakyRelu leaky_relu;
+  Matmul matmul;
   Pad pad;
   Pool2d pool2d;
   Prelu prelu;
+  Reduce reduce;
   Relu relu;
   Resample2d resample2d;
   Reshape reshape;

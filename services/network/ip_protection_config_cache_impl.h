@@ -36,7 +36,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) IpProtectionConfigCacheImpl
   void SetUp() override;
   bool AreAuthTokensAvailable() override;
   absl::optional<network::mojom::BlindSignedAuthTokenPtr> GetAuthToken(
-      network::mojom::IpProtectionProxyLayer proxy_layer) override;
+      size_t chain_index) override;
   void InvalidateTryAgainAfterTime() override;
   void SetIpProtectionTokenCacheManagerForTesting(
       network::mojom::IpProtectionProxyLayer proxy_layer,
@@ -48,7 +48,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) IpProtectionConfigCacheImpl
       std::unique_ptr<IpProtectionProxyListManager> ipp_proxy_list_manager)
       override;
   bool IsProxyListAvailable() override;
-  const std::vector<std::string>& GetProxyList() override;
+  std::vector<net::ProxyChain> GetProxyChainList() override;
   void RequestRefreshProxyList() override;
 
  private:

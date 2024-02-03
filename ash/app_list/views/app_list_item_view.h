@@ -180,8 +180,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   void SetItemAccessibleName(const std::u16string& name);
 
-  void SetHostBadgeIcon(const gfx::ImageSkia& host_badge_icon,
-                        bool update_host_badge_icon);
+  void SetHostBadgeIcon(const gfx::ImageSkia& host_badge_icon);
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
@@ -213,7 +212,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
   gfx::Rect GetIconBoundsInScreen() const;
 
   // Returns the image of icon.
-  gfx::ImageSkia GetIconImage() const;
+  gfx::ImageSkia GetDragImage() const;
 
   // Sets the icon's visibility.
   void SetIconVisible(bool visible);
@@ -267,10 +266,6 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // Ensures this item view has its own layer.
   void EnsureLayer();
 
-  // Generates a copy of the current layer for the item and transfers ownership
-  // of it to the caller.
-  std::unique_ptr<ui::LayerTreeOwner> RequestDuplicateLayer();
-
   bool HasNotificationBadge();
 
   bool FireMouseDragTimerForTest();
@@ -287,6 +282,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   bool IsNotificationIndicatorShownForTest() const;
   GridDelegate* grid_delegate_for_test() { return grid_delegate_; }
+  const ui::ImageModel& icon_image_model() const { return icon_image_model_; }
   const gfx::ImageSkia icon_image_for_test() const {
     return icon_image_model_.GetImage().AsImageSkia();
   }
@@ -314,16 +310,26 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // Whether the app list items need to keep layers at all times.
   bool AlwaysPaintsToLayer();
 
+  // Initializes the view to simulate a completed promise app state, and runs
+  // animation to show the app list item view. Used when showing the app list
+  // item view in place of a promise app.
+  // `fallback_icon` - the icon that can be used for the app list item view if
+  // the actual app icon has not yet been loaded. Using the `fallback_icon`
+  // addresses a flash of the app item state with no icon immediately after
+  // adding the view to the apps grid.
+  void AnimateInFromPromiseApp(const ui::ImageModel& fallback_icon,
+                               base::RepeatingClosure callback);
+
   GridIndex most_recent_grid_index() { return most_recent_grid_index_; }
 
   bool has_pending_row_change() { return has_pending_row_change_; }
   void reset_has_pending_row_change() { has_pending_row_change_ = false; }
 
   const ui::Layer* icon_background_layer_for_test() const {
-    if (!icon_background_layer_) {
+    if (!icon_background_) {
       return nullptr;
     }
-    return icon_background_layer_->layer();
+    return icon_background_->layer();
   }
   bool is_icon_extended_for_test() const { return is_icon_extended_; }
   bool is_promise_app() const { return is_promise_app_; }
@@ -425,9 +431,20 @@ class ASH_EXPORT AppListItemView : public views::Button,
   void ItemIsNewInstallChanged() override;
   void ItemBeingDestroyed() override;
   void ItemProgressUpdated() override;
+  void ItemAppStatusUpdated() override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
+
+  // Called upon completion of the AppListItemView's show animation from a
+  // promise icon state.
+  void OnAnimatedInFromPromiseApp(base::RepeatingClosure callback);
+
+  // Whether the image view should show the icon from
+  // `fallback_icon_image_model_` instead of the icon from the app list item.
+  // Returns true during show animation from a promise icon state, if the actual
+  // app icon has not been loaded yet.
+  bool ShouldUseFallbackIconImageModel() const;
 
   // Calculates the transform between the icon scaled by |icon_scale| and the
   // normal size icon.
@@ -438,9 +455,6 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // the icon background is going to extend, shrink the background otherwise.
   // `animate` specifies if the visual update should be animated or not.
   void SetBackgroundExtendedState(bool extend_icon, bool animate);
-
-  // Ensures that the layer where the icon background is painted on is created.
-  void EnsureIconBackgroundLayer();
 
   // Returns the color ID for the app list item background, if the background
   // needs to be shown.
@@ -453,6 +467,10 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   // Initialize the item drag operation if it is available at `location`.
   bool MaybeStartTouchDrag(const gfx::Point& location);
+
+  // Updates the active `progress_indicator_` to reflect the current state of
+  // the item associated to this view.
+  void UpdateProgressIndicatorState();
 
   // Updates the layer bounds for the `progress_indicator_` if any is currently
   // active.
@@ -508,7 +526,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   // The background layer added under the `icon_` layer to paint the background
   // of the icon.
-  std::unique_ptr<ui::LayerOwner> icon_background_layer_;
+  raw_ptr<views::View, ExperimentalAsh> icon_background_ = nullptr;
 
   // Draws a dot next to the title for newly installed apps.
   raw_ptr<views::View, ExperimentalAsh> new_install_dot_ = nullptr;
@@ -554,6 +572,18 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   // The bitmap image for this app list item's host badge icon.
   gfx::ImageSkia host_badge_icon_image_;
+
+  // If set, the icon that will be used for the AppListItemView until the actual
+  // app icon loads. Used when animating an installed app into a place of a
+  // promise app, in which case the promise app icon is initially used as the
+  // app icon to prevent jankyness due to an empty icon while the app list item
+  // is being loaded.
+  ui::ImageModel fallback_icon_image_model_;
+
+  // Whether fallback icon should be preferred even if the actual app icon has
+  // been loaded - set while the animation from a promise icon state is in
+  // progress.
+  bool prefer_fallback_icon_ = false;
 
   // The current item's drag state.
   DragState drag_state_ = DragState::kNone;
@@ -605,6 +635,11 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // An object that draws and updates the progress ring around promise app
   // icons.
   std::unique_ptr<ProgressIndicator> progress_indicator_;
+
+  // If set, the progress indicator will be shown, and indicate the contained
+  // progress value. Used when animating the view in from a promise app state to
+  // simulate promise icon UI.
+  absl::optional<float> forced_progress_indicator_value_;
 
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_{this};
 };

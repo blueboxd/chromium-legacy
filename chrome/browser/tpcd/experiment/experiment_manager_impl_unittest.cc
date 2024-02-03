@@ -22,12 +22,7 @@
 namespace tpcd::experiment {
 namespace {
 
-class TestingExperimentManagerImpl : public ExperimentManagerImpl {
- public:
-  bool CanRegisterSyntheticTrialForTesting() const {
-    return CanRegisterSyntheticTrial();
-  }
-};
+class TestingExperimentManagerImpl : public ExperimentManagerImpl {};
 
 using ::testing::InSequence;
 using ::testing::Optional;
@@ -144,6 +139,25 @@ TEST_F(ExperimentManagerImplTestBase, ForceEligibleForTesting) {
 
   task_environment_.FastForwardBy(delay_time_);
   EXPECT_THAT(test_manager.IsClientEligible(), testing::Optional(true));
+}
+
+TEST_F(ExperimentManagerImplTestBase, ProfileOnboardedSetsPref) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kCookieDeprecationFacilitatedTesting,
+      {{kDisable3PCookiesName, "true"}});
+
+  TestingExperimentManagerImpl test_manager;
+  test_manager.SetClientEligibility(/*is_eligible=*/true, mock_callback_.Get());
+  EXPECT_CALL(mock_callback_, Run(true)).Times(1);
+  task_environment_.FastForwardBy(delay_time_);
+
+  EXPECT_EQ(prefs().GetInteger(prefs::kTPCDExperimentClientState),
+            static_cast<int>(utils::ExperimentState::kEligible));
+
+  test_manager.NotifyProfileTrackingProtectionOnboarded();
+  EXPECT_EQ(prefs().GetInteger(prefs::kTPCDExperimentClientState),
+            static_cast<int>(utils::ExperimentState::kOnboarded));
 }
 
 class ExperimentManagerImplTest : public ExperimentManagerImplTestBase {
@@ -316,94 +330,5 @@ TEST_F(ExperimentManagerImplTest, IsClientEligible_PrefIsUnknownReturnsEmpty) {
 
   EXPECT_EQ(TestingExperimentManagerImpl().IsClientEligible(), absl::nullopt);
 }
-
-// The parameter indicates whether to disable 3pcs.
-class ExperimentManagerImplSyntheticTrialTest
-    : public ExperimentManagerImplTestBase,
-      public testing::WithParamInterface<bool> {};
-
-TEST_P(ExperimentManagerImplSyntheticTrialTest, ProfileOnboardedSetsPref) {
-  const bool disable_3p_cookies = GetParam();
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kCookieDeprecationFacilitatedTesting,
-      {{kDisable3PCookiesName, disable_3p_cookies ? "true" : "false"},
-       {kNeedOnboardingForSyntheticTrialName, "true"},
-       {kEnableSilentOnboardingName, "true"}});
-
-  TestingExperimentManagerImpl test_manager;
-  test_manager.SetClientEligibility(/*is_eligible=*/true, mock_callback_.Get());
-  EXPECT_CALL(mock_callback_, Run(true)).Times(1);
-  task_environment_.FastForwardBy(delay_time_);
-
-  EXPECT_EQ(prefs().GetInteger(prefs::kTPCDExperimentClientState),
-            static_cast<int>(utils::ExperimentState::kEligible));
-
-  test_manager.NotifyProfileTrackingProtectionOnboarded();
-  EXPECT_EQ(prefs().GetInteger(prefs::kTPCDExperimentClientState),
-            static_cast<int>(utils::ExperimentState::kOnboarded));
-}
-
-TEST_P(ExperimentManagerImplSyntheticTrialTest, CanRegister) {
-  const bool disable_3p_cookies = GetParam();
-
-  const struct {
-    utils::ExperimentState experiment_state;
-    bool expected;
-    bool need_onboarding = false;
-    bool enable_silent_onboarding = false;
-  } kTestCases[] = {
-      {
-          .experiment_state = utils::ExperimentState::kUnknownEligibility,
-          .expected = false,
-      },
-      {
-          .experiment_state = utils::ExperimentState::kIneligible,
-          .expected = true,
-      },
-      {
-          .experiment_state = utils::ExperimentState::kEligible,
-          .expected = true,
-          .need_onboarding = false,
-      },
-      {
-          .experiment_state = utils::ExperimentState::kEligible,
-          .expected = !disable_3p_cookies,
-          .need_onboarding = true,
-      },
-      {
-          .experiment_state = utils::ExperimentState::kEligible,
-          .expected = false,
-          .need_onboarding = true,
-          .enable_silent_onboarding = true,
-      },
-      {
-          .experiment_state = utils::ExperimentState::kOnboarded,
-          .expected = true,
-      },
-  };
-
-  for (const auto& test_case : kTestCases) {
-    base::test::ScopedFeatureList scope_feature_list;
-    scope_feature_list.InitAndEnableFeatureWithParameters(
-        features::kCookieDeprecationFacilitatedTesting,
-        {{kDisable3PCookiesName, disable_3p_cookies ? "true" : "false"},
-         {kNeedOnboardingForSyntheticTrialName,
-          test_case.need_onboarding ? "true" : "false"},
-         {kEnableSilentOnboardingName,
-          test_case.enable_silent_onboarding ? "true" : "false"}});
-
-    prefs().SetInteger(prefs::kTPCDExperimentClientState,
-                       static_cast<int>(test_case.experiment_state));
-    EXPECT_EQ(
-        TestingExperimentManagerImpl().CanRegisterSyntheticTrialForTesting(),
-        test_case.expected);
-  }
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         ExperimentManagerImplSyntheticTrialTest,
-                         testing::Bool());
 
 }  // namespace tpcd::experiment

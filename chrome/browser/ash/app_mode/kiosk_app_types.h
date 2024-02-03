@@ -6,21 +6,21 @@
 #define CHROME_BROWSER_ASH_APP_MODE_KIOSK_APP_TYPES_H_
 
 #include <string>
+#include <string_view>
 
 #include "components/account_id/account_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
-// Type of different kiosk apps to be launched.
+// Supported types of Kiosk apps.
 enum class KioskAppType { kArcApp, kChromeApp, kWebApp };
 
-// Universal identifier for all kiosk apps.
+// Universal identifier for Kiosk apps.
 class KioskAppId {
  public:
-  static KioskAppId ForChromeApp(
-      const std::string& chrome_app_id,
-      absl::optional<AccountId> account_id = absl::nullopt);
+  static KioskAppId ForChromeApp(std::string_view chrome_app_id,
+                                 const AccountId& account_id);
   static KioskAppId ForWebApp(const AccountId& account_id);
   static KioskAppId ForArcApp(const AccountId& account_id);
 
@@ -30,15 +30,13 @@ class KioskAppId {
 
   KioskAppType type;
   absl::optional<std::string> app_id;
-  absl::optional<AccountId> account_id;
+  AccountId account_id;
 
  private:
-  KioskAppId(const std::string& chrome_app_id,
-             absl::optional<AccountId> account_id);
+  KioskAppId(std::string_view chrome_app_id, const AccountId& account_id);
   KioskAppId(KioskAppType type, const AccountId& account_id);
 };
 
-// Overload << operator to allow logging of KioskAppId.
 std::ostream& operator<<(std::ostream& stream, const KioskAppId& app_id);
 
 }  // namespace ash

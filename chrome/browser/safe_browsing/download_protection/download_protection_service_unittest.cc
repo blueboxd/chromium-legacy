@@ -80,7 +80,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/browser/password_store/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
@@ -2995,6 +2995,7 @@ TEST_F(DownloadProtectionServiceTest,
   enterprise_connectors::test::EventReportValidator validator(client_.get());
   validator.ExpectDangerousDownloadEvent(
       "",                     // URL, not set in this test
+      "",                     // Tab URL, not set in this test
       "a.exe",                // Simple filename without the directory
       "68617368",             // SHA256 of the fake download
       "DANGEROUS_FILE_TYPE",  // expected_threat_type
@@ -3063,6 +3064,7 @@ TEST_F(DownloadProtectionServiceTest,
   enterprise_connectors::test::EventReportValidator validator(client_.get());
   validator.ExpectSensitiveDataEvent(
       "",          // URL, not set in this test
+      "",          // Tab URL, not set in this test
       "",          // source, not used for file downloads.
       "",          // destination, not used for file downloads.
       "a.exe",     // Simple filename without the directory
@@ -3117,6 +3119,7 @@ TEST_F(DownloadProtectionServiceTest,
   enterprise_connectors::test::EventReportValidator validator(client_.get());
   validator.ExpectDangerousDownloadEvent(
       "",                     // URL, not set in this test
+      "",                     // Tab URL, not set in this test
       "a.exe",                // Simple filename without the directory
       "68617368",             // SHA256 of the fake download
       "DANGEROUS_FILE_TYPE",  // expected_threat_type
@@ -3179,6 +3182,7 @@ TEST_F(DownloadProtectionServiceTest,
   enterprise_connectors::test::EventReportValidator validator(client_.get());
   validator.ExpectSensitiveDataEvent(
       "",          // URL, not set in this test
+      "",          // Tab URL, not set in this test
       "",          // source, not used for file downloads.
       "",          // destination, not used for file downloads.
       "a.exe",     // Simple filename without the directory
@@ -3242,6 +3246,7 @@ TEST_F(DownloadProtectionServiceTest,
   enterprise_connectors::test::EventReportValidator validator(client_.get());
   validator.ExpectSensitiveDataEvent(
       "",          // URL, not set in this test
+      "",          // Tab URL, not set in this test
       "",          // source, not used for file downloads.
       "",          // destination, not used for file downloads.
       "a.exe",     // Simple filename without the directory
@@ -3678,90 +3683,6 @@ TEST_F(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
                            ],
                            "block_until_verdict": 1,
                            "block_large_files": false
-                         })");
-    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
-
-    RunLoop run_loop;
-    download_service_->CheckClientDownload(
-        &item,
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
-    EXPECT_TRUE(HasClientDownloadRequest());
-    ClearClientDownloadRequest();
-  }
-}
-
-TEST_F(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
-  base::FilePath test_file;
-  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_file));
-  test_file = test_file.AppendASCII("safe_browsing")
-                  .AppendASCII("download_protection")
-                  .AppendASCII("signed.exe");
-
-  NiceMockDownloadItem item;
-  PrepareBasicDownloadItemWithFullPaths(
-      &item, {"http://www.evil.com/signed.exe"},  // url_chain
-      "http://www.google.com/",                   // referrer
-      test_file,                                  // tmp_path
-      temp_dir_.GetPath().Append(
-          FILE_PATH_LITERAL("signed.exe")));  // final_path
-  content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
-
-  TestBinaryUploadService* test_upload_service =
-      static_cast<TestBinaryUploadService*>(
-          CloudBinaryUploadServiceFactory::GetForProfile(profile()));
-  test_upload_service->SetResponse(
-      BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE,
-      enterprise_connectors::ContentAnalysisResponse());
-
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              MatchDownloadAllowlistUrl(_, _))
-      .WillRepeatedly(
-          [](const GURL& url, base::OnceCallback<void(bool)> callback) {
-            std::move(callback).Run(false);
-          });
-  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(2);
-  EXPECT_CALL(*binary_feature_extractor_.get(),
-              ExtractImageFeatures(
-                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(2);
-
-  {
-    enterprise_connectors::test::SetAnalysisConnector(
-        profile()->GetPrefs(), enterprise_connectors::FILE_DOWNLOADED, R"(
-                         {
-                           "service_provider": "google",
-                           "enable": [
-                             {"url_list": ["evil.com"], "tags": ["dlp"]}
-                           ],
-                           "block_until_verdict": 1,
-                           "block_unsupported_file_types": true
-                         })");
-    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
-
-    RunLoop run_loop;
-    download_service_->CheckClientDownload(
-        &item,
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE));
-    EXPECT_TRUE(HasClientDownloadRequest());
-  }
-
-  {
-    enterprise_connectors::test::SetAnalysisConnector(
-        profile()->GetPrefs(), enterprise_connectors::FILE_DOWNLOADED, R"(
-                         {
-                           "service_provider": "google",
-                           "enable": [
-                             {"url_list": ["evil.com"], "tags": ["dlp"]}
-                           ],
-                           "block_until_verdict": 1,
-                           "block_unsupported_file_types": false
                          })");
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 

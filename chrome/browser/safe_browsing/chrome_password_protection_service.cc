@@ -414,7 +414,7 @@ void ChromePasswordProtectionService::ShowModalWarning(
 
   // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
   if (web_contents->IsFullscreen())
-    web_contents->ExitFullscreen(true);
+    web_contents->ExitFullscreen();
 
 #if BUILDFLAG(IS_ANDROID)
   (new PasswordReuseControllerAndroid(
@@ -510,7 +510,7 @@ void ChromePasswordProtectionService::ShowInterstitial(
          password_type.account_type() == ReusedPasswordAccountType::GSUITE);
   // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
   if (web_contents->IsFullscreen())
-    web_contents->ExitFullscreen(/*will_cause_resize=*/true);
+    web_contents->ExitFullscreen();
 
   content::OpenURLParams params(
       GURL(chrome::kChromeUIResetPasswordURL), content::Referrer(),
@@ -601,8 +601,9 @@ void ChromePasswordProtectionService::MaybeStartThreatDetailsCollection(
   if (!trigger_manager_)
     return;
 
+  auto* primary_main_frame = web_contents->GetPrimaryMainFrame();
   const content::GlobalRenderFrameHostId primary_main_frame_id =
-      web_contents->GetPrimaryMainFrame()->GetGlobalId();
+      primary_main_frame->GetGlobalId();
   security_interstitials::UnsafeResource resource;
   if (password_type.account_type() ==
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
@@ -617,7 +618,7 @@ void ChromePasswordProtectionService::MaybeStartThreatDetailsCollection(
   }
   resource.url = web_contents->GetLastCommittedURL();
   resource.render_process_id = primary_main_frame_id.child_id;
-  resource.render_frame_id = primary_main_frame_id.frame_routing_id;
+  resource.render_frame_token = primary_main_frame->GetFrameToken().value();
   resource.token = token;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       profile_->GetDefaultStoragePartition()
@@ -815,7 +816,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
   switch (outcome) {
     case RequestOutcome::MATCHED_ALLOWLIST:
       MaybeLogPasswordReuseLookupResult(web_contents,
-                                        PasswordReuseLookup::WHITELIST_HIT);
+                                        PasswordReuseLookup::ALLOWLIST_HIT);
       break;
     case RequestOutcome::RESPONSE_ALREADY_CACHED:
       MaybeLogPasswordReuseLookupResultWithVerdict(
@@ -837,7 +838,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
     case RequestOutcome::MATCHED_ENTERPRISE_LOGIN_URL:
     case RequestOutcome::MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL:
       MaybeLogPasswordReuseLookupResult(
-          web_contents, PasswordReuseLookup::ENTERPRISE_WHITELIST_HIT);
+          web_contents, PasswordReuseLookup::ENTERPRISE_ALLOWLIST_HIT);
       break;
     case RequestOutcome::PASSWORD_ALERT_MODE:
     case RequestOutcome::TURNED_OFF_BY_ADMIN:
@@ -1049,7 +1050,7 @@ void ChromePasswordProtectionService::OpenChangePasswordUrl(
 #if BUILDFLAG(IS_ANDROID)
     JNIEnv* env = base::android::AttachCurrentThread();
     PasswordCheckupLauncherHelperImpl checkup_launcher;
-    checkup_launcher.LaunchLocalCheckup(
+    checkup_launcher.LaunchCheckupOnDevice(
         env, web_contents->GetTopLevelNativeWindow(),
         password_manager::PasswordCheckReferrerAndroid::kPhishedWarningDialog);
 #endif

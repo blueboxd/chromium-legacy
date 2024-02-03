@@ -47,7 +47,7 @@ base::Value::List RulesToValue(
 }
 
 std::vector<api::events::Rule> RulesFromValue(
-    const absl::optional<base::Value>& value) {
+    const std::optional<base::Value>& value) {
   std::vector<api::events::Rule> rules;
 
   if (!value || !value->is_list())
@@ -57,9 +57,9 @@ std::vector<api::events::Rule> RulesFromValue(
   for (const base::Value& dict_value : value->GetList()) {
     if (!dict_value.is_dict())
       continue;
-    api::events::Rule rule;
-    if (api::events::Rule::Populate(dict_value.GetDict(), rule)) {
-      rules.push_back(std::move(rule));
+    auto rule = api::events::Rule::FromValue(dict_value.GetDict());
+    if (rule) {
+      rules.push_back(std::move(rule).value());
     }
   }
 
@@ -309,7 +309,7 @@ size_t RulesRegistry::GetNumberOfUsedRuleIdentifiersForTesting() const {
 }
 
 void RulesRegistry::DeserializeAndAddRules(const std::string& extension_id,
-                                           absl::optional<base::Value> rules) {
+                                           std::optional<base::Value> rules) {
   DCHECK_CURRENTLY_ON(owner_thread());
 
   // Since this is called in response to asynchronously loading rules from

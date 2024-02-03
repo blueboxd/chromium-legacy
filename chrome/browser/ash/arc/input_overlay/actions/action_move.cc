@@ -222,8 +222,8 @@ bool ActionMove::ParseFromJson(const base::Value::Dict& value) {
   }
 }
 
-bool ActionMove::InitByAddingNewAction() {
-  if (!Action::InitByAddingNewAction()) {
+bool ActionMove::InitByAddingNewAction(const gfx::Point& target_pos) {
+  if (!Action::InitByAddingNewAction(target_pos)) {
     return false;
   }
 
@@ -442,6 +442,12 @@ bool ActionMove::RewriteKeyEvent(const ui::KeyEvent* key_event,
       if (!CreateTouchPressedEvent(key_event->time_stamp(), rewritten_events)) {
         return false;
       }
+    }
+
+    // TODO(b/308486017): "Modifier key + regular key" support is TBD. Currently
+    // it is not supported.
+    if (ContainShortcutEventFlags(key_event)) {
+      return false;
     }
 
     // Generate touch move.

@@ -7,6 +7,7 @@
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
+#include "components/autofill/core/browser/payments/test_payments_network_interface.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -49,18 +50,19 @@ void AutofillMetricsBaseTest::SetUpHelper() {
   autofill_driver_ = std::make_unique<TestAutofillDriver>();
   autofill_driver_->SetIsInAnyMainFrame(is_in_any_main_frame_);
 
-  payments::TestPaymentsClient* payments_client =
-      new payments::TestPaymentsClient(autofill_client_->GetURLLoaderFactory(),
-                                       autofill_client_->GetIdentityManager(),
-                                       &personal_data());
-  autofill_client_->set_test_payments_client(
-      std::unique_ptr<payments::TestPaymentsClient>(payments_client));
+  payments::TestPaymentsNetworkInterface* payments_network_interface =
+      new payments::TestPaymentsNetworkInterface(
+          autofill_client_->GetURLLoaderFactory(),
+          autofill_client_->GetIdentityManager(), &personal_data());
+  autofill_client_->set_test_payments_network_interface(
+      std::unique_ptr<payments::TestPaymentsNetworkInterface>(
+          payments_network_interface));
   auto credit_card_save_manager = std::make_unique<TestCreditCardSaveManager>(
-      autofill_driver_.get(), autofill_client_.get(), payments_client,
-      &personal_data());
+      autofill_driver_.get(), autofill_client_.get(),
+      payments_network_interface, &personal_data());
   autofill_client_->set_test_form_data_importer(
       std::make_unique<TestFormDataImporter>(
-          autofill_client_.get(), payments_client,
+          autofill_client_.get(), payments_network_interface,
           std::move(credit_card_save_manager),
           /*iban_save_manager=*/nullptr, &personal_data(), "en-US"));
   autofill_client_->set_autofill_offer_manager(
@@ -113,19 +115,11 @@ void AutofillMetricsBaseTest::CreateAmbiguousProfiles() {
   personal_data().Refresh();
 }
 
-void AutofillMetricsBaseTest::RecreateProfile(bool is_server) {
+void AutofillMetricsBaseTest::RecreateProfile() {
   personal_data().ClearProfiles();
-
-  if (is_server) {
-    AutofillProfile profile(AutofillProfile::SERVER_PROFILE, "server_id");
-    SetProfileTestData(&profile);
-    personal_data().AddProfile(profile);
-  } else {
-    AutofillProfile profile;
-    SetProfileTestData(&profile);
-    personal_data().AddProfile(profile);
-  }
-
+  AutofillProfile profile;
+  SetProfileTestData(&profile);
+  personal_data().AddProfile(profile);
   personal_data().Refresh();
 }
 
@@ -137,8 +131,8 @@ void AutofillMetricsBaseTest::SetFidoEligibility(bool is_verifiable) {
       access_manager->GetOrCreateFidoAuthenticator())
       ->SetUserVerifiable(is_verifiable);
 #endif
-  static_cast<payments::TestPaymentsClient*>(
-      autofill_client_->GetPaymentsClient())
+  static_cast<payments::TestPaymentsNetworkInterface*>(
+      autofill_client_->GetPaymentsNetworkInterface())
       ->AllowFidoRegistration(true);
   access_manager->is_authentication_in_progress_ = false;
   access_manager->can_fetch_unmask_details_ = true;
@@ -160,7 +154,7 @@ void AutofillMetricsBaseTest::OnDidGetRealPan(
   details.cvc = u"123";
   full_card_request->OnUnmaskPromptAccepted(details);
 
-  payments::PaymentsClient::UnmaskResponseDetails response;
+  payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   response.card_type = is_virtual_card
                            ? AutofillClient::PaymentsRpcCardType::kVirtualCard
                            : AutofillClient::PaymentsRpcCardType::kServerCard;
@@ -179,7 +173,7 @@ void AutofillMetricsBaseTest::OnDidGetRealPanWithNonHttpOkResponse() {
   details.cvc = u"123";
   full_card_request->OnUnmaskPromptAccepted(details);
 
-  payments::PaymentsClient::UnmaskResponseDetails response;
+  payments::PaymentsNetworkInterface::UnmaskResponseDetails response;
   // Don't set |response.card_type|, so that it stays as kUnknown.
   full_card_request->OnDidGetRealPan(
       AutofillClient::PaymentsRpcResult::kPermanentFailure, response);
@@ -241,7 +235,7 @@ void AutofillMetricsBaseTest::CreateCreditCards(
                                        "server_id_2");
     full_server_credit_card.set_guid("10000000-0000-0000-0000-000000000003");
     full_server_credit_card.set_instrument_id(2);
-    personal_data().AddFullServerCreditCard(full_server_credit_card);
+    personal_data().AddServerCreditCard(full_server_credit_card);
   }
   personal_data().Refresh();
 }

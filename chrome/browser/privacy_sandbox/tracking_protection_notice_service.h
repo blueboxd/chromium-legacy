@@ -105,21 +105,26 @@ class TrackingProtectionNoticeService
   class BaseIPHNotice {
    public:
     BaseIPHNotice(Profile* profile,
-                  TrackingProtectionOnboarding* onboarding_service);
+                  TrackingProtectionOnboarding* onboarding_service,
+                  TrackingProtectionNoticeService* notice_service);
     virtual ~BaseIPHNotice();
 
     void MaybeUpdateNoticeVisibility(content::WebContents* web_content);
 
-   private:
+    TrackingProtectionNoticeService* notice_service() const {
+      return notice_service_;
+    }
+
     // Fires when the notice is closed (For any reason)
     virtual void OnNoticeClosed(
         base::Time showed_when,
         user_education::FeaturePromoController* promo_controller);
 
-    virtual bool WasPromoPreviouslyDismissed(Browser* browser);
-    virtual bool IsPromoShowing(Browser* browser);
-    virtual bool MaybeShowPromo(Browser* browser);
-    virtual void HidePromo(Browser* browser);
+   private:
+    bool WasPromoPreviouslyDismissed(Browser* browser);
+    bool IsPromoShowing(Browser* browser);
+    bool MaybeShowPromo(Browser* browser);
+    void HidePromo(Browser* browser);
     bool IsLocationBarEligible(Browser* browser);
 
     virtual TrackingProtectionOnboarding::NoticeType GetNoticeType() = 0;
@@ -127,12 +132,14 @@ class TrackingProtectionNoticeService
 
     raw_ptr<Profile> profile_;
     raw_ptr<TrackingProtectionOnboarding> onboarding_service_;
+    raw_ptr<TrackingProtectionNoticeService> notice_service_;
   };
 
   class OnboardingNotice : public BaseIPHNotice {
    public:
     OnboardingNotice(Profile* profile,
-                     TrackingProtectionOnboarding* onboarding_service);
+                     TrackingProtectionOnboarding* onboarding_service,
+                     TrackingProtectionNoticeService* notice_service);
 
    private:
     TrackingProtectionOnboarding::NoticeType GetNoticeType() override;
@@ -142,25 +149,12 @@ class TrackingProtectionNoticeService
   class OffboardingNotice : public BaseIPHNotice {
    public:
     OffboardingNotice(Profile* profile,
-                      TrackingProtectionOnboarding* onboarding_service);
+                      TrackingProtectionOnboarding* onboarding_service,
+                      TrackingProtectionNoticeService* notice_service);
 
    private:
     TrackingProtectionOnboarding::NoticeType GetNoticeType() override;
     const base::Feature& GetIPHFeature() override;
-  };
-
-  class SilentOnboardingNotice : public BaseIPHNotice {
-   public:
-    SilentOnboardingNotice(Profile* profile,
-                           TrackingProtectionOnboarding* onboarding_service);
-
-   private:
-    TrackingProtectionOnboarding::NoticeType GetNoticeType() override;
-    const base::Feature& GetIPHFeature() override;
-    bool WasPromoPreviouslyDismissed(Browser* browser) override;
-    bool IsPromoShowing(Browser* browser) override;
-    bool MaybeShowPromo(Browser* browser) override;
-    void HidePromo(Browser* browser) override;
     void OnNoticeClosed(
         base::Time showed_when,
         user_education::FeaturePromoController* promo_controller) override;
@@ -201,7 +195,6 @@ class TrackingProtectionNoticeService
   raw_ptr<TrackingProtectionOnboarding> onboarding_service_;
   std::unique_ptr<BaseIPHNotice> onboarding_notice_;
   std::unique_ptr<BaseIPHNotice> offboarding_notice_;
-  std::unique_ptr<BaseIPHNotice> silent_onboarding_notice_;
   std::unique_ptr<BrowserTabStripTracker> tab_strip_tracker_;
   base::ScopedObservation<TrackingProtectionOnboarding,
                           TrackingProtectionOnboarding::Observer>

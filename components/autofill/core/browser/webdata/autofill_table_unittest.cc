@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/webdata/autofill_table.h"
-#include "components/autofill/core/browser/field_types.h"
 
 #include <map>
 #include <memory>
@@ -24,12 +23,15 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/autofill_wallet_usage_data.h"
+#include "components/autofill/core/browser/data_model/bank_account.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/profile_token_quality.h"
 #include "components/autofill/core/browser/profile_token_quality_test_api.h"
@@ -212,7 +214,7 @@ class AutofillTableProfileTest
 
   // Creates an `AutofillProfile` with `profile_source()` as its source.
   AutofillProfile CreateAutofillProfile() const {
-    return AutofillProfile(profile_source());
+    return AutofillProfile(profile_source(), AddressCountryCode("ES"));
   }
 
   // Depending on the `profile_source()`, the AutofillProfiles are stored in a
@@ -1010,8 +1012,10 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
 // Not part of the `AutofillTableProfileTest` fixture, as it doesn't benefit
 // from parameterization on the `profile_source()`.
 TEST_F(AutofillTableTest, GetAutofillProfiles) {
-  AutofillProfile local_profile(AutofillProfile::Source::kLocalOrSyncable);
-  AutofillProfile account_profile(AutofillProfile::Source::kAccount);
+  AutofillProfile local_profile(AutofillProfile::Source::kLocalOrSyncable,
+                                AddressCountryCode("ES"));
+  AutofillProfile account_profile(AutofillProfile::Source::kAccount,
+                                  AddressCountryCode("ES"));
   EXPECT_TRUE(table_->AddAutofillProfile(local_profile));
   EXPECT_TRUE(table_->AddAutofillProfile(account_profile));
 
@@ -1157,8 +1161,8 @@ TEST_F(AutofillTableTest, MaskedServerIban) {
 
   EXPECT_TRUE(table_->SetServerIbans(ibans));
 
-  std::vector<std::unique_ptr<Iban>> masked_server_ibans =
-      table_->GetServerIbans();
+  std::vector<std::unique_ptr<Iban>> masked_server_ibans;
+  EXPECT_TRUE(table_->GetServerIbans(masked_server_ibans));
   EXPECT_EQ(3U, masked_server_ibans.size());
   EXPECT_THAT(ibans, UnorderedElementsAre(*masked_server_ibans[0],
                                           *masked_server_ibans[1],
@@ -1449,6 +1453,38 @@ TEST_F(AutofillTableTest, UpdateCreditCardCvc_Delete) {
   EXPECT_FALSE(cvc_statement.Step());
 }
 
+TEST_F(AutofillTableTest, LocalCvcs_ClearAll) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
+  CreditCard card_1 = test::WithCvc(test::GetCreditCard());
+  CreditCard card_2 = test::WithCvc(test::GetCreditCard2());
+  EXPECT_TRUE(table_->AddCreditCard(card_1));
+  EXPECT_TRUE(table_->AddCreditCard(card_2));
+
+  // Get the credit cards and the CVCs should match.
+  std::unique_ptr<CreditCard> db_card_1 = table_->GetCreditCard(card_1.guid());
+  std::unique_ptr<CreditCard> db_card_2 = table_->GetCreditCard(card_2.guid());
+  EXPECT_EQ(card_1.cvc(), db_card_1->cvc());
+  EXPECT_EQ(card_2.cvc(), db_card_2->cvc());
+
+  // Clear all local CVCs from the web database.
+  table_->ClearLocalCvcs();
+
+  sql::Statement cvc_statement(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT guid FROM local_stored_cvc WHERE guid=?"));
+
+  // Verify `card_1` CVC is deleted.
+  cvc_statement.BindString(0, card_1.guid());
+  ASSERT_TRUE(cvc_statement.is_valid());
+  EXPECT_FALSE(cvc_statement.Step());
+  cvc_statement.Reset(/*clear_bound_vars=*/true);
+
+  // Verify `card_2` CVC is deleted.
+  cvc_statement.BindString(0, card_2.guid());
+  ASSERT_TRUE(cvc_statement.is_valid());
+  EXPECT_FALSE(cvc_statement.Step());
+}
+
 // Tests that verify add, update and clear server cvc function working as
 // expected.
 TEST_F(AutofillTableTest, ServerCvc) {
@@ -1520,7 +1556,7 @@ TEST_F(AutofillTableTest, AddFullServerCreditCard) {
   EXPECT_TRUE(table_->AddFullServerCreditCard(credit_card));
 
   std::vector<std::unique_ptr<CreditCard>> outputs;
-  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_TRUE(table_->GetServerCreditCards(outputs));
   ASSERT_EQ(1U, outputs.size());
   EXPECT_EQ(0, credit_card.Compare(*outputs[0]));
 }
@@ -1538,7 +1574,7 @@ TEST_P(AutofillTableProfileTest, UpdateAutofillProfile) {
   profile.SetRawInfo(ADDRESS_HOME_CITY, u"Los Angeles");
   profile.SetRawInfo(ADDRESS_HOME_STATE, u"CA");
   profile.SetRawInfo(ADDRESS_HOME_ZIP, u"90025");
-  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"ES");
   profile.SetRawInfo(ADDRESS_HOME_OVERFLOW, u"Andar 1, Apto. 12");
   profile.SetRawInfo(ADDRESS_HOME_LANDMARK, u"Landmark");
   profile.SetRawInfo(ADDRESS_HOME_BETWEEN_STREETS, u"Marcos y Oliva");
@@ -2107,7 +2143,7 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   test::SetServerCreditCards(table_.get(), inputs);
 
   std::vector<std::unique_ptr<CreditCard>> outputs;
-  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_TRUE(table_->GetServerCreditCards(outputs));
   ASSERT_EQ(inputs.size(), outputs.size());
 
   // Ordering isn't guaranteed, so fix the ordering if it's backwards.
@@ -2165,39 +2201,16 @@ TEST_F(AutofillTableTest, SetGetRemoveServerCardMetadata) {
   EXPECT_TRUE(table_->AddServerCardMetadata(input));
 
   // Make sure it was added correctly.
-  std::map<std::string, AutofillMetadata> outputs;
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  std::vector<AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(outputs));
   ASSERT_EQ(1U, outputs.size());
-  EXPECT_EQ(input, outputs[input.id]);
+  EXPECT_EQ(input, outputs[0]);
 
   // Remove the metadata from the table.
   EXPECT_TRUE(table_->RemoveServerCardMetadata(input.id));
 
   // Make sure it was removed correctly.
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
-  EXPECT_EQ(0U, outputs.size());
-}
-
-TEST_F(AutofillTableTest, SetGetRemoveServerAddressMetadata) {
-  // Create and set the metadata.
-  AutofillMetadata input;
-  input.id = "server id";
-  input.use_count = 50;
-  input.use_date = AutofillClock::Now();
-  input.has_converted = true;
-  table_->AddServerAddressMetadata(input);
-
-  // Make sure it was added correctly.
-  std::map<std::string, AutofillMetadata> outputs;
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
-  ASSERT_EQ(1U, outputs.size());
-  EXPECT_EQ(input, outputs[input.id]);
-
-  // Remove the metadata from the table.
-  EXPECT_TRUE(table_->RemoveServerAddressMetadata(input.id));
-
-  // Make sure it was removed correctly.
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_TRUE(table_->GetServerCardsMetadata(outputs));
   EXPECT_EQ(0U, outputs.size());
 }
 
@@ -2208,7 +2221,7 @@ TEST_F(AutofillTableTest, SetGetRemoveServerIbanMetadata) {
   // Set the metadata.
   iban.set_use_count(50);
   iban.set_use_date(AutofillClock::Now());
-  EXPECT_TRUE(table_->AddOrUpdateServerIbanMetadata(iban));
+  EXPECT_TRUE(table_->AddOrUpdateServerIbanMetadata(iban.GetMetadata()));
 
   // Make sure it was added correctly.
   std::vector<AutofillMetadata> outputs = table_->GetServerIbansMetadata();
@@ -2223,37 +2236,6 @@ TEST_F(AutofillTableTest, SetGetRemoveServerIbanMetadata) {
   EXPECT_EQ(0u, outputs.size());
 }
 
-TEST_F(AutofillTableTest, AddUpdateServerAddressMetadata) {
-  // Create and set the metadata.
-  AutofillMetadata input;
-  input.id = "server id";
-  input.use_count = 50;
-  input.use_date = AutofillClock::Now();
-  input.has_converted = true;
-  ASSERT_TRUE(table_->AddServerAddressMetadata(input));
-
-  // Make sure it was added correctly.
-  std::map<std::string, AutofillMetadata> outputs;
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
-  ASSERT_EQ(1U, outputs.size());
-  ASSERT_EQ(input, outputs[input.id]);
-
-  // Update the metadata in the table.
-  input.use_count = 51;
-  EXPECT_TRUE(table_->UpdateServerAddressMetadata(input));
-
-  // Make sure it was updated correctly.
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
-  ASSERT_EQ(1U, outputs.size());
-  EXPECT_EQ(input, outputs[input.id]);
-
-  // Insert a new entry using update - that should also be legal.
-  input.id = "another server id";
-  EXPECT_TRUE(table_->UpdateServerAddressMetadata(input));
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
-  ASSERT_EQ(2U, outputs.size());
-}
-
 TEST_F(AutofillTableTest, AddUpdateServerCardMetadata) {
   // Create and set the metadata.
   AutofillMetadata input;
@@ -2264,56 +2246,25 @@ TEST_F(AutofillTableTest, AddUpdateServerCardMetadata) {
   ASSERT_TRUE(table_->AddServerCardMetadata(input));
 
   // Make sure it was added correctly.
-  std::map<std::string, AutofillMetadata> outputs;
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  std::vector<AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(outputs));
   ASSERT_EQ(1U, outputs.size());
-  ASSERT_EQ(input, outputs[input.id]);
+  ASSERT_EQ(input, outputs[0]);
 
   // Update the metadata in the table.
   input.use_count = 51;
   EXPECT_TRUE(table_->UpdateServerCardMetadata(input));
 
   // Make sure it was updated correctly.
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_TRUE(table_->GetServerCardsMetadata(outputs));
   ASSERT_EQ(1U, outputs.size());
-  EXPECT_EQ(input, outputs[input.id]);
+  EXPECT_EQ(input, outputs[0]);
 
   // Insert a new entry using update - that should also be legal.
   input.id = "another server id";
   EXPECT_TRUE(table_->UpdateServerCardMetadata(input));
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_TRUE(table_->GetServerCardsMetadata(outputs));
   ASSERT_EQ(2U, outputs.size());
-}
-
-TEST_F(AutofillTableTest, UpdateServerAddressMetadataDoesNotChangeData) {
-  AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
-  std::vector<AutofillProfile> inputs;
-  inputs.push_back(one);
-  table_->SetServerProfiles(inputs);
-
-  std::vector<std::unique_ptr<AutofillProfile>> outputs;
-  table_->GetServerProfiles(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
-
-  // Update metadata in the profile.
-  ASSERT_NE(outputs[0]->use_count(), 51u);
-  outputs[0]->set_use_count(51);
-
-  AutofillMetadata input_metadata = outputs[0]->GetMetadata();
-  EXPECT_TRUE(table_->UpdateServerAddressMetadata(input_metadata));
-
-  // Make sure it was updated correctly.
-  std::map<std::string, AutofillMetadata> output_metadata;
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&output_metadata));
-  ASSERT_EQ(1U, output_metadata.size());
-  EXPECT_EQ(input_metadata, output_metadata[input_metadata.id]);
-
-  // Make sure nothing else got updated.
-  std::vector<std::unique_ptr<AutofillProfile>> outputs2;
-  table_->GetServerProfiles(&outputs2);
-  ASSERT_EQ(1u, outputs2.size());
-  EXPECT_TRUE(outputs[0]->EqualsForLegacySyncPurposes(*outputs2[0]));
 }
 
 TEST_F(AutofillTableTest, UpdateServerCardMetadataDoesNotChangeData) {
@@ -2326,7 +2277,7 @@ TEST_F(AutofillTableTest, UpdateServerCardMetadataDoesNotChangeData) {
   test::SetServerCreditCards(table_.get(), inputs);
 
   std::vector<std::unique_ptr<CreditCard>> outputs;
-  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_TRUE(table_->GetServerCreditCards(outputs));
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(inputs[0].server_id(), outputs[0]->server_id());
 
@@ -2338,14 +2289,14 @@ TEST_F(AutofillTableTest, UpdateServerCardMetadataDoesNotChangeData) {
   EXPECT_TRUE(table_->UpdateServerCardMetadata(input_metadata));
 
   // Make sure it was updated correctly.
-  std::map<std::string, AutofillMetadata> output_metadata;
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&output_metadata));
+  std::vector<AutofillMetadata> output_metadata;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(output_metadata));
   ASSERT_EQ(1U, output_metadata.size());
-  EXPECT_EQ(input_metadata, output_metadata[input_metadata.id]);
+  EXPECT_EQ(input_metadata, output_metadata[0]);
 
   // Make sure nothing else got updated.
   std::vector<std::unique_ptr<CreditCard>> outputs2;
-  table_->GetServerCreditCards(&outputs2);
+  table_->GetServerCreditCards(outputs2);
   ASSERT_EQ(1u, outputs2.size());
   EXPECT_EQ(0, outputs[0]->Compare(*outputs2[0]));
 }
@@ -2355,14 +2306,15 @@ TEST_F(AutofillTableTest, UpdateServerIbanMetadataDoesNotChangeData) {
   std::vector<Iban> inputs = {test::GetServerIban()};
   table_->SetServerIbans(inputs);
 
-  std::vector<std::unique_ptr<Iban>> outputs = table_->GetServerIbans();
+  std::vector<std::unique_ptr<Iban>> outputs;
+  EXPECT_TRUE(table_->GetServerIbans(outputs));
   ASSERT_EQ(1U, outputs.size());
   EXPECT_EQ(inputs[0].instrument_id(), outputs[0]->instrument_id());
 
   // Update metadata in the IBAN.
   outputs[0]->set_use_count(outputs[0]->use_count() + 1);
 
-  EXPECT_TRUE(table_->AddOrUpdateServerIbanMetadata(*outputs[0]));
+  EXPECT_TRUE(table_->AddOrUpdateServerIbanMetadata(outputs[0]->GetMetadata()));
 
   // Make sure it was updated correctly.
   std::vector<AutofillMetadata> output_metadata =
@@ -2371,7 +2323,8 @@ TEST_F(AutofillTableTest, UpdateServerIbanMetadataDoesNotChangeData) {
   EXPECT_EQ(outputs[0]->GetMetadata(), output_metadata[0]);
 
   // Make sure nothing else got updated.
-  std::vector<std::unique_ptr<Iban>> outputs2 = table_->GetServerIbans();
+  std::vector<std::unique_ptr<Iban>> outputs2;
+  EXPECT_TRUE(table_->GetServerIbans(outputs2));
   ASSERT_EQ(1U, outputs2.size());
   EXPECT_EQ(0, outputs[0]->Compare(*outputs2[0]));
 }
@@ -2386,16 +2339,16 @@ TEST_F(AutofillTableTest, RemoveWrongServerCardMetadata) {
   table_->AddServerCardMetadata(input);
 
   // Make sure it was added correctly.
-  std::map<std::string, AutofillMetadata> outputs;
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  std::vector<AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(outputs));
   ASSERT_EQ(1U, outputs.size());
-  EXPECT_EQ(input, outputs[input.id]);
+  EXPECT_EQ(input, outputs[0]);
 
   // Try removing some non-existent metadata.
   EXPECT_FALSE(table_->RemoveServerCardMetadata("a_wrong_id"));
 
   // Make sure the metadata was not removed.
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_TRUE(table_->GetServerCardsMetadata(outputs));
   ASSERT_EQ(1U, outputs.size());
 }
 
@@ -2423,7 +2376,7 @@ TEST_F(AutofillTableTest, SetServerCardsData) {
 
   // Make sure the card was added correctly.
   std::vector<std::unique_ptr<CreditCard>> outputs;
-  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_TRUE(table_->GetServerCreditCards(outputs));
   ASSERT_EQ(inputs.size(), outputs.size());
 
   // GUIDs for server cards are dynamically generated so will be different
@@ -2447,24 +2400,24 @@ TEST_F(AutofillTableTest, SetServerCardsData) {
   EXPECT_EQ(u"Fake description", outputs[0]->product_description());
 
   // Make sure no metadata was added.
-  std::map<std::string, AutofillMetadata> metadata_map;
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&metadata_map));
-  ASSERT_EQ(0U, metadata_map.size());
+  std::vector<AutofillMetadata> metadata;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(metadata));
+  ASSERT_EQ(0U, metadata.size());
 
   // Set a different card.
   inputs[0] = CreditCard(CreditCard::RecordType::kMaskedServerCard, "card2");
   table_->SetServerCardsData(inputs);
 
   // The original one should have been replaced.
-  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_TRUE(table_->GetServerCreditCards(outputs));
   ASSERT_EQ(1U, outputs.size());
   EXPECT_EQ("card2", outputs[0]->server_id());
   EXPECT_EQ(CreditCard::Issuer::kIssuerUnknown, outputs[0]->card_issuer());
   EXPECT_EQ("", outputs[0]->issuer_id());
 
   // Make sure no metadata was added.
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&metadata_map));
-  ASSERT_EQ(0U, metadata_map.size());
+  ASSERT_TRUE(table_->GetServerCardsMetadata(metadata));
+  ASSERT_EQ(0U, metadata.size());
 }
 
 // Tests that adding server cards data does not delete the existing metadata.
@@ -2483,91 +2436,9 @@ TEST_F(AutofillTableTest, SetServerCardsData_ExistingMetadata) {
   table_->SetServerCardsData(inputs);
 
   // Make sure the metadata is still intact.
-  std::map<std::string, AutofillMetadata> outputs;
-  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
-  ASSERT_EQ(1U, outputs.size());
-  EXPECT_EQ(input, outputs[input.id]);
-}
-
-TEST_F(AutofillTableTest, SetServerAddressesData) {
-  AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
-  std::vector<AutofillProfile> inputs;
-  inputs.push_back(one);
-  table_->SetServerAddressesData(inputs);
-
-  // Make sure the address was added correctly.
-  std::vector<std::unique_ptr<AutofillProfile>> outputs;
-  table_->GetServerProfiles(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
-
-  outputs.clear();
-
-  // Make sure no metadata was added.
-  std::map<std::string, AutofillMetadata> metadata_map;
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&metadata_map));
-  ASSERT_EQ(0U, metadata_map.size());
-
-  // Set a different profile.
-  AutofillProfile two(AutofillProfile::SERVER_PROFILE, "b456");
-  inputs[0] = two;
-  table_->SetServerAddressesData(inputs);
-
-  // The original one should have been replaced.
-  table_->GetServerProfiles(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-  EXPECT_EQ(two.server_id(), outputs[0]->server_id());
-
-  // Make sure no metadata was added.
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&metadata_map));
-  ASSERT_EQ(0U, metadata_map.size());
-}
-
-// Tests that adding server addresses data does not delete the existing
-// metadata.
-TEST_F(AutofillTableTest, SetServerAddressesData_ExistingMetadata) {
-  // Create and set some metadata.
-  AutofillMetadata input;
-  input.id = "server id";
-  input.use_count = 50;
-  input.use_date = AutofillClock::Now();
-  input.has_converted = true;
-  table_->AddServerAddressMetadata(input);
-
-  // Set an address data.
-  std::vector<AutofillProfile> inputs;
-  inputs.push_back(
-      AutofillProfile(AutofillProfile::SERVER_PROFILE, "server id"));
-  table_->SetServerAddressesData(inputs);
-
-  // Make sure the metadata is still intact.
-  std::map<std::string, AutofillMetadata> outputs;
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
-  ASSERT_EQ(1U, outputs.size());
-  EXPECT_EQ(input, outputs[input.id]);
-}
-
-TEST_F(AutofillTableTest, RemoveWrongServerAddressMetadata) {
-  // Crete and set some metadata.
-  AutofillMetadata input;
-  input.id = "server id";
-  input.use_count = 50;
-  input.use_date = AutofillClock::Now();
-  input.has_converted = true;
-  table_->AddServerAddressMetadata(input);
-
-  // Make sure it was added correctly.
-  std::map<std::string, AutofillMetadata> outputs;
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
-  ASSERT_EQ(1U, outputs.size());
-  EXPECT_EQ(input, outputs[input.id]);
-
-  // Try removing some non-existent metadata.
-  EXPECT_FALSE(table_->RemoveServerAddressMetadata("a_wrong_id"));
-
-  // Make sure the metadata was not removed.
-  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
-  ASSERT_EQ(1U, outputs.size());
+  std::vector<AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(outputs));
+  EXPECT_THAT(outputs, ElementsAre(input));
 }
 
 TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
@@ -2586,7 +2457,7 @@ TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
   ASSERT_TRUE(table_->UnmaskServerCreditCard(inputs[0], full_number));
 
   std::vector<std::unique_ptr<CreditCard>> outputs;
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_TRUE(CreditCard::RecordType::kFullServerCard ==
               outputs[0]->record_type());
@@ -2596,7 +2467,7 @@ TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
 
   // Re-mask the number, we should only get the last 4 digits out.
   ASSERT_TRUE(table_->MaskServerCreditCard(inputs[0].server_id()));
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_TRUE(CreditCard::RecordType::kMaskedServerCard ==
               outputs[0]->record_type());
@@ -2626,7 +2497,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
 
   // The card should now be unmasked.
   std::vector<std::unique_ptr<CreditCard>> outputs;
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_TRUE(outputs[0]->record_type() ==
               CreditCard::RecordType::kFullServerCard);
@@ -2639,7 +2510,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   test::SetServerCreditCards(table_.get(), inputs);
 
   // The card should stay unmasked.
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_TRUE(outputs[0]->record_type() ==
               CreditCard::RecordType::kFullServerCard);
@@ -2658,7 +2529,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   test::SetServerCreditCards(table_.get(), inputs);
 
   // We should have only the new card, the other one should have been deleted.
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_TRUE(outputs[0]->record_type() ==
               CreditCard::RecordType::kMaskedServerCard);
@@ -2671,7 +2542,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   // that the unmasked data was really deleted).
   inputs[0] = masked_card;
   test::SetServerCreditCards(table_.get(), inputs);
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_TRUE(outputs[0]->record_type() ==
               CreditCard::RecordType::kMaskedServerCard);
@@ -2696,7 +2567,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
   test::SetServerCreditCards(table_.get(), inputs);
 
   std::vector<std::unique_ptr<CreditCard>> outputs;
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(1U, outputs[0]->use_count());
@@ -2711,7 +2582,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
   inputs.back().set_use_date(base::Time());
   inputs.back().set_billing_address_id("2");
   table_->UpdateServerCardMetadata(inputs.back());
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
@@ -2722,7 +2593,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
 
   // Setting the cards again shouldn't delete the usage stats.
   table_->SetServerCreditCards(inputs);
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
@@ -2739,79 +2610,13 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
   // Back to the original card list.
   inputs.back() = masked_card;
   table_->SetServerCreditCards(inputs);
-  table_->GetServerCreditCards(&outputs);
+  table_->GetServerCreditCards(outputs);
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(1U, outputs[0]->use_count());
   EXPECT_NE(base::Time(), outputs[0]->use_date());
   EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   EXPECT_EQ("1", outputs[0]->billing_address_id());
-  outputs.clear();
-}
-
-TEST_F(AutofillTableTest, SetServerProfile) {
-  AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
-  std::vector<AutofillProfile> inputs;
-  inputs.push_back(one);
-  table_->SetServerProfiles(inputs);
-
-  std::vector<std::unique_ptr<AutofillProfile>> outputs;
-  table_->GetServerProfiles(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
-
-  outputs.clear();
-
-  // Set a different profile.
-  AutofillProfile two(AutofillProfile::SERVER_PROFILE, "b456");
-  inputs[0] = two;
-  table_->SetServerProfiles(inputs);
-
-  // The original one should have been replaced.
-  table_->GetServerProfiles(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-  EXPECT_EQ(two.server_id(), outputs[0]->server_id());
-
-  outputs.clear();
-}
-
-TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
-  AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
-  std::vector<AutofillProfile> inputs;
-  inputs.push_back(one);
-  table_->SetServerProfiles(inputs);
-
-  std::vector<std::unique_ptr<AutofillProfile>> outputs;
-  table_->GetServerProfiles(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
-  EXPECT_EQ(1U, outputs[0]->use_count());
-  EXPECT_NE(base::Time(), outputs[0]->use_date());
-  // We don't track modification date for server profiles. It should always be
-  // base::Time().
-  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
-  outputs.clear();
-
-  // Update the usage stats; make sure they're reflected in GetServerProfiles.
-  inputs.back().set_use_count(4U);
-  inputs.back().set_use_date(AutofillClock::Now());
-  table_->UpdateServerAddressMetadata(inputs.back());
-  table_->GetServerProfiles(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
-  EXPECT_EQ(4U, outputs[0]->use_count());
-  EXPECT_NE(base::Time(), outputs[0]->use_date());
-  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
-  outputs.clear();
-
-  // Setting the profiles again shouldn't delete the usage stats.
-  table_->SetServerProfiles(inputs);
-  table_->GetServerProfiles(&outputs);
-  ASSERT_EQ(1u, outputs.size());
-  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
-  EXPECT_EQ(4U, outputs[0]->use_count());
-  EXPECT_NE(base::Time(), outputs[0]->use_date());
-  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   outputs.clear();
 }
 
@@ -2848,7 +2653,7 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
 
   // This should not affect the unmasked card (should be unmasked).
   std::vector<std::unique_ptr<CreditCard>> outputs;
-  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_TRUE(table_->GetServerCreditCards(outputs));
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(CreditCard::RecordType::kFullServerCard, outputs[0]->record_type());
   EXPECT_EQ(full_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
@@ -2862,7 +2667,7 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
       now - base::Days(1), now, &profiles, &credit_cards));
 
   // This should re-mask.
-  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_TRUE(table_->GetServerCreditCards(outputs));
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(CreditCard::RecordType::kMaskedServerCard,
             outputs[0]->record_type());
@@ -2871,7 +2676,7 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
 
   // Unmask again, the card should be back.
   table_->UnmaskServerCreditCard(masked_card, full_number);
-  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_TRUE(table_->GetServerCreditCards(outputs));
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(CreditCard::RecordType::kFullServerCard, outputs[0]->record_type());
   EXPECT_EQ(full_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
@@ -2882,7 +2687,7 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
       base::Time(), base::Time::Max(), &profiles, &credit_cards));
 
   // Should be masked again.
-  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_TRUE(table_->GetServerCreditCards(outputs));
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(CreditCard::RecordType::kMaskedServerCard,
             outputs[0]->record_type());
@@ -2896,14 +2701,14 @@ TEST_F(AutofillTableTest, SetGetPaymentsCustomerData) {
   table_->SetPaymentsCustomerData(&input);
 
   std::unique_ptr<PaymentsCustomerData> output;
-  ASSERT_TRUE(table_->GetPaymentsCustomerData(&output));
+  ASSERT_TRUE(table_->GetPaymentsCustomerData(output));
   EXPECT_EQ(input, *output);
 }
 
 // We don't set anything in the table. Test that we don't crash.
 TEST_F(AutofillTableTest, GetPaymentsCustomerData_NoData) {
   std::unique_ptr<PaymentsCustomerData> output;
-  ASSERT_TRUE(table_->GetPaymentsCustomerData(&output));
+  ASSERT_TRUE(table_->GetPaymentsCustomerData(output));
   EXPECT_FALSE(output);
 }
 
@@ -2919,7 +2724,7 @@ TEST_F(AutofillTableTest, SetGetPaymentsCustomerData_MultipleSet) {
   table_->SetPaymentsCustomerData(&input3);
 
   std::unique_ptr<PaymentsCustomerData> output;
-  ASSERT_TRUE(table_->GetPaymentsCustomerData(&output));
+  ASSERT_TRUE(table_->GetPaymentsCustomerData(output));
   EXPECT_EQ(input3, *output);
 }
 
@@ -2930,7 +2735,7 @@ TEST_F(AutofillTableTest, SetGetCreditCardCloudData_OneTimeSet) {
   table_->SetCreditCardCloudTokenData(inputs);
 
   std::vector<std::unique_ptr<CreditCardCloudTokenData>> outputs;
-  ASSERT_TRUE(table_->GetCreditCardCloudTokenData(&outputs));
+  ASSERT_TRUE(table_->GetCreditCardCloudTokenData(outputs));
   EXPECT_EQ(outputs.size(), inputs.size());
   EXPECT_EQ(0, outputs[0]->Compare(test::GetCreditCardCloudTokenData1()));
   EXPECT_EQ(0, outputs[1]->Compare(test::GetCreditCardCloudTokenData2()));
@@ -2948,14 +2753,14 @@ TEST_F(AutofillTableTest, SetGetCreditCardCloudData_MultipleSet) {
   table_->SetCreditCardCloudTokenData(inputs);
 
   std::vector<std::unique_ptr<CreditCardCloudTokenData>> outputs;
-  ASSERT_TRUE(table_->GetCreditCardCloudTokenData(&outputs));
+  ASSERT_TRUE(table_->GetCreditCardCloudTokenData(outputs));
   EXPECT_EQ(1u, outputs.size());
   EXPECT_EQ(0, outputs[0]->Compare(test::GetCreditCardCloudTokenData2()));
 }
 
 TEST_F(AutofillTableTest, GetCreditCardCloudData_NoData) {
   std::vector<std::unique_ptr<CreditCardCloudTokenData>> output;
-  ASSERT_TRUE(table_->GetCreditCardCloudTokenData(&output));
+  ASSERT_TRUE(table_->GetCreditCardCloudTokenData(output));
   EXPECT_TRUE(output.empty());
 }
 
@@ -3296,6 +3101,196 @@ TEST_F(AutofillTableTest, DontCrashWhenAddingValueToPoisonedDB) {
   field.name = u"Name";
   field.value = u"Superman";
   EXPECT_FALSE(table_->AddFormFieldValue(field, &changes));
+}
+
+TEST_F(AutofillTableTest, AddBankAccount) {
+  BankAccount bank_account_to_store_1 = test::CreatePixBankAccount(100);
+  BankAccount bank_account_to_store_2 = test::CreatePixBankAccount(200);
+  bank_account_to_store_2.AddPaymentRail(
+      PaymentInstrument::PaymentRail::kUnknown);
+  bank_account_to_store_1.AddToDatabase(table_.get());
+  bank_account_to_store_2.AddToDatabase(table_.get());
+
+  // Verify bank account 1 is correctly retrieved.
+  std::unique_ptr<PaymentInstrument> payment_instrument_1 =
+      table_->GetPaymentInstrument(
+          bank_account_to_store_1.instrument_id(),
+          PaymentInstrument::InstrumentType::kBankAccount);
+  BankAccount* bank_account_from_db_1(
+      static_cast<BankAccount*>(payment_instrument_1.get()));
+
+  ASSERT_TRUE(bank_account_from_db_1);
+  EXPECT_EQ(bank_account_to_store_1, *bank_account_from_db_1);
+  EXPECT_TRUE(bank_account_from_db_1->IsSupported(
+      PaymentInstrument::PaymentRail::kPix));
+
+  // Verify bank account 2 is correctly retrieved.
+  std::unique_ptr<PaymentInstrument> payment_instrument_2 =
+      table_->GetPaymentInstrument(
+          bank_account_to_store_2.instrument_id(),
+          PaymentInstrument::InstrumentType::kBankAccount);
+  BankAccount* bank_account_from_db_2(
+      static_cast<BankAccount*>(payment_instrument_2.get()));
+
+  ASSERT_TRUE(bank_account_from_db_2);
+  EXPECT_EQ(bank_account_to_store_2, *bank_account_from_db_2);
+  EXPECT_TRUE(bank_account_from_db_2->IsSupported(
+      PaymentInstrument::PaymentRail::kPix));
+  EXPECT_TRUE(bank_account_from_db_2->IsSupported(
+      PaymentInstrument::PaymentRail::kUnknown));
+}
+
+TEST_F(AutofillTableTest, UpdateBankAccount) {
+  BankAccount bank_account_to_store = test::CreatePixBankAccount(100);
+  ASSERT_TRUE(bank_account_to_store.AddToDatabase(table_.get()));
+
+  BankAccount updated_bank_account_to_store(
+      100, u"updated_nickname", GURL("http://www.updated-example.com"),
+      u"updated_bank_name", u"updated_account_number_suffix",
+      BankAccount::AccountType::kSalary);
+  updated_bank_account_to_store.AddPaymentRail(
+      PaymentInstrument::PaymentRail::kPix);
+  updated_bank_account_to_store.AddPaymentRail(
+      PaymentInstrument::PaymentRail::kUnknown);
+  ASSERT_TRUE(updated_bank_account_to_store.UpdateInDatabase(table_.get()));
+
+  std::unique_ptr<PaymentInstrument> payment_instrument =
+      table_->GetPaymentInstrument(
+          bank_account_to_store.instrument_id(),
+          PaymentInstrument::InstrumentType::kBankAccount);
+  BankAccount* bank_account_from_db(
+      static_cast<BankAccount*>(payment_instrument.get()));
+
+  ASSERT_TRUE(bank_account_from_db);
+  EXPECT_EQ(updated_bank_account_to_store, *bank_account_from_db);
+  // Verify existing payment rail is still supported.
+  EXPECT_TRUE(
+      bank_account_from_db->IsSupported(PaymentInstrument::PaymentRail::kPix));
+  // Verify updated payment rail is supported.
+  EXPECT_TRUE(bank_account_from_db->IsSupported(
+      PaymentInstrument::PaymentRail::kUnknown));
+}
+
+TEST_F(AutofillTableTest, UpdateBankAccount_RemoveSupportedRail) {
+  // Add 2 supported payment rails.
+  BankAccount bank_account_to_store = test::CreatePixBankAccount(100);
+  bank_account_to_store.AddPaymentRail(
+      PaymentInstrument::PaymentRail::kUnknown);
+  ASSERT_TRUE(bank_account_to_store.AddToDatabase(table_.get()));
+
+  BankAccount updated_bank_account_to_store(
+      100, bank_account_to_store.nickname(),
+      bank_account_to_store.display_icon_url(),
+      bank_account_to_store.bank_name(),
+      bank_account_to_store.account_number_suffix(),
+      bank_account_to_store.account_type());
+  // Add only 1 supported payment rail.
+  updated_bank_account_to_store.AddPaymentRail(
+      PaymentInstrument::PaymentRail::kUnknown);
+
+  ASSERT_TRUE(updated_bank_account_to_store.UpdateInDatabase(table_.get()));
+
+  std::unique_ptr<PaymentInstrument> payment_instrument =
+      table_->GetPaymentInstrument(
+          bank_account_to_store.instrument_id(),
+          PaymentInstrument::InstrumentType::kBankAccount);
+  BankAccount* bank_account_from_db(
+      static_cast<BankAccount*>(payment_instrument.get()));
+
+  ASSERT_TRUE(bank_account_from_db);
+  EXPECT_EQ(updated_bank_account_to_store, *bank_account_from_db);
+  // Verify existing payment rail is no longer supported.
+  EXPECT_FALSE(
+      bank_account_from_db->IsSupported(PaymentInstrument::PaymentRail::kPix));
+  // Verify updated payment rail is supported.
+  EXPECT_TRUE(bank_account_from_db->IsSupported(
+      PaymentInstrument::PaymentRail::kUnknown));
+}
+
+TEST_F(AutofillTableTest, RemoveBankAccount) {
+  BankAccount bank_account_to_store = test::CreatePixBankAccount(100);
+  bank_account_to_store.AddPaymentRail(
+      PaymentInstrument::PaymentRail::kUnknown);
+  ASSERT_TRUE(bank_account_to_store.AddToDatabase(table_.get()));
+
+  // Remove bank account from db.
+  ASSERT_TRUE(bank_account_to_store.DeleteFromDatabase(table_.get()));
+
+  // Verify row is deleted from payment_instruments table.
+  sql::Statement payment_instruments_select(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT COUNT(*) "
+          "FROM payment_instruments WHERE instrument_id = ? AND "
+          "instrument_type = ?"));
+  payment_instruments_select.BindInt64(0,
+                                       bank_account_to_store.instrument_id());
+  payment_instruments_select.BindInt64(
+      1, static_cast<int>(bank_account_to_store.GetInstrumentType()));
+
+  EXPECT_TRUE(payment_instruments_select.Step());
+  EXPECT_EQ(0, payment_instruments_select.ColumnInt(0));
+
+  // Verify row is deleted from payment_instrument_supported_rails table.
+  sql::Statement payment_instrument_supported_rails_select(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT COUNT(*) "
+          "FROM payment_instrument_supported_rails WHERE instrument_id = ? AND "
+          "instrument_type = ?"));
+  payment_instrument_supported_rails_select.BindInt64(
+      0, bank_account_to_store.instrument_id());
+  payment_instrument_supported_rails_select.BindInt64(
+      1, static_cast<int>(bank_account_to_store.GetInstrumentType()));
+
+  EXPECT_TRUE(payment_instrument_supported_rails_select.Step());
+  EXPECT_EQ(0, payment_instrument_supported_rails_select.ColumnInt(0));
+
+  // Verify row is deleted from bank_accounts table.
+  sql::Statement bank_accounts_select(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT COUNT(*) "
+          "FROM bank_accounts WHERE instrument_id = ?"));
+  bank_accounts_select.BindInt64(0, bank_account_to_store.instrument_id());
+  EXPECT_TRUE(bank_accounts_select.Step());
+  EXPECT_EQ(0, bank_accounts_select.ColumnInt(0));
+}
+
+TEST_F(AutofillTableTest, GetPaymentInstrument) {
+  sql::Statement payment_instruments_insert(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "INSERT INTO payment_instruments (instrument_id, instrument_type, "
+          "nickname, display_icon_url) VALUES(100, 1, 'nickname', "
+          "'http://display-icon-url.com')"));
+  sql::Statement payment_instrument_supported_rails_insert(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "INSERT INTO payment_instrument_supported_rails (instrument_id, "
+          "instrument_type, payment_rail)VALUES(100, 1, 1)"));
+  sql::Statement bank_accounts_insert(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "INSERT INTO bank_accounts (instrument_id, bank_name, "
+          "account_number_suffix, account_type) VALUES(100, 'bank_name', "
+          "'account_number_suffix', 1)"));
+  EXPECT_TRUE(payment_instruments_insert.Run());
+  EXPECT_TRUE(payment_instrument_supported_rails_insert.Run());
+  EXPECT_TRUE(bank_accounts_insert.Run());
+
+  std::unique_ptr<PaymentInstrument> payment_instrument =
+      table_->GetPaymentInstrument(
+          100, PaymentInstrument::InstrumentType::kBankAccount);
+  BankAccount* bank_account_from_db(
+      static_cast<BankAccount*>(payment_instrument.get()));
+
+  ASSERT_TRUE(bank_account_from_db);
+  EXPECT_EQ(100, bank_account_from_db->instrument_id());
+  EXPECT_EQ(u"nickname", bank_account_from_db->nickname());
+  EXPECT_EQ(static_cast<BankAccount::AccountType>(1),
+            bank_account_from_db->account_type());
+  EXPECT_EQ(u"account_number_suffix",
+            bank_account_from_db->account_number_suffix());
+  EXPECT_EQ(GURL("http://display-icon-url.com"),
+            bank_account_from_db->display_icon_url());
+  EXPECT_EQ(u"bank_name", bank_account_from_db->bank_name());
+  EXPECT_TRUE(
+      bank_account_from_db->IsSupported(PaymentInstrument::PaymentRail::kPix));
 }
 
 }  // namespace autofill

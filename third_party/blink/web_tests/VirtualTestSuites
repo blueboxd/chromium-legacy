@@ -57,7 +57,7 @@
     "prefix": "pna-iframes-enabled",
     "platforms": ["Linux", "Mac", "win"],
     "bases": ["external/wpt/fetch/private-network-access"],
-    "args": ["--enable-features=PrivateNetworkAccessForIframes",
+    "args": ["--enable-features=PrivateNetworkAccessForIframes,CorsSafelistedHeaderValueSizeRelaxed",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["phao@google.com", "lyf@google.com"],
     "expires": "Jan 1, 2024"
@@ -66,7 +66,7 @@
     "prefix": "pna-iframes-warning",
     "platforms": ["Linux", "Mac", "win"],
     "bases": ["external/wpt/fetch/private-network-access"],
-    "args": ["--enable-features=PrivateNetworkAccessForIframes,PrivateNetworkAccessForIframesWarningOnly",
+    "args": ["--enable-features=PrivateNetworkAccessForIframes,PrivateNetworkAccessForIframesWarningOnly,CorsSafelistedHeaderValueSizeRelaxed",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["phao@google.com", "lyf@google.com"],
     "expires": "Jan 1, 2024"
@@ -594,7 +594,7 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "plz-dedicated-worker",
+    "prefix": "plz-dedicated-worker-disabled",
     "platforms": ["Linux"],
     "bases": ["external/wpt/content-security-policy/inside-worker",
               "external/wpt/content-security-policy/worker-src",
@@ -615,9 +615,12 @@
               "http/tests/workers",
               "inspector-protocol/worker"
             ],
-    "args": ["--enable-features=PlzDedicatedWorker",
-             "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "Jul 1, 2024"
+    "args": ["--disable-features=PlzDedicatedWorker,DeprecateUnload"],
+    "owners": [
+      "yyanagisawa@chromium.org",
+      "kouhei@chromium.org"
+    ],
+    "expires": "Nov 10, 2024"
   },
   {
     "prefix": "service-worker-storage-control-on-thread-pool",
@@ -710,7 +713,10 @@
       "external/wpt/navigation-api/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html",
       "external/wpt/navigation-api/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html",
       "external/wpt/navigation-api/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html",
-      "external/wpt/navigation-api/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html"
+      "external/wpt/navigation-api/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html",
+      "external/wpt/longtask-timing/longtask-in-childiframe-crossorigin.html",
+      "external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html",
+      "http/tests/security/drag-drop-same-unique-origin.html"
     ],
     "exclusive_tests": "ALL",
     "args": ["--disable-site-isolation-trials",
@@ -918,14 +924,16 @@
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "never"
   },
+  "The elastic-overscroll virtual suite is testing a feature that is enabled",
+  "or not based on platform and settings, so it should not expire.",
   {
     "prefix": "elastic-overscroll",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
     "args": ["--enable-features=ElasticOverscroll",
-             "--enable-blink-features=FixedElementsDontOverscroll",
              "--enable-threaded-compositing"],
-    "expires": "Jul 1, 2023"
+    "expires": "never",
+    "owners": ["arakeri@microsoft.com"]
   },
   "The non-overlay-scrollbar virtual suite is testing a feature that is",
   "enabled or not based on platform and settings, so it should not expire.",
@@ -971,7 +979,8 @@
     "prefix": "fluent-non-overlay-scrollbar-hc",
     "platforms": ["Win"],
     "bases": ["virtual/fluent-non-overlay-scrollbar/composited",
-              "virtual/fluent-non-overlay-scrollbar/hover-over-scrollbar-thumb.html"],
+              "virtual/fluent-non-overlay-scrollbar/hover-over-scrollbar-thumb.html",
+              "virtual/fluent-non-overlay-scrollbar/colored-scrollbar.html"],
     "args": ["--enable-features=FluentScrollbar",
              "--enable-threaded-compositing",
              "--force-high-contrast"],
@@ -992,7 +1001,8 @@
   {
     "prefix": "fluent-overlay-scrollbar",
     "platforms": ["Win"],
-    "bases": ["virtual/fluent-non-overlay-scrollbar/hover-over-scrollbar-thumb.html"],
+    "bases": ["virtual/fluent-non-overlay-scrollbar/hover-over-scrollbar-thumb.html",
+              "virtual/fluent-non-overlay-scrollbar/colored-scrollbar.html"],
     "args": ["--enable-features=FluentOverlayScrollbar",
              "--enable-threaded-compositing",
              "--disable-smooth-scrolling"],
@@ -1114,18 +1124,6 @@
         "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
     "expires": "Jul 1, 2024"
-  },
-  {
-    "prefix": "offsetparent-old-behavior",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "external/wpt/css/css-contain/content-visibility",
-      "external/wpt/shadow-dom",
-      "fast/dom/shadow"
-    ],
-    "args": ["--disable-features=OffsetParentNewSpecBehavior",
-             "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "Jul 1, 2023"
   },
   {
     "prefix": "non-streaming-declarative-shadow-dom-enabled",
@@ -1572,8 +1570,8 @@
     "owners": ["masonf@chromium.org", "dom-dev@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "external/wpt/html/semantics/popovers/popover-anchor-idl-property.html",
-      "external/wpt/html/semantics/popovers/popover-anchor-nesting.html",
+      "external/wpt/html/semantics/popovers/popover-anchor-idl-property.tentative.html",
+      "external/wpt/html/semantics/popovers/popover-anchor-nesting.tentative.html",
       "external/wpt/html/semantics/popovers/popover-attribute-all-elements.html",
       "external/wpt/html/semantics/popovers/popover-attribute-basic.html",
       "external/wpt/html/semantics/popovers/popover-beforetoggle-opening-event.html",
@@ -1627,6 +1625,19 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "fledge-kanon-status-below-threshold",
+    "platforms": ["Linux", "Mac", "Win"],
+    "owners": ["behamilton@google.com", "caraitto@chromium.org", "pauljensen@chromium.org", "mmenke@chromium.org", "morlovich@chromium.org", "qingxinwu@google.com"],
+    "bases": [
+      "external/wpt/fledge/tentative/kanon-status-below-threshold.https.window.js"
+    ],
+    "args": [
+      "--enable-features=InterestGroupStorage,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/mparch,FledgeConsiderKAnonymity",
+      "--disable-features=CookieDeprecationFacilitatedTesting,FledgeEnforceKAnonymity"
+    ],
+    "expires": "Sep 1, 2024"
+  },
+  {
     "prefix": "fledge-rounding",
     "platforms": ["Linux", "Mac", "Win"],
     "owners": ["behamilton@google.com", "caraitto@chromium.org", "pauljensen@chromium.org", "mmenke@chromium.org", "morlovich@chromium.org", "qingxinwu@google.com"],
@@ -1637,7 +1648,7 @@
       "--enable-features=InterestGroupStorage,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/mparch,FledgeRounding:fledge_bid_reporting_bits/8/fledge_score_reporting_bits/8/fledge_ad_cost_reporting_bits/8",
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
-    "expires": "Dec 1, 2023"
+    "expires": "Sep 1, 2024"
   },
   {
     "prefix": "automatic-lazy-frame-loading",
@@ -1764,7 +1775,7 @@
     "exclusive_tests": [
       "external/wpt/browsing-topics"
     ],
-    "args": ["--enable-features=BrowsingTopics,BrowsingTopicsXHR,PrivacySandboxAdsAPIsOverride",
+    "args": ["--enable-features=BrowsingTopics,PrivacySandboxAdsAPIsOverride",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "Aug 10, 2023"
   },
@@ -2031,8 +2042,8 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch,SpeculationRulesNoVarySearchHint,SpeculationRulesEagerness,SpeculationRulesDocumentRulesSelectorMatches",
-      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor:block_until_head_eager_prefetch/true,PrefetchRedirects",
+      "--enable-blink-features=SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch,SpeculationRulesNoVarySearchHint,SpeculationRulesEagerness,SpeculationRulesDocumentRulesSelectorMatches",
+      "--enable-features=PrefetchUseContentRefactor:block_until_head_eager_prefetch/true,PrefetchRedirects",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test",
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
@@ -2064,8 +2075,8 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch,SpeculationRulesNoVarySearchHint,SpeculationRulesEagerness,SpeculationRulesDocumentRulesSelectorMatches",
-      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor:block_until_head_eager_prefetch/true,PrefetchRedirects,PrefetchReusable",
+      "--enable-blink-features=SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch,SpeculationRulesNoVarySearchHint,SpeculationRulesEagerness,SpeculationRulesDocumentRulesSelectorMatches",
+      "--enable-features=PrefetchUseContentRefactor:block_until_head_eager_prefetch/true,PrefetchRedirects,PrefetchReusable",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test",
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
@@ -2090,6 +2101,7 @@
     "prefix": "speculation-rules-prerender-target-hint",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
+      "external/wpt/speculation-rules/prerender",
       "http/tests/inspector-protocol/prerender/prerender-failure-status-update-with-target-hint.js",
       "http/tests/inspector-protocol/prerender/prerender-status-update-with-target-hint.js"
     ],
@@ -2163,8 +2175,10 @@
   {
     "prefix": "orb-v02",
     "platforms": ["Linux"],
-    "args": ["--enable-features=OpaqueResponseBlockingV01,OpaqueResponseBlockingV02", "--disable-features=OpaqueResponseBlockingErrorsForAllFetches",
-             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "args": [
+      "--enable-features=OpaqueResponseBlockingV01,OpaqueResponseBlockingV02",
+      "--disable-features=OpaqueResponseBlockingErrorsForAllFetches,DeprecateUnload",
+      "--disable-threaded-compositing", "--disable-threaded-animation"],
     "bases": [
       "external/wpt/fetch/orb",
       "external/wpt/fetch/corb",
@@ -2387,6 +2401,7 @@
     ],
     "args": [
       "--enable-features=KeepAliveInBrowserMigration",
+      "--disable-features=DeprecateUnload",
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
     "expires": "Dec 1, 2023"
@@ -2448,6 +2463,7 @@
       "external/wpt/html/semantics/scripting-1"
     ],
     "args": ["--enable-features=ForceProduceCompileHints",
+             "--disable-features=DeprecateUnload",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "never"
   },
@@ -2455,7 +2471,8 @@
     "prefix": "static-routing-api",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "external/wpt/service-workers/service-worker/tentative/static-router"
+      "external/wpt/service-workers/service-worker/tentative/static-router",
+      "http/tests/inspector-protocol/service-worker/tentative/static-router"
     ],
     "args": ["--enable-features=ServiceWorkerStaticRouter",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
@@ -2524,6 +2541,27 @@
     ]
   },
   {
+    "prefix": "delay-async-when-lcp-in-html",
+    "platforms": [
+      "Linux",
+      "Mac",
+      "Win"
+    ],
+    "bases": [
+      "http/tests/delay-async-when-lcp-in-html"
+    ],
+    "exclusive_tests": "ALL",
+    "args": [
+      "--enable-features=LCPCriticalPathPredictor:lcpp_recorded_lcp_element_types/all",
+      "--enable-features=DelayAsyncScriptExecution:delay_async_exec_delay_type/till_first_lcp_candidate/delay_async_exec_when_lcp_found_in_html/true"
+    ],
+    "expires": "Sep 10, 2024",
+    "owners": [
+      "alexnj@chromium.org",
+      "chikamune@chromium.org"
+    ]
+  },
+  {
     "prefix": "deprecated-css-appearance-values-enabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -2575,6 +2613,14 @@
     "expires": "Dec 21, 2023"
   },
   {
+    "prefix": "url-non-special",
+    "platforms": ["Linux"],
+    "bases": ["external/wpt/url"],
+    "args": ["--enable-features=StandardCompliantNonSpecialSchemeURLParsing"],
+    "owners": ["hayato@chromium.org"],
+    "expires": "Jul 1, 2024"
+  },
+  {
     "prefix": "cookie-deprecation-label",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -2605,7 +2651,15 @@
     "expires": "Jul 1, 2024",
     "owners": ["arichiv@chromium.org"]
   },
-
+  {
+    "prefix": "permission-element",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/html/semantics/permission-element"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=PermissionElement"],
+    "owners": ["permissions-core@google.com"],
+    "expires": "Jul 1, 2024"
+  },
   "The GenericSensorExtraClasses feature is controlled by a flag, which has ",
   "an expiration date. |expires| below is set to 'never' to avoid having to ",
   "manage the expiration date in two locations.",
@@ -2626,5 +2680,95 @@
     ],
     "args": ["--enable-features=GenericSensorExtraClasses"],
     "expires": "never"
+  },
+  {
+    "prefix": "webnn-service-enabled",
+    "platforms": ["Win"],
+    "bases": [
+      "external/wpt/webnn/gpu"
+    ],
+    "exclusive_tests": "ALL",
+    "args": ["--use-gpu-in-tests", "--enable-features=MachineLearningNeuralNetworkService"],
+    "expires": "Jun 1, 2024",
+    "owners": ["rafael.cintron@microsoft.com", "ningxin.hu@intel.com", "kbr@chromium.org"]
+  },
+  {
+    "prefix": "deprecate-unload",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "http/tests/devtools/sources/debugger/skip-pause-during-navigation.js",
+      "http/tests/history/history-replace-updates-current-item.html",
+      "http/tests/inspector-protocol/permissions-policy.js",
+      "http/tests/navigation/history-back-across-form-submission-to-fragment.html",
+      "http/tests/navigation/image-css-load-in-subframe-unload-handler.html",
+      "http/tests/navigation/image-load-in-subframe-unload-handler.html",
+      "http/tests/navigation/image-load-in-unload-handler.html",
+      "http/tests/navigation/navigate-to-about-blank-from-subframe-unload-handler-cross-origin.html",
+      "http/tests/navigation/navigate-to-about-blank-from-subframe-unload-handler-same-origin.html",
+      "http/tests/navigation/redirect-on-back-updates-history-item.html",
+      "http/tests/navigation/redirect-on-reload-updates-history-item.html",
+      "http/tests/navigation/targeted-navigation-in-unload-handler.html",
+      "http/tests/notifications/close-on-document-unload.html",
+      "http/tests/notifications/notification-creation-detached-context.html",
+      "http/tests/notifications/request-permission-detached-context.html",
+      "http/tests/security/isolatedWorld/context-destroy.html",
+      "http/tests/security/window-events-clear-domain.html",
+      "http/tests/security/window-events-clear-port.html",
+      "http/tests/security/window-events-pass.html",
+      "http/tests/sendbeacon/beacon-detached-no-crash.html",
+      "http/tests/xmlhttprequest/frame-load-cancelled-abort.html",
+      "http/tests/xmlhttprequest/frame-unload-abort-crash.html",
+      "http/tests/xmlhttprequest/xhr-onunload.html",
+      "http/tests/xmlhttprequest/xmlhttprequest-unload-sync-handler-attached-from-parent.html",
+      "http/tests/xmlhttprequest/xmlhttprequest-unload-sync.html",
+      "external/wpt/battery-status/no-leak-on-detached-use.https.html",
+      "external/wpt/document-picture-in-picture/clears-session-on-close.https.html",
+      "external/wpt/fetch/api/basic/keepalive.any.js",
+      "external/wpt/fetch/api/cors/cors-keepalive.any.js",
+      "external/wpt/fetch/api/redirect/redirect-keepalive.any.js",
+      "external/wpt/fetch/metadata/unload.https.sub.html",
+      "external/wpt/html/browsers/browsing-the-web/back-forward-cache/events.html",
+      "external/wpt/html/browsers/browsing-the-web/navigating-across-documents/navigate-to-unparseable-url.html",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/001.html",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/002.html",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/003.html",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/004.html",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/005.html",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/004.html",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/007.html",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/009.html",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/unload-main-frame-cross-origin.window.js",
+      "external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/unload-main-frame-same-origin.window.js",
+      "external/wpt/html/browsers/history/the-history-interface/traverse_the_history_unload_1.html",
+      "external/wpt/html/browsers/the-window-object/BarProp.window.js",
+      "external/wpt/html/browsers/the-window-object/close-method.window.js",
+      "external/wpt/html/browsers/the-window-object/open-close/close_unload.html",
+      "external/wpt/html/browsers/the-window-object/self-et-al.window.js",
+      "external/wpt/html/infrastructure/urls/base-url/document-base-url-window-initiator-is-not-opener.https.window.js",
+      "external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/bailout-exception-vs-return-origin.sub.window.js",
+      "external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/bailout-exception-vs-return-xml.window.js",
+      "external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/bailout-side-effects-ignore-opens-during-unload.window.js",
+      "external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/ignore-opens-during-unload.window.js",
+      "external/wpt/html/webappapis/scripting/events/event-handler-attributes-body-window.html",
+      "external/wpt/html/webappapis/scripting/events/event-handler-attributes-frameset-window.html",
+      "external/wpt/html/webappapis/scripting/events/event-handler-attributes-windowless-body.html",
+      "external/wpt/navigation-api/navigate-event/replaceState-in-unload-then-remove-iframe.html",
+      "external/wpt/navigation-api/navigation-methods/return-value/navigate-rejection-order-invalidurl-unload.html",
+      "external/wpt/navigation-api/navigation-methods/return-value/navigate-rejection-order-unload-unserializablestate.html",
+      "external/wpt/navigation-api/navigation-methods/return-value/navigate-unload.html",
+      "external/wpt/navigation-api/navigation-methods/return-value/reload-rejection-order-unload-unserializablestate.html",
+      "external/wpt/navigation-api/navigation-methods/return-value/reload-unload.html",
+      "external/wpt/navigation-timing/nested-unload-timing.html",
+      "external/wpt/permissions-policy/experimental-features/unload-allowed-by-default.tentative.window.js",
+      "external/wpt/permissions-policy/experimental-features/unload-disallowed-subframe.tentative.window.js",
+      "external/wpt/screen-details/getScreenDetails.tentative.https.window.js",
+      "wpt_internal/geolocation-api/disconnected-frame-permission-denied.https.html",
+      "wpt_internal/geolocation-api/disconnected-frame.https.html",
+      "wpt_internal/presentation/presentation-receiver-terminate-connection.https.html",
+      "wpt_internal/speech/scripted/speechrecognition-no-crash-detached.html"
+     ],
+    "args": ["--enable-features=DeprecateUnload"],
+    "expires": "Jun 1, 2024",
+    "owners": ["fergal@chromium.org", "rakina@chromium.org"]
   }
 ]

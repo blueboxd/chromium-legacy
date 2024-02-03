@@ -42,6 +42,7 @@
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/bubble_histograms_variant.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
@@ -891,14 +892,11 @@ void BubbleDialogDelegate::BubbleUmaLogger::LogMetric(
     return;
   }
 
-  const std::unordered_set<std::string> kAllowedClassNames{
-      "ProfileMenuViewBase", "ExtensionsMenuView", "PageInfoBubbleViewBase",
-      "PermissionPromptBaseView", "DownloadBubbleContentsView"};
-
   const auto& allowed_class_names =
       allowed_class_names_for_testing_.has_value()
           ? allowed_class_names_for_testing_.value()
-          : kAllowedClassNames;
+          : base::make_span(views_metrics::kBubbleNameVariantAllowList,
+                            views_metrics::kBubbleNameVariantAllowListSize);
 
   if (!base::Contains(allowed_class_names, bubble_name.value())) {
     return;
@@ -1058,6 +1056,9 @@ void BubbleDialogDelegate::OnBubbleWidgetVisibilityChanged(bool visible) {
   // Log time from bubble dialog delegate creation to bubble becoming
   // visible.
   if (visible) {
+    if (GetWidget()->IsClosed()) {
+      return;
+    }
     if (bubble_created_time_.has_value()) {
       GetWidget()
           ->GetCompositor()
@@ -1091,6 +1092,7 @@ void BubbleDialogDelegate::OnBubbleWidgetVisibilityChanged(bool visible) {
   // the bubble in its entirety rather than just its title and initially focused
   // view.  See http://crbug.com/474622 for details.
   if (visible && ui::IsAlert(GetAccessibleWindowRole())) {
+    GetWidget()->GetRootView()->SetAccessibleRole(GetAccessibleWindowRole());
     GetWidget()->GetRootView()->NotifyAccessibilityEvent(
         ax::mojom::Event::kAlert, true);
   }

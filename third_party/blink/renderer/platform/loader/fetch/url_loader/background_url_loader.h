@@ -19,10 +19,12 @@ struct ResourceRequest;
 
 namespace blink {
 
-class WebBackgroundResourceFetchAssets;
+class BackForwardCacheLoaderHelper;
+class BackgroundCodeCacheHost;
 class URLLoaderClient;
 class ResourceRequestHead;
 struct ResourceLoaderOptions;
+class WebBackgroundResourceFetchAssets;
 
 // BackgroundURLLoader is used to fetch a resource request on a background
 // thread. Used only when BackgroundResourceFetch feature is enabled.
@@ -49,7 +51,9 @@ class BLINK_PLATFORM_EXPORT BackgroundURLLoader : public URLLoader {
       const Vector<String>& cors_exempt_header_list,
       scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
-      Vector<std::unique_ptr<URLLoaderThrottle>> throttles);
+      BackForwardCacheLoaderHelper* back_forward_cache_loader_helper,
+      Vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      scoped_refptr<BackgroundCodeCacheHost> background_code_cache_host);
   ~BackgroundURLLoader() override;
 
   void LoadSynchronously(std::unique_ptr<network::ResourceRequest> request,

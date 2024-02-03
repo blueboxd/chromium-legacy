@@ -7,9 +7,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/test_utils.h"
+#include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/test/render_view_test.h"
-#include "form_autofill_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
@@ -102,7 +102,6 @@ TEST_F(FormAutofillIssuesTest, FormAriaLabelledByToNonExistingId) {
 
   std::vector<blink::WebAutofillClient::FormIssue> form_issues_2 =
       GetFormIssues(form_target.GetFormControlElements(), form_issues);
-  LOG(ERROR) << "hueee " << form_issues_2.size();
   EXPECT_TRUE(FormIssuesContainIssueType(
       form_issues, GenericIssueErrorType::kFormAriaLabelledByToNonExistingId,
       /*violating_attr=*/"aria-labelledby"));
@@ -213,8 +212,8 @@ TEST_F(FormAutofillIssuesTest, FormLabelForNameError) {
   FormData form_data;
   form_util::WebFormElementToFormData(
       WebFormElementFromHTML(kHtml), WebFormControlElement(),
-      /*field_data_manager=*/nullptr, {form_util::ExtractOption::kValue},
-      &form_data, nullptr);
+      *base::MakeRefCounted<FieldDataManager>(),
+      {form_util::ExtractOption::kValue}, &form_data, nullptr);
 
   std::vector<blink::WebAutofillClient::FormIssue> form_issues =
       CheckForLabelsWithIncorrectForAttribute(web_frame->GetDocument(),
@@ -238,8 +237,8 @@ TEST_F(FormAutofillIssuesTest, FormLabelForMatchesNonExistingIdError) {
   FormData form_data;
   form_util::WebFormElementToFormData(
       WebFormElementFromHTML(kHtml), WebFormControlElement(),
-      /*field_data_manager=*/nullptr, {form_util::ExtractOption::kValue},
-      &form_data, nullptr);
+      *base::MakeRefCounted<FieldDataManager>(),
+      {form_util::ExtractOption::kValue}, &form_data, nullptr);
 
   std::vector<blink::WebAutofillClient::FormIssue> form_issues =
       CheckForLabelsWithIncorrectForAttribute(web_frame->GetDocument(),

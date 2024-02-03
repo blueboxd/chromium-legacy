@@ -145,6 +145,7 @@ class CORE_EXPORT HTMLSelectElement final
 
   // For use in the implementation of HTMLOptionElement.
   void OptionSelectionStateChanged(HTMLOptionElement*, bool option_is_selected);
+  void ElementInserted(Node& node);
   void OptionInserted(HTMLOptionElement&, bool option_is_selected);
   void OptionRemoved(HTMLOptionElement&);
   IndexedPropertySetterResult AnonymousIndexedSetter(unsigned,
@@ -198,6 +199,9 @@ class CORE_EXPORT HTMLSelectElement final
   AXObject* PopupRootAXObject() const;
 
   bool IsRichlyEditableForAccessibility() const override { return false; }
+
+  bool HandleInvokeInternal(HTMLElement& invoker,
+                            AtomicString& action) override;
 
  private:
   mojom::blink::FormControlType FormControlType() const override;

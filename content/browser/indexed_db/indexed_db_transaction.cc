@@ -139,7 +139,6 @@ IndexedDBTransaction::IndexedDBTransaction(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("IndexedDB",
                                     "IndexedDBTransaction::lifetime", this);
 
-  callbacks_ = connection_->callbacks();
   database_ = connection_->database();
   if (database_) {
     database_->TransactionCreated();
@@ -182,7 +181,7 @@ void IndexedDBTransaction::SetCommitFlag() {
   }
 
   is_commit_pending_ = true;
-  bucket_context_->delegate().on_tasks_available.Run();
+  bucket_context_->QueueRunTasks();
 }
 
 void IndexedDBTransaction::ScheduleTask(blink::mojom::IDBTaskType type,
@@ -199,7 +198,7 @@ void IndexedDBTransaction::ScheduleTask(blink::mojom::IDBTaskType type,
     preemptive_task_queue_.push(std::move(task));
   }
   if (state() == STARTED)
-    bucket_context_->delegate().on_tasks_available.Run();
+    bucket_context_->QueueRunTasks();
 }
 
 void IndexedDBTransaction::ScheduleAbortTask(AbortOperation abort_task) {
@@ -249,12 +248,11 @@ leveldb::Status IndexedDBTransaction::Abort(
   locks_receiver_.locks.clear();
   locks_receiver_.AbortLockRequest();
 
-  if (callbacks_.get())
-    callbacks_->OnAbort(*this, error);
+  callbacks()->OnAbort(*this, error);
 
   if (database_)
     database_->TransactionFinished(mode_, false);
-  bucket_context_->delegate().on_tasks_available.Run();
+  bucket_context_->QueueRunTasks();
   bucket_context_.Release();
   return leveldb::Status::OK();
 }
@@ -292,7 +290,7 @@ void IndexedDBTransaction::Start() {
   state_ = STARTED;
   DCHECK(!locks_receiver_.locks.empty());
   diagnostics_.start_time = base::Time::Now();
-  bucket_context_->delegate().on_tasks_available.Run();
+  bucket_context_->QueueRunTasks();
 }
 
 // static
@@ -490,7 +488,7 @@ leveldb::Status IndexedDBTransaction::BlobWriteComplete(
     }
     case BlobWriteResult::kRunPhaseTwoAsync:
       ScheduleTask(base::BindOnce(&CommitPhaseTwoProxy));
-      bucket_context_->delegate().on_tasks_available.Run();
+      bucket_context_->QueueRunTasks();
       return leveldb::Status::OK();
     case BlobWriteResult::kRunPhaseTwoAndReturnResult: {
       return CommitPhaseTwo();
@@ -624,7 +622,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
           "IndexedDB",
           "IndexedDBTransaction::CommitPhaseTwo.TransactionCompleteCallbacks",
           "txn.id", id());
-      callbacks_->OnComplete(*this);
+      callbacks()->OnComplete(*this);
     }
 
     if (mode() != blink::mojom::IDBTransactionMode::ReadOnly) {
@@ -652,7 +650,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
       error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
                                      "Internal error committing transaction.");
     }
-    callbacks_->OnAbort(*this, error);
+    callbacks()->OnAbort(*this, error);
     if (database_)
       database_->TransactionFinished(mode_, false);
   }

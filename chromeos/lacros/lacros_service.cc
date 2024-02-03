@@ -16,6 +16,7 @@
 #include "base/task/thread_pool.h"
 #include "build/chromeos_buildflags.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
+#include "chromeos/components/in_session_auth/mojom/in_session_auth.mojom.h"
 #include "chromeos/components/payments/mojom/payment_app.mojom.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -37,6 +38,7 @@
 #include "chromeos/crosapi/mojom/cros_display_config.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/desk.mojom.h"
+#include "chromeos/crosapi/mojom/desk_profiles.mojom.h"
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "chromeos/crosapi/mojom/device_local_account_extension_service.mojom.h"
 #include "chromeos/crosapi/mojom/device_oauth2_token_service.mojom.h"
@@ -67,7 +69,6 @@
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
 #include "chromeos/crosapi/mojom/identity_manager.mojom.h"
 #include "chromeos/crosapi/mojom/image_writer.mojom.h"
-#include "chromeos/crosapi/mojom/in_session_auth.mojom.h"
 #include "chromeos/crosapi/mojom/kerberos_in_browser.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/kiosk_session_service.mojom.h"
@@ -272,6 +273,10 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::AudioService, &Crosapi::BindAudioService,
                   Crosapi::MethodMinVersions::kBindAudioServiceMinVersion>();
   ConstructRemote<
+      crosapi::mojom::AppShortcutPublisher,
+      &Crosapi::BindBrowserShortcutPublisher,
+      Crosapi::MethodMinVersions::kBindBrowserShortcutPublisherMinVersion>();
+  ConstructRemote<
       crosapi::mojom::AppWindowTracker, &Crosapi::BindChromeAppWindowTracker,
       Crosapi::MethodMinVersions::kBindChromeAppWindowTrackerMinVersion>();
   ConstructRemote<
@@ -304,6 +309,9 @@ LacrosService::LacrosService()
       Crosapi::MethodMinVersions::kBindCrosDisplayConfigControllerMinVersion>();
   ConstructRemote<crosapi::mojom::Desk, &Crosapi::BindDesk,
                   Crosapi::MethodMinVersions::kBindDeskMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::DeskProfileObserver, &Crosapi::BindDeskProfileObserver,
+      Crosapi::MethodMinVersions::kBindDeskProfileObserverMinVersion>();
   ConstructRemote<crosapi::mojom::DeskTemplate, &Crosapi::BindDeskTemplate,
                   Crosapi::MethodMinVersions::kBindDeskTemplateMinVersion>();
   ConstructRemote<
@@ -406,7 +414,7 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::ImageWriter,
                   &crosapi::mojom::Crosapi::BindImageWriter,
                   Crosapi::MethodMinVersions::kBindImageWriterMinVersion>();
-  ConstructRemote<crosapi::mojom::InSessionAuth,
+  ConstructRemote<chromeos::auth::mojom::InSessionAuth,
                   &crosapi::mojom::Crosapi::BindInSessionAuth,
                   Crosapi::MethodMinVersions::kBindInSessionAuthMinVersion>();
   ConstructRemote<

@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AutomationPredicate} from '../../common/automation_predicate.js';
-import {AutomationUtil} from '../../common/automation_util.js';
-import {CursorRange} from '../../common/cursors/range.js';
 import {Flags} from '../../common/flags.js';
 import {InstanceChecker} from '../../common/instance_checker.js';
 import {LocalStorage} from '../../common/local_storage.js';
@@ -28,6 +25,7 @@ import {ChromeVoxState} from './chromevox_state.js';
 import {ClipboardHandler} from './clipboard_handler.js';
 import {DownloadHandler} from './download_handler.js';
 import {Earcons} from './earcons.js';
+import {EditingRangeObserver} from './editing/editing.js';
 import {DesktopAutomationHandler} from './event/desktop_automation_handler.js';
 import {FocusAutomationHandler} from './event/focus_automation_handler.js';
 import {MediaAutomationHandler} from './event/media_automation_handler.js';
@@ -52,8 +50,6 @@ import {TtsBackground} from './tts_background.js';
  * @fileoverview The entry point for all ChromeVox related code for the
  * background page.
  */
-const RoleType = chrome.automation.RoleType;
-const StateType = chrome.automation.StateType;
 
 /** ChromeVox background context. */
 export class Background extends ChromeVoxState {
@@ -113,6 +109,7 @@ export class Background extends ChromeVoxState {
     ClipboardHandler.init();
     CommandHandler.init();
     DownloadHandler.init();
+    EditingRangeObserver.init();
     EventSource.init();
     FindHandler.init();
     GestureCommandHandler.init();

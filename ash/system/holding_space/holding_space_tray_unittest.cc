@@ -12,6 +12,7 @@
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
+#include "ash/public/cpp/holding_space/holding_space_controller_observer.h"
 #include "ash/public/cpp/holding_space/holding_space_file.h"
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
@@ -22,6 +23,7 @@
 #include "ash/public/cpp/holding_space/holding_space_test_api.h"
 #include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/public/cpp/holding_space/mock_holding_space_client.h"
+#include "ash/public/cpp/holding_space/mock_holding_space_controller_observer.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -2109,6 +2111,27 @@ TEST_F(HoldingSpaceTrayTest, EnterAndExitAnimations) {
 
   // Clean up.
   UnregisterModelForUser(kSecondaryUserId);
+}
+
+TEST_F(HoldingSpaceTrayTest, FiresBubbleOpenCloseEvents) {
+  StartSession();
+  ASSERT_TRUE(test_api()->IsShowingInShelf());
+
+  MockHoldingSpaceControllerObserver observer;
+  base::ScopedObservation<HoldingSpaceController,
+                          HoldingSpaceControllerObserver>
+      observation(&observer);
+  observation.Observe(HoldingSpaceController::Get());
+
+  EXPECT_CALL(observer, OnHoldingSpaceTrayBubbleVisibilityChanged(
+                            GetTray(), /*visible*/ true));
+  test_api()->Show();
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnHoldingSpaceTrayBubbleVisibilityChanged(
+                            GetTray(), /*visible*/ false));
+  test_api()->Close();
+  testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
 // Verifies that the holding space bubble supports scrolling of pinned files.

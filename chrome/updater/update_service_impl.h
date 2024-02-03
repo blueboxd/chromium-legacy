@@ -6,6 +6,7 @@
 #define CHROME_UPDATER_UPDATE_SERVICE_IMPL_H_
 
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/sequence_checker.h"
 #include "base/values.h"
 #include "chrome/updater/update_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class FilePath;
@@ -153,12 +153,13 @@ void GetComponents(
     UpdateService::PolicySameVersionUpdate policy_same_version_update,
     const std::vector<std::string>& ids,
     base::OnceCallback<
-        void(const std::vector<absl::optional<update_client::CrxComponent>>&)>
+        void(const std::vector<std::optional<update_client::CrxComponent>>&)>
         callback);
 
 #if BUILDFLAG(IS_WIN)
 std::string GetInstallerText(UpdateService::ErrorCategory error_category,
                              int error_code,
+                             int extra_code,
                              bool is_installer_error = false);
 #endif  // BUILDFLAG(IS_WIN)
 }  // namespace internal

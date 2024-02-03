@@ -151,9 +151,7 @@ void AutofillContextMenuManager::AppendItems() {
   }
 
   // Includes the option of submitting feedback on Autofill.
-  if (personal_data_manager_->IsAutofillEnabled() &&
-      base::FeatureList::IsEnabled(features::kAutofillFeedback) &&
-      IsLikelyDogfoodClient()) {
+  if (personal_data_manager_->IsAutofillEnabled() && IsLikelyDogfoodClient()) {
     menu_model_->AddItemWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK,
         IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK,
@@ -330,7 +328,11 @@ void AutofillContextMenuManager::LogManualFallbackContextMenuEntryShown(
     ContentAutofillDriver& driver) {
   AutofillField* field =
       GetAutofillField(driver.GetAutofillManager(), driver.GetFrameToken());
-  CHECK(field);
+  if (!field) {
+    // `field` can be null when the user clicks on the correct input form field,
+    // which is not extracted by the BrowserAutofillManager.
+    return;
+  }
 
   static_cast<BrowserAutofillManager&>(driver.GetAutofillManager())
       .GetAutocompleteUnrecognizedFallbackEventLogger()

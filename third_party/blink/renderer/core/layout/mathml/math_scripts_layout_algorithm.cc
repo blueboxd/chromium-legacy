@@ -88,8 +88,8 @@ ScriptsVerticalParameters GetScriptsVerticalParameters(
 }  // namespace
 
 MathScriptsLayoutAlgorithm::MathScriptsLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params) {
+    const LayoutAlgorithmParams& params)
+    : LayoutAlgorithm(params) {
   DCHECK(params.space.IsNewFormattingContext());
 }
 
@@ -273,7 +273,7 @@ MathScriptsLayoutAlgorithm::LayoutAndGetMetrics(NGBlockNode child) const {
       Node(), ChildAvailableSize(), ConstraintSpace(), child);
   child_and_metrics.result =
       child.Layout(constraint_space, nullptr /*break_token*/);
-  NGBoxFragment fragment(
+  LogicalBoxFragment fragment(
       ConstraintSpace().GetWritingDirection(),
       To<NGPhysicalBoxFragment>(child_and_metrics.result->PhysicalFragment()));
   child_and_metrics.inline_size = fragment.InlineSize();
@@ -410,7 +410,7 @@ const NGLayoutResult* MathScriptsLayoutAlgorithm::Layout() {
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   return container_builder_.ToBoxFragment();
 }

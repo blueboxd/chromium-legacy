@@ -16,11 +16,10 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/combobox.h"
-#include "ash/system/tray/detailed_view_delegate.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -105,10 +104,8 @@ class ClassroomStudentComboboxModel : public ui::ComboboxModel {
 
 }  // namespace
 
-ClassroomBubbleStudentView::ClassroomBubbleStudentView(
-    DetailedViewDelegate* delegate)
+ClassroomBubbleStudentView::ClassroomBubbleStudentView()
     : ClassroomBubbleBaseView(
-          delegate,
           std::make_unique<ClassroomStudentComboboxModel>()) {
   combo_box_view_->SetSelectionChangedCallback(base::BindRepeating(
       &ClassroomBubbleStudentView::SelectedAssignmentListChanged,

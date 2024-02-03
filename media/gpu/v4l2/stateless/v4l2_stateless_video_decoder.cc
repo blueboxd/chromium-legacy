@@ -157,10 +157,12 @@ size_t V4L2StatelessVideoDecoder::GetMaxOutputFramePoolSize() const {
   return 0;
 }
 
-scoped_refptr<V4L2DecodeSurface> V4L2StatelessVideoDecoder::CreateSurface() {
+scoped_refptr<StatelessDecodeSurface>
+V4L2StatelessVideoDecoder::CreateSurface() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  NOTIMPLEMENTED();
-  return nullptr;
+  DVLOGF(4);
+
+  return base::MakeRefCounted<StatelessDecodeSurface>();
 }
 
 bool V4L2StatelessVideoDecoder::SubmitFrame(void* ctrls,
@@ -168,17 +170,39 @@ bool V4L2StatelessVideoDecoder::SubmitFrame(void* ctrls,
                                             size_t size,
                                             int32_t bitstream_id) {
   DVLOGF(4);
-  NOTIMPLEMENTED();
-  return false;
+  if (!output_queue_) {
+    if (!input_queue_->PrepareBuffers()) {
+      return false;
+    }
+    input_queue_->StartStreaming();
+
+    // The header needs to be parsed before the video resolution and format
+    // can be decided.
+    if (!device_->SetHeaders(ctrls, base::ScopedFD(-1))) {
+      return false;
+    }
+
+    output_queue_ = OutputQueue::Create(device_);
+    if (!output_queue_) {
+      return false;
+    }
+
+    if (!output_queue_->PrepareBuffers()) {
+      return false;
+    }
+
+    output_queue_->StartStreaming();
+  }
+
+  return true;
 }
 
 void V4L2StatelessVideoDecoder::SurfaceReady(
-    scoped_refptr<V4L2DecodeSurface> dec_surface,
+    scoped_refptr<StatelessDecodeSurface> dec_surface,
     int32_t bitstream_id,
     const gfx::Rect& visible_rect,
     const VideoColorSpace& color_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  NOTREACHED();
   NOTIMPLEMENTED();
 }
 
@@ -210,11 +234,6 @@ bool V4L2StatelessVideoDecoder::CreateInputQueue(VideoCodecProfile profile,
 
   const VideoCodec codec = VideoCodecProfileToVideoCodec(profile);
   input_queue_ = InputQueue::Create(device_, codec, resolution);
-
-  if (input_queue_) {
-    input_queue_->PrepareBuffers();
-    input_queue_->StartStreaming();
-  }
 
   return !!input_queue_;
 }
@@ -267,10 +286,6 @@ void V4L2StatelessVideoDecoder::ProcessCompressedBuffer(
         case AcceleratedVideoDecoder::kRanOutOfSurfaces:
           VLOGF(2) << "AcceleratedVideoDecoder::kRanOutOfSurfaces";
           NOTREACHED();
-          break;
-        case AcceleratedVideoDecoder::kNeedContextUpdate:
-          VLOGF(2) << "AcceleratedVideoDecoder::kNeedContextUpdate";
-          NOTIMPLEMENTED();
           break;
         case AcceleratedVideoDecoder::kDecodeError:
           VLOGF(2) << "AcceleratedVideoDecoder::kDecodeError";

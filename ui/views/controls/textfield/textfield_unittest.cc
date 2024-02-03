@@ -37,6 +37,8 @@
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -126,8 +128,10 @@ class TextfieldDestroyerController : public TextfieldController {
 
 // Class that focuses a textfield when it sees a KeyDown event.
 class TextfieldFocuser : public View {
+  METADATA_HEADER(TextfieldFocuser, View)
+
  public:
-  explicit TextfieldFocuser(Textfield* textfield) : textfield_(textfield) {
+  explicit TextfieldFocuser(Textfield* textfield) : textfield_(*textfield) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
   }
 
@@ -144,8 +148,11 @@ class TextfieldFocuser : public View {
 
  private:
   bool consume_ = true;
-  raw_ptr<Textfield, DanglingUntriaged> textfield_;
+  const raw_ref<Textfield> textfield_;
 };
+
+BEGIN_METADATA(TextfieldFocuser)
+END_METADATA
 
 class MockInputMethod : public ui::InputMethodBase {
  public:
@@ -340,6 +347,8 @@ void MockInputMethod::ClearComposition() {
 
 // A Textfield wrapper to intercept OnKey[Pressed|Released]() results.
 class TestTextfield : public views::Textfield {
+  METADATA_HEADER(TestTextfield, views::Textfield)
+
  public:
   TestTextfield() = default;
 
@@ -404,6 +413,9 @@ class TestTextfield : public views::Textfield {
 
   base::WeakPtrFactory<TestTextfield> weak_ptr_factory_{this};
 };
+
+BEGIN_METADATA(TestTextfield)
+END_METADATA
 
 TextfieldTest::TextfieldTest() {
   ui::SetUpInputMethodForTesting(new MockInputMethod());
@@ -3360,6 +3372,75 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
   // - rects[6] == rects[7]
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(TextfieldTest, SetAutocorrectRange) {
+  InitTextfield();
+
+  textfield_->SetText(u"abc def ghi");
+  textfield_->SetAutocorrectRange(gfx::Range(4, 7));
+
+  gfx::Range autocorrect_range = textfield_->GetAutocorrectRange();
+  EXPECT_EQ(autocorrect_range, gfx::Range(4, 7));
+}
+
+TEST_F(TextfieldTest, DoesNotSetAutocorrectRangeWhenRangeGivenIsInvalid) {
+  InitTextfield();
+
+  textfield_->SetText(u"abc");
+
+  EXPECT_FALSE(textfield_->SetAutocorrectRange(gfx::Range(8, 11)));
+  EXPECT_TRUE(textfield_->GetAutocorrectRange().is_empty());
+}
+
+TEST_F(TextfieldTest,
+       ClearsAutocorrectRangeWhenSetAutocorrectRangeWithEmptyRange) {
+  InitTextfield();
+
+  textfield_->SetText(u"abc");
+
+  // TODO(b/161490813): Change to EXPECT_TRUE after fixing set range.
+  EXPECT_FALSE(textfield_->SetAutocorrectRange(gfx::Range()));
+  EXPECT_TRUE(textfield_->GetAutocorrectRange().is_empty());
+}
+
+TEST_F(TextfieldTest, GetAutocorrectCharacterBoundsTest) {
+  InitTextfield();
+
+  textfield_->InsertText(
+      u"hello placeholder text",
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  textfield_->SetAutocorrectRange(gfx::Range(3, 10));
+
+  EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range(3, 10));
+
+  gfx::Rect rect_for_long_text = textfield_->GetAutocorrectCharacterBounds();
+
+  textfield_->clear();
+
+  textfield_->InsertText(
+      u"hello placeholder text",
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+  textfield_->SetAutocorrectRange(gfx::Range(3, 8));
+
+  EXPECT_EQ(textfield_->GetAutocorrectRange(), gfx::Range(3, 8));
+
+  gfx::Rect rect_for_short_text = textfield_->GetAutocorrectCharacterBounds();
+
+  EXPECT_LT(rect_for_short_text.x(), rect_for_long_text.x());
+  EXPECT_EQ(rect_for_short_text.y(), rect_for_long_text.y());
+  EXPECT_EQ(rect_for_short_text.height(), rect_for_long_text.height());
+  // TODO(crbug.com/1108170): Investigate why the rectangle width is wrong.
+  // The value seems to be wrong due to the incorrect value being returned from
+  // RenderText::GetCursorBounds(). Unfortuantly, that is tricky to fix, since
+  // RenderText is used in other parts of the codebase.
+  // When fixed, the following EXPECT statement should pass.
+  // EXPECT_LT(rect_for_short_text.width(), rect_for_long_text.width());
+}
+
+// TODO(crbug.com/1108170): Add a test to check that when the composition /
+// surrounding text is updated, the AutocorrectRange is updated accordingly.
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // The word we select by double clicking should remain selected regardless of
 // where we drag the mouse afterwards without releasing the left button.
 TEST_F(TextfieldTest, KeepInitiallySelectedWord) {
@@ -4680,8 +4761,8 @@ TEST_F(TextfieldTest, TextfieldInitialization) {
 // command only results when the event is not consumed.
 TEST_F(TextfieldTest, SwitchFocusInKeyDown) {
   InitTextfield();
-  TextfieldFocuser* focuser = new TextfieldFocuser(textfield_);
-  widget_->GetContentsView()->AddChildView(focuser);
+  TextfieldFocuser* focuser = widget_->GetContentsView()->AddChildView(
+      std::make_unique<TextfieldFocuser>(textfield_));
 
   focuser->RequestFocus();
   EXPECT_EQ(focuser, GetFocusedView());
@@ -4695,6 +4776,8 @@ TEST_F(TextfieldTest, SwitchFocusInKeyDown) {
   SendKeyPress(ui::VKEY_SPACE, 0);
   EXPECT_EQ(textfield_, GetFocusedView());
   EXPECT_EQ(u" ", textfield_->GetText());
+  // Remove to ensure that the pointer in the focuser does not become dangling.
+  widget_->GetContentsView()->RemoveChildViewT(std::exchange(focuser, nullptr));
 }
 
 TEST_F(TextfieldTest, SendingDeletePreservesShiftFlag) {

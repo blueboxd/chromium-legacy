@@ -479,9 +479,9 @@ android_library("cronet_impl_native_base_java") {
   srcjar_deps += [ ":cronet_jni_headers" ]
 }
 
-# cronet_impl_aosp_native_base_java.jar - native implementation of Cronet engine
+# httpengine_native_provider_base_java.jar - native implementation of Cronet engine
 # loaded from AOSP (only for Android U onwards)
-android_library("cronet_impl_aosp_native_base_java") {
+android_library("httpengine_native_provider_base_java") {
   sources = [
     "java/src/org/chromium/net/impl/AndroidBidirectionalStreamBuilderWrapper.java",
     "java/src/org/chromium/net/impl/AndroidBidirectionalStreamWrapper.java",
@@ -498,7 +498,7 @@ android_library("cronet_impl_aosp_native_base_java") {
     "java/src/org/chromium/net/impl/AndroidUrlResponseInfoWrapper.java",
     "java/src/org/chromium/net/impl/BidirectionalStreamCallbackWrapper.java",
     "java/src/org/chromium/net/impl/CronetExceptionTranslationUtils.java",
-    "java/src/org/chromium/net/impl/PlatformCronetProvider.java",
+    "java/src/org/chromium/net/impl/HttpEngineNativeProvider.java",
     "java/src/org/chromium/net/impl/UploadDataProviderWrapper.java",
     "java/src/org/chromium/net/impl/UrlRequestCallbackWrapper.java",
     "java/src/org/chromium/net/impl/UrlRequestStatusListenerWrapper.java",
@@ -506,7 +506,6 @@ android_library("cronet_impl_aosp_native_base_java") {
 
   deps = [
     ":cronet_api_java",
-    ":cronet_impl_common_base_java",
     "//base:base_java",
     "//build/android:build_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
@@ -518,10 +517,10 @@ android_library("cronet_impl_aosp_native_base_java") {
 # Groups all Cronet implementations and the common code into a single Java dependency.
 java_group("cronet_impl_all_java") {
   deps = [
-    ":cronet_impl_aosp_native_base_java",
     ":cronet_impl_common_base_java",
     ":cronet_impl_native_base_java",
     ":cronet_impl_platform_base_java",
+    ":httpengine_native_provider_base_java",
   ]
 }
 
@@ -613,6 +612,7 @@ action("cronet_combine_proguard_flags") {
   sources = [
     "//base/android/proguard/chromium_code.flags",
     "//build/android/chromium_annotations.flags",
+    "//third_party/jni_zero/proguard.flags",
 
     # Massage the proguard to avoid incompatibilities when building internally.
     "//components/cronet/android/cronet_impl_native_proguard.cfg",
@@ -688,6 +688,14 @@ android_java_prebuilt("package_impl_fake_java") {
     ":package_api_java",
     ":package_impl_common_java",
     ":repackage_fake",
+  ]
+}
+
+android_java_prebuilt("package_httpengine_native_provider_java") {
+  jar_path = "$_package_dir/httpengine_native_provider_java.jar"
+  deps = [
+    ":package_api_java",
+    ":repackage_httpengine_native_provider",
   ]
 }
 
@@ -798,6 +806,12 @@ jar_src("jar_cronet_impl_util_java_source") {
   jar_path = "$_package_dir/cronet_impl_util_java-src.jar"
 }
 
+jar_src("jar_httpengine_native_provider_java_source") {
+  src_search_dirs = [ "java/src" ]
+  source_deps = [ ":httpengine_native_provider_base_java" ]
+  jar_path = "$_package_dir/httpengine_native_provider_java-src.jar"
+}
+
 # List of patterns of .class files to exclude from the jar.
 _jar_excluded_patterns = [
   # Excludes Android support libraries crbug.com/832770.
@@ -857,6 +871,11 @@ repackage_jars("repackage_fake") {
 repackage_jars("repackage_util") {
   output = "$_package_dir/cronet_impl_util_java.jar"
   deps = [ ":cronet_impl_java_util_java" ]
+}
+
+repackage_jars("repackage_httpengine_native_provider") {
+  output = "$_package_dir/httpengine_native_provider_java.jar"
+  deps = [ ":httpengine_native_provider_base_java" ]
 }
 
 # See crbug.com/1005836 for more info on why repackage_native requires 2 extra
@@ -1081,6 +1100,7 @@ android_library("cronet_common_javatests") {
            "//base:base_java_test_support",
            "//build/android:build_java",
            "//third_party/android_sdk:android_test_base_java",
+           "//third_party/androidx:androidx_core_core_java",
            "//third_party/google-truth:google_truth_java",
            "//third_party/jni_zero:jni_zero_java",
            "//third_party/junit",
@@ -1271,6 +1291,7 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
       "$target_gen_dir/cronet_impl_native_proguard.cfg",
       "cronet_impl_common_proguard.cfg",
       "cronet_impl_platform_proguard.cfg",
+      "httpengine_native_provider_proguard.cfg",
       "test/proguard.cfg",
     ]
   }
@@ -1396,6 +1417,7 @@ android_apk("cronet_perf_test_apk") {
     proguard_configs = [
       "$target_gen_dir/cronet_impl_native_proguard.cfg",
       "cronet_impl_common_proguard.cfg",
+      "httpengine_native_provider_proguard.cfg",
       "test/proguard.cfg",
       "//testing/android/proguard_for_test.flags",
       "//third_party/jni_zero/proguard_for_test.flags",
@@ -1585,7 +1607,7 @@ action("generate_licenses") {
     "license_file",
     rebase_path(_license_path, root_build_dir),
     "--gn-target",
-    "//components/cronet/android:cronet",
+    "//components/cronet/android:cronet_non_test_package",
     "--gn-out-dir",
     ".",
   ]
@@ -1665,6 +1687,7 @@ copy("cronet_package_copy") {
     "cronet_impl_common_proguard.cfg",
     "cronet_impl_fake_proguard.cfg",
     "cronet_impl_platform_proguard.cfg",
+    "httpengine_native_provider_proguard.cfg",
     "implementation_api_version.txt",
     "interface_api_version.txt",
   ]
@@ -1676,6 +1699,7 @@ copy("cronet_package_copy") {
     ":cronet_impl_common_base_java",
     ":cronet_impl_fake_base_java",
     ":cronet_impl_platform_base_java",
+    ":httpengine_native_provider_base_java",
   ]
 }
 
@@ -1747,6 +1771,9 @@ copy("cronet_package_copy_test_support_apks") {
 copy("cronet_package_copy_test_files") {
   testonly = true
   sources = [
+    "//net/data/ssl/certificates/cronet-quic-chain.pem",
+    "//net/data/ssl/certificates/cronet-quic-leaf-cert.key",
+    "//net/data/ssl/certificates/cronet-quic-leaf-cert.key.pkcs8.pem",
     "//net/data/ssl/certificates/expired_cert.pem",
     "//net/data/ssl/certificates/quic-chain.pem",
     "//net/data/ssl/certificates/quic-leaf-cert.key",
@@ -1845,36 +1872,30 @@ action("dependencies_checks") {
   deps = [ ":cronet" ]
 }
 
-group("cronet_package_android") {
-  # Marked as testonly as it contains test-only targets too.
-  testonly = true
-
+group("cronet_non_test_package") {
+  # Target containing all of cronet's non-test targets.
   # Enforce building with ICU alternatives, crbug.com/611621.
   # Enforce that arm_use_neon==false when building for ARMv7 by
   # not including any deps in cronet_package target otherwise.
   if (use_platform_icu_alternatives &&
       (!(target_cpu == "arm" && arm_version == 7) || !arm_use_neon)) {
     deps = [
-      ":api_static_checks",
       ":cronet_package_copy",
       ":cronet_package_copy_native_headers",
       ":cronet_package_copy_native_lib",
       ":cronet_package_copy_native_lib_unstripped",
       ":cronet_package_copy_resources",
-      ":cronet_sizes",
-      ":cronet_test_package",
-      ":dependencies_checks",
-      ":generate_javadoc",
-      ":generate_licenses",
       ":jar_cronet_api_source",
       ":jar_cronet_impl_common_java_source",
       ":jar_cronet_impl_fake_java_source",
       ":jar_cronet_impl_native_java_source",
       ":jar_cronet_impl_platform_java_source",
       ":jar_cronet_sample_source",
+      ":jar_httpengine_native_provider_java_source",
       ":repackage_api",
       ":repackage_common",
       ":repackage_fake",
+      ":repackage_httpengine_native_provider",
       ":repackage_native",
       ":repackage_platform",
     ]
@@ -1882,6 +1903,37 @@ group("cronet_package_android") {
       deps += [ ":enforce_no_neon" ]
     }
   }
+}
+
+group("cronet_test_package") {
+  # Target containing all of cronet's test targets.
+  testonly = true
+
+  # Don't build for MIPS where tests aren't run.
+  if (current_cpu != "mipsel" && current_cpu != "mips64el") {
+    deps = [
+      ":cronet_package_copy_native_test_lib",
+      ":cronet_package_copy_native_test_lib_unstripped",
+      ":cronet_package_copy_test_assets",
+      ":cronet_package_copy_test_files",
+      ":cronet_package_copy_test_support_apks",
+      ":cronet_sizes",
+      ":repackage_test_jars",
+    ]
+  }
+}
+
+group("cronet_package_android") {
+  # Target containing all of cronet's targets both test and non-test ones.
+  # Marked as testonly as it contains test-only targets too.
+  testonly = true
+  deps = [
+    ":cronet_non_test_package",
+    ":cronet_test_package",
+    ":dependencies_checks",
+    ":generate_javadoc",
+    ":generate_licenses",
+  ]
 }
 
 group("cronet_android_mainline") {
@@ -1903,21 +1955,5 @@ group("cronet_android_mainline") {
     if (current_cpu == "arm" && arm_version == 7) {
       deps += [ ":enforce_no_neon" ]
     }
-  }
-}
-
-group("cronet_test_package") {
-  testonly = true
-
-  # Don't build for MIPS where tests aren't run.
-  if (current_cpu != "mipsel" && current_cpu != "mips64el") {
-    deps = [
-      ":cronet_package_copy_native_test_lib",
-      ":cronet_package_copy_native_test_lib_unstripped",
-      ":cronet_package_copy_test_assets",
-      ":cronet_package_copy_test_files",
-      ":cronet_package_copy_test_support_apks",
-      ":repackage_test_jars",
-    ]
   }
 }

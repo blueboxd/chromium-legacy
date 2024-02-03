@@ -13,10 +13,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/optimization_guide/core/model_execution/model_execution_features_controller.h"
+#include "components/optimization_guide/core/model_quality/model_quality_logs_uploader.h"
 #include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/core/optimization_guide_model_provider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/model_execution.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -38,6 +41,7 @@ class OptimizationGuideBridge;
 class ChromeHintsManager;
 class ModelExecutionManager;
 class ModelInfo;
+class ModelQualityLogEntry;
 class OptimizationGuideStore;
 class PredictionManager;
 class PredictionManagerBrowserTestBase;
@@ -54,6 +58,10 @@ class OptimizationGuideLogger;
 class OptimizationGuideNavigationData;
 class Profile;
 
+namespace settings {
+class SettingsUI;
+}  // namespace settings
+
 // Keyed service that can be used to get information received from the remote
 // Optimization Guide Service. For regular profiles, this will do the work to
 // fetch the necessary information from the remote Optimization Guide Service
@@ -66,6 +74,7 @@ class OptimizationGuideKeyedService
       public optimization_guide::OptimizationGuideDecider,
       public optimization_guide::OptimizationGuideModelProvider,
       public optimization_guide::OptimizationGuideModelExecutor,
+      public optimization_guide::ModelQualityLogsUploader,
       public ProfileObserver {
  public:
   explicit OptimizationGuideKeyedService(
@@ -100,11 +109,35 @@ class OptimizationGuideKeyedService
       optimization_guide::OptimizationTargetModelObserver* observer) override;
 
   // optimization_guide::OptimizationGuideModelExecutor implementation:
+  std::unique_ptr<Session> StartSession(
+      optimization_guide::proto::ModelExecutionFeature feature) override;
   void ExecuteModel(
       optimization_guide::proto::ModelExecutionFeature feature,
       const google::protobuf::MessageLite& request_metadata,
       optimization_guide::OptimizationGuideModelExecutionResultCallback
           callback) override;
+
+  // optimization_guide::ModelQualityLogsUploader implementation.
+  //
+  // It passes ownership of ModelQualityLogEntry, which is reset after upload
+  // has been completed.
+  void UploadModelQualityLogs(
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry)
+      override;
+
+  // Returns true if the `feature` should be currently enabled for this user.
+  // Note that the return value here may not match the feature enable state on
+  // chrome settings page since the latter takes effect on browser restart.
+  bool ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature feature) const;
+
+  // Adds `observer` which can observe the change in feature settings.
+  void AddModelExecutionSettingsEnabledObserver(
+      optimization_guide::SettingsEnabledObserver* observer);
+
+  // Removes `observer`.
+  void RemoveModelExecutionSettingsEnabledObserver(
+      optimization_guide::SettingsEnabledObserver* observer);
 
   // Adds hints for a URL with provided metadata to the optimization guide.
   // For testing purposes only. This will flush any callbacks for |url| that
@@ -131,6 +164,9 @@ class OptimizationGuideKeyedService
     return optimization_guide_logger_.get();
   }
 
+  // Simulates browser restart. Useful for testing controller functionality
+  // where some of the settings change take effect on browser restart.
+  void SimulateBrowserRestartForControllerTesting();
 
  private:
   friend class ChromeBrowserMainExtraPartsOptimizationGuide;
@@ -145,6 +181,7 @@ class OptimizationGuideKeyedService
   friend class optimization_guide::PredictionModelStoreBrowserTestBase;
   friend class optimization_guide::android::OptimizationGuideBridge;
   friend class PersonalizedHintsFetcherBrowserTest;
+  friend class settings::SettingsUI;
 
   // Initializes |this|.
   void Initialize();
@@ -187,6 +224,11 @@ class OptimizationGuideKeyedService
       optimization_guide::OnDemandOptimizationGuideDecisionRepeatingCallback
           callback) override;
 
+  // Returns true if the opt-in setting should be shown for this profile for
+  // given `feature`. This should only be called by settings UX.
+  bool IsSettingVisible(
+      optimization_guide::proto::ModelExecutionFeature feature) const;
+
   download::BackgroundDownloadService* BackgroundDownloadServiceProvider();
 
   bool ComponentUpdatesEnabledProvider() const;
@@ -225,6 +267,9 @@ class OptimizationGuideKeyedService
   // Manages the model execution. Not created for off the record profiles.
   std::unique_ptr<optimization_guide::ModelExecutionManager>
       model_execution_manager_;
+
+  std::unique_ptr<optimization_guide::ModelExecutionFeaturesController>
+      model_execution_features_controller_;
 
   // Used to observe profile initialization event.
   base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};

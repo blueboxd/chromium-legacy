@@ -36,9 +36,11 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
 #include "extensions/test/test_content_script_load_waiter.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -131,7 +133,6 @@ class ScriptInjectionTrackerBrowserTest : public ExtensionBrowserTest {
 
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
-    ASSERT_TRUE(embedded_test_server()->Start());
   }
 };
 
@@ -178,6 +179,8 @@ class ContentScriptExecuterBeforeDidCommit {
 // https://developer.chrome.com/docs/extensions/mv3/content_scripts/#programmatic
 IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
                        ProgrammaticContentScript) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension.
   TestExtensionDir dir;
   const char kManifestTemplate[] = R"(
@@ -258,6 +261,8 @@ IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
 // specific tracking.
 IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
                        ProgrammaticUserScript) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension.
   // TODO(https://crbug.com/1429408): There's currently no way for extensions
   // to trigger user script injections, so this extension is really just to
@@ -329,6 +334,8 @@ IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
 // TODO(crbug.com/936696): Remove the test after RenderDocument is shipped.
 IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
                        ProgrammaticInjectionRacingWithDidCommit) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // The test assumes the RenderFrame stays the same after navigation. Disable
   // back/forward cache to ensure that RenderFrame swap won't happen.
   content::DisableBackForwardCacheForTesting(
@@ -379,6 +386,8 @@ IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
 // https://developer.chrome.com/docs/extensions/mv3/content_scripts/#static-declarative
 IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
                        ContentScriptDeclarationInExtensionManifest) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension.
   TestExtensionDir dir;
   const char kManifestTemplate[] = R"(
@@ -454,6 +463,8 @@ IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     ScriptInjectionTrackerBrowserTest,
     AboutBlankNavigationAfterLoadingExtensionMidwayThroughTest) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Navigate to a test page that *is* covered by `content_scripts.matches`
   // manifest entry below (the extension is *not* installed at this point yet).
   GURL injected_url =
@@ -519,22 +530,12 @@ IN_PROC_BROWSER_TEST_F(
       *popup->GetPrimaryMainFrame()->GetProcess(), extension_id));
 }
 
-class ScriptInjectionTrackerMatchOriginAsFallbackBrowserTest
-    : public ScriptInjectionTrackerBrowserTest {
- public:
-  ScriptInjectionTrackerMatchOriginAsFallbackBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        extensions_features::kContentScriptsMatchOriginAsFallback);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 // Covers detecting content script injection into a 'data:...' URL.
 IN_PROC_BROWSER_TEST_F(
-    ScriptInjectionTrackerMatchOriginAsFallbackBrowserTest,
+    ScriptInjectionTrackerBrowserTest,
     ContentScriptDeclarationInExtensionManifest_DataUrlIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension.
   TestExtensionDir dir;
   const char kManifestTemplate[] = R"(
@@ -620,6 +621,8 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     ScriptInjectionTrackerBrowserTest,
     ContentScriptDeclarationInExtensionManifest_AboutBlankPopup) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension.
   TestExtensionDir dir;
   const char kManifestTemplate[] = R"(
@@ -699,6 +702,8 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     ScriptInjectionTrackerBrowserTest,
     ContentScriptDeclarationInExtensionManifest_SubframeWithInitialEmptyDoc) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension.
   TestExtensionDir dir;
   const char kManifestTemplate[] = R"(
@@ -876,6 +881,8 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     ScriptInjectionTrackerBrowserTest,
     ContentScriptDeclarationInExtensionManifest_ScriptLoadRacesWithDidCommit) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Navigate to a test page that is *not* covered by `content_scripts.matches`
   // manifest entry used in this test (see `kManifestTemplate` below).
   GURL ignored_url =
@@ -1025,6 +1032,8 @@ IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
 #if BUILDFLAG(IS_MAC)
   GTEST_SKIP() << "Very flaky on Mac; https://crbug.com/1311017";
 #else
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension.
   TestExtensionDir dir;
   const char kManifestTemplate[] = R"(
@@ -1111,6 +1120,8 @@ IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest, HistoryPushState) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension.
   TestExtensionDir dir;
   const char kManifestTemplate[] = R"(
@@ -1168,6 +1179,8 @@ class DynamicScriptsTrackerBrowserTest
 // API.
 IN_PROC_BROWSER_TEST_F(DynamicScriptsTrackerBrowserTest,
                        ContentScriptViaScriptingApi) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension.
   TestExtensionDir dir;
   const char kManifestTemplate[] = R"(
@@ -1198,7 +1211,7 @@ IN_PROC_BROWSER_TEST_F(DynamicScriptsTrackerBrowserTest,
       window.onload = function() {
           chrome.test.assertEq('complete', document.readyState);
           document.body.innerText = 'content script has run';
-          chrome.test.sendMessage('SCRIPT_INJECTED');
+          chrome.test.notifyPass();
       }
   )";
   dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScript);
@@ -1226,11 +1239,11 @@ IN_PROC_BROWSER_TEST_F(DynamicScriptsTrackerBrowserTest,
   // above.
   {
     GURL injected_url = embedded_test_server()->GetURL("a.com", "/title1.html");
-    ExtensionTestMessageListener listener("SCRIPT_INJECTED");
+    ResultCatcher catcher;
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), injected_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-    ASSERT_TRUE(listener.WaitUntilSatisfied());
+    ASSERT_TRUE(catcher.GetNextResult());
   }
   content::WebContents* second_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1248,6 +1261,139 @@ IN_PROC_BROWSER_TEST_F(DynamicScriptsTrackerBrowserTest,
       *second_tab->GetPrimaryMainFrame()->GetProcess(), extension->id()));
   EXPECT_FALSE(ScriptInjectionTracker::DidProcessRunContentScriptFromExtension(
       *first_tab->GetPrimaryMainFrame()->GetProcess(), extension->id()));
+}
+
+// Regression test for https://crbug.com/1439642.
+// TODO(crbug.com/1502769): Test is flaky.
+IN_PROC_BROWSER_TEST_F(DynamicScriptsTrackerBrowserTest,
+                       DISABLED_ContentScriptViaScriptingApiWhileIdle) {
+  // The test orchestrates the following sequence of events.
+  //
+  // Step 1: `DidFinishNavigation` for a.com/iframe_cross_site.html
+  //         - At this point navigation to b.com/title1.html subframe
+  //           will be paused thanks to using `ControllableHttpResponse`
+  //         - At this point `ScriptInjectionTracker::DidFinishNavigation`
+  //           will be called (and we want that to happen before step 2, because
+  //           we want to prevent `ScriptInjectionTracker` from relying on
+  //           `DidFinishNavigation` to learn about newly registered content
+  //           scripts)
+  //
+  // Step 2: `chrome.scripting.registerContentScripts`
+  //         - registering content script injection for a.com (but *not* for
+  //           b.com)
+  //         - at this point
+  //           `ScriptInjectionTracker::WillUpdateContentScriptsInRenderer` will
+  //           be called (but as described in https://crbug.com/1439642 there
+  //           may be trouble with seeing the newly registered scripts)
+  //
+  // Step 3: DidFinishNavigation for b.com/title1.html
+  //         - Triggered by `subframe_response.Done()`
+  //         - This is a *cross-site* frame, *not* covered by
+  //           `registerContentScripts` URL patterns => it doesn't matter that
+  //           `ScriptInjectionTracker::DidFinishNavigation` will be called
+  //           here)
+  //
+  // Step 4: Content script gets injected
+  //        - This happens at `document_idle` / because step 3 above finished
+  //          loading of the whole page
+  //
+  // Step 5: Verification if `ScriptInjectionTracker` understands that the
+  // content script has been injected.
+
+  // Set up ControllableHttpResponse to Control the timing of the navigation
+  // to the subframe (and therefore to control the timing of the "onload" event
+  // for the main frame).
+  std::string subframe_relative_path = "/title1.html";
+  net::test_server::ControllableHttpResponse subframe_response(
+      embedded_test_server(), subframe_relative_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Install a test extension.
+  TestExtensionDir dir;
+  const char kManifestTemplate[] = R"(
+      {
+        "name": "ScriptInjectionTrackerBrowserTest - ScriptingAPI",
+        "version": "1.0",
+        "manifest_version": 3,
+        "permissions": [ "scripting" ],
+        "host_permissions": ["*://*/*"]
+      } )";
+  dir.WriteManifest(kManifestTemplate);
+  dir.WriteFile(FILE_PATH_LITERAL("page.html"), "<p>Extension page</p>");
+  const char kContentScript[] = R"(
+      window.onload = function() {
+          chrome.test.assertEq('complete', document.readyState);
+          document.body.innerText = 'content script has run';
+          chrome.test.notifyPass();
+      }
+  )";
+  dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScript);
+  const Extension* extension = LoadExtension(dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // Navigate to an extension page (so that later we can call
+  // `chrome.scripting.registerContentScripts`).
+  content::RenderFrameHost* extension_frame = ui_test_utils::NavigateToURL(
+      browser(), extension->GetResourceURL("/page.html"));
+  ASSERT_TRUE(extension_frame);
+
+  // Step 1: Navigate to a test page that *will later* be covered by the dynamic
+  // content script.  Wait for DidFinishNavigation of the main page navigation,
+  // but do *not* wait for `onload` event.
+  {
+    GURL main_url =
+        embedded_test_server()->GetURL("a.com", "/iframe_cross_site.html");
+    content::TestNavigationObserver nav_observer(main_url);
+    nav_observer.StartWatchingNewWebContents();
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), main_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+    nav_observer.WaitForNavigationFinished();
+  }
+  content::WebContents* second_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Verify that initially the process doesn't show up as having been injected
+  // with content scripts.  We can't inspect `document.body.innerText` because
+  // "onload" didn't happen yet (i.e. maybe none of HTML has been parsed yet).
+  EXPECT_FALSE(ScriptInjectionTracker::DidProcessRunContentScriptFromExtension(
+      *second_tab->GetPrimaryMainFrame()->GetProcess(), extension->id()));
+
+  {
+    ResultCatcher catcher;
+
+    // Step 2: Register a dynamic content script.
+    {
+      const char kRegistrationScript[] = R"(
+          chrome.scripting.registerContentScripts([{
+            id: 'script1',
+            matches: ['*://a.com/*'],
+            js: ['content_script.js'],
+            runAt: 'document_idle'
+          }]);
+      )";
+      ASSERT_TRUE(content::ExecJs(extension_frame, kRegistrationScript));
+    }
+
+    // Step 3: Finish sending the subframe contents over the network.  This will
+    // unblock `onload` event and will allow injecting the script at
+    // `document_idle` time.
+    {
+      subframe_response.WaitForRequest();
+      subframe_response.Send(net::HTTP_OK, "text/html", "<p>Subframe</p>");
+      subframe_response.Done();
+
+      // Step 4: Wait until content script gets injected.
+      ASSERT_TRUE(catcher.GetNextResult());
+    }
+  }
+
+  // Step 5: Verify that *now* the second tab shows up as having been injected
+  // with content scripts.
+  EXPECT_EQ("content script has run",
+            content::EvalJs(second_tab, "document.body.innerText"));
+  EXPECT_TRUE(ScriptInjectionTracker::DidProcessRunContentScriptFromExtension(
+      *second_tab->GetPrimaryMainFrame()->GetProcess(), extension->id()));
 }
 
 class UserScriptTrackerBrowserTest : public ScriptInjectionTrackerBrowserTest {
@@ -1273,6 +1419,8 @@ class UserScriptTrackerBrowserTest : public ScriptInjectionTrackerBrowserTest {
 // API.
 IN_PROC_BROWSER_TEST_F(UserScriptTrackerBrowserTest,
                        UserScriptViaUserScriptsApi) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // Install a test extension with a user script.
   TestExtensionDir dir;
   const char kManifestTemplate[] = R"(
@@ -1305,7 +1453,7 @@ IN_PROC_BROWSER_TEST_F(UserScriptTrackerBrowserTest,
       window.onload = function() {
           chrome.test.assertEq('complete', document.readyState);
           document.body.innerText = 'user script has run';
-          chrome.test.sendMessage('SCRIPT_INJECTED');
+          chrome.test.notifyPass();
       }
   )";
   dir.WriteFile(FILE_PATH_LITERAL("user_script.js"), kUserScript);
@@ -1331,11 +1479,11 @@ IN_PROC_BROWSER_TEST_F(UserScriptTrackerBrowserTest,
   // Navigate to a page that is in the user script 'matches'.
   GURL injected_url =
       embedded_test_server()->GetURL("requested.com", "/title1.html");
-  ExtensionTestMessageListener listener("SCRIPT_INJECTED");
+  ResultCatcher catcher;
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), injected_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
+  ASSERT_TRUE(catcher.GetNextResult());
 
   content::WebContents* second_tab =
       browser()->tab_strip_model()->GetActiveWebContents();

@@ -191,12 +191,23 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   // Attempts to take a lock of `lock_type` on `url`. Passes a handle of the
   // lock to `callback` if successful. The lock is released when there are no
   // handles to it.
-  void TakeLock(const storage::FileSystemURL& url,
+  //
+  // `binding_context` is the `BindingContext` of the frame that holds this
+  // handle.
+  //
+  // If there is an existing lock that is in contention with the `lock_type`, it
+  // will evict pages that hold the existing lock if they are all inactive (e.g.
+  // in the BFCache).
+  void TakeLock(const BindingContext& binding_context,
+                const storage::FileSystemURL& url,
                 FileSystemAccessLockManager::LockType lock_type,
                 FileSystemAccessLockManager::TakeLockCallback callback);
 
   // Returns true if there is not an existing lock on `url` that is contentious
   // with `lock_type`.
+  //
+  // This may return `false` but the same arguments would succeed for `TakeLock`
+  // since `TakeLock` may evict pages to take the lock.
   bool IsContentious(const storage::FileSystemURL& url,
                      FileSystemAccessLockManager::LockType lock_type);
 
@@ -585,7 +596,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   base::SequenceBound<storage::FileSystemOperationRunner> operation_runner_
       GUARDED_BY_CONTEXT(sequence_checker_);
   raw_ptr<FileSystemAccessPermissionContext> permission_context_
-      GUARDED_BY_CONTEXT(sequence_checker_);
+      GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
 
   // All the mojo receivers for this FileSystemAccessManager itself. Keeps
   // track of associated origin and other state as well to not have to rely on

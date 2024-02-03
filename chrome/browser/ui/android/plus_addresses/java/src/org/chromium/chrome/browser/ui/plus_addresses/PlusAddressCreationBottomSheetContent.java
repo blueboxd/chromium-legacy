@@ -21,13 +21,15 @@ import org.chromium.ui.text.SpanApplier;
 /** Implements the content for the plus address creation bottom sheet. */
 public class PlusAddressCreationBottomSheetContent implements BottomSheetContent {
     private final View mView;
-    private final PlusAddressCreationDelegate mDelegate;
+    private PlusAddressCreationDelegate mDelegate;
 
     /**
      * Creates the BottomSheetContent and inflates the view given a delegate responding to actions.
+     *
+     * <p>The confirm and cancel button on-click listeners rely on the existence of the delegate, so
+     * setDelegate must be called before handling those click events.
      */
     public PlusAddressCreationBottomSheetContent(
-            PlusAddressCreationDelegate delegate,
             Activity activity,
             String modalTitle,
             String plusAddressDescription,
@@ -37,7 +39,6 @@ public class PlusAddressCreationBottomSheetContent implements BottomSheetContent
         mView =
                 LayoutInflater.from(activity)
                         .inflate(R.layout.plus_address_creation_prompt, /* root= */ null);
-        mDelegate = delegate;
 
         // TODO(b/303054310): Once project exigencies allow for it, convert all of
         // these back to the android view XML.
@@ -62,11 +63,36 @@ public class PlusAddressCreationBottomSheetContent implements BottomSheetContent
 
         Button plusAddressConfirmButton = mView.findViewById(R.id.plus_address_confirm_button);
         plusAddressConfirmButton.setText(plusAddressModalOkText);
-        plusAddressConfirmButton.setOnClickListener((View _view) -> mDelegate.onConfirmed());
+        plusAddressConfirmButton.setOnClickListener((View _view) -> mDelegate.onConfirmRequested());
 
         Button plusAddressCancelButton = mView.findViewById(R.id.plus_address_cancel_button);
         plusAddressCancelButton.setText(plusAddressModalCancelText);
         plusAddressCancelButton.setOnClickListener((View _view) -> mDelegate.onCanceled());
+    }
+
+    public void setProposedPlusAddress(String proposedPlusAddress) {
+        TextView proposedPlusAddressView = mView.findViewById(R.id.proposed_plus_address);
+        proposedPlusAddressView.setText(proposedPlusAddress);
+        // Enable Confirm button if modal use was blocked up until now.
+        Button plusAddressConfirmButton = mView.findViewById(R.id.plus_address_confirm_button);
+        if (!plusAddressConfirmButton.isEnabled()) {
+            plusAddressConfirmButton.setEnabled(true);
+        }
+    }
+
+    public void showError(String errorMessage) {
+        TextView proposedPlusAddressView = mView.findViewById(R.id.proposed_plus_address);
+        proposedPlusAddressView.setText(errorMessage);
+        // Disable Confirm button if attempts to Confirm() fail.
+        Button plusAddressConfirmButton = mView.findViewById(R.id.plus_address_confirm_button);
+        if (plusAddressConfirmButton.isEnabled()) {
+            plusAddressConfirmButton.setEnabled(false);
+        }
+    }
+
+    /** Sets the delegate listening for actions the user performs on this bottom sheet. */
+    public void setDelegate(PlusAddressCreationDelegate delegate) {
+        mDelegate = delegate;
     }
 
     // BottomSheetContent implementation follows:

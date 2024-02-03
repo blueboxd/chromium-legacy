@@ -2457,6 +2457,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Actions.PinnedToolbarButtonActivation">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when an action pinned to the toolbar is activated.
+  </description>
+</action>
+
 <action name="ActiveBrowserChanged" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -2899,6 +2907,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DarkTheme.Preference">
+  <obsolete>Removed in M121.</obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <description>
@@ -8683,33 +8692,6 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="DeviceSignalsConsent_Accepted">
-  <owner>xzonghan@chromium.org</owner>
-  <description>User accepted device signals consent dialog.</description>
-</action>
-
-<action name="DeviceSignalsConsent_Cancelled">
-  <owner>xzonghan@chromium.org</owner>
-  <description>
-    User cancelled device signals consent dialog via either clicking cancel
-    button or pressing escape key.
-  </description>
-</action>
-
-<action name="DeviceSignalsConsent_EscPressed">
-  <owner>xzonghan@chromium.org</owner>
-  <description>
-    User cancelled device signals consent dialog via pressing escape key.
-  </description>
-</action>
-
-<action name="DeviceSignalsConsent_Shown">
-  <owner>xzonghan@chromium.org</owner>
-  <description>
-    The device signals consent dialog is triggered and shown to the user.
-  </description>
-</action>
-
 <action name="DevicesPage_AddPrintersClicked">
   <obsolete>No longer recorded as of Sep 2013.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -10347,6 +10329,59 @@ should be able to be added at any place in this file.
 <action name="Gesture_Overview">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="GetDisplayMedia.Cancel">
+  <owner>eladalon@chromium.org</owner>
+  <owner>tovep@chromium.org</owner>
+  <owner>kron@chromium.org</owner>
+  <description>User cancelled the getDisplayMedia dialog.</description>
+</action>
+
+<action name="GetDisplayMedia.SelectCurrentTab">
+  <owner>eladalon@chromium.org</owner>
+  <owner>tovep@chromium.org</owner>
+  <owner>kron@chromium.org</owner>
+  <description>
+    User selected to share the current tab in the getDisplayMedia dialog.
+  </description>
+</action>
+
+<action name="GetDisplayMedia.SelectScreen">
+  <owner>eladalon@chromium.org</owner>
+  <owner>tovep@chromium.org</owner>
+  <owner>kron@chromium.org</owner>
+  <description>
+    User selected to share a screen in the getDisplayMedia dialog.
+  </description>
+</action>
+
+<action name="GetDisplayMedia.SelectWebContents">
+  <owner>eladalon@chromium.org</owner>
+  <owner>tovep@chromium.org</owner>
+  <owner>kron@chromium.org</owner>
+  <description>
+    User selected to share web contents in the getDisplayMedia dialog.
+  </description>
+</action>
+
+<action name="GetDisplayMedia.SelectWindow">
+  <owner>eladalon@chromium.org</owner>
+  <owner>tovep@chromium.org</owner>
+  <owner>kron@chromium.org</owner>
+  <description>
+    User selected to share a window in the getDisplayMedia dialog.
+  </description>
+</action>
+
+<action name="GetDisplayMedia.ShowDialog">
+  <owner>eladalon@chromium.org</owner>
+  <owner>tovep@chromium.org</owner>
+  <owner>kron@chromium.org</owner>
+  <description>
+    The getDisplayMedia dialog was shown to the user. In the majority of cases
+    this is triggered by the user in the web application.
+  </description>
 </action>
 
 <action name="Glanceables_Classroom_AssignmentPressed">
@@ -12324,6 +12359,17 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IntentPickerViewClosedOpenInChrome">
+  <obsolete>Deprecated as of 11/2023, needed a rename.</obsolete>
+  <owner>dibyapal@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    Recorded when the user manually closes the intent picker bubble view,
+    leading to the site not being launched in a PWA. This is currently measured
+    only on Windows, Mac and Linux platforms.
+  </description>
+</action>
+
+<action name="IntentPickerViewClosedStayInChrome">
   <owner>dibyapal@google.com</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <description>
@@ -12919,6 +12965,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.UnitConversion.TargetUnitValueChange">
+  <owner>erahmaoui@google.com</owner>
+  <owner>olivierrobin@google.com</owner>
+  <description>
+    Recorded the first time (between the presentation and the dismissal of the
+    unit conversion view controller) the user changes the target unit value
+    field of a unit conversion view controller. iOS only.
+  </description>
+</action>
+
 <action name="IOS.UnitConversion.UnitTypeChange">
   <owner>erahmaoui@google.com</owner>
   <description>
@@ -13114,6 +13170,18 @@ should be able to be added at any place in this file.
     Reported when Languages Settings UI was dismissed using swipe down gesture.
     iOS only.
   </description>
+</action>
+
+<action name="IOSLaunchedByAddBookmarkToChromeIntent">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>User added bookmarks to Chrome via Apple Shortcuts.</description>
+</action>
+
+<action name="IOSLaunchedByAddReadingListItemToChromeIntent">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>User added a reading list item via Apple Shortcuts.</description>
 </action>
 
 <action name="IOSLaunchedByOpenInChromeIntent">
@@ -18740,6 +18808,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MediaContextMenu_SearchForVideoFrame">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    User clicked on the contextual menu of a video player to search for the
+    video frame.
+  </description>
+</action>
+
 <action name="MediaIndicatorButton_Dragged">
   <obsolete>Replaced with &quot;AlertIndicatorButton_Dragged&quot;.</obsolete>
   <owner>miu@chromium.org</owner>
@@ -21013,7 +21090,6 @@ should be able to be added at any place in this file.
 <action name="MobileMenuPinTab">
   <obsolete>Deprecated as of 2023-08</obsolete>
   <owner>ewannpv@chromium.org</owner>
-  <owner>pakzhygitov@google.com</owner>
   <description>
     User tapped on the 'Pin Tab' action in the iOS overflow menu.
   </description>
@@ -21171,7 +21247,6 @@ should be able to be added at any place in this file.
 <action name="MobileMenuUnpinTab">
   <obsolete>Deprecated as of 2023-08</obsolete>
   <owner>ewannpv@chromium.org</owner>
-  <owner>pakzhygitov@google.com</owner>
   <description>
     User tapped on the 'Unpin Tab' action in the iOS overflow menu.
   </description>
@@ -22544,7 +22619,6 @@ should be able to be added at any place in this file.
 <action name="MobileSnackbarUndoPinAction">
   <obsolete>Deprecated as of 2023-08</obsolete>
   <owner>ewannpv@chromium.org</owner>
-  <owner>pakzhygitov@google.com</owner>
   <description>
     User tapped on the UNDO button of the snackbar displayed after pinning a tab
     from the iOS overflow menu.
@@ -22554,7 +22628,6 @@ should be able to be added at any place in this file.
 <action name="MobileSnackbarUndoUnpinAction">
   <obsolete>Deprecated as of 2023-08</obsolete>
   <owner>ewannpv@chromium.org</owner>
-  <owner>pakzhygitov@google.com</owner>
   <description>
     User tapped on the UNDO button of the snackbar displayed after unpinning a
     tab from the iOS overflow menu.
@@ -22738,7 +22811,6 @@ should be able to be added at any place in this file.
 
 <action name="MobileTabGridCloseAllNonPinnedTabs">
   <owner>ewannpv@chromium.org</owner>
-  <owner>pakzhygitov@google.com</owner>
   <description>
     User in the iOS tab grid used the Close All control and chose to close all
     non-pinned tabs.
@@ -22874,6 +22946,24 @@ should be able to be added at any place in this file.
   <description>User exited the iOS tab grid (by any means).</description>
 </action>
 
+<action name="MobileTabGridFailedCreateIncognitoTab">
+  <owner>ddac@chromium.org</owner>
+  <owner>vincb@chromium.org</owner>
+  <description>
+    User in the iOS tab grid tried to create a new incognito tab using the new
+    tab button, but it was not allowed by the policy.
+  </description>
+</action>
+
+<action name="MobileTabGridFailedCreateRegularTab">
+  <owner>ddac@chromium.org</owner>
+  <owner>vincb@chromium.org</owner>
+  <description>
+    User in the iOS tab grid tried to create a new regular tab using the new tab
+    button, but it was not allowed by the policy.
+  </description>
+</action>
+
 <action name="MobileTabGridMoveToExistingTab">
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
@@ -22958,7 +23048,6 @@ should be able to be added at any place in this file.
 
 <action name="MobileTabGridPinnedTabSelected">
   <owner>ewannpv@chromium.org</owner>
-  <owner>pakzhygitov@google.com</owner>
   <description>
     User selected a tab in the iOS tab grid pinned tabs section.
   </description>
@@ -23184,7 +23273,6 @@ should be able to be added at any place in this file.
 
 <action name="MobileTabPinned">
   <owner>ewannpv@chromium.org</owner>
-  <owner>pakzhygitov@google.com</owner>
   <description>
     User pins a Tab. This includes pinning a tab from the tab strip, tab grid
     and overflow menu.
@@ -23283,7 +23371,6 @@ should be able to be added at any place in this file.
 
 <action name="MobileTabUnpinned">
   <owner>ewannpv@chromium.org</owner>
-  <owner>pakzhygitov@google.com</owner>
   <description>
     User unpins a Tab. This includes unpinning a tab from the tab strip, tab
     grid and overflow menu.
@@ -28031,6 +28118,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordManager_SyncCredentialFilledAndLoginSuccessfull">
+  <obsolete>Obsolete and no longer recorded in M121 (2023-11).</obsolete>
   <owner>vabr@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <description>
@@ -28040,6 +28128,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordManager_SyncCredentialShown">
+  <obsolete>Obsolete and no longer recorded in M121 (2023-11).</obsolete>
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <description>
@@ -32511,6 +32600,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ShowGraphicsTabletSettingsPage">
+  <owner>wangdanny@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    Recorded when a user navigates to the graphics tablet settings subpage by
+    clicking on the notification shown when a graphics tablet with customizable
+    buttons is connected to a chromebook for the first time.
+  </description>
+</action>
+
 <action name="ShowHelpTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -32544,6 +32643,16 @@ should be able to be added at any place in this file.
 <action name="ShowModalDialog">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="ShowMouseSettingsPage">
+  <owner>wangdanny@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    Recorded when a user navigates to the mouse settings subpage by clicking on
+    the notification shown when a mouse with customizable buttons is connected
+    to a chromebook for the first time.
+  </description>
 </action>
 
 <action name="ShowOptions">
@@ -32648,11 +32757,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SidePanel.Bookmarks.Pinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the bookmarks side panel entry is pinned via the pin button in
+    the side panel header.
+  </description>
+</action>
+
 <action name="SidePanel.Bookmarks.Shown">
   <owner>johntlee@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     Recorded when the bookmarks side panel entry is shown.
+  </description>
+</action>
+
+<action name="SidePanel.Bookmarks.Unpinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the bookmarks side panel entry is unpinned via the pin button
+    in the side panel header.
   </description>
 </action>
 
@@ -32691,10 +32818,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SidePanel.Feed.Pinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the feed side panel entry is pinned via the pin button in the
+    side panel header.
+  </description>
+</action>
+
 <action name="SidePanel.Feed.Shown">
   <owner>jianli@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>Recorded when the feed side panel entry is shown.</description>
+</action>
+
+<action name="SidePanel.Feed.Unpinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the feed side panel entry is unpinned via the pin button in
+    the side panel header.
+  </description>
 </action>
 
 <action name="SidePanel.Hide">
@@ -32712,11 +32859,31 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SidePanel.HistoryClusters.Pinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>mfacey@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the history clusters side panel entry is pinned via the pin
+    button in the side panel header.
+  </description>
+</action>
+
 <action name="SidePanel.HistoryClusters.Shown">
   <owner>mfacey@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     Recorded when the history clusters side panel entry is shown.
+  </description>
+</action>
+
+<action name="SidePanel.HistoryClusters.Unpinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>mfacey@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the history clusters side panel entry is unpinned via the pin
+    button in the side panel header.
   </description>
 </action>
 
@@ -32735,6 +32902,16 @@ should be able to be added at any place in this file.
   <description>Recorded when the Lens side panel entry is shown.</description>
 </action>
 
+<action name="SidePanel.Performance.Pinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>agale@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the performance side panel entry is pinned via the pin button
+    in the side panel header.
+  </description>
+</action>
+
 <action name="SidePanel.Performance.Shown">
   <owner>agale@chromium.org</owner>
   <owner>chrome-performance-ui-sea@google.com</owner>
@@ -32743,11 +32920,41 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SidePanel.Performance.Unpinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>agale@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the performance side panel entry is unpinned via the pin
+    button in the side panel header.
+  </description>
+</action>
+
+<action name="SidePanel.ReadAnything.Pinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>abigailbklein@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the read anything side panel entry is pinned via the pin
+    button in the side panel header.
+  </description>
+</action>
+
 <action name="SidePanel.ReadAnything.Shown">
   <owner>abigailbklein@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     Recorded when the read anything side panel entry is shown.
+  </description>
+</action>
+
+<action name="SidePanel.ReadAnything.Unpinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>abigailbklein@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the read anything side panel entry is unpinned via the pin
+    button in the side panel header.
   </description>
 </action>
 
@@ -32767,11 +32974,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SidePanel.ReadingList.Pinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the reading list side panel entry is pinned via the pin button
+    in the side panel header.
+  </description>
+</action>
+
 <action name="SidePanel.ReadingList.Shown">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     Recorded when the reading list side panel entry is shown.
+  </description>
+</action>
+
+<action name="SidePanel.ReadingList.Unpinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the reading list side panel entry is unpinned via the pin
+    button in the side panel header.
   </description>
 </action>
 
@@ -32806,11 +33031,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SidePanel.UserNotes.Pinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the user notes side panel entry is pinned via the pin button
+    in the side panel header.
+  </description>
+</action>
+
 <action name="SidePanel.UserNotes.Shown">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     Recorded when the user notes side panel entry is shown.
+  </description>
+</action>
+
+<action name="SidePanel.UserNotes.Unpinned.BySidePanelHeaderButton">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded when the user notes side panel entry is unpinned via the pin button
+    in the side panel header.
   </description>
 </action>
 
@@ -33089,6 +33332,14 @@ should be able to be added at any place in this file.
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the bookmark manager.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromChromeSigninInterceptBubble">
+  <owner>rsult@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when showing the Chrome sign in intercept bubble.
   </description>
 </action>
 
@@ -33749,6 +34000,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_FromChromeSigninInterceptBubble">
+  <owner>rsult@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded on signin in to chrome from the Chrome Signin Intercept Bubble.
+  </description>
+</action>
+
 <action name="Signin_Signin_FromCloudPrint">
   <owner>gogerald@chromium.org</owner>
   <description>
@@ -34051,6 +34310,15 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromTabOrganization">
+  <owner>emshack@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION.
   </description>
 </action>
 
@@ -40270,14 +40538,6 @@ should be able to be added at any place in this file.
       label="Users tapped the currently selected tab in tab group bottom
              sheet."/>
   <affected-action name="MobileTabReturnedToCurrentTab"/>
-</action-suffix>
-
-<action-suffix separator="." ordering="suffix">
-  <suffix name="Dark" label="Users selected dark theme preference."/>
-  <suffix name="Light" label="Users selected light theme preference."/>
-  <suffix name="SystemDefault"
-      label="Users selected system default theme preference."/>
-  <affected-action name="Android.DarkTheme.Preference"/>
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">

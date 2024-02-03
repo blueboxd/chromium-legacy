@@ -63,6 +63,27 @@ uint64_t GraphInfoBuilder::BuildOutput(const std::string& name,
   return operand_id;
 }
 
+void GraphInfoBuilder::BuildElu(uint64_t input_operand_id,
+                                uint64_t output_operand_id,
+                                float alpha) {
+  mojom::EluPtr elu = mojom::Elu::New();
+  elu->input_operand_id = input_operand_id;
+  elu->output_operand_id = output_operand_id;
+  elu->alpha = alpha;
+  graph_info_->operations.push_back(mojom::Operation::NewElu(std::move(elu)));
+}
+
+void GraphInfoBuilder::BuildLeakyRelu(uint64_t input_operand_id,
+                                      uint64_t output_operand_id,
+                                      float alpha) {
+  mojom::LeakyReluPtr leaky_relu = mojom::LeakyRelu::New();
+  leaky_relu->input_operand_id = input_operand_id;
+  leaky_relu->output_operand_id = output_operand_id;
+  leaky_relu->alpha = alpha;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewLeakyRelu(std::move(leaky_relu)));
+}
+
 void GraphInfoBuilder::BuildPad(uint64_t input_operand_id,
                                 uint64_t output_operand_id,
                                 const std::vector<uint32_t>& beginning_padding,
@@ -148,6 +169,28 @@ void GraphInfoBuilder::BuildElementWiseBinary(
       mojom::Operation::NewElementWiseBinary(std::move(binary)));
 }
 
+void GraphInfoBuilder::BuildMatmul(uint64_t a_operand_id,
+                                   uint64_t b_operand_id,
+                                   uint64_t output_operand_id) {
+  mojom::MatmulPtr matmul = mojom::Matmul::New();
+  matmul->a_operand_id = a_operand_id;
+  matmul->b_operand_id = b_operand_id;
+  matmul->output_operand_id = output_operand_id;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewMatmul(std::move(matmul)));
+}
+
+void GraphInfoBuilder::BuildElementWiseUnary(mojom::ElementWiseUnary::Kind kind,
+                                             uint64_t input_operand,
+                                             uint64_t output_operand) {
+  mojom::ElementWiseUnaryPtr unary = mojom::ElementWiseUnary::New();
+  unary->kind = kind;
+  unary->input_operand_id = input_operand;
+  unary->output_operand_id = output_operand;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewElementWiseUnary(std::move(unary)));
+}
+
 void GraphInfoBuilder::BuildPrelu(uint64_t input_operand_id,
                                   uint64_t slope_operand_id,
                                   uint64_t output_operand_id) {
@@ -157,6 +200,21 @@ void GraphInfoBuilder::BuildPrelu(uint64_t input_operand_id,
   prelu->output_operand_id = output_operand_id;
   graph_info_->operations.push_back(
       mojom::Operation::NewPrelu(std::move(prelu)));
+}
+
+void GraphInfoBuilder::BuildReduce(mojom::Reduce::Kind kind,
+                                   uint64_t input_operand_id,
+                                   uint64_t output_operand_id,
+                                   std::vector<uint32_t> axes,
+                                   bool keep_dimensions) {
+  mojom::ReducePtr reduce = mojom::Reduce::New();
+  reduce->kind = kind;
+  reduce->input_operand_id = input_operand_id;
+  reduce->output_operand_id = output_operand_id;
+  reduce->axes = std::move(axes);
+  reduce->keep_dimensions = keep_dimensions;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewReduce(std::move(reduce)));
 }
 
 void GraphInfoBuilder::BuildRelu(uint64_t input_operand_id,

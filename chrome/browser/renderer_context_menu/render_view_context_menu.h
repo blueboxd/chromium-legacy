@@ -173,6 +173,12 @@ class RenderViewContextMenu
   // Returns the correct IDC for the Region Search context menu string
   int GetRegionSearchIdc() const;
 
+  // Returns the correct IDC for the Video Frame Search context menu string
+  int GetSearchForVideoFrameIdc() const;
+
+  // Returns the provider for image search.
+  const TemplateURL* GetImageSearchProvider() const;
+
   // Returns the correct provider name for the Search by Image context menu
   // string
   std::u16string GetImageSearchProviderName(const TemplateURL* provider) const;
@@ -288,6 +294,7 @@ class RenderViewContextMenu
   void AppendLinkToTextItems();
   void AppendPrintItem();
   void AppendPartialTranslateItem();
+  void AppendTranslateItem();
   void AppendMediaRouterItem();
   void AppendReadingModeItem();
   void AppendRotationItems();
@@ -373,6 +380,7 @@ class RenderViewContextMenu
   void ExecControls();
   void ExecSaveVideoFrameAs();
   void ExecCopyVideoFrame();
+  void ExecSearchForVideoFrame();
   void ExecLiveCaption();
   void ExecRotateCW();
   void ExecRotateCCW();
@@ -390,8 +398,8 @@ class RenderViewContextMenu
   void ExecRunLayoutExtraction();
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
-  void MediaPlayerActionAt(const gfx::Point& location,
-                           const blink::mojom::MediaPlayerAction& action);
+  void MediaPlayerAction(const blink::mojom::MediaPlayerAction& action);
+  void SearchForVideoFrame(const gfx::ImageSkia& image);
   void PluginActionAt(const gfx::Point& location,
                       blink::mojom::PluginActionType plugin_action);
 
@@ -408,6 +416,10 @@ class RenderViewContextMenu
   // or whether the current page can be translated.
   bool CanTranslate(bool menu_logging);
 
+  // Whether or not partial translation is supported for the current target
+  // language.
+  bool CanPartiallyTranslateTargetLanguage();
+
   // Under the correct conditions, issues a preconnection to the Lens URL and
   // warms up a renderer process.
   void MaybePrepareForLensQuery();
@@ -416,8 +428,7 @@ class RenderViewContextMenu
   // Does not execute "Save link as" if the URL is blocked by the URL filter.
   void CheckSupervisedUserURLFilterAndSaveLinkAs();
   void OnSupervisedUserURLFilterChecked(
-      supervised_user::SupervisedUserURLFilter::FilteringBehavior
-          filtering_behavior,
+      supervised_user::FilteringBehavior filtering_behavior,
       supervised_user::FilteringBehaviorReason reason,
       bool uncertain);
 #endif

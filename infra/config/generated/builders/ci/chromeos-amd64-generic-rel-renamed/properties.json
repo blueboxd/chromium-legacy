@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/ci/chromeos-amd64-generic-rel-renamed/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "chromeos-amd64-generic-rel-renamed",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -44,12 +47,16 @@
         {
           "bucket": "ci",
           "builder": "chromeos-amd64-generic-rel-renamed",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ],
       "mirroring_builder_group_and_names": [
         {
           "builder": "chromeos-amd64-generic-rel-renamed",
+          "group": "tryserver.chromium.chromiumos"
+        },
+        {
+          "builder": "chromeos-amd64-generic-siso-rel",
           "group": "tryserver.chromium.chromiumos"
         }
       ]
@@ -71,6 +78,6 @@
   "builder_group": "chromium.chromiumos",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium"
   ]
 }

@@ -16,6 +16,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -125,9 +126,6 @@ public class DisplayCutoutController implements InsetObserver.WindowInsetObserve
 
         /** Whether the activity is in browser (not-HTML) fullscreen. */
         boolean isInBrowserFullscreen();
-
-        /** Whether the basic Feature for drawing Edge To Edge is enabled. */
-        boolean isDrawEdgeToEdgeEnabled();
     }
 
     private final Delegate mDelegate;
@@ -228,13 +226,13 @@ public class DisplayCutoutController implements InsetObserver.WindowInsetObserve
      * @param value The new viewport fit value.
      */
     public void setViewportFit(@WebContentsObserver.ViewportFitType int value) {
+        Log.i(TAG, "setViewportFit: %s", value);
         mSafeAreaInsetsTracker.setIsViewportFitCover(
                 value == ViewportFit.COVER || value == ViewportFit.COVER_FORCED_BY_USER_AGENT);
 
         // TODO(crbug.com/1480477): Investigate whether if() can be turned into assert.
         if (!mDelegate.getWebContents().isFullscreenForCurrentTab()
-                && !mDelegate.isInBrowserFullscreen()
-                && !mDelegate.isDrawEdgeToEdgeEnabled()) {
+                && !mDelegate.isInBrowserFullscreen()) {
             value = ViewportFit.AUTO;
         }
 

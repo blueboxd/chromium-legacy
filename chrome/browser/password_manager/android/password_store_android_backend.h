@@ -21,12 +21,16 @@
 #include "chrome/browser/password_manager/android/password_store_android_backend_bridge_helper.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_dispatcher_bridge.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
-#include "components/password_manager/core/browser/password_store_backend.h"
-#include "components/password_manager/core/browser/password_store_backend_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_store/password_store_backend.h"
+#include "components/password_manager/core/browser/password_store/password_store_backend_metrics_recorder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
+class PrefService;
+
 namespace password_manager {
+
+class AffiliationsPrefetcher;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. Update enums.xml whenever updating
@@ -73,8 +77,9 @@ enum class PasswordStoreOperation {
   // Operation that is non-modifying, but not safe to retry because it is
   // user-visible.
   kGetGroupedMatchingLoginsAsync = 12,
+  kGetAllLoginsWithBrandingInfoAsync = 13,
 
-  kMaxValue = kGetGroupedMatchingLoginsAsync,
+  kMaxValue = kGetAllLoginsWithBrandingInfoAsync,
 };
 
 // Android-specific password store backend that delegates every request to
@@ -89,14 +94,17 @@ class PasswordStoreAndroidBackend
     : public PasswordStoreBackend,
       public PasswordStoreAndroidBackendReceiverBridge::Consumer {
  public:
-  explicit PasswordStoreAndroidBackend(PrefService* prefs);
+  PasswordStoreAndroidBackend(
+      PrefService* prefs,
+      AffiliationsPrefetcher* affiliations_prefetcher);
   PasswordStoreAndroidBackend(
       base::PassKey<class PasswordStoreAndroidBackendTest>,
       std::unique_ptr<PasswordStoreAndroidBackendBridgeHelper> bridge_helper,
       std::unique_ptr<PasswordManagerLifecycleHelper> lifecycle_helper,
       std::unique_ptr<PasswordSyncControllerDelegateAndroid>
           sync_controller_delegate,
-      PrefService* prefs);
+      PrefService* prefs,
+      AffiliationsPrefetcher* affiliations_prefetcher);
   ~PasswordStoreAndroidBackend() override;
 
  private:
@@ -364,6 +372,8 @@ class PasswordStoreAndroidBackend
       sync_controller_delegate_;
 
   raw_ptr<PrefService> prefs_ = nullptr;
+
+  raw_ptr<AffiliationsPrefetcher> affiliations_prefetcher_ = nullptr;
 
   base::Time initialized_at_ = base::Time::Now();
 

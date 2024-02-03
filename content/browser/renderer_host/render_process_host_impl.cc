@@ -484,9 +484,9 @@ bool MayReuseAndIsSuitableWithMainFrameThreshold(
 
   size_t main_frame_count = 0;
   bool devtools_attached = false;
-  host->ForEachRenderFrameHost(base::BindRepeating(
-      [](size_t& main_frame_count, bool& devtools_attached,
-         RenderFrameHost* render_frame_host) {
+  host->ForEachRenderFrameHost(
+      [&main_frame_count,
+       &devtools_attached](RenderFrameHost* render_frame_host) {
         if (static_cast<RenderFrameHostImpl*>(render_frame_host)
                 ->IsOutermostMainFrame()) {
           ++main_frame_count;
@@ -496,8 +496,7 @@ bool MayReuseAndIsSuitableWithMainFrameThreshold(
                 render_frame_host->GetDevToolsFrameToken().ToString())) {
           devtools_attached = true;
         }
-      },
-      std::ref(main_frame_count), std::ref(devtools_attached)));
+      });
 
   // If a threshold is specified, don't reuse `host` if it already hosts more
   // main frames (including BFCached and prerendered) than the threshold.
@@ -1097,15 +1096,13 @@ bool IsUnusedAndTiedToBrowsingInstance(
   // existing top-chrome WebUI processes, but should not attempt to reuse an
   // unused process from an unrelated blank tab.
   bool stays_in_existing_browsing_instance = false;
-  host->ForEachRenderFrameHost(base::BindRepeating(
-      [](bool* stays_in_existing_browsing_instance,
-         const IsolationContext& isolation_context, RenderFrameHost* rfh) {
-        if (isolation_context.browsing_instance_id() ==
-            rfh->GetSiteInstance()->GetBrowsingInstanceId()) {
-          *stays_in_existing_browsing_instance = true;
-        }
-      },
-      &stays_in_existing_browsing_instance, isolation_context));
+  host->ForEachRenderFrameHost([&stays_in_existing_browsing_instance,
+                                &isolation_context](RenderFrameHost* rfh) {
+    if (isolation_context.browsing_instance_id() ==
+        rfh->GetSiteInstance()->GetBrowsingInstanceId()) {
+      stays_in_existing_browsing_instance = true;
+    }
+  });
   return stays_in_existing_browsing_instance;
 }
 
@@ -2746,7 +2743,7 @@ int RenderProcessHostImpl::GetRenderFrameHostCount() const {
 }
 
 void RenderProcessHostImpl::ForEachRenderFrameHost(
-    base::RepeatingCallback<void(RenderFrameHost*)> on_render_frame_host) {
+    base::FunctionRef<void(RenderFrameHost*)> on_render_frame_host) {
   // TODO(crbug.com/652474): This is also implemented in MockRenderProcessHost.
   // When changing something here, don't forget to consider whether that change
   // is also needed in MockRenderProcessHost::ForEachRenderFrameHost().
@@ -2764,7 +2761,7 @@ void RenderProcessHostImpl::ForEachRenderFrameHost(
         RenderFrameHostImpl::LifecycleStateImpl::kSpeculative) {
       continue;
     }
-    on_render_frame_host.Run(rfh);
+    on_render_frame_host(rfh);
   }
 }
 
@@ -3780,6 +3777,18 @@ void RenderProcessHostImpl::OnAssociatedInterfaceRequest(
 void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   channel_connected_ = true;
 
+  // Propagate the pseudonymization salt to all the child processes.
+  //
+  // Doing this as the first step in this method helps to minimize scenarios
+  // where child process runs code that depends on the pseudonymization salt
+  // before it has been set.  See also https://crbug.com/1479308#c5
+  //
+  // TODO(dullweber, lukasza): Figure out if it is possible to reset the salt
+  // at a regular interval (on the order of hours?).  The browser would need to
+  // be responsible for 1) deciding when the refresh happens and 2) pushing the
+  // updated salt to all the child processes.
+  child_process_->SetPseudonymizationSalt(GetPseudonymizationSalt());
+
 #if BUILDFLAG(IS_MAC)
   ChildProcessTaskPortProvider::GetInstance()->OnChildProcessLaunched(
       peer_pid, child_process_.get());
@@ -3808,14 +3817,6 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   child_process_->SetProfilingFile(OpenProfilingFile());
 #endif
-
-  // Propagate the pseudonymization salt to all the child processes.
-  //
-  // TODO(dullweber, lukasza): Figure out if it is possible to reset the salt
-  // at a regular interval (on the order of hours?).  The browser would need to
-  // be responsible for 1) deciding when the refresh happens and 2) pushing the
-  // updated salt to all the child processes.
-  child_process_->SetPseudonymizationSalt(GetPseudonymizationSalt());
 }
 
 void RenderProcessHostImpl::OnChannelError() {
@@ -4104,9 +4105,6 @@ void RenderProcessHostImpl::Cleanup() {
   }
   for (auto& observer : observers_)
     observer.RenderProcessHostDestroyed(this);
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDERER_PROCESS_TERMINATED, Source<RenderProcessHost>(this),
-      NotificationService::NoDetails());
 
   RecentlyDestroyedHosts::Add(this, time_spent_running_unload_handlers_,
                               browser_context_);
@@ -4285,16 +4283,19 @@ void RenderProcessHostImpl::UnregisterHost(int host_id) {
 // static
 void RenderProcessHostImpl::RegisterCreationObserver(
     RenderProcessHostCreationObserver* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         // Android unit tests trigger the thread uninitialized case.
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
   GetAllCreationObservers().push_back(observer);
 }
 
 // static
 void RenderProcessHostImpl::UnregisterCreationObserver(
     RenderProcessHostCreationObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         // Chrome OS unit tests trigger the thread uninitialized case.
-         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
+  DCHECK(
+      BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+      // Chrome OS and Android unit tests trigger the thread uninitialized case.
+      !BrowserThread::IsThreadInitialized(BrowserThread::UI));
   auto iter = base::ranges::find(GetAllCreationObservers(), observer);
   DCHECK(iter != GetAllCreationObservers().end());
   GetAllCreationObservers().erase(iter);
@@ -4933,9 +4934,6 @@ void RenderProcessHostImpl::ProcessDied(
   for (auto& observer : observers_)
     observer.RenderProcessExited(this, info);
 
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
-      Details<ChildProcessTerminationInfo>(&info));
   within_process_died_observer_ = false;
 
   // Initialize a new ChannelProxy in case this host is re-used for a new
@@ -5215,8 +5213,8 @@ void RenderProcessHostImpl::SendProcessStateToRenderer() {
 
 void RenderProcessHostImpl::OnProcessLaunched() {
   // No point doing anything, since this object will be destructed soon.  We
-  // especially don't want to send the RENDERER_PROCESS_CREATED notification,
-  // since some clients might expect a RENDERER_PROCESS_TERMINATED afterwards
+  // especially don't want to send the OnRenderProcessHostCreated notification,
+  // since some clients might expect a RenderProcessHostDestroyed() afterwards
   // to properly cleanup.
   if (deleting_soon_)
     return;
@@ -5229,8 +5227,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
     // Unpause the channel now that the process is launched. We don't flush it
     // yet to ensure that any initialization messages sent here (e.g., things
-    // done in response to NOTIFICATION_RENDER_PROCESS_CREATED; see below)
-    // preempt already queued messages.
+    // done in response to OnRenderProcessHostCreated; see below) preempt
+    // already queued messages.
     channel_->Unpause(false /* flush */);
 
     gpu_client_->SetClientPid(GetProcess().Pid());
@@ -5282,9 +5280,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   // The queued messages contain such things as "navigate". If this
   // notification was after, we can end up executing JavaScript before the
   // initialization happens.
-  NotificationService::current()->Notify(NOTIFICATION_RENDERER_PROCESS_CREATED,
-                                         Source<RenderProcessHost>(this),
-                                         NotificationService::NoDetails());
   for (auto* observer : GetAllCreationObservers())
     observer->OnRenderProcessHostCreated(this);
 

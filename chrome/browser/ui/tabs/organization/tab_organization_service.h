@@ -37,9 +37,6 @@ class TabOrganizationService : public KeyedService {
   // the browser, if a session does not already exist.
   void OnTriggerOccured(const Browser* browser);
 
-  // Notifies observers when a session from this service starts a request.
-  void OnStartRequest(const TabOrganizationSession::ID session_id) const;
-
   const BrowserSessionMap& browser_session_map() const {
     return browser_session_map_;
   }
@@ -52,6 +49,19 @@ class TabOrganizationService : public KeyedService {
   // already exist for the browser. If callers are unsure whether there is an
   // existing session, they should first call GetSessionForBrowser to confirm.
   TabOrganizationSession* CreateSessionForBrowser(const Browser* browser);
+
+  // If the session exists, destroys the session, calls CreateSessionForBrowser.
+  TabOrganizationSession* ResetSessionForBrowser(const Browser* browser);
+
+  void AcceptTabOrganization(Browser* browser,
+                             TabOrganization::ID session_id,
+                             TabOrganization::ID organization_id);
+
+  // Called when the proactive nudge button is clicked.
+  void OnActionUIAccepted(const Browser* browser);
+
+  // Called when the close button on the proactive nudge UI is clicked.
+  void OnActionUIDismissed(const Browser* browser);
 
   // Starts a request for the tab organization session that exists for the
   // browser, creating a new session if one does not already exists. Does not
@@ -73,7 +83,8 @@ class TabOrganizationService : public KeyedService {
   // A list of the observers of a tab organization Service.
   base::ObserverList<TabOrganizationObserver>::Unchecked observers_;
 
-  TabOrganizationTriggerObserver trigger_observer_;
+  std::unique_ptr<TabOrganizationTriggerObserver> trigger_observer_;
+  raw_ptr<BackoffLevelProvider> trigger_backoff_;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_ORGANIZATION_TAB_ORGANIZATION_SERVICE_H_

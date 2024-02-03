@@ -771,11 +771,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   // Closes the picker at the same time the new browser is created.
   class ClosePickerOnBrowserAddedObserver : public BrowserListObserver {
    public:
-    explicit ClosePickerOnBrowserAddedObserver(
-        ProfilePickerCreationFlowBrowserTest* fixture)
-        : fixture_(fixture) {
-      BrowserList::AddObserver(this);
-    }
+    ClosePickerOnBrowserAddedObserver() { BrowserList::AddObserver(this); }
 
     // This observer is registered early, before the call to
     // `OpenBrowserWindowForProfile()` in `ProfileManagementFlowController`. It
@@ -783,20 +779,11 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
     // `clear_host_callback_` is called
     void OnBrowserAdded(Browser* browser) override {
       BrowserList::RemoveObserver(this);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-      // On Lacros, using `ProfilePicker::Hide()` causes a timeout.
-      fixture_->widget()->CloseNow();
-#else
       ProfilePicker::Hide();
-#endif
-      fixture_->WaitForPickerClosed();
     }
-
-   private:
-    raw_ptr<ProfilePickerCreationFlowBrowserTest> fixture_ = nullptr;
   };
 
-  ClosePickerOnBrowserAddedObserver close_picker_on_browser_added(this);
+  ClosePickerOnBrowserAddedObserver close_picker_on_browser_added;
 
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   // Simulate a successful sign-in and wait for the sign-in to propagate to the
@@ -814,8 +801,8 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1368936): Test is flaky on Linux and Windows.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+// TODO(crbug.com/1368936): Test is flaky on Linux, Windows and Mac.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #define MAYBE_CreateForceSignedInProfile DISABLED_CreateForceSignedInProfile
 #else
 #define MAYBE_CreateForceSignedInProfile CreateForceSignedInProfile
@@ -861,9 +848,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   EXPECT_EQ(2u, g_browser_process->profile_manager()->GetNumberOfProfiles());
   // Get the profile that was used to load the `force_signin_webui_url`.
   Profile* force_signin_profile = Profile::FromBrowserContext(
-      content::Source<content::NavigationController>(url_observer.source())
-          .ptr()
-          ->GetBrowserContext());
+      url_observer.web_contents()->GetBrowserContext());
   EXPECT_TRUE(force_signin_profile);
   // Make sure that the force_signin profile is different from the main one.
   EXPECT_FALSE(force_signin_profile->IsSameOrParent(browser()->profile()));

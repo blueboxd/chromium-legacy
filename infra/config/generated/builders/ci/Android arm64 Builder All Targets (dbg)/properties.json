@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/ci/Android arm64 Builder All Targets (dbg)/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "Android arm64 Builder All Targets (dbg)",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -39,12 +42,20 @@
         {
           "bucket": "ci",
           "builder": "Android arm64 Builder All Targets (dbg)",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ],
       "mirroring_builder_group_and_names": [
         {
+          "builder": "android-arm64-all-targets-dbg",
+          "group": "tryserver.chromium.android"
+        },
+        {
           "builder": "android_compile_dbg",
+          "group": "tryserver.chromium.android"
+        },
+        {
+          "builder": "android_compile_siso_dbg",
           "group": "tryserver.chromium.android"
         }
       ]
@@ -66,6 +77,6 @@
   "builder_group": "chromium.android",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "android"
   ]
 }

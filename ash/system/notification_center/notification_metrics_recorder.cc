@@ -4,7 +4,6 @@
 
 #include "ash/system/notification_center/notification_metrics_recorder.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/metrics_utils.h"
@@ -25,7 +24,6 @@ NotificationMetricsRecorder::NotificationMetricsRecorder(
     NotificationCenterTray* tray)
     : tray_(tray) {
   CHECK(tray_);
-  DCHECK(features::IsQsRevampEnabled());
   message_center::MessageCenter::Get()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 }
@@ -48,7 +46,8 @@ void NotificationMetricsRecorder::OnNotificationClicked(
   if (reply.has_value()) {
     metrics_utils::LogInlineReplySent(notification_id, is_popup);
   } else if (button_index.has_value()) {
-    metrics_utils::LogClickedActionButton(notification_id, is_popup);
+    metrics_utils::LogClickedActionButton(notification_id, is_popup,
+                                          button_index.value());
   } else {
     metrics_utils::LogClickedBody(notification_id, is_popup);
   }

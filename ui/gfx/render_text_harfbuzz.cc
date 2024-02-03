@@ -337,12 +337,12 @@ inline hb_script_t ICUScriptToHBScript(UScriptCode script) {
 }
 
 bool FontWasAlreadyTried(sk_sp<SkTypeface> typeface,
-                         std::set<SkFontID>* fallback_fonts) {
+                         std::set<SkTypefaceID>* fallback_fonts) {
   return fallback_fonts->count(typeface->uniqueID()) != 0;
 }
 
 void MarkFontAsTried(sk_sp<SkTypeface> typeface,
-                     std::set<SkFontID>* fallback_fonts) {
+                     std::set<SkTypefaceID>* fallback_fonts) {
   fallback_fonts->insert(typeface->uniqueID());
 }
 
@@ -2058,7 +2058,7 @@ void RenderTextHarfBuzz::ShapeRuns(
   }
 
   // Keep a set of fonts already tried for shaping runs.
-  std::set<SkFontID> fallback_fonts_already_tried;
+  std::set<SkTypefaceID> fallback_fonts_already_tried;
   std::vector<Font> fallback_font_candidates;
 
   // Shaping with primary configured fonts from font_list().
@@ -2297,8 +2297,9 @@ void RenderTextHarfBuzz::EnsureLayoutRunList() {
     layout_run_list_.Reset();
 
     const std::u16string& text = GetLayoutText();
-    if (!text.empty())
+    if (!text.empty()) {
       ItemizeAndShapeText(text, &layout_run_list_);
+    }
 
     display_run_list_.reset();
     update_display_text_ = true;
@@ -2346,22 +2347,26 @@ bool RenderTextHarfBuzz::IsValidDisplayRange(Range display_range) {
   }
 }
 
-bool RenderTextHarfBuzz::GetDecoratedTextForRange(
-    const Range& range,
+void RenderTextHarfBuzz::GetDecoratedTextForRange(
+    const Range& text_range,
     DecoratedText* decorated_text) {
-  if (obscured())
-    return false;
-
   EnsureLayout();
 
   decorated_text->attributes.clear();
-  decorated_text->text = GetTextFromRange(range);
+  decorated_text->text = GetTextFromRange(text_range);
+
+  // The range on the runs below is in display offsets, not logical offsets.
+  // This means we need to convert the text range to a display range before
+  // running the intersection logic below, or else we won't get the attributes
+  // for the obscured grapheme composed of multiple codepoints.
+  const Range display_range(TextIndexToDisplayIndex(text_range.start()),
+                            TextIndexToDisplayIndex(text_range.end()));
 
   const internal::TextRunList* run_list = GetRunList();
   for (size_t i = 0; i < run_list->size(); i++) {
     const internal::TextRunHarfBuzz& run = *run_list->runs()[i];
 
-    const Range intersection = range.Intersect(run.range);
+    const Range intersection = display_range.Intersect(run.range);
     DCHECK(!intersection.is_reversed());
 
     if (!intersection.is_empty()) {
@@ -2374,17 +2379,21 @@ bool RenderTextHarfBuzz::GetDecoratedTextForRange(
         style |= Font::STRIKE_THROUGH;
       }
 
-      // Get range relative to the decorated text.
+      // Get range relative to the decorated text in logical offsets. The
+      // `intersection` is in display offsets but logical text offsets are
+      // expected in the range attribute of `DecoratedText::RangedAttribute`.
+      Range intersection_text_range =
+          Range(DisplayIndexToTextIndex(intersection.start()),
+                DisplayIndexToTextIndex(intersection.end()));
       DecoratedText::RangedAttribute attribute(
-          Range(intersection.start() - range.GetMin(),
-                intersection.end() - range.GetMin()),
+          Range(intersection_text_range.start() - text_range.GetMin(),
+                intersection_text_range.end() - text_range.GetMin()),
           run.font_params.font.Derive(0, style, run.font_params.weight));
 
       attribute.strike = run.font_params.strike;
       decorated_text->attributes.push_back(attribute);
     }
   }
-  return true;
 }
 
 }  // namespace gfx

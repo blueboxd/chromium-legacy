@@ -31,8 +31,8 @@ struct ResultWithOffset {
 };
 
 TableRowLayoutAlgorithm::TableRowLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params) {}
+    const LayoutAlgorithmParams& params)
+    : LayoutAlgorithm(params) {}
 
 const NGLayoutResult* TableRowLayoutAlgorithm::Layout() {
   const TableConstraintSpaceData& table_data = *ConstraintSpace().TableData();
@@ -180,8 +180,8 @@ const NGLayoutResult* TableRowLayoutAlgorithm::Layout() {
       bool has_rowspan = cell_data.rowspan_block_size != kIndefiniteSize;
       const auto& physical_fragment =
           To<NGPhysicalBoxFragment>(cell_result->PhysicalFragment());
-      const NGBoxFragment fragment(table_data.table_writing_direction,
-                                   physical_fragment);
+      const LogicalBoxFragment fragment(table_data.table_writing_direction,
+                                        physical_fragment);
       row_baseline_tabulator.ProcessCell(
           fragment, cell_style.VerticalAlign(), has_rowspan,
           cell_data.has_descendant_that_depends_on_percentage_block_size);
@@ -276,7 +276,7 @@ const NGLayoutResult* TableRowLayoutAlgorithm::Layout() {
   container_builder_.SetBaselines(row_baseline_tabulator.ComputeBaseline(
       container_builder_.FragmentBlockSize()));
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
   return container_builder_.ToBoxFragment();
 }
 

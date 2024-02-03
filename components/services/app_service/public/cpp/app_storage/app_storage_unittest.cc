@@ -168,12 +168,12 @@ class AppStorageTest : public testing::Test {
     app2->readiness = kReadiness2;
     app2->name = kAppName2;
     app2->short_name = kAppShortName1;
+    app2->publisher_id = "publisher_id";
     app2->description = "description";
     app2->version = "version";
     app2->additional_search_terms = {"term1", "term2"};
     app2->icon_key =
-        apps::IconKey(apps::IconKey::kDoesNotChangeOverTime,
-                      /*resource_id=*/65535, apps::IconEffects::kNone);
+        IconKey(/*resource_id=*/65535, IconEffects::kCrOsStandardIcon);
     app2->last_launch_time = base::Time() + base::Days(2);
     app2->install_time = base::Time() + base::Days(1);
 
@@ -200,6 +200,15 @@ class AppStorageTest : public testing::Test {
     app2->paused = false;
     app2->intent_filters.push_back(apps_util::MakeIntentFilterForUrlScope(
         GURL("https://www.google.com/abc")));
+    app2->window_mode = WindowMode::kBrowser;
+    app2->run_on_os_login = RunOnOsLogin(RunOnOsLoginMode::kNotRun,
+                                         /*is_managed=*/false);
+    app2->allow_close = false;
+    app2->app_size_in_bytes = 1024;
+    app2->data_size_in_bytes = 2048;
+    app2->supported_locales = {"a", "b", "c"};
+    app2->selected_locale = "a";
+
     apps.push_back(std::move(app2));
 
     // TODO(crbug.com/1385932): Add other files in the App structure.
@@ -209,6 +218,7 @@ class AppStorageTest : public testing::Test {
   MODIFY_FIELD(name, kAppName2)
   MODIFY_FIELD(short_name, kAppShortName2)
   MODIFY_FIELD(description, "description")
+  MODIFY_FIELD(publisher_id, "publisher_id")
   MODIFY_FIELD(version, "version")
   MODIFY_FIELD(additional_search_terms, {"term1"})
   MODIFY_FIELD(last_launch_time, base::Time() + base::Days(2))
@@ -225,6 +235,23 @@ class AppStorageTest : public testing::Test {
   MODIFY_FIELD(show_in_management, true)
   MODIFY_FIELD(handles_intents, false)
   MODIFY_FIELD(allow_uninstall, false)
+  MODIFY_FIELD(window_mode, WindowMode::kWindow)
+  MODIFY_FIELD(run_on_os_login,
+               RunOnOsLogin(RunOnOsLoginMode::kNotRun, /*is_managed=*/false))
+  MODIFY_FIELD(allow_close, false)
+  MODIFY_FIELD(app_size_in_bytes, 512)
+  MODIFY_FIELD(data_size_in_bytes, 0)
+  MODIFY_FIELD(supported_locales, {"aa"})
+  MODIFY_FIELD(selected_locale, "aa")
+
+  void ModifyIconKey(absl::optional<IconKey> icon_key) {
+    AppPtr app = std::make_unique<App>(kAppType1, kAppId1);
+    app->icon_key = std::move(icon_key);
+    std::vector<AppPtr> apps;
+    apps.push_back(std::move(app));
+    app_registry_cache_.OnApps(std::move(apps), kAppType1,
+                               /*should_notify_initialized=*/false);
+  }
 
   void ModifyPermissions() {
     AppPtr app = std::make_unique<App>(kAppType1, kAppId1);
@@ -361,6 +388,7 @@ TEST_F(AppStorageTest, ReadAndWriteMultipleApps) {
 
   VERIFY_MODIFY_FIELD(name, kAppName2);
   VERIFY_MODIFY_FIELD(short_name, kAppShortName2);
+  VERIFY_MODIFY_FIELD(publisher_id, "publisher_id");
   VERIFY_MODIFY_FIELD(description, "description");
   VERIFY_MODIFY_FIELD(version, "version");
   VERIFY_MODIFY_FIELD(additional_search_terms, {"term1"});
@@ -378,6 +406,44 @@ TEST_F(AppStorageTest, ReadAndWriteMultipleApps) {
   VERIFY_MODIFY_FIELD(show_in_management, true);
   VERIFY_MODIFY_FIELD(handles_intents, false);
   VERIFY_MODIFY_FIELD(allow_uninstall, false);
+  VERIFY_MODIFY_FIELD(window_mode, WindowMode::kWindow);
+  VERIFY_MODIFY_FIELD(run_on_os_login, RunOnOsLogin(RunOnOsLoginMode::kNotRun,
+                                                    /*is_managed=*/false));
+  VERIFY_MODIFY_FIELD(allow_close, false);
+  VERIFY_MODIFY_FIELD(app_size_in_bytes, 512);
+  VERIFY_MODIFY_FIELD(data_size_in_bytes, 0);
+  VERIFY_MODIFY_FIELD(supported_locales, {"aa"});
+  VERIFY_MODIFY_FIELD(selected_locale, "aa");
+
+  // Verify for the none icon effect.
+  IconKey icon_key1(IconEffects::kNone);
+  ModifyIconKey(std::move(*(icon_key1.Clone())));
+  app_storage()->WaitForSaveFinished(/*expect_app_count=*/2);
+  apps[0]->icon_key = std::move(icon_key1);
+  VerifySavedApps(apps);
+
+  // Verify the icon effect modification.
+  IconKey icon_key2(IconEffects::kCrOsStandardIcon);
+  ModifyIconKey(std::move(*(icon_key2.Clone())));
+  app_storage()->WaitForSaveFinished(/*expect_app_count=*/2);
+  apps[0]->icon_key = std::move(icon_key2);
+  VerifySavedApps(apps);
+
+  // Verify the kPaused icon effect can be filtered out. We don't need to modify
+  // `apps`, because the icon key won't be updated, and we don't need to wait
+  // for the saving as well. After modifying the intent filters, the apps can be
+  // checked again.
+  IconKey icon_key3(IconEffects::kCrOsStandardIcon | IconEffects::kPaused);
+  ModifyIconKey(std::move(icon_key3));
+  EXPECT_FALSE(app_storage()->is_app_changed());
+
+  // Verify the icon_key's `update_version` can be filtered out. We don't need
+  // to modify `apps`, because `update_version` won't be saved,. After modifying
+  // the intent filters, the apps can be checked again.
+  IconKey icon_key4(IconEffects::kCrOsStandardIcon);
+  icon_key4.update_version = true;
+  ModifyIconKey(std::move(icon_key4));
+  EXPECT_FALSE(app_storage()->is_app_changed());
 
   ModifyPermissions();
   app_storage()->WaitForSaveFinished(/*expect_app_count=*/2);

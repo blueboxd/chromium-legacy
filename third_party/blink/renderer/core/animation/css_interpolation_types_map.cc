@@ -202,12 +202,9 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
         break;
       case CSSPropertyID::kGridTemplateColumns:
       case CSSPropertyID::kGridTemplateRows:
-        if (RuntimeEnabledFeatures::
-                CSSGridTemplatePropertyInterpolationEnabled()) {
-          applicable_types->push_back(
-              std::make_unique<CSSGridTemplatePropertyInterpolationType>(
-                  used_property));
-        }
+        applicable_types->push_back(
+            std::make_unique<CSSGridTemplatePropertyInterpolationType>(
+                used_property));
         break;
       case CSSPropertyID::kContainIntrinsicWidth:
       case CSSPropertyID::kContainIntrinsicHeight:
@@ -447,7 +444,6 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
                 used_property));
         break;
       case CSSPropertyID::kOverlay:
-        DCHECK(RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled());
         applicable_types->push_back(
             std::make_unique<CSSOverlayInterpolationType>(used_property));
         break;

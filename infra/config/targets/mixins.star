@@ -669,6 +669,18 @@ targets.mixin(
 )
 
 targets.mixin(
+    name = "ios_runtime_cache_17_2",
+    swarming = targets.swarming(
+        named_caches = [
+            swarming.cache(
+                name = "runtime_ios_17_2",
+                path = "Runtime-ios-17.2",
+            ),
+        ],
+    ),
+)
+
+targets.mixin(
     name = "ioswpt-chromium-swarming-pool",
     swarming = targets.swarming(
         dimensions = {
@@ -683,7 +695,7 @@ targets.mixin(
 )
 
 targets.mixin(
-    name = "junit-swarming",
+    name = "junit-swarming-emulator",
     swarming = targets.swarming(
         dimensions = {
             "cores": "8",
@@ -813,6 +825,13 @@ targets.mixin(
             "pool": "chromium.tests.gpu",
         },
     ),
+)
+
+targets.mixin(
+    name = "linux_vulkan",
+    linux_args = [
+        "--extra-browser-args=--enable-features=Vulkan",
+    ],
 )
 
 targets.mixin(
@@ -1469,9 +1488,6 @@ targets.mixin(
         "--use-webgpu-power-preference=default-high-performance",
         "$$MAGIC_SUBSTITUTION_GPUParallelJobs",
     ],
-    linux_args = [
-        "--extra-browser-args=--enable-features=Vulkan",
-    ],
 )
 
 targets.mixin(
@@ -1619,12 +1635,12 @@ targets.mixin(
     name = "xcode_15_beta",
     args = [
         "--xcode-build-version",
-        "15c5028h",
+        "15c5042i",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15c5028h",
+                name = "xcode_ios_15c5042i",
                 path = "Xcode.app",
             ),
         ],

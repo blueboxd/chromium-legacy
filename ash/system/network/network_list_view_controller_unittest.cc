@@ -707,7 +707,7 @@ TEST_P(NetworkListViewControllerTest, MobileSectionHeaderAddEsimButtonStates) {
   EXPECT_TRUE(GetAddESimEntry()->GetVisible());
   EXPECT_EQ(GetAddESimEntry()->GetTooltipText(),
             l10n_util::GetStringUTF16(GetAddESimTooltipMessageId()));
-  ASSERT_THAT(GetMobileStatusMessage(), IsNull());
+  ASSERT_THAT(GetMobileStatusMessage(), NotNull());
 
   // Add eSIM button is not enabled when inhibited.
   properties->inhibit_reason = InhibitReason::kResettingEuiccMemory;
@@ -1141,14 +1141,10 @@ TEST_P(NetworkListViewControllerTest,
   cros_network()->SetDeviceProperties(properties.Clone());
 
   ASSERT_THAT(GetMobileSubHeader(), NotNull());
-  // If add eSim entry is shown, no mobile network message should show.
-  if (GetAddESimEntry()) {
-    ASSERT_THAT(GetMobileStatusMessage(), IsNull());
-  } else {
-    ASSERT_THAT(GetMobileStatusMessage(), NotNull());
-    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS),
-              GetMobileStatusMessage()->label()->GetText());
-  }
+  ASSERT_THAT(GetMobileStatusMessage(), NotNull());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS),
+            GetMobileStatusMessage()->label()->GetText());
+
   CheckMobileToggleButtonStatus(/*enabled=*/true, /*toggled_on=*/true);
   EXPECT_TRUE(network_list(NetworkType::kMobile)->GetVisible());
 
@@ -1165,13 +1161,9 @@ TEST_P(NetworkListViewControllerTest,
   cros_network()->ClearNetworksAndDevices();
   cros_network()->SetDeviceProperties(properties.Clone());
 
-  if (GetAddESimEntry()) {
-    ASSERT_THAT(GetMobileStatusMessage(), IsNull());
-  } else {
-    ASSERT_THAT(GetMobileStatusMessage(), NotNull());
-    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS),
-              GetMobileStatusMessage()->label()->GetText());
-  }
+  ASSERT_THAT(GetMobileStatusMessage(), NotNull());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS),
+            GetMobileStatusMessage()->label()->GetText());
 
   EXPECT_TRUE(GetMobileToggleButton()->GetVisible());
   EXPECT_TRUE(network_list(NetworkType::kMobile)->GetVisible());
@@ -1187,13 +1179,10 @@ TEST_P(NetworkListViewControllerTest,
   cros_network()->SetDeviceProperties(properties.Clone());
 
   // Message is shown when uninhibited.
-  if (GetAddESimEntry()) {
-    ASSERT_THAT(GetMobileStatusMessage(), IsNull());
-  } else {
-    ASSERT_THAT(GetMobileStatusMessage(), NotNull());
-    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS),
-              GetMobileStatusMessage()->label()->GetText());
-  }
+  ASSERT_THAT(GetMobileStatusMessage(), NotNull());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS),
+            GetMobileStatusMessage()->label()->GetText());
+
   CheckMobileToggleButtonStatus(/*enabled=*/true, /*toggled_on=*/true);
   EXPECT_TRUE(network_list(NetworkType::kMobile)->GetVisible());
 
@@ -1233,8 +1222,6 @@ TEST_P(NetworkListViewControllerTest,
 }
 
 TEST_P(NetworkListViewControllerTest, HasCorrectTetherStatusMessage) {
-  // TODO(b/295543827):Display error message if Bluetooth is disabled.
-
   // Mobile section is not shown if Tether network is unavailable.
   if (!IsInstantHotspotRebrandEnabled()) {
     EXPECT_THAT(GetMobileStatusMessage(), IsNull());
@@ -1264,44 +1251,69 @@ TEST_P(NetworkListViewControllerTest, HasCorrectTetherStatusMessage) {
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NO_MOBILE_DEVICES_FOUND),
         GetTetherHostsStatusMessage()->label()->GetText());
     EXPECT_TRUE(network_list(NetworkType::kTether)->GetVisible());
-    return;
   }
 
   // Tether network is uninitialized and Bluetooth state enabling.
   properties->device_state = DeviceStateType::kUninitialized;
   cros_network()->SetDeviceProperties(properties.Clone());
   SetBluetoothAdapterState(BluetoothSystemState::kEnabling);
-  CheckMobileToggleButtonStatus(/*enabled=*/false, /*toggled_on=*/true);
-  EXPECT_TRUE(network_list(NetworkType::kMobile)->GetVisible());
-  ASSERT_THAT(GetMobileStatusMessage(), NotNull());
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR),
-      GetMobileStatusMessage()->label()->GetText());
+  if (!IsInstantHotspotRebrandEnabled()) {
+    CheckMobileToggleButtonStatus(/*enabled=*/false, /*toggled_on=*/true);
+    EXPECT_TRUE(network_list(NetworkType::kMobile)->GetVisible());
+    ASSERT_THAT(GetMobileStatusMessage(), NotNull());
+    EXPECT_EQ(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR),
+        GetMobileStatusMessage()->label()->GetText());
+  } else {
+    EXPECT_TRUE(network_list(NetworkType::kTether)->GetVisible());
+    ASSERT_THAT(GetTetherHostsStatusMessage(), NotNull());
+    EXPECT_EQ(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NO_MOBILE_DEVICES_FOUND),
+        GetTetherHostsStatusMessage()->label()->GetText());
+  }
 
   // Set Bluetooth device to disabling.
   SetBluetoothAdapterState(BluetoothSystemState::kDisabling);
-  CheckMobileToggleButtonStatus(/*enabled=*/true, /*toggled_on=*/false);
-  ASSERT_THAT(GetMobileStatusMessage(), NotNull());
-  EXPECT_TRUE(network_list(NetworkType::kMobile)->GetVisible());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_ENABLING_MOBILE_ENABLES_BLUETOOTH),
-            GetMobileStatusMessage()->label()->GetText());
+  if (!IsInstantHotspotRebrandEnabled()) {
+    CheckMobileToggleButtonStatus(/*enabled=*/true, /*toggled_on=*/false);
+    ASSERT_THAT(GetMobileStatusMessage(), NotNull());
+    EXPECT_TRUE(network_list(NetworkType::kMobile)->GetVisible());
+    EXPECT_EQ(l10n_util::GetStringUTF16(
+                  IDS_ASH_STATUS_TRAY_ENABLING_MOBILE_ENABLES_BLUETOOTH),
+              GetMobileStatusMessage()->label()->GetText());
+  } else {
+    ASSERT_THAT(GetTetherHostsStatusMessage(), NotNull());
+    EXPECT_TRUE(network_list(NetworkType::kTether)->GetVisible());
+    EXPECT_EQ(l10n_util::GetStringUTF16(
+                  IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED_TOOLTIP),
+              GetTetherHostsStatusMessage()->label()->GetText());
+  }
 
   // Simulate login as secondary user and disable Bluetooth device.
   LoginAsSecondaryUser();
   SetBluetoothAdapterState(BluetoothSystemState::kDisabled);
-  CheckMobileToggleButtonStatus(/*enabled=*/false, /*toggled_on=*/false);
-  ASSERT_THAT(GetMobileStatusMessage(), NotNull());
-  EXPECT_TRUE(network_list(NetworkType::kMobile)->GetVisible());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_ENABLING_MOBILE_ENABLES_BLUETOOTH),
-            GetMobileStatusMessage()->label()->GetText());
+  if (!IsInstantHotspotRebrandEnabled()) {
+    CheckMobileToggleButtonStatus(/*enabled=*/false, /*toggled_on=*/false);
+    ASSERT_THAT(GetMobileStatusMessage(), NotNull());
+    EXPECT_TRUE(network_list(NetworkType::kMobile)->GetVisible());
+    EXPECT_EQ(l10n_util::GetStringUTF16(
+                  IDS_ASH_STATUS_TRAY_ENABLING_MOBILE_ENABLES_BLUETOOTH),
+              GetMobileStatusMessage()->label()->GetText());
+  } else {
+    ASSERT_THAT(GetTetherHostsStatusMessage(), NotNull());
+    EXPECT_TRUE(network_list(NetworkType::kTether)->GetVisible());
+    EXPECT_EQ(l10n_util::GetStringUTF16(
+                  IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED_TOOLTIP),
+              GetTetherHostsStatusMessage()->label()->GetText());
+  }
 
-  // No message shown when Tether devices are added.
+  // No message shown when Tether devices are added, AND Bluetooth is enabled.
   cros_network()->AddNetworkAndDevice(
       CrosNetworkConfigTestHelper::CreateStandaloneNetworkProperties(
           kTetherName, NetworkType::kTether, ConnectionStateType::kConnected));
+  SetBluetoothAdapterState(BluetoothSystemState::kEnabled);
   EXPECT_THAT(GetMobileStatusMessage(), IsNull());
+  EXPECT_THAT(GetTetherHostsStatusMessage(), IsNull());
 
   properties->device_state = DeviceStateType::kDisabled;
   cros_network()->SetDeviceProperties(properties.Clone());

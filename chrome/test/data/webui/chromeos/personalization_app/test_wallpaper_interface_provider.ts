@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CurrentAttribution, CurrentWallpaper, DefaultImageSymbol, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, kDefaultImageSymbol, OnlineImageType, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperObserverInterface, WallpaperObserverRemote, WallpaperProviderInterface, WallpaperSearchThumbnail, WallpaperType} from 'chrome://personalization/js/personalization_app.js';
+import {CurrentAttribution, CurrentWallpaper, DefaultImageSymbol, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, kDefaultImageSymbol, OnlineImageType, SeaPenWallpaper, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperObserverInterface, WallpaperObserverRemote, WallpaperProviderInterface, WallpaperType} from 'chrome://personalization/js/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
@@ -38,6 +38,7 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
       'isInTabletMode',
       'confirmPreviewWallpaper',
       'cancelPreviewWallpaper',
+      'shouldShowTimeOfDayWallpaperDialog',
     ]);
 
     /**
@@ -155,23 +156,22 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
 
     this.collectionId = this.collections_![0]!.id;
     this.timeOfDayCollectionId = this.collections_![3]!.id;
-
-    this.seaPenImageThumbnails = [
+    this.seaPenWallpapers = [
       {
-        id: BigInt(1),
-        url: {url: 'https://images.googleusercontent.com/1'},
+        query_info: 'a close up of a flower with water drops on it',
+        url: {url: 'https://images.googleusercontent.com/image_1.jpg'},
+        file_path: {path: '/sea_pen/image_1.jpg'},
       },
       {
-        id: BigInt(2),
-        url: {url: 'https://images.googleusercontent.com/2'},
+        query_info:
+            'a large white ball in the middle of a field with soap bubbles',
+        url: {url: 'https://images.googleusercontent.com/image_2.jpg'},
+        file_path: {'path': '/sea_pen/image_2.jpg'},
       },
       {
-        id: BigInt(3),
-        url: {url: 'https://images.googleusercontent.com/3'},
-      },
-      {
-        id: BigInt(4),
-        url: {url: 'https://images.googleusercontent.com/4'},
+        query_info: 'a large rock sitting on top of a hill in the desert',
+        url: {url: 'https://images.googleusercontent.com/image_3.jpg'},
+        file_path: {'path': '/sea_pen/image_3.jpg'},
       },
     ];
   }
@@ -200,7 +200,7 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
   collectionId: string;
   setDailyRefreshCollectionIdResponse = {success: false};
   timeOfDayCollectionId: string;
-  seaPenImageThumbnails: WallpaperSearchThumbnail[];
+  seaPenWallpapers: SeaPenWallpaper[];
   selectWallpaperResponse = true;
   selectGooglePhotosPhotoResponse = true;
   selectGooglePhotosAlbumResponse = true;
@@ -208,6 +208,7 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
   selectLocalImageResponse = true;
   updateDailyRefreshWallpaperResponse = true;
   isInTabletModeResponse = true;
+  shouldShowTimeOfDayWallpaperDialogResponse = true;
   wallpaperObserverUpdateTimeout = 0;
   wallpaperObserverRemote: WallpaperObserverInterface|null = null;
 
@@ -364,6 +365,12 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
 
   cancelPreviewWallpaper() {
     this.methodCalled('cancelPreviewWallpaper');
+  }
+
+  shouldShowTimeOfDayWallpaperDialog() {
+    this.methodCalled('shouldShowTimeOfDayWallpaperDialog');
+    return Promise.resolve(
+        {shouldShowDialog: this.shouldShowTimeOfDayWallpaperDialogResponse});
   }
 
   setCollections(collections: WallpaperCollection[]) {

@@ -36,6 +36,10 @@ namespace gfx {
 class ColorSpace;
 class GpuFence;
 class Size;
+
+#if BUILDFLAG(IS_WIN)
+class D3DSharedFence;
+#endif
 }  // namespace gfx
 
 namespace viz {
@@ -117,8 +121,9 @@ class GPU_EXPORT SharedImageInterface {
   // Creates a shared image of requested |format|, |size| and |color_space|.
   // |usage| is a combination of |SharedImageUsage| bits that describes which
   // API(s) the image will be used with.
-  // Returns a mailbox that can be imported into said APIs using their
-  // corresponding shared image functions (e.g.
+  // Returns a non-null scoped_refptr to ClientSharedImage. The
+  // ClientSharedImage struct contains a mailbox that can be imported into said
+  // APIs using their corresponding shared image functions (e.g.
   // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM or
   // RasterInterface::CopySharedImage) or (deprecated) mailbox functions (e.g.
   // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
@@ -127,14 +132,15 @@ class GPU_EXPORT SharedImageInterface {
   // the GPU channel is lost).
   // |debug_label| is retained for heap dumps and passed to graphics APIs for
   // tracing tools. Pick a name that is unique to the allocation site.
-  virtual Mailbox CreateSharedImage(viz::SharedImageFormat format,
-                                    const gfx::Size& size,
-                                    const gfx::ColorSpace& color_space,
-                                    GrSurfaceOrigin surface_origin,
-                                    SkAlphaType alpha_type,
-                                    uint32_t usage,
-                                    base::StringPiece debug_label,
-                                    gpu::SurfaceHandle surface_handle) = 0;
+  virtual scoped_refptr<ClientSharedImage> CreateSharedImage(
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage,
+      base::StringPiece debug_label,
+      gpu::SurfaceHandle surface_handle) = 0;
 
   // Same behavior as the above, except that this version takes |pixel_data|
   // which is used to populate the SharedImage.  |pixel_data| should have the
@@ -211,7 +217,7 @@ class GPU_EXPORT SharedImageInterface {
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
   // the GPU channel is lost).
-  virtual Mailbox CreateSharedImage(
+  virtual scoped_refptr<ClientSharedImage> CreateSharedImage(
       gfx::GpuMemoryBuffer* gpu_memory_buffer,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gfx::BufferPlane plane,
@@ -248,6 +254,12 @@ class GPU_EXPORT SharedImageInterface {
   // those may keep a reference to the underlying data.
   virtual void DestroySharedImage(const SyncToken& sync_token,
                                   const Mailbox& mailbox) = 0;
+
+  // Same behavior as the above, except that this version takes
+  // a |client_shared_image| parameter (which holds a mailbox).
+  virtual void DestroySharedImage(
+      const SyncToken& sync_token,
+      scoped_refptr<ClientSharedImage> client_shared_image) = 0;
 
   // Adds another owning reference to the SharedImage. It must be released via
   // DestroySharedImage in the same way as for SharedImages created via
@@ -304,6 +316,16 @@ class GPU_EXPORT SharedImageInterface {
       bool register_with_image_pipe) = 0;
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
+#if BUILDFLAG(IS_WIN)
+  // Update fence between processes. Register D3DSharedFence in GPU process
+  // first and then use DXGIHandleToken to identify the fence between processes
+  // and pass signaled fence value from current process to GPU process.
+  virtual void UpdateSharedImage(
+      const SyncToken& sync_token,
+      scoped_refptr<gfx::D3DSharedFence> d3d_shared_fence,
+      const Mailbox& mailbox);
+#endif  // BUILDFLAG(IS_WIN)
+
   // Generates an unverified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.
   virtual SyncToken GenUnverifiedSyncToken() = 0;
@@ -347,6 +369,11 @@ class GPU_EXPORT SharedImageInterface {
   // and blocks on the clients thread only the first time for a given |mailbox|.
   virtual std::unique_ptr<SharedImageInterface::ScopedMapping> MapSharedImage(
       const Mailbox& mailbox);
+
+  // Same behavior as the above, except that this version takes
+  // a |client_shared_image| parameter (which holds a mailbox).
+  virtual std::unique_ptr<SharedImageInterface::ScopedMapping> MapSharedImage(
+      const scoped_refptr<ClientSharedImage>& client_shared_image);
 
   virtual const SharedImageCapabilities& GetCapabilities() = 0;
 };

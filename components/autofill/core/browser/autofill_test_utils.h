@@ -37,6 +37,7 @@ namespace autofill {
 class AutofillExternalDelegate;
 class AutofillProfile;
 class AutofillTable;
+class BankAccount;
 struct FormData;
 struct FormFieldData;
 struct FormDataPredictions;
@@ -125,12 +126,6 @@ AutofillProfile GetIncompleteProfile1();
 
 // Returns an incomplete profile of dummy info, different to the above.
 AutofillProfile GetIncompleteProfile2();
-
-// Returns a server profile full of dummy info.
-AutofillProfile GetServerProfile();
-
-// Returns a server profile full of dummy info, different to the above.
-AutofillProfile GetServerProfile2();
 
 // Sets the `profile`s source and initial creator to match `category`.
 void SetProfileCategory(
@@ -285,6 +280,14 @@ void SetCreditCardInfo(CreditCard* credit_card,
                        const std::string& billing_address_id,
                        const std::u16string& cvc = u"");
 
+// Same as SetCreditCardInfo() but returns CreditCard object.
+CreditCard CreateCreditCardWithInfo(const char* name_on_card,
+                                    const char* card_number,
+                                    const char* expiration_month,
+                                    const char* expiration_year,
+                                    const std::string& billing_address_id,
+                                    const std::u16string& cvc = u"");
+
 // TODO(isherman): We should do this automatically for all tests, not manually
 // on a per-test basis: http://crbug.com/57221
 // Disables or mocks out code that would otherwise reach out to system services.
@@ -387,6 +390,9 @@ Suggestion CreateAutofillSuggestion(
     PopupItemId popup_item_id,
     const std::u16string& main_text_value = std::u16string(),
     const Suggestion::Payload& payload = Suggestion::Payload());
+
+// Returns a bank account enabled for Pix with fake data.
+BankAccount CreatePixBankAccount(int64_t instrument_id);
 
 }  // namespace test
 }  // namespace autofill

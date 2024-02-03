@@ -13,11 +13,11 @@
 
 namespace blink {
 
-NGSimplifiedOOFLayoutAlgorithm::NGSimplifiedOOFLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params,
+SimplifiedOofLayoutAlgorithm::SimplifiedOofLayoutAlgorithm(
+    const LayoutAlgorithmParams& params,
     const NGPhysicalBoxFragment& previous_fragment,
     bool is_new_fragment)
-    : NGLayoutAlgorithm(params),
+    : LayoutAlgorithm(params),
       writing_direction_(Style().GetWritingDirection()) {
   DCHECK(previous_fragment.IsFragmentainerBox());
   DCHECK(params.space.HasKnownFragmentainerBlockSize());
@@ -75,17 +75,18 @@ NGSimplifiedOOFLayoutAlgorithm::NGSimplifiedOOFLayoutAlgorithm(
       previous_fragment.MayHaveDescendantAboveBlockStart());
 }
 
-const NGLayoutResult* NGSimplifiedOOFLayoutAlgorithm::Layout() {
+const NGLayoutResult* SimplifiedOofLayoutAlgorithm::Layout() {
   FinishFragmentationForFragmentainer(ConstraintSpace(), &container_builder_);
   return container_builder_.ToBoxFragment();
 }
 
-void NGSimplifiedOOFLayoutAlgorithm::AppendOutOfFlowResult(
+void SimplifiedOofLayoutAlgorithm::AppendOutOfFlowResult(
     const NGLayoutResult* result) {
   container_builder_.AddResult(*result, result->OutOfFlowPositionedOffset());
 }
 
-void NGSimplifiedOOFLayoutAlgorithm::AddChildFragment(const NGLink& child) {
+void SimplifiedOofLayoutAlgorithm::AddChildFragment(
+    const PhysicalFragmentLink& child) {
   const auto* fragment = child.get();
   // Determine the previous position in the logical coordinate system.
   LogicalOffset child_offset =

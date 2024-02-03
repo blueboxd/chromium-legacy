@@ -52,6 +52,8 @@ source_set("chromeos") {
     "arc/open_with_menu.h",
     "arc/start_smart_selection_action_menu.cc",
     "arc/start_smart_selection_action_menu.h",
+    "enterprise/cloud_storage/one_drive_pref_observer.cc",
+    "enterprise/cloud_storage/one_drive_pref_observer.h",
     "enterprise/cloud_storage/policy_utils.cc",
     "enterprise/cloud_storage/policy_utils.h",
     "enterprise/incognito_navigation_throttle.cc",
@@ -298,6 +300,7 @@ source_set("chromeos") {
     "//components/reporting/client:report_queue_factory",
     "//components/reporting/proto:metric_data_proto",
     "//components/reporting/util:rate_limiter_interface",
+    "//components/reporting/util:rate_limiter_slide_window",
     "//components/services/app_service",
     "//components/strings:components_strings",
     "//components/sync/protocol",
@@ -352,6 +355,8 @@ source_set("chromeos") {
       "extensions/login_screen/login/cleanup/files_cleanup_handler.h",
       "extensions/login_screen/login/cleanup/lacros_cleanup_handler.cc",
       "extensions/login_screen/login/cleanup/lacros_cleanup_handler.h",
+      "extensions/login_screen/login/cleanup/pinned_apps_cleanup_handler.cc",
+      "extensions/login_screen/login/cleanup/pinned_apps_cleanup_handler.h",
       "extensions/login_screen/login/cleanup/print_jobs_cleanup_handler.cc",
       "extensions/login_screen/login/cleanup/print_jobs_cleanup_handler.h",
       "extensions/login_screen/login/external_logout_done/external_logout_done_event_handler.cc",
@@ -516,6 +521,7 @@ source_set("unit_tests") {
     "policy/dlp/dlp_copy_or_move_hook_delegate_unittest.cc",
     "policy/dlp/dlp_drag_drop_notifier_unittest.cc",
     "policy/dlp/dlp_file_access_copy_or_move_delegate_factory_unittest.cc",
+    "policy/dlp/dlp_file_destination_unittest.cc",
     "policy/dlp/dlp_files_controller_unittest.cc",
     "policy/dlp/dlp_files_utils_unittest.cc",
     "policy/dlp/dlp_rules_manager_impl_unittest.cc",
@@ -683,6 +689,7 @@ source_set("unit_tests") {
       "//components/reporting/metrics:metrics_data_collection",
       "//components/reporting/metrics/fakes:test_support",
       "//components/reporting/util:rate_limiter_interface",
+      "//components/reporting/util:rate_limiter_slide_window",
     ]
   }
 }

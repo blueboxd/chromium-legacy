@@ -79,11 +79,10 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData final
   PaintLayerScrollableAreaRareData& operator=(
       const PaintLayerScrollableAreaRareData&) = delete;
 
-  void Trace(Visitor* visitor) const;
+  void Trace(Visitor* visitor) const {}
 
-  HeapLinkedHashSet<Member<PaintLayer>> sticky_layers_;
   absl::optional<cc::SnapContainerData> snap_container_data_;
-  bool snap_container_data_needs_update_ = true;
+  absl::optional<cc::SnappedTargetData> snapped_target_data_;
   Vector<gfx::Rect> tickmarks_override_;
 };
 
@@ -490,12 +489,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void EnqueueForSnapUpdateIfNeeded();
 
-  void AddStickyLayer(PaintLayer*);
-  bool HasStickyLayer(PaintLayer* layer) const {
-    return rare_data_ && rare_data_->sticky_layers_.Contains(layer);
-  }
   void UpdateAllStickyConstraints();
-  void InvalidateAllStickyConstraints();
+  void EnqueueForStickyUpdateIfNeeded();
   void InvalidatePaintForStickyDescendants();
 
   // This function doesn't check background-attachment:fixed backgrounds
@@ -542,11 +537,13 @@ class CORE_EXPORT PaintLayerScrollableArea final
   const cc::SnapContainerData* GetSnapContainerData() const override;
   void SetSnapContainerData(absl::optional<cc::SnapContainerData>) override;
   bool SetTargetSnapAreaElementIds(cc::TargetSnapAreaElementIds) override;
-  bool SnapContainerDataNeedsUpdate() const override;
-  void SetSnapContainerDataNeedsUpdate(bool) override;
 
   absl::optional<gfx::PointF> GetSnapPositionAndSetTarget(
       const cc::SnapSelectionStrategy& strategy) override;
+  void SetSnappedTargetData(
+      absl::optional<cc::SnappedTargetData> data) override;
+  const cc::SnappedTargetData* GetSnappedTargetData() const override;
+  void UpdateSnappedTargetsAndEnqueueSnapChanged() override;
 
   void DisposeImpl() override;
 
@@ -684,6 +681,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   Element* GetElementForScrollStart() const;
 
   void SetShouldCheckForPaintInvalidation();
+
+  bool UsedColorSchemeScrollbarsChanged(const ComputedStyle* old_style) const;
+  bool IsGlobalRootNonOverlayScroller() const;
 
   // PaintLayer is destructed before PaintLayerScrollable area, during this
   // time before PaintLayerScrollableArea has been collected layer_ will

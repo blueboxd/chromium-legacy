@@ -120,19 +120,20 @@ class WebSocketBasicStreamSocketTest : public TestWithTaskEnvironment {
   WebSocketBasicStreamSocketTest()
       : common_connect_job_params_(
             &factory_,
-            nullptr /* host_resolver */,
-            nullptr /* http_auth_cache */,
-            nullptr /* http_auth_handler_factory */,
-            nullptr /* spdy_session_pool */,
-            nullptr /* quic_supported_versions */,
-            nullptr /* quic_stream_factory */,
-            nullptr /* proxy_delegate */,
-            nullptr /* http_user_agent_settings */,
-            nullptr /* ssl_client_context */,
-            nullptr /* socket_performance_watcher_factory */,
-            nullptr /* network_quality_estimator */,
-            nullptr /* net_log */,
-            nullptr /* websocket_endpoint_lock_manager */),
+            /*host_resolver=*/nullptr,
+            /*http_auth_cache=*/nullptr,
+            /*http_auth_handler_factory=*/nullptr,
+            /*spdy_session_pool=*/nullptr,
+            /*quic_supported_versions=*/nullptr,
+            /*quic_stream_factory=*/nullptr,
+            /*proxy_delegate=*/nullptr,
+            /*http_user_agent_settings=*/nullptr,
+            /*ssl_client_context=*/nullptr,
+            /*socket_performance_watcher_factory=*/nullptr,
+            /*network_quality_estimator=*/nullptr,
+            /*net_log=*/nullptr,
+            /*websocket_endpoint_lock_manager=*/nullptr,
+            /*http_server_properties*/ nullptr),
         pool_(1, 1, &common_connect_job_params_),
         generator_(&GenerateNulMaskingKey) {}
 
@@ -264,7 +265,7 @@ class WebSocketBasicStreamSocketWriteTest
     const size_t payload_size =
         kWriteFrameSize - (WebSocketFrameHeader::kBaseHeaderSize +
                            WebSocketFrameHeader::kMaskingKeyLength);
-    auto buffer = base::MakeRefCounted<IOBuffer>(payload_size);
+    auto buffer = base::MakeRefCounted<IOBufferWithSize>(payload_size);
     frame_buffers_.push_back(buffer);
     memcpy(buffer->data(), kWriteFrame + kWriteFrameSize - payload_size,
            payload_size);
@@ -969,7 +970,7 @@ TEST_F(WebSocketBasicStreamSocketTest, WriteNonNulMask) {
       std::make_unique<WebSocketFrame>(WebSocketFrameHeader::kOpCodeText);
   const std::string unmasked_payload = "graphics";
   const size_t payload_size = unmasked_payload.size();
-  auto buffer = base::MakeRefCounted<IOBuffer>(payload_size);
+  auto buffer = base::MakeRefCounted<IOBufferWithSize>(payload_size);
   memcpy(buffer->data(), unmasked_payload.data(), payload_size);
   frame->payload = buffer->data();
   WebSocketFrameHeader& header = frame->header;

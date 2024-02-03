@@ -8,10 +8,10 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_constants.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_config.h"
+#include "partition_alloc/partition_alloc_constants.h"
 
 namespace partition_alloc {
 
@@ -54,6 +54,14 @@ struct ThreadAllocStats {
   uint64_t alloc_total_size;
   uint64_t dealloc_count;
   uint64_t dealloc_total_size;
+};
+
+struct LightweightQuarantineStats {
+  size_t size_in_bytes;
+  size_t count;
+  size_t cumulative_size_in_bytes;
+  size_t cumulative_count;
+  size_t quarantine_miss_count;  // Object too large.
 };
 
 // Struct used to retrieve total memory usage of a partition. Used by

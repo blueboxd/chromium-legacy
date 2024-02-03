@@ -53,7 +53,9 @@ class PixelTest : public testing::Test {
     // SkiaRenderer with the Vulkan backend will be used.
     kSkiaVulkan,
     // SkiaRenderer with the Skia Graphite on Dawn will be used.
-    kSkiaGraphite,
+    kSkiaGraphiteDawn,
+    // SkiaRenderer with the Skia Graphite on Metal will be used.
+    kSkiaGraphiteMetal,
   };
 
   explicit PixelTest(GraphicsBackend backend = kDefault);
@@ -129,14 +131,24 @@ class PixelTest : public testing::Test {
 
   void TearDown() override;
 
+  bool use_skia_graphite() const {
+    return graphics_backend_ == GraphicsBackend::kSkiaGraphiteDawn ||
+           graphics_backend_ == GraphicsBackend::kSkiaGraphiteMetal;
+  }
+
  private:
+  // Render |pass_list| and readback the |copy_rect| portion of |target| to
+  // |result_bitmap_|.
+  void RenderReadbackTargetAndAreaToResultBitmap(
+      viz::AggregatedRenderPassList* pass_list,
+      viz::AggregatedRenderPass* target,
+      const gfx::Rect* copy_rect);
+
   void ReadbackResult(base::OnceClosure quit_run_loop,
                       std::unique_ptr<viz::CopyOutputResult> result);
 
-  bool PixelsMatchReference(const base::FilePath& ref_file,
-                            const PixelComparator& comparator);
-
   std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
+  GraphicsBackend graphics_backend_ = GraphicsBackend::kDefault;
 };
 
 }  // namespace cc

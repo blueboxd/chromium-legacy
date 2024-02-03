@@ -20,6 +20,7 @@ namespace search_engines {
 extern const char kSearchEngineChoiceScreenProfileInitConditionsHistogram[];
 extern const char kSearchEngineChoiceScreenNavigationConditionsHistogram[];
 extern const char kSearchEngineChoiceScreenEventsHistogram[];
+extern const char kDefaultSearchEngineChoiceLocationHistogram[];
 extern const char kSearchEngineChoiceScreenDefaultSearchEngineTypeHistogram[];
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -67,7 +68,14 @@ enum class SearchEngineChoiceScreenEvents {
   kLearnMoreWasDisplayed = 5,
   // The "Learn more" screen was displayed on the FRE-specific screen.
   kFreLearnMoreWasDisplayed = 6,
-  kMaxValue = kFreLearnMoreWasDisplayed,
+  // The profile creation specific flavor of the screen was displayed.
+  kProfileCreationChoiceScreenWasDisplayed = 7,
+  // The user clicked `Set as default` on the profile creation specific screen.
+  kProfileCreationDefaultWasSet = 8,
+  // The "Learn more" screen was displayed on the profile creation specific
+  // screen.
+  kProfileCreationLearnMoreDisplayed = 9,
+  kMaxValue = kProfileCreationLearnMoreDisplayed,
 };
 
 // Profile properties that need to be passed to
@@ -154,11 +162,9 @@ bool IsEeaChoiceCountry(int country_id);
 // Records the location from which the choice was made and the search engine
 // that was chosen.
 // The function should be called after the default search engine has been set.
-// TODO(b/307713013): Remove the default value for `template_url_service` once
-// the function is used on the iOS side.
 void RecordChoiceMade(PrefService* profile_prefs,
                       ChoiceMadeLocation choice_location,
-                      TemplateURLService* template_url_service = nullptr);
+                      TemplateURLService* template_url_service);
 
 // Records the specified choice screen condition at profile initialization.
 void RecordChoiceScreenProfileInitCondition(

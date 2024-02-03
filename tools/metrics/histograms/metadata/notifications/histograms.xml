@@ -94,7 +94,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Notifications.Actions" enum="NotificationActionType"
-    expires_after="2024-02-11">
+    expires_after="2024-04-28">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -127,7 +127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Android.SitesChannel" enum="BooleanUsage"
-    expires_after="2024-03-10">
+    expires_after="2024-05-12">
   <owner>peter@chromium.org</owner>
   <summary>
     Recorded when the Sites channel (which we hope to deprecate) is used as a
@@ -297,7 +297,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Cros.Actions.{NotificationAction}"
-    enum="NotificationTypeDetailed" expires_after="2024-03-10">
+    enum="NotificationTypeDetailed" expires_after="2024-05-12">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -476,20 +476,6 @@ chromium-metrics-reviews@google.com.
   <token key="Style" variants="MacOSNotificationStyle"/>
 </histogram>
 
-<histogram name="Notifications.macOS.Delivered.{Style}" enum="BooleanSuccess"
-    expires_after="M96">
-  <obsolete>
-    Obsoleted April 2023. Histogram was removed after expiration.
-  </obsolete>
-  <owner>knollr@chromium.org</owner>
-  <owner>peter@chromium.org</owner>
-  <summary>
-    Whether delivering a notification to the system was successful or not.
-    Logged every time we pass a notification with {Style} style to the system.
-  </summary>
-  <token key="Style" variants="MacOSNotificationStyle"/>
-</histogram>
-
 <histogram name="Notifications.macOS.LaunchedViaNotificationAction"
     enum="NotificationActionSource" expires_after="M97">
   <owner>knollr@chromium.org</owner>
@@ -659,7 +645,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PerNotificationActions"
-    enum="NotificationActionType" expires_after="2024-02-25">
+    enum="NotificationActionType" expires_after="2024-04-28">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -749,7 +735,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PersistentNotificationActionCount"
-    units="buttons" expires_after="2024-02-11">
+    units="buttons" expires_after="2024-04-28">
   <owner>peter@chromium.org</owner>
   <summary>
     The number of action buttons the developer provided for a persistent Web

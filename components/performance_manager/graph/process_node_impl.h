@@ -93,6 +93,24 @@ class ProcessNodeImpl
       const blink::RemoteFrameToken& remote_frame_token) override;
   void FireBackgroundTracingTrigger(const std::string& trigger_name) override;
 
+  // Partial ProcessNode implementation:
+  content::ProcessType GetProcessType() const override;
+  base::ProcessId GetProcessId() const override;
+  const base::Process& GetProcess() const override;
+  resource_attribution::ProcessContext GetResourceContext() const override;
+  base::TimeTicks GetLaunchTime() const override;
+  absl::optional<int32_t> GetExitStatus() const override;
+  const std::string& GetMetricsName() const override;
+  bool GetMainThreadTaskLoadIsLow() const override;
+  uint64_t GetPrivateFootprintKb() const override;
+  uint64_t GetResidentSetKb() const override;
+  RenderProcessHostId GetRenderProcessHostId() const override;
+  const RenderProcessHostProxy& GetRenderProcessHostProxy() const override;
+  const BrowserChildProcessHostProxy& GetBrowserChildProcessHostProxy()
+      const override;
+  base::TaskPriority GetPriority() const override;
+  ContentTypes GetHostedContentTypes() const override;
+
   void SetProcessExitStatus(int32_t exit_status);
   void SetProcessMetricsName(const std::string& metrics_name);
   void SetProcess(base::Process process, base::TimeTicks launch_time);
@@ -101,14 +119,6 @@ class ProcessNodeImpl
   void set_private_footprint_kb(uint64_t private_footprint_kb) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     private_footprint_kb_ = private_footprint_kb;
-  }
-  uint64_t private_footprint_kb() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return private_footprint_kb_;
-  }
-  uint64_t resident_set_kb() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return resident_set_kb_;
   }
   void set_resident_set_kb(uint64_t resident_set_kb) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -126,30 +136,6 @@ class ProcessNodeImpl
   // Otherwise, returns nullptr.
   PageNodeImpl* GetPageNodeIfExclusive() const;
 
-  content::ProcessType process_type() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return process_type_;
-  }
-  // Use process_id() in preference to process().Pid(). It's always valid to
-  // access, but will return kNullProcessId when the process is not valid. It
-  // will also retain the process ID for a process that has exited.
-  base::ProcessId process_id() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return process_id_;
-  }
-  const base::Process& process() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return process_.value();
-  }
-  resource_attribution::ProcessContext resource_context() const;
-  base::TimeTicks launch_time() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return launch_time_;
-  }
-  absl::optional<int32_t> exit_status() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return exit_status_;
-  }
   const std::string& metrics_name() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return metrics_name_;
@@ -226,28 +212,12 @@ class ProcessNodeImpl
   ProcessNodeImpl(content::ProcessType process_type,
                   AnyChildProcessHostProxy proxy);
 
-  // ProcessNode implementation. These are private so that users of the impl use
-  // the private getters rather than the public interface.
-  content::ProcessType GetProcessType() const override;
-  base::ProcessId GetProcessId() const override;
-  const base::Process& GetProcess() const override;
-  resource_attribution::ProcessContext GetResourceContext() const override;
-  base::TimeTicks GetLaunchTime() const override;
-  absl::optional<int32_t> GetExitStatus() const override;
-  const std::string& GetMetricsName() const override;
+  // Rest of ProcessNode implementation. These are private so that users of the
+  // impl use the private getters rather than the public interface.
   bool VisitFrameNodes(const FrameNodeVisitor& visitor) const override;
   bool VisitWorkerNodes(const WorkerNodeVisitor& visitor) const override;
   base::flat_set<const FrameNode*> GetFrameNodes() const override;
   base::flat_set<const WorkerNode*> GetWorkerNodes() const override;
-  bool GetMainThreadTaskLoadIsLow() const override;
-  uint64_t GetPrivateFootprintKb() const override;
-  uint64_t GetResidentSetKb() const override;
-  RenderProcessHostId GetRenderProcessHostId() const override;
-  const RenderProcessHostProxy& GetRenderProcessHostProxy() const override;
-  const BrowserChildProcessHostProxy& GetBrowserChildProcessHostProxy()
-      const override;
-  base::TaskPriority GetPriority() const override;
-  ContentTypes GetHostedContentTypes() const override;
 
   void OnAllFramesInProcessFrozen();
 

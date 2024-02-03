@@ -8,7 +8,6 @@ import static org.chromium.components.browser_ui.site_settings.WebsitePreference
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.MathUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.StorageInfoClearedCallback;
 import org.chromium.components.content_settings.ContentSettingValues;
@@ -146,7 +145,7 @@ public final class Website implements WebsiteEntry {
      */
     public int compareByStorageTo(Website to) {
         if (this == to) return 0;
-        return MathUtils.compareLongs(to.getTotalUsage(), getTotalUsage());
+        return Long.compare(to.getTotalUsage(), getTotalUsage());
     }
 
     /**
@@ -177,7 +176,10 @@ public final class Website implements WebsiteEntry {
     }
 
     public void addEmbeddedPermission(ContentSettingException info) {
-        assert !info.getSecondaryPattern().equals("*");
+        assert (info.getSecondaryPattern() == null && info.isEmbargoed())
+                || (info.getSecondaryPattern() != null
+                        && !info.getSecondaryPattern().equals("*")
+                        && !info.isEmbargoed());
         var list = mEmbeddedPermissionInfos.computeIfAbsent(
                 info.getContentSettingType(), k -> new ArrayList<>());
         list.add(info);
@@ -203,18 +205,47 @@ public final class Website implements WebsiteEntry {
     }
 
     /**
+     * Returns the ContentSettingValue associated with the list of embedded exceptions associated
+     * with the website. Each website object should only have embedded exceptions of a single
+     * ContentSettingValue.
+     *
+     * @param exceptions Website embedded exceptions.
+     * @return the ContentSettingValue of the list of |exceptions|.
+     */
+    private @ContentSettingValues @Nullable Integer getContentSetting(
+            List<ContentSettingException> exceptions) {
+        assert !exceptions.isEmpty();
+
+        @ContentSettingValues
+        @Nullable
+        Integer contentSetting = exceptions.get(0).getContentSetting();
+
+        for (ContentSettingException exception : exceptions) {
+            assert exception.getContentSetting().equals(contentSetting);
+        }
+
+        return contentSetting;
+    }
+
+    public List<ContentSettingException> getEmbeddedContentSettings(@ContentSettingsType int type) {
+        assert isEmbeddedPermission(type);
+        return getEmbeddedPermissions().get(type);
+    }
+
+    /**
      * @return ContentSettingValue for specified ContentSettingsType.
      *         (Camera, Clipboard, etc.).
      */
     public @ContentSettingValues @Nullable Integer getContentSetting(
             BrowserContextHandle browserContextHandle, @ContentSettingsType int type) {
         if (isEmbeddedPermission(type)) {
-            var exceptions = getEmbeddedPermissions().get(type);
-            if (exceptions == null) return null;
-            // This function may not be used when multiple embedded permissions have been merged
-            // into one website like for SingleWebsiteSettings.
-            assert exceptions.size() == 1;
-            return exceptions.get(0).getContentSetting();
+            var exceptions = getEmbeddedContentSettings(type);
+            if (exceptions == null || exceptions.isEmpty()) return null;
+
+            // If multiple embedded permissions have been merged into one website like for
+            // SingleWebsiteSettings, this function may only be used if all permission exceptions
+            // have been grouped by content setting.
+            return getContentSetting(exceptions);
         } else if (getPermissionInfo(type) != null) {
             return getPermissionInfo(type).getContentSetting(browserContextHandle);
         } else if (getContentSettingException(type) != null) {
@@ -231,6 +262,11 @@ public final class Website implements WebsiteEntry {
             @ContentSettingsType int type, @ContentSettingValues int value) {
         if (getPermissionInfo(type) != null) {
             getPermissionInfo(type).setContentSetting(browserContextHandle, value);
+            return;
+        }
+
+        if (isEmbeddedPermission(type)) {
+            setAllEmbeddedContentSettings(browserContextHandle, type, value);
             return;
         }
 
@@ -275,17 +311,26 @@ public final class Website implements WebsiteEntry {
             } else {
                 RecordUserAction.record("SoundContentSetting.UnmuteBy.SiteSettings");
             }
-        } else if (isEmbeddedPermission(type)) {
-            var exceptions = getEmbeddedPermissions().get(type);
-            if (exceptions != null) {
-                assert exceptions.size() == 1;
-                exception = exceptions.get(0);
-            }
         }
+
         // We want to call setContentSetting even after explicitly setting
         // mContentSettingException above because this will trigger the actual change
         // on the PrefServiceBridge.
         if (exception != null) {
+            exception.setContentSetting(browserContextHandle, value);
+        }
+    }
+
+    private void setAllEmbeddedContentSettings(
+            BrowserContextHandle browserContextHandle,
+            @ContentSettingsType int type,
+            @ContentSettingValues int value) {
+        List<ContentSettingException> exceptions = getEmbeddedPermissions().get(type);
+        if (exceptions == null) {
+            return;
+        }
+
+        for (ContentSettingException exception : exceptions) {
             exception.setContentSetting(browserContextHandle, value);
         }
     }
@@ -295,6 +340,13 @@ public final class Website implements WebsiteEntry {
      * is embargoed.
      */
     public boolean isEmbargoed(@ContentSettingsType int type) {
+        if (isEmbeddedPermission(type)) {
+            List<ContentSettingException> exceptions = getEmbeddedContentSettings(type);
+            assert exceptions.size() == 1;
+
+            return exceptions.get(0).isEmbargoed();
+        }
+
         PermissionInfo permissionInfo = getPermissionInfo(type);
         if (permissionInfo != null && permissionInfo.isEmbargoed()) return true;
 
@@ -393,6 +445,10 @@ public final class Website implements WebsiteEntry {
      */
     public List<ChosenObjectInfo> getChosenObjectInfo() {
         return new ArrayList<ChosenObjectInfo>(mObjectInfo);
+    }
+
+    public String getTitleForEmbeddedPreferenceRow() {
+        return omitProtocolIfPresent(mEmbedder.getTitle());
     }
 
     // WebsiteEntry implementation.

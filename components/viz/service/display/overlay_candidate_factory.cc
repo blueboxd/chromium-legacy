@@ -360,13 +360,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
 
   if (resource_id != kInvalidResourceId) {
     candidate.format = resource_provider_->GetBufferFormat(resource_id);
-    // TODO(b/181974042): We should probably also propagate the
-    // resource_provider_->GetSamplerColorSpace() -- while the display
-    // controller is not expected to use the GPU sampler, some hardware can do
-    // per-plane color management. We just don't have the API for it yet (at
-    // least on ChromeOS).
-    candidate.color_space =
-        resource_provider_->GetOverlayColorSpace(resource_id);
+    candidate.color_space = resource_provider_->GetColorSpace(resource_id);
     candidate.hdr_metadata = resource_provider_->GetHDRMetadata(resource_id);
 
     if (!context_.is_delegated_context &&
@@ -383,14 +377,6 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
           ApplyTransform(sqs->quad_to_target_transform, y_flipped, candidate);
       status != CandidateStatus::kSuccess) {
     return status;
-  }
-
-  // TODO(b/1471182): Render passes with transforms are complicated because
-  // clipping combined with filters that expand their bounds mean we don't know
-  // their exact size yet. Disabling them temporarily until we fix all the bugs.
-  bool is_rpdq = !!quad->DynamicCast<AggregatedRenderPassDrawQuad>();
-  if (absl::holds_alternative<gfx::Transform>(candidate.transform) && is_rpdq) {
-    return CandidateStatus::kFailRpdqWithTransform;
   }
 
   candidate.is_opaque =
@@ -430,10 +416,15 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
     // Out of window clipping is enabled on Lacros only when it is supported.
     // TODO(crbug.com/1385509): Remove the condition on `quad_within_window`
     // when M117 becomes widely supported.
-    const bool can_delegate_clipping =
+    bool can_delegate_clipping =
         context_.supports_clip_rect &&
         (quad_within_window || context_.supports_out_of_window_clip_rect) &&
         transform_supports_clipping;
+
+    bool is_rpdq = !!quad->DynamicCast<AggregatedRenderPassDrawQuad>();
+    if (is_rpdq) {
+      can_delegate_clipping &= context_.transform_and_clip_rpdq;
+    }
 
     if (can_delegate_clipping) {
       // If we know the clip_rect won't intersect the display_rect at all, we

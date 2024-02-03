@@ -9,16 +9,22 @@
 #include "base/containers/map_util.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
+#include "chrome/browser/printing/local_printer_utils_chromeos.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_paths.h"
+#include "chromeos/printing/printer_configuration.h"
+#include "extensions/common/constants.h"
+#include "extensions/test/test_extension_dir.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/ash/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/ash/printing/fake_cups_printers_manager.h"
 #include "chrome/browser/ash/printing/test_cups_print_job_manager.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "extensions/common/constants.h"
-#include "extensions/test/test_extension_dir.h"
 #include "printing/backend/test_print_backend.h"
+#endif
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "base/feature_list.h"
@@ -47,6 +53,7 @@ static constexpr auto kManifestFileNames =
          {ExtensionType::kExtensionMV2, "manifest_extension.json"},
          {ExtensionType::kExtensionMV3, "manifest_v3_extension.json"}});
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::unique_ptr<KeyedService> BuildTestCupsPrintJobManager(
     content::BrowserContext* context) {
   return std::make_unique<ash::TestCupsPrintJobManager>(
@@ -57,9 +64,11 @@ std::unique_ptr<KeyedService> BuildFakeCupsPrintersManager(
     content::BrowserContext* context) {
   return std::make_unique<ash::FakeCupsPrintersManager>();
 }
+#endif
 
 }  // namespace
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 PrintingTestHelper::PrintingTestHelper()
     : test_print_backend_(base::MakeRefCounted<printing::TestPrintBackend>()) {
   CHECK(BrowserContextDependencyManager::GetInstance());
@@ -127,6 +136,7 @@ void PrintingTestHelper::OnWillCreateBrowserContextServices(
   ash::CupsPrintersManagerFactory::GetInstance()->SetTestingFactory(
       context, base::BindRepeating(&BuildFakeCupsPrintersManager));
 }
+#endif
 
 std::unique_ptr<TestExtensionDir> CreatePrintingExtension(ExtensionType type) {
   auto extension_dir = std::make_unique<TestExtensionDir>();
@@ -161,6 +171,17 @@ ConstructPrinterCapabilities() {
   capabilities->papers.push_back(std::move(paper));
   capabilities->collate_capable = true;
   return capabilities;
+}
+
+std::vector<crosapi::mojom::LocalDestinationInfoPtr>
+ConstructGetPrintersResponse(const std::string& printer_id,
+                             const std::string& printer_name) {
+  chromeos::Printer printer;
+  printer.set_id(printer_id);
+  printer.set_display_name(printer_name);
+  std::vector<crosapi::mojom::LocalDestinationInfoPtr> printers;
+  printers.push_back(printing::PrinterToMojom(printer));
+  return printers;
 }
 
 }  // namespace extensions

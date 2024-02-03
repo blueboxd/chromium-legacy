@@ -300,10 +300,7 @@ BOOL ShouldDismissKeyboardOnScroll() {
                                              [UITableViewHeaderFooterView
                                                  class])];
   self.shouldUpdateVisibleSuggestionCount = YES;
-
-  if (@available(iOS 15.0, *)) {
-    self.tableView.sectionHeaderTopPadding = 0;
-  }
+  self.tableView.sectionHeaderTopPadding = 0;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -376,8 +373,6 @@ BOOL ShouldDismissKeyboardOnScroll() {
       leadingPadding += CGRectGetMinX(omniboxFrame);
     }
 
-    self.tableView.contentInset =
-        UIEdgeInsetsMakeDirected(0, leadingPadding, kBottomPadding, 0);
     self.tableView.directionalLayoutMargins =
         NSDirectionalEdgeInsetsMake(0, leadingPadding, kBottomPadding, 0);
   }

@@ -565,47 +565,10 @@ void AutofillField::AppendLogEventIfNotRepeated(
   // recording log events into |field_log_events_| to save memory when
   // |field_log_events_| reaches certain threshold, e.g. 1000.
 
-  // Disable it for now until we find a selection criterion to select forms to
-  // be recorded into UKM. Always enable for clients with
-  // `features::kAutofillFeedback` and
-  // `features::kAutofillGranularFillingAvailable` enabled.
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillLogUKMEventsWithSampleRate) &&
-      !base::FeatureList::IsEnabled(features::kAutofillFeedback) &&
-      !base::FeatureList::IsEnabled(
-          features::kAutofillGranularFillingAvailable)) {
-    return;
-  }
-
   if (field_log_events_.empty() ||
       field_log_events_.back().index() != log_event.index() ||
       !AreCollapsibleLogEvents(field_log_events_.back(), log_event)) {
     field_log_events_.push_back(log_event);
-  }
-}
-
-DeprecatedFormControlType AutofillField::FormControlType() const {
-  // Keep in sync with https://html.spec.whatwg.org/#attr-input-type.
-  if (form_control_type == FormControlType::kInputText ||
-      form_control_type == FormControlType::kInputSearch ||
-      form_control_type == FormControlType::kInputTelephone ||
-      form_control_type == FormControlType::kInputUrl ||
-      form_control_type == FormControlType::kInputEmail ||
-      form_control_type == FormControlType::kInputPassword ||
-      form_control_type == FormControlType::kInputNumber) {
-    return DeprecatedFormControlType::kText;
-  } else if (form_control_type == FormControlType::kTextArea) {
-    return DeprecatedFormControlType::kTextarea;
-  } else if (form_control_type == FormControlType::kInputCheckbox) {
-    return DeprecatedFormControlType::kCheckbox;
-  } else if (form_control_type == FormControlType::kInputRadio) {
-    return DeprecatedFormControlType::kRadio;
-  } else if (form_control_type == FormControlType::kSelectOne) {
-    return DeprecatedFormControlType::kSelectOne;
-  } else if (form_control_type == FormControlType::kSelectList) {
-    return DeprecatedFormControlType::kSelectlist;
-  } else {
-    return DeprecatedFormControlType::kOther;
   }
 }
 

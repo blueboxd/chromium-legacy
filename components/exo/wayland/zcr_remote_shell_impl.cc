@@ -455,11 +455,10 @@ WaylandRemoteShell::WaylandRemoteShell(
       use_default_scale_cancellation_(use_default_scale_cancellation_default),
       seat_(display->seat()) {
   WMHelper* helper = WMHelper::GetInstance();
-  helper->AddTabletModeObserver(this);
   helper->AddFrameThrottlingObserver();
   helper->SetDefaultScaleCancellation(use_default_scale_cancellation_);
 
-  layout_mode_ = helper->InTabletMode()
+  layout_mode_ = display::Screen::GetScreen()->InTabletMode()
                      ? ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET
                      : ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 
@@ -476,6 +475,8 @@ WaylandRemoteShell::WaylandRemoteShell(
                                                     fixed_scale);
   }
 
+  display_manager_observation_.Observe(ash::Shell::Get()->display_manager());
+
   SendDisplayMetrics();
 
   // The activation event has been moved to aura_shell, but the
@@ -486,7 +487,6 @@ WaylandRemoteShell::WaylandRemoteShell(
 
 WaylandRemoteShell::~WaylandRemoteShell() {
   WMHelper* helper = WMHelper::GetInstance();
-  helper->RemoveTabletModeObserver(this);
   helper->RemoveFrameThrottlingObserver();
   if (seat_)
     seat_->RemoveObserver(this);
@@ -537,15 +537,6 @@ void WaylandRemoteShell::OnRemoteSurfaceDestroyed(wl_resource* resource) {
   pending_bounds_changes_.erase(resource);
 }
 
-// Overridden from display::DisplayObserver:
-void WaylandRemoteShell::OnWillProcessDisplayChanges() {
-  in_display_update_ = true;
-}
-
-void WaylandRemoteShell::OnDidProcessDisplayChanges() {
-  in_display_update_ = false;
-}
-
 void WaylandRemoteShell::OnDisplayAdded(const display::Display& new_display) {
   ScheduleSendDisplayMetrics(0);
 }
@@ -556,6 +547,16 @@ void WaylandRemoteShell::OnDisplayRemoved(const display::Display& old_display) {
 
 void WaylandRemoteShell::OnDisplayTabletStateChanged(
     display::TabletState state) {
+  if (wl_resource_get_version(remote_shell_resource_) >=
+      event_mapping_.layout_mode_since_version) {
+    if (state == display::TabletState::kInTabletMode) {
+      layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET;
+    } else if (state == display::TabletState::kExitingTabletMode) {
+      layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
+    }
+    event_mapping_.send_layout_mode(remote_shell_resource_, layout_mode_);
+  }
+
   const bool layout_change_started =
       state == display::TabletState::kEnteringTabletMode ||
       state == display::TabletState::kExitingTabletMode;
@@ -576,20 +577,14 @@ void WaylandRemoteShell::OnDisplayMetricsChanged(
   }
 }
 
-// Overridden from ash::TabletModeObserver:
-void WaylandRemoteShell::OnTabletModeStarted() {
-  layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET;
-  if (wl_resource_get_version(remote_shell_resource_) >=
-      event_mapping_.layout_mode_since_version)
-    event_mapping_.send_layout_mode(remote_shell_resource_, layout_mode_);
+void WaylandRemoteShell::OnWillProcessDisplayChanges() {
+  in_display_update_ = true;
 }
-void WaylandRemoteShell::OnTabletModeEnding() {
-  layout_mode_ = ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
-  if (wl_resource_get_version(remote_shell_resource_) >=
-      event_mapping_.layout_mode_since_version)
-    event_mapping_.send_layout_mode(remote_shell_resource_, layout_mode_);
+
+void WaylandRemoteShell::OnDidProcessDisplayChanges(
+    const DisplayConfigurationChange& configuration_change) {
+  in_display_update_ = false;
 }
-void WaylandRemoteShell::OnTabletModeEnded() {}
 
 void WaylandRemoteShell::ScheduleSendDisplayMetrics(int delay_ms) {
   needs_send_display_metrics_ = true;

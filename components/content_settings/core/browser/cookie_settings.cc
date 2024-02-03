@@ -123,10 +123,6 @@ void CookieSettings::SetTemporaryCookieGrantForHeuristic(
     const GURL& first_party_url,
     base::TimeDelta ttl,
     bool use_schemeless_patterns) {
-  if (url.is_empty() || first_party_url.is_empty()) {
-    return;
-  }
-
   // If the new grant has an earlier TTL than the existing setting, keep the
   // existing TTL.
   SettingInfo info;
@@ -349,14 +345,13 @@ bool CookieSettings::IsStorageAccessApiEnabled() const {
 
 CookieSettings::~CookieSettings() = default;
 
+#if BUILDFLAG(IS_IOS)
+bool CookieSettings::ShouldBlockThirdPartyCookiesInternal() {
+  return false;
+}
+#else
 bool CookieSettings::ShouldBlockThirdPartyCookiesInternal() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-#if BUILDFLAG(IS_IOS)
-  if (!base::FeatureList::IsEnabled(kImprovedCookieControls)) {
-    return false;
-  }
-#endif
 
   if (net::cookie_util::IsForceThirdPartyCookieBlockingEnabled()) {
     return true;
@@ -381,6 +376,7 @@ bool CookieSettings::ShouldBlockThirdPartyCookiesInternal() {
   }
   return false;
 }
+#endif
 
 bool CookieSettings::MitigationsEnabledFor3pcdInternal() {
   // Mitigations won't be enabled when Third Party Cookies Blocking is enabled

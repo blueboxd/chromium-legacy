@@ -17,6 +17,7 @@
   .image {
     border: 1px solid rgba(0, 0, 0, .14);
     border-radius: 20px;
+    height: 162px;
     margin-bottom: 4px;
     width: 100%;
   }
@@ -25,19 +26,12 @@
     align-items: center;
     background-color: var(--image-background-color);
     display: flex;
-    height: fit-content;
     justify-content: center;
   }
 
   #miniNewTabPage {
-    height: auto;
-    margin: 17px;
-    width: 100%;
-  }
-
-  #gm3MiniNewTabPage {
-    height: auto;
-    width: 100%;
+    height: 130px;
+    width: 256px;
   }
 
   :host-context([chrome-refresh-2023]):host {
@@ -51,11 +45,11 @@
     border: 0;
     border-radius: 12px;
     display: flex;
+    height: 158px;
     justify-content: center;
     margin-bottom: 12px;
     position: relative;
-    width: unset;
-    padding: 16px;
+    width: 272px;
   }
 
   :host-context([chrome-refresh-2023]) img,
@@ -63,6 +57,9 @@
     border: 0;
     border-radius: 8px;
     box-shadow: var(--cr-elevation-2);
+    height: 126px;
+    margin: 16px;
+    width: 240px;
     z-index: 1;
   }
 
@@ -127,8 +124,7 @@
         </img>
       </template>
       <template is="dom-if" if="[[chromeRefresh2023Enabled_]]">
-        <svg id="gm3MiniNewTabPage" aria-labelledby="classicChromeThemeTitle"
-            viewBox="0 0 240 126" preserveAspectRatio="xMidYMid meet">
+        <svg aria-labelledby="classicChromeThemeTitle">
           <use href="icons/gm3_mini_new_tab_page.svg#miniNewTabPage"></use>
         </svg>
       </template>

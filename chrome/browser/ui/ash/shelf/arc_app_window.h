@@ -58,8 +58,11 @@ class ArcAppWindow : public AppWindowBase,
   void Close() override;
 
   // AppIconLoaderDelegate:
-  void OnAppImageUpdated(const std::string& app_id,
-                         const gfx::ImageSkia& image) override;
+  void OnAppImageUpdated(
+      const std::string& app_id,
+      const gfx::ImageSkia& image,
+      bool is_placeholder_icon,
+      const absl::optional<gfx::ImageSkia>& badge_image) override;
 
  private:
   // Ensures that default app icon is set.

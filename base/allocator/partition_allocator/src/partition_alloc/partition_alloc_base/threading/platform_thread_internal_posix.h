@@ -5,8 +5,8 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_THREADING_PLATFORM_THREAD_INTERNAL_POSIX_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_THREADING_PLATFORM_THREAD_INTERNAL_POSIX_H_
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
 
 namespace partition_alloc::internal::base::internal {
 
@@ -16,7 +16,7 @@ namespace partition_alloc::internal::base::internal {
 // after going through clone() syscall which does not call pthread_atfork()
 // handlers).
 // This can only be called when the process is single-threaded.
-PA_COMPONENT_EXPORT(PARTITION_ALLOC) void InvalidateTidCache();
+PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) void InvalidateTidCache();
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace partition_alloc::internal::base::internal

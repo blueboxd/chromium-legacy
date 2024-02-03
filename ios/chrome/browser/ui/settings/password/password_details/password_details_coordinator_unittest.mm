@@ -10,13 +10,13 @@
 #import "base/test/task_environment.h"
 #import "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
-#import "components/password_manager/core/browser/test_password_store.h"
+#import "components/password_manager/core/browser/password_store/test_password_store.h"
 #import "components/password_manager/core/browser/ui/affiliated_group.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/metrics/ios_password_manager_metrics.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
-#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -62,7 +62,8 @@ void CheckPasswordDetailsVisitMetricsCount(
     int count,
     const HistogramTester& histogram_tester) {
   histogram_tester.ExpectUniqueSample(
-      /*name=*/"PasswordManager.iOS.PasswordDetailsVisit", /*sample=*/true,
+      /*name=*/password_manager::kPasswordManagerSurfaceVisitHistogramName,
+      /*sample=*/password_manager::PasswordManagerSurface::kPasswordDetails,
       /*count=*/count);
 }
 
@@ -83,8 +84,13 @@ class PasswordDetailsCoordinatorTest : public PlatformTest {
     builder.AddTestingFactory(SyncServiceFactory::GetInstance(),
                               base::BindRepeating(&CreateMockSyncService));
 
+    // Create scene state for reauthentication coordinator.
+    scene_state_ = [[SceneState alloc] initWithAppState:nil];
+    scene_state_.activationLevel = SceneActivationLevelForegroundActive;
+
     browser_state_ = builder.Build();
-    browser_ = std::make_unique<TestBrowser>(browser_state_.get());
+    browser_ =
+        std::make_unique<TestBrowser>(browser_state_.get(), scene_state_);
 
     CommandDispatcher* dispatcher = browser_->GetCommandDispatcher();
     // Mock ApplicationCommands. Since ApplicationCommands conforms to
@@ -100,11 +106,6 @@ class PasswordDetailsCoordinatorTest : public PlatformTest {
     // coordinator. Needed for verifying behavior when auth is required.
     mock_reauth_module_.shouldReturnSynchronously = NO;
     mock_reauth_module_.expectedResult = ReauthenticationResult::kSuccess;
-
-    // Create scene state for reauthentication coordinator.
-    scene_state_ = [[SceneState alloc] initWithAppState:nil];
-    scene_state_.activationLevel = SceneActivationLevelForegroundActive;
-    SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
 
     UINavigationController* navigation_controller =
         [[UINavigationController alloc] init];

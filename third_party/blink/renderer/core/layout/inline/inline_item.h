@@ -90,6 +90,11 @@ class CORE_EXPORT InlineItem {
   }
 
   const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
+  const ShapeResult* TextShapeResultNotShared() {
+    return !shape_result_ || shape_result_->HasOneRef()
+               ? shape_result_.get()
+               : TextShapeResultNotSharedSlow();
+  }
   bool IsUnsafeToReuseShapeResult() const {
     return is_unsafe_to_reuse_shape_result_;
   }
@@ -108,7 +113,7 @@ class CORE_EXPORT InlineItem {
 
   // If this item is either a float or OOF-positioned node. If an inline
   // formatting-context *only* contains these types of nodes we consider it
-  // block-level, and run the |NGBlockLayoutAlgorithm| instead of the
+  // block-level, and run the |BlockLayoutAlgorithm| instead of the
   // |InlineLayoutAlgorithm|.
   bool IsBlockLevel() const { return is_block_level_; }
   void SetIsBlockLevel(bool value) { is_block_level_ = value; }
@@ -169,17 +174,17 @@ class CORE_EXPORT InlineItem {
     shape_result_ = nullptr;
   }
 
-  void SetStyleVariant(NGStyleVariant style_variant) {
+  void SetStyleVariant(StyleVariant style_variant) {
     style_variant_ = static_cast<unsigned>(style_variant);
   }
-  NGStyleVariant StyleVariant() const {
-    return static_cast<NGStyleVariant>(style_variant_);
+  StyleVariant GetStyleVariant() const {
+    return static_cast<StyleVariant>(style_variant_);
   }
   const ComputedStyle* Style() const {
     // Use the |ComputedStyle| in |LayoutObject|, because not all style changes
     // re-run |CollectInlines()|.
     DCHECK(layout_object_);
-    return &layout_object_->EffectiveStyle(StyleVariant());
+    return &layout_object_->EffectiveStyle(GetStyleVariant());
   }
 
   // Returns a screen-size font for SVG text.
@@ -260,6 +265,7 @@ class CORE_EXPORT InlineItem {
   void Trace(Visitor* visitor) const;
 
  private:
+  const ShapeResult* TextShapeResultNotSharedSlow();
   void ComputeBoxProperties();
 
   unsigned start_offset_;
@@ -269,7 +275,7 @@ class CORE_EXPORT InlineItem {
 
   InlineItemType type_;
   unsigned text_type_ : 3;          // TextItemType
-  unsigned style_variant_ : 2;      // NGStyleVariant
+  unsigned style_variant_ : 2;      // StyleVariant
   unsigned end_collapse_type_ : 2;  // NGCollapseType
   unsigned bidi_level_ : 8;         // UBiDiLevel is defined as uint8_t.
   // |segment_data_| is valid only for |type_ == InlineItem::kText|.

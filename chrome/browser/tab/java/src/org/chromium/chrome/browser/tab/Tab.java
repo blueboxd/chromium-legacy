@@ -205,6 +205,9 @@ public interface Tab extends TabLifecycle {
      */
     boolean isUserInteractable();
 
+    /** Returns whether the tab is detached for reparenting. */
+    boolean isDetached();
+
     /**
      *  Sets Parent for the current Tab and other tab related parent properties.
      */
@@ -337,4 +340,7 @@ public interface Tab extends TabLifecycle {
     @Nullable
     @TabLaunchType
     Integer getTabLaunchTypeAtCreation();
+
+    /** Sets the TabLaunchType for tabs launched with an unset launch type. */
+    void setTabLaunchType(@TabLaunchType int launchType);
 }

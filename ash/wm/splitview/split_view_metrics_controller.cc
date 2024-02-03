@@ -145,7 +145,7 @@ std::string GetHistogramNameWithDeviceUIMode(std::string prefix) {
 
 SplitViewMetricsController::DeviceOrientation GetDeviceOrientation(
     const display::Display& display) {
-  return chromeos::IsDisplayLayoutHorizontal(display)
+  return display.is_landscape()
              ? SplitViewMetricsController::DeviceOrientation::kLandscape
              : SplitViewMetricsController::DeviceOrientation::kPortrait;
 }
@@ -688,15 +688,6 @@ void SplitViewMetricsController::RecordCloseTwoWindowsDuration(
 
 void SplitViewMetricsController::MaybeStartOrEndRecordSnapTwoWindowsDuration(
     WindowState* window_state) {
-  // If `first_snapped_window_` is no longer snapped, record the max duration to
-  // indicate a second window was never snapped on the opposite side.
-  if (first_snapped_window_ &&
-      !WindowState::Get(first_snapped_window_)->IsSnapped()) {
-    // Any state type change can change `first_snapped_window_`'s state type
-    // (i.e. float). This must be reset before we check `first_snapped_window_`
-    // below.
-    RecordSnapTwoWindowsDuration(kSequentialSnapActionMaxTime);
-  }
   if (window_state->IsSnapped()) {
     if (first_snapped_window_ && !first_snapped_time_.is_null() &&
         window_state->window() != first_snapped_window_ &&
@@ -713,6 +704,11 @@ void SplitViewMetricsController::MaybeStartOrEndRecordSnapTwoWindowsDuration(
     first_snapped_window_ = window_state->window();
     first_snapped_time_ = base::TimeTicks::Now();
     return;
+  }
+  // If `first_snapped_window_` is no longer snapped, record the max duration to
+  // indicate a second window was never snapped on the opposite side.
+  if (window_state->window() == first_snapped_window_) {
+    RecordSnapTwoWindowsDuration(kSequentialSnapActionMaxTime);
   }
 }
 

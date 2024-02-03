@@ -11,11 +11,13 @@
 #import "base/functional/bind.h"
 #import "base/functional/callback_helpers.h"
 #import "base/metrics/histogram_functions.h"
+#import "base/ranges/algorithm.h"
 #import "ios/chrome/browser/sessions/proto/storage.pb.h"
 #import "ios/chrome/browser/sessions/session_constants.h"
 #import "ios/chrome/browser/sessions/session_internal_util.h"
 #import "ios/chrome/browser/sessions/session_io_request.h"
 #import "ios/chrome/browser/sessions/session_loading.h"
+#import "ios/chrome/browser/sessions/session_migration.h"
 #import "ios/chrome/browser/sessions/session_restoration_web_state_list_observer.h"
 #import "ios/chrome/browser/sessions/web_state_list_serialization.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -87,6 +89,64 @@ std::unique_ptr<web::WebState> CreateWebState(
       base::BindOnce(&LoadWebStateSession, web_state_session_path));
 
   return web_state;
+}
+
+// Delete data for discarded sessions with `identifiers` in `storage_path`
+// on a background thread.
+void DeleteDataForSessions(const base::FilePath& storage_path,
+                           const std::set<std::string>& identifiers) {
+  for (const std::string& identifier : identifiers) {
+    const base::FilePath path = storage_path.Append(identifier);
+    std::ignore = ios::sessions::DeleteRecursively(path);
+  }
+}
+
+// An output iterator that counts how many time it has been incremented.
+// Allows to check if sets has non-empty intersection without allocating.
+template <typename T1, typename T2>
+struct CountingOutputIterator {
+  CountingOutputIterator& operator++() {
+    ++count;
+    return *this;
+  }
+  CountingOutputIterator& operator++(int) {
+    ++count;
+    return *this;
+  }
+
+  CountingOutputIterator& operator*() { return *this; }
+  CountingOutputIterator& operator=(const T1&) { return *this; }
+  CountingOutputIterator& operator=(const T2&) { return *this; }
+
+  uint32_t count = 0;
+};
+
+// Override of CountingOutputIterator<T1, T2> when types are identical.
+template <typename T>
+struct CountingOutputIterator<T, T> {
+  CountingOutputIterator& operator++() {
+    ++count;
+    return *this;
+  }
+  CountingOutputIterator& operator++(int) {
+    ++count;
+    return *this;
+  }
+
+  CountingOutputIterator& operator*() { return *this; }
+  CountingOutputIterator& operator=(const T&) { return *this; }
+
+  uint32_t count = 0;
+};
+
+// Returns whether the two sets have non-empty intersection.
+template <typename Range1, typename Range2>
+constexpr bool HasIntersection(Range1&& range1, Range2&& range2) {
+  auto result = base::ranges::set_intersection(
+      std::forward<Range1>(range1), std::forward<Range2>(range2),
+      CountingOutputIterator<decltype(*range1.begin()),
+                             decltype(*range2.begin())>{});
+  return result.count != 0;
 }
 
 }  // anonymous namespace
@@ -184,7 +244,8 @@ SessionRestorationServiceImpl::SessionRestorationServiceImpl(
     base::TimeDelta save_delay,
     bool enable_pinned_web_states,
     const base::FilePath& storage_path,
-    const scoped_refptr<base::SequencedTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    sessions::TabRestoreService* tab_restore_service)
     : save_delay_(save_delay),
       enable_pinned_web_states_(enable_pinned_web_states),
       storage_path_(storage_path.Append(kSessionRestorationDirname)),
@@ -196,28 +257,40 @@ SessionRestorationServiceImpl::SessionRestorationServiceImpl(
 SessionRestorationServiceImpl::~SessionRestorationServiceImpl() {}
 
 void SessionRestorationServiceImpl::Shutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(infos_.empty()) << "Disconnect() must be called for all Browser";
+  tab_restore_service_ = nullptr;
 }
 
 #pragma mark - SessionRestorationService
 
 void SessionRestorationServiceImpl::AddObserver(
     SessionRestorationObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.AddObserver(observer);
 }
 
 void SessionRestorationServiceImpl::RemoveObserver(
     SessionRestorationObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
 }
 
 void SessionRestorationServiceImpl::SaveSessions() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SaveDirtySessions();
+}
+
+void SessionRestorationServiceImpl::ScheduleSaveSessions() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Nothing to do, the service automatically schedule a save as soon
+  // as changes are detected.
 }
 
 void SessionRestorationServiceImpl::SetSessionID(
     Browser* browser,
     const std::string& identifier) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   WebStateList* web_state_list = browser->GetWebStateList();
 
   auto iterator = infos_.find(web_state_list);
@@ -225,6 +298,10 @@ void SessionRestorationServiceImpl::SetSessionID(
 
   DCHECK(!base::Contains(identifiers_, identifier));
   identifiers_.insert(identifier);
+
+  // Migrate the storage to optimized format before trying to load.
+  ios::sessions::MigrateNamedSessionToOptimized(
+      storage_path_.DirName(), identifier, tab_restore_service_.get());
 
   // It is safe to use base::Unretained(this) as the callback is never called
   // after SessionRestorationWebStateListObserver is destroyed. Those objects
@@ -239,6 +316,7 @@ void SessionRestorationServiceImpl::SetSessionID(
 }
 
 void SessionRestorationServiceImpl::LoadSession(Browser* browser) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::Contains(infos_, browser->GetWebStateList()));
   WebStateListInfo& info = *infos_[browser->GetWebStateList()];
 
@@ -304,6 +382,7 @@ void SessionRestorationServiceImpl::LoadSession(Browser* browser) {
 }
 
 void SessionRestorationServiceImpl::Disconnect(Browser* browser) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SaveDirtySessions();
   DCHECK(dirty_web_state_lists_.empty());
 
@@ -321,6 +400,7 @@ std::unique_ptr<web::WebState>
 SessionRestorationServiceImpl::CreateUnrealizedWebState(
     Browser* browser,
     web::proto::WebStateStorage storage) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto iterator = infos_.find(browser->GetWebStateList());
   DCHECK(iterator != infos_.end());
 
@@ -364,10 +444,28 @@ SessionRestorationServiceImpl::CreateUnrealizedWebState(
       base::ReturnValueOnce<NSData*>(nil));
 }
 
+void SessionRestorationServiceImpl::DeleteDataForDiscardedSessions(
+    const std::set<std::string>& identifiers,
+    base::OnceClosure closure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!HasIntersection(identifiers, identifiers_));
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&DeleteDataForSessions, storage_path_, identifiers),
+      std::move(closure));
+}
+
+void SessionRestorationServiceImpl::InvokeClosureWhenBackgroundProcessingDone(
+    base::OnceClosure closure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  task_runner_->PostTask(FROM_HERE, std::move(closure));
+}
+
 #pragma mark - Private
 
 void SessionRestorationServiceImpl::MarkWebStateListDirty(
     WebStateList* web_state_list) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   dirty_web_state_lists_.insert(web_state_list);
   if (!timer_.IsRunning()) {
     timer_.Start(
@@ -378,6 +476,7 @@ void SessionRestorationServiceImpl::MarkWebStateListDirty(
 }
 
 void SessionRestorationServiceImpl::SaveDirtySessions() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (timer_.IsRunning()) {
     timer_.Stop();
   }

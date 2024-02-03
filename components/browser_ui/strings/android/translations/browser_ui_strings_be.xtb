@@ -22,7 +22,6 @@
 <translation id="1384959399684842514">Спампоўка прыпынена</translation>
 <translation id="1415402041810619267">URL-адрас абрэзаны</translation>
 <translation id="1426410128494586442">Так</translation>
-<translation id="1446450296470737166">Дазв. поўны кантроль MIDI-прылад</translation>
 <translation id="1448064542941920355">Паменшыць маштаб</translation>
 <translation id="1510341833810331442">Сайтам не дазволена захоўваць даныя на вашай прыладзе</translation>
 <translation id="1547123415014299762">Староннія файлы cookie дазволены</translation>
@@ -118,6 +117,7 @@
 <translation id="2968755619301702150">Звесткі пра сертыфікат</translation>
 <translation id="2979365474350987274">Выкарыстанне старонніх файлаў cookie абмежавана</translation>
 <translation id="3008272652534848354">Скінуць дазволы</translation>
+<translation id="3013291976881901233">Прылады MIDI</translation>
 <translation id="301521992641321250">Заблакіравана аўтаматычна</translation>
 <translation id="3069226013421428034">Дазволіць уваход праз староннія сэрвісы для канкрэтнага сайта.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Тэрмін дзеяння заканчваецца заўтра}one{Тэрмін дзеяння заканчваецца праз # дзень}few{Тэрмін дзеяння заканчваецца праз # дні}many{Тэрмін дзеяння заканчваецца праз # дзён}other{Тэрмін дзеяння заканчваецца праз # дня}}</translation>
@@ -179,7 +179,6 @@
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4008040567710660924">Дазвол выкарыстання файлаў cookie ад канкрэтнага сайта.</translation>
 <translation id="4046123991198612571">Наступны трэк</translation>
-<translation id="4053720452172726777">Наладжвайце Google Chrome і кіруйце ім</translation>
 <translation id="4149890623864272035">Вы сапраўды хочаце выдаліць усе лакальныя даныя (у тым ліку файлы cookie) і скінуць усе дазволы для гэтага вэб-сайта?</translation>
 <translation id="4149994727733219643">Спрошчаны выгляд для вэб-старонак</translation>
 <translation id="4151930093518524179">Стандартны маштаб</translation>
@@ -192,7 +191,6 @@
 <translation id="4278390842282768270">Дазволена</translation>
 <translation id="429312253194641664">Сайт прайграе мультымедыя</translation>
 <translation id="42981349822642051">Разгарнуць</translation>
-<translation id="4336566011000459927">Сягоння Chrome зноў абмяжуе выкарыстанне файлаў cookie</translation>
 <translation id="4338831206024587507">Усе сайты дамена <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Не даваць сайтам знаць, калі вы карыстаецеся гэтай прыладай</translation>
 <translation id="4412992751769744546">Дазволіць староннія файлы cookie</translation>
@@ -295,12 +293,10 @@
 <translation id="6177128806592000436">Ваша падключэнне да гэтага сайта небяспечнае</translation>
 <translation id="6181444274883918285">Дадаць выключэнне з сайтаў</translation>
 <translation id="6192792657125177640">Выключэнні</translation>
-<translation id="6194967801833346599">{DAYS,plural, =1{Заўтра Chrome зноў заблакіруе файлы cookie}one{Праз # дзень файлы cookie зноў будуць заблакіраваны}few{Праз # дні файлы cookie зноў будуць заблакіраваны}many{Праз # дзён файлы cookie зноў будуць заблакіраваны}other{Праз # дня файлы cookie зноў будуць заблакіраваны}}</translation>
 <translation id="6195163219142236913">Староннія файлы cookie абмежаваны</translation>
 <translation id="6196640612572343990">Блакіраваць староннія файлы cookie</translation>
 <translation id="6205314730813004066">Прыватнасць у рэкламе</translation>
 <translation id="6207207788774442484">Выдаліць даныя і скінуць дазволы</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6231752747840485235">Выдаліць "<ph name="APP_NAME" />"?</translation>
 <translation id="6262191102408817757">На падставе даных вашай апошняй укладкі</translation>
 <translation id="6262279340360821358">Заблакіравана: <ph name="PERMISSION_1" /> і <ph name="PERMISSION_2" /></translation>
@@ -348,6 +344,7 @@
 <translation id="7053983685419859001">Заблакіраваць</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбраны 1 элемент}one{Выбраны # элемент}few{Выбрана # элементы}many{Выбрана # элементаў}other{Выбрана # элемента}}</translation>
 <translation id="7087918508125750058">Выбрана: <ph name="ITEM_COUNT" />.  Параметры знаходзяцца ўверсе экрана</translation>
+<translation id="7137403271056944713">Кіраванне/перапраграмаванне MIDI</translation>
 <translation id="7141896414559753902">Заблакіраваць сайтам паказ выплыўных вокнаў і перанакіраванні (рэкамендуецца)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7180611975245234373">Абнавіць</translation>
@@ -385,7 +382,6 @@
 <translation id="780301667611848630">Не, дзякуй</translation>
 <translation id="7804248752222191302">Сайт выкарыстоўвае камеру</translation>
 <translation id="7807060072011926525">Ад кампаніі Google</translation>
-<translation id="7822573154188733812">Chrome блакіруе для сайтаў магчымасць выкарыстоўваць староннія файлы cookie, якія дазваляюць адсочваць вашы дзеянні ў інтэрнэце. Кіраваць <ph name="BEGIN_LINK" />абаронай ад адсочвання<ph name="END_LINK" /> можна ў наладах.</translation>
 <translation id="7835852323729233924">Прайграванне мультымедыя</translation>
 <translation id="783819812427904514">Уключыць гук відэа</translation>
 <translation id="7846076177841592234">Скасаваць выбар</translation>
@@ -402,7 +398,6 @@
 <translation id="8077120325605624147">Любы наведаны вамі сайт будзе паказваць вам рэкламу</translation>
 <translation id="8087000398470557479">Змесціва з <ph name="DOMAIN_NAME" />, пастаўшчык – Google.</translation>
 <translation id="8088603949666785339"><ph name="BANNER_TITLE" />: іншыя дзеянні</translation>
-<translation id="8113501330600751161">{DAYS,plural, =1{Заўтра Chrome зноў абмяжуе выкарыстанне файлаў cookie}one{Chrome зноў абмяжуе выкарыстанне файлаў cookie праз # дзень}few{Chrome зноў абмяжуе выкарыстанне файлаў cookie праз # дні}many{Chrome зноў абмяжуе выкарыстанне файлаў cookie праз # дзён}other{Chrome зноў абмяжуе выкарыстанне файлаў cookie праз # дня}}</translation>
 <translation id="8116925261070264013">Без гуку</translation>
 <translation id="813082847718468539">Прагляд звестак пра сайт</translation>
 <translation id="8131740175452115882">Пацвердзіць</translation>

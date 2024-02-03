@@ -701,8 +701,7 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
   // Web App's publisher_id the start url.
   app->publisher_id = web_app->start_url().spec();
 
-  app->icon_key =
-      std::move(*icon_key_factory_.CreateIconKey(GetIconEffects(web_app)));
+  app->icon_key = apps::IconKey(GetIconEffects(web_app));
 
   app->last_launch_time = web_app->last_launch_time();
   app->install_time = web_app->first_install_time();
@@ -780,6 +779,8 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
   const auto login_mode = registrar().GetAppRunOnOsLoginMode(web_app->app_id());
   app->run_on_os_login = apps::RunOnOsLogin(
       ConvertOsLoginMode(login_mode.value), !login_mode.user_controllable);
+
+  app->allow_close = !registrar().IsPreventCloseEnabled(web_app->app_id());
 
   for (const auto& shortcut : web_app->shortcuts_menu_item_infos()) {
     const std::string name = base::UTF16ToUTF8(shortcut.name);
@@ -861,8 +862,7 @@ void WebAppPublisherHelper::SetIconEffect(const std::string& app_id) {
   }
 
   auto app = std::make_unique<apps::App>(app_type(), app_id);
-  app->icon_key =
-      std::move(*icon_key_factory_.CreateIconKey(GetIconEffects(web_app)));
+  app->icon_key = apps::IconKey(GetIconEffects(web_app));
   delegate_->PublishWebApp(std::move(app));
 }
 
@@ -1192,6 +1192,17 @@ apps::WindowMode WebAppPublisherHelper::GetWindowMode(
   return ConvertDisplayModeToWindowMode(display_mode);
 }
 
+void WebAppPublisherHelper::UpdateAppSize(const std::string& app_id) {
+  const auto* web_app = GetWebApp(app_id);
+  if (!web_app) {
+    return;
+  }
+
+  provider_->scheduler().ComputeAppSize(
+      app_id, base::BindOnce(&WebAppPublisherHelper::OnGetWebAppSize,
+                             weak_ptr_factory_.GetWeakPtr(), app_id));
+}
+
 void WebAppPublisherHelper::SetWindowMode(const std::string& app_id,
                                           apps::WindowMode window_mode) {
   auto user_display_mode = mojom::UserDisplayMode::kStandalone;
@@ -1371,7 +1382,7 @@ void WebAppPublisherHelper::OnWebAppManifestUpdated(
     // a new `raw_icon_data_version`, to remove the icon files saved in the
     // AppService icon directory, to get the new raw icon files of the web app
     // for AppService.
-    app->icon_key->raw_icon_updated = true;
+    app->icon_key->update_version = true;
     delegate_->PublishWebApp(std::move(app));
   }
 }
@@ -1459,9 +1470,7 @@ void WebAppPublisherHelper::OnWebAppDisabledStateChanged(
 
   DCHECK_EQ(is_disabled, web_app->chromeos_data()->is_disabled);
   apps::AppPtr app = CreateWebApp(web_app);
-  app->icon_key =
-      std::move(*icon_key_factory_.CreateIconKey(GetIconEffects(web_app)));
-  ;
+  app->icon_key = apps::IconKey(GetIconEffects(web_app));
 
   // If the disable mode is hidden, update the visibility of the new disabled
   // app.
@@ -1708,7 +1717,15 @@ void WebAppPublisherHelper::LaunchAppWithIntentImpl(
           [](base::OnceCallback<void(const std::vector<content::WebContents*>&)>
                  callback,
              content::WebContents* contents) {
-            std::move(callback).Run({contents});
+            // These calls are piped through LaunchWebAppCommand and can end
+            // early during an Abort due to various reasons (like
+            // FirstRunService not completed), in which case there will be no
+            // web contents.
+            if (contents) {
+              std::move(callback).Run({contents});
+            } else {
+              std::move(callback).Run({});
+            }
           },
           std::move(callback)));
 }
@@ -1992,6 +2009,18 @@ void WebAppPublisherHelper::OnLaunchCompleted(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   std::move(on_complete).Run(web_contents.get());
+}
+
+void WebAppPublisherHelper::OnGetWebAppSize(
+    webapps::AppId app_id,
+    absl::optional<ComputeAppSizeCommand::Size> size) {
+  auto app = std::make_unique<apps::App>(app_type(), app_id);
+  if (!size.has_value()) {
+    return;
+  }
+  app->app_size_in_bytes = size->app_size_in_bytes;
+  app->data_size_in_bytes = size->data_size_in_bytes;
+  delegate_->PublishWebApp(std::move(app));
 }
 
 }  // namespace web_app

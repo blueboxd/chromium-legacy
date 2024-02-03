@@ -10,11 +10,13 @@
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import '../../../css/common.css.js';
 
+import {SeaPenThumbnail} from '../../../sea_pen.mojom-webui.js';
 import {WithPersonalizationStore} from '../../personalization_store.js';
-import {getZerosArray, isNonEmptyArray} from '../../utils.js';
-import {WallpaperSearchThumbnail} from '../constants.js';
+import {getZerosArray, isNonEmptyArray, isSelectionEvent} from '../../utils.js';
+import {selectSeaPenWallpaper} from '../wallpaper_controller.js';
 
 import {getTemplate} from './sea_pen_images_element.html.js';
+import {getSeaPenProvider} from './sea_pen_interface_provider.js';
 
 export class SeaPenImagesElement extends WithPersonalizationStore {
   static get is() {
@@ -39,7 +41,7 @@ export class SeaPenImagesElement extends WithPersonalizationStore {
 
   private templateId: string;
   private query_: string|null;
-  private thumbnails_: WallpaperSearchThumbnail[]|null;
+  private thumbnails_: SeaPenThumbnail[]|null;
   private thumbnailsLoading_: boolean;
 
   override connectedCallback() {
@@ -62,20 +64,25 @@ export class SeaPenImagesElement extends WithPersonalizationStore {
   }
 
   private shouldShowThumbnailPlaceholders_(
-      thumbnailsLoading: boolean,
-      thumbnails: WallpaperSearchThumbnail[]|null): boolean {
+      thumbnailsLoading: boolean, thumbnails: SeaPenThumbnail[]|null): boolean {
     // Use placeholders before and during loading thumbnails.
     return !thumbnails || thumbnailsLoading;
   }
 
   private shouldShowImageThumbnails_(
-      thumbnailsLoading: boolean,
-      thumbnails: WallpaperSearchThumbnail[]|null): boolean {
+      thumbnailsLoading: boolean, thumbnails: SeaPenThumbnail[]|null): boolean {
     return !thumbnailsLoading && isNonEmptyArray(thumbnails);
   }
 
   private getPlaceholders_(x: number) {
     return getZerosArray(x);
+  }
+
+  private onThumbnailSelected_(event: Event&{model: {item: SeaPenThumbnail}}) {
+    if (!isSelectionEvent(event)) {
+      return;
+    }
+    selectSeaPenWallpaper(event.model.item, getSeaPenProvider());
   }
 }
 

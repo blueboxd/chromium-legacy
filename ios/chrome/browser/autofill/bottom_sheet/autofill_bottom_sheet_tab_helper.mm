@@ -137,13 +137,14 @@ void AutofillBottomSheetTabHelper::AttachPasswordListeners(
   }
 
   AttachListeners(renderer_ids, registered_password_renderer_ids_[frame_id],
-                  frame_id);
+                  frame_id, /*must_be_empty = */ false);
 }
 
 void AutofillBottomSheetTabHelper::AttachListeners(
     const std::vector<autofill::FieldRendererId>& renderer_ids,
     std::set<autofill::FieldRendererId>& registered_renderer_ids,
-    const std::string& frame_id) {
+    const std::string& frame_id,
+    bool must_be_empty) {
   if (!web_state_) {
     return;
   }
@@ -168,7 +169,7 @@ void AutofillBottomSheetTabHelper::AttachListeners(
   if (!new_renderer_ids.empty()) {
     // Enable the bottom sheet on the new renderer IDs.
     AutofillBottomSheetJavaScriptFeature::GetInstance()->AttachListeners(
-        new_renderer_ids, frame);
+        new_renderer_ids, frame, must_be_empty);
 
     // Add new renderer IDs to the list of registered renderer IDs.
     std::copy(
@@ -193,7 +194,8 @@ void AutofillBottomSheetTabHelper::DetachPasswordListeners(
   web::WebFrame* frame = webFramesManager->GetFrameWithId(frame_id);
 
   AutofillBottomSheetJavaScriptFeature::GetInstance()->DetachListeners(
-      registered_password_renderer_ids_[frame_id], frame, refocus);
+      registered_password_renderer_ids_[frame_id], frame,
+      /*must_be_empty = */ false, refocus);
 }
 
 void AutofillBottomSheetTabHelper::DetachPasswordListenersForAllFrames(
@@ -206,7 +208,8 @@ void AutofillBottomSheetTabHelper::DetachPasswordListenersForAllFrames(
 
   for (auto& registered_renderer_ids : registered_password_renderer_ids_) {
     DetachListenersForFrame(registered_renderer_ids.first,
-                            registered_renderer_ids.second, refocus);
+                            registered_renderer_ids.second,
+                            /*must_be_empty = */ false, refocus);
   }
 }
 
@@ -224,7 +227,8 @@ void AutofillBottomSheetTabHelper::DetachPaymentsListeners(
   web::WebFrame* frame = webFramesManager->GetFrameWithId(frame_id);
 
   AutofillBottomSheetJavaScriptFeature::GetInstance()->DetachListeners(
-      registered_payments_renderer_ids_[frame_id], frame, refocus);
+      registered_payments_renderer_ids_[frame_id], frame,
+      /*must_be_empty = */ true, refocus);
 }
 
 void AutofillBottomSheetTabHelper::DetachPaymentsListenersForAllFrames(
@@ -236,13 +240,15 @@ void AutofillBottomSheetTabHelper::DetachPaymentsListenersForAllFrames(
 
   for (auto& registered_renderer_ids : registered_payments_renderer_ids_) {
     DetachListenersForFrame(registered_renderer_ids.first,
-                            registered_renderer_ids.second, refocus);
+                            registered_renderer_ids.second,
+                            /*must_be_empty = */ true, refocus);
   }
 }
 
 void AutofillBottomSheetTabHelper::DetachListenersForFrame(
     const std::string& frame_id,
     const std::set<autofill::FieldRendererId>& renderer_ids,
+    bool must_be_empty,
     bool refocus) {
   if (!web_state_) {
     return;
@@ -253,7 +259,7 @@ void AutofillBottomSheetTabHelper::DetachListenersForFrame(
           web_state_);
   web::WebFrame* frame = webFramesManager->GetFrameWithId(frame_id);
   AutofillBottomSheetJavaScriptFeature::GetInstance()->DetachListeners(
-      renderer_ids, frame, refocus);
+      renderer_ids, frame, must_be_empty, refocus);
 }
 
 // WebStateObserver
@@ -327,7 +333,8 @@ void AutofillBottomSheetTabHelper::OnFieldTypesDetermined(
   }
   std::string frame_id = frame->GetFrameId();
   AttachListeners(renderer_ids, registered_payments_renderer_ids_[frame_id],
-                  frame_id);
+                  frame_id,
+                  /*must_be_empty=*/true);
 }
 
 // Private methods

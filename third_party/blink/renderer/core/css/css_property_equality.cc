@@ -1054,7 +1054,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kWebkitBoxAlign:
     case CSSPropertyID::kWebkitBoxDecorationBreak:
     case CSSPropertyID::kWebkitBoxDirection:
-    case CSSPropertyID::kWebkitBoxDirectionAlternative:
     case CSSPropertyID::kWebkitBoxFlex:
     case CSSPropertyID::kWebkitBoxOrdinalGroup:
     case CSSPropertyID::kWebkitBoxOrient:
@@ -1307,7 +1306,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kInherits:
     case CSSPropertyID::kInitialValue:
     case CSSPropertyID::kLineGapOverride:
-    case CSSPropertyID::kNavigationTrigger:
+    case CSSPropertyID::kNavigation:
     case CSSPropertyID::kNegative:
     case CSSPropertyID::kOverrideColors:
     case CSSPropertyID::kPad:

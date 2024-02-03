@@ -69,6 +69,10 @@ BASE_DECLARE_FEATURE(kDownloadBubbleV2);
 // server-side.
 BASE_DECLARE_FEATURE(kDownloadTailoredWarnings);
 
+// Controls whether Standard Safe Browsing users are permitted to provide
+// passwords for local decryption on encrypted archives.
+BASE_DECLARE_FEATURE(kEncryptedArchivesMetadata);
+
 // Enables decreased Phishguard password length minimum.
 BASE_DECLARE_FEATURE(kEvaluateProtectedPasswordLengthMinimum);
 
@@ -259,6 +263,9 @@ BASE_DECLARE_FEATURE(kStrictDownloadTimeout);
 // Specifies the duration of the timeout, in milliseconds.
 extern const base::FeatureParam<int> kStrictDownloadTimeoutMilliseconds;
 
+// Enables suspicious site detection for real time URL lookups.
+BASE_DECLARE_FEATURE(kSuspiciousSiteDetectionRTLookups);
+
 // Controls the daily quota for the suspicious site trigger.
 BASE_DECLARE_FEATURE(kSuspiciousSiteTriggerQuotaFeature);
 
@@ -326,6 +333,8 @@ extern const base::FeatureParam<std::string> kRedWarningSurveyReportTypeFilter;
 // the warning or not. Note: specifying any combination of TRUE and FALSE
 // corresponds to "don't care."
 extern const base::FeatureParam<std::string> kRedWarningSurveyDidProceedFilter;
+
+BASE_DECLARE_FEATURE(kClientSideDetectionImagesCache);
 
 }  // namespace safe_browsing
 #endif  // COMPONENTS_SAFE_BROWSING_CORE_COMMON_FEATURES_H_

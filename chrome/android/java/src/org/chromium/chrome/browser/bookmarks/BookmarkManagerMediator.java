@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
+import static org.chromium.components.browser_ui.widget.BrowserUiListMenuUtils.buildMenuListItem;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CallbackController;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplierImpl;
@@ -43,13 +44,11 @@ import org.chromium.chrome.browser.ui.signin.SyncPromoController.SyncPromoState;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.browser_ui.widget.BrowserUiListMenuUtils;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DragListener;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DraggabilityProvider;
 import org.chromium.components.browser_ui.widget.dragreorder.DragStateDelegate;
-import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
-import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
-import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
@@ -60,6 +59,8 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.components.power_bookmarks.PowerBookmarkType;
 import org.chromium.ui.accessibility.AccessibilityState;
+import org.chromium.ui.listmenu.ListMenu;
+import org.chromium.ui.listmenu.ListMenuItemProperties;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -114,10 +115,6 @@ class BookmarkManagerMediator
 
     private final BookmarkModelObserver mBookmarkModelObserver =
             new BookmarkModelObserver() {
-                private final PendingRunnable mPendingRefresh =
-                        new PendingRunnable(
-                                TaskTraits.UI_DEFAULT, BookmarkManagerMediator.this::refresh);
-
                 @Override
                 public void bookmarkNodeChildrenReordered(BookmarkItem node) {
                     if (!mIsBookmarkModelReorderingInProgress) {
@@ -137,8 +134,7 @@ class BookmarkManagerMediator
                     BookmarkId id = node.getId();
                     if (getCurrentUiMode() == BookmarkUiMode.FOLDER) {
                         // If the folder is removed in folder mode, show the parent folder or falls
-                        // back to
-                        // all bookmarks mode.
+                        // back to all bookmarks mode.
                         if (Objects.equals(id, getCurrentFolderId())) {
                             if (mBookmarkModel.getTopLevelFolderIds().contains(id)) {
                                 openFolder(mBookmarkModel.getDefaultFolderViewLocation());
@@ -147,13 +143,10 @@ class BookmarkManagerMediator
                             }
                         } else {
                             // Needs to remove the current node, and update any transitive parents
-                            // that may
-                            // be showing child counts. Just refresh() for now.
-                            // refresh();
+                            // that may be showing child counts. Just refresh() for now.
                             int position = getPositionForBookmark(id);
                             // If the position couldn't be found, then do a full refresh. Otherwise
-                            // be
-                            // smart and remove only the index of the removed bookmark.
+                            // be smart and remove only the index of the removed bookmark.
                             if (position == -1) {
                                 mPendingRefresh.post();
                             } else {
@@ -207,8 +200,7 @@ class BookmarkManagerMediator
                 @Override
                 public BookmarkUiState push(BookmarkUiState item) {
                     // The back press state depends on the size of stack. So push/pop item first in
-                    // order
-                    // to keep the size update-to-date.
+                    // order to keep the size update-to-date.
                     var state = super.push(item);
                     onBackPressStateChanged();
                     return state;
@@ -392,6 +384,10 @@ class BookmarkManagerMediator
     private final SnackbarManager mSnackbarManager;
     private final ImprovedBookmarkRowCoordinator mImprovedBookmarkRowCoordinator;
     private final Set<PowerBookmarkType> mCurrentPowerFilter = new HashSet<>();
+    private final CallbackController mCallbackController = new CallbackController();
+    private final PendingRunnable mPendingRefresh =
+            new PendingRunnable(
+                    TaskTraits.UI_DEFAULT, mCallbackController.makeCancelable(this::refresh));
 
     // Whether this instance has been destroyed.
     private boolean mIsDestroyed;
@@ -525,6 +521,7 @@ class BookmarkManagerMediator
 
         mBookmarkUndoController.destroy();
         mBookmarkQueryHandler.destroy();
+        mCallbackController.destroy();
 
         mBookmarkUiPrefs.removeObserver(mBookmarkUiPrefsObserver);
 
@@ -573,7 +570,7 @@ class BookmarkManagerMediator
 
         if (mBookmarkModel.isBookmarkModelLoaded()) {
             BookmarkUiState searchState = null;
-            if (!mStateStack.isEmpty() && mStateStack.peek().mUiMode == BookmarkUiMode.SEARCHING) {
+            if (getCurrentUiMode() == BookmarkUiMode.SEARCHING) {
                 searchState = mStateStack.pop();
             }
 
@@ -766,8 +763,7 @@ class BookmarkManagerMediator
 
     @Override
     public @BookmarkUiMode int getCurrentUiMode() {
-        if (mStateStack.isEmpty()) return BookmarkUiMode.LOADING;
-        return mStateStack.peek().mUiMode;
+        return mStateStack.isEmpty() ? BookmarkUiMode.LOADING : mStateStack.peek().mUiMode;
     }
 
     @Override
@@ -824,10 +820,6 @@ class BookmarkManagerMediator
 
     // Private methods.
 
-    private @Nullable BookmarkId getCurrentFolderId() {
-        return mStateStack.isEmpty() ? null : mStateStack.peek().mFolder;
-    }
-
     /**
      * Puts all UI elements to loading state. This state might be overridden synchronously by {@link
      * #updateForUrl(String)}, if the bookmark model is already loaded.
@@ -857,11 +849,13 @@ class BookmarkManagerMediator
                             mBookmarkModel.getDefaultFolderViewLocation(), mBookmarkModel);
         }
 
-        if (!mStateStack.isEmpty() && mStateStack.peek().equals(state)) return;
+        @BookmarkUiMode int currentUiMode = getCurrentUiMode();
+        @Nullable BookmarkUiState currentState = getCurrentUiState();
+        if (Objects.equals(currentState, state)) return;
 
         // The loading state is not persisted in history stack and once we have a valid state it
         // shall be removed.
-        if (!mStateStack.isEmpty() && mStateStack.peek().mUiMode == BookmarkUiMode.LOADING) {
+        if (!mStateStack.isEmpty() && currentUiMode == BookmarkUiMode.LOADING) {
             mStateStack.pop();
         }
 
@@ -873,21 +867,21 @@ class BookmarkManagerMediator
         boolean preserveFolderBookmarksOnEmptySearch = false;
         // Don't queue multiple consecutive search states. Instead replace the previous with the new
         // one.
-        if (getCurrentUiMode() == BookmarkUiMode.SEARCHING
+        if (currentUiMode == BookmarkUiMode.SEARCHING
                 && state.mUiMode == BookmarkUiMode.SEARCHING) {
             mStateStack.pop();
-        } else if (getCurrentUiMode() == BookmarkUiMode.FOLDER
+        } else if (currentUiMode == BookmarkUiMode.FOLDER
                 && !BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
             preserveFolderBookmarksOnEmptySearch = true;
         } else if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
-                && getCurrentUiMode() != BookmarkUiMode.SEARCHING
+                && currentUiMode != BookmarkUiMode.SEARCHING
                 && state.mUiMode == BookmarkUiMode.SEARCHING) {
             // The initial state change to search should clear selection.
             mSelectionDelegate.clearSelection();
         }
 
         // Search states should only be the top most state. Back button should not restore them.
-        if (getCurrentUiMode() == BookmarkUiMode.SEARCHING
+        if (currentUiMode == BookmarkUiMode.SEARCHING
                 && state.mUiMode == BookmarkUiMode.FOLDER
                 && BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
             mStateStack.pop();
@@ -1086,6 +1080,7 @@ class BookmarkManagerMediator
 
     /** Refresh the list of bookmarks within the currently visible folder. */
     private void refresh() {
+        assert !mIsDestroyed;
         if (!mStateStack.isEmpty()) {
             notifyUi(mStateStack.peek(), /* preserveFolderBookmarksOnEmptySearch= */ false);
         }
@@ -1315,14 +1310,10 @@ class BookmarkManagerMediator
 
         propertyModel.set(
                 ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER,
-                (v) -> {
-                    bookmarkRowClicked(bookmarkId);
-                });
+                () -> bookmarkRowClicked(bookmarkId));
         propertyModel.set(
                 ImprovedBookmarkRowProperties.ROW_LONG_CLICK_LISTENER,
-                (v) -> {
-                    return bookmarkRowLongClicked(bookmarkId);
-                });
+                () -> bookmarkRowLongClicked(bookmarkId));
 
         return new ListItem(bookmarkListEntry.getViewType(), propertyModel);
     }
@@ -1457,7 +1448,7 @@ class BookmarkManagerMediator
                         setPriceTrackingEnabled(model, true);
                     }
                 };
-        return new BasicListMenu(mContext, listItems, delegate);
+        return BrowserUiListMenuUtils.getBasicListMenu(mContext, listItems, delegate);
     }
 
     void setPriceTrackingEnabled(PropertyModel model, boolean enabled) {
@@ -1486,7 +1477,11 @@ class BookmarkManagerMediator
 
     void toggleSelectionForRow(BookmarkId id) {
         mSelectionDelegate.toggleSelectionForItem(id);
-        PropertyModel model = mModelList.get(getPositionForBookmark(id)).model;
+        int index = getPositionForBookmark(id);
+        if (index < 0) {
+            return;
+        }
+        PropertyModel model = mModelList.get(index).model;
         model.set(ImprovedBookmarkRowProperties.SELECTED, mSelectionDelegate.isItemSelected(id));
     }
 
@@ -1499,7 +1494,11 @@ class BookmarkManagerMediator
     }
 
     void openBookmarkId(BookmarkId id) {
-        BookmarkItem item = mBookmarkModel.getBookmarkById(id);
+        @Nullable BookmarkItem item = mBookmarkModel.getBookmarkById(id);
+        if (item == null) {
+            return;
+        }
+
         if (item.isFolder()) {
             openFolder(id);
         } else {
@@ -1581,6 +1580,10 @@ class BookmarkManagerMediator
 
     private @Nullable BookmarkUiState getCurrentUiState() {
         return mStateStack.isEmpty() ? null : mStateStack.peek();
+    }
+
+    private @Nullable BookmarkId getCurrentFolderId() {
+        return mStateStack.isEmpty() ? null : mStateStack.peek().mFolder;
     }
 
     @VisibleForTesting

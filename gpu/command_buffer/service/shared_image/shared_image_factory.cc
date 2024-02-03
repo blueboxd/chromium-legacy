@@ -787,8 +787,9 @@ bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
                                          GrSurfaceOrigin surface_origin,
                                          SkAlphaType alpha_type,
                                          uint32_t usage) {
-  if (!D3DImageBackingFactory::IsSwapChainSupported())
+  if (!D3DImageBackingFactory::IsSwapChainSupported(gpu_preferences_)) {
     return false;
+  }
 
   auto backings = d3d_backing_factory_->CreateSwapChain(
       front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
@@ -798,8 +799,9 @@ bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
 }
 
 bool SharedImageFactory::PresentSwapChain(const Mailbox& mailbox) {
-  if (!D3DImageBackingFactory::IsSwapChainSupported())
+  if (!D3DImageBackingFactory::IsSwapChainSupported(gpu_preferences_)) {
     return false;
+  }
   auto it = shared_images_.find(mailbox);
   if (it == shared_images_.end()) {
     DLOG(ERROR) << "PresentSwapChain: Could not find shared image mailbox";
@@ -875,16 +877,22 @@ gpu::SharedImageCapabilities SharedImageFactory::MakeCapabilities() {
       is_angle_metal || is_skia_graphite;
   shared_image_caps.disable_r8_shared_images =
       workarounds_.r8_egl_images_broken;
+  shared_image_caps.disable_webgpu_shared_images =
+      workarounds_.disable_webgpu_shared_images;
 
 #if BUILDFLAG(IS_WIN)
   shared_image_caps.shared_image_d3d =
       D3DImageBackingFactory::IsD3DSharedImageSupported(gpu_preferences_);
   shared_image_caps.shared_image_swap_chain =
       shared_image_caps.shared_image_d3d &&
-      D3DImageBackingFactory::IsSwapChainSupported();
+      D3DImageBackingFactory::IsSwapChainSupported(gpu_preferences_);
 #endif  // BUILDFLAG(IS_WIN)
 
   return shared_image_caps;
+}
+
+bool SharedImageFactory::HasSharedImage(const Mailbox& mailbox) const {
+  return shared_images_.contains(mailbox);
 }
 
 void SharedImageFactory::SetGpuExtraInfo(

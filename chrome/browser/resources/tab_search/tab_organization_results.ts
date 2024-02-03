@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/cr_elements/mwb_shared_style.css.js';
@@ -16,9 +17,13 @@ import {TabData, TabItemType} from './tab_data.js';
 import {getTemplate} from './tab_organization_results.html.js';
 import {Tab} from './tab_search.mojom-webui.js';
 
+const MINIMUM_SCROLLABLE_MAX_HEIGHT: number = 204;
+const NON_SCROLLABLE_VERTICAL_SPACING: number = 120;
+
 export interface TabOrganizationResultsElement {
   $: {
     input: CrInputElement,
+    scrollable: HTMLElement,
   };
 }
 
@@ -32,6 +37,11 @@ export class TabOrganizationResultsElement extends PolymerElement {
       tabs: Array,
       name: String,
 
+      availableHeight: {
+        type: Number,
+        observer: 'onAvailableHeightChange_',
+      },
+
       tabDatas_: {
         type: Array,
         value: () => [],
@@ -42,6 +52,7 @@ export class TabOrganizationResultsElement extends PolymerElement {
 
   tabs: Tab[];
   name: string;
+  availableHeight: number;
 
   private tabDatas_: TabData[];
 
@@ -53,6 +64,13 @@ export class TabOrganizationResultsElement extends PolymerElement {
     return this.tabs.map(
         tab => new TabData(
             tab, TabItemType.OPEN_TAB, new URL(tab.url.url).hostname));
+  }
+
+  private onAvailableHeightChange_() {
+    const maxHeight = Math.max(
+        MINIMUM_SCROLLABLE_MAX_HEIGHT,
+        (this.availableHeight - NON_SCROLLABLE_VERTICAL_SPACING));
+    this.$.scrollable.style.maxHeight = maxHeight + 'px';
   }
 
   private onInputFocus_() {
@@ -69,6 +87,10 @@ export class TabOrganizationResultsElement extends PolymerElement {
   private onTabRemove_(event: DomRepeatEvent<TabData>) {
     const index = this.tabDatas_.indexOf(event.model.item);
     this.splice('tabs', index, 1);
+    this.dispatchEvent(new CustomEvent('remove-tab', {
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   private onCreateGroupClick_() {
@@ -77,6 +99,18 @@ export class TabOrganizationResultsElement extends PolymerElement {
       composed: true,
       detail: {name: this.name, tabs: this.tabs},
     }));
+  }
+
+  private onLearnMoreClick_() {
+    // TODO(emshack): Implement this
+  }
+
+  private onThumbsUpClick_() {
+    // TODO(emshack): Implement this
+  }
+
+  private onThumbsDownClick_() {
+    // TODO(emshack): Implement this
   }
 }
 

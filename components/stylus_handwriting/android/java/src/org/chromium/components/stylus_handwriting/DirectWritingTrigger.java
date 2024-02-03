@@ -73,6 +73,8 @@ class DirectWritingTrigger implements StylusWritingHandler, StylusApiOption {
     public void onWebContentsChanged(Context context, WebContents webContents) {
         updateDWSettings(context);
         webContents.setStylusWritingHandler(this);
+        mStylusWritingImeCallback = webContents.getStylusWritingImeCallback();
+        mCallback.setImeCallback(mStylusWritingImeCallback);
     }
 
     @Override
@@ -98,7 +100,7 @@ class DirectWritingTrigger implements StylusWritingHandler, StylusApiOption {
         if (isEditable) {
             if (!mStylusWritingDetected && mNeedsFocusedNodeChangedAfterTouchUp
                     && mStylusUpEvent != null) {
-                mBinder.updateEditableBounds(roundedBounds, currentView);
+                mBinder.updateEditableBounds(roundedBounds, currentView, true);
                 // Call onStopRecognition with editable bounds to show DW toolbar on Pen TAP in
                 // input field.
                 onStopRecognition(mStylusUpEvent, roundedBounds, currentView);
@@ -116,10 +118,8 @@ class DirectWritingTrigger implements StylusWritingHandler, StylusApiOption {
     }
 
     @Override
-    public boolean requestStartStylusWriting(StylusWritingImeCallback imeCallback) {
+    public boolean requestStartStylusWriting() {
         if (!mDwServiceEnabled || !mBinder.isServiceConnected()) return false;
-        mStylusWritingImeCallback = imeCallback;
-        mCallback.setImeCallback(imeCallback);
         StylusApiOption.recordStylusHandwritingTriggered(Api.DIRECT_WRITING);
         mStylusWritingDetected = true;
         // We know writing can be started but wait for onEditElementFocusedForStylusWriting to be
@@ -128,7 +128,7 @@ class DirectWritingTrigger implements StylusWritingHandler, StylusApiOption {
     }
 
     private void startRecognition(Rect editableBound) {
-        if (mCurrentStylusDownEvent == null) return;
+        if (mCurrentStylusDownEvent == null || mStylusWritingImeCallback == null) return;
 
         View rootView = mStylusWritingImeCallback.getContainerView();
         if (!mBinder.startRecognition(editableBound, mCurrentStylusDownEvent, rootView)) return;
@@ -171,18 +171,22 @@ class DirectWritingTrigger implements StylusWritingHandler, StylusApiOption {
         // enabled. Platform Crash occurs if it is created when DW setting is not enabled.
         if (mCallback != null) return;
         mCallback = new DirectWritingServiceCallback();
-        mCallback.setTriggerCallback(new DirectWritingServiceCallback.TriggerCallback() {
-            @Override
-            public void updateEditableBoundsToService() {
-                mBinder.updateEditableBounds(
-                        mEditableNodeBounds, mStylusWritingImeCallback.getContainerView());
-            }
+        mCallback.setTriggerCallback(
+                new DirectWritingServiceCallback.TriggerCallback() {
+                    @Override
+                    public void updateEditableBoundsToService() {
+                        if (mStylusWritingImeCallback == null) return;
+                        mBinder.updateEditableBounds(
+                                mEditableNodeBounds,
+                                mStylusWritingImeCallback.getContainerView(),
+                                true);
+                    }
 
-            @Override
-            public boolean isHandwritingIconShowing() {
-                return mIsHandwritingIconShowing;
-            }
-        });
+                    @Override
+                    public boolean isHandwritingIconShowing() {
+                        return mIsHandwritingIconShowing;
+                    }
+                });
     }
 
     @Override
@@ -217,6 +221,12 @@ class DirectWritingTrigger implements StylusWritingHandler, StylusApiOption {
         mBinder.unbindService(context);
     }
 
+    @Override
+    public void onImeAdapterDestroyed() {
+        mStylusWritingImeCallback = null;
+        mCallback.setImeCallback(null);
+    }
+
     /*
      * This API needs to be called before starting recognition to bind direct writing service.
      */
@@ -246,6 +256,11 @@ class DirectWritingTrigger implements StylusWritingHandler, StylusApiOption {
 
     void setServiceBinderForTest(DirectWritingServiceBinder serviceBinder) {
         mBinder = serviceBinder;
+    }
+
+    @VisibleForTesting
+    StylusWritingImeCallback getStylusWritingImeCallbackForTest() {
+        return mStylusWritingImeCallback;
     }
 
     @VisibleForTesting
@@ -442,7 +457,7 @@ class DirectWritingTrigger implements StylusWritingHandler, StylusApiOption {
         startRecognition(focusedEditBounds);
         mCallback.updateEditableBounds(focusedEditBounds, cursorPosition);
         mBinder.updateEditableBounds(
-                focusedEditBounds, mStylusWritingImeCallback.getContainerView());
+                focusedEditBounds, mStylusWritingImeCallback.getContainerView(), false);
         return editorBoundsInfo;
     }
 

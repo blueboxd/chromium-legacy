@@ -81,7 +81,6 @@ void IpProtectionConfigProvider::TryGetAuthTokens(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CHECK(!is_shutting_down_);
   SetUp();
-  CHECK(proxy_layer == network::mojom::IpProtectionProxyLayer::kProxyA);
 
   // The `batch_size` is cast to an `int` for use by BlindSignAuth, so check
   // for overflow here.
@@ -98,6 +97,7 @@ void IpProtectionConfigProvider::TryGetAuthTokens(
     return;
   }
 
+  // TODO(crbug.com/1491092): Pass in proxy_layer parameter.
   RequestOAuthToken(batch_size, std::move(callback));
 }
 
@@ -114,9 +114,22 @@ void IpProtectionConfigProvider::GetProxyList(GetProxyListCallback callback) {
           std::move(callback).Run(absl::nullopt);
           return;
         }
-        std::vector<std::string> proxy_list(
-            response->first_hop_hostnames().begin(),
-            response->first_hop_hostnames().end());
+        std::vector<std::vector<std::string>> proxy_list;
+        if (net::features::kIpPrivacyUseProxyChains.Get()) {
+          for (const auto& proxy_chain : response->proxy_chain()) {
+            std::vector<std::string> proxies = {proxy_chain.proxy_a()};
+            // TODO(crbug.com/1491092): Remove check once proxy_b is populated
+            // by Phosphor.
+            if (!proxy_chain.proxy_b().empty()) {
+              proxies.emplace_back(proxy_chain.proxy_b());
+            }
+            proxy_list.push_back(std::move(proxies));
+          }
+        } else {
+          for (const auto& hostname : response->first_hop_hostnames()) {
+            proxy_list.push_back({hostname});
+          }
+        }
         VLOG(2) << "IPATP::GetProxyList got proxy list of length "
                 << proxy_list.size();
         std::move(callback).Run(std::move(proxy_list));
@@ -194,6 +207,7 @@ void IpProtectionConfigProvider::OnRequestOAuthTokenCompleted(
   FetchBlindSignedToken(access_token_info, batch_size, std::move(callback));
 }
 
+// TODO(crbug.com/1491092): Pass in proxy_layer parameter.
 void IpProtectionConfigProvider::FetchBlindSignedToken(
     signin::AccessTokenInfo access_token_info,
     uint32_t batch_size,

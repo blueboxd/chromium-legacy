@@ -100,11 +100,8 @@ class InterestGroupEnabledContentBrowserClient
 class FencedFrameReporterTest : public RenderViewHostTestHarness {
  public:
   FencedFrameReporterTest() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kAttributionFencedFrameReportingBeacon,
-                              blink::features::
-                                  kFencedFramesAutomaticBeaconCredentials},
-        /*disabled_features=*/{});
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAttributionFencedFrameReportingBeacon);
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory() {
@@ -119,7 +116,7 @@ class FencedFrameReporterTest : public RenderViewHostTestHarness {
     old_content_browser_client_ =
         SetBrowserClientForTesting(&test_content_browser_client_);
     RenderViewHostTestHarness::SetUp();
-    NavigateAndCommit(main_frame_url_);
+    NavigateAndCommit(request_initiator_);
   }
 
   void TearDown() override {
@@ -132,19 +129,17 @@ class FencedFrameReporterTest : public RenderViewHostTestHarness {
                        const absl::optional<std::string>& event_data) {
     EXPECT_EQ(request.url, expected_url);
     EXPECT_EQ(request.mode, network::mojom::RequestMode::kCors);
+    EXPECT_EQ(request.request_initiator,
+              url::Origin::Create(request_initiator_));
     EXPECT_EQ(request.credentials_mode, network::mojom::CredentialsMode::kOmit);
     EXPECT_TRUE(request.trusted_params->isolation_info.network_isolation_key()
                     .IsTransient());
 
-    // Checks specific to DestinationURL events.
     if (!event_data.has_value()) {
       EXPECT_EQ(request.method, net::HttpRequestHeaders::kGetMethod);
-      EXPECT_EQ(request.request_initiator, main_frame_origin_);
       return;
     }
 
-    // Checks specific to DestinationEnum events.
-    EXPECT_EQ(request.request_initiator, report_url_declarer_origin_);
     EXPECT_EQ(request.method, net::HttpRequestHeaders::kPostMethod);
 
     std::string content_type;
@@ -176,14 +171,12 @@ class FencedFrameReporterTest : public RenderViewHostTestHarness {
 
   network::TestURLLoaderFactory test_url_loader_factory_;
 
-  const GURL main_frame_url_{"https://main_frame.test/"};
-  const GURL report_url_declarer_{"https://report_declarer.test/"};
+  const GURL request_initiator_{"https://initiator.test/"};
   const GURL report_destination_{"https://report_destination.test"};
   const GURL report_destination2_{"https://report_destination2.test"};
   const GURL report_destination3_{"https://report_destination3.test"};
-  const url::Origin main_frame_origin_ = url::Origin::Create(main_frame_url_);
-  const url::Origin report_url_declarer_origin_ =
-      url::Origin::Create(report_url_declarer_);
+  const url::Origin main_frame_origin_ =
+      url::Origin::Create(request_initiator_);
   const url::Origin report_destination_origin_ =
       url::Origin::Create(report_destination_);
   const url::Origin report_destination2_origin_ =
@@ -206,7 +199,6 @@ TEST_F(FencedFrameReporterTest, NoReportNoMap) {
   scoped_refptr<FencedFrameReporter> reporter =
       FencedFrameReporter::CreateForSharedStorage(
           shared_url_loader_factory(), browser_context(),
-          report_url_declarer_origin_,
           /*reporting_url_map=*/{{"event_type", report_destination_}});
   std::string error_message;
   blink::mojom::ConsoleMessageLevel console_message_level =
@@ -289,7 +281,6 @@ TEST_F(FencedFrameReporterTest, NoReportEmptyMap) {
   scoped_refptr<FencedFrameReporter> reporter =
       FencedFrameReporter::CreateForSharedStorage(shared_url_loader_factory(),
                                                   browser_context(),
-                                                  report_url_declarer_origin_,
                                                   /*reporting_url_map=*/{});
   std::string error_message;
   blink::mojom::ConsoleMessageLevel console_message_level =
@@ -313,7 +304,6 @@ TEST_F(FencedFrameReporterTest, NoReportEventTypeNotRegistered) {
   scoped_refptr<FencedFrameReporter> reporter =
       FencedFrameReporter::CreateForSharedStorage(
           shared_url_loader_factory(), browser_context(),
-          report_url_declarer_origin_,
           /*reporting_url_map=*/
           {{"registered_event_type", report_destination_}});
   std::string error_message;
@@ -339,7 +329,6 @@ TEST_F(FencedFrameReporterTest, NoReportBadUrl) {
   scoped_refptr<FencedFrameReporter> reporter =
       FencedFrameReporter::CreateForSharedStorage(
           shared_url_loader_factory(), browser_context(),
-          report_url_declarer_origin_,
           /*reporting_url_map=*/
           {{"no_url", GURL()},
            {"data_url", GURL("data:,only http is allowed")}});
@@ -374,7 +363,6 @@ TEST_F(FencedFrameReporterTest, SendReports) {
   scoped_refptr<FencedFrameReporter> reporter =
       FencedFrameReporter::CreateForSharedStorage(
           shared_url_loader_factory(), browser_context(),
-          report_url_declarer_origin_,
           /*reporting_url_map=*/
           {{"event_type", report_destination_},
            {"event_type2", report_destination2_}});
@@ -429,15 +417,12 @@ TEST_F(FencedFrameReporterTest, SendFledgeReportsAfterMapsReceived) {
   // Receive all mappings.
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kSeller,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{"event_type", report_destination_}});
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kComponentSeller,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{"event_type", report_destination2_}});
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{"event_type", report_destination3_}},
       /*reporting_ad_macros=*/FencedFrameReporter::ReportingMacros());
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
@@ -542,7 +527,6 @@ TEST_F(FencedFrameReporterTest, SendReportsFledgeBeforeMapsReceived) {
 
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kSeller,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{"event_type", report_destination_}});
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 2);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[0].request,
@@ -554,7 +538,6 @@ TEST_F(FencedFrameReporterTest, SendReportsFledgeBeforeMapsReceived) {
 
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kComponentSeller,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{"event_type", report_destination2_}});
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 3);
   ValidateRequest((*test_url_loader_factory_.pending_requests())[2].request,
@@ -562,7 +545,6 @@ TEST_F(FencedFrameReporterTest, SendReportsFledgeBeforeMapsReceived) {
 
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{"event_type", report_destination3_}},
       /*reporting_ad_macros=*/FencedFrameReporter::ReportingMacros());
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 5);
@@ -616,7 +598,6 @@ TEST_F(FencedFrameReporterTest, SendFledgeReportsBeforeMapsReceivedWithErrors) {
       console_message_level));
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kSeller,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{"event_type", report_destination_}});
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
 
@@ -629,9 +610,8 @@ TEST_F(FencedFrameReporterTest, SendFledgeReportsBeforeMapsReceivedWithErrors) {
       error_message, console_message_level));
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kComponentSeller,
-      report_url_declarer_origin_,
-      /*reporting_url_map=*/
-      {{"event_type", GURL("data:,only http is allowed")}});
+      /*reporting_url_map=*/{
+          {"event_type", GURL("data:,only http is allowed")}});
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
 
   // SendReport() is called, and then a mapping is received with an empty map.
@@ -648,7 +628,6 @@ TEST_F(FencedFrameReporterTest, SendFledgeReportsBeforeMapsReceivedWithErrors) {
       console_message_level));
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{},
       /*reporting_ad_macros=*/FencedFrameReporter::ReportingMacros());
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
@@ -675,7 +654,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLNoOrEmptyAllowlist) {
     // Receive buyer mapping.
     reporter->OnUrlMappingReady(
         blink::FencedFrame::ReportingDestination::kBuyer,
-        report_url_declarer_origin_,
         /*reporting_url_map=*/{{}},
         /*reporting_ad_macros=*/FencedFrameReporter::ReportingMacros());
     EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
@@ -711,7 +689,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLNoAdMacroMap) {
 
   // Receive a buyer mapping whose `reporting_ad_macro_map` is absl::nullopt.
   reporter->OnUrlMappingReady(blink::FencedFrame::ReportingDestination::kBuyer,
-                              report_url_declarer_origin_,
                               /*reporting_url_map=*/{{}},
                               /*reporting_ad_macros=*/absl::nullopt);
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
@@ -747,7 +724,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLEmptyAdMacroMap) {
 
   // Receive buyer mapping.
   reporter->OnUrlMappingReady(blink::FencedFrame::ReportingDestination::kBuyer,
-                              report_url_declarer_origin_,
                               /*reporting_url_map=*/{{}},
                               /*reporting_ad_macro_map=*/{{}});
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
@@ -787,7 +763,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLCompleteMacroSubstitution) {
   // Receive buyer mapping.
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{}},
       /*reporting_ad_macros=*/
       FencedFrameReporter::ReportingMacros(
@@ -830,7 +805,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLPartialMacroSubstitution) {
   // Receive buyer mapping.
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{}},
       /*reporting_ad_macros=*/
       FencedFrameReporter::ReportingMacros({{"${FOO}", "${FOO}${FOO}"}}));
@@ -873,7 +847,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLNestedMacro) {
   // Receive buyer mapping.
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{}},
       /*reporting_ad_macros=*/
       FencedFrameReporter::ReportingMacros(
@@ -914,7 +887,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationHTTPURL) {
 
   // Receive buyer mapping.
   reporter->OnUrlMappingReady(blink::FencedFrame::ReportingDestination::kBuyer,
-                              report_url_declarer_origin_,
                               /*reporting_url_map=*/{{}},
                               /*reporting_ad_macros=*/
                               FencedFrameReporter::ReportingMacros({}));
@@ -953,7 +925,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationInvalidURL) {
 
   // Receive buyer mapping.
   reporter->OnUrlMappingReady(blink::FencedFrame::ReportingDestination::kBuyer,
-                              report_url_declarer_origin_,
                               /*reporting_url_map=*/{{}},
                               /*reporting_ad_macros=*/
                               FencedFrameReporter::ReportingMacros({}));
@@ -995,7 +966,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationInvalidURLAfterMacros) {
   // This macro isn't the format that will be used by Protected Audience, but it
   // makes it easy to test this particular case.
   reporter->OnUrlMappingReady(blink::FencedFrame::ReportingDestination::kBuyer,
-                              report_url_declarer_origin_,
                               /*reporting_url_map=*/{{}},
                               /*reporting_ad_macros=*/
                               FencedFrameReporter::ReportingMacros(
@@ -1036,7 +1006,6 @@ TEST_F(FencedFrameReporterTest, CustomDestinationURLAllowlist) {
   // Receive buyer mapping.
   reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      report_url_declarer_origin_,
       /*reporting_url_map=*/{{"event_type", report_destination_}},
       /*reporting_ad_macros=*/FencedFrameReporter::ReportingMacros());
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
@@ -1359,7 +1328,6 @@ TEST_F(FencedFrameReporterTest, AttributionManagerShutDown_NoCrash) {
   scoped_refptr<FencedFrameReporter> reporter =
       FencedFrameReporter::CreateForSharedStorage(
           shared_url_loader_factory(), browser_context(),
-          report_url_declarer_origin_,
           /*reporting_url_map=*/
           {{"event_type", report_destination_}});
 

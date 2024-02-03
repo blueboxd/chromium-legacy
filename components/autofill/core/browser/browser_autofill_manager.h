@@ -28,7 +28,6 @@
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_trigger_details.h"
-#include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_autofill_history.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -101,9 +100,9 @@ enum class ValuePatternsMetric {
 
 // Manages saving and restoring the user's personal information entered into web
 // forms. One per frame; owned by the AutofillDriver.
-class BrowserAutofillManager : public AutofillManager,
-                               public SingleFieldFormFiller::SuggestionsHandler,
-                               public CreditCardAccessManager::Accessor {
+class BrowserAutofillManager
+    : public AutofillManager,
+      public SingleFieldFormFiller::SuggestionsHandler {
  public:
   BrowserAutofillManager(AutofillDriver* driver,
                          AutofillClient* client,
@@ -141,6 +140,15 @@ class BrowserAutofillManager : public AutofillManager,
       const std::u16string& cvc,
       const AutofillTriggerDetails& trigger_details);
 
+  // Records filling information and routes the filling back to the driver.
+  // TODO(crbug.com/1331312): Replace FormFieldData parameter by FieldGlobalId.
+  void FillOrPreviewField(mojom::ActionPersistence action_persistence,
+                          mojom::TextReplacement text_replacement,
+                          const FormData& form,
+                          const FormFieldData& field,
+                          const std::u16string& value,
+                          PopupItemId popup_item_id) override;
+
   // Reverts the last autofill operation on `form` that affected
   // `trigger_field`, virtual for testing. `renderer_action` denotes whether
   // this is an actual filling or a preview operation on the renderer side.
@@ -171,16 +179,6 @@ class BrowserAutofillManager : public AutofillManager,
       const FormData& form,
       const FormFieldData& field,
       const CreditCard* credit_card,
-      const AutofillTriggerDetails& trigger_details);
-
-  // Fetches the related virtual card information given the related actual card
-  // |guid| and fills the information into the form.
-  // TODO(crbug.com/1330108): Clean up the API.
-  virtual void FillOrPreviewVirtualCardInformation(
-      mojom::ActionPersistence action_persistence,
-      const std::string& guid,
-      const FormData& form,
-      const FormFieldData& field,
       const AutofillTriggerDetails& trigger_details);
 
   // Returns true if the value/identifier is deletable. Fills out
@@ -472,9 +470,11 @@ class BrowserAutofillManager : public AutofillManager,
       bool skip_unrecognized_autocomplete_fields,
       bool is_refill) const;
 
-  // CreditCardAccessManager::Accessor
+  // When `FillOrPreviewCreditCardForm()` fetches a credit card, this gets
+  // called once the fetching has finished. If successful, the `credit_card` is
+  // filled.
   void OnCreditCardFetched(CreditCardFetchResult result,
-                           const CreditCard* credit_card) override;
+                           const CreditCard* credit_card);
 
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels();
@@ -516,12 +516,10 @@ class BrowserAutofillManager : public AutofillManager,
   // case.
   [[nodiscard]] bool ShouldPreventAutofillFromOverridingPrefilledField(
       mojom::ActionPersistence action_persistence,
-      AutofillField* cached_field,
-      FormFieldData* field_data,
+      AutofillField& cached_field,
+      const FormFieldData& field_data,
       bool is_initiating_field,
-      absl::variant<const AutofillProfile*, const CreditCard*>
-          profile_or_credit_card,
-      const std::u16string* optional_cvc);
+      const AutofillProfile& profile);
 
   // Creates a FormStructure using the FormData received from the renderer. Will
   // return an empty scoped_ptr if the data should not be processed for upload
@@ -604,12 +602,13 @@ class BrowserAutofillManager : public AutofillManager,
   //
   // Returns true if the field has been filled, false otherwise. This is
   // independent of whether the field was filled or autofilled before.
+  // TODO(crbug.com/1330108): Cleanup API and logic.
   bool FillFieldWithValue(
-      AutofillField* autofill_field,
+      AutofillField& autofill_field,
       absl::variant<const AutofillProfile*, const CreditCard*>
           profile_or_credit_card,
       const std::map<FieldGlobalId, std::u16string>& forced_fill_values,
-      FormFieldData* field_data,
+      FormFieldData& field_data,
       bool should_notify,
       const std::u16string& cvc,
       uint32_t profile_form_bitmask,
@@ -712,9 +711,6 @@ class BrowserAutofillManager : public AutofillManager,
   std::unique_ptr<FastCheckoutDelegate> fast_checkout_delegate_;
 
   std::string app_locale_;
-
-  // Used to help fill data into fields.
-  FieldFiller field_filler_;
 
   // Container holding the history of Autofill filling operations. Used to undo
   // some of the filling operations.

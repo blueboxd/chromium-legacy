@@ -19,15 +19,13 @@ namespace origin_trials {
 // not part of the tokens sort order with respect to being inserted in sorted
 // sets.
 struct PersistedTrialToken {
-  bool match_subdomains;
   std::string trial_name;
   base::Time token_expiry;
   blink::TrialToken::UsageRestriction usage_restriction;
   std::string token_signature;
   base::flat_set<std::string> partition_sites;
 
-  PersistedTrialToken(bool match_subdomains,
-                      std::string name,
+  PersistedTrialToken(std::string name,
                       base::Time expiry,
                       blink::TrialToken::UsageRestriction usage,
                       std::string signature,
@@ -53,8 +51,7 @@ struct PersistedTrialToken {
   bool InAnyPartition() const;
 
   // Return true if this token matches the information in |trial_token|,
-  // specifically the origin, match subdomains, trial name, expiry time, and
-  // signature attributes.
+  // specifically trial name, expiry time, and signature.
   bool Matches(const blink::TrialToken& trial_token) const;
 };
 

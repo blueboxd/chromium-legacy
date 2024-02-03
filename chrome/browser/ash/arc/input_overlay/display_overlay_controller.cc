@@ -15,6 +15,7 @@
 #include "base/functional/bind.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/action_highlight.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view_list_item.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/button_options_menu.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ash/arc/input_overlay/ui/message_view.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/nudge.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/nudge_view.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/target_view.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/ui_utils.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -53,6 +55,7 @@ constexpr char kEditingList[] = "GameControlsEditingList";
 constexpr char kInputMapping[] = "GameControlsInputMapping";
 constexpr char kEduationNudge[] = "GameControlsEducationNudge";
 constexpr char kDeleteEditShortcut[] = "DeleteEditShortcut";
+constexpr char kActionHighlight[] = "ActionHighlight";
 
 std::unique_ptr<views::Widget> CreateTransientWidget(
     aura::Window* parent_window,
@@ -480,6 +483,7 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
       break;
 
     case DisplayMode::kView: {
+      RemoveActionHighlightWidget();
       if (GetActiveActionsSize() == 0u) {
         // If there is no active action in `kView` mode, it doesn't create
         // `input_mapping_widget_` to save resources. When
@@ -631,8 +635,10 @@ InputOverlayWindowStateType DisplayOverlayController::GetWindowStateType()
   return type;
 }
 
-void DisplayOverlayController::AddNewAction(ActionType action_type) {
-  touch_injector_->AddNewAction(action_type);
+void DisplayOverlayController::AddNewAction(ActionType action_type,
+                                            const gfx::Point& target_pos) {
+  touch_injector_->AddNewAction(action_type, target_pos);
+  ExitButtonPlaceMode();
 }
 
 void DisplayOverlayController::RemoveAction(Action* action) {
@@ -695,7 +701,7 @@ void DisplayOverlayController::AddButtonOptionsMenuWidget(Action* action) {
       /*accept_events=*/true, /*is_floating=*/true);
   button_options_widget_->SetContentsView(
       std::make_unique<ButtonOptionsMenu>(this, action));
-  UpdateButtonOptionsMenuWidgetBounds(action);
+  UpdateButtonOptionsMenuWidgetBounds();
 
   button_options_widget_->ShowInactive();
 }
@@ -723,7 +729,7 @@ void DisplayOverlayController::SetButtonOptionsMenuWidgetVisibility(
 
   if (is_visible) {
     if (auto* menu = GetButtonOptionsMenu()) {
-      UpdateButtonOptionsMenuWidgetBounds(menu->action());
+      UpdateButtonOptionsMenuWidgetBounds();
     }
     button_options_widget_->ShowInactive();
   } else {
@@ -782,13 +788,44 @@ void DisplayOverlayController::AddDeleteEditShortcutWidget(
 
   auto* window = delete_edit_shortcut_widget_->GetNativeWindow();
   window->parent()->StackChildAtTop(window);
-  delete_edit_shortcut_widget_->Show();
+  delete_edit_shortcut_widget_->ShowInactive();
 }
 
 void DisplayOverlayController::RemoveDeleteEditShortcutWidget() {
   if (delete_edit_shortcut_widget_) {
     delete_edit_shortcut_widget_->Close();
     delete_edit_shortcut_widget_.reset();
+  }
+}
+
+void DisplayOverlayController::AddActionHighlightWidget(Action* action) {
+  auto* anchor_view = action->action_view();
+  if (!action_highlight_widget_) {
+    action_highlight_widget_ = CreateTransientWidget(
+        touch_injector_->window(), /*widget_name=*/kActionHighlight,
+        /*accept_events=*/false, /*is_floating=*/false);
+    action_highlight_widget_->SetContentsView(
+        std::make_unique<ActionHighlight>(this, anchor_view));
+  }
+
+  auto* highlight = views::AsViewClass<ActionHighlight>(
+      action_highlight_widget_->GetContentsView());
+  highlight->UpdateAnchorView(anchor_view);
+
+  action_highlight_widget_->ShowInactive();
+  input_mapping_widget_->StackAboveWidget(action_highlight_widget_.get());
+}
+
+void DisplayOverlayController::RemoveActionHighlightWidget() {
+  if (action_highlight_widget_) {
+    action_highlight_widget_->Close();
+    action_highlight_widget_.reset();
+  }
+}
+
+void DisplayOverlayController::HideActionHighlightWidget() {
+  if (action_highlight_widget_) {
+    action_highlight_widget_->Hide();
   }
 }
 
@@ -802,21 +839,14 @@ void DisplayOverlayController::MayShowEduNudgeForEditingTip() {
   }
 }
 
-void DisplayOverlayController::UpdateButtonOptionsMenuWidgetBounds(
-    Action* action) {
+void DisplayOverlayController::UpdateButtonOptionsMenuWidgetBounds() {
+  // There is no `button_options_widget_` in view mode.
   if (!button_options_widget_) {
     return;
   }
 
   if (auto* menu = GetButtonOptionsMenu()) {
-    UpdateWidgetBoundsInRootWindow(
-        button_options_widget_.get(),
-        gfx::Rect(
-            action->action_view()->CalculateAttachViewPositionInRootWindow(
-                CalculateAvailableBounds(
-                    touch_injector_->window()->GetRootWindow()),
-                touch_injector_->content_bounds().origin(), menu),
-            menu->GetPreferredSize()));
+    menu->UpdateWidget();
   }
 }
 
@@ -839,6 +869,18 @@ void DisplayOverlayController::UpdateEditingListWidgetBounds() {
 
   if (auto* editing_list = GetEditingList()) {
     editing_list->UpdateWidget();
+  }
+}
+
+void DisplayOverlayController::UpdateTargetWidgetBounds() {
+  if (!target_widget_) {
+    return;
+  }
+
+  auto* target_view =
+      views::AsViewClass<TargetView>(target_widget_->GetContentsView());
+  if (target_view) {
+    target_view->UpdateWidgetBounds();
   }
 }
 
@@ -1074,6 +1116,7 @@ void DisplayOverlayController::UpdateForBoundsChanged() {
   if (IsBeta()) {
     UpdateInputMappingWidgetBounds();
     UpdateEditingListWidgetBounds();
+    UpdateTargetWidgetBounds();
 
     // Remove the floating window attached the ActionView.
     RemoveButtonOptionsMenuWidget();
@@ -1097,8 +1140,10 @@ void DisplayOverlayController::UpdateForBoundsChanged() {
 }
 
 void DisplayOverlayController::RemoveAllWidgets() {
+  RemoveTargetWidget();
   RemoveButtonOptionsMenuWidget();
   RemoveEditingListWidget();
+  RemoveActionHighlightWidget();
   RemoveInputMappingWidget();
 }
 
@@ -1158,6 +1203,15 @@ void DisplayOverlayController::RemoveEditingListWidget() {
   }
 }
 
+void DisplayOverlayController::SetEditingListVisibility(bool visible) {
+  DCHECK(editing_list_widget_);
+  if (visible) {
+    editing_list_widget_->ShowInactive();
+  } else {
+    editing_list_widget_->Hide();
+  }
+}
+
 EditingList* DisplayOverlayController::GetEditingList() {
   if (!editing_list_widget_) {
     return nullptr;
@@ -1174,6 +1228,37 @@ ButtonOptionsMenu* DisplayOverlayController::GetButtonOptionsMenu() {
 
   return views::AsViewClass<ButtonOptionsMenu>(
       button_options_widget_->GetContentsView());
+}
+
+void DisplayOverlayController::EnterButtonPlaceMode(ActionType action_type) {
+  RemoveDeleteEditShortcutWidget();
+  SetEditingListVisibility(/*visible=*/false);
+  AddTargetWidget(action_type);
+  // TODO(b/304806934): add rich nudge view.
+}
+
+void DisplayOverlayController::ExitButtonPlaceMode() {
+  // TODO(b/304806934): remove rich nudge view.
+  RemoveTargetWidget();
+  SetEditingListVisibility(/*visible=*/true);
+}
+
+void DisplayOverlayController::AddTargetWidget(ActionType action_type) {
+  DCHECK(!target_widget_);
+
+  target_widget_ = CreateTransientWidget(
+      touch_injector_->window(), /*widget_name=*/kInputMapping,
+      /*accept_events=*/true, /*is_floating=*/true);
+  target_widget_->SetContentsView(
+      std::make_unique<TargetView>(this, action_type));
+  target_widget_->ShowInactive();
+}
+
+void DisplayOverlayController::RemoveTargetWidget() {
+  if (target_widget_) {
+    target_widget_->Close();
+    target_widget_.reset();
+  }
 }
 
 void DisplayOverlayController::UpdateEventRewriteCapability() {

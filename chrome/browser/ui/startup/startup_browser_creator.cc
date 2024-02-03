@@ -100,8 +100,11 @@
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
+#include "chrome/browser/ash/floating_workspace/floating_workspace_service.h"
+#include "chrome/browser/ash/floating_workspace/floating_workspace_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "components/user_manager/user_manager.h"
 #else
@@ -124,7 +127,6 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/metrics/jumplist_metrics_win.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win.h"
@@ -748,15 +750,24 @@ void StartupBrowserCreator::LaunchBrowserForLastProfiles(
                                      : profile;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       if (process_startup == chrome::startup::IsProcessStartup::kYes) {
-        // If FullRestoreService is available for the profile (i.e. the full
-        // restore feature is enabled and the profile is a regular user
-        // profile), defer the browser launching to FullRestoreService code.
-        auto* full_restore_service =
-            ash::full_restore::FullRestoreService::GetForProfile(
-                profile_to_open);
-        if (full_restore_service) {
-          full_restore_service->LaunchBrowserWhenReady();
-          return;
+        if (ash::floating_workspace_util::IsFloatingWorkspaceV2Enabled()) {
+          ash::FloatingWorkspaceService::GetForProfile(profile_to_open);
+        }
+        // If floating workspace is enabled and safe mode is off, floating
+        // workspace will handle the app restore from user's workspace copy.
+        // Otherwise if safe mode is on, floating workspace will only emit
+        // notification and then delegate the actual work to full restore.
+        if (!ash::floating_workspace_util::ShouldHandleRestartRestore()) {
+          // If FullRestoreService is available for the profile (i.e. the full
+          // restore feature is enabled and the profile is a regular user
+          // profile), defer the browser launching to FullRestoreService code.
+          auto* full_restore_service =
+              ash::full_restore::FullRestoreService::GetForProfile(
+                  profile_to_open);
+          if (full_restore_service) {
+            full_restore_service->LaunchBrowserWhenReady();
+            return;
+          }
         }
       }
 #endif
@@ -996,7 +1007,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     if (user && user->GetType() == user_manager::USER_TYPE_KIOSK_APP) {
       ash::LaunchAppOrDie(
           profile, ash::KioskAppId::ForChromeApp(
-                       command_line.GetSwitchValueASCII(switches::kAppId)));
+                       command_line.GetSwitchValueASCII(switches::kAppId),
+                       user->GetAccountId()));
     } else if (user &&
                user->GetType() == user_manager::USER_TYPE_WEB_KIOSK_APP) {
       ash::LaunchAppOrDie(profile,
@@ -1177,8 +1189,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     // `switches::kWinJumplistAction` is expected to be set together with a
     // URL to open and with a specific profile dir.
     if (profile_info.mode == StartupProfileMode::kBrowserWindow) {
-      jumplist::LogJumplistActionFromSwitchValue(
-          command_line.GetSwitchValueASCII(switches::kWinJumplistAction));
       // Use a non-NULL pointer to indicate JumpList has been used. We re-use
       // chrome::kJumpListIconDirname as the key to the data.
       privacy_safe_profile->SetUserData(

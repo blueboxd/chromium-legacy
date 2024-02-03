@@ -61,8 +61,6 @@
 #include "chrome/browser/ash/login/screens/choobe_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
 #include "chrome/browser/ash/login/screens/consumer_update_screen.h"
-#include "chrome/browser/ash/login/screens/cryptohome_recovery_screen.h"
-#include "chrome/browser/ash/login/screens/cryptohome_recovery_setup_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/ash/login/screens/demo_setup_screen.h"
 #include "chrome/browser/ash/login/screens/device_disabled_screen.h"
@@ -76,8 +74,6 @@
 #include "chrome/browser/ash/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/ash/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_info_screen.h"
-#include "chrome/browser/ash/login/screens/gaia_password_changed_screen.h"
-#include "chrome/browser/ash/login/screens/gaia_password_changed_screen_legacy.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
 #include "chrome/browser/ash/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/ash/login/screens/hardware_data_collection_screen.h"
@@ -86,7 +82,6 @@
 #include "chrome/browser/ash/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/ash/login/screens/lacros_data_backward_migration_screen.h"
 #include "chrome/browser/ash/login/screens/lacros_data_migration_screen.h"
-#include "chrome/browser/ash/login/screens/local_password_setup_screen.h"
 #include "chrome/browser/ash/login/screens/local_state_error_screen.h"
 #include "chrome/browser/ash/login/screens/locale_switch_screen.h"
 #include "chrome/browser/ash/login/screens/management_transition_screen.h"
@@ -96,12 +91,20 @@
 #include "chrome/browser/ash/login/screens/network_screen.h"
 #include "chrome/browser/ash/login/screens/offline_login_screen.h"
 #include "chrome/browser/ash/login/screens/online_authentication_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/apply_online_password_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/cryptohome_recovery_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/cryptohome_recovery_setup_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/factor_setup_success_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/gaia_password_changed_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/gaia_password_changed_screen_legacy.h"
+#include "chrome/browser/ash/login/screens/osauth/local_password_setup_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/osauth_error_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/password_selection_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/packaged_license_screen.h"
-#include "chrome/browser/ash/login/screens/password_selection_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
-#include "chrome/browser/ash/login/screens/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/remote_activity_notification_screen.h"
 #include "chrome/browser/ash/login/screens/reset_screen.h"
 #include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
@@ -185,6 +188,9 @@
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/ash/login/os_install_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/os_trial_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/osauth/apply_online_password_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/osauth/factor_setup_success_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/osauth/osauth_error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/parental_handoff_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/password_selection_screen_handler.h"
@@ -921,11 +927,25 @@ WizardController::CreateScreens() {
         base::BindRepeating(&WizardController::OnPasswordSelectionScreenExit,
                             weak_factory_.GetWeakPtr())));
 
+    append(std::make_unique<ApplyOnlinePasswordScreen>(
+        oobe_ui->GetView<ApplyOnlinePasswordScreenHandler>()->AsWeakPtr(),
+        base::BindRepeating(&WizardController::OnApplyOnlinePasswordScreenExit,
+                            weak_factory_.GetWeakPtr())));
+
     append(std::make_unique<LocalPasswordSetupScreen>(
         oobe_ui->GetView<LocalPasswordSetupHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnLocalPasswordSetupScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
+
+  append(std::make_unique<OSAuthErrorScreen>(
+      oobe_ui->GetView<OSAuthErrorScreenHandler>()->AsWeakPtr(),
+      base::BindRepeating(&WizardController::OnOSAuthErrorScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<FactorSetupSuccessScreen>(
+      oobe_ui->GetView<FactorSetupSuccessScreenHandler>()->AsWeakPtr(),
+      base::BindRepeating(&WizardController::OnFactorSetupSuccessScreenExit,
+                          weak_factory_.GetWeakPtr())));
 
   return result;
 }
@@ -1024,6 +1044,10 @@ void WizardController::ShowLocalPasswordSetupScreen() {
   SetCurrentScreen(GetScreen(LocalPasswordSetupView::kScreenId));
 }
 
+void WizardController::ShowApplyOnlinePasswordScreen() {
+  SetCurrentScreen(GetScreen(ApplyOnlinePasswordScreenView::kScreenId));
+}
+
 void WizardController::ShowEnrollmentScreen() {
   // Update the enrollment configuration and start the screen.
   GetLoginDisplayHost()->GetOobeMetricsHelper()->RecordEnrollingUserType();
@@ -1100,6 +1124,14 @@ void WizardController::ShowCryptohomeRecoverySetupScreen() {
 
 void WizardController::ShowPasswordSelectionScreen() {
   SetCurrentScreen(GetScreen(PasswordSelectionScreenView::kScreenId));
+}
+
+void WizardController::ShowOSAuthErrorScreen() {
+  SetCurrentScreen(GetScreen(OSAuthErrorScreenView::kScreenId));
+}
+
+void WizardController::ShowFactorSetupSuccessScreen() {
+  SetCurrentScreen(GetScreen(FactorSetupSuccessScreenView::kScreenId));
 }
 
 void WizardController::ShowFingerprintSetupScreen() {
@@ -1326,21 +1358,6 @@ void WizardController::OnConsumerUpdateScreenExit(
     AdvanceToScreen(GaiaView::kScreenId);
   } else {
     AdvanceToScreen(PrefToScreenId(screen_name));
-  }
-}
-
-void WizardController::OnLocalPasswordSetupScreenExit(
-    LocalPasswordSetupScreen::Result result) {
-  OnScreenExit(LocalPasswordSetupView::kScreenId,
-               LocalPasswordSetupScreen::GetResultString(result));
-  switch (result) {
-    case LocalPasswordSetupScreen::Result::kBack:
-      ShowPasswordSelectionScreen();
-      return;
-    case LocalPasswordSetupScreen::Result::kDone:
-    case LocalPasswordSetupScreen::Result::kNotApplicable:
-      ShowFingerprintSetupScreen();
-      return;
   }
 }
 
@@ -1846,7 +1863,6 @@ void WizardController::OnQuickStartScreenExit(QuickStartScreen::Result result) {
     case QuickStartScreen::Result::CANCEL_AND_RETURN_TO_WELCOME:
       ShowWelcomeScreen();
       return;
-    case QuickStartScreen::Result::WIFI_CONNECTED:
     case QuickStartScreen::Result::WIFI_CREDENTIALS_RECEIVED:
     case QuickStartScreen::Result::CANCEL_AND_RETURN_TO_NETWORK:
       ShowNetworkScreen();
@@ -1946,8 +1962,8 @@ void WizardController::OnUpdateCompleted() {
   // Install language packs based on the user selected language.
   if (ash::features::IsLanguagePacksInOobeEnabled()) {
     const std::string locale = GetApplicationLocale();
-    language_packs::LanguagePackManager::GetInstance()->UpdatePacksForOobe(
-        locale, base::DoNothing());
+    language_packs::LanguagePackManager::UpdatePacksForOobe(locale,
+                                                            base::DoNothing());
   }
 
   if (demo_setup_controller_) {
@@ -2210,14 +2226,67 @@ void WizardController::OnPasswordSelectionScreenExit(
       DCHECK(did_go_back);
       return;
     }
-    case PasswordSelectionScreen::Result::LOCAL_PASSWORD:
+    case PasswordSelectionScreen::Result::LOCAL_PASSWORD_CHOICE:
+    case PasswordSelectionScreen::Result::LOCAL_PASSWORD_FORCED:
       ShowLocalPasswordSetupScreen();
       return;
-    case PasswordSelectionScreen::Result::GAIA_PASSWORD:
-      // TODO(b/291808449): Screen should set up GAIA password
-      // itself, proceed to next step.
+    case PasswordSelectionScreen::Result::GAIA_PASSWORD_CHOICE:
+    case PasswordSelectionScreen::Result::GAIA_PASSWORD_FALLBACK:
+    case PasswordSelectionScreen::Result::GAIA_PASSWORD_ENTERPRISE:
+      ShowApplyOnlinePasswordScreen();
+      return;
+  }
+}
+
+void WizardController::OnLocalPasswordSetupScreenExit(
+    LocalPasswordSetupScreen::Result result) {
+  OnScreenExit(LocalPasswordSetupView::kScreenId,
+               LocalPasswordSetupScreen::GetResultString(result));
+  switch (result) {
+    case LocalPasswordSetupScreen::Result::kBack:
+      ShowPasswordSelectionScreen();
+      return;
+    case LocalPasswordSetupScreen::Result::kDone:
+    case LocalPasswordSetupScreen::Result::kNotApplicable:
+      ShowFactorSetupSuccessScreen();
+      return;
+  }
+}
+
+void WizardController::OnApplyOnlinePasswordScreenExit(
+    ApplyOnlinePasswordScreen::Result result) {
+  OnScreenExit(ApplyOnlinePasswordScreenView::kScreenId,
+               ApplyOnlinePasswordScreen::GetResultString(result));
+  switch (result) {
+    case ApplyOnlinePasswordScreen::Result::kError:
+      ShowOSAuthErrorScreen();
+      return;
+    case ApplyOnlinePasswordScreen::Result::kSuccess:
+    case ApplyOnlinePasswordScreen::Result::kNotApplicable:
       ShowFingerprintSetupScreen();
       return;
+  }
+}
+
+void WizardController::OnOSAuthErrorScreenExit(
+    OSAuthErrorScreen::Result result) {
+  OnScreenExit(OSAuthErrorScreenView::kScreenId,
+               OSAuthErrorScreen::GetResultString(result));
+  switch (result) {
+    case OSAuthErrorScreen::Result::kAbortSignin:
+      ShowLoginScreen();
+      return;
+  }
+}
+
+void WizardController::OnFactorSetupSuccessScreenExit(
+    FactorSetupSuccessScreen::Result result) {
+  OnScreenExit(FactorSetupSuccessScreenView::kScreenId,
+               FactorSetupSuccessScreen::GetResultString(result));
+  switch (result) {
+    case FactorSetupSuccessScreen::Result::kNotApplicable:
+    case FactorSetupSuccessScreen::Result::kProceed:
+      ShowFingerprintSetupScreen();
   }
 }
 
@@ -2259,7 +2328,13 @@ void WizardController::OnRecommendAppsScreenExit(
 }
 
 void WizardController::OnRemoteActivityNotificationScreenExit() {
-  OnScreenExit(AppDownloadingScreenView::kScreenId, kDefaultExitReason);
+  // Remember the user acknowledged the message.
+  GetLocalState()->SetBoolean(::prefs::kRemoteAdminWasPresent, false);
+
+  // Cleanup OOBE state.
+  if (LoginDisplayHost::default_host()->HasUserPods()) {
+    LoginDisplayHost::default_host()->HideOobeDialog();
+  }
 }
 
 void WizardController::OnAppDownloadingScreenExit() {
@@ -2478,11 +2553,7 @@ void WizardController::StartTimezoneResolve() {
     return;
   }
 
-  geolocation_provider_ = std::make_unique<SimpleGeolocationProvider>(
-      g_browser_process->platform_part()->GetTimezoneResolverManager(),
-      shared_url_loader_factory_,
-      SimpleGeolocationProvider::DefaultGeolocationProviderURL());
-  geolocation_provider_->RequestGeolocation(
+  SimpleGeolocationProvider::GetInstance()->RequestGeolocation(
       base::Seconds(kResolveTimeZoneTimeoutSeconds),
       false /* send_wifi_geolocation_data */,
       false /* send_cellular_geolocation_data */,
@@ -2760,6 +2831,14 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowConsumerUpdateScreen();
   } else if (screen_id == PasswordSelectionScreenView::kScreenId) {
     ShowPasswordSelectionScreen();
+  } else if (screen_id == ApplyOnlinePasswordScreenView::kScreenId) {
+    ShowApplyOnlinePasswordScreen();
+  } else if (screen_id == OSAuthErrorScreenView::kScreenId) {
+    ShowOSAuthErrorScreen();
+  } else if (screen_id == FactorSetupSuccessScreenView::kScreenId) {
+    ShowFactorSetupSuccessScreen();
+  } else if (screen_id == LocalPasswordSetupView::kScreenId) {
+    ShowLocalPasswordSetupScreen();
   } else if (screen_id == TpmErrorView::kScreenId ||
              screen_id == GaiaPasswordChangedView::kScreenId ||
              screen_id == FamilyLinkNoticeView::kScreenId ||

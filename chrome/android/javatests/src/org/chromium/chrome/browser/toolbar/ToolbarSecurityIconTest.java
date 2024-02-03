@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifierJni;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
-import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TrustedCdn;
@@ -85,8 +84,6 @@ public final class ToolbarSecurityIconTest {
 
     @Mock private LocationBarModel.Natives mLocationBarModelJni;
 
-    @Mock private SearchEngineLogoUtils mSearchEngineLogoUtils;
-
     @Mock private ChromeAutocompleteSchemeClassifier.Natives mChromeAutocompleteSchemeClassifierJni;
 
     @Mock private Profile mMockProfile;
@@ -127,9 +124,7 @@ public final class ToolbarSecurityIconTest {
                                 context,
                                 NewTabPageDelegate.EMPTY,
                                 (url) -> url.getSpec(),
-                                (window) -> null,
-                                ToolbarUnitTestUtils.OFFLINE_STATUS,
-                                mSearchEngineLogoUtils));
+                                ToolbarUnitTestUtils.OFFLINE_STATUS));
         Profile.setLastUsedProfileForTesting(mMockProfile);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -222,7 +217,7 @@ public final class ToolbarSecurityIconTest {
         }
 
         assertEquals(
-                0,
+                R.drawable.omnibox_info,
                 mLocationBarModel.getSecurityIconResource(
                         ConnectionSecurityLevel.NONE,
                         IS_SMALL_DEVICE,

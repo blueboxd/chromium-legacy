@@ -61,12 +61,12 @@ inline OnceCallback<internal::MakeUnboundRunType<Functor, Args...>> BindOnce(
   static_assert(!internal::IsOnceCallback<std::decay_t<Functor>>() ||
                     (std::is_rvalue_reference<Functor&&>() &&
                      !std::is_const<std::remove_reference_t<Functor>>()),
-                "BindOnce requires non-const rvalue for OnceCallback binding."
-                " I.e.: base::BindOnce(std::move(callback)).");
+                "BindOnce requires non-const rvalue for OnceCallback binding, "
+                "i.e. base::BindOnce(std::move(callback)).");
   static_assert(
       std::conjunction_v<
           internal::AssertBindArgIsNotBasePassed<std::decay_t<Args>>...>,
-      "Use std::move() instead of base::Passed() with base::BindOnce()");
+      "Use std::move() instead of base::Passed() with base::BindOnce().");
 
   return internal::BindImpl<OnceCallback>(std::forward<Functor>(functor),
                                           std::forward<Args>(args)...);
@@ -424,8 +424,8 @@ internal::OwnedRefWrapper<std::decay_t<T>> OwnedRef(T&& t) {
 // via use of enable_if, and the second takes a T* which will not bind to T&.
 //
 // DEPRECATED - Do not use in new code. See https://crbug.com/1326449
-template <typename T,
-          std::enable_if_t<!std::is_lvalue_reference_v<T>>* = nullptr>
+template <typename T>
+  requires(!std::is_lvalue_reference_v<T>)
 inline internal::PassedWrapper<T> Passed(T&& scoper) {
   return internal::PassedWrapper<T>(std::move(scoper));
 }

@@ -124,11 +124,16 @@ bool FakeLoginDisplayHost::IsUserAllowlisted(
 
 void FakeLoginDisplayHost::ShowGaiaDialog(const AccountId& prefilled_account) {}
 
+void FakeLoginDisplayHost::StartUserRecovery(
+    const AccountId& account_to_recover) {}
+
 void FakeLoginDisplayHost::ShowAllowlistCheckFailedError() {}
 
 void FakeLoginDisplayHost::ShowOsInstallScreen() {}
 
 void FakeLoginDisplayHost::ShowGuestTosScreen() {}
+
+void FakeLoginDisplayHost::ShowRemoteActivityNotificationScreen() {}
 
 void FakeLoginDisplayHost::HideOobeDialog(bool saml_page_closed) {}
 
@@ -155,8 +160,6 @@ void FakeLoginDisplayHost::RequestSystemInfoUpdate() {}
 bool FakeLoginDisplayHost::HasUserPods() {
   return false;
 }
-
-void FakeLoginDisplayHost::VerifyOwnerForKiosk(base::OnceClosure) {}
 
 void FakeLoginDisplayHost::AddObserver(LoginDisplayHost::Observer* observer) {}
 

@@ -11,9 +11,9 @@
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_metrics.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/recipient_info.h"
@@ -48,7 +48,7 @@
 
   // Url which allows to change the password that is being shared. Can be null
   // for Android app credentials.
-  absl::optional<GURL> _changePasswordURL;
+  std::optional<GURL> _changePasswordURL;
 }
 
 - (instancetype)
@@ -57,7 +57,7 @@
                     recipients:(NSArray<RecipientInfoForIOSDisplay*>*)recipients
                        website:(NSString*)website
                            URL:(const GURL&)URL
-             changePasswordURL:(const absl::optional<GURL>&)changePasswordURL {
+             changePasswordURL:(const std::optional<GURL>&)changePasswordURL {
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _recipients = recipients;

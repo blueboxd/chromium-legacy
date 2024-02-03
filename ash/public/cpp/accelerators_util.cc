@@ -95,8 +95,29 @@ const base::flat_map<ui::KeyboardCode, std::u16string>& GetKeyDisplayMap() {
           {ui::KeyboardCode::VKEY_RETURN, u"enter"},
           {ui::KeyboardCode::VKEY_BACK, u"backspace"},
           {ui::KeyboardCode::VKEY_MEDIA_PLAY, u"MediaPlay"},
+          {ui::KeyboardCode::VKEY_NUMPAD0, u"numpad 0"},
+          {ui::KeyboardCode::VKEY_NUMPAD1, u"numpad 1"},
+          {ui::KeyboardCode::VKEY_NUMPAD2, u"numpad 2"},
+          {ui::KeyboardCode::VKEY_NUMPAD3, u"numpad 3"},
+          {ui::KeyboardCode::VKEY_NUMPAD4, u"numpad 4"},
+          {ui::KeyboardCode::VKEY_NUMPAD5, u"numpad 5"},
+          {ui::KeyboardCode::VKEY_NUMPAD6, u"numpad 6"},
+          {ui::KeyboardCode::VKEY_NUMPAD7, u"numpad 7"},
+          {ui::KeyboardCode::VKEY_NUMPAD8, u"numpad 8"},
+          {ui::KeyboardCode::VKEY_NUMPAD9, u"numpad 9"},
+          {ui::KeyboardCode::VKEY_ADD, u"numpad +"},
+          {ui::KeyboardCode::VKEY_DECIMAL, u"numpad ."},
+          {ui::KeyboardCode::VKEY_DIVIDE, u"numpad /"},
+          {ui::KeyboardCode::VKEY_MULTIPLY, u"numpad *"},
+          {ui::KeyboardCode::VKEY_SUBTRACT, u"numpad -"},
       }));
   return *key_display_map;
+}
+
+bool IsValidDomCode(ui::DomCode dom_code) {
+  return ui::KeycodeConverter::InvalidNativeKeycode() !=
+         ui::KeycodeConverter::UsbKeycodeToNativeKeycode(
+             static_cast<int32_t>(dom_code));
 }
 
 }  // namespace
@@ -124,7 +145,8 @@ std::u16string KeycodeToKeyString(ui::KeyboardCode key_code,
     ui::DomCode dom_code =
         ui::KeycodeConverter::MapUSPositionalShortcutKeyToDomCode(key_code);
     if (dom_code != ui::DomCode::NONE) {
-      if (layout_engine->Lookup(dom_code, /*event_flags=*/ui::EF_NONE, &dom_key,
+      if (IsValidDomCode(dom_code) &&
+          layout_engine->Lookup(dom_code, /*event_flags=*/ui::EF_NONE, &dom_key,
                                 &key_code_to_compare)) {
         if (dom_key.IsDeadKey()) {
           return GetStringForDeadKey(dom_key);
@@ -148,21 +170,9 @@ std::u16string KeycodeToKeyString(ui::KeyboardCode key_code,
 
   // Cache miss, get the key string and store it.
   for (const auto& dom_code : ui::kDomCodesArray) {
-    if (!layout_engine->Lookup(dom_code, /*event_flags=*/ui::EF_NONE, &dom_key,
+    if (IsValidDomCode(dom_code) &&
+        !layout_engine->Lookup(dom_code, /*event_flags=*/ui::EF_NONE, &dom_key,
                                &key_code_to_compare)) {
-      continue;
-    }
-
-    // Even though this isn't what we're looking for, we should still populate
-    // the cache as we're iterating through the DomCode array.
-    // Do not store "Unidentified".
-    if (key_code_to_compare != key_code) {
-      if (dom_key != ui::DomKey::UNIDENTIFIED) {
-        AcceleratorKeycodeLookupCache::Get()->InsertOrAssign(
-            key_code_to_compare,
-            base::UTF8ToUTF16(
-                ui::KeycodeConverter::DomKeyToKeyString(dom_key)));
-      }
       continue;
     }
 
@@ -170,13 +180,19 @@ std::u16string KeycodeToKeyString(ui::KeyboardCode key_code,
       continue;
     }
 
-    // Found the correct lookup, cache and return the string.
     const std::u16string key_string =
         base::UTF8ToUTF16(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
     if (dom_key != ui::DomKey::UNIDENTIFIED) {
       AcceleratorKeycodeLookupCache::Get()->InsertOrAssign(key_code,
                                                            key_string);
     }
+
+    // Even though this isn't what we're looking for, we should still populate
+    // the cache as we're iterating through the DomCode array.
+    if (key_code_to_compare != key_code) {
+      continue;
+    }
+
     return key_string;
   }
   return std::u16string();

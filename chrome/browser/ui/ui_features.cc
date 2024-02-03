@@ -36,6 +36,12 @@ const char kChromeLabsActivationParameterName[] =
 const base::FeatureParam<int> kChromeLabsActivationPercentage{
     &kChromeLabs, kChromeLabsActivationParameterName, 99};
 
+// When enabled, clicks outside the omnibox and its popup will close an open
+// omnibox popup.
+BASE_FEATURE(kCloseOmniboxPopupOnInactiveAreaClick,
+             "CloseOmniboxPopupOnInactiveAreaClick",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Create new Extensions app menu option (removing "More Tools -> Extensions")
 // with submenu to manage extensions and visit chrome web store.
 BASE_FEATURE(kExtensionsMenuInAppMenu,
@@ -146,21 +152,6 @@ BASE_FEATURE(kSidePanelCompanionDefaultPinned,
 BASE_FEATURE(kSidePanelPinning,
              "SidePanelPinning",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSidePanelMinimumWidth,
-             "SidePanelMinimumWidth",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<int> kSidePanelMinimumWidthParameter{
-    &kSidePanelMinimumWidth, "minPanelWidth", 360};
-int GetSidePanelMinimumWidth() {
-  if (base::FeatureList::IsEnabled(kSidePanelMinimumWidth)) {
-    return kSidePanelMinimumWidthParameter.Get();
-  }
-
-  // This is the default value used without this feature.
-  return 320;
-}
-
 #endif
 
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078

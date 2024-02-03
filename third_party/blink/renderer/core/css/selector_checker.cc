@@ -1680,14 +1680,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.MatchesDefaultPseudoClass();
     case CSSSelector::kPseudoDisabled:
       if (auto* fieldset = DynamicTo<HTMLFieldSetElement>(element)) {
-        if (RuntimeEnabledFeatures::
-                SendMouseEventsDisabledFormControlsEnabled()) {
-          // <fieldset> should never be considered disabled, but should still
-          // match the :enabled or :disabled pseudo-classes according to whether
-          // the attribute is set or not. See here for context:
-          // https://github.com/whatwg/html/issues/5886#issuecomment-1582410112
-          return fieldset->IsActuallyDisabled();
-        }
+        // <fieldset> should never be considered disabled, but should still
+        // match the :enabled or :disabled pseudo-classes according to whether
+        // the attribute is set or not. See here for context:
+        // https://github.com/whatwg/html/issues/5886#issuecomment-1582410112
+        return fieldset->IsActuallyDisabled();
       }
       return element.IsDisabledFormControl();
     case CSSSelector::kPseudoReadOnly:
@@ -1700,13 +1697,15 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.IsRequiredFormControl();
     case CSSSelector::kPseudoUserInvalid:
       CHECK(RuntimeEnabledFeatures::UserValidUserInvalidEnabled());
-      if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
+      if (auto* form_control =
+              DynamicTo<HTMLFormControlElementWithState>(element)) {
         return form_control->MatchesUserInvalidPseudo();
       }
       return false;
     case CSSSelector::kPseudoUserValid:
       CHECK(RuntimeEnabledFeatures::UserValidUserInvalidEnabled());
-      if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
+      if (auto* form_control =
+              DynamicTo<HTMLFormControlElementWithState>(element)) {
         return form_control->MatchesUserValidPseudo();
       }
       return false;
@@ -1976,6 +1975,33 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoRelativeAnchor:
       DCHECK(context.relative_anchor_element);
       return context.relative_anchor_element == &element;
+    case CSSSelector::kPseudoActiveViewTransition: {
+      // :active_view_transition is only valid on the html element.
+      if (!IsA<HTMLElement>(element)) {
+        return false;
+      }
+
+      if (mode_ == kResolvingStyle) {
+        if (UNLIKELY(context.is_inside_has_pseudo_class)) {
+          element.SetAncestorsOrSiblingsAffectedByActiveViewTransitionInHas();
+        } else if (ImpactsNonSubject(context)) {
+          element.SetChildrenOrSiblingsAffectedByActiveViewTransition();
+        }
+      }
+      if (ImpactsSubject(context)) {
+        result.SetFlag(MatchFlag::kAffectedByActiveViewTransition);
+      }
+
+      // The pseudo is only valid if there is a transition.
+      auto* transition =
+          ViewTransitionUtils::GetTransition(element.GetDocument());
+      if (!transition) {
+        return false;
+      }
+
+      // Ask the transition to match based on the argument list.
+      return transition->MatchForActiveViewTransition(selector.IdentList());
+    }
     case CSSSelector::kPseudoUnparsed:
       // Only kept around for parsing; can never match anything
       // (because we don't know what it's supposed to mean).

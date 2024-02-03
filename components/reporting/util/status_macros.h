@@ -5,11 +5,10 @@
 #ifndef COMPONENTS_REPORTING_UTIL_STATUS_MACROS_H_
 #define COMPONENTS_REPORTING_UTIL_STATUS_MACROS_H_
 
+#include "base/types/always_false.h"
 #include "base/types/expected.h"
 #include "components/reporting/util/status.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-// TODO(b/300464285): Remove this header inclusion here.
-#include "base/types/expected_macros.h"
 
 namespace reporting::internal {
 // Helper functions for the macro RETURN_IF_ERROR_STATUS. Overloads of the
@@ -22,17 +21,11 @@ absl::optional<base::unexpected<Status>> ShouldReturnStatus(
 absl::optional<base::unexpected<Status>> ShouldReturnStatus(
     base::unexpected<Status>&& status);
 
-// Helper struct to display T in error message for the static_assert
-// failure.
-template <typename...>
-struct always_false {
-  static constexpr bool value = false;
-};
-
 template <typename T>
 void ShouldReturnStatus(T) {
-  static_assert(always_false<T>::value,
-                "T must be either Status or base::expected<Status>");
+  static_assert(base::AlwaysFalse<T>,
+                "RETURN_IF_ERROR_STATUS only accepts either Status or "
+                "base::unexpected<Status>");
 }
 }  // namespace reporting::internal
 

@@ -15,6 +15,9 @@ import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.BuildInfo;
+import org.chromium.ui.display.DisplayUtil;
+
 /** {@link ImageView} for the Shrink, Expand, and New Tab animations. */
 // TODO(crbug/1495731): Move to hub/internal/ once TabSwitcherLayout no longer depends on this.
 public class ShrinkExpandImageView extends ImageView implements RunOnNextLayout {
@@ -36,6 +39,18 @@ public class ShrinkExpandImageView extends ImageView implements RunOnNextLayout 
      *     the view.
      */
     public void reset(@Nullable Rect layoutRect) {
+        resetKeepingBitmap(layoutRect);
+        setImageBitmap(null);
+    }
+
+    /**
+     * Reset the view from a previous animation keeping the bitmap.
+     *
+     * @param layoutRect The {@link Rect} to position the view. The top and left will be used to set
+     *     margins and position the view. The width and height will be used to set the dimensions of
+     *     the view.
+     */
+    public void resetKeepingBitmap(@Nullable Rect layoutRect) {
         if (layoutRect != null) {
             FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) getLayoutParams();
             if (layoutParams != null) {
@@ -45,7 +60,6 @@ public class ShrinkExpandImageView extends ImageView implements RunOnNextLayout 
                 setLayoutParams(layoutParams);
             }
         }
-        setImageBitmap(null);
         setImageMatrix(new Matrix());
         setScaleX(1.0f);
         setScaleY(1.0f);
@@ -77,5 +91,13 @@ public class ShrinkExpandImageView extends ImageView implements RunOnNextLayout 
     @Override
     public void runOnNextLayoutRunnables() {
         mRunOnNextLayoutDelegate.runOnNextLayoutRunnables();
+    }
+
+    @Override
+    public void setImageBitmap(Bitmap bitmap) {
+        if (BuildInfo.getInstance().isAutomotive && bitmap != null) {
+            bitmap.setDensity(DisplayUtil.getUiDensityForAutomotive(bitmap.getDensity()));
+        }
+        super.setImageBitmap(bitmap);
     }
 }

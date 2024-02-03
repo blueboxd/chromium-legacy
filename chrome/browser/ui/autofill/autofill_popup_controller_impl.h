@@ -56,6 +56,11 @@ class ExpandablePopupParentControllerImpl {
   // `nullptr` is returned in these cases.
   virtual base::WeakPtr<AutofillPopupView> CreateSubPopupView(
       base::WeakPtr<AutofillPopupController> sub_controller) = 0;
+
+  // Returns the number of popups above this one. For example, if `this` is the
+  // second popup, `GetPopupLevel()` returns 1, if `this` is the root popup,
+  // it returns 0.
+  virtual int GetPopupLevel() const = 0;
 };
 
 // This class is a controller for an AutofillPopupView. It implements
@@ -220,6 +225,7 @@ class AutofillPopupControllerImpl
   // ExpandablePopupParentControllerImpl:
   base::WeakPtr<AutofillPopupView> CreateSubPopupView(
       base::WeakPtr<AutofillPopupController> controller) override;
+  int GetPopupLevel() const override;
 
   // Returns `true` if this popup has no parent, and `false` for sub-popups.
   bool IsRootPopup() const;
@@ -251,7 +257,8 @@ class AutofillPopupControllerImpl
   std::vector<Suggestion> suggestions_;
 
   // The trigger source of the `suggestions_`.
-  AutofillSuggestionTriggerSource trigger_source_;
+  AutofillSuggestionTriggerSource trigger_source_ =
+      AutofillSuggestionTriggerSource::kUnspecified;
 
   // If set to true, the popup will stay open regardless of external changes on
   // the machine that would normally cause the popup to be hidden.

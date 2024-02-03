@@ -26,6 +26,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
@@ -39,9 +41,11 @@ import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapp
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** Tests for IME (input method editor) on Android WebView. */
-@RunWith(AwJUnit4ClassRunner.class)
-public class AwImeTest {
-    @Rule public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+@RunWith(Parameterized.class)
+@UseParametersRunnerFactory(AwJUnit4ClassRunnerWithParameters.Factory.class)
+public class AwImeTest extends AwParameterizedTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule;
 
     private static class TestJavascriptInterface {
         private final CallbackHelper mFocusCallbackHelper = new CallbackHelper();
@@ -61,6 +65,10 @@ public class AwImeTest {
     private EditText mEditText;
     private final TestJavascriptInterface mTestJavascriptInterface = new TestJavascriptInterface();
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
+
+    public AwImeTest(AwSettingsMutation param) {
+        this.mActivityTestRule = new AwActivityTestRule(param.getMutation());
+    }
 
     @Before
     public void setUp() {
@@ -109,9 +117,25 @@ public class AwImeTest {
     private void loadBottomInputHtml() throws Throwable {
         // Shows an input at the bottom of the screen.
         final String htmlDocument =
-                "<html><head><style>html, body{background-color:beige} "
-                        + "div{position:absolute;top:10000px;}</style></head><body>Test<div"
-                        + " id='footer'><input id='input_text'><br/></div></body></html>";
+                """
+                        <html>
+                        <head>
+                            <style>
+                                html,
+                                body {
+                                    background-color: beige
+                                }
+
+                                div {
+                                    position: absolute;
+                                    top: 10000px;
+                                }
+                            </style>
+                        </head>
+
+                        <body>Test<div id='footer'><input id='input_text'><br /></div>
+                        </body>
+                        </html>""";
         final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
 
         mActivityTestRule.loadHtmlSync(
@@ -140,16 +164,17 @@ public class AwImeTest {
         mActivityTestRule.executeJavaScriptAndWaitForResult(
                 mTestContainerView.getAwContents(),
                 mContentsClient,
-                "function onDocumentFocused() {\n"
-                        + "  document.getElementById('editor').focus();\n"
-                        + "  test.onEditorFocused();\n"
-                        + "}\n"
-                        + "(function() {\n"
-                        + "if (document.hasFocus()) {\n"
-                        + "  onDocumentFocused();"
-                        + "} else {\n"
-                        + "  window.addEventListener('focus', onDocumentFocused);\n"
-                        + "}})();");
+                """
+                function onDocumentFocused() {
+                        document.getElementById('editor').focus();
+                        test.onEditorFocused();
+                }
+                (function() {
+                if (document.hasFocus()) {
+                        onDocumentFocused();
+                } else {
+                        window.addEventListener('focus', onDocumentFocused)
+                }})();""");
         mTestJavascriptInterface.getFocusCallbackHelper().waitForCallback(0);
     }
 

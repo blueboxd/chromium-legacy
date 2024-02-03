@@ -923,26 +923,27 @@ void CloseWindow(Browser* browser) {
   browser->window()->Close();
 }
 
-void NewTab(Browser* browser) {
+content::WebContents& NewTab(Browser* browser) {
   base::RecordAction(UserMetricsAction("NewTab"));
   // TODO(asvitkine): This is invoked programmatically from several places.
   // Audit the code and change it so that the histogram only gets collected for
   // user-initiated commands.
   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", NewTabTypes::NEW_TAB_COMMAND,
                             NewTabTypes::NEW_TAB_ENUM_COUNT);
-
   if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)) {
-    AddTabAt(browser, GURL(), -1, true);
-  } else {
-    ScopedTabbedBrowserDisplayer displayer(browser->profile());
-    Browser* b = displayer.browser();
-    AddTabAt(b, GURL(), -1, true);
-    b->window()->Show();
-    // The call to AddBlankTabAt above did not set the focus to the tab as its
-    // window was not active, so we have to do it explicitly.
-    // See http://crbug.com/6380.
-    b->tab_strip_model()->GetActiveWebContents()->RestoreFocus();
+    return *AddAndReturnTabAt(browser, GURL(), -1, true);
   }
+
+  ScopedTabbedBrowserDisplayer displayer(browser->profile());
+  Browser* b = displayer.browser();
+  auto* contents = AddAndReturnTabAt(b, GURL(), -1, true);
+  b->window()->Show();
+  // The call to AddBlankTabAt above did not set the focus to the tab as its
+  // window was not active, so we have to do it explicitly.
+  // See http://crbug.com/6380.
+  b->tab_strip_model()->GetActiveWebContents()->RestoreFocus();
+
+  return *contents;
 }
 
 void NewTabToRight(Browser* browser) {
@@ -1972,8 +1973,7 @@ void SetAndroidOsForTabletSite(content::WebContents* current_tab) {
     ua_override.ua_metadata_override = embedder_support::GetUserAgentMetadata(
         g_browser_process->local_state());
     ua_override.ua_metadata_override->mobile = true;
-    ua_override.ua_metadata_override->form_factor =
-        embedder_support::kMobileFormFactor;
+    ua_override.ua_metadata_override->form_factor = {blink::kTabletFormFactor};
     ua_override.ua_metadata_override->platform =
         kChPlatformOverrideForTabletSite;
     ua_override.ua_metadata_override->platform_version = std::string();

@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.customtabs.features.partialcustomtab;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
-import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_BOTTOM_SHEET;
-import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_BOTTOM_SHEET_MAXIMIZED;
-import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_FULL_SCREEN;
+import static androidx.browser.customtabs.CustomTabsCallback.ACTIVITY_LAYOUT_STATE_BOTTOM_SHEET;
+import static androidx.browser.customtabs.CustomTabsCallback.ACTIVITY_LAYOUT_STATE_BOTTOM_SHEET_MAXIMIZED;
+import static androidx.browser.customtabs.CustomTabsCallback.ACTIVITY_LAYOUT_STATE_FULL_SCREEN;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
@@ -34,6 +34,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Px;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
+import androidx.browser.customtabs.CustomTabsCallback;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -46,9 +47,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ActivityLayoutState;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.ContentGestureListener.GestureState;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -112,7 +112,6 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     private GestureDetector mGestureDetector;
     private ContentGestureListener mGestureHandler;
 
-    private @Px int mFullyExpandedAdjustmentHeight;
     private TabAnimator mTabAnimator;
 
     private @HeightStatus int mStatus = HeightStatus.INITIAL_HEIGHT;
@@ -222,7 +221,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
 
     private boolean isFullyExpanded() {
         WindowManager.LayoutParams attrs = mActivity.getWindow().getAttributes();
-        return attrs.y <= getFullyExpandedYWithAdjustment();
+        return attrs.y <= getFullyExpandedY();
     }
 
     @Override
@@ -262,7 +261,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
                     attrs.height = mDisplayHeight - mNavbarHeight;
                     window.setAttributes(attrs);
                 }
-                end = getFullyExpandedYWithAdjustment();
+                end = getFullyExpandedY();
                 break;
             case HeightStatus.INITIAL_HEIGHT:
                 end = initialY();
@@ -342,18 +341,15 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
             mStatus = mTabAnimator.getTargetStatus();
             mTabAnimator.cancel();
         }
-        int newStatus;
-        switch (mStatus) {
-            case HeightStatus.INITIAL_HEIGHT:
-                newStatus = HeightStatus.TOP;
-                break;
-            case HeightStatus.TOP:
-                newStatus = HeightStatus.INITIAL_HEIGHT;
-                break;
-            default:
-                assert false : "Invalid height status: " + mStatus;
-                newStatus = HeightStatus.INITIAL_HEIGHT;
-        }
+        int newStatus =
+                switch (mStatus) {
+                    case HeightStatus.INITIAL_HEIGHT -> HeightStatus.TOP;
+                    case HeightStatus.TOP -> HeightStatus.INITIAL_HEIGHT;
+                    default -> {
+                        assert false : "Invalid height status: " + mStatus;
+                        yield HeightStatus.INITIAL_HEIGHT;
+                    }
+                };
         animateTabTo(newStatus, false);
     }
 
@@ -383,7 +379,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     }
 
     @Override
-    protected @ActivityLayoutState int getActivityLayoutState() {
+    protected @CustomTabsCallback.ActivityLayoutState int getActivityLayoutState() {
         if (isFullscreen()) {
             return ACTIVITY_LAYOUT_STATE_FULL_SCREEN;
         } else if (isMaximized()) {
@@ -462,12 +458,6 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     protected void initializeHeight() {
         super.initializeHeight();
 
-        // When the flag is enabled, we make the max snap point 10% shorter, so it will only occupy
-        // 90% of the height.
-        mFullyExpandedAdjustmentHeight = ChromeFeatureList.sCctResizable90MaximumHeight.isEnabled()
-                ? (int) ((mDisplayHeight - getFullyExpandedY()) * EXTRA_HEIGHT_RATIO)
-                : 0;
-
         int maxExpandedY = getFullyExpandedY();
         @Px
         int height = 0;
@@ -499,7 +489,6 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     private void positionAtWidth(int width) {
         if (!ChromeFeatureList.sCctResizableSideSheet.isEnabled()) return;
 
-        int density = (int) (mActivity.getResources().getDisplayMetrics().density);
         WindowManager.LayoutParams attrs = mActivity.getWindow().getAttributes();
         if (isFullHeight() || isFullscreen()) {
             attrs.width = MATCH_PARENT;
@@ -507,8 +496,9 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
         } else {
             int x = 0;
             if (isLandscapeMaxWidth(width)) {
-                width = BOTTOM_SHEET_MAX_WIDTH_DP_LANDSCAPE * density;
-                x = (mDisplayWidth - width) / 2;
+                float density = mActivity.getResources().getDisplayMetrics().density;
+                width = (int) (BOTTOM_SHEET_MAX_WIDTH_DP_LANDSCAPE * density);
+                x = (mDisplayWidth - width) / 2 + mVersionCompat.getXOffset();
             }
             attrs.width = width;
             attrs.x = x;
@@ -616,7 +606,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     private void updateWindowPos(@Px int y, boolean userGesture) {
         // Do not allow the Window to go above the minimum threshold capped by the status
         // bar and (optionally) the 90%-height adjustment.
-        int topY = getFullyExpandedYWithAdjustment();
+        int topY = getFullyExpandedY();
         y = MathUtils.clamp(y, topY, mDisplayHeight);
         Window window = mActivity.getWindow();
         WindowManager.LayoutParams attrs = window.getAttributes();
@@ -814,22 +804,15 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
         }
     }
 
-    private @Px int getFullyExpandedY() {
+    @VisibleForTesting
+    @Px
+    int getFullyExpandedY() {
         return mStatusbarHeight;
     }
 
     @Override
     protected boolean isMaximized() {
         return mStatus == HeightStatus.TOP;
-    }
-
-    @VisibleForTesting
-    @Px
-    int getFullyExpandedYWithAdjustment() {
-        // Adding |mFullyExpandedAdjustmentHeight| to the y coordinate because the
-        // coordinates system's origin is at the top left and y is growing in downward, larger y
-        // means smaller height of the bottom sheet CCT.
-        return getFullyExpandedY() + mFullyExpandedAdjustmentHeight;
     }
 
     // CustomTabHeightStrategy implementation
@@ -875,7 +858,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     public void onDragEnd(int flingDistance) {
         int currentY = mActivity.getWindow().getAttributes().y;
         int finalY = currentY + flingDistance;
-        int topY = getFullyExpandedYWithAdjustment();
+        int topY = getFullyExpandedY();
         int initialY = initialY();
         int bottomY = mDisplayHeight - mNavbarHeight;
 
@@ -957,8 +940,8 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     }
 
     private boolean isLandscapeMaxWidth(int width) {
-        int density = (int) (mActivity.getResources().getDisplayMetrics().density);
-        return isLandscape() && width / density > BOTTOM_SHEET_MAX_WIDTH_DP_LANDSCAPE;
+        float density = mActivity.getResources().getDisplayMetrics().density;
+        return isLandscape() && width > BOTTOM_SHEET_MAX_WIDTH_DP_LANDSCAPE * density;
     }
 
     @Override

@@ -225,7 +225,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/command.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -897,33 +896,10 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
 
   SetProperty(views::kElementIdentifierKey, kBrowserViewElementId);
 
-  // In order to do feature promos, the browser must have a UI and not be an
-  // "off-the-record" or in a demo or guest mode.
-  bool is_profile_type_without_iph =
-      GetIncognito() || GetGuestSession() || IsManagedGuestSession() ||
-      profiles::IsDemoSession() || profiles::IsChromeAppKioskSession();
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  is_profile_type_without_iph |= profiles::IsWebKioskSession();
-#endif
-  if (!headless::IsHeadlessMode() && !is_profile_type_without_iph) {
-    if (UserEducationService* const user_education_service =
-            UserEducationServiceFactory::GetForBrowserContext(GetProfile())) {
-      RegisterChromeHelpBubbleFactories(
-          user_education_service->help_bubble_factory_registry());
-      MaybeRegisterChromeFeaturePromos(
-          user_education_service->feature_promo_registry());
-      MaybeRegisterChromeTutorials(user_education_service->tutorial_registry());
-      feature_promo_controller_ =
-          std::make_unique<BrowserFeaturePromoController>(
-              this,
-              feature_engagement::TrackerFactory::GetForBrowserContext(
-                  GetProfile()),
-              &user_education_service->feature_promo_registry(),
-              &user_education_service->help_bubble_factory_registry(),
-              &user_education_service->feature_promo_storage_service(),
-              &user_education_service->tutorial_service());
-    }
-  }
+  // Not all browsers do feature promos. Conditionally create one (or don't) for
+  // this browser window.
+  feature_promo_controller_ =
+      BrowserFeaturePromoController::MaybeCreateForBrowserView(this);
 
   browser_->tab_strip_model()->AddObserver(this);
   immersive_mode_controller_ = chrome::CreateImmersiveModeController(this);
@@ -2026,7 +2002,7 @@ void BrowserView::FullscreenStateChanged() {
 
   GetExclusiveAccessManager()
       ->fullscreen_controller()
-      ->FullscreenTransititionCompleted();
+      ->FullscreenTransitionCompleted();
 }
 
 void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
@@ -2532,7 +2508,12 @@ void BrowserView::TryNotifyWindowBoundsChanged(const gfx::Rect& widget_bounds) {
     return;
 
   last_widget_bounds_ = widget_bounds;
-  browser()->extension_window_controller()->NotifyWindowBoundsChanged();
+
+  // `extension_window_controller()` may be null if we are in the process of
+  // creating the Browser. In that case, skip the notification.
+  if (auto* const controller = browser()->extension_window_controller()) {
+    controller->NotifyWindowBoundsChanged();
+  }
 }
 
 void BrowserView::OnWidgetVisibilityChanged(views::Widget* widget,
@@ -2542,10 +2523,6 @@ void BrowserView::OnWidgetVisibilityChanged(views::Widget* widget,
     UpdateLoadingAnimations(visible);
   }
 }
-
-BrowserView::PageData::PageData(content::Page& page) : PageUserData(page) {}
-
-PAGE_USER_DATA_KEY_IMPL(BrowserView::PageData);
 
 absl::optional<bool> BrowserView::GetCanResizeFromWebAPI() const {
   // TODO(laurila, crbug.com/1493617): Support multi-tab apps.
@@ -2561,18 +2538,28 @@ absl::optional<bool> BrowserView::GetCanResizeFromWebAPI() const {
     return absl::nullopt;
   }
 
-  if (auto* data = PageData::GetForPage(
-          web_contents->GetPrimaryMainFrame()->GetPage())) {
-    return data->can_resize();
-  }
-  return absl::nullopt;
+  return web_contents->GetPrimaryPage().GetResizable();
 }
 
 bool BrowserView::GetCanResize() {
   return CanResize();
 }
 
-void BrowserView::SetCanResizeFromWebAPI(absl::optional<bool> can_resize) {
+// TODO(laurila, crbug.com/1466855): Map into new `ui::DisplayState` enum
+// instead of `ui::WindowShowState`.
+ui::WindowShowState BrowserView::GetWindowShowState() const {
+  if (IsMaximized()) {
+    return ui::SHOW_STATE_MAXIMIZED;
+  } else if (IsMinimized()) {
+    return ui::SHOW_STATE_MINIMIZED;
+  } else if (IsFullscreen()) {
+    return ui::SHOW_STATE_FULLSCREEN;
+  } else {
+    return ui::SHOW_STATE_DEFAULT;
+  }
+}
+
+void BrowserView::OnCanResizeFromWebAPIChanged() {
   // TODO(laurila, crbug.com/1493617): Support multi-tab apps.
   // The value can only be set in web apps, where there currently can only be 1
   // WebContents, the return value can be determined only by looking at the
@@ -2582,6 +2569,7 @@ void BrowserView::SetCanResizeFromWebAPI(absl::optional<bool> can_resize) {
     return;
   }
 
+  auto can_resize = web_contents->GetPrimaryPage().GetResizable();
   if (cached_can_resize_from_web_api_ == can_resize) {
     return;
   }
@@ -2598,27 +2586,29 @@ void BrowserView::SetCanResizeFromWebAPI(absl::optional<bool> can_resize) {
   }
 
   cached_can_resize_from_web_api_ = can_resize;
-  PageData::GetOrCreateForPage(web_contents->GetPrimaryMainFrame()->GetPage())
-      ->set_can_resize(can_resize);
-
   GetWidget()->OnSizeConstraintsChanged();
 }
 
-void BrowserView::OnWidgetSizeConstraintsChanged(views::Widget* widget) {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kDesktopPWAsAdditionalWindowingControls)) {
-    return;
-  }
+void BrowserView::SynchronizeRenderWidgetHostVisualPropertiesForMainFrame() {
   content::WebContents* web_contents = GetActiveWebContents();
   if (!web_contents || !web_contents->GetPrimaryMainFrame()) {
     return;
   }
-  // This will update `resizable` @media feature value in renderer whenever the
-  // widget's resizability has changed.
+
   if (content::RenderWidgetHost* render_widget_host =
           web_contents->GetPrimaryMainFrame()->GetRenderWidgetHost()) {
     render_widget_host->SynchronizeVisualProperties();
   }
+}
+
+void BrowserView::OnWidgetSizeConstraintsChanged(views::Widget* widget) {
+  // `resizable` @media feature value in renderer needs to be updated.
+  SynchronizeRenderWidgetHostVisualPropertiesForMainFrame();
+}
+
+void BrowserView::OnWidgetShowStateChanged(views::Widget* widget) {
+  // `display-state` @media feature value in renderer needs to be updated.
+  SynchronizeRenderWidgetHostVisualPropertiesForMainFrame();
 }
 
 void BrowserView::PrimaryPageChanged(content::Page& page) {
@@ -4736,19 +4726,16 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     immersive_mode_controller_->SetEnabled(fullscreen);
   }
 
-#if !BUILDFLAG(IS_MAC)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Mac platforms, FullscreenStateChanged() is invoked from
   // BrowserFrameMac::OnWindowFullscreenTransitionComplete when the asynchronous
-  // fullscreen transition is complete. On other platforms (except for Lacros,
-  // see TODO comment below for Lacros platform), there is no asynchronous
-  // transition so we synchronously invoke the function.
-  // TODO(crbug.com/1495223): On Lacros, FullscreenStateChanged() is invoked
-  // from BrowserDesktopWindowTreeHostLacros::OnFullscreenModeChanged when the
+  // fullscreen transition is complete.
+  // On Lacros, FullscreenStateChanged() is invoked from
+  // BrowserDesktopWindowTreeHostLacros::OnFullscreenModeChanged when the
   // fullscreen state is updated on Ash side and Lacros is notified of the
-  // updates through wayland message, so this FullscreenStateChanged() call
-  // should be skipped on Lacros as well, but there are multiple tests and
-  // features which assume the fullscreen state to be updated synchronously. We
-  // need to resolve them before removing this line on Lacros.
+  // updates through wayland messages.
+  // On other platforms, there is no asynchronous transition so we synchronously
+  // invoke the function.
   FullscreenStateChanged();
 #endif
 
@@ -5056,9 +5043,9 @@ bool BrowserView::MaybeShowStartupFeaturePromo(
 
 bool BrowserView::CloseFeaturePromo(
     const base::Feature& iph_feature,
-    user_education::FeaturePromoCloseReason close_reason) {
+    user_education::EndFeaturePromoReason end_promo_reason) {
   return feature_promo_controller_ &&
-         feature_promo_controller_->EndPromo(iph_feature, close_reason);
+         feature_promo_controller_->EndPromo(iph_feature, end_promo_reason);
 }
 
 user_education::FeaturePromoHandle BrowserView::CloseFeaturePromoAndContinue(

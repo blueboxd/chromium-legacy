@@ -17,7 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -172,7 +172,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool is_outermost_main_frame,
       const GURL& candidate_url,
       const GURL& destination_url) override;
-  bool ShouldUseMobileFlingCurve() override;
   bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                const GURL& site_url) override;
   bool ShouldUseSpareRenderProcessHost(content::BrowserContext* browser_context,
@@ -522,6 +521,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebUIBrowserInterfaceBrokerRegistry& registry) override;
   void RegisterMojoBinderPoliciesForSameOriginPrerendering(
       content::MojoBinderPolicyMap& policy_map) override;
+  void RegisterMojoBinderPoliciesForPreview(
+      content::MojoBinderPolicyMap& policy_map) override;
   void RegisterBrowserInterfaceBindersForServiceWorker(
       content::BrowserContext* browser_context,
       const content::ServiceWorkerVersionBaseInfo& service_worker_version_info,
@@ -590,7 +591,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int frame_tree_node_id) override;
   void RegisterNonNetworkNavigationURLLoaderFactories(
       int frame_tree_node_id,
-      ukm::SourceIdObj ukm_source_id,
       NonNetworkURLLoaderFactoryMap* factories) override;
   void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
       content::BrowserContext* browser_context,
@@ -678,6 +678,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   content::UsbDelegate* GetUsbDelegate() override;
   content::PrivateNetworkDeviceDelegate* GetPrivateNetworkDeviceDelegate()
       override;
+  bool IsSecurityLevelAcceptableForWebAuthn(
+      content::RenderFrameHost* rfh,
+      const url::Origin& caller_origin) override;
 #if !BUILDFLAG(IS_ANDROID)
   void CreateDeviceInfoService(
       content::RenderFrameHost* render_frame_host,
@@ -955,6 +958,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   void SetIsMinimalMode(bool minimal) override;
 
+  bool UseOutermostMainFrameOrEmbedderForSubCaptureTargets() const override;
+
 #if !BUILDFLAG(IS_ANDROID)
   void BindVideoEffectsManager(
       const std::string& device_id,
@@ -962,6 +967,15 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       mojo::PendingReceiver<video_capture::mojom::VideoEffectsManager>
           video_effects_manager) override;
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+  void PreferenceRankAudioDeviceInfos(
+      content::BrowserContext* browser_context,
+      blink::WebMediaDeviceInfoArray& infos) override;
+  void PreferenceRankVideoDeviceInfos(
+      content::BrowserContext* browser_context,
+      blink::WebMediaDeviceInfoArray& infos) override;
+  network::mojom::IpProtectionProxyBypassPolicy
+  GetIpProtectionProxyBypassPolicy() override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

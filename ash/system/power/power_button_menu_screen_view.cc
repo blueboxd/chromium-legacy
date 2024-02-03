@@ -15,6 +15,7 @@
 #include "ash/system/power/power_button_menu_view.h"
 #include "ash/system/power/power_button_menu_view_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -64,6 +65,8 @@ using TransformDirection = PowerButtonMenuView::TransformDirection;
 class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
     : public views::View,
       public ui::ImplicitAnimationObserver {
+  METADATA_HEADER(PowerButtonMenuBackgroundView, views::View)
+
  public:
   explicit PowerButtonMenuBackgroundView(
       base::RepeatingClosure show_animation_done)
@@ -119,6 +122,11 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
   // A callback for when the animation that shows the power menu has finished.
   base::RepeatingClosure show_animation_done_;
 };
+
+BEGIN_METADATA(PowerButtonMenuScreenView,
+               PowerButtonMenuBackgroundView,
+               views::View)
+END_METADATA
 
 PowerButtonMenuScreenView::PowerButtonMenuScreenView(
     ShutdownReason shutdown_reason,
@@ -404,5 +412,8 @@ gfx::Size PowerButtonMenuScreenView::GetMenuViewPreferredSize() {
     return power_button_menu_view_->GetPreferredSize();
   }
 }
+
+BEGIN_METADATA(PowerButtonMenuScreenView)
+END_METADATA
 
 }  // namespace ash

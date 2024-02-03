@@ -110,7 +110,7 @@ class CORE_EXPORT HTMLInputElement
   bool IsTextField() const;
   bool IsTelephone() const;
   // To override from TextControlElement
-  bool ShouldAutoDirUseValue() const final;
+  bool IsAutoDirectionalityFormAssociated() const final;
   // Do not add type check predicates for concrete input types; e.g.  isImage,
   // isRadio, isFile.  If you want to check the input type, you may use
   // |input->FormControlType() == FormControlType::kInputImage|, etc.
@@ -385,6 +385,9 @@ class CORE_EXPORT HTMLInputElement
 
   ShadowRoot* EnsureShadowSubtree();
 
+  bool HandleInvokeInternal(HTMLElement& invoker,
+                            AtomicString& action) override;
+
  protected:
   void DefaultEventHandler(Event&) override;
 
@@ -399,7 +402,8 @@ class CORE_EXPORT HTMLInputElement
   bool HasActivationBehavior() const override;
 
   bool HasCustomFocusLogic() const final;
-  bool IsKeyboardFocusable() const final;
+  bool IsKeyboardFocusable(UpdateBehavior update_behavior =
+                               UpdateBehavior::kStyleAndLayout) const final;
   bool MayTriggerVirtualKeyboard() const final;
   bool ShouldHaveFocusAppearance() const final;
   bool IsEnumeratable() const final;

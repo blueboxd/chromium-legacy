@@ -55,6 +55,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -98,8 +99,6 @@ import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecy
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DragListener;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DraggabilityProvider;
 import org.chromium.components.browser_ui.widget.dragreorder.DragStateDelegate;
-import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
-import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
@@ -122,6 +121,8 @@ import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.TestActivity;
+import org.chromium.ui.listmenu.BasicListMenu;
+import org.chromium.ui.listmenu.ListMenuItemProperties;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -137,9 +138,7 @@ import java.util.function.Consumer;
 /** Unit tests for {@link BookmarkManagerMediator}. */
 @Batch(Batch.UNIT_TESTS)
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(
-        manifest = Config.NONE,
-        shadows = {ShadowPostTask.class})
+@Config(shadows = {ShadowPostTask.class})
 @EnableFeatures({
     ChromeFeatureList.BOOKMARKS_REFRESH,
     ChromeFeatureList.SHOPPING_LIST,
@@ -150,12 +149,12 @@ public class BookmarkManagerMediatorTest {
     private static final String EXAMPLE_URL_FORMATTED =
             UrlFormatter.formatUrlForSecurityDisplay(
                     EXAMPLE_URL, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
-    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     @Rule
     public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(TestActivity.class);
 
+    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.LENIENT);
     @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Rule public JniMocker mJniMocker = new JniMocker();
 
@@ -306,9 +305,9 @@ public class BookmarkManagerMediatorTest {
 
     private final ModelList mModelList = new ModelList();
     private final Bitmap mBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+
     private BookmarkUiPrefs mBookmarkUiPrefs =
             new BookmarkUiPrefs(ChromeSharedPreferences.getInstance());
-
     private Activity mActivity;
     private BookmarkManagerMediator mMediator;
     private DragReorderableRecyclerViewAdapter mDragReorderableRecyclerViewAdapter;
@@ -318,218 +317,178 @@ public class BookmarkManagerMediatorTest {
         // The mediator will respond to model changes by posting a task to update for performance.
         // This just runs all of those posts synchronously to simplify test code.
         ShadowPostTask.setTestImpl(
-                new ShadowPostTask.TestImpl() {
-                    @Override
-                    public void postDelayedTask(
-                            @TaskTraits int taskTraits, Runnable task, long delay) {
-                        assert delay == 0;
-                        assert taskTraits >= TaskTraits.UI_TRAITS_START;
-                        task.run();
-                    }
+                (taskTraits, task, delay) -> {
+                    assert delay == 0;
+                    assert taskTraits >= TaskTraits.UI_TRAITS_START;
+                    task.run();
                 });
+        mActivityScenarioRule.getScenario().onActivity(this::onActivity);
+    }
 
-        mActivityScenarioRule
-                .getScenario()
-                .onActivity(
-                        (activity) -> {
-                            mActivity = spy(activity);
+    private void onActivity(Activity activity) {
+        mActivity = spy(activity);
 
-                            // Setup Profile.
-                            Profile.setLastUsedProfileForTesting(mProfile);
+        // Setup Profile.
+        Profile.setLastUsedProfileForTesting(mProfile);
 
-                            // Setup CurrencyFormatter.
-                            mJniMocker.mock(
-                                    CurrencyFormatterJni.TEST_HOOKS, mCurrencyFormatterJniMock);
+        // Setup CurrencyFormatter.
+        mJniMocker.mock(CurrencyFormatterJni.TEST_HOOKS, mCurrencyFormatterJniMock);
 
-                            // Setup TrackerFactory.
-                            TrackerFactory.setTrackerForTests(mTracker);
+        // Setup TrackerFactory.
+        TrackerFactory.setTrackerForTests(mTracker);
 
-                            // Setup BookmarkModel.
-                            doReturn(mRootFolderId).when(mBookmarkModel).getRootFolderId();
-                            doReturn(mDesktopFolderId).when(mBookmarkModel).getDesktopFolderId();
-                            doReturn(mDesktopFolderItem)
-                                    .when(mBookmarkModel)
-                                    .getBookmarkById(mDesktopFolderId);
-                            doReturn(mMobileFolderId).when(mBookmarkModel).getMobileFolderId();
-                            doReturn(mMobileFolderItem)
-                                    .when(mBookmarkModel)
-                                    .getBookmarkById(mMobileFolderId);
-                            doReturn(mPriceTrackedBookmarkItem)
-                                    .when(mBookmarkModel)
-                                    .getBookmarkById(mPriceTrackedBookmarkId);
-                            doReturn(Arrays.asList(mPriceTrackedBookmarkId))
-                                    .when(mBookmarkModel)
-                                    .getChildIds(mMobileFolderId);
-                            doReturn(mOtherFolderId).when(mBookmarkModel).getOtherFolderId();
-                            doReturn(mOtherFolderItem)
-                                    .when(mBookmarkModel)
-                                    .getBookmarkById(mOtherFolderId);
-                            doReturn(mReadingListFolderId)
-                                    .when(mBookmarkModel)
-                                    .getReadingListFolder();
-                            doReturn(mReadingListFolderItem)
-                                    .when(mBookmarkModel)
-                                    .getBookmarkById(mReadingListFolderId);
-                            doReturn(true).when(mBookmarkModel).doesBookmarkExist(any());
-                            doReturn(Arrays.asList(mFolderId2, mFolderId3))
-                                    .when(mBookmarkModel)
-                                    .getChildIds(mFolderId1);
-                            doReturn(mFolderItem1).when(mBookmarkModel).getBookmarkById(mFolderId1);
-                            doReturn(mFolderItem2).when(mBookmarkModel).getBookmarkById(mFolderId2);
-                            doReturn(mBookmarkItem21)
-                                    .when(mBookmarkModel)
-                                    .getBookmarkById(mBookmarkId21);
-                            doReturn(Arrays.asList(mBookmarkId21))
-                                    .when(mBookmarkModel)
-                                    .getChildIds(mFolderId2);
-                            doReturn(1).when(mBookmarkModel).getTotalBookmarkCount(mFolderId2);
-                            doReturn(mFolderItem3).when(mBookmarkModel).getBookmarkById(mFolderId3);
-                            doReturn(Arrays.asList(mReadingListId))
-                                    .when(mBookmarkModel)
-                                    .getChildIds(mReadingListFolderId);
-                            doReturn(mReadingListFolderItem)
-                                    .when(mBookmarkModel)
-                                    .getBookmarkById(mReadingListFolderId);
-                            doReturn(mReadingListItem)
-                                    .when(mBookmarkModel)
-                                    .getBookmarkById(mReadingListId);
-                            doReturn(true).when(mBookmarkModel).isFolderVisible(any());
-                            doReturn(
-                                            Arrays.asList(
-                                                    mDesktopFolderId,
-                                                    mMobileFolderId,
-                                                    mOtherFolderId,
-                                                    mReadingListFolderId))
-                                    .when(mBookmarkModel)
-                                    .getTopLevelFolderIds();
+        // Setup BookmarkModel.
+        doReturn(mRootFolderId).when(mBookmarkModel).getRootFolderId();
+        doReturn(mDesktopFolderId).when(mBookmarkModel).getDesktopFolderId();
+        doReturn(mDesktopFolderItem).when(mBookmarkModel).getBookmarkById(mDesktopFolderId);
+        doReturn(mMobileFolderId).when(mBookmarkModel).getMobileFolderId();
+        doReturn(mMobileFolderItem).when(mBookmarkModel).getBookmarkById(mMobileFolderId);
+        doReturn(mPriceTrackedBookmarkItem)
+                .when(mBookmarkModel)
+                .getBookmarkById(mPriceTrackedBookmarkId);
+        doReturn(Arrays.asList(mPriceTrackedBookmarkId))
+                .when(mBookmarkModel)
+                .getChildIds(mMobileFolderId);
+        doReturn(mOtherFolderId).when(mBookmarkModel).getOtherFolderId();
+        doReturn(mOtherFolderItem).when(mBookmarkModel).getBookmarkById(mOtherFolderId);
+        doReturn(mReadingListFolderId).when(mBookmarkModel).getReadingListFolder();
+        doReturn(mReadingListFolderItem).when(mBookmarkModel).getBookmarkById(mReadingListFolderId);
+        doReturn(true).when(mBookmarkModel).doesBookmarkExist(any());
+        doReturn(Arrays.asList(mFolderId2, mFolderId3))
+                .when(mBookmarkModel)
+                .getChildIds(mFolderId1);
+        doReturn(mFolderItem1).when(mBookmarkModel).getBookmarkById(mFolderId1);
+        doReturn(mFolderItem2).when(mBookmarkModel).getBookmarkById(mFolderId2);
+        doReturn(mBookmarkItem21).when(mBookmarkModel).getBookmarkById(mBookmarkId21);
+        doReturn(Arrays.asList(mBookmarkId21)).when(mBookmarkModel).getChildIds(mFolderId2);
+        doReturn(1).when(mBookmarkModel).getTotalBookmarkCount(mFolderId2);
+        doReturn(mFolderItem3).when(mBookmarkModel).getBookmarkById(mFolderId3);
+        doReturn(Arrays.asList(mReadingListId))
+                .when(mBookmarkModel)
+                .getChildIds(mReadingListFolderId);
+        doReturn(mReadingListFolderItem).when(mBookmarkModel).getBookmarkById(mReadingListFolderId);
+        doReturn(mReadingListItem).when(mBookmarkModel).getBookmarkById(mReadingListId);
+        doReturn(true).when(mBookmarkModel).isFolderVisible(any());
+        doReturn(
+                        Arrays.asList(
+                                mDesktopFolderId,
+                                mMobileFolderId,
+                                mOtherFolderId,
+                                mReadingListFolderId))
+                .when(mBookmarkModel)
+                .getTopLevelFolderIds();
 
-                            // Setup SelectableListLayout.
-                            doReturn(mActivity).when(mSelectableListLayout).getContext();
-                            doReturn(mSelectableListLayoutHandleBackPressChangedSupplier)
-                                    .when(mSelectableListLayout)
-                                    .getHandleBackPressChangedSupplier();
+        // Setup SelectableListLayout.
+        doReturn(mActivity).when(mSelectableListLayout).getContext();
+        doReturn(mSelectableListLayoutHandleBackPressChangedSupplier)
+                .when(mSelectableListLayout)
+                .getHandleBackPressChangedSupplier();
 
-                            // Setup BookmarkUIObserver.
-                            doRunnable(() -> mMediator.removeUiObserver(mBookmarkUiObserver))
-                                    .when(mBookmarkUiObserver)
-                                    .onDestroy();
+        // Setup BookmarkUIObserver.
+        doRunnable(() -> mMediator.removeUiObserver(mBookmarkUiObserver))
+                .when(mBookmarkUiObserver)
+                .onDestroy();
 
-                            // Setup LargeIconBridge.
-                            doAnswer(
-                                            invocation -> {
-                                                LargeIconCallback cb = invocation.getArgument(3);
-                                                cb.onLargeIconAvailable(
-                                                        mBitmap,
-                                                        Color.GREEN,
-                                                        false,
-                                                        IconType.FAVICON);
-                                                return null;
-                                            })
-                                    .when(mLargeIconBridge)
-                                    .getLargeIconForUrl(any(), anyInt(), anyInt(), any());
+        // Setup LargeIconBridge.
+        doAnswer(
+                        invocation -> {
+                            LargeIconCallback cb = invocation.getArgument(3);
+                            cb.onLargeIconAvailable(mBitmap, Color.GREEN, false, IconType.FAVICON);
+                            return null;
+                        })
+                .when(mLargeIconBridge)
+                .getLargeIconForUrl(any(), anyInt(), anyInt(), any());
 
-                            // Setup BookmarkUiPrefs.
-                            mBookmarkUiPrefs.setBookmarkRowDisplayPref(
-                                    BookmarkRowDisplayPref.COMPACT);
+        // Setup BookmarkUiPrefs.
+        mBookmarkUiPrefs.setBookmarkRowDisplayPref(BookmarkRowDisplayPref.COMPACT);
 
-                            // Setup sync/identify mocks.
-                            SyncServiceFactory.setInstanceForTesting(mSyncService);
-                            IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
-                            doReturn(mSigninManager)
-                                    .when(mIdentityServicesProvider)
-                                    .getSigninManager(any());
-                            doReturn(mIdentityManager).when(mSigninManager).getIdentityManager();
-                            AccountManagerFacadeProvider.setInstanceForTests(mAccountManagerFacade);
+        // Setup sync/identify mocks.
+        SyncServiceFactory.setInstanceForTesting(mSyncService);
+        IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
+        doReturn(mSigninManager).when(mIdentityServicesProvider).getSigninManager(any());
+        doReturn(mIdentityManager).when(mSigninManager).getIdentityManager();
+        AccountManagerFacadeProvider.setInstanceForTests(mAccountManagerFacade);
 
-                            // Setup image fetching.
-                            doAnswer(
-                                            (invocation) -> {
-                                                Callback<Pair<Drawable, Drawable>> callback =
-                                                        invocation.getArgument(1);
-                                                callback.onResult(new Pair<>(mDrawable, mDrawable));
-                                                return null;
-                                            })
-                                    .when(mBookmarkImageFetcher)
-                                    .fetchFirstTwoImagesForFolder(any(), any());
-                            doAnswer(
-                                            (invocation) -> {
-                                                Callback<Drawable> callback =
-                                                        invocation.getArgument(1);
-                                                callback.onResult(mDrawable);
-                                                return null;
-                                            })
-                                    .when(mBookmarkImageFetcher)
-                                    .fetchImageForBookmarkWithFaviconFallback(any(), any());
-                            doAnswer(
-                                            (invocation) -> {
-                                                Callback<Drawable> callback =
-                                                        invocation.getArgument(1);
-                                                callback.onResult(mDrawable);
-                                                return null;
-                                            })
-                                    .when(mBookmarkImageFetcher)
-                                    .fetchFaviconForBookmark(any(), any());
+        // Setup image fetching.
+        doAnswer(
+                        (invocation) -> {
+                            Callback<Pair<Drawable, Drawable>> callback = invocation.getArgument(1);
+                            callback.onResult(new Pair<>(mDrawable, mDrawable));
+                            return null;
+                        })
+                .when(mBookmarkImageFetcher)
+                .fetchFirstTwoImagesForFolder(any(), any());
+        doAnswer(
+                        (invocation) -> {
+                            Callback<Drawable> callback = invocation.getArgument(1);
+                            callback.onResult(mDrawable);
+                            return null;
+                        })
+                .when(mBookmarkImageFetcher)
+                .fetchImageForBookmarkWithFaviconFallback(any(), any());
+        doAnswer(
+                        (invocation) -> {
+                            Callback<Drawable> callback = invocation.getArgument(1);
+                            callback.onResult(mDrawable);
+                            return null;
+                        })
+                .when(mBookmarkImageFetcher)
+                .fetchFaviconForBookmark(any(), any());
 
-                            // Setup price tracking utils.
-                            mJniMocker.mock(
-                                    PriceTrackingUtilsJni.TEST_HOOKS, mPriceTrackingUtilsJniMock);
-                            doCallback(3, (Callback<Boolean> callback) -> callback.onResult(true))
-                                    .when(mPriceTrackingUtilsJniMock)
-                                    .setPriceTrackingStateForBookmark(
-                                            any(), anyLong(), anyBoolean(), any(), anyBoolean());
-                            doCallback(
-                                            0,
-                                            (Callback<List<BookmarkId>> callback) -> {
-                                                callback.onResult(
-                                                        Arrays.asList(mPriceTrackedBookmarkId));
-                                            })
-                                    .when(mShoppingService)
-                                    .getAllPriceTrackedBookmarks(any());
-                            ShoppingSpecifics trackedShoppingSpecifics =
-                                    ShoppingSpecifics.newBuilder().setProductClusterId(1).build();
-                            PowerBookmarkMeta shoppingMetaTracked =
-                                    PowerBookmarkMeta.newBuilder()
-                                            .setShoppingSpecifics(trackedShoppingSpecifics)
-                                            .build();
-                            doReturn(true)
-                                    .when(mShoppingService)
-                                    .isSubscribedFromCache(
-                                            PowerBookmarkUtils
-                                                    .createCommerceSubscriptionForShoppingSpecifics(
-                                                            trackedShoppingSpecifics));
-                            doReturn(shoppingMetaTracked)
-                                    .when(mBookmarkModel)
-                                    .getPowerBookmarkMeta(mPriceTrackedBookmarkId);
-                            ShoppingFeatures.setShoppingListEligibleForTesting(true);
+        // Setup price tracking utils.
+        mJniMocker.mock(PriceTrackingUtilsJni.TEST_HOOKS, mPriceTrackingUtilsJniMock);
+        doCallback(3, (Callback<Boolean> callback) -> callback.onResult(true))
+                .when(mPriceTrackingUtilsJniMock)
+                .setPriceTrackingStateForBookmark(
+                        any(), anyLong(), anyBoolean(), any(), anyBoolean());
+        doCallback(
+                        0,
+                        (Callback<List<BookmarkId>> callback) -> {
+                            callback.onResult(Arrays.asList(mPriceTrackedBookmarkId));
+                        })
+                .when(mShoppingService)
+                .getAllPriceTrackedBookmarks(any());
+        ShoppingSpecifics trackedShoppingSpecifics =
+                ShoppingSpecifics.newBuilder().setProductClusterId(1).build();
+        PowerBookmarkMeta shoppingMetaTracked =
+                PowerBookmarkMeta.newBuilder()
+                        .setShoppingSpecifics(trackedShoppingSpecifics)
+                        .build();
+        doReturn(true)
+                .when(mShoppingService)
+                .isSubscribedFromCache(
+                        PowerBookmarkUtils.createCommerceSubscriptionForShoppingSpecifics(
+                                trackedShoppingSpecifics));
+        doReturn(shoppingMetaTracked)
+                .when(mBookmarkModel)
+                .getPowerBookmarkMeta(mPriceTrackedBookmarkId);
+        ShoppingFeatures.setShoppingListEligibleForTesting(true);
 
-                            mDragReorderableRecyclerViewAdapter =
-                                    spy(
-                                            new DragReorderableRecyclerViewAdapter(
-                                                    mActivity, mModelList));
-                            mMediator =
-                                    new BookmarkManagerMediator(
-                                            mActivity,
-                                            mBookmarkModel,
-                                            mBookmarkOpener,
-                                            mSelectableListLayout,
-                                            mSelectionDelegate,
-                                            mRecyclerView,
-                                            mDragReorderableRecyclerViewAdapter,
-                                            mLargeIconBridge,
-                                            /* isDialogUi= */ true,
-                                            /* isIncognito= */ false,
-                                            mBackPressStateSupplier,
-                                            mProfile,
-                                            mBookmarkUndoController,
-                                            mModelList,
-                                            mBookmarkUiPrefs,
-                                            mHideKeyboardRunnable,
-                                            mBookmarkImageFetcher,
-                                            mShoppingService,
-                                            mSnackbarManager,
-                                            mOnScrollListenerConsumer);
-                            mMediator.addUiObserver(mBookmarkUiObserver);
-                        });
+        mDragReorderableRecyclerViewAdapter =
+                spy(new DragReorderableRecyclerViewAdapter(mActivity, mModelList));
+        mMediator =
+                new BookmarkManagerMediator(
+                        mActivity,
+                        mBookmarkModel,
+                        mBookmarkOpener,
+                        mSelectableListLayout,
+                        mSelectionDelegate,
+                        mRecyclerView,
+                        mDragReorderableRecyclerViewAdapter,
+                        mLargeIconBridge,
+                        /* isDialogUi= */ true,
+                        /* isIncognito= */ false,
+                        mBackPressStateSupplier,
+                        mProfile,
+                        mBookmarkUndoController,
+                        mModelList,
+                        mBookmarkUiPrefs,
+                        mHideKeyboardRunnable,
+                        mBookmarkImageFetcher,
+                        mShoppingService,
+                        mSnackbarManager,
+                        mOnScrollListenerConsumer);
+        mMediator.addUiObserver(mBookmarkUiObserver);
     }
 
     @After
@@ -1265,19 +1224,19 @@ public class BookmarkManagerMediatorTest {
                 (BasicListMenu) mMediator.createListMenuForBookmark(mModelList.get(0).model);
         assertNotNull(menu);
 
-        // select
+        // Select.
         menu.onItemClick(null, null, 0, 0);
         verify(mSelectionDelegate).toggleSelectionForItem(mBookmarkId21);
 
-        // edit
+        // Edit.
         // TODO(crbug.com/1444544): This doesn't actually open the activity yet.
         menu.onItemClick(null, null, 1, 0);
 
-        // move
+        // Move.
         // TODO(crbug.com/1444544): This doesn't actually open the activity yet.
         menu.onItemClick(null, null, 2, 0);
 
-        // delete.
+        // Delete.
         menu.onItemClick(null, null, 3, 0);
         verify(mBookmarkModel).deleteBookmarks(mBookmarkId21);
     }
@@ -1308,7 +1267,7 @@ public class BookmarkManagerMediatorTest {
                 (BasicListMenu) mMediator.createListMenuForBookmark(mModelList.get(1).model);
         assertNotNull(menu);
 
-        // delete.
+        // Delete.
         menu.onItemClick(null, null, 4, 0);
         verify(mPriceTrackingUtilsJniMock)
                 .setPriceTrackingStateForBookmark(
@@ -2109,5 +2068,74 @@ public class BookmarkManagerMediatorTest {
         mMediator.openFolder(mFolderId1);
         mBookmarkUiPrefs.setBookmarkRowDisplayPref(BookmarkRowDisplayPref.VISUAL);
         verify(mRecyclerView).announceForAccessibility("Showing visual view");
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testDestroyDuringPendingRefresh() {
+        // Remove test impl from setUp, to resume paused behavior.
+        ShadowPostTask.reset();
+
+        finishLoading();
+        mMediator.openFolder(mFolderId1);
+        verify(mBookmarkModel, times(1)).getChildIds(mFolderId1);
+        verifyCurrentBookmarkIds(null, mFolderId2, mFolderId3);
+
+        verify(mBookmarkModel).addObserver(mBookmarkModelObserverArgumentCaptor.capture());
+        BookmarkModelObserver observer = mBookmarkModelObserverArgumentCaptor.getValue();
+        doReturn(Arrays.asList(mFolderId2)).when(mBookmarkModel).getChildIds(mFolderId1);
+        observer.bookmarkModelChanged();
+
+        // Hasn't updated for changes yet, the refresh is pending.
+        verifyCurrentBookmarkIds(null, mFolderId2, mFolderId3);
+
+        mMediator.onDestroy();
+        // Now give the pending task time to run. It should no-op, and not crash.
+        ShadowLooper.idleMainLooper();
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testClickDeletedBookmark() {
+        finishLoading();
+        mMediator.openFolder(mFolderId1);
+        verify(mBookmarkModel, times(1)).getChildIds(mFolderId1);
+        verifyCurrentBookmarkIds(null, mFolderId2, mFolderId3);
+
+        // Hang onto the on click handlers. After removing views it's not normal for users to be
+        // able to click on rows. But there's asynchronicity, especially between model changes and
+        // the views. While this test case is a bit more extreme than in practice, our logic still
+        // need to be robust.
+        Runnable onClick2 =
+                mModelList.get(1).model.get(ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER);
+        Runnable onClick3 =
+                mModelList.get(2).model.get(ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER);
+
+        // Folder 3 is deleted, but folder 2 is still in the model.
+        when(mBookmarkModel.getBookmarkById(mFolderId3)).thenReturn(null);
+        // Neither children are present in folder 1 anymore.
+        when(mBookmarkModel.getChildIds(mFolderId1)).thenReturn(Collections.emptyList());
+
+        verify(mBookmarkModel).addObserver(mBookmarkModelObserverArgumentCaptor.capture());
+        BookmarkModelObserver observer = mBookmarkModelObserverArgumentCaptor.getValue();
+        observer.bookmarkModelChanged();
+        verifyCurrentBookmarkIds(new BookmarkId[] {null});
+
+        // Neither of these can do anything, the models are gone. But more importantly, they should
+        // not crash.
+        when(mSelectionDelegate.isSelectionEnabled()).thenReturn(true);
+        onClick2.run();
+        onClick3.run();
+
+        when(mSelectionDelegate.isSelectionEnabled()).thenReturn(false);
+        // Handling here is a bit arbitrary. So rare we don't need to support it, but we can and the
+        // code does currently open the folder correctly.
+        onClick2.run();
+        verifyCurrentBookmarkIds(null, mBookmarkId21);
+        verify(mBookmarkModel).getChildIds(mFolderId2);
+
+        // This should no-op as the folder is gone.
+        onClick3.run();
+        verify(mBookmarkModel, never()).getChildIds(mFolderId3);
     }
 }

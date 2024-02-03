@@ -34,6 +34,7 @@ source_set("browser_tests") {
     "css/css_browsertest.cc",
     "downloads/downloads_browsertest.cc",
     "engagement/site_engagement_browsertest.cc",
+    "feedback/feedback_browsertest.cc",
     "flags/flags_browsertest.cc",
     "histograms/histograms_internals_browsertest.cc",
     "history/history_supervised_user_browsertest.cc",
@@ -99,7 +100,9 @@ source_set("browser_tests") {
 
   if (is_chromeos_ash) {
     sources += [
+      "chromeos/ash_common/webui_resource_browsertest.cc",
       "chromeos/enterprise_reporting/enterprise_reporting_browsertest.cc",
+      "chromeos/firmware_update/firmware_update_browsertest.cc",
       "chromeos/personalization_app/personalization_app_browsertest.cc",
     ]
   } else {
@@ -328,15 +331,9 @@ ts_library("build_ts") {
 
   if (is_chromeos_ash) {
     in_files += [
-      "cr_focus_row_behavior_test.ts",
       "mocha_adapter.js",
       "mojo_webui_test_support.js",
     ]
-  }
-
-  if (enable_webui_certificate_viewer) {
-    in_files +=
-        [ "certificate_viewer_dialog/certificate_viewer_dialog_test.js" ]
   }
 
   if (!is_chromeos_lacros) {
@@ -382,6 +379,7 @@ generate_grd("build_grd") {
     "discards:build_grdp",
     "downloads:build_grdp",
     "engagement:build_grdp",
+    "feedback:build_grdp",
     "flags:build_grdp",
     "histograms:build_grdp",
     "history:build_grdp",
@@ -404,6 +402,7 @@ generate_grd("build_grd") {
     "settings:build_grdp",
     "side_panel:build_grdp",
     "side_panel/customize_chrome:build_grdp",
+    "side_panel/read_anything:build_grdp",
     "support_tool:build_grdp",
     "sync_internals:build_grdp",
     "tab_search:build_grdp",
@@ -423,6 +422,7 @@ generate_grd("build_grd") {
     "$target_gen_dir/discards/resources.grdp",
     "$target_gen_dir/downloads/resources.grdp",
     "$target_gen_dir/engagement/resources.grdp",
+    "$target_gen_dir/feedback/resources.grdp",
     "$target_gen_dir/flags/resources.grdp",
     "$target_gen_dir/histograms/resources.grdp",
     "$target_gen_dir/history/resources.grdp",
@@ -445,6 +445,7 @@ generate_grd("build_grd") {
     "$target_gen_dir/sandbox/resources.grdp",
     "$target_gen_dir/settings/resources.grdp",
     "$target_gen_dir/side_panel/customize_chrome/resources.grdp",
+    "$target_gen_dir/side_panel/read_anything/resources.grdp",
     "$target_gen_dir/side_panel/resources.grdp",
     "$target_gen_dir/support_tool/resources.grdp",
     "$target_gen_dir/sync_internals/resources.grdp",
@@ -461,6 +462,11 @@ generate_grd("build_grd") {
   if (enable_print_preview) {
     deps += [ "print_preview:build_grdp" ]
     grdp_files += [ "$target_gen_dir/print_preview/resources.grdp" ]
+  }
+
+  if (enable_webui_certificate_viewer) {
+    deps += [ "certificate_viewer_dialog:build_grdp" ]
+    grdp_files += [ "$target_gen_dir/certificate_viewer_dialog/resources.grdp" ]
   }
 
   if (enable_webui_tab_strip) {

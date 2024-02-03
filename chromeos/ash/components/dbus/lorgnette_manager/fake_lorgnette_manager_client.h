@@ -28,6 +28,7 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) FakeLorgnetteManagerClient
   void Init(dbus::Bus* bus) override;
 
   void ListScanners(
+      const std::string& client_id,
       bool local_only,
       chromeos::DBusMethodCallback<lorgnette::ListScannersResponse> callback)
       override;
@@ -42,6 +43,13 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) FakeLorgnetteManagerClient
       const lorgnette::CloseScannerRequest& request,
       chromeos::DBusMethodCallback<lorgnette::CloseScannerResponse> callback)
       override;
+  void SetOptions(const lorgnette::SetOptionsRequest& request,
+                  chromeos::DBusMethodCallback<lorgnette::SetOptionsResponse>
+                      callback) override;
+  void GetCurrentConfig(
+      const lorgnette::GetCurrentConfigRequest& request,
+      chromeos::DBusMethodCallback<lorgnette::GetCurrentConfigResponse>
+          callback) override;
   void StartPreparedScan(
       const lorgnette::StartPreparedScanRequest& request,
       chromeos::DBusMethodCallback<lorgnette::StartPreparedScanResponse>
@@ -91,6 +99,14 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) FakeLorgnetteManagerClient
   void SetCloseScannerResponse(
       const absl::optional<lorgnette::CloseScannerResponse>& response);
 
+  // Sets the response returned by SetOptions().
+  void SetSetOptionsResponse(
+      const absl::optional<lorgnette::SetOptionsResponse>& response);
+
+  // Sets the response returned by GetCurrentConfig().
+  void SetGetCurrentConfigResponse(
+      const absl::optional<lorgnette::GetCurrentConfigResponse>& response);
+
   // Sets the response returned by StartPreparedScan()
   void SetStartPreparedScanResponse(
       const absl::optional<lorgnette::StartPreparedScanResponse>& response);
@@ -112,6 +128,9 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) FakeLorgnetteManagerClient
   absl::optional<lorgnette::ScannerCapabilities> capabilities_response_;
   absl::optional<lorgnette::OpenScannerResponse> open_scanner_response_;
   absl::optional<lorgnette::CloseScannerResponse> close_scanner_response_;
+  absl::optional<lorgnette::SetOptionsResponse> set_options_response_;
+  absl::optional<lorgnette::GetCurrentConfigResponse>
+      get_current_config_response_;
   absl::optional<lorgnette::StartPreparedScanResponse>
       start_prepared_scan_response_;
   absl::optional<lorgnette::ReadScanDataResponse> read_scan_data_response_;

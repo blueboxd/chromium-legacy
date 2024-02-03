@@ -6,8 +6,10 @@
 #define SERVICES_ON_DEVICE_MODEL_ON_DEVICE_MODEL_SERVICE_H_
 
 #include "base/component_export.h"
+#include "base/types/expected.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "services/on_device_model/public/cpp/on_device_model.h"
 #include "services/on_device_model/public/mojom/on_device_model.mojom.h"
 
 namespace on_device_model {
@@ -30,12 +32,15 @@ class COMPONENT_EXPORT(ON_DEVICE_MODEL) OnDeviceModelService
   OnDeviceModelService& operator=(const OnDeviceModelService&) = delete;
 
   // mojom::OnDeviceModelService:
-  void LoadModel(ModelAssets assets, LoadModelCallback callback) override;
+  void LoadModel(mojom::LoadModelParamsPtr params,
+                 mojo::PendingReceiver<mojom::OnDeviceModel> model,
+                 LoadModelCallback callback) override;
   void GetEstimatedPerformanceClass(
       GetEstimatedPerformanceClassCallback callback) override;
 
  private:
-  static std::unique_ptr<mojom::OnDeviceModel> CreateModel(ModelAssets assets);
+  static base::expected<std::unique_ptr<OnDeviceModel>, mojom::LoadModelResult>
+  CreateModel(mojom::LoadModelParamsPtr params);
 
   mojo::Receiver<mojom::OnDeviceModelService> receiver_;
   mojo::UniqueReceiverSet<mojom::OnDeviceModel> model_receivers_;

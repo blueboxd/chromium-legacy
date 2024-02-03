@@ -22,7 +22,6 @@
 <translation id="1384959399684842514">Изтеглянето е на пауза</translation>
 <translation id="1415402041810619267">URL адресът е съкратен</translation>
 <translation id="1426410128494586442">Да</translation>
-<translation id="1446450296470737166">Разр. на пълния контрол над MIDI</translation>
 <translation id="1448064542941920355">Намаляване на нивото на мащаба</translation>
 <translation id="1510341833810331442">Сайтовете нямат разрешение да запазват данни на устройството ви</translation>
 <translation id="1547123415014299762">„Бисквитките“ на трети страни са разрешени</translation>
@@ -118,6 +117,7 @@
 <translation id="2968755619301702150">Визуализатор на сертификатите</translation>
 <translation id="2979365474350987274">„Бисквитките“ на трети страни са ограничени</translation>
 <translation id="3008272652534848354">Нулиране на разрешенията</translation>
+<translation id="3013291976881901233">MIDI устройства</translation>
 <translation id="301521992641321250">Автоматично блокирано</translation>
 <translation id="3069226013421428034">Разрешаване на влизането с профили от трети страни за конкретен сайт.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Изтича утре}other{Изтича след # дни}}</translation>
@@ -179,7 +179,6 @@
 <translation id="4002066346123236978">Заглавие</translation>
 <translation id="4008040567710660924">Разрешаване на „бисквитките“ за конкретен сайт.</translation>
 <translation id="4046123991198612571">Следващ запис</translation>
-<translation id="4053720452172726777">Персонализиране и контролиране на Google Chrome</translation>
 <translation id="4149890623864272035">Наистина ли искате да изтриете всички локални данни, включително „бисквитките“, и да нулирате всички разрешения за този уебсайт?</translation>
 <translation id="4149994727733219643">Опростен изглед на уеб страниците</translation>
 <translation id="4151930093518524179">Промяна на мащаба по подразбиране</translation>
@@ -300,7 +299,6 @@
 <translation id="6196640612572343990">Блокиране на „бисквитките“ на трети страни</translation>
 <translation id="6205314730813004066">Поверителност при рекламите</translation>
 <translation id="6207207788774442484">Изтриване на данните и нулиране на разрешенията</translation>
-<translation id="6216432067784365534">Опции за <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Да се деинсталира ли <ph name="APP_NAME" />?</translation>
 <translation id="6262191102408817757">Въз основа на последния ви раздел</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> и <ph name="PERMISSION_2" /> са блокирани</translation>
@@ -348,6 +346,7 @@
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избран е 1}other{Избрани са #}}</translation>
 <translation id="7087918508125750058">Избрани: <ph name="ITEM_COUNT" />. Налице са опции близо до горната част на екрана</translation>
+<translation id="7137403271056944713">Управл./препрограм. на MIDI у-ва</translation>
 <translation id="7141896414559753902">Блокиране на показването на изскачащи прозорци и пренасочвания от сайтовете (препоръчително)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7180611975245234373">Опресняване</translation>

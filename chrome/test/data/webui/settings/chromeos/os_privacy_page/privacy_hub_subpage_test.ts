@@ -5,11 +5,11 @@
 import 'chrome://os-settings/lazy_load.js';
 
 import {MediaDevicesProxy, PrivacyHubBrowserProxyImpl, SettingsPrivacyHubSubpage} from 'chrome://os-settings/lazy_load.js';
-import {CrToggleElement, MetricsConsentBrowserProxyImpl, OsSettingsPrivacyPageElement, PaperTooltipElement, Router, routes, SecureDnsMode, settingMojom, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
+import {CrLinkRowElement, CrToggleElement, MetricsConsentBrowserProxyImpl, OsSettingsPrivacyPageElement, PaperTooltipElement, Router, routes, SecureDnsMode, settingMojom, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util_ts.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.js';
 import {DomRepeat, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -705,6 +705,57 @@ suite('<settings-privacy-hub-subpage> app permissions', () => {
     flush();
   }
 
+  function getCameraCrToggle(): CrToggleElement {
+    const crToggle =
+        privacyHubSubpage.shadowRoot!.querySelector<CrToggleElement>(
+            '#cameraToggle');
+    assertTrue(!!crToggle);
+    return crToggle;
+  }
+
+  test('Navigate to the camera subpage', () => {
+    createSubpage();
+
+    const cameraSubpageLink =
+        privacyHubSubpage.shadowRoot!.querySelector<CrLinkRowElement>(
+            '#cameraSubpageLink');
+    assertTrue(!!cameraSubpageLink);
+
+    cameraSubpageLink.click();
+    assertEquals(routes.PRIVACY_HUB_CAMERA, Router.getInstance().currentRoute);
+  });
+
+  test('Toggle camera access', async () => {
+    const prefs = {
+      'ash': {
+        'user': {
+          'camera_allowed': {
+            value: true,
+          },
+        },
+      },
+    };
+    createSubpage(prefs);
+
+    mediaDevices.addDevice('videoinput', 'Fake Camera');
+    await waitAfterNextRender(privacyHubSubpage);
+
+    const cameraToggle = getCameraCrToggle();
+    const cameraPref = privacyHubSubpage.prefs.ash.user.camera_allowed;
+
+    // Pref and toggle should be in sync and not disabled.
+    assertTrue(cameraToggle.checked);
+    assertTrue(cameraPref.value);
+
+    cameraToggle.click();
+    assertFalse(cameraToggle.checked);
+    assertFalse(cameraPref.value);
+
+    cameraToggle.click();
+    assertTrue(cameraToggle.checked);
+    assertTrue(cameraPref.value);
+  });
+
   function getMicrophoneCrToggle(): CrToggleElement {
     const crToggle =
         privacyHubSubpage.shadowRoot!.querySelector<CrToggleElement>(
@@ -779,37 +830,31 @@ suite('<settings-privacy-hub-subpage> app permissions', () => {
     await waitAfterNextRender(privacyHubSubpage);
 
     const microphoneToggle = getMicrophoneCrToggle();
+    const microphonePref = privacyHubSubpage.prefs.ash.user.microphone_allowed;
 
     // Pref and toggle should be in sync and not disabled.
     assertTrue(microphoneToggle.checked);
-    assertTrue(privacyHubSubpage.prefs.ash.user.microphone_allowed.value);
+    assertTrue(microphonePref.value);
 
-    // Click the cr-toggle.
     microphoneToggle.click();
-    await waitAfterNextRender(microphoneToggle);
-
-    assertFalse(privacyHubSubpage.prefs.ash.user.microphone_allowed.value);
     assertFalse(microphoneToggle.checked);
+    assertFalse(microphonePref.value);
 
-    // Click the cr-toggle again.
+
     microphoneToggle.click();
-    await waitAfterNextRender(microphoneToggle);
-
     assertTrue(microphoneToggle.checked);
-    assertTrue(privacyHubSubpage.prefs.ash.user.microphone_allowed.value);
+    assertTrue(microphonePref.value);
   });
 
-  test('Navigate to the microphone subpage', async () => {
+  test('Navigate to the microphone subpage', () => {
     createSubpage();
 
-    const microphoneSubpageLinkWrapper =
-        privacyHubSubpage.shadowRoot!.querySelector<HTMLButtonElement>(
-            '#microphoneSubpageLinkWrapper');
-    assertTrue(!!microphoneSubpageLinkWrapper);
+    const microphoneSubpageLink =
+        privacyHubSubpage.shadowRoot!.querySelector<CrLinkRowElement>(
+            '#microphoneSubpageLink');
+    assertTrue(!!microphoneSubpageLink);
 
-    microphoneSubpageLinkWrapper.click();
-    await waitAfterNextRender(privacyHubSubpage);
-
+    microphoneSubpageLink.click();
     assertEquals(
         routes.PRIVACY_HUB_MICROPHONE, Router.getInstance().currentRoute);
   });

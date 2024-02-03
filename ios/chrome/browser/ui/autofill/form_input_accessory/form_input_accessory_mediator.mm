@@ -339,7 +339,7 @@ class PasswordCounterDelegateBridge
   }
 
   // Return early if the URL can't be verified.
-  absl::optional<GURL> pageURL = webState->GetLastCommittedURLIfTrusted();
+  std::optional<GURL> pageURL = webState->GetLastCommittedURLIfTrusted();
   if (!pageURL) {
     [self reset];
     return;
@@ -465,7 +465,7 @@ class PasswordCounterDelegateBridge
   }
 
   // Return early if the URL can't be verified.
-  absl::optional<GURL> pageURL = _webState->GetLastCommittedURLIfTrusted();
+  std::optional<GURL> pageURL = _webState->GetLastCommittedURLIfTrusted();
   if (!pageURL) {
     return NO;
   }

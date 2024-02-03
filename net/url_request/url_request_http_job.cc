@@ -435,11 +435,6 @@ void URLRequestHttpJob::OnGotFirstPartySetMetadata(
   AddExtraHeaders();
 
   if (ShouldAddCookieHeader()) {
-    // We shouldn't overwrite this if we've already computed the key.
-    DCHECK(!cookie_partition_key_.has_value());
-
-    cookie_partition_key_ = CookiePartitionKey::FromNetworkIsolationKey(
-        request_->isolation_info().network_isolation_key());
     AddCookieHeaderAndStart();
   } else {
     StartTransaction();
@@ -728,7 +723,8 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 
   cookie_store->GetCookieListWithOptionsAsync(
       request_->url(), options,
-      CookiePartitionKeyCollection::FromOptional(cookie_partition_key_.value()),
+      CookiePartitionKeyCollection::FromOptional(
+          request_->cookie_partition_key()),
       base::BindOnce(&URLRequestHttpJob::SetCookieHeaderAndStart,
                      weak_factory_.GetWeakPtr(), options));
 }
@@ -738,6 +734,10 @@ namespace {
 bool ShouldBlockAllCookies(const PrivacyMode& privacy_mode) {
   return privacy_mode == PRIVACY_MODE_ENABLED ||
          privacy_mode == PRIVACY_MODE_ENABLED_WITHOUT_CLIENT_CERTS;
+}
+
+bool ShouldBlockUnpartitionedCookiesOnly(const PrivacyMode& privacy_mode) {
+  return privacy_mode == PRIVACY_MODE_ENABLED_PARTITIONED_STATE_ALLOWED;
 }
 
 }  // namespace
@@ -765,68 +765,95 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
       cookie.access_result.status.AddExclusionReason(
           CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
-  } else {
-    // Consult the delegate to ensure that they have the correct exclusion
-    // reason.
-    AnnotateAndMoveUserBlockedCookies(maybe_included_cookies, excluded_cookies);
   }
-
-  if (!maybe_included_cookies.empty()) {
-    std::string cookie_line =
-        CanonicalCookie::BuildCookieLine(maybe_included_cookies);
-    request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
-                                          cookie_line);
-
-    size_t n_partitioned_cookies = 0;
-    bool may_set_sec_cookie_deprecation_header =
-        !request_->context()->cookie_deprecation_label().value_or("").empty();
-
-    // TODO(crbug.com/1031664): Reduce the number of times the cookie list
-    // is iterated over. Get metrics for every cookie which is included.
-    for (const auto& c : maybe_included_cookies) {
-      bool request_is_secure = request_->url().SchemeIsCryptographic();
-      net::CookieSourceScheme cookie_scheme = c.cookie.SourceScheme();
-      CookieRequestScheme cookie_request_schemes;
-
-      switch (cookie_scheme) {
-        case net::CookieSourceScheme::kSecure:
-          cookie_request_schemes =
-              request_is_secure
-                  ? CookieRequestScheme::kSecureSetSecureRequest
-                  : CookieRequestScheme::kSecureSetNonsecureRequest;
-          break;
-
-        case net::CookieSourceScheme::kNonSecure:
-          cookie_request_schemes =
-              request_is_secure
-                  ? CookieRequestScheme::kNonsecureSetSecureRequest
-                  : CookieRequestScheme::kNonsecureSetNonsecureRequest;
-          break;
-
-        case net::CookieSourceScheme::kUnset:
-          cookie_request_schemes = CookieRequestScheme::kUnsetCookieScheme;
-          break;
+  // TODO(https://crbug.com/1469135): Consolidate the following `if` blocks so
+  // that all the cookies should be passed into
+  // `AnnotateAndMoveUserBlockedCookies` to be associated with the correct
+  // inclusion status.
+  if (ShouldBlockUnpartitionedCookiesOnly(request_info_.privacy_mode)) {
+    auto partition_it = base::ranges::stable_partition(
+        maybe_included_cookies, [](const CookieWithAccessResult& el) {
+          return el.cookie.IsPartitioned();
+        });
+    for (auto it = partition_it; it < maybe_included_cookies.end(); ++it) {
+      if (!cookie_util::IsForceThirdPartyCookieBlockingEnabled()) {
+        it->access_result.status.AddExclusionReason(
+            CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+      } else {
+        it->access_result.status.AddExclusionReason(
+            CookieInclusionStatus::EXCLUDE_THIRD_PARTY_PHASEOUT);
       }
-
-      UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSchemeRequestScheme",
-                                cookie_request_schemes);
-      if (c.cookie.IsPartitioned()) {
-        ++n_partitioned_cookies;
-
-        if (may_set_sec_cookie_deprecation_header &&
-            c.cookie.Name() == "receive-cookie-deprecation" &&
-            c.cookie.IsHttpOnly() && c.cookie.IsSecure()) {
-          request_info_.extra_headers.SetHeader(
-              "Sec-Cookie-Deprecation",
-              *request_->context()->cookie_deprecation_label());
-          may_set_sec_cookie_deprecation_header = false;
-        }
+      if (first_party_set_metadata_.AreSitesInSameFirstPartySet()) {
+        it->access_result.status.AddExclusionReason(
+            CookieInclusionStatus::
+                EXCLUDE_THIRD_PARTY_BLOCKED_WITHIN_FIRST_PARTY_SET);
       }
     }
+    excluded_cookies.insert(
+        excluded_cookies.end(), std::make_move_iterator(partition_it),
+        std::make_move_iterator(maybe_included_cookies.end()));
+    maybe_included_cookies.erase(partition_it, maybe_included_cookies.end());
+  }
+  if (request_info_.privacy_mode == PRIVACY_MODE_DISABLED ||
+      !maybe_included_cookies.empty()) {
+    AnnotateAndMoveUserBlockedCookies(maybe_included_cookies, excluded_cookies);
+    if (!maybe_included_cookies.empty()) {
+      std::string cookie_line =
+          CanonicalCookie::BuildCookieLine(maybe_included_cookies);
+      request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
+                                            cookie_line);
 
-    if (IsPartitionedCookiesEnabled()) {
-      base::UmaHistogramCounts100("Cookie.PartitionedCookiesInRequest",
-                                  n_partitioned_cookies);
+      size_t n_partitioned_cookies = 0;
+      bool may_set_sec_cookie_deprecation_header =
+          !request_->context()->cookie_deprecation_label().value_or("").empty();
+
+      // TODO(crbug.com/1031664): Reduce the number of times the cookie list
+      // is iterated over. Get metrics for every cookie which is included.
+      for (const auto& c : maybe_included_cookies) {
+        bool request_is_secure = request_->url().SchemeIsCryptographic();
+        net::CookieSourceScheme cookie_scheme = c.cookie.SourceScheme();
+        CookieRequestScheme cookie_request_schemes;
+
+        switch (cookie_scheme) {
+          case net::CookieSourceScheme::kSecure:
+            cookie_request_schemes =
+                request_is_secure
+                    ? CookieRequestScheme::kSecureSetSecureRequest
+                    : CookieRequestScheme::kSecureSetNonsecureRequest;
+            break;
+
+          case net::CookieSourceScheme::kNonSecure:
+            cookie_request_schemes =
+                request_is_secure
+                    ? CookieRequestScheme::kNonsecureSetSecureRequest
+                    : CookieRequestScheme::kNonsecureSetNonsecureRequest;
+            break;
+
+          case net::CookieSourceScheme::kUnset:
+            cookie_request_schemes = CookieRequestScheme::kUnsetCookieScheme;
+            break;
+        }
+
+        UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSchemeRequestScheme",
+                                  cookie_request_schemes);
+        if (c.cookie.IsPartitioned()) {
+          ++n_partitioned_cookies;
+
+          if (may_set_sec_cookie_deprecation_header &&
+              c.cookie.Name() == "receive-cookie-deprecation" &&
+              c.cookie.IsHttpOnly() && c.cookie.IsSecure()) {
+            request_info_.extra_headers.SetHeader(
+                "Sec-Cookie-Deprecation",
+                *request_->context()->cookie_deprecation_label());
+            may_set_sec_cookie_deprecation_header = false;
+          }
+        }
+      }
+
+      if (ShouldRecordPartitionedCookieUsage()) {
+        base::UmaHistogramCounts100("Cookie.PartitionedCookiesInRequest",
+                                    n_partitioned_cookies);
+      }
     }
   }
 
@@ -859,7 +886,13 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 void URLRequestHttpJob::AnnotateAndMoveUserBlockedCookies(
     CookieAccessResultList& maybe_included_cookies,
     CookieAccessResultList& excluded_cookies) const {
-  DCHECK(!ShouldBlockAllCookies(request_info_.privacy_mode))
+  DCHECK(request_info_.privacy_mode == PrivacyMode::PRIVACY_MODE_DISABLED ||
+         (request_info_.privacy_mode ==
+              PrivacyMode::PRIVACY_MODE_ENABLED_PARTITIONED_STATE_ALLOWED &&
+          base::ranges::all_of(maybe_included_cookies,
+                               [](const CookieWithAccessResult& el) {
+                                 return el.cookie.IsPartitioned();
+                               })))
       << request_info_.privacy_mode;
 
   bool can_get_cookies = URLRequest::DefaultCanUseCookies();
@@ -970,7 +1003,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     DCHECK(cookie_string.find('\n') == std::string::npos);
     std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
         request_->url(), cookie_string, base::Time::Now(), server_time,
-        cookie_partition_key_.value(), /*block_truncated=*/true,
+        request_->cookie_partition_key(), /*block_truncated=*/true,
         &returned_status);
 
     absl::optional<CanonicalCookie> cookie_to_return = absl::nullopt;
@@ -981,7 +1014,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     }
 
     // Check cookie accessibility with cookie_settings.
-    if (cookie && !CanSetCookie(*cookie, &options, &returned_status)) {
+    if (cookie && !CanSetCookie(*cookie, &options, first_party_set_metadata_,
+                                &returned_status)) {
       // Cookie allowed by cookie_settings checks could be blocked explicitly,
       // e.g. via Android Webview APIs, we need to manually add exclusion reason
       // in this case.
@@ -1765,6 +1799,11 @@ void URLRequestHttpJob::RecordCompletionHistograms(CompletionCause reason) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpJob.PrefilterBytesRead.Net",
                                   prefilter_bytes_read(), 1, 50000000, 50);
 
+      if (request_->ad_tagged()) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpJob.PrefilterBytesRead.Ads.Net",
+                                    prefilter_bytes_read(), 1, 50000000, 50);
+      }
+
       if (is_https_google && used_quic) {
         UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTimeNotCached.Secure.Quic",
                                    total_time);
@@ -1822,10 +1861,8 @@ bool URLRequestHttpJob::ShouldAddCookieHeader() const {
   return request_->context()->cookie_store() && request_->allow_credentials();
 }
 
-bool URLRequestHttpJob::IsPartitionedCookiesEnabled() const {
-  // Only valid to call this after we've computed the key.
-  DCHECK(cookie_partition_key_.has_value());
-  return cookie_partition_key_.value().has_value();
+bool URLRequestHttpJob::ShouldRecordPartitionedCookieUsage() const {
+  return request_->cookie_partition_key().has_value();
 }
 
 }  // namespace net

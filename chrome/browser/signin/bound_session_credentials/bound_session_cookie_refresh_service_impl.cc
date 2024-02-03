@@ -10,6 +10,7 @@
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_controller.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_controller_impl.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_params_storage.h"
@@ -64,6 +65,8 @@ void BoundSessionCookieRefreshServiceImpl::RegisterNewBoundSession(
     session_params_storage_->ClearParams(cookie_controller_->url().spec(),
                                          cookie_controller_->session_id());
     cookie_controller_.reset();
+    RecordSessionTerminationTrigger(
+        SessionTerminationTrigger::kSessionOverride);
   }
   InitializeBoundSession(params);
 }
@@ -78,7 +81,7 @@ void BoundSessionCookieRefreshServiceImpl::MaybeTerminateSession(
   if (headers->GetNormalizedHeader(kGoogleSessionTerminationHeader,
                                    &session_id)) {
     if (session_id == cookie_controller_->session_id()) {
-      TerminateSession();
+      TerminateSession(SessionTerminationTrigger::kSessionTerminationHeader);
     } else {
       DVLOG(1) << "Session id on session termination header (" << session_id
                << ") doesn't match with the current session id ("
@@ -109,20 +112,20 @@ void BoundSessionCookieRefreshServiceImpl::
 }
 
 void BoundSessionCookieRefreshServiceImpl::
-    AddBoundSessionRequestThrottledListenerReceiver(
+    AddBoundSessionRequestThrottledHandlerReceiver(
         mojo::PendingReceiver<
-            chrome::mojom::BoundSessionRequestThrottledListener> receiver) {
-  renderer_request_throttled_listener_.Add(this, std::move(receiver));
+            chrome::mojom::BoundSessionRequestThrottledHandler> receiver) {
+  renderer_request_throttled_handler_.Add(this, std::move(receiver));
 }
 
-void BoundSessionCookieRefreshServiceImpl::OnRequestBlockedOnCookie(
-    OnRequestBlockedOnCookieCallback resume_blocked_request) {
+void BoundSessionCookieRefreshServiceImpl::HandleRequestBlockedOnCookie(
+    HandleRequestBlockedOnCookieCallback resume_blocked_request) {
   if (!cookie_controller_) {
     // Session has been terminated.
     std::move(resume_blocked_request).Run();
     return;
   }
-  cookie_controller_->OnRequestBlockedOnCookie(
+  cookie_controller_->HandleRequestBlockedOnCookie(
       std::move(resume_blocked_request));
 }
 
@@ -166,12 +169,8 @@ void BoundSessionCookieRefreshServiceImpl::
   UpdateAllRenderers();
 }
 
-void BoundSessionCookieRefreshServiceImpl::TerminateSession() {
-  cookie_controller_.reset();
-  // TODO(b/300627729): stop clearing all params once multiple sessions are
-  // supported.
-  session_params_storage_->ClearAllParams();
-  UpdateAllRenderers();
+void BoundSessionCookieRefreshServiceImpl::OnPersistentErrorEncountered() {
+  TerminateSession(SessionTerminationTrigger::kCookieRotationPersistentError);
 }
 
 void BoundSessionCookieRefreshServiceImpl::OnStorageKeyDataCleared(
@@ -205,7 +204,7 @@ void BoundSessionCookieRefreshServiceImpl::OnStorageKeyDataCleared(
     return;
   }
 
-  TerminateSession();
+  TerminateSession(SessionTerminationTrigger::kCookiesCleared);
 }
 
 std::unique_ptr<BoundSessionCookieController>
@@ -233,4 +232,20 @@ void BoundSessionCookieRefreshServiceImpl::UpdateAllRenderers() {
   if (session_updated_callback_for_testing_) {
     session_updated_callback_for_testing_.Run();
   }
+}
+
+void BoundSessionCookieRefreshServiceImpl::TerminateSession(
+    SessionTerminationTrigger trigger) {
+  cookie_controller_.reset();
+  // TODO(b/300627729): stop clearing all params once multiple sessions are
+  // supported.
+  session_params_storage_->ClearAllParams();
+  UpdateAllRenderers();
+  RecordSessionTerminationTrigger(trigger);
+}
+
+void BoundSessionCookieRefreshServiceImpl::RecordSessionTerminationTrigger(
+    SessionTerminationTrigger trigger) {
+  base::UmaHistogramEnumeration(
+      "Signin.BoundSessionCredentials.SessionTerminationTrigger", trigger);
 }

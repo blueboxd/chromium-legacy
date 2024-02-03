@@ -109,8 +109,8 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
-#include "components/password_manager/core/browser/smart_bubble_stats_store.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/smart_bubble_stats_store.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/permissions/permission_actions_history.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
@@ -1389,8 +1389,8 @@ void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
   if (should_clear_password_account_storage_settings_) {
     should_clear_password_account_storage_settings_ = false;
 #if !BUILDFLAG(IS_ANDROID)
-    password_manager::features_util::ClearAccountStorageSettingsForAllUsers(
-        profile_->GetPrefs());
+    password_manager::features_util::KeepAccountStorageSettingsOnlyForUsers(
+        profile_->GetPrefs(), {});
 #endif  // !BUILDFLAG(IS_ANDROID)
   }
 

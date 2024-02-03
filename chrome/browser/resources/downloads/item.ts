@@ -16,6 +16,7 @@ import './strings.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import './bypass_warning_confirmation_dialog.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
@@ -185,6 +186,8 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
       },
 
       useFileIcon_: Boolean,
+
+      showBypassWarningConfirmationDialog_: Boolean,
     };
   }
 
@@ -215,6 +218,7 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
   private displayType_: DisplayType;
   private improvedDownloadWarningsUx_: boolean;
   private completelyOnDisk_: boolean;
+  private showBypassWarningConfirmationDialog_: boolean;
   override overrideCustomEquivalent: boolean;
 
   constructor() {
@@ -353,7 +357,8 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
     }
 
     if (this.data.state === State.kAsyncScanning ||
-        this.data.state === State.kPromptForScanning) {
+        this.data.state === State.kPromptForScanning ||
+        this.data.state === State.kPromptForLocalPasswordScanning) {
       return DisplayType.SUSPICIOUS;
     }
 
@@ -392,6 +397,16 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
     }
 
     return DisplayType.NORMAL;
+  }
+
+  private computeDeepScanControlText_(): string {
+    if (this.data.state === State.kPromptForScanning) {
+      return loadTimeData.getString('controlDeepScan');
+    } else if (this.data.state === State.kPromptForLocalPasswordScanning) {
+      return loadTimeData.getString('controlLocalPasswordScan');
+    }
+
+    return '';
   }
 
   private computeSaveDangerousLabel_(): string {
@@ -458,6 +473,8 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
         return loadTimeData.getString('asyncScanningDownloadDesc');
       case State.kPromptForScanning:
         return loadTimeData.getString('promptForScanningDesc');
+      case State.kPromptForLocalPasswordScanning:
+        return loadTimeData.getString('promptForLocalPasswordScanningDesc');
       case State.kInProgress:
       case State.kPaused:  // Fallthrough.
         return data.progressStatusText;
@@ -546,11 +563,9 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
         return 'cr:error';
       }
 
-      if (this.data.state === State.kAsyncScanning) {
-        return 'cr:warning';
-      }
-
-      if (this.data.state === State.kPromptForScanning) {
+      if (this.data.state === State.kAsyncScanning ||
+          this.data.state === State.kPromptForScanning ||
+          this.data.state === State.kPromptForLocalPasswordScanning) {
         return 'cr:warning';
       }
     }
@@ -587,7 +602,8 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
       }
 
       if (this.data.state === State.kAsyncScanning ||
-          this.data.state === State.kPromptForScanning) {
+          this.data.state === State.kPromptForScanning ||
+          this.data.state === State.kPromptForLocalPasswordScanning) {
         return 'yellow';
       }
     }
@@ -686,11 +702,13 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
       return true;
     }
     return this.showCancel_ && this.data.percent >= -1 &&
-        this.data.state !== State.kPromptForScanning;
+        this.data.state !== State.kPromptForScanning &&
+        this.data.state !== State.kPromptForLocalPasswordScanning;
   }
 
   private computeShowDeepScan_(): boolean {
-    return this.data.state === State.kPromptForScanning;
+    return this.data.state === State.kPromptForScanning ||
+        this.data.state === State.kPromptForLocalPasswordScanning;
   }
 
   private computeShowOpenAnyway_(): boolean {
@@ -762,10 +780,9 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
       if (OVERRIDDEN_ICON_TYPES.includes(this.data.dangerType as DangerType)) {
         return false;
       }
-      if (this.data.state === State.kAsyncScanning) {
-        return false;
-      }
-      if (this.data.state === State.kPromptForScanning) {
+      if (this.data.state === State.kAsyncScanning ||
+          this.data.state === State.kPromptForScanning ||
+          this.data.state === State.kPromptForLocalPasswordScanning) {
         return false;
       }
       return true;
@@ -911,10 +928,24 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
   }
 
   private onSaveDangerousClick_() {
-    this.mojoHandler_!.saveDangerousRequiringGesture(this.data.id);
     if (this.improvedDownloadWarningsUx_) {
       this.getMoreActionsMenu().close();
+      if (this.displayType_ === DisplayType.DANGEROUS) {
+        this.showBypassWarningConfirmationDialog_ = true;
+        return;
+      }
     }
+    this.mojoHandler_!.saveDangerousRequiringGesture(this.data.id);
+  }
+
+  private onBypassWarningConfirmationDialogClose_() {
+    const dialog = this.shadowRoot!.querySelector(
+        'download-bypass-warning-confirmation-dialog');
+    assert(dialog);
+    if (dialog.wasConfirmed()) {
+      this.mojoHandler_!.saveDangerousRequiringGesture(this.data.id);
+    }
+    this.showBypassWarningConfirmationDialog_ = false;
   }
 
   private onShowClick_() {

@@ -79,9 +79,7 @@ bool ShouldDisplayCredentialAsCompromised(
 
   for (const auto& insecure_credential : insecure_credentials) {
     if (credential == insecure_credential) {
-      return password_manager::features::IsPasswordCheckupEnabled()
-                 ? IsCredentialUnmutedCompromised(insecure_credential)
-                 : IsCompromised(insecure_credential);
+      return IsCredentialUnmutedCompromised(insecure_credential);
     }
   }
   return false;
@@ -89,12 +87,6 @@ bool ShouldDisplayCredentialAsCompromised(
 
 // Whether displaying a credential as muted is supported in the current context.
 bool CanDisplayCredentialAsMuted(DetailsContext details_context) {
-  // Muted credentials are only available when kIOSPasswordCheckup feature is
-  // enabled.
-  if (!password_manager::features::IsPasswordCheckupEnabled()) {
-    return false;
-  }
-
   switch (details_context) {
     case DetailsContext::kPasswordSettings:
     case DetailsContext::kOutsideSettings:
@@ -275,7 +267,7 @@ bool ShouldDisplayCredentialAsMuted(
       _credentials, [password](const CredentialUIEntry& credential) {
         return MatchesRealmUsernameAndPassword(password, credential);
       });
-  absl::optional<CredentialUIEntry> accountCredential =
+  std::optional<CredentialUIEntry> accountCredential =
       [self conflictingAccountPassword:password];
   DCHECK(localCredential != _credentials.end());
   DCHECK(accountCredential.has_value());
@@ -536,7 +528,7 @@ bool ShouldDisplayCredentialAsMuted(
 
 // Returns a credential that a) is saved in the user account, and b) has the
 // same website/username as `password`, but a different password value.
-- (absl::optional<CredentialUIEntry>)conflictingAccountPassword:
+- (std::optional<CredentialUIEntry>)conflictingAccountPassword:
     (PasswordDetails*)password {
   // All credentials for the same website are in `_credentials` due to password
   // grouping. So it's enough to search that reduced list and not all saved
@@ -553,7 +545,7 @@ bool ShouldDisplayCredentialAsMuted(
                    credential.password;
       });
   if (it == _credentials.end()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return *it;
 }

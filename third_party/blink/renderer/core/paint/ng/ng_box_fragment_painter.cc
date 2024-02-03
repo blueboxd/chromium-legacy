@@ -670,7 +670,7 @@ void NGBoxFragmentPainter::PaintObject(
   }
 
   if (ShouldPaintSelfOutline(paint_phase)) {
-    if (NGOutlineUtils::HasPaintedOutline(style, fragment.GetNode())) {
+    if (HasPaintedOutline(style, fragment.GetNode())) {
       NGFragmentPainter(fragment, GetDisplayItemClient())
           .PaintOutline(paint_info, paint_offset, style);
     }
@@ -811,7 +811,7 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info,
                                               PhysicalOffset paint_offset) {
   DCHECK(!box_fragment_.IsInlineFormattingContext());
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
-  for (const NGLink& child : box_fragment_.Children()) {
+  for (const PhysicalFragmentLink& child : box_fragment_.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
     DCHECK(child_fragment.IsBox());
     if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating())
@@ -822,7 +822,7 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info,
 }
 
 void NGBoxFragmentPainter::PaintBlockChild(
-    const NGLink& child,
+    const PhysicalFragmentLink& child,
     const PaintInfo& paint_info,
     const PaintInfo& paint_info_for_descendants,
     PhysicalOffset paint_offset) {
@@ -900,7 +900,7 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
 
   DCHECK(container.HasFloatingDescendantsForPaint());
 
-  for (const NGLink& child : container.Children()) {
+  for (const PhysicalFragmentLink& child : container.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
     if (child_fragment.HasSelfPaintingLayer())
       continue;
@@ -1315,8 +1315,10 @@ void NGBoxFragmentPainter::PaintColumnRules(
   DCHECK(box_fragment_.IsCSSBox());
   DCHECK(style.HasColumnRule());
 
-  // TODO(crbug.com/792437): Certain rule styles should be converted.
-  EBorderStyle rule_style = style.ColumnRuleStyle();
+  // https://www.w3.org/TR/css-multicol-1/#propdef-column-rule-style
+  // interpret column-rule-style as in the collapsing border model
+  EBorderStyle rule_style =
+      ComputedStyle::CollapsedBorderStyle(style.ColumnRuleStyle());
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(paint_info.context,
                                                   GetDisplayItemClient(),
@@ -1332,7 +1334,7 @@ void NGBoxFragmentPainter::PaintColumnRules(
 
   // Count all the spanners
   int span_count = 0;
-  for (const NGLink& child : box_fragment_.Children()) {
+  for (const PhysicalFragmentLink& child : box_fragment_.Children()) {
     if (!child->IsColumnBox()) {
       span_count++;
     }
@@ -1342,7 +1344,7 @@ void NGBoxFragmentPainter::PaintColumnRules(
   bool past_first_column_in_row = false;
   AutoDarkMode auto_dark_mode(
       PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kBackground));
-  for (const NGLink& child : box_fragment_.Children()) {
+  for (const PhysicalFragmentLink& child : box_fragment_.Children()) {
     if (!child->IsColumnBox()) {
       // Column spanner. Continue in the next row, if there are 2 columns or
       // more there.
@@ -2349,7 +2351,7 @@ bool NGBoxFragmentPainter::HitTestBlockChildren(
   if (phase == HitTestPhase::kDescendantBlockBackgrounds)
     phase = HitTestPhase::kSelfBlockBackground;
   auto children = box_fragment_.Children();
-  for (const NGLink& child : base::Reversed(children)) {
+  for (const PhysicalFragmentLink& child : base::Reversed(children)) {
     const auto& block_child = To<NGPhysicalBoxFragment>(*child);
     if (UNLIKELY(block_child.IsLayoutObjectDestroyedOrMoved()))
       continue;
@@ -2501,7 +2503,7 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
   }
 
   auto children = container.Children();
-  for (const NGLink& child : base::Reversed(children)) {
+  for (const PhysicalFragmentLink& child : base::Reversed(children)) {
     const NGPhysicalFragment& child_fragment = *child.fragment;
     if (UNLIKELY(child_fragment.IsLayoutObjectDestroyedOrMoved()))
       continue;

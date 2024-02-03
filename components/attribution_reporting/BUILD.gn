@@ -14,7 +14,6 @@ mojom("mojom") {
     "trigger_registration_error.mojom",
   ]
   webui_module_path = "/"
-  use_typescript_sources = true
 
   # Used by Blink, so requires legacy JS bindings.
   generate_legacy_js_bindings = true
@@ -55,6 +54,8 @@ component("attribution_reporting") {
     "event_trigger_data.h",
     "filters.cc",
     "filters.h",
+    "max_event_level_reports.cc",
+    "max_event_level_reports.h",
     "os_registration.cc",
     "os_registration.h",
     "parsing_utils.cc",
@@ -116,6 +117,7 @@ source_set("unit_tests") {
     "event_report_windows_unittest.cc",
     "event_trigger_data_unittest.cc",
     "filters_unittest.cc",
+    "max_event_level_reports_unittest.cc",
     "os_registration_unittest.cc",
     "parsing_utils_unittest.cc",
     "source_registration_unittest.cc",
@@ -194,7 +196,6 @@ mojom("registration_mojom") {
 
   generate_java = true
   webui_module_path = "/"
-  use_typescript_sources = true
   disallow_interfaces = true
 
   # Used by Blink, so requires legacy JS bindings.
@@ -307,10 +308,16 @@ mojom("registration_mojom") {
               "namespace attribution_reporting { class EventReportWindows; }"
         },
         {
-          mojom = "attribution_reporting.mojom.TriggerConfig"
-          cpp = "::attribution_reporting::TriggerConfig"
+          mojom = "attribution_reporting.mojom.TriggerSpec"
+          cpp = "::attribution_reporting::TriggerSpec"
           forward_declaration =
-              "namespace attribution_reporting { class TriggerConfig; }"
+              "namespace attribution_reporting { class TriggerSpec; }"
+        },
+        {
+          mojom = "attribution_reporting.mojom.TriggerSpecs"
+          cpp = "::attribution_reporting::TriggerSpecs"
+          forward_declaration =
+              "namespace attribution_reporting { class TriggerSpecs; }"
         },
       ]
       traits_headers = [ "registration_mojom_traits.h" ]
@@ -346,7 +353,6 @@ component("registration_mojom_traits") {
 mojom("source_type_mojom") {
   sources = [ "source_type.mojom" ]
   webui_module_path = "/"
-  use_typescript_sources = true
   disallow_interfaces = true
   generate_java = false
 }

@@ -54,9 +54,11 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD(void, StartKiosk, (const KioskAppId&, bool), (override));
   MOCK_METHOD(void, AttemptShowEnableConsumerKioskScreen, (), (override));
   MOCK_METHOD(void, ShowGaiaDialog, (const AccountId&), (override));
+  MOCK_METHOD(void, StartUserRecovery, (const AccountId&), (override));
   MOCK_METHOD(void, ShowOsInstallScreen, (), (override));
   MOCK_METHOD(void, ShowGuestTosScreen, (), (override));
   MOCK_METHOD(void, ShowAllowlistCheckFailedError, (), (override));
+  MOCK_METHOD(void, ShowRemoteActivityNotificationScreen, (), (override));
   MOCK_METHOD(void, HideOobeDialog, (bool saml_video_timeout), (override));
   MOCK_METHOD(void, SetShelfButtonsEnabled, (bool), (override));
   MOCK_METHOD(void, UpdateOobeDialogState, (OobeDialogState state), (override));
@@ -80,7 +82,6 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD(void, UpdateAddUserButtonStatus, (), (override));
   MOCK_METHOD(void, RequestSystemInfoUpdate, (), (override));
   MOCK_METHOD(bool, HasUserPods, (), (override));
-  MOCK_METHOD(void, VerifyOwnerForKiosk, (base::OnceClosure), (override));
   MOCK_METHOD(void, AddObserver, (LoginDisplayHost::Observer*), (override));
   MOCK_METHOD(void, RemoveObserver, (LoginDisplayHost::Observer*), (override));
   MOCK_METHOD(SigninUI*, GetSigninUI, (), (override));

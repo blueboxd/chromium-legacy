@@ -16,10 +16,6 @@ bool IsFedCmAuthzEnabled() {
   return base::FeatureList::IsEnabled(features::kFedCmAuthz);
 }
 
-bool IsFedCmIdpSignoutEnabled() {
-  return base::FeatureList::IsEnabled(features::kFedCmLogoutRps);
-}
-
 bool IsFedCmMultipleIdentityProvidersEnabled() {
   return base::FeatureList::IsEnabled(
       features::kFedCmMultipleIdentityProviders);
@@ -70,6 +66,15 @@ bool IsFedCmErrorEnabled() {
 
 bool IsFedCmRevokeEnabled() {
   return base::FeatureList::IsEnabled(features::kFedCmRevoke);
+}
+
+bool IsFedCmAddAccountEnabled() {
+  return base::FeatureList::IsEnabled(features::kFedCmAddAccount);
+}
+
+bool IsFedCmExemptIdpWithThirdPartyCookiesEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kFedCmExemptIdpWithThirdPartyCookies);
 }
 
 }  // namespace content

@@ -709,6 +709,7 @@ void LineBreaker::PrepareNextLine(LineInfo* line_info) {
   override_break_anywhere_ = false;
   disable_phrase_ = false;
   disable_score_line_break_ = false;
+  disable_bisect_line_break_ = false;
   if (!current_style_)
     SetCurrentStyle(line_info->LineStyle());
   ComputeBaseDirection();
@@ -2593,8 +2594,8 @@ void LineBreaker::HandleAtomicInline(const InlineItem& item,
     const auto& physical_box_fragment = To<NGPhysicalBoxFragment>(
         item_result->layout_result->PhysicalFragment());
     item_result->inline_size =
-        NGFragment(constraint_space_.GetWritingDirection(),
-                   physical_box_fragment)
+        LogicalFragment(constraint_space_.GetWritingDirection(),
+                        physical_box_fragment)
             .InlineSize();
 
     if (UNLIKELY(is_initial_letter_box) &&
@@ -2729,7 +2730,7 @@ void LineBreaker::HandleBlockInInline(
 
     const NGPhysicalFragment& fragment = layout_result->PhysicalFragment();
     item_result->inline_size =
-        NGFragment(constraint_space_.GetWritingDirection(), fragment)
+        LogicalFragment(constraint_space_.GetWritingDirection(), fragment)
             .InlineSize();
 
     item_result->should_create_line_box = !layout_result->IsSelfCollapsing();
@@ -2778,7 +2779,7 @@ void LineBreaker::HandleBlockInInline(
 // broken inside or before it in the previous fragmentainer. Otherwise we must
 // attempt to place it.
 bool LineBreaker::ShouldPushFloatAfterLine(
-    NGUnpositionedFloat* unpositioned_float,
+    UnpositionedFloat* unpositioned_float,
     LineInfo* line_info) {
   if (unpositioned_float->token) {
     return false;
@@ -2868,7 +2869,7 @@ void LineBreaker::HandleFloat(const InlineItem& item,
   }
 
   LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
-  NGUnpositionedFloat unpositioned_float(
+  UnpositionedFloat unpositioned_float(
       NGBlockNode(To<LayoutBox>(item.GetLayoutObject())), float_break_token,
       constraint_space_.AvailableSize(),
       constraint_space_.PercentageResolutionSize(),
@@ -3221,6 +3222,8 @@ void LineBreaker::HandleOverflow(LineInfo* line_info) {
   //   css2.1/t1601-c547-indent-01-d.html
   //   virtual/text-antialias/international/bdi-neutral-wrapped.html
   disable_score_line_break_ = true;
+  // The bisect line breaker doesn't support overflowing content.
+  disable_bisect_line_break_ = true;
 
   // Restore the hyphenation states to before the loop if needed.
   DCHECK(!HasHyphen());
@@ -3250,6 +3253,8 @@ void LineBreaker::RetryAfterOverflow(LineInfo* line_info,
                                      InlineItemResults* item_results) {
   // `ScoreLineBreaker` doesn't support multi-pass line breaking.
   disable_score_line_break_ = true;
+  // The bisect line breaker doesn't support multi-pass line breaking.
+  disable_bisect_line_break_ = true;
 
   state_ = LineBreakState::kContinue;
 

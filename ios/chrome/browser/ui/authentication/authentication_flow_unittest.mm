@@ -29,13 +29,13 @@
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/browser_prefs.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
-#import "ios/chrome/browser/signin/fake_system_identity.h"
-#import "ios/chrome/browser/signin/fake_system_identity_manager.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/fake_authentication_service_delegate.h"
+#import "ios/chrome/browser/signin/model/fake_system_identity.h"
+#import "ios/chrome/browser/signin/model/fake_system_identity_manager.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -49,6 +49,7 @@ namespace {
 
 NSString* const kFakeDMToken = @"fake_dm_token";
 NSString* const kFakeClientID = @"fake_client_id";
+NSString* const kFakeUserAffiliationID = @"fake_user_affiliation_id";
 
 class AuthenticationFlowTest : public PlatformTest {
  protected:
@@ -472,16 +473,19 @@ TEST_F(AuthenticationFlowTest,
                                 syncConsent:NO];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
-    [authentication_flow_ didRegisterForUserPolicyWithDMToken:kFakeDMToken
-                                                     clientID:kFakeClientID];
+    [authentication_flow_
+        didRegisterForUserPolicyWithDMToken:kFakeDMToken
+                                   clientID:kFakeClientID
+                         userAffiliationIDs:@[ kFakeUserAffiliationID ]];
   }] registerUserPolicy:browser_state_.get() forIdentity:managed_identity_];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didFetchUserPolicyWithSuccess:YES];
   }] fetchUserPolicy:browser_state_.get()
-         withDmToken:kFakeDMToken
-            clientID:kFakeClientID
-            identity:managed_identity_];
+             withDmToken:kFakeDMToken
+                clientID:kFakeClientID
+      userAffiliationIDs:@[ kFakeUserAffiliationID ]
+                identity:managed_identity_];
 
   SetSigninSuccessExpectations(
       managed_identity_,
@@ -535,7 +539,8 @@ TEST_F(AuthenticationFlowTest,
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didRegisterForUserPolicyWithDMToken:kFakeDMToken
-                                                     clientID:kFakeClientID];
+                                                     clientID:kFakeClientID
+                                           userAffiliationIDs:@[ kFakeUserAffiliationID ]];
   }] registerUserPolicy:browser_state_.get() forIdentity:managed_identity_];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
@@ -543,6 +548,7 @@ TEST_F(AuthenticationFlowTest,
   }] fetchUserPolicy:browser_state_.get()
          withDmToken:kFakeDMToken
             clientID:kFakeClientID
+  userAffiliationIDs:@[ kFakeUserAffiliationID ]
             identity:managed_identity_];
 
   SetSigninSuccessExpectations(
@@ -617,16 +623,19 @@ TEST_F(AuthenticationFlowTest,
       signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER, @"foo.com");
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
-    [authentication_flow_ didRegisterForUserPolicyWithDMToken:kFakeDMToken
-                                                     clientID:kFakeClientID];
+    [authentication_flow_
+        didRegisterForUserPolicyWithDMToken:kFakeDMToken
+                                   clientID:kFakeClientID
+                         userAffiliationIDs:@[ kFakeUserAffiliationID ]];
   }] registerUserPolicy:browser_state_.get() forIdentity:managed_identity_];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didFetchUserPolicyWithSuccess:YES];
   }] fetchUserPolicy:browser_state_.get()
-         withDmToken:kFakeDMToken
-            clientID:kFakeClientID
-            identity:managed_identity_];
+             withDmToken:kFakeDMToken
+                clientID:kFakeClientID
+      userAffiliationIDs:@[ kFakeUserAffiliationID ]
+                identity:managed_identity_];
 
   [authentication_flow_ startSignInWithCompletion:sign_in_completion_];
 
@@ -670,16 +679,19 @@ TEST_F(AuthenticationFlowTest,
                                 syncConsent:YES];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
-    [authentication_flow_ didRegisterForUserPolicyWithDMToken:kFakeDMToken
-                                                     clientID:kFakeClientID];
+    [authentication_flow_
+        didRegisterForUserPolicyWithDMToken:kFakeDMToken
+                                   clientID:kFakeClientID
+                         userAffiliationIDs:@[ kFakeUserAffiliationID ]];
   }] registerUserPolicy:browser_state_.get() forIdentity:managed_identity_];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didFetchUserPolicyWithSuccess:YES];
   }] fetchUserPolicy:browser_state_.get()
-         withDmToken:kFakeDMToken
-            clientID:kFakeClientID
-            identity:managed_identity_];
+             withDmToken:kFakeDMToken
+                clientID:kFakeClientID
+      userAffiliationIDs:@[ kFakeUserAffiliationID ]
+                identity:managed_identity_];
 
   [authentication_flow_ startSignInWithCompletion:sign_in_completion_];
 
@@ -725,13 +737,16 @@ TEST_F(AuthenticationFlowTest,
                                 syncConsent:YES];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
-    [authentication_flow_ didRegisterForUserPolicyWithDMToken:@""
-                                                     clientID:kFakeClientID];
+    [authentication_flow_
+        didRegisterForUserPolicyWithDMToken:@""
+                                   clientID:kFakeClientID
+                         userAffiliationIDs:@[ kFakeUserAffiliationID ]];
   }] registerUserPolicy:browser_state_.get() forIdentity:managed_identity_];
 
   [[performer_ reject] fetchUserPolicy:browser_state_.get()
                            withDmToken:@""
                               clientID:kFakeClientID
+                    userAffiliationIDs:@[ kFakeUserAffiliationID ]
                               identity:managed_identity_];
 
   [authentication_flow_ startSignInWithCompletion:sign_in_completion_];
@@ -777,16 +792,19 @@ TEST_F(AuthenticationFlowTest, TestCanSyncWithUserPolicyFetchFailure) {
                                 syncConsent:YES];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
-    [authentication_flow_ didRegisterForUserPolicyWithDMToken:kFakeDMToken
-                                                     clientID:kFakeClientID];
+    [authentication_flow_
+        didRegisterForUserPolicyWithDMToken:kFakeDMToken
+                                   clientID:kFakeClientID
+                         userAffiliationIDs:@[ kFakeUserAffiliationID ]];
   }] registerUserPolicy:browser_state_.get() forIdentity:managed_identity_];
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didFetchUserPolicyWithSuccess:NO];
   }] fetchUserPolicy:browser_state_.get()
-         withDmToken:kFakeDMToken
-            clientID:kFakeClientID
-            identity:managed_identity_];
+             withDmToken:kFakeDMToken
+                clientID:kFakeClientID
+      userAffiliationIDs:@[ kFakeUserAffiliationID ]
+                identity:managed_identity_];
 
   [authentication_flow_ startSignInWithCompletion:sign_in_completion_];
 

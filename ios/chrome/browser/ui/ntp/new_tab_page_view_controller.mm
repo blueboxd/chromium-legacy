@@ -6,11 +6,12 @@
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
 
+#import <algorithm>
+
 #import "base/check.h"
 #import "base/ios/block_types.h"
 #import "base/task/sequenced_task_runner.h"
-#import "ios/chrome/browser/ntp/features.h"
-#import "ios/chrome/browser/ntp/home/features.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
@@ -163,6 +164,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
     _shouldAnimateHeader = YES;
     _focusAccessibilityOmniboxWhenViewAppears = YES;
     _inhibitScrollPositionUpdates = NO;
+    _shiftTileStartTime = -1;
   }
   return self;
 }
@@ -420,19 +422,10 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   [self.feedWrapperViewController loadViewIfNeeded];
   self.collectionView.accessibilityIdentifier = kNTPCollectionViewIdentifier;
 
-  // Configures the feed and wrapper in the view hierarchy.
-  UIView* feedView = self.feedWrapperViewController.view;
-  [self.feedWrapperViewController willMoveToParentViewController:self];
-  [self addChildViewController:self.feedWrapperViewController];
-  [self.view addSubview:feedView];
-  [self.feedWrapperViewController didMoveToParentViewController:self];
-  feedView.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(feedView, self.view);
-
   if (self.isFeedVisible && IsFeedContainmentEnabled()) {
     _feedContainer = [[UIView alloc] initWithFrame:CGRectZero];
     _feedContainer.translatesAutoresizingMaskIntoConstraints = NO;
-    _feedContainer.backgroundColor = ntp_home::NTPBackgroundColor();
+    _feedContainer.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
     // Reduce the zPosition so that the container appears behind the feed
     // content.
@@ -448,6 +441,15 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
     [self.view addSubview:_feedContainer];
   }
+
+  // Configures the feed and wrapper in the view hierarchy.
+  UIView* feedView = self.feedWrapperViewController.view;
+  [self.feedWrapperViewController willMoveToParentViewController:self];
+  [self addChildViewController:self.feedWrapperViewController];
+  [self.view addSubview:feedView];
+  [self.feedWrapperViewController didMoveToParentViewController:self];
+  feedView.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(feedView, self.view);
 
   // Configures the content suggestions in the view hierarchy.
   // TODO(crbug.com/1262536): Remove this when issue is fixed.
@@ -975,6 +977,19 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   [self.animator startAnimation];
 }
 
+#pragma mark - NewTabPageViewDelegate
+
+- (CGFloat)homeModulePadding {
+  if (!IsFeedContainmentEnabled()) {
+    return 0;
+  }
+  int screenWidth = self.view.frame.size.width;
+  int minPadding = HomeModuleMinimumPadding();
+  return minPadding - std::clamp(static_cast<int>(screenWidth -
+                                                  kDiscoverFeedContentMaxWidth),
+                                 0, minPadding);
+}
+
 #pragma mark - Private
 
 // Returns YES if scroll should be skipped when focusing the omnibox.
@@ -1400,29 +1415,46 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   if (self.feedHeaderViewController) {
     [self cleanUpCollectionViewConstraints];
 
-    NSLayoutConstraint* headerWidthConstraint =
-        [self.feedHeaderViewController.view.widthAnchor
-            constraintEqualToAnchor:self.collectionView.widthAnchor];
-    headerWidthConstraint.priority = UILayoutPriorityDefaultHigh;
-
+    // Apply parent collection view constraints.
     [NSLayoutConstraint activateConstraints:@[
-      [self.feedHeaderViewController.view.centerXAnchor
-          constraintEqualToAnchor:self.collectionView.centerXAnchor],
-      [self.feedHeaderViewController.view.widthAnchor
-          constraintLessThanOrEqualToConstant:kDiscoverFeedContentWidth],
-      headerWidthConstraint,
       [self.collectionView.centerXAnchor
           constraintEqualToAnchor:[self containerView].centerXAnchor],
       [self.collectionView.widthAnchor
-          constraintLessThanOrEqualToConstant:kDiscoverFeedContentWidth],
+          constraintLessThanOrEqualToConstant:kDiscoverFeedContentMaxWidth],
     ]];
+
+    // Apply feed header constraints.
+    if (IsFeedContainmentEnabled()) {
+      [NSLayoutConstraint activateConstraints:@[
+        [self.feedHeaderViewController.view.centerXAnchor
+            constraintEqualToAnchor:self.collectionView.centerXAnchor],
+        [self.feedHeaderViewController.view.widthAnchor
+            constraintEqualToAnchor:self.collectionView.widthAnchor
+                           constant:-[self homeModulePadding]],
+      ]];
+    } else {
+      NSLayoutConstraint* headerWidthConstraint =
+          [self.feedHeaderViewController.view.widthAnchor
+              constraintEqualToAnchor:self.collectionView.widthAnchor];
+      headerWidthConstraint.priority = UILayoutPriorityDefaultHigh;
+
+      [NSLayoutConstraint activateConstraints:@[
+        [self.feedHeaderViewController.view.centerXAnchor
+            constraintEqualToAnchor:self.collectionView.centerXAnchor],
+        [self.feedHeaderViewController.view.widthAnchor
+            constraintLessThanOrEqualToConstant:kDiscoverFeedContentMaxWidth],
+        headerWidthConstraint,
+      ]];
+    }
+
     [self setInitialFeedHeaderConstraints];
     if (self.feedTopSectionViewController) {
       [NSLayoutConstraint activateConstraints:@[
-        [self.feedTopSectionViewController.view.leftAnchor
-            constraintEqualToAnchor:self.collectionView.leftAnchor],
+        [self.feedTopSectionViewController.view.centerXAnchor
+            constraintEqualToAnchor:self.collectionView.centerXAnchor],
         [self.feedTopSectionViewController.view.widthAnchor
-            constraintEqualToAnchor:self.collectionView.widthAnchor],
+            constraintEqualToAnchor:self.collectionView.widthAnchor
+                           constant:-[self homeModulePadding]],
         [self.feedTopSectionViewController.view.topAnchor
             constraintEqualToAnchor:self.feedHeaderViewController.view
                                         .bottomAnchor],
@@ -1442,7 +1474,8 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
     CHECK(IsFeedContainmentEnabled());
     [NSLayoutConstraint activateConstraints:@[
       [_feedContainer.widthAnchor
-          constraintEqualToAnchor:self.collectionView.widthAnchor],
+          constraintEqualToAnchor:self.collectionView.widthAnchor
+                         constant:-[self homeModulePadding]],
       [_feedContainer.centerXAnchor
           constraintEqualToAnchor:self.collectionView.centerXAnchor],
       [_feedContainer.topAnchor
@@ -1460,12 +1493,24 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   ]];
   [self setInitialFakeOmniboxConstraints];
 
-  [NSLayoutConstraint activateConstraints:@[
-    [[self containerView].safeAreaLayoutGuide.leadingAnchor
-        constraintEqualToAnchor:contentSuggestionsView.leadingAnchor],
-    [[self containerView].safeAreaLayoutGuide.trailingAnchor
-        constraintEqualToAnchor:contentSuggestionsView.trailingAnchor],
-  ]];
+  if (IsFeedContainmentEnabled()) {
+    // This should be an objective improvement since it prevents the width of
+    // the Content Suggestions from surpassing their parent, but the flag will
+    // guard the change for now to be safe.
+    [NSLayoutConstraint activateConstraints:@[
+      [contentSuggestionsView.safeAreaLayoutGuide.leadingAnchor
+          constraintEqualToAnchor:self.collectionView.leadingAnchor],
+      [contentSuggestionsView.safeAreaLayoutGuide.trailingAnchor
+          constraintEqualToAnchor:self.collectionView.trailingAnchor],
+    ]];
+  } else {
+    [NSLayoutConstraint activateConstraints:@[
+      [[self containerView].safeAreaLayoutGuide.leadingAnchor
+          constraintEqualToAnchor:contentSuggestionsView.leadingAnchor],
+      [[self containerView].safeAreaLayoutGuide.trailingAnchor
+          constraintEqualToAnchor:contentSuggestionsView.trailingAnchor],
+    ]];
+  }
 }
 
 // Sets minimum height for the NTP collection view, allowing it to scroll enough

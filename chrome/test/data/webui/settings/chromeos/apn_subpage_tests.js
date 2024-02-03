@@ -8,7 +8,7 @@ import {Router, routes} from 'chrome://os-settings/os_settings.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {CrosNetworkConfigRemote} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
-import {DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
+import {DeviceStateType, NetworkType, PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {FakeNetworkConfig} from 'chrome://webui-test/chromeos/fake_network_config_mojom.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -20,7 +20,7 @@ suite('ApnSubpageTest', function() {
   /** @type {?CrosNetworkConfigRemote} */
   let mojoApi_ = null;
 
-  setup(function() {
+  setup(async function() {
     // Disable animations so sub-pages open within one event loop.
     testing.Test.disableAnimationsAndTransitions();
     PolymerTest.clearBody();
@@ -29,6 +29,12 @@ suite('ApnSubpageTest', function() {
     mojoApi_.setManagedPropertiesForTest(OncMojo.getDefaultManagedProperties(
         NetworkType.kCellular, 'cellular_guid', 'cellular'));
     MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
+
+    // Start at BASIC route so that if the APN subpage navigates backwards, it
+    // goes back to BASIC and not the previous tests' last page (crbug/1497312).
+    Router.getInstance().navigateTo(routes.BASIC);
+    await flushTasks();
+
     apnSubpage = document.createElement('apn-subpage');
     document.body.appendChild(apnSubpage);
     const params = new URLSearchParams();
@@ -146,30 +152,6 @@ suite('ApnSubpageTest', function() {
         assertEquals(4, counter);
       });
 
-  test(
-      'Keep same cellular properties while network is updating and' +
-          ' scanning is in process',
-      async function() {
-        let props = OncMojo.getDefaultManagedProperties(
-            NetworkType.kCellular, 'cellular_guid', 'cellular');
-        props.typeProperties.cellular = {testProp: true};
-        mojoApi_.setManagedPropertiesForTest(props);
-        await flushTasks();
-        const getApnList = () =>
-            apnSubpage.shadowRoot.querySelector('apn-list');
-        assertTrue(getApnList().managedCellularProperties.testProp);
-        apnSubpage.deviceState_ = {
-          type: NetworkType.kCellular,
-          scanning: true,
-        };
-        props = OncMojo.getDefaultManagedProperties(
-            NetworkType.kCellular, 'cellular_guid', 'cellular');
-        props.typeProperties.cellular = {testProp: false};
-        mojoApi_.setManagedPropertiesForTest(props);
-        await flushTasks();
-        assertTrue(getApnList().managedCellularProperties.testProp);
-      });
-
   test('Error state is propagated to <apn-list>', async function() {
     let props = OncMojo.getDefaultManagedProperties(
         NetworkType.kCellular, 'cellular_guid', 'cellular');
@@ -244,5 +226,20 @@ suite('ApnSubpageTest', function() {
 
     assertEquals(0, counter);
     Router.getInstance().navigateToPreviousRoute = navigateToPreviousRoute;
+  });
+
+  test('Portal state is propagated to <apn-list>', async function() {
+    let props = OncMojo.getDefaultManagedProperties(
+        NetworkType.kCellular, 'cellular_guid', 'cellular');
+    mojoApi_.setManagedPropertiesForTest(props);
+    await flushTasks();
+    const getApnList = () => apnSubpage.shadowRoot.querySelector('apn-list');
+    assertFalse(!!getApnList().portalState);
+
+    props = Object.assign({}, props);
+    props.portalState = PortalState.kNoInternet;
+    mojoApi_.setManagedPropertiesForTest(props);
+    await flushTasks();
+    assertEquals(PortalState.kNoInternet, getApnList().portalState);
   });
 });

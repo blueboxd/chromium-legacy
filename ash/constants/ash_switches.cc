@@ -218,9 +218,6 @@ const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 const char kAshDisableTouchExplorationMode[] =
     "ash-disable-touch-exploration-mode";
 
-// Enable cursor motion blur.
-const char kAshEnableCursorMotionBlur[] = "ash-enable-cursor-motion-blur";
-
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";
@@ -389,6 +386,10 @@ const char kDisableDemoMode[] = "disable-demo-mode";
 
 // If this switch is set, the device cannot be remotely disabled by its owner.
 const char kDisableDeviceDisabling[] = "disable-device-disabling";
+
+// Disables DriveFS for testing purposes, used in tast testing and only on test
+// images.
+const char kDisableDriveFsForTesting[] = "disable-drive-fs-for-testing";
 
 // Disables fine grained time zone detection.
 const char kDisableFineGrainedTimeZoneDetection[] =
@@ -912,6 +913,8 @@ const char kHiddenNetworkMigrationInterval[] =
 // follow the format "--hidden-network-migration-age=#", and should be >= 0.
 const char kHiddenNetworkMigrationAge[] = "hidden-network-migration-age";
 
+const char kPickerFeatureKey[] = "picker-feature-key";
+
 // Sets the channel from which the PPD files are loaded.
 const char kPrintingPpdChannel[] = "printing-ppd-channel";
 const char kPrintingPpdChannelProduction[] = "production";
@@ -998,11 +1001,6 @@ const char kSkipForceOnlineSignInForTesting[] =
 // the nudge is considered as shown.
 const char kSkipReorderNudgeShowThresholdDurationForTest[] =
     "skip-reorder-nudge-show-threshold-duration";
-
-// Used to force software cursors on specific devices that do not have enough
-// planes to display a hardware cursor when connected to displays with higher
-// widths in pixels.
-const char kSwCursorOnWideDisplays[] = "sw-cursor-on-wide-displays";
 
 // If set, the device will be forced to stay in clamshell UI mode but screen
 // auto rotation will be supported. E.g, chromebase device Dooly.

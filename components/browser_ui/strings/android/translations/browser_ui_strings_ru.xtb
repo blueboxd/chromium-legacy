@@ -22,7 +22,6 @@
 <translation id="1384959399684842514">Скачивание приостановлено.</translation>
 <translation id="1415402041810619267">URL укорочен</translation>
 <translation id="1426410128494586442">Да</translation>
-<translation id="1446450296470737166">Полный доступ к управлению MIDI-устройствами</translation>
 <translation id="1448064542941920355">Уменьшить масштаб</translation>
 <translation id="1510341833810331442">Сайтам запрещено сохранять данные на вашем устройстве</translation>
 <translation id="1547123415014299762">Сторонние файлы cookie разрешены</translation>
@@ -117,7 +116,8 @@
 <translation id="2932883381142163287">Сообщить о нарушении</translation>
 <translation id="2968755619301702150">Просмотр сертификатов</translation>
 <translation id="2979365474350987274">Использование сторонних файлов cookie ограничено</translation>
-<translation id="3008272652534848354">Сбросить разрешения</translation>
+<translation id="3008272652534848354">Сбросить все разрешения</translation>
+<translation id="3013291976881901233">MIDI-устройства</translation>
 <translation id="301521992641321250">Заблокировано автоматически</translation>
 <translation id="3069226013421428034">Разрешить вход через сторонние сервисы для определенного сайта.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Срок действия истекает завтра}one{Срок действия истекает через # день}few{Срок действия истекает через # дня}many{Срок действия истекает через # дней}other{Срок действия истекает через # дня}}</translation>
@@ -179,11 +179,10 @@
 <translation id="4002066346123236978">Название</translation>
 <translation id="4008040567710660924">Разрешить определенному сайту сохранять файлы cookie</translation>
 <translation id="4046123991198612571">Следующий трек</translation>
-<translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
 <translation id="4149890623864272035">Вы действительно хотите удалить все локальные данные этого сайта, включая файлы cookie, и сбросить все его разрешения?</translation>
 <translation id="4149994727733219643">Упрощенный просмотр веб-страниц</translation>
 <translation id="4151930093518524179">Масштаб по умолчанию</translation>
-<translation id="4165986682804962316">Настройки сайтов</translation>
+<translation id="4165986682804962316">Настройки сайта</translation>
 <translation id="4169549551965910670">Выполнено подключение к USB-устройству</translation>
 <translation id="4194328954146351878">Запрашивать для сайтов разрешение на доступ к информации и ее изменение через NFC (рекомендуется)</translation>
 <translation id="4200726100658658164">Открыть настройки геолокации</translation>
@@ -192,7 +191,6 @@
 <translation id="4278390842282768270">Разрешено</translation>
 <translation id="429312253194641664">На сайте воспроизводятся медиафайлы</translation>
 <translation id="42981349822642051">Развернуть</translation>
-<translation id="4336566011000459927">Сегодня Chrome снова ограничит использование файлов cookie</translation>
 <translation id="4338831206024587507">Все сайты с доменом <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Блокировать передачу на сайты информации об использовании устройства</translation>
 <translation id="4412992751769744546">Разрешить использование сторонних файлов cookie</translation>
@@ -251,7 +249,7 @@
 <translation id="5389626883706033615">Сайтам запрещено запрашивать разрешение на использование сохраненной информации о вас</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и ещё 1)}one{(и ещё #)}few{(и ещё #)}many{(и ещё #)}other{(и ещё #)}}</translation>
 <translation id="5403592356182871684">Имена</translation>
-<translation id="5438097262470833822">Будут сброшены разрешения для <ph name="WEBSITE" />.</translation>
+<translation id="5438097262470833822">Будут отозваны разрешения для <ph name="WEBSITE" />.</translation>
 <translation id="5489227211564503167">Просмотрено <ph name="ELAPSED_TIME" /> из <ph name="TOTAL_TIME" />.</translation>
 <translation id="5502860503640766021">Разрешено: <ph name="PERMISSION_1" />. Заблокировано: <ph name="PERMISSION_2" />.</translation>
 <translation id="5505264765875738116">Сайты не могут запрашивать разрешения на отправку уведомлений</translation>
@@ -295,12 +293,10 @@
 <translation id="6177128806592000436">Подключение к сайту не защищено</translation>
 <translation id="6181444274883918285">Добавить исключение</translation>
 <translation id="6192792657125177640">Исключения</translation>
-<translation id="6194967801833346599">{DAYS,plural, =1{Завтра Chrome снова начнет блокировать файлы cookie}one{Файлы cookie будут снова заблокированы через # день}few{Файлы cookie будут снова заблокированы через # дня}many{Файлы cookie будут снова заблокированы через # дней}other{Файлы cookie будут снова заблокированы через # дня}}</translation>
 <translation id="6195163219142236913">Использование сторонних файлов cookie ограничено</translation>
 <translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
 <translation id="6205314730813004066">Конфиденциальность в рекламе</translation>
 <translation id="6207207788774442484">Удалить данные и сбросить разрешения</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6231752747840485235">Удалить приложение "<ph name="APP_NAME" />"?</translation>
 <translation id="6262191102408817757">На основе данных последней использованной вкладки</translation>
 <translation id="6262279340360821358">Заблокировано: <ph name="PERMISSION_1" /> и <ph name="PERMISSION_2" /></translation>
@@ -314,7 +310,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Запретить сайтам использовать устройство и данные виртуальной реальности</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
-<translation id="6500423977866688905">Запрашивать мобильную версию, если окно узкое</translation>
+<translation id="6500423977866688905">Запросите мобильную версию, если окно вытянутое</translation>
 <translation id="6527303717912515753">Поделиться</translation>
 <translation id="652937045869844725">Попробуйте разрешить сторонние файлы cookie. Это снизит вашу защиту, зато функции сайта, скорее всего, будут работать.</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
@@ -330,7 +326,7 @@
 <translation id="6697925417670533197">Текущие скачивания</translation>
 <translation id="6722828510648505498">Вы можете запретить предложения войти в аккаунт от сервисов подтверждения личности.</translation>
 <translation id="6746124502594467657">Переместить вниз</translation>
-<translation id="6749077623962119521">Сбросить разрешения?</translation>
+<translation id="6749077623962119521">Отозвать разрешения?</translation>
 <translation id="6766622839693428701">Проведите вниз, чтобы закрыть панель.</translation>
 <translation id="6787751205395685251">Выберите значение для сайта <ph name="SITE_NAME" />.</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
@@ -348,6 +344,7 @@
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбран 1 объект}one{Выбран # объект}few{Выбрано # объекта}many{Выбрано # объектов}other{Выбрано # объекта}}</translation>
 <translation id="7087918508125750058">Выбрано: <ph name="ITEM_COUNT" />. Меню находится в верхней части экрана.</translation>
+<translation id="7137403271056944713">Управление/программирование MIDI</translation>
 <translation id="7141896414559753902">Блокировать всплывающие окна и переадресацию на сайтах (рекомендуется)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7180611975245234373">Обновить</translation>
@@ -385,7 +382,6 @@
 <translation id="780301667611848630">Нет, спасибо</translation>
 <translation id="7804248752222191302">Сайт использует вашу камеру</translation>
 <translation id="7807060072011926525">Данные от Google</translation>
-<translation id="7822573154188733812">Chrome запрещает сайтам использовать сторонние файлы cookie для отслеживания ваших действий в интернете. <ph name="BEGIN_LINK" />Управлять Защитой от слежения<ph name="END_LINK" /> можно в настройках.</translation>
 <translation id="7835852323729233924">Воспроизведение медиаконтента</translation>
 <translation id="783819812427904514">Включить звук для видео</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>
@@ -402,7 +398,6 @@
 <translation id="8077120325605624147">Реклама может показываться на любом посещаемом сайте</translation>
 <translation id="8087000398470557479">Контент с сайта <ph name="DOMAIN_NAME" />. Получен с помощью Google.</translation>
 <translation id="8088603949666785339"><ph name="BANNER_TITLE" />: другие действия</translation>
-<translation id="8113501330600751161">{DAYS,plural, =1{Завтра Chrome снова ограничит использование файлов cookie}one{Chrome снова ограничит использование файлов cookie через # день}few{Chrome снова ограничит использование файлов cookie через # дня}many{Chrome снова ограничит использование файлов cookie через # дней}other{Chrome снова ограничит использование файлов cookie через # дня}}</translation>
 <translation id="8116925261070264013">Сайты с отключенным звуком</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8131740175452115882">Подтвердить</translation>

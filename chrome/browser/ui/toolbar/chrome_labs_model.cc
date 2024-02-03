@@ -48,6 +48,14 @@ const std::vector<LabInfo>& GetData() {
         l10n_util::GetStringUTF16(IDS_TAB_GROUPS_SAVE_DESCRIPTION),
         "tab-groups-save", version_info::Channel::BETA);
 
+    // CustomizeChromeSidePanel.
+    lab_info.emplace_back(
+        flag_descriptions::kCustomizeChromeSidePanelId,
+        l10n_util::GetStringUTF16(
+            IDS_CUSTOMIZE_CHROME_SIDE_PANEL_EXPERIMENT_NAME),
+        l10n_util::GetStringUTF16(IDS_CUSTOMIZE_CHROME_SIDE_PANEL_DESCRIPTION),
+        "chrome-labs-customize-chrome-side-panel", version_info::Channel::BETA);
+
     // ChromeRefresh2023.
     std::vector<std::u16string> chrome_refresh_variation_descriptions = {
         l10n_util::GetStringUTF16(IDS_CHROMEREFRESH2023_WITHOUT_OMNIBOX)};
@@ -58,6 +66,13 @@ const std::vector<LabInfo>& GetData() {
         l10n_util::GetStringUTF16(IDS_CHROMEREFRESH2023_DESCRIPTION),
         "chrome-refresh", version_info::Channel::BETA,
         chrome_refresh_variation_descriptions);
+
+    // ChromeWebuiRefresh2023.
+    lab_info.emplace_back(
+        flag_descriptions::kChromeWebuiRefresh2023Id,
+        l10n_util::GetStringUTF16(IDS_CHROMEWEBUIREFRESH2023_EXPERIMENT_NAME),
+        l10n_util::GetStringUTF16(IDS_CHROMEWEBUIREFRESH2023_DESCRIPTION),
+        "chrome-labs-webui-refresh", version_info::Channel::BETA);
 
     // Tab Scrolling.
     std::vector<std::u16string> tab_scrolling_variation_descriptions = {

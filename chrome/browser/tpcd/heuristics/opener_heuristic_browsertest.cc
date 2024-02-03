@@ -24,7 +24,6 @@
 #include "chrome/browser/tpcd/heuristics/opener_heuristic_utils.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -48,13 +47,13 @@
 #include "chrome/browser/ui/browser.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+using base::test::HasValue;
+using base::test::ValueIs;
 using content::NavigationHandle;
 using content::RenderFrameHost;
 using content::WebContents;
 using content::WebContentsObserver;
 using testing::ElementsAre;
-using testing::Field;
-using testing::Optional;
 using testing::Pair;
 using tpcd::experiment::EnableForIframeTypes;
 
@@ -266,23 +265,6 @@ class OpenerHeuristicBrowserTest
         entries[0].metrics["OpenerHasSameSiteIframe"]);
   }
 
-  absl::optional<PopupsStateValue> GetPopupState(const GURL& opener_url,
-                                                 const GURL& popup_url) {
-    absl::optional<PopupsStateValue> state;
-
-    GetDipsService()
-        ->storage()
-        ->AsyncCall(&DIPSStorage::ReadPopup)
-        .WithArgs(GetSiteForDIPS(opener_url), GetSiteForDIPS(popup_url))
-        .Then(base::BindLambdaForTesting(
-            [&state](absl::optional<PopupsStateValue> db_state) {
-              state = db_state;
-            }));
-    GetDipsService()->storage()->FlushPostedTasksForTesting();
-
-    return state;
-  }
-
   base::FieldTrialParams tpcd_heuristics_grants_params_;
   base::SimpleTestClock clock_;
   base::test::ScopedFeatureList feature_list_;
@@ -473,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
 
   // Note: no previous interaction on a.test.
 
-  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
 
   std::vector<const ukm::mojom::UkmEntry*> entries =
       ukm_recorder.GetEntriesByName("OpenerHeuristic.PopupPastInteraction");
@@ -487,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
 
   RecordInteraction(GURL("https://a.test"), clock_.Now() - base::Hours(3));
 
-  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.PopupPastInteraction",
@@ -534,36 +516,26 @@ class OpenerHeuristicPastInteractionGrantBrowserTest
 IN_PROC_BROWSER_TEST_P(OpenerHeuristicPastInteractionGrantBrowserTest,
                        PopupPastInteractionIsReported_WithStorageAccessGrant) {
   GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
-  GURL initial_url = embedded_test_server()->GetURL(
-      "b.test", "/cross-site/c.test/title1.html");
-  GURL final_url = embedded_test_server()->GetURL("c.test", "/title1.html");
-  RecordInteraction(initial_url, clock_.Now() - base::Hours(3));
+  GURL popup_url = embedded_test_server()->GetURL("b.test", "/title1.html");
+  RecordInteraction(popup_url, clock_.Now() - base::Hours(3));
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(initial_url));
-  ASSERT_EQ(popup->GetLastCommittedURL(), final_url);
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
 
   // Expect that cookie access was granted for the Popup With Past Interaction
   // heuristic, if the feature is enabled.
   auto cookie_settings = CookieSettingsFactory::GetForProfile(
       Profile::FromBrowserContext(GetActiveWebContents()->GetBrowserContext()));
-  EXPECT_EQ(
-      cookie_settings->GetCookieSetting(initial_url, opener_url,
-                                        net::CookieSettingOverrides(), nullptr),
-      GetParam().write_grant_enabled ? CONTENT_SETTING_ALLOW
-                                     : CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(
-      cookie_settings->GetThirdPartyCookieAllowMechanism(
-          initial_url, opener_url, net::CookieSettingOverrides(), nullptr),
-      GetParam().write_grant_enabled
-          ? content_settings::CookieSettingsBase::
-                ThirdPartyCookieAllowMechanism::kAllowBy3PCDHeuristics
-          : content_settings::CookieSettingsBase::
-                ThirdPartyCookieAllowMechanism::kNone);
-
-  // Cookie access was NOT granted for the site that the popup redirected to.
   EXPECT_EQ(cookie_settings->GetCookieSetting(
-                final_url, opener_url, net::CookieSettingOverrides(), nullptr),
-            CONTENT_SETTING_BLOCK);
+                popup_url, opener_url, net::CookieSettingOverrides(), nullptr),
+            GetParam().write_grant_enabled ? CONTENT_SETTING_ALLOW
+                                           : CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(cookie_settings->GetThirdPartyCookieAllowMechanism(
+                popup_url, opener_url, net::CookieSettingOverrides(), nullptr),
+            GetParam().write_grant_enabled
+                ? content_settings::CookieSettingsBase::
+                      ThirdPartyCookieAllowMechanism::kAllowBy3PCDHeuristics
+                : content_settings::CookieSettingsBase::
+                      ThirdPartyCookieAllowMechanism::kNone);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -574,7 +546,7 @@ IN_PROC_BROWSER_TEST_P(
   GURL popup_url = embedded_test_server()->GetURL("c.com", "/title1.html");
   RecordInteraction(popup_url, clock_.Now() - base::Hours(3));
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  ASSERT_TRUE(OpenAdTaggedPopup(popup_url).has_value());
+  ASSERT_THAT(OpenAdTaggedPopup(popup_url), HasValue());
 
   // Expect that cookie access was granted for the ad-tagged Popup With Past
   // Interaction heuristic, only if the flag is *off*.
@@ -609,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
 
   RecordInteraction(GURL("https://a.test"), clock_.Now() - base::Hours(3));
 
-  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.PopupPastInteraction",
@@ -640,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
 
   RecordInteraction(GURL("https://a.test"), clock_.Now() - base::Hours(3));
 
-  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.PopupPastInteraction",
@@ -663,8 +635,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
 
   RecordInteraction(GURL("https://a.test"), clock_.Now() - base::Hours(3));
 
-  auto maybe_popup = OpenPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
 
   ASSERT_EQ(
       ukm_recorder.GetEntriesByName("OpenerHeuristic.PopupPastInteraction")
@@ -672,7 +643,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
       1u);
 
   ASSERT_TRUE(content::NavigateToURL(
-      *maybe_popup, embedded_test_server()->GetURL("b.test", "/title1.html")));
+      popup, embedded_test_server()->GetURL("b.test", "/title1.html")));
 
   // After another navigation, PopupPastInteraction isn't reported again (i.e.,
   // still once total).
@@ -691,7 +662,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   // Initialize interaction and popup.
   RecordInteraction(popup_url, clock_.Now() - base::Hours(3));
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
   GetDipsService()->storage()->FlushPostedTasksForTesting();
 
   // Assert that the UKM events and DIPS entries were recorded.
@@ -758,18 +729,17 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest, PopupInteraction) {
       embedded_test_server()->GetURL("b.test", "/server-redirect?title1.html");
   GURL final_url = embedded_test_server()->GetURL("b.test", "/title1.html");
 
-  auto maybe_popup = OpenPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
 
   clock_.Advance(base::Minutes(1));
-  ASSERT_TRUE(content::NavigateToURL(*maybe_popup, redirect_url, final_url));
+  ASSERT_TRUE(content::NavigateToURL(popup, redirect_url, final_url));
 
   ASSERT_EQ(
       ukm_recorder.GetEntriesByName("OpenerHeuristic.PopupInteraction").size(),
       0u);
 
   clock_.Advance(base::Minutes(1));
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.PopupInteraction",
@@ -819,27 +789,18 @@ class OpenerHeuristicCurrentInteractionGrantBrowserTest
 IN_PROC_BROWSER_TEST_P(OpenerHeuristicCurrentInteractionGrantBrowserTest,
                        PopupInteractionWithStorageAccessGrant) {
   GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
-  GURL initial_url = embedded_test_server()->GetURL(
-      "b.test", "/cross-site/c.test/title1.html");
-  GURL final_url = embedded_test_server()->GetURL("c.test", "/title1.html");
+  GURL popup_url = embedded_test_server()->GetURL("b.test", "/title1.html");
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(initial_url));
-  ASSERT_EQ(popup->GetLastCommittedURL(), final_url);
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
   clock_.Advance(base::Minutes(1));
   SimulateMouseClick(popup);
 
+  // Expect that cookie access was granted for the Popup With Current
+  // Interaction heuristic.
   auto cookie_settings = CookieSettingsFactory::GetForProfile(
       Profile::FromBrowserContext(GetActiveWebContents()->GetBrowserContext()));
-  // Cookie access was NOT granted for the initial URL (that the user didn't
-  // interact with).
-  EXPECT_EQ(
-      cookie_settings->GetCookieSetting(initial_url, opener_url,
-                                        net::CookieSettingOverrides(), nullptr),
-      CONTENT_SETTING_BLOCK);
-  // Cookie access WAS granted for the interacted-with URL (if the feature was
-  // enabled).
   EXPECT_EQ(cookie_settings->GetCookieSetting(
-                final_url, opener_url, net::CookieSettingOverrides(), nullptr),
+                popup_url, opener_url, net::CookieSettingOverrides(), nullptr),
             GetParam().write_grant_enabled ? CONTENT_SETTING_ALLOW
                                            : CONTENT_SETTING_BLOCK);
 }
@@ -850,11 +811,10 @@ IN_PROC_BROWSER_TEST_P(OpenerHeuristicCurrentInteractionGrantBrowserTest,
       embedded_test_server()->GetURL("a.com", "/ad_tagging/frame_factory.html");
   GURL popup_url = embedded_test_server()->GetURL("c.com", "/title1.html");
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  auto maybe_popup = OpenAdTaggedPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenAdTaggedPopup(popup_url));
 
   clock_.Advance(base::Minutes(1));
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
 
   // Expect that cookie access was granted for the ad-tagged Popup With Current
   // Interaction heuristic, only if the flag is *off*.
@@ -881,18 +841,17 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
       embedded_test_server()->GetURL("b.test", "/title1.html");
   GURL final_url = embedded_test_server()->GetURL("c.test", "/title1.html");
 
-  auto maybe_popup = OpenPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
 
-  ASSERT_TRUE(content::NavigateToURL(*maybe_popup, interaction_url));
-  SimulateMouseClick(*maybe_popup);
+  ASSERT_TRUE(content::NavigateToURL(popup, interaction_url));
+  SimulateMouseClick(popup);
 
   ASSERT_EQ(
       ukm_recorder.GetEntriesByName("OpenerHeuristic.PopupInteraction").size(),
       1u);
 
-  ASSERT_TRUE(content::NavigateToURL(*maybe_popup, final_url));
-  SimulateMouseClick(*maybe_popup);
+  ASSERT_TRUE(content::NavigateToURL(popup, final_url));
+  SimulateMouseClick(popup);
 
   // The second click was not reported (still only 1 total).
   ASSERT_EQ(
@@ -906,16 +865,15 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   GURL popup_url = embedded_test_server()->GetURL("a.test", "/title1.html");
   GURL uncommitted_url = embedded_test_server()->GetURL("c.test", "/nocontent");
 
-  auto maybe_popup = OpenPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
 
   clock_.Advance(base::Minutes(1));
   // Attempt a navigation which won't commit (because the HTTP response is No
   // Content).
-  ASSERT_TRUE(content::NavigateToURL(*maybe_popup, uncommitted_url, popup_url));
+  ASSERT_TRUE(content::NavigateToURL(popup, uncommitted_url, popup_url));
 
   clock_.Advance(base::Minutes(1));
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.PopupInteraction",
@@ -953,14 +911,13 @@ IN_PROC_BROWSER_TEST_F(
 
   // Initialize popup and interaction.
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  auto maybe_popup = OpenPopup(popup_url_1);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url_1));
 
   clock_.Advance(base::Minutes(1));
-  ASSERT_TRUE(content::NavigateToURL(*maybe_popup, popup_url_2, popup_url_3));
+  ASSERT_TRUE(content::NavigateToURL(popup, popup_url_2, popup_url_3));
 
   clock_.Advance(base::Minutes(1));
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
   GetDipsService()->storage()->FlushPostedTasksForTesting();
 
   // Assert that the UKM events and DIPS entries were recorded.
@@ -1029,7 +986,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   RecordInteraction(GURL("https://b.test"), clock_.Now() - base::Hours(3));
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, toplevel_url));
-  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.TopLevel",
@@ -1043,10 +1000,9 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
             static_cast<int32_t>(OptionalBool::kFalse));
   EXPECT_EQ(entries[0].metrics["IsAdTaggedPopupClick"], false);
 
-  auto opener_has_iframe = GetOpenerHasSameSiteIframe(
-      ukm_recorder, "OpenerHeuristic.PopupPastInteraction");
-  ASSERT_TRUE(opener_has_iframe.has_value()) << opener_has_iframe.error();
-  EXPECT_EQ(opener_has_iframe.value(), OptionalBool::kFalse);
+  ASSERT_THAT(GetOpenerHasSameSiteIframe(
+                  ukm_recorder, "OpenerHeuristic.PopupPastInteraction"),
+              ValueIs(OptionalBool::kFalse));
 }
 
 IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
@@ -1058,13 +1014,12 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, toplevel_url));
 
-  auto maybe_popup = OpenPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
 
   ASSERT_EQ(ukm_recorder.GetEntriesByName("OpenerHeuristic.TopLevel").size(),
             0u);
 
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.TopLevel",
@@ -1078,10 +1033,9 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
             static_cast<int32_t>(OptionalBool::kFalse));
   EXPECT_EQ(entries[0].metrics["IsAdTaggedPopupClick"], false);
 
-  auto opener_has_iframe = GetOpenerHasSameSiteIframe(
-      ukm_recorder, "OpenerHeuristic.PopupInteraction");
-  ASSERT_TRUE(opener_has_iframe.has_value()) << opener_has_iframe.error();
-  EXPECT_EQ(opener_has_iframe.value(), OptionalBool::kFalse);
+  ASSERT_THAT(GetOpenerHasSameSiteIframe(ukm_recorder,
+                                         "OpenerHeuristic.PopupInteraction"),
+              ValueIs(OptionalBool::kFalse));
 }
 
 IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
@@ -1100,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   ASSERT_TRUE(content::NavigateToURL(web_contents, toplevel_url));
   ASSERT_TRUE(content::NavigateIframeToURL(GetActiveWebContents(), iframe_id,
                                            iframe_url));
-  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.TopLevel",
@@ -1113,10 +1067,9 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   EXPECT_EQ(entries[0].metrics["HasSameSiteIframe"],
             static_cast<int32_t>(OptionalBool::kTrue));
 
-  auto opener_has_iframe = GetOpenerHasSameSiteIframe(
-      ukm_recorder, "OpenerHeuristic.PopupPastInteraction");
-  ASSERT_TRUE(opener_has_iframe.has_value()) << opener_has_iframe.error();
-  EXPECT_EQ(opener_has_iframe.value(), OptionalBool::kTrue);
+  ASSERT_THAT(GetOpenerHasSameSiteIframe(
+                  ukm_recorder, "OpenerHeuristic.PopupPastInteraction"),
+              ValueIs(OptionalBool::kTrue));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -1129,15 +1082,14 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, toplevel_url));
 
-  auto maybe_popup = OpenPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
 
   DestroyWebContents(web_contents);
 
   ASSERT_EQ(ukm_recorder.GetEntriesByName("OpenerHeuristic.TopLevel").size(),
             0u);
 
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.TopLevel",
@@ -1150,10 +1102,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(entries[0].metrics["HasSameSiteIframe"],
             static_cast<int32_t>(OptionalBool::kUnknown));
 
-  auto opener_has_iframe = GetOpenerHasSameSiteIframe(
-      ukm_recorder, "OpenerHeuristic.PopupInteraction");
-  ASSERT_TRUE(opener_has_iframe.has_value()) << opener_has_iframe.error();
-  EXPECT_EQ(opener_has_iframe.value(), OptionalBool::kUnknown);
+  ASSERT_THAT(GetOpenerHasSameSiteIframe(ukm_recorder,
+                                         "OpenerHeuristic.PopupInteraction"),
+              ValueIs(OptionalBool::kUnknown));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -1168,15 +1119,14 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, toplevel_url));
 
-  auto maybe_popup = OpenPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, other_url));
 
   ASSERT_EQ(ukm_recorder.GetEntriesByName("OpenerHeuristic.TopLevel").size(),
             0u);
 
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.TopLevel",
@@ -1189,10 +1139,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(entries[0].metrics["HasSameSiteIframe"],
             static_cast<int32_t>(OptionalBool::kUnknown));
 
-  auto opener_has_iframe = GetOpenerHasSameSiteIframe(
-      ukm_recorder, "OpenerHeuristic.PopupInteraction");
-  ASSERT_TRUE(opener_has_iframe.has_value()) << opener_has_iframe.error();
-  EXPECT_EQ(opener_has_iframe.value(), OptionalBool::kUnknown);
+  ASSERT_THAT(GetOpenerHasSameSiteIframe(ukm_recorder,
+                                         "OpenerHeuristic.PopupInteraction"),
+              ValueIs(OptionalBool::kUnknown));
 }
 
 IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest, TopLevel_PopupProvider) {
@@ -1204,7 +1153,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest, TopLevel_PopupProvider) {
   RecordInteraction(GURL("https://google.com"), clock_.Now() - base::Hours(3));
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, toplevel_url));
-  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.TopLevel", {"PopupProvider"});
@@ -1224,10 +1173,9 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest, TopLevel_PopupId) {
   RecordInteraction(GURL("https://google.com"), clock_.Now() - base::Hours(3));
 
   ASSERT_TRUE(content::NavigateToURL(web_contents, toplevel_url));
-  auto maybe_popup = OpenPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url));
 
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
 
   // Verify all three events share the same popup id.
   auto tl_entries =
@@ -1253,7 +1201,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest, TopLevel_PopupId) {
   EXPECT_EQ(ppi_entries[0].metrics["PopupId"], popup_id);
 
   // Open second popup, verify different popup id.
-  ASSERT_TRUE(OpenPopup(popup_url).has_value());
+  ASSERT_THAT(OpenPopup(popup_url), HasValue());
   tl_entries = ukm_recorder.GetEntries("OpenerHeuristic.TopLevel", {"PopupId"});
   ASSERT_EQ(tl_entries.size(), 2u);
   const int64_t popup_id2 = tl_entries[1].metrics["PopupId"];
@@ -1271,7 +1219,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   RecordInteraction(GURL("https://b.com"), clock_.Now() - base::Hours(3));
 
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), toplevel_url));
-  ASSERT_TRUE(OpenAdTaggedPopup(popup_url).has_value());
+  ASSERT_THAT(OpenAdTaggedPopup(popup_url), HasValue());
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.TopLevel",
@@ -1292,9 +1240,8 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   GURL popup_url = embedded_test_server()->GetURL("b.com", "/title1.html");
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), toplevel_url));
 
-  auto maybe_popup = OpenAdTaggedPopup(popup_url);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
-  SimulateMouseClick(*maybe_popup);
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenAdTaggedPopup(popup_url))
+  SimulateMouseClick(popup);
 
   std::vector<ukm::TestAutoSetUkmRecorder::HumanReadableUkmEntry> entries =
       ukm_recorder.GetEntries("OpenerHeuristic.TopLevel",
@@ -1305,37 +1252,6 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   EXPECT_EQ(ukm_recorder.GetSourceForSourceId(entries[0].source_id)->url(),
             toplevel_url);
   EXPECT_EQ(entries[0].metrics["IsAdTaggedPopupClick"], true);
-}
-
-IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
-                       PastAndCurrentInteractionAreBothReportedToDipsDb) {
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
-  GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
-  GURL initial_site = embedded_test_server()->GetURL("b.test", "/title1.html");
-  GURL initial_url = embedded_test_server()->GetURL(
-      "b.test", "/cross-site/c.test/title1.html");
-  GURL final_url = embedded_test_server()->GetURL("c.test", "/title1.html");
-
-  // Initialize popup and interaction.
-  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), initial_site));
-  SimulateMouseClick(GetActiveWebContents());
-
-  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(initial_url));
-  ASSERT_EQ(popup->GetLastCommittedURL(), final_url);
-  clock_.Advance(base::Minutes(1));
-  SimulateMouseClick(popup);
-  GetDipsService()->storage()->FlushPostedTasksForTesting();
-
-  absl::optional<PopupsStateValue> initial_state =
-      GetPopupState(opener_url, initial_url);
-  absl::optional<PopupsStateValue> final_state =
-      GetPopupState(opener_url, final_url);
-  ASSERT_THAT(
-      initial_state,
-      Optional(Field(&PopupsStateValue::is_current_interaction, false)));
-  ASSERT_THAT(final_state,
-              Optional(Field(&PopupsStateValue::is_current_interaction, true)));
 }
 
 // chrome/browser/ui/browser.h (for changing profile prefs) is not available on
@@ -1362,9 +1278,8 @@ class OpenerHeuristicBackfillGrantBrowserTest
   }
 };
 
-// Test the backfill grants created by DIPSService when tracking protection is
-// onboarded. This logic is located in DIPSService in order to run as a
-// singleton, rather than once per tab.
+// Test the backfill grants created by OpenerHeuristicService when tracking
+// protection is onboarded.
 IN_PROC_BROWSER_TEST_P(OpenerHeuristicBackfillGrantBrowserTest,
                        TrackingProtectionOnboardingCreatesBackfillGrants) {
   GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
@@ -1375,24 +1290,22 @@ IN_PROC_BROWSER_TEST_P(OpenerHeuristicBackfillGrantBrowserTest,
   // popup_url_1 was opened further back than the backfill lookback period of 10
   // minutes.
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  auto maybe_popup = OpenPopup(popup_url_1);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(WebContents * popup, OpenPopup(popup_url_1));
   clock_.Advance(base::Minutes(1));
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
 
   clock_.Advance(base::Minutes(10));
 
   // popup_url_2 was opened with a past interaction, not a current interaction.
   RecordInteraction(popup_url_2, clock_.Now() - base::Hours(3));
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  ASSERT_TRUE(OpenPopup(popup_url_2).has_value());
+  ASSERT_THAT(OpenPopup(popup_url_2), HasValue());
 
   // Only popup_url_3 is eligible for a backfill grant.
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
-  maybe_popup = OpenPopup(popup_url_3);
-  ASSERT_TRUE(maybe_popup.has_value()) << maybe_popup.error();
+  ASSERT_OK_AND_ASSIGN(popup, OpenPopup(popup_url_3));
   clock_.Advance(base::Minutes(1));
-  SimulateMouseClick(*maybe_popup);
+  SimulateMouseClick(popup);
 
   // The pref is updated when the user in onboarded to 3PCD tracking protection,
   // and a PrefChangeRegistrar updates the TrackingProtectionSettingsObservers.

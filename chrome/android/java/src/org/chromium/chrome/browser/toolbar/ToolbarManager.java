@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.Over
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
@@ -88,7 +89,6 @@ import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.OverrideUrlLoadingDelegate;
-import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownScrollListener;
 import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor.OpenHistoryClustersDelegate;
@@ -545,24 +545,25 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         ToolbarLayout toolbarLayout = mActivity.findViewById(R.id.toolbar);
         NewTabPageDelegate ntpDelegate = createNewTabPageDelegate(toolbarLayout);
-        mLocationBarModel = new LocationBarModel(activity, ntpDelegate,
-                DomDistillerTabUtils::getFormattedUrlFromOriginalDistillerUrl,
-                IncognitoUtils::getNonPrimaryOTRProfileFromWindowAndroid,
-                new LocationBarModel.OfflineStatus() {
-                    @Override
-                    public boolean isShowingTrustedOfflinePage(Tab tab) {
-                        return OfflinePageTabData.isShowingTrustedOfflinePage(tab);
-                    }
+        mLocationBarModel =
+                new LocationBarModel(
+                        activity,
+                        ntpDelegate,
+                        DomDistillerTabUtils::getFormattedUrlFromOriginalDistillerUrl,
+                        new LocationBarModel.OfflineStatus() {
+                            @Override
+                            public boolean isShowingTrustedOfflinePage(Tab tab) {
+                                return OfflinePageTabData.isShowingTrustedOfflinePage(tab);
+                            }
 
-                    @Override
-                    public boolean isOfflinePage(Tab tab) {
-                        TraceEvent.begin("isOfflinePage");
-                        boolean ret = OfflinePageTabData.isShowingOfflinePage(tab);
-                        TraceEvent.end("isOfflinePage");
-                        return ret;
-                    }
-                },
-                SearchEngineLogoUtils.getInstance());
+                            @Override
+                            public boolean isOfflinePage(Tab tab) {
+                                TraceEvent.begin("isOfflinePage");
+                                boolean ret = OfflinePageTabData.isShowingOfflinePage(tab);
+                                TraceEvent.end("isOfflinePage");
+                                return ret;
+                            }
+                        });
         mControlContainer = controlContainer;
         assert mControlContainer != null;
 
@@ -728,7 +729,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                             activityLifecycleDispatcher,
                             overrideUrlLoadingDelegate,
                             new BackKeyBehaviorDelegate() {},
-                            SearchEngineLogoUtils.getInstance(),
                             toolbarPageInfo::show,
                             IntentHandler::bringTabToFront,
                             DownloadUtils::isAllowedToDownloadPage,
@@ -1498,21 +1498,26 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
     /**
      * Initialize the manager with the components that had native initialization dependencies.
-     * <p>
-     * Calling this must occur after the native library have completely loaded.
      *
-     * @param layoutManager A {@link LayoutManagerImpl} instance used to watch for scene
-     *                      changes.
+     * <p>Calling this must occur after the native library have completely loaded.
+     *
+     * @param layoutManager A {@link LayoutManagerImpl} instance used to watch for scene changes.
+     * @param stripLayoutHelperManager {@link StripLayoutHelperManager} instance used to manage the
+     *     tab strip.
      * @param tabSwitcherClickHandler The {@link OnClickListener} for the tab switcher button.
      * @param newTabClickHandler The {@link OnClickListener} for the new tab button.
      * @param bookmarkClickHandler The {@link OnClickListener} for the bookmark button.
      * @param customTabsBackClickHandler The {@link OnClickListener} for the custom tabs back
-     *         button.
+     *     button.
      * @param showStartSurfaceSupplier Supplies if we should show the start surface.
      */
-    public void initializeWithNative(LayoutManagerImpl layoutManager,
-            OnClickListener tabSwitcherClickHandler, OnClickListener newTabClickHandler,
-            OnClickListener bookmarkClickHandler, OnClickListener customTabsBackClickHandler,
+    public void initializeWithNative(
+            @NonNull LayoutManagerImpl layoutManager,
+            @Nullable StripLayoutHelperManager stripLayoutHelperManager,
+            OnClickListener tabSwitcherClickHandler,
+            OnClickListener newTabClickHandler,
+            OnClickListener bookmarkClickHandler,
+            OnClickListener customTabsBackClickHandler,
             Supplier<Boolean> showStartSurfaceSupplier) {
         TraceEvent.begin("ToolbarManager.initializeWithNative");
         assert !mInitializedWithNative;
@@ -1544,9 +1549,12 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         mToolbar.addOnAttachStateChangeListener(mAttachStateChangeListener);
 
-        if (layoutManager != null) {
-            mLayoutManager = layoutManager;
-            mLayoutManager.getOverlayPanelManager().addObserver(mOverlayPanelManagerObserver);
+        mLayoutManager = layoutManager;
+        mLayoutManager.getOverlayPanelManager().addObserver(mOverlayPanelManagerObserver);
+
+        if (stripLayoutHelperManager != null) {
+            mControlContainer.setToolbarContainerDragListener(
+                    stripLayoutHelperManager.getDragListener());
         }
 
         if (mMenuStateObserver != null) {
@@ -1952,7 +1960,10 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * @return The extra Y offset for the toolbar in pixels.
      */
     private int getToolbarExtraYOffset() {
-        return mBrowserControlsSizer.getTopControlsMinHeight();
+        int toolbarHairlineHeight =
+                mControlContainer.findViewById(R.id.toolbar_hairline).getHeight();
+        return mBrowserControlsSizer.getTopControlsHeight()
+                - (mControlContainer.getHeight() - toolbarHairlineHeight);
     }
 
     /**
@@ -2126,12 +2137,24 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         boolean wasIncognito = mLocationBarModel.isIncognito();
         Tab previousTab = mLocationBarModel.getTab();
 
-        boolean isIncognito =
-                tab != null ? tab.isIncognito() : mTabModelSelector.isIncognitoSelected();
-        mLocationBarModel.setTab(tab, isIncognito);
+        Profile profile =
+                tab != null ? tab.getProfile() : mTabModelSelector.getCurrentModel().getProfile();
+        assert profile != null
+                : "Failed to get Profile when incognito = "
+                        + mTabModelSelector.isIncognitoSelected();
+        // TODO(crbug/1498999): Remove this Profile calculation fallback if no asserts are hit.
+        if (profile == null) {
+            assert tab == null;
+            profile =
+                    mTabModelSelector.isIncognitoSelected()
+                            ? IncognitoUtils.getIncognitoProfileFromWindowAndroid(mWindowAndroid)
+                            : Profile.getLastUsedRegularProfile();
+        }
 
+        mLocationBarModel.setTab(tab, profile);
         updateTabLoadingState(true);
 
+        boolean isIncognito = profile.isOffTheRecord();
         // This method is called prior to action mode destroy callback for incognito <-> normal
         // tab switch. Makes sure the action mode toolbar is hidden before selecting the new tab.
         if (previousTab != null && wasIncognito != isIncognito
@@ -2411,10 +2434,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     }
 
     /**
-     * Sets whether to skip recreating the activity when the settings are changed. It should only
-     * be true in testing.
+     * Sets whether to skip recreating the activity when the settings are changed. It should only be
+     * true in testing.
      */
-    public static void setSkipRecreateForTesting(boolean skipRecreating) {
+    public static void setSkipRecreateActivityWhenStartSurfaceEnabledStateChangesForTesting(
+            boolean skipRecreating) {
         sSkipRecreateForTesting = skipRecreating;
         ResettersForTesting.register(() -> sSkipRecreateForTesting = false);
     }

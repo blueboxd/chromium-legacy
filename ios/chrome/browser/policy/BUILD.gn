@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ios/bundle_data_from_filelist.gni")
+
 source_set("policy") {
   sources = [
     "browser_dm_token_storage_ios.h",
@@ -66,6 +68,7 @@ source_set("policy") {
     "//components/commerce/core:pref_names",
     "//components/component_updater",
     "//components/enterprise",
+    "//components/enterprise/idle",
     "//components/history/core/common",
     "//components/keyed_service/ios",
     "//components/metrics",
@@ -85,7 +88,6 @@ source_set("policy") {
     "//components/variations/service",
     "//components/version_info:version_info",
     "//ios/chrome/app/application_delegate:app_state_header",
-    "//ios/chrome/browser/shared/coordinator/scene:scene_state_browser_agent",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser",
@@ -93,8 +95,8 @@ source_set("policy") {
     "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/commands",
-    "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/signin:system_identity",
+    "//ios/chrome/browser/signin/model",
+    "//ios/chrome/browser/signin/model:system_identity",
     "//ios/chrome/browser/ui/authentication/signin:signin_headers",
     "//ios/chrome/common",
     "//services/network/public/cpp",
@@ -167,16 +169,14 @@ source_set("test_support") {
   ]
 }
 
-bundle_data("test_resources") {
+bundle_data_from_filelist("test_resources") {
   visibility = [
     ":eg2_tests",
     ":unit_tests",
   ]
   testonly = true
-  sources = [ "//ios/chrome/test/data/policy/policy_test_cases.json" ]
-  outputs = [
-    "{{bundle_resources_dir}}/ios/chrome/test/data/policy/{{source_file_part}}",
-  ]
+  filelist_name =
+      "//ios/chrome/test/data/policy/policy_test_bundle_data.filelist"
 }
 
 source_set("unit_tests") {
@@ -218,7 +218,6 @@ source_set("unit_tests") {
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/prefs/model",
-    "//ios/chrome/browser/shared/coordinator/scene:scene_state_browser_agent",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/coordinator/scene/test",
     "//ios/chrome/browser/shared/model/application_context",
@@ -229,10 +228,10 @@ source_set("unit_tests") {
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features:system_flags",
-    "//ios/chrome/browser/signin:fake_system_identity",
-    "//ios/chrome/browser/signin:fake_system_identity_manager",
-    "//ios/chrome/browser/signin:signin",
-    "//ios/chrome/browser/signin:test_support",
+    "//ios/chrome/browser/signin/model",
+    "//ios/chrome/browser/signin/model:fake_system_identity",
+    "//ios/chrome/browser/signin/model:fake_system_identity_manager",
+    "//ios/chrome/browser/signin/model:test_support",
     "//ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt",
     "//ios/chrome/test:test_support",
     "//ios/web/public/test:test",
@@ -274,12 +273,11 @@ source_set("eg2_tests") {
     "//components/sync/base:features",
     "//google_apis",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ntp:features",
-    "//ios/chrome/browser/ntp/home:features",
     "//ios/chrome/browser/policy:eg_test_support+eg2",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/model/url:constants",
-    "//ios/chrome/browser/signin:fake_system_identity",
+    "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/signin/model:fake_system_identity",
     "//ios/chrome/browser/translate/model:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication/signin:constants",

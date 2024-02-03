@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './scanning_mojom_imports.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://scanning/color_mode_select.js';
 
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
@@ -13,7 +13,7 @@ import {ColorMode} from 'chrome://scanning/scanning.mojom-webui.js';
 import {getColorModeString} from 'chrome://scanning/scanning_app_util.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
-import {assertOrderedAlphabetically, changeSelect} from './scanning_app_test_utils.js';
+import {assertOrderedAlphabetically, changeSelectedIndex} from './scanning_app_test_utils.js';
 
 suite('colorModeSelectTest', function() {
   let colorModeSelect: ColorModeSelectElement|null = null;
@@ -100,7 +100,7 @@ suite('colorModeSelectTest', function() {
     colorModeSelect.options =
         [ColorMode.kGrayscale, ColorMode.kBlackAndWhite, ColorMode.kColor];
     flush();
-    await changeSelect(select, /* value */ null, /* selectedIndex */ 0);
+    await changeSelectedIndex(select, /*index=*/ 0);
     assertEquals(
         ColorMode.kBlackAndWhite.toString(), colorModeSelect.selectedOption);
     assertEquals(

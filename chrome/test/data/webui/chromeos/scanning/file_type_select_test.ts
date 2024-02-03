@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './scanning_mojom_imports.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://scanning/file_type_select.js';
 
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
@@ -11,7 +11,7 @@ import {FileTypeSelectElement} from 'chrome://scanning/file_type_select.js';
 import {FileType} from 'chrome://scanning/scanning.mojom-webui.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
-import {changeSelect} from './scanning_app_test_utils.js';
+import {changeSelectedValue} from './scanning_app_test_utils.js';
 
 suite('fileTypeSelectTest', function() {
   let fileTypeSelect: FileTypeSelectElement|null = null;
@@ -55,8 +55,7 @@ suite('fileTypeSelectTest', function() {
     assertEquals(FileType.kPdf.toString(), select.value);
 
     // Selecting a different option should update the selected value.
-    await changeSelect(
-        select, FileType.kJpg.toString(), /* selectedIndex */ null);
+    await changeSelectedValue(select, FileType.kJpg.toString());
 
     assertEquals(FileType.kJpg.toString(), fileTypeSelect.selectedFileType);
   });

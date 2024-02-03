@@ -51,7 +51,6 @@ import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.LazyOneshotSupplier;
-import org.chromium.base.supplier.LazyOneshotSupplierImpl;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.SyncOneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -157,20 +156,6 @@ public class HubLayoutUnitTest {
 
         when(mHubManager.getPaneManager()).thenReturn(mPaneManager);
         when(mHubManager.getHubController()).thenReturn(mHubController);
-        LazyOneshotSupplier<HubManager> hubManagerSupplier =
-                new LazyOneshotSupplierImpl<HubManager>() {
-                    @Override
-                    public void doSet() {
-                        set(mHubManager);
-                    }
-                };
-        LazyOneshotSupplier<ViewGroup> rootViewSupplier =
-                new LazyOneshotSupplierImpl<ViewGroup>() {
-                    @Override
-                    public void doSet() {
-                        set(mFrameLayout);
-                    }
-                };
 
         mActivityScenarioRule
                 .getScenario()
@@ -183,6 +168,10 @@ public class HubLayoutUnitTest {
 
                             when(mHubController.getContainerView()).thenReturn(mHubContainerView);
 
+                            LazyOneshotSupplier<HubManager> hubManagerSupplier =
+                                    LazyOneshotSupplier.fromValue(mHubManager);
+                            LazyOneshotSupplier<ViewGroup> rootViewSupplier =
+                                    LazyOneshotSupplier.fromValue(mFrameLayout);
                             HubLayoutDependencyHolder dependencyHolder =
                                     new HubLayoutDependencyHolder(
                                             hubManagerSupplier, rootViewSupplier, mScrimController);
@@ -245,47 +234,19 @@ public class HubLayoutUnitTest {
 
     @Test
     @SmallTest
-    public void testUpdateLayoutAndLayoutTabsDuringShow() {
-        assertThat(mHubLayout.getSceneLayer(), instanceOf(SceneLayer.class));
-        LayoutTab[] layoutTabs = mHubLayout.getLayoutTabsToRender();
-        assertNull(layoutTabs);
+    public void testUpdateSceneLayerAndLayoutTabsDuringShow() {
+        animateCheckingSceneLayerAndLayoutTabs(
+                () -> startShowing(LayoutType.BROWSING, true), TAB_ID);
+        verify(mTabContentManager)
+                .updateVisibleIds(eq(Collections.emptyList()), eq(Tab.INVALID_TAB_ID));
+    }
 
-        mHubLayout.updateLayout(FAKE_TIME, FAKE_TIME);
-        verify(mUpdateHost, never()).requestUpdate();
-
-        startShowing(LayoutType.BROWSING, true);
-
-        assertThat(mHubLayout.getSceneLayer(), instanceOf(StaticTabSceneLayer.class));
-        layoutTabs = mHubLayout.getLayoutTabsToRender();
-        assertEquals(1, layoutTabs.length);
-        assertEquals(TAB_ID, layoutTabs[0].getId());
-        verify(mTabContentManager, times(1))
-                .updateVisibleIds(eq(Collections.singletonList(TAB_ID)), eq(Tab.INVALID_TAB_ID));
-
-        assertEquals(0f, layoutTabs[0].get(LayoutTab.CONTENT_OFFSET), FLOAT_ERROR);
-
-        float contentOffset = 100f;
-        when(mBrowserControlsStateProvider.getContentOffset())
-                .thenReturn(Math.round(contentOffset));
-        mHubLayout.updateSceneLayer(
-                new RectF(),
-                new RectF(),
-                mTabContentManager,
-                mResourceManager,
-                mBrowserControlsStateProvider);
-        assertEquals(contentOffset, layoutTabs[0].get(LayoutTab.CONTENT_OFFSET), FLOAT_ERROR);
-
-        // Change this so updateSnap() returns true.
-        layoutTabs[0].set(LayoutTab.RENDER_X, 5);
-        mHubLayout.updateLayout(FAKE_TIME, FAKE_TIME);
-        verify(mUpdateHost, times(1)).requestUpdate();
-
-        ShadowLooper.runUiThreadTasks();
-
-        assertThat(mHubLayout.getSceneLayer(), instanceOf(SceneLayer.class));
-        layoutTabs = mHubLayout.getLayoutTabsToRender();
-        assertNull(layoutTabs);
-        verify(mTabContentManager, times(1))
+    @Test
+    @SmallTest
+    public void testUpdateSceneLayerAndLayoutTabsDuringHide() {
+        animateCheckingSceneLayerAndLayoutTabs(
+                () -> startHiding(LayoutType.BROWSING, NEW_TAB_ID), NEW_TAB_ID);
+        verify(mTabContentManager, never())
                 .updateVisibleIds(eq(Collections.emptyList()), eq(Tab.INVALID_TAB_ID));
     }
 
@@ -422,7 +383,11 @@ public class HubLayoutUnitTest {
     @SmallTest
     @Config(qualifiers = "sw600dp")
     public void testHideTablet() {
-        hide(LayoutType.BROWSING, TAB_ID, HubLayoutAnimationType.TRANSLATE_DOWN);
+        hide(
+                LayoutType.BROWSING,
+                TAB_ID,
+                /* skipStartHiding= */ false,
+                HubLayoutAnimationType.TRANSLATE_DOWN);
         verify(mTabContentManager, never()).getEtc1TabThumbnailWithCallback(anyInt(), any());
     }
 
@@ -430,7 +395,11 @@ public class HubLayoutUnitTest {
     @SmallTest
     public void testHideToStartSurface() {
         mPaneSupplier.set(mPane);
-        hide(LayoutType.START_SURFACE, Tab.INVALID_TAB_ID, HubLayoutAnimationType.FADE_OUT);
+        hide(
+                LayoutType.START_SURFACE,
+                Tab.INVALID_TAB_ID,
+                /* skipStartHiding= */ false,
+                HubLayoutAnimationType.FADE_OUT);
         verify(mTabContentManager, never()).getEtc1TabThumbnailWithCallback(anyInt(), any());
         verify(mPane, never()).createHideHubLayoutAnimatorProvider(any());
     }
@@ -438,7 +407,11 @@ public class HubLayoutUnitTest {
     @Test
     @SmallTest
     public void testHideWithNoPane() {
-        hide(LayoutType.BROWSING, Tab.INVALID_TAB_ID, HubLayoutAnimationType.FADE_OUT);
+        hide(
+                LayoutType.BROWSING,
+                Tab.INVALID_TAB_ID,
+                /* skipStartHiding= */ false,
+                HubLayoutAnimationType.FADE_OUT);
         verify(mTabContentManager, never()).getEtc1TabThumbnailWithCallback(anyInt(), any());
     }
 
@@ -446,7 +419,24 @@ public class HubLayoutUnitTest {
     @SmallTest
     public void testHideViaNewTab() {
         mHubLayout.onTabCreated(FAKE_TIME, NEW_TAB_ID, NEW_TAB_INDEX, TAB_ID, false, false, 0, 0);
-        hide(LayoutType.BROWSING, NEW_TAB_ID, HubLayoutAnimationType.NEW_TAB);
+        hide(
+                LayoutType.BROWSING,
+                NEW_TAB_ID,
+                /* skipStartHiding= */ true,
+                HubLayoutAnimationType.EXPAND_NEW_TAB);
+        verify(mTabContentManager, never()).getEtc1TabThumbnailWithCallback(anyInt(), any());
+    }
+
+    @Test
+    @SmallTest
+    @Config(qualifiers = "sw600dp")
+    public void testHideViaNewTabTablet() {
+        mHubLayout.onTabCreated(FAKE_TIME, NEW_TAB_ID, NEW_TAB_INDEX, TAB_ID, false, false, 0, 0);
+        hide(
+                LayoutType.BROWSING,
+                NEW_TAB_ID,
+                /* skipStartHiding= */ true,
+                HubLayoutAnimationType.TRANSLATE_DOWN);
         verify(mTabContentManager, never()).getEtc1TabThumbnailWithCallback(anyInt(), any());
     }
 
@@ -469,7 +459,11 @@ public class HubLayoutUnitTest {
                 .when(mTabContentManager)
                 .getEtc1TabThumbnailWithCallback(eq(TAB_ID), any());
 
-        hide(LayoutType.BROWSING, TAB_ID, HubLayoutAnimationType.EXPAND_TAB);
+        hide(
+                LayoutType.BROWSING,
+                TAB_ID,
+                /* skipStartHiding= */ false,
+                HubLayoutAnimationType.EXPAND_TAB);
 
         verify(mThumbnailCallback).onResult(isNotNull());
     }
@@ -495,7 +489,11 @@ public class HubLayoutUnitTest {
                 .when(mTabContentManager)
                 .getEtc1TabThumbnailWithCallback(eq(TAB_ID), any());
 
-        hide(LayoutType.BROWSING, Tab.INVALID_TAB_ID, HubLayoutAnimationType.EXPAND_TAB);
+        hide(
+                LayoutType.BROWSING,
+                Tab.INVALID_TAB_ID,
+                /* skipStartHiding= */ false,
+                HubLayoutAnimationType.EXPAND_TAB);
 
         verify(mThumbnailCallback).onResult(isNotNull());
     }
@@ -510,7 +508,11 @@ public class HubLayoutUnitTest {
                 .createHideAnimatorProvider(any(), anyInt());
         when(mTab.isNativePage()).thenReturn(true);
 
-        hide(LayoutType.START_SURFACE, TAB_ID, HubLayoutAnimationType.EXPAND_TAB);
+        hide(
+                LayoutType.START_SURFACE,
+                TAB_ID,
+                /* skipStartHiding= */ false,
+                HubLayoutAnimationType.EXPAND_TAB);
 
         verify(mThumbnailCallback).onResult(isNull());
         verify(mTabContentManager, never()).getEtc1TabThumbnailWithCallback(anyInt(), any());
@@ -531,7 +533,7 @@ public class HubLayoutUnitTest {
         assertTrue(mHubLayout.isRunningAnimations());
         assertTrue(mHubLayout.onUpdateAnimation(FAKE_TIME, false));
 
-        startHiding(LayoutType.BROWSING, NEW_TAB_ID, false);
+        startHiding(LayoutType.BROWSING, NEW_TAB_ID);
         verify(mHubLayout).doneShowing();
         verify(mTab, never()).hide(anyInt());
         verify(mScrimController).forceAnimationToFinish();
@@ -581,16 +583,16 @@ public class HubLayoutUnitTest {
     private void hide(
             @LayoutType int nextLayout,
             int nextTabId,
+            boolean skipStartHiding,
             @HubLayoutAnimationType int expectedAnimationType) {
-        if (expectedAnimationType == HubLayoutAnimationType.NEW_TAB) {
+        if (skipStartHiding) {
             assertTrue(mHubLayout.isRunningAnimations());
             assertTrue(mHubLayout.onUpdateAnimation(FAKE_TIME, false));
         } else {
             assertFalse(mHubLayout.isRunningAnimations());
             assertFalse(mHubLayout.onUpdateAnimation(FAKE_TIME, false));
+            startHiding(nextLayout, nextTabId);
         }
-
-        startHiding(nextLayout, nextTabId, true);
 
         assertEquals(expectedAnimationType, mHubLayout.getCurrentAnimationType());
         assertTrue(mHubLayout.isRunningAnimations());
@@ -610,17 +612,60 @@ public class HubLayoutUnitTest {
     private void startShowing(@LayoutType int fromLayout, boolean animate) {
         when(mLayoutStateProvider.getActiveLayoutType()).thenReturn(fromLayout);
         mHubLayout.contextChanged(mActivity);
+        assertEquals(fromLayout, mHubLayout.getPreviousLayoutTypeSupplier().get().intValue());
 
         mHubLayout.show(FAKE_TIME, animate);
     }
 
-    private void startHiding(
-            @LayoutType int nextLayout, int nextTabId, boolean hintAtTabSelection) {
+    private void startHiding(@LayoutType int nextLayout, int nextTabId) {
         @LayoutType int layoutType = mHubLayout.getLayoutType();
         when(mLayoutStateProvider.getActiveLayoutType()).thenReturn(layoutType);
         when(mLayoutStateProvider.getNextLayoutType()).thenReturn(nextLayout);
 
-        mHubLayout.startHiding(nextTabId, hintAtTabSelection);
+        mHubLayout.startHiding(nextTabId);
+    }
+
+    private void animateCheckingSceneLayerAndLayoutTabs(
+            Runnable startAnimationRunnable, int tabId) {
+        assertThat(mHubLayout.getSceneLayer(), instanceOf(SceneLayer.class));
+        LayoutTab[] layoutTabs = mHubLayout.getLayoutTabsToRender();
+        assertNull(layoutTabs);
+
+        mHubLayout.updateLayout(FAKE_TIME, FAKE_TIME);
+        verify(mUpdateHost, never()).requestUpdate();
+
+        startAnimationRunnable.run();
+
+        assertThat(mHubLayout.getSceneLayer(), instanceOf(StaticTabSceneLayer.class));
+        layoutTabs = mHubLayout.getLayoutTabsToRender();
+        assertEquals(1, layoutTabs.length);
+        assertEquals(tabId, layoutTabs[0].getId());
+        verify(mTabContentManager)
+                .updateVisibleIds(eq(Collections.singletonList(tabId)), eq(Tab.INVALID_TAB_ID));
+
+        assertEquals(0f, layoutTabs[0].get(LayoutTab.CONTENT_OFFSET), FLOAT_ERROR);
+
+        float contentOffset = 100f;
+        when(mBrowserControlsStateProvider.getContentOffset())
+                .thenReturn(Math.round(contentOffset));
+        mHubLayout.updateSceneLayer(
+                new RectF(),
+                new RectF(),
+                mTabContentManager,
+                mResourceManager,
+                mBrowserControlsStateProvider);
+        assertEquals(contentOffset, layoutTabs[0].get(LayoutTab.CONTENT_OFFSET), FLOAT_ERROR);
+
+        // Change this so updateSnap() returns true.
+        layoutTabs[0].set(LayoutTab.RENDER_X, 5);
+        mHubLayout.updateLayout(FAKE_TIME, FAKE_TIME);
+        verify(mUpdateHost).requestUpdate();
+
+        ShadowLooper.runUiThreadTasks();
+
+        assertThat(mHubLayout.getSceneLayer(), instanceOf(SceneLayer.class));
+        layoutTabs = mHubLayout.getLayoutTabsToRender();
+        assertNull(layoutTabs);
     }
 
     private void setupHubLayoutAnimatorAndProvider(@HubLayoutAnimationType int animationType) {

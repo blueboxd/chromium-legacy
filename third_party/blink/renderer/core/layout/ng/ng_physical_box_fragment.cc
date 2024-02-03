@@ -46,7 +46,7 @@ struct SameSizeAsNGPhysicalBoxFragment : NGPhysicalFragment {
   LayoutUnit last_baseline;
   Member<void*> rare;
   NGInkOverflow ink_overflow;
-  HeapVector<NGLink> children;
+  HeapVector<PhysicalFragmentLink> children;
 };
 
 ASSERT_SIZE(NGPhysicalBoxFragment, SameSizeAsNGPhysicalBoxFragment);
@@ -93,26 +93,25 @@ void ApplyOverflowClip(OverflowClipAxes overflow_clip_axes,
   }
 }
 
-NGContainingBlock<PhysicalOffset> PhysicalContainingBlock(
+OofContainingBlock<PhysicalOffset> PhysicalContainingBlock(
     NGFragmentBuilder* builder,
     PhysicalSize outer_size,
     PhysicalSize inner_size,
-    const NGContainingBlock<LogicalOffset>& containing_block) {
-  return NGContainingBlock<PhysicalOffset>(
+    const OofContainingBlock<LogicalOffset>& containing_block) {
+  return OofContainingBlock<PhysicalOffset>(
       containing_block.Offset().ConvertToPhysical(
           builder->Style().GetWritingDirection(), outer_size, inner_size),
       RelativeInsetToPhysical(containing_block.RelativeOffset(),
                               builder->Style().GetWritingDirection()),
       containing_block.Fragment(),
       containing_block.ClippedContainerBlockOffset(),
-      containing_block.IsInsideColumnSpanner(),
-      containing_block.RequiresContentBeforeBreaking());
+      containing_block.IsInsideColumnSpanner());
 }
 
-NGContainingBlock<PhysicalOffset> PhysicalContainingBlock(
+OofContainingBlock<PhysicalOffset> PhysicalContainingBlock(
     NGFragmentBuilder* builder,
     PhysicalSize size,
-    const NGContainingBlock<LogicalOffset>& containing_block) {
+    const OofContainingBlock<LogicalOffset>& containing_block) {
   PhysicalSize containing_block_size =
       containing_block.Fragment() ? containing_block.Fragment()->Size() : size;
   return PhysicalContainingBlock(builder, size, containing_block_size,
@@ -238,7 +237,8 @@ NGPhysicalBoxFragment::CloneWithPostLayoutFragments(
   AllowPostLayoutScope allow_post_layout_scope;
 #endif
 
-  for (NGLink& child : cloned_fragment->GetMutableForCloning().Children()) {
+  for (PhysicalFragmentLink& child :
+       cloned_fragment->GetMutableForCloning().Children()) {
     child.fragment = child->PostLayout();
     DCHECK(child.fragment);
 
@@ -250,7 +250,7 @@ NGPhysicalBoxFragment::CloneWithPostLayoutFragments(
     // need to not only update its children, but also the children of the
     // children that are fragmentainers.
     auto& fragmentainer = *To<NGPhysicalBoxFragment>(child.fragment.Get());
-    for (NGLink& fragmentainer_child :
+    for (PhysicalFragmentLink& fragmentainer_child :
          fragmentainer.GetMutableForCloning().Children()) {
       auto& old_child =
           *To<NGPhysicalBoxFragment>(fragmentainer_child.fragment.Get());
@@ -350,10 +350,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       !!builder->table_cell_column_index_ +
       (builder->table_section_row_offsets_.empty() ? 0 : 2) +
       !!builder->page_name_ + has_borders + has_padding +
-      inflow_bounds.has_value();
-  if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
-    rare_fields_size += !!builder->Style().MayHaveMargin();
-  }
+      inflow_bounds.has_value() + !!builder->Style().MayHaveMargin();
 
   if (rare_fields_size > 0 || !builder->table_column_geometries_.empty()) {
     rare_data_ = MakeGarbageCollected<PhysicalFragmentRareData>(
@@ -440,15 +437,13 @@ void NGPhysicalBoxFragment::Dispose() {
 }
 
 // TODO(kojii): Move to ng_physical_fragment.cc
-NGPhysicalFragment::OutOfFlowData*
-NGPhysicalFragment::FragmentedOutOfFlowDataFromBuilder(
+NGPhysicalFragment::OofData* NGPhysicalFragment::FragmentedOofDataFromBuilder(
     NGFragmentBuilder* builder) {
   DCHECK(has_fragmented_out_of_flow_data_);
   DCHECK_EQ(has_fragmented_out_of_flow_data_,
             !builder->oof_positioned_fragmentainer_descendants_.empty() ||
                 !builder->multicols_with_pending_oofs_.empty());
-  NGFragmentedOutOfFlowData* fragmented_data =
-      MakeGarbageCollected<NGFragmentedOutOfFlowData>();
+  auto* fragmented_data = MakeGarbageCollected<FragmentedOofData>();
   fragmented_data->oof_positioned_fragmentainer_descendants.reserve(
       builder->oof_positioned_fragmentainer_descendants_.size());
   const PhysicalSize& size = Size();
@@ -456,11 +451,11 @@ NGPhysicalFragment::FragmentedOutOfFlowDataFromBuilder(
   const WritingModeConverter converter(writing_direction, size);
   for (const auto& descendant :
        builder->oof_positioned_fragmentainer_descendants_) {
-    NGInlineContainer<PhysicalOffset> inline_container(
+    OofInlineContainer<PhysicalOffset> inline_container(
         descendant.inline_container.container,
         converter.ToPhysical(descendant.inline_container.relative_offset,
                              PhysicalSize()));
-    NGInlineContainer<PhysicalOffset> fixedpos_inline_container(
+    OofInlineContainer<PhysicalOffset> fixedpos_inline_container(
         descendant.fixedpos_inline_container.container,
         converter.ToPhysical(
             descendant.fixedpos_inline_container.relative_offset,
@@ -478,7 +473,7 @@ NGPhysicalFragment::FragmentedOutOfFlowDataFromBuilder(
         descendant.Node(),
         descendant.static_position.ConvertToPhysical(
             containing_block_converter),
-        inline_container,
+        descendant.requires_content_before_breaking, inline_container,
         PhysicalContainingBlock(builder, size, containing_block_size,
                                 descendant.containing_block),
         PhysicalContainingBlock(builder, size,
@@ -487,13 +482,13 @@ NGPhysicalFragment::FragmentedOutOfFlowDataFromBuilder(
   }
   for (const auto& multicol : builder->multicols_with_pending_oofs_) {
     auto& value = multicol.value;
-    NGInlineContainer<PhysicalOffset> fixedpos_inline_container(
+    OofInlineContainer<PhysicalOffset> fixedpos_inline_container(
         value->fixedpos_inline_container.container,
         converter.ToPhysical(value->fixedpos_inline_container.relative_offset,
                              PhysicalSize()));
     fragmented_data->multicols_with_pending_oofs.insert(
         multicol.key,
-        MakeGarbageCollected<NGMulticolWithPendingOOFs<PhysicalOffset>>(
+        MakeGarbageCollected<MulticolWithPendingOofs<PhysicalOffset>>(
             value->multicol_offset.ConvertToPhysical(
                 builder->Style().GetWritingDirection(), size, PhysicalSize()),
             PhysicalContainingBlock(builder, size,
@@ -1077,7 +1072,6 @@ NGPhysicalBoxFragment::MutableForContainerLayout::MutableForContainerLayout(
 
 void NGPhysicalBoxFragment::MutableForContainerLayout::SetMargins(
     const PhysicalBoxStrut& margins) {
-  DCHECK(RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
   // This can be called even without rare_data_.
   fragment_.EnsureRareField(FieldId::kMargins).margins = margins;
 }
@@ -1172,7 +1166,7 @@ PhysicalRect NGPhysicalBoxFragment::RecalcContentsInkOverflow() {
       return contents_rect;
   }
 
-  for (const NGLink& child : PostLayoutChildren()) {
+  for (const PhysicalFragmentLink& child : PostLayoutChildren()) {
     const auto* child_fragment = DynamicTo<NGPhysicalBoxFragment>(child.get());
     if (!child_fragment || child_fragment->HasSelfPaintingLayer())
       continue;
@@ -1210,7 +1204,7 @@ PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
   if (UNLIKELY(IsTableRow())) {
     // This is necessary because table-rows paints beyond border box if it
     // contains rowspanned cells.
-    for (const NGLink& child : PostLayoutChildren()) {
+    for (const PhysicalFragmentLink& child : PostLayoutChildren()) {
       const auto& child_fragment = To<NGPhysicalBoxFragment>(*child);
       if (!child_fragment.IsTableCell()) {
         continue;
@@ -1407,7 +1401,8 @@ void NGPhysicalBoxFragment::AddOutlineRectsForInlineBox(
 
   if (ShouldIncludeBlockVisualOverflowForAnchorOnly(outline_type) &&
       !HasNonVisibleOverflow() && !HasControlClip(*this)) {
-    if (container->IsAnonymousBlock()) {
+    if (!RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled() &&
+        container->IsAnonymousBlock()) {
       const auto* container_box = DynamicTo<LayoutBox>(
           container->GetLayoutObject()->NonAnonymousAncestor());
       if (!container_box)
@@ -1480,7 +1475,7 @@ PositionWithAffinity NGPhysicalBoxFragment::PositionForPointByClosestChild(
         FirstPositionInOrBeforeNode(*layout_object_->GetNode()));
   }
 
-  NGLink closest_child = {nullptr};
+  PhysicalFragmentLink closest_child = {nullptr};
   LayoutUnit shortest_distance = LayoutUnit::Max();
   bool found_hit_test_candidate = false;
   const PhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
@@ -1495,7 +1490,7 @@ PositionWithAffinity NGPhysicalBoxFragment::PositionForPointByClosestChild(
   // inline direction, block direction or reverse block direction. Multicol
   // containers progress both in the inline direction (columns) and block
   // direction (column rows and spanners).
-  for (const NGLink& child : Children()) {
+  for (const PhysicalFragmentLink& child : Children()) {
     const auto& box_fragment = To<NGPhysicalBoxFragment>(*child.fragment);
     bool is_hit_test_candidate = IsHitTestCandidate(box_fragment);
     if (!is_hit_test_candidate) {
@@ -1570,8 +1565,8 @@ NGPhysicalBoxFragment::PositionForPointInBlockFlowDirection(
 
   // Loop over block children to find a child logically below
   // |point_in_contents|.
-  const NGLink* last_candidate_box = nullptr;
-  for (const NGLink& child : Children()) {
+  const PhysicalFragmentLink* last_candidate_box = nullptr;
+  for (const PhysicalFragmentLink& child : Children()) {
     const auto& box_fragment = To<NGPhysicalBoxFragment>(*child.fragment);
     if (!IsHitTestCandidate(box_fragment))
       continue;
@@ -1730,6 +1725,8 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   DCHECK_EQ(is_math_operator_, other.is_math_operator_);
 
   // |has_floating_descendants_for_paint_| can change during simplified layout.
+  DCHECK_EQ(has_adjoining_object_descendants_,
+            other.has_adjoining_object_descendants_);
   DCHECK_EQ(may_have_descendant_above_block_start_,
             other.may_have_descendant_above_block_start_);
   DCHECK_EQ(depends_on_percentage_block_size_,
@@ -1795,7 +1792,7 @@ void NGPhysicalBoxFragment::CheckIntegrity() const {
   bool has_floats = false;
   bool has_list_markers = false;
 
-  for (const NGLink& child : Children()) {
+  for (const PhysicalFragmentLink& child : Children()) {
     if (child->IsFloating())
       has_floats = true;
     else if (child->IsOutOfFlowPositioned())
@@ -1859,7 +1856,7 @@ void NGPhysicalBoxFragment::AssertFragmentTreeChildren(
     }
   }
 
-  for (const NGLink& child : Children()) {
+  for (const PhysicalFragmentLink& child : Children()) {
     if (child->IsLayoutObjectDestroyedOrMoved()) {
       DCHECK(allow_destroyed_or_moved);
       continue;

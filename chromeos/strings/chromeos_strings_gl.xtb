@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gl">
+<translation id="1003363546227723021">Cando a pantalla está inactiva, nela móstranse fotos, a hora, o tempo e información dos medios de comunicación</translation>
 <translation id="1014750484722996375">Escritorios</translation>
 <translation id="1018219910092211213">Non se puido resolver o DNS</translation>
 <translation id="1018656279737460067">Cancelados</translation>
@@ -29,6 +30,7 @@
 <translation id="1175951029573070619">Intermedia (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Eliminar</translation>
 <translation id="1195447618553298278">Erro descoñecido.</translation>
+<translation id="1195784767091936222">Activar modo escuro automático</translation>
 <translation id="1196959502276349371">Versión <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Reproducir/Pór en pausa</translation>
 <translation id="1201402288615127009">Seguinte</translation>
@@ -134,6 +136,7 @@
 <translation id="1852934301711881861">Instalar Chrome OS Flex</translation>
 <translation id="1856388568474281774">Frecha abaixo</translation>
 <translation id="1858620243986915808">Anexar captura de pantalla</translation>
+<translation id="1871413952174074704">O APN non pode ter máis de <ph name="CHAR_LIMIT" /> caracteres</translation>
 <translation id="1871569928317311284">Quitar tema escuro</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Quitar modo escuro</translation>
@@ -147,6 +150,7 @@
 <translation id="1923388006036088459">Cores para destacar</translation>
 <translation id="1947737735496445907">Impreso</translation>
 <translation id="1951012854035635156">Asistente</translation>
+<translation id="1954687945444914660">fotografía</translation>
 <translation id="1962550982027027473">Requírese un APN predeterminado</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1977994649430373166">Foto do perfil de Google</translation>
@@ -275,6 +279,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">O dispositivo está conectado.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Queres quitar a páxina?}=1{Queres quitar a páxina {PAGE_NUMBER}?}other{Queres quitar a páxina {PAGE_NUMBER}?}}</translation>
+<translation id="3136905423678675159">Queres activar o modo escuro automático?</translation>
 <translation id="3146655726035122603">Exclusivo de <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Datos móbiles</translation>
 <translation id="3156846309055100599">Escaneando páxina <ph name="PAGE_NUMBER" />…</translation>
@@ -354,6 +359,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> recensións)</translation>
 <translation id="3748026146096797577">Non conectado</translation>
 <translation id="3749289110408117711">Nome de ficheiro</translation>
+<translation id="3754384069690464321">Para obter os mellores resultados con este fondo de pantalla, activa o modo escuro automático. Podes volver cambialo na aplicación cando queiras.</translation>
 <translation id="3771294271822695279">Ficheiros de vídeo</translation>
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="380097101658023925">controis rgb</translation>
@@ -434,7 +440,6 @@
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> imaxes</translation>
 <translation id="4333390807948134856">Tecla <ph name="KEY_NAME" /> premida</translation>
 <translation id="4354430579665871434">tecla</translation>
-<translation id="435692326371619097">Xestiona a configuración do APN da rede. Os APN establecen unha conexión entre unha rede de telefonía móbil e Internet. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">Restablecer todos os atallos</translation>
 <translation id="4378373042927530923">Non se executou</translation>
 <translation id="4378551569595875038">Conectando...</translation>
@@ -534,7 +539,6 @@
 <translation id="4999333166442584738">Ocultar informe</translation>
 <translation id="500920857929044050">Deter proba</translation>
 <translation id="5017508259293544172">LEAP</translation>
-<translation id="5019310272469539976">Cando a pantalla está inactiva, nela móstranse fotos, a hora, o tempo e información dos medios de comunicación.</translation>
 <translation id="5035083460461104704">Cor do tema</translation>
 <translation id="5038292761217083259">teclado multicolor</translation>
 <translation id="5039804452771397117">Permitir</translation>
@@ -588,6 +592,7 @@
 <translation id="5389224261615877010">Arco da vella</translation>
 <translation id="5400907029458559844">O dispositivo estase conectando.</translation>
 <translation id="5401938042319910061">Executar todas as rutinas</translation>
+<translation id="540604120278030498">Nova York</translation>
 <translation id="5423849171846380976">Activado</translation>
 <translation id="5430931332414098647">Conexión compartida instantánea</translation>
 <translation id="5431318178759467895">Cor</translation>
@@ -796,6 +801,7 @@
 <translation id="7046522406494308071">Queres restablecer os valores predeterminados de todos os atallos?</translation>
 <translation id="7058278511608979688">Finalizar e gardar</translation>
 <translation id="7059230779847288458">Cargando (<ph name="TIME_VALUE" /> para completar a carga)</translation>
+<translation id="7065364575846974659">París</translation>
 <translation id="7066538517128343186">a tecla <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Prepara o dispositivo</translation>
 <translation id="708426984172631313">PROBA DETIDA</translation>
@@ -935,6 +941,7 @@
 <translation id="8094062939584182041">Permitir que Google che envíe correos electrónicos sobre este tema</translation>
 <translation id="8104083085214006426">Estás usando unha rede aberta e non segura</translation>
 <translation id="8111706652656628199">O atallo non está dispoñible. Preme un novo atallo usando maiúsculas e outra tecla modificadora (control, alt, busca ou menú de aplicacións).</translation>
+<translation id="8112538018114444149">Un parque en <ph name="CHIP_CITY" /> con estilo de <ph name="CHIP_STYLE" />.</translation>
 <translation id="811820734797650957">(Android) pódeselle facer ping á pasarela</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8132480444149501833">Solicitar contadores de tráfico</translation>
@@ -1069,6 +1076,7 @@
 <translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">A resolución de DNS ten latencia alta</translation>
 <translation id="9065203028668620118">Editar</translation>
+<translation id="9068296451330120661">acuarelas</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9082718469794970195">Usar este vídeo</translation>
@@ -1103,4 +1111,5 @@
 <translation id="979450713603643090">Rosa claro</translation>
 <translation id="982713511914535780">Realizar proba de descarga</translation>
 <translation id="987264212798334818">Xeral</translation>
+<translation id="995062385528875723">Non se poden usar letras con acentos, caracteres de alfabetos non latinos nin símbolos</translation>
 </translationbundle>

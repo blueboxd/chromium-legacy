@@ -119,6 +119,8 @@ BrowserPolicyConnectorAsh::CreateBackgroundTaskRunner() {
 BrowserPolicyConnectorAsh::BrowserPolicyConnectorAsh() {
   DCHECK(ash::InstallAttributes::IsInitialized());
 
+  crd_admin_session_controller_ = std::make_unique<CrdAdminSessionController>();
+
   // DBusThreadManager or DeviceSettingsService may be
   // uninitialized on unit tests.
   if (ash::DBusThreadManager::IsInitialized() &&
@@ -139,9 +141,6 @@ BrowserPolicyConnectorAsh::BrowserPolicyConnectorAsh() {
             base::BindRepeating(&GetChromePolicyDetails),
             CreateBackgroundTaskRunner(), device_policy_external_data_path,
             device_cloud_policy_store.get());
-
-    crd_admin_session_controller_ =
-        std::make_unique<CrdAdminSessionController>();
 
     device_cloud_policy_manager_ = new DeviceCloudPolicyManagerAsh(
         std::move(device_cloud_policy_store), std::move(external_data_manager),
@@ -293,8 +292,11 @@ void BrowserPolicyConnectorAsh::Init(
 void BrowserPolicyConnectorAsh::PreShutdown() {
   // Let the |affiliated_invalidation_service_provider_| unregister itself as an
   // observer of per-Profile InvalidationServices and the device-global
-  // invalidation::TiclInvalidationService it may have created as an observer of
+  // invalidation::InvalidationService it may have created as an observer of
   // the DeviceOAuth2TokenService that is destroyed before Shutdown() is called.
+  //
+  // TODO(b/308427142) The comment above is hard to grok, as is the code it
+  // describes. We should clean this up.
   if (affiliated_invalidation_service_provider_) {
     affiliated_invalidation_service_provider_->Shutdown();
   }
@@ -343,6 +345,8 @@ void BrowserPolicyConnectorAsh::Shutdown() {
   }
 
   adb_sideloading_allowance_mode_policy_handler_.reset();
+
+  crd_admin_session_controller_->Shutdown();
 
   ChromeBrowserPolicyConnector::Shutdown();
 }

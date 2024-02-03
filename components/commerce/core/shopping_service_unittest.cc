@@ -360,8 +360,9 @@ TEST_P(ShoppingServiceTest,
       {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
       {});
 
-  std::string json("{\"image\": \"" + std::string(kImageUrl) + "\"}");
-  base::Value js_result(json);
+  auto result = base::Value::Dict();
+  result.Set("image", std::string(kImageUrl));
+  base::Value js_result(std::move(result));
   MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   // Assume the page hasn't finished loading.
@@ -433,8 +434,9 @@ TEST_P(ShoppingServiceTest,
   test_features_.InitWithFeatures(
       {kCommerceAllowLocalImages, kCommerceAllowServerImages}, {});
 
-  std::string json("{\"image\": \"" + std::string(kImageUrl) + "\"}");
-  base::Value js_result(json);
+  auto result = base::Value::Dict();
+  result.Set("image", std::string(kImageUrl));
+  base::Value js_result(std::move(result));
   MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   // Assume the page has already loaded for the navigation. This is usually the
@@ -703,8 +705,9 @@ TEST_P(ShoppingServiceTest, TestShoppingListEligible_SignIn) {
 }
 
 TEST_P(ShoppingServiceTest, TestShoppingListEligible_WAA) {
-  test_features_.InitWithFeatures({kShoppingList},
-                                  {kShoppingListRegionLaunched});
+  test_features_.InitWithFeatures(
+      {kShoppingList},
+      {kShoppingListRegionLaunched, kShoppingListWAARestrictionRemoval});
 
   TestingPrefServiceSimple prefs;
   RegisterPrefs(prefs.registry());
@@ -1253,7 +1256,7 @@ TEST_P(ShoppingServiceTest,
 }
 
 TEST_P(ShoppingServiceTest, TestIsShoppingPage) {
-  test_features_.InitAndEnableFeature(kShoppingPageTypes);
+  opt_guide_->SetDefaultShoppingPage(false);
   base::RunLoop run_loop[3];
   OptimizationMetadata meta;
   ShoppingPageTypes data;
@@ -1316,7 +1319,8 @@ TEST_P(ShoppingServiceTest, TestIsShoppingPage) {
 }
 
 TEST_P(ShoppingServiceTest, TestDiscountInfoResponse) {
-  test_features_.InitAndEnableFeature(kShowDiscountOnNavigation);
+  test_features_.InitWithFeatures(
+      {kShowDiscountOnNavigation, kEnableDiscountInfoApi}, {});
 
   std::vector<DiscountInfo> infos;
 
@@ -1391,7 +1395,8 @@ TEST_P(ShoppingServiceTest, TestDiscountInfoResponse) {
 }
 
 TEST_P(ShoppingServiceTest, TestDiscountInfoResponse_InfoWithoutId) {
-  test_features_.InitAndEnableFeature(kShowDiscountOnNavigation);
+  test_features_.InitWithFeatures(
+      {kShowDiscountOnNavigation, kEnableDiscountInfoApi}, {});
 
   std::vector<DiscountInfo> infos;
 
@@ -1436,7 +1441,8 @@ TEST_P(ShoppingServiceTest, TestDiscountInfoResponse_InfoWithoutId) {
 }
 
 TEST_P(ShoppingServiceTest, TestDiscountInfoResponse_InfoWithoutTerms) {
-  test_features_.InitAndEnableFeature(kShowDiscountOnNavigation);
+  test_features_.InitWithFeatures(
+      {kShowDiscountOnNavigation, kEnableDiscountInfoApi}, {});
 
   std::vector<DiscountInfo> infos;
 

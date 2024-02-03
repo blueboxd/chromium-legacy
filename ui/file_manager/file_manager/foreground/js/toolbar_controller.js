@@ -6,11 +6,10 @@ import {assert, assertInstanceof} from 'chrome://resources/ash/common/assert.js'
 
 import {queryRequiredElement, queryRequiredExactlyOne} from '../../common/js/dom_utils.js';
 import {isNonModifiable} from '../../common/js/entry_utils.js';
-import {isCrosComponentsEnabled, isDriveFsBulkPinningEnabled} from '../../common/js/flags.js';
+import {isCrosComponentsEnabled} from '../../common/js/flags.js';
 import {str, strf} from '../../common/js/translations.js';
 import {canBulkPinningCloudPanelShow} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
-import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 import {State} from '../../externs/ts/state.js';
 // @ts-ignore: error TS6133: 'Store' is declared but its value is never read.
 import {Store} from '../../externs/ts/store.js';
@@ -40,12 +39,11 @@ export class ToolbarController {
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!DirectoryModel} directoryModel
    * @param {!VolumeManager} volumeManager
-   * @param {!FileOperationManager} fileOperationManager
    * @param {!A11yAnnounce} a11y
    */
   constructor(
       toolbar, navigationList, listContainer, selectionHandler, directoryModel,
-      volumeManager, fileOperationManager, a11y) {
+      volumeManager, a11y) {
     /**
      * @private @type {!HTMLElement}
      * @const
@@ -258,16 +256,13 @@ export class ToolbarController {
     this.volumeManager_ = volumeManager;
 
     /**
-     * @private @type {!FileOperationManager}
-     * @const
-     */
-    this.fileOperationManager_ = fileOperationManager;
-
-    /**
      * @private @type {!A11yAnnounce}
      * @const
      */
     this.a11y_ = a11y;
+
+    /** @private @type {boolean} */
+    this.bulkPinningEnabled_ = false;
 
     /**
      * @private @type {!Store}
@@ -304,22 +299,18 @@ export class ToolbarController {
     this.sharesheetButton_.addEventListener(
         'click', this.onSharesheetButtonClicked_.bind(this));
 
-    if (isDriveFsBulkPinningEnabled()) {
-      const cloudPanel = queryRequiredElement('xf-cloud-panel');
-      this.cloudButton_.addEventListener('click', () => {
-        this.cloudButton_.toggleAttribute('menu-shown', true);
-        this.cloudButton_.toggleAttribute('aria-expanded', true);
-        // @ts-ignore: error TS2339: Property 'showAt' does not exist on type
-        // 'HTMLElement'.
-        cloudPanel.showAt(this.cloudButton_);
-      });
-      cloudPanel.addEventListener(XfCloudPanel.events.PANEL_CLOSED, () => {
-        this.cloudButton_.toggleAttribute('menu-shown', false);
-        this.cloudButton_.toggleAttribute('aria-expanded', false);
-      });
-      /** @type {?boolean} */
-      this.bulkPinningPref_ = null;
-    }
+    const cloudPanel = queryRequiredElement('xf-cloud-panel');
+    this.cloudButton_.addEventListener('click', () => {
+      this.cloudButton_.toggleAttribute('menu-shown', true);
+      this.cloudButton_.toggleAttribute('aria-expanded', true);
+      // @ts-ignore: error TS2339: Property 'showAt' does not exist on type
+      // 'HTMLElement'.
+      cloudPanel.showAt(this.cloudButton_);
+    });
+    cloudPanel.addEventListener(XfCloudPanel.events.PANEL_CLOSED, () => {
+      this.cloudButton_.toggleAttribute('menu-shown', false);
+      this.cloudButton_.toggleAttribute('aria-expanded', false);
+    });
 
     this.togglePinnedCommand_.addEventListener(
         'checkedChange', this.updatePinnedToggle_.bind(this));
@@ -579,23 +570,23 @@ export class ToolbarController {
    * @private
    */
   updateBulkPinning_(state) {
-    const bulkPinningPref = state.preferences?.driveFsBulkPinningEnabled;
+    const enabled = !!state.preferences?.driveFsBulkPinningEnabled;
     const bulkPinning = state.bulkPinning;
     const isNetworkMetered = state.drive?.connectionType ===
         chrome.fileManagerPrivate.DriveConnectionStateType.METERED;
-    // If the bulk pinning preference is enabled, the user should not be able to
-    // toggle items offline.
-    if (this.bulkPinningPref_ !== bulkPinningPref) {
-      // @ts-ignore: error TS2322: Type 'boolean | undefined' is not assignable
-      // to type 'boolean | null'.
-      this.bulkPinningPref_ = bulkPinningPref;
+    // If bulk-pinning is enabled, the user should not be able to toggle items
+    // offline.
+    if (this.bulkPinningEnabled_ !== enabled) {
+      this.bulkPinningEnabled_ = enabled;
       this.togglePinnedCommand_.canExecuteChange(
           this.listContainer_.currentList);
     }
-    if (!canBulkPinningCloudPanelShow(bulkPinning?.stage, bulkPinningPref)) {
+
+    if (!canBulkPinningCloudPanelShow(bulkPinning?.stage, enabled)) {
       this.cloudButton_.hidden = true;
       return;
     }
+
     this.updateBulkPinningIcon_(bulkPinning, isNetworkMetered);
     this.cloudButton_.hidden = false;
   }

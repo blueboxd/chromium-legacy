@@ -73,7 +73,9 @@ CGFloat const kRadioButtonSize = 20;
     [optionsView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor
                                                constant:-kHorizontalMargin],
   ]];
-  [self updateButtonForState:UIControlStateDisabled];
+
+  [self setPrimaryButtonConfiguration];
+  self.primaryActionButton.enabled = NO;
 }
 
 - (void)viewWillLayoutSubviews {
@@ -95,14 +97,13 @@ CGFloat const kRadioButtonSize = 20;
         [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
     NSParagraphStyleAttributeName : paragraphStyle,
   };
-  NSDictionary* linkAttributes = @{
-    NSLinkAttributeName : net::NSURLWithGURL(GURL("chrome://settings")),
-    NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle)
-  };
+  NSDictionary* linkAttributes =
+      @{NSLinkAttributeName : net::NSURLWithGURL(GURL("chrome://settings"))};
   subtitle.attributedText = AttributedStringFromStringWithLink(
       l10n_util::GetNSString(IDS_IOS_PARCEL_TRACKING_OPT_IN_SUBTITLE),
       textAttributes, linkAttributes);
   subtitle.delegate = self;
+  subtitle.editable = YES;
   subtitle.selectable = YES;
 }
 
@@ -161,10 +162,7 @@ CGFloat const kRadioButtonSize = 20;
   cell.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
   cell.userInteractionEnabled = YES;
   cell.textLabel.text = title;
-  cell.isAccessibilityElement = YES;
-  cell.accessibilityLabel = cell.textLabel.text;
-  cell.accessibilityTraits =
-      [self accessibilityTraitsForButton:/*selected=*/NO];
+  cell.textLabel.isAccessibilityElement = YES;
 
   cell.accessoryView =
       [[UIImageView alloc] initWithImage:DefaultSymbolTemplateWithPointSize(
@@ -197,9 +195,7 @@ CGFloat const kRadioButtonSize = 20;
   }
   cell.accessoryView = [[UIImageView alloc] initWithImage:icon];
   cell.accessoryView.tintColor = [UIColor colorNamed:kBlueColor];
-  [self updateButtonForState:UIControlStateNormal];
-  cell.accessibilityTraits =
-      [self accessibilityTraitsForButton:/*selected=*/YES];
+  self.primaryActionButton.enabled = YES;
 }
 
 - (void)tableView:(UITableView*)tableView
@@ -209,8 +205,6 @@ CGFloat const kRadioButtonSize = 20;
       initWithImage:DefaultSymbolTemplateWithPointSize(
                         kCircleSymbol, kSymbolAccessoryPointSize)];
   cell.accessoryView.tintColor = [UIColor colorNamed:kGrey500Color];
-  cell.accessibilityTraits =
-      [self accessibilityTraitsForButton:/*selected=*/NO];
 }
 
 #pragma mark - Private
@@ -237,24 +231,6 @@ CGFloat const kRadioButtonSize = 20;
   return _tableView;
 }
 
-// Updates the "Enable Tracking" button. The button should be disabled initially
-// and only enabled after an option, either "always track" or "ask to track",
-// has been selected by the user.
-- (void)updateButtonForState:(UIControlState)state {
-  UIButton* button = self.primaryActionButton;
-  if (state == UIControlStateDisabled) {
-    button.userInteractionEnabled = NO;
-    [button setBackgroundColor:[UIColor colorNamed:kGrey200Color]];
-    [button setTitleColor:[UIColor colorNamed:kGrey600Color]
-                 forState:UIControlStateNormal];
-  } else if (state == UIControlStateNormal) {
-    button.userInteractionEnabled = YES;
-    [button setBackgroundColor:[UIColor colorNamed:kBlueColor]];
-    [button setTitleColor:[UIColor colorNamed:kBackgroundColor]
-                 forState:UIControlStateNormal];
-  }
-}
-
 // Updates the optionsView's height constraint.
 - (void)updateOptionsViewHeightConstraint {
   CGFloat totalCellHeight = 0;
@@ -264,14 +240,33 @@ CGFloat const kRadioButtonSize = 20;
   _optionsViewHeightConstraint.constant = totalCellHeight;
 }
 
-// Returns the accessibility traits for the radio button options. `selected`
-// should be true if the radio button is selected.
-- (UIAccessibilityTraits)accessibilityTraitsForButton:(BOOL)selected {
-  UIAccessibilityTraits accessibilityTraits = UIAccessibilityTraitButton;
-  if (selected) {
-    accessibilityTraits |= UIAccessibilityTraitSelected;
-  }
-  return accessibilityTraits;
+// Sets the configurationUpdateHandler for the primaryActionButton to handle the
+// button's state changes. The button should be disabled initially and only
+// enabled after an option, either "always track" or "ask to track", has been
+// selected by the user.
+- (void)setPrimaryButtonConfiguration {
+  UIButton* button = self.primaryActionButton;
+  button.configurationUpdateHandler = ^(UIButton* incomingButton) {
+    UIButtonConfiguration* updatedConfig = incomingButton.configuration;
+    switch (incomingButton.state) {
+      case UIControlStateDisabled: {
+        updatedConfig.background.backgroundColor =
+            [UIColor colorNamed:kGrey200Color];
+        updatedConfig.baseForegroundColor = [UIColor colorNamed:kGrey600Color];
+        break;
+      }
+      case UIControlStateNormal: {
+        updatedConfig.background.backgroundColor =
+            [UIColor colorNamed:kBlueColor];
+        updatedConfig.baseForegroundColor =
+            [UIColor colorNamed:kBackgroundColor];
+        break;
+      }
+      default:
+        break;
+    }
+    incomingButton.configuration = updatedConfig;
+  };
 }
 
 @end

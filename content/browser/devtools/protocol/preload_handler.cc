@@ -4,16 +4,16 @@
 
 #include "content/browser/devtools/protocol/preload_handler.h"
 
-#include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "content/browser/devtools/protocol/preload.h"
 #include "content/browser/preloading/prefetch/prefetch_service.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_config.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
-#include "content/browser/renderer_host/frame_tree.h"
-#include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/preloading/prerender/prerender_metrics.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/prefetch_service_delegate.h"
@@ -234,8 +234,6 @@ Preload::PrefetchStatus PrefetchStatusToProtocol(PrefetchStatus status) {
       return Preload::PrefetchStatusEnum::PrefetchProxyNotAvailable;
     case PrefetchStatus::kPrefetchIsPrivacyDecoy:
       return Preload::PrefetchStatusEnum::PrefetchIsPrivacyDecoy;
-    case PrefetchStatus::kPrefetchIsStale:
-      return Preload::PrefetchStatusEnum::PrefetchIsStale;
     case PrefetchStatus::kPrefetchNotUsedCookiesChanged:
       return Preload::PrefetchStatusEnum::PrefetchNotUsedCookiesChanged;
     case PrefetchStatus::kPrefetchIneligibleHostIsNonUnique:
@@ -375,7 +373,8 @@ void PreloadHandler::DidUpdatePrerenderStatus(
     absl::optional<blink::mojom::SpeculationTargetHint> target_hint,
     PreloadingTriggeringOutcome status,
     absl::optional<PrerenderFinalStatus> prerender_status,
-    absl::optional<std::string> disallowed_mojo_interface) {
+    absl::optional<std::string> disallowed_mojo_interface,
+    const std::vector<PrerenderMismatchedHeaders>* mismatched_headers) {
   if (!enabled_) {
     return;
   }
@@ -399,12 +398,38 @@ void PreloadHandler::DidUpdatePrerenderStatus(
       disallowed_mojo_interface.has_value()
           ? Maybe<std::string>(disallowed_mojo_interface.value())
           : Maybe<std::string>();
+  Maybe<protocol::Array<protocol::Preload::PrerenderMismatchedHeaders>>
+      maybe_mismatched_headers;
+  if (mismatched_headers) {
+    auto mismatched_headers_internal = std::make_unique<
+        protocol::Array<protocol::Preload::PrerenderMismatchedHeaders>>();
+
+    for (const auto& mismatched_headers_it : *mismatched_headers) {
+      auto protocol_mismatched_headers =
+          protocol::Preload::PrerenderMismatchedHeaders::Create()
+              .SetHeaderName(mismatched_headers_it.header_name)
+              .Build();
+      if (mismatched_headers_it.initial_value) {
+        protocol_mismatched_headers->SetInitialValue(
+            mismatched_headers_it.initial_value.value());
+      }
+      if (mismatched_headers_it.activation_value) {
+        protocol_mismatched_headers->SetActivationValue(
+            mismatched_headers_it.activation_value.value());
+      }
+      mismatched_headers_internal->push_back(
+          std::move(protocol_mismatched_headers));
+    }
+    maybe_mismatched_headers = std::move(mismatched_headers_internal);
+  }
+
   if (PreloadingTriggeringOutcomeSupportedByPrerender(status)) {
     frontend_->PrerenderStatusUpdated(
         std::move(preloading_attempt_key),
         PreloadingTriggeringOutcomeToProtocol(status),
         std::move(protocol_prerender_status),
-        std::move(protocol_disallowed_mojo_interface));
+        std::move(protocol_disallowed_mojo_interface),
+        std::move(maybe_mismatched_headers));
   }
 }
 

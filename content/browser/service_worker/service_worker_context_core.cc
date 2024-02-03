@@ -579,7 +579,7 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserContext* browser_context = wrapper_->browser_context();
-  DCHECK(browser_context);
+  CHECK(browser_context);
   if (!GetContentClient()->browser()->MayDeleteServiceWorkerRegistration(
           scope, browser_context)) {
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorDisallowed);
@@ -755,6 +755,15 @@ ServiceWorkerContextCore::PopNextWarmUpRequest() {
   warm_up_requests_.pop_back();
   BeginProcessingWarmingUp();
   return request;
+}
+
+bool ServiceWorkerContextCore::IsWaitingForWarmUp(
+    const blink::StorageKey& key) const {
+  return std::find_if(
+             warm_up_requests_.begin(), warm_up_requests_.end(), [&](auto& it) {
+               const blink::StorageKey& warm_up_request_key = std::get<1>(it);
+               return key == warm_up_request_key;
+             }) != warm_up_requests_.end();
 }
 
 void ServiceWorkerContextCore::RegistrationComplete(

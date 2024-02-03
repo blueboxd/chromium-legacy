@@ -88,6 +88,28 @@ public class MultiWindowUtils implements ActivityStateListener {
         int MULTI_WINDOW = 1;
     }
 
+    @IntDef({
+        InstanceAllocationType.DEFAULT,
+        InstanceAllocationType.EXISTING_INSTANCE_UNMAPPED_TASK,
+        InstanceAllocationType.EXISTING_INSTANCE_MAPPED_TASK,
+        InstanceAllocationType.PREFER_NEW_INSTANCE_NEW_TASK,
+        InstanceAllocationType.PREFER_NEW_INVALID_INSTANCE,
+        InstanceAllocationType.NEW_INSTANCE_NEW_TASK,
+        InstanceAllocationType.EXISTING_INSTANCE_NEW_TASK,
+        InstanceAllocationType.INVALID_INSTANCE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface InstanceAllocationType {
+        int DEFAULT = 0;
+        int EXISTING_INSTANCE_UNMAPPED_TASK = 1;
+        int EXISTING_INSTANCE_MAPPED_TASK = 2;
+        int PREFER_NEW_INSTANCE_NEW_TASK = 3;
+        int PREFER_NEW_INVALID_INSTANCE = 4;
+        int NEW_INSTANCE_NEW_TASK = 5;
+        int EXISTING_INSTANCE_NEW_TASK = 6;
+        int INVALID_INSTANCE = 7;
+    }
+
     protected MultiWindowUtils() {
         mMultiInstanceApi31Enabled = isMultiInstanceApi31Enabled();
     }
@@ -725,5 +747,24 @@ public class MultiWindowUtils implements ActivityStateListener {
      */
     public static void launchIntentInInstance(Intent intent, int instanceId) {
         MultiInstanceManagerApi31.launchIntentInInstance(intent, instanceId);
+    }
+
+    /**
+     * Determine whether a newly created ChromeTabbedActivity was allocated a new window ID. This
+     * method was introduced for the sole purpose of investigation/logging of the issue in the
+     * linked bug. It is expected that a valid new window ID is allocated in this scenario iff the
+     * following conditions are met: 1. At least 1 instance of Chrome is running. 2. The total
+     * number of currently persisted instances is the same as the number of running Chrome
+     * instances; it is possible that fewer instances are actively running at a given time, in which
+     * case the allocated window ID will be for one of the "restored" instances. TODO
+     * (crbug.com/1484026): Cleanup this method after the issue is resolved.
+     *
+     * @return {@code true} if a new instance will be used, {@code false} otherwise.
+     */
+    public static boolean willUseNewInstance() {
+        int runningInstanceCount =
+                MultiInstanceManagerApi31.getWindowIdsOfRunningTabbedActivities().size();
+        int instanceCount = getInstanceCount();
+        return runningInstanceCount >= 1 && instanceCount == runningInstanceCount;
     }
 }

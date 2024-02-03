@@ -245,41 +245,28 @@ class TestImporter(object):
 
         if try_results and self.git_cl.some_failed(try_results):
             self.fetch_new_expectations_and_baselines()
-            # Update metadata after baselines so that `rebaseline-cl` does not
-            # complain about uncommitted files. `update-metadata` has a similar
-            # but more fine-grained check.
-            self.expectations_updater.update_metadata()
-            if self.project_git.has_working_directory_changes():
-                # Skip slow and timeout tests so that presubmit check passes
-                port = self.host.port_factory.get()
-                if self.expectations_updater.skip_slow_timeout_tests(port):
-                    path = port.path_to_generic_test_expectations_file()
-                    self.project_git.add_list([path])
+            # Skip slow and timeout tests so that presubmit check passes
+            port = self.host.port_factory.get()
+            if self.expectations_updater.skip_slow_timeout_tests(port):
+                path = port.path_to_generic_test_expectations_file()
+                self.project_git.add_list([path])
 
-                self._generate_manifest()
-                message = 'Update test expectations and baselines.'
+            self._generate_manifest()
+            message = 'Update test expectations and baselines.'
+            if self.project_git.has_working_directory_changes():
                 self._commit_changes(message)
-                self._upload_patchset(message)
+            # Even if we didn't commit anything here, we may still upload
+            # `TestExpectations`, which are committed earlier (before
+            # rebaselining).
+            self._upload_patchset(message)
         return True
 
     def _trigger_try_jobs(self):
-        _log.info('Triggering try jobs for updating expectations.')
-        rebaselining_builders = self.host.builders.builders_for_rebaselining()
-        wptrunner_builders = {
-            builder
-            for builder in self.host.builders.all_try_builder_names()
-            if self.host.builders.has_wptrunner_steps(builder)
-        }
-        if rebaselining_builders:
-            _log.info('For rebaselining:')
-            for builder in sorted(rebaselining_builders):
-                _log.info('  %s', builder)
-        if wptrunner_builders:
-            _log.info('For updating WPT metadata:')
-            for builder in sorted(wptrunner_builders):
-                _log.info('  %s', builder)
-        self.git_cl.trigger_try_jobs(rebaselining_builders
-                                     | wptrunner_builders)
+        builders = self.host.builders.builders_for_rebaselining()
+        _log.info('Triggering try jobs for updating expectations:')
+        for builder in sorted(builders):
+            _log.info(f'  {builder}')
+        self.git_cl.trigger_try_jobs(builders)
 
     def run_commit_queue_for_cl(self):
         """Triggers CQ and either commits or aborts; returns True on success."""
@@ -641,9 +628,8 @@ class TestImporter(object):
         # If this starts blocking the importer unnecessarily, revert
         # https://chromium-review.googlesource.com/c/chromium/src/+/2451504
         # Try linux-blink-rel to make sure no breakage in webdriver tests
-        description += (
-            'Cq-Include-Trybots: luci.chromium.try:linux-wpt-identity-fyi-rel,'
-            'linux-wpt-input-fyi-rel,linux-blink-rel')
+        for builder in ['linux-blink-rel', 'linux-wpt-chromium-rel']:
+            description += f'Cq-Include-Trybots: luci.chromium.try:{builder}\n'
 
         return description
 

@@ -141,7 +141,7 @@ void KeyframeEffect::RemoveFromTicking() {
   is_ticking_ = false;
   // Resetting last_tick_time_ here ensures that calling ::UpdateState
   // before ::Animate doesn't start a keyframe model.
-  last_tick_time_ = absl::nullopt;
+  last_tick_time_ = std::nullopt;
   animation_->RemoveFromTicking();
 }
 
@@ -151,7 +151,7 @@ void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
 
   // Animate hasn't been called, this happens if an element has been added
   // between the Commit and Draw phases.
-  if (last_tick_time_ == absl::nullopt || awaiting_deletion_) {
+  if (last_tick_time_ == std::nullopt || awaiting_deletion_) {
     start_ready_keyframe_models = false;
   }
 
@@ -251,10 +251,20 @@ void KeyframeEffect::AddKeyframeModel(
       keyframe_models(), [&](const auto& existing_keyframe_model) {
         auto* cc_existing_keyframe_model =
             KeyframeModel::ToCcKeyframeModel(existing_keyframe_model.get());
-        return keyframe_model->TargetProperty() ==
-                   existing_keyframe_model->TargetProperty() &&
-               cc_keyframe_model->group() ==
-                   cc_existing_keyframe_model->group();
+        bool same_group_and_target =
+            keyframe_model->TargetProperty() ==
+                existing_keyframe_model->TargetProperty() &&
+            cc_keyframe_model->group() == cc_existing_keyframe_model->group();
+        // Keyframe models in the same group might target the same property
+        // if one or both is an outgoing animation (i.e. about to be
+        // removed).
+        bool both_active =
+            cc_keyframe_model->affects_active_elements() &&
+            cc_existing_keyframe_model->affects_active_elements();
+        bool both_pending =
+            cc_keyframe_model->affects_pending_elements() &&
+            cc_existing_keyframe_model->affects_pending_elements();
+        return same_group_and_target && (both_active || both_pending);
       }));
 
   if (keyframe_model->TargetProperty() == TargetProperty::SCROLL_OFFSET) {
@@ -389,6 +399,13 @@ bool KeyframeEffect::DispatchAnimationEventToKeyframeModel(
   bool dispatched = false;
   switch (event.type) {
     case AnimationEvent::Type::kStarted:
+      if (!keyframe_model) {
+        KeyframeModel* replacement = KeyframeModel::ToCcKeyframeModel(
+            GetKeyframeModel(event.target_property));
+        if (replacement && replacement->group() == event.group_id) {
+          keyframe_model = replacement;
+        }
+      }
       if (keyframe_model && keyframe_model->needs_synchronized_start_time()) {
         keyframe_model->set_needs_synchronized_start_time(false);
         if (!keyframe_model->has_set_start_time())
@@ -638,7 +655,7 @@ void KeyframeEffect::PushNewKeyframeModelsToImplThread(
         !ScrollOffsetAnimationCurve::ToScrollOffsetAnimationCurve(
              keyframe_model->curve())
              ->HasSetInitialValue()) {
-      absl::optional<gfx::PointF> current_scroll_offset;
+      std::optional<gfx::PointF> current_scroll_offset;
       // If the scroller was already composited, prefer using its current scroll
       // offset.
       current_scroll_offset = keyframe_effect_impl->ScrollOffsetForAnimation();
@@ -700,7 +717,9 @@ void KeyframeEffect::RemoveKeyframeModelsCompletedOnMainThread(
     element_animations_->SetNeedsPushProperties();
 }
 
-void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
+void KeyframeEffect::PushPropertiesTo(
+    KeyframeEffect* keyframe_effect_impl,
+    std::optional<base::TimeTicks> replaced_start_time) {
   if (!needs_push_properties_)
     return;
   needs_push_properties_ = false;
@@ -729,6 +748,12 @@ void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
   if (!has_any_keyframe_model() &&
       !keyframe_effect_impl->has_any_keyframe_model())
     return;
+
+  if (replaced_start_time) {
+    for (auto& km : keyframe_models()) {
+      km->set_start_time(*replaced_start_time);
+    }
+  }
 
   // Synchronize the main-thread and impl-side keyframe model lists, removing
   // aborted KeyframeModels and pushing any new animations.
@@ -1063,7 +1088,7 @@ void KeyframeEffect::MarkFinishedKeyframeModels(
     element_animations_->UpdateClientAnimationState();
 }
 
-absl::optional<gfx::PointF> KeyframeEffect::ScrollOffsetForAnimation() const {
+std::optional<gfx::PointF> KeyframeEffect::ScrollOffsetForAnimation() const {
   return element_animations_->ScrollOffsetForAnimation();
 }
 

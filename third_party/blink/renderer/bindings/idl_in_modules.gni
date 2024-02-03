@@ -244,8 +244,6 @@ static_idl_files_in_modules = [
   "//third_party/blink/renderer/modules/encryptedmedia/media_keys_get_status_for_policy.idl",
   "//third_party/blink/renderer/modules/encryptedmedia/media_keys_policy.idl",
   "//third_party/blink/renderer/modules/encryptedmedia/navigator_request_media_key_system_access.idl",
-  "//third_party/blink/renderer/modules/environment_integrity/environment_integrity.idl",
-  "//third_party/blink/renderer/modules/environment_integrity/navigator_environment_integrity.idl",
   "//third_party/blink/renderer/modules/eventsource/event_source.idl",
   "//third_party/blink/renderer/modules/eventsource/event_source_init.idl",
   "//third_party/blink/renderer/modules/eyedropper/color_selection_options.idl",
@@ -1246,6 +1244,23 @@ if (target_os != "android") {
     "//third_party/blink/renderer/modules/direct_sockets/tcp_socket.idl",
     "//third_party/blink/renderer/modules/direct_sockets/udp_message.idl",
     "//third_party/blink/renderer/modules/direct_sockets/udp_socket.idl",
+  ]
+}
+
+# Printing
+# This uses target_os rather than current_os (which is what is_android is set
+# from) for the case of generating the v8 context snapshot for Android. When
+# generating the snapshot for Android, Blink is compiled with
+# current_os = "linux" and target_os = "android". Using target_os is necessary as
+# we need to compile in the same way as would happen when current_os = "android".
+if (target_os != "android") {
+  static_idl_files_in_modules += [
+    "//third_party/blink/renderer/modules/printing/navigator_printing.idl",
+    "//third_party/blink/renderer/modules/printing/web_printer.idl",
+    "//third_party/blink/renderer/modules/printing/web_printer_attributes.idl",
+    "//third_party/blink/renderer/modules/printing/web_printing_enums.idl",
+    "//third_party/blink/renderer/modules/printing/web_printing_manager.idl",
+    "//third_party/blink/renderer/modules/printing/web_print_job.idl",
   ]
 }
 

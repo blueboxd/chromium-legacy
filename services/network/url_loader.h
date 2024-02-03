@@ -82,6 +82,7 @@ constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
 class KeepaliveStatisticsRecorder;
 class NetToMojoPendingBuffer;
 class ScopedThrottlingToken;
+class SlopBucket;
 class URLLoaderFactory;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
@@ -487,7 +488,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   void ScheduleStart();
   void ReadMore();
-  void DidRead(int num_bytes, bool completed_synchronously);
+  void DidRead(int num_bytes,
+               bool completed_synchronously,
+               bool into_slop_bucket);
   void NotifyCompleted(int error_code);
   void OnMojoDisconnect();
   void OnResponseBodyStreamConsumerClosed(MojoResult result);
@@ -593,7 +596,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   const int keepalive_request_size_;
   const bool keepalive_;
   const bool do_not_prompt_for_login_;
-  const bool is_ad_tagged_;
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Receiver<mojom::URLLoader> receiver_;
   mojo::Receiver<mojom::AuthChallengeResponder>
@@ -778,6 +780,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   std::vector<network::mojom::CookieAccessDetailsPtr> cookie_access_details_;
 
   const bool provide_data_use_updates_;
+
+  // A SlopBucket is used as temporary storage for response body data from
+  // high-priority requests that cannot yet be written to the mojo data pipe
+  // because it is full.
+  std::unique_ptr<SlopBucket> slop_bucket_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 };

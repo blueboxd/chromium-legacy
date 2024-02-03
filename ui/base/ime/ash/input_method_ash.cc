@@ -389,17 +389,6 @@ void InputMethodAsh::OnFocus() {
   }
 }
 
-void InputMethodAsh::OnTouch(ui::EventPointerType pointerType) {
-  TextInputClient* client = GetTextInputClient();
-  if (!client || !IsTextInputClientFocused(client)) {
-    return;
-  }
-  TextInputMethod* engine = GetEngine();
-  if (engine) {
-    engine->OnTouch(pointerType);
-  }
-}
-
 void InputMethodAsh::OnBlur() {
   if (IMEBridge::Get() && IMEBridge::Get()->GetInputContextHandler() == this) {
     IMEBridge::Get()->SetInputContextHandler(nullptr);
@@ -501,22 +490,6 @@ gfx::Range InputMethodAsh::GetAutocorrectRange() {
   return GetTextInputClient()->GetAutocorrectRange();
 }
 
-gfx::Rect InputMethodAsh::GetAutocorrectCharacterBounds() {
-  if (IsTextInputTypeNone())
-    return gfx::Rect();
-  return GetTextInputClient()->GetAutocorrectCharacterBounds();
-}
-
-gfx::Rect InputMethodAsh::GetTextFieldBounds() {
-  if (IsTextInputTypeNone())
-    return gfx::Rect();
-  absl::optional<gfx::Rect> control_bounds;
-  absl::optional<gfx::Rect> selection_bounds;
-  GetTextInputClient()->GetActiveTextInputControlLayoutBounds(
-      &control_bounds, &selection_bounds);
-  return control_bounds ? *control_bounds : gfx::Rect();
-}
-
 void InputMethodAsh::SetAutocorrectRange(
     const gfx::Range& range,
     SetAutocorrectRangeDoneCallback callback) {
@@ -579,10 +552,8 @@ void InputMethodAsh::ConfirmComposition(bool reset_engine) {
     pending_composition_ = absl::nullopt;
     composition_changed_ = false;
   }
-  if (client &&
-      (client->HasCompositionText() ||
-       (base::FeatureList::IsEnabled(::features::kAlwaysConfirmComposition) &&
-        client->SupportsAlwaysConfirmComposition()))) {
+  if (client && (client->HasCompositionText() ||
+                 client->SupportsAlwaysConfirmComposition())) {
     const size_t characters_committed =
         client->ConfirmCompositionText(/*keep_selection*/ true);
     typing_session_manager_.CommitCharacters(characters_committed);
@@ -627,13 +598,10 @@ void InputMethodAsh::UpdateContextFocusState() {
 
   IMEBridge::Get()->SetCurrentInputContext(GetInputContext());
 
-  if (base::FeatureList::IsEnabled(
-          features::kInputMethodDeadKeyFixForTerminal)) {
-    TextInputClient* client = GetTextInputClient();
-    focused_url_ = client && !IsPasswordOrNoneInputFieldFocused()
-                       ? client->GetTextEditingContext().page_url
-                       : GURL();
-  }
+  TextInputClient* client = GetTextInputClient();
+  focused_url_ = client && !IsPasswordOrNoneInputFieldFocused()
+                     ? client->GetTextEditingContext().page_url
+                     : GURL();
 }
 
 ui::EventDispatchDetails InputMethodAsh::ProcessKeyEventPostIME(
@@ -717,10 +685,8 @@ ui::EventDispatchDetails InputMethodAsh::ProcessFilteredKeyPressEvent(
     // TODO(b/289319217): Investigate if we need to distinguish between a dead
     // key that is handled by the character composer or is handled by the input
     // method.
-    // TODO(b/289319217): Expand fix to all URLs once the fix looks stable.
-    if (base::FeatureList::IsEnabled(
-            features::kInputMethodDeadKeyFixForTerminal) &&
-        focused_url_.is_valid() && IsTerminalOrCrosh(focused_url_) &&
+    if ((base::FeatureList::IsEnabled(features::kInputMethodDeadKeyFix) ||
+         (focused_url_.is_valid() && IsTerminalOrCrosh(focused_url_))) &&
         event->GetDomKey().IsDeadKey()) {
       return DispatchKeyEventPostIME(event);
     }
@@ -1136,20 +1102,6 @@ bool InputMethodAsh::IsPasswordOrNoneInputFieldFocused() {
 bool InputMethodAsh::HasCompositionText() {
   TextInputClient* client = GetTextInputClient();
   return client && client->HasCompositionText();
-}
-
-std::u16string InputMethodAsh::GetCompositionText() {
-  TextInputClient* client = GetTextInputClient();
-  if (!client) {
-    return u"";
-  }
-
-  gfx::Range composition_range;
-  client->GetCompositionTextRange(&composition_range);
-  std::u16string composition_text;
-  client->GetTextFromRange(composition_range, &composition_text);
-
-  return composition_text;
 }
 
 ukm::SourceId InputMethodAsh::GetClientSourceForMetrics() {

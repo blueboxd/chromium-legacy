@@ -50,6 +50,8 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -61,6 +63,7 @@ import org.chromium.chrome.browser.multiwindow.MultiInstanceManagerApi31UnitTest
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -153,6 +156,7 @@ public class MultiInstanceManagerApi31UnitTest {
 
     @Mock Profile mProfile;
     @Mock Profile mIncognitoProfile;
+    @Mock ProfileProvider mProfileProvider;
 
     @Mock TabModelSelectorBase mTabModelSelector;
     @Mock TabModel mNormalTabModel;
@@ -185,6 +189,8 @@ public class MultiInstanceManagerApi31UnitTest {
     private int mIncognitoTabCount;
 
     private Context mContextTabMove;
+    private OneshotSupplierImpl<ProfileProvider> mProfileProviderSupplier =
+            new OneshotSupplierImpl<>();
 
     private static class TestMultiInstanceManagerApi31 extends MultiInstanceManagerApi31 {
         // Running tasks containing Chrome activity ~ ActivityManager.getAppTasks()
@@ -336,6 +342,7 @@ public class MultiInstanceManagerApi31UnitTest {
         when(mActivityManager.getAppTasks()).thenReturn(new ArrayList());
         when(mTabModelOrchestratorSupplier.get()).thenReturn(mTabModelOrchestrator);
 
+        mProfileProviderSupplier.set(mProfileProvider);
         when(mIncognitoProfile.isOffTheRecord()).thenReturn(true);
 
         mActivityPool =
@@ -354,10 +361,10 @@ public class MultiInstanceManagerApi31UnitTest {
                 new TabModelSelectorFactory() {
                     @Override
                     public TabModelSelector buildSelector(
-                            Activity activity,
+                            Context context,
+                            OneshotSupplier<ProfileProvider> profileProviderSupplier,
                             TabCreatorManager tabCreatorManager,
-                            NextTabPolicySupplier nextTabPolicySupplier,
-                            int selectorIndex) {
+                            NextTabPolicySupplier nextTabPolicySupplier) {
                         return new MockTabModelSelector(mProfile, mIncognitoProfile, 0, 0, null);
                     }
                 });
@@ -874,13 +881,14 @@ public class MultiInstanceManagerApi31UnitTest {
     }
 
     private int allocInstanceIndex(int passedId, Activity activity, boolean preferNew) {
-        int index =
+        Pair<Integer, Integer> instanceIdInfo =
                 mMultiInstanceManager.allocInstanceId(passedId, activity.getTaskId(), preferNew);
+        int index = instanceIdInfo.first;
 
         // Does what TabModelOrchestrator.createTabModels() would do to simulate production code.
         Pair<Integer, TabModelSelector> pair =
                 TabWindowManagerSingleton.getInstance()
-                        .requestSelector(activity, null, null, index);
+                        .requestSelector(activity, mProfileProviderSupplier, null, null, index);
         if (pair == null) return INVALID_INSTANCE_ID;
 
         int instanceId = pair.first;

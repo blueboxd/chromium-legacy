@@ -4,7 +4,8 @@
 
 import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
 
-import {FeedbackContext, HelpContentList, HelpContentType, SearchRequest, SearchResponse} from './feedback_types.js';
+import {HelpContentList} from './feedback_types.js';
+import {FeedbackContext, HelpContentType, SearchRequest, SearchResponse} from './os_feedback_ui.mojom-webui.js';
 
 /**
  * @fileoverview
@@ -87,6 +88,7 @@ export const fakeFeedbackContext = {
   fromSettingsSearch: false,
   fromAutofill: false,
   autofillMetadata: '',
+  wifiDebugLogsAllowed: false,
   traceId: 1,
   categoryTag: 'MediaApp',
   hasLinkedCrossDevicePhone: false,
@@ -102,6 +104,7 @@ export const fakeEmptyFeedbackContext = {
   fromSettingsSearch: false,
   fromAutofill: false,
   autofillMetadata: '',
+  wifiDebugLogsAllowed: false,
   traceId: 0,
   hasLinkedCrossDevicePhone: false,
 };
@@ -119,6 +122,7 @@ export const fakeLoginFlowFeedbackContext = {
   fromSettingsSearch: false,
   fromAutofill: false,
   autofillMetadata: '',
+  wifiDebugLogsAllowed: false,
   traceId: 0,
   categoryTag: 'Login',
   hasLinkedCrossDevicePhone: false,
@@ -134,6 +138,7 @@ export const fakeInternalUserFeedbackContext = {
   fromSettingsSearch: true,
   fromAutofill: false,
   autofillMetadata: '',
+  wifiDebugLogsAllowed: false,
   traceId: 1,
   hasLinkedCrossDevicePhone: true,
 };
@@ -148,6 +153,7 @@ export const fakeFeedbackContextWithoutLinkedCrossDevicePhone = {
   fromSettingsSearch: true,
   fromAutofill: false,
   autofillMetadata: '',
+  wifiDebugLogsAllowed: false,
   traceId: 1,
   hasLinkedCrossDevicePhone: false,
 };

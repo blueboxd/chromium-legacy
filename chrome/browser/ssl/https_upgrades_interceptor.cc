@@ -190,9 +190,18 @@ HttpsUpgradesInterceptor::MaybeCreateInterceptor(
       !g_browser_process->profile_manager()->IsValidProfile(profile)) {
     return nullptr;
   }
+
   PrefService* prefs = profile->GetPrefs();
   bool https_first_mode_enabled =
       prefs && prefs->GetBoolean(prefs::kHttpsOnlyModeEnabled);
+
+  if (base::FeatureList::IsEnabled(features::kHttpsFirstModeIncognito)) {
+    if (profile->IsIncognitoProfile() && prefs &&
+        prefs->GetBoolean(prefs::kHttpsFirstModeIncognito)) {
+      https_first_mode_enabled = true;
+    }
+  }
+
   return std::make_unique<HttpsUpgradesInterceptor>(
       frame_tree_node_id, https_first_mode_enabled, navigation_ui_data);
 }
@@ -259,8 +268,8 @@ void HttpsUpgradesInterceptor::MaybeCreateLoader(
       security_interstitials::https_only_mode::HttpInterstitialState>();
   interstitial_state_->enabled_by_pref = http_interstitial_enabled_by_pref_;
   // StatefulSSLHostStateDelegate can be null during tests.
-  if (state && state->IsHttpsEnforcedForHost(
-                   tentative_resource_request.url.host(), storage_partition)) {
+  if (state && state->IsHttpsEnforcedForUrl(tentative_resource_request.url,
+                                            storage_partition)) {
     interstitial_state_->enabled_by_engagement_heuristic = true;
   }
 
@@ -527,8 +536,7 @@ void HttpsUpgradesInterceptor::MaybeCreateLoaderOnHstsQueryCompleted(
           HttpsFirstModeServiceFactory::GetForProfile(profile);
       // HttpsFirstModeService can be null in tests.
       if (hfm_service) {
-        hfm_service->MaybeEnableHttpsFirstModeForUser(
-            /*add_fallback_entry=*/true);
+        hfm_service->RecordHttpsUpgradeFallbackEvent();
       }
     }
 
@@ -669,8 +677,7 @@ bool HttpsUpgradesInterceptor::MaybeCreateLoaderForResponse(
         HttpsFirstModeServiceFactory::GetForProfile(profile);
     // HttpsFirstModeService can be null in tests.
     if (hfm_service) {
-      hfm_service->MaybeEnableHttpsFirstModeForUser(
-          /*add_fallback_entry=*/true);
+      hfm_service->RecordHttpsUpgradeFallbackEvent();
     }
   }
 

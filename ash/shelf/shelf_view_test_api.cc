@@ -167,4 +167,11 @@ bool ShelfViewTestAPI::IsSeparatorVisible() const {
   return shelf_view_->separator_->GetVisible();
 }
 
+bool ShelfViewTestAPI::HasPendingPromiseAppRemoval(
+    const std::string& promise_app_id) const {
+  auto found = shelf_view_->pending_promise_apps_removals_.find(promise_app_id);
+
+  return found != shelf_view_->pending_promise_apps_removals_.end();
+}
+
 }  // namespace ash

@@ -210,11 +210,10 @@ TEST_F(
 
 [['AboutPage', 'os_about_page_tests.js'],
  ['ApnDetailDialog', 'apn_detail_dialog_test.js'],
- // TODO(crbug.com/1497312): Enable the ApnSubpage test.
- // [
- //   'ApnSubpage', 'apn_subpage_tests.js',
- //   {enabled: ['ash::features::kApnRevamp']}
- // ],
+ [
+   'ApnSubpage', 'apn_subpage_tests.js',
+   {enabled: ['ash::features::kApnRevamp']}
+ ],
  ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
  ['AppManagementManagedApps', 'app_management/managed_apps_test.js'],
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
@@ -230,12 +229,20 @@ TEST_F(
  ['DateTimePageTimezoneSubpage', 'date_time_page/timezone_subpage_test.js'],
  ['DevicePageAudioPage', 'device_page/audio_page_test.js'],
  [
+   'DevicePageCustomizeButtonDropdownItem',
+   'device_page/customize_button_dropdown_item_test.js'
+ ],
+ [
    'DevicePageCustomizeButtonRow', 'device_page/customize_button_row_test.js', {
      enabled: [
        'ash::features::kPeripheralCustomization',
        'ash::features::kInputDeviceSettingsSplit'
      ]
    }
+ ],
+ [
+   'DevicePageCustomizeButtonSelect',
+   'device_page/customize_button_select_test.js'
  ],
  [
    'DevicePageCustomizeButtonsSubsection',
@@ -448,7 +455,7 @@ TEST_F(
  ],
  [
    'InternetPageInternetDetailSubpage',
-   'internet_page/internet_detail_subpage_tests.js', {
+   'internet_page/internet_detail_subpage_test.js', {
      enabled: [
        'ash::features::kApnRevamp',
        'ash::features::kPasspointARCSupport',
@@ -691,6 +698,10 @@ TEST_F(
    'os_apps_page/app_management_page/app_item_test.js'
  ],
  [
+   'OsAppsPageAppManagementPageAppLanguageItem',
+   'os_apps_page/app_management_page/app_language_item_test.js'
+ ],
+ [
    'OsAppsPageAppManagementPage',
    'os_apps_page/app_management_page/app_management_page_test.js'
  ],
@@ -893,6 +904,20 @@ TEST_F(
  [
    'OsPrivacyPageManageUsersSubpage',
    'os_privacy_page/manage_users_subpage_test.js'
+ ],
+ [
+   'OsPrivacyPagePrivacyHubAppPermissionRow',
+   'os_privacy_page/privacy_hub_app_permission_row_test.js'
+ ],
+ [
+   'OsPrivacyPagePrivacyHubCameraSubpage',
+   'os_privacy_page/privacy_hub_camera_subpage_test.js',
+   {
+     enabled: [
+       'ash::features::kCrosPrivacyHubV0',
+       'ash::features::kCrosPrivacyHubAppPermissions'
+     ]
+   },
  ],
  [
    'OsPrivacyPagePrivacyHubMicrophoneSubpage',

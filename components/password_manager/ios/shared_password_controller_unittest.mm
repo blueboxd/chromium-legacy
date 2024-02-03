@@ -113,10 +113,7 @@ class MockPasswordManager : public PasswordManagerInterface {
                autofill::FieldRendererId,
                const std::u16string&),
               (override));
-  MOCK_METHOD(void,
-              OnPasswordNoLongerGenerated,
-              (PasswordManagerDriver*),
-              (override));
+  MOCK_METHOD(void, OnPasswordNoLongerGenerated, (), (override));
   MOCK_METHOD(void,
               OnPasswordFormRemoved,
               (PasswordManagerDriver*,
@@ -521,12 +518,14 @@ TEST_F(SharedPasswordControllerTest, ReturnsSuggestionsIfAvailable) {
             typedValue:@""
                frameID:kTestFrameID];
   FormSuggestion* suggestion = [FormSuggestion
-      suggestionWithValue:@"value"
-       displayDescription:@"display-description"
-                     icon:nil
-              popupItemId:autofill::PopupItemId::kAutocompleteEntry
-        backendIdentifier:nil
-           requiresReauth:NO];
+             suggestionWithValue:@"value"
+              displayDescription:@"display-description"
+                            icon:nil
+                     popupItemId:autofill::PopupItemId::kAutocompleteEntry
+               backendIdentifier:nil
+                  requiresReauth:NO
+      acceptanceA11yAnnouncement:nil
+                        metadata:{.is_single_username_form = true}];
 
   const std::string web_frame_id = SysNSStringToUTF8(kTestFrameID);
   auto web_frame =
@@ -554,6 +553,9 @@ TEST_F(SharedPasswordControllerTest, ReturnsSuggestionsIfAvailable) {
                completionHandler:^(NSArray<FormSuggestion*>* suggestions,
                                    id<FormSuggestionProvider> delegate) {
                  EXPECT_EQ(1UL, suggestions.count);
+                 // Verify that the metadata is correctly copied over.
+                 EXPECT_TRUE([suggestions firstObject]
+                                 .metadata.is_single_username_form);
                  EXPECT_EQ(delegate, controller_);
                  completion_was_called = YES;
                }];

@@ -66,8 +66,8 @@ const MockTransaction kSimpleGET_Transaction = {
     absl::nullopt,
     absl::nullopt,
     TEST_MODE_NORMAL,
-    nullptr,
-    nullptr,
+    MockTransactionHandler(),
+    MockTransactionReadHandler(),
     nullptr,
     0,
     0,
@@ -90,8 +90,8 @@ const MockTransaction kSimplePOST_Transaction = {
     absl::nullopt,
     absl::nullopt,
     TEST_MODE_NORMAL,
-    nullptr,
-    nullptr,
+    MockTransactionHandler(),
+    MockTransactionReadHandler(),
     nullptr,
     0,
     0,
@@ -115,8 +115,8 @@ const MockTransaction kTypicalGET_Transaction = {
     absl::nullopt,
     absl::nullopt,
     TEST_MODE_NORMAL,
-    nullptr,
-    nullptr,
+    MockTransactionHandler(),
+    MockTransactionReadHandler(),
     nullptr,
     0,
     0,
@@ -140,8 +140,8 @@ const MockTransaction kETagGET_Transaction = {
     absl::nullopt,
     absl::nullopt,
     TEST_MODE_NORMAL,
-    nullptr,
-    nullptr,
+    MockTransactionHandler(),
+    MockTransactionReadHandler(),
     nullptr,
     0,
     0,
@@ -164,8 +164,8 @@ const MockTransaction kRangeGET_Transaction = {
     absl::nullopt,
     absl::nullopt,
     TEST_MODE_NORMAL,
-    nullptr,
-    nullptr,
+    MockTransactionHandler(),
+    MockTransactionReadHandler(),
     nullptr,
     0,
     0,
@@ -273,7 +273,7 @@ void TestTransactionConsumer::DidFinish(int result) {
 
 void TestTransactionConsumer::Read() {
   state_ = State::kReading;
-  read_buf_ = base::MakeRefCounted<IOBuffer>(1024);
+  read_buf_ = base::MakeRefCounted<IOBufferWithSize>(1024);
   int result =
       trans_->Read(read_buf_.get(), 1024,
                    base::BindOnce(&TestTransactionConsumer::OnIOComplete,
@@ -376,7 +376,7 @@ int MockNetworkTransaction::Read(net::IOBuffer* buf,
 
   if (OK == num) {
     if (read_handler_) {
-      num = (*read_handler_)(content_length_, data_cursor_, buf, buf_len);
+      num = read_handler_.Run(content_length_, data_cursor_, buf, buf_len);
       data_cursor_ += num;
     } else {
       int data_len = static_cast<int>(data_.size());
@@ -501,10 +501,10 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
     HttpRequestInfo new_request = *request;
     modify_request_headers_callback_.Run(&new_request.extra_headers);
     if (t->handler) {
-      (t->handler)(&new_request, &resp_status, &resp_headers, &resp_data);
+      t->handler.Run(&new_request, &resp_status, &resp_headers, &resp_data);
     }
   } else if (t->handler) {
-    (t->handler)(request, &resp_status, &resp_headers, &resp_data);
+    t->handler.Run(request, &resp_status, &resp_headers, &resp_data);
   }
   if (t->read_handler)
     read_handler_ = t->read_handler;
@@ -668,7 +668,7 @@ int ReadTransaction(HttpTransaction* trans, std::string* result) {
   std::string content;
   do {
     TestCompletionCallback callback;
-    scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(256);
+    auto buf = base::MakeRefCounted<IOBufferWithSize>(256);
     rv = trans->Read(buf.get(), 256, callback.callback());
     if (rv == ERR_IO_PENDING) {
       rv = callback.WaitForResult();

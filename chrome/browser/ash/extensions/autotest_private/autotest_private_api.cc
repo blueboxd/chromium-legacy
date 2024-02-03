@@ -70,7 +70,7 @@
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/bind_post_task.h"
@@ -2070,8 +2070,8 @@ AutotestPrivateGetLacrosInfoFunction::ToLacrosState(
       return api::autotest_private::LacrosState::kUnavailable;
     case crosapi::BrowserManager::State::STOPPED:
       return api::autotest_private::LacrosState::kStopped;
-    case crosapi::BrowserManager::State::CREATING_LOG_FILE:
-      return api::autotest_private::LacrosState::kCreatingLogFile;
+    case crosapi::BrowserManager::State::PREPARING_FOR_LAUNCH:
+      return api::autotest_private::LacrosState::kPreparingForLaunch;
     case crosapi::BrowserManager::State::PRE_LAUNCHED:
       return api::autotest_private::LacrosState::kPreLaunched;
     case crosapi::BrowserManager::State::STARTING:
@@ -6676,7 +6676,6 @@ AutotestPrivateIsFeatureEnabledFunction::Run() {
   static const base::Feature* const kAllowList[] = {
       // clang-format off
       &ash::features::kPrivacyIndicators,
-      &ash::features::kQsRevamp,
       &ash::features::kVideoConference,
       &chromeos::features::kJelly,
       &kDisabledFeatureForTest,
@@ -6773,8 +6772,19 @@ AutotestPrivateIsFieldTrialActiveFunction::Run() {
       api::autotest_private::IsFieldTrialActive::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  return RespondNow(
-      WithArguments(base::FieldTrialList::IsTrialActive(params->feature_name)));
+  base::FieldTrial::ActiveGroups active_groups;
+  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+
+  bool found = false;
+  for (base::FieldTrial::ActiveGroup field_trial : active_groups) {
+    if (field_trial.trial_name == params->trial_name &&
+        field_trial.group_name == params->group_name) {
+      found = true;
+      break;
+    }
+  }
+
+  return RespondNow(WithArguments(found));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

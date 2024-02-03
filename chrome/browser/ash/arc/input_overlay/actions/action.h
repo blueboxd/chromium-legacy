@@ -62,7 +62,7 @@ class Action {
 
   virtual bool ParseFromJson(const base::Value::Dict& value);
   // Used to create an action from UI.
-  virtual bool InitByAddingNewAction();
+  virtual bool InitByAddingNewAction(const gfx::Point& target_pos);
   virtual void InitByChangingActionType(Action* action);
 
   bool ParseUserAddedActionFromProto(const ActionProto& proto);
@@ -130,6 +130,10 @@ class Action {
   // For default action, it is marked as deleted. For user action, the class
   // instance is deleted.
   bool IsDeleted();
+
+  // Returns true if this action has event translated to touch events and not
+  // released yet.
+  bool IsActive();
 
   InputElement* current_input() const { return current_input_.get(); }
   InputElement* original_input() const { return original_input_.get(); }

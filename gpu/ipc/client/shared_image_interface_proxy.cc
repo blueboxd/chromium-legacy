@@ -7,7 +7,6 @@
 #include "base/bits.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -16,7 +15,10 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/gpu_fence.h"
-#include "ui/gfx/gpu_memory_buffer.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "ui/gfx/win/d3d_shared_fence.h"
+#endif
 
 namespace gpu {
 namespace {
@@ -123,16 +125,17 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage,
     base::StringPiece debug_label,
-    gfx::BufferUsage buffer_usage) {
+    gfx::BufferUsage buffer_usage,
+    gfx::GpuMemoryBufferHandle* handle_to_populate) {
   // Create a GMB here first on IO thread via sync IPC. Then create a mailbox
   // from it.
-  gfx::GpuMemoryBufferHandle buffer_handle;
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
-    host_->CreateGpuMemoryBuffer(size, format, buffer_usage, &buffer_handle);
+    host_->CreateGpuMemoryBuffer(size, format, buffer_usage,
+                                 handle_to_populate);
   }
 
-  if (buffer_handle.is_null()) {
+  if (handle_to_populate->is_null()) {
     LOG(ERROR) << "Buffer handle is null. Not creating a mailbox from it.";
     return Mailbox();
   }
@@ -145,20 +148,9 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   // GpuChannelMessageFilter::CreateGpuMemoryBuffer() call in service side can
   // itself can post a task from IO thread to gpu main thread to create a
   // mailbox from handle and then return the handle back to SIIProxy.
-  auto mailbox =
-      CreateSharedImage(format, size, color_space, surface_origin, alpha_type,
-                        usage, std::move(debug_label), buffer_handle.Clone());
-
-  auto gpu_memory_buffer =
-      SharedImageInterface::CreateGpuMemoryBufferForUseByScopedMapping(
-          GpuMemoryBufferHandleInfo(std::move(buffer_handle), format, size,
-                                    buffer_usage));
-  // Cache the buffer in the map.
-  {
-    base::AutoLock lock(lock_);
-    mailbox_infos_[mailbox].gpu_memory_buffer = std::move(gpu_memory_buffer);
-  }
-  return mailbox;
+  return CreateSharedImage(format, size, color_space, surface_origin,
+                           alpha_type, usage, std::move(debug_label),
+                           handle_to_populate->Clone());
 }
 
 Mailbox SharedImageInterfaceProxy::CreateSharedImage(
@@ -307,11 +299,44 @@ void SharedImageInterfaceProxy::CopyToGpuMemoryBuffer(
         std::move(dependencies));
   }
 }
+
+void SharedImageInterfaceProxy::UpdateSharedImage(
+    const SyncToken& sync_token,
+    scoped_refptr<gfx::D3DSharedFence> d3d_shared_fence,
+    const Mailbox& mailbox) {
+  base::AutoLock lock(lock_);
+
+  std::vector<SyncToken> dependencies =
+      GenerateDependenciesFromSyncToken(std::move(sync_token), host_);
+  // Register fence in gpu process in first update.
+  auto [token_it, inserted] =
+      registered_fence_tokens_.insert(d3d_shared_fence->GetDXGIHandleToken());
+  if (inserted) {
+    gfx::GpuFenceHandle fence_handle;
+    fence_handle.Adopt(d3d_shared_fence->CloneSharedHandle());
+
+    last_flush_id_ = host_->EnqueueDeferredMessage(
+        mojom::DeferredRequestParams::NewSharedImageRequest(
+            mojom::DeferredSharedImageRequest::NewRegisterDxgiFence(
+                mojom::RegisterDxgiFenceParams::New(
+                    mailbox, d3d_shared_fence->GetDXGIHandleToken(),
+                    std::move(fence_handle)))),
+        std::move(dependencies));
+  }
+
+  last_flush_id_ = host_->EnqueueDeferredMessage(
+      mojom::DeferredRequestParams::NewSharedImageRequest(
+          mojom::DeferredSharedImageRequest::NewUpdateDxgiFence(
+              mojom::UpdateDxgiFenceParams::New(
+                  mailbox, d3d_shared_fence->GetDXGIHandleToken(),
+                  d3d_shared_fence->GetFenceValue()))),
+      std::move(dependencies));
+}
 #endif  // BUILDFLAG(IS_WIN)
 
 void SharedImageInterfaceProxy::UpdateSharedImage(const SyncToken& sync_token,
                                                   const Mailbox& mailbox) {
-  UpdateSharedImage(sync_token, nullptr, mailbox);
+  UpdateSharedImage(sync_token, std::unique_ptr<gfx::GpuFence>(), mailbox);
 }
 
 void SharedImageInterfaceProxy::UpdateSharedImage(
@@ -626,18 +651,6 @@ void SharedImageInterfaceProxy::NotifyMailboxAdded(const Mailbox& mailbox,
                                                    uint32_t usage) {
   base::AutoLock lock(lock_);
   AddMailbox(mailbox, usage);
-}
-
-gfx::GpuMemoryBuffer* SharedImageInterfaceProxy::GetGpuMemoryBuffer(
-    const Mailbox& mailbox) {
-  base::AutoLock lock(lock_);
-  auto it = mailbox_infos_.find(mailbox);
-
-  // Mailbox for which query is made must be present. GMB must also be
-  // present as it should be populated while creating the mailbox.
-  CHECK(it != mailbox_infos_.end());
-  CHECK(it->second.gpu_memory_buffer);
-  return it->second.gpu_memory_buffer.get();
 }
 
 SharedImageInterfaceProxy::SharedImageInfo::SharedImageInfo() = default;

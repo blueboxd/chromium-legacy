@@ -84,8 +84,9 @@ base::Value::Dict PageNodeImplDescriber::DescribePageNodeData(
                PageNode::ToString(page_node_impl->embedding_type_));
   }
   result.Set("freezing_vote",
-             FreezingVoteToString(page_node_impl->freezing_vote()));
-  result.Set("resource_context", page_node_impl->resource_context().ToString());
+             FreezingVoteToString(page_node_impl->GetFreezingVote()));
+  result.Set("resource_context",
+             page_node_impl->GetResourceContext().ToString());
 
   base::Value::Dict estimates;
   estimates.Set(

@@ -813,6 +813,10 @@ public class ImeAdapterImpl
         if (mCursorAnchorInfoController != null) {
             mCursorAnchorInfoController.focusedNodeChanged(false);
         }
+        mStylusWritingImeCallback = null;
+        if (mWebContents.getStylusWritingHandler() != null) {
+            mWebContents.getStylusWritingHandler().onImeAdapterDestroyed();
+        }
     }
 
     /**
@@ -1092,8 +1096,7 @@ public class ImeAdapterImpl
         if (!ViewUtils.hasFocus(containerView)) ViewUtils.requestFocus(containerView);
 
         updateInputStateForStylusWriting();
-        return mWebContents.getStylusWritingHandler().requestStartStylusWriting(
-                getStylusWritingImeCallback());
+        return mWebContents.getStylusWritingHandler().requestStartStylusWriting();
     }
 
     @CalledByNative
@@ -1152,7 +1155,7 @@ public class ImeAdapterImpl
     }
 
     /** Lazily creates/returns a StylusWritingImeCallback object. */
-    private StylusWritingImeCallback getStylusWritingImeCallback() {
+    public StylusWritingImeCallback getStylusWritingImeCallback() {
         if (mStylusWritingImeCallback == null) {
             mStylusWritingImeCallback = new StylusWritingImeCallback() {
                 @Override

@@ -26,13 +26,11 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadingListUtils;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.components.power_bookmarks.PowerBookmarkType;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -105,27 +103,13 @@ class BookmarkBridge {
         BookmarkBridgeJni.get().getImageUrlForBookmark(mNativeBookmarkBridge, url, callback);
     }
 
-    /**
-     * @param tab Tab whose current URL is checked against.
-     * @return {@code true} if the current Tab URL has a bookmark associated with it. If the
-     *     bookmark backend is not loaded, return {@code false}.
-     */
-    public boolean hasBookmarkIdForTab(@Nullable Tab tab) {
-        ThreadUtils.assertOnUiThread();
-        if (mNativeBookmarkBridge == 0) return false;
-        return getUserBookmarkIdForTab(tab) != null;
-    }
-
-    /**
-     * @param tab Tab whose current URL is checked against.
-     * @return BookmarkId or {@link null} if bookmark backend is not loaded or the tab is frozen.
-     */
-    public @Nullable BookmarkId getUserBookmarkIdForTab(@Nullable Tab tab) {
+    /** Returns the most recently added BookmarkId */
+    public @Nullable BookmarkId getMostRecentlyAddedUserBookmarkIdForUrl(@NonNull GURL url) {
         ThreadUtils.assertOnUiThread();
         if (mNativeBookmarkBridge == 0) return null;
-        if (tab == null || tab.isFrozen() || mNativeBookmarkBridge == 0) return null;
+        assert mIsNativeBookmarkModelLoaded;
         return BookmarkBridgeJni.get()
-                .getBookmarkIdForWebContents(mNativeBookmarkBridge, tab.getWebContents(), true);
+                .getMostRecentlyAddedUserBookmarkIdForUrl(mNativeBookmarkBridge, url);
     }
 
     /**
@@ -792,19 +776,6 @@ class BookmarkBridge {
     }
 
     /**
-     * @param url The URL of the reading list item.
-     * @return The reading list item with the URL, or null if no such reading list item.
-     */
-    public BookmarkItem getReadingListItem(GURL url) {
-        ThreadUtils.assertOnUiThread();
-        if (mNativeBookmarkBridge == 0) return null;
-        assert url != null;
-        assert mIsNativeBookmarkModelLoaded;
-
-        return BookmarkBridgeJni.get().getReadingListItem(mNativeBookmarkBridge, url);
-    }
-
-    /**
      * Helper method to mark an article as read.
      *
      * @param url The URL of the reading list item.
@@ -994,8 +965,7 @@ class BookmarkBridge {
 
         void getImageUrlForBookmark(long nativeBookmarkBridge, GURL url, Callback<GURL> callback);
 
-        BookmarkId getBookmarkIdForWebContents(
-                long nativeBookmarkBridge, WebContents webContents, boolean onlyEditable);
+        BookmarkId getMostRecentlyAddedUserBookmarkIdForUrl(long nativeBookmarkBridge, GURL url);
 
         BookmarkItem getBookmarkById(long nativeBookmarkBridge, long id, int type);
 
@@ -1061,8 +1031,6 @@ class BookmarkBridge {
                 long nativeBookmarkBridge, BookmarkId parent, int index, String title, GURL url);
 
         BookmarkId addToReadingList(long nativeBookmarkBridge, String title, GURL url);
-
-        BookmarkItem getReadingListItem(long nativeBookmarkBridge, GURL url);
 
         void setReadStatus(long nativeBookmarkBridge, GURL url, boolean read);
 

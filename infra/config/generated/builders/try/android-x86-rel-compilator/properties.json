@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/android-x86-rel/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "android-oreo-x86-rel",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -37,7 +40,7 @@
         {
           "bucket": "ci",
           "builder": "android-oreo-x86-rel",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ]
     }
@@ -47,6 +50,7 @@
       "unit",
       "overall"
     ],
+    "use_clang_coverage": true,
     "use_java_coverage": true
   },
   "$build/flakiness": {

@@ -56,6 +56,12 @@ export class RealboxDropdownElement extends PolymerElement {
         value: false,
       },
 
+      expandedStateLayoutChromeRefresh: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('realboxCr23ExpandedStateLayout'),
+        reflectToAttribute: true,
+      },
+
       /**
        * Whether the secondary side was at any point available to be shown.
        */
@@ -117,6 +123,7 @@ export class RealboxDropdownElement extends PolymerElement {
   }
 
   canShowSecondarySide: boolean;
+  expandedStateLayoutChromeRefresh: boolean;
   hadSecondarySide: boolean;
   hasSecondarySide: boolean;
   result: AutocompleteResult;
@@ -392,6 +399,10 @@ export class RealboxDropdownElement extends PolymerElement {
    * @returns Icon name for suggestion group show/hide toggle button.
    */
   private toggleButtonIconForGroup_(groupId: number): string {
+    if (loadTimeData.getBoolean('realboxCr23ExpandedStateIcons')) {
+      return this.groupIsHidden_(groupId) ? 'icon-arrow-drop-down-cr23' :
+                                            'icon-arrow-drop-up-cr23';
+    }
     return this.groupIsHidden_(groupId) ? 'icon-expand-more' :
                                           'icon-expand-less';
   }

@@ -348,7 +348,7 @@ CSSValue* ConsumeSingleTimelineName(CSSParserTokenRange&,
 CSSValue* ConsumeSingleTimelineInset(CSSParserTokenRange&,
                                      const CSSParserContext&);
 
-void AddBackgroundValue(CSSValue*& list, CSSValue*);
+void AddBackgroundValue(CSSValue*& list, const CSSValue*);
 CSSValue* ConsumeBackgroundAttachment(CSSParserTokenRange&);
 CSSValue* ConsumeBackgroundBlendMode(CSSParserTokenRange&);
 CSSValue* ConsumeBackgroundBox(CSSParserTokenRange&);
@@ -360,8 +360,8 @@ bool ConsumeBackgroundPosition(CSSParserTokenRange&,
                                const CSSParserContext&,
                                UnitlessQuirk,
                                absl::optional<WebFeature> three_value_position,
-                               CSSValue*& result_x,
-                               CSSValue*& result_y);
+                               const CSSValue*& result_x,
+                               const CSSValue*& result_y);
 CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange&, AllowTextValue);
 CSSValue* ParseBackgroundBox(CSSParserTokenRange&,
                              const CSSParserLocalContext&,

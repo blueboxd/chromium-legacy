@@ -22,7 +22,6 @@
 <translation id="1384959399684842514">डाउनलोड रोकिएको छ</translation>
 <translation id="1415402041810619267">URL छोटो बनाइयो</translation>
 <translation id="1426410128494586442">हो</translation>
-<translation id="1446450296470737166">MIDI डिभाइसहरूको पूर्ण नियन्त्रणलाई अनुमति दिनुहोस्</translation>
 <translation id="1448064542941920355">जुमको स्तर घटाउनुहोस्</translation>
 <translation id="1510341833810331442">साइटहरूलाई तपाईंको डिभाइसमा जानकारी सेभ गर्ने अनुमति दिइएको छैन</translation>
 <translation id="1547123415014299762">तेस्रो पक्षीय कुकीहरू प्रयोग गर्न दिइन्छ</translation>
@@ -118,6 +117,7 @@
 <translation id="2968755619301702150">प्रमाणपत्र दर्शक</translation>
 <translation id="2979365474350987274">तेस्रो पक्षीय कुकीहरू सीमित गरिएका छन्</translation>
 <translation id="3008272652534848354">अनुमतिहरू रिसेट गर्नुहोस्</translation>
+<translation id="3013291976881901233">MIDI यन्त्रहरू</translation>
 <translation id="301521992641321250">स्वतः रोक लगाइयो</translation>
 <translation id="3069226013421428034">निश्चित साइटमा तेस्रो पक्षको खातामार्फत साइन इन गर्न दिनुहोस्।</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{भोलि म्याद सकिन्छ}other{# दिनमा म्याद सकिन्छ}}</translation>
@@ -179,7 +179,6 @@
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4008040567710660924">कुनै खास साइटमा कुकीहरूलाई अनुमति दिनुहोस्।</translation>
 <translation id="4046123991198612571">अर्को ट्र्याक</translation>
-<translation id="4053720452172726777">Google Chrome आफू अनुकूल र नियन्त्रण गर्नुहोस्</translation>
 <translation id="4149890623864272035">तपाईंले कुकीलगायतका स्थानीय रूपमा भण्डारण गरिएका सबै जानकारी मेटाउन र यस वेबसाइटलाई दिइएका सबै अनुमति रिसेट गर्न खोज्नुभएकै हो?</translation>
 <translation id="4149994727733219643">वेब पृष्ठहरूका लागि सरलीकृत दृश्य</translation>
 <translation id="4151930093518524179">डिफल्ट जुम</translation>
@@ -192,7 +191,6 @@
 <translation id="4278390842282768270">अनुमति प्राप्त</translation>
 <translation id="429312253194641664">कुनै साइटले मिडियो प्ले गरिरहेको छ</translation>
 <translation id="42981349822642051">विस्तृत गर्नुहोस्</translation>
-<translation id="4336566011000459927">Chrome ले आज फेरि कुकीहरू सीमित पार्ने छ</translation>
 <translation id="4338831206024587507"><ph name="DOMAIN" /> अन्तर्गतका सबै साइटहरू</translation>
 <translation id="4402755511846832236">तपाईं यो डिभाइस चलाउँदै हुनुहुन्छ कि हुनुहुन्न भन्ने कुरा साइटहरूलाई थाहा पाउन नदिनुहोस्</translation>
 <translation id="4412992751769744546">तेस्रो पक्षीय कुकीहरूलाई अनुमति दिनुहोस्</translation>
@@ -295,12 +293,10 @@
 <translation id="6177128806592000436">यस साइटमा तपाईँको जडान सुरक्षित छैन</translation>
 <translation id="6181444274883918285">साइटको अपवाद थप्नुुहोस्</translation>
 <translation id="6192792657125177640">अपवाद</translation>
-<translation id="6194967801833346599">{DAYS,plural, =1{Chrome ले भोलि फेरि कुकीहरू ब्लक गर्ने छ}other{कुकीहरू अबको # दिनमा फेरि ब्लक गरिने छन्}}</translation>
 <translation id="6195163219142236913">तेस्रो पक्षीय कुकीहरू सीमित गरिएका छन्</translation>
 <translation id="6196640612572343990">तेस्रो पक्षीय कुकीहरूमाथि रोक लगाउनुहोस्</translation>
 <translation id="6205314730813004066">विज्ञापनको गोपनीयता</translation>
 <translation id="6207207788774442484">जानकारी मेटाउनुहोस् र अनुमति रिसेट गर्नुहोस्</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> विकल्पहरू</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />' अनइन्स्टल गर्ने हो?</translation>
 <translation id="6262191102408817757">तपाईंको अन्तिम ट्याबका आधारमा</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> र <ph name="PERMISSION_2" /> ब्लक गरियो</translation>
@@ -348,6 +344,7 @@
 <translation id="7053983685419859001">रोक्नुहोस्</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{१ चयन गरियो}other{# चयन गरिए}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> चयन गरिए।  विकल्पहरू स्क्रिनको शीर्षभागको नजिकै उपलब्ध छन्</translation>
+<translation id="7137403271056944713">MIDI डिभाइस कन्ट्रोल/रिप्रोग्राम</translation>
 <translation id="7141896414559753902">साइटहरूलाई पपअपहरू देखाउन र रिडिरेक्ट गर्नबाट रोक्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> के.बि.</translation>
 <translation id="7180611975245234373">ताजा गर्नुहोस्</translation>
@@ -385,7 +382,6 @@
 <translation id="780301667611848630">भयो, धन्यवाद</translation>
 <translation id="7804248752222191302">कुनै साइटले तपाईंको क्यामेरा प्रयोग गर्दै छ</translation>
 <translation id="7807060072011926525">Google ले प्रदान गरेको</translation>
-<translation id="7822573154188733812">Chrome ले साइटहरूलाई तपाईंले ब्राउज गरिरहेका बेला तपाईंलाई ट्र्याक गर्ने प्रयोजनका लागि तेस्रो पक्षीय कुकीहरू प्रयोग गर्न दिँदैन। <ph name="BEGIN_LINK" />ट्र्याकिङबाट सुरक्षित राख्ने सुविधा व्यवस्थापन गर्न<ph name="END_LINK" /> सेटिङमा जानुहोस्।</translation>
 <translation id="7835852323729233924">प्ले भइरहेको मिडिया</translation>
 <translation id="783819812427904514">भिडियो अनम्युट गर्नुहोस्</translation>
 <translation id="7846076177841592234">चयन रद्द गर्नुहोस्</translation>
@@ -402,7 +398,6 @@
 <translation id="8077120325605624147">तपाईंले खोल्ने कुनै पनि साइटले तपाईंलाई जुनसुकै विज्ञापन देखाउन सक्छ</translation>
 <translation id="8087000398470557479">यो Google द्वारा डेलिभर गरिएको <ph name="DOMAIN_NAME" /> को सामग्री हो।</translation>
 <translation id="8088603949666785339"><ph name="BANNER_TITLE" /> मा गई थप विकल्पहरू हेर्नुहोस्</translation>
-<translation id="8113501330600751161">{DAYS,plural, =1{Chrome ले भोलि फेरि कुकीहरू सीमित पार्ने छ}other{Chrome ले अबको # दिनमा फेरि कुकीहरू सीमित पार्ने छ}}</translation>
 <translation id="8116925261070264013">म्युट गरियो</translation>
 <translation id="813082847718468539">साइट जानकारी हेर्नुहोस्</translation>
 <translation id="8131740175452115882">निश्चित</translation>

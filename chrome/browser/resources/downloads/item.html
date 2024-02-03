@@ -124,7 +124,7 @@
   }
 
   #content:not(.is-active) .icon {
-    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
     opacity: .5;
   }
 
@@ -401,7 +401,7 @@
           <span role="gridcell">
             <cr-button on-click="onDeepScanClick_" id="deepScan"
                       class="action-button" focus-row-control focus-type="open">
-              $i18n{controlDeepScan}
+              [[computeDeepScanControlText_(data.state)]]
             </cr-button>
           </span>
           <span role="gridcell">
@@ -436,7 +436,7 @@
           <span role="gridcell">
             <cr-button on-click="onDeepScanClick_" id="deepScan"
                       class="action-button" focus-row-control focus-type="open">
-              $i18n{controlDeepScan}
+              [[computeDeepScanControlText_(data.state)]]
             </cr-button>
           </span>
         </template>
@@ -584,3 +584,9 @@
     <div id="incognito" title="$i18n{inIncognito}" hidden="[[!data.otr]]"></div>
   </div>
 </div>
+<template is="dom-if" if="[[showBypassWarningConfirmationDialog_]]" restamp>
+  <download-bypass-warning-confirmation-dialog
+      file-name="[[data.fileName]]"
+      on-close="onBypassWarningConfirmationDialogClose_">
+  </download-bypass-warning-confirmation-dialog>
+</template>

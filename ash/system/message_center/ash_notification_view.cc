@@ -141,8 +141,8 @@ constexpr auto kTitleRowNoMessageCollapsedPadding =
 
 constexpr auto kHeaderRowExpandedPadding = gfx::Insets::TLBR(6, 0, 8, 0);
 constexpr auto kHeaderRowCollapsedPadding = gfx::Insets::TLBR(0, 0, 8, 0);
-constexpr auto kRightContentCollapsedPadding = gfx::Insets::TLBR(12, 0, 0, 16);
-constexpr auto kRightContentExpandedPadding = gfx::Insets::TLBR(20, 0, 0, 16);
+constexpr auto kRightContentCollapsedPadding = gfx::Insets::TLBR(12, 16, 0, 0);
+constexpr auto kRightContentExpandedPadding = gfx::Insets::TLBR(20, 16, 0, 0);
 constexpr auto kTimeStampInCollapsedStatePadding =
     gfx::Insets::TLBR(0, 0, 0, 16);
 
@@ -345,6 +345,11 @@ void AshNotificationView::GroupedNotificationsContainer::
   parent_notification_view_ = parent_notification_view;
 }
 
+BEGIN_METADATA(AshNotificationView,
+               GroupedNotificationsContainer,
+               views::BoxLayoutView)
+END_METADATA
+
 AshNotificationView::NotificationTitleRow::NotificationTitleRow(
     const std::u16string& title)
     : title_view_(AddChildView(GenerateTitleView(title))),
@@ -485,9 +490,6 @@ void AshNotificationView::NotificationTitleRow::OnThemeChanged() {
   }
 }
 
-// static
-const char AshNotificationView::kViewClassName[] = "AshNotificationView";
-
 AshNotificationView::AshNotificationView(
     const message_center::Notification& notification,
     bool shown_in_popup)
@@ -547,6 +549,8 @@ AshNotificationView::AshNotificationView(
                       views::Builder<views::FlexLayoutView>()
                           .SetOrientation(views::LayoutOrientation::kVertical)
                           .SetCrossAxisAlignment(views::LayoutAlignment::kEnd)
+                          .SetMinimumCrossAxisSize(
+                              kExpandAndControlButtonsContainerMinimumWidth)
                           .AddChild(
                               views::Builder<views::BoxLayoutView>()
                                   .SetMainAxisAlignment(MainAxisAlignment::kEnd)
@@ -1142,10 +1146,6 @@ void AshNotificationView::RemoveGroupNotification(
   } else {
     on_notification_slid_out.Run();
   }
-}
-
-const char* AshNotificationView::GetClassName() const {
-  return kViewClassName;
 }
 
 void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
@@ -2320,5 +2320,8 @@ void AshNotificationView::AttachBinaryImageAsDropData(
     data->SetHtml(*html_snippet, /*base_url=*/GURL());
   }
 }
+
+BEGIN_METADATA(AshNotificationView)
+END_METADATA
 
 }  // namespace ash

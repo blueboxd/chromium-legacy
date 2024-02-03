@@ -18,6 +18,8 @@ source_set("browser") {
   if (!is_ios && !is_android) {
     sources += [
       "passkey_model.h",
+      "passkey_model_change.cc",
+      "passkey_model_change.h",
       "passkey_model_utils.cc",
       "passkey_model_utils.h",
       "passkey_sync_bridge.cc",
@@ -26,6 +28,21 @@ source_set("browser") {
     deps += [
       "//base",
       "//components/sync",
+    ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = []
+  deps = []
+
+  if (!is_ios && !is_android) {
+    sources += [ "passkey_model_utils_unittest.cc" ]
+    deps += [
+      ":browser",
+      "//base/test:test_support",
+      "//components/sync/protocol",
     ]
   }
 }

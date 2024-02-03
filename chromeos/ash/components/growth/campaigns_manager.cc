@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/task/thread_pool.h"
 #include "chromeos/ash/components/growth/campaigns_matcher.h"
+#include "chromeos/ash/components/growth/growth_metrics.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -28,13 +29,14 @@ absl::optional<base::Value::Dict> ReadCampaignsFile(
           campaigns_component_path.Append(kCampaignFileName),
           &campaigns_data)) {
     LOG(ERROR) << "Failed to read campaigns file from disk.";
+    RecordCampaignsManagerError(CampaignsManagerError::kCampaignsFileLoadFail);
     return absl::nullopt;
   }
 
   absl::optional<base::Value> value(base::JSONReader::Read(campaigns_data));
   if (!value || !value->is_dict()) {
-    // TODO(b/299305911): Add metrics to track fail parsing campaign file.
     LOG(ERROR) << "Failed to parse campaigns file: " << campaigns_data;
+    RecordCampaignsManagerError(CampaignsManagerError::kCampaignsParsingFail);
     return absl::nullopt;
   }
   return std::move(value->GetDict());
@@ -73,12 +75,12 @@ void CampaignsManager::SetPrefs(PrefService* prefs) {
   matcher_.SetPrefs(prefs);
 }
 
-void CampaignsManager::LoadCampaigns() {
+void CampaignsManager::LoadCampaigns(base::OnceClosure load_callback) {
   // TODO(b/299305911): Add metrics to track campaigns load latency.
   // Load campaigns component via component updater.
   client_->LoadCampaignsComponent(
       base::BindOnce(&CampaignsManager::OnCampaignsComponentLoaded,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), std::move(load_callback)));
 }
 
 const Campaign* CampaignsManager::GetCampaignBySlot(Slot slot) const {
@@ -88,21 +90,24 @@ const Campaign* CampaignsManager::GetCampaignBySlot(Slot slot) const {
 }
 
 void CampaignsManager::OnCampaignsComponentLoaded(
+    base::OnceClosure load_callback,
     const absl::optional<const base::FilePath>& path) {
   if (!path.has_value()) {
     LOG(ERROR) << "Failed to load campaign component.";
-    // TODO(b/299305911): Add metrics to track fail loading campaigns component.
-    OnCampaignsLoaded(/*campaigns=*/absl::nullopt);
+    RecordCampaignsManagerError(
+        CampaignsManagerError::kCampaignsComponentLoadFail);
+    OnCampaignsLoaded(std::move(load_callback), /*campaigns=*/absl::nullopt);
     return;
   }
   // Read the campaigns file from component mounted path.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()}, base::BindOnce(&ReadCampaignsFile, *path),
       base::BindOnce(&CampaignsManager::OnCampaignsLoaded,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), std::move(load_callback)));
 }
 
 void CampaignsManager::OnCampaignsLoaded(
+    base::OnceClosure load_callback,
     absl::optional<base::Value::Dict> campaigns_dict) {
   // Load campaigns into campaigns store.
   if (campaigns_dict.has_value()) {
@@ -117,6 +122,7 @@ void CampaignsManager::OnCampaignsLoaded(
                         GetReactiveCampaigns(&campaigns_store_));
   campaigns_loaded_ = true;
 
+  std::move(load_callback).Run();
   NotifyCampaignsLoaded();
 }
 

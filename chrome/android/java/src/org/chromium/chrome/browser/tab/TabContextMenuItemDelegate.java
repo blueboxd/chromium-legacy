@@ -11,6 +11,7 @@ import android.net.MailTo;
 import android.net.Uri;
 import android.provider.Browser;
 import android.provider.ContactsContract;
+import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
@@ -261,7 +262,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
                 || mEphemeralTabCoordinatorSupplier.get() == null) {
             return;
         }
-        mEphemeralTabCoordinatorSupplier.get().requestOpenSheet(url, title, mTab.isIncognito());
+        mEphemeralTabCoordinatorSupplier.get().requestOpenSheet(url, title, mTab.getProfile());
     }
 
     @Override
@@ -269,20 +270,28 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         if (url == null || url.isEmpty()) return;
         assert url.isValid();
 
-        BookmarkModel bookmarkModel =
-                BookmarkModel.getForProfile(Profile.getLastUsedRegularProfile());
-        bookmarkModel.finishLoadingBookmarkModel(() -> {
-            // Add to reading list.
-            BookmarkUtils.addToReadingList(
-                    url, title, mSnackbarManager.get(), bookmarkModel, mTab.getContext());
-            TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile())
-                    .notifyEvent(EventConstants.READ_LATER_CONTEXT_MENU_TAPPED);
+        Profile profile = mTab.getProfile().getOriginalProfile();
+        BookmarkModel bookmarkModel = BookmarkModel.getForProfile(profile);
+        bookmarkModel.finishLoadingBookmarkModel(
+                () -> {
+                    // Add to reading list.
+                    BookmarkUtils.addToReadingList(
+                            url,
+                            title,
+                            mSnackbarManager.get(),
+                            bookmarkModel,
+                            mTab.getContext(),
+                            profile);
+                    TrackerFactory.getTrackerForProfile(profile)
+                            .notifyEvent(EventConstants.READ_LATER_CONTEXT_MENU_TAPPED);
 
-            // Add to offline pages.
-            RequestCoordinatorBridge.getForProfile(Profile.getLastUsedRegularProfile())
-                    .savePageLater(url.getSpec(), OfflinePageBridge.BOOKMARK_NAMESPACE,
-                            /*userRequested*/ true);
-        });
+                    // Add to offline pages.
+                    RequestCoordinatorBridge.getForProfile(profile)
+                            .savePageLater(
+                                    url.getSpec(),
+                                    OfflinePageBridge.BOOKMARK_NAMESPACE,
+                                    /*userRequested*/ true);
+                });
     }
 
     @Override
@@ -337,6 +346,14 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public void onOpenInDefaultBrowser(GURL url) {
+        // Most browsers (including Chrome) do not advertise support for data scheme URIs
+        // and so cannot handle data scheme view Intents. Use the browser backing the currently
+        // running CCT.
+        if (TextUtils.equals("data", url.getScheme())) {
+            onOpenInNewChromeTabFromCCT(url, false);
+            return;
+        }
+
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url.getSpec()));
         CustomTabsIntent.setAlwaysUseBrowserUI(intent);
         IntentUtils.safeStartActivity(mTab.getContext(), intent);

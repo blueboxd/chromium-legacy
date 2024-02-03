@@ -59,7 +59,7 @@ public class LocationBarLayout extends FrameLayout {
     protected LinearLayout mUrlActionContainer;
 
     protected CompositeTouchDelegate mCompositeTouchDelegate;
-    protected SearchEngineLogoUtils mSearchEngineLogoUtils;
+    protected SearchEngineUtils mSearchEngineUtils;
     private float mUrlFocusPercentage;
     private boolean mUrlBarLaidOutAtFocusedWidth;
     private final boolean mIsSurfacePolishEnabled;
@@ -130,20 +130,18 @@ public class LocationBarLayout extends FrameLayout {
      * @param urlCoordinator The coordinator for interacting with the url bar.
      * @param statusCoordinator The coordinator for interacting with the status icon.
      * @param locationBarDataProvider Provider of LocationBar data, e.g. url and title.
-     * @param searchEngineLogoUtils Allows querying the state of the search engine logo feature.
+     * @param searchEngineUtils Allows querying the state of the search engine logo feature.
      */
     @CallSuper
     public void initialize(
             @NonNull AutocompleteCoordinator autocompleteCoordinator,
             @NonNull UrlBarCoordinator urlCoordinator,
             @NonNull StatusCoordinator statusCoordinator,
-            @NonNull LocationBarDataProvider locationBarDataProvider,
-            @NonNull SearchEngineLogoUtils searchEngineLogoUtils) {
+            @NonNull LocationBarDataProvider locationBarDataProvider) {
         mAutocompleteCoordinator = autocompleteCoordinator;
         mUrlCoordinator = urlCoordinator;
         mStatusCoordinator = statusCoordinator;
         mLocationBarDataProvider = locationBarDataProvider;
-        mSearchEngineLogoUtils = searchEngineLogoUtils;
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
@@ -570,7 +568,9 @@ public class LocationBarLayout extends FrameLayout {
         }
 
         boolean isInSingleUrlBarMode =
-                isNtpOnPhone && mSearchEngineLogoUtils.isDefaultSearchEngineGoogle();
+                isNtpOnPhone
+                        && mSearchEngineUtils != null
+                        && mSearchEngineUtils.isDefaultSearchEngineGoogle();
         if (mIsSurfacePolishEnabled && isInSingleUrlBarMode) {
             translationX +=
                     (getResources().getDimensionPixelSize(R.dimen.fake_search_box_start_padding)
@@ -601,6 +601,11 @@ public class LocationBarLayout extends FrameLayout {
     int getFocusedStatusViewSpacingDelta() {
         return getEndPaddingPixelSizeOnFocusDelta()
                 + OmniboxResourceProvider.getFocusedStatusViewLeftSpacing(getContext());
+    }
+
+    /** Applies the new SearchEngineUtils. */
+    void setSearchEngineUtils(SearchEngineUtils searchEngineUtils) {
+        mSearchEngineUtils = searchEngineUtils;
     }
 
     public void notifyVoiceRecognitionCanceled() {}

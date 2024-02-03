@@ -23,7 +23,6 @@
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/message_center/message_popup_animation_waiter.h"
 #include "ash/system/message_center/metrics_utils.h"
-#include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/notification_center/notification_center_test_api.h"
 #include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/notification_center/notification_center_view.h"
@@ -202,8 +201,8 @@ class AshNotificationViewTestBase : public AshTestBase,
   void SetUp() override {
     AshTestBase::SetUp();
     delegate_ = new NotificationTestDelegate();
-    notification_center_test_api_ = std::make_unique<NotificationCenterTestApi>(
-        GetPrimaryNotificationCenterTray());
+    notification_center_test_api_ =
+        std::make_unique<NotificationCenterTestApi>();
   }
 
   // Create a test notification that is used in the view.
@@ -1366,8 +1365,7 @@ class AshNotificationViewDragTestBase : public AshNotificationViewTestBase {
         {{features::kNotificationImageDrag, true}});
 
     AshNotificationViewTestBase::SetUp();
-    notification_test_api_ =
-        std::make_unique<NotificationCenterTestApi>(/*tray=*/nullptr);
+    notification_test_api_ = std::make_unique<NotificationCenterTestApi>();
 
     // Configure the widget that handles notification drop.
     drop_handling_widget_ = CreateTestWidget(
@@ -1540,7 +1538,7 @@ TEST_P(AshNotificationViewDragTest, Basics) {
   if (IsPopupNotification()) {
     // Wait until the notification popup shows.
     MessagePopupAnimationWaiter(
-        GetPrimaryUnifiedSystemTray()->GetMessagePopupCollection())
+        GetPrimaryNotificationCenterTray()->popup_collection())
         .Wait();
     EXPECT_FALSE(
         message_center::MessageCenter::Get()->GetPopupNotifications().empty());
@@ -1607,7 +1605,7 @@ TEST_P(AshNotificationViewDragTest, GroupedNotification) {
   if (IsPopupNotification()) {
     // Wait until the notification popup shows.
     MessagePopupAnimationWaiter(
-        GetPrimaryUnifiedSystemTray()->GetMessagePopupCollection())
+        GetPrimaryNotificationCenterTray()->popup_collection())
         .Wait();
   } else {
     // Show the message center bubble.
@@ -1626,7 +1624,7 @@ TEST_P(AshNotificationViewDragTest, GroupedNotification) {
   child_view->ToggleExpand();
   if (IsPopupNotification()) {
     MessagePopupAnimationWaiter(
-        GetPrimaryUnifiedSystemTray()->GetMessagePopupCollection())
+        GetPrimaryNotificationCenterTray()->popup_collection())
         .Wait();
   } else {
     notification_test_api()->CompleteNotificationListAnimation();
@@ -1687,7 +1685,7 @@ class AshNotificationViewDragAsyncDropTest
     if (IsPopupNotification()) {
       // Wait until the notification popup shows.
       MessagePopupAnimationWaiter(
-          GetPrimaryUnifiedSystemTray()->GetMessagePopupCollection())
+          GetPrimaryNotificationCenterTray()->popup_collection())
           .Wait();
       EXPECT_FALSE(message_center::MessageCenter::Get()
                        ->GetPopupNotifications()
@@ -1715,7 +1713,7 @@ TEST_P(AshNotificationViewDragAsyncDropTest, Basics) {
   base::OnceClosure drop_callback;
   EXPECT_CALL(dlp_controller_, DropIfAllowed(_, _, _))
       .WillOnce([&](const ui::OSExchangeData* drag_data,
-                    const ui::DataTransferEndpoint* data_dst,
+                    base::optional_ref<const ui::DataTransferEndpoint> data_dst,
                     base::OnceClosure drop_cb) {
         drop_callback = std::move(drop_cb);
       });
@@ -1752,17 +1750,19 @@ TEST_P(AshNotificationViewDragAsyncDropTest,
     // Configure `dlp_controller_` to hold all drop callbacks.
     testing::InSequence s;
     EXPECT_CALL(dlp_controller_, DropIfAllowed(_, _, _))
-        .WillOnce([&](const ui::OSExchangeData* drag_data,
-                      const ui::DataTransferEndpoint* data_dst,
-                      base::OnceClosure drop_cb) {
-          first_drop_callback = std::move(drop_cb);
-        });
+        .WillOnce(
+            [&](const ui::OSExchangeData* drag_data,
+                base::optional_ref<const ui::DataTransferEndpoint> data_dst,
+                base::OnceClosure drop_cb) {
+              first_drop_callback = std::move(drop_cb);
+            });
     EXPECT_CALL(dlp_controller_, DropIfAllowed(_, _, _))
-        .WillOnce([&](const ui::OSExchangeData* drag_data,
-                      const ui::DataTransferEndpoint* data_dst,
-                      base::OnceClosure drop_cb) {
-          second_drop_callback = std::move(drop_cb);
-        });
+        .WillOnce(
+            [&](const ui::OSExchangeData* drag_data,
+                base::optional_ref<const ui::DataTransferEndpoint> data_dst,
+                base::OnceClosure drop_cb) {
+              second_drop_callback = std::move(drop_cb);
+            });
   }
 
   // Add one image notification then perform drag-and-drop.
@@ -1809,17 +1809,19 @@ TEST_P(AshNotificationViewDragAsyncDropTest, InterruptAsyncDropWithViewDrag) {
     // Configure `dlp_controller_` to hold all drop callbacks.
     testing::InSequence s;
     EXPECT_CALL(dlp_controller_, DropIfAllowed(_, _, _))
-        .WillOnce([&](const ui::OSExchangeData* drag_data,
-                      const ui::DataTransferEndpoint* data_dst,
-                      base::OnceClosure drop_cb) {
-          first_drop_callback = std::move(drop_cb);
-        });
+        .WillOnce(
+            [&](const ui::OSExchangeData* drag_data,
+                base::optional_ref<const ui::DataTransferEndpoint> data_dst,
+                base::OnceClosure drop_cb) {
+              first_drop_callback = std::move(drop_cb);
+            });
     EXPECT_CALL(dlp_controller_, DropIfAllowed(_, _, _))
-        .WillOnce([&](const ui::OSExchangeData* drag_data,
-                      const ui::DataTransferEndpoint* data_dst,
-                      base::OnceClosure drop_cb) {
-          second_drop_callback = std::move(drop_cb);
-        });
+        .WillOnce(
+            [&](const ui::OSExchangeData* drag_data,
+                base::optional_ref<const ui::DataTransferEndpoint> data_dst,
+                base::OnceClosure drop_cb) {
+              second_drop_callback = std::move(drop_cb);
+            });
   }
 
   // Add one image notification then perform drag-and-drop.
@@ -1894,7 +1896,7 @@ TEST_P(ScreenCaptureNotificationViewDragTest, Basics) {
   if (IsPopupNotification()) {
     // Wait until the notification popup shows.
     MessagePopupAnimationWaiter(
-        GetPrimaryUnifiedSystemTray()->GetMessagePopupCollection())
+        GetPrimaryNotificationCenterTray()->popup_collection())
         .Wait();
     EXPECT_FALSE(
         message_center::MessageCenter::Get()->GetPopupNotifications().empty());
@@ -1934,7 +1936,7 @@ TEST_F(DragAfterNotificationRemovalTest, Basics) {
 
   // Wait until the notification popup shows.
   MessagePopupAnimationWaiter(
-      GetPrimaryUnifiedSystemTray()->GetMessagePopupCollection())
+      GetPrimaryNotificationCenterTray()->popup_collection())
       .Wait();
   EXPECT_FALSE(
       message_center::MessageCenter::Get()->GetPopupNotifications().empty());

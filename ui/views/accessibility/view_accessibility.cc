@@ -248,6 +248,12 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     }
   }
 
+  if (custom_data_.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+    data->AddBoolAttribute(
+        ax::mojom::BoolAttribute::kSelected,
+        custom_data_.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  }
+
   data->relative_bounds.bounds = gfx::RectF(view_->GetBoundsInScreen());
   if (!custom_data_.relative_bounds.bounds.IsEmpty())
     data->relative_bounds.bounds = custom_data_.relative_bounds.bounds;
@@ -515,6 +521,10 @@ void ViewAccessibility::ClearPosInSetOverride() {
   custom_data_.RemoveIntAttribute(ax::mojom::IntAttribute::kSetSize);
 }
 
+void ViewAccessibility::OverrideIsSelected(bool selected) {
+  custom_data_.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected);
+}
+
 void ViewAccessibility::OverrideNextFocus(Widget* widget) {
   if (widget)
     next_focus_ = widget->GetWeakPtr();
@@ -553,20 +563,37 @@ gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() const {
 }
 
 void ViewAccessibility::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
+  Widget* const widget = view_->GetWidget();
+  if (!widget || widget->IsClosed()) {
+    return;
+  }
   // Used for unit testing.
   if (accessibility_events_callback_)
     accessibility_events_callback_.Run(nullptr, event_type);
 }
 
+void ViewAccessibility::AnnounceAlert(const std::u16string& text) {
+  if (auto* const widget = view_->GetWidget()) {
+    if (auto* const root_view =
+            static_cast<internal::RootView*>(widget->GetRootView())) {
+      root_view->AnnounceTextAs(text,
+                                ui::AXPlatformNode::AnnouncementType::kAlert);
+    }
+  }
+}
+
+void ViewAccessibility::AnnouncePolitely(const std::u16string& text) {
+  if (auto* const widget = view_->GetWidget()) {
+    if (auto* const root_view =
+            static_cast<internal::RootView*>(widget->GetRootView())) {
+      root_view->AnnounceTextAs(text,
+                                ui::AXPlatformNode::AnnouncementType::kPolite);
+    }
+  }
+}
+
 void ViewAccessibility::AnnounceText(const std::u16string& text) {
-  Widget* const widget = view_->GetWidget();
-  if (!widget)
-    return;
-  auto* const root_view =
-      static_cast<internal::RootView*>(widget->GetRootView());
-  if (!root_view)
-    return;
-  root_view->AnnounceText(text);
+  AnnounceAlert(text);
 }
 
 const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {

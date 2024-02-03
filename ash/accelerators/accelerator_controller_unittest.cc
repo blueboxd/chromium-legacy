@@ -52,7 +52,7 @@
 #include "ash/wm/splitview/split_view_metrics_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
-#include "ash/wm/test_session_state_animator.h"
+#include "ash/wm/test/test_session_state_animator.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -705,7 +705,7 @@ TEST_F(AcceleratorControllerTest, WindowSnapUpsideDown) {
       DisplayConfigurationController::ANIMATION_SYNC);
   display::Display current_display =
       display_manager()->GetDisplayForId(primary_display_id);
-  ASSERT_TRUE(chromeos::IsDisplayLayoutHorizontal(current_display));
+  ASSERT_TRUE(current_display.is_landscape());
   ASSERT_FALSE(chromeos::IsDisplayLayoutPrimary(current_display));
 
   // Snap the window. Test that it goes to the physical left/right as expected.
@@ -726,7 +726,7 @@ TEST_F(AcceleratorControllerTest, WindowSnapUpsideDown) {
       display::Display::RotationSource::USER,
       DisplayConfigurationController::ANIMATION_SYNC);
   current_display = display_manager()->GetDisplayForId(primary_display_id);
-  ASSERT_FALSE(chromeos::IsDisplayLayoutHorizontal(current_display));
+  ASSERT_FALSE(current_display.is_landscape());
   ASSERT_FALSE(chromeos::IsDisplayLayoutPrimary(current_display));
 
   window = CreateAppWindow(gfx::Rect(300, 300));

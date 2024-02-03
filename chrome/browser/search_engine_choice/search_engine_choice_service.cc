@@ -14,6 +14,7 @@
 #include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/profiles/profile_customization_bubble_sync_controller.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engine_choice_utils.h"
@@ -111,14 +112,22 @@ void SearchEngineChoiceService::NotifyChoiceMade(int prepopulate_id,
   browsers_with_open_dialogs_.clear();
 
   // Log the view entry point in which the choice was made.
-  if (entry_point == EntryPoint::kProfilePicker) {
-    choice_made_in_profile_picker_ = true;
-    search_engines::RecordChoiceScreenEvent(
-        search_engines::SearchEngineChoiceScreenEvents::kFreDefaultWasSet);
-  } else {
-    search_engines::RecordChoiceScreenEvent(
-        search_engines::SearchEngineChoiceScreenEvents::kDefaultWasSet);
+  search_engines::SearchEngineChoiceScreenEvents event;
+  switch (entry_point) {
+    case EntryPoint::kDialog:
+      event = search_engines::SearchEngineChoiceScreenEvents::kDefaultWasSet;
+      break;
+    case EntryPoint::kFirstRunExperience:
+      event = search_engines::SearchEngineChoiceScreenEvents::kFreDefaultWasSet;
+      choice_made_in_profile_picker_ = true;
+      break;
+    case EntryPoint::kProfileCreation:
+      event = search_engines::SearchEngineChoiceScreenEvents::
+          kProfileCreationDefaultWasSet;
+      choice_made_in_profile_picker_ = true;
+      break;
   }
+  search_engines::RecordChoiceScreenEvent(event);
 
   // `RecordChoiceMade` should always be called after setting the default
   // search engine.
@@ -194,8 +203,15 @@ SearchEngineChoiceService::ComputeDialogConditions(Browser& browser) {
   }
 
   // To avoid conflict, the dialog should not be shown if a sign-in dialog is
-  // being currently displayed.
-  if (browser.signin_view_controller()->ShowsModalDialog()) {
+  // currently displayed or is about to be displayed.
+  bool signin_dialog_displayed_or_pending =
+      browser.signin_view_controller()->ShowsModalDialog();
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  signin_dialog_displayed_or_pending =
+      signin_dialog_displayed_or_pending ||
+      IsProfileCustomizationBubbleSyncControllerRunning(&browser);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  if (signin_dialog_displayed_or_pending) {
     return search_engines::SearchEngineChoiceScreenConditions::
         kSuppressedByOtherDialog;
   }
@@ -266,9 +282,21 @@ bool SearchEngineChoiceService::IsUrlSuitableForDialog(GURL url) {
 
 void SearchEngineChoiceService::NotifyLearnMoreLinkClicked(
     EntryPoint entry_point) {
-  RecordChoiceScreenEvent(entry_point == EntryPoint::kDialog
-                              ? search_engines::SearchEngineChoiceScreenEvents::
-                                    kLearnMoreWasDisplayed
-                              : search_engines::SearchEngineChoiceScreenEvents::
-                                    kFreLearnMoreWasDisplayed);
+  search_engines::SearchEngineChoiceScreenEvents event;
+
+  switch (entry_point) {
+    case EntryPoint::kDialog:
+      event = search_engines::SearchEngineChoiceScreenEvents::
+          kLearnMoreWasDisplayed;
+      break;
+    case EntryPoint::kFirstRunExperience:
+      event = search_engines::SearchEngineChoiceScreenEvents::
+          kFreLearnMoreWasDisplayed;
+      break;
+    case EntryPoint::kProfileCreation:
+      event = search_engines::SearchEngineChoiceScreenEvents::
+          kProfileCreationLearnMoreDisplayed;
+      break;
+  }
+  RecordChoiceScreenEvent(event);
 }

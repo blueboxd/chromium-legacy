@@ -20,7 +20,7 @@
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -163,10 +163,10 @@ class LeakDetectionDelegateTest : public testing::Test {
         .WillOnce(testing::WithArg<0>([password_forms, store, in_store](
                                           base::WeakPtr<PasswordStoreConsumer>
                                               consumer) {
-          std::vector<std::unique_ptr<PasswordForm>> results;
+          std::vector<PasswordForm> results;
           for (auto& form : password_forms) {
-            results.push_back(std::make_unique<PasswordForm>(std::move(form)));
-            results.back()->in_store = in_store;
+            results.push_back(std::move(form));
+            results.back().in_store = in_store;
           }
           base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
               FROM_HERE,

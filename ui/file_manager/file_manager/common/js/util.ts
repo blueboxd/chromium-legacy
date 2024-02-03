@@ -9,7 +9,6 @@
  */
 
 import {promisify} from './api.js';
-import {isDriveFsBulkPinningEnabled} from './flags.js';
 
 export function iconSetToCSSBackgroundImageValue(
     iconSet: chrome.fileManagerPrivate.IconSet): string {
@@ -23,11 +22,11 @@ export function iconSetToCSSBackgroundImageValue(
   }
 
   if (lowDpiPart && highDpiPart) {
-    return '-webkit-image-set(' + lowDpiPart + ', ' + highDpiPart + ')';
+    return 'image-set(' + lowDpiPart + ', ' + highDpiPart + ')';
   } else if (lowDpiPart) {
-    return '-webkit-image-set(' + lowDpiPart + ')';
+    return 'image-set(' + lowDpiPart + ')';
   } else if (highDpiPart) {
-    return '-webkit-image-set(' + highDpiPart + ')';
+    return 'image-set(' + highDpiPart + ')';
   }
 
   return 'none';
@@ -73,15 +72,6 @@ export function runningInBrowser(): boolean {
 }
 
 /**
- * The type of a file operation error.
- */
-export enum FileOperationErrorType {
-  UNEXPECTED_SOURCE_FILE = 0,
-  TARGET_EXISTS = 1,
-  FILESYSTEM_ERROR = 2,
-}
-
-/**
  * The last URL with visitURL().
  */
 let lastVisitedURL: string;
@@ -111,11 +101,9 @@ export function getLastVisitedURL(): string {
  */
 export function isTeleported(): Promise<boolean> {
   return new Promise(onFulfilled => {
-    chrome.fileManagerPrivate.getProfiles(
-        (_: chrome.fileManagerPrivate.ProfileInfo[], currentId: string,
-         displayedId: string) => {
-          onFulfilled(currentId !== displayedId);
-        });
+    chrome.fileManagerPrivate.getProfiles((response) => {
+      onFulfilled(response.currentProfileId !== response.displayedProfileId);
+    });
   });
 }
 
@@ -124,9 +112,8 @@ export function isTeleported(): Promise<boolean> {
  * in production environment.
  */
 export function testSendMessage(message: string): void {
-  const test = chrome.test || (window.top as ChromeWindow).chrome.test;
-  if (test) {
-    test.sendMessage(message);
+  if (chrome.test) {
+    chrome.test.sendMessage(message);
   }
 }
 
@@ -240,8 +227,9 @@ export function makeTaskID(
  *     (guest) => { if (guest) { ... in guest mode } }
  */
 export async function isInGuestMode(): Promise<boolean> {
-  const profiles: chrome.fileManagerPrivate.ProfileInfo[] =
+  const response: chrome.fileManagerPrivate.ProfilesResponse =
       await promisify(chrome.fileManagerPrivate.getProfiles);
+  const profiles = response.profiles;
   return profiles.length > 0 && profiles[0]?.profileId === '$guest';
 }
 
@@ -264,15 +252,11 @@ export const isNullOrUndefined = <T>(value: T): boolean =>
  */
 export function canBulkPinningCloudPanelShow(
     stage: chrome.fileManagerPrivate.BulkPinStage|undefined,
-    pref: boolean|undefined): boolean {
-  if (!isDriveFsBulkPinningEnabled()) {
-    return false;
-  }
-
+    enabled: boolean): boolean {
   const BulkPinStage = chrome.fileManagerPrivate.BulkPinStage;
   // If the stage is in progress and the bulk pinning preference is enabled,
   // then the cloud panel should not be visible.
-  if (pref &&
+  if (enabled &&
       (stage === BulkPinStage.GETTING_FREE_SPACE ||
        stage === BulkPinStage.LISTING_FILES ||
        stage === BulkPinStage.SYNCING)) {
@@ -281,8 +265,8 @@ export function canBulkPinningCloudPanelShow(
 
   // For the PAUSED... states the preference should still be enabled, however,
   // for the latter the preference will have been disabled.
-  if ((stage === BulkPinStage.PAUSED_OFFLINE && pref) ||
-      (stage === BulkPinStage.PAUSED_BATTERY_SAVER && pref) ||
+  if ((stage === BulkPinStage.PAUSED_OFFLINE && enabled) ||
+      (stage === BulkPinStage.PAUSED_BATTERY_SAVER && enabled) ||
       stage === BulkPinStage.NOT_ENOUGH_SPACE) {
     return true;
   }

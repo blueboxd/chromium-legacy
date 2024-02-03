@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/ash/components/growth/campaigns_matcher.h"
+#include <memory>
 
 #include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
@@ -10,6 +11,7 @@
 #include "base/version.h"
 #include "chromeos/ash/components/growth/campaigns_manager_client.h"
 #include "chromeos/ash/components/growth/campaigns_model.h"
+#include "chromeos/ash/components/growth/growth_metrics.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 
@@ -20,8 +22,9 @@ bool MatchPref(const base::Value::List* criterias,
                base::StringPiece pref_path,
                const PrefService* pref_service) {
   if (!pref_service) {
-    // TODO(b/299305911): This is unexpected. Add metrics to track this case.
     LOG(ERROR) << "Matching pref before pref service is available";
+    RecordCampaignsManagerError(
+        CampaignsManagerError::kUserPrefUnavailableAtMatching);
     return false;
   }
 
@@ -42,6 +45,31 @@ bool MatchPref(const base::Value::List* criterias,
 
 int GetMilestone() {
   return version_info::GetMajorVersionNumberAsInt();
+}
+
+// Matched if any of the given `scheduling_targetings` is matched.
+bool MatchSchedulings(const std::vector<std::unique_ptr<SchedulingTargeting>>&
+                          scheduling_targetings) {
+  const auto now = base::Time::Now();
+  for (const auto& scheduling_targeting : scheduling_targetings) {
+    if (scheduling_targeting->GetStartTime().ToDeltaSinceWindowsEpoch() <=
+            now.ToDeltaSinceWindowsEpoch() &&
+        scheduling_targeting->GetEndTime().ToDeltaSinceWindowsEpoch() >=
+            now.ToDeltaSinceWindowsEpoch()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool MatchSessionTargeting(const SessionTargeting& targeting) {
+  if (!targeting.IsValid()) {
+    // Campaigns matched if there is no demo mode targeting.
+    return true;
+  }
+
+  return MatchSchedulings(targeting.GetSchedulings());
 }
 
 }  // namespace
@@ -71,6 +99,7 @@ const Campaign* CampaignsMatcher::GetCampaignBySlot(Slot slot) const {
     const auto* campaign = campaign_value.GetIfDict();
     if (!campaign) {
       LOG(ERROR) << "Invalid campaign.";
+      RecordCampaignsManagerError(CampaignsManagerError::kInvalidCampaign);
       continue;
     }
 
@@ -200,13 +229,14 @@ bool CampaignsMatcher::Matched(const Targetings* targetings) const {
   const auto* targeting = targetings->front().GetIfDict();
   if (!targeting) {
     // Targeting is invalid. Skip the current campaign.
-    // TODO(b/299305911): Add metrics to track when a targeting is invalid.
     LOG(ERROR) << "Invalid targeting.";
+    RecordCampaignsManagerError(CampaignsManagerError::kInvalidTargeting);
     return false;
   }
 
-  return MaybeMatchDemoModeTargeting(DemoModeTargeting(*targeting)) &&
-         MatchDeviceTargeting(DeviceTargeting(*targeting));
+  return MatchSessionTargeting(SessionTargeting(targeting)) &&
+         MaybeMatchDemoModeTargeting(DemoModeTargeting(targeting)) &&
+         MatchDeviceTargeting(DeviceTargeting(targeting));
 }
 
 }  // namespace growth

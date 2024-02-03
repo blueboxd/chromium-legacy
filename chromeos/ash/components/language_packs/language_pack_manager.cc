@@ -6,6 +6,7 @@
 
 #include <string_view>
 
+#include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/bind.h"
@@ -15,12 +16,16 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_split.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/ash/components/language_packs/handwriting.h"
 #include "chromeos/ash/components/language_packs/language_packs_util.h"
+#include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/dlcservice/dbus-constants.h"
+
+using ::ash::input_method::InputMethodManager;
 
 namespace ash::language_packs {
 namespace {
@@ -125,6 +130,58 @@ void OnGetDlcState(GetPackStateCallback callback,
   result.language_code = locale;
 
   std::move(callback).Run(result);
+}
+
+// This functions goes through the list of locales to install and remove,
+// according to the diff. It performs the actual installation and uninstallation
+// of DLCs on the device.
+// It should be called whenever Input Methods are changed.
+void InstallOrRemoveToMatchState(const std::string& feature_id,
+                                 const StringsDiff& locale_diff) {
+  for (const std::string& locale : locale_diff.remove) {
+    LanguagePackManager::RemovePack(feature_id, locale, base::DoNothing());
+  }
+  for (const std::string& locale : locale_diff.add) {
+    LanguagePackManager::InstallPack(feature_id, locale, base::DoNothing());
+  }
+}
+
+// Updates packs for input methods based on the user prefs and the currently
+// installed DLCs.
+// TODO: b/294162606 - Write unit tests for this function if possible.
+void UpdateFromInputMethodPrefs(
+    base::span<const std::string> installed_hwr_locales,
+    input_method::InputMethodUtil* input_method_util,
+    PrefService* prefs) {
+  const std::vector<std::string> input_method_ids =
+      ExtractInputMethodsFromPrefs(prefs);
+  const base::flat_set<std::string> target_hwr_locales = MapThenFilterStrings(
+      input_method_ids, base::BindRepeating(MapInputMethodIdToHandwritingLocale,
+                                            input_method_util));
+
+  const StringsDiff locale_diff = ComputeStringsDiff(
+      {installed_hwr_locales.begin(), installed_hwr_locales.end()},
+      target_hwr_locales);
+
+  InstallOrRemoveToMatchState(kHandwritingFeatureId, locale_diff);
+}
+
+// Callback for dlcservice::GetExistingDlcs().
+// TODO: b/294162606 - Write unit tests for this function if possible.
+void OnGetExistingDlcs(PrefService* prefs,
+                       const std::string& err,
+                       const dlcservice::DlcsWithContent& dlcs_with_content) {
+  if (!err.empty() && err != dlcservice::kErrorNone) {
+    DLOG(ERROR) << "DlcserviceClient::GetExisingDlcs() returned error";
+    // TODO: b/285985206 - Record a UMA histogram.
+    return;
+  }
+
+  const base::flat_set<std::string> hwr_locales =
+      ConvertDlcsWithContentToHandwritingLocales(dlcs_with_content);
+  UpdateFromInputMethodPrefs({hwr_locales.begin(), hwr_locales.end()},
+                             InputMethodManager::Get()->GetInputMethodUtil(),
+                             prefs);
 }
 
 }  // namespace
@@ -392,6 +449,14 @@ void LanguagePackManager::UpdatePacksForOobe(
     DLOG(ERROR) << "Language Packs: UpdatePacksForOobe locale does not exist";
     std::move(callback).Run(CreateInvalidDlcPackResult());
   }
+}
+
+void LanguagePackManager::CheckAndUpdateDlcsForInputMethods(
+    PrefService* prefs) {
+  // The list of input methods have changed. We need to get the list of current
+  // DLCs installed on device, which is an asynchronous method.
+  DlcserviceClient::Get()->GetExistingDlcs(
+      base::BindOnce(&OnGetExistingDlcs, prefs));
 }
 
 void LanguagePackManager::AddObserver(Observer* const observer) {

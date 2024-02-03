@@ -58,9 +58,21 @@ PlusAddressService::PlusAddressService(
   }
 }
 
-bool PlusAddressService::SupportsPlusAddresses(url::Origin origin) {
+bool PlusAddressService::SupportsPlusAddresses(url::Origin origin,
+                                               bool is_off_the_record) {
   // TODO(b/295187452): Also check `origin` here.
-  return is_enabled();
+  // First, check prerequisites (the feature enabled, etc.)
+  if (!is_enabled()) {
+    return false;
+  }
+  // We've met the prerequisites. If this isn't an OTR session, plus_addresses
+  // are supported.
+  if (!is_off_the_record) {
+    return true;
+  }
+  // Prerequisites are met, but it's an off-the-record session. If there's an
+  // existing plus_address, it's supported, otherwise it is not.
+  return GetPlusAddress(origin).has_value();
 }
 
 absl::optional<std::string> PlusAddressService::GetPlusAddress(
@@ -207,6 +219,7 @@ absl::optional<std::string> PlusAddressService::GetPrimaryEmail() {
 
 bool PlusAddressService::is_enabled() const {
   return base::FeatureList::IsEnabled(plus_addresses::kFeature) &&
+         (kEnterprisePlusAddressServerUrl.Get() != "") &&
          identity_manager_ != nullptr &&
          // Note that having a primary account implies that account's email will
          // be populated.

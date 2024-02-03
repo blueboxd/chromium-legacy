@@ -67,7 +67,22 @@ MLOperand* BuildElementWiseBinary(V8TestingScope& scope,
                                   const MLOperand* a,
                                   const MLOperand* b);
 
-enum class ElementWiseUnaryKind { kAbs, kCeil, kFloor, kNeg };
+enum class ElementWiseUnaryKind {
+  kAbs,
+  kCeil,
+  kCos,
+  kExp,
+  kFloor,
+  kLog,
+  kNeg,
+  kSin,
+  kTan,
+  kErf,
+  kIdentity,
+  kLogicalNot,
+  kReciprocal,
+  kSqrt,
+};
 
 MLOperand* BuildPad(V8TestingScope& scope,
                     MLGraphBuilder* builder,
@@ -91,7 +106,18 @@ MLOperand* BuildGemm(V8TestingScope& scope,
                      const MLOperand* b,
                      const MLGemmOptions* options = MLGemmOptions::Create());
 
-enum class ReduceKind { kMean, kSum };
+enum class ReduceKind {
+  kL1,
+  kL2,
+  kLogSum,
+  kLogSumExp,
+  kMax,
+  kMean,
+  kMin,
+  kProduct,
+  kSum,
+  kSumSquare
+};
 
 MLOperand* BuildReduce(
     V8TestingScope& scope,

@@ -27,7 +27,6 @@ external/wpt/html/semantics/embedded-content/media-elements/autoplay-allowed-by-
 external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html
 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-sorted-before-dispatch.html
 external/wpt/html/semantics/links/hyperlink-auditing/headers.optional.html
-external/wpt/intersection-observer/padding-clip.html
 external/wpt/mediacapture-record/passthrough/MediaRecorder-passthrough.https.html
 external/wpt/screen-capture/permissions-policy-video.https.sub.html external/wpt/close-watcher/user-activation.html
 external/wpt/scroll-to-text-fragment/redirects.html
@@ -71,7 +70,6 @@ virtual/close-watcher/external/wpt/close-watcher/user-activation-shared.html?dia
 virtual/close-watcher/external/wpt/close-watcher/user-activation.html
 virtual/dark-color-scheme/fast/forms/validation-bubble-appearance-edge.html
 virtual/dark-color-scheme/fast/forms/validation-bubble-appearance-wrap.html
-virtual/disable-intersection-optimization/external/wpt/intersection-observer/padding-clip.html
 virtual/fenced-frame-mparch/external/wpt/fenced-frame/anchor-focus.https.html
 virtual/fenced-frame-mparch/external/wpt/fenced-frame/background-sync.https.html
 virtual/gpu-rasterization/images/color-profile-animate-rotate.html
@@ -84,7 +82,6 @@ virtual/keepalive-in-browser-migration/external/wpt/fetch/metadata/window-open.h
 virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-2d-drawImage.html
 virtual/pending-beacon/external/wpt/pending-beacon/pending_beacon-sendonhidden.tentative.https.window.html
 virtual/pending-beacon/external/wpt/pending-beacon/pending_post_beacon-cors.tentative.https.window.html
-virtual/plz-dedicated-worker/external/wpt/fetch/api/basic/scheme-blob.sub.any.html
 virtual/produce-compile-hints/external/wpt/fetch/api/basic/scheme-blob.sub.any.html
 virtual/produce-compile-hints/external/wpt/fetch/api/basic/scheme-blob.sub.any.worker.html
 virtual/reduce-accept-language/http/tests/inspector-protocol/network/navigate-iframe-in2out.js

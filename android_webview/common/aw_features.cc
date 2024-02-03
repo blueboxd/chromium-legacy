@@ -31,9 +31,12 @@ BASE_FEATURE(kWebViewCheckReturnResources,
 
 // Whether to destroy the WebView rendering functor when after a WebView window
 // becomes invisible.
+//
+// From a stable experiment in October 2023, this saves tens of MiB of graphics
+// memory at high quantiles, at no performance cost.
 BASE_FEATURE(kWebViewClearFunctorInBackground,
              "WebViewClearFunctorInBackground",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Use the SafeBrowsingApiHandlerBridge which uses the connectionless GMS APIs.
 // This Feature is checked and used in downstream internal code.
@@ -75,6 +78,12 @@ BASE_FEATURE(kWebViewDisplayCutout,
 // WebView clients.
 BASE_FEATURE(kWebViewEmptyComponentLoaderPolicy,
              "WebViewEmptyComponentLoaderPolicy",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable the WebView Media Integrity API.
+// This feature requires `kWebViewInjectPlatformJsApis` to be enabled as well.
+BASE_FEATURE(kWebViewMediaIntegrityApi,
+             "WebViewMediaIntegrityApi",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, passive mixed content (Audio/Video/Image subresources loaded
@@ -200,7 +209,7 @@ BASE_FEATURE(kWebViewImageDrag,
 // Enables injection of platform-specific JavaScript APIs.
 BASE_FEATURE(kWebViewInjectPlatformJsApis,
              "WebViewInjectPlatformJsApis",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // This enables uploading UMA data with a higher frequency.
 // This Feature is checked and used in downstream internal code.

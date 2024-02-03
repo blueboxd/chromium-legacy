@@ -87,14 +87,15 @@ absl::optional<double> GetMeasurementResult(
 absl::optional<double> GetMeasurementResult(
     const PageTimelineCPUMonitor::CPUUsageMap& cpu_usage_map,
     const TestNodeWrapper<FrameNodeImpl>& frame_wrapper) {
-  return GetMeasurementResult(cpu_usage_map, frame_wrapper->resource_context());
+  return GetMeasurementResult(cpu_usage_map,
+                              frame_wrapper->GetResourceContext());
 }
 
 absl::optional<double> GetMeasurementResult(
     const PageTimelineCPUMonitor::CPUUsageMap& cpu_usage_map,
     const TestNodeWrapper<WorkerNodeImpl>& worker_wrapper) {
   return GetMeasurementResult(cpu_usage_map,
-                              worker_wrapper->resource_context());
+                              worker_wrapper->GetResourceContext());
 }
 
 // A GMock matcher that will match 0.0 if the kUseResourceAttributionCPUMonitor
@@ -140,8 +141,11 @@ class PageTimelineCPUMonitorTest : public GraphTestHarness,
     mock_utility_process_->SetProcess(base::Process::Current(),
                                       /*launch_time=*/base::TimeTicks::Now());
 
-    cpu_monitor_.SetCPUMeasurementDelegateFactoryForTesting(
-        graph(), delegate_factory_.GetFactoryCallback());
+    // These tests validate specific timing of measurements around process
+    // creation and destruction.
+    delegate_factory_.SetRequireValidProcesses(true);
+    cpu_monitor_.SetCPUMeasurementDelegateFactoryForTesting(graph(),
+                                                            &delegate_factory_);
   }
 
   // Creates a renderer process containing a single page and frame, for simple
@@ -157,8 +161,8 @@ class PageTimelineCPUMonitorTest : public GraphTestHarness,
     // Resource Attribution stores page estimates directly in CPUUsageMap.
     auto resource_context =
         features::kUseResourceAttributionCPUMonitor.Get()
-            ? ResourceContext(page_node->resource_context())
-            : ResourceContext(frame_node->resource_context());
+            ? ResourceContext(page_node->GetResourceContext())
+            : ResourceContext(frame_node->GetResourceContext());
 
     // By default simulate 100% CPU usage in the renderer. To override this call
     // SetProcessCPUUsage again before advancing the clock.
@@ -242,7 +246,7 @@ TEST_P(PageTimelineCPUMonitorTest, CPUMeasurement) {
   // Renderer creation racing with StartMonitoring(). Its pid will not be
   // available until after monitoring starts .
   const SinglePageRendererNodes renderer2 = CreateSimpleCPUTrackingRenderer();
-  ASSERT_EQ(renderer2.process_node->process_id(), base::kNullProcessId);
+  ASSERT_EQ(renderer2.process_node->GetProcessId(), base::kNullProcessId);
 
   // `renderer1` begins measurement as soon as StartMonitoring is called.
   // `renderer2` begins measurement when its pid is available.

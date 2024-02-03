@@ -26,7 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
-#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_sdk_manager.h"  // nogncheck
+#include "chrome/browser/enterprise/connectors/test/fake_content_analysis_sdk_manager.h"  // nogncheck
 #endif
 
 namespace enterprise_connectors {
@@ -533,6 +533,7 @@ TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyReportOnly) {
   if (ExpectPostDialogAnalysis()) {
     validator.ExpectSensitiveDataEvent(
         /*url*/ "",
+        /*tab_url*/ "",
         /*source*/ "",
         /*destination*/ kPrinterName,
         /*filename*/ "New Tab",
@@ -607,6 +608,7 @@ TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyWarnThenCancel) {
   if (ExpectPostDialogAnalysis()) {
     validator.ExpectSensitiveDataEvent(
         /*url*/ "",
+        /*tab_url*/ "",
         /*source*/ "",
         /*destination*/ kPrinterName,
         /*filename*/ "New Tab",
@@ -681,6 +683,7 @@ TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyWarnedThenBypass) {
       testing::Mock::VerifyAndClearExpectations(client_.get());
       validator.ExpectSensitiveDataEvent(
           /*url*/ "",
+          /*tab_url*/ "",
           /*source*/ "",
           /*destination*/ kPrinterName,
           /*filename*/ "New Tab",
@@ -707,6 +710,7 @@ TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyWarnedThenBypass) {
   if (ExpectPostDialogAnalysis()) {
     validator.ExpectSensitiveDataEvent(
         /*url*/ "",
+        /*tab_url*/ "",
         /*source*/ "",
         /*destination*/ kPrinterName,
         /*filename*/ "New Tab",
@@ -774,6 +778,7 @@ TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyBlocked) {
   if (ExpectPostDialogAnalysis()) {
     validator.ExpectSensitiveDataEvent(
         /*url*/ "",
+        /*tab_url*/ "",
         /*source*/ "",
         /*destination*/ kPrinterName,
         /*filename*/ "New Tab",

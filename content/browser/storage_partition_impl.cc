@@ -34,7 +34,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
-#include "base/time/default_clock.h"
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -84,6 +83,7 @@
 #include "content/browser/navigation_or_document_handle.h"
 #include "content/browser/network/shared_dictionary_util.h"
 #include "content/browser/network_context_client_base_impl.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
@@ -1427,7 +1427,6 @@ void StoragePartitionImpl::Initialize(
   base::FilePath path = is_in_memory() ? base::FilePath() : partition_path_;
   indexed_db_control_wrapper_ = std::make_unique<IndexedDBControlWrapper>(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
-      base::DefaultClock::GetInstance(),
       ChromeBlobStorageContext::GetRemoteFor(browser_context_),
       std::move(file_system_access_context), GetIOThreadTaskRunner({}),
       /*task_runner=*/nullptr);
@@ -1667,6 +1666,15 @@ network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
     InitNetworkContext();
   }
   return network_context_.get();
+}
+
+cert_verifier::mojom::CertVerifierServiceUpdater*
+StoragePartitionImpl::GetCertVerifierServiceUpdater() {
+  DCHECK(initialized_);
+  if (!cert_verifier_service_updater_.is_bound()) {
+    InitNetworkContext();
+  }
+  return cert_verifier_service_updater_.get();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -3167,6 +3175,12 @@ void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {
   }
 }
 
+void StoragePartitionImpl::FlushCertVerifierInterfaceForTesting() {
+  DCHECK(initialized_);
+  DCHECK(cert_verifier_service_updater_);
+  cert_verifier_service_updater_.FlushForTesting();  // IN-TEST
+}
+
 void StoragePartitionImpl::WaitForDeletionTasksForTesting() {
   DCHECK(initialized_);
   if (deletion_helpers_running_) {
@@ -3361,8 +3375,10 @@ void StoragePartitionImpl::InitNetworkContext() {
          "NetworkContextParams, as they will be replaced with a new pipe to "
          "the CertVerifierService.";
 
-  context_params->cert_verifier_params =
-      GetCertVerifierParams(std::move(cert_verifier_creation_params));
+  cert_verifier_service_updater_.reset();
+  context_params->cert_verifier_params = GetCertVerifierParamsWithUpdater(
+      std::move(cert_verifier_creation_params),
+      cert_verifier_service_updater_.BindNewPipeAndPassReceiver());
 
   // This mechanisms should be used only for legacy internal headers. You can
   // find a recommended alternative approach on URLRequest::cors_exempt_headers

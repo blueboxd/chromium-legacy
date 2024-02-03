@@ -19,6 +19,7 @@ FakeLorgnetteManagerClient::~FakeLorgnetteManagerClient() = default;
 void FakeLorgnetteManagerClient::Init(dbus::Bus* bus) {}
 
 void FakeLorgnetteManagerClient::ListScanners(
+    const std::string& client_id,
     bool local_only,
     chromeos::DBusMethodCallback<lorgnette::ListScannersResponse> callback) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
@@ -44,6 +45,22 @@ void FakeLorgnetteManagerClient::CloseScanner(
     chromeos::DBusMethodCallback<lorgnette::CloseScannerResponse> callback) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), close_scanner_response_));
+}
+
+void FakeLorgnetteManagerClient::SetOptions(
+    const lorgnette::SetOptionsRequest& request,
+    chromeos::DBusMethodCallback<lorgnette::SetOptionsResponse> callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), set_options_response_));
+}
+
+void FakeLorgnetteManagerClient::GetCurrentConfig(
+    const lorgnette::GetCurrentConfigRequest& request,
+    chromeos::DBusMethodCallback<lorgnette::GetCurrentConfigResponse>
+        callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), get_current_config_response_));
 }
 
 void FakeLorgnetteManagerClient::StartPreparedScan(
@@ -144,6 +161,16 @@ void FakeLorgnetteManagerClient::SetCloseScannerResponse(
     const absl::optional<lorgnette::CloseScannerResponse>&
         close_scanner_response) {
   close_scanner_response_ = close_scanner_response;
+}
+
+void FakeLorgnetteManagerClient::SetSetOptionsResponse(
+    const absl::optional<lorgnette::SetOptionsResponse>& response) {
+  set_options_response_ = response;
+}
+
+void FakeLorgnetteManagerClient::SetGetCurrentConfigResponse(
+    const absl::optional<lorgnette::GetCurrentConfigResponse>& response) {
+  get_current_config_response_ = response;
 }
 
 void FakeLorgnetteManagerClient::SetStartPreparedScanResponse(

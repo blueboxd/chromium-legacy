@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
-#include "third_party/blink/renderer/core/svg/proxy_svg_resource_client.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -41,17 +41,10 @@
 
 namespace blink {
 
-CSSImageValue::CSSImageValue(CSSUrlData url_data,
-                             const Referrer& referrer,
-                             OriginClean origin_clean,
-                             bool is_ad_related,
-                             StyleImage* image)
+CSSImageValue::CSSImageValue(CSSUrlData url_data, StyleImage* image)
     : CSSValue(kImageClass),
       url_data_(std::move(url_data)),
-      referrer_(referrer),
-      cached_image_(image),
-      origin_clean_(origin_clean),
-      is_ad_related_(is_ad_related) {}
+      cached_image_(image) {}
 
 CSSImageValue::~CSSImageValue() = default;
 
@@ -59,12 +52,13 @@ FetchParameters CSSImageValue::PrepareFetch(
     const Document& document,
     FetchParameters::ImageRequestBehavior image_request_behavior,
     CrossOriginAttributeValue cross_origin) const {
+  const Referrer& referrer = url_data_.GetReferrer();
   ResourceRequest resource_request(url_data_.ResolveUrl(document));
   resource_request.SetReferrerPolicy(
       ReferrerUtils::MojoReferrerPolicyResolveDefault(
-          referrer_.referrer_policy));
-  resource_request.SetReferrerString(referrer_.referrer);
-  if (is_ad_related_) {
+          referrer.referrer_policy));
+  resource_request.SetReferrerString(referrer.referrer);
+  if (url_data_.IsAdRelated()) {
     resource_request.SetIsAdResource();
   }
   ExecutionContext* execution_context = document.GetExecutionContext();
@@ -72,8 +66,8 @@ FetchParameters CSSImageValue::PrepareFetch(
   options.initiator_info.name = initiator_name_.empty()
                                     ? fetch_initiator_type_names::kCSS
                                     : initiator_name_;
-  if (referrer_.referrer != Referrer::ClientReferrerString()) {
-    options.initiator_info.referrer = referrer_.referrer;
+  if (referrer.referrer != Referrer::ClientReferrerString()) {
+    options.initiator_info.referrer = referrer.referrer;
   }
   FetchParameters params(std::move(resource_request), options);
 
@@ -87,7 +81,7 @@ FetchParameters CSSImageValue::PrepareFetch(
     params.SetLazyImageDeferred();
   }
 
-  if (origin_clean_ != OriginClean::kTrue) {
+  if (!url_data_.IsFromOriginCleanStyleSheet()) {
     params.SetFromOriginDirtyStyleSheet(true);
   }
 
@@ -106,8 +100,14 @@ StyleImage* CSSImageValue::CacheImage(
 
     FetchParameters params =
         PrepareFetch(document, image_request_behavior, cross_origin);
-    cached_image_ = document.GetStyleEngine().CacheStyleImage(
-        params, origin_clean_, is_ad_related_, override_image_resolution);
+    ImageResourceContent* image_content =
+        document.GetStyleEngine().CacheImageContent(params);
+    cached_image_ = MakeGarbageCollected<StyleFetchedImage>(
+        image_content, document,
+        params.GetImageRequestBehavior() ==
+            FetchParameters::ImageRequestBehavior::kDeferImageLoad,
+        url_data_.IsFromOriginCleanStyleSheet(), url_data_.IsAdRelated(),
+        params.Url(), override_image_resolution);
   }
   return cached_image_.Get();
 }
@@ -130,6 +130,14 @@ void CSSImageValue::RestoreCachedResourceIfNeeded(
                               : initiator_name_);
 }
 
+SVGResource* CSSImageValue::EnsureSVGResource() const {
+  if (!svg_resource_) {
+    svg_resource_ = MakeGarbageCollected<ExternalSVGResourceImageContent>(
+        cached_image_->CachedImage(), NormalizedFragmentIdentifier());
+  }
+  return svg_resource_.Get();
+}
+
 bool CSSImageValue::HasFailedOrCanceledSubresources() const {
   if (!cached_image_) {
     return false;
@@ -150,7 +158,7 @@ String CSSImageValue::CustomCSSText() const {
 
 void CSSImageValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(cached_image_);
-  visitor->Trace(proxy_svg_resource_client_);
+  visitor->Trace(svg_resource_);
   CSSValue::TraceAfterDispatch(visitor);
 }
 
@@ -165,14 +173,6 @@ CSSImageValue* CSSImageValue::ComputedCSSValueMaybeLocal() const {
   return ComputedCSSValue();
 }
 
-ProxySVGResourceClient* CSSImageValue::GetSVGResourceClient() {
-  if (!proxy_svg_resource_client_) {
-    proxy_svg_resource_client_ =
-        MakeGarbageCollected<ProxySVGResourceClient>(*this);
-  }
-  return proxy_svg_resource_client_.Get();
-}
-
 AtomicString CSSImageValue::NormalizedFragmentIdentifier() const {
   // Always use KURL's FragmentIdentifier to ensure that we're handling the
   // fragment in a consistent manner.
@@ -184,6 +184,7 @@ AtomicString CSSImageValue::NormalizedFragmentIdentifier() const {
 void CSSImageValue::ReResolveURL(const Document& document) const {
   if (url_data_.ReResolveUrl(document)) {
     cached_image_.Clear();
+    svg_resource_.Clear();
   }
 }
 

@@ -9,13 +9,11 @@ import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {maybeShowTooltip} from '../../../common/js/dom_utils.js';
 import {compareLabelAndGroupBottomEntries, compareName, isComputersEntry, isDescendantEntry, isEntryInsideDrive, isOneDrive, isOneDriveId, isRecentRootType, isSameEntry, isSharedDriveEntry} from '../../../common/js/entry_utils.js';
 import {FileType} from '../../../common/js/file_type.js';
-import {isJellyEnabled} from '../../../common/js/flags.js';
 import {vmTypeToIconName} from '../../../common/js/icon_util.js';
 import {recordEnum, recordInterval, recordSmallCount, recordUserAction, startInterval} from '../../../common/js/metrics.js';
 import {getEntryLabel, str, strf} from '../../../common/js/translations.js';
 import {iconSetToCSSBackgroundImageValue} from '../../../common/js/util.js';
 import {VolumeManagerCommon} from '../../../common/js/volume_manager_types.js';
-import {FileOperationManager} from '../../../externs/background/file_operation_manager.js';
 import {FilesAppDirEntry} from '../../../externs/files_app_entry_interfaces.js';
 import {PropStatus, SearchData, SearchLocation, State} from '../../../externs/ts/state.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
@@ -208,7 +206,7 @@ directorytree.styleRowElementDepth = (item, depth) => {
   // 'TreeItem'.
   const fileRowElement = item.rowElement.firstElementChild;
 
-  const indent = depth * (isJellyEnabled() ? 20 : 22);
+  const indent = depth * 20;
   let style = 'padding-inline-start: ' + indent + 'px';
   const width = indent + 60;
   style += '; min-width: ' + width + 'px;';
@@ -2362,14 +2360,10 @@ export class DirectoryTree extends Tree {
    * @param {!DirectoryModel} directoryModel Current DirectoryModel.
    * @param {!VolumeManager} volumeManager VolumeManager of the system.
    * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
-   * @param {!FileOperationManager} fileOperationManager
    * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
    */
   decorateDirectoryTree(
-      // @ts-ignore: error TS6133: 'fileOperationManager' is declared but its
-      // value is never read.
-      directoryModel, volumeManager, metadataModel, fileOperationManager,
-      fakeEntriesVisible) {
+      directoryModel, volumeManager, metadataModel, fakeEntriesVisible) {
     // @ts-ignore: error TS2339: Property 'decorate' does not exist on type
     // 'Tree'.
     Tree.prototype.decorate.call(this);
@@ -3042,12 +3036,10 @@ export class DirectoryTree extends Tree {
  * @param {!DirectoryModel} directoryModel Current DirectoryModel.
  * @param {!VolumeManager} volumeManager VolumeManager of the system.
  * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
- * @param {!FileOperationManager} fileOperationManager
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
 DirectoryTree.decorate =
-    (el, directoryModel, volumeManager, metadataModel, fileOperationManager,
-     fakeEntriesVisible) => {
+    (el, directoryModel, volumeManager, metadataModel, fakeEntriesVisible) => {
       // @ts-ignore: error TS2339: Property '__proto__' does not exist on type
       // 'HTMLElement'.
       el.__proto__ = DirectoryTree.prototype;
@@ -3055,8 +3047,7 @@ DirectoryTree.decorate =
       Object.freeze(directorytree);
 
       /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
-          directoryModel, volumeManager, metadataModel, fileOperationManager,
-          fakeEntriesVisible);
+          directoryModel, volumeManager, metadataModel, fakeEntriesVisible);
 
       // @ts-ignore: error TS2339: Property 'rowElementDepthStyleHandler' does
       // not exist on type 'HTMLElement'.

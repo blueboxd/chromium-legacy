@@ -17,7 +17,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/ash/app_mode/certificate_manager_dialog.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/login/auth/chrome_login_performer.h"
 #include "chrome/browser/ash/login/chrome_restart_request.h"
 #include "chrome/browser/ash/login/ui/captive_portal_window_proxy.h"
@@ -250,7 +249,7 @@ void ErrorScreen::ShowNetworkErrorMessage(NetworkStateInformer::State state,
     }
     SetErrorState(NetworkError::ERROR_STATE_PORTAL, network_name);
   } else if (is_loading_timeout) {
-    SetErrorState(NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT, network_name);
+    SetErrorState(NetworkError::ERROR_STATE_LOADING_TIMEOUT, network_name);
   } else {
     SetErrorState(NetworkError::ERROR_STATE_OFFLINE, std::string());
   }
@@ -260,7 +259,7 @@ void ErrorScreen::ShowNetworkErrorMessage(NetworkStateInformer::State state,
   AllowGuestSignin(guest_signin_allowed);
   ShowOfflineLoginOption(
       g_offline_login_allowed_ && g_offline_login_per_user_allowed_ &&
-      GetErrorState() != NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT);
+      GetErrorState() != NetworkError::ERROR_STATE_LOADING_TIMEOUT);
 
   // No need to show the screen again if it is already shown.
   if (is_hidden()) {

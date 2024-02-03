@@ -33,8 +33,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
-#include "chrome/browser/printing/prefs_util.h"
 #include "chrome/browser/printing/printer_query_oop.h"
+#include "printing/printing_features.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -47,7 +47,7 @@ namespace {
 
 PrintingContext::ProcessBehavior GetPrintingContextProcessBehavior() {
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
-  if (ShouldPrintJobOop()) {
+  if (features::ShouldPrintJobOop()) {
     return PrintingContext::ProcessBehavior::kOopEnabledSkipSystemCalls;
   }
 #endif
@@ -108,7 +108,7 @@ std::unique_ptr<PrinterQuery> PrinterQuery::Create(
   }
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
-  if (ShouldPrintJobOop()) {
+  if (features::ShouldPrintJobOop()) {
     return base::WrapUnique(new PrinterQueryOop(rfh_id));
   }
 #endif
@@ -422,7 +422,7 @@ void PrinterQuery::GetSettingsWithUI(uint32_t document_page_count,
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
   if (web_contents && web_contents->IsFullscreen()) {
-    web_contents->ExitFullscreen(true);
+    web_contents->ExitFullscreen();
   }
 
   PRINTER_LOG(EVENT) << "Getting printer settings from user in-process";

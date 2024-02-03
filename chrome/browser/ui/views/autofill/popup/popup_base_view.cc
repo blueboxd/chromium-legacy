@@ -86,10 +86,8 @@ std::unique_ptr<views::Border> CreateBorder() {
 // static
 int PopupBaseView::GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      base::FeatureList::IsEnabled(
-          features::kAutofillShowAutocompleteDeleteButton)
-          ? views::Emphasis::kHigh
-          : views::Emphasis::kMedium);
+      ShouldApplyNewAutofillPopupStyle() ? views::Emphasis::kHigh
+                                         : views::Emphasis::kMedium);
 }
 
 // static
@@ -329,7 +327,7 @@ void PopupBaseView::NotifyAXSelection(views::View& selected_view) {
       {"PopupSuggestionView", "PopupPasswordSuggestionView", "PopupFooterView",
        "PopupSeparatorView", "PopupWarningView", "PopupBaseView",
        "PasswordGenerationPopupViewViews::GeneratedPasswordBox",
-       "PopupCellView", "PopupCellWithButtonView"});
+       "PopupRowContentView", "EditPasswordRow"});
   DCHECK(kDerivedClasses.contains(selected_view.GetClassName()))
       << "If you add a new derived class from AutofillPopupRowView, add it "
          "here and to onSelection(evt) in "

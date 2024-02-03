@@ -44,7 +44,7 @@ TEST_F(FrameVisibilityDecoratorTest, IsCurrent) {
 
 TEST_F(FrameVisibilityDecoratorTest, SetPageVisible) {
   auto page_node = CreateNode<PageNodeImpl>();
-  EXPECT_FALSE(page_node->is_visible());
+  EXPECT_FALSE(page_node->IsVisible());
 
   // Create a frame node.
   auto frame_node = CreateFrameNodeAutoId(process_node(), page_node.get());
@@ -64,7 +64,7 @@ TEST_F(FrameVisibilityDecoratorTest, SetPageVisible) {
 
 TEST_F(FrameVisibilityDecoratorTest, PageIsBeingMirrored) {
   auto page_node = CreateNode<PageNodeImpl>();
-  EXPECT_FALSE(page_node->is_visible());
+  EXPECT_FALSE(page_node->IsVisible());
   auto frame_node = CreateFrameNodeAutoId(process_node(), page_node.get());
   frame_node->SetIsCurrent(true);
 
@@ -80,7 +80,7 @@ TEST_F(FrameVisibilityDecoratorTest, PageIsBeingMirrored) {
 // PageNode::IsVisible.
 TEST_F(FrameVisibilityDecoratorTest, PageUserVisible) {
   auto page_node = CreateNode<PageNodeImpl>();
-  EXPECT_FALSE(page_node->is_visible());
+  EXPECT_FALSE(page_node->IsVisible());
   auto frame_node = CreateFrameNodeAutoId(process_node(), page_node.get());
   frame_node->SetIsCurrent(true);
 
@@ -108,7 +108,7 @@ TEST_F(FrameVisibilityDecoratorTest, PageUserVisible) {
 
 TEST_F(FrameVisibilityDecoratorTest, SetPageVisibleWithChildNodes) {
   auto page_node = CreateNode<PageNodeImpl>();
-  EXPECT_FALSE(page_node->is_visible());
+  EXPECT_FALSE(page_node->IsVisible());
 
   // Create a main frame node.
   auto main_frame_node = CreateFrameNodeAutoId(process_node(), page_node.get());
@@ -199,6 +199,34 @@ TEST_F(FrameVisibilityDecoratorTest, SetFrameIntersectsViewport) {
   child_frame_node->SetIntersectsViewport(true);
   EXPECT_EQ(frame_node->visibility(), FrameNode::Visibility::kVisible);
   EXPECT_EQ(child_frame_node->visibility(), FrameNode::Visibility::kVisible);
+}
+
+TEST_F(FrameVisibilityDecoratorTest, FencedFrame) {
+  auto page_node = CreateNode<PageNodeImpl>();
+  // The page starts already visible.
+  page_node->SetIsVisible(true);
+
+  // The main frame. No parent nor outer document.
+  auto main_frame_node = CreateNode<FrameNodeImpl>(
+      process_node(), page_node.get(), /*parent_frame_node=*/nullptr,
+      /*outer_document_for_fenced_frame=*/nullptr,
+      /*render_frame_id=*/1);
+  main_frame_node->SetIsCurrent(true);
+
+  // Create a <fencedframe> whose intersection with the viewport is still
+  // unknown.
+  auto fenced_frame_node = CreateNode<FrameNodeImpl>(
+      process_node(), page_node.get(),
+      /*parent_frame_node=*/nullptr,
+      /*outer_document_for_fenced_frame=*/main_frame_node.get(),
+      /*render_frame_id=*/2);
+  fenced_frame_node->SetIsCurrent(true);
+  EXPECT_FALSE(fenced_frame_node->intersects_viewport().has_value());
+  EXPECT_EQ(fenced_frame_node->visibility(), FrameNode::Visibility::kUnknown);
+
+  // Make it so that the fenced frame intersects with the view port.
+  fenced_frame_node->SetIntersectsViewport(true);
+  EXPECT_EQ(fenced_frame_node->visibility(), FrameNode::Visibility::kVisible);
 }
 
 }  // namespace performance_manager

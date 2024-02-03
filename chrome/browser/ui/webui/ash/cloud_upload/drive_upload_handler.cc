@@ -436,9 +436,6 @@ void DriveUploadHandler::OnSyncingStatusUpdate(
     if (base::FilePath(item->path) != observed_relative_drive_path_) {
       continue;
     }
-    if (item->state == drivefs::mojom::ItemEvent::State::kCancelledAndDeleted) {
-      continue;
-    }
     switch (item->state) {
       case drivefs::mojom::ItemEvent::State::kQueued: {
         // Tell Drive to upload the file now. If successful, we will receive a
@@ -474,7 +471,9 @@ void DriveUploadHandler::OnSyncingStatusUpdate(
                   OfficeFilesUploadResult::kSyncError);
         return;
       case drivefs::mojom::ItemEvent::State::kCancelledAndDeleted:
-        NOTREACHED();
+        LOG(ERROR) << "Drive sync error: cancelled and deleted";
+        OnEndCopy(base::unexpected(GetGenericErrorMessage()),
+                  OfficeFilesUploadResult::kSyncCancelledAndDeleted);
         return;
       case drivefs::mojom::ItemEvent::State::kCancelledAndTrashed:
         LOG(ERROR) << "Drive sync error: cancelled and trashed";

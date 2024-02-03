@@ -38,10 +38,6 @@ BASE_FEATURE(kEnableImageSearchSidePanelFor3PDse,
              "EnableImageSearchSidePanelFor3PDse",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kLensRegionSearchStaticPage,
-             "LensRegionSearchStaticPage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kLensImageFormatOptimizations,
              "LensImageFormatOptimizations",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -93,11 +89,8 @@ constexpr base::FeatureParam<bool> kDismissLoadingStateOnDidFinishLoad{
 constexpr base::FeatureParam<bool> kDismissLoadingStateOnPrimaryPageChanged{
     &kLensStandalone, "dismiss-loading-state-on-primary-page-changed", false};
 
-constexpr base::FeatureParam<int> kMaxPixelsForRegionSearch{
-    &kLensImageCompression, "region-search-dimensions-max-pixels", 1000};
-
-constexpr base::FeatureParam<int> kMaxAreaForRegionSearch{
-    &kLensImageCompression, "region-search-dimensions-max-area", 1000000};
+constexpr base::FeatureParam<int> kMaxAreaForImageSearch{
+    &kLensImageCompression, "dimensions-max-area", 1000000};
 
 constexpr base::FeatureParam<int> kMaxPixelsForImageSearch{
     &kLensImageCompression, "dimensions-max-pixels", 1000};
@@ -111,11 +104,11 @@ const base::FeatureParam<int> kEncodingQualityJpeg{
 const base::FeatureParam<int> kEncodingQualityWebp{
     &kLensImageFormatOptimizations, "encoding-quality-webp", 45};
 
-const base::FeatureParam<bool> kUseWebpInRegionSearch{
-    &kLensImageFormatOptimizations, "use-webp-region-search", false};
+const base::FeatureParam<bool> kUseWebpForImageSearch{
+    &kLensImageFormatOptimizations, "use-webp-for-image-search", false};
 
-const base::FeatureParam<bool> kUseJpegInRegionSearch{
-    &kLensImageFormatOptimizations, "use-jpeg-region-search", true};
+const base::FeatureParam<bool> kUseJpegForImageSearch{
+    &kLensImageFormatOptimizations, "use-jpeg-for-image-search", true};
 
 constexpr base::FeatureParam<std::string> kLensPingURL{
     &kEnableLensPing, "lens-ping-url",
@@ -129,12 +122,8 @@ bool GetEnableLatencyLogging() {
          base::FeatureList::IsEnabled(kLensStandalone);
 }
 
-int GetMaxPixelsForRegionSearch() {
-  return kMaxPixelsForRegionSearch.Get();
-}
-
-int GetMaxAreaForRegionSearch() {
-  return kMaxAreaForRegionSearch.Get();
+int GetMaxAreaForImageSearch() {
+  return kMaxAreaForImageSearch.Get();
 }
 
 int GetMaxPixelsForImageSearch() {
@@ -187,14 +176,6 @@ bool IsLensSidePanelEnabled() {
   return base::FeatureList::IsEnabled(kLensStandalone);
 }
 
-bool IsLensSidePanelEnabledForRegionSearch() {
-  return IsLensSidePanelEnabled() && !IsLensFullscreenSearchEnabled();
-}
-
-bool IsLensRegionSearchStaticPageEnabled() {
-  return base::FeatureList::IsEnabled(kLensRegionSearchStaticPage);
-}
-
 int GetEncodingQualityJpeg() {
   return kEncodingQualityJpeg.Get();
 }
@@ -203,14 +184,14 @@ int GetEncodingQualityWebp() {
   return kEncodingQualityWebp.Get();
 }
 
-bool IsWebpForRegionSearchEnabled() {
+bool IsWebpForImageSearchEnabled() {
   return base::FeatureList::IsEnabled(kLensImageFormatOptimizations) &&
-         kUseWebpInRegionSearch.Get();
+         kUseWebpForImageSearch.Get();
 }
 
-bool IsJpegForRegionSearchEnabled() {
+bool IsJpegForImageSearchEnabled() {
   return base::FeatureList::IsEnabled(kLensImageFormatOptimizations) &&
-         kUseJpegInRegionSearch.Get();
+         kUseJpegForImageSearch.Get();
 }
 
 bool GetEnableContextMenuInLensSidePanel() {

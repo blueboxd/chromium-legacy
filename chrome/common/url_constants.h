@@ -377,18 +377,6 @@ inline constexpr char kPasswordSharingLearnMoreURL[] =
 inline constexpr char kPasswordSharingTroubleshootURL[] =
     "https://support.google.com/chrome?p=password_sharing_troubleshoot";
 
-// Help URL for the Payment methods page of the Google Pay site.
-inline constexpr char16_t kPaymentMethodsURL[] =
-    u"https://pay.google.com/payments/"
-    u"home?utm_source=chrome&utm_medium=settings&utm_campaign=chrome-payment#"
-    u"paymentMethods";
-
-// Help URL for the newer GPay Web site instead of the legacy Payments Center.
-inline constexpr char16_t kPaymentMethodsURLForGPayWeb[] =
-    u"https://pay.google.com/"
-    u"pay?p=paymentmethods&utm_source=chrome&utm_medium=settings&utm_campaign="
-    u"payment_methods";
-
 // The URL for the "Fill out forms automatically" support page.
 inline constexpr char kAddressesAndPaymentMethodsLearnMoreURL[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -638,6 +626,10 @@ inline constexpr char kGoogleNameserversLearnMoreURL[] =
 // The URL for the "learn more" link for Instant Tethering.
 inline constexpr char kInstantTetheringLearnMoreURL[] =
     "https://support.google.com/chromebook?p=instant_tethering";
+
+// The URL for the "learn more" link for Chromebook hotspot.
+inline constexpr char kChromebookHotspotLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=chromebook_hotspot";
 
 // The URL for the "Learn more" link for Kerberos accounts.
 inline constexpr char kKerberosAccountsLearnMoreURL[] =

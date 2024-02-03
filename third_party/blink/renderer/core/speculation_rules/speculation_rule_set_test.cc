@@ -7,6 +7,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/types/strong_alias.h"
 #include "services/network/public/mojom/no_vary_search.mojom-blink.h"
@@ -34,6 +35,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_rule_predicate.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
+#include "third_party/blink/renderer/core/speculation_rules/speculation_rules_metrics.h"
 #include "third_party/blink/renderer/core/speculation_rules/stub_speculation_host.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
@@ -156,7 +158,6 @@ class SpeculationRuleSetTest : public ::testing::Test {
   }
 
  private:
-  ScopedSpeculationRulesPrefetchProxyForTest enable_prefetch_{true};
   ScopedSpeculationRulesRelativeToDocumentForTest enable_relative_to_{true};
   ScopedPrerender2ForTest enable_prerender2_{true};
   Persistent<ExecutionContext> execution_context_;
@@ -882,9 +883,6 @@ TEST_F(SpeculationRuleSetTest, PropagatesAllRulesToBrowser) {
 // Tests that prefetch rules are ignored unless SpeculationRulesPrefetchProxy
 // is enabled.
 TEST_F(SpeculationRuleSetTest, PrerenderIgnorePrefetchRules) {
-  // Overwrite the kSpeculationRulesPrefetchProxy flag.
-  ScopedSpeculationRulesPrefetchProxyForTest enable_prefetch{false};
-
   DummyPageHolder page_holder;
   StubSpeculationHost speculation_host;
   const String speculation_script =
@@ -1587,9 +1585,9 @@ TEST_F(DocumentRulesTest, ParseHref) {
           MatchesPredicate(Href({URLPattern("/foo#bar")})),
           MatchesPredicate(Href({URLPattern("/foo")})),
           MatchesPredicate(Href({URLPattern("/buzz"), URLPattern("/fizz"),
-                                 URLPattern("https://bar.com")})),
-          MatchesPredicate(Or({Href({URLPattern("https://foo.com")}),
-                               Neg(Href({URLPattern("http://*")}))}))));
+                                 URLPattern("https://bar.com:*")})),
+          MatchesPredicate(Or({Href({URLPattern("https://foo.com:*")}),
+                               Neg(Href({URLPattern("http://*:*")}))}))));
 }
 
 TEST_F(DocumentRulesTest, ParseHref_AllUrlPatternKeys) {
@@ -1604,7 +1602,7 @@ TEST_F(DocumentRulesTest, ParseHref_AllUrlPatternKeys) {
     "hostname": "abc.xyz",
     "baseURL": "https://example.com"
   })");
-  EXPECT_THAT(href_matches, Href({URLPattern("https://abc.xyz:*/*\\?*")}));
+  EXPECT_THAT(href_matches, Href({URLPattern("https://:@abc.xyz:*/*\\?*#")}));
 }
 
 TEST_F(DocumentRulesTest, HrefMatchesWithBaseURL) {
@@ -1802,10 +1800,10 @@ TEST_F(DocumentRulesTest, DropInvalidRules) {
   EXPECT_EQ(rule_set->error_type(),
             SpeculationRuleSetErrorType::kInvalidRulesSkipped);
   EXPECT_THAT(rule_set->prefetch_rules(),
-              ElementsAre(MatchesPredicate(
-                  And({Or({Href({URLPattern("/hello.html")}),
-                           Selector({StyleRuleWithSelectorText(".valid")})}),
-                       Neg(And({Href({URLPattern("https://world.com")})}))}))));
+              ElementsAre(MatchesPredicate(And(
+                  {Or({Href({URLPattern("/hello.html")}),
+                       Selector({StyleRuleWithSelectorText(".valid")})}),
+                   Neg(And({Href({URLPattern("https://world.com:*")})}))}))));
 }
 
 // Tests that errors of individual rules which cause them to be ignored are
@@ -4020,6 +4018,7 @@ TEST_F(SpeculationRuleSetTest, Eagerness) {
   const KURL kUrl6{"https://example.com/prefetch/document/page2.html"};
   const KURL kUrl7{"https://example.com/prerender/list/page2.html"};
   const KURL kUrl8{"https://example.com/prerender/document/page2.html"};
+  const KURL kUrl9{"https://example.com/prefetch/list/page3.html"};
 
   AddAnchor(*document.body(), kUrl2.GetString());
   AddAnchor(*document.body(), kUrl4.GetString());
@@ -4045,6 +4044,11 @@ TEST_F(SpeculationRuleSetTest, Eagerness) {
           {
             "source": "document",
             "where": {"href_matches": "https://example.com/prefetch/document/page2.html"}
+          },
+          {
+            "source": "list",
+            "urls": ["https://example.com/prefetch/list/page3.html"],
+            "eagerness": "immediate"
           }
         ],
         "prerender": [
@@ -4090,9 +4094,11 @@ TEST_F(SpeculationRuleSetTest, Eagerness) {
               HasEagerness(blink::mojom::SpeculationEagerness::kConservative)),
           AllOf(HasURL(kUrl7),
                 HasEagerness(blink::mojom::SpeculationEagerness::kEager)),
-          AllOf(HasURL(kUrl8),
-                HasEagerness(
-                    blink::mojom::SpeculationEagerness::kConservative))));
+          AllOf(
+              HasURL(kUrl8),
+              HasEagerness(blink::mojom::SpeculationEagerness::kConservative)),
+          AllOf(HasURL(kUrl9),
+                HasEagerness(blink::mojom::SpeculationEagerness::kEager))));
 }
 
 TEST_F(SpeculationRuleSetTest, InvalidUseOfEagerness1) {
@@ -4481,6 +4487,62 @@ TEST_F(SpeculationRuleSetTest, ValidNoVarySearchHintNoErrorOrWarningMessages) {
     EXPECT_FALSE(rule_set->HasError());
     EXPECT_FALSE(rule_set->HasWarnings());
   }
+}
+
+TEST_F(SpeculationRuleSetTest, DocumentReportsSuccessMetric) {
+  base::HistogramTester histogram_tester;
+  DummyPageHolder page_holder;
+  page_holder.GetFrame().GetSettings()->SetScriptEnabled(true);
+  Document& document = page_holder.GetDocument();
+  HTMLScriptElement* script =
+      MakeGarbageCollected<HTMLScriptElement>(document, CreateElementFlags());
+  script->setAttribute(html_names::kTypeAttr, AtomicString("speculationrules"));
+  script->setText("{}");
+  document.head()->appendChild(script);
+  histogram_tester.ExpectUniqueSample("Blink.SpeculationRules.LoadOutcome",
+                                      SpeculationRulesLoadOutcome::kSuccess, 1);
+}
+
+TEST_F(SpeculationRuleSetTest, DocumentReportsParseErrorFromScript) {
+  base::HistogramTester histogram_tester;
+  DummyPageHolder page_holder;
+  page_holder.GetFrame().GetSettings()->SetScriptEnabled(true);
+  Document& document = page_holder.GetDocument();
+  HTMLScriptElement* script =
+      MakeGarbageCollected<HTMLScriptElement>(document, CreateElementFlags());
+  script->setAttribute(html_names::kTypeAttr, AtomicString("speculationrules"));
+  script->setText("{---}");
+  document.head()->appendChild(script);
+  histogram_tester.ExpectUniqueSample(
+      "Blink.SpeculationRules.LoadOutcome",
+      SpeculationRulesLoadOutcome::kParseErrorInline, 1);
+}
+
+TEST_F(SpeculationRuleSetTest, DocumentReportsParseErrorFromRequest) {
+  base::HistogramTester histogram_tester;
+  DummyPageHolder page_holder;
+  Document& document = page_holder.GetDocument();
+  SpeculationRuleSet* rule_set = SpeculationRuleSet::Parse(
+      SpeculationRuleSet::Source::FromRequest(
+          "{---}", KURL("https://fake.test/sr.json"), 0),
+      document.GetExecutionContext());
+  DocumentSpeculationRules::From(document).AddRuleSet(rule_set);
+  histogram_tester.ExpectUniqueSample(
+      "Blink.SpeculationRules.LoadOutcome",
+      SpeculationRulesLoadOutcome::kParseErrorFetched, 1);
+}
+
+TEST_F(SpeculationRuleSetTest, DocumentReportsParseErrorFromBrowserInjection) {
+  base::HistogramTester histogram_tester;
+  DummyPageHolder page_holder;
+  Document& document = page_holder.GetDocument();
+  SpeculationRuleSet* rule_set = SpeculationRuleSet::Parse(
+      SpeculationRuleSet::Source::FromBrowserInjected("{---}", KURL()),
+      document.GetExecutionContext());
+  DocumentSpeculationRules::From(document).AddRuleSet(rule_set);
+  histogram_tester.ExpectUniqueSample(
+      "Blink.SpeculationRules.LoadOutcome",
+      SpeculationRulesLoadOutcome::kParseErrorBrowserInjected, 1);
 }
 
 }  // namespace

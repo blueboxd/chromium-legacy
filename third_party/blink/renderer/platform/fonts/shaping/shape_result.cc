@@ -1013,7 +1013,6 @@ void ShapeResult::ApplyTextAutoSpacingCore(Iterator offset_begin,
                                            Iterator offset_end) {
   DCHECK(offset_begin != offset_end);
   Iterator current_offset = offset_begin;
-  float total_space = 0.0;
   if (UNLIKELY(current_offset->offset == StartIndex())) {
     // Enter this branch if the previous item's direction is RTL and current
     // item's direction is LTR. In this case, spacing cannot be added to the
@@ -1116,10 +1115,9 @@ void ShapeResult::ApplyTextAutoSpacingCore(Iterator offset_begin,
       }
     }
     run->width_ += total_space_for_run;
-    total_space += total_space_for_run;
   }
   DCHECK(current_offset == offset_end);  // Check if all offsets are consumed.
-  width_ += total_space;
+  // `width_` will be updated in `RecalcCharacterPositions()`.
 }
 
 scoped_refptr<ShapeResult> ShapeResult::UnapplyAutoSpacing(
@@ -1134,15 +1132,20 @@ scoped_refptr<ShapeResult> ShapeResult::UnapplyAutoSpacing(
   scoped_refptr<ShapeResult> sub_range = SubRange(start_offset, break_offset);
 
   // Remove the auto-spacing from the last glyph.
-  RunInfo& last_run = *sub_range->runs_.back();
-  DCHECK(last_run.HasOneRef());  // Ensure it's copied and thus safe to modify.
-  HarfBuzzRunGlyphData& last_glyph = last_run.glyph_data_.back();
-  DCHECK(PrimaryFont());
-  const float width = TextAutoSpace::GetSpacingWidth(*PrimaryFont());
-  DCHECK_GE(last_glyph.advance, width);
-  last_glyph.advance -= width;
-  last_run.width_ -= width;
-  sub_range->width_ -= width;
+  for (const scoped_refptr<RunInfo>& run : base::Reversed(sub_range->runs_)) {
+    if (UNLIKELY(!run->NumGlyphs())) {
+      continue;
+    }
+    DCHECK(run->HasOneRef());  // Ensure it's copied and thus safe to modify.
+    HarfBuzzRunGlyphData& last_glyph = run->glyph_data_.back();
+    DCHECK(PrimaryFont());
+    const float width = TextAutoSpace::GetSpacingWidth(*PrimaryFont());
+    DCHECK_GE(last_glyph.advance, width);
+    last_glyph.advance -= width;
+    run->width_ -= width;
+    sub_range->width_ -= width;
+    break;
+  }
   return sub_range;
 }
 
@@ -1990,6 +1993,7 @@ void ShapeResult::ComputePositionData() const {
   }
 
   character_position_->start_offset_ = start_offset;
+  character_position_->width_ = width_ = run_advance;
 }
 
 void ShapeResult::EnsurePositionData() const {
@@ -1997,7 +2001,7 @@ void ShapeResult::EnsurePositionData() const {
     return;
 
   character_position_ =
-      std::make_unique<CharacterPositionData>(num_characters_, width_);
+      std::make_unique<CharacterPositionData>(num_characters_);
   RecalcCharacterPositions();
 }
 

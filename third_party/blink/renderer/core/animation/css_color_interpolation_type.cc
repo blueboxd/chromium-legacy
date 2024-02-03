@@ -19,25 +19,29 @@
 
 namespace blink {
 
-std::unique_ptr<InterpolableColor>
-CSSColorInterpolationType::CreateInterpolableColor(const Color& color) {
+InterpolableColor* CSSColorInterpolationType::CreateInterpolableColor(
+    const Color& color) {
   return InterpolableColor::Create(color);
 }
 
-std::unique_ptr<InterpolableColor>
-CSSColorInterpolationType::CreateInterpolableColor(CSSValueID keyword) {
+InterpolableColor* CSSColorInterpolationType::CreateInterpolableColor(
+    CSSValueID keyword) {
   return InterpolableColor::Create(keyword);
 }
 
-std::unique_ptr<InterpolableColor>
-CSSColorInterpolationType::CreateInterpolableColor(const StyleColor& color) {
-  if (!color.IsNumeric())
-    return CreateInterpolableColor(color.GetColorKeyword());
+InterpolableColor* CSSColorInterpolationType::CreateInterpolableColor(
+    const StyleColor& color) {
+  if (!color.IsNumeric()) {
+    CSSValueID color_keyword = color.GetColorKeyword();
+    DCHECK(StyleColor::IsColorKeyword(color_keyword))
+        << color << " is not a recognized color keyword";
+    return CreateInterpolableColor(color_keyword);
+  }
   return CreateInterpolableColor(color.GetColor());
 }
 
-std::unique_ptr<InterpolableColor>
-CSSColorInterpolationType::MaybeCreateInterpolableColor(const CSSValue& value) {
+InterpolableColor* CSSColorInterpolationType::MaybeCreateInterpolableColor(
+    const CSSValue& value) {
   if (auto* color_value = DynamicTo<cssvalue::CSSColor>(value)) {
     return CreateInterpolableColor(color_value->Value());
   }
@@ -238,15 +242,14 @@ InterpolationValue CSSColorInterpolationType::MaybeConvertValue(
     }
   }
 
-  std::unique_ptr<InterpolableColor> interpolable_color =
-      MaybeCreateInterpolableColor(value);
+  InterpolableColor* interpolable_color = MaybeCreateInterpolableColor(value);
   if (!interpolable_color)
     return nullptr;
-  auto color_pair =
-      std::make_unique<InterpolableList>(kInterpolableColorPairIndexCount);
+  auto* color_pair =
+      MakeGarbageCollected<InterpolableList>(kInterpolableColorPairIndexCount);
   color_pair->Set(kUnvisited, interpolable_color->Clone());
-  color_pair->Set(kVisited, std::move(interpolable_color));
-  return InterpolationValue(std::move(color_pair));
+  color_pair->Set(kVisited, interpolable_color);
+  return InterpolationValue(color_pair);
 }
 
 PairwiseInterpolationValue CSSColorInterpolationType::MaybeMergeSingles(
@@ -287,11 +290,11 @@ InterpolationValue CSSColorInterpolationType::ConvertStyleColorPair(
 InterpolationValue CSSColorInterpolationType::ConvertStyleColorPair(
     const StyleColor& unvisited_color,
     const StyleColor& visited_color) {
-  auto color_pair =
-      std::make_unique<InterpolableList>(kInterpolableColorPairIndexCount);
+  auto* color_pair =
+      MakeGarbageCollected<InterpolableList>(kInterpolableColorPairIndexCount);
   color_pair->Set(kUnvisited, CreateInterpolableColor(unvisited_color));
   color_pair->Set(kVisited, CreateInterpolableColor(visited_color));
-  return InterpolationValue(std::move(color_pair));
+  return InterpolationValue(color_pair);
 }
 
 InterpolationValue

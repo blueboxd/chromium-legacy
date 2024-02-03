@@ -18,9 +18,12 @@ class AutofillBottomSheetJavaScriptFeature : public web::JavaScriptFeature {
   // This function sends the relevant renderer IDs to the bottom_sheet.ts
   // script, which will result in attaching listeners for the focus events
   // on these fields.
+  // - If "must_be_empty" is true, this means that the field must be empty in
+  // order to handle the focus event.
   void AttachListeners(
       const std::vector<autofill::FieldRendererId>& renderer_ids,
-      web::WebFrame* frame);
+      web::WebFrame* frame,
+      bool must_be_empty);
 
   // This function will result in detaching listeners from the provided renderer
   // ids, which will prevent the associated bottom sheet from showing up until
@@ -31,13 +34,14 @@ class AutofillBottomSheetJavaScriptFeature : public web::JavaScriptFeature {
   // that had originally triggered the bottom sheet.
   void DetachListeners(const std::set<autofill::FieldRendererId>& renderer_ids,
                        web::WebFrame* frame,
+                       bool must_be_empty,
                        bool refocus);
 
  private:
   friend class base::NoDestructor<AutofillBottomSheetJavaScriptFeature>;
 
   // web::JavaScriptFeature
-  absl::optional<std::string> GetScriptMessageHandlerName() const override;
+  std::optional<std::string> GetScriptMessageHandlerName() const override;
   void ScriptMessageReceived(web::WebState* web_state,
                              const web::ScriptMessage& message) override;
 

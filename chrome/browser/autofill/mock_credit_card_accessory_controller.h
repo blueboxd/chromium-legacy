@@ -43,10 +43,14 @@ class MockCreditCardAccessoryController
               (override));
   MOCK_METHOD(void, RefreshSuggestions, (), (override));
   MOCK_METHOD(void, OnPersonalDataChanged, (), (override));
-  MOCK_METHOD(void,
-              OnCreditCardFetched,
-              (autofill::CreditCardFetchResult, const autofill::CreditCard*),
-              (override));
+
+  base::WeakPtr<CreditCardAccessoryController> AsWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<MockCreditCardAccessoryController> weak_ptr_factory_{
+      this};
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_MOCK_CREDIT_CARD_ACCESSORY_CONTROLLER_H_

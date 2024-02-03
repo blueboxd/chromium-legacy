@@ -35,6 +35,7 @@
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/browser/indexed_db/indexed_db_factory_client.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
@@ -340,7 +341,7 @@ leveldb::Status IndexedDBDatabase::ForceCloseAndRunTasks() {
   DCHECK(connections_.empty());
   force_closing_ = false;
   if (CanBeDestroyed())
-    bucket_context_->delegate().on_tasks_available.Run();
+    bucket_context_->QueueRunTasks();
   return status;
 }
 
@@ -1518,7 +1519,7 @@ Status IndexedDBDatabase::OpenInternal() {
 }
 
 std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+    std::unique_ptr<IndexedDBDatabaseCallbacks> database_callbacks,
     scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker) {
   auto connection = std::make_unique<IndexedDBConnection>(
       *bucket_context_, weak_factory_.GetWeakPtr(),
@@ -1526,7 +1527,7 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
                           weak_factory_.GetWeakPtr()),
       base::BindOnce(&IndexedDBDatabase::ConnectionClosed,
                      weak_factory_.GetWeakPtr()),
-      database_callbacks, std::move(client_state_checker));
+      std::move(database_callbacks), std::move(client_state_checker));
   connections_.insert(connection.get());
   return connection;
 }
@@ -1590,7 +1591,7 @@ void IndexedDBDatabase::ConnectionClosed(IndexedDBConnection* connection) {
   if (connections_.empty())
     connection_coordinator_.OnNoConnections();
   if (CanBeDestroyed())
-    bucket_context_->delegate().on_tasks_available.Run();
+    bucket_context_->QueueRunTasks();
 }
 
 bool IndexedDBDatabase::CanBeDestroyed() {

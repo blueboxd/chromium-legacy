@@ -10,10 +10,14 @@ import("//third_party/protobuf/proto_library.gni")
 # events with several attached metrics.
 static_library("structured") {
   sources = [
+    "event_storage.cc",
     "event_storage.h",
     "key_data.cc",
     "key_data.h",
+    "key_data_provider.cc",
     "key_data_provider.h",
+    "key_data_provider_file.cc",
+    "key_data_provider_file.h",
     "persistent_proto.cc",
     "persistent_proto.h",
     "reporting/structured_metrics_log_metrics.cc",
@@ -206,6 +210,8 @@ static_library("structured_metrics_validator") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "test/test_event_storage.cc",
+    "test/test_event_storage.h",
     "test/test_key_data_provider.cc",
     "test/test_key_data_provider.h",
     "test/test_structured_metrics_provider.cc",
@@ -213,6 +219,7 @@ static_library("test_support") {
   ]
   deps = [
     ":structured",
+    ":structured_metrics_validator",
     "//base",
     "//base/test:test_support",
     "//components/metrics:metrics",

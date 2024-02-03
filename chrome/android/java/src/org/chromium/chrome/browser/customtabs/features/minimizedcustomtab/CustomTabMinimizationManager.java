@@ -29,10 +29,14 @@ import androidx.lifecycle.Lifecycle.State;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tab.TabHidingType;
+import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -65,21 +69,34 @@ public class CustomTabMinimizationManager
     private final AppCompatActivity mActivity;
     private final ActivityTabProvider mTabProvider;
     private final MinimizedCustomTabFeatureEngagementDelegate mFeatureEngagementDelegate;
+    private final BrowserServicesIntentDataProvider mIntentData;
+    private final Runnable mCloseTabRunnable;
     private long mMinimizationSystemTime;
 
     /**
      * @param activity The {@link AppCompatActivity} to minimize.
      * @param tabProvider The {@link ActivityTabProvider} that provides the Tab that will be
      *     minimized.
+     * @param featureEngagementDelegate The {@link MinimizedCustomTabFeatureEngagementDelegate}.
+     * @param closeTabRunnable The {@link Runnable} to close the Custom Tab when the minimized tab
+     *     is dismissed.
      */
     public CustomTabMinimizationManager(
             AppCompatActivity activity,
             ActivityTabProvider tabProvider,
-            MinimizedCustomTabFeatureEngagementDelegate featureEngagementDelegate) {
+            MinimizedCustomTabFeatureEngagementDelegate featureEngagementDelegate,
+            Runnable closeTabRunnable,
+            BrowserServicesIntentDataProvider intentData) {
         mActivity = activity;
         mActivity.addOnPictureInPictureModeChangedListener(this);
         mTabProvider = tabProvider;
         mFeatureEngagementDelegate = featureEngagementDelegate;
+        mCloseTabRunnable = closeTabRunnable;
+        mIntentData = intentData;
+    }
+
+    public void destroy() {
+        mActivity.removeOnPictureInPictureModeChangedListener(this);
     }
 
     /** Minimize the Custom Tab into picture-in-picture. */
@@ -101,6 +118,7 @@ public class CustomTabMinimizationManager
         assert tab != null;
         if (pictureInPictureModeChangedInfo.isInPictureInPictureMode()) {
             updateTabForMinimization(tab);
+            CustomTabsConnection.getInstance().onMinimized(mIntentData.getSession());
             RecordHistogram.recordEnumeratedHistogram(
                     "CustomTabs.MinimizedEvents",
                     MinimizationEvents.MINIMIZE,
@@ -120,10 +138,12 @@ public class CustomTabMinimizationManager
                             TimeUnit.MILLISECONDS.toSeconds(
                                     SystemClock.elapsedRealtime() - mMinimizationSystemTime));
                 }
+                mCloseTabRunnable.run();
                 return;
             }
 
             updateTabForMaximization(tab);
+            CustomTabsConnection.getInstance().onUnminimized(mIntentData.getSession());
             RecordHistogram.recordEnumeratedHistogram(
                     "CustomTabs.MinimizedEvents",
                     MinimizationEvents.MAXIMIZE,
@@ -139,10 +159,16 @@ public class CustomTabMinimizationManager
 
     private void updateTabForMinimization(Tab tab) {
         if (tab == null) return;
+
+        GURL url =
+                DomDistillerUrlUtils.isDistilledPage(tab.getUrl())
+                        ? tab.getOriginalUrl()
+                        : tab.getUrl();
+
         PropertyModel model =
                 new PropertyModel.Builder(ALL_KEYS)
                         .with(TITLE, tab.getTitle())
-                        .with(URL, tab.getUrl().getHost())
+                        .with(URL, url.getHost())
                         .with(FAVICON, TabFavicon.getBitmap(tab))
                         .build();
         var fragment = MinimizedCardDialogFragment.newInstance(model);

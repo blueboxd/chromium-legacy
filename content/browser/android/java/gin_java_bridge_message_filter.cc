@@ -87,18 +87,15 @@ void GinJavaBridgeMessageFilter::AddRoutingIdForHost(
       render_frame_host->IsInPrimaryMainFrame();
 }
 
-void GinJavaBridgeMessageFilter::RemoveHost(GinJavaBridgeDispatcherHost* host) {
+void GinJavaBridgeMessageFilter::RemoveRoutingIdForHost(
+    RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  int routing_id = render_frame_host->GetRoutingID();
+
   base::AutoLock locker(hosts_lock_);
-  auto iter = hosts_.begin();
-  while (iter != hosts_.end()) {
-    if (iter->second == host) {
-      hosts_is_in_primary_main_frame_.erase(iter->first);
-      hosts_.erase(iter++);
-    } else {
-      ++iter;
-    }
-  }
+  hosts_is_in_primary_main_frame_.erase(routing_id);
+  hosts_.erase(routing_id);
 }
 
 void GinJavaBridgeMessageFilter::RenderProcessExited(
@@ -184,13 +181,13 @@ scoped_refptr<GinJavaBridgeDispatcherHost> GinJavaBridgeMessageFilter::FindHost(
 
 void GinJavaBridgeMessageFilter::OnGetMethods(
     GinJavaBoundObject::ObjectID object_id,
-    std::set<std::string>* returned_method_names) {
+    std::vector<std::string>* returned_method_names) {
   DCHECK(JavaBridgeThread::CurrentlyOn());
   scoped_refptr<GinJavaBridgeDispatcherHost> host = FindHost();
   if (host) {
     host->OnGetMethods(object_id, returned_method_names);
   } else {
-    *returned_method_names = std::set<std::string>();
+    *returned_method_names = std::vector<std::string>();
   }
 }
 

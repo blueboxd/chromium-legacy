@@ -92,7 +92,11 @@ bool DoImagesMatch(const gfx::Image& a, const gfx::Image& b) {
       a_bitmap.height() != b_bitmap.height()) {
     return false;
   }
-  return memcmp(a_bitmap.getPixels(), b_bitmap.getPixels(),
+
+  // memcmp(nullptr, nullptr, 0) is undefined, so empty bitmaps must be
+  // special-cased.
+  return a_bitmap.computeByteSize() == 0 ||
+         memcmp(a_bitmap.getPixels(), b_bitmap.getPixels(),
                 a_bitmap.computeByteSize()) == 0;
 }
 
@@ -131,6 +135,10 @@ class MockPageBroadcast : public blink::mojom::PageBroadcast {
   MOCK_METHOD(void,
               SetPageBaseBackgroundColor,
               (absl::optional<SkColor> color),
+              (override));
+  MOCK_METHOD(void,
+              UpdateColorProviders,
+              (const ::blink::ColorProviderColorMaps& color_provider_colors),
               (override));
   MOCK_METHOD(
       void,
@@ -2405,9 +2413,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   entry->SetTitle(u"Title");
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
-  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
-      std::make_unique<NavigationEntryRestoreContextImpl>();
-  entry->SetPageState(blink::PageState::CreateFromURL(url), context.get());
+  NavigationEntryRestoreContextImpl context;
+  entry->SetPageState(blink::PageState::CreateFromURL(url), &context);
   entries.push_back(std::move(entry));
 
   std::unique_ptr<WebContents> our_contents =
@@ -2478,9 +2485,8 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
               ui::PAGE_TRANSITION_RELOAD, false, std::string(),
               browser_context(), nullptr /* blob_url_loader_factory */));
   new_entry->SetTitle(u"Title");
-  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
-      std::make_unique<NavigationEntryRestoreContextImpl>();
-  new_entry->SetPageState(blink::PageState::CreateFromURL(url), context.get());
+  NavigationEntryRestoreContextImpl context;
+  new_entry->SetPageState(blink::PageState::CreateFromURL(url), &context);
   entries.push_back(std::move(new_entry));
 
   std::unique_ptr<WebContents> our_contents =
@@ -3666,8 +3672,7 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
   };
   const GURL kInitialUrl("http://site3.com");
 
-  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
-      std::make_unique<NavigationEntryRestoreContextImpl>();
+  NavigationEntryRestoreContextImpl context;
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   for (const GURL& restoredUrl : kRestoredUrls) {
     std::unique_ptr<NavigationEntryImpl> entry =
@@ -3677,8 +3682,7 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
                 /* initiator_base_url= */ absl::nullopt,
                 ui::PAGE_TRANSITION_RELOAD, false, std::string(),
                 browser_context(), nullptr /* blob_url_loader_factory */));
-    entry->SetPageState(blink::PageState::CreateFromURL(restoredUrl),
-                        context.get());
+    entry->SetPageState(blink::PageState::CreateFromURL(restoredUrl), &context);
     entries.push_back(std::move(entry));
   }
 

@@ -21,7 +21,7 @@ import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
-import org.chromium.android_webview.autofill.ChromeAutocompleteSafeModeAction;
+import org.chromium.android_webview.AwMediaIntegrityApiStatusConfig.ApiStatus;
 import org.chromium.android_webview.client_hints.AwUserAgentMetadata;
 import org.chromium.android_webview.common.AwFeatures;
 import org.chromium.android_webview.common.Lifetime;
@@ -183,11 +183,11 @@ public class AwSettings {
     private int mCacheMode = WebSettings.LOAD_DEFAULT;
     private boolean mShouldFocusFirstNode = true;
     private boolean mGeolocationEnabled = true;
-    private boolean mAutoCompleteEnabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
     private boolean mFullscreenSupported;
     private boolean mSupportZoom = true;
     private boolean mBuiltInZoomControls;
     private boolean mDisplayZoomControls = true;
+    private final AwMediaIntegrityApiStatusConfig mIntegrityApiStatusConfig;
 
     // Cache default user agent string obtained through JNI, since it will not change during the
     // process lifetime. This saves a JNI call when creating new AwSettings objects after the first
@@ -350,6 +350,7 @@ public class AwSettings {
             } else {
                 mRequestedWithHeaderAllowedOriginRules = Collections.emptySet();
             }
+            mIntegrityApiStatusConfig = new AwMediaIntegrityApiStatusConfig();
         }
         // Defer initializing the native side until a native WebContents instance is set.
     }
@@ -647,44 +648,6 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             return mGeolocationEnabled;
         }
-    }
-
-    /**
-     * See {@link android.webkit.WebSettings#setSaveFormData}.
-     */
-    public void setSaveFormData(final boolean enable) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return;
-        if (TRACE) Log.i(TAG, "setSaveFormData=" + enable);
-        synchronized (mAwSettingsLock) {
-            if (mAutoCompleteEnabled != enable) {
-                mAutoCompleteEnabled = enable;
-                mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
-                    if (mNativeAwSettings != 0) {
-                        AwSettingsJni.get().updateFormDataPreferencesLocked(
-                                mNativeAwSettings, AwSettings.this);
-                    }
-                });
-            }
-        }
-    }
-
-    /**
-     * See {@link android.webkit.WebSettings#getSaveFormData}.
-     */
-    public boolean getSaveFormData() {
-        synchronized (mAwSettingsLock) {
-            return getSaveFormDataLocked();
-        }
-    }
-
-    @CalledByNative
-    private boolean getSaveFormDataLocked() {
-        assert Thread.holdsLock(mAwSettingsLock);
-        if (ChromeAutocompleteSafeModeAction.isChromeAutocompleteDisabled()) {
-            Log.i(TAG, "Chrome autocomplete is disabled by SafeMode");
-            return false;
-        }
-        return mAutoCompleteEnabled;
     }
 
     public void setUserAgent(int ua) {
@@ -2120,6 +2083,25 @@ public class AwSettings {
         }
     }
 
+    public void setWebViewIntegrityApiStatus(
+            @ApiStatus int defaultStatus, Map<String, @ApiStatus Integer> permissionConfig) {
+        synchronized (mAwSettingsLock) {
+            mIntegrityApiStatusConfig.setApiStatus(defaultStatus, permissionConfig);
+        }
+    }
+
+    public @ApiStatus int getWebViewIntegrityApiDefaultStatus() {
+        synchronized (mAwSettingsLock) {
+            return mIntegrityApiStatusConfig.getDefaultStatus();
+        }
+    }
+
+    public Map<String, @ApiStatus Integer> getWebViewIntegrityApiOverrideRules() {
+        synchronized (mAwSettingsLock) {
+            return mIntegrityApiStatusConfig.getOverrideRules();
+        }
+    }
+
     @NativeMethods
     interface Natives {
         long init(AwSettings caller, WebContents webContents);
@@ -2133,7 +2115,6 @@ public class AwSettings {
         void updateWebkitPreferencesLocked(long nativeAwSettings, AwSettings caller);
         String getDefaultUserAgent();
         AwUserAgentMetadata getDefaultUserAgentMetadata();
-        void updateFormDataPreferencesLocked(long nativeAwSettings, AwSettings caller);
         void updateRendererPreferencesLocked(long nativeAwSettings, AwSettings caller);
         void updateOffscreenPreRasterLocked(long nativeAwSettings, AwSettings caller);
         void updateWillSuppressErrorStateLocked(long nativeAwSettings, AwSettings caller);

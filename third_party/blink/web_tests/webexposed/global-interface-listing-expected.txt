@@ -741,6 +741,7 @@ interface CSSImportRule : CSSRule
     getter layerName
     getter media
     getter styleSheet
+    getter supportsText
     method constructor
     setter media
 interface CSSKeyframeRule : CSSRule
@@ -1920,6 +1921,7 @@ interface Document : Node
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -2140,6 +2142,7 @@ interface Document : Node
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -3710,6 +3713,7 @@ interface HTMLElement : Element
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -3845,6 +3849,7 @@ interface HTMLElement : Element
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -4070,6 +4075,7 @@ interface HTMLHtmlElement : HTMLElement
     setter version
 interface HTMLIFrameElement : HTMLElement
     attribute @@toStringTag
+    getter adAuctionHeaders
     getter align
     getter allow
     getter allowFullscreen
@@ -4097,6 +4103,7 @@ interface HTMLIFrameElement : HTMLElement
     getter width
     method constructor
     method getSVGDocument
+    setter adAuctionHeaders
     setter align
     setter allow
     setter allowFullscreen
@@ -5244,7 +5251,7 @@ interface IIRFilterNode : AudioNode
     method constructor
     method getFrequencyResponse
 interface IdentityCredential : Credential
-    static method logoutRPs
+    static method revoke
     attribute @@toStringTag
     getter isAutoSelected
     getter token
@@ -5618,13 +5625,20 @@ interface MLGraphBuilder
     method constructor
     method conv2d
     method convTranspose2d
+    method cos
     method div
     method elu
+    method erf
+    method exp
+    method expand
     method floor
     method gemm
     method hardSwish
+    method identity
     method input
     method leakyRelu
+    method log
+    method logicalNot
     method matmul
     method max
     method maxPool2d
@@ -5634,16 +5648,29 @@ interface MLGraphBuilder
     method pad
     method pow
     method prelu
+    method reciprocal
+    method reduceL1
+    method reduceL2
+    method reduceLogSum
+    method reduceLogSumExp
+    method reduceMax
     method reduceMean
+    method reduceMin
+    method reduceProduct
     method reduceSum
+    method reduceSumSquare
     method relu
     method resample2d
     method reshape
     method sigmoid
+    method sin
     method slice
     method softmax
+    method softsign
     method split
+    method sqrt
     method sub
+    method tan
     method tanh
     method transpose
 interface MLModelLoader
@@ -5653,6 +5680,7 @@ interface MLModelLoader
 interface MLOperand
     attribute @@toStringTag
     method constructor
+    method shape
 interface Magnetometer : Sensor
     attribute @@toStringTag
     getter x
@@ -5749,6 +5777,7 @@ interface MathMLElement : Element
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -5860,6 +5889,7 @@ interface MathMLElement : Element
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -6170,12 +6200,14 @@ interface MessageEvent : Event
     method initMessageEvent
 interface MessagePort : EventTarget
     attribute @@toStringTag
+    getter onclose
     getter onmessage
     getter onmessageerror
     method close
     method constructor
     method postMessage
     method start
+    setter onclose
     setter onmessage
     setter onmessageerror
 interface MimeType
@@ -6364,6 +6396,7 @@ interface NavigateEvent : Event
     method scroll
 interface Navigation : EventTarget
     attribute @@toStringTag
+    getter activation
     getter canGoBack
     getter canGoForward
     getter currentEntry
@@ -6384,6 +6417,12 @@ interface Navigation : EventTarget
     setter onnavigate
     setter onnavigateerror
     setter onnavigatesuccess
+interface NavigationActivation
+    attribute @@toStringTag
+    getter entry
+    getter from
+    getter navigationType
+    method constructor
 interface NavigationCurrentEntryChangeEvent : Event
     attribute @@toStringTag
     getter from
@@ -6492,7 +6531,6 @@ interface Navigator
     method deprecatedReplaceInURN
     method deprecatedURNToURL
     method getBattery
-    method getEnvironmentIntegrity
     method getGamepads
     method getInstalledRelatedApps
     method getUserMedia
@@ -8087,6 +8125,7 @@ interface SVGElement : Element
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -8200,6 +8239,7 @@ interface SVGElement : Element
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -9272,6 +9312,10 @@ interface SharedWorker : EventTarget
     getter port
     method constructor
     setter onerror
+interface SnapEvent : Event
+    attribute @@toStringTag
+    getter snapTargets
+    method constructor
 interface SoftNavigationEntry : PerformanceEntry
     attribute @@toStringTag
     method constructor
@@ -9454,6 +9498,7 @@ interface SubmitEvent : Event
     method constructor
 interface Subscriber
     attribute @@toStringTag
+    getter active
     getter signal
     method complete
     method constructor
@@ -12556,6 +12601,7 @@ namespace console
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onstorage
     getter onsubmit
@@ -12784,6 +12830,7 @@ namespace console
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onstorage
     setter onsubmit

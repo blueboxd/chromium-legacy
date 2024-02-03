@@ -4,7 +4,10 @@
 
 #include "components/update_client/update_client_metrics.h"
 
+#include <cstddef>
+
 #include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 
 namespace update_client::metrics {
 

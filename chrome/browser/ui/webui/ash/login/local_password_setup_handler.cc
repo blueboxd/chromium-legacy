@@ -31,17 +31,13 @@ void LocalPasswordSetupHandler::DeclareLocalizedValues(
                 device_name);
   builder->AddF("localPasswordResetTitle", IDS_LOGIN_LOCAL_PASSWORD_RESET_TITLE,
                 device_name);
-  builder->AddF("localPasswordSetupDoneSubtitle",
-                IDS_LOGIN_LOCAL_PASSWORD_SETUP_DONE_SUBTITLE, device_name);
-  builder->Add("localPasswordSetupDoneTitle",
-               IDS_LOGIN_LOCAL_PASSWORD_SETUP_DONE_TITLE);
-  builder->Add("localPasswordResetDoneTitle",
-               IDS_LOGIN_LOCAL_PASSWORD_RESET_DONE_TITLE);
   builder->Add("passwordInputPlaceholderText",
                IDS_LOGIN_MANUAL_PASSWORD_INPUT_LABEL);
   builder->Add("confirmPasswordInputPlaceholderText",
                IDS_LOGIN_CONFIRM_PASSWORD_LABEL);
   builder->Add("passwordMismatchError", IDS_LOGIN_MANUAL_PASSWORD_MISMATCH);
+  builder->Add("showPassword", IDS_AUTH_SETUP_SHOW_PASSWORD);
+  builder->Add("hidePassword", IDS_AUTH_SETUP_HIDE_PASSWORD);
   builder->Add("setLocalPasswordPlaceholder",
                IDS_AUTH_SETUP_SET_LOCAL_PASSWORD_PLACEHOLDER);
   builder->Add("setLocalPasswordConfirmPlaceholder",
@@ -50,10 +46,6 @@ void LocalPasswordSetupHandler::DeclareLocalizedValues(
                IDS_AUTH_SETUP_SET_LOCAL_PASSWORD_MIN_CHARS_HINT);
   builder->Add("setLocalPasswordNoMatchError",
                IDS_AUTH_SETUP_SET_LOCAL_PASSWORD_NO_MATCH_ERROR);
-}
-
-void LocalPasswordSetupHandler::ShowLocalPasswordSetupSuccess() {
-  CallExternalAPI("showLocalPasswordSetupSuccess");
 }
 
 void LocalPasswordSetupHandler::ShowLocalPasswordSetupFailure() {

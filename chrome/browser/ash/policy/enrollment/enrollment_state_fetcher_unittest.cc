@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/policy/enrollment/enrollment_state_fetcher.h"
-#include <algorithm>
+
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "ash/constants/ash_switches.h"
 #include "base/functional/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
@@ -18,7 +20,7 @@
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
-#include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_state.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_test_support.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
@@ -300,7 +302,7 @@ TEST_F(EnrollmentStateFetcherTest, DisabledOnFlex) {
   histograms.ExpectUniqueSample(kUMAStateDeterminationOnFlex, true, 1);
 }
 
-TEST_F(EnrollmentStateFetcherTest, SystemClockNotSyncronized) {
+TEST_F(EnrollmentStateFetcherTest, SystemClockNotSynchronized) {
   system_clock_.DisableService();
 
   AutoEnrollmentState state = FetchEnrollmentState();
@@ -381,7 +383,8 @@ TEST_F(EnrollmentStateFetcherTest, ProceedWithMissingStateKeys) {
   ExpectOprfRequest();
   ExpectQueryRequest();
   EXPECT_CALL(state_key_broker_, RequestStateKeys)
-      .WillRepeatedly(RunOnceCallback<0>(std::vector<std::string>{}));
+      .WillRepeatedly(
+          base::test::RunOnceCallbackRepeatedly<0>(std::vector<std::string>{}));
   EXPECT_CALL(job_creation_handler_, OnJobCreation(JobWithStateRequest(
                                          /*state_key=*/std::string(),
                                          kTestSerialNumber, kTestBrandCode)))
@@ -445,7 +448,7 @@ TEST_F(EnrollmentStateFetcherTest, FailToCreateQueryRequest) {
                        use_case,
                        // Using fake ID, cipher key and seed will cause failure
                        // to create query request since it won't match the
-                       // ecrypted ID in OPRF response from the psm_test_case_.
+                       // encrypted ID in OPRF response from the psm_test_case_.
                        {plaintext_id}, "ec_cipher_key",
                        "seed4567890123456789012345678912")
                     .value();

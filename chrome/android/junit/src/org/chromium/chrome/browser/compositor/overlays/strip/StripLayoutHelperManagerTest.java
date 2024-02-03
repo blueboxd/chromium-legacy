@@ -48,6 +48,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
@@ -74,6 +75,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.dragdrop.DragAndDropDelegate;
 
 /** Tests for {@link StripLayoutHelperManager}. */
@@ -97,11 +99,12 @@ public class StripLayoutHelperManagerTest {
     @Mock private TabCreatorManager mTabCreatorManager;
     @Mock private TabModelFilterProvider mTabModelFilterProvider;
     @Mock private TabModel mStandardTabModel;
-    @Mock private TabModel mIncognitoTabModel;
     @Mock private Tab mSelectedTab;
     @Mock private StripLayoutTab mHoveredStripTab;
     @Mock private ViewStub mTabHoverCardViewStub;
     @Mock private ObservableSupplierImpl<TabContentManager> mTabContentManagerSupplier;
+    @Mock private BrowserControlsStateProvider mBrowserControlStateProvider;
+    @Mock private WindowAndroid mWindowAndroid;
 
     private StripLayoutHelperManager mStripLayoutHelperManager;
     private Context mContext;
@@ -110,7 +113,7 @@ public class StripLayoutHelperManagerTest {
     private static final float SCREEN_HEIGHT = 1600.f;
     private static final float VISIBLE_VIEWPORT_Y = 200.f;
     private static final int ORIENTATION = 2;
-    private static final float BUTTON_END_PADDING_TSR = 12.f;
+    private static final float BUTTON_END_PADDING_TSR = 8.f;
 
     @Before
     public void beforeTest() {
@@ -147,7 +150,9 @@ public class StripLayoutHelperManagerTest {
                         mDragDropDelegate,
                         mToolbarContainerView,
                         mTabHoverCardViewStub,
-                        mTabContentManagerSupplier);
+                        mTabContentManagerSupplier,
+                        mBrowserControlStateProvider,
+                        mWindowAndroid);
         mStripLayoutHelperManager.setTabModelSelector(mTabModelSelector, mTabCreatorManager);
     }
 
@@ -217,14 +222,15 @@ public class StripLayoutHelperManagerTest {
     @Feature("Tab Strip Redesign")
     public void testModelSelectorButtonXPosition_TSR() {
         // Set model selector button position.
+        mStripLayoutHelperManager.setModelSelectorButtonVisibleForTesting(true);
         mStripLayoutHelperManager.onSizeChanged(
                 SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
 
         // Verify model selector button x-position.
-        // stripWidth(800) - buttonEndPadding(12) - MsbWidth(32) = 756
+        // stripWidth(800) - buttonEndPadding(8) - MsbWidth(32) = 760
         assertEquals(
                 "Model selector button x-position is not as expected",
-                756.f,
+                760.f,
                 mStripLayoutHelperManager.getModelSelectorButton().getX(),
                 0.0);
     }
@@ -234,6 +240,7 @@ public class StripLayoutHelperManagerTest {
     public void testModelSelectorButtonXPosition_RTL_TSR() {
         // Set model selector button position.
         LocalizationUtils.setRtlForTesting(true);
+        mStripLayoutHelperManager.setModelSelectorButtonVisibleForTesting(true);
         mStripLayoutHelperManager.onSizeChanged(
                 SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
 
@@ -634,9 +641,6 @@ public class StripLayoutHelperManagerTest {
         assertNotNull(
                 "Tab drag source should be set.",
                 mStripLayoutHelperManager.getTabDragSourceForTesting());
-        assertNotNull(
-                "Tab drop target should be set.",
-                mStripLayoutHelperManager.getTabDropTargetForTesting());
     }
 
     @Test
@@ -649,9 +653,6 @@ public class StripLayoutHelperManagerTest {
         assertNull(
                 "Tab drag source should not be set.",
                 mStripLayoutHelperManager.getTabDragSourceForTesting());
-        assertNull(
-                "Tab drop target should not be set.",
-                mStripLayoutHelperManager.getTabDropTargetForTesting());
     }
 
     @Test
@@ -665,9 +666,15 @@ public class StripLayoutHelperManagerTest {
         assertNull(
                 "Tab drag source should not be set.",
                 mStripLayoutHelperManager.getTabDragSourceForTesting());
-        assertNull(
-                "Tab drop target should not be set.",
-                mStripLayoutHelperManager.getTabDropTargetForTesting());
+    }
+
+    @Test
+    @Config(sdk = VERSION_CODES.S)
+    @EnableFeatures(ChromeFeatureList.TAB_LINK_DRAG_DROP_ANDROID)
+    public void testGetDragListener() throws NameNotFoundException {
+        enableMultiInstance();
+        initializeTest();
+        assertNotNull("DragListener should be set.", mStripLayoutHelperManager.getDragListener());
     }
 
     private void enableMultiInstance() throws NameNotFoundException {

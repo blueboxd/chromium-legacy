@@ -24,6 +24,7 @@
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome_browser_policy_connector.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
@@ -96,7 +97,11 @@ ChromeBrowserPolicyConnector::ChromeBrowserPolicyConnector()
 #endif
 }
 
-ChromeBrowserPolicyConnector::~ChromeBrowserPolicyConnector() = default;
+ChromeBrowserPolicyConnector::~ChromeBrowserPolicyConnector() {
+  if (local_test_provider_) {
+    local_test_provider_->Shutdown();
+  }
+}
 
 void ChromeBrowserPolicyConnector::OnResourceBundleCreated() {
   BrowserPolicyConnectorBase::OnResourceBundleCreated();
@@ -163,6 +168,10 @@ void ChromeBrowserPolicyConnector::Shutdown() {
     machine_level_user_cloud_policy_manager_->Shutdown();
     machine_level_user_cloud_policy_manager_ = nullptr;
   }
+
+  if (HasPolicyService()) {
+    GetPolicyService()->UseLocalTestPolicyProvider(nullptr);
+  }
 #endif
 
   BrowserPolicyConnector::Shutdown();
@@ -178,9 +187,17 @@ ChromeBrowserPolicyConnector::GetPlatformProvider() {
   return platform_provider_.get();
 }
 
+ConfigurationPolicyProvider*
+ChromeBrowserPolicyConnector::local_test_policy_provider() {
+  if (local_test_provider_for_testing_) {
+    return local_test_provider_for_testing_.get();
+  }
+  return local_test_provider_.get();
+}
+
 void ChromeBrowserPolicyConnector::SetLocalTestPolicyProviderForTesting(
     ConfigurationPolicyProvider* provider) {
-  local_test_provider_ = provider;
+  local_test_provider_for_testing_ = provider;
 }
 
 void ChromeBrowserPolicyConnector::MaybeApplyLocalTestPolicies(
@@ -202,13 +219,14 @@ void ChromeBrowserPolicyConnector::MaybeApplyLocalTestPolicies(
   if (policies_to_apply.empty()) {
     return;
   }
-  for (ConfigurationPolicyProvider* provider : GetPolicyProviders()) {
-    provider->set_active(false);
-  }
-  LocalTestPolicyProvider* local_test_policy_provider =
-      static_cast<LocalTestPolicyProvider*>(local_test_provider_);
-  local_test_policy_provider->set_active(true);
-  local_test_policy_provider->LoadJsonPolicies(policies_to_apply);
+
+  LocalTestPolicyProvider* test_provider =
+      local_test_provider_for_testing_ ? static_cast<LocalTestPolicyProvider*>(
+                                             local_test_provider_for_testing_)
+                                       : local_test_provider_.get();
+  test_provider->set_active(true);
+  GetPolicyService()->UseLocalTestPolicyProvider(test_provider);
+  test_provider->LoadJsonPolicies(policies_to_apply);
   local_state->ClearPref(policy_prefs::kLocalTestPoliciesForNextStartup);
 }
 
@@ -218,6 +236,12 @@ void ChromeBrowserPolicyConnector::InitCloudManagementController(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   chrome_browser_cloud_management_controller()->MaybeInit(local_state,
                                                           url_loader_factory);
+}
+
+void ChromeBrowserPolicyConnector::
+    SetMachineLevelUserCloudPolicyManagerForTesting(
+        MachineLevelUserCloudPolicyManager* manager) {
+  machine_level_user_cloud_policy_manager_ = manager;
 }
 
 void ChromeBrowserPolicyConnector::SetProxyPolicyProviderForTesting(
@@ -300,12 +324,10 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
     providers.push_back(std::move(command_line_provider));
   }
 
-  std::unique_ptr<LocalTestPolicyProvider> local_test_provider =
+  local_test_provider_ =
       LocalTestPolicyProvider::CreateIfAllowed(chrome::GetChannel());
-
-  if (local_test_provider) {
-    local_test_provider_ = local_test_provider.get();
-    providers.push_back(std::move(local_test_provider));
+  if (local_test_provider_) {
+    local_test_provider_->Init(GetSchemaRegistry());
   }
 
   return providers;
@@ -327,8 +349,9 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
   // policies.
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
 #else
-  base::apple::ScopedCFTypeRef<CFStringRef> bundle_id(
-      base::SysUTF8ToCFStringRef(base::apple::BaseBundleID()));
+  base::apple::ScopedCFTypeRef<CFStringRef> bundle_id_scoper =
+      base::SysUTF8ToCFStringRef(base::apple::BaseBundleID());
+  CFStringRef bundle_id = bundle_id_scoper.get();
 #endif
   auto loader = std::make_unique<PolicyLoaderMac>(
       base::ThreadPool::CreateSequencedTaskRunner(

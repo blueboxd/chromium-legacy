@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
 #include "chromeos/ash/components/drivefs/drivefs_pinning_manager.h"
-#include "chromeos/ash/components/drivefs/sync_status_tracker.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
@@ -180,7 +179,7 @@ class DriveIntegrationService : public KeyedService,
     virtual void OnBulkPinProgress(const drivefs::pinning::Progress& progress) {
     }
 
-    // Triggered when the bulk pinning manger is fully initialized.
+    // Triggered when the bulk-pinning manager is fully initialized.
     virtual void OnBulkPinInitialized() {}
 
     // Triggered when the network connection to Drive could have changed.
@@ -315,8 +314,6 @@ class DriveIntegrationService : public KeyedService,
   // Retrieves a list of paths being synced.
   void GetSyncingPaths(
       drivefs::mojom::DriveFs::GetSyncingPathsCallback callback);
-
-  drivefs::SyncState GetSyncStateForPath(const base::FilePath& drive_path);
 
   // Tells DriveFS to update its cached pin states of hosted files (once).
   void PollHostedFilePinStates();

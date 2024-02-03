@@ -166,7 +166,7 @@ TEST_F(LensTabHelperTest, ShouldAllowRequest_WebImagesSearchBar) {
 
 // Test `EntryPointForGoogleChromeActionURLPath` for the web search bar.
 TEST_F(LensTabHelperTest, EntryPointForGoogleChromeActionURLPath_WebSearchBar) {
-  absl::optional<LensEntrypoint> entry_point =
+  std::optional<LensEntrypoint> entry_point =
       LensTabHelper::EntryPointForGoogleChromeActionURLPath(@"/web-search-box");
   ASSERT_TRUE(entry_point);
   EXPECT_EQ(entry_point.value(), LensEntrypoint::WebSearchBar);
@@ -175,7 +175,7 @@ TEST_F(LensTabHelperTest, EntryPointForGoogleChromeActionURLPath_WebSearchBar) {
 // Test `EntryPointForGoogleChromeActionURLPath` for the translate onebox.
 TEST_F(LensTabHelperTest,
        EntryPointForGoogleChromeActionURLPath_TranslateOnebox) {
-  absl::optional<LensEntrypoint> entry_point =
+  std::optional<LensEntrypoint> entry_point =
       LensTabHelper::EntryPointForGoogleChromeActionURLPath(
           @"/translate-onebox");
   ASSERT_TRUE(entry_point);
@@ -194,7 +194,7 @@ TEST_F(LensTabHelperTest,
 
 // Test `EntryPointForGoogleChromeActionURLPath` for an invalid entry point.
 TEST_F(LensTabHelperTest, EntryPointForGoogleChromeActionURLPath_Invalid) {
-  absl::optional<LensEntrypoint> entry_point =
+  std::optional<LensEntrypoint> entry_point =
       LensTabHelper::EntryPointForGoogleChromeActionURLPath(@"/invalid");
   EXPECT_FALSE(entry_point);
 }

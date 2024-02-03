@@ -92,6 +92,7 @@
 #include <numeric>
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -711,8 +712,11 @@ WebLocalFrame* WebLocalFrame::FromFrameToken(
 }
 
 WebLocalFrame* WebLocalFrame::FrameForCurrentContext() {
-  v8::Local<v8::Context> context =
-      v8::Isolate::GetCurrent()->GetCurrentContext();
+  v8::Isolate* isolate = v8::Isolate::TryGetCurrent();
+  if (UNLIKELY(!isolate)) {
+    return nullptr;
+  }
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   if (context.IsEmpty())
     return nullptr;
   return FrameForContext(context);
@@ -1614,6 +1618,11 @@ void WebLocalFrameImpl::MoveCaretSelection(
 
 bool WebLocalFrameImpl::SetEditableSelectionOffsets(int start, int end) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::setEditableSelectionOffsets");
+  if (EditContext* edit_context =
+          GetFrame()->GetInputMethodController().GetActiveEditContext()) {
+    edit_context->SetSelection(start, end);
+    return true;
+  }
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
@@ -3262,21 +3271,7 @@ void WebLocalFrameImpl::SetLCPPHint(
     return;
   }
 
-  Vector<ElementLocator> lcp_element_locators;
-  lcp_element_locators.reserve(
-      base::checked_cast<wtf_size_t>(hint->lcp_element_locators.size()));
-  for (const std::string& serialized_locator : hint->lcp_element_locators) {
-    lcp_element_locators.push_back(ElementLocator());
-    bool result =
-        lcp_element_locators.back().ParseFromString(serialized_locator);
-    if (!result) {
-      // This can happen when the host LCPP database is corrupted or we
-      // updated the ElementLocator schema in an incompatible way.
-      LOG(INFO) << "Ignoring an invalid lcp_element_locator hint.";
-      lcp_element_locators.pop_back();
-    }
-  }
-  lcpp->set_lcp_element_locators(std::move(lcp_element_locators));
+  lcpp->set_lcp_element_locators(hint->lcp_element_locators);
 
   HashSet<KURL> lcp_influencer_scripts;
   for (auto& url : hint->lcp_influencer_scripts) {

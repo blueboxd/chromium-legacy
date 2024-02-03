@@ -48,7 +48,7 @@ class GinJavaBridgeMessageFilter : public BrowserMessageFilter,
   // Called on the UI thread.
   void AddRoutingIdForHost(GinJavaBridgeDispatcherHost* host,
                            RenderFrameHost* render_frame_host);
-  void RemoveHost(GinJavaBridgeDispatcherHost* host);
+  void RemoveRoutingIdForHost(RenderFrameHost* render_frame_host);
 
   static scoped_refptr<GinJavaBridgeMessageFilter> FromHost(
       AgentSchedulingGroupHost& agent_scheduling_group,
@@ -80,7 +80,7 @@ class GinJavaBridgeMessageFilter : public BrowserMessageFilter,
   scoped_refptr<GinJavaBridgeDispatcherHost> FindHost(
       bool* is_in_primary_main_frame = nullptr);
   void OnGetMethods(GinJavaBoundObject::ObjectID object_id,
-                    std::set<std::string>* returned_method_names);
+                    std::vector<std::string>* returned_method_names);
   void OnHasMethod(GinJavaBoundObject::ObjectID object_id,
                    const std::string& method_name,
                    bool* result);

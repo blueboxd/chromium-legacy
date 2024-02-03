@@ -11,14 +11,19 @@ namespace extensions_features {
 // API Features
 ///////////////////////////////////////////////////////////////////////////////
 
+// Controls the availability of contentSettings.clipboard.
+BASE_FEATURE(kApiContentSettingsClipboard,
+             "ApiContentSettingsClipboard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls the availability of the enterprise.kioskInput API.
+BASE_FEATURE(kApiEnterpriseKioskInput,
+             "ApiEnterpriseKioskInput",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Controls the availability of the ReadingList API.
 BASE_FEATURE(kApiReadingList,
              "ApiReadingList",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Controls the availability of the runtime.getContexts() API.
-BASE_FEATURE(kApiRuntimeGetContexts,
-             "ApiRuntimeGetContexts",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls the availability of the sidePanel.open() API.
@@ -69,12 +74,6 @@ BASE_FEATURE(kAvoidEarlyExtensionScriptContextCreation,
 // extension).
 BASE_FEATURE(kCheckingNoExtensionIdInExtensionIpcs,
              "EMF_NO_EXTENSION_ID_FOR_EXTENSION_SOURCE",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables support for the "match_origin_as_fallback" property in content
-// scripts.
-BASE_FEATURE(kContentScriptsMatchOriginAsFallback,
-             "ContentScriptsMatchOriginAsFallback",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Determine if dynamic extension URLs are handled and redirected.
@@ -187,7 +186,7 @@ BASE_FEATURE(kTelemetryExtensionPendingApprovalApi,
 // ExtensionWebRequestEventRouter.
 BASE_FEATURE(kUsePerBrowserContextWebRequestEventRouter,
              "kUsePerBrowserContextWebRequestEventRouter",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls the <webview> tag behaviour changes proposed as part of the guest
 // view MPArch migration. See
@@ -224,6 +223,12 @@ BASE_FEATURE(kNewWebstoreURL,
 // limit.
 BASE_FEATURE(kDeclarativeNetRequestSafeRuleLimits,
              "DeclarativeNetRequestSafeDynamicRules",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables declarative net request rules to specify response headers as a
+// matching condition.
+BASE_FEATURE(kDeclarativeNetRequestResponseHeaderMatching,
+             "DeclarativeNetRequestResponseHeaderMatching",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace extensions_features

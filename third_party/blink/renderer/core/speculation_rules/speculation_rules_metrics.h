@@ -19,7 +19,9 @@ enum class SpeculationRulesLoadOutcome {
   kEmptyResponseBody = 6,
   kParseErrorFetched = 7,
   kParseErrorInline = 8,
-  kMaxValue = kParseErrorInline,
+  kParseErrorBrowserInjected = 9,
+  kAutoSpeculationRulesOptedOut = 10,
+  kMaxValue = kAutoSpeculationRulesOptedOut,
 };
 
 void CountSpeculationRulesLoadOutcome(SpeculationRulesLoadOutcome);

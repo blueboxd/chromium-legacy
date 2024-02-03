@@ -608,6 +608,12 @@ NetworkContext::NetworkContext(
 
   socket_factory_ = std::make_unique<SocketFactory>(
       url_request_context_->net_log(), url_request_context_);
+#if BUILDFLAG(IS_WIN)
+  if (params_->socket_brokers) {
+    socket_factory_->BindSocketBroker(
+        std::move(params_->socket_brokers->server));
+  }
+#endif
   resource_scheduler_ = std::make_unique<ResourceScheduler>();
 
   if (base::FeatureList::IsEnabled(features::kNetworkServiceMemoryCache))
@@ -1471,25 +1477,6 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
   network_delegate_->set_enable_referrers(enable_referrers);
 }
 
-#if BUILDFLAG(IS_CHROMEOS)
-void NetworkContext::UpdateAdditionalCertificates(
-    mojom::AdditionalCertificatesPtr additional_certificates) {
-  if (!cert_verifier_with_trust_anchors_) {
-    CHECK(g_cert_verifier_for_testing);
-    return;
-  }
-  if (!additional_certificates) {
-    cert_verifier_with_trust_anchors_->SetAdditionalCerts(
-        net::CertificateList(), net::CertificateList());
-    return;
-  }
-
-  cert_verifier_with_trust_anchors_->SetAdditionalCerts(
-      additional_certificates->trust_anchors,
-      additional_certificates->all_certificates);
-}
-#endif  // BUILDFLAG(IS_CHROMEOS)
-
 #if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkContext::SetCTPolicy(mojom::CTPolicyPtr ct_policy) {
   if (!require_ct_delegate_)
@@ -2069,8 +2056,7 @@ void NetworkContext::VerifyIpProtectionConfigGetterForTesting(
                   weak_ptr->proxy_delegate_->GetIpProtectionConfigCache();
               ipp_config_cache->InvalidateTryAgainAfterTime();
               while (ipp_config_cache->AreAuthTokensAvailable()) {
-                ipp_config_cache->GetAuthToken(
-                    network::mojom::IpProtectionProxyLayer::kProxyA);
+                ipp_config_cache->GetAuthToken(0);  // kProxyA.
               }
               // Call `PostTask()` instead of invoking the Verify method again
               // directly so that if `DisableCacheManagementForTesting()` needed
@@ -2115,8 +2101,7 @@ void NetworkContext::OnIpProtectionConfigAvailableForTesting(
                   network::mojom::IpProtectionProxyLayer::kProxyA));
 
   absl::optional<network::mojom::BlindSignedAuthTokenPtr> result =
-      ipp_config_cache->GetAuthToken(
-          network::mojom::IpProtectionProxyLayer::kProxyA);
+      ipp_config_cache->GetAuthToken(0);  // kProxyA.
   if (result.has_value()) {
     std::move(callback).Run(std::move(result).value(), absl::nullopt);
     return;
@@ -2460,11 +2445,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
             std::move(cert_verifier)));
 
 #if BUILDFLAG(IS_CHROMEOS)
+    // TODO(https://crbug.com/1477317): The TrustAnchorUsed callback should
+    // work on all platforms. (Also consider whether this wrapper is the best
+    // way to handle this or if it should be refactored.)
     cert_verifier_with_trust_anchors_ =
         new CertVerifierWithTrustAnchors(base::BindRepeating(
             &NetworkContext::TrustAnchorUsed, base::Unretained(this)));
-    UpdateAdditionalCertificates(
-        std::move(params_->initial_additional_certificates));
     cert_verifier_with_trust_anchors_->InitializeOnIOThread(
         std::move(cert_verifier));
     cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_.get());
@@ -2774,10 +2760,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));
 
 #if BUILDFLAG(IS_WIN)
-  if (params_->socket_broker) {
+  if (params_->socket_brokers) {
     builder.set_client_socket_factory(
         std::make_unique<BrokeredClientSocketFactory>(
-            std::move(params_->socket_broker)));
+            std::move(params_->socket_brokers->client)));
   }
 #endif
 

@@ -97,35 +97,8 @@ AnchoredNudge::~AnchoredNudge() {
   }
 }
 
-views::ImageView* AnchoredNudge::GetImageView() {
-  return system_nudge_view_->image_view();
-}
-
-const std::u16string& AnchoredNudge::GetBodyText() {
-  CHECK(system_nudge_view_->body_label());
-  return system_nudge_view_->body_label()->GetText();
-}
-
-const std::u16string& AnchoredNudge::GetTitleText() {
-  CHECK(system_nudge_view_->title_label());
-  return system_nudge_view_->title_label()->GetText();
-}
-
-views::LabelButton* AnchoredNudge::GetFirstButton() {
-  return system_nudge_view_->first_button();
-}
-
-views::LabelButton* AnchoredNudge::GetSecondButton() {
-  return system_nudge_view_->second_button();
-}
-
 gfx::Rect AnchoredNudge::GetBubbleBounds() {
   auto* root_window = GetWidget()->GetNativeWindow();
-
-  // This can happen during destruction.
-  if (!root_window) {
-    return gfx::Rect();
-  }
 
   gfx::Rect work_area_bounds =
       WorkAreaInsets::ForWindow(root_window)->user_work_area_bounds();
@@ -171,8 +144,6 @@ void AnchoredNudge::AddedToWidget() {
   GetDialogClientView()->RemoveAccelerator(
       ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
-  // Widget needs a native window in order to observe its shelf.
-  CHECK(GetWidget()->GetNativeWindow());
   auto* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
 
   if (anchored_to_shelf_) {
@@ -233,7 +204,7 @@ void AnchoredNudge::OnHotseatStateChanged(HotseatState old_state,
 
 void AnchoredNudge::OnShelfAlignmentChanged(aura::Window* root_window,
                                             ShelfAlignment old_alignment) {
-  if (!GetWidget() || !GetWidget()->GetNativeWindow()) {
+  if (!GetWidget()) {
     return;
   }
 
@@ -256,7 +227,6 @@ void AnchoredNudge::OnShelfAlignmentChanged(aura::Window* root_window,
 void AnchoredNudge::OnDisplayMetricsChanged(const display::Display& display,
                                             uint32_t changed_metrics) {
   OnAnchorBoundsChanged();
-  system_nudge_view_->UpdateShadowBounds();
 }
 
 void AnchoredNudge::SetArrowFromShelf(Shelf* shelf) {
@@ -266,7 +236,7 @@ void AnchoredNudge::SetArrowFromShelf(Shelf* shelf) {
 }
 
 void AnchoredNudge::SetDefaultAnchorRect() {
-  if (!GetWidget() || !GetWidget()->GetNativeWindow()) {
+  if (!GetWidget()) {
     return;
   }
 

@@ -8,13 +8,14 @@ import("//third_party/protobuf/proto_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/webui_features.gni")
 
+import("//build/config/cast.gni")
+
 # TODO(rockot): Maybe we can factor these dependencies out of //mojo. They're
 # used to conditionally enable message ID scrambling in a way which is
 # consistent across toolchains and which is affected by branded vs non-branded
 # Chrome builds. Ideally we could create some generic knobs here that could be
 # flipped elsewhere though.
 import("//build/config/chrome_build.gni")
-import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/nacl/config.gni")
@@ -1933,11 +1934,10 @@ template("mojom") {
     not_needed(invoker, [ "use_typescript_sources" ])
   }
 
-  # Don't allow new JavaScript WebUI bindings on non-ChromeOS platforms.
+  # Don't allow JavaScript WebUI bindings on non-ChromeOS platforms.
   if (!use_typescript_for_target && defined(invoker.webui_module_path)) {
     assert(
-        is_chromeos_ash || invoker.webui_module_path ==
-                               "chrome://resources/mojo/mojo/public/mojom/base",
+        is_chromeos_ash,
         "WebUI bindings should be in TypeScript on non-ChromeOS platforms. " +
             "Remove use_typescript_sources = false")
   }

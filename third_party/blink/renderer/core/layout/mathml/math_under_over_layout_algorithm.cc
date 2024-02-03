@@ -138,8 +138,8 @@ bool HasAccent(const NGBlockNode& node, bool accent_under) {
 }  // namespace
 
 MathUnderOverLayoutAlgorithm::MathUnderOverLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params) {
+    const LayoutAlgorithmParams& params)
+    : LayoutAlgorithm(params) {
   DCHECK(params.space.IsNewFormattingContext());
 }
 
@@ -216,8 +216,9 @@ const NGLayoutResult* MathUnderOverLayoutAlgorithm::Layout() {
   // https://w3c.github.io/mathml-core/#dfn-algorithm-for-stretching-operators-along-the-inline-axis
   LayoutUnit inline_stretch_size;
   auto UpdateInlineStretchSize = [&](const NGLayoutResult* result) {
-    NGFragment fragment(ConstraintSpace().GetWritingDirection(),
-                        To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
+    LogicalFragment fragment(
+        ConstraintSpace().GetWritingDirection(),
+        To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
     inline_stretch_size = std::max(inline_stretch_size, fragment.InlineSize());
   };
 
@@ -293,7 +294,7 @@ const NGLayoutResult* MathUnderOverLayoutAlgorithm::Layout() {
   auto base_margins =
       ComputeMarginsFor(base_space, base.Style(), ConstraintSpace());
 
-  NGBoxFragment base_fragment(
+  LogicalBoxFragment base_fragment(
       ConstraintSpace().GetWritingDirection(),
       To<NGPhysicalBoxFragment>(base_layout_result->PhysicalFragment()));
   LayoutUnit base_ascent =
@@ -306,7 +307,7 @@ const NGLayoutResult* MathUnderOverLayoutAlgorithm::Layout() {
     const NGLayoutResult* over_layout_result = over.Layout(over_space);
     BoxStrut over_margins =
         ComputeMarginsFor(over_space, over.Style(), ConstraintSpace());
-    NGBoxFragment over_fragment(
+    LogicalBoxFragment over_fragment(
         ConstraintSpace().GetWritingDirection(),
         To<NGPhysicalBoxFragment>(over_layout_result->PhysicalFragment()));
     ascent += parameters.over_extra_ascender + over_margins.block_start;
@@ -353,7 +354,7 @@ const NGLayoutResult* MathUnderOverLayoutAlgorithm::Layout() {
     const NGLayoutResult* under_layout_result = under.Layout(under_space);
     BoxStrut under_margins =
         ComputeMarginsFor(under_space, under.Style(), ConstraintSpace());
-    NGBoxFragment under_fragment(
+    LogicalBoxFragment under_fragment(
         ConstraintSpace().GetWritingDirection(),
         To<NGPhysicalBoxFragment>(under_layout_result->PhysicalFragment()));
     descent += under_margins.block_start;
@@ -391,7 +392,7 @@ const NGLayoutResult* MathUnderOverLayoutAlgorithm::Layout() {
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   return container_builder_.ToBoxFragment();
 }

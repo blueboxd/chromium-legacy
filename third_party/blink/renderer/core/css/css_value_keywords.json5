@@ -507,6 +507,7 @@
     "flex",
     "grid",
     //"math",
+    //"ruby",
     // The order must match the order found in IsDisplayBox().
     "contents",
     //none
@@ -519,6 +520,7 @@
     "table-column",
     "table-cell",
     "table-caption",
+    "ruby-text",
     // The order must match the order found in IsDisplayLegacy().
     "inline-block",
     "inline-table",
@@ -1668,6 +1670,9 @@
     // Layered @import rule
     "layer",
 
+    // supports in import rule: @import supports()
+    "supports",
+
     // color-contrast()
     "color-contrast",
     "vs",
@@ -1731,8 +1736,8 @@
     "inverted",
     // none
 
-    // navigation-trigger
-    "cross-document-same-origin",
+    // @view-transition navigation
+    // auto
     // none
 
     // container-type

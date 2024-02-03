@@ -29,7 +29,6 @@ struct TaskList;
 class CalendarView;
 class ClassroomBubbleStudentView;
 class ClassroomBubbleTeacherView;
-class DetailedViewDelegate;
 class Shelf;
 
 // The bubble associated with the `GlanceableTrayBubble`. This bubble is the
@@ -69,13 +68,13 @@ class GlanceableTrayBubbleView : public TrayBubbleView,
   template <typename T>
   void AddClassroomBubbleViewIfNeeded(raw_ptr<T, ExperimentalAsh>* view,
                                       bool is_role_active);
-  void AddTaskBubbleViewIfNeeded(ui::ListModel<api::TaskList>* task_lists);
+  void AddTaskBubbleViewIfNeeded(
+      const ui::ListModel<api::TaskList>* task_lists);
 
   void OnGlanceablesContainerPreferredSizeChanged();
   void OnGlanceablesContainerHeightChanged(int height_delta);
 
   const raw_ptr<Shelf, ExperimentalAsh> shelf_;
-  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   // Whether the bubble view has been initialized.
   bool initialized_ = false;

@@ -37,7 +37,6 @@ namespace ash {
 namespace {
 
 LorgnetteManagerClient* g_instance = nullptr;
-constexpr char kListScannersDiscoveryClientId[] = "ListScanners";
 
 // The LorgnetteManagerClient implementation used in production.
 class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
@@ -49,15 +48,24 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   ~LorgnetteManagerClientImpl() override = default;
 
   void ListScanners(
+      const std::string& client_id,
       bool local_only,
       chromeos::DBusMethodCallback<lorgnette::ListScannersResponse> callback)
       override {
     if (features::IsAsynchronousScannerDiscoveryEnabled()) {
+      // The client ID is required for asynchronous discovery.  If none is
+      // provided, exit early with an error result.
+      if (client_id.empty()) {
+        lorgnette::ListScannersResponse response;
+        response.set_result(lorgnette::OPERATION_RESULT_INVALID);
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE,
+            base::BindOnce(std::move(callback), std::move(response)));
+        return;
+      }
+
       lorgnette::StartScannerDiscoveryRequest request;
-      // ListScanners doesn't support concurrent calls and completes the session
-      // before it finishes, so hardcoding a single client id shouldn't cause
-      // cross-caller interference.
-      request.set_client_id(kListScannersDiscoveryClientId);
+      request.set_client_id(client_id);
       request.set_preferred_only(true);
       request.set_local_only(local_only);
 
@@ -130,6 +138,43 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     lorgnette_daemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&LorgnetteManagerClientImpl::OnCloseScannerResponse,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void SetOptions(const lorgnette::SetOptionsRequest& request,
+                  chromeos::DBusMethodCallback<lorgnette::SetOptionsResponse>
+                      callback) override {
+    dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
+                                 lorgnette::kSetOptionsMethod);
+    dbus::MessageWriter writer(&method_call);
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode SetOptionsRequest protobuf";
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
+      return;
+    }
+    lorgnette_daemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&LorgnetteManagerClientImpl::OnSetOptionsResponse,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void GetCurrentConfig(
+      const lorgnette::GetCurrentConfigRequest& request,
+      chromeos::DBusMethodCallback<lorgnette::GetCurrentConfigResponse>
+          callback) override {
+    dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
+                                 lorgnette::kGetCurrentConfigMethod);
+    dbus::MessageWriter writer(&method_call);
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode GetCurrentConfigRequest protobuf";
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
+      return;
+    }
+    lorgnette_daemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&LorgnetteManagerClientImpl::OnGetCurrentConfigResponse,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -557,6 +602,49 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     std::move(callback).Run(response_proto);
   }
 
+  // Handles the response received after calling SetOptions().
+  void OnSetOptionsResponse(
+      chromeos::DBusMethodCallback<lorgnette::SetOptionsResponse> callback,
+      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to obtain SetOptionsResponse";
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    lorgnette::SetOptionsResponse response_proto;
+    dbus::MessageReader reader(response);
+    if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
+      LOG(ERROR) << "Failed to decode SetOptionsResponse proto";
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(response_proto);
+  }
+
+  // Handles the response received after calling GetCurrentConfig().
+  void OnGetCurrentConfigResponse(
+      chromeos::DBusMethodCallback<lorgnette::GetCurrentConfigResponse>
+          callback,
+      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to obtain GetCurrentConfigResponse";
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    lorgnette::GetCurrentConfigResponse response_proto;
+    dbus::MessageReader reader(response);
+    if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
+      LOG(ERROR) << "Failed to decode GetCurrentConfigResponse proto";
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(response_proto);
+  }
+
   // Handles the response received after calling StartPreparedScan.
   void OnStartPreparedScanResponse(
       chromeos::DBusMethodCallback<lorgnette::StartPreparedScanResponse>
@@ -793,6 +881,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     if (!response.has_value()) {
+      // TODO(b/277049005): Set the proper result code once this is disentangled
+      // from the synchronous ListScanners response.
       std::move(callback).Run(absl::nullopt);
       return;
     }
@@ -917,6 +1007,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
         // needs to be updated to actually remove devices.
         break;
       case lorgnette::ScannerListChangedSignal::ENUM_COMPLETE: {
+        session.response.set_result(lorgnette::OPERATION_RESULT_SUCCESS);
         lorgnette::StopScannerDiscoveryRequest request;
         request.set_session_id(session.session_id);
         StopScannerDiscovery(request, base::DoNothing());

@@ -60,8 +60,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
                                                Document& document)
     : HTMLElement(tag_name, document),
       autofill_state_(WebAutofillState::kNotFilled),
-      blocks_form_submission_(false),
-      interacted_since_last_form_submit_(false) {
+      blocks_form_submission_(false) {
   SetHasCustomStyleCallbacks();
   static uint64_t next_free_unique_id = 1;
   unique_renderer_form_control_id_ = next_free_unique_id++;
@@ -118,7 +117,6 @@ bool HTMLFormControlElement::FormNoValidate() const {
 void HTMLFormControlElement::Reset() {
   SetAutofillState(WebAutofillState::kNotFilled);
   ResetImpl();
-  SetInteractedSinceLastFormSubmit(false);
 }
 
 void HTMLFormControlElement::AttributeChanged(
@@ -297,17 +295,19 @@ String HTMLFormControlElement::ResultForDialogSubmit() {
   return FastGetAttribute(html_names::kValueAttr);
 }
 
-bool HTMLFormControlElement::SupportsFocus() const {
+bool HTMLFormControlElement::SupportsFocus(UpdateBehavior) const {
   return !IsDisabledFormControl();
 }
 
-bool HTMLFormControlElement::IsKeyboardFocusable() const {
-  if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
-    return HTMLElement::IsKeyboardFocusable();
+bool HTMLFormControlElement::IsKeyboardFocusable(
+    UpdateBehavior update_behavior) const {
+  if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
+    return HTMLElement::IsKeyboardFocusable(update_behavior);
+  }
 
   // Form control elements are always keyboard focusable if they are focusable
   // at all, and don't have a negative tabindex set.
-  return IsFocusable() && tabIndex() >= 0;
+  return IsFocusable(update_behavior) && tabIndex() >= 0;
 }
 
 bool HTMLFormControlElement::MayTriggerVirtualKeyboard() const {
@@ -624,26 +624,6 @@ int32_t HTMLFormControlElement::GetAxId() const {
   }
 
   return 0;
-}
-
-void HTMLFormControlElement::SetInteractedSinceLastFormSubmit(
-    bool interacted_since_last_form_submit) {
-  if (interacted_since_last_form_submit_ == interacted_since_last_form_submit) {
-    return;
-  }
-  interacted_since_last_form_submit_ = interacted_since_last_form_submit;
-  PseudoStateChanged(CSSSelector::kPseudoUserInvalid);
-  PseudoStateChanged(CSSSelector::kPseudoUserValid);
-}
-
-bool HTMLFormControlElement::MatchesUserInvalidPseudo() {
-  return interacted_since_last_form_submit_ && MatchesValidityPseudoClasses() &&
-         !ListedElement::IsValidElement();
-}
-
-bool HTMLFormControlElement::MatchesUserValidPseudo() {
-  return interacted_since_last_form_submit_ && MatchesValidityPseudoClasses() &&
-         ListedElement::IsValidElement();
 }
 
 }  // namespace blink

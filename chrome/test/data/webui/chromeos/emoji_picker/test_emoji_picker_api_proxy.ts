@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TenorGifResponse} from 'chrome://emoji-picker/emoji_picker.mojom-webui.js';
-import {EmojiPickerApiProxyImpl} from 'chrome://emoji-picker/emoji_picker_api_proxy.js';
-import {GifSubcategoryData, VisualContent} from 'chrome://emoji-picker/types.js';
+import {EmojiPickerApiProxyImpl, GifSubcategoryData, TenorGifResponse, VisualContent} from 'chrome://emoji-picker/emoji_picker.js';
 
 export class TestEmojiPickerApiProxyImpl extends EmojiPickerApiProxyImpl {
   // This variable is used to mock the status return value in the actual api
@@ -279,7 +277,7 @@ export class TestEmojiPickerApiProxyImpl extends EmojiPickerApiProxyImpl {
     return new Promise((resolve) => {
       resolve({
         status: this.httpOk,
-        featuredGifs: this.gifs[query]!,
+        featuredGifs: this.gifs[query] ?? this.gifs['trending']!,
       });
     });
   }
@@ -289,7 +287,7 @@ export class TestEmojiPickerApiProxyImpl extends EmojiPickerApiProxyImpl {
     query = (pos ? query + pos : query).replace('#', '');
     return Promise.resolve({
       status: this.httpOk,
-      searchGifs: this.searchResults[query]!,
+      searchGifs: this.searchResults[query] ?? this.searchResults['face']!,
     });
   }
 

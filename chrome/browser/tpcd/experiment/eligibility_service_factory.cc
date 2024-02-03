@@ -33,7 +33,6 @@ EligibilityServiceFactory::EligibilityServiceFactory()
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOwnInstance)
               .WithGuest(ProfileSelection::kOwnInstance)
-              .WithAshInternals(ProfileSelection::kNone)
               .Build()) {
   DependsOn(TrackingProtectionOnboardingFactory::GetInstance());
 }

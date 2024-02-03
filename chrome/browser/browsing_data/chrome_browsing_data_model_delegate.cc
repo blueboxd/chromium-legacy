@@ -14,15 +14,26 @@
 #include "components/browsing_topics/browsing_topics_service.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/media_device_salt/media_device_salt_service.h"
+#include "components/supervised_user/core/common/buildflags.h"
+#include "components/supervised_user/core/common/features.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "url/origin.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
-#include "chrome/browser/web_applications/isolated_web_apps/remove_isolated_web_app_browsing_data.h"
+#include "chrome/browser/web_applications/isolated_web_apps/remove_isolated_web_app_data.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_service.h"
+#endif
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/permissions/permissions_client.h"
 #endif
 
 namespace {
@@ -198,6 +209,27 @@ ChromeBrowsingDataModelDelegate::IsBlockedByThirdPartyCookieBlocking(
     default:
       NOTREACHED_NORETURN();
   }
+}
+
+bool ChromeBrowsingDataModelDelegate::IsCookieDeletionDisabled(
+    const GURL& url) {
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  supervised_user::SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForBrowserContext(profile_);
+  if (!supervised_user_service) {
+    // For some Profiles (e.g. Incognito), SupervisedUserService is not
+    // created.
+    return false;
+  }
+  return supervised_user_service->IsCookieDeletionDisabled(url);
+#elif BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+  if (profile_->IsChild()) {
+    auto* client = permissions::PermissionsClient::Get();
+    return client->IsCookieDeletionDisabled(profile_, url);
+  }
+#else
+  return false;
+#endif
 }
 
 void ChromeBrowsingDataModelDelegate::GetAllMediaDeviceSaltDataKeys(

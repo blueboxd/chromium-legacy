@@ -21,6 +21,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/action_view_controller.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -40,8 +41,10 @@ namespace views {
 
 MdTextButton::MdTextButton(PressedCallback callback,
                            const std::u16string& text,
-                           int button_context)
-    : LabelButton(std::move(callback), text, button_context) {
+                           int button_context,
+                           bool use_text_color_for_icon)
+    : LabelButton(std::move(callback), text, button_context),
+      use_text_color_for_icon_(use_text_color_for_icon) {
   InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   SetHasInkDropActionOnClick(true);
   SetShowInkDropWhenHotTracked(true);
@@ -107,22 +110,6 @@ void MdTextButton::SetStyle(ui::ButtonStyle button_style) {
 
 ui::ButtonStyle MdTextButton::GetStyle() const {
   return style_;
-}
-
-SkColor MdTextButton::GetHoverColor(ui::ButtonStyle button_style) {
-  if (!features::IsChromeRefresh2023()) {
-    return color_utils::DeriveDefaultIconColor(label()->GetEnabledColor());
-  }
-
-  switch (button_style) {
-    case ui::ButtonStyle::kProminent:
-      return GetColorProvider()->GetColor(ui::kColorSysStateHoverOnProminent);
-    case ui::ButtonStyle::kDefault:
-    case ui::ButtonStyle::kText:
-    case ui::ButtonStyle::kTonal:
-    default:
-      return GetColorProvider()->GetColor(ui::kColorSysStateHoverOnSubtle);
-  }
 }
 
 void MdTextButton::SetBgColorOverride(const absl::optional<SkColor>& color) {
@@ -325,7 +312,8 @@ void MdTextButton::UpdateBackgroundColor() {
 }
 
 void MdTextButton::UpdateIconColor() {
-  if (features::IsChromeRefresh2023() && HasImage(ButtonState::STATE_NORMAL)) {
+  if (features::IsChromeRefresh2023() && use_text_color_for_icon_ &&
+      HasImage(ButtonState::STATE_NORMAL)) {
     auto image_model = GetImageModel(ButtonState::STATE_NORMAL);
     if (image_model.IsVectorIcon()) {
       LabelButton::SetImageModel(ButtonState::STATE_NORMAL,
@@ -343,6 +331,41 @@ void MdTextButton::UpdateColors() {
     UpdateBackgroundColor();
     UpdateIconColor();
     SchedulePaint();
+  }
+}
+
+SkColor MdTextButton::GetHoverColor(ui::ButtonStyle button_style) {
+  if (!features::IsChromeRefresh2023()) {
+    return color_utils::DeriveDefaultIconColor(label()->GetEnabledColor());
+  }
+
+  switch (button_style) {
+    case ui::ButtonStyle::kProminent:
+      return GetColorProvider()->GetColor(ui::kColorSysStateHoverOnProminent);
+    case ui::ButtonStyle::kDefault:
+    case ui::ButtonStyle::kText:
+    case ui::ButtonStyle::kTonal:
+    default:
+      return GetColorProvider()->GetColor(ui::kColorSysStateHoverOnSubtle);
+  }
+}
+
+template <>
+void ActionViewController<MdTextButton, ActionViewController<Button>>::
+    ActionItemChangedImpl(MdTextButton* action_view,
+                          actions::ActionItem* action_item) {
+  action_view->SetText(action_item->GetText());
+  action_view->SetTooltipText(action_item->GetTooltipText());
+  action_view->SetImageModel(Button::ButtonState::STATE_NORMAL,
+                             action_item->GetImage());
+}
+
+template <>
+void ActionViewController<MdTextButton, ActionViewController<Button>>::
+    SetActionViewImpl(MdTextButton* action_view) {
+  if (action_view) {
+    action_view->SetCallback(base::BindRepeating(
+        &ActionViewController::TriggerAction, base::Unretained(this)));
   }
 }
 

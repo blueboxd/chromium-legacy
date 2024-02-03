@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_browser_window_handler.h"
 #include <memory>
 
-#include "base/check_deref.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_policies.h"
@@ -21,6 +20,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "kiosk_troubleshooting_controller_ash.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -37,18 +37,12 @@ void MakeWindowResizable(BrowserWindow* window) {
   }
 }
 
-std::string GetUrlOfActiveTab(const Browser* browser) {
-  content::WebContents* active_tab =
-      browser->tab_strip_model()->GetActiveWebContents();
-  return active_tab ? active_tab->GetVisibleURL().spec() : std::string();
-}
-
-void CloseAllBrowserWindows() {
-  for (auto* browser : CHECK_DEREF(BrowserList::GetInstance())) {
-    LOG(WARNING) << "kiosk: Closing unexpected browser window with url: "
-                 << GetUrlOfActiveTab(browser);
-    browser->window()->Close();
-  }
+bool IsAshWithLacrosEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return crosapi::browser_util::IsLacrosEnabled();
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -82,11 +76,6 @@ KioskBrowserWindowHandler::KioskBrowserWindowHandler(
                          weak_ptr_factory_.GetWeakPtr()));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  if (!web_app_name.has_value()) {
-    // If this is ChromeApp kiosk, close all preexisting browser windows to
-    // avoid potential kiosk escapes.
-    CloseAllBrowserWindows();
-  }
   BrowserList::AddObserver(this);
 }
 
@@ -95,7 +84,10 @@ KioskBrowserWindowHandler::~KioskBrowserWindowHandler() {
 }
 
 void KioskBrowserWindowHandler::HandleNewBrowserWindow(Browser* browser) {
-  std::string url_string = GetUrlOfActiveTab(browser);
+  content::WebContents* active_tab =
+      browser->tab_strip_model()->GetActiveWebContents();
+  std::string url_string =
+      active_tab ? active_tab->GetVisibleURL().spec() : std::string();
 
   if (KioskSettingsNavigationThrottle::IsSettingsPage(url_string)) {
     base::UmaHistogramEnumeration(kKioskNewBrowserWindowHistogram,
@@ -114,6 +106,17 @@ void KioskBrowserWindowHandler::HandleNewBrowserWindow(Browser* browser) {
     return;
   }
 #endif
+
+  if (IsAshWithLacrosEnabled()) {
+    base::UmaHistogramEnumeration(
+        kKioskNewBrowserWindowHistogram,
+        KioskBrowserWindowType::kClosedAshBrowserWithLacrosEnabled);
+    LOG(WARNING) << "Tried to open ash browser-window during lacros-kiosk"
+                 << ", url=" << url_string;
+    browser->window()->Close();
+    on_browser_window_added_callback_.Run(/*is_closing=*/true);
+    return;
+  }
 
   if (IsNewBrowserWindowAllowed(browser)) {
     base::UmaHistogramEnumeration(

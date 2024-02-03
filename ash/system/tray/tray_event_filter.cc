@@ -13,13 +13,12 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/ash_message_popup_collection.h"
-#include "ash/system/message_center/unified_message_center_bubble.h"
+#include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_base.h"
 #include "ash/system/unified/date_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/functional/bind.h"
 #include "ui/aura/window.h"
@@ -122,24 +121,18 @@ void TrayEventFilter::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  auto* unified_system_tray_bubble =
-      active_status_area_widget->unified_system_tray()->bubble();
-
-  // If `QsRevamp` is disabled, the event handling will happen in
-  // `UnifiedSystemTrayBubble`.
-  if (!features::IsQsRevampEnabled() && unified_system_tray_bubble &&
-      open_shelf_pod_bubble == unified_system_tray_bubble->GetBubbleView()) {
-    return;
-  }
-
   views::Widget* bubble_widget = open_shelf_pod_bubble->GetWidget();
   auto* gained_active_widget =
       views::Widget::GetWidgetForNativeView(gained_active);
 
+  if (bubble_widget == gained_active_widget) {
+    return;
+  }
+
   // Don't close the bubble if a transient child is gaining or losing
-  // activation.
-  if (bubble_widget == gained_active_widget ||
-      ::wm::HasTransientAncestor(gained_active,
+  // activation (i.e. b/303382616: the network info bubble is a transcient child
+  // of the QS bubble and activating it should not close the QS bubble).
+  if (::wm::HasTransientAncestor(gained_active,
                                  bubble_widget->GetNativeWindow()) ||
       (lost_active && ::wm::HasTransientAncestor(
                           lost_active, bubble_widget->GetNativeWindow()))) {
@@ -149,8 +142,8 @@ void TrayEventFilter::OnWindowActivated(ActivationReason reason,
   // If the activated window is a popup notification, interacting with it
   // should not close the bubble.
   if (features::IsNotifierCollisionEnabled() &&
-      active_status_area_widget->unified_system_tray()
-          ->GetMessagePopupCollection()
+      active_status_area_widget->notification_center_tray()
+          ->popup_collection()
           ->IsWidgetAPopupNotification(gained_active_widget)) {
     return;
   }

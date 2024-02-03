@@ -290,7 +290,10 @@ void Frame::NotifyUserActivationInFrameTree(
     mojom::blink::UserActivationNotificationType notification_type) {
   for (Frame* node = this; node; node = node->Tree().Parent()) {
     node->user_activation_state_.Activate(notification_type);
-    node->ActivateHistoryUserActivationState();
+    auto* local_node = DynamicTo<LocalFrame>(node);
+    if (local_node) {
+      local_node->SetHadUserInteraction(true);
+    }
   }
 
   // See the "Same-origin Visibility" section in |UserActivationState| class
@@ -308,7 +311,7 @@ void Frame::NotifyUserActivationInFrameTree(
           security_origin->CanAccess(
               local_frame_node->GetSecurityContext()->GetSecurityOrigin())) {
         node->user_activation_state_.Activate(notification_type);
-        node->ActivateHistoryUserActivationState();
+        local_frame_node->SetHadUserInteraction(true);
       }
     }
   }
@@ -332,7 +335,10 @@ bool Frame::ConsumeTransientUserActivationInFrameTree() {
 void Frame::ClearUserActivationInFrameTree() {
   for (Frame* node = this; node; node = node->Tree().TraverseNext(this)) {
     node->user_activation_state_.Clear();
-    node->ClearHistoryUserActivationState();
+    auto* local_node = DynamicTo<LocalFrame>(node);
+    if (local_node) {
+      local_node->SetHadUserInteraction(false);
+    }
   }
 }
 
@@ -688,8 +694,9 @@ bool Frame::SwapImpl(
     provisional_frame_ = nullptr;
   }
 
-  v8::HandleScope handle_scope(page->GetAgentGroupScheduler().Isolate());
-  WindowProxyManager::GlobalProxyVector global_proxies;
+  v8::Isolate* isolate = page->GetAgentGroupScheduler().Isolate();
+  v8::HandleScope handle_scope(isolate);
+  WindowProxyManager::GlobalProxyVector global_proxies(isolate);
   GetWindowProxyManager()->ReleaseGlobalProxies(global_proxies);
 
   if (new_web_frame->IsWebRemoteFrame()) {
@@ -787,6 +794,11 @@ bool Frame::SwapImpl(
                 mojo::NullAssociatedRemote(), mojo::NullAssociatedReceiver());
         page->SetMainFrame(
             WebFrame::ToCoreFrame(*old_page_placeholder_remote_frame));
+
+        // The old page might be in the middle of closing when this swap
+        // happens. We need to ensure that the closing still happens with the
+        // new page, so also swap the CloseTaskHandlers in the pages.
+        new_page->TakeCloseTaskHandler(page);
 
         // On the new Page, we have a different placeholder main RemoteFrame,
         // which was created when the new Page's WebView was created from

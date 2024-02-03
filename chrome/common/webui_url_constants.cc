@@ -306,6 +306,7 @@ const char kChromeUISuggestInternalsURL[] = "chrome://suggest-internals/";
 const char kChromeUIWebAppInternalsHost[] = "web-app-internals";
 const char kChromeUIWebAppInternalsURL[] = "chrome://web-app-internals";
 const char kChromeUIWebUITestHost[] = "webui-test";
+const char kChromeUIUntrustedWebUITestURL[] = "chrome-untrusted://webui-test/";
 #endif
 
 #if BUILDFLAG(PLATFORM_CFM)
@@ -629,6 +630,7 @@ const char kSafetyHubSubPage[] = "safetyCheck";
 const char kSearchSubPage[] = "search";
 const char kSearchEnginesSubPage[] = "searchEngines";
 const char kSignOutSubPage[] = "signOut";
+const char kSyncSetupPageContentSubPage[] = "syncSetup/pageContent";
 const char kSyncSetupSubPage[] = "syncSetup";
 const char kTriggeredResetProfileSettingsSubPage[] =
     "triggeredResetProfileSettings";
@@ -666,12 +668,6 @@ const char kChromeUICastFeedbackHost[] = "cast-feedback";
 #if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
 const char kChromeUISearchEngineChoiceHost[] = "search-engine-choice";
 const char kChromeUISearchEngineChoiceURL[] = "chrome://search-engine-choice";
-#endif
-
-#if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
-const char kChromeUILensURL[] = "chrome://lens/";
-const char kChromeUILensUntrustedURL[] = "chrome-untrusted://lens/";
-const char kChromeUILensHost[] = "lens";
 #endif
 
 // Extension sub pages.

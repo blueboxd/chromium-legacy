@@ -1325,7 +1325,7 @@ Vector2d RenderText::GetLineOffset(size_t line_number) {
 
 bool RenderText::GetWordLookupDataAtPoint(const Point& point,
                                           DecoratedText* decorated_word,
-                                          Point* baseline_point) {
+                                          Rect* rect) {
   if (obscured())
     return false;
 
@@ -1340,18 +1340,19 @@ bool RenderText::GetWordLookupDataAtPoint(const Point& point,
   DCHECK(!word_range.is_reversed());
   DCHECK(!word_range.is_empty());
 
-  return GetLookupDataForRange(word_range, decorated_word, baseline_point);
+  return GetLookupDataForRange(word_range, decorated_word, rect);
 }
 
 bool RenderText::GetLookupDataForRange(const Range& range,
                                        DecoratedText* decorated_text,
-                                       Point* baseline_point) {
+                                       Rect* rect) {
   const internal::ShapedText* shaped_text = GetShapedText();
 
   const std::vector<Rect> word_bounds = GetSubstringBounds(range);
-  if (word_bounds.empty() || !GetDecoratedTextForRange(range, decorated_text)) {
+  if (word_bounds.empty()) {
     return false;
   }
+  GetDecoratedTextForRange(range, decorated_text);
 
   // Retrieve the baseline origin of the left-most glyph.
   const auto left_rect = std::min_element(
@@ -1362,8 +1363,9 @@ bool RenderText::GetLookupDataForRange(const Range& range,
   if (line_index < 0 ||
       line_index >= static_cast<int>(shaped_text->lines().size()))
     return false;
-  *baseline_point = left_rect->origin() +
-                    Vector2d(0, shaped_text->lines()[line_index].baseline);
+  *rect = Rect(left_rect->origin() +
+                   Vector2d(0, shaped_text->lines()[line_index].baseline),
+               left_rect->size());
   return true;
 }
 
@@ -1669,8 +1671,9 @@ void RenderText::EnsureLayoutTextUpdated() const {
     if (elided_grapheme || text_truncated) {
       grapheme_codepoints.clear();
       // Append an ellipsis if not already done.
-      if (!previous_grapheme_elided)
+      if (!previous_grapheme_elided) {
         grapheme_codepoints.push_back(kEllipsisCodepoint);
+      }
     }
     previous_grapheme_elided = elided_grapheme;
 

@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_observer.h"
+#include "chrome/browser/search/background/wallpaper_search/wallpaper_search_background_manager.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search/instant_types.h"
@@ -41,7 +42,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/mojom/themes.mojom.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -121,20 +121,21 @@ void CopyFileToProfilePath(const base::FilePath& from_path,
                      chrome::kChromeUIUntrustedNewTabPageBackgroundFilename));
 }
 
-void WriteFileToPath(const std::string& data, const base::FilePath& path) {
-  base::WriteFile(path, base::as_bytes(base::make_span(data)));
-}
-
 std::string ReadFileToString(const base::FilePath& path) {
   std::string image_data;
   base::ReadFileToString(path, &image_data);
   return image_data;
 }
 
-void RemoveLocalBackgroundImageCopy(Profile* profile,
-                                    const std::string& file_prefix) {
+void RemoveLocalBackgroundImageCopy(Profile* profile) {
+  // Delete wallpaper search image.
+  if (base::FeatureList::IsEnabled(
+          ntp_features::kCustomizeChromeWallpaperSearch)) {
+    WallpaperSearchBackgroundManager::RemoveWallpaperSearchBackground(profile);
+  }
+  // Delete uploaded image.
   base::FilePath path = profile->GetPath().AppendASCII(
-      file_prefix + chrome::kChromeUIUntrustedNewTabPageBackgroundFilename);
+      chrome::kChromeUIUntrustedNewTabPageBackgroundFilename);
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::GetDeleteFileCallback(path));
@@ -158,17 +159,31 @@ void NtpCustomBackgroundService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kNtpCustomBackgroundLocalToDevice,
                                 false);
   registry->RegisterStringPref(prefs::kNtpCustomBackgroundLocalToDeviceId, "");
+  // Register wallpaper search profile prefs.
+  if (base::FeatureList::IsEnabled(
+          ntp_features::kCustomizeChromeWallpaperSearch)) {
+    WallpaperSearchBackgroundManager::RegisterProfilePrefs(registry);
+  }
+}
+
+// static
+void NtpCustomBackgroundService::ResetNtpTheme(Profile* profile) {
+  auto* pref_service = profile->GetPrefs();
+  RemoveLocalBackgroundImageCopy(profile);
+  pref_service->ClearPref(prefs::kNtpCustomBackgroundDict);
+  pref_service->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
+  pref_service->ClearPref(prefs::kNtpCustomBackgroundLocalToDeviceId);
 }
 
 // static
 void NtpCustomBackgroundService::ResetProfilePrefs(Profile* profile) {
-  auto* pref_service = profile->GetPrefs();
-  RemoveLocalBackgroundImageCopy(
-      profile,
-      pref_service->GetString(prefs::kNtpCustomBackgroundLocalToDeviceId));
-  pref_service->ClearPref(prefs::kNtpCustomBackgroundDict);
-  pref_service->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
-  pref_service->ClearPref(prefs::kNtpCustomBackgroundLocalToDeviceId);
+  // Clear wallpaper search profile prefs.
+  if (base::FeatureList::IsEnabled(
+          ntp_features::kCustomizeChromeWallpaperSearch)) {
+    WallpaperSearchBackgroundManager::ResetProfilePrefs(profile);
+  }
+  // Clear theme.
+  ResetNtpTheme(profile);
 }
 
 NtpCustomBackgroundService::NtpCustomBackgroundService(Profile* profile)
@@ -240,9 +255,7 @@ void NtpCustomBackgroundService::OnNtpBackgroundServiceShuttingDown() {
 
 void NtpCustomBackgroundService::UpdateBackgroundFromSync() {
   // Any incoming change to synced background data should clear the local image.
-  RemoveLocalBackgroundImageCopy(
-      profile_,
-      pref_service_->GetString(prefs::kNtpCustomBackgroundLocalToDeviceId));
+  RemoveLocalBackgroundImageCopy(profile_);
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
   pref_service_->ClearPref(prefs::kNtpCustomBackgroundLocalToDeviceId);
   NotifyAboutBackgrounds();
@@ -283,9 +296,7 @@ void NtpCustomBackgroundService::SetCustomBackgroundInfo(
       pref_service_->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice) &&
       pref_service_->FindPreference(prefs::kNtpCustomBackgroundDict)
           ->IsDefaultValue();
-  RemoveLocalBackgroundImageCopy(
-      profile_,
-      pref_service_->GetString(prefs::kNtpCustomBackgroundLocalToDeviceId));
+  RemoveLocalBackgroundImageCopy(profile_);
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
   pref_service_->ClearPref(prefs::kNtpCustomBackgroundLocalToDeviceId);
 
@@ -375,41 +386,6 @@ void NtpCustomBackgroundService::SelectLocalBackgroundImage(
         base::BindOnce(&ReadFileToString, path),
         base::BindOnce(&NtpCustomBackgroundService::ProcessLocalImageData,
                        weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
-void NtpCustomBackgroundService::SetBackgroundToLocalResourceAndExtractColor(
-    const base::Token& id,
-    const SkBitmap& bitmap) {
-  NtpCustomBackgroundService::SetBackgroundToLocalResourceWithId(id);
-  NtpCustomBackgroundService::UpdateCustomLocalBackgroundColorAsync(
-      gfx::Image::CreateFrom1xBitmap(bitmap));
-}
-
-void NtpCustomBackgroundService::SelectLocalBackgroundImage(
-    const base::Token& id,
-    const SkBitmap& bitmap) {
-  if (IsCustomBackgroundDisabledByPolicy()) {
-    return;
-  }
-
-  previous_background_info_.reset();
-  previous_local_background_ = true;
-
-  std::vector<unsigned char> encoded;
-  const bool success = gfx::PNGCodec::EncodeBGRASkBitmap(
-      bitmap, /*discard_transparency=*/false, &encoded);
-  if (success) {
-    base::ThreadPool::PostTaskAndReply(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-        base::BindOnce(
-            &WriteFileToPath, std::string(encoded.begin(), encoded.end()),
-            profile_->GetPath().AppendASCII(
-                id.ToString() +
-                chrome::kChromeUIUntrustedNewTabPageBackgroundFilename)),
-        base::BindOnce(&NtpCustomBackgroundService::
-                           SetBackgroundToLocalResourceAndExtractColor,
-                       weak_ptr_factory_.GetWeakPtr(), id, bitmap));
   }
 }
 
@@ -636,9 +612,7 @@ void NtpCustomBackgroundService::SetBackgroundToLocalResource() {
   if (pref_service_->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice) &&
       !pref_service_->GetString(prefs::kNtpCustomBackgroundLocalToDeviceId)
            .empty()) {
-    RemoveLocalBackgroundImageCopy(
-        profile_,
-        pref_service_->GetString(prefs::kNtpCustomBackgroundLocalToDeviceId));
+    RemoveLocalBackgroundImageCopy(profile_);
   }
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, true);
   pref_service_->ClearPref(prefs::kNtpCustomBackgroundLocalToDeviceId);
@@ -650,9 +624,7 @@ void NtpCustomBackgroundService::SetBackgroundToLocalResourceWithId(
   background_updated_timestamp_ = base::TimeTicks::Now();
   // Remove the last local background if it exists. This is
   // temporary until multiple local images is supported.
-  RemoveLocalBackgroundImageCopy(
-      profile_,
-      pref_service_->GetString(prefs::kNtpCustomBackgroundLocalToDeviceId));
+  RemoveLocalBackgroundImageCopy(profile_);
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, true);
   pref_service_->SetString(prefs::kNtpCustomBackgroundLocalToDeviceId,
                            id.ToString());

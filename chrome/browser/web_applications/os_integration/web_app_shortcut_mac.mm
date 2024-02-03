@@ -856,9 +856,9 @@ static const LSCopyApplicationURLsForBundleIdentifierPtr LSCopyApplicationURLsFo
 
   if(LSCopyApplicationURLsForBundleIdentifierFuncPtr) {
     // First search using LaunchServices
-    bundle_urls =
-        base::apple::CFToNSOwnershipCast(LSCopyApplicationURLsForBundleIdentifierFuncPtr(
-            base::SysUTF8ToCFStringRef(bundle_id), /*outError=*/nullptr));
+    bundle_urls = base::apple::CFToNSOwnershipCast(
+        LSCopyApplicationURLsForBundleIdentifierFuncPtr(
+            base::SysUTF8ToCFStringRef(bundle_id).get(), /*outError=*/nullptr));
   } else {
     base::apple::ScopedCFTypeRef<CFURLRef> cf_url;
     LSFindApplicationForInfo(kLSUnknownCreator, base::SysUTF8ToCFStringRef(bundle_id), NULL, NULL,
@@ -1500,7 +1500,7 @@ void WebAppShortcutCreator::CreateShortcutsAt(
 
     // LaunchServices will eventually detect the (updated) app, but explicitly
     // calling LSRegisterURL ensures tests see the right state immediately.
-    LSRegisterURL(base::apple::FilePathToCFURL(dst_app_path), true);
+    LSRegisterURL(base::apple::FilePathToCFURL(dst_app_path).get(), true);
 
     updated_paths->push_back(dst_app_path);
   }
@@ -1830,7 +1830,7 @@ bool WebAppShortcutCreator::UpdateSignature(
   base::apple::ScopedCFTypeRef<CFURLRef> app_url =
       base::apple::FilePathToCFURL(app_path);
   base::apple::ScopedCFTypeRef<SecStaticCodeRef> app_code;
-  if (SecStaticCodeCreateWithPath(app_url, kSecCSDefaultFlags,
+  if (SecStaticCodeCreateWithPath(app_url.get(), kSecCSDefaultFlags,
                                   app_code.InitializeInto()) != errSecSuccess) {
     return false;
   }
@@ -1855,23 +1855,23 @@ bool WebAppShortcutCreator::UpdateSignature(
   }
 
   base::apple::ScopedCFTypeRef<CFErrorRef> errors;
-  if (SecCodeSignerAddSignatureWithErrors(signer, app_code, kSecCSDefaultFlags,
-                                          errors.InitializeInto()) !=
-      errSecSuccess) {
-    LOG(ERROR) << "Failed to sign web app shim: " << errors;
+  if (SecCodeSignerAddSignatureWithErrors(
+          signer.get(), app_code.get(), kSecCSDefaultFlags,
+          errors.InitializeInto()) != errSecSuccess) {
+    LOG(ERROR) << "Failed to sign web app shim: " << errors.get();
     return false;
   }
 
   base::apple::ScopedCFTypeRef<CFDictionaryRef> app_shim_info;
-  if (SecCodeCopySigningInformation(app_code, kSecCSSigningInformation,
+  if (SecCodeCopySigningInformation(app_code.get(), kSecCSSigningInformation,
                                     app_shim_info.InitializeInto()) !=
       errSecSuccess) {
     LOG(ERROR) << "Failed to copy signing information from web app shim";
     return false;
   }
 
-  CFDataRef cd_hash_data =
-      GetValueFromDictionary<CFDataRef>(app_shim_info, kSecCodeInfoUnique);
+  CFDataRef cd_hash_data = base::apple::GetValueFromDictionary<CFDataRef>(
+      app_shim_info.get(), kSecCodeInfoUnique);
   std::vector<uint8_t> cd_hash(
       CFDataGetBytePtr(cd_hash_data),
       CFDataGetBytePtr(cd_hash_data) + CFDataGetLength(cd_hash_data));

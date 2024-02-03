@@ -169,16 +169,29 @@ class TokenPreloadScanner::StartTagScanner {
   STACK_ALLOCATED();
 
  public:
-  StartTagScanner(const StringImpl* tag_impl,
-                  MediaValuesCached* media_values,
-                  SubresourceIntegrity::IntegrityFeatures features,
-                  TokenPreloadScanner::ScannerType scanner_type,
-                  const HashSet<String>* disabled_image_types)
+  StartTagScanner(
+      const StringImpl* tag_impl,
+      MediaValuesCached* media_values,
+      SubresourceIntegrity::IntegrityFeatures features,
+      TokenPreloadScanner::ScannerType scanner_type,
+      const HashSet<String>* disabled_image_types,
+      features::LcppPreloadLazyLoadImageType preload_lazy_load_image_type)
       : tag_impl_(tag_impl),
         media_values_(media_values),
         integrity_features_(features),
         scanner_type_(scanner_type),
-        disabled_image_types_(disabled_image_types) {
+        disabled_image_types_(disabled_image_types),
+        preload_lazy_load_image_type_(preload_lazy_load_image_type) {
+    switch (preload_lazy_load_image_type_) {
+      case features::LcppPreloadLazyLoadImageType::kCustomLazyLoading:
+      case features::LcppPreloadLazyLoadImageType::kAll:
+        use_data_src_attr_match_for_image_ = true;
+        break;
+      case features::LcppPreloadLazyLoadImageType::kNone:
+      case features::LcppPreloadLazyLoadImageType::kNativeLazyLoading:
+        use_data_src_attr_match_for_image_ = false;
+        break;
+    }
     if (Match(tag_impl_, html_names::kImgTag) ||
         Match(tag_impl_, html_names::kSourceTag) ||
         Match(tag_impl_, html_names::kLinkTag)) {
@@ -232,7 +245,8 @@ class TokenPreloadScanner::StartTagScanner {
       const PictureData& picture_data,
       const CachedDocumentParameters& document_parameters,
       const PreloadRequest::ExclusionInfo* exclusion_info,
-      bool treat_links_as_in_body) {
+      bool treat_links_as_in_body,
+      bool is_potentially_lcp_element) {
     PreloadRequest::RequestType request_type =
         PreloadRequest::kRequestTypePreload;
     absl::optional<ResourceType> type;
@@ -322,7 +336,8 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetRenderBlockingBehavior(render_blocking_behavior);
 
     if (type == ResourceType::kImage && is_img &&
-        IsLazyLoadImageDeferable(document_parameters)) {
+        IsLazyLoadImageDeferable(document_parameters,
+                                 is_potentially_lcp_element)) {
       return nullptr;
     }
     // Do not set integrity metadata for <link> elements for destinations not
@@ -345,9 +360,9 @@ class TokenPreloadScanner::StartTagScanner {
       request->SetAttributionReportingEligibleImgOrScript(true);
     }
 
-    if (shared_storage_writable_) {
+    if (shared_storage_writable_opted_in_) {
       DCHECK(is_img);
-      request->SetSharedStorageWritable(true);
+      request->SetSharedStorageWritableOptedIn(true);
     }
 
     return request;
@@ -431,7 +446,11 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (Match(attribute_name, html_names::kAttributionsrcAttr)) {
       attributionsrc_attr_set_ = true;
     } else if (Match(attribute_name, html_names::kSharedstoragewritableAttr)) {
-      shared_storage_writable_ = true;
+      shared_storage_writable_opted_in_ = true;
+    } else if (use_data_src_attr_match_for_image_ &&
+               Match(attribute_name, html_names::kDataSrcAttr) &&
+               img_src_url_.IsNull()) {
+      img_src_url_ = attribute_value;
     }
   }
 
@@ -569,10 +588,26 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
   bool IsLazyLoadImageDeferable(
-      const CachedDocumentParameters& document_parameters) {
+      const CachedDocumentParameters& document_parameters,
+      bool is_potentially_lcp_element) {
     if (document_parameters.lazy_load_image_setting ==
         LocalFrame::LazyLoadImageSetting::kDisabled) {
       return false;
+    }
+
+    // LCPP experiment in crbug.com/1498777. If the image is potentially a LCP
+    // element, the scanner doesn't mark it as a deferable image regardless of
+    // whether it has loading="lazy" attribute or not, in order to make the LCP
+    // image load completion faster.
+    if (is_potentially_lcp_element) {
+      switch (document_parameters.preload_lazy_load_image_type) {
+        case features::LcppPreloadLazyLoadImageType::kNativeLazyLoading:
+        case features::LcppPreloadLazyLoadImageType::kCustomLazyLoading:
+        case features::LcppPreloadLazyLoadImageType::kAll:
+          return false;
+        case features::LcppPreloadLazyLoadImageType::kNone:
+          break;
+      }
     }
 
     return loading_attr_value_ == LoadingAttributeValue::kLazy;
@@ -770,9 +805,11 @@ class TokenPreloadScanner::StartTagScanner {
   // For explanation, see TokenPreloadScanner's declaration.
   const HashSet<String>* disabled_image_types_;
   bool attributionsrc_attr_set_ = false;
-  bool shared_storage_writable_ = false;
+  bool shared_storage_writable_opted_in_ = false;
   absl::optional<float> resource_width_;
   absl::optional<float> resource_height_;
+  features::LcppPreloadLazyLoadImageType preload_lazy_load_image_type_;
+  bool use_data_src_attr_match_for_image_ = false;
 };
 
 TokenPreloadScanner::TokenPreloadScanner(
@@ -789,11 +826,16 @@ TokenPreloadScanner::TokenPreloadScanner(
       in_script_web_bundle_(false),
       seen_body_(false),
       seen_img_(false),
+      seen_potential_lcp_element_(false),
       template_count_(0),
       document_parameters_(std::move(document_parameters)),
       media_values_cached_data_(std::move(media_values_cached_data)),
       scanner_type_(scanner_type),
-      lcp_element_matcher_(std::move(locators)) {
+      lcp_element_matcher_(
+          std::move(locators),
+          features::
+              kLCPCriticalPathPredictorEnableElementLocatorPerformanceImprovements
+                  .Get()) {
   CHECK(document_parameters_.get());
   CHECK(media_values_cached_data_.get());
   DCHECK(document_url.IsValid());
@@ -921,6 +963,11 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
       const StringImpl* tag_impl = TagImplFor(token.Data());
       const bool potentially_lcp_element =
           lcp_element_matcher_.ObserveStartTagAndReportMatch(tag_impl, token);
+
+      if (potentially_lcp_element) {
+        seen_potential_lcp_element_ = true;
+      }
+
       if (Match(tag_impl, html_names::kTemplateTag)) {
         bool is_declarative_shadow_root = false;
         const HTMLToken::Attribute* shadowrootmode_attribute =
@@ -1026,7 +1073,8 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
       MediaValuesCached* media_values = EnsureMediaValues();
       StartTagScanner scanner(
           tag_impl, media_values, document_parameters_->integrity_features,
-          scanner_type_, &document_parameters_->disabled_image_types);
+          scanner_type_, &document_parameters_->disabled_image_types,
+          document_parameters_->preload_lazy_load_image_type);
       scanner.ProcessAttributes(token.Attributes());
 
       if (in_picture_ && media_values->Width()) {
@@ -1037,7 +1085,8 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
       }
       std::unique_ptr<PreloadRequest> request = scanner.CreatePreloadRequest(
           predicted_base_element_url_, picture_data_, *document_parameters_,
-          exclusion_info_.get(), seen_img_ || seen_body_);
+          exclusion_info_.get(), seen_img_ || seen_body_,
+          potentially_lcp_element);
       if (request) {
         request->SetInitiatorPosition(
             TextPosition(source.CurrentLine(), source.CurrentColumn()));
@@ -1181,6 +1230,10 @@ std::unique_ptr<PendingPreloadData> HTMLPreloadScanner::Scan(
       pending_data = std::make_unique<PendingPreloadData>();
     }
   }
+
+  pending_data->has_located_potential_lcp_element =
+      scanner_.HasLocatedPotentialLcpElement();
+
   return pending_data;
 }
 
@@ -1213,6 +1266,8 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   } else {
     lazy_load_image_setting = LocalFrame::LazyLoadImageSetting::kDisabled;
   }
+  preload_lazy_load_image_type =
+      features::kLCPCriticalPathPredictorPreloadLazyLoadImageType.Get();
   probe::GetDisabledImageTypes(document->GetExecutionContext(),
                                &disabled_image_types);
 }

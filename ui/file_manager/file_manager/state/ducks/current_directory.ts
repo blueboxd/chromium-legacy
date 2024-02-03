@@ -9,7 +9,7 @@ import {annotateTasks, getDefaultTask, INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR} fr
 import {descriptorEqual} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {CurrentDirectory, DirectoryContent, FileData, FileKey, FileTasks, PropStatus, Selection, State} from '../../externs/ts/state.js';
+import {CurrentDirectory, DirectoryContent, FileData, FileKey, FileTask, FileTasks, PropStatus, Selection, State} from '../../externs/ts/state.js';
 import {constants} from '../../foreground/js/constants.js';
 import {PathComponent} from '../../foreground/js/path_component.js';
 import type {ActionsProducerGen} from '../../lib/actions_producer.js';
@@ -94,7 +94,7 @@ function changeDirectoryReducer(currentState: State, payload: {
       dirCount: 0,
       fileCount: 0,
       hostedCount: undefined,
-      offlineCachedCount: undefined,
+      offlineCachedCount: 0,
       fileTasks: {
         tasks: [],
         policyDefaultHandlerStatus: undefined,
@@ -212,9 +212,11 @@ function updateSelectionReducer(currentState: State, payload: {
       selection.fileCount++;
     }
 
+    const metadata = fileData.metadata;
+
     // Update hostedCount to undefined if any entry doesn't have the metadata
     // yet.
-    const isHosted = fileData.metadata?.hosted;
+    const isHosted = metadata?.hosted;
     if (isHosted === undefined) {
       selection.hostedCount = undefined;
     } else {
@@ -223,15 +225,12 @@ function updateSelectionReducer(currentState: State, payload: {
       }
     }
 
-    // Update offlineCachedCount to undefined if any entry doesn't have the
-    // metadata yet.
-    const isOfflineCached = fileData.metadata?.offlineCached;
-    if (isOfflineCached === undefined) {
-      selection.offlineCachedCount = undefined;
-    } else {
-      if (selection.offlineCachedCount !== undefined && isOfflineCached) {
-        selection.offlineCachedCount++;
-      }
+    // If no availableOffline property, then assume it's available.
+    const isOfflineCached =
+        (metadata?.availableOffline === undefined ||
+         metadata?.availableOffline);
+    if (isOfflineCached) {
+      selection.offlineCachedCount++;
     }
   }
 
@@ -396,9 +395,9 @@ export async function*
             tasks, resultingTasks.policyDefaultHandlerStatus, taskHistory) ??
         undefined;
     yield updateFileTasks({
-      tasks,
+      tasks: tasks as FileTask[],
       policyDefaultHandlerStatus: resultingTasks.policyDefaultHandlerStatus,
-      defaultTask: defaultTask,
+      defaultTask: defaultTask as FileTask,
       status: PropStatus.SUCCESS,
     });
   } catch (error) {

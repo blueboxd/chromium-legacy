@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/public/web/web_script_source.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -70,7 +71,7 @@ class HTMLSelectListElementTest : public PageTestBase {
 };
 
 // Tests that HtmlSelectListElement::SetAutofillValue() doesn't change the
-// `user_has_edited_the_field_` attribute of the field.
+// `interacted_state_` attribute of the field.
 TEST_F(HTMLSelectListElementTest, SetAutofillValuePreservesEditedState) {
   SetHtmlInnerHTML(
       "<!DOCTYPE HTML><selectlist id='sel'>"
@@ -79,11 +80,11 @@ TEST_F(HTMLSelectListElementTest, SetAutofillValuePreservesEditedState) {
   HTMLSelectListElement* select_list =
       To<HTMLSelectListElement>(GetElementById("sel"));
 
-  select_list->SetUserHasEditedTheField(false);
+  select_list->ClearUserHasEditedTheField();
   select_list->SetAutofillValue("222", WebAutofillState::kAutofilled);
   EXPECT_EQ(select_list->UserHasEditedTheField(), false);
 
-  select_list->SetUserHasEditedTheField(true);
+  select_list->SetUserHasEditedTheField();
   select_list->SetAutofillValue("111", WebAutofillState::kAutofilled);
   EXPECT_EQ(select_list->UserHasEditedTheField(), true);
 }
@@ -296,7 +297,7 @@ TEST_F(HTMLSelectListElementTest, SuggestedValueClearedWhenValueSet) {
 Color GetBorderColorForSuggestedOptionPopover(HTMLSelectListElement* element) {
   const ComputedStyle& popover_style =
       element->SuggestedOptionPopoverForTesting()->ComputedStyleRef();
-  return popover_style.BorderTop().GetColor().GetColor();
+  return popover_style.VisitedDependentColor(GetCSSPropertyBorderTopColor());
 }
 
 // Test HTMLSelectListElement preview popover inherits border color from the

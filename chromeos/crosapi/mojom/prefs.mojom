@@ -102,8 +102,8 @@ enum PrefPath {
   [MinVersion=7] kDnsOverHttpsTemplatesWithIdentifiers = 32,
   // M109: prefs::kDnsOverHttpsSalt (local state)
   [MinVersion=7] kDnsOverHttpsSalt = 33,
-  // M110: ash::prefs::kUserGeolocationAllowed
-  [MinVersion=8] kGeolocationAllowed = 34,
+  // M110: ash::prefs::kUserGeolocationAccessLevel
+  [MinVersion=8] kUserGeolocationAccessLevel = 34,
   // M112: prefs::kMultitaskMenuNudgeClamshellShownCount
   [MinVersion=9] kMultitaskMenuNudgeClamshellShownCount = 35,
   // M112: prefs::kMultitaskMenuNudgeClamshellLastShown
@@ -119,6 +119,8 @@ enum PrefPath {
   [MinVersion=13] kAccessibilityPdfOcrAlwaysActive = 41,
   // M117 proxy_config::prefs::kProxy (profile)
   [MinVersion=14] kProxy = 42,
+  // M121: DefaultSearchManager::kDefaultSearchProviderDataPrefName
+  [MinVersion=15] kDefaultSearchProviderDataPrefName = 43,
 };
 
 // Information about who or what is controlling a particular pref. This is used

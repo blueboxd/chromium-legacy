@@ -37,11 +37,9 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
-#include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -66,7 +64,6 @@ using password_manager::CanonicalizeUsername;
 using password_manager::CredentialUIEntry;
 using password_manager::InsecureType;
 using password_manager::LeakCheckCredential;
-using password_manager::PasswordChangeSuccessTracker;
 using password_manager::PasswordForm;
 using ui::TimeFormat;
 
@@ -147,25 +144,25 @@ api::passwords_private::PasswordCheckState ConvertPasswordCheckState(
     State state) {
   switch (state) {
     case State::kIdle:
-      return api::passwords_private::PASSWORD_CHECK_STATE_IDLE;
+      return api::passwords_private::PasswordCheckState::kIdle;
     case State::kRunning:
-      return api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
+      return api::passwords_private::PasswordCheckState::kRunning;
     case State::kCanceled:
-      return api::passwords_private::PASSWORD_CHECK_STATE_CANCELED;
+      return api::passwords_private::PasswordCheckState::kCanceled;
     case State::kSignedOut:
-      return api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT;
+      return api::passwords_private::PasswordCheckState::kSignedOut;
     case State::kNetworkError:
-      return api::passwords_private::PASSWORD_CHECK_STATE_OFFLINE;
+      return api::passwords_private::PasswordCheckState::kOffline;
     case State::kQuotaLimit:
-      return api::passwords_private::PASSWORD_CHECK_STATE_QUOTA_LIMIT;
+      return api::passwords_private::PasswordCheckState::kQuotaLimit;
     case State::kTokenRequestFailure:
     case State::kHashingFailure:
     case State::kServiceError:
-      return api::passwords_private::PASSWORD_CHECK_STATE_OTHER_ERROR;
+      return api::passwords_private::PasswordCheckState::kOtherError;
   }
 
   NOTREACHED();
-  return api::passwords_private::PASSWORD_CHECK_STATE_NONE;
+  return api::passwords_private::PasswordCheckState::kNone;
 }
 
 std::string FormatElapsedTime(base::Time time) {
@@ -183,16 +180,16 @@ std::vector<api::passwords_private::CompromiseType> GetCompromiseType(
   for (const auto& issue : entry.password_issues) {
     switch (issue.first) {
       case InsecureType::kLeaked:
-        types.push_back(api::passwords_private::COMPROMISE_TYPE_LEAKED);
+        types.push_back(api::passwords_private::CompromiseType::kLeaked);
         break;
       case InsecureType::kPhished:
-        types.push_back(api::passwords_private::COMPROMISE_TYPE_PHISHED);
+        types.push_back(api::passwords_private::CompromiseType::kPhished);
         break;
       case InsecureType::kReused:
-        types.push_back(api::passwords_private::COMPROMISE_TYPE_REUSED);
+        types.push_back(api::passwords_private::CompromiseType::kReused);
         break;
       case InsecureType::kWeak:
-        types.push_back(api::passwords_private::COMPROMISE_TYPE_WEAK);
+        types.push_back(api::passwords_private::CompromiseType::kWeak);
         break;
     }
   }
@@ -373,7 +370,7 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
 
   // Handle the currently running case first, only then consider errors.
   if (state == State::kRunning) {
-    result.state = api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
+    result.state = api::passwords_private::PasswordCheckState::kRunning;
 
     if (password_check_progress_) {
       result.already_processed = password_check_progress_->already_processed();
@@ -388,7 +385,7 @@ PasswordCheckDelegate::GetPasswordCheckStatus() const {
   }
 
   if (result.total_number_of_passwords == 0) {
-    result.state = api::passwords_private::PASSWORD_CHECK_STATE_NO_PASSWORDS;
+    result.state = api::passwords_private::PasswordCheckState::kNoPasswords;
     return result;
   }
 
@@ -518,12 +515,6 @@ PasswordCheckDelegate::ConstructInsecureCredentialUiEntry(
   api_credential.id = id_generator_->GenerateId(std::move(copy));
 
   return api_credential;
-}
-
-PasswordChangeSuccessTracker*
-PasswordCheckDelegate::GetPasswordChangeSuccessTracker() const {
-  return password_manager::PasswordChangeSuccessTrackerFactory::
-      GetForBrowserContext(profile_);
 }
 
 }  // namespace extensions

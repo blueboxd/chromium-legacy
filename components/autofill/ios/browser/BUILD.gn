@@ -20,10 +20,6 @@ source_set("browser") {
     "autofill_java_script_feature.mm",
     "autofill_manager_observer_bridge.h",
     "autofill_manager_observer_bridge.mm",
-    "autofill_switches.cc",
-    "autofill_switches.h",
-    "child_frame_registration_java_script_feature.h",
-    "child_frame_registration_java_script_feature.mm",
     "credit_card_util.h",
     "credit_card_util.mm",
     "form_suggestion.h",
@@ -39,7 +35,6 @@ source_set("browser") {
 
   deps = [
     ":autofill_js",
-    ":child_frame_registration_ts",
     ":suggestion_controller_js",
     ":util",
     "//base",
@@ -96,17 +91,6 @@ optimize_js("autofill_js") {
   ]
 }
 
-optimize_ts("child_frame_registration_ts") {
-  visibility = [ ":browser" ]
-
-  sources = [ "resources/child_frame_registration.ts" ]
-  deps = [
-    "//ios/web/public/js_messaging:frame_id",
-    "//ios/web/public/js_messaging:gcrweb",
-    "//ios/web/public/js_messaging:util_scripts",
-  ]
-}
-
 optimize_ts("suggestion_controller_js") {
   sources = [ "resources/suggestion_controller.ts" ]
 
@@ -150,6 +134,7 @@ source_set("unit_tests") {
     "//components/autofill/core/common",
     "//components/autofill/ios/form_util",
     "//components/autofill/ios/form_util:form_handler_feature",
+    "//components/autofill/ios/form_util:form_util_feature",
     "//components/leveldb_proto:leveldb_proto",
     "//components/prefs",
     "//ios/web/public",

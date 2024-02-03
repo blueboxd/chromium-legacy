@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/linux-lacros-rel/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "linux-lacros-builder-rel",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -34,7 +37,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "linux-lacros-tester-rel",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -59,7 +62,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "linux-lacros-builder-rel",
-                "project": "chromium-m120"
+                "project": "chromium"
               }
             }
           }
@@ -69,14 +72,14 @@
         {
           "bucket": "ci",
           "builder": "linux-lacros-builder-rel",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "linux-lacros-tester-rel",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ]
     }

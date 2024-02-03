@@ -31,6 +31,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/custom_handlers/protocol_handler.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/enterprise/buildflags/buildflags.h"
@@ -65,6 +66,7 @@
 #include "ui/color/color_provider_key.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/color/color_provider_source.h"
+#include "ui/color/color_provider_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/test_native_theme.h"
 #include "url/gurl.h"
@@ -90,7 +92,7 @@
 #include "ui/base/clipboard/clipboard_format_type.h"
 
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
-#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_sdk_manager.h"  // nogncheck
+#include "chrome/browser/enterprise/connectors/test/fake_content_analysis_sdk_manager.h"  // nogncheck
 #endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 
 #endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
@@ -429,6 +431,19 @@ class PrefersColorSchemeTest
     const ui::ColorProvider* GetColorProvider() const override {
       return &provider_;
     }
+
+    const ui::RendererColorMap GetRendererColorMap(
+        ui::ColorProviderKey::ColorMode color_mode,
+        ui::ColorProviderKey::ForcedColors forced_colors) const override {
+      auto key = GetColorProviderKey();
+      key.color_mode = color_mode;
+      key.forced_colors = forced_colors;
+      ui::ColorProvider* color_provider =
+          ui::ColorProviderManager::Get().GetColorProviderFor(key);
+      CHECK(color_provider);
+      return ui::CreateRendererColorMap(*color_provider);
+    }
+
     ui::ColorProviderKey GetColorProviderKey() const override { return key_; }
 
    private:
@@ -1001,7 +1016,8 @@ class AutomaticBeaconCredentialsBrowserTest : public InProcessBrowserTest,
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{privacy_sandbox::
                                   kOverridePrivacySandboxSettingsLocalTesting},
-        /*disabled_features=*/{});
+        /*disabled_features=*/{
+            content_settings::features::kTrackingProtection3pcd});
   }
 
   AutomaticBeaconCredentialsBrowserTest(

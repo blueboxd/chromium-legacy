@@ -64,7 +64,8 @@ TEST_F(FamilyPromoCoordinatorTest,
   OCMExpect([mock_application_commands_handler_
       closeSettingsUIAndOpenURL:[OCMArg checkWithBlock:^BOOL(
                                             OpenNewTabCommand* command) {
-        return command.URL == GURL("https://families.google.com/families/");
+        return command.URL == GURL("https://myaccount.google.com/family/"
+                                   "create?utm_source=cpwd");
       }]]);
   [(id<FamilyPromoActionHandler>)coordinator createFamilyGroupLinkWasTapped];
   EXPECT_OCMOCK_VERIFY(mock_application_commands_handler_);
@@ -87,7 +88,8 @@ TEST_F(FamilyPromoCoordinatorTest,
   OCMExpect([mock_application_commands_handler_
       closeSettingsUIAndOpenURL:[OCMArg checkWithBlock:^BOOL(
                                             OpenNewTabCommand* command) {
-        return command.URL == GURL("https://families.google.com/families/");
+        return command.URL == GURL("https://myaccount.google.com/family/"
+                                   "details?utm_source=cpwd");
       }]]);
   [(id<FamilyPromoActionHandler>)coordinator createFamilyGroupLinkWasTapped];
   EXPECT_OCMOCK_VERIFY(mock_application_commands_handler_);

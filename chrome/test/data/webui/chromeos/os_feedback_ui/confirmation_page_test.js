@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://webui-test/mojo_webui_test_support.js';
+
 import {ConfirmationPageElement} from 'chrome://os-feedback/confirmation_page.js';
 import {FakeFeedbackServiceProvider} from 'chrome://os-feedback/fake_feedback_service_provider.js';
 import {FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
-import {FeedbackAppPostSubmitAction, SendReportStatus} from 'chrome://os-feedback/feedback_types.js';
 import {setFeedbackServiceProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
+import {FeedbackAppPostSubmitAction, SendReportStatus} from 'chrome://os-feedback/os_feedback_ui.mojom-webui.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {eventToPromise, isVisible} from '../test_util.js';
 
 /** @type {string} */
@@ -30,7 +32,7 @@ const OFFLINE_MESSAGE =
     'experience and will be reviewed by our team. Because of the large ' +
     'number of reports, we won’t be able to send a reply.';
 
-export function confirmationPageTest() {
+suite('confirmationPageTest', () => {
   /** @type {?ConfirmationPageElement} */
   let page = null;
 
@@ -54,6 +56,7 @@ export function confirmationPageTest() {
     page = /** @type {!ConfirmationPageElement} */ (
         document.createElement('confirmation-page'));
     assertTrue(!!page);
+    page.isUserLoggedIn = true;
     document.body.appendChild(page);
     return flushTasks();
   }
@@ -201,24 +204,27 @@ export function confirmationPageTest() {
   });
 
   /**
-   * Test that when the user is not logged in, the community link should be
-   * invisible.
+   * Test that when the user is not logged in, the help resources section should
+   * be invisible.
    */
-  test('userNotLoggedIn_ShouldHideCommunityLink', async () => {
+  test('userNotLoggedIn_ShouldHideHelpResourcesSection', async () => {
     await initializePage();
-    page.sendReportStatus = SendReportStatus.kSuccess;
     page.isUserLoggedIn = false;
 
     const helpResourcesSection = getElement(page, '#helpResources');
-    const helpLinks = helpResourcesSection.querySelectorAll('cr-link-row');
-    assertTrue(!!helpLinks);
-    assertEquals(3, helpLinks.length);
-    const communityLink = helpLinks[2];
+    assertFalse(isVisible(helpResourcesSection));
+  });
 
-    assertFalse(isVisible(communityLink));
-
+  /**
+   * Test that when the user is logged in, the help resources section should be
+   * visible.
+   */
+  test('userLoggedIn_ShouldShowHelpResourcesSection', async () => {
+    await initializePage();
     page.isUserLoggedIn = true;
-    assertTrue(isVisible(communityLink));
+
+    const helpResourcesSection = getElement(page, '#helpResources');
+    assertTrue(isVisible(helpResourcesSection));
   });
 
   /**
@@ -385,4 +391,4 @@ export function confirmationPageTest() {
     verifyRecordPostSubmitActionCalled(
         false, FeedbackAppPostSubmitAction.kOpenDiagnosticsApp);
   });
-}
+});

@@ -171,12 +171,6 @@ std::string MediaCodecUtil::CodecToAndroidMimeType(VideoCodec codec) {
 }
 
 // static
-bool MediaCodecUtil::PlatformSupportsCbcsEncryption(int sdk) {
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecUtil_platformSupportsCbcsEncryption(env, sdk);
-}
-
-// static
 std::set<int> MediaCodecUtil::GetEncoderColorFormats(
     const std::string& mime_type) {
   std::set<int> color_formats;
@@ -238,6 +232,13 @@ bool MediaCodecUtil::IsHEVCDecoderAvailable() {
   return IsDecoderSupportedByDevice(kHevcMimeType);
 }
 #endif
+
+// static
+bool MediaCodecUtil::IsAACEncoderAvailable() {
+  // We only support AAC encoding on android Q+, due to our use of the NDK.
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_Q;
+}
 
 // static
 bool MediaCodecUtil::IsSurfaceViewOutputSupported() {

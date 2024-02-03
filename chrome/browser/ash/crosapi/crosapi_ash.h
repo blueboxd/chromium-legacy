@@ -55,6 +55,7 @@ class ClipboardHistoryAsh;
 class ContentProtectionAsh;
 class CrosapiDependencyRegistry;
 class DeskAsh;
+class DeskProfilesAsh;
 class DeskTemplateAsh;
 class DeviceAttributesAsh;
 class DeviceLocalAccountExtensionServiceAsh;
@@ -99,6 +100,7 @@ class NetworkChangeAsh;
 class NetworkSettingsServiceAsh;
 class NetworkingAttributesAsh;
 class NetworkingPrivateAsh;
+class PasskeyAuthenticator;
 class ParentAccessAsh;
 class PaymentAppInstanceAsh;
 class PolicyServiceAsh;
@@ -167,6 +169,8 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindBrowserCdmFactory(mojo::GenericPendingReceiver receiver) override;
   void BindBrowserServiceHost(
       mojo::PendingReceiver<mojom::BrowserServiceHost> receiver) override;
+  void BindBrowserShortcutPublisher(
+      mojo::PendingReceiver<mojom::AppShortcutPublisher> receiver) override;
   void BindBrowserVersionService(
       mojo::PendingReceiver<mojom::BrowserVersionService> receiver) override;
   void BindCertDatabase(
@@ -188,6 +192,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::CrosDisplayConfigController> receiver)
       override;
   void BindDesk(mojo::PendingReceiver<mojom::Desk> receiver) override;
+  void BindDeskProfileObserver(
+      mojo::PendingReceiver<mojom::DeskProfileObserver> receiver) override;
   void BindDeskTemplate(
       mojo::PendingReceiver<mojom::DeskTemplate> receiver) override;
   void BindDeviceAttributes(
@@ -256,7 +262,8 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindImageWriter(
       mojo::PendingReceiver<mojom::ImageWriter> receiver) override;
   void BindInSessionAuth(
-      mojo::PendingReceiver<mojom::InSessionAuth> receiver) override;
+      mojo::PendingReceiver<chromeos::auth::mojom::InSessionAuth> receiver)
+      override;
   void BindKerberosInBrowser(
       mojo::PendingReceiver<mojom::KerberosInBrowser> receiver) override;
   void BindKeystoreService(
@@ -304,6 +311,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::NetworkingAttributes> receiver) override;
   void BindNetworkingPrivate(
       mojo::PendingReceiver<mojom::NetworkingPrivate> receiver) override;
+  void BindPasskeyAuthenticator(
+      mojo::PendingReceiver<mojom::PasskeyAuthenticator> receiver) override;
   void BindParentAccess(
       mojo::PendingReceiver<mojom::ParentAccess> receiver) override;
   void BindPaymentAppInstance(
@@ -416,6 +425,8 @@ class CrosapiAsh : public mojom::Crosapi {
   }
 
   DeskAsh* desk_ash() { return desk_ash_.get(); }
+
+  DeskProfilesAsh* desk_profiles_ash() { return desk_profiles_ash_.get(); }
 
   DeskTemplateAsh* desk_template_ash() { return desk_template_ash_.get(); }
 
@@ -590,6 +601,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<ClipboardHistoryAsh> clipboard_history_ash_;
   std::unique_ptr<ContentProtectionAsh> content_protection_ash_;
   std::unique_ptr<DeskAsh> desk_ash_;
+  std::unique_ptr<DeskProfilesAsh> desk_profiles_ash_;
   std::unique_ptr<DeskTemplateAsh> desk_template_ash_;
   std::unique_ptr<DeviceAttributesAsh> device_attributes_ash_;
   std::unique_ptr<DeviceLocalAccountExtensionServiceAsh>

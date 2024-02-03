@@ -200,8 +200,14 @@ Color Color::FromColorSpace(ColorSpace color_space,
   }
 
   if (IsLightnessFirstComponent(color_space) && !isnan(result.param0_)) {
-    // param0_ is luminance which cannot be negative or above 100%.
-    result.param0_ = std::min(100.f, std::max(result.param0_, 0.f));
+    // param0_ is lightness which cannot be negative or above 100%.
+    // lab/lch have lightness in the range [0, 100].
+    // oklab/okch have lightness in the range [0, 1].
+    if (color_space == ColorSpace::kLab || color_space == ColorSpace::kLch) {
+      result.param0_ = std::min(100.f, std::max(result.param0_, 0.f));
+    } else {
+      result.param0_ = std::min(1.f, std::max(result.param0_, 0.f));
+    }
   }
   if (IsChromaSecondComponent(color_space)) {
     result.param1_ = std::max(result.param1_, 0.f);
@@ -349,14 +355,17 @@ Color Color::InterpolateColors(
     Color color1,
     Color color2,
     float percentage) {
-  // TODO(crbug.com/1445171): Add unit tests that cover "none" values for hue,
-  // hsl and hwb colorspaces.
   DCHECK(percentage >= 0.0f && percentage <= 1.0f);
 
+  // https://www.w3.org/TR/css-color-4/#missing:
+  // When interpolating colors, missing components do not behave as zero values
+  // for color space conversions.
   const auto color1_prev_color_space = color1.GetColorSpace();
-  color1.ConvertToColorSpace(interpolation_space);
+  color1.ConvertToColorSpace(interpolation_space,
+                             false /* resolve_missing_components */);
   const auto color2_prev_color_space = color2.GetColorSpace();
-  color2.ConvertToColorSpace(interpolation_space);
+  color2.ConvertToColorSpace(interpolation_space,
+                             false /* resolve_missing_components */);
 
   CarryForwardAnalogousMissingComponents(color1, color1_prev_color_space);
   CarryForwardAnalogousMissingComponents(color2, color2_prev_color_space);
@@ -477,9 +486,36 @@ std::tuple<float, float, float> Color::ExportAsXYZD50Floats() const {
   }
 }
 
-void Color::ConvertToColorSpace(ColorSpace destination_color_space) {
+// https://www.w3.org/TR/css-color-4/#missing:
+// "[Except for interpolations] a missing component behaves as a zero value, in
+// the appropriate unit for that component: 0, 0%, or 0deg. This includes
+// rendering the color directly, converting it to another color space,
+// performing computations on the color component values, etc."
+// So we simply turn "none"s into zeros here. Note that this does not happen for
+// interpolations.
+void Color::ResolveMissingComponents() {
+  if (param0_is_none_) {
+    param0_ = 0;
+    param0_is_none_ = false;
+  }
+  if (param1_is_none_) {
+    param1_ = 0;
+    param1_is_none_ = false;
+  }
+  if (param2_is_none_) {
+    param2_ = 0;
+    param2_is_none_ = false;
+  }
+}
+
+void Color::ConvertToColorSpace(ColorSpace destination_color_space,
+                                bool resolve_missing_components) {
   if (color_space_ == destination_color_space) {
     return;
+  }
+
+  if (resolve_missing_components) {
+    ResolveMissingComponents();
   }
 
   switch (destination_color_space) {
@@ -695,11 +731,17 @@ void Color::ConvertToColorSpace(ColorSpace destination_color_space) {
 }
 
 SkColor4f Color::toSkColor4f() const {
-  // Used value of an (ok)lab/lch color with lightness outside of the range
+  // Used value of an lab/lch color with lightness outside of the range
   // (0, 100) maps to black/white respectively.
+  // The same is true for oklab/oklch, except the range is (0, 1).
   // See: https://github.com/w3c/csswg-drafts/issues/8794
   if (IsLightnessFirstComponent(color_space_) && !param0_is_none_) {
-    if (param0_ >= 100.0) {
+    float upper_bound = 100.0;
+    if (color_space_ == ColorSpace::kOklab ||
+        color_space_ == ColorSpace::kOklch) {
+      upper_bound = 1.0;
+    }
+    if (param0_ >= upper_bound) {
       return SkColor4f{1.f, 1.f, 1.f, alpha_};
     }
     if (param0_ <= 0.0) {
@@ -938,7 +980,7 @@ String Color::SerializeLegacyColorAsCSSColor() const {
     result.Append(", ");
 
     // See <alphavalue> section in
-    // https://drafts.csswg.org/cssom/#serializing-css-values
+    // https://www.w3.org/TR/cssom/#serializing-css-values
     // First we need an 8-bit integer alpha to begin the algorithm described in
     // the link above.
     int int_alpha = ClampTo(round((alpha_ + kEpsilon) * 255.0), 0.0, 255.0);
@@ -975,14 +1017,8 @@ String Color::SerializeAsCSSColor() const {
     result.Append(" ");
   }
 
-  float p0 = param0_;
-  if (color_space_ == ColorSpace::kOklab ||
-      color_space_ == ColorSpace::kOklch) {
-    p0 /= 100.0f;
-  }
-
   param0_is_none_ ? result.Append("none")
-                  : result.Append(ColorParamToString(p0));
+                  : result.Append(ColorParamToString(param0_));
   result.Append(" ");
   param1_is_none_ ? result.Append("none")
                   : result.Append(ColorParamToString(param1_));
@@ -1174,7 +1210,7 @@ void Color::GetHSL(double& hue, double& saturation, double& lightness) const {
 
 // Output parameters hue, white and black are in the range 0.0 to 1.0.
 void Color::GetHWB(double& hue, double& white, double& black) const {
-  // https://drafts.csswg.org/css-color-4/#the-hwb-notation. This is an
+  // https://www.w3.org/TR/css-color-4/#the-hwb-notation. This is an
   // implementation of the algorithm to transform sRGB to HWB.
   double max;
   GetHueMaxMin(hue, max, white);

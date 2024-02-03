@@ -14,6 +14,25 @@
 
 namespace media {
 
+class StatelessVP9Picture : public VP9Picture {
+ public:
+  explicit StatelessVP9Picture(
+      scoped_refptr<StatelessDecodeSurface> dec_surface)
+      : dec_surface_(std::move(dec_surface)) {}
+
+  StatelessVP9Picture(const StatelessVP9Picture&) = delete;
+  StatelessVP9Picture& operator=(const StatelessVP9Picture&) = delete;
+
+ private:
+  ~StatelessVP9Picture() override = default;
+
+  scoped_refptr<VP9Picture> CreateDuplicate() override {
+    return base::MakeRefCounted<StatelessVP9Picture>(dec_surface_);
+  }
+
+  scoped_refptr<StatelessDecodeSurface> dec_surface_;
+};
+
 using DecodeStatus = VP9Decoder::VP9Accelerator::Status;
 namespace {
 
@@ -121,16 +140,20 @@ VP9Delegate::~VP9Delegate() = default;
 
 scoped_refptr<VP9Picture> VP9Delegate::CreateVP9Picture() {
   DVLOGF(4);
+  scoped_refptr<StatelessDecodeSurface> dec_surface =
+      surface_handler_->CreateSurface();
+  if (!dec_surface) {
+    return nullptr;
+  }
 
-  return new VP9Picture();
+  return base::MakeRefCounted<StatelessVP9Picture>(std::move(dec_surface));
 }
 
 DecodeStatus VP9Delegate::SubmitDecode(
     scoped_refptr<VP9Picture> pic,
     const Vp9SegmentationParams& segm_params,
     const Vp9LoopFilterParams& lf_params,
-    const Vp9ReferenceFrameVector& ref_frames,
-    base::OnceClosure done_cb) {
+    const Vp9ReferenceFrameVector& ref_frames) {
   const Vp9FrameHeader* frame_hdr = pic->frame_hdr.get();
   DVLOGF(4);
   DCHECK(frame_hdr);
@@ -272,22 +295,13 @@ DecodeStatus VP9Delegate::SubmitDecode(
 
 bool VP9Delegate::OutputPicture(scoped_refptr<VP9Picture> pic) {
   DVLOGF(4);
-  NOTIMPLEMENTED();
+  surface_handler_->SurfaceReady(nullptr, pic->bitstream_id(),
+                                 pic->visible_rect(), pic->get_colorspace());
   return true;
-}
-
-bool VP9Delegate::GetFrameContext(scoped_refptr<VP9Picture> pic,
-                                  Vp9FrameContext* frame_ctx) {
-  NOTIMPLEMENTED() << "Frame context update not supported";
-  return false;
 }
 
 bool VP9Delegate::NeedsCompressedHeaderParsed() const {
   return supports_compressed_header_;
-}
-
-bool VP9Delegate::SupportsContextProbabilityReadback() const {
-  return false;
 }
 
 }  // namespace media

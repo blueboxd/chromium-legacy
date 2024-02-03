@@ -22,7 +22,6 @@
 <translation id="1384959399684842514">Жүктеу кідіртілді</translation>
 <translation id="1415402041810619267">URL қысқартылды</translation>
 <translation id="1426410128494586442">Иә</translation>
-<translation id="1446450296470737166">MIDI толық бақылауға рұқсат беру</translation>
 <translation id="1448064542941920355">Масштабты азайту</translation>
 <translation id="1510341833810331442">Сайттарға деректерді құрылғыда сақтауға рұқсат етілмейді.</translation>
 <translation id="1547123415014299762">Үшінші тарап cookie файлдары рұқсат етілген</translation>
@@ -118,6 +117,7 @@
 <translation id="2968755619301702150">Сертификат көру құралы</translation>
 <translation id="2979365474350987274">Үшінші тарап cookie файлдарына шектеу қойылды.</translation>
 <translation id="3008272652534848354">Рұқсаттарды бастапқы күйіне қайтару</translation>
+<translation id="3013291976881901233">MIDI құрылғылары</translation>
 <translation id="301521992641321250">Автоматты түрде блокталған</translation>
 <translation id="3069226013421428034">Белгілі бір сайт үшін бөгде қызметтер арқылы кіруге рұқсат беру.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Мерзімі ертең аяқталады}other{Мерзімі # күннен кейін аяқталады}}</translation>
@@ -179,7 +179,6 @@
 <translation id="4002066346123236978">Тақырып</translation>
 <translation id="4008040567710660924">Белгілі бір сайт үшін cookie файлдарына рұқсат беріңіз.</translation>
 <translation id="4046123991198612571">Келесі аудиотрек</translation>
-<translation id="4053720452172726777">Google Chrome реттеу және бақылау</translation>
 <translation id="4149890623864272035">Барлық жергілікті деректі, соның ішінде cookie файлдарын жойып, осы веб-сайттың барлық рұқсатын қайта орнату қажет пе?</translation>
 <translation id="4149994727733219643">Веб-беттердің қарапайым көрінісі</translation>
 <translation id="4151930093518524179">Әдепкі масштаб</translation>
@@ -192,7 +191,6 @@
 <translation id="4278390842282768270">Рұқсат етілген</translation>
 <translation id="429312253194641664">Сайтта мультимедиа ойнатылуда</translation>
 <translation id="42981349822642051">Жаю</translation>
-<translation id="4336566011000459927">Chrome бүгін cookie файлдарына қайта шектеу қояды.</translation>
 <translation id="4338831206024587507"><ph name="DOMAIN" /> доменіндегі барлық сайт</translation>
 <translation id="4402755511846832236">Сайттарды бөгеу арқылы олардың құрылғыны қашан белсенді пайдаланғаныңыз туралы ақпаратты алуына жол берілмейді.</translation>
 <translation id="4412992751769744546">Үшінші тарап cookie файлдарына рұқсат беру</translation>
@@ -295,12 +293,10 @@
 <translation id="6177128806592000436">Бұл сайтпен байланысыңыз қауіпсіз емес</translation>
 <translation id="6181444274883918285">Сайтты ерекшеліктер тізіміне қосу</translation>
 <translation id="6192792657125177640">Ерекше жағдайлар</translation>
-<translation id="6194967801833346599">{DAYS,plural, =1{Chrome ертең cookie файлдарын қайта блоктайды.}other{# күннен кейін cookie файлдары қайта блокталады.}}</translation>
 <translation id="6195163219142236913">Үшінші тарап cookie файлдарына шектеу қойылды.</translation>
 <translation id="6196640612572343990">Үшінші тарап cookie файлдарын бөгеу</translation>
 <translation id="6205314730813004066">Жарнамадағы құпиялық</translation>
 <translation id="6207207788774442484">Деректерді жою және рұқсаттарды қайта орнату</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> опциялары</translation>
 <translation id="6231752747840485235">"<ph name="APP_NAME" />" қолданбасы жойылсын ба?</translation>
 <translation id="6262191102408817757">Соңғы ашылған қойындыға негізделген.</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> және <ph name="PERMISSION_2" /> үшін тыйым салынған.</translation>
@@ -348,6 +344,7 @@
 <translation id="7053983685419859001">Блоктау</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 таңдалды}other{# таңдалды}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> таңдалды. Опциялар экранның жоғарғы жағында тұр</translation>
+<translation id="7137403271056944713">MIDI басқару/қайта бағдарламалау</translation>
 <translation id="7141896414559753902">Сайттардың қалқымалы терезе көрсетуіне және бағыттауына тыйым салу (ұсынылады)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7180611975245234373">Жаңарту</translation>
@@ -385,7 +382,6 @@
 <translation id="780301667611848630">Жоқ, рақмет</translation>
 <translation id="7804248752222191302">Сайт камераны пайдаланып жатыр.</translation>
 <translation id="7807060072011926525">Google ұсынған деректер</translation>
-<translation id="7822573154188733812">Chrome сайттарды браузер пайдаланғаныңызды бақылайтын үшінші тарап cookie файлдарын қолданудан блоктайды. <ph name="BEGIN_LINK" />Бақылаудан қорғау параметрлерін реттеу<ph name="END_LINK" /> үшін параметрлерге өтіңіз.</translation>
 <translation id="7835852323729233924">Медиамазмұн ойнату</translation>
 <translation id="783819812427904514">Бейненің дыбысын қосу</translation>
 <translation id="7846076177841592234">Таңдаудан бас тарту</translation>
@@ -402,7 +398,6 @@
 <translation id="8077120325605624147">Сіз кірген кез келген сайт сізге кез келген жарнаманы көрсете алады</translation>
 <translation id="8087000398470557479">Бұл контент Google ұсынған <ph name="DOMAIN_NAME" /> доменінен алынған.</translation>
 <translation id="8088603949666785339"><ph name="BANNER_TITLE" /> ішіндегі қосымша опциялар</translation>
-<translation id="8113501330600751161">{DAYS,plural, =1{Chrome ертең cookie файлдарына қайта шектеу қояды.}other{Chrome # күннен кейін cookie файлдарына қайта шектеу қояды.}}</translation>
 <translation id="8116925261070264013">Дыбысы өшірулі</translation>
 <translation id="813082847718468539">Сайт ақпаратын көру</translation>
 <translation id="8131740175452115882">Растау</translation>

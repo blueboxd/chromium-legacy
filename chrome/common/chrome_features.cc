@@ -144,12 +144,6 @@ BASE_FEATURE(kCrosCompUpdates,
              "CrosCompUpdates",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables the behaviour difference between web apps and browser created
-// shortcut backed by the web app system on Chrome OS.
-BASE_FEATURE(kCrosShortstand,
-             "CrosShortstand",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable project Crostini, Linux VMs on Chrome OS.
 BASE_FEATURE(kCrostini, "Crostini", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -272,12 +266,6 @@ BASE_FEATURE(kDesktopTaskManagerEndProcessDisabledForExtension,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-// Generates customised default offline page that is shown when web app is
-// offline if no custom page is provided by developer.
-BASE_FEATURE(kPWAsDefaultOfflinePage,
-             "PWAsDefaultOfflinePage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When installing default installed PWAs, we wait for service workers
 // to cache resources.
 BASE_FEATURE(kDesktopPWAsCacheDuringDefaultInstall,
@@ -326,6 +314,12 @@ BASE_FEATURE(kDesktopPWAsPreventClose,
 BASE_FEATURE(kDesktopPWAsIconHealthChecks,
              "DesktopPWAsIconHealthChecks",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDesktopPWAsLinkCapturing,
+             "DesktopPWAsLinkCapturing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<bool> kLinksCapturedByDefault{
+    &kDesktopPWAsLinkCapturing, "on_by_default", true};
 
 // Adds a user settings that allows PWAs to be opened with a tab strip.
 BASE_FEATURE(kDesktopPWAsTabStripSettings,
@@ -771,6 +765,13 @@ BASE_FEATURE(kHttpsFirstModeV2ForTypicallySecureUsers,
 // Enables automatically upgrading main frame navigations to HTTPS.
 BASE_FEATURE(kHttpsUpgrades, "HttpsUpgrades", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables HTTPS-First Mode by default in Incognito Mode, changing the binary
+// opt-in to HTTPS-First Mode with a tri-state setting (HFM everywhere, HFM in
+// Incognito, or no HFM) with HFM-in-Incognito the new default setting.
+BASE_FEATURE(kHttpsFirstModeIncognito,
+             "HttpsFirstModeIncognito",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_MAC)
 // Enables immersive fullscreen. The tab strip and toolbar are placed underneath
 // the titlebar. The tab strip and toolbar can auto hide and reveal.
@@ -842,10 +843,6 @@ BASE_FEATURE(kIsolatedWebAppDevMode,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS)
-BASE_FEATURE(kKioskEnableAppService,
-             "KioskEnableAppService",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kKioskEnableSystemWebApps,
              "KioskEnableSystemWebApps",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1073,7 +1070,7 @@ BASE_FEATURE(kPrintPreviewSetupAssistance,
 // updates.
 BASE_FEATURE(kLocalPrinterObserving,
              "LocalPrinterObserving",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1120,12 +1117,14 @@ BASE_FEATURE(kRemoveSupervisedUsersOnStartup,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 // Enables extensions module in Safety Check.
 BASE_FEATURE(kSafetyCheckExtensions,
              "SafetyCheckExtensions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
+#if !BUILDFLAG(IS_ANDROID)
 // Enables notification permission module in Safety Check.
 BASE_FEATURE(kSafetyCheckNotificationPermissions,
              "SafetyCheckNotificationPermissions",

@@ -116,8 +116,8 @@ enum class WebauthnDialogCallbackType;
 enum class WebauthnDialogState;
 
 namespace payments {
-class PaymentsClient;
 class MandatoryReauthManager;
+class PaymentsNetworkInterface;
 }
 
 // A client interface that needs to be supplied to the Autofill component by the
@@ -478,8 +478,8 @@ class AutofillClient : public RiskDataLoader {
   // Gets the FormDataImporter instance owned by the client.
   virtual FormDataImporter* GetFormDataImporter() = 0;
 
-  // Gets the payments::PaymentsClient instance owned by the client.
-  virtual payments::PaymentsClient* GetPaymentsClient() = 0;
+  // Gets the payments::PaymentsNetworkInterface instance owned by the client.
+  virtual payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() = 0;
 
   // Gets the StrikeDatabase associated with the client. Note: Nullptr may be
   // returned so check before use.
@@ -630,22 +630,6 @@ class AutofillClient : public RiskDataLoader {
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback);
 
-  // Runs `callback` once the user makes a decision with respect to the
-  // offer-to-save prompt. On desktop, shows the offer-to-save bubble if
-  // `should_show_prompt` is true; otherwise only shows the omnibox icon.
-  virtual void ConfirmSaveIbanLocally(const Iban& iban,
-                                      bool should_show_prompt,
-                                      SaveIbanPromptCallback callback) = 0;
-
-  // Runs `callback` once the user makes a decision with respect to the
-  // offer-to-upload prompt. On desktop, shows the offer-to-upload bubble if
-  // `should_show_prompt` is true; otherwise only shows the omnibox icon.
-  virtual void ConfirmUploadIbanToCloud(
-      const Iban& iban,
-      const LegalMessageLines& legal_message_lines,
-      bool should_show_prompt,
-      SaveIbanPromptCallback callback) = 0;
-
   // TODO(crbug.com/991037): Find a way to merge these two functions. Shouldn't
   // use WebauthnDialogState as that state is a purely UI state (should not be
   // accessible for managers?), and some of the states |KInactive| may be
@@ -676,7 +660,7 @@ class AutofillClient : public RiskDataLoader {
   // card. Runs |callback| when a card is selected.
   virtual void OfferVirtualCardOptions(
       const std::vector<CreditCard*>& candidates,
-      base::OnceCallback<void(const std::string&)> callback) = 0;
+      base::OnceCallback<void(const std::string&)> callback);
 
 #else  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   // Display the cardholder name fix flow prompt and run the |callback| if
@@ -722,6 +706,22 @@ class AutofillClient : public RiskDataLoader {
       const LegalMessageLines& legal_message_lines,
       SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback);
+
+  // Runs `callback` once the user makes a decision with respect to the
+  // offer-to-save prompt. On desktop, shows the offer-to-save bubble if
+  // `should_show_prompt` is true; otherwise only shows the omnibox icon.
+  virtual void ConfirmSaveIbanLocally(const Iban& iban,
+                                      bool should_show_prompt,
+                                      SaveIbanPromptCallback callback);
+
+  // Runs `callback` once the user makes a decision with respect to the
+  // offer-to-upload prompt. On desktop, shows the offer-to-upload bubble if
+  // `should_show_prompt` is true; otherwise only shows the omnibox icon.
+  virtual void ConfirmUploadIbanToCloud(
+      const Iban& iban,
+      const LegalMessageLines& legal_message_lines,
+      bool should_show_prompt,
+      SaveIbanPromptCallback callback);
 
   // Called after credit card upload is finished. Will show upload result to
   // users. |card_saved| indicates if the card is successfully saved.
@@ -900,7 +900,7 @@ class AutofillClient : public RiskDataLoader {
   // Navigates to |url| in a new tab. |url| links to the promo code offer
   // details page for the offers in a promo code suggestions popup. Every offer
   // in a promo code suggestions popup links to the same offer details page.
-  virtual void OpenPromoCodeOfferDetailsURL(const GURL& url) = 0;
+  virtual void OpenPromoCodeOfferDetailsURL(const GURL& url);
 
   // Updates and returns the current form interactions flow id. This is used as
   // an approximation for keeping track of the number of user interactions with

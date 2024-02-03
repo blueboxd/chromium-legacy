@@ -8,7 +8,9 @@
 
 #include "base/auto_reset.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -116,16 +118,12 @@ MenuHost::MenuHost(SubmenuView* submenu) : submenu_(submenu) {
   set_auto_release_capture(false);
 }
 
-MenuHost::~MenuHost() {
-  if (owner_)
-    owner_->RemoveObserver(this);
-  CHECK(!IsInObserverList());
-}
+MenuHost::~MenuHost() = default;
 
 void MenuHost::InitMenuHost(const InitParams& init_params) {
   TRACE_EVENT0("views", "MenuHost::InitMenuHost");
   Widget::InitParams params(Widget::InitParams::TYPE_MENU);
-  const MenuController* menu_controller =
+  MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
   bool bubble_border = submenu_->GetScrollViewContainer() &&
                        submenu_->GetScrollViewContainer()->HasBubbleBorder();
@@ -162,6 +160,22 @@ void MenuHost::InitMenuHost(const InitParams& init_params) {
   params.force_software_compositing = true;
 #endif
   Init(std::move(params));
+  absl::optional<std::string> show_menu_host_duration_histogram =
+      menu_controller->TakeShowMenuHostDurationHistogram();
+  CHECK(!menu_controller->TakeShowMenuHostDurationHistogram().has_value());
+  if (show_menu_host_duration_histogram.has_value()) {
+    // Register callback to emit histogram to measure the time from when the
+    // menu host is initialized to successful presentation of the next frame
+    // handled by the compositor of menu host's widget.
+    GetCompositor()->RequestSuccessfulPresentationTimeForNextFrame(
+        base::BindOnce(
+            [](std::string histogram, base::TimeTicks menu_host_init_time,
+               base::TimeTicks presentation_time) {
+              UMA_HISTOGRAM_TIMES(histogram,
+                                  presentation_time - menu_host_init_time);
+            },
+            show_menu_host_duration_histogram.value(), base::TimeTicks::Now()));
+  }
 
 #if defined(USE_AURA)
   pre_dispatch_handler_ =
@@ -169,13 +183,11 @@ void MenuHost::InitMenuHost(const InitParams& init_params) {
           menu_controller, submenu_, GetNativeView());
 #endif
 
-  DCHECK(!owner_);
-  owner_ = init_params.parent.get();
-  if (owner_)
-    owner_->AddObserver(this);
-
+  DCHECK(!GetOwner());
+  if (init_params.parent) {
+    owner_observation_.Observe(init_params.parent);
+  }
   native_view_for_gestures_ = init_params.native_view_for_gestures;
-
   SetContentsView(init_params.contents_view);
   ShowMenuHost(init_params.do_capture);
 }
@@ -189,6 +201,7 @@ void MenuHost::ShowMenuHost(bool do_capture) {
   // process of showing.
   base::AutoReset<bool> reseter(&ignore_capture_lost_, true);
   ShowInactive();
+
   if (do_capture) {
     MenuController* menu_controller =
         submenu_->GetMenuItem()->GetMenuController();
@@ -198,26 +211,18 @@ void MenuHost::ShowMenuHost(bool do_capture) {
       // gesture events instead of being dropped.
       gfx::NativeView source_view = native_view_for_gestures_
                                         ? native_view_for_gestures_
-                                        : owner_->GetNativeView();
+                                        : GetOwner()->GetNativeView();
       internal::TransferGesture(GetGestureRecognizer(), source_view,
                                 GetNativeView());
     } else {
       GetGestureRecognizer()->CancelActiveTouchesExcept(nullptr);
     }
 
-    if (record_init_to_presentation_time_ && owner_ &&
-        owner_->GetCompositor()) {
-      // Register callback to emit histogram to measure the time from when the
-      // menu host is initialized to when the next frame is successfully
-      // presented.
-      owner_->GetCompositor()->RequestSuccessfulPresentationTimeForNextFrame(
-          std::move(record_init_to_presentation_time_));
-    }
-
     // If MenuHost has no parent widget, it needs to call Show to get focus,
     // so that it will get keyboard events.
-    if (owner_ == nullptr)
+    if (GetOwner() == nullptr) {
       Show();
+    }
     native_widget_private()->SetCapture();
   }
 }
@@ -225,11 +230,11 @@ void MenuHost::ShowMenuHost(bool do_capture) {
 void MenuHost::HideMenuHost() {
   MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
-  if (owner_ && menu_controller &&
+  if (GetOwner() && menu_controller &&
       menu_controller->send_gesture_events_to_owner()) {
     gfx::NativeView target_view = native_view_for_gestures_
                                       ? native_view_for_gestures_
-                                      : owner_->GetNativeView();
+                                      : GetOwner()->GetNativeView();
     internal::TransferGesture(GetGestureRecognizer(), GetNativeView(),
                               target_view);
   }
@@ -242,6 +247,7 @@ void MenuHost::HideMenuHost() {
 void MenuHost::DestroyMenuHost() {
   HideMenuHost();
   destroying_ = true;
+  submenu_ = nullptr;
   static_cast<MenuHostRootView*>(GetRootView())->ClearSubmenu();
 #if defined(USE_AURA)
   pre_dispatch_handler_.reset();
@@ -342,15 +348,18 @@ void MenuHost::OnDragComplete() {
 }
 
 Widget* MenuHost::GetPrimaryWindowWidget() {
-  return owner_ ? owner_->GetPrimaryWindowWidget()
-                : Widget::GetPrimaryWindowWidget();
+  return GetOwner() ? GetOwner()->GetPrimaryWindowWidget()
+                    : Widget::GetPrimaryWindowWidget();
 }
 
 void MenuHost::OnWidgetDestroying(Widget* widget) {
-  DCHECK_EQ(owner_, widget);
-  owner_->RemoveObserver(this);
-  owner_ = nullptr;
+  DCHECK_EQ(GetOwner(), widget);
+  owner_observation_.Reset();
   native_view_for_gestures_ = nullptr;
+}
+
+Widget* MenuHost::GetOwner() {
+  return owner_observation_.GetSource();
 }
 
 }  // namespace views

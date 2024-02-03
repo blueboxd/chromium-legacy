@@ -61,8 +61,4 @@ id<GREYAction> SwipeToShowDeleteButton() {
   return [ChromeActionsAppInterface swipeToShowDeleteButton];
 }
 
-id<GREYAction> AccessibilitySwipeRight() {
-  return [ChromeActionsAppInterface accessibilitySwipeRight];
-}
-
 }  // namespace chrome_test_util

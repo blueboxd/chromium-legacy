@@ -34,9 +34,8 @@ regressions. 3 steps:
                base::FEATURE_DISABLED_BY_DEFAULT);
 
   MyFeature::MyFeature() {
-    enabled = base::FeatureList::IsEnabled(omnibox::kMyFeature);
-    my_param =
-        base::FeatureParam<int>(&omnibox::kMyFeature, "my_param", 0).Get();
+    enabled = base::FeatureList::IsEnabled(kMyFeature);
+    my_param = base::FeatureParam<int>(&kMyFeature, "my_param", 0).Get();
   }
 
 
@@ -49,13 +48,13 @@ regressions. 3 steps:
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      omnibox::kMyFeature, {{"my_param", "1"}});
+      omnibox_feature_configs::MyFeature::kMyFeature, {{"my_param", "1"}});
   omnibox_feature_configs::ScopedConfigForTesting<
       omnibox_feature_configs::MyFeature> scoped_config;
 
   scoped_feature_list.Reset();
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      omnibox::kMyFeature, {{"my_param", "2"}});
+      omnibox_feature_configs::MyFeature::kMyFeature, {{"my_param", "2"}});
   scoped_config.Reset();
 */
 
@@ -110,6 +109,17 @@ struct DocumentProvider : Config<DocumentProvider> {
   size_t min_query_length;
 };
 
+// If enabled, pretends all matches are allowed to be default. This is very
+// blunt, and needs refining before being launch ready. E.g. how does this
+// affect transferred matches? This might cause crashes. This can result in
+// misleading inline autocompletion; e.g. the bing.com favicon looks like the
+// search loupe, so inlined bing results will like DSE search suggestions.
+struct ForceAllowedToBeDefault : Config<ForceAllowedToBeDefault> {
+  DECLARE_FEATURE(kForceAllowedToBeDefault);
+  ForceAllowedToBeDefault();
+  bool enabled;
+};
+
 // If enabled, the shortcut provider is more aggressive in scoring.
 struct ShortcutBoosting : Config<ShortcutBoosting> {
   DECLARE_FEATURE(kShortcutBoost);
@@ -122,16 +132,19 @@ struct ShortcutBoosting : Config<ShortcutBoosting> {
   bool counterfactual;
   // Shortcuts are boosted if either:
   // 1) They are the top shortcut.
-  // 2) OR they have more hits than `non_top_hit_threshold`. If this is 1, then
-  //    all shortcuts are boosted, since all have at least 1 hit. If 0
-  //    (default), then no shortcuts will be boosted through (2) - only the top
-  //    shortcut will be boosted.
+  // 2) OR they have more hits than `non_top_hit_[searches_]threshold`. If this
+  //    is 1, then all shortcuts are boosted, since all have at least 1 hit. If
+  //    0 (default), then no shortcuts will be boosted through (2) - only the
+  //    top shortcut will be boosted.
   int non_top_hit_threshold;
+  int non_top_hit_search_threshold;
   // If enabled, boosted shortcuts will be grouped with searches. Unboosted
   // shortcuts are grouped with URLs, like traditionally, regardless of
   // `group_with_searches`.
   bool group_with_searches;
 };
+
+#undef DECLARE_FEATURE
 
 }  // namespace omnibox_feature_configs
 

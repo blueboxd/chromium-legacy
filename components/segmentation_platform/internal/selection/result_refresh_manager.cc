@@ -28,27 +28,16 @@ bool SupportMultiOutput(SegmentResultProvider::SegmentResult* result) {
   return result && result->result.has_output_config();
 }
 
-// Collects training data after model execution.
-void CollectTrainingDataIfNeeded(
-    const Config* config,
-    ExecutionService* execution_service,
-    SegmentResultProvider::ResultState result_state) {
-  bool is_model_executed =
-      (result_state ==
-       SegmentResultProvider::ResultState::kServerModelExecutionScoreUsed) ||
-      (result_state ==
-       SegmentResultProvider::ResultState::kDefaultModelExecutionScoreUsed);
-
-  // Collect training data only if model was executed.
-  if (!is_model_executed) {
-    return;
-  }
+// Collects training data.
+void CollectTrainingDataIfNeeded(const Config* config,
+                                 ExecutionService* execution_service) {
   // The execution service and training data collector might be null in testing.
   if (execution_service && execution_service->training_data_collector()) {
     for (const auto& segment : config->segments) {
       execution_service->training_data_collector()->OnDecisionTime(
           segment.first, nullptr,
-          proto::TrainingOutputs::TriggerConfig::PERIODIC, absl::nullopt);
+          proto::TrainingOutputs::TriggerConfig::PERIODIC, absl::nullopt,
+          /*decision_result_update_trigger=*/true);
     }
   }
 }
@@ -164,16 +153,16 @@ void ResultRefreshManager::OnGetCachedResultOrRunModel(
   stats::RecordSegmentSelectionFailure(
       *config, stats::GetSuccessOrFailureReason(result_state));
 
-  proto::PredictionResult pred_result = result->result;
-  stats::RecordClassificationResultComputed(*config, pred_result);
+  stats::RecordClassificationResultComputed(*config, result->result);
 
   proto::ClientResult client_result =
-      metadata_utils::CreateClientResultFromPredResult(pred_result,
-                                                       base::Time::Now());
-  cached_result_writer_->UpdatePrefsIfExpired(config, client_result,
-                                              platform_options_);
-
-  CollectTrainingDataIfNeeded(config, execution_service_, result_state);
+      metadata_utils::CreateClientResultFromPredResult(
+          std::move(result->result), base::Time::Now());
+  bool is_pref_updated = cached_result_writer_->UpdatePrefsIfExpired(
+      config, std::move(client_result), platform_options_);
+  if (is_pref_updated) {
+    CollectTrainingDataIfNeeded(config, execution_service_);
+  }
 }
 
 }  // namespace segmentation_platform

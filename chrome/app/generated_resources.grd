@@ -291,6 +291,9 @@ are declared in tools/grit/grit_rule.gni.
       <!-- Global Media Controls specific strings -->
       <part file="gmc_strings.grdp" />
 
+      <!-- Media live preview specific strings -->
+      <part file="media_live_preview_strings.grdp" />
+
       <!-- Profiles specific strings -->
       <part file="profiles_strings.grdp" />
 
@@ -712,6 +715,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_COPYVIDEOFRAME" desc="The name of the Copy Video Frame command in the content area context menu">
             C&amp;opy video frame
           </message>
+          <message name="IDS_CONTENT_CONTEXT_SEARCHFORVIDEOFRAME" desc="In Title Case: The name of the Lens Search command in the content area context menu">
+            Search video frame with <ph name="VISUAL_SEARCH_PROVIDER">$1<ex>Google Lens</ex></ph>
+          </message>
           <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="The name of the Open Video in New Tab command in the content area context menu">
             &amp;Open video in new tab
           </message>
@@ -983,6 +989,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYVIDEOFRAME" desc="The name of the Copy Video Frame command in the content area context menu">
             C&amp;opy Video Frame
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SEARCHFORVIDEOFRAME" desc="In Title Case: The name of the Lens Search command in the content area context menu">
+            Search Video Frame with <ph name="VISUAL_SEARCH_PROVIDER">$1<ex>Google Lens</ex></ph>
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="In Title Case: The name of the Open Video in New Tab command in the content area context menu">
             &amp;Open Video in New Tab
@@ -2196,8 +2205,12 @@ are declared in tools/grit/grit_rule.gni.
         Scanning for malware...
       </message>
       <message name="IDS_BLOCK_REASON_PROMPT_FOR_SCANNING_UPDATED"
-               desc="Message shown to the user on chrome://downloads page to explain that this download is recommended to be scanned.">
+          desc="Message shown to the user on chrome://downloads page to explain that this download is recommended to be scanned.">
         This file might be a virus or malware. You can send it to Google to check if it's unsafe.
+      </message>
+      <message name="IDS_BLOCK_REASON_PROMPT_FOR_LOCAL_PASSWORD_SCANNING"
+          desc="Message shown to the user on chrome://downloads page to explain that this download is recommended to be scanned.">
+        This file may be dangerous
       </message>
       <message name="IDS_DEEP_SCANNED_OPENED_DANGEROUS_DESCRIPTION"
         desc="Message shown to the user on chrome://downloads page to explain this this download was deep scanned, and found to be malicious.">
@@ -2435,6 +2448,10 @@ are declared in tools/grit/grit_rule.gni.
                desc="In the download view, the 'Open' button when prompt for deep scan">
         Open anyway
       </message>
+      <message name="IDS_DOWNLOAD_LOCAL_PASSWORD_SCAN"
+        desc="On the downloads page, the label for the button to check a download for malware">
+        Check for malware
+      </message>
 
       <message name="IDS_DOWNLOAD_KEEP_DANGEROUS_FILE"
                desc="On the downloads page, the label for the button to download a dangerous file despite its danger.">
@@ -2472,6 +2489,15 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_DOWNLOAD_UNVERIFIED_ICON_ACCESSIBLE_LABEL"
                desc="On the downloads page, the accessible label for the icon for a blocked unverified download.">
         Unverified download blocked
+      </message>
+
+      <message name="IDS_DOWNLOAD_WARNING_BYPASS_DIALOG_TITLE"
+               desc="On the downloads page, the title of the dialog to bypass a dangerous download warning.">
+        This file could harm your device
+      </message>
+      <message name="IDS_DOWNLOAD_WARNING_BYPASS_DIALOG_DESCRIPTION"
+               desc="On the downloads page, the description in the dialog to bypass a dangerous download warning.">
+        This file contains malware or comes from a suspicious site
       </message>
 
       <!-- Download Alerts for Accessibility -->
@@ -3327,6 +3353,36 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_DOWNLOAD_BUBBLE_PASSWORD_PROMPT_ACCESSIBLE_ALERT_INVALID"
         desc="Accessible alert text for screen readers when users focus on the password textfield with subtext indicating invalid password">
         Incorrect password. Try again.
+      </message>
+
+      <!-- Local archive decryption in download bubble -->
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_LOCAL_DECRYPTION_STATUS"
+        desc="Prompt when a suspicious archive is blocked due to being encrypted">
+        Suspicious file blocked
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_PASSWORD_NEEDED"
+        desc="Prompt when a suspicious archive is blocked due to being encrypted">
+        Password needed
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_ACCEPT_LOCAL_DECRYPTION"
+        desc="Label on button to accept using the password for checking a download for malware">
+        Check for malware
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_BYPASS_LOCAL_DECRYPTION"
+        desc="Label on button to bypass using the password for checking a download for malware">
+        Download suspicious file
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_LOCAL_DECRYPTION_CANCEL"
+        desc="Label on button to cancel checking a download for malware">
+        Cancel download
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_LOCAL_DECRYPTION_IN_PROGRESS"
+        desc="Description in the download bubble when a file is being checked for malware">
+        This file may be dangerous<ph name="LINE_BREAK">$1</ph>This check is taking longer than usual...
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_LOCAL_DECRYPTING"
+               desc="Status text for a download item that is being checked for malware.">
+        Checking for malware...
       </message>
 
       <!-- Desktop omnibox PWA install icon -->
@@ -5483,6 +5539,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_EXTENSION_PROMPT_WARNING_ENTERPRISE_DEVICE_ATTRIBUTES" desc="Permission string for enterprise device attributes permission.">
           See device information, such as its serial number or asset ID
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_ENTERPRISE_KIOSK_INPUT" desc="Permission string for enterprise kiosk input permission.">
+          Change the system keyboard layout
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_ENTERPRISE_NETWORKING_ATTRIBUTES" desc="Permission string for enterprise networking attributes permission.">
           See network information, such as your IP or MAC address
         </message>
@@ -5827,6 +5886,12 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_EXTENSIONS_PINNED_BY_ADMIN_ACCESSIBLE_NAME" desc="The accessible name indicating that an extension has been 'pinned' to the toolbar by the controlling administrator (sentence case).">
             <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> is pinned by your administrator
           </message>
+          <message name="IDS_EXTENSIONS_SUBMENU_OPEN_SIDE_PANEL_ITEM" desc="The text for the link in the extensions menu to open the side panel corresponding to the extension (sentence case).">
+            Open side panel
+          </message>
+          <message name="IDS_EXTENSIONS_SUBMENU_CLOSE_SIDE_PANEL_ITEM" desc="The text for the link in the extensions menu to close the side panel corresponding to the extension (sentence case).">
+            Close side panel
+          </message>
           <message name="IDS_MANAGE_EXTENSION" desc="The text for the button in the extension's context menu used to open the chrome://extensions/?id=xxx page and manage a specific extension (sentence case).">
             Manage extension
           </message>
@@ -5921,6 +5986,12 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_EXTENSIONS_PINNED_BY_ADMIN_ACCESSIBLE_NAME" desc="The accessible name indicating that an extension has been 'pinned' to the toolbar by the controlling administrator (sentence case).">
             <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> is pinned by your Administrator
+          </message>
+          <message name="IDS_EXTENSIONS_SUBMENU_OPEN_SIDE_PANEL_ITEM" desc="The text for the link in the extensions menu to open the side panel corresponding to the extension (title case).">
+            Open Side Panel
+          </message>
+          <message name="IDS_EXTENSIONS_SUBMENU_CLOSE_SIDE_PANEL_ITEM" desc="The text for the link in the extensions menu to close the side panel corresponding to the extension (title case).">
+            Close Side Panel
           </message>
           <message name="IDS_MANAGE_EXTENSION" desc="The text for the button in the extension's context menu used to open the chrome://extensions/?id=xxx page and manage a specific extension (title case).">
             Manage Extension
@@ -7614,6 +7685,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOMIZE_YOUR_UPLOADED_IMAGE_LABEL" desc="The label for the 'Your uploaded image' button in the customization menu on the New Tab Page side panel.">
         Your uploaded image
       </message>
+      <message name="IDS_NTP_CUSTOMIZE_YOUR_SEARCHED_IMAGE_LABEL" desc="The label for the 'Your searched image' button in the customization menu on the New Tab Page side panel." translateable="false">
+        Your searched image
+      </message>
       <message name="IDS_NTP_CUSTOMIZE_UPLOAD_FROM_DEVICE_LABEL" desc="The label for the 'Upload from device' tile in the customization menu on the New Tab Page">
         Upload from device
       </message>
@@ -7796,6 +7870,42 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NTP_WEBSTORE_TOAST_BUTTON_TEXT" desc="The text displayed in the New Tab Page webstore themes toast button">
         Find themes
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_GENERIC_ERROR_DESCRIPTION" desc="The description of the generic error displayed when wallpaper search fails.">
+        Please try again later.
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_GENERIC_ERROR_TITLE" desc="The title of the generic error displayed when wallpaper search fails.">
+        Something went wrong.
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_HEADER" translateable="false" desc="Header for the wallpaper search page of Customize Chrome Side Panel." >
+        Wallpaper Search
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_HISTORY_HEADER" translateable="false" desc="Header for the wallpaper search section for showing past themes." >
+        Your recent themes
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_OFFLINE_DESCRIPTION" desc="The description of the message displayed by wallpaper search when the browser is offline.">
+        Check your internet connection and try again.
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_OFFLINE_TITLE" desc="The title of the message displayed by wallpaper search when the browser is offline.">
+        Looks like you're offline.
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_OPTIONAL_DETAILS_LABEL" desc="The label for optional details.">
+        Add optional details
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_REQUEST_THROTTLED_DESCRIPTION" desc="The description of the message displayed when a wallpaper search request is throttled.">
+        You can try again tomorrow.
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_REQUEST_THROTTLED_TITLE" desc="The title of the message displayed when a wallpaper search request is throttled.">
+        You've reached your limit for today.
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_SUBMIT_AGAIN_BTN_TEXT" translateable="false" desc="Button text for submitting the form to get wallpaper search results when the user has already done it before." >
+        Search Again
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_SUBMIT_BTN_TEXT" translateable="false" desc="Button text for submitting the form to get wallpaper search results." >
+        Search
+      </message>
+      <message name="IDS_NTP_WALLPAPER_SEARCH_TRY_AGAIN_CTA" desc="Call to action displayed when wallpaper search fails that asks user to try again.">
+        Try again
       </message>
 
       <!-- NTP Modules -->
@@ -8359,11 +8469,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SIDE_PANEL_TOOLBAR_BUTTON_CXMENU_UNPIN" desc="The label of the context menu item for unpinning a side panel toolbar button.">
         Unpin
       </message>
+      <message name="IDS_SIDE_PANEL_TOOLBAR_BUTTON_CXMENU_PIN" desc="The label of the context menu item for pinning a side panel toolbar button.">
+        Pin
+      </message>
       <message name="IDS_SIDE_PANEL_HEADER_UNPIN_BUTTON_TOOLTIP" desc="The tooltip for unpinning a side panel toolbar button.">
         Unpin from toolbar
       </message>
       <message name="IDS_SIDE_PANEL_HEADER_PIN_BUTTON_TOOLTIP" desc="The tooltip for pinning a side panel toolbar button.">
         Pin to toolbar
+      </message>
+      <message name="IDS_SIDE_PANEL_GENERIC_MENU_IPH" desc="The body text of the IPH describing how to find side panel entry points in the Chrome menu.">
+        You can open most side panel features through the Chrome menu
+      </message>
+      <message name="IDS_SIDE_PANEL_GENERIC_PINNABLE_IPH" desc="The body text of the IPH describing a side panel is pinnable.">
+        You can pin this side panel for easy access
       </message>
 
       <!-- Bookmarks strings -->
@@ -9825,6 +9944,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_FEEDBACK_FREE_TEXT_LABEL" desc="Label of the text box where users can describe a problem they are having">
           Describe the issue in detail
         </message>
+        <message name="IDS_FEEDBACK_FREE_TEXT_AI_LABEL" desc="Label of the text box where users can describe a problem they are having for AI">
+          Describe the issue in detail. Feedback will be sent to Google for human review and may be used for improving or developing Google products and services.
+        </message>
         <message name="IDS_FEEDBACK_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
           URL
         </message>
@@ -9899,6 +10021,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_FEEDBACK_NO_DESCRIPTION" desc="Message shown when no text is entered before hitting send feedback">
           Please describe the problem before sending feedback.
+        </message>
+        <message name="IDS_FEEDBACK_OFFENSIVE_CHECKBOX_LABEL" desc="Checkbox label for whether offensive or unsafe content is reported">
+          Report offensive/unsafe.
         </message>
         <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
           Send
@@ -10484,6 +10609,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       </message>
       <message name="IDS_TAB_ORGANIZATION_TIP_ACTION" desc="The actionable text of the tip in the tab organization UI" translateable="false">
         Show me how
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_LEARN_MORE" desc="The actionable text in the tab organization UI results state for getting more information" translateable="false">
+        Learn more
       </message>
 
       <!-- Strings for Window Titles in Menus -->
@@ -15401,6 +15529,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         =1 {This file or your device doesn’t meet some of your organization’s security policies. Check with your admin on what needs to be fixed.}
       other {These files don't meet some of your organization’s security policies. Check with your admin on what needs to be fixed.}}
     </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAIL_CLOSED_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of uploaded data when it triggers fail-closed settings of enterprise security policies">
+       Scan failed. This action is blocked by your administrator.
+    </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_WARNING_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of uploaded data when it doesn't comply with enterprise security policies to warn the user and allow them to proceed or not">
       {NUM_FILES, plural,
         =0 {This data or your device doesn’t meet some of your organization’s security policies. Check with your admin on what needs to be fixed.}
@@ -15740,15 +15871,29 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_TAB_GROUPS_SAVE_DESCRIPTION" desc="The description for the Tab Groups Save experiment.">
       Enables saving and recalling of tab groups. Right click a tab group to save it. Recall groups from the bookmarks bar.
     </message>
+    <!-- ChromeLabs Customize Chrome SidePanel-->
+    <message name="IDS_CUSTOMIZE_CHROME_SIDE_PANEL_EXPERIMENT_NAME" desc="The name for the Customize Chrome Side Panel experiment.">
+      Customize Chrome Side Panel
+    </message>
+    <message name="IDS_CUSTOMIZE_CHROME_SIDE_PANEL_DESCRIPTION" desc="The description for the Customize Chrome Side Panel experiment.">
+      Enables the ability to use Customize Chrome functionality from the unified side panel on the New Tab Page.
+    </message>
     <!-- ChromeLabs ChromeRefresh2023-->
     <message name="IDS_CHROMEREFRESH2023_EXPERIMENT_NAME" desc="The name of the project for Chrome's desktop UI redesign.">
       Chrome Refresh 2023
     </message>
     <message name="IDS_CHROMEREFRESH2023_DESCRIPTION" desc="The description of the project for Chrome's desktop UI redesign.">
-      Enables the new desktop design.
+      Enables the new desktop design. Customize Chrome Side Panel must also be enabled.
     </message>
      <message name="IDS_CHROMEREFRESH2023_WITHOUT_OMNIBOX" desc="Indicates no omnibox design changes in Chrome's desktop UI redesign.">
       without Omnibox
+    </message>
+    <!-- ChromeLabs ChromeWebuiRefresh2023-->
+    <message name="IDS_CHROMEWEBUIREFRESH2023_EXPERIMENT_NAME" desc="The name of the project for Chrome's desktop WebUI redesign.">
+      Chrome WebUI Refresh 2023
+    </message>
+    <message name="IDS_CHROMEWEBUIREFRESH2023_DESCRIPTION" desc="The description of the project for Chrome's desktop WebUI redesign.">
+      Enables the new desktop design for WebUI. Chrome Refresh 2023 must also be enabled.
     </message>
     <!-- ChromeLabs Tab Scrolling -->
     <message name="IDS_TAB_SCROLLING_EXPERIMENT_NAME" desc="Name for Tab Scrolling experiment">
@@ -15837,6 +15982,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_ACCOUNT_SELECTION_DATA_SHARING_CONSENT" desc="The consent text shown to the user before sign up.">
       To continue, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.com</ex></ph> will share your name, email address, and profile picture with this site. See this site's <ph name="BEGIN_LINK1">$2</ph>privacy policy<ph name="END_LINK1">$3</ph> and <ph name="BEGIN_LINK2">$4</ph>terms of service<ph name="END_LINK2">$5</ph>.
+    </message>
+    <message name="IDS_ACCOUNT_SELECTION_ADD_ACCOUNT" desc="Title of the button that lets the user sign in to an additional account" translateable="false">
+      Add Account
     </message>
     <message name="IDS_IDP_SIGNIN_STATUS_MISMATCH_DIALOG_TITLE" desc="Header for mismatch dialog which is shown to the user when their sign in status is signed in but they are not signed in to any account." translateable="false">
       Failed signing in to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
@@ -16240,35 +16388,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       You have enabled testing third-party cookie phaseout. This cannot be overridden by the settings page. If you want to re-enable third-party cookies, relaunch Chrome with this feature disabled.
     </message>
 
-    <!-- Experimental enterprise plus_addresses feature strings -->
-    <message name="IDS_PLUS_ADDRESS_MODAL_TITLE" desc="Title for the experimental enterprise plus addresses feature modal" translateable="false">
-      Lorem Ipsum
-    </message>
-    <message name="IDS_PLUS_ADDRESS_MODAL_PLUS_ADDRESS_LABEL" desc="Label for the upper portion of the plus addresses modal" translateable="false">
-      Lorem Ipsum
-    </message>
-    <message name="IDS_PLUS_ADDRESS_MODAL_PROPOSED_PLUS_ADDRESS_AND_COPY" desc="The plus address with some descriptive text around it." translateable="false">
-      Use <ph name="PLUS_ADDRESS">$1<ex>plus@plus.plus</ex>?</ph>
-    </message>
-    <message name="IDS_PLUS_ADDRESS_MODAL_PROPOSED_PLUS_ADDRESS_PLACEHOLDER" desc="A placeholder for the plus address" translateable="false">
-      Lorem Ipsum or whatever
-    </message>
-    <message name="IDS_PLUS_ADDRESS_MODAL_REGULAR_ADDRESS_LABEL" desc="A label for the regular address in the plus address modal" translateable="false">
-      For <ph name="REGULAR_ADDRESS">$1<ex>test@example.test</ex></ph>
-    </message>
-    <message name="IDS_PLUS_ADDRESS_MODAL_PLUS_ADDRESS_DESCRIPTION" desc="An illustrative description of the plus addresses modal" translateable="false">
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-    </message>
-    <message name="IDS_PLUS_ADDRESS_MODAL_CANCEL_TEXT" desc="Cancel button text for the experimental enterprise plus addresses feature modal" translateable="false">
-      Dolor
-    </message>
-    <message name="IDS_PLUS_ADDRESS_MODAL_OK_TEXT" desc="Ok button text for the experimental enterprise plus addresses feature modal" translateable="false">
-      Sit
-    </message>
-    <message name="IDS_PLUS_ADDRESS_MODAL_PLUS_ADDRESS_DESCRIPTION_V2" desc="An illustrative description of the plus addresses modal" translateable="false">
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua <ph name="BEGIN_LINK">&lt;link&gt;</ph>Ut enim ad minim veniam<ph name="END_LINK">&lt;/link&gt;</ph> for <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="REGULAR_ADDRESS">$1<ex>test@example.test</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph>.
-    </message>
-
     <!-- Responsive Toolbar -->
     <message name="IDS_OVERFLOW_MENU_ITEM_TEXT_PROFILE" desc="Overflow menu item text of profile button">
       Profile
@@ -16328,6 +16447,54 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_IWA_INSTALLER_DISABLED_SUBTITLE" desc="Subtitle of the feature disabled screen of the IWA installer. $1 = IDS_IWA_INSTALLER_DISABLED_CHANGE_PREFERENCE">
       You security preferences do not allow installations of Isolated Apps. <ph name="CHANGE_PREFERENCE">$1<ex>Change your preferences</ex></ph>
     </message>
+    <message name="IDS_IWA_INSTALLER_INSTALL_SUBTITLE" desc="Subtitle of the installing screen of the IWA installer.">
+      Please wait while installation is in progress
+    </message>
+    <message name="IDS_IWA_INSTALLER_INSTALL_PROGRESS" desc="Subtitle of the installation progress bar on the installing screen of the IWA installer.">
+      Installing...
+    </message>
+    <message name="IDS_IWA_INSTALLER_SHOW_METADATA_SUBTITLE" desc="Subtitle of the pre-installation app info summary screen of the Isolated Web App installer">
+      This application will be installed on your currently used Chrome profile. <ph name="MANAGE_PROFILES">$1<ex>Manage your Chrome profiles</ex></ph>
+    </message>
+    <message name="IDS_IWA_INSTALLER_SHOW_METADATA_MANAGE_PROFILES" desc="Link to a settings page that lets the user manage their active profiles">
+      Manage your Chrome profiles
+    </message>
+    <message name="IDS_IWA_INSTALLER_SHOW_METADATA_APP_NAME_LABEL" desc="Label before the Isolated Web App name in the pre-install app info summary screen">
+      Application: <ph name="APP_NAME">$1<ex>Google Maps</ex></ph>
+    </message>
+    <message name="IDS_IWA_INSTALLER_SHOW_METADATA_APP_VERSION_LABEL" desc="Label before the Isolated Web App version in the pre-install app info summary screen">
+      Version: <ph name="APP_VERSION">$1<ex>1.0.0</ex></ph>
+    </message>
+    <message name="IDS_IWA_INSTALLER_CONFIRM_TITLE" desc="Title of the confirmation popup that appears immediately before Isolated Web App installation">
+      Do you want to continue and allow this software to make changes to your device?
+    </message>
+    <message name="IDS_IWA_INSTALLER_CONFIRM_SUBTITLE" desc="Subtitle of the confirmation popup that appears immediately before Isolated Web App installation. $1 = IDS_IWA_INSTALLER_CONFIRM_LEARN_MORE">
+      To keep your device secure, you should only run and install software from trusted sources and developers. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
+    </message>
+    <message name="IDS_IWA_INSTALLER_CONFIRM_LEARN_MORE" desc="Link to a learn more page shown in the confirmation popup that appears immediately before Isolated Web App installation">
+      Learn more
+    </message>
+    <message name="IDS_IWA_INSTALLER_CONFIRM_CONTINUE" desc="Text of the continue button in the confirmation popup that appears immediately before Isolated Web App installation">
+      Continue
+    </message>
+    <message name="IDS_IWA_INSTALLER_INSTALL_FAILED_TITLE" desc="Title of the error dialog that is shown when an Isolated Web App failed to install">
+      Something went wrong
+    </message>
+    <message name="IDS_IWA_INSTALLER_INSTALL_FAILED_SUBTITLE" desc="Subtitle of the error dialog that is shown when an Isolated Web App failed to install">
+      The installation could not be completed. Please try again or close this window
+    </message>
+    <message name="IDS_IWA_INSTALLER_INSTALL_FAILED_RETRY" desc="Label of the retry button in the error dialog that is shown when an Isolated Web App failed to install">
+      Retry
+    </message>
+    <message name="IDS_IWA_INSTALLER_SUCCESS_SUBTITLE" desc="Subtitle of the page shown after an Isolated Web App has successfully been installed.">
+      Congrats! <ph name="APP_NAME">$1<ex>Google Maps</ex></ph> has been successfully installed on your device
+    </message>
+    <message name="IDS_IWA_INSTALLER_SUCCESS_FINISH" desc="Text of the close button shown on the page after an Isolated Web App has been successfully installed">
+      Finish
+    </message>
+    <message name="IDS_IWA_INSTALLER_SUCCESS_LAUNCH_APPLICATION" desc="Text of the launch app button shown on the page after an Isolated Web App has been successfully installed">
+      Launch application
+    </message>
     <message name="IDS_IWA_INSTALLER_VERIFICATION_TITLE" desc="Title of the verification step of the IWA installation">
       Chrome is verifying the installation bundle
     </message>
@@ -16339,6 +16506,23 @@ Please help our engineers fix this problem. Tell us what happened right before y
         =0 {Checking public key and integrity block... Less than 1 minute remaining}
         =1 {Checking public key and integrity block... 1 minute remaining}
         other {Checking public key and integrity block... # minutes remaining}}
+    </message>
+    <message name="IDS_IWA_INSTALLER_VERIFICATION_ERROR_TITLE" desc="Title of an error popup during the verification step of the Isolated Web App installer">
+      Chrome failed to verify this installation bundle
+    </message>
+    <message name="IDS_IWA_INSTALLER_VERIFICATION_ERROR_SUBTITLE" desc="Subtitle of an error popup during the verification step of the Isolated Web App installer">
+      This bundle might be broken or compromised. Please close this window and download it again
+    </message>
+
+    <!-- Common WebUI elements. -->
+    <message name="IDS_THUMBS_DOWN" desc="Accessibility label for a thumbs down icon that a user can click to provide negative feedback about a feature." translateable="false">
+      Thumbs down
+    </message>
+    <message name="IDS_THUMBS_UP" desc="Accessibility label for a thumbs up icon that a user can click to provide positive feedback about a feature." translateable="false">
+      Thumbs up
+    </message>
+    <message name="IDS_EXPERIMENTAL_FEATURE_DISCLAIMER" desc="Text used for experimental features." translateable="false">
+      This feature is experimental.
     </message>
   </messages>
 </release>

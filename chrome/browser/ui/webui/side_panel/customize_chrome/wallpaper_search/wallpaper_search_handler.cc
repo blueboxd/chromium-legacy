@@ -4,26 +4,37 @@
 
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/wallpaper_search/wallpaper_search_handler.h"
 
+#include <tuple>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "base/barrier_callback.h"
 #include "base/base64.h"
 #include "base/containers/contains.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/task/thread_pool.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/token.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/background/ntp_custom_background_service.h"
-#include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
+#include "chrome/browser/search/background/wallpaper_search/wallpaper_search_background_manager.h"
 #include "chrome/browser/ui/webui/cr_components/theme_color_picker/customize_chrome_colors.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/image_fetcher/core/image_decoder.h"
+#include "components/optimization_guide/core/model_execution/optimization_guide_model_execution_error.h"
+#include "components/optimization_guide/core/model_quality/feature_type_map.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/proto/features/wallpaper_search.pb.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/search/ntp_features.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -34,6 +45,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/skia_utils_base.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
@@ -63,20 +75,58 @@ std::pair<int, int> CalculateResizeDimensions(int width,
   }
   return dimensions;
 }
+
+std::string ReadFile(const base::FilePath& path) {
+  std::string result;
+  base::ReadFileToString(path, &result);
+  return result;
+}
 }  // namespace
 
 WallpaperSearchHandler::WallpaperSearchHandler(
     mojo::PendingReceiver<
         side_panel::customize_chrome::mojom::WallpaperSearchHandler>
         pending_handler,
+    mojo::PendingRemote<
+        side_panel::customize_chrome::mojom::WallpaperSearchClient>
+        pending_client,
     Profile* profile,
-    image_fetcher::ImageDecoder* image_decoder)
+    image_fetcher::ImageDecoder* image_decoder,
+    WallpaperSearchBackgroundManager* wallpaper_search_background_manager,
+    int64_t session_id)
     : profile_(profile),
       data_decoder_(std::make_unique<data_decoder::DataDecoder>()),
       image_decoder_(*image_decoder),
-      receiver_(this, std::move(pending_handler)) {}
+      wallpaper_search_background_manager_(
+          *wallpaper_search_background_manager),
+      session_id_(session_id),
+      client_(std::move(pending_client)),
+      receiver_(this, std::move(pending_handler)) {
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kNtpWallpaperSearchHistory,
+      base::BindRepeating(&WallpaperSearchHandler::UpdateHistory,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
 
-WallpaperSearchHandler::~WallpaperSearchHandler() {}
+WallpaperSearchHandler::~WallpaperSearchHandler() {
+  auto backround_id =
+      wallpaper_search_background_manager_->SaveCurrentBackgroundToHistory();
+  if (!log_entries_.empty()) {
+    auto* quality =
+        log_entries_.back()
+            ->quality_data<optimization_guide::WallpaperSearchFeatureTypeMap>();
+    quality->set_final_request_in_session(true);
+    if (backround_id.has_value() &&
+        base::Contains(wallpaper_search_results_, *backround_id)) {
+      auto* image_quality =
+          std::get<0>(wallpaper_search_results_[*backround_id]);
+      if (image_quality) {
+        image_quality->set_selected(true);
+      }
+    }
+  }
+}
 
 void WallpaperSearchHandler::GetDescriptors(GetDescriptorsCallback callback) {
   callback =
@@ -140,6 +190,7 @@ void WallpaperSearchHandler::GetWallpaperSearchResults(
     GetWallpaperSearchResultsCallback callback) {
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback),
+      side_panel::customize_chrome::mojom::WallpaperSearchStatus::kError,
       std::vector<
           side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>());
   if (!base::FeatureList::IsEnabled(
@@ -176,17 +227,64 @@ void WallpaperSearchHandler::GetWallpaperSearchResults(
           MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH,
       request,
       base::BindOnce(&WallpaperSearchHandler::OnWallpaperSearchResultsRetrieved,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     base::ElapsedTimer()));
 }
 
 void WallpaperSearchHandler::SetBackgroundToWallpaperSearchResult(
-    const base::Token& result_id) {
+    const base::Token& result_id,
+    double time) {
   CHECK(base::Contains(wallpaper_search_results_, result_id));
-  auto* ntp_custom_background_service =
-      NtpCustomBackgroundServiceFactory::GetForProfile(profile_);
-  CHECK(ntp_custom_background_service);
-  ntp_custom_background_service->SelectLocalBackgroundImage(
-      result_id, wallpaper_search_results_[result_id]);
+  auto& [image_quality, render_time, bitmap] =
+      wallpaper_search_results_[result_id];
+  if (image_quality) {
+    image_quality->set_previewed(true);
+    if (render_time.has_value()) {
+      image_quality->set_preview_latency_ms(
+          (base::Time::FromMillisecondsSinceUnixEpoch(time) - *render_time)
+              .InMilliseconds());
+    }
+  }
+  wallpaper_search_background_manager_->SelectLocalBackgroundImage(result_id,
+                                                                   bitmap);
+}
+
+void WallpaperSearchHandler::UpdateHistory() {
+  const auto& history = wallpaper_search_background_manager_->GetHistory();
+  std::vector<side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>
+      thumbnails;
+
+  auto barrier = base::BarrierCallback<std::pair<SkBitmap, base::Token>>(
+      history.size(), base::BindOnce(&WallpaperSearchHandler::OnHistoryDecoded,
+                                     weak_ptr_factory_.GetWeakPtr(), history));
+
+  for (const auto& entry : history) {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(
+            &ReadFile,
+            profile_->GetPath().AppendASCII(
+                entry.ToString() +
+                chrome::kChromeUIUntrustedNewTabPageBackgroundFilename)),
+        base::BindOnce(&WallpaperSearchHandler::DecodeHistoryImage,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::BindOnce(
+                           [](base::RepeatingCallback<void(
+                                  std::pair<SkBitmap, base::Token>)> barrier,
+                              const base::Token& id, const gfx::Image& image) {
+                             std::move(barrier).Run(
+                                 std::pair(image.AsBitmap(), id));
+                           },
+                           barrier, entry)));
+  }
+}
+
+// This function is a wrapper around image_fetcher::ImageDecoder::DecodeImage()
+// because of argument order when working with PostTaskAndReplyWithResult().
+void WallpaperSearchHandler::DecodeHistoryImage(
+    image_fetcher::ImageDecodedCallback callback,
+    std::string image) {
+  image_decoder_->DecodeImage(image, gfx::Size(), nullptr, std::move(callback));
 }
 
 void WallpaperSearchHandler::OnDescriptorsRetrieved(
@@ -287,10 +385,70 @@ void WallpaperSearchHandler::OnDescriptorsJsonParsed(
   std::move(callback).Run(std::move(mojo_descriptors));
 }
 
+void WallpaperSearchHandler::OnHistoryDecoded(
+    std::vector<base::Token> history,
+    std::vector<std::pair<SkBitmap, base::Token>> results) {
+  std::vector<side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>
+      thumbnails;
+
+  // Use the original history array to order the results.
+  // O(n^2) but there should never be more than 6 in each vector.
+  for (const auto& entry : history) {
+    for (auto& [bitmap, id] : results) {
+      if (entry == id) {
+        auto dimensions =
+            CalculateResizeDimensions(bitmap.width(), bitmap.height(), 100);
+        SkBitmap small_bitmap = skia::ImageOperations::Resize(
+            bitmap, skia::ImageOperations::RESIZE_GOOD,
+            /* width */ dimensions.first,
+            /* height */ dimensions.second);
+        std::vector<unsigned char> encoded;
+        const bool success = gfx::PNGCodec::EncodeBGRASkBitmap(
+            small_bitmap, /*discard_transparency=*/false, &encoded);
+        if (success) {
+          auto thumbnail =
+              side_panel::customize_chrome::mojom::WallpaperSearchResult::New();
+          thumbnail->image = base::Base64Encode(encoded);
+          thumbnail->id = std::move(id);
+          thumbnails.push_back(std::move(thumbnail));
+        }
+        break;
+      }
+    }
+  }
+  client_->SetHistory(std::move(thumbnails));
+}
+
 void WallpaperSearchHandler::OnWallpaperSearchResultsRetrieved(
     GetWallpaperSearchResultsCallback callback,
-    optimization_guide::OptimizationGuideModelExecutionResult result) {
+    base::ElapsedTimer request_timer,
+    optimization_guide::OptimizationGuideModelExecutionResult result,
+    std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry) {
+  if (log_entry) {
+    log_entries_.push_back(std::move(log_entry));
+  }
+  if (!log_entries_.empty()) {
+    auto* quality =
+        log_entries_.back()
+            ->quality_data<optimization_guide::WallpaperSearchFeatureTypeMap>();
+    quality->set_session_id(session_id_);
+    quality->set_index(log_entries_.size() - 1);
+    // We will set this to true for the respective log entry when the side panel
+    // closes.
+    quality->set_final_request_in_session(false);
+    quality->set_request_latency_ms(request_timer.Elapsed().InMilliseconds());
+  }
+
   if (!result.has_value()) {
+    if (result.error().error() ==
+        optimization_guide::OptimizationGuideModelExecutionError::
+            ModelExecutionError::kRequestThrottled) {
+      std::move(callback).Run(
+          side_panel::customize_chrome::mojom::WallpaperSearchStatus::
+              kRequestThrottled,
+          std::vector<
+              side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>());
+    }
     return;
   }
   auto response = optimization_guide::ParsedAnyMetadata<
@@ -298,7 +456,8 @@ void WallpaperSearchHandler::OnWallpaperSearchResultsRetrieved(
   if (response->images().empty()) {
     return;
   }
-  auto barrier = base::BarrierCallback<SkBitmap>(
+  auto barrier = base::BarrierCallback<std::pair<
+      optimization_guide::proto::WallpaperSearchImageQuality*, SkBitmap>>(
       response->images_size(),
       base::BindOnce(&WallpaperSearchHandler::OnWallpaperSearchResultsDecoded,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -307,14 +466,44 @@ void WallpaperSearchHandler::OnWallpaperSearchResultsRetrieved(
   // from gfx::Image to SkBitmap before passing to the barrier callback because
   // of some issues with const gfx::Image& and base::BarrierCallback.
   for (auto& image : response->images()) {
+    optimization_guide::proto::WallpaperSearchImageQuality* image_quality =
+        nullptr;
+    if (!log_entries_.empty()) {
+      auto* quality =
+          log_entries_.back()
+              ->quality_data<
+                  optimization_guide::WallpaperSearchFeatureTypeMap>();
+      image_quality = quality->add_images_quality();
+      image_quality->set_image_id(image.image_id());
+      // We default to false and will flip if image was previewed or selected.
+      image_quality->set_previewed(false);
+      image_quality->set_selected(false);
+    }
     image_decoder_->DecodeImage(
         image.encoded_image(), gfx::Size(), nullptr,
         base::BindOnce(
-            [](base::RepeatingCallback<void(SkBitmap)> barrier,
+            [](base::RepeatingCallback<void(
+                   std::pair<
+                       optimization_guide::proto::WallpaperSearchImageQuality*,
+                       SkBitmap>)> barrier,
+               optimization_guide::proto::WallpaperSearchImageQuality*
+                   image_quality,
                const gfx::Image& image) {
-              std::move(barrier).Run(image.AsBitmap());
+              std::move(barrier).Run(
+                  std::make_pair(image_quality, image.AsBitmap()));
             },
-            barrier));
+            barrier, image_quality));
+  }
+}
+
+void WallpaperSearchHandler::SetResultRenderTime(
+    const std::vector<base::Token>& result_ids,
+    double time) {
+  for (const auto& id : result_ids) {
+    CHECK(base::Contains(wallpaper_search_results_, id));
+    auto& tuple = wallpaper_search_results_[id];
+    std::get<1>(tuple) =
+        absl::make_optional(base::Time::FromMillisecondsSinceUnixEpoch(time));
   }
 }
 
@@ -323,11 +512,13 @@ void WallpaperSearchHandler::OnWallpaperSearchResultsRetrieved(
 // make it base64 for easy reading by the UI.
 void WallpaperSearchHandler::OnWallpaperSearchResultsDecoded(
     GetWallpaperSearchResultsCallback callback,
-    std::vector<SkBitmap> bitmaps) {
+    std::vector<
+        std::pair<optimization_guide::proto::WallpaperSearchImageQuality*,
+                  SkBitmap>> bitmaps) {
   std::vector<side_panel::customize_chrome::mojom::WallpaperSearchResultPtr>
       thumbnails;
 
-  for (auto& bitmap : bitmaps) {
+  for (auto& [image_quality, bitmap] : bitmaps) {
     auto dimensions =
         CalculateResizeDimensions(bitmap.width(), bitmap.height(), 100);
     SkBitmap small_bitmap = skia::ImageOperations::Resize(
@@ -341,12 +532,15 @@ void WallpaperSearchHandler::OnWallpaperSearchResultsDecoded(
       auto thumbnail =
           side_panel::customize_chrome::mojom::WallpaperSearchResult::New();
       auto id = base::Token::CreateRandom();
-      wallpaper_search_results_[id] = std::move(bitmap);
+      wallpaper_search_results_[id] =
+          std::make_tuple(image_quality, absl::nullopt, std::move(bitmap));
       thumbnail->image = base::Base64Encode(encoded);
       thumbnail->id = std::move(id);
       thumbnails.push_back(std::move(thumbnail));
     }
   }
 
-  std::move(callback).Run(std::move(thumbnails));
+  std::move(callback).Run(
+      side_panel::customize_chrome::mojom::WallpaperSearchStatus::kOk,
+      std::move(thumbnails));
 }

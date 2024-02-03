@@ -20,12 +20,28 @@ import {getTemplate} from './reporting_history.html.js';
 export interface ReportingHistoryElement {
   $: {
     body: HTMLDivElement,
+    erpTableFilter: HTMLSelectElement,
   };
 }
 
 export class ReportingHistoryElement extends PolymerElement {
   private browserProxy: EnterpriseReportingBrowserProxy =
       EnterpriseReportingBrowserProxy.getInstance();
+
+  // Filtering options for the table.
+  private static allEvents: string = 'All events';
+  private static allButUploads: string = 'All events except uploads';
+  private filterOptions: string[] = [
+    ReportingHistoryElement.allEvents,
+    ReportingHistoryElement.allButUploads,
+    'QueueAction',
+    'Enqueue',
+    'Flush',
+    'Confirm',
+    'Upload',
+  ];
+  private selectedOption: string = ReportingHistoryElement.allEvents;
+  private currentHistory: ErpHistoryData;
 
   static get is() {
     return 'reporting-history-element' as const;
@@ -38,13 +54,23 @@ export class ReportingHistoryElement extends PolymerElement {
   static get properties() {
     return {
       loggingState: Boolean,
+
+      filterOptions: {
+        type: Array,
+        value: () => [],
+      },
+
+      selectedOption: {
+        type: String,
+        value: '',
+      },
     };
   }
 
   private loggingState: boolean;
 
   loggingStateToString(checked: boolean) {
-    return checked ? 'on' : 'off';
+    return checked ? 'On' : 'Off';
   }
 
   onToggleChange(event: CustomEvent<boolean>) {
@@ -52,6 +78,48 @@ export class ReportingHistoryElement extends PolymerElement {
 
     // Deliver the value to the handler.
     this.browserProxy.handler.recordDebugState(event.detail);
+  }
+
+  onFilterChange() {
+    const currentSelection: string = this.$.erpTableFilter.value;
+    if (this.selectedOption != currentSelection) {
+      this.selectedOption = currentSelection;
+      this.updateErpTable();
+    }
+  }
+
+  onDownloadButtonClick(): void {
+    // Select the table and traverse through it.
+    const tableRows = this.$.body.querySelectorAll('.erp-history-table tr');
+    const csv: string[] = [];
+    tableRows.forEach(currentRow => {
+      const row: string[] = [];
+      const cols = currentRow.querySelectorAll('td, th');
+      cols.forEach(currentCol => {
+        let value: string = '';
+        // For the erp-parameters column we need to extract the information from
+        // the bullet lists, for all the other columns we just append the
+        // innerHTML directly.
+        if (currentCol.className == 'erp-parameters') {
+          currentCol.querySelectorAll('li').forEach(el => {
+            value += el.innerText + ' - ';
+          });
+        } else {
+          value = currentCol.innerHTML;
+        }
+        row.push(value);
+      });
+      csv.push(row.join(','));
+    });
+    // Create the file and download it. Format: reporting_logs_DATE.csv.
+    const csvFile = new Blob([csv.join('\n')], {type: 'text/csv'});
+    const url = URL.createObjectURL(csvFile);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporting_logs_${new Date().toISOString()}.csv`;
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   override connectedCallback() {
@@ -63,8 +131,9 @@ export class ReportingHistoryElement extends PolymerElement {
     // Add a listener for the asynchronous 'setErpHistoryData' event
     // to be invoked by page handler and populate the table.
     this.browserProxy.callbackRouter.setErpHistoryData.addListener(
-        (history: ErpHistoryData) => {
-          this.updateErpTable(history);
+        (historyData: ErpHistoryData) => {
+          this.currentHistory = historyData;
+          this.updateErpTable();
         });
   }
 
@@ -80,7 +149,8 @@ export class ReportingHistoryElement extends PolymerElement {
     // Populate history upon page refresh.
     this.browserProxy.handler.getErpHistoryData().then(
         ({historyData}: {historyData: ErpHistoryData}) => {
-          this.updateErpTable(historyData);
+          this.currentHistory = historyData;
+          this.updateErpTable();
         });
   }
 
@@ -97,19 +167,32 @@ export class ReportingHistoryElement extends PolymerElement {
   }
 
   // Fills the passed table element with the given history.
-  private updateErpTable(history: ErpHistoryData) {
+  private updateErpTable() {
     // Reset table.
     this.$.body.replaceChildren();
 
     // If there are no events, present a placeholder.
-    if (history.events.length === 0) {
+    if (this.currentHistory.events.length === 0) {
+      this.setEmptyErpTable();
+      return;
+    }
+    // If there are events we filter them by the type of event.
+    const filteredEvents = this.currentHistory.events.filter(
+        (event: ErpHistoryEvent) => event.call == this.selectedOption ||
+            this.selectedOption == ReportingHistoryElement.allEvents ||
+            (this.selectedOption == ReportingHistoryElement.allButUploads &&
+             event.call != 'Upload'));
+
+    // If there are no events after filtering, present the placeholder.
+    if (filteredEvents.length === 0) {
       this.setEmptyErpTable();
       return;
     }
 
     // Populate the table row by the events: iterate through the history
     // in reverse order so that the most recent event shows up first.
-    for (const event of history.events.reverse()) {
+    // This uses the already filtered events by the user selection.
+    for (const event of filteredEvents.reverse()) {
       const row = this.composeTableRow(event);
       this.$.body.appendChild(row);
     }

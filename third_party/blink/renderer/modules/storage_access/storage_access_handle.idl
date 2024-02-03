@@ -8,8 +8,11 @@ interface StorageAccessHandle {
     [LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage localStorage;
     [LogActivity=GetterOnly, RaisesException=Getter] readonly attribute IDBFactory indexedDB;
     [LogActivity=GetterOnly, RaisesException=Getter] readonly attribute LockManager locks;
-    // TODO(crbug.com/1484966): Add cache storage
-    // TODO(crbug.com/1484966): Add origin private file system
-    // TODO(crbug.com/1484966): Add quota
-    // TODO(crbug.com/1484966): Add blob storage, broadcast channel, shared worker
+    [LogActivity=GetterOnly, RaisesException=Getter] readonly attribute CacheStorage caches;
+    [CallWith=ScriptState, LogActivity, RaisesException] Promise<FileSystemDirectoryHandle> getDirectory();
+    [CallWith=ScriptState, LogActivity, RaisesException] Promise<StorageEstimate> estimate();
+    [LogActivity, RaisesException] DOMString createObjectURL(Blob blob);
+    [LogActivity, RaisesException] void revokeObjectURL(DOMString url);
+    [CallWith=ExecutionContext, LogActivity, RaisesException] BroadcastChannel BroadcastChannel(DOMString name);
+    // TODO(crbug.com/1484966): Add shared worker
 };

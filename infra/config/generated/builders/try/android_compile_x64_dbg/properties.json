@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/android_compile_x64_dbg/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "Android x64 Builder All Targets (dbg)",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -36,7 +39,7 @@
         {
           "bucket": "ci",
           "builder": "Android x64 Builder All Targets (dbg)",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ],
       "is_compile_only": true

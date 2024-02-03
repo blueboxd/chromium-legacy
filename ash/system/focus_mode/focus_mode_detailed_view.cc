@@ -18,6 +18,7 @@
 #include "ash/style/system_textfield_controller.h"
 #include "ash/style/typography.h"
 #include "ash/system/focus_mode/focus_mode_countdown_view.h"
+#include "ash/system/focus_mode/focus_mode_task_view.h"
 #include "ash/system/focus_mode/focus_mode_util.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/time/time_view_utils.h"
@@ -35,7 +36,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/message_center/message_center.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
@@ -74,6 +74,12 @@ constexpr int kTimerSettingViewBetweenChildSpacing = 8;
 constexpr auto kTimerAdjustmentButtonSize = gfx::Size(63, 36);
 constexpr auto kTimerCountdownViewInsets = gfx::Insets::TLBR(0, 24, 12, 16);
 
+// Task view constants.
+constexpr auto kTaskViewContainerInsets = gfx::Insets::TLBR(0, 24, 22, 24);
+constexpr auto kTaskViewHeaderInsets = gfx::Insets::VH(18, 0);
+
+constexpr int kToggleButtonLeftPadding = 8;
+
 // Creates an `IconButton` with the formatting needed for the
 // `timer_setting_view_`'s timer adjustment buttons.
 std::unique_ptr<IconButton> CreateTimerAdjustmentButton(
@@ -89,7 +95,7 @@ std::unique_ptr<IconButton> CreateTimerAdjustmentButton(
   timer_adjustment_button->SetImageVerticalAlignment(
       views::ImageButton::VerticalAlignment::ALIGN_MIDDLE);
   timer_adjustment_button->SetPreferredSize(kTimerAdjustmentButtonSize);
-  timer_adjustment_button->SetIconColorId(cros_tokens::kCrosSysOnSurface);
+  timer_adjustment_button->SetIconColor(cros_tokens::kCrosSysOnSurface);
   timer_adjustment_button->SetBackground(
       views::CreateThemedRoundedRectBackground(
           background_color, kTimerAdjustmentButtonSize.height() / 2, 0));
@@ -251,12 +257,7 @@ FocusModeDetailedView::FocusModeDetailedView(DetailedViewDelegate* delegate)
 
   CreateTimerView();
 
-  // TODO(b/286931806): remove border inset and add Focus Scene UI.
-  scene_view_ =
-      scroll_content()->AddChildView(std::make_unique<RoundedContainer>(
-          RoundedContainer::Behavior::kAllRounded));
-  scene_view_->SetBorderInsets(gfx::Insets::VH(83, 0));
-  scene_view_->SetProperty(views::kMarginsKey, kDisconnectedContainerMargins);
+  CreateTaskView();
 
   FocusModeController* focus_mode_controller = FocusModeController::Get();
   const bool in_focus_session = focus_mode_controller->in_focus_session();
@@ -286,10 +287,9 @@ void FocusModeDetailedView::AddedToWidget() {
 }
 
 void FocusModeDetailedView::OnFocusModeChanged(bool in_focus_session) {
-  // TODO(b/302194469): centralize bubble-closing logic.
   if (in_focus_session) {
-    // Close the system tray bubble. Deletes `this`.
-    CloseBubble();
+    // The system tray bubble is closed by the `FocusModeController` whenever we
+    // toggle focus mode on, so do nothing here.
     return;
   }
 
@@ -299,7 +299,6 @@ void FocusModeDetailedView::OnFocusModeChanged(bool in_focus_session) {
   if (toggle_view_->sub_text_label()) {
     toggle_view_->sub_text_label()->SetVisible(false);
   }
-  cached_end_time_ = base::Time();
   views::AsViewClass<PillButton>(toggle_view_->right_view())
       ->SetText(l10n_util::GetStringUTF16(
           in_focus_session
@@ -313,15 +312,16 @@ void FocusModeDetailedView::OnFocusModeChanged(bool in_focus_session) {
 }
 
 void FocusModeDetailedView::OnTimerTick() {
-  // Only update the sub label if the end time has changed since the last time
-  // it was updated.
-  base::Time end_time = FocusModeController::Get()->end_time();
-  if (cached_end_time_ != end_time) {
-    toggle_view_->SetSubText(
-        focus_mode_util::GetFormattedEndTimeString(end_time));
-    cached_end_time_ = end_time;
-  }
   timer_countdown_view_->UpdateUI();
+}
+
+void FocusModeDetailedView::OnSessionDurationChanged() {
+  toggle_view_->SetSubText(focus_mode_util::GetFormattedEndTimeString(
+      FocusModeController::Get()->end_time()));
+
+  if (FocusModeController::Get()->in_focus_session()) {
+    timer_countdown_view_->UpdateUI();
+  }
 }
 
 void FocusModeDetailedView::CreateToggleView() {
@@ -347,10 +347,16 @@ void FocusModeDetailedView::CreateToggleView() {
   TypographyProvider::Get()->StyleLabel(ash::TypographyToken::kCrosButton1,
                                         *toggle_view_->text_label());
 
+  // As part of the first time user flow, if the user has never started a
+  // session before, we want to provide description text.
+  if (!focus_mode_controller->HasStartedSessionBefore()) {
+    toggle_view_->SetSubText(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_FOCUS_MODE_FIRST_TIME_SUBLABEL));
+  }
+
   if (in_focus_session) {
-    cached_end_time_ = focus_mode_controller->end_time();
-    toggle_view_->SetSubText(
-        focus_mode_util::GetFormattedEndTimeString(cached_end_time_));
+    toggle_view_->SetSubText(focus_mode_util::GetFormattedEndTimeString(
+        focus_mode_controller->end_time()));
     toggle_view_->sub_text_label()->SetEnabledColorId(
         cros_tokens::kCrosSysSecondary);
     TypographyProvider::Get()->StyleLabel(
@@ -513,16 +519,43 @@ void FocusModeDetailedView::UpdateTimerView(bool in_focus_session) {
   }
 }
 
+void FocusModeDetailedView::CreateTaskView() {
+  auto* task_view_container =
+      scroll_content()->AddChildView(std::make_unique<RoundedContainer>(
+          RoundedContainer::Behavior::kAllRounded));
+  task_view_container->SetProperty(views::kMarginsKey,
+                                   kDisconnectedContainerMargins);
+  task_view_container->SetBorderInsets(kTaskViewContainerInsets);
+
+  // Create the task header.
+  auto* task_view_header =
+      task_view_container->AddChildView(std::make_unique<views::Label>());
+  task_view_header->SetText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_SUBHEADER));
+  task_view_header->SetHorizontalAlignment(
+      gfx::HorizontalAlignment::ALIGN_TO_HEAD);
+  task_view_header->SetBorder(views::CreateEmptyBorder(kTaskViewHeaderInsets));
+  task_view_header->SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant);
+  TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosBody2,
+                                        *task_view_header);
+
+  // Create the focus mode task view.
+  task_view_container->AddChildView(std::make_unique<FocusModeTaskView>());
+}
+
 void FocusModeDetailedView::CreateDoNotDisturbContainer() {
   do_not_disturb_view_ =
       scroll_content()->AddChildView(std::make_unique<RoundedContainer>(
           RoundedContainer::Behavior::kAllRounded));
   do_not_disturb_view_->SetProperty(views::kMarginsKey,
                                     kDisconnectedContainerMargins);
+  // `RoundedContainer` adds extra insets, so we need to remove those.
+  do_not_disturb_view_->SetBorderInsets(gfx::Insets());
 
   HoverHighlightView* toggle_row = do_not_disturb_view_->AddChildView(
       std::make_unique<HoverHighlightView>(/*listener=*/this));
   toggle_row->SetFocusBehavior(View::FocusBehavior::NEVER);
+  toggle_row->SetPreferredSize(gfx::Size(0, kToggleViewHeight));
 
   // Create the do not disturb icon and its label.
   auto icon = std::make_unique<views::ImageView>();
@@ -545,10 +578,17 @@ void FocusModeDetailedView::CreateDoNotDisturbContainer() {
 
   toggle->SetIsOn(controller->turn_on_do_not_disturb());
   do_not_disturb_toggle_button_ = toggle.get();
-  toggle_row->AddRightView(toggle.release());
+  toggle_row->AddRightView(toggle.release(),
+                           views::CreateEmptyBorder(gfx::Insets::TLBR(
+                               0, kToggleButtonLeftPadding, 0, 0)));
 
-  // TODO(hongyulong): Add insets for the tri_view of the toggle row.
   toggle_row->SetExpandable(true);
+  toggle_row->tri_view()->SetInsets(kToggleViewInsets);
+  views::BoxLayout* toggle_view_tri_view_layout =
+      toggle_row->tri_view()->box_layout();
+  toggle_view_tri_view_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  toggle_view_tri_view_layout->InvalidateLayout();
 }
 
 void FocusModeDetailedView::OnDoNotDisturbToggleClicked() {

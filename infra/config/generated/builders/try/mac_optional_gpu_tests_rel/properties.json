@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "try",
               "builder": "mac_optional_gpu_tests_rel",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-fyi-archive",
@@ -19,7 +19,9 @@
                 ],
                 "build_config": "Release",
                 "config": "chromium",
-                "target_bits": 64
+                "target_arch": "intel",
+                "target_bits": 64,
+                "target_platform": "mac"
               },
               "legacy_gclient_config": {
                 "apply_configs": [
@@ -35,7 +37,7 @@
         {
           "bucket": "try",
           "builder": "mac_optional_gpu_tests_rel",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ]
     }

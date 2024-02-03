@@ -999,6 +999,12 @@ void RootWindowController::StartSplitViewOverviewSession(
     absl::optional<OverviewStartAction> action,
     absl::optional<OverviewEnterExitType> type,
     WindowSnapActionSource snap_action_source) {
+  if (!OverviewController::Get()->CanEnterOverview()) {
+    // If we can't start overview, we shouldn't start split view overview
+    // either. This can happen when we restore snap state after exiting
+    // overview.
+    return;
+  }
   split_view_overview_session_ =
       std::make_unique<SplitViewOverviewSession>(window, snap_action_source);
   split_view_overview_session_->Init(action, type);
@@ -1417,7 +1423,7 @@ void RootWindowController::CreateContainers() {
 
   // Make sure booting animation container is always on top of all other
   // siblings under the `magnified_container`.
-  if (ash::features::IsOobeSimonEnabled()) {
+  if (ash::features::IsBootAnimationEnabled()) {
     aura::Window* booting_animation_container =
         CreateContainer(kShellWindowId_BootingAnimationContainer,
                         "BootingAnimationContainer", magnified_container);

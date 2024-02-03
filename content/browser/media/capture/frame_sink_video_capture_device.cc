@@ -194,7 +194,7 @@ bool FrameSinkVideoCaptureDevice::CanSupportNV12Format() const {
   // If present, GPU capabilities should already be up to date (this is ensured
   // by subscribing to context lost events via `context_provider_observer_`
   // helper):
-  return gpu_capabilities_->texture_rg && gpu_capabilities_->gpu_rasterization;
+  return gpu_capabilities_->texture_rg;
 }
 
 media::VideoPixelFormat
@@ -387,8 +387,9 @@ void FrameSinkVideoCaptureDevice::Resume() {
   MaybeStartConsuming();
 }
 
-void FrameSinkVideoCaptureDevice::Crop(
-    const base::Token& crop_id,
+void FrameSinkVideoCaptureDevice::ApplySubCaptureTarget(
+    media::mojom::SubCaptureTargetType type,
+    const base::Token& target,
     uint32_t sub_capture_target_version,
     base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>
         callback) {

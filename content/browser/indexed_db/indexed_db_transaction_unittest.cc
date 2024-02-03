@@ -18,21 +18,19 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "base/time/default_clock.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
-#include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
-namespace indexed_db_transaction_unittest {
 namespace {
 
 void SetToTrue(bool* value) {
@@ -72,57 +70,36 @@ class IndexedDBTransactionTest : public testing::Test {
         /*special_storage_policy=*/nullptr);
     indexed_db_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), quota_manager_->proxy(),
-        base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*file_system_access_context=*/mojo::NullRemote(),
         base::SequencedTaskRunner::GetCurrentDefault(),
         base::SequencedTaskRunner::GetCurrentDefault());
 
     IndexedDBBucketContext::Delegate delegate;
-    delegate.on_tasks_available = CreateRunTasksCallback();
+    delegate.on_fatal_error = base::BindRepeating(
+        &IndexedDBTransactionTest::OnFatalError, base::Unretained(this));
+    delegate.on_ready_for_destruction =
+        base::BindRepeating(&IndexedDBTransactionTest::OnDbReadyForDestruction,
+                            base::Unretained(this));
 
     bucket_context_ = std::make_unique<IndexedDBBucketContext>(
-        storage::BucketInfo(), false, base::DefaultClock::GetInstance(),
-        std::make_unique<PartitionedLockManager>(), std::move(delegate),
-        std::make_unique<IndexedDBFakeBackingStore>(), quota_manager_->proxy(),
+        storage::BucketInfo(), std::make_unique<PartitionedLockManager>(),
+        std::move(delegate), std::make_unique<IndexedDBFakeBackingStore>(),
+        quota_manager_->proxy(),
         /*io_task_runner=*/base::SequencedTaskRunner::GetCurrentDefault(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*file_system_access_context=*/mojo::NullRemote(), base::DoNothing());
 
-    // DB is created here instead of the constructor to workaround a
-    // "peculiarity of C++". More info at
-    // https://github.com/google/googletest/blob/main/docs/faq.md#my-compiler-complains-that-a-constructor-or-destructor-cannot-return-a-value-whats-going-on
-    db_ = std::make_unique<IndexedDBDatabase>(u"db", *bucket_context_,
-                                              IndexedDBDatabase::Identifier());
+    db_ = bucket_context_->AddDatabase(
+        u"db", std::make_unique<IndexedDBDatabase>(
+                   u"db", *bucket_context_, IndexedDBDatabase::Identifier()));
   }
 
-  TasksAvailableCallback CreateRunTasksCallback() {
-    return base::BindRepeating(&IndexedDBTransactionTest::RunTasksForDatabase,
-                               base::Unretained(this), true);
-  }
+  void TearDown() override { db_ = nullptr; }
 
-  void RunTasksForDatabase(bool async) {
-    if (!db_)
-      return;
-    if (async) {
-      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&IndexedDBTransactionTest::RunTasksForDatabase,
-                         base::Unretained(this), false));
-      return;
-    }
-    auto [result, status] = db_->RunTasks();
-    switch (result) {
-      case IndexedDBDatabase::RunTasksResult::kDone:
-        return;
-      case IndexedDBDatabase::RunTasksResult::kError:
-        error_called_ = true;
-        return;
-      case IndexedDBDatabase::RunTasksResult::kCanBeDestroyed:
-        db_.reset();
-        return;
-    }
-  }
+  void OnFatalError(leveldb::Status s) { error_called_ = true; }
+
+  void OnDbReadyForDestruction() { bucket_context_.reset(); }
 
   void RunPostedTasks() { base::RunLoop().RunUntilIdle(); }
 
@@ -142,7 +119,8 @@ class IndexedDBTransactionTest : public testing::Test {
     auto connection = std::make_unique<IndexedDBConnection>(
         *bucket_context_, db_->AsWeakPtr(), base::DoNothing(),
         base::DoNothing(),
-        base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>(),
+        std::make_unique<IndexedDBDatabaseCallbacks>(
+            mojo::NullAssociatedRemote()),
         base::MakeRefCounted<IndexedDBClientStateCheckerWrapper>(
             std::move(remote)));
     db_->AddConnectionForTesting(connection.get());
@@ -157,7 +135,7 @@ class IndexedDBTransactionTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   std::unique_ptr<IndexedDBBucketContext> bucket_context_;
-  std::unique_ptr<IndexedDBDatabase> db_;
+  raw_ptr<IndexedDBDatabase> db_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<storage::MockQuotaManager> quota_manager_;
 
@@ -692,5 +670,4 @@ TEST_F(IndexedDBTransactionTest, IsTransactionBlockingOthers) {
   EXPECT_FALSE(db_->IsTransactionBlockingOthers(transaction));
 }
 
-}  // namespace indexed_db_transaction_unittest
 }  // namespace content

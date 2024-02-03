@@ -15,6 +15,7 @@ template("model_service") {
     public_deps = [
       "//base",
       "//mojo/public/cpp/bindings",
+      "//services/on_device_model/public/cpp",
       "//services/on_device_model/public/mojom",
     ]
     defines = [ "IS_ON_DEVICE_MODEL_IMPL" ]
@@ -24,7 +25,7 @@ template("model_service") {
         "chrome_ml_instance.h",
         "on_device_model_internal.cc",
       ]
-      deps += [ "//third_party/ml/public" ]
+      deps += [ "//components/optimization_guide/internal/public" ]
 
       # NOTE: Not a buildflag since it's controllable per target.
       defines += [ "ENABLE_ML_INTERNAL" ]

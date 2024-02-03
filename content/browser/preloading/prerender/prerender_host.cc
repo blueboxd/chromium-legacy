@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/preloading/prerender/prerender_host.h"
+#include <memory>
 
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
@@ -26,15 +27,26 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/prerender_trigger_type.h"
+#include "content/public/browser/preloading_trigger_type.h"
 #include "content/public/common/referrer.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/client_hints/enabled_client_hints.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/origin.h"
 
 namespace content {
+
+namespace {
+
+base::OnceCallback<void(int)>& GetHostCreationCallbackForTesting() {
+  static base::NoDestructor<base::OnceCallback<void(int)>>
+      host_creation_callback_for_testing;
+  return *host_creation_callback_for_testing;
+}
+
+}  // namespace
 
 // static
 PrerenderHost* PrerenderHost::GetFromFrameTreeNodeIfPrerendering(
@@ -56,8 +68,9 @@ PrerenderHost& PrerenderHost::GetFromFrameTreeNode(
 bool PrerenderHost::AreHttpRequestHeadersCompatible(
     const std::string& potential_activation_headers_str,
     const std::string& prerender_headers_str,
-    PrerenderTriggerType trigger_type,
-    const std::string& embedder_histogram_suffix) {
+    PreloadingTriggerType trigger_type,
+    const std::string& embedder_histogram_suffix,
+    PrerenderCancellationReason& reason) {
   net::HttpRequestHeaders prerender_headers;
   prerender_headers.AddHeadersFromString(prerender_headers_str);
 
@@ -85,7 +98,7 @@ bool PrerenderHost::AreHttpRequestHeadersCompatible(
   // to set url parameters.
 #if BUILDFLAG(IS_ANDROID)
   // Used by Android devices only.
-  if (trigger_type == PrerenderTriggerType::kEmbedder) {
+  if (trigger_type == PreloadingTriggerType::kEmbedder) {
     prerender_headers.RemoveHeader("X-Geo");
     potential_activation_headers.RemoveHeader("X-Geo");
   }
@@ -102,7 +115,7 @@ bool PrerenderHost::AreHttpRequestHeadersCompatible(
   potential_activation_headers.RemoveHeader("sec-ch-viewport-height");
 
   if (PrerenderHost::IsActivationHeaderMatch(potential_activation_headers,
-                                             prerender_headers)) {
+                                             prerender_headers, reason)) {
     return true;
   }
 
@@ -114,6 +127,12 @@ bool PrerenderHost::AreHttpRequestHeadersCompatible(
                      std::move(prerender_headers), trigger_type,
                      embedder_histogram_suffix));
   return false;
+}
+
+// static
+void PrerenderHost::SetHostCreationCallbackForTesting(
+    base::OnceCallback<void(int host_id)> callback) {
+  GetHostCreationCallbackForTesting() = std::move(callback);  // IN-TEST
 }
 
 PrerenderHost::PrerenderHost(
@@ -182,18 +201,18 @@ PrerenderHost::PrerenderHost(
       frame_tree_->root()->render_manager()->current_frame_host());
 
   frame_tree_node_id_ = frame_tree_->root()->frame_tree_node_id();
+
+  if (GetHostCreationCallbackForTesting()) {
+    std::move(GetHostCreationCallbackForTesting())  // IN-TEST
+        .Run(frame_tree_node_id_);
+  }
 }
 
 // static
 bool PrerenderHost::IsActivationHeaderMatch(
     const net::HttpRequestHeaders& potential_activation_headers,
-    const net::HttpRequestHeaders& prerender_headers) {
-  // The numbers of headers are different.
-  if (potential_activation_headers.GetHeaderVector().size() !=
-      prerender_headers.GetHeaderVector().size()) {
-    return false;
-  }
-
+    const net::HttpRequestHeaders& prerender_headers,
+    PrerenderCancellationReason& reason) {
   // Normalize the headers.
   using HeaderPair = net::HttpRequestHeaders::HeaderKeyValuePair;
   auto cmp = [](const HeaderPair& a, const HeaderPair& b) {
@@ -203,6 +222,7 @@ bool PrerenderHost::IsActivationHeaderMatch(
   auto same_predicate = [](const HeaderPair& a, const HeaderPair& b) {
     return a.key == b.key && base::EqualsCaseInsensitiveASCII(a.value, b.value);
   };
+
   std::vector<HeaderPair> potential_header_list(
       potential_activation_headers.GetHeaderVector());
   std::vector<HeaderPair> prerender_header_list(
@@ -215,9 +235,60 @@ bool PrerenderHost::IsActivationHeaderMatch(
   std::sort(prerender_header_list.begin(), prerender_header_list.end(), cmp);
 
   // The two vectors should be exactly the same if the headers are the same.
-  return std::equal(potential_header_list.begin(), potential_header_list.end(),
-                    prerender_header_list.begin(), prerender_header_list.end(),
-                    same_predicate);
+  if (std::equal(potential_header_list.begin(), potential_header_list.end(),
+                 prerender_header_list.begin(), prerender_header_list.end(),
+                 same_predicate)) {
+    return true;
+  }
+
+  // If the two vectors are not exactly the same, it means that header mismatch
+  // occurred.
+  std::unique_ptr<std::vector<PrerenderMismatchedHeaders>> mismatched_headers =
+      std::make_unique<std::vector<PrerenderMismatchedHeaders>>();
+
+  auto prerender_header_list_it = prerender_header_list.begin();
+  auto potential_header_list_it = potential_header_list.begin();
+
+  while (prerender_header_list_it != prerender_header_list.end() &&
+         potential_header_list_it != potential_header_list.end()) {
+    if (same_predicate(*prerender_header_list_it, *potential_header_list_it)) {
+      prerender_header_list_it++;
+      potential_header_list_it++;
+    } else if (prerender_header_list_it->key == potential_header_list_it->key) {
+      mismatched_headers->emplace_back(prerender_header_list_it->key,
+                                       prerender_header_list_it->value,
+                                       potential_header_list_it->value);
+      prerender_header_list_it++;
+      potential_header_list_it++;
+    } else if (prerender_header_list_it->key < potential_header_list_it->key) {
+      mismatched_headers->emplace_back(prerender_header_list_it->key,
+                                       prerender_header_list_it->value,
+                                       absl::nullopt);
+      prerender_header_list_it++;
+    } else {
+      mismatched_headers->emplace_back(potential_header_list_it->key,
+                                       absl::nullopt,
+                                       potential_header_list_it->value);
+      potential_header_list_it++;
+    }
+  }
+
+  while (prerender_header_list_it != prerender_header_list.end()) {
+    mismatched_headers->emplace_back(prerender_header_list_it->key,
+                                     prerender_header_list_it->value,
+                                     absl::nullopt);
+    prerender_header_list_it++;
+  }
+
+  while (potential_header_list_it != potential_header_list.end()) {
+    mismatched_headers->emplace_back(potential_header_list_it->key,
+                                     absl::nullopt,
+                                     potential_header_list_it->value);
+    potential_header_list_it++;
+  }
+
+  reason.SetPrerenderMismatchedHeaders(std::move(mismatched_headers));
+  return false;
 }
 
 PrerenderHost::~PrerenderHost() {
@@ -369,7 +440,7 @@ bool PrerenderHost::StartPrerendering() {
     // We may eventually return false for this code path to make things simple.
     // TODO(https://crbug.com/1394486): Monitor reports and decide if we
     // continue to have the `is_ready_for_activation_` check in
-    // AreInitialPrerenderNavigationParamsCompatibleWithNavigation().
+    // CheckInitialPrerenderNavigationParamsCompatibleWithNavigation().
     net::Error net_error = created_navigation_handle->GetNetErrorCode();
     base::debug::Alias(&net_error);
     base::debug::DumpWithoutCrashing();
@@ -495,12 +566,11 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
   std::unique_ptr<StoredPage> page =
       frame_tree_->root()->render_manager()->TakePrerenderedPage();
 
-  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
-      std::make_unique<NavigationEntryRestoreContextImpl>();
+  NavigationEntryRestoreContextImpl context;
   std::unique_ptr<NavigationEntryImpl> nav_entry =
       GetNavigationController()
           .GetEntryWithUniqueID(page->render_frame_host()->nav_entry_id())
-          ->CloneWithoutSharing(context.get());
+          ->CloneWithoutSharing(&context);
 
   navigation_request.SetPrerenderActivationNavigationState(
       std::move(nav_entry), prior_replication_state);
@@ -620,7 +690,8 @@ bool PrerenderHost::IsFramePolicyCompatibleWithPrimaryFrameTree() {
 }
 
 bool PrerenderHost::AreInitialPrerenderNavigationParamsCompatibleWithNavigation(
-    NavigationRequest& navigation_request) {
+    NavigationRequest& navigation_request,
+    PrerenderCancellationReason& reason) {
   // TODO(crbug.com/1181763): compare the rest of the navigation parameters. We
   // should introduce compile-time parameter checks as well, to ensure how new
   // fields should be compared for compatibility.
@@ -647,7 +718,7 @@ bool PrerenderHost::AreInitialPrerenderNavigationParamsCompatibleWithNavigation(
   // Compare BeginNavigationParams.
   ActivationNavigationParamsMatch result =
       AreBeginNavigationParamsCompatibleWithNavigation(
-          navigation_request.begin_params());
+          navigation_request.begin_params(), reason);
   if (result != ActivationNavigationParamsMatch::kOk) {
     RecordPrerenderActivationNavigationParamsMatch(result, trigger_type(),
                                                    embedder_histogram_suffix());
@@ -671,7 +742,8 @@ bool PrerenderHost::AreInitialPrerenderNavigationParamsCompatibleWithNavigation(
 
 PrerenderHost::ActivationNavigationParamsMatch
 PrerenderHost::AreBeginNavigationParamsCompatibleWithNavigation(
-    const blink::mojom::BeginNavigationParams& potential_activation) {
+    const blink::mojom::BeginNavigationParams& potential_activation,
+    PrerenderCancellationReason& reason) {
   CHECK(begin_params_);
   if (potential_activation.initiator_frame_token !=
       begin_params_->initiator_frame_token) {
@@ -680,7 +752,7 @@ PrerenderHost::AreBeginNavigationParamsCompatibleWithNavigation(
 
   if (!AreHttpRequestHeadersCompatible(potential_activation.headers,
                                        begin_params_->headers, trigger_type(),
-                                       embedder_histogram_suffix())) {
+                                       embedder_histogram_suffix(), reason)) {
     return ActivationNavigationParamsMatch::kHttpRequestHeader;
   }
 

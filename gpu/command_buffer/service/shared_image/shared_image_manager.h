@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_SHARED_IMAGE_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_SHARED_IMAGE_MANAGER_H_
 
+#include <optional>
 #include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
@@ -14,10 +15,11 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/gpu_gles2_export.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_WIN)
-#include <d3d11.h>
+namespace gfx {
+class D3DSharedFence;
+}
 #endif
 
 namespace gpu {
@@ -107,6 +109,11 @@ class GPU_GLES2_EXPORT SharedImageManager
       MemoryTypeTracker* ref);
 #endif
 
+#if BUILDFLAG(IS_WIN)
+  void UpdateExternalFence(const Mailbox& mailbox,
+                           scoped_refptr<gfx::D3DSharedFence> external_fence);
+#endif
+
   // Called by SharedImageRepresentation in the destructor.
   void OnRepresentationDestroyed(const Mailbox& mailbox,
                                  SharedImageRepresentation* representation);
@@ -138,7 +145,7 @@ class GPU_GLES2_EXPORT SharedImageManager
  private:
   class AutoLock;
   // The lock for protecting |images_|.
-  absl::optional<base::Lock> lock_;
+  std::optional<base::Lock> lock_;
 
   base::flat_set<std::unique_ptr<SharedImageBacking>> images_ GUARDED_BY(lock_);
 

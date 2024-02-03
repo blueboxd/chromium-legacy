@@ -54,6 +54,8 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -264,6 +266,8 @@ ui::ColorId GetFocusColorId(bool use_jelly_colors) {
 }  // namespace
 
 class CheckBoxMenuItemView : public views::MenuItemView {
+  METADATA_HEADER(CheckBoxMenuItemView, views::MenuItemView)
+
  public:
   CheckBoxMenuItemView(views::MenuItemView* parent,
                        int command,
@@ -287,11 +291,18 @@ class CheckBoxMenuItemView : public views::MenuItemView {
             static_cast<AppListSearchControlCategory>(GetCommand()))
             ? ax::mojom::CheckedState::kTrue
             : ax::mojom::CheckedState::kFalse);
+    // The title of the menu is not focusable but included in the position
+    // counting. Explicitly set the hierarchical level of the toggleable menu
+    // items to exclude the title.
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 1);
   }
 
  private:
   raw_ptr<AppListViewDelegate> view_delegate_ = nullptr;
 };
+
+BEGIN_METADATA(CheckBoxMenuItemView)
+END_METADATA
 
 class FilterMenuAdapter : public views::MenuModelAdapter {
  public:
@@ -478,6 +489,12 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   SearchBoxModel* const search_box_model =
       model_provider->search_model()->search_box();
   search_box_model_observer_.Observe(search_box_model);
+
+  // The assistant view delegate could be nullptr in test.
+  if (view_delegate_->GetAssistantViewDelegate()) {
+    assistant_view_delegate_observer_.Observe(
+        view_delegate_->GetAssistantViewDelegate());
+  }
 
   if (features::IsUserEducationEnabled()) {
     // NOTE: Set `kHelpBubbleContextKey` before `views::kElementIdentifierKey`
@@ -746,10 +763,6 @@ void SearchBoxView::OnPaintBorder(gfx::Canvas* canvas) {
   }
 }
 
-const char* SearchBoxView::GetClassName() const {
-  return "SearchBoxView";
-}
-
 void SearchBoxView::OnThemeChanged() {
   SearchBoxViewBase::OnThemeChanged();
 
@@ -812,6 +825,10 @@ void SearchBoxView::OpenAssistantPage() {
   delegate_->AssistantButtonPressed();
 }
 
+void SearchBoxView::OnLauncherSearchChipPressed(const std::u16string& query) {
+  UpdateQuery(query);
+}
+
 void SearchBoxView::ShowFilterMenu() {
   ui::SimpleMenuModel* model = BuildFilterMenuModel();
   filter_menu_adapter_ = std::make_unique<FilterMenuAdapter>(
@@ -821,6 +838,7 @@ void SearchBoxView::ShowFilterMenu() {
       view_delegate_);
 
   filter_menu_adapter_->ShowFilterMenu(this);
+  RecordSearchCategoryFilterMenuOpened();
 }
 
 void SearchBoxView::OnFilterMenuClosed() {
@@ -828,6 +846,8 @@ void SearchBoxView::OnFilterMenuClosed() {
   if (HasSearch()) {
     TriggerSearch();
   }
+
+  RecordSearchCategoryEnableState(GetSearchCategoryEnableState());
 }
 
 views::MenuItemView* SearchBoxView::GetFilterMenuItemByCategory(
@@ -1655,8 +1675,8 @@ void SearchBoxView::UpdateIphViewVisibility() {
     }
 
     SetIphView(std::make_unique<LauncherSearchIphView>(
-        std::move(scoped_iph_session), /*delegate=*/this,
-        /*is_in_tablet_mode=*/!is_app_list_bubble_));
+        /*delegate=*/this, /*is_in_tablet_mode=*/!is_app_list_bubble_,
+        std::move(scoped_iph_session)));
 
     assistant_button()->SetBackground(views::CreateThemedRoundedRectBackground(
         kColorAshControlBackgroundColorInactive,
@@ -1720,5 +1740,33 @@ std::vector<AppListSearchControlCategory>
 SearchBoxView::GetToggleableCategories() {
   return view_delegate_->GetToggleableCategories();
 }
+
+CategoryEnableStateMap SearchBoxView::GetSearchCategoryEnableState() {
+  auto toggleable_categories = GetToggleableCategories();
+  CategoryEnableStateMap category_to_state;
+
+  // Initialize the map.
+  for (int i = base::to_underlying(AppListSearchControlCategory::kMinValue);
+       i <= base::to_underlying(AppListSearchControlCategory::kMaxValue); ++i) {
+    auto category = static_cast<AppListSearchControlCategory>(i);
+    // Cannot toggle is not a category.
+    if (category == AppListSearchControlCategory::kCannotToggle) {
+      continue;
+    }
+
+    category_to_state[category] = SearchCategoryEnableState::kNotAvailable;
+  }
+
+  // Set the enable states for toggleable categories.
+  for (auto category : toggleable_categories) {
+    category_to_state[category] = view_delegate_->IsCategoryEnabled(category)
+                                      ? SearchCategoryEnableState::kEnabled
+                                      : SearchCategoryEnableState::kDisabled;
+  }
+  return category_to_state;
+}
+
+BEGIN_METADATA(SearchBoxView)
+END_METADATA
 
 }  // namespace ash

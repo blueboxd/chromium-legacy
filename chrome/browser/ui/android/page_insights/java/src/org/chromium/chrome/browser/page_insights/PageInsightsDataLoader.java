@@ -8,8 +8,6 @@ import static org.chromium.components.optimization_guide.proto.HintsProto.Optimi
 
 import android.util.LruCache;
 
-import androidx.annotation.Nullable;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.base.Callback;
@@ -31,19 +29,11 @@ class PageInsightsDataLoader {
     private LruCache<GURL, PageInsightsMetadata> mCache =
             new LruCache<GURL, PageInsightsMetadata>(LRU_CACHE_SIZE);
     private boolean mIsDestroyed;
-    @Nullable private Callback<PageInsightsMetadata> mCurrentCallback;
 
     PageInsightsDataLoader() {}
 
-    /**
-     * Fetches insights data for the given {@code url}, or retrieves from cache if present, and runs
-     * {@code callback} with the retrieved data.
-     *
-     * <p>If called a second time, before first fetch has completed, first callback will not be run.
-     */
     void loadInsightsData(
             GURL url, boolean shouldAttachGaiaToRequest, Callback<PageInsightsMetadata> callback) {
-        mCurrentCallback = callback;
         if (url == null) {
             Log.e(TAG, "Error fetching Page Insights data: Url cannot be null.");
             return;
@@ -69,12 +59,7 @@ class PageInsightsDataLoader {
                                 PageInsightsMetadata pageInsightsMetadata =
                                         PageInsightsMetadata.parseFrom(metadata.getValue());
                                 mCache.put(url, pageInsightsMetadata);
-                                // There is never a case where we want to run an old callback when
-                                // a newer one has been provided, and doing so could lead to bugs
-                                // (e.g. peek is shown with insights for previous page).
-                                if (mCurrentCallback == callback) {
-                                    callback.bind(pageInsightsMetadata).run();
-                                }
+                                callback.bind(pageInsightsMetadata).run();
                             } catch (InvalidProtocolBufferException e) {
                                 Log.e(
                                         TAG,

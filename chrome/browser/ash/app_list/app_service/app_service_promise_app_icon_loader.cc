@@ -62,7 +62,7 @@ void AppServicePromiseAppIconLoader::FetchImage(const std::string& id) {
     return;
   }
   CallLoadIcon(apps::PackageId::FromString(id).value(),
-               apps::IconEffects::kCrOsStandardMask);
+               apps::IconEffects::kCrOsStandardIcon);
 }
 
 void AppServicePromiseAppIconLoader::ClearImage(const std::string& id) {
@@ -105,5 +105,7 @@ void AppServicePromiseAppIconLoader::OnLoadIcon(
     const apps::PackageId& package_id,
     apps::IconValuePtr icon_value) {
   gfx::ImageSkia image = icon_value->uncompressed;
-  delegate()->OnAppImageUpdated(package_id.ToString(), image);
+  delegate()->OnAppImageUpdated(package_id.ToString(), image,
+                                icon_value->is_placeholder_icon,
+                                /*badge_image=*/absl::nullopt);
 }

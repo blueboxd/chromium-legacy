@@ -12,11 +12,12 @@ import {assert} from 'chrome://resources/ash/common/assert.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {FeedbackAppExitPath, FeedbackAppHelpContentOutcome, FeedbackAppPreSubmitAction, FeedbackContext, FeedbackServiceProviderInterface, Report, SendReportStatus} from './feedback_types.js';
+import {getTemplate} from './feedback_flow.html.js';
 import {showScrollingEffectOnStart, showScrollingEffects} from './feedback_utils.js';
 import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
+import {FeedbackAppExitPath, FeedbackAppHelpContentOutcome, FeedbackAppPreSubmitAction, FeedbackContext, Report, SendReportStatus} from './os_feedback_ui.mojom-webui.js';
 
 /**
  * The host of untrusted child page.
@@ -158,6 +159,12 @@ const phoneHubRegEx =
     new RegExp('app[ ]?stream(ing)?|phone|camera[ ]?roll', 'i');
 
 /**
+ * Regular expression to check for wifi-related keywords.
+ */
+const wifiRegEx =
+    new RegExp('\\b(wifi|wi\-fi|internet|network|hotspot)\\b', 'i');
+
+/**
  * @fileoverview
  * 'feedback-flow' manages the navigation among the steps to be taken.
  */
@@ -167,7 +174,7 @@ export class FeedbackFlowElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -200,6 +207,12 @@ export class FeedbackFlowElement extends PolymerElement {
      * @type {boolean}
      */
     this.shouldShowBluetoothCheckbox_;
+
+    /**
+     * Whether to show the Wifi debug Logs checkbox in share data page.
+     * @type {boolean}
+     */
+    this.shouldShowWifiDebugLogsCheckbox_ = false;
 
     /**
      * Whether to show the Link Cross Device Dogfood Feedback checkbox in share
@@ -410,6 +423,7 @@ export class FeedbackFlowElement extends PolymerElement {
       assistantDebugInfoAllowed: false,
       fromSettingsSearch: feedbackInfo.fromSettingsSearch ?? false,
       isInternalAccount: feedbackInfo.isInternalAccount ?? false,
+      wifiDebugLogsAllowed: false,
       traceId: feedbackInfo.traceId ?? 0,
       pageUrl: {url: feedbackInfo.pageUrl ?? ''},
       fromAssistant: feedbackInfo.fromAssistant ?? false,
@@ -542,6 +556,8 @@ export class FeedbackFlowElement extends PolymerElement {
         this.shouldShowBluetoothCheckbox_ = this.feedbackContext_ !== null &&
             this.feedbackContext_.isInternalAccount &&
             this.isDescriptionRelatedToBluetooth(this.description_);
+        this.shouldShowWifiDebugLogsCheckbox_ =
+            this.computeShouldShowWifiDebugLogsCheckbox_();
         this.shouldShowLinkCrossDeviceDogfoodFeedbackCheckbox_ =
             this.feedbackContext_ !== null &&
             loadTimeData.getBoolean(
@@ -610,6 +626,13 @@ export class FeedbackFlowElement extends PolymerElement {
       default:
         console.warn('unexpected state: ', event.detail.currentState);
     }
+  }
+
+  /** @private */
+  computeShouldShowWifiDebugLogsCheckbox_() {
+    return this.feedbackContext_ && this.feedbackContext_.isInternalAccount &&
+        this.feedbackContext_.wifiDebugLogsAllowed &&
+        wifiRegEx.test(this.description_);
   }
 
   /** @private */
@@ -714,6 +737,13 @@ export class FeedbackFlowElement extends PolymerElement {
    */
   getIsUserLoggedInForTesting() {
     return this.isUserLoggedIn_;
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  getShouldShowWifiDebugLogsCheckboxForTesting() {
+    return this.shouldShowWifiDebugLogsCheckbox_;
   }
 
   /**

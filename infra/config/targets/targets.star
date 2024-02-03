@@ -334,7 +334,7 @@ targets.console_test_launcher(
     label = "//chromecast/media/cma/backend:cast_audio_backend_unittests",
 )
 
-targets.junit_test(
+targets.generated_script(
     name = "cast_base_junit_tests",
     label = "//chromecast/base:cast_base_junit_tests",
 )
@@ -384,7 +384,7 @@ targets.console_test_launcher(
     label = "//chromecast:cast_shell_browsertests",
 )
 
-targets.junit_test(
+targets.generated_script(
     name = "cast_shell_junit_tests",
     label = "//chromecast/browser/android:cast_shell_junit_tests",
 )
@@ -556,7 +556,20 @@ targets.script(
         "../../testing/scripts/run_chromedriver_tests.py",
         "../../chrome/test/chromedriver/test/run_py_tests.py",
         "--chromedriver=chromedriver",
-        "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
+        "--log-path=${ISOLATED_OUTDIR}/chrome.chromedriver.log",
+        "--browser-name=chrome",
+    ],
+)
+
+targets.script(
+    name = "chromedriver_py_tests_headless_shell",
+    label = "//chrome/test/chromedriver:chromedriver_py_tests_headless_shell",
+    script = "//testing/scripts/run_chromedriver_tests.py",
+    args = [
+        "../../chrome/test/chromedriver/test/run_py_tests.py",
+        "--chromedriver=chromedriver",
+        "--log-path=${ISOLATED_OUTDIR}/chrome-headless-shell.chromedriver.log",
+        "--browser-name=chrome-headless-shell",
     ],
 )
 
@@ -825,11 +838,6 @@ targets.console_test_launcher(
 targets.console_test_launcher(
     name = "cronet_smoketests_platform_only_instrumentation_apk",
     label = "//components/cronet/android:cronet_smoketests_platform_only_instrumentation_apk",
-)
-
-targets.generated_script(
-    name = "cronet_test",
-    label = "//components/cronet/ios/test:cronet_test",
 )
 
 targets.console_test_launcher(
@@ -2032,7 +2040,7 @@ targets.script(
 
 targets.generated_script(
     name = "touch_to_fill_junit_tests",
-    label = "//chrome/browser/touch_to_fill/android:touch_to_fill_junit_tests",
+    label = "//chrome/browser/touch_to_fill/password_manager/android:touch_to_fill_junit_tests",
 )
 
 targets.compile_target(
@@ -2081,7 +2089,7 @@ targets.windowed_test_launcher(
 
 targets.generated_script(
     name = "ui_junit_tests",
-    label = "//ui/android:ui_junit_tests",
+    label = "//ui:ui_junit_tests",
 )
 
 targets.windowed_test_launcher(

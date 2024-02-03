@@ -27,7 +27,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.autofill.AutofillValue;
 
-import androidx.annotation.RequiresApi;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
@@ -37,6 +36,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
@@ -82,11 +83,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeoutException;
 
 /** Tests for WebView Autofill. */
-@RunWith(AwJUnit4ClassRunner.class)
+@RunWith(Parameterized.class)
+@UseParametersRunnerFactory(AwJUnit4ClassRunnerWithParameters.Factory.class)
 @Batch(Batch.PER_CLASS)
-@MinAndroidSdkLevel(Build.VERSION_CODES.O)
-@RequiresApi(Build.VERSION_CODES.O)
-public class AwAutofillTest {
+public class AwAutofillTest extends AwParameterizedTest {
     public static final boolean DEBUG = false;
     public static final String TAG = "AutofillTest";
 
@@ -349,7 +349,8 @@ public class AwAutofillTest {
 
     private static boolean sIsAwGCurrentAutofillService;
 
-    @Rule public AwActivityTestRule mRule = new AwActivityTestRule();
+    @Rule
+    public AwActivityTestRule mRule;
 
     private TestWebServer mWebServer;
     private EmbeddedTestServer mEmbeddedServer;
@@ -363,6 +364,10 @@ public class AwAutofillTest {
     private TestAutofillManagerWrapper mTestAutofillManagerWrapper;
     private AwAutofillSessionUMATestHelper mUMATestHelper;
     private AutofillProvider mAutofillProvider;
+
+    public AwAutofillTest(AwSettingsMutation param) {
+        this.mRule = new AwActivityTestRule(param.getMutation());
+    }
 
     @Before
     public void setUp() throws Exception {

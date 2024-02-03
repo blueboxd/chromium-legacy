@@ -56,6 +56,8 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
                                   const base::FilePath& target_path,
                                   DownloadCheckResultReason* reason);
 
+  download::DownloadItem* item() const override;
+
  private:
   // CheckClientDownloadRequestBase overrides:
   bool IsSupportedDownload(DownloadCheckResultReason* reason) override;
@@ -72,6 +74,11 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
                                   bool upload_requested,
                                   const std::string& request_data,
                                   const std::string& response_body) override;
+  bool ShouldPromptForDeepScanning(bool server_requests_prompt) const override;
+  bool ShouldPromptForLocalDecryption(
+      bool server_requests_prompt) const override;
+  bool ShouldPromptForIncorrectPassword() const override;
+  bool ShouldShowScanFailure() const override;
   void LogDeepScanningPrompt() const override;
 
   // Uploads the binary for deep scanning if the reason and policies indicate
@@ -88,9 +95,6 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
   void NotifyRequestFinished(DownloadCheckResult result,
                              DownloadCheckResultReason reason) override;
 
-  // Called when finishing the download, to decide whether to prompt the user
-  // for deep scanning or not.
-  bool ShouldPromptForDeepScanning(bool server_requests_prompt) const override;
 
   bool IsAllowlistedByPolicy() const override;
 

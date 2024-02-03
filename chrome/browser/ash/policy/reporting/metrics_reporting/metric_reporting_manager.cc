@@ -87,11 +87,6 @@ constexpr char kDisplaysTelemetry[] = "displays_telemetry";
 constexpr char kDeviceActivityTelemetry[] = "device_activity_telemetry";
 constexpr char kWebsiteTelemetry[] = "website_telemetry";
 
-// App event rate limiter configuration.
-constexpr size_t kAppEventsTotalSize = 4096u /**bytes**/ * 1024;
-constexpr base::TimeDelta kAppEventsWindow = base::Seconds(10);
-constexpr size_t kAppEventsBucketCount = 10;
-
 }  // namespace
 
 // static
@@ -176,11 +171,18 @@ void MetricReportingManager::OnLogin(Profile* profile) {
       EventType::kUser, Destination::EVENT_METRIC, Priority::SLOW_BATCH,
       /*rate_limiter=*/nullptr, source_info);
 
-  auto app_event_rate_limiter = std::make_unique<RateLimiterSlideWindow>(
-      kAppEventsTotalSize, kAppEventsWindow, kAppEventsBucketCount);
+  auto app_event_rate_limiter = delegate_->CreateSlidingWindowRateLimiter(
+      metrics::kAppEventsTotalSize, metrics::kAppEventsWindow,
+      metrics::kAppEventsBucketCount);
   app_event_report_queue_ = delegate_->CreateMetricReportQueue(
       EventType::kUser, Destination::EVENT_METRIC, Priority::SLOW_BATCH,
       std::move(app_event_rate_limiter), source_info);
+  auto website_event_rate_limiter = delegate_->CreateSlidingWindowRateLimiter(
+      metrics::kWebsiteEventsTotalSize, metrics::kWebsiteEventsWindow,
+      metrics::kWebsiteEventsBucketCount);
+  website_event_report_queue_ = delegate_->CreateMetricReportQueue(
+      EventType::kUser, Destination::EVENT_METRIC, Priority::SLOW_BATCH,
+      std::move(website_event_rate_limiter), source_info);
   user_peripheral_events_and_telemetry_report_queue_ =
       delegate_->CreateMetricReportQueue(
           EventType::kUser, Destination::PERIPHERAL_EVENTS, Priority::SECURITY,
@@ -241,6 +243,9 @@ MetricReportingManager::MetricReportingManager(
       source_info);
   event_report_queue_ = delegate_->CreateMetricReportQueue(
       EventType::kDevice, Destination::EVENT_METRIC, Priority::SLOW_BATCH,
+      /*rate_limiter=*/nullptr, source_info);
+  immediate_event_report_queue_ = delegate_->CreateMetricReportQueue(
+      EventType::kDevice, Destination::EVENT_METRIC, Priority::IMMEDIATE,
       /*rate_limiter=*/nullptr, std::move(source_info));
   DelayedInit();
 
@@ -267,8 +272,10 @@ void MetricReportingManager::Shutdown() {
   telemetry_report_queue_.reset();
   user_telemetry_report_queue_.reset();
   event_report_queue_.reset();
+  immediate_event_report_queue_.reset();
   user_event_report_queue_.reset();
   app_event_report_queue_.reset();
+  website_event_report_queue_.reset();
   user_peripheral_events_and_telemetry_report_queue_.reset();
   user_reporting_settings_.reset();
 }
@@ -651,7 +658,7 @@ void MetricReportingManager::InitWebsiteMetricCollectors(Profile* profile) {
       std::make_unique<WebsiteMetricsRetrieverAsh>(profile_weak_ptr),
       user_reporting_settings_.get());
   InitEventObserverManager(
-      std::move(website_events_observer), user_event_report_queue_.get(),
+      std::move(website_events_observer), website_event_report_queue_.get(),
       user_reporting_settings_.get(),
       /*enable_setting_path=*/kReportWebsiteActivityAllowlist,
       metrics::kReportWebsiteActivityEnabledDefaultValue,
@@ -677,7 +684,7 @@ void MetricReportingManager::InitFatalCrashCollectors() {
 
   if (base::FeatureList::IsEnabled(kEnableFatalCrashEventsObserver)) {
     event_observer_managers_.emplace_back(delegate_->CreateEventObserverManager(
-        FatalCrashEventsObserver::Create(), telemetry_report_queue_.get(),
+        FatalCrashEventsObserver::Create(), immediate_event_report_queue_.get(),
         &reporting_settings_, ash::kReportDeviceCrashReportInfo,
         metrics::kReportDeviceCrashReportInfoDefaultValue,
         /*collector_pool=*/this));

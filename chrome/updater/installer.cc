@@ -27,7 +27,6 @@
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 
@@ -165,14 +164,15 @@ Installer::Result Installer::InstallHelper(
   // specified by the |run| attribute in the manifest object of an update
   // response.
   if (!install_params || install_params->run.empty()) {
-    return Result(kErrorMissingInstallParams);
+    return Result(GOOPDATEINSTALL_E_FILENAME_INVALID,
+                  kErrorMissingInstallParams);
   }
 
   // Assume the install params are ASCII for now.
   const auto application_installer =
       unpack_path.AppendASCII(install_params->run);
   if (!base::PathExists(application_installer)) {
-    return Result(kErrorMissingRunableFile);
+    return Result(GOOPDATEINSTALL_E_FILENAME_INVALID, kErrorMissingRunableFile);
   }
 
   // Upon success, when the control flow returns back to the |update_client|,

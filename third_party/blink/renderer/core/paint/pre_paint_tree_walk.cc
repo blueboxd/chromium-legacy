@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/inline/fragment_item.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -72,23 +73,30 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
   Walk(root_frame_view, context);
   paint_invalidator_.ProcessPendingDelayedPaintInvalidations();
 
+  bool updates_executed = root_frame_view.ExecuteAllPendingUpdates();
+  if (updates_executed) {
+    needs_invalidate_chrome_client_and_intersection_ = true;
+  }
+
 #if DCHECK_IS_ON()
-  if (needed_tree_builder_context_update && VLOG_IS_ON(1)) {
+  if ((needed_tree_builder_context_update || updates_executed) &&
+      VLOG_IS_ON(1)) {
     ShowAllPropertyTrees(root_frame_view);
   }
 #endif
 
-  bool updates_executed = root_frame_view.ExecuteAllPendingUpdates();
-  if (updates_executed) {
-    needs_invalidate_chrome_client_ = true;
-  }
-
   // If the page has anything changed, we need to inform the chrome client
   // so that the client will initiate repaint of the contents if needed (e.g.
   // when this page is embedded as a non-composited content of another page).
-  if (needs_invalidate_chrome_client_) {
-    if (auto* client = root_frame_view.GetChromeClient())
+  if (needs_invalidate_chrome_client_and_intersection_) {
+    if (auto* client = root_frame_view.GetChromeClient()) {
       client->InvalidateContainer();
+    }
+    // TODO(wangxianzhu): For now we call this whenever there has been any
+    // paint property change or paint invalidation. If this shows up as a
+    // performance issue, we should exclude scroll, effect and non-layout
+    // paint invalidations for v1 intersection observations.
+    root_frame_view.InvalidateIntersectionObservations();
   }
 }
 
@@ -121,8 +129,6 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view,
   // Block fragmentation doesn't cross frame boundaries.
   context.ResetFragmentation();
 
-  // ancestor_scroll_container_paint_layer does not cross frame boundaries.
-  context.ancestor_scroll_container_paint_layer = nullptr;
   if (context.tree_builder_context) {
     PaintPropertyTreeBuilder::SetupContextForFrame(
         frame_view, *context.tree_builder_context);
@@ -335,7 +341,7 @@ void PrePaintTreeWalk::CheckTreeBuilderContextState(
 #endif
 
 NGPrePaintInfo PrePaintTreeWalk::CreatePrePaintInfo(
-    const NGLink& child,
+    const PhysicalFragmentLink& child,
     const PrePaintTreeWalkContext& context) {
   const auto* fragment = To<NGPhysicalBoxFragment>(child.fragment.Get());
   return NGPrePaintInfo(fragment, child.offset,
@@ -547,15 +553,16 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   if (paint_invalidator_.InvalidatePaint(
           object, pre_paint_info,
           base::OptionalToPtr(context.tree_builder_context),
-          paint_invalidator_context))
-    needs_invalidate_chrome_client_ = true;
+          paint_invalidator_context)) {
+    needs_invalidate_chrome_client_and_intersection_ = true;
+  }
 
   InvalidatePaintForHitTesting(object, context);
 
   if (context.tree_builder_context) {
     property_tree_builder->UpdateForChildren();
     property_tree_builder->IssueInvalidationsAfterUpdate();
-    needs_invalidate_chrome_client_ |=
+    needs_invalidate_chrome_client_and_intersection_ |=
         property_tree_builder->PropertiesChanged();
   }
 }
@@ -564,7 +571,7 @@ bool PrePaintTreeWalk::CollectMissableChildren(
     PrePaintTreeWalkContext& context,
     const NGPhysicalBoxFragment& parent) {
   bool has_missable_children = false;
-  for (const NGLink& child : parent.Children()) {
+  for (const PhysicalFragmentLink& child : parent.Children()) {
     if (UNLIKELY(child->IsLayoutObjectDestroyedOrMoved()))
       continue;
     if (child->IsOutOfFlowPositioned() &&
@@ -632,7 +639,7 @@ PrePaintTreeWalk::RebuildContextForMissedDescendant(
     // origin, and has zero block-size.
     // See e.g. https://www.w3.org/TR/css-break-3/#transforms
     if (search_fragment) {
-      for (NGLink link : search_fragment->Children()) {
+      for (PhysicalFragmentLink link : search_fragment->Children()) {
         if (link->GetLayoutObject() == object) {
           box_fragment = To<NGPhysicalBoxFragment>(link.get());
           paint_offset = link.offset;
@@ -722,7 +729,7 @@ void PrePaintTreeWalk::WalkMissedChildren(
     offset_to_block_start_edge.left = fragment.Size().width;
   }
 
-  for (const NGLink& child : fragment.Children()) {
+  for (const PhysicalFragmentLink& child : fragment.Children()) {
     if (UNLIKELY(child->IsLayoutObjectDestroyedOrMoved()))
       continue;
     if (!child->IsOutOfFlowPositioned()) {
@@ -785,7 +792,7 @@ void PrePaintTreeWalk::WalkFragmentationContextRootChildren(
 
   absl::optional<wtf_size_t> inner_fragmentainer_idx;
 
-  for (NGLink child : fragment.Children()) {
+  for (PhysicalFragmentLink child : fragment.Children()) {
     const auto* box_fragment = To<NGPhysicalBoxFragment>(child.fragment.Get());
     if (UNLIKELY(box_fragment->IsLayoutObjectDestroyedOrMoved()))
       continue;
@@ -1069,7 +1076,7 @@ void PrePaintTreeWalk::WalkLayoutObjectChildren(
 
       if (search_fragment) {
         // See if we can find a fragment for the child.
-        for (NGLink link : search_fragment->Children()) {
+        for (PhysicalFragmentLink link : search_fragment->Children()) {
           if (link->GetLayoutObject() != child)
             continue;
           // We found it!

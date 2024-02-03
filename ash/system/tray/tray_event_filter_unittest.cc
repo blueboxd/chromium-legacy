@@ -14,7 +14,8 @@
 #include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/ash_notification_expand_button.h"
 #include "ash/system/message_center/ash_notification_view.h"
-#include "ash/system/message_center/unified_message_center_bubble.h"
+#include "ash/system/network/network_detailed_view.h"
+#include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/tray_constants.h"
@@ -22,6 +23,7 @@
 #include "ash/system/unified/date_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/test/scoped_feature_list.h"
@@ -111,8 +113,7 @@ class TestTrayBackgroundView : public TrayBackgroundView {
 
 }  // namespace
 
-class TrayEventFilterTest : public AshTestBase,
-                            public testing::WithParamInterface<bool> {
+class TrayEventFilterTest : public AshTestBase {
  public:
   TrayEventFilterTest() = default;
 
@@ -123,8 +124,6 @@ class TrayEventFilterTest : public AshTestBase,
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(features::kQsRevamp,
-                                              /*enabled=*/IsQsRevampEnabed());
     AshTestBase::SetUp();
 
     // Adds this `test_tray_background_view_` to the mock `StatusAreaWidget`.
@@ -159,9 +158,6 @@ class TrayEventFilterTest : public AshTestBase,
   }
 
  protected:
-  // TODO(b/305075031) clean up after the flag is removed.
-  bool IsQsRevampEnabed() { return true; }
-
   std::string AddNotification() {
     std::string notification_id = base::NumberToString(notification_id_++);
     MessageCenter::Get()->AddNotification(std::make_unique<Notification>(
@@ -191,17 +187,13 @@ class TrayEventFilterTest : public AshTestBase,
     return GetPrimaryUnifiedSystemTray()->IsBubbleShown();
   }
 
-  bool IsMessageCenterBubbleShown() {
-    return GetPrimaryUnifiedSystemTray()->IsMessageCenterBubbleShown();
-  }
-
   UnifiedSystemTray* GetPrimaryUnifiedSystemTray() {
     return GetPrimaryShelf()->GetStatusAreaWidget()->unified_system_tray();
   }
 
   void AnimatePopupAnimationUntilIdle() {
     AshMessagePopupCollection* popup_collection =
-        GetPrimaryUnifiedSystemTray()->GetMessagePopupCollection();
+        GetPrimaryNotificationCenterTray()->popup_collection();
 
     while (popup_collection->animation()->is_animating()) {
       popup_collection->animation()->SetCurrentValue(1.0);
@@ -215,19 +207,14 @@ class TrayEventFilterTest : public AshTestBase,
 
  private:
   int notification_id_ = 0;
-  base::test::ScopedFeatureList scoped_feature_list_;
   raw_ptr<TestTrayBackgroundView> test_tray_background_view_ = nullptr;
 };
-
-INSTANTIATE_TEST_SUITE_P(IsQsRevampEnabled,
-                         TrayEventFilterTest,
-                         testing::Bool());
 
 // Tests that clicking on notification popup when bubble is open will not result
 // in the bubble closes. The logic for this is handled in
 // `bubble_utils::ShouldCloseBubbleForEvent()` where we ignore events happen
 // inside a `kShellWindowId_SettingBubbleContainer`.
-TEST_P(TrayEventFilterTest, ClickOnPopupWhenBubbleOpen) {
+TEST_F(TrayEventFilterTest, ClickOnPopupWhenBubbleOpen) {
   // Update display so that the screen is height enough and expand/collapse
   // notification is allowed on top of the tray bubble.
   UpdateDisplay("901x900");
@@ -239,16 +226,9 @@ TEST_P(TrayEventFilterTest, ClickOnPopupWhenBubbleOpen) {
   EXPECT_TRUE(IsQuickSettingsBubbleShown());
 
   auto notification_id = AddNotification();
-  auto* popup_view = GetPrimaryUnifiedSystemTray()
-                         ->GetMessagePopupCollection()
+  auto* popup_view = GetPrimaryNotificationCenterTray()
+                         ->popup_collection()
                          ->GetMessageViewForNotificationId(notification_id);
-
-  if (!IsQsRevampEnabed()) {
-    // When QsRevamp is not enabled, the popup will not be shown when Quick
-    // Settings is open.
-    EXPECT_FALSE(popup_view);
-    return;
-  }
 
   auto* ash_notification_popup = static_cast<AshNotificationView*>(popup_view);
 
@@ -269,7 +249,7 @@ TEST_P(TrayEventFilterTest, ClickOnPopupWhenBubbleOpen) {
   EXPECT_TRUE(IsQuickSettingsBubbleShown());
 }
 
-TEST_P(TrayEventFilterTest, DraggingInsideDoesNotCloseBubble) {
+TEST_F(TrayEventFilterTest, DraggingInsideDoesNotCloseBubble) {
   ShowTestBubble();
   auto* bubble_widget = GetTestBubbleWidget();
   EXPECT_TRUE(bubble_widget);
@@ -300,7 +280,7 @@ TEST_P(TrayEventFilterTest, DraggingInsideDoesNotCloseBubble) {
   EXPECT_TRUE(test_tray_background_view()->bubble());
 }
 
-TEST_P(TrayEventFilterTest, DraggingOnTrayClosesBubble) {
+TEST_F(TrayEventFilterTest, DraggingOnTrayClosesBubble) {
   ShowTestBubble();
   EXPECT_TRUE(GetTestBubbleWidget());
 
@@ -319,7 +299,7 @@ TEST_P(TrayEventFilterTest, DraggingOnTrayClosesBubble) {
 
 // Tests that when we drag up to show the hotseat, the open bubble will be close
 // to make sure it does not overlap with the hotseat (crbug/1329327).
-TEST_P(TrayEventFilterTest, ShowHotseatClosesBubble) {
+TEST_F(TrayEventFilterTest, ShowHotseatClosesBubble) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -346,7 +326,7 @@ TEST_P(TrayEventFilterTest, ShowHotseatClosesBubble) {
   EXPECT_FALSE(test_tray_background_view()->bubble());
 }
 
-TEST_P(TrayEventFilterTest, ClickOnCalendarBubbleClosesOtherTrays) {
+TEST_F(TrayEventFilterTest, ClickOnCalendarBubbleClosesOtherTrays) {
   Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   auto* status_area = GetPrimaryShelf()->GetStatusAreaWidget();
   auto* ime_tray = status_area->ime_menu_tray();
@@ -365,7 +345,7 @@ TEST_P(TrayEventFilterTest, ClickOnCalendarBubbleClosesOtherTrays) {
 
 // Tests that when we open the calendar while Quick Settings bubble is open, the
 // bubble will not be closed.
-TEST_P(TrayEventFilterTest, TransitionFromQsToCalendar) {
+TEST_F(TrayEventFilterTest, TransitionFromQsToCalendar) {
   ShowQuickSettingsBubble();
   EXPECT_TRUE(IsQuickSettingsBubbleShown());
 
@@ -373,7 +353,7 @@ TEST_P(TrayEventFilterTest, TransitionFromQsToCalendar) {
   EXPECT_TRUE(IsQuickSettingsBubbleShown());
 }
 
-TEST_P(TrayEventFilterTest, CloseTrayBubbleWhenWindowActivated) {
+TEST_F(TrayEventFilterTest, CloseTrayBubbleWhenWindowActivated) {
   StatusAreaWidget* status_area = GetPrimaryShelf()->GetStatusAreaWidget();
   UnifiedSystemTray* system_tray = status_area->unified_system_tray();
 
@@ -406,6 +386,29 @@ TEST_P(TrayEventFilterTest, CloseTrayBubbleWhenWindowActivated) {
 
   second_widget->Activate();
   EXPECT_FALSE(ime_menu->GetBubbleView());
+}
+
+TEST_F(TrayEventFilterTest, NotCloseTrayBubbleWhenTranscientChildActivated) {
+  UnifiedSystemTray* system_tray =
+      GetPrimaryShelf()->GetStatusAreaWidget()->unified_system_tray();
+
+  ShowQuickSettingsBubble();
+
+  auto* bubble = system_tray->bubble();
+
+  // Show the network detailed view.
+  bubble->unified_system_tray_controller()->ShowNetworkDetailedView();
+
+  // Click on the info button in the network detailed view so that a transient
+  // bubble is opened.
+  auto* info_button = bubble->quick_settings_view()
+                          ->GetDetailedViewForTest<NetworkDetailedView>()
+                          ->info_button_for_testing();
+  LeftClickOn(info_button);
+
+  // Since a transcient child of the bubble is activated, the bubble should
+  // remain open.
+  EXPECT_TRUE(system_tray->bubble());
 }
 
 }  // namespace ash

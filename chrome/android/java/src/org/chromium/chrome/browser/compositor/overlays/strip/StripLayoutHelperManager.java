@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnDragListener;
 import android.view.ViewStub;
 
 import androidx.annotation.ColorInt;
@@ -24,6 +25,7 @@ import androidx.core.graphics.ColorUtils;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
@@ -67,6 +69,7 @@ import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.dragdrop.DragAndDropDelegate;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.url.GURL;
@@ -157,7 +160,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
     private final ViewStub mTabHoverCardViewStub;
     private float mModelSelectorWidth;
     // 3-dots menu button with tab strip end padding
-    private float mMenuButtonPadding;
+    private float mStripEndPadding;
     private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver =
@@ -174,7 +177,6 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
     private final Supplier<LayerTitleCache> mLayerTitleCacheSupplier;
 
     // Drag-Drop
-    @Nullable private TabDropTarget mTabDropTarget;
     @Nullable private TabDragSource mTabDragSource;
 
     private class TabStripEventHandler implements MotionEventHandler {
@@ -200,7 +202,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         @Override
         public void drag(float x, float y, float dx, float dy, float tx, float ty) {
             mModelSelectorButton.drag(x, y);
-            getActiveStripLayoutHelper().drag(time(), x, y, dx, dy, tx, ty);
+            getActiveStripLayoutHelper().drag(time(), x, y, dx);
         }
 
         @Override
@@ -269,11 +271,6 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
             if (layoutType != LayoutType.TAB_SWITCHER) return;
             mBrowserScrimShowing = false;
         }
-
-        @Override
-        public void onTabSelectionHinted(int tabId) {
-            LayoutStateObserver.super.onTabSelectionHinted(tabId);
-        }
     }
 
     /**
@@ -301,6 +298,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
      * @param toolbarContainerView @{link View} passed to @{link TabDragSource} for drag and drop.
      * @param tabHoverCardViewStub The {@link ViewStub} representing the strip tab hover card.
      * @param tabContentManagerSupplier Supplier of the {@link TabContentManager} instance.
+     * @param browserControlsStateProvider @{@link BrowserControlsStateProvider} for drag drop.
      */
     public StripLayoutHelperManager(
             Context context,
@@ -314,7 +312,9 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
             DragAndDropDelegate dragDropDelegate,
             View toolbarContainerView,
             @NonNull ViewStub tabHoverCardViewStub,
-            ObservableSupplier<TabContentManager> tabContentManagerSupplier) {
+            ObservableSupplier<TabContentManager> tabContentManagerSupplier,
+            @NonNull BrowserControlsStateProvider browserControlsStateProvider,
+            @NonNull WindowAndroid windowAndroid) {
         mUpdateHost = updateHost;
         mLayerTitleCacheSupplier = layerTitleCacheSupplier;
         mTabStripTreeProvider = new TabStripSceneLayer(context);
@@ -402,9 +402,11 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
             mTabStripFadeShortWidth = FADE_SHORT_TSR_WIDTH_DP;
             mTabStripFadeLongWidth = FADE_LONG_TSR_WIDTH_DP;
 
-            // Use toolbar menu button padding to align MSB with menu button.
-            mMenuButtonPadding = context.getResources().getDimension(R.dimen.button_end_padding)
-                    / context.getResources().getDisplayMetrics().density;
+            // Use toolbar menu button padding as the strip end adding to align MSB with menu
+            // button.
+            mStripEndPadding =
+                    context.getResources().getDimension(R.dimen.button_end_padding)
+                            / context.getResources().getDisplayMetrics().density;
 
         } else {
             mModelSelectorButton = new CompositorButton(context, MODEL_SELECTOR_BUTTON_WIDTH_DP,
@@ -437,11 +439,12 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                 && TabUiFeatureUtilities.isTabDragEnabled()) {
             mTabDragSource =
                     new TabDragSource(
-                            toolbarContainerView,
+                            context,
+                            () -> getActiveStripLayoutHelper(),
                             multiInstanceManager,
                             dragDropDelegate,
-                            managerHost.getBrowserControlsManager());
-            mTabDropTarget = new TabDropTarget(this, multiInstanceManager, toolbarContainerView);
+                            browserControlsStateProvider,
+                            windowAndroid);
         }
 
         mNormalHelper =
@@ -453,7 +456,8 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                         false,
                         mModelSelectorButton,
                         mTabDragSource,
-                        toolbarContainerView);
+                        toolbarContainerView,
+                        windowAndroid);
         mIncognitoHelper =
                 new StripLayoutHelper(
                         context,
@@ -463,7 +467,8 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                         true,
                         mModelSelectorButton,
                         mTabDragSource,
-                        toolbarContainerView);
+                        toolbarContainerView,
+                        windowAndroid);
 
         tabHoverCardViewStub.setOnInflateListener((viewStub, view) -> {
             var hoverCardView = (StripTabHoverCardView) view;
@@ -522,7 +527,6 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
             mTabModelSelectorTabModelObserver.destroy();
             mTabModelSelectorTabObserver.destroy();
         }
-        mTabDropTarget = null;
         mTabDragSource = null;
     }
 
@@ -597,7 +601,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         }
         if (!LocalizationUtils.isLayoutRtl()) {
             if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
-                mModelSelectorButton.setX(mWidth - getModelSelectorButtonWidthWithPadding());
+                mModelSelectorButton.setX(mWidth - getModelSelectorButtonWidthWithEndPadding());
             } else {
                 mModelSelectorButton.setX(
                         mWidth - mModelSelectorWidth - MODEL_SELECTOR_BUTTON_PADDING_DP);
@@ -605,7 +609,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         } else {
             if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
                 mModelSelectorButton.setX(
-                        getModelSelectorButtonWidthWithPadding() - mModelSelectorWidth);
+                        getModelSelectorButtonWidthWithEndPadding() - mModelSelectorWidth);
             } else {
                 mModelSelectorButton.setX(MODEL_SELECTOR_BUTTON_PADDING_DP);
             }
@@ -619,20 +623,34 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         mEventFilter.setEventArea(mStripFilterArea);
     }
 
-    private float getModelSelectorButtonWidthWithPadding() {
+    private float getModelSelectorButtonWidthWithEndPadding() {
         if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
-            float modelSelectorWithStripEndPadding =
-                    (BUTTON_DESIRED_TOUCH_TARGET_SIZE - mModelSelectorWidth - mMenuButtonPadding)
-                            / 2
-                    + mMenuButtonPadding;
-            return mModelSelectorWidth + modelSelectorWithStripEndPadding;
+            return mModelSelectorWidth + mStripEndPadding;
         } else {
             return mModelSelectorWidth + (MODEL_SELECTOR_BUTTON_PADDING_DP * 2);
         }
     }
 
+    /**
+     * @Return The start padding needed for model selector button to ensure there is enough space
+     * for touch target.
+     */
+    private float getButtonStartPaddingForTouchTarget() {
+        if (mModelSelectorButton.isVisible() && ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            return BUTTON_DESIRED_TOUCH_TARGET_SIZE
+                    - mModelSelectorButton.getWidth()
+                    - mStripEndPadding;
+        } else {
+            return 0.f;
+        }
+    }
+
     public TintedCompositorButton getNewTabButton() {
         return getActiveStripLayoutHelper().getNewTabButton();
+    }
+
+    public boolean isTabStripFull() {
+        return getActiveStripLayoutHelper().isTabStripFull();
     }
 
     /**
@@ -712,6 +730,13 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
             mIncognitoHelper.setRightFadeWidth(mTabStripFadeShortWidth);
         }
         return rightFadeDrawable;
+    }
+
+    /**
+     * Returns drag listener for tab strip.
+     */
+    public OnDragListener getDragListener() {
+        return mTabDragSource;
     }
 
     void setModelSelectorButtonVisibleForTesting(boolean isVisible) {
@@ -911,6 +936,9 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         };
 
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
+        if (mTabDragSource != null) {
+            mTabDragSource.setTabModelSelector(mTabModelSelector);
+        }
     }
 
     private void updateTitleForTab(Tab tab) {
@@ -980,7 +1008,13 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
 
             mModelSelectorButton.setVisible(isVisible);
 
-            float endMargin = isVisible ? getModelSelectorButtonWidthWithPadding() : 0.0f;
+            // endMargin = msbEndPadding(8dp) + msbWidth(32dp) + msbStartPadding(8dp to create more
+            // gap between MSB and NTB so there is enough space for touch target).
+            float endMargin =
+                    isVisible
+                            ? getModelSelectorButtonWidthWithEndPadding()
+                                    + getButtonStartPaddingForTouchTarget()
+                            : 0.0f;
             mNormalHelper.setEndMargin(endMargin, isVisible);
             mIncognitoHelper.setEndMargin(endMargin, true);
         }
@@ -1031,9 +1065,5 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
 
     public TabDragSource getTabDragSourceForTesting() {
         return mTabDragSource;
-    }
-
-    public TabDropTarget getTabDropTargetForTesting() {
-        return mTabDropTarget;
     }
 }

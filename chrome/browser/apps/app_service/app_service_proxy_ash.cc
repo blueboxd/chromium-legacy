@@ -14,7 +14,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
-#include "chrome/browser/apps/app_service/app_install/app_install_service.h"
+#include "chrome/browser/apps/app_service/app_install/app_install_service_ash.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/app_service/instance_registry_updater.h"
@@ -25,6 +25,7 @@
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_service.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
+#include "chrome/browser/apps/app_service/publishers/browser_shortcuts_crosapi_publisher.h"
 #include "chrome/browser/apps/app_service/publishers/shortcut_publisher.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_apps.h"
 #include "chrome/browser/apps/app_service/shortcut_removal_dialog.h"
@@ -201,7 +202,8 @@ void AppServiceProxyAsh::Initialize() {
   if (chromeos::features::IsCrosWebAppShortcutUiUpdateEnabled()) {
     shortcut_registry_cache_ = std::make_unique<apps::ShortcutRegistryCache>();
   }
-  app_install_service_ = std::make_unique<apps::AppInstallService>(*profile_);
+  app_install_service_ =
+      std::make_unique<apps::AppInstallServiceAsh>(*profile_);
 }
 
 apps::InstanceRegistry& AppServiceProxyAsh::InstanceRegistry() {
@@ -228,6 +230,12 @@ AppServiceProxyAsh::BrowserAppInstanceTracker() {
 apps::BrowserAppInstanceRegistry*
 AppServiceProxyAsh::BrowserAppInstanceRegistry() {
   return browser_app_instance_registry_.get();
+}
+
+apps::BrowserShortcutsCrosapiPublisher*
+AppServiceProxyAsh::BrowserShortcutsCrosapiPublisher() {
+  return publisher_host_ ? publisher_host_->BrowserShortcutsCrosapiPublisher()
+                         : nullptr;
 }
 
 apps::StandaloneBrowserApps* AppServiceProxyAsh::StandaloneBrowserApps() {
@@ -278,9 +286,12 @@ void AppServiceProxyAsh::OnApps(std::vector<AppPtr> deltas,
   for (const auto& delta : deltas) {
     if ((delta->readiness != Readiness::kUnknown &&
          !apps_util::IsInstalled(delta->readiness)) ||
-        (delta->icon_key.has_value() && delta->icon_key->raw_icon_updated)) {
+        (delta->icon_key.has_value() && delta->icon_key->HasUpdatedVersion())) {
       // If there's already a deletion in progress, skip the deletion request.
-      if (base::Contains(pending_read_icon_requests_, delta->app_id)) {
+      // For app types, not using AppService icon cache, e.g. remote apps, skip
+      // the deletion request.
+      if (base::Contains(pending_read_icon_requests_, delta->app_id) ||
+          !ShouldReadIcons(app_type)) {
         continue;
       }
 
@@ -515,7 +526,7 @@ apps::ShortcutRegistryCache* AppServiceProxyAsh::ShortcutRegistryCache() {
 }
 
 void AppServiceProxyAsh::PublishShortcut(ShortcutPtr delta) {
-  if (delta->icon_key.has_value() && delta->icon_key->raw_icon_updated) {
+  if (delta->icon_key.has_value() && delta->icon_key->HasUpdatedVersion()) {
     MaybeScheduleIconFolderDeletionForShortcut(delta->shortcut_id);
   }
 

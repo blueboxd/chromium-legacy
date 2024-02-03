@@ -8,6 +8,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "net/base/proxy_server.h"
 #include "services/network/ip_protection_proxy_list_manager.h"
 #include "services/network/ip_protection_proxy_list_manager_impl.h"
 #include "services/network/ip_protection_token_cache_manager.h"
@@ -32,11 +33,14 @@ IpProtectionConfigCacheImpl::~IpProtectionConfigCacheImpl() = default;
 void IpProtectionConfigCacheImpl::SetUp() {
   ipp_proxy_list_manager_ =
       std::make_unique<IpProtectionProxyListManagerImpl>(&config_getter_);
-  // TODO(@ciaramcmullin) Initialize kProxyB cache manager when fetching tokens
-  // for proxy B is supported.
+
   ipp_token_cache_managers_[network::mojom::IpProtectionProxyLayer::kProxyA] =
       std::make_unique<IpProtectionTokenCacheManagerImpl>(
           &config_getter_, network::mojom::IpProtectionProxyLayer::kProxyA);
+
+  ipp_token_cache_managers_[network::mojom::IpProtectionProxyLayer::kProxyB] =
+      std::make_unique<IpProtectionTokenCacheManagerImpl>(
+          &config_getter_, network::mojom::IpProtectionProxyLayer::kProxyB);
 }
 
 bool IpProtectionConfigCacheImpl::AreAuthTokensAvailable() {
@@ -49,9 +53,11 @@ bool IpProtectionConfigCacheImpl::AreAuthTokensAvailable() {
 }
 
 absl::optional<network::mojom::BlindSignedAuthTokenPtr>
-IpProtectionConfigCacheImpl::GetAuthToken(
-    network::mojom::IpProtectionProxyLayer proxy_layer) {
+IpProtectionConfigCacheImpl::GetAuthToken(size_t chain_index) {
   absl::optional<network::mojom::BlindSignedAuthTokenPtr> result;
+  auto proxy_layer = chain_index == 0
+                         ? network::mojom::IpProtectionProxyLayer::kProxyA
+                         : network::mojom::IpProtectionProxyLayer::kProxyB;
   if (ipp_token_cache_managers_.count(proxy_layer) > 0) {
     result = ipp_token_cache_managers_[proxy_layer]->GetAuthToken();
   }
@@ -87,11 +93,29 @@ bool IpProtectionConfigCacheImpl::IsProxyListAvailable() {
              : false;
 }
 
-const std::vector<std::string>& IpProtectionConfigCacheImpl::GetProxyList() {
-  static const std::vector<std::string> empty_vector;
-  return (ipp_proxy_list_manager_ != nullptr)
-             ? ipp_proxy_list_manager_->ProxyList()
-             : empty_vector;
+std::vector<net::ProxyChain> IpProtectionConfigCacheImpl::GetProxyChainList() {
+  std::vector<net::ProxyChain> proxy_chain_list;
+  if (ipp_proxy_list_manager_ != nullptr) {
+    for (const std::vector<std::string>& proxy_chain_hostnames :
+         ipp_proxy_list_manager_->ProxyList()) {
+      bool invalid_proxy_server = false;
+      std::vector<net::ProxyServer> proxy_servers;
+      for (const auto& proxy : proxy_chain_hostnames) {
+        net::ProxyServer proxy_server = net::ProxyServer::FromSchemeHostAndPort(
+            net::ProxyServer::SCHEME_HTTPS, proxy, absl::nullopt);
+        // If invalid proxy server, skip entire proxy chain.
+        if (!proxy_server.is_valid()) {
+          invalid_proxy_server = true;
+          break;
+        }
+        proxy_servers.push_back(std::move(proxy_server));
+      }
+      if (!invalid_proxy_server) {
+        proxy_chain_list.emplace_back(std::move(proxy_servers));
+      }
+    }
+  }
+  return proxy_chain_list;
 }
 
 void IpProtectionConfigCacheImpl::RequestRefreshProxyList() {

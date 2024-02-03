@@ -17,7 +17,7 @@
 #import "components/ntp_tiles/icon_cacher.h"
 #import "components/ntp_tiles/most_visited_sites.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
-#import "components/password_manager/core/browser/test_password_store.h"
+#import "components/password_manager/core/browser/password_store/test_password_store.h"
 #import "components/reading_list/core/reading_list_model_impl.h"
 #import "components/segmentation_platform/public/constants.h"
 #import "components/segmentation_platform/public/features.h"
@@ -28,9 +28,7 @@
 #import "ios/chrome/browser/default_browser/model/utils_test_support.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#import "ios/chrome/browser/first_run/first_run.h"
-#import "ios/chrome/browser/ntp/features.h"
-#import "ios/chrome/browser/ntp/home/features.h"
+#import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
@@ -43,8 +41,6 @@
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_factory.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
-#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
-#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -54,10 +50,10 @@
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/fake_authentication_service_delegate.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
@@ -85,6 +81,22 @@
 using set_up_list_prefs::SetUpListItemState;
 using startup_metric_utils::FirstRunSentinelCreationResult;
 
+#define EXPECT_SET_MAGIC_STACK_ORDER(consumer, ...)                      \
+  {                                                                      \
+    id block_checker = [OCMArg checkWithBlock:^BOOL(id value) {          \
+      NSArray<NSNumber*>* magic_stack_order = (NSArray*)value;           \
+      std::vector<ContentSuggestionsModuleType> expected_order = {       \
+          __VA_ARGS__};                                                  \
+      EXPECT_EQ(magic_stack_order.count, expected_order.size());         \
+      for (unsigned int i = 0; i < expected_order.size(); i++) {         \
+        EXPECT_EQ(magic_stack_order[i].intValue, int(expected_order[i])) \
+            << "For Magic Stack order index " << i;                      \
+      }                                                                  \
+      return YES;                                                        \
+    }];                                                                  \
+    OCMExpect([consumer setMagicStackOrder:block_checker]);              \
+  }
+
 @protocol ContentSuggestionsMediatorDispatcher <BrowserCoordinatorCommands,
                                                 SnackbarCommands>
 @end
@@ -102,8 +114,7 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{segmentation_platform::features::kSegmentationPlatformFeature, {}},
          {segmentation_platform::features::kSegmentationPlatformIosModuleRanker,
-          {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
-         {kIOSSetUpList, {}}},
+          {{segmentation_platform::kDefaultModelEnabledParam, "true"}}}},
         {});
 
     TestChromeBrowserState::Builder test_cbs_builder;
@@ -157,8 +168,6 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     dispatcher_ =
         OCMProtocolMock(@protocol(ContentSuggestionsMediatorDispatcher));
     consumer_ = OCMProtocolMock(@protocol(ContentSuggestionsConsumer));
-    scene_state_ = [[SceneState alloc] initWithAppState:nil];
-    SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
 
     SetUpMediator();
     mediator_.consumer = consumer_;
@@ -278,7 +287,6 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   IOSChromeScopedTestingLocalState local_state_;
-  SceneState* scene_state_;
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<Browser> browser_;
@@ -436,15 +444,15 @@ TEST_F(ContentSuggestionsMediatorTest,
            {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
           {kMagicStack, {{kMagicStackMostVisitedModuleParam, "true"}}},
       },
-      {kIOSSetUpList});
-  OCMExpect(
-      [consumer_ setMagicStackOrder:[OCMArg checkWithBlock:^BOOL(id value) {
-                   NSArray<NSNumber*>* magicStackOrder = (NSArray*)value;
-                   // Ensure MVT and Shortcuts are returned in that order.
-                   return [magicStackOrder count] == 2 &&
-                          0 == [magicStackOrder[0] intValue] &&
-                          1 == [magicStackOrder[1] intValue];
-                 }]]);
+      {});
+
+  EXPECT_SET_MAGIC_STACK_ORDER(
+      consumer_, ContentSuggestionsModuleType::kSetUpListSync,
+      ContentSuggestionsModuleType::kSetUpListDefaultBrowser,
+      ContentSuggestionsModuleType::kSetUpListAutofill,
+      ContentSuggestionsModuleType::kMostVisited,
+      ContentSuggestionsModuleType::kShortcuts, );
+
   mediator_.consumer = consumer_;
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -472,17 +480,15 @@ TEST_F(ContentSuggestionsMediatorTest,
         {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
        {kMagicStack, {{kMagicStackMostVisitedModuleParam, "true"}}},
        {kSafetyCheckMagicStack, {}}},
-      {kIOSSetUpList});
-  OCMExpect(
-      [consumer_ setMagicStackOrder:[OCMArg checkWithBlock:^BOOL(id value) {
-                   NSArray<NSNumber*>* magicStackOrder = (NSArray*)value;
-                   // Ensure MVT, Shortcuts, and Safety Check are returned in
-                   // that order.
-                   return [magicStackOrder count] == 3 &&
-                          0 == [magicStackOrder[0] intValue] &&
-                          1 == [magicStackOrder[1] intValue] &&
-                          7 == [magicStackOrder[2] intValue];
-                 }]]);
+      {});
+
+  EXPECT_SET_MAGIC_STACK_ORDER(
+      consumer_, ContentSuggestionsModuleType::kSetUpListSync,
+      ContentSuggestionsModuleType::kSetUpListDefaultBrowser,
+      ContentSuggestionsModuleType::kSetUpListAutofill,
+      ContentSuggestionsModuleType::kMostVisited,
+      ContentSuggestionsModuleType::kShortcuts,
+      ContentSuggestionsModuleType::kSafetyCheck, );
   mediator_.consumer = consumer_;
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -510,7 +516,7 @@ TEST_F(ContentSuggestionsMediatorTest,
          {kHideIrrelevantModulesParam, "true"}}},
        {kSafetyCheckMagicStack, {}},
        {kTabResumption, {}}},
-      {kIOSSetUpList});
+      {});
 
   [mediator_ disconnect];
   SetUpMediator();
@@ -519,15 +525,12 @@ TEST_F(ContentSuggestionsMediatorTest,
       segmentation_platform::SegmentationPlatformServiceFactory::
           GetForBrowserState(chrome_browser_state_.get());
 
-  OCMExpect(
-      [consumer_ setMagicStackOrder:[OCMArg checkWithBlock:^BOOL(id value) {
-                   NSArray<NSNumber*>* magicStackOrder = (NSArray*)value;
-                   // Ensure MVT, Shortcuts, and Safety Check are returned in
-                   // that order.
-                   return [magicStackOrder count] == 2 &&
-                          0 == [magicStackOrder[0] intValue] &&
-                          1 == [magicStackOrder[1] intValue];
-                 }]]);
+  EXPECT_SET_MAGIC_STACK_ORDER(
+      consumer_, ContentSuggestionsModuleType::kSetUpListDefaultBrowser,
+      ContentSuggestionsModuleType::kSetUpListAutofill,
+      ContentSuggestionsModuleType::kSetUpListSync,
+      ContentSuggestionsModuleType::kMostVisited,
+      ContentSuggestionsModuleType::kShortcuts, );
   mediator_.consumer = consumer_;
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -640,7 +643,7 @@ TEST_F(ContentSuggestionsMediatorTest, TestParcelTrackingReceived) {
         {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
        {kMagicStack, {{kMagicStackMostVisitedModuleParam, "true"}}},
        {kIOSParcelTracking, {}}},
-      {kIOSSetUpList});
+      {});
   [mediator_ disconnect];
   SetUpMediator();
   consumer_ = OCMProtocolMock(@protocol(ContentSuggestionsConsumer));
@@ -653,17 +656,15 @@ TEST_F(ContentSuggestionsMediatorTest, TestParcelTrackingReceived) {
           prefs::
               kIosMagicStackSegmentationParcelTrackingImpressionsSinceFreshness);
   EXPECT_EQ(parcel_tracking_freshness_impression_count, -1);
-  OCMExpect(
-      [consumer_ setMagicStackOrder:[OCMArg checkWithBlock:^BOOL(id value) {
-                   NSArray<NSNumber*>* magicStackOrder = (NSArray*)value;
-                   // Ensure MVT, Shortcuts, and two Parcel Tracking items are
-                   // in the ranking.
-                   return [magicStackOrder count] == 4 &&
-                          0 == [magicStackOrder[0] intValue] &&
-                          1 == [magicStackOrder[1] intValue] &&
-                          11 == [magicStackOrder[2] intValue] &&
-                          11 == [magicStackOrder[3] intValue];
-                 }]]);
+
+  EXPECT_SET_MAGIC_STACK_ORDER(
+      consumer_, ContentSuggestionsModuleType::kSetUpListDefaultBrowser,
+      ContentSuggestionsModuleType::kSetUpListAutofill,
+      ContentSuggestionsModuleType::kSetUpListSync,
+      ContentSuggestionsModuleType::kMostVisited,
+      ContentSuggestionsModuleType::kShortcuts,
+      ContentSuggestionsModuleType::kParcelTracking,
+      ContentSuggestionsModuleType::kParcelTracking, );
   OCMExpect([consumer_ showParcelTrackingItems:[OCMArg any]]);
   // One of the parcels should be untracked since it was delivered more than two
   // days ago.

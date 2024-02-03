@@ -12,6 +12,37 @@
 
 namespace blink {
 
+namespace {
+
+// Returns whether any of the given table's columns have backgrounds, even if
+// they don't have any associated cells (unlike
+// `LayoutTable::HasBackgroundForPaint`). Used to know whether the table
+// background should be invalidated when some column span changes.
+bool TableHasColumnsWithBackground(LayoutTable* table) {
+  TableGroupedChildren grouped_children(NGBlockNode(To<LayoutBox>(table)));
+  for (const auto& column : grouped_children.columns) {
+    if (column.Style().HasBackground()) {
+      return true;
+    }
+
+    // Iterate through a colgroup's children.
+    if (column.IsTableColgroup()) {
+      NGLayoutInputNode node = column.FirstChild();
+      while (node) {
+        DCHECK(node.IsTableCol());
+        if (node.Style().HasBackground()) {
+          return true;
+        }
+        node = node.NextSibling();
+      }
+    }
+  }
+
+  return false;
+}
+
+}  // namespace
+
 LayoutTableColumn::LayoutTableColumn(Element* element) : LayoutBox(element) {
   UpdateFromElement();
 }
@@ -125,16 +156,15 @@ void LayoutTableColumn::UpdateFromElement() {
         layout_invalidation_reason::kAttributeChanged);
     if (LayoutTable* table = Table()) {
       table->GridBordersChanged();
+      if (Style()->HasBackground() || TableHasColumnsWithBackground(table)) {
+        table->SetBackgroundNeedsFullPaintInvalidation();
+      }
     }
   }
 }
 
 PhysicalSize LayoutTableColumn::Size() const {
   NOT_DESTROYED();
-  if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
-    return frame_size_;
-  }
-
   auto* table = Table();
   DCHECK(table);
   if (table->PhysicalFragmentCount() == 0) {
@@ -177,10 +207,6 @@ PhysicalSize LayoutTableColumn::Size() const {
 
 LayoutPoint LayoutTableColumn::LocationInternal() const {
   NOT_DESTROYED();
-  if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
-    return frame_location_;
-  }
-
   auto* table = Table();
   DCHECK(table);
   if (table->PhysicalFragmentCount() == 0) {

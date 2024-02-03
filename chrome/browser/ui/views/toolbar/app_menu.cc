@@ -10,6 +10,7 @@
 #include <cmath>
 #include <memory>
 #include <set>
+#include <utility>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -955,7 +956,8 @@ AppMenu::AppMenu(Browser* browser, ui::MenuModel* model, int run_types)
       GlobalErrorServiceFactory::GetForProfile(browser->profile()));
 
   DCHECK(!root_);
-  root_ = new MenuItemView(this);
+  auto root = std::make_unique<MenuItemView>(/*delegate=*/this);
+  root_ = root.get();
   PopulateMenu(root_, model);
 
   int32_t types = views::MenuRunner::HAS_MNEMONICS;
@@ -969,7 +971,7 @@ AppMenu::AppMenu(Browser* browser, ui::MenuModel* model, int run_types)
     types |= views::MenuRunner::SHOULD_SHOW_MNEMONICS;
   }
 
-  menu_runner_ = std::make_unique<views::MenuRunner>(root_, types);
+  menu_runner_ = std::make_unique<views::MenuRunner>(std::move(root), types);
 }
 
 AppMenu::~AppMenu() {
@@ -987,10 +989,12 @@ void AppMenu::RunMenu(views::MenuButtonController* host) {
   UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", MENU_ACTION_MENU_OPENED,
                             LIMIT_MENU_ACTION);
 
-  menu_runner_->RunMenuAt(host->button()->GetWidget(), host,
-                          host->button()->GetAnchorBoundsInScreen(),
-                          views::MenuAnchorPosition::kTopRight,
-                          ui::MENU_SOURCE_NONE);
+  menu_runner_->RunMenuAt(
+      host->button()->GetWidget(), host,
+      host->button()->GetAnchorBoundsInScreen(),
+      views::MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_NONE,
+      /*native_view_for_gestures=*/gfx::NativeView(), /*corners=*/absl::nullopt,
+      "Chrome.AppMenu.MenuHostInitToNextFramePresented");
 }
 
 void AppMenu::CloseMenu() {
@@ -1319,7 +1323,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
             const MenuConfig& config = MenuConfig::instance();
             AddChipToProfileMenuItem(
                 browser_, item, profile_attributes->GetLocalProfileName(),
-                config.arrow_to_edge_padding + views::kSubmenuArrowSize,
+                config.arrow_to_edge_padding + config.arrow_size,
                 profile_menu_item_selected_subscription_list_);
           }
         }

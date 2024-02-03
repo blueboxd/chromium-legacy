@@ -60,15 +60,7 @@ void RTCEncodedVideoUnderlyingSource::Trace(Visitor* visitor) const {
 
 void RTCEncodedVideoUnderlyingSource::OnFrameFromSource(
     std::unique_ptr<webrtc::TransformableVideoFrameInterface> webrtc_frame) {
-  // It can happen that a frame is posted to the task runner of the old
-  // execution context during a stream transfer to a new context.
-  // TODO(https://crbug.com/1506631): Make the state updates related to the
-  // transfer atomic and turn this into a DCHECK.
-  if (!task_runner_->BelongsToCurrentThread()) {
-    DVLOG(1) << "Dropped frame posted to incorrect task runner. This can "
-                "happen during transfer.";
-    return;
-  }
+  DCHECK(task_runner_->BelongsToCurrentThread());
   // If the source is canceled or there are too many queued frames,
   // drop the new frame.
   if (!disconnect_callback_ || !GetExecutionContext()) {

@@ -326,9 +326,15 @@ void ChromeCameraAppUIDelegate::SetLaunchDirectory() {
 void ChromeCameraAppUIDelegate::PopulateLoadTimeData(
     content::WebUIDataSource* source) {
   // Add strings that can be pulled in.
+  //
+  // Please also update the mocked value in _handle_strings_m_js in
+  // ash/webui/camera_app_ui/resources/utils/cca/commands/dev.py when adding or
+  // removing keys here.
   source->AddString("board_name", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("device_type",
                     DeviceTypeToString(chromeos::GetDeviceType()));
+  source->AddBoolean("auto_qr", base::FeatureList::IsEnabled(
+                                    ash::features::kCameraAppAutoQRDetection));
 
   const PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
   source->AddBoolean("video_capture_disallowed",

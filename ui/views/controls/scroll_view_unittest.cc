@@ -21,6 +21,8 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -40,6 +42,7 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_test_api.h"
+#include "ui/views/view_tracker.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
@@ -101,22 +104,6 @@ class ScrollViewTestApi {
   raw_ptr<ScrollView> scroll_view_;
 };
 
-class ObserveViewDeletion : public ViewObserver {
- public:
-  explicit ObserveViewDeletion(View* view) { observer_.Observe(view); }
-
-  void OnViewIsDeleting(View* observed_view) override {
-    deleted_view_ = observed_view;
-    observer_.Reset();
-  }
-
-  View* deleted_view() { return deleted_view_; }
-
- private:
-  base::ScopedObservation<View, ViewObserver> observer_{this};
-  raw_ptr<View, DanglingUntriaged> deleted_view_ = nullptr;
-};
-
 }  // namespace test
 
 namespace {
@@ -126,6 +113,8 @@ const int kMinHeight = 50;
 const int kMaxHeight = 100;
 
 class FixedView : public View {
+  METADATA_HEADER(FixedView, View)
+
  public:
   FixedView() = default;
 
@@ -142,7 +131,12 @@ class FixedView : public View {
   void SetFocus() { Focus(); }
 };
 
+BEGIN_METADATA(FixedView)
+END_METADATA
+
 class CustomView : public View {
+  METADATA_HEADER(CustomView, View)
+
  public:
   CustomView() = default;
 
@@ -173,6 +167,9 @@ class CustomView : public View {
   gfx::Point last_location_;
 };
 
+BEGIN_METADATA(CustomView)
+END_METADATA
+
 void CheckScrollbarVisibility(const ScrollView* scroll_view,
                               ScrollBarOrientation orientation,
                               bool should_be_visible) {
@@ -196,6 +193,8 @@ ui::MouseEvent TestLeftMouseAt(const gfx::Point& location, ui::EventType type) {
 // height. This is similar to a TableView that has many columns showing, but
 // very few rows.
 class VerticalResizingView : public View {
+  METADATA_HEADER(VerticalResizingView, View)
+
  public:
   VerticalResizingView() = default;
 
@@ -210,8 +209,13 @@ class VerticalResizingView : public View {
   }
 };
 
+BEGIN_METADATA(VerticalResizingView)
+END_METADATA
+
 // Same as VerticalResizingView, but horizontal instead.
 class HorizontalResizingView : public View {
+  METADATA_HEADER(HorizontalResizingView, View)
+
  public:
   HorizontalResizingView() = default;
 
@@ -226,7 +230,12 @@ class HorizontalResizingView : public View {
   }
 };
 
+BEGIN_METADATA(HorizontalResizingView)
+END_METADATA
+
 class TestScrollBarThumb : public BaseScrollBarThumb {
+  METADATA_HEADER(TestScrollBarThumb, BaseScrollBarThumb)
+
  public:
   using BaseScrollBarThumb::BaseScrollBarThumb;
 
@@ -235,7 +244,12 @@ class TestScrollBarThumb : public BaseScrollBarThumb {
   void OnPaint(gfx::Canvas* canvas) override {}
 };
 
+BEGIN_METADATA(TestScrollBarThumb)
+END_METADATA
+
 class TestScrollBar : public ScrollBar {
+  METADATA_HEADER(TestScrollBar, ScrollBar)
+
  public:
   TestScrollBar(bool horizontal, bool overlaps_content, int thickness)
       : ScrollBar(horizontal),
@@ -257,6 +271,9 @@ class TestScrollBar : public ScrollBar {
   const bool overlaps_content_ = false;
   const int thickness_ = 0;
 };
+
+BEGIN_METADATA(TestScrollBar)
+END_METADATA
 
 }  // namespace
 
@@ -400,8 +417,9 @@ class WidgetScrollViewTest : public test::WidgetTest,
   // testing::Test:
   void TearDown() override {
     widget_->GetCompositor()->RemoveObserver(this);
-    if (widget_)
-      widget_->CloseNow();
+    if (widget_) {
+      widget_.ExtractAsDangling()->CloseNow();
+    }
     WidgetTest::TearDown();
   }
 
@@ -415,7 +433,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
     quit_closure_.Reset();
   }
 
-  raw_ptr<Widget, DanglingUntriaged> widget_ = nullptr;
+  raw_ptr<Widget> widget_ = nullptr;
 
   // Disable scrollbar hiding (i.e. disable overlay scrollbars) by default.
   bool use_overlay_scrollers_ = false;
@@ -2217,7 +2235,8 @@ TEST_F(ScrollViewTest, IgnoreOverlapWithHiddenVerticalScroll) {
 
 TEST_F(ScrollViewTest, TestSettingContentsToNull) {
   View* contents = InstallContents();
-  test::ObserveViewDeletion view_deletion{contents};
+  ViewTracker tracker(contents);
+  ASSERT_TRUE(tracker.view());
 
   // Make sure the content is installed and working.
   EXPECT_EQ("0,0 100x100", contents->parent()->bounds().ToString());
@@ -2228,8 +2247,9 @@ TEST_F(ScrollViewTest, TestSettingContentsToNull) {
   // The content should now be gone.
   EXPECT_FALSE(scroll_view_->contents());
 
-  // The contents view should have also been deleted.
-  EXPECT_EQ(contents, view_deletion.deleted_view());
+  // The contents view should have also been deleted (and therefore the tracker
+  // is no longer tracking a view).
+  EXPECT_FALSE(tracker.view());
 }
 
 // Test scrolling behavior when clicking on the scroll track.

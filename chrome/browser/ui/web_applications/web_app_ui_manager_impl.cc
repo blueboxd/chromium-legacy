@@ -20,7 +20,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/ui/web_applications/commands/launch_web_app_command.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -153,37 +152,6 @@ void UninstallWebAppWithDialogFromStartupSwitch(const webapps::AppId& app_id,
 }
 
 #endif  // BUILDFLAG(IS_WIN)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-void OnFirstRunCompleted(apps::AppLaunchParams params,
-                         LaunchWebAppWindowSetting launch_setting,
-                         Profile* profile,
-                         LaunchWebAppCallback callback,
-                         bool proceed) {
-  CHECK(profile);
-
-  if (!proceed) {
-    return;
-  }
-
-  WebAppProvider* provider = WebAppProvider::GetForWebApps(profile);
-  CHECK(provider);
-
-  provider->scheduler().ScheduleCallbackWithLock<web_app::AppLock>(
-      "WebAppUiManagerImpl::OnFirstRunCompleted",
-      std::make_unique<web_app::AppLockDescription>(params.app_id),
-      base::BindOnce(
-          [](apps::AppLaunchParams params,
-             LaunchWebAppWindowSetting launch_setting, Profile* profile,
-             LaunchWebAppCallback callback, web_app::AppLock& lock) {
-            CHECK(profile);
-            ::web_app::LaunchWebApp(
-                std::move(params), launch_setting, *profile, lock.registrar(),
-                lock.os_integration_manager(), std::move(callback));
-          },
-          std::move(params), launch_setting, profile, std::move(callback)));
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
 
@@ -384,27 +352,28 @@ void WebAppUiManagerImpl::ShowWebAppSettings(const webapps::AppId& app_id) {
   chrome::ShowSiteSettings(profile_, start_url);
 }
 
-// TODO(b/307951776): Evaluate refactoring.
-void WebAppUiManagerImpl::WaitForFirstRunAndLaunchWebApp(
-    apps::AppLaunchParams params,
-    LaunchWebAppWindowSetting launch_setting,
+void WebAppUiManagerImpl::LaunchWebApp(apps::AppLaunchParams params,
+                                       LaunchWebAppWindowSetting launch_setting,
+                                       Profile& profile,
+                                       LaunchWebAppDebugValueCallback callback,
+                                       AppLock& lock) {
+  ::web_app::LaunchWebApp(std::move(params), launch_setting, profile, lock,
+                          std::move(callback));
+}
+
+void WebAppUiManagerImpl::WaitForFirstRunService(
     Profile& profile,
-    LaunchWebAppCallback callback,
-    AppLock& lock) {
+    FirstRunServiceCompletedCallback callback) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   FirstRunService* first_run_service =
       FirstRunServiceFactory::GetForBrowserContextIfExists(&profile);
   if (first_run_service) {
     first_run_service->OpenFirstRunIfNeeded(
-        FirstRunService::EntryPoint::kWebAppLaunch,
-        base::BindOnce(&OnFirstRunCompleted, std::move(params), launch_setting,
-                       &profile, std::move(callback)));
+        FirstRunService::EntryPoint::kWebAppLaunch, std::move(callback));
     return;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-  ::web_app::LaunchWebApp(std::move(params), launch_setting, profile,
-                          lock.registrar(), lock.os_integration_manager(),
-                          std::move(callback));
+  std::move(callback).Run(/*success=*/true);
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

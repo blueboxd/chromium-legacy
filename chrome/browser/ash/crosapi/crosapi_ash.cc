@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
+#include "chrome/browser/apps/app_service/publishers/browser_shortcuts_crosapi_publisher.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_apps.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps_factory.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/ash/crosapi/content_protection_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_dependency_registry.h"
 #include "chrome/browser/ash/crosapi/desk_ash.h"
+#include "chrome/browser/ash/crosapi/desk_profiles_ash.h"
 #include "chrome/browser/ash/crosapi/desk_template_ash.h"
 #include "chrome/browser/ash/crosapi/device_attributes_ash.h"
 #include "chrome/browser/ash/crosapi/device_local_account_extension_service_ash.h"
@@ -108,6 +110,8 @@
 #include "chrome/browser/ash/crosapi/web_kiosk_service_ash.h"
 #include "chrome/browser/ash/crosapi/web_page_info_ash.h"
 #include "chrome/browser/ash/input_method/editor_mediator_factory.h"
+#include "chrome/browser/ash/passkeys/passkey_authenticator_service_ash.h"
+#include "chrome/browser/ash/passkeys/passkey_authenticator_service_factory_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/sync/sync_mojo_service_ash.h"
@@ -144,6 +148,7 @@
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/multi_capture_service.mojom.h"
+#include "chromeos/crosapi/mojom/passkeys.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
@@ -212,6 +217,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       clipboard_history_ash_(std::make_unique<ClipboardHistoryAsh>()),
       content_protection_ash_(std::make_unique<ContentProtectionAsh>()),
       desk_ash_(std::make_unique<DeskAsh>()),
+      desk_profiles_ash_(std::make_unique<DeskProfilesAsh>()),
       desk_template_ash_(std::make_unique<DeskTemplateAsh>()),
       device_attributes_ash_(std::make_unique<DeviceAttributesAsh>()),
       device_local_account_extension_service_ash_(
@@ -225,8 +231,6 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       dlp_ash_(std::make_unique<DlpAsh>()),
       document_scan_ash_(std::make_unique<DocumentScanAsh>()),
       download_controller_ash_(std::make_unique<DownloadControllerAsh>()),
-      download_status_updater_ash_(
-          std::make_unique<DownloadStatusUpdaterAsh>()),
       drive_integration_service_ash_(
           std::make_unique<DriveIntegrationServiceAsh>()),
       echo_private_ash_(std::make_unique<EchoPrivateAsh>()),
@@ -387,6 +391,18 @@ void CrosapiAsh::BindBrowserServiceHost(
                                           std::move(receiver));
 }
 
+void CrosapiAsh::BindBrowserShortcutPublisher(
+    mojo::PendingReceiver<mojom::AppShortcutPublisher> receiver) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  auto* app_service_proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  apps::BrowserShortcutsCrosapiPublisher* browser_shortcuts =
+      app_service_proxy->BrowserShortcutsCrosapiPublisher();
+  if (browser_shortcuts) {
+    browser_shortcuts->RegisterCrosapiHost(std::move(receiver));
+  }
+}
+
 void CrosapiAsh::BindBrowserVersionService(
     mojo::PendingReceiver<crosapi::mojom::BrowserVersionService> receiver) {
   browser_version_service_ash_->BindReceiver(std::move(receiver));
@@ -444,6 +460,11 @@ void CrosapiAsh::BindDesk(mojo::PendingReceiver<mojom::Desk> receiver) {
   desk_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindDeskProfileObserver(
+    mojo::PendingReceiver<mojom::DeskProfileObserver> receiver) {
+  desk_profiles_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindDeskTemplate(
     mojo::PendingReceiver<mojom::DeskTemplate> receiver) {
   desk_template_ash_->BindReceiver(std::move(receiver));
@@ -496,6 +517,15 @@ void CrosapiAsh::BindDownloadController(
 
 void CrosapiAsh::BindDownloadStatusUpdater(
     mojo::PendingReceiver<mojom::DownloadStatusUpdater> receiver) {
+  // Delay creating `download_status_updater_ash_` until binding so that the Ash
+  // profile is ready.
+  if (!download_status_updater_ash_) {
+    Profile* const profile = GetAshProfile();
+    CHECK(profile);
+    download_status_updater_ash_ =
+        std::make_unique<DownloadStatusUpdaterAsh>(profile);
+  }
+
   download_status_updater_ash_->BindReceiver(std::move(receiver));
 }
 
@@ -626,7 +656,7 @@ void CrosapiAsh::BindImageWriter(
 }
 
 void CrosapiAsh::BindInSessionAuth(
-    mojo::PendingReceiver<mojom::InSessionAuth> receiver) {
+    mojo::PendingReceiver<chromeos::auth::mojom::InSessionAuth> receiver) {
   in_session_auth_ash_->BindReceiver(std::move(receiver));
 }
 
@@ -755,6 +785,17 @@ void CrosapiAsh::BindNetworkingPrivate(
 void CrosapiAsh::BindParentAccess(
     mojo::PendingReceiver<mojom::ParentAccess> receiver) {
   parent_access_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindPasskeyAuthenticator(
+    mojo::PendingReceiver<mojom::PasskeyAuthenticator> receiver) {
+  auto* passkey_authenticator =
+      ash::PasskeyAuthenticatorServiceFactoryAsh::GetForProfile(
+          GetAshProfile());
+  if (!passkey_authenticator) {
+    return;
+  }
+  passkey_authenticator->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindPaymentAppInstance(

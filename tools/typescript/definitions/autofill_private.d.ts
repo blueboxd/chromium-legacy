@@ -114,6 +114,9 @@ declare global {
         ADDRESS_HOME_BETWEEN_STREETS_1,
         ADDRESS_HOME_BETWEEN_STREETS_2,
         SINGLE_USERNAME_FORGOT_PASSWORD,
+        ADDRESS_HOME_APT,
+        ADDRESS_HOME_APT_TYPE,
+        SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES,
       }
 
       export enum AddressSource {
@@ -218,6 +221,7 @@ declare global {
       export function authenticateUserAndFlipMandatoryAuthToggle(): void;
       export function getLocalCard(guid: string): Promise<CreditCardEntry|null>;
       export function checkIfDeviceAuthAvailable(): Promise<boolean>;
+      export function bulkDeleteAllCvcs(): void;
 
       export const onPersonalDataChanged: ChromeEvent<
           (addresses: AddressEntry[], creditCards: CreditCardEntry[],

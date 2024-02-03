@@ -6,7 +6,7 @@
 namespace display::test {
 bool EdidTimingEntry::SetMode(unsigned short width,
                               unsigned short height,
-                              unsigned char freq) {
+                              unsigned short freq) {
   if (width < 256 || width > 2288) {
     return false;
   }
@@ -25,7 +25,7 @@ bool EdidTimingEntry::SetMode(unsigned short width,
     return false;  // Invalid aspect ratio.
   }
   x_pixels = static_cast<unsigned char>((width / 8) - 31);
-  vertical_frequency = freq - 60;
+  vertical_frequency = static_cast<unsigned char>(freq - 60);
   return true;
 }
 
@@ -51,12 +51,18 @@ int EdidTimingEntry::GetVerticalFrequency() {
   return vertical_frequency + 60;
 }
 
-// Return timing entries (Standard timing information; EDID 1.4).
 EdidTimingEntry* Edid::GetTimingEntry(int entry) {
   assert(0 <= entry && entry < 8);
   // Timing entries start at byte 38.
   return reinterpret_cast<EdidTimingEntry*>(edidBlock.data() + 38 +
                                             (entry * sizeof(EdidTimingEntry)));
+}
+
+void Edid::SetProductCode(unsigned short code) {
+  // Manufacturer product code is bytes 10-11.
+  unsigned short* mfg_code =
+      reinterpret_cast<unsigned short*>(edidBlock.data() + 10);
+  *mfg_code = code;
 }
 
 void Edid::UpdateChecksum() {

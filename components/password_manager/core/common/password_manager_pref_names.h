@@ -228,15 +228,6 @@ extern const char kPasswordsPrefWithNewLabelUsed[];
 extern const char kProfileStoreDateLastUsedForFilling[];
 extern const char kAccountStoreDateLastUsedForFilling[];
 
-// A list of ongoing PasswordChangeSuccessTracker flows that is persisted in
-// case Chrome is temporarily shut down while, e.g., a user retrieves a
-// password reset email.
-extern const char kPasswordChangeSuccessTrackerFlows[];
-
-// Integer indicating the format version of the list saved under
-// |kPasswordChangeSuccessTrackerFlows|.
-extern const char kPasswordChangeSuccessTrackerVersion[];
-
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 // Integer indicating how many times user saw biometric authentication before
 // filling promo.
@@ -271,6 +262,11 @@ extern const char kPasswordManagerPromoCardsList[];
 // Boolean pref indicating whether password sharing is enabled. Enables both
 // sending and receiving passwords.
 extern const char kPasswordSharingEnabled[];
+
+#if BUILDFLAG(IS_MAC)
+// Integer pref indicating how many times relaunch Chrome bubble was dismissed.
+extern const char kRelaunchChromeBubbleDismissedCounter[];
+#endif
 
 }  // namespace password_manager::prefs
 

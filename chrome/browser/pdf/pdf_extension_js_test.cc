@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/icu_test_util.h"
@@ -19,6 +21,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/devtools_agent_coverage_observer.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_test_data_source.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -51,6 +55,14 @@ class PDFExtensionJSTest : public PDFExtensionTestBase {
 
     // Register the chrome://webui-test data source.
     webui::CreateAndAddWebUITestDataSource(browser()->profile());
+
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kDevtoolsCodeCoverage)) {
+      base::FilePath devtools_code_coverage_dir =
+          command_line->GetSwitchValuePath(switches::kDevtoolsCodeCoverage);
+      coverage_handler_ = std::make_unique<DevToolsAgentCoverageObserver>(
+          devtools_code_coverage_dir);
+    }
   }
 
   void RunTestsInJsModule(const std::string& filename,
@@ -93,15 +105,27 @@ class PDFExtensionJSTest : public PDFExtensionTestBase {
            };
            document.body.appendChild(s);)";
 
-    ASSERT_TRUE(content::ExecJs(
+    bool result = content::ExecJs(
         guest->GetGuestMainFrame(),
         base::StringPrintf(kModuleLoaderTemplate,
-                           chrome::kChromeUIWebUITestHost, filename.c_str())));
+                           chrome::kChromeUIWebUITestHost, filename.c_str()));
+
+    if (coverage_handler_ && coverage_handler_->CoverageEnabled()) {
+      const auto* test_info =
+          ::testing::UnitTest::GetInstance()->current_test_info();
+      const std::string full_test_name = base::StrCat(
+          {test_info->test_suite_name(), test_info->test_case_name()});
+      coverage_handler_->CollectCoverage(full_test_name);
+    }
+
+    ASSERT_TRUE(result);
 
     if (!catcher.GetNextResult()) {
       FAIL() << catcher.message();
     }
   }
+
+  std::unique_ptr<DevToolsAgentCoverageObserver> coverage_handler_;
 };
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Basic) {

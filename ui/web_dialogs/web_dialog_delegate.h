@@ -131,10 +131,6 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // certain that the window is about to be closed.
   virtual void OnDialogWillClose() {}
 
-  // A callback to notify the delegate that the dialog is about to close due to
-  // the user pressing the ESC key.
-  virtual void OnDialogClosingFromKeyEvent() {}
-
   // A callback to notify the delegate that the dialog closed.
   // IMPORTANT: Implementations should delete |this| here (unless they've
   // arranged for the delegate to be deleted in some other way, e.g. by
@@ -224,9 +220,6 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   void set_allow_web_contents_creation(bool allow_web_contents_creation) {
     allow_web_contents_creation_ = allow_web_contents_creation;
   }
-
-  // Stores the dialog bounds.
-  virtual void StoreDialogSize(const gfx::Size& dialog_size) {}
 
   // Returns the accelerators handled by the delegate.
   virtual std::vector<Accelerator> GetAccelerators();

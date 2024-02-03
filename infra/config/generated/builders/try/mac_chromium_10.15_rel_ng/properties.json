@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/mac_chromium_10.15_rel_ng/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "Mac Builder",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-mac-archive",
@@ -34,7 +37,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Mac10.15 Tests",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-mac-archive",
@@ -55,7 +58,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Mac Builder",
-                "project": "chromium-m120"
+                "project": "chromium"
               }
             }
           }
@@ -65,14 +68,14 @@
         {
           "bucket": "ci",
           "builder": "Mac Builder",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Mac10.15 Tests",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ]
     }

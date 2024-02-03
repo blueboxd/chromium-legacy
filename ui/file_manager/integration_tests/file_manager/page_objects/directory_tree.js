@@ -70,6 +70,10 @@ export class DirectoryTreePageObject {
     this.selectors_ = new DirectoryTreeSelectors_(useNewTree);
   }
 
+  get isNewTree() {
+    return this.useNewTree_;
+  }
+
   /**
    * Returns the selector for the tree root.
    * @return {string}
@@ -122,6 +126,19 @@ export class DirectoryTreePageObject {
         this.appId_,
         this.selectors_.itemByType(
             type, /* isPlaceholder= */ false, {focused: true}));
+  }
+
+  /**
+   * Wait for the shortcut tree item with the label to have focused (aka
+   * "selected" in the old tree implementation) state.
+   *
+   * @param {string} label Label of the tree item
+   * @return {!Promise<!ElementObject>}
+   */
+  async waitForFocusedShortcutItemByLabel(label) {
+    return this.remoteCall_.waitForElement(
+        this.appId_,
+        this.selectors_.itemByLabel(label, {focused: true, shortcut: true}));
   }
 
   /**
@@ -194,7 +211,6 @@ export class DirectoryTreePageObject {
   getItemLabel(item) {
     if (!item) {
       chrome.test.fail('Item is not a valid tree item.');
-      return '';
     }
     return this.useNewTree_ ? item.attributes['label'] :
                               item.attributes['entry-label'];
@@ -209,7 +225,6 @@ export class DirectoryTreePageObject {
   getItemVolumeType(item) {
     if (!item) {
       chrome.test.fail('Item is not a valid tree item.');
-      return '';
     }
     return item.attributes['volume-type-for-testing'];
   }
@@ -222,7 +237,6 @@ export class DirectoryTreePageObject {
   assertItemDisabled(item) {
     if (!item) {
       chrome.test.fail('Item is not a valid tree item.');
-      return;
     }
     // Empty value for "disabled" means it's disabled.
     chrome.test.assertEq('', item.attributes['disabled']);

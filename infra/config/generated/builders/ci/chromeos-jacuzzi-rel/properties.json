@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/ci/chromeos-jacuzzi-rel/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "chromeos-jacuzzi-rel",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -28,7 +31,7 @@
               },
               "legacy_gclient_config": {
                 "apply_configs": [
-                  "arm",
+                  "arm64",
                   "chromeos"
                 ],
                 "config": "chromium"
@@ -41,7 +44,7 @@
         {
           "bucket": "ci",
           "builder": "chromeos-jacuzzi-rel",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ],
       "mirroring_builder_group_and_names": [
@@ -66,8 +69,5 @@
     ]
   },
   "builder_group": "chromium.chromiumos",
-  "recipe": "chromium",
-  "sheriff_rotations": [
-    "chrome_browser_release"
-  ]
+  "recipe": "chromium"
 }

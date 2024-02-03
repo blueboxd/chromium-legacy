@@ -61,8 +61,6 @@ class CredentialModelTypeController : public syncer::ModelTypeController,
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
   void OnAccountsCookieDeletedByUserAction() override;
-  void OnPrimaryAccountChanged(
-      const signin::PrimaryAccountChangeEvent& event) override;
 
  private:
   void OnOptInStateMaybeChanged();
@@ -72,9 +70,6 @@ class CredentialModelTypeController : public syncer::ModelTypeController,
   const raw_ptr<syncer::SyncService> sync_service_;
 
   PasswordAccountStorageSettingsWatcher account_storage_settings_watcher_;
-
-  // Passed in to LoadModels(), and cached here for later use in Stop().
-  syncer::SyncMode sync_mode_ = syncer::SyncMode::kFull;
 
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>

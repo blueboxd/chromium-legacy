@@ -84,8 +84,7 @@ enum class Result {
   kRemoveIban_Success = 160,
   kRemoveIban_ReadFailure = 161,
   kRemoveIban_WriteFailure = 162,
-  kUpdateServerAddressMetadata_Success = 170,
-  kUpdateServerAddressMetadata_Failure = 171,
+  // Server addresses metadata updates (170, 171) are deprecated.
   kAddUpiId_Success = 180,
   kAddUpiId_Failure = 181,
   kClearAllServerData_Success = 190,
@@ -106,7 +105,9 @@ enum class Result {
   kClearServerCvcs_Failure = 261,
   kUpdateCreditCardCvc_Success = 270,
   kUpdateCreditCardCvc_Failure = 271,
-  kMaxValue = kUpdateCreditCardCvc_Failure,
+  kClearLocalCvcs_Success = 272,
+  kClearLocalCvcs_Failure = 273,
+  kMaxValue = kClearLocalCvcs_Failure,
 };
 
 // Reports the success or failure of various operations on the database via UMA.
@@ -203,6 +204,16 @@ void AutofillWebDataBackendImpl::NotifyOfCreditCardChanged(
   // DB sequence notification.
   for (auto& db_observer : db_observer_list_)
     db_observer.CreditCardChanged(change);
+}
+
+void AutofillWebDataBackendImpl::NotifyOfIbanChanged(const IbanChange& change) {
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+
+  // DB sequence notification.
+  for (AutofillWebDataServiceObserverOnDBSequence& db_observer :
+       db_observer_list_) {
+    db_observer.IbanChanged(change);
+  }
 }
 
 void AutofillWebDataBackendImpl::NotifyOnAutofillChangedBySync(
@@ -422,16 +433,6 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillProfiles(
           AUTOFILL_PROFILES_RESULT, std::move(profiles)));
 }
 
-std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
-    WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  AutofillTable::FromWebDatabase(db)->GetServerProfiles(&profiles);
-  return std::unique_ptr<WDTypedResult>(
-      new WDResult<std::vector<std::unique_ptr<AutofillProfile>>>(
-          AUTOFILL_PROFILES_RESULT, std::move(profiles)));
-}
-
 std::unique_ptr<WDTypedResult>
 AutofillWebDataBackendImpl::GetCountOfValuesContainedBetween(
     const base::Time& begin,
@@ -571,7 +572,7 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerCreditCards(
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<CreditCard>> credit_cards;
-  AutofillTable::FromWebDatabase(db)->GetServerCreditCards(&credit_cards);
+  AutofillTable::FromWebDatabase(db)->GetServerCreditCards(credit_cards);
   return std::unique_ptr<WDTypedResult>(
       new WDResult<std::vector<std::unique_ptr<CreditCard>>>(
           AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards)));
@@ -635,8 +636,8 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetLocalIbans(
 std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerIbans(
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  std::vector<std::unique_ptr<Iban>> ibans =
-      AutofillTable::FromWebDatabase(db)->GetServerIbans();
+  std::vector<std::unique_ptr<Iban>> ibans;
+  AutofillTable::FromWebDatabase(db)->GetServerIbans(ibans);
   return std::make_unique<WDResult<std::vector<std::unique_ptr<Iban>>>>(
       AUTOFILL_IBANS_RESULT, std::move(ibans));
 }
@@ -701,26 +702,6 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveLocalIban(
     db_observer.IbanChanged(IbanChange(IbanChange::REMOVE, guid, *iban));
   }
   ReportResult(Result::kRemoveIban_Success);
-  return WebDatabase::COMMIT_NEEDED;
-}
-
-WebDatabase::State AutofillWebDataBackendImpl::UpdateServerAddressMetadata(
-    const AutofillProfile& profile,
-    WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  DCHECK_EQ(AutofillProfile::SERVER_PROFILE, profile.record_type());
-  if (!AutofillTable::FromWebDatabase(db)->UpdateServerAddressMetadata(
-          profile)) {
-    ReportResult(Result::kUpdateServerAddressMetadata_Failure);
-    return WebDatabase::COMMIT_NOT_NEEDED;
-  }
-
-  for (auto& db_observer : db_observer_list_) {
-    db_observer.AutofillProfileChanged(AutofillProfileChange(
-        AutofillProfileChange::UPDATE, profile.server_id(), profile));
-  }
-
-  ReportResult(Result::kUpdateServerAddressMetadata_Success);
   return WebDatabase::COMMIT_NEEDED;
 }
 
@@ -812,11 +793,21 @@ WebDatabase::State AutofillWebDataBackendImpl::ClearServerCvcs(
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
+WebDatabase::State AutofillWebDataBackendImpl::ClearLocalCvcs(WebDatabase* db) {
+  CHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  if (AutofillTable::FromWebDatabase(db)->ClearLocalCvcs()) {
+    ReportResult(Result::kClearLocalCvcs_Success);
+    return WebDatabase::COMMIT_NEEDED;
+  }
+  ReportResult(Result::kClearLocalCvcs_Failure);
+  return WebDatabase::COMMIT_NOT_NEEDED;
+}
+
 std::unique_ptr<WDTypedResult>
 AutofillWebDataBackendImpl::GetPaymentsCustomerData(WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::unique_ptr<PaymentsCustomerData> customer_data;
-  AutofillTable::FromWebDatabase(db)->GetPaymentsCustomerData(&customer_data);
+  AutofillTable::FromWebDatabase(db)->GetPaymentsCustomerData(customer_data);
   return std::make_unique<WDResult<std::unique_ptr<PaymentsCustomerData>>>(
       AUTOFILL_CUSTOMERDATA_RESULT, std::move(customer_data));
 }
@@ -826,7 +817,7 @@ AutofillWebDataBackendImpl::GetCreditCardCloudTokenData(WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<CreditCardCloudTokenData>> cloud_token_data;
   AutofillTable::FromWebDatabase(db)->GetCreditCardCloudTokenData(
-      &cloud_token_data);
+      cloud_token_data);
   return std::make_unique<
       WDResult<std::vector<std::unique_ptr<CreditCardCloudTokenData>>>>(
       AUTOFILL_CLOUDTOKEN_RESULT, std::move(cloud_token_data));

@@ -95,7 +95,6 @@
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/box_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/outline_painter.h"
@@ -134,7 +133,6 @@ static const unsigned kBackgroundObscurationTestMaxDepth = 4;
 struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   DeprecatedLayoutRect frame_rect;
   PhysicalSize previous_size;
-  PhysicalBoxStrut margin_box_outsets;
   MinMaxSizes intrinsic_logical_widths;
   LayoutUnit intrinsic_logical_widths_initial_block_size;
   Member<void*> result;
@@ -455,13 +453,10 @@ LayoutBoxRareData::LayoutBoxRareData()
     : spanner_placeholder_(nullptr),
       // TODO(rego): We should store these based on physical direction.
       has_override_containing_block_content_logical_width_(false),
-      has_previous_content_box_rect_(false),
-      snap_container_(nullptr) {}
+      has_previous_content_box_rect_(false) {}
 
 void LayoutBoxRareData::Trace(Visitor* visitor) const {
   visitor->Trace(spanner_placeholder_);
-  visitor->Trace(snap_container_);
-  visitor->Trace(snap_areas_);
   visitor->Trace(layout_child_);
 }
 
@@ -506,7 +501,6 @@ void LayoutBox::WillBeDestroyed() {
     DisassociatePhysicalFragments();
   }
 
-  SetSnapContainer(nullptr);
   LayoutBoxModelObject::WillBeDestroyed();
 }
 
@@ -524,18 +518,12 @@ void LayoutBox::DisassociatePhysicalFragments() {
 void LayoutBox::InsertedIntoTree() {
   NOT_DESTROYED();
   LayoutBoxModelObject::InsertedIntoTree();
-  if (!RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
-    AddScrollSnapMapping();
-  }
   AddCustomLayoutChildIfNeeded();
 }
 
 void LayoutBox::WillBeRemovedFromTree() {
   NOT_DESTROYED();
   ClearCustomLayoutChild();
-  if (!RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
-    ClearScrollSnapMapping();
-  }
   LayoutBoxModelObject::WillBeRemovedFromTree();
 }
 
@@ -845,42 +833,32 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
     const ComputedStyle& old_style) {
   NOT_DESTROYED();
   DCHECK(Style());
-  SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
   // scroll-snap-type and scroll-padding invalidate the snap container.
   if (old_style.GetScrollSnapType() != StyleRef().GetScrollSnapType() ||
       old_style.ScrollPaddingBottom() != StyleRef().ScrollPaddingBottom() ||
       old_style.ScrollPaddingLeft() != StyleRef().ScrollPaddingLeft() ||
       old_style.ScrollPaddingTop() != StyleRef().ScrollPaddingTop() ||
       old_style.ScrollPaddingRight() != StyleRef().ScrollPaddingRight()) {
-    if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
-      if (!NeedsLayout() && IsScrollContainer()) {
-        GetScrollableArea()->EnqueueForSnapUpdateIfNeeded();
-      }
-    } else {
-      snap_coordinator.SnapContainerDidChange(*this);
+    if (!NeedsLayout() && IsScrollContainer()) {
+      GetScrollableArea()->EnqueueForSnapUpdateIfNeeded();
+    }
+  }
+
+  // scroll-snap-align invalidates layout as we need to propagate the
+  // snap-areas up the fragment-tree.
+  if (old_style.GetScrollSnapAlign() != StyleRef().GetScrollSnapAlign()) {
+    if (auto* containing_block = ContainingBlock()) {
+      containing_block->SetNeedsLayout(layout_invalidation_reason::kStyleChange,
+                                       kMarkContainerChain);
     }
   }
 
   auto SnapAreaDidChange = [&]() {
-    if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
-      auto* snap_container = ContainingScrollContainer();
-      if (snap_container && !snap_container->NeedsLayout()) {
-        snap_container->GetScrollableArea()->EnqueueForSnapUpdateIfNeeded();
-      }
-    } else {
-      snap_coordinator.SnapAreaDidChange(*this,
-                                         StyleRef().GetScrollSnapAlign());
+    auto* snap_container = ContainingScrollContainer();
+    if (snap_container && !snap_container->NeedsLayout()) {
+      snap_container->GetScrollableArea()->EnqueueForSnapUpdateIfNeeded();
     }
   };
-
-  if (old_style.GetScrollSnapAlign() != StyleRef().GetScrollSnapAlign()) {
-    if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
-      ContainingBlock()->SetNeedsLayout(
-          layout_invalidation_reason::kStyleChange, kMarkContainerChain);
-    } else {
-      SnapAreaDidChange();
-    }
-  }
 
   // scroll-snap-stop and scroll-margin invalidate the snap area.
   if (old_style.ScrollSnapStop() != StyleRef().ScrollSnapStop() ||
@@ -894,18 +872,6 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
   // Transform invalidates the snap area.
   if (old_style.Transform() != StyleRef().Transform())
     SnapAreaDidChange();
-}
-
-void LayoutBox::AddScrollSnapMapping() {
-  NOT_DESTROYED();
-  SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
-  snap_coordinator.SnapAreaDidChange(*this, Style()->GetScrollSnapAlign());
-}
-
-void LayoutBox::ClearScrollSnapMapping() {
-  NOT_DESTROYED();
-  SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
-  snap_coordinator.SnapAreaDidChange(*this, cc::ScrollSnapAlign());
 }
 
 void LayoutBox::UpdateFromStyle() {
@@ -1037,19 +1003,6 @@ LayoutUnit LayoutBox::ClientHeightFrom(LayoutUnit height) const {
   }
 }
 
-int LayoutBox::PixelSnappedClientWidth() const {
-  NOT_DESTROYED();
-  DCHECK(!RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled());
-  return SnapSizeToPixel(ClientWidth(), PhysicalLocation().left + ClientLeft());
-}
-
-DISABLE_CFI_PERF
-int LayoutBox::PixelSnappedClientHeight() const {
-  NOT_DESTROYED();
-  DCHECK(!RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled());
-  return SnapSizeToPixel(ClientHeight(), PhysicalLocation().top + ClientTop());
-}
-
 LayoutUnit LayoutBox::ClientWidthWithTableSpecialBehavior() const {
   NOT_DESTROYED();
   // clientWidth/Height is the visual portion of the box content, not including
@@ -1130,36 +1083,8 @@ LayoutUnit LayoutBox::ScrollHeight() const {
                   PhysicalLayoutOverflowRect().Bottom() - BorderTop());
 }
 
-int LayoutBox::PixelSnappedScrollWidth() const {
-  NOT_DESTROYED();
-  DCHECK(!RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled());
-  return SnapSizeToPixel(ScrollWidth(), PhysicalLocation().left + ClientLeft());
-}
-
-int LayoutBox::PixelSnappedScrollHeight() const {
-  NOT_DESTROYED();
-  DCHECK(!RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled());
-  LayoutUnit top = PhysicalLocation().top;
-  if (IsScrollContainer()) {
-    return SnapSizeToPixel(GetScrollableArea()->ScrollHeight(),
-                           top + ClientTop());
-  }
-  // For objects with visible overflow, this matches IE.
-  // FIXME: Need to work right with writing modes.
-  return SnapSizeToPixel(ScrollHeight(), top + ClientTop());
-}
-
-void LayoutBox::SetMargin(const PhysicalBoxStrut& box) {
-  NOT_DESTROYED();
-  DCHECK(!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
-  margin_box_outsets_ = box;
-}
-
 PhysicalBoxStrut LayoutBox::MarginBoxOutsets() const {
   NOT_DESTROYED();
-  if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
-    return margin_box_outsets_;
-  }
   if (PhysicalFragmentCount()) {
     // We get margin data from the first physical fragment. Margins are
     // per-LayoutBox data, and we don't need to take care of block
@@ -1336,7 +1261,7 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
     return kIndefiniteSize;
   const Element& element = *To<Element>(GetNode());
 
-  const bool apply_fixed_size = StyleRef().ApplyControlFixedSize();
+  const bool apply_fixed_size = StyleRef().ApplyControlFixedSize(&element);
   const auto* select = DynamicTo<HTMLSelectElement>(element);
   if (UNLIKELY(select && select->UsesMenuList())) {
     return apply_fixed_size ? MenuListIntrinsicInlineSize(*select, *this)
@@ -1390,7 +1315,7 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentBlockSize() const {
     return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartRadio).block_size;
   }
 
-  if (!StyleRef().ApplyControlFixedSize()) {
+  if (!StyleRef().ApplyControlFixedSize(GetNode())) {
     return kIndefiniteSize;
   }
   if (const auto* select = DynamicTo<HTMLSelectElement>(GetNode())) {
@@ -2260,6 +2185,12 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
       if (layer->GetImage() && image == layer->GetImage()->Data()) {
         SetShouldDoFullPaintInvalidationWithoutLayoutChange(
             PaintInvalidationReason::kImage);
+        if (layer->GetImage()->IsMaskSource() && IsSVGChild()) {
+          // Since an invalid <mask> reference does not yield a paint property
+          // on SVG content (see CSSMaskPainter), we need to update paint
+          // properties when such a reference changes.
+          SetNeedsPaintPropertyUpdate();
+        }
         break;
       }
     }
@@ -2543,16 +2474,15 @@ PhysicalRect LayoutBox::ClipRect(const PhysicalOffset& location) const {
   return clip_rect;
 }
 
-LayoutUnit LayoutBox::ContainingBlockLogicalHeightForGetComputedStyle() const {
+LayoutUnit LayoutBox::ContainingBlockLogicalHeightForRelPositioned() const {
   NOT_DESTROYED();
-  DCHECK(IsPositioned());
+  DCHECK(IsRelPositioned());
 
+  // TODO(ikilpatrick): This is resolving percentages against incorrectly if
+  // the container is an inline.
   auto* cb = To<LayoutBoxModelObject>(Container());
-  LayoutUnit height = ContainingBlockLogicalHeightForPositioned(cb);
-  if (IsRelPositioned() || IsStickyPositioned()) {
-    height -= cb->PaddingLogicalHeight();
-  }
-  return height;
+  return ContainingBlockLogicalHeightForPositioned(cb) -
+         cb->PaddingLogicalHeight();
 }
 
 LayoutUnit LayoutBox::ContainingBlockLogicalWidthForContent() const {
@@ -2837,9 +2767,6 @@ void LayoutBox::CheckMayHaveFragmentItems() const {
 
 void LayoutBox::InvalidateCachedGeometry() {
   NOT_DESTROYED();
-  if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
-    return;
-  }
   SetHasValidCachedGeometry(false);
   if (auto* block_flow = DynamicTo<LayoutBlockFlow>(this)) {
     if (auto* flow_thread = block_flow->MultiColumnFlowThread()) {
@@ -3621,7 +3548,9 @@ void LayoutBox::CopyVisualOverflowFromFragments() {
   const PhysicalRect visual_overflow = VisualOverflowRect();
   if (visual_overflow == previous_visual_overflow)
     return;
-  InvalidateIntersectionObserverCachedRects();
+  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+    DeprecatedInvalidateIntersectionObserverCachedRects();
+  }
   SetShouldCheckForPaintInvalidation();
 }
 
@@ -3841,8 +3770,7 @@ LayoutUnit LayoutBox::OffsetTop(const Element* parent) const {
 
 PhysicalSize LayoutBox::Size() const {
   NOT_DESTROYED();
-  if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled() &&
-      !HasValidCachedGeometry()) {
+  if (!HasValidCachedGeometry()) {
     // const_cast in order to update the cached value.
     const_cast<LayoutBox*>(this)->SetHasValidCachedGeometry(true);
     const_cast<LayoutBox*>(this)->frame_size_ = ComputeSize();
@@ -3912,50 +3840,6 @@ LayoutBox* LayoutBox::LocationContainer() const {
 ShapeOutsideInfo* LayoutBox::GetShapeOutsideInfo() const {
   NOT_DESTROYED();
   return ShapeOutsideInfo::Info(*this);
-}
-
-LayoutBox* LayoutBox::SnapContainer() const {
-  NOT_DESTROYED();
-  return rare_data_ ? rare_data_->snap_container_ : nullptr;
-}
-
-void LayoutBox::ClearSnapAreas() {
-  NOT_DESTROYED();
-  if (SnapAreaSet* areas = SnapAreas()) {
-    for (const auto& snap_area : *areas)
-      snap_area->rare_data_->snap_container_ = nullptr;
-    areas->clear();
-  }
-}
-
-void LayoutBox::AddSnapArea(LayoutBox& snap_area) {
-  NOT_DESTROYED();
-  EnsureRareData().snap_areas_.insert(&snap_area);
-}
-
-void LayoutBox::RemoveSnapArea(const LayoutBox& snap_area) {
-  NOT_DESTROYED();
-  // const_cast is safe here because we only need to modify the type to match
-  // the key type, and not actually mutate the object.
-  if (rare_data_)
-    rare_data_->snap_areas_.erase(const_cast<LayoutBox*>(&snap_area));
-}
-
-void LayoutBox::ReassignSnapAreas(LayoutBox& new_container) {
-  NOT_DESTROYED();
-  SnapAreaSet* areas = SnapAreas();
-  if (!areas)
-    return;
-  for (const auto& snap_area : *areas) {
-    snap_area->rare_data_->snap_container_ = &new_container;
-    new_container.AddSnapArea(*snap_area);
-  }
-  areas->clear();
-}
-
-SnapAreaSet* LayoutBox::SnapAreas() const {
-  NOT_DESTROYED();
-  return rare_data_ ? &rare_data_->snap_areas_ : nullptr;
 }
 
 CustomLayoutChild* LayoutBox::GetCustomLayoutChild() const {

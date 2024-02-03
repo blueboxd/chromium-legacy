@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_column_spanner_path.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
@@ -105,7 +106,7 @@ void NGBoxFragmentBuilder::AddResult(
     const LogicalOffset offset,
     absl::optional<const BoxStrut> margins,
     absl::optional<LogicalOffset> relative_offset,
-    const NGInlineContainer<LogicalOffset>* inline_container) {
+    const OofInlineContainer<LogicalOffset>* inline_container) {
   const auto& fragment = child_layout_result.PhysicalFragment();
 
   // We'll normally propagate info from child_layout_result here, but if that's
@@ -139,15 +140,10 @@ void NGBoxFragmentBuilder::AddResult(
            child_layout_result.IsSelfCollapsing(), relative_offset,
            inline_container);
   if (margins) {
-    if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
-      const auto& box_fragment = To<NGPhysicalBoxFragment>(fragment);
-      if (!margins->IsEmpty() || !box_fragment.Margins().IsZero()) {
-        box_fragment.GetMutableForContainerLayout().SetMargins(
-            margins->ConvertToPhysical(GetWritingDirection()));
-      }
-    } else {
-      To<LayoutBox>(fragment.GetMutableLayoutObject())
-          ->SetMargin((*margins).ConvertToPhysical(GetWritingDirection()));
+    const auto& box_fragment = To<NGPhysicalBoxFragment>(fragment);
+    if (!margins->IsEmpty() || !box_fragment.Margins().IsZero()) {
+      box_fragment.GetMutableForContainerLayout().SetMargins(
+          margins->ConvertToPhysical(GetWritingDirection()));
     }
   }
 
@@ -170,7 +166,7 @@ void NGBoxFragmentBuilder::AddChild(
     const MarginStrut* margin_strut,
     bool is_self_collapsing,
     absl::optional<LogicalOffset> relative_offset,
-    const NGInlineContainer<LogicalOffset>* inline_container) {
+    const OofInlineContainer<LogicalOffset>* inline_container) {
 #if DCHECK_IS_ON()
   needs_inflow_bounds_explicitly_set_ = !!relative_offset;
   needs_may_have_descendant_above_block_start_explicitly_set_ =
@@ -239,7 +235,7 @@ void NGBoxFragmentBuilder::AddChild(
         }
 
         // Use the original offset (*without* relative-positioning applied).
-        NGFragment fragment(GetWritingDirection(), child);
+        LogicalFragment fragment(GetWritingDirection(), child);
         LogicalRect bounds = {child_offset, fragment.Size()};
 
         // Margins affect the inflow-bounds in interesting ways.
@@ -297,6 +293,9 @@ void NGBoxFragmentBuilder::AddChild(
   PropagateFromFragment(child, child_offset, *relative_offset,
                         inline_container);
   AddChildInternal(&child, child_offset + *relative_offset);
+
+  // We have got some content, so follow normal breaking rules from now on.
+  SetRequiresContentBeforeBreaking(false);
 }
 
 void NGBoxFragmentBuilder::AddBreakToken(const NGBreakToken* token,
@@ -383,13 +382,28 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
        !child_fragment.IsFloatingOrOutOfFlowPositioned()) ||
       child_layout_result.ShouldForceSameFragmentationFlow();
 
-  if (ConstraintSpace().IsPaginated() && child_is_in_same_flow &&
-      !IsFragmentainerBoxType()) {
+  if (ConstraintSpace().IsPaginated() &&
+      ((child_is_in_same_flow && !IsFragmentainerBoxType()) ||
+       Node().IsPaginatedRoot())) {
     DCHECK(ConstraintSpace().HasKnownFragmentainerBlockSize());
-    NGFragment logical_fragment(child_fragment.Style().GetWritingDirection(),
-                                child_fragment);
-    LayoutUnit fragment_block_end =
-        offset.block_offset + logical_fragment.BlockSize();
+    // Include overflow inside monolithic content if this is for a page
+    // fragment. Otherwise just use the fragment size.
+    LayoutUnit block_size;
+    if (Node().IsPaginatedRoot()) {
+      // The root node is guaranteed to be block-level, so there should be a
+      // child box fragment here.
+      DCHECK(child_box_fragment);
+
+      LogicalBoxFragment logical_fragment(
+          child_box_fragment->Style().GetWritingDirection(),
+          *child_box_fragment);
+      block_size = logical_fragment.BlockEndLayoutOverflow();
+    } else {
+      LogicalFragment logical_fragment(
+          child_fragment.Style().GetWritingDirection(), child_fragment);
+      block_size = logical_fragment.BlockSize();
+    }
+    LayoutUnit fragment_block_end = offset.block_offset + block_size;
     LayoutUnit fragmentainer_overflow =
         fragment_block_end - FragmentainerSpaceLeft(ConstraintSpace());
     if (fragmentainer_overflow > LayoutUnit()) {
@@ -493,7 +507,7 @@ const NGLayoutResult* NGBoxFragmentBuilder::ToBoxFragment(
     WritingMode block_or_line_writing_mode) {
 #if DCHECK_IS_ON()
   if (ItemsBuilder()) {
-    for (const NGLogicalLink& child : Children()) {
+    for (const LogicalFragmentLink& child : Children()) {
       DCHECK(child.fragment);
       const NGPhysicalFragment& fragment = *child.fragment;
       DCHECK(fragment.IsLineBox() ||
@@ -554,11 +568,6 @@ const NGLayoutResult* NGBoxFragmentBuilder::ToBoxFragment(
     }
   }
 
-  if (!has_floating_descendants_for_paint_ && items_builder_) {
-    has_floating_descendants_for_paint_ =
-        items_builder_->HasFloatingDescendantsForPaint();
-  }
-
   const NGPhysicalBoxFragment* fragment =
       NGPhysicalBoxFragment::Create(this, block_or_line_writing_mode);
   fragment->CheckType();
@@ -569,6 +578,7 @@ const NGLayoutResult* NGBoxFragmentBuilder::ToBoxFragment(
 
 LogicalOffset NGBoxFragmentBuilder::GetChildOffset(
     const LayoutObject* object) const {
+  DCHECK(!RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled());
   DCHECK(object);
 
   if (const FragmentItemsBuilder* items_builder = items_builder_) {
@@ -598,12 +608,12 @@ LogicalOffset NGBoxFragmentBuilder::GetChildOffset(
       }
     }
   }
-  NOTREACHED();
+  DUMP_WILL_BE_NOTREACHED_NORETURN();
   return LogicalOffset();
 }
 
 void NGBoxFragmentBuilder::AdjustFragmentainerDescendant(
-    NGLogicalOOFNodeForFragmentation& descendant,
+    LogicalOofNodeForFragmentation& descendant,
     bool only_fixedpos_containing_block) {
   LayoutUnit previous_consumed_block_size;
   if (PreviousBreakToken())
@@ -619,8 +629,6 @@ void NGBoxFragmentBuilder::AdjustFragmentainerDescendant(
         -previous_consumed_block_size);
     descendant.static_position.offset.block_offset +=
         previous_consumed_block_size;
-    descendant.containing_block.SetRequiresContentBeforeBreaking(
-        RequiresContentBeforeBreaking());
   }
 
   // If the fixedpos containing block is fragmented, adjust the offset to be
@@ -630,8 +638,6 @@ void NGBoxFragmentBuilder::AdjustFragmentainerDescendant(
        descendant.fixedpos_inline_container.container)) {
     descendant.fixedpos_containing_block.IncreaseBlockOffset(
         -previous_consumed_block_size);
-    descendant.fixedpos_containing_block.SetRequiresContentBeforeBreaking(
-        RequiresContentBeforeBreaking());
   }
 }
 
@@ -657,7 +663,7 @@ void NGBoxFragmentBuilder::AdjustFixedposContainingBlockForInnerMulticols() {
   LayoutUnit previous_consumed_block_size =
       PreviousBreakToken()->ConsumedBlockSize();
   for (auto& multicol : multicols_with_pending_oofs_) {
-    NGMulticolWithPendingOOFs<LogicalOffset>& value = *multicol.value;
+    MulticolWithPendingOofs<LogicalOffset>& value = *multicol.value;
     if (!value.fixedpos_containing_block.Fragment() &&
         (node_.IsFixedContainer() ||
          value.fixedpos_inline_container.container)) {

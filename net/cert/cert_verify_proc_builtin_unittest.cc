@@ -21,9 +21,6 @@
 #include "net/cert/crl_set.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/system_trust_store.h"
-#include "net/cert/pki/trust_store.h"
-#include "net/cert/pki/trust_store_collection.h"
-#include "net/cert/pki/trust_store_in_memory.h"
 #include "net/cert/time_conversions.h"
 #include "net/cert_net/cert_net_fetcher_url_request.h"
 #include "net/http/transport_security_state.h"
@@ -41,6 +38,9 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/pki/trust_store.h"
+#include "third_party/boringssl/src/pki/trust_store_collection.h"
+#include "third_party/boringssl/src/pki/trust_store_in_memory.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -99,52 +99,53 @@ int VerifyOnWorkerThread(const scoped_refptr<CertVerifyProc>& verify_proc,
                          scoped_refptr<X509Certificate> cert,
                          const std::string& hostname,
                          int flags,
-                         const CertificateList& additional_trust_anchors,
                          CertVerifyResult* verify_result,
                          NetLogSource* out_source) {
   base::ScopedAllowBaseSyncPrimitivesForTesting scoped_allow_blocking;
   NetLogWithSource net_log(NetLogWithSource::Make(
       net::NetLog::Get(), net::NetLogSourceType::CERT_VERIFIER_TASK));
-  int error =
-      verify_proc->Verify(cert.get(), hostname,
-                          /*ocsp_response=*/std::string(),
-                          /*sct_list=*/std::string(), flags,
-                          additional_trust_anchors, verify_result, net_log);
+  int error = verify_proc->Verify(cert.get(), hostname,
+                                  /*ocsp_response=*/std::string(),
+                                  /*sct_list=*/std::string(), flags,
+                                  verify_result, net_log);
   *out_source = net_log.source();
   return error;
 }
 
 class MockSystemTrustStore : public SystemTrustStore {
  public:
-  TrustStore* GetTrustStore() override { return &trust_store_; }
+  bssl::TrustStore* GetTrustStore() override { return &trust_store_; }
 
-  bool IsKnownRoot(const ParsedCertificate* trust_anchor) const override {
+  bool IsKnownRoot(const bssl::ParsedCertificate* trust_anchor) const override {
     return mock_is_known_root_;
   }
 
-  void AddTrustStore(TrustStore* store) { trust_store_.AddTrustStore(store); }
+  void AddTrustStore(bssl::TrustStore* store) {
+    trust_store_.AddTrustStore(store);
+  }
 
   void SetMockIsKnownRoot(bool is_known_root) {
     mock_is_known_root_ = is_known_root;
   }
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-  int64_t chrome_root_store_version() override { return 0; }
+  int64_t chrome_root_store_version() const override { return 0; }
 #endif
 
  private:
-  TrustStoreCollection trust_store_;
+  bssl::TrustStoreCollection trust_store_;
   bool mock_is_known_root_ = false;
 };
 
-class BlockingTrustStore : public TrustStore {
+class BlockingTrustStore : public bssl::TrustStore {
  public:
-  CertificateTrust GetTrust(const ParsedCertificate* cert) override {
+  bssl::CertificateTrust GetTrust(
+      const bssl::ParsedCertificate* cert) override {
     return backing_trust_store_.GetTrust(cert);
   }
 
-  void SyncGetIssuersOf(const ParsedCertificate* cert,
-                        ParsedCertificateList* issuers) override {
+  void SyncGetIssuersOf(const bssl::ParsedCertificate* cert,
+                        bssl::ParsedCertificateList* issuers) override {
     sync_get_issuer_started_event_.Signal();
     sync_get_issuer_ok_to_finish_event_.Wait();
 
@@ -153,7 +154,7 @@ class BlockingTrustStore : public TrustStore {
 
   base::WaitableEvent sync_get_issuer_started_event_;
   base::WaitableEvent sync_get_issuer_ok_to_finish_event_;
-  TrustStoreInMemory backing_trust_store_;
+  bssl::TrustStoreInMemory backing_trust_store_;
 };
 
 }  // namespace
@@ -162,11 +163,8 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
  public:
   void SetUp() override {
     cert_net_fetcher_ = base::MakeRefCounted<CertNetFetcherURLRequest>();
-    auto mock_system_trust_store = std::make_unique<MockSystemTrustStore>();
-    mock_system_trust_store_ = mock_system_trust_store.get();
-    verify_proc_ = CreateCertVerifyProcBuiltin(
-        cert_net_fetcher_, CRLSet::EmptyCRLSetForTesting(),
-        std::move(mock_system_trust_store));
+
+    InitializeVerifyProc({});
 
     context_ = CreateTestURLRequestContextBuilder()->Build();
 
@@ -175,10 +173,19 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
 
   void TearDown() override { cert_net_fetcher_->Shutdown(); }
 
+  void InitializeVerifyProc(const CertificateList& additional_trust_anchors) {
+    auto mock_system_trust_store = std::make_unique<MockSystemTrustStore>();
+    mock_system_trust_store_ = mock_system_trust_store.get();
+    CertVerifyProc::InstanceParams instance_params;
+    instance_params.additional_trust_anchors = additional_trust_anchors;
+    verify_proc_ = CreateCertVerifyProcBuiltin(
+        cert_net_fetcher_, CRLSet::EmptyCRLSetForTesting(),
+        std::move(mock_system_trust_store), instance_params);
+  }
+
   void Verify(scoped_refptr<X509Certificate> cert,
               const std::string& hostname,
               int flags,
-              const CertificateList& additional_trust_anchors,
               CertVerifyResult* verify_result,
               NetLogSource* out_source,
               CompletionOnceCallback callback) {
@@ -186,8 +193,7 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&VerifyOnWorkerThread, verify_proc_, std::move(cert),
-                       hostname, flags, additional_trust_anchors, verify_result,
-                       out_source),
+                       hostname, flags, verify_result, out_source),
         std::move(callback));
   }
 
@@ -196,11 +202,11 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
   // Creates a CRL issued and signed by |crl_issuer|, marking |revoked_serials|
   // as revoked, and registers it to be served by the test server.
   // Returns the full URL to retrieve the CRL from the test server.
-  GURL CreateAndServeCrl(
-      EmbeddedTestServer* test_server,
-      CertBuilder* crl_issuer,
-      const std::vector<uint64_t>& revoked_serials,
-      absl::optional<SignatureAlgorithm> signature_algorithm = absl::nullopt) {
+  GURL CreateAndServeCrl(EmbeddedTestServer* test_server,
+                         CertBuilder* crl_issuer,
+                         const std::vector<uint64_t>& revoked_serials,
+                         absl::optional<bssl::SignatureAlgorithm>
+                             signature_algorithm = absl::nullopt) {
     std::string crl = BuildCrl(crl_issuer->GetSubject(), crl_issuer->GetKey(),
                                revoked_serials, signature_algorithm);
     std::string crl_path = MakeRandomPath(".crl");
@@ -211,7 +217,7 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
     return test_server->GetURL(crl_path);
   }
 
-  void AddTrustStore(TrustStore* store) {
+  void AddTrustStore(bssl::TrustStore* store) {
     mock_system_trust_store_->AddTrustStore(store);
   }
 
@@ -239,6 +245,8 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
 
 TEST_F(CertVerifyProcBuiltinTest, ShouldBypassHSTS) {
   auto [leaf, root] = CertBuilder::CreateSimpleChain2();
+  InitializeVerifyProc(
+      /*additional_trust_anchors=*/{root->GetX509Certificate()});
 
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTP);
   ASSERT_TRUE(test_server.InitializeAndListen());
@@ -264,7 +272,6 @@ TEST_F(CertVerifyProcBuiltinTest, ShouldBypassHSTS) {
         test_server.base_url().host()));
     Verify(chain.get(), "www.example.com",
            CertVerifyProc::VERIFY_REV_CHECKING_ENABLED,
-           /*additional_trust_anchors=*/{root->GetX509Certificate()},
            &verify_result, &verify_net_log_source, verify_callback.callback());
 
     int error = verify_callback.WaitForResult();
@@ -275,6 +282,8 @@ TEST_F(CertVerifyProcBuiltinTest, ShouldBypassHSTS) {
 
 TEST_F(CertVerifyProcBuiltinTest, SimpleSuccess) {
   auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
+  InitializeVerifyProc(
+      /*additional_trust_anchors=*/{root->GetX509Certificate()});
 
   scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
   ASSERT_TRUE(chain.get());
@@ -283,9 +292,8 @@ TEST_F(CertVerifyProcBuiltinTest, SimpleSuccess) {
   CertVerifyResult verify_result;
   NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
-  Verify(chain.get(), "www.example.com", /*flags=*/0,
-         /*additional_trust_anchors=*/{root->GetX509Certificate()},
-         &verify_result, &verify_net_log_source, callback.callback());
+  Verify(chain.get(), "www.example.com", /*flags=*/0, &verify_result,
+         &verify_net_log_source, callback.callback());
 
   int error = callback.WaitForResult();
   EXPECT_THAT(error, IsOk());
@@ -296,6 +304,8 @@ TEST_F(CertVerifyProcBuiltinTest, SimpleSuccess) {
 
 TEST_F(CertVerifyProcBuiltinTest, CRLNotCheckedForKnownRoots) {
   auto [leaf, root] = CertBuilder::CreateSimpleChain2();
+  InitializeVerifyProc(
+      /*additional_trust_anchors=*/{root->GetX509Certificate()});
 
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTP);
   ASSERT_TRUE(test_server.InitializeAndListen());
@@ -316,7 +326,6 @@ TEST_F(CertVerifyProcBuiltinTest, CRLNotCheckedForKnownRoots) {
     TestCompletionCallback verify_callback;
     Verify(chain.get(), "www.example.com",
            CertVerifyProc::VERIFY_REV_CHECKING_ENABLED,
-           /*additional_trust_anchors=*/{root->GetX509Certificate()},
            &verify_result, &verify_net_log_source, verify_callback.callback());
 
     int error = verify_callback.WaitForResult();
@@ -332,7 +341,6 @@ TEST_F(CertVerifyProcBuiltinTest, CRLNotCheckedForKnownRoots) {
     TestCompletionCallback verify_callback;
     Verify(chain.get(), "www.example.com",
            CertVerifyProc::VERIFY_REV_CHECKING_ENABLED,
-           /*additional_trust_anchors=*/{root->GetX509Certificate()},
            &verify_result, &verify_net_log_source, verify_callback.callback());
 
     int error = verify_callback.WaitForResult();
@@ -350,6 +358,8 @@ TEST_F(CertVerifyProcBuiltinTest, CRLNotCheckedForKnownRoots) {
 // checking, additional CRL fetches will not be attempted.
 TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineCRL) {
   auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
+  InitializeVerifyProc(
+      /*additional_trust_anchors=*/{root->GetX509Certificate()});
 
   const base::TimeDelta timeout_increment =
       CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
@@ -398,7 +408,6 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineCRL) {
   TestCompletionCallback verify_callback;
   Verify(chain.get(), "www.example.com",
          CertVerifyProc::VERIFY_REV_CHECKING_ENABLED,
-         /*additional_trust_anchors=*/{root->GetX509Certificate()},
          &verify_result, &verify_net_log_source, verify_callback.callback());
 
   for (int i = 0; i < expected_request_count; i++) {
@@ -425,6 +434,8 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineCRL) {
 // checking, additional OCSP fetches will not be attempted.
 TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineOCSP) {
   auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
+  InitializeVerifyProc(
+      /*additional_trust_anchors=*/{root->GetX509Certificate()});
 
   const base::TimeDelta timeout_increment =
       CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
@@ -472,7 +483,6 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineOCSP) {
   TestCompletionCallback verify_callback;
   Verify(chain.get(), "www.example.com",
          CertVerifyProc::VERIFY_REV_CHECKING_ENABLED,
-         /*additional_trust_anchors=*/{root->GetX509Certificate()},
          &verify_result, &verify_net_log_source, verify_callback.callback());
 
   for (int i = 0; i < expected_request_count; i++) {
@@ -497,6 +507,8 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineOCSP) {
 // is done.
 TEST_F(CertVerifyProcBuiltinTest, EVNoOCSPRevocationChecks) {
   auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
+  InitializeVerifyProc(
+      /*additional_trust_anchors=*/{root->GetX509Certificate()});
 
   // Add test EV policy to leaf and intermediate.
   static const char kEVTestCertPolicy[] = "1.2.3.4";
@@ -534,7 +546,6 @@ TEST_F(CertVerifyProcBuiltinTest, EVNoOCSPRevocationChecks) {
   TestCompletionCallback verify_callback;
   Verify(chain.get(), "www.example.com",
          /*flags=*/0,
-         /*additional_trust_anchors=*/{root->GetX509Certificate()},
          &verify_result, &verify_net_log_source, verify_callback.callback());
 
   // EV doesn't do revocation checking, therefore verification result
@@ -571,12 +582,14 @@ TEST_F(CertVerifyProcBuiltinTest, EVNoOCSPRevocationChecks) {
 
 TEST_F(CertVerifyProcBuiltinTest, DeadlineExceededDuringSyncGetIssuers) {
   auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
+  InitializeVerifyProc(
+      /*additional_trust_anchors=*/{root->GetX509Certificate()});
 
   BlockingTrustStore trust_store;
   AddTrustStore(&trust_store);
 
-  auto intermediate_parsed_cert =
-      ParsedCertificate::Create(intermediate->DupCertBuffer(), {}, nullptr);
+  auto intermediate_parsed_cert = bssl::ParsedCertificate::Create(
+      intermediate->DupCertBuffer(), {}, nullptr);
   ASSERT_TRUE(intermediate_parsed_cert);
   trust_store.backing_trust_store_.AddCertificateWithUnspecifiedTrust(
       intermediate_parsed_cert);
@@ -589,7 +602,6 @@ TEST_F(CertVerifyProcBuiltinTest, DeadlineExceededDuringSyncGetIssuers) {
   TestCompletionCallback verify_callback;
   Verify(chain.get(), "www.example.com",
          /*flags=*/0,
-         /*additional_trust_anchors=*/{root->GetX509Certificate()},
          &verify_result, &verify_net_log_source, verify_callback.callback());
 
   // Wait for trust_store.SyncGetIssuersOf to be called.
@@ -633,8 +645,8 @@ std::string UnknownSignatureAlgorithmTLV() {
 }
 
 // Returns a TLV to use as an invalid signature algorithm when building a cert.
-// This is a SEQUENCE so that it will pass the ParseCertificate code
-// and fail inside ParseSignatureAlgorithm.
+// This is a SEQUENCE so that it will pass the bssl::ParseCertificate code
+// and fail inside bssl::ParseSignatureAlgorithm.
 // SEQUENCE {
 //   INTEGER { 42 }
 // }
@@ -660,8 +672,8 @@ TEST_F(CertVerifyProcBuiltinTest, UnknownSignatureAlgorithmTarget) {
   CertVerifyResult verify_result;
   NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
-  Verify(chain.get(), "www.example.com", flags, CertificateList(),
-         &verify_result, &verify_net_log_source, callback.callback());
+  Verify(chain.get(), "www.example.com", flags, &verify_result,
+         &verify_net_log_source, callback.callback());
   int error = callback.WaitForResult();
   // Unknown signature algorithm in the leaf cert should result in the cert
   // being invalid.
@@ -684,8 +696,8 @@ TEST_F(CertVerifyProcBuiltinTest,
   CertVerifyResult verify_result;
   NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
-  Verify(chain.get(), "www.example.com", flags, CertificateList(),
-         &verify_result, &verify_net_log_source, callback.callback());
+  Verify(chain.get(), "www.example.com", flags, &verify_result,
+         &verify_net_log_source, callback.callback());
   int error = callback.WaitForResult();
   // Invalid signature algorithm in the leaf cert should result in the
   // cert being invalid.
@@ -706,8 +718,8 @@ TEST_F(CertVerifyProcBuiltinTest, UnknownSignatureAlgorithmIntermediate) {
   CertVerifyResult verify_result;
   NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
-  Verify(chain.get(), "www.example.com", flags, CertificateList(),
-         &verify_result, &verify_net_log_source, callback.callback());
+  Verify(chain.get(), "www.example.com", flags, &verify_result,
+         &verify_net_log_source, callback.callback());
   int error = callback.WaitForResult();
   // Unknown signature algorithm in the intermediate cert should result in the
   // cert being invalid.
@@ -731,8 +743,8 @@ TEST_F(CertVerifyProcBuiltinTest,
   CertVerifyResult verify_result;
   NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
-  Verify(chain.get(), "www.example.com", flags, CertificateList(),
-         &verify_result, &verify_net_log_source, callback.callback());
+  Verify(chain.get(), "www.example.com", flags, &verify_result,
+         &verify_net_log_source, callback.callback());
   int error = callback.WaitForResult();
   // Invalid signature algorithm in the intermediate cert should result in the
   // cert being invalid.
@@ -753,8 +765,8 @@ TEST_F(CertVerifyProcBuiltinTest, UnknownSignatureAlgorithmRoot) {
   CertVerifyResult verify_result;
   NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
-  Verify(chain.get(), "www.example.com", flags, CertificateList(),
-         &verify_result, &verify_net_log_source, callback.callback());
+  Verify(chain.get(), "www.example.com", flags, &verify_result,
+         &verify_net_log_source, callback.callback());
   int error = callback.WaitForResult();
   // Unknown signature algorithm in the root cert should have no effect on
   // verification.
@@ -787,8 +799,8 @@ TEST_F(CertVerifyProcBuiltinTest,
   CertVerifyResult verify_result;
   NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
-  Verify(chain.get(), "www.example.com", flags, CertificateList(),
-         &verify_result, &verify_net_log_source, callback.callback());
+  Verify(chain.get(), "www.example.com", flags, &verify_result,
+         &verify_net_log_source, callback.callback());
   int error = callback.WaitForResult();
   // Invalid signature algorithm in the root cert should have no effect on
   // verification.
@@ -866,8 +878,8 @@ TEST_P(CertVerifyProcBuiltinIterationTest, IterationLimit) {
   CertVerifyResult verify_result;
   NetLogSource verify_net_log_source;
   TestCompletionCallback callback;
-  Verify(chain.get(), "www.example.com", flags, CertificateList(),
-         &verify_result, &verify_net_log_source, callback.callback());
+  Verify(chain.get(), "www.example.com", flags, &verify_result,
+         &verify_net_log_source, callback.callback());
   int error = callback.WaitForResult();
 
   auto events = net_log_observer.GetEntriesForSource(verify_net_log_source);

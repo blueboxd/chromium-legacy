@@ -361,9 +361,13 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
   // container due to portal activation. The |predecessor_contents| is now a
   // portal pending adoption. |predecessor_contents| is non-null, but may
   // subsequently be destroyed if it is not adopted.
-  // |activation_time| is the time the activation happened.
+  // `activation_time` is the time the activation happened.
   virtual void DidActivatePortal(WebContents* predecessor_web_contents,
                                  base::TimeTicks activation_time) {}
+
+  // Called after the WebContents completes the previewed page activation steps.
+  // `activation_time` is the time the activation happened.
+  virtual void DidActivatePreviewedPage(base::TimeTicks activation_time) {}
 
   // Document load events ------------------------------------------------------
 
@@ -697,6 +701,12 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
       RenderFrameHost* rfh,
       blink::mojom::FrameVisibility visibility) {}
 
+  // Called when an individual frame starts/stops capturing at least one video
+  // stream. An example is capturing another window using getDisplayMedia().
+  virtual void OnFrameIsCapturingVideoStreamChanged(
+      RenderFrameHost* rfh,
+      bool is_capturing_video_stream) {}
+
   // Called when the connected to USB device state changes.
   virtual void OnIsConnectedToUsbDeviceChanged(
       bool is_connected_to_usb_device) {}
@@ -710,8 +720,7 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
 
   // Invoked when the renderer process has toggled the tab into/out of
   // fullscreen mode.
-  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen,
-                                             bool will_cause_resize) {}
+  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) {}
 
   // Signals that |rfh| has the current fullscreen element. This is invoked
   // when:

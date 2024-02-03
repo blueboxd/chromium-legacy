@@ -51,7 +51,7 @@ class BaselineAccumulator {
   explicit BaselineAccumulator(const ComputedStyle& style)
       : font_baseline_(style.GetFontBaseline()) {}
 
-  void AccumulateItem(const NGBoxFragment& fragment,
+  void AccumulateItem(const LogicalBoxFragment& fragment,
                       const LayoutUnit block_offset,
                       bool is_first_line,
                       bool is_last_line) {
@@ -133,9 +133,9 @@ bool ContainsNonWhitespace(const LayoutBox* box) {
 }  // anonymous namespace
 
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params,
+    const LayoutAlgorithmParams& params,
     const HashMap<wtf_size_t, LayoutUnit>* cross_size_adjustments)
-    : NGLayoutAlgorithm(params),
+    : LayoutAlgorithm(params),
       is_column_(Style().ResolvedIsColumnFlexDirection()),
       is_horizontal_flow_(FlexibleBoxAlgorithm::IsHorizontalFlow(Style())),
       is_cross_size_definite_(IsContainerCrossSizeDefinite()),
@@ -1074,7 +1074,7 @@ const NGLayoutResult* FlexLayoutAlgorithm::Layout() {
 const NGLayoutResult*
 FlexLayoutAlgorithm::RelayoutIgnoringChildScrollbarChanges() {
   DCHECK(!ignore_child_scrollbar_changes_);
-  NGLayoutAlgorithmParams params(
+  LayoutAlgorithmParams params(
       Node(), container_builder_.InitialFragmentGeometry(), ConstraintSpace(),
       BreakToken(), /* early_break */ nullptr);
   FlexLayoutAlgorithm algorithm(params);
@@ -1085,7 +1085,7 @@ FlexLayoutAlgorithm::RelayoutIgnoringChildScrollbarChanges() {
 const NGLayoutResult* FlexLayoutAlgorithm::RelayoutAndBreakEarlierForFlex(
     const NGLayoutResult* previous_result) {
   DCHECK(previous_result->GetEarlyBreak());
-  NGLayoutAlgorithmParams params(
+  LayoutAlgorithmParams params(
       Node(), container_builder_.InitialFragmentGeometry(), ConstraintSpace(),
       BreakToken(), previous_result->GetEarlyBreak(), &column_early_breaks_);
   FlexLayoutAlgorithm algorithm_with_break(params);
@@ -1231,7 +1231,7 @@ const NGLayoutResult* FlexLayoutAlgorithm::LayoutInternal() {
 
   // Un-freeze descendant scrollbars before we run the OOF layout part.
   freeze_scrollbars.reset();
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   return container_builder_.ToBoxFragment();
 }
@@ -1515,7 +1515,7 @@ NGLayoutResult::EStatus FlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
           To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
 
       const auto writing_direction = ConstraintSpace().GetWritingDirection();
-      NGBoxFragment fragment(writing_direction, physical_fragment);
+      LogicalBoxFragment fragment(writing_direction, physical_fragment);
       if (!InvolvedInBlockFragmentation(container_builder_)) {
         container_builder_.AddResult(
             *layout_result, offset,
@@ -1903,8 +1903,8 @@ FlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
     const auto& physical_fragment =
         To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
 
-    NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
-                           physical_fragment);
+    LogicalBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
+                                physical_fragment);
 
     bool is_at_block_end = !physical_fragment.BreakToken() ||
                            physical_fragment.BreakToken()->IsAtBlockEnd();
@@ -2127,11 +2127,11 @@ void FlexLayoutAlgorithm::AdjustButtonBaseline(
     return;
   }
   DCHECK_EQ(children.size(), 1u);
-  const NGLogicalLink& child = children[0];
+  const LogicalFragmentLink& child = children[0];
   DCHECK(!child.fragment->IsLineBox());
   const NGConstraintSpace& space = ConstraintSpace();
-  NGBoxFragment fragment(space.GetWritingDirection(),
-                         To<NGPhysicalBoxFragment>(*child.fragment));
+  LogicalBoxFragment fragment(space.GetWritingDirection(),
+                              To<NGPhysicalBoxFragment>(*child.fragment));
   absl::optional<LayoutUnit> child_baseline =
       space.BaselineAlgorithmType() == NGBaselineAlgorithmType::kDefault
           ? fragment.FirstBaseline()
@@ -2504,7 +2504,7 @@ const NGLayoutResult* FlexLayoutAlgorithm::RelayoutWithNewRowSizes() {
   DCHECK(!row_cross_size_updates_.empty());
   DCHECK_LE(row_cross_size_updates_.size(), 2u);
 
-  NGLayoutAlgorithmParams params(
+  LayoutAlgorithmParams params(
       Node(), container_builder_.InitialFragmentGeometry(), ConstraintSpace(),
       BreakToken(), early_break_, additional_early_breaks_);
   FlexLayoutAlgorithm algorithm_with_row_cross_sizes(params,

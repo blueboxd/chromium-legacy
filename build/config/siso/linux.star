@@ -14,7 +14,7 @@ load("./nasm_linux.star", "nasm")
 load("./proto_linux.star", "proto")
 load("./reproxy.star", "reproxy")
 load("./rust_linux.star", "rust")
-load("./typescript_linux.star", "typescript")
+load("./typescript_unix.star", "typescript")
 
 def __filegroups(ctx):
     fg = {}
@@ -59,6 +59,7 @@ def __disable_remote_b289968566(ctx, step_config):
             "./obj/chrome/test/browser_tests/spoken_feedback_browsertest.o",
             "./obj/chrome/test/unit_tests/chrome_browsing_data_remover_delegate_unittest.o",
             "./obj/chrome/test/unit_tests/site_settings_handler_unittest.o",
+            "./obj/content/browser/browser/browser_interface_binders.o",
             "./obj/fuchsia_web/runners/cast_runner_integration_tests__exec/cast_runner_integration_test.o",
             "./obj/fuchsia_web/webengine/web_engine_core/frame_impl.o",
             "./ash_clang_x64/obj/chrome/browser/ash/ash/autotest_private_api.o",
@@ -75,13 +76,6 @@ def __disable_remote_b289968566(ctx, step_config):
 
 def __step_config(ctx, step_config):
     config.check(ctx)
-    step_config["platforms"].update({
-        "default": {
-            "OSFamily": "Linux",
-            "container-image": "docker://gcr.io/chops-public-images-prod/rbe/siso-chromium/linux@sha256:912808c295e578ccde53b0685bcd0d56c15d7a03e819dcce70694bfe3fdab35e",
-            "label:action_default": "1",
-        },
-    })
 
     step_config = __disable_remote_b289968566(ctx, step_config)
 

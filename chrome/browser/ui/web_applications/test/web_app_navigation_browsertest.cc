@@ -40,6 +40,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
 
@@ -127,7 +128,6 @@ WebAppNavigationBrowserTest::GetTestNavigationObserver(const GURL& target_url) {
 void WebAppNavigationBrowserTest::ClickLink(
     content::WebContents* web_contents,
     const GURL& link_url,
-    const GURL& target_url,
     WebAppNavigationBrowserTest::LinkTarget target,
     const std::string& rel,
     int modifiers,
@@ -165,7 +165,7 @@ void WebAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
     int modifiers,
     blink::WebMouseEvent::Button button) {
   auto observer = GetTestNavigationObserver(target_url);
-  ClickLink(web_contents, link_url, target_url, target, rel, modifiers, button);
+  ClickLink(web_contents, link_url, target, rel, modifiers, button);
   observer->Wait();
 }
 
@@ -317,16 +317,17 @@ void WebAppNavigationBrowserTest::NavigateToLaunchingPage(Browser* browser) {
       https_server_.GetURL(GetLaunchingPageHost(), GetLaunchingPagePath())));
 }
 
-bool WebAppNavigationBrowserTest::TestActionDoesNotOpenAppWindow(
+bool WebAppNavigationBrowserTest::ExpectLinkClickNotCapturedIntoAppBrowser(
     Browser* browser,
     const GURL& target_url,
-    base::OnceClosure action) {
+    const std::string& rel) {
   content::WebContents* initial_tab =
       browser->tab_strip_model()->GetActiveWebContents();
   int num_tabs = browser->tab_strip_model()->count();
   size_t num_browsers = chrome::GetBrowserCount(browser->profile());
 
-  std::move(action).Run();
+  ClickLinkAndWait(browser->tab_strip_model()->GetActiveWebContents(),
+                   target_url, LinkTarget::SELF, rel);
 
   EXPECT_EQ(num_tabs, browser->tab_strip_model()->count());
   EXPECT_EQ(num_browsers, chrome::GetBrowserCount(browser->profile()));
@@ -335,13 +336,6 @@ bool WebAppNavigationBrowserTest::TestActionDoesNotOpenAppWindow(
   EXPECT_EQ(target_url, initial_tab->GetLastCommittedURL());
 
   return !HasFailure();
-}
-
-bool WebAppNavigationBrowserTest::TestTabActionDoesNotOpenAppWindow(
-    const GURL& target_url,
-    base::OnceClosure action) {
-  return TestActionDoesNotOpenAppWindow(browser(), target_url,
-                                        std::move(action));
 }
 
 const GURL& WebAppNavigationBrowserTest::test_web_app_start_url() {

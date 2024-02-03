@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 
 import androidx.annotation.CallSuper;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.IntentUtils;
@@ -27,12 +28,14 @@ import org.chromium.chrome.browser.back_press.BackPressHelper;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.back_press.SecondaryActivityBackPressUma.SecondaryActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.init.ActivityProfileProvider;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.SimpleStartupForegroundSessionDetector;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.policy.PolicyServiceFactory;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.policy.PolicyService;
@@ -67,7 +70,6 @@ public abstract class FirstRunActivityBase
     private boolean mNativeInitialized;
 
     private final FirstRunAppRestrictionInfo mFirstRunAppRestrictionInfo;
-    private final OneshotSupplierImpl<Profile> mProfileSupplier;
     private final OneshotSupplierImpl<PolicyService> mPolicyServiceSupplier;
     private final ObservableSupplierImpl<Boolean> mBackPressStateSupplier =
             new ObservableSupplierImpl<>() {
@@ -83,7 +85,6 @@ public abstract class FirstRunActivityBase
 
     public FirstRunActivityBase() {
         mFirstRunAppRestrictionInfo = FirstRunAppRestrictionInfo.takeMaybeInitialized();
-        mProfileSupplier = new OneshotSupplierImpl<>();
         mPolicyServiceSupplier = new OneshotSupplierImpl<>();
         mPolicyLoadListener = sPolicyLoadListenerFactoryForTesting == null
                 ? new PolicyLoadListener(mFirstRunAppRestrictionInfo, mPolicyServiceSupplier)
@@ -111,6 +112,8 @@ public abstract class FirstRunActivityBase
         mChildAccountStatusSupplier =
                 new ChildAccountStatusSupplier(accountManagerFacade, mFirstRunAppRestrictionInfo);
 
+        // TODO(crbug.com/1498708): Find the underlying issue causing the status bar not to be set
+        //  during FRE, this is just a temporary visual fix.
         if (BuildInfo.getInstance().isAutomotive) {
             StatusBarColorController.setStatusBarColor(getWindow(), Color.BLACK);
         }
@@ -155,13 +158,23 @@ public abstract class FirstRunActivityBase
     }
 
     @Override
+    protected OneshotSupplier<ProfileProvider> createProfileProvider() {
+        return new ActivityProfileProvider(getLifecycleDispatcher()) {
+            @Nullable
+            @Override
+            protected OTRProfileID createOffTheRecordProfileID() {
+                throw new IllegalStateException("Attempting to access incognito in the FRE");
+            }
+        };
+    }
+
+    @Override
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
         mNativeInitialized = true;
         mNativeInitializedTime = SystemClock.elapsedRealtime();
         RecordHistogram.recordTimesHistogram(
                 "MobileFre.NativeInitialized", mNativeInitializedTime - mStartTime);
-        mProfileSupplier.set(Profile.getLastUsedRegularProfile());
         mPolicyServiceSupplier.set(PolicyServiceFactory.getGlobalPolicyService());
     }
 
@@ -240,11 +253,6 @@ public abstract class FirstRunActivityBase
         if (!mNativeInitialized) return;
 
         assert mNativeInitializedTime != 0;
-    }
-
-    /** @return The supplier that provides the Profile (when available). */
-    public OneshotSupplier<Profile> getProfileSupplier() {
-        return mProfileSupplier;
     }
 
     /**

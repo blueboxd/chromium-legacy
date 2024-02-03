@@ -27,7 +27,7 @@
 #include "components/password_manager/core/browser/import/csv_password_sequence.h"
 #include "components/password_manager/core/browser/import/import_results.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/browser/password_store/test_password_store.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/browser_context.h"
@@ -298,7 +298,7 @@ TEST_F(PasswordManagerPorterTest, PasswordExport) {
               SetDestination(temp_file_path()));
 
   porter().SetExporterForTesting(std::move(mock_password_manager_exporter_));
-  porter().Export(web_contents()->GetWeakPtr());
+  porter().Export(web_contents());
 }
 
 TEST_F(PasswordManagerPorterTest, CancelExportFileSelection) {
@@ -312,7 +312,7 @@ TEST_F(PasswordManagerPorterTest, CancelExportFileSelection) {
   EXPECT_CALL(*mock_password_manager_exporter_, Cancel());
 
   porter().SetExporterForTesting(std::move(mock_password_manager_exporter_));
-  porter().Export(web_contents()->GetWeakPtr());
+  porter().Export(web_contents());
 }
 
 TEST_F(PasswordManagerPorterTest, CancelExport) {
@@ -324,7 +324,7 @@ TEST_F(PasswordManagerPorterTest, CancelExport) {
   EXPECT_CALL(*mock_password_manager_exporter_, Cancel());
 
   porter().SetExporterForTesting(std::move(mock_password_manager_exporter_));
-  porter().Export(web_contents()->GetWeakPtr());
+  porter().Export(web_contents());
   porter().CancelExport();
 }
 

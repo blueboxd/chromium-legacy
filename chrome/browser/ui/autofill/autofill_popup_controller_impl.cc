@@ -399,8 +399,8 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index,
   mf_controller->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                           /*has_suggestions=*/false);
   mf_controller->Hide();
-#endif
 
+#endif
   if (suggestion.popup_item_id == PopupItemId::kVirtualCreditCardEntry) {
     std::string event_name =
         suggestion.feature_for_iph ==
@@ -427,7 +427,11 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index,
     view_->AxAnnounce(*announcement);
   }
 
-  delegate_->DidAcceptSuggestion(suggestion, index, trigger_source_);
+  delegate_->DidAcceptSuggestion(
+      suggestion,
+      AutofillPopupDelegate::SuggestionPosition{
+          .row = index, .sub_popup_level = GetPopupLevel()},
+      trigger_source_);
 #if BUILDFLAG(IS_ANDROID)
   if ((suggestion.popup_item_id == PopupItemId::kPasswordEntry ||
        suggestion.popup_item_id == PopupItemId::kUsernameEntry) &&
@@ -688,6 +692,10 @@ base::WeakPtr<AutofillPopupView>
 AutofillPopupControllerImpl::CreateSubPopupView(
     base::WeakPtr<AutofillPopupController> controller) {
   return view_ ? view_->CreateSubPopupView(controller) : nullptr;
+}
+
+int AutofillPopupControllerImpl::GetPopupLevel() const {
+  return !IsRootPopup() ? parent_controller_->get()->GetPopupLevel() + 1 : 0;
 }
 
 void AutofillPopupControllerImpl::FireControlsChangedEvent(bool is_show) {

@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/color_palette.h"
@@ -153,9 +154,12 @@ class SidePanelBorder : public views::Border {
     // inset is outside the SidePanel itself, but not outside the BorderView.
     // If there is a header we want to increase the top inset to give room for
     // the header to paint on top of the border area.
-    return kBorderInsets +
-           gfx::Insets::TLBR(views::Separator::kThickness + header_height_, 0,
-                             0, 0);
+    int top_inset = views::Separator::kThickness + header_height_;
+    if (base::FeatureList::IsEnabled(features::kSidePanelPinning) &&
+        features::IsChromeRefresh2023()) {
+      top_inset -= kBorderThickness;
+    }
+    return kBorderInsets + gfx::Insets::TLBR(top_inset, 0, 0, 0);
   }
   gfx::Size GetMinimumSize() const override {
     return gfx::Size(GetInsets().width(), GetInsets().height());
@@ -276,8 +280,7 @@ bool SidePanel::IsRightAligned() {
 }
 
 gfx::Size SidePanel::GetMinimumSize() const {
-  const int min_side_panel_contents_width =
-      features::GetSidePanelMinimumWidth();
+  const int min_side_panel_contents_width = 320;
   const int min_height = 0;
   return gfx::Size(min_side_panel_contents_width + kBorderInsets.width(),
                    min_height);
@@ -294,8 +297,12 @@ void SidePanel::AddHeaderView(std::unique_ptr<views::View> view) {
   static_cast<BorderView*>(border_view_)->HeaderViewChanged(header_view_);
   // Update the border so that the insets include space for the header to be
   // placed on top of the border.
-  SetBorder(views::CreateEmptyBorder(
-      kBorderInsets + gfx::Insets::TLBR(header_view_->height(), 0, 0, 0)));
+  int top_inset = header_view_->height();
+  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+    top_inset -= kBorderThickness;
+  }
+  SetBorder(views::CreateEmptyBorder(kBorderInsets +
+                                     gfx::Insets::TLBR(top_inset, 0, 0, 0)));
 }
 
 gfx::Size SidePanel::GetContentSizeUpperBound() const {
@@ -403,9 +410,12 @@ void SidePanel::UpdateVisibility() {
       border_view_->layer()->SetFillsBoundsOpaquely(false);
       if (header_view_) {
         static_cast<BorderView*>(border_view_)->HeaderViewChanged(header_view_);
+        int top_inset = header_view_->height();
+        if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+          top_inset -= kBorderThickness;
+        }
         SetBorder(views::CreateEmptyBorder(
-            kBorderInsets +
-            gfx::Insets::TLBR(header_view_->height(), 0, 0, 0)));
+            kBorderInsets + gfx::Insets::TLBR(top_inset, 0, 0, 0)));
       }
     } else {
       border_view_->DestroyLayer();

@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
+#include "content/browser/interest_group/header_direct_from_seller_signals.h"
 #include "content/browser/interest_group/interest_group_caching_storage.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/subresource_url_authorizations.h"
@@ -48,7 +49,6 @@ namespace content {
 class AuctionWorkletManager;
 struct BiddingAndAuctionResponse;
 class BrowserContext;
-class HeaderDirectFromSellerSignals;
 class InterestGroupManagerImpl;
 class PrivateAggregationManager;
 
@@ -138,7 +138,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
     raw_ptr<const blink::AuctionConfig> auction_config;
 
     std::unique_ptr<SubresourceUrlBuilder> subresource_url_builder;
-    std::unique_ptr<HeaderDirectFromSellerSignals>
+    scoped_refptr<HeaderDirectFromSellerSignals::Result>
         direct_from_seller_signals_header_ad_slot;
 
     // Bid fed as input to the seller. If this is the top level seller and the
@@ -371,7 +371,6 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // function from OnSellerReportResultComplete since this is also called by
   // `InitializeFromServerResponse()`.
   bool AddReportResultResult(
-      const url::Origin& seller_origin,
       const absl::optional<GURL>& seller_report_url,
       const base::flat_map<std::string, GURL>& seller_ad_beacon_map,
       blink::FencedFrame::ReportingDestination destination,
@@ -411,7 +410,6 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // `InitializeFromServerResponse()` since macro expanded reporting is not
   // supported from server auction.
   bool AddReportWinResult(
-      const url::Origin& bidder_origin,
       const absl::optional<GURL>& bidder_report_url,
       const base::flat_map<std::string, GURL>& bidder_ad_beacon_map,
       const absl::optional<base::flat_map<std::string, std::string>>&

@@ -85,8 +85,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnStartAppLaunch() override;
   void OnBrowserCreated() override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
+  void StartUserRecovery(const AccountId& account_to_recover) override;
   void ShowOsInstallScreen() override;
   void ShowGuestTosScreen() override;
+  void ShowRemoteActivityNotificationScreen() override;
   void HideOobeDialog(bool saml_page_closed = false) override;
   void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(OobeDialogState state) override;
@@ -96,10 +98,11 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
   bool HasUserPods() override;
-  void VerifyOwnerForKiosk(base::OnceClosure on_success) override;
   void ShowPasswordChangedDialogLegacy(const AccountId& account_id,
                                        bool show_password_error) override;
   void StartCryptohomeRecovery(
+      std::unique_ptr<UserContext> user_context) override;
+  void RunLocalAuthentication(
       std::unique_ptr<UserContext> user_context) override;
   void StartBrowserDataMigration() override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
@@ -169,6 +172,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void ShowFullScreen();
   void HideDialog();
 
+  // Common part for ShowGaiaDialog/StartUserRecovery.
+  void ShowGaiaDialogImpl(const AccountId& prefilled_account);
+
   // Adds this as a `OobeUI::Observer` if it has not already been added as one.
   void ObserveOobeUI();
 
@@ -179,9 +185,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // consume auth status events.
   void CreateExistingUserController();
 
-  // Consumer kiosk owner authentication functions.
-  void CheckOwnerCredentials(const UserContext& user_context);
-  void OnOwnerSigninSuccess();
+  // Result callback for local authentication dialog.
+  void OnLocalAuthenticationCompleted(
+      bool success,
+      std::unique_ptr<UserContext> user_context);
 
   // Sets an extra flag that can hide/unhide offline login link if the offline
   // login timer has expired for a focused user.
@@ -243,11 +250,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // Set if Gaia dialog is shown with prefilled email.
   absl::optional<AccountId> gaia_reauth_account_id_;
-
-  // Consumer kiosk owner fields.
-  AccountId owner_account_id_;
-  base::OnceClosure owner_verified_callback_;
-  scoped_refptr<ExtendedAuthenticator> extended_authenticator_;
 
   base::ScopedObservation<views::View, views::ViewObserver> scoped_observation_{
       this};

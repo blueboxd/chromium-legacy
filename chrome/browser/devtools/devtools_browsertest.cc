@@ -487,13 +487,13 @@ class DevToolsBeforeUnloadTest : public DevToolsTest {
   }
 
   void OpenDevToolsPopupWindow(DevToolsWindow* devtools_window) {
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
     ASSERT_TRUE(content::ExecJs(
         DevToolsWindowTesting::Get(devtools_window)->main_web_contents(),
         "window.open(\"\", \"\", \"location=0\");"));
-    observer.Wait();
+    Browser* popup_browser = BrowserList::GetInstance()->GetLastActive();
+    WebContents* popup_contents =
+        popup_browser->tab_strip_model()->GetActiveWebContents();
+    content::WaitForLoadStop(popup_contents);
   }
 
   void CloseDevToolsPopupWindow(DevToolsWindow* devtools_window) {
@@ -782,7 +782,14 @@ class DevToolsServiceWorkerExtensionTest : public InProcessBrowserTest {
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
 };
 
-IN_PROC_BROWSER_TEST_F(DevToolsServiceWorkerExtensionTest, AttachOnReload) {
+// TODO(crbug/1503023): Fix the memory leak and enable the test.
+#if defined(LEAK_SANITIZER) && BUILDFLAG(IS_LINUX)
+#define MAYBE_AttachOnReload DISABLED_AttachOnReload
+#else
+#define MAYBE_AttachOnReload AttachOnReload
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsServiceWorkerExtensionTest,
+                       MAYBE_AttachOnReload) {
   base::FilePath extension_path =
       base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
           .AppendASCII("devtools")
@@ -1903,9 +1910,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, CanInspectExtensionOffscreenDoc) {
           get_info_function.get(),
           content::JsReplace(R"([$1])", extension->id()), browser()->profile());
   ASSERT_TRUE(result);
-  std::unique_ptr<extensions::api::developer_private::ExtensionInfo> info =
-      extensions::api::developer_private::ExtensionInfo::FromValueDeprecated(
-          *result);
+  auto info =
+      extensions::api::developer_private::ExtensionInfo::FromValue(*result);
   ASSERT_TRUE(info);
 
   // The only inspectable view should be the offscreen document. Validate the
@@ -1913,7 +1919,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, CanInspectExtensionOffscreenDoc) {
   ASSERT_EQ(1u, info->views.size());
   const extensions::api::developer_private::ExtensionView& view =
       info->views[0];
-  EXPECT_EQ(extensions::api::developer_private::VIEW_TYPE_OFFSCREEN_DOCUMENT,
+  EXPECT_EQ(extensions::api::developer_private::ViewType::kOffscreenDocument,
             view.type);
   content::WebContents* offscreen_contents =
       offscreen_document->host_contents();

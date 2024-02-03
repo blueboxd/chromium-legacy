@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <sys/mman.h>
+#include <sys/poll.h>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -19,6 +20,7 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
@@ -28,7 +30,7 @@
 #include "media/gpu/chromeos/image_processor_backend.h"
 #include "media/gpu/chromeos/image_processor_factory.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
-#include "media/gpu/chromeos/vulkan_image_processor_backend.h"
+#include "media/gpu/chromeos/vulkan_image_processor.h"
 #include "media/gpu/test/image.h"
 #include "media/gpu/test/image_processor/image_processor_client.h"
 #include "media/gpu/test/video_frame_file_writer.h"
@@ -680,11 +682,16 @@ TEST(ImageProcessorBackendTest, VulkanDetileScaleTest) {
   gfx::Rect visible_rect = input_image.VisibleRect();
   scoped_refptr<VideoFrame> mm21_frame = CreateNV12Frame(
       input_image.Size(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+
+  // The MM21 path only makes sense for V4L2, so we should never get an Intel
+  // media compressed buffer here.
+  ASSERT_FALSE(IsIntelMediaCompressedModifier(mm21_frame->layout().modifier()));
   std::unique_ptr<VideoFrameMapper> frame_mapper =
       VideoFrameMapperFactory::CreateMapper(
           VideoPixelFormat::PIXEL_FORMAT_NV12,
           VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
-          /*force_linear_buffer_mapper=*/true);
+          /*force_linear_buffer_mapper=*/true,
+          /*must_support_intel_media_compressed_buffers=*/false);
   scoped_refptr<VideoFrame> mapped_mm21_frame =
       frame_mapper->Map(mm21_frame, PROT_READ | PROT_WRITE);
   ASSERT_TRUE(mapped_mm21_frame);
@@ -713,41 +720,37 @@ TEST(ImageProcessorBackendTest, VulkanDetileScaleTest) {
       test::CreateVideoFrameLayout(input_image.PixelFormat(), coded_size);
   auto output_layout = test::CreateVideoFrameLayout(
       output_fourcc.ToVideoPixelFormat(), output_size);
-  ImageProcessor::PortConfig input_config(
-      Fourcc(Fourcc::MM21), coded_size, input_layout->planes(), visible_rect,
-      {VideoFrame::STORAGE_GPU_MEMORY_BUFFER});
-  ImageProcessor::PortConfig output_config(
-      output_fourcc, output_size, output_layout->planes(), output_visible_rect,
-      {VideoFrame::STORAGE_GPU_MEMORY_BUFFER});
-  base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
-  bool image_processor_error = false;
-  auto client_task_runner = base::SequencedTaskRunner::GetCurrentDefault();
-  ImageProcessor::ErrorCB error_cb = base::BindRepeating(
-      [](scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-         base::RepeatingClosure quit_closure, bool* image_processor_error) {
-        CHECK(client_task_runner->RunsTasksInCurrentSequence());
-        *image_processor_error = true;
-        quit_closure.Run();
+  auto in_gmb = CreateGpuMemoryBufferHandle(mm21_frame.get());
+  auto out_gmb = CreateGpuMemoryBufferHandle(vulkan_output_frame.get());
+  gpu::Mailbox input_mailbox = gpu::Mailbox::GenerateForSharedImage();
+  gpu::Mailbox output_mailbox = gpu::Mailbox::GenerateForSharedImage();
+
+  VulkanImageProcessor::BackingCB input_backing_cb = base::BindRepeating(
+      [](gpu::Mailbox expected_mailbox_, gfx::GpuMemoryBufferHandle* in_gmb_,
+         gpu::Mailbox& mailbox) {
+        assert(mailbox == expected_mailbox_);
+        return std::move(*in_gmb_);
       },
-      client_task_runner, quit_closure, &image_processor_error);
-  auto vulkan_image_processor = VulkanImageProcessorBackend::Create(
-      input_config, output_config, ImageProcessorBackend::OutputMode::IMPORT,
-      error_cb);
+      input_mailbox, &in_gmb);
+  VulkanImageProcessor::ReleaseCB in_release_cb =
+      base::BindOnce([](gpu::Mailbox& mailbox) {});
+  VulkanImageProcessor::BackingCB output_backing_cb = base::BindRepeating(
+      [](gpu::Mailbox expected_mailbox_, gfx::GpuMemoryBufferHandle* out_gmb_,
+         gpu::Mailbox& mailbox) {
+        assert(mailbox == expected_mailbox_);
+        return std::move(*out_gmb_);
+      },
+      output_mailbox, &out_gmb);
+  auto vulkan_image_processor =
+      VulkanImageProcessor::Create(input_backing_cb, output_backing_cb);
   ASSERT_TRUE(vulkan_image_processor);
 
-  ImageProcessor::FrameReadyCB vulkan_callback = base::BindOnce(
-      [](scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-         base::RepeatingClosure quit_closure,
-         scoped_refptr<VideoFrame>* output_frame,
-         scoped_refptr<VideoFrame> frame) {
-        CHECK(client_task_runner->RunsTasksInCurrentSequence());
-        quit_closure.Run();
-      },
-      client_task_runner, quit_closure, &vulkan_output_frame);
-  vulkan_image_processor->Process(mm21_frame, vulkan_output_frame,
-                                  std::move(vulkan_callback));
-  run_loop.Run();
+  gpu::SemaphoreHandle done_semaphore = vulkan_image_processor->Process(
+      input_mailbox, coded_size, visible_rect.size(), std::move(in_release_cb),
+      output_mailbox, output_size, output_visible_rect.size(), absl::nullopt);
+
+  struct pollfd poll_request = {done_semaphore.TakeHandle().get(), -0x7FFF, 0};
+  poll(&poll_request, 1, 1000);
 
   // Replicate this operation using LibYUV. Note that we don't use the image
   // processor since we need to do a very specific conversion and scale
@@ -804,11 +807,17 @@ TEST(ImageProcessorBackendTest, VulkanDetileScaleTest) {
   uint8_t* vulkan_output_v =
       (uint8_t*)mmap(nullptr, i420_scaled_u_v_size, PROT_READ | PROT_WRITE,
                      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+  // The MM21 de-tiling path only makes sense for V4L2, so we should never get
+  // an Intel media compressed buffer here.
+  ASSERT_FALSE(
+      IsIntelMediaCompressedModifier(vulkan_output_frame->layout().modifier()));
   std::unique_ptr<VideoFrameMapper> output_frame_mapper =
       VideoFrameMapperFactory::CreateMapper(
           VideoPixelFormat::PIXEL_FORMAT_ARGB,
           VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
-          /*force_linear_buffer_mapper=*/true);
+          /*force_linear_buffer_mapper=*/true,
+          /*must_support_intel_media_compressed_buffers=*/false);
   scoped_refptr<VideoFrame> mapped_output_frame =
       output_frame_mapper->Map(vulkan_output_frame, PROT_READ | PROT_WRITE);
   const uint8_t* argb_plane =

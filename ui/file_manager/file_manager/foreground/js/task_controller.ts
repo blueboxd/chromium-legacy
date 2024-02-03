@@ -11,7 +11,6 @@ import {assertInstanceof, assertNotReached} from 'chrome://resources/ash/common/
 
 import {getMimeType, startIOTask} from '../../common/js/api.js';
 import {type AnnotatedTask, getDefaultTask} from '../../common/js/file_tasks.js';
-import {isJellyEnabled} from '../../common/js/flags.js';
 import {recordDirectoryListLoadWithTolerance, startInterval} from '../../common/js/metrics.js';
 import {str, strf} from '../../common/js/translations.js';
 import {checkAPIError} from '../../common/js/util.js';
@@ -302,15 +301,12 @@ export class TaskController {
     const tasks = fileTasks.getAnnotatedTasks();
     const items = [];
 
-    // We don't bold default task item in refresh23 style.
-    const shouldBoldDefaultItem = !isJellyEnabled();
-
     // Create items.
     for (const task of tasks) {
       if (task === fileTasks.defaultTask) {
         const title = task.title + ' ' + str('DEFAULT_TASK_LABEL');
         items.push(createDropdownItem(
-            task, title, /*bold=*/ shouldBoldDefaultItem, /*isDefault=*/ true,
+            task, title, /*isDefault=*/ true,
             /*isPolicyDefault=*/
             !!fileTasks.getPolicyDefaultHandlerStatus()));
       } else {
@@ -683,7 +679,6 @@ export interface DropdownItem {
   iconUrl?: string;
   iconType: string;
   task: chrome.fileManagerPrivate.FileTask;
-  bold: boolean;
   isDefault: boolean;
   isPolicyDefault: boolean;
   isGenericFileHandler?: boolean;
@@ -692,11 +687,10 @@ export interface DropdownItem {
 
 /**
  * Creates dropdown item based on task.
- * @param bold Make a menu item bold.
  * @param isDefault Mark the item as default item.
  */
 function createDropdownItem(
-    task: chrome.fileManagerPrivate.FileTask, title?: string, bold?: boolean,
+    task: chrome.fileManagerPrivate.FileTask, title?: string,
     isDefault?: boolean, isPolicyDefault?: boolean): DropdownItem {
   return {
     type: TaskMenuItemType.RUN_TASK,
@@ -704,7 +698,6 @@ function createDropdownItem(
     iconUrl: task.iconUrl || '',
     iconType: (task as AnnotatedTask).iconType || '',
     task: task,
-    bold: bold || false,
     isDefault: isDefault || false,
     isPolicyDefault: isPolicyDefault || false,
     isGenericFileHandler: task.isGenericFileHandler,

@@ -82,10 +82,21 @@ std::unique_ptr<FeatureTile> NearbyShareFeaturePodController::CreateTile(
     TrackVisibilityUMA();
   }
 
+  const std::u16string feature_name =
+      nearby_share_delegate_->GetPlaceholderFeatureName();
   tile_->SetLabel(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_LABEL));
-  tile_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TOGGLE_TOOLTIP));
+      feature_name.empty()
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_LABEL)
+          : l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_LABEL_PH, feature_name));
+  tile_->SetTooltipText(
+      feature_name.empty()
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TOGGLE_TOOLTIP)
+          : l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TOGGLE_TOOLTIP_PH,
+                feature_name));
   bool enabled = nearby_share_delegate_->IsHighVisibilityOn();
   OnHighVisibilityEnabledChanged(enabled);
   return tile;
@@ -123,15 +134,18 @@ void NearbyShareFeaturePodController::OnHighVisibilityEnabledChanged(
 
 void NearbyShareFeaturePodController::UpdateButton(bool enabled) {
   tile_->SetToggled(enabled);
-  tile_->SetVectorIcon(enabled ? kQuickSettingsNearbyShareOnIcon
-                               : kQuickSettingsNearbyShareOffIcon);
 
+  auto& icon = nearby_share_delegate_->GetIcon(/*on_icon=*/enabled);
   if (enabled) {
+    tile_->SetVectorIcon(icon.is_empty() ? kQuickSettingsNearbyShareOnIcon
+                                         : icon);
     tile_->SetSubLabel(l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_ON_STATE,
         RemainingTimeString(RemainingHighVisibilityTime())));
 
   } else {
+    tile_->SetVectorIcon(icon.is_empty() ? kQuickSettingsNearbyShareOffIcon
+                                         : icon);
     tile_->SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_OFF_STATE));
   }

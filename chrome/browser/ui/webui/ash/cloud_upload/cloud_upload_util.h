@@ -137,7 +137,8 @@ enum class OfficeFilesSourceVolume {
   kGuestOS = 12,         // Guest OS volumes (Crostini, Bruschetta, etc)
   kUnknown = 100,
   kMicrosoftOneDrive = 101,
-  kMaxValue = kMicrosoftOneDrive,
+  kAndroidOneDriveDocumentsProvider = 102,
+  kMaxValue = kAndroidOneDriveDocumentsProvider,
 };
 
 // List of UMA enum value for Web Drive Office task results. The enum values
@@ -189,7 +190,8 @@ enum class OfficeFilesUploadResult {
   kSyncError = 20,
   kSyncCancelledAndDeleted = 21,
   kSyncCancelledAndTrashed = 22,
-  kMaxValue = kSyncCancelledAndTrashed,
+  kUploadNotStartedReauthenticationRequired = 23,
+  kMaxValue = kUploadNotStartedReauthenticationRequired,
 };
 
 constexpr char kGoogleDriveTaskResultMetricName[] =
@@ -242,7 +244,7 @@ constexpr char kOneDriveOpenSourceVolumeMetric[] =
 constexpr char kOneDriveOpenSourceVolumeMetricStateMetric[] =
     "FileBrowser.OfficeFiles.Open.SourceVolume.OneDrive.MetricState";
 
-constexpr char kOpenCloudProviderMetric[] =
+constexpr char kOpenInitialCloudProviderMetric[] =
     "FileBrowser.OfficeFiles.Open.CloudProvider";
 
 constexpr char kDriveTransferRequiredMetric[] =

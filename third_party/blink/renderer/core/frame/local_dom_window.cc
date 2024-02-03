@@ -437,6 +437,9 @@ bool LocalDOMWindow::CanExecuteScripts(
   if (!GetFrame())
     return false;
 
+  // Detached frames should not be attempting to execute script.
+  DCHECK(!GetFrame()->IsDetached());
+
   // Normally, scripts are not allowed in sandboxed contexts that disallow them.
   // However, there is an exception for cases when the script should bypass the
   // main world's CSP (such as for privileged isolated worlds). See
@@ -456,13 +459,17 @@ bool LocalDOMWindow::CanExecuteScripts(
     return false;
   }
 
-  WebContentSettingsClient* settings_client =
-      GetFrame()->GetContentSettingsClient();
-  bool script_enabled = GetFrame()->GetSettings()->GetScriptEnabled();
-  if (settings_client)
-    script_enabled = settings_client->AllowScript(script_enabled);
-  if (!script_enabled && reason == kAboutToExecuteScript && settings_client)
-    settings_client->DidNotAllowScript();
+  bool allow_script_renderer = GetFrame()->GetSettings()->GetScriptEnabled();
+  bool allow_script_content_setting =
+      GetFrame()->GetContentSettings()->allow_script;
+  bool script_enabled = allow_script_renderer && allow_script_content_setting;
+  if (!script_enabled && reason == kAboutToExecuteScript) {
+    WebContentSettingsClient* settings_client =
+        GetFrame()->GetContentSettingsClient();
+    if (settings_client) {
+      settings_client->DidNotAllowScript();
+    }
+  }
   return script_enabled;
 }
 
@@ -1264,10 +1271,8 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     payment_request_token_.Activate();
   }
 
-  if (RuntimeEnabledFeatures::CapabilityDelegationFullscreenRequestEnabled(
-          this) &&
-      event->delegatedCapability() ==
-          mojom::blink::DelegatedCapability::kFullscreenRequest) {
+  if (event->delegatedCapability() ==
+      mojom::blink::DelegatedCapability::kFullscreenRequest) {
     UseCounter::Count(this,
                       WebFeature::kCapabilityDelegationOfFullscreenRequest);
     fullscreen_request_token_.Activate();
@@ -1984,7 +1989,7 @@ void LocalDOMWindow::AddedEventListener(
   }
 
   if (event_type == event_type_names::kUnload) {
-    UseCounter::Count(this, WebFeature::kDocumentUnloadRegistered);
+    CountDeprecation(WebFeature::kDocumentUnloadRegistered);
   } else if (event_type == event_type_names::kBeforeunload) {
     UseCounter::Count(this, WebFeature::kDocumentBeforeUnloadRegistered);
     if (GetFrame() && !GetFrame()->IsMainFrame())
@@ -2200,7 +2205,6 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
 
   bool has_user_gesture = LocalFrame::HasTransientUserActivation(GetFrame());
   frame_request.GetResourceRequest().SetHasUserGesture(has_user_gesture);
-  GetFrame()->MaybeLogAdClickNavigation();
 
   if (window_features.attribution_srcs.has_value()) {
     // An impression must be attached prior to the
@@ -2432,9 +2436,13 @@ void LocalDOMWindow::SetIsInBackForwardCache(bool is_in_back_forward_cache) {
   }
 }
 
-void LocalDOMWindow::DidBufferLoadWhileInBackForwardCache(size_t num_bytes) {
+void LocalDOMWindow::DidBufferLoadWhileInBackForwardCache(
+    bool update_process_wide_count,
+    size_t num_bytes) {
   total_bytes_buffered_while_in_back_forward_cache_ += num_bytes;
-  BackForwardCacheBufferLimitTracker::Get().DidBufferBytes(num_bytes);
+  if (update_process_wide_count) {
+    BackForwardCacheBufferLimitTracker::Get().DidBufferBytes(num_bytes);
+  }
 }
 
 bool LocalDOMWindow::credentialless() const {
@@ -2512,26 +2520,8 @@ bool LocalDOMWindow::CanUseWindowingControls(ExceptionState& exception_state) {
 #endif
 }
 
-bool LocalDOMWindow::CanUseMinMaxRestoreWindowingControls(
-    ExceptionState& exception_state) {
-  if (!CanUseWindowingControls(exception_state)) {
-    return false;
-  }
-
-#if !defined(USE_AURA)
-  // TODO(crbug.com/1466851): Make the APIs also work on Mac.
-  exception_state.ThrowDOMException(
-      DOMExceptionCode::kNotSupportedError,
-      "API is only supported on Aura platforms (Win/Lin/CrOS/Fuchsia). This "
-      "excludes Mac and mobile platforms.");
-  return false;
-#else
-  return true;
-#endif
-}
-
 void LocalDOMWindow::maximize(ExceptionState& exception_state) {
-  if (!CanUseMinMaxRestoreWindowingControls(exception_state)) {
+  if (!CanUseWindowingControls(exception_state)) {
     return;
   }
 
@@ -2542,13 +2532,13 @@ void LocalDOMWindow::maximize(ExceptionState& exception_state) {
     return;
   }
 
-#if defined(USE_AURA)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   GetFrame()->GetLocalFrameHostRemote().Maximize();
 #endif
 }
 
 void LocalDOMWindow::minimize(ExceptionState& exception_state) {
-  if (!CanUseMinMaxRestoreWindowingControls(exception_state)) {
+  if (!CanUseWindowingControls(exception_state)) {
     return;
   }
 
@@ -2559,13 +2549,13 @@ void LocalDOMWindow::minimize(ExceptionState& exception_state) {
     return;
   }
 
-#if defined(USE_AURA)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   GetFrame()->GetLocalFrameHostRemote().Minimize();
 #endif
 }
 
 void LocalDOMWindow::restore(ExceptionState& exception_state) {
-  if (!CanUseMinMaxRestoreWindowingControls(exception_state)) {
+  if (!CanUseWindowingControls(exception_state)) {
     return;
   }
 
@@ -2573,7 +2563,7 @@ void LocalDOMWindow::restore(ExceptionState& exception_state) {
   // This one is a bit more involved compared to minimize/maximize since it
   // requires capability delegation.
 
-#if defined(USE_AURA)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   GetFrame()->GetLocalFrameHostRemote().Restore();
 #endif
 }

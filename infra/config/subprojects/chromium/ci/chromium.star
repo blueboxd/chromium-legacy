@@ -523,6 +523,7 @@ ci.builder(
         category = "mac",
         short_name = "rel",
     ),
+    contact_team_email = "bling-engprod@google.com",
     properties = {
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {
@@ -559,6 +560,7 @@ ci.builder(
         category = "mac|arm",
         short_name = "rel",
     ),
+    contact_team_email = "bling-engprod@google.com",
     properties = {
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {
@@ -619,6 +621,7 @@ ci.builder(
             target_bits = 64,
         ),
     ),
+    builderless = False,
     cores = 32,
     os = os.WINDOWS_DEFAULT,
     tree_closing = True,
@@ -658,6 +661,7 @@ ci.builder(
             target_bits = 64,
         ),
     ),
+    builderless = False,
     cores = 32,
     os = os.WINDOWS_DEFAULT,
     console_view_entry = consoles.console_view_entry(
@@ -686,6 +690,7 @@ ci.builder(
             target_bits = 32,
         ),
     ),
+    builderless = False,
     cores = 32,
     os = os.WINDOWS_DEFAULT,
     tree_closing = True,
@@ -725,6 +730,7 @@ ci.builder(
             target_bits = 32,
         ),
     ),
+    builderless = False,
     cores = 32,
     os = os.WINDOWS_DEFAULT,
     console_view_entry = consoles.console_view_entry(

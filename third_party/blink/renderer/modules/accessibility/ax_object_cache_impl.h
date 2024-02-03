@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/accessibility/ax_enums.mojom-blink-forward.h"
+#include "ui/accessibility/ax_error_types.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
@@ -155,9 +156,9 @@ class MODULES_EXPORT AXObjectCacheImpl
       pause_tree_updates_until_more_loaded_content_ = false;
       UpdateAXForAllDocuments();
     }
-    CHECK(FocusedObject());
     ax_tree_source_->Freeze();
     is_frozen_ = true;
+    CHECK(FocusedObject());
   }
   void Thaw() override {
     is_frozen_ = false;
@@ -285,7 +286,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void InlineTextBoxesUpdated(LayoutObject*) override;
   // Called during the accessibility lifecycle to refresh the AX tree.
-  void ProcessDeferredAccessibilityEvents(Document&, bool force) override;
+  void ProcessDeferredAccessibilityEvents(Document&) override;
   // Remove AXObject subtrees (once flat tree traversal is safe).
   void ProcessSubtreeRemovals() override;
   // Is there work to be done when layout becomes clean?
@@ -321,6 +322,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* ObjectFromAXID(AXID id) const override;
   AXObject* Root() override;
 
+  // Create an AXObject, and do not check if a previous one exists.
+  // Also, initialize the object and add it to maps for later retrieval.
+  AXObject* CreateAndInit(Node*, LayoutObject*, AXObject* parent_if_known);
   // Used for objects without backing DOM nodes, layout objects, etc.
   AXObject* CreateAndInit(ax::mojom::blink::Role, AXObject* parent);
 
@@ -336,6 +340,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* GetOrCreate(const Node*);
   AXObject* GetOrCreate(AbstractInlineTextBox*, AXObject* parent_if_known);
 
+  // Compute the included parent and its children, and then return
+  // the AXObject for |child|.
+  AXObject* RepairChildrenOfIncludedParent(Node* child);
+
   AXID GetAXID(Node*) override;
 
   AXID GetExistingAXID(Node*) override;
@@ -347,6 +355,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // Get an AXObject* backed by the passed-in DOM node.
   AXObject* Get(const Node*) override;
+
   // Get an AXObject* backed by the passed-in LayoutObject, or the
   // LayoutObject's DOM node, if that is available.
   // If |parent_for_repair| is provided, and the object had been detached from
@@ -370,16 +379,13 @@ class MODULES_EXPORT AXObjectCacheImpl
   void MarkAXObjectDirty(AXObject*);
 
   void MarkAXObjectDirtyWithCleanLayout(AXObject*);
-  void MarkAXObjectDirtyWithCleanLayoutAndEvent(
-      AXObject*,
-      ax::mojom::blink::EventFrom event_from,
-      ax::mojom::blink::Action event_from_action);
 
   void MarkAXSubtreeDirtyWithCleanLayout(AXObject*);
 
   // Set the parent of |child|. If no parent is possible, this means the child
   // can no longer be in the AXTree, so remove the child.
   AXObject* RestoreParentOrPrune(AXObject* child);
+  AXObject* RestoreParentOrPruneWithCleanLayout(AXObject* child);
 
   // When an object is created or its id changes, this must be called so that
   // the relation cache is updated.
@@ -402,6 +408,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleValidationMessageVisibilityChangedWithCleanLayout(const Node*);
   void HandleUpdateActiveMenuOptionWithCleanLayout(Node*);
   void HandleEditableTextContentChangedWithCleanLayout(Node*);
+  void UpdateAriaOwnsWithCleanLayout(Node*);
   void UpdateTableRoleWithCleanLayout(Node*);
 
   AXID GenerateAXID() const override;
@@ -457,8 +464,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   // For built-in HTML form validation messages.
   AXObject* ValidationMessageObjectIfInvalid();
 
-  WebAXAutofillState GetAutofillState(AXID id) const;
-  void SetAutofillState(AXID id, WebAXAutofillState state);
+  WebAXAutofillSuggestionAvailability GetAutofillSuggestionAvailability(
+      AXID id) const;
+  void SetAutofillSuggestionAvailability(
+      AXID id,
+      WebAXAutofillSuggestionAvailability suggestion_availability);
 
   std::pair<ax::mojom::blink::EventFrom, ax::mojom::blink::Action>
   active_event_from_data() const {
@@ -497,9 +507,11 @@ class MODULES_EXPORT AXObjectCacheImpl
     return result;
   }
 
-  bool SerializeEntireTree(size_t max_node_count,
-                           base::TimeDelta timeout,
-                           ui::AXTreeUpdate*) override;
+  bool SerializeEntireTree(
+      size_t max_node_count,
+      base::TimeDelta timeout,
+      ui::AXTreeUpdate*,
+      std::set<ui::AXSerializationErrorFlag>* out_error = nullptr) override;
 
   void MarkAXObjectDirtyWithDetails(
       AXObject* obj,
@@ -555,7 +567,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // The document/cache are in the tear-down phase.
   bool HasBeenDisposed() const { return has_been_disposed_; }
   // Assert that tree is completely up-to-date.
-  void CheckTreeIsUpdated() const;
+  void CheckTreeIsUpdated();
   void CheckStyleIsComplete(Document& document) const;
 
   // Returns the `TextChangedOperation` associated with the `id` from the
@@ -629,9 +641,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   // clean layout.
   void EnsureRelationCache();
 
-  // Create an AXObject, and do not check if a previous one exists.
-  // Also, initialize the object and add it to maps for later retrieval.
-  AXObject* CreateAndInit(Node*, LayoutObject*, AXObject* parent_if_known);
   // Helpers for CreateAndInit().
   AXObject* CreateFromRenderer(LayoutObject*);
   AXObject* CreateFromNode(Node*);
@@ -664,7 +673,6 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   bool IsMainDocumentDirty() const;
   bool IsPopupDocumentDirty() const;
-
   void ProcessSubtreeRemoval(Node*, bool remove_root);
 
   HeapHashSet<WeakMember<InspectorAccessibilityAgent>> agents_;
@@ -733,9 +741,10 @@ class MODULES_EXPORT AXObjectCacheImpl
     kTextMarkerDataAdded = 30,
     kUpdateActiveMenuOption = 31,
     kNodeIsAttached = 32,
-    kUpdateTableRole = 33,
-    kUseMapAttributeChanged = 34,
-    kValidationMessageVisibilityChanged = 35,
+    kUpdateAriaOwns = 33,
+    kUpdateTableRole = 34,
+    kUseMapAttributeChanged = 35,
+    kValidationMessageVisibilityChanged = 36,
 
     // These updates are associated with an AXID:
     kChildrenChanged = 100,
@@ -1015,8 +1024,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   wtf_size_t max_pending_updates_ = 1UL << 16;
   bool tree_updates_paused_ = false;
 
-  // Maps ids to their object's autofill state.
-  HashMap<AXID, WebAXAutofillState> autofill_state_map_;
+  // Maps ids to their object's autofill suggestion availability.
+  HashMap<AXID, WebAXAutofillSuggestionAvailability>
+      autofill_suggestion_availability_map_;
 
   // The set of node IDs whose bounds has changed since the last time
   // SerializeLocationChanges was called.

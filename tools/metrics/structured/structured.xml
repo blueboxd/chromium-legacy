@@ -1,5 +1,33 @@
 <structured-metrics>
 
+<project name="PopularDisplays">
+  <owner>markyacoub@google.com</owner>
+  <owner>chromeos-gfx-display@google.com</owner>
+  <id>none</id>
+  <scope>device</scope>
+  <key-rotation>90</key-rotation>
+  <summary>
+    Project for recording monitor infos
+  </summary>
+
+  <event name="MonitorInfo">
+    <summary>
+      Records a unique external monitor information, only once when it's plugged
+      in by a user for the very first time on that device.
+    </summary>
+    <metric name="DisplayName" type="raw-string">
+      <summary>
+        The Name of the Monitor.
+      </summary>
+    </metric>
+    <metric name="ProductCode" type="int">
+      <summary>
+        An identifier for the display ManufacturerId and ProductId
+      </summary>
+    </metric>
+  </event>
+</project>
+
 <project name="FastPair">
   <owner>jackshira@chromium.org</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -660,6 +688,168 @@
       Test event for events without metrics.
     </summary>
 
+  </event>
+</project>
+
+<project name="DevTools">
+  <owner>dsv@chromium.org</owner>
+  <id>per-project</id>
+  <scope>device</scope>
+  <key-rotation>120</key-rotation>
+  <summary>
+    Interaction metrics for the Chrome DevTools — debugging tools and
+    capabilities offered by Chrome.
+  </summary>
+
+  <event name="Impression">
+    <summary>
+      Recorded whenever a new visual element is first shown to the user
+    </summary>
+    <metric name="VeId" type="int">
+      <summary>
+        Visual Element ID
+      </summary>
+    </metric>
+    <metric name="VeType" type="int">
+      <summary>
+        Visual Element type.
+      </summary>
+    </metric>
+    <metric name="VeParent" type="int">
+      <summary>
+        ID of a parent of the visual element.
+      </summary>
+    </metric>
+    <metric name="VeContext" type="int">
+      <summary>
+        Arbitrary contextual information for the visual element.
+      </summary>
+    </metric>
+    <metric name="TimeSinceLastAction" type="int">
+      <summary>
+        Time in milliseconds since last DevTools event.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="Click">
+    <summary>
+      Recorded whenever user clicks on a tracked visual element.
+    </summary>
+    <metric name="VeId" type="int">
+      <summary>
+        Visual Element ID
+      </summary>
+    </metric>
+    <metric name="MouseButton" type="int">
+      <summary>
+        An index of a mouse button as defined in JavaScript MouseEvent.
+      </summary>
+    </metric>
+    <metric name="Context" type="int">
+      <summary>
+        Arbitrary contextual information for the event.
+      </summary>
+    </metric>
+    <metric name="TimeSinceLastAction" type="int">
+      <summary>
+        Time in milliseconds since last DevTools event.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="Hover">
+    <summary>
+      Recorded whenever user hovers on a tracked visual element.
+    </summary>
+    <metric name="VeId" type="int">
+      <summary>
+        Visual Element ID
+      </summary>
+    </metric>
+    <metric name="Time" type="int">
+      <summary>
+        Number of seconds the hover has lasted
+      </summary>
+    </metric>
+    <metric name="Context" type="int">
+      <summary>
+        Arbitrary contextual information for the event.
+      </summary>
+    </metric>
+    <metric name="TimeSinceLastAction" type="int">
+      <summary>
+        Time in milliseconds since last DevTools event.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="Drag">
+    <summary>
+      Recorded whenever user drags in a tracked visual element.
+    </summary>
+    <metric name="VeId" type="int">
+      <summary>
+        Visual Element ID
+      </summary>
+    </metric>
+    <metric name="Distance" type="int">
+      <summary>
+        Number of pixels dragged
+      </summary>
+    </metric>
+    <metric name="Context" type="int">
+      <summary>
+        Arbitrary contextual information for the event.
+      </summary>
+    </metric>
+    <metric name="TimeSinceLastAction" type="int">
+      <summary>
+        Time in milliseconds since last DevTools event.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="Change">
+    <summary>
+      Recorded whenever user changes a value of a tracked visual element.
+    </summary>
+    <metric name="VeId" type="int">
+      <summary>
+        Visual Element ID
+      </summary>
+    </metric>
+    <metric name="Context" type="int">
+      <summary>
+        Arbitrary contextual information for the event.
+      </summary>
+    </metric>
+    <metric name="TimeSinceLastAction" type="int">
+      <summary>
+        Time in milliseconds since last DevTools event.
+      </summary>
+    </metric>
+  </event>
+
+  <event name="KeyDown">
+    <summary>
+      Recorded presses key on a tracked visual element.
+    </summary>
+    <metric name="VeId" type="int">
+      <summary>
+        Visual Element ID
+      </summary>
+    </metric>
+    <metric name="Context" type="int">
+      <summary>
+        Arbitrary contextual information for the event.
+      </summary>
+    </metric>
+    <metric name="TimeSinceLastAction" type="int">
+      <summary>
+        Time in milliseconds since last DevTools event.
+      </summary>
+    </metric>
   </event>
 </project>
 

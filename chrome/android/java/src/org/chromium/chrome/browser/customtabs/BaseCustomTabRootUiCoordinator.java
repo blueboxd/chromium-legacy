@@ -315,28 +315,22 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                         mBrowserControlsManager,
                         mBrowserControlsManager,
                         mBackPressManager,
-                        mCompositorViewHolderSupplier.get() == null
-                                ? null
-                                : mCompositorViewHolderSupplier.get().getInMotionSupplier(),
                         this::isPageInsightsHubEnabled,
                         this::getPageInsightsConfig);
 
-        if (mContextualSearchManagerSupplier.get() != null) {
-            mContextualSearchObserver =
-                    new ContextualSearchObserver() {
-                        @Override
-                        public void onShowContextualSearch(
-                                @Nullable GSAContextDisplaySelection selectionContext) {
-                            mPageInsightsCoordinator.onBottomUiStateChanged(true);
-                        }
+        mContextualSearchObserver = new ContextualSearchObserver() {
+            @Override
+            public void onShowContextualSearch(
+                    @Nullable GSAContextDisplaySelection selectionContext) {
+                mPageInsightsCoordinator.onBottomUiStateChanged(true);
+            }
 
-                        @Override
-                        public void onHideContextualSearch() {
-                            mPageInsightsCoordinator.onBottomUiStateChanged(false);
-                        }
-                    };
-            mContextualSearchManagerSupplier.get().addObserver(mContextualSearchObserver);
-        }
+            @Override
+            public void onHideContextualSearch() {
+                mPageInsightsCoordinator.onBottomUiStateChanged(false);
+            }
+        };
+        mContextualSearchManagerSupplier.get().addObserver(mContextualSearchObserver);
     }
 
     boolean isPageInsightsHubEnabled() {
@@ -414,12 +408,22 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                             mActivityTabProvider,
                             new UserEducationHelper(mActivity, new Handler(Looper.getMainLooper())),
                             mProfileSupplier);
+            Runnable closeTabRunnable =
+                    () -> {
+                        if (mNavigationController.hasValue()) {
+                            mNavigationController.get().navigateOnClose();
+                        }
+                    };
             // The method above already checks for the minimum API level.
             //
             // noinspection NewApi
             mMinimizationManager =
                     new CustomTabMinimizationManager(
-                            mActivity, mActivityTabProvider, mMinimizedCustomTabIPHController);
+                            mActivity,
+                            mActivityTabProvider,
+                            mMinimizedCustomTabIPHController,
+                            closeTabRunnable,
+                            intentDataProvider);
         }
     }
 
@@ -491,6 +495,11 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         if (mPageInsightsCoordinator != null) {
             mPageInsightsCoordinator.destroy();
             mPageInsightsCoordinator = null;
+        }
+
+        if (mMinimizationManager != null) {
+            mMinimizationManager.destroy();
+            mMinimizationManager = null;
         }
 
         if (mMinimizedCustomTabIPHController != null) {

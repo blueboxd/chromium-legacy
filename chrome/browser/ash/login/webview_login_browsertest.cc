@@ -183,8 +183,7 @@ void InjectCookie(content::StoragePartition* storage_partition) {
           kTestCookieName, kTestCookieValue, kTestCookieHost, "/", base::Time(),
           base::Time(), base::Time(), base::Time(), /*secure=*/true,
           /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
-          net::COOKIE_PRIORITY_MEDIUM,
-          /*same_party=*/false);
+          net::COOKIE_PRIORITY_MEDIUM);
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
       *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
@@ -958,22 +957,15 @@ IN_PROC_BROWSER_TEST_F(ReauthTokenWebviewLoginTest, FetchSuccess) {
   test::OobeJS().ClickOnPath(kPrimaryButton);
   OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
 
-  const UserContext* user_context = nullptr;
-  if (ash::features::ShouldUseAuthSessionStorage()) {
-    CHECK(LoginDisplayHost::default_host()
-              ->GetWizardContext()
-              ->extra_factors_token.has_value());
-    auto* storage = ash::AuthSessionStorage::Get();
-    auto& token = LoginDisplayHost::default_host()
-                      ->GetWizardContext()
-                      ->extra_factors_token.value();
-    CHECK(storage->IsValid(token));
-    user_context = storage->Peek(token);
-  } else {
-    user_context = LoginDisplayHost::default_host()
-                       ->GetWizardContext()
-                       ->extra_factors_auth_session.get();
-  }
+  CHECK(LoginDisplayHost::default_host()
+            ->GetWizardContext()
+            ->extra_factors_token.has_value());
+  auto* storage = ash::AuthSessionStorage::Get();
+  auto& token = LoginDisplayHost::default_host()
+                    ->GetWizardContext()
+                    ->extra_factors_token.value();
+  CHECK(storage->IsValid(token));
+  const UserContext* user_context = storage->Peek(token);
 
   EXPECT_EQ(user_context->GetReauthProofToken(), "fake-reauth-proof-token");
 }
@@ -994,22 +986,15 @@ IN_PROC_BROWSER_TEST_F(ReauthTokenWebviewLoginTest, FetchFailure) {
   test::OobeJS().ClickOnPath(kPrimaryButton);
   OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
 
-  const UserContext* user_context = nullptr;
-  if (ash::features::ShouldUseAuthSessionStorage()) {
-    CHECK(LoginDisplayHost::default_host()
-              ->GetWizardContext()
-              ->extra_factors_token.has_value());
-    auto* storage = ash::AuthSessionStorage::Get();
-    auto& token = LoginDisplayHost::default_host()
-                      ->GetWizardContext()
-                      ->extra_factors_token.value();
-    CHECK(storage->IsValid(token));
-    user_context = storage->Peek(token);
-  } else {
-    user_context = LoginDisplayHost::default_host()
-                       ->GetWizardContext()
-                       ->extra_factors_auth_session.get();
-  }
+  CHECK(LoginDisplayHost::default_host()
+            ->GetWizardContext()
+            ->extra_factors_token.has_value());
+  auto* storage = ash::AuthSessionStorage::Get();
+  auto& token = LoginDisplayHost::default_host()
+                    ->GetWizardContext()
+                    ->extra_factors_token.value();
+  CHECK(storage->IsValid(token));
+  const UserContext* user_context = storage->Peek(token);
   EXPECT_TRUE(user_context->GetReauthProofToken().empty());
 }
 

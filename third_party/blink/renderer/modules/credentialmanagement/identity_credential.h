@@ -36,13 +36,9 @@ class MODULES_EXPORT IdentityCredential final : public Credential {
   const String& token() const { return token_; }
   const bool& isAutoSelected() const { return is_auto_selected_; }
 
-  static ScriptPromise logoutRPs(
-      ScriptState*,
-      const HeapVector<Member<IdentityCredentialLogoutRPsRequest>>&);
-
-  ScriptPromise revoke(ScriptState*,
-                       const IdentityCredentialRevokeOptions* options,
-                       ExceptionState&);
+  static ScriptPromise revoke(ScriptState*,
+                              const IdentityCredentialRevokeOptions* options,
+                              ExceptionState&);
 
  private:
   const String token_;

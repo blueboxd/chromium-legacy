@@ -5,6 +5,13 @@
     width: fit-content;
   }
 
+  cr-icon-button {
+    --cr-icon-button-fill-color: var(--color-sys-on-surface-subtle);
+    --cr-icon-button-icon-size: 16px;
+    --cr-icon-button-size: 24px;
+    margin: 0;
+  }
+
   cr-input {
     --cr-input-background-color: transparent;
     --cr-input-border: 1px solid var(--color-side-panel-textfield-border);
@@ -22,33 +29,59 @@
     --cr-input-padding-top: 8px;
   }
 
+  .feedback {
+    align-items: center;
+    display: flex;
+    gap: 4px;
+  }
+
   .mwb-list-item {
     background-color: transparent;
+    min-height: var(--mwb-item-height);
   }
 
   .results {
-    background-color: var(--color-sys-surface5);
+    background-color: var(--color-tab-search-card-background);
     border-radius: 8px;
+  }
+
+  #scrollable {
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
     padding: 16px 0;
+  }
+
+  .tab-organization-link {
+    flex: 1;
   }
 </style>
 
 <div class="tab-organization-container">
   <div class="tab-organization-header">$i18n{successTitle}</div>
   <div class="results">
-    <cr-input id="input" type="text" value="{{name}}"
-        on-focus="onInputFocus_"
-        on-keydown="onInputKeyDown_">
-    </cr-input>
-    <template is="dom-repeat" items="[[tabDatas_]]">
-      <tab-search-item class="mwb-list-item" data="[[item]]"
-          on-close="onTabRemove_" hide-timestamp>
-      </tab-search-item>
-    </template>
-    <cr-button class="action-button" on-click="onCreateGroupClick_">
-      $i18n{createGroup}
-    </cr-button>
+    <div id="scrollable">
+      <cr-input id="input" type="text" value="{{name}}"
+          on-focus="onInputFocus_"
+          on-keydown="onInputKeyDown_">
+      </cr-input>
+      <template is="dom-repeat" items="[[tabDatas_]]">
+        <tab-search-item class="mwb-list-item" data="[[item]]"
+            on-close="onTabRemove_" hide-timestamp>
+        </tab-search-item>
+      </template>
+      <cr-button class="action-button" on-click="onCreateGroupClick_">
+        $i18n{createGroup}
+      </cr-button>
+    </div>
+  </div>
+  <div class="feedback">
+    <div class="tab-organization-link" on-click="onLearnMoreClick_">
+      $i18n{learnMore}
+    </div>
+    <cr-icon-button iron-icon="cr:thumbs-up" on-click="onThumbsUpClick_">
+    </cr-icon-button>
+    <cr-icon-button iron-icon="cr:thumbs-down" on-click="onThumbsDownClick_">
+    </cr-icon-button>
   </div>
 </div>

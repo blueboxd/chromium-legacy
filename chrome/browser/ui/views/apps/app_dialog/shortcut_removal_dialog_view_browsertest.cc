@@ -77,9 +77,10 @@ class ShortcutRemovalDialogViewBrowserTest
                           const std::string& host_app_id) {
     proxy()->OverrideShortcutInnerIconLoaderForTesting(
         &shortcut_stub_icon_loader_);
-    shortcut_stub_icon_loader_.timelines_by_app_id_[shortcut_id.value()] = 1;
+    shortcut_stub_icon_loader_.update_version_by_app_id_[shortcut_id.value()] =
+        1;
     proxy()->OverrideInnerIconLoaderForTesting(&app_stub_icon_loader_);
-    app_stub_icon_loader_.timelines_by_app_id_[host_app_id] = 1;
+    app_stub_icon_loader_.update_version_by_app_id_[host_app_id] = 1;
   }
 
   int NumLoadShortcutIcon() {
@@ -131,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ShortcutRemovalDialogViewBrowserTest, InvokeUi) {
   proxy()->AppRegistryCache().ForOneApp(
       app_constants::kChromeAppId,
       [&host_app_name](const apps::AppUpdate& update) {
-        host_app_name = base::UTF8ToUTF16(update.ShortName());
+        host_app_name = base::UTF8ToUTF16(update.Name());
       });
 
   std::u16string expected_title =

@@ -14,7 +14,6 @@
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/browser/ui/password_check_referrer.h"
-#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
@@ -88,8 +87,6 @@ void ConfigureHandlers(id<SettingsRootViewControlling> controller,
 }
 
 }  // namespace
-
-using password_manager::features::IsPasswordCheckupEnabled;
 
 NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
@@ -304,14 +301,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
           initWithRootViewController:nil
                              browser:browser
                             delegate:delegate];
-  if (IsPasswordCheckupEnabled()) {
-    [navigationController
-        showSavedPasswordsAndShowCancelButton:showCancelButton];
-  } else {
-    [navigationController
-        showSavedPasswordsAndStartPasswordCheck:YES
-                               showCancelButton:showCancelButton];
-  }
+  [navigationController showSavedPasswordsAndShowCancelButton:showCancelButton];
 
   return navigationController;
 }
@@ -612,19 +602,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [super viewDidLoad];
 
   self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
-
-  // Hardcode navigation bar style for iOS 14 and under to workaround bug that
-  // navigation bar height not adjusting consistently across subviews. Should be
-  // removed once iOS 14 is deprecated.
-  if (!base::ios::IsRunningOnIOS15OrLater()) {
-    UINavigationBarAppearance* appearance =
-        [[UINavigationBarAppearance alloc] init];
-    [appearance configureWithOpaqueBackground];
-    self.navigationBar.standardAppearance = appearance;
-    self.navigationBar.compactAppearance = appearance;
-    self.navigationBar.scrollEdgeAppearance = appearance;
-  }
-
   self.toolbar.translucent = NO;
   self.navigationBar.barTintColor =
       [UIColor colorNamed:kSecondaryBackgroundColor];
@@ -675,6 +652,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self stopPrivacySafeBrowsingCoordinator];
   [self stopPrivacySettingsCoordinator];
   [self stopInactiveTabSettingsCoordinator];
+  [self stopPasswordDetailsCoordinator];
 
   // Reset the delegate to prevent any queued transitions from attempting to
   // close the settings.
@@ -821,31 +799,9 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.manageSyncSettingsCoordinator = nil;
 }
 
-// Shows the saved passwords and starts the password check if
-// `startPasswordCheck` is true. If `showCancelButton` is true, adds a cancel
-// button as the left navigation item. Used when kIOSPasswordCheckup is
-// disabled.
-- (void)showSavedPasswordsAndStartPasswordCheck:(BOOL)startPasswordCheck
-                               showCancelButton:(BOOL)showCancelButton {
-  DCHECK(!IsPasswordCheckupEnabled());
-  self.savedPasswordsCoordinator = [[PasswordsCoordinator alloc]
-      initWithBaseNavigationController:self
-                               browser:self.browser];
-  self.savedPasswordsCoordinator.delegate = self;
-  [self.savedPasswordsCoordinator start];
-  if (startPasswordCheck) {
-    [self.savedPasswordsCoordinator checkSavedPasswords];
-  }
-  if (showCancelButton) {
-    [self.savedPasswordsCoordinator.viewController navigationItem]
-        .leftBarButtonItem = [self cancelButton];
-  }
-}
-
 // Shows the saved passwords. If `showCancelButton` is true, adds a cancel
-// button as the left navigation item. Used when kIOSPasswordCheckup is enabled.
+// button as the left navigation item.
 - (void)showSavedPasswordsAndShowCancelButton:(BOOL)showCancelButton {
-  DCHECK(IsPasswordCheckupEnabled());
   self.savedPasswordsCoordinator = [[PasswordsCoordinator alloc]
       initWithBaseNavigationController:self
                                browser:self.browser];
@@ -918,6 +874,13 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.privacySafeBrowsingCoordinator = nil;
 }
 
+// Stops the underlying PasswordDetailsCoordinator.
+- (void)stopPasswordDetailsCoordinator {
+  [self.passwordDetailsCoordinator stop];
+  self.passwordDetailsCoordinator.delegate = nil;
+  self.passwordDetailsCoordinator = nil;
+}
+
 #pragma mark - GoogleServicesSettingsCoordinatorDelegate
 
 - (void)googleServicesSettingsCoordinatorDidRemove:
@@ -958,9 +921,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 - (void)passwordDetailsCoordinatorDidRemove:
     (PasswordDetailsCoordinator*)coordinator {
   DCHECK_EQ(self.passwordDetailsCoordinator, coordinator);
-  [self.passwordDetailsCoordinator stop];
-  self.passwordDetailsCoordinator.delegate = nil;
-  self.passwordDetailsCoordinator = nil;
+  [self stopPasswordDetailsCoordinator];
 }
 
 - (void)passwordDetailsCancelButtonWasTapped {
@@ -1119,14 +1080,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 // TODO(crbug.com/779791) : Do not pass `baseViewController` through dispatcher.
 - (void)showSavedPasswordsSettingsFromViewController:
             (UIViewController*)baseViewController
-                                    showCancelButton:(BOOL)showCancelButton
-                                  startPasswordCheck:(BOOL)startPasswordCheck {
-  if (IsPasswordCheckupEnabled()) {
-    [self showSavedPasswordsAndShowCancelButton:showCancelButton];
-  } else {
-    [self showSavedPasswordsAndStartPasswordCheck:startPasswordCheck
-                                 showCancelButton:showCancelButton];
-  }
+                                    showCancelButton:(BOOL)showCancelButton {
+  [self showSavedPasswordsAndShowCancelButton:showCancelButton];
 }
 
 // TODO(crbug.com/779791) : Do not pass `baseViewController` through dispatcher.

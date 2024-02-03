@@ -113,8 +113,9 @@ ImageResourceContent* StyleFetchedImage::CachedImage() const {
 
 CSSValue* StyleFetchedImage::CssValue() const {
   return MakeGarbageCollected<CSSImageValue>(
-      CSSUrlData(AtomicString(url_.GetString()), url_), Referrer(),
-      origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse, is_ad_related_,
+      CSSUrlData(AtomicString(url_.GetString()), url_, Referrer(),
+                 origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse,
+                 is_ad_related_),
       const_cast<StyleFetchedImage*>(this));
 }
 
@@ -204,9 +205,7 @@ bool StyleFetchedImage::HasIntrinsicSize() const {
     if (!svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info)) {
       return false;
     }
-    return intrinsic_sizing_info.has_width ||
-           intrinsic_sizing_info.has_height ||
-           !intrinsic_sizing_info.aspect_ratio.IsEmpty();
+    return !intrinsic_sizing_info.IsNone();
   }
   return image.HasIntrinsicSize();
 }

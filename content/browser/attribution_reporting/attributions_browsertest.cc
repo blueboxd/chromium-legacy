@@ -1488,14 +1488,12 @@ IN_PROC_BROWSER_TEST_F(AttributionsFencedFrameBrowserTest,
   GURL reporting_url = https_server()->GetURL(
       "a.test", "/register_source_headers_trigger_same_origin.html");
 
-  GURL buyer_url = https_server()->GetURL("c.test", "/");
-
   scoped_refptr<FencedFrameReporter> fenced_frame_reporter =
       CreateFencedFrameReporter();
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL(buyer_url)), {{"click", reporting_url}});
+      {{"click", reporting_url}});
 
   FrameTreeNode* fenced_frame_root_node =
       AddFencedFrame(root, fenced_frame_url, std::move(fenced_frame_reporter));
@@ -1571,14 +1569,12 @@ IN_PROC_BROWSER_TEST_F(AttributionsFencedFrameBrowserTest,
   GURL reporting_url =
       https_server()->GetURL("a.test", "/register_source_redirect");
 
-  GURL buyer_url = https_server()->GetURL("c.test", "/");
-
   scoped_refptr<FencedFrameReporter> fenced_frame_reporter =
       CreateFencedFrameReporter();
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(buyer_url), {{"click", reporting_url}});
+      {{"click", reporting_url}});
 
   FrameTreeNode* fenced_frame_root_node =
       AddFencedFrame(root, fenced_frame_url, std::move(fenced_frame_reporter));
@@ -1605,7 +1601,6 @@ IN_PROC_BROWSER_TEST_F(AttributionsFencedFrameBrowserTest,
           ->GetURL("b.test",
                    "/register_source_headers_trigger_same_origin.html")
           .spec());
-  http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
   register_response->Send(http_response->ToResponseString());
   register_response->Done();
 
@@ -1653,14 +1648,11 @@ IN_PROC_BROWSER_TEST_F(AttributionsFencedFrameBrowserTest,
   GURL reporting_url = https_server()->GetURL(
       "a.test", "/register_source_headers_trigger_same_origin.html");
 
-  GURL buyer_url = https_server()->GetURL("c.test", "/");
-
   scoped_refptr<FencedFrameReporter> fenced_frame_reporter =
       CreateFencedFrameReporter();
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL(buyer_url)),
       {{blink::kDeprecatedFencedFrameTopNavigationBeaconType, reporting_url}});
 
   FrameTreeNode* fenced_frame_root_node =

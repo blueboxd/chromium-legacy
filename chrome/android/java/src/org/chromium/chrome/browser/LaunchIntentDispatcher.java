@@ -67,7 +67,7 @@ public class LaunchIntentDispatcher {
     public static final String EXTRA_LAUNCH_MODE =
             "com.google.android.apps.chrome.EXTRA_LAUNCH_MODE";
 
-    private static final String TAG = "ActivitiyDispatcher";
+    private static final String TAG = "ActivityDispatcher";
 
     private final Activity mActivity;
     private Intent mIntent;
@@ -247,6 +247,10 @@ public class LaunchIntentDispatcher {
      */
     public static boolean isCustomTabIntent(Intent intent) {
         if (intent == null) return false;
+        Log.w(
+                TAG,
+                "CustomTabsIntent#shouldAlwaysUseBrowserUI() = "
+                        + CustomTabsIntent.shouldAlwaysUseBrowserUI(intent));
         if (CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
                 || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
@@ -423,6 +427,10 @@ public class LaunchIntentDispatcher {
             }
             RecordHistogram.recordBooleanHistogram(
                     "Android.Intent.HasNonSpoofablePackageName", hasNonSpoofablePackageName());
+        }
+
+        if (mActivity instanceof ChromeLauncherActivity) {
+            newIntent.putExtra(IntentHandler.EXTRA_LAUNCHED_VIA_CHROME_LAUNCHER_ACTIVITY, true);
         }
 
         Uri extraReferrer = mActivity.getReferrer();

@@ -4,6 +4,7 @@
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
 import {SyncInfo, Tab, TabOrganizationError, TabOrganizationPageElement, TabOrganizationResultsElement, TabOrganizationSession, TabOrganizationState, TabSearchApiProxyImpl, TabSearchSyncBrowserProxyImpl} from 'chrome://tab-search.top-chrome/tab_search.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -48,7 +49,8 @@ suite('TabOrganizationPageTest', () => {
     TabSearchSyncBrowserProxyImpl.setInstance(testSyncProxy);
 
     tabOrganizationResults = document.createElement('tab-organization-results');
-    tabOrganizationResults.name = session.organizations[0]!.name;
+    tabOrganizationResults.name =
+        mojoString16ToString(session.organizations[0]!.name);
     tabOrganizationResults.tabs = session.organizations[0]!.tabs;
 
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -83,7 +85,7 @@ suite('TabOrganizationPageTest', () => {
           state: TabOrganizationState.kNotStarted,
           organizations: [{
             organizationId: 1,
-            name: 'foo',
+            name: stringToMojoString16('foo'),
             tabs: [
               createTab({title: 'Tab 1', url: {url: 'https://tab-1.com/'}}),
               createTab({title: 'Tab 2', url: {url: 'https://tab-2.com/'}}),
@@ -101,6 +103,10 @@ suite('TabOrganizationPageTest', () => {
     const notStarted = tabOrganizationPage.shadowRoot!.querySelector(
         'tab-organization-not-started');
     assertTrue(!!notStarted);
+    const animations = notStarted.getAnimations();
+    assertEquals(2, animations.length);
+    animations[0]!.finish();
+    animations[1]!.finish();
     assertTrue(isVisible(notStarted));
 
     const organizeTabsButton =
@@ -173,6 +179,10 @@ suite('TabOrganizationPageTest', () => {
     const notStarted = tabOrganizationPage.shadowRoot!.querySelector(
         'tab-organization-not-started');
     assertTrue(!!notStarted);
+    const animations = notStarted.getAnimations();
+    assertEquals(2, animations.length);
+    animations[0]!.finish();
+    animations[1]!.finish();
     assertTrue(isVisible(notStarted));
 
     const actionButton = notStarted.shadowRoot!.querySelector('cr-button');
@@ -184,12 +194,76 @@ suite('TabOrganizationPageTest', () => {
     assertEquals(0, testApiProxy.getCallCount('requestTabOrganization'));
   });
 
+  test('Triggers sync when not syncing', async () => {
+    const syncInfo: SyncInfo = {
+      syncing: false,
+      syncingHistory: true,
+      paused: false,
+    };
+    await tabOrganizationPageSetup(syncInfo);
+
+    const notStarted = tabOrganizationPage.shadowRoot!.querySelector(
+        'tab-organization-not-started');
+    assertTrue(!!notStarted);
+    assertTrue(isVisible(notStarted));
+
+    const actionButton = notStarted.shadowRoot!.querySelector('cr-button');
+    assertTrue(!!actionButton);
+    actionButton.click();
+
+    assertEquals(1, testApiProxy.getCallCount('triggerSync'));
+  });
+
+  test('Triggers sign in when paused', async () => {
+    const syncInfo: SyncInfo = {
+      syncing: true,
+      syncingHistory: true,
+      paused: true,
+    };
+    await tabOrganizationPageSetup(syncInfo);
+
+    const notStarted = tabOrganizationPage.shadowRoot!.querySelector(
+        'tab-organization-not-started');
+    assertTrue(!!notStarted);
+    assertTrue(isVisible(notStarted));
+
+    const actionButton = notStarted.shadowRoot!.querySelector('cr-button');
+    assertTrue(!!actionButton);
+    actionButton.click();
+
+    assertEquals(1, testApiProxy.getCallCount('triggerSignIn'));
+  });
+
+  test('Opens settings when not syncing history', async () => {
+    const syncInfo: SyncInfo = {
+      syncing: true,
+      syncingHistory: false,
+      paused: false,
+    };
+    await tabOrganizationPageSetup(syncInfo);
+
+    const notStarted = tabOrganizationPage.shadowRoot!.querySelector(
+        'tab-organization-not-started');
+    assertTrue(!!notStarted);
+    assertTrue(isVisible(notStarted));
+
+    const actionButton = notStarted.shadowRoot!.querySelector('cr-button');
+    assertTrue(!!actionButton);
+    actionButton.click();
+
+    assertEquals(1, testApiProxy.getCallCount('openSyncSettings'));
+  });
+
   test('Updates with sync changes', async () => {
     await tabOrganizationPageSetup();
 
     const notStarted = tabOrganizationPage.shadowRoot!.querySelector(
         'tab-organization-not-started');
     assertTrue(!!notStarted);
+    const animations = notStarted.getAnimations();
+    assertEquals(2, animations.length);
+    animations[0]!.finish();
+    animations[1]!.finish();
     assertTrue(isVisible(notStarted));
 
     const accountRowSynced =
@@ -224,8 +298,11 @@ suite('TabOrganizationPageTest', () => {
 
     assertEquals(0, testApiProxy.getCallCount('startTabGroupTutorial'));
 
-    const tipAction =
-        tabOrganizationPage.shadowRoot!.querySelector<HTMLElement>('.link');
+    const failure = tabOrganizationPage.shadowRoot!.querySelector(
+        'tab-organization-failure');
+    assertTrue(!!failure);
+    const tipAction = failure.shadowRoot!.querySelector<HTMLElement>(
+        '.tab-organization-link');
     assertTrue(!!tipAction);
     tipAction.click();
     await flushTasks();

@@ -46,12 +46,15 @@ class PlusAddressService : public KeyedService,
                      PrefService* pref_service,
                      PlusAddressClient plus_address_client);
 
-  // Returns `true` when plus addresses are supported. Currently requires only
-  // that the `kPlusAddressesEnabled` base::Feature is enabled.
+  // Returns `true` when plus addresses are supported. This includes checks that
+  // the `kPlusAddressesEnabled` base::Feature is enabled, that there's a
+  // signed-in user, the ability to talk to the server, and that off-the-record
+  // sessions will not offer new shielded email creation.
   // Virtual to allow overriding the behavior in tests. This allows external
   // tests (e.g., those in autofill that depend on this class) to substitute
   // their own behavior.
-  virtual bool SupportsPlusAddresses(url::Origin origin);
+  virtual bool SupportsPlusAddresses(url::Origin origin,
+                                     bool is_off_the_record);
   // Get a plus address, if one exists, for the passed-in origin. Note that all
   // plus address activity is scoped to eTLD+1. This class owns the conversion
   // of `origin` to its eTLD+1 form.

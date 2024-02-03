@@ -148,9 +148,9 @@ constexpr int kFailedToRegister = -8;
 
 int InstallUpdater(const base::FilePath& browser_path) {
   base::FilePath browser_plist = browser_path.Append("Contents/Info.plist");
-  absl::optional<std::string> browser_app_id =
+  std::optional<std::string> browser_app_id =
       ReadValueFromPlist(browser_plist, "KSProductID");
-  absl::optional<std::string> browser_version =
+  std::optional<std::string> browser_version =
       ReadValueFromPlist(browser_plist, "KSVersion");
   if (!browser_app_id || !browser_version) {
     return kFailedToReadBrowserPlist;
@@ -247,8 +247,8 @@ bool VerifyUpdaterSignature(const base::FilePath& updater_app_bundle) {
   base::apple::ScopedCFTypeRef<SecStaticCodeRef> code;
   base::apple::ScopedCFTypeRef<CFErrorRef> errors;
   if (SecStaticCodeCreateWithPath(
-          base::apple::FilePathToCFURL(updater_app_bundle), kSecCSDefaultFlags,
-          code.InitializeInto()) != errSecSuccess) {
+          base::apple::FilePathToCFURL(updater_app_bundle).get(),
+          kSecCSDefaultFlags, code.InitializeInto()) != errSecSuccess) {
     return false;
   }
   if (SecRequirementCreateWithString(
@@ -262,8 +262,8 @@ bool VerifyUpdaterSignature(const base::FilePath& updater_app_bundle) {
     return false;
   }
   if (SecStaticCodeCheckValidityWithErrors(
-          code, kSecCSCheckAllArchitectures | kSecCSCheckNestedCode,
-          requirement, errors.InitializeInto()) != errSecSuccess) {
+          code.get(), kSecCSCheckAllArchitectures | kSecCSCheckNestedCode,
+          requirement.get(), errors.InitializeInto()) != errSecSuccess) {
     return false;
   }
   return true;

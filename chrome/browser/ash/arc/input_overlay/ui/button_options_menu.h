@@ -29,18 +29,19 @@ class DisplayOverlayController;
 //
 // View looks like this:
 // +----------------------------------+
-// ||icon|  |"Button options"|  |icon||
+// ||"Button options"|          |icon||
 // |----------------------------------|
-// ||"Key assignment"|                |
-// |----------------------------------|
-// |  |feature_tile|  |feature_title| |
-// |  |            |  |             | |
+// ||"Buttons let..."|                |
 // |----------------------------------|
 // ||"Selected key"       |key labels||
 // ||"key"                            |
 // |----------------------------------|
-// ||"Button label"                 > |
-// ||"Unassigned"                     |
+// |  |"Choose your button type:"   | |
+// |  |feature_tile|  |feature_title| |
+// |  |            |  |             | |
+// |----------------------------------|
+// -----------------------------------|
+// ||         Delete button          ||
 // +----------------------------------+
 class ButtonOptionsMenu : public ArrowContainer, public TouchInjectorObserver {
  public:
@@ -49,6 +50,8 @@ class ButtonOptionsMenu : public ArrowContainer, public TouchInjectorObserver {
   ButtonOptionsMenu(const ButtonOptionsMenu&) = delete;
   ButtonOptionsMenu& operator=(const ButtonOptionsMenu&) = delete;
   ~ButtonOptionsMenu() override;
+
+  void UpdateWidget();
 
   Action* action() const { return action_; }
 
@@ -64,9 +67,10 @@ class ButtonOptionsMenu : public ArrowContainer, public TouchInjectorObserver {
   void AddEditTitle();
   void AddActionEdit();
   void AddActionSelection();
+  void AddDeleteButton();
 
   // Functions related to buttons.
-  void OnTrashButtonPressed();
+  void OnDeleteButtonPressed();
   void OnDoneButtonPressed();
   void OnButtonLabelAssignmentPressed();
 

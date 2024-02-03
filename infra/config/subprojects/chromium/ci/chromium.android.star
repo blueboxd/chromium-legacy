@@ -10,6 +10,7 @@ load("//lib/builders.star", "builders", "os", "reclient", "sheriff_rotations")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
+load("//lib/gn_args.star", "gn_args")
 
 ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
@@ -78,6 +79,19 @@ ci.builder(
     # build.
     # TODO(crbug.com/1395760): Check why the compile takes longer time.
     execution_timeout = 8 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "clang",
+            "asan",
+            "debug_builder",
+            "reclient",
+            # TODO(1486663): Remove no_symbols when unit_tests binary size
+            # issue is resolved.
+            "no_symbols",
+            "strip_debug_info",
+        ],
+    ),
 )
 
 ci.thin_tester(
@@ -187,6 +201,13 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 4 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder_without_codecs",
+            "debug_builder",
+            "reclient",
+        ],
+    ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -226,6 +247,15 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 7 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_static_builder",
+            "reclient",
+            "arm64",
+            "webview_google",
+        ],
+    ),
 )
 
 # We want to confirm that we can compile everything.
@@ -270,6 +300,15 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 7 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_static_builder",
+            "reclient",
+            "arm64",
+            "webview_google",
+        ],
+    ),
 )
 
 # This builder should be used for trybot mirroring when no need to compile all.
@@ -288,6 +327,16 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 7 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_static_builder",
+            "reclient",
+            "x64",
+            "webview_trichrome",
+            "webview_shell",
+        ],
+    ),
 )
 
 # Similar to crbug.com/1246468#c34, as android has some non standard
@@ -324,6 +373,16 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 7 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_static_builder",
+            "reclient",
+            "x64",
+            "webview_trichrome",
+            "webview_shell",
+        ],
+    ),
 )
 
 ci.builder(
@@ -356,6 +415,15 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 6 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_static_builder",
+            "reclient",
+            "x86",
+            "webview_shell",
+        ],
+    ),
 )
 
 ci.builder(
@@ -385,6 +453,19 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "woa-engprod@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x86",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_trichrome",
+            "webview_shell",
+        ],
+    ),
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -448,6 +529,16 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "clank-engprod@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cast_android",
+            "cast_receiver",
+            "clang",
+            "debug_static_builder",
+            "reclient",
+        ],
+    ),
 )
 
 ci.builder(
@@ -461,6 +552,15 @@ ci.builder(
     ),
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 7 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder_without_codecs",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "strip_debug_info",
+        ],
+    ),
     notifies = ["Deterministic Android"],
 )
 
@@ -476,6 +576,13 @@ ci.builder(
     ),
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 6 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_builder",
+            "reclient",
+        ],
+    ),
     notifies = ["Deterministic Android"],
     reclient_jobs = reclient.jobs.DEFAULT,
 )
@@ -544,6 +651,18 @@ ci.builder(
         short_name = "10",
     ),
     contact_team_email = "clank-engprod@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "arm64",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_trichrome",
+        ],
+    ),
 )
 
 ci.builder(
@@ -609,6 +728,17 @@ ci.builder(
     ),
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 8 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "arm64",
+            "strip_debug_info",
+            "webview_google",
+        ],
+    ),
 )
 
 ci.builder(
@@ -635,6 +765,19 @@ ci.builder(
     ),
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 4 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x86",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_monochrome",
+            "webview_shell",
+        ],
+    ),
 )
 
 ci.builder(
@@ -648,6 +791,18 @@ ci.builder(
         short_name = "size",
     ),
     contact_team_email = "clank-engprod@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "chrome_with_codecs",
+            "reclient",
+            "minimal_symbols",
+            "official_optimize",
+            "stable_channel",
+            "v8_release_branch",
+            "use_dummy_lastchange",
+        ],
+    ),
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -683,6 +838,17 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "arm_no_neon",
+            "release_java",
+            "use_dummy_lastchange",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -718,6 +884,18 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "arm_no_neon",
+            "strip_debug_info",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -747,6 +925,15 @@ ci.builder(
         short_name = "dbg",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "arm64",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -776,6 +963,18 @@ ci.builder(
         short_name = "rel",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "arm64",
+            "strip_debug_info",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -804,6 +1003,19 @@ ci.builder(
         category = "cronet|asan",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "arm_no_neon",
+            "clang",
+            "asan",
+            "strip_debug_info",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -834,6 +1046,16 @@ ci.builder(
         short_name = "dbg",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "arm64",
+            "cronet_android_mainline_clang",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -864,6 +1086,19 @@ ci.builder(
         short_name = "rel",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "arm64",
+            "strip_debug_info",
+            "cronet_android_mainline_clang",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -899,6 +1134,16 @@ ci.builder(
         short_name = "dbg",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "x86",
+            "cronet_android_mainline_clang",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -929,6 +1174,19 @@ ci.builder(
         short_name = "rel",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x86",
+            "strip_debug_info",
+            "cronet_android_mainline_clang",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -945,8 +1203,99 @@ ci.builder(
         short_name = "m",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "arm64",
+            "strip_debug_info",
+        ],
+    ),
     notifies = ["cronet"],
     reclient_jobs = reclient.jobs.DEFAULT,
+)
+
+ci.builder(
+    name = "android-cronet-riscv64-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(config = "main_builder"),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|riscv64",
+        short_name = "dbg",
+    ),
+    contact_team_email = "cronet-sheriff@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "riscv64",
+        ],
+    ),
+    notifies = ["cronet"],
+)
+
+ci.builder(
+    name = "android-cronet-riscv64-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(config = "main_builder"),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|riscv64",
+        short_name = "rel",
+    ),
+    contact_team_email = "cronet-sheriff@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "riscv64",
+            "strip_debug_info",
+        ],
+    ),
+    notifies = ["cronet"],
 )
 
 ci.builder(
@@ -980,6 +1329,15 @@ ci.builder(
         short_name = "dbg",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "x86",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -1014,6 +1372,15 @@ ci.builder(
         short_name = "dbg",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "x64",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -1395,6 +1762,18 @@ ci.builder(
         short_name = "rel",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x86",
+            "strip_debug_info",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -1424,6 +1803,18 @@ ci.builder(
         short_name = "rel",
     ),
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x64",
+            "strip_debug_info",
+        ],
+    ),
     notifies = ["cronet"],
 )
 
@@ -1453,6 +1844,19 @@ ci.builder(
     ),
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 4 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x86",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_monochrome",
+            "webview_shell",
+        ],
+    ),
 )
 
 ci.thin_tester(
@@ -1522,6 +1926,17 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 4 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "arm64",
+            "strip_debug_info",
+            "webview_monochrome",
+        ],
+    ),
 )
 
 ci.builder(
@@ -1554,6 +1969,19 @@ ci.builder(
         short_name = "P",
     ),
     contact_team_email = "clank-engprod@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x86",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_monochrome",
+            "webview_shell",
+        ],
+    ),
 )
 
 # TODO(crbug.com/1137474): Update the console view config once on CQ
@@ -1589,6 +2017,19 @@ ci.builder(
         short_name = "11",
     ),
     execution_timeout = 4 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x86",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_trichrome",
+            "webview_shell",
+        ],
+    ),
 )
 
 ci.builder(
@@ -1622,6 +2063,20 @@ ci.builder(
     ),
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 4 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x64",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_trichrome",
+            "no_secondary_abi",
+            "webview_shell",
+        ],
+    ),
 )
 
 ci.builder(
@@ -1658,4 +2113,18 @@ ci.builder(
         short_name = "13",
     ),
     execution_timeout = 4 * time.hour,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x64",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_trichrome",
+            "no_secondary_abi",
+            "webview_shell",
+        ],
+    ),
 )

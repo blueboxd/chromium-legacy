@@ -17,8 +17,8 @@
 #import "components/power_bookmarks/core/power_bookmark_utils.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
-#import "ios/chrome/browser/push_notification/push_notification_service.h"
-#import "ios/chrome/browser/push_notification/push_notification_util.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_service.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
@@ -78,7 +78,7 @@ const bookmarks::BookmarkNode* PrepareSubscription(
 
   commerce::ProductInfo product_info;
   product_info.title = kBookmarkTitle;
-  absl::optional<commerce::ProductInfo> optional_product_info;
+  std::optional<commerce::ProductInfo> optional_product_info;
   optional_product_info.emplace(product_info);
   shopping_service->SetResponseForGetProductInfoForUrl(optional_product_info);
 
@@ -186,7 +186,7 @@ TEST_F(
   commerce::ProductInfo product_info;
   product_info.title = kBookmarkTitle;
   product_info.product_cluster_id.emplace(12345L);
-  absl::optional<commerce::ProductInfo> optional_product_info;
+  std::optional<commerce::ProductInfo> optional_product_info;
   optional_product_info.emplace(product_info);
   shopping_service_->SetResponseForGetProductInfoForUrl(optional_product_info);
   mediator_.consumer = consumer_;

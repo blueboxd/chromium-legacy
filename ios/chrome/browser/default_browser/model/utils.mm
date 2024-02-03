@@ -19,11 +19,10 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
-#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/signin/signin_util.h"
+#import "ios/chrome/browser/signin/model/signin_util.h"
 
 #import <UIKit/UIKit.h>
 
@@ -569,8 +568,7 @@ bool ShouldTriggerDefaultBrowserHighlightFeature(
     const base::Feature& feature,
     feature_engagement::Tracker* tracker,
     syncer::SyncService* syncService) {
-  // TODO(crbug.com/1410229) clean-up experiment code when fully launched.
-  if (!IsBlueDotPromoEnabled() || IsChromeLikelyDefaultBrowser() ||
+  if (IsChromeLikelyDefaultBrowser() ||
       (syncService && ShouldIndicateIdentityErrorInOverflowMenu(syncService))) {
     return false;
   }
@@ -594,30 +592,6 @@ bool ShouldTriggerDefaultBrowserHighlightFeature(
   }
 
   return false;
-}
-
-bool AreDefaultBrowserPromosEnabled() {
-  if (base::FeatureList::IsEnabled(kDefaultBrowserBlueDotPromo)) {
-    return kBlueDotPromoUserGroupParam.Get() ==
-           BlueDotPromoUserGroup::kAllDBPromosEnabled;
-  }
-
-  return true;
-}
-
-bool IsBlueDotPromoEnabled() {
-  if (base::FeatureList::IsEnabled(kDefaultBrowserBlueDotPromo)) {
-    return kBlueDotPromoUserGroupParam.Get() ==
-               BlueDotPromoUserGroup::kOnlyBlueDotPromoEnabled ||
-           kBlueDotPromoUserGroupParam.Get() ==
-               BlueDotPromoUserGroup::kAllDBPromosEnabled;
-  }
-
-  return false;
-}
-
-bool IsDefaultBrowserInPromoManagerEnabled() {
-  return base::FeatureList::IsEnabled(kDefaultBrowserRefactoringPromoManager);
 }
 
 bool IsDefaultBrowserVideoPromoEnabled() {

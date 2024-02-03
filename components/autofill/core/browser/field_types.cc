@@ -50,7 +50,9 @@ static constexpr auto kTypeNameToFieldType =
          {"PHONE_HOME_WHOLE_NUMBER", PHONE_HOME_WHOLE_NUMBER},
          {"ADDRESS_HOME_LINE1", ADDRESS_HOME_LINE1},
          {"ADDRESS_HOME_LINE2", ADDRESS_HOME_LINE2},
+         {"ADDRESS_HOME_APT", ADDRESS_HOME_APT},
          {"ADDRESS_HOME_APT_NUM", ADDRESS_HOME_APT_NUM},
+         {"ADDRESS_HOME_APT_TYPE", ADDRESS_HOME_APT_TYPE},
          {"ADDRESS_HOME_CITY", ADDRESS_HOME_CITY},
          {"ADDRESS_HOME_STATE", ADDRESS_HOME_STATE},
          {"ADDRESS_HOME_ZIP", ADDRESS_HOME_ZIP},
@@ -130,7 +132,9 @@ static constexpr auto kTypeNameToFieldType =
           ADDRESS_HOME_OVERFLOW_AND_LANDMARK},
          {"ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK",
           ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK},
-         {"SINGLE_USERNAME_FORGOT_PASSWORD", SINGLE_USERNAME_FORGOT_PASSWORD}});
+         {"SINGLE_USERNAME_FORGOT_PASSWORD", SINGLE_USERNAME_FORGOT_PASSWORD},
+         {"SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES",
+          SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES}});
 
 bool IsFillableFieldType(ServerFieldType field_type) {
   switch (field_type) {
@@ -160,7 +164,9 @@ bool IsFillableFieldType(ServerFieldType field_type) {
     case ADDRESS_HOME_LINE1:
     case ADDRESS_HOME_LINE2:
     case ADDRESS_HOME_LINE3:
+    case ADDRESS_HOME_APT:
     case ADDRESS_HOME_APT_NUM:
+    case ADDRESS_HOME_APT_TYPE:
     case ADDRESS_HOME_CITY:
     case ADDRESS_HOME_STATE:
     case ADDRESS_HOME_ZIP:
@@ -217,6 +223,7 @@ bool IsFillableFieldType(ServerFieldType field_type) {
     case CONFIRMATION_PASSWORD:
     case SINGLE_USERNAME:
     case SINGLE_USERNAME_FORGOT_PASSWORD:
+    case SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES:
       return true;
 
     // Not fillable credential fields.
@@ -304,6 +311,7 @@ std::string_view FieldTypeToDeveloperRepresentationString(
     case USERNAME:
     case SINGLE_USERNAME:
     case SINGLE_USERNAME_FORGOT_PASSWORD:
+    case SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES:
       return "Username";
     case USERNAME_AND_EMAIL_ADDRESS:
       return "Username and email";
@@ -388,8 +396,12 @@ std::string_view FieldTypeToDeveloperRepresentationString(
       return "Sorting code";
     case ADDRESS_HOME_DEPENDENT_LOCALITY:
       return "Dependent locality";
+    case ADDRESS_HOME_APT:
+      return "Apt";
     case ADDRESS_HOME_APT_NUM:
       return "Apt num";
+    case ADDRESS_HOME_APT_TYPE:
+      return "Apt type";
     case ADDRESS_HOME_CITY:
       return "City";
     case ADDRESS_HOME_STATE:
@@ -488,7 +500,9 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case ADDRESS_HOME_LINE1:
     case ADDRESS_HOME_LINE2:
     case ADDRESS_HOME_LINE3:
+    case ADDRESS_HOME_APT:
     case ADDRESS_HOME_APT_NUM:
+    case ADDRESS_HOME_APT_TYPE:
     case ADDRESS_HOME_CITY:
     case ADDRESS_HOME_STATE:
     case ADDRESS_HOME_ZIP:
@@ -546,6 +560,7 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case SINGLE_USERNAME:
     case NOT_USERNAME:
     case SINGLE_USERNAME_FORGOT_PASSWORD:
+    case SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES:
       return FieldTypeGroup::kPasswordField;
 
     case NO_SERVER_DATA:

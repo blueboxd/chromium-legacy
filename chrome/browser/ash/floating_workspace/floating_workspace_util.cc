@@ -6,7 +6,9 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -22,10 +24,11 @@ namespace ash {
 
 namespace {
 
-PrefService* GetPrimaryUserPrefService() {
-  auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
-  auto* user_profile = ProfileHelper::Get()->GetProfileByUser(primary_user);
-  return user_profile->GetPrefs();
+PrefService* GetActiveUserPrefService() {
+  auto* active_user = user_manager::UserManager::Get()->GetActiveUser();
+  return active_user
+             ? ProfileHelper::Get()->GetProfileByUser(active_user)->GetPrefs()
+             : nullptr;
 }
 
 }  // namespace
@@ -43,9 +46,10 @@ bool IsFloatingWorkspaceV1Enabled() {
 }
 
 bool IsFloatingWorkspaceV2Enabled() {
-  PrefService* pref_service = GetPrimaryUserPrefService();
-  DCHECK(pref_service);
-
+  PrefService* pref_service = GetActiveUserPrefService();
+  if (!pref_service) {
+    return false;
+  }
   const PrefService::Preference* floating_workspace_pref =
       pref_service->FindPreference(prefs::kFloatingWorkspaceEnabled);
 
@@ -55,6 +59,7 @@ bool IsFloatingWorkspaceV2Enabled() {
     // If there is a policy managing the pref, return what is set by policy.
     return pref_service->GetBoolean(prefs::kFloatingWorkspaceEnabled);
   }
+
   // TODO(b/297795546): Remove external ash feature flag.
   return features::IsFloatingWorkspaceV2Enabled();
 }
@@ -63,6 +68,15 @@ bool IsInternetConnected() {
   NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
   return nsh != nullptr &&
          nsh->ConnectedNetworkByType(NetworkTypePattern::Default()) != nullptr;
+}
+
+bool IsSafeMode() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kSafeMode);
+}
+
+bool ShouldHandleRestartRestore() {
+  return IsFloatingWorkspaceV2Enabled() && !IsSafeMode();
 }
 
 }  // namespace floating_workspace_util

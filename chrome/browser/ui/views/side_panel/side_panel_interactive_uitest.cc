@@ -347,6 +347,18 @@ IN_PROC_BROWSER_TEST_F(PinnedSidePanelInteractiveTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PinnedSidePanelInteractiveTest,
+                       SidePanelPinButtonsHideInIncognitoMode) {
+  Browser* const incognito = CreateIncognitoBrowser();
+  RunTestSequence(
+      InContext(incognito->window()->GetElementContext(),
+                WaitForShow(kBrowserViewElementId)),
+      InSameContext(Steps(ActivateSurface(kBrowserViewElementId), FlushEvents(),
+                          EnsureNotPresent(kSidePanelElementId),
+                          OpenBookmarksSidePanel(),
+                          EnsureNotPresent(kSidePanelPinButtonElementId))));
+}
+
+IN_PROC_BROWSER_TEST_F(PinnedSidePanelInteractiveTest,
                        PinnedToolbarButtonsHighlightWhileSidePanelVisible) {
   // Replace the contents of the ReadingMode side panel with an empty view so it
   // loads faster.
@@ -368,11 +380,11 @@ IN_PROC_BROWSER_TEST_F(PinnedSidePanelInteractiveTest,
       Check(base::BindLambdaForTesting([=]() {
         return actions_model->Contains(kActionSidePanelShowBookmarks);
       })),
-      CheckResult(
-          base::BindLambdaForTesting([this]() {
-            return GetPinnedToolbarActionsContainer()->children().size();
-          }),
-          1),
+      CheckView(
+          kPinnedToolbarActionsContainerElementId,
+          [](views::View* view) { return view->children().size() == 2u; }),
+      CheckViewProperty(kPinnedToolbarActionsContainerDividerElementId,
+                        &views::View::GetVisible, true),
       // Verify the bookmarks pinned toolbar button is not highlighted.
       CheckPinnedToolbarActionsContainerChildInkDropState(0, false),
       // Open the bookmarks side panel.

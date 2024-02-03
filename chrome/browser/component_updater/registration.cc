@@ -205,12 +205,6 @@ void RegisterComponentsForUpdate() {
 
 #if BUILDFLAG(IS_ANDROID)
   RegisterRealTimeUrlChecksAllowlistComponent(cus);
-  // TODO(https://crbug.com/1423159): Clean this up once it's been live for a
-  // few months.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::GetDeleteFileCallback(
-          path.Append(FILE_PATH_LITERAL("CreatorChipConfig"))));
 #endif  // BUIDLFLAG(IS_ANDROID)
 
   RegisterAutofillStatesComponent(cus, g_browser_process->local_state());
@@ -223,15 +217,14 @@ void RegisterComponentsForUpdate() {
 
   RegisterTpcdMetadataComponent(cus);
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   // TODO(crbug.com/1490685): Remove this test component once the
   // experiment has concluded.
   if (base::FeatureList::IsEnabled(features::kPayloadTestComponent)) {
     RegisterPayloadTestComponent(cus);
   }
+
   // TODO(crbug.com/1499359): Remove once the experiment has concluded.
   EnsureNetworkQualityObserver();
-#endif
 }
 
 }  // namespace component_updater

@@ -168,8 +168,8 @@ class DownloadItemActivatedData
  public:
   DownloadItemActivatedData(DownloadItem::DownloadCreationType download_type,
                             uint32_t download_id,
-                            std::string original_url,
-                            std::string final_url,
+                            const GURL& original_url,
+                            const GURL& final_url,
                             std::string file_name,
                             DownloadDangerType danger_type,
                             int64_t start_offset,
@@ -196,10 +196,12 @@ class DownloadItemActivatedData
         GetDownloadCreationTypeNames(download_type_).c_str()));
     out->append(base::StringPrintf("\"id\":\"%d\",", download_id_));
     out->append("\"original_url\":");
-    base::EscapeJSONString(original_url_, true, out);
+    base::EscapeJSONString(original_url_.is_valid() ? original_url_.spec() : "",
+                           true, out);
     out->append(",");
     out->append("\"final_url\":");
-    base::EscapeJSONString(final_url_, true, out);
+    base::EscapeJSONString(final_url_.is_valid() ? final_url_.spec() : "", true,
+                           out);
     out->append(",");
     out->append("\"file_name\":");
     base::EscapeJSONString(file_name_, true, out);
@@ -217,8 +219,8 @@ class DownloadItemActivatedData
  private:
   DownloadItem::DownloadCreationType download_type_;
   uint32_t download_id_;
-  std::string original_url_;
-  std::string final_url_;
+  GURL original_url_;
+  GURL final_url_;
   std::string file_name_;
   DownloadDangerType danger_type_;
   int64_t start_offset_;
@@ -878,6 +880,9 @@ const std::string& DownloadItemImpl::GetSerializedEmbedderDownloadData() const {
 }
 
 const GURL& DownloadItemImpl::GetTabUrl() const {
+  if (IsSavePackageDownload()) {
+    return GetURL();
+  }
   return request_info_.tab_url;
 }
 
@@ -1029,6 +1034,7 @@ bool DownloadItemImpl::IsDangerous() const {
     case DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
     case DOWNLOAD_DANGER_TYPE_ALLOWLISTED_BY_POLICY:
     case DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+    case DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING:
     case DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
       return false;
@@ -1163,10 +1169,6 @@ DownloadItem::DownloadCreationType DownloadItemImpl::GetDownloadCreationType()
   return download_type_;
 }
 
-bool DownloadItemImpl::IsDlpManaged() const {
-  return is_dlp_managed_;
-}
-
 ::network::mojom::CredentialsMode DownloadItemImpl::GetCredentialsMode() const {
   return request_info_.credentials_mode;
 }
@@ -1227,10 +1229,6 @@ void DownloadItemImpl::SetLastAccessTime(base::Time last_access_time) {
 
 void DownloadItemImpl::SetDisplayName(const base::FilePath& name) {
   display_name_ = name;
-}
-
-void DownloadItemImpl::SetIsDlpManaged(bool is_managed) {
-  is_dlp_managed_ = is_managed;
 }
 
 std::string DownloadItemImpl::DebugString(bool verbose) const {
@@ -1535,8 +1533,8 @@ void DownloadItemImpl::Init(bool active,
   }
 
   auto active_data = std::make_unique<DownloadItemActivatedData>(
-      download_type, GetId(), GetOriginalUrl().spec(), GetURL().spec(),
-      file_name, GetDangerType(), GetReceivedBytes(), HasUserGesture());
+      download_type, GetId(), GetOriginalUrl(), GetURL(), file_name,
+      GetDangerType(), GetReceivedBytes(), HasUserGesture());
 
   if (active) {
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
@@ -2417,9 +2415,8 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
         TRACE_ID_WITH_SCOPE("DownloadItemActive", download_id_),
         "download_item",
         std::make_unique<DownloadItemActivatedData>(
-            TYPE_ACTIVE_DOWNLOAD, GetId(), GetOriginalUrl().spec(),
-            GetURL().spec(), file_name, GetDangerType(), GetReceivedBytes(),
-            HasUserGesture()));
+            TYPE_ACTIVE_DOWNLOAD, GetId(), GetOriginalUrl(), GetURL(),
+            file_name, GetDangerType(), GetReceivedBytes(), HasUserGesture()));
   }
 }
 

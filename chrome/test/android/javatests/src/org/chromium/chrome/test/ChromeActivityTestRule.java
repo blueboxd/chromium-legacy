@@ -36,6 +36,8 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
@@ -200,7 +202,9 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
     public void waitForActivityCompletelyLoaded() {
         CriteriaHelper.pollUiThread(
                 () -> getActivity().getActivityTab() != null, "Tab never selected/initialized.");
-        Tab tab = getActivity().getActivityTab();
+        Tab tab =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> getActivity().getActivityTab());
 
         ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
 
@@ -376,6 +380,14 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
         return intent;
     }
 
+    public Profile getProfile(boolean incognito) {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> {
+                    return ProfileProvider.getOrCreateProfile(
+                            getActivity().getProfileProviderSupplier().get(), incognito);
+                });
+    }
+
     /**
      * @return The number of tabs currently open.
      */
@@ -471,11 +483,10 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
         return mTestServerRule;
     }
 
-    /**
-     * @return {@link WebContents} of the active tab of the activity.
-     */
+    /** Returns the {@link WebContents} of the active tab of the activity. */
     public WebContents getWebContents() {
-        return getActivity().getActivityTab().getWebContents();
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> getActivity().getActivityTab().getWebContents());
     }
 
     /**

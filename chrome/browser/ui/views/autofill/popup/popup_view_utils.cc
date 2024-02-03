@@ -558,6 +558,7 @@ int GetMainTextStyleForPopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kFillExistingPlusAddress:
     case PopupItemId::kFillFullEmail:
     case PopupItemId::kFillFullPhoneNumber:
+    case PopupItemId::kEntryNotSelectable:
     case PopupItemId::kGeneratePasswordEntry:
     case PopupItemId::kIbanEntry:
     case PopupItemId::kInsecureContextPaymentDisabledMessage:
@@ -608,6 +609,7 @@ bool IsFooterPopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kDevtoolsTestAddressEntry:
     case PopupItemId::kDevtoolsTestAddresses:
     case PopupItemId::kFieldByFieldFilling:
+    case PopupItemId::kEntryNotSelectable:
     case PopupItemId::kFillExistingPlusAddress:
     case PopupItemId::kFillFullAddress:
     case PopupItemId::kFillFullName:
@@ -638,6 +640,7 @@ bool IsExpandablePopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kFillFullEmail:
     case PopupItemId::kFillFullPhoneNumber:
     case PopupItemId::kFieldByFieldFilling:
+    case PopupItemId::kEntryNotSelectable:
       return true;
     case PopupItemId::kAccountStoragePasswordEntry:
     case PopupItemId::kAccountStorageUsernameEntry:
@@ -675,6 +678,13 @@ bool IsExpandablePopupItemId(PopupItemId popup_item_id) {
     case PopupItemId::kWebauthnSignInWithAnotherDevice:
       return false;
   }
+}
+
+bool ShouldApplyNewAutofillPopupStyle() {
+  return base::FeatureList::IsEnabled(
+             features::kAutofillShowAutocompleteDeleteButton) ||
+         base::FeatureList::IsEnabled(
+             features::kAutofillGranularFillingAvailable);
 }
 
 }  // namespace autofill

@@ -294,6 +294,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_NOTE_CHARACTER_COUNT},
     {"passwordNoteCharacterCountWarning",
      IDS_PASSWORD_MANAGER_UI_NOTE_CHARACTER_COUNT_WARNING},
+    {"passwordListAriaLabel", IDS_PASSWORD_MANAGER_UI_PASSWORD_LIST_ARIA_LABEL},
     {"passwords", IDS_PASSWORD_MANAGER_UI_PASSWORDS},
     {"phishedAndLeakedPassword",
      IDS_PASSWORD_MANAGER_UI_PASSWORD_PHISHED_AND_LEAKED},
@@ -591,10 +592,7 @@ PasswordManagerUI::PasswordManagerUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<SafetyHubHandler>(profile));
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   web_ui->AddMessageHandler(
-      std::make_unique<password_manager::PromoCardsHandler>(
-          profile,
-          password_manager::PromoCardInterface::GetAllPromoCardsForProfile(
-              profile)));
+      std::make_unique<password_manager::PromoCardsHandler>(profile));
 #endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   web_ui->AddMessageHandler(std::make_unique<settings::PasskeysHandler>());

@@ -1421,8 +1421,6 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     std::vector<GURL> report_urls;
     std::vector<GURL> debug_loss_report_urls;
     std::vector<GURL> debug_win_report_urls;
-    base::flat_map<blink::FencedFrame::ReportingDestination, url::Origin>
-        ad_reporting_url_declarer_origins;
     base::flat_map<blink::FencedFrame::ReportingDestination,
                    FencedFrameReporter::ReportingUrlMap>
         ad_beacon_map;
@@ -1901,9 +1899,6 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     DCHECK(reporter_);
     result_.report_urls = interest_group_manager_->TakeReportUrlsOfType(
         InterestGroupManagerImpl::ReportType::kSendReportTo);
-    result_.ad_reporting_url_declarer_origins =
-        reporter_->fenced_frame_reporter()
-            ->GetReportingUrlDeclarerOriginsForTesting();
     result_.ad_beacon_map =
         reporter_->fenced_frame_reporter()->GetAdBeaconMapForTesting();
     result_.ad_macros =
@@ -3433,10 +3428,6 @@ TEST_F(AuctionRunnerTest, Basic) {
                        /*highest_scoring_other_bid=*/1,
                        /*highest_scoring_other_bid_currency=*/absl::nullopt,
                        /*made_highest_scoring_other_bid=*/false)));
-  EXPECT_THAT(result_.ad_reporting_url_declarer_origins,
-              testing::UnorderedElementsAre(
-                  testing::Pair(ReportingDestination::kSeller, kSeller),
-                  testing::Pair(ReportingDestination::kBuyer, kBidder2)));
   EXPECT_THAT(
       result_.ad_beacon_map,
       testing::UnorderedElementsAre(
@@ -4049,12 +4040,6 @@ TEST_F(AuctionRunnerTest, ComponentAuction) {
                        /*highest_scoring_other_bid=*/0,
                        /*highest_scoring_other_bid_currency=*/absl::nullopt,
                        /*made_highest_scoring_other_bid=*/false)));
-  EXPECT_THAT(result_.ad_reporting_url_declarer_origins,
-              testing::UnorderedElementsAre(
-                  testing::Pair(ReportingDestination::kSeller, kSeller),
-                  testing::Pair(ReportingDestination::kComponentSeller,
-                                kComponentSeller2),
-                  testing::Pair(ReportingDestination::kBuyer, kBidder2)));
   EXPECT_THAT(
       result_.ad_beacon_map,
       testing::UnorderedElementsAre(
@@ -8023,8 +8008,7 @@ TEST_F(AuctionRunnerTest, PromiseSignalsBadAuctionIdAdditionalBids) {
 
 // An auction where the winning additional bid claims to be from an IG the user
 // is already in.
-// TODO(crbug.com/1497719): Re-enable this flaky test.
-TEST_F(AuctionRunnerTest, DISABLED_AdditionalBidAliasesInterestGroup) {
+TEST_F(AuctionRunnerTest, AdditionalBidAliasesInterestGroup) {
   base::test::ScopedFeatureList additional_bids_on;
   additional_bids_on.InitWithFeatures(
       {blink::features::kFledgeNegativeTargeting,
@@ -8213,6 +8197,7 @@ TEST_F(AuctionRunnerTest, DISABLED_AdditionalBidAliasesInterestGroup) {
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumConfigPromises(1)
+                   .SetNumAuctionsWithConfigPromises(1)
                    // Timing of what waits for seller worklet can vary, with
                    // execution time and platform.
                    .SetNumBidsQueuedWaitingForSellerWorklet(-1)
@@ -8273,8 +8258,7 @@ TEST_F(AuctionRunnerTest, DISABLED_AdditionalBidAliasesInterestGroup) {
 
 // An auction where the winning additional bid claims to be from an IG the user
 // is not in.
-// TODO(crbug.com/1497452): Re-enable this flaky test.
-TEST_F(AuctionRunnerTest, DISABLED_AdditionalBidDistinctFromInterestGroup) {
+TEST_F(AuctionRunnerTest, AdditionalBidDistinctFromInterestGroup) {
   base::test::ScopedFeatureList additional_bids_on;
   additional_bids_on.InitWithFeatures(
       {blink::features::kFledgeNegativeTargeting,
@@ -8466,6 +8450,7 @@ TEST_F(AuctionRunnerTest, DISABLED_AdditionalBidDistinctFromInterestGroup) {
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumConfigPromises(1)
+                   .SetNumAuctionsWithConfigPromises(1)
                    // Timing of what waits for seller worklet can vary, with
                    // execution time and platform.
                    .SetNumBidsQueuedWaitingForSellerWorklet(-1)
@@ -8815,16 +8800,12 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
 
   EXPECT_EQ(InterestGroupKey(kBidder2, kBidder2Name), result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
-  EXPECT_THAT(
-      result_.errors,
-      testing::UnorderedElementsAre(
-          testing::Eq(
-              "When looking for directFromSellerSignalsHeaderAdSlot adSlot1, "
-              "encountered response where top-level JSON value isn't an array: "
-              "Ad-Auction-Signals={\n  \"adSlot\": \"adSlot1\",\n  "
-              "\"sellerSignals\": 3\n}"),
-          testing::Eq("When looking for directFromSellerSignalsHeaderAdSlot "
-                      "adSlot1, failed to find a matching response.")));
+  // NOTE: The parsing error itself is reported separately, in the
+  // AdAuctionPageData.
+  EXPECT_THAT(result_.errors,
+              testing::UnorderedElementsAre(testing::Eq(
+                  "When looking for directFromSellerSignalsHeaderAdSlot "
+                  "adSlot1, failed to find a matching response.")));
 }
 
 // Trying to update auctionSignals which wasn't originally passed in as a

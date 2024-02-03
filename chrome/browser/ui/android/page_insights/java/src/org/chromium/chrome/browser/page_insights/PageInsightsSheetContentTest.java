@@ -65,7 +65,6 @@ public class PageInsightsSheetContentTest {
     private BottomSheetTestSupport mTestSupport;
     private int mFullHeight;
     private boolean mTapHandlerResult;
-    private boolean mShouldInterceptTouchEventsResult;
     private boolean mTapHandlerCalled;
     private boolean mBackPressHandlerCalled;
     private boolean mBackPressHandlerResult;
@@ -84,10 +83,6 @@ public class PageInsightsSheetContentTest {
         mBackPressHandlerCalled = false;
         ViewGroup rootView = sTestRule.getActivity().findViewById(android.R.id.content);
         TestThreadUtils.runOnUiThreadBlocking(() -> rootView.removeAllViews());
-
-        TestValues testValues = new TestValues();
-        testValues.addFeatureFlagOverride(ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB, true);
-        FeatureList.setTestValues(testValues);
 
         mScrimCoordinator =
                 new ScrimCoordinator(
@@ -140,17 +135,9 @@ public class PageInsightsSheetContentTest {
                                         return mBackPressHandlerResult;
                                     },
                                     new ObservableSupplierImpl<>(false),
-                                    new PageInsightsSheetContent.OnBottomSheetTouchHandler() {
-                                        @Override
-                                        public boolean handleTap() {
-                                            mTapHandlerCalled = true;
-                                            return mTapHandlerResult;
-                                        }
-
-                                        @Override
-                                        public boolean shouldInterceptTouchEvents() {
-                                            return mShouldInterceptTouchEventsResult;
-                                        }
+                                    () -> {
+                                        mTapHandlerCalled = true;
+                                        return mTapHandlerResult;
                                     });
                     mBottomSheetController.requestShowContent(mSheetContent, false);
                     mFullHeight =
@@ -598,7 +585,7 @@ public class PageInsightsSheetContentTest {
                             /* isPrivacyNoticeRequired= */ true,
                             /* shouldHavePeekState= */ true);
 
-                    assertFalse(mTapHandlerCalled);
+                    assertEquals(false, mTapHandlerCalled);
                 });
     }
 
@@ -615,7 +602,7 @@ public class PageInsightsSheetContentTest {
 
                     getContentViewById(R.id.page_insights_content_container).callOnClick();
 
-                    assertTrue(mTapHandlerCalled);
+                    assertEquals(true, mTapHandlerCalled);
                 });
     }
 
@@ -632,103 +619,76 @@ public class PageInsightsSheetContentTest {
 
                     mSheetContent.getToolbarView().callOnClick();
 
-                    assertTrue(mTapHandlerCalled);
+                    assertEquals(true, mTapHandlerCalled);
                 });
     }
 
     @Test
     @MediumTest
-    public void
-            contentContainerOnInterceptTouchEvent_actionUp_handlerTrue_trueAndTapHandlerCalled() {
+    public void contentContainerOnInterceptTouchEvent_actionUp_handlerTrue_true() {
         createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    mShouldInterceptTouchEventsResult = true;
+                    mTapHandlerResult = true;
                     mSheetContent.initContent(
                             new View(sTestRule.getActivity()),
                             /* isPrivacyNoticeRequired= */ true,
                             /* shouldHavePeekState= */ true);
 
-                    assertTrue(
+                    assertEquals(
+                            true,
                             ((LinearLayout)
                                             getContentViewById(
                                                     R.id.page_insights_content_container))
                                     .onInterceptTouchEvent(
                                             MotionEvent.obtain(
                                                     0, 0, MotionEvent.ACTION_UP, 0, 0, 0)));
-                    assertTrue(mTapHandlerCalled);
                 });
     }
 
     @Test
     @MediumTest
-    public void
-            contentContainerOnInterceptTouchEvent_actionUp_handlerFalse_falseAndTapHandlerNotCalled() {
+    public void contentContainerOnInterceptTouchEvent_actionUp_handlerFalse_false() {
         createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    mShouldInterceptTouchEventsResult = false;
+                    mTapHandlerResult = false;
                     mSheetContent.initContent(
                             new View(sTestRule.getActivity()),
                             /* isPrivacyNoticeRequired= */ true,
                             /* shouldHavePeekState= */ true);
 
-                    assertFalse(
-                            ((LinearLayout)
-                                            getContentViewById(
-                                                    R.id.page_insights_content_container))
-                                    .onInterceptTouchEvent(
-                                            MotionEvent.obtain(
-                                                    0, 0, MotionEvent.ACTION_UP, 0, 0, 0)));
-                    assertFalse(mTapHandlerCalled);
-                });
-    }
-
-    @Test
-    @MediumTest
-    public void
-            contentContainerOnInterceptTouchEvent_actionDown_handlerTrue_trueAndTapHandlerNotCalled() {
-        createSheetContent();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    mShouldInterceptTouchEventsResult = true;
-                    mSheetContent.initContent(
-                            new View(sTestRule.getActivity()),
-                            /* isPrivacyNoticeRequired= */ true,
-                            /* shouldHavePeekState= */ true);
-
-                    assertTrue(
+                    assertEquals(
+                            false,
                             ((LinearLayout)
                                             getContentViewById(
                                                     R.id.page_insights_content_container))
                                     .onInterceptTouchEvent(
                                             MotionEvent.obtain(
                                                     0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0)));
-                    assertFalse(mTapHandlerCalled);
                 });
     }
 
     @Test
     @MediumTest
-    public void
-            contentContainerOnInterceptTouchEvent_actionDown_handlerFalse_falseAndTapHandlerNotCalled() {
+    public void contentContainerOnInterceptTouchEvent_actionDown_handlerTrue_false() {
         createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    mShouldInterceptTouchEventsResult = false;
+                    mTapHandlerResult = true;
                     mSheetContent.initContent(
                             new View(sTestRule.getActivity()),
                             /* isPrivacyNoticeRequired= */ true,
                             /* shouldHavePeekState= */ true);
 
-                    assertFalse(
+                    assertEquals(
+                            false,
                             ((LinearLayout)
                                             getContentViewById(
                                                     R.id.page_insights_content_container))
                                     .onInterceptTouchEvent(
                                             MotionEvent.obtain(
                                                     0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0)));
-                    assertFalse(mTapHandlerCalled);
                 });
     }
 
@@ -839,43 +799,6 @@ public class PageInsightsSheetContentTest {
                             PageInsightsSheetContent.HeightMode.DISABLED,
                             mSheetContent.getPeekHeight());
                 });
-    }
-
-    @Test
-    @MediumTest
-    public void getPeekHeight_shouldHavePeekStateThenShouldNot() {
-        createSheetContent();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    mSheetContent.initContent(
-                            new FrameLayout(sTestRule.getActivity()),
-                            /* isPrivacyNoticeRequired= */ false,
-                            /* shouldHavePeekState= */ true);
-
-                    mSheetContent.setShouldHavePeekState(false);
-
-                    assertEquals(
-                            PageInsightsSheetContent.HeightMode.DISABLED,
-                            mSheetContent.getPeekHeight());
-                });
-    }
-
-    @Test
-    @MediumTest
-    public void swipeToDismissEnabled_true() {
-        createSheetContent();
-        mSheetContent.setSwipeToDismissEnabled(true);
-
-        assertTrue(mSheetContent.swipeToDismissEnabled());
-    }
-
-    @Test
-    @MediumTest
-    public void swipeToDismissEnabled_false() {
-        createSheetContent();
-        mSheetContent.setSwipeToDismissEnabled(false);
-
-        assertFalse(mSheetContent.swipeToDismissEnabled());
     }
 
     private View getToolbarViewById(int viewId) {

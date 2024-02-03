@@ -110,18 +110,18 @@ class MockPolicyController : public DataTransferPolicyController {
   ~MockPolicyController() override;
 
   MOCK_METHOD3(IsClipboardReadAllowed,
-               bool(const DataTransferEndpoint* const data_src,
-                    const DataTransferEndpoint* const data_dst,
+               bool(base::optional_ref<const DataTransferEndpoint> data_src,
+                    base::optional_ref<const DataTransferEndpoint> data_dst,
                     const absl::optional<size_t> size));
   MOCK_METHOD5(PasteIfAllowed,
-               void(const DataTransferEndpoint* const data_src,
-                    const DataTransferEndpoint* const data_dst,
+               void(base::optional_ref<const DataTransferEndpoint> data_src,
+                    base::optional_ref<const DataTransferEndpoint> data_dst,
                     const absl::optional<size_t> size,
                     content::RenderFrameHost* rfh,
                     base::OnceCallback<void(bool)> callback));
   MOCK_METHOD3(DropIfAllowed,
                void(const ui::OSExchangeData* drag_data,
-                    const ui::DataTransferEndpoint* data_dst,
+                    base::optional_ref<const ui::DataTransferEndpoint> data_dst,
                     base::OnceClosure drop_cb));
 };
 
@@ -1198,14 +1198,16 @@ TYPED_TEST(ClipboardTest, ClipboardSourceDteCanBeRetrievedByLacros) {
     writer.WriteEncodedDataTransferEndpointForTesting(kDteJson);
   }
 
-  EXPECT_CALL(*policy_controller,
-              IsClipboardReadAllowed(
-                  Pointee(AllOf(
-                      Property(&DataTransferEndpoint::IsUrlType, true),
-                      Property(&DataTransferEndpoint::GetURL,
-                               Pointee(Property(&GURL::spec,
-                                                "https://www.google.com/"))))),
-                  _, _))
+  EXPECT_CALL(
+      *policy_controller,
+      IsClipboardReadAllowed(
+          Property(
+              &base::optional_ref<const DataTransferEndpoint>::value,
+              AllOf(Property(&DataTransferEndpoint::IsUrlType, true),
+                    Property(&DataTransferEndpoint::GetURL,
+                             Pointee(Property(&GURL::spec,
+                                              "https://www.google.com/"))))),
+          _, _))
       .WillRepeatedly(testing::Return(true));
 
   std::u16string read_result;

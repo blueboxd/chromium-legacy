@@ -7,26 +7,30 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/switch.h"
 #include "ash/style/system_textfield.h"
 #include "ash/system/focus_mode/focus_mode_controller.h"
 #include "ash/system/focus_mode/focus_mode_countdown_view.h"
+#include "ash/system/focus_mode/focus_mode_feature_pod_controller.h"
 #include "ash/system/focus_mode/focus_mode_util.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/fake_detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tri_view.h"
+#include "ash/system/unified/feature_tile.h"
+#include "ash/system/unified/unified_system_tray.h"
+#include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/test/ash_test_base.h"
 #include "base/i18n/time_formatting.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/label.h"
@@ -49,6 +53,12 @@ class FocusModeDetailedViewTest : public AshTestBase {
 
     widget_ = CreateFramelessTestWidget();
     widget_->SetFullscreen(true);
+
+    // Focus Mode considers it to be a first time user flow if
+    // `kFocusModeDoNotDisturb` has never been set by the user before. For
+    // normal feature testing purposes, we will intentionally set it so that the
+    // pref will not be marked as using the default value.
+    prefs()->SetBoolean(prefs::kFocusModeDoNotDisturb, true);
 
     CreateFakeFocusModeDetailedView();
   }
@@ -80,6 +90,10 @@ class FocusModeDetailedViewTest : public AshTestBase {
 
   views::Label* GetToggleRowSubLabel() {
     return focus_mode_detailed_view_->toggle_view_->sub_text_label();
+  }
+
+  bool IsToggleRowSubLabelVisible() {
+    return GetToggleRowSubLabel() && GetToggleRowSubLabel()->GetVisible();
   }
 
   PillButton* GetToggleRowButton() {
@@ -117,6 +131,10 @@ class FocusModeDetailedViewTest : public AshTestBase {
     return focus_mode_detailed_view_->end_time_label_;
   }
 
+  PrefService* prefs() {
+    return Shell::Get()->session_controller()->GetActivePrefService();
+  }
+
   FakeDetailedViewDelegate detailed_view_delegate_;
 
  private:
@@ -135,16 +153,11 @@ TEST_F(FocusModeDetailedViewTest, DndOffBeforeStart) {
   // 1. Before turning on a focus session, the system do not disturb is off. The
   // default value for the toggle button is set to enabled.
   EXPECT_FALSE(message_center->IsQuietMode());
-
-  EXPECT_EQ(0u, detailed_view_delegate_.close_bubble_call_count());
   EXPECT_TRUE(toggle_button->GetIsOn());
 
-  // Start a focus session and the bubble will be closed.
+  // Start a focus session and verify that quiet mode is on.
   focus_mode_controller->ToggleFocusMode();
   EXPECT_TRUE(focus_mode_controller->in_focus_session());
-  EXPECT_EQ(1u, detailed_view_delegate_.close_bubble_call_count());
-
-  // The quiet mode is on during the focus session.
   EXPECT_TRUE(message_center->IsQuietMode());
 
   // End the focus session. The system do not disturb will be back to its
@@ -152,7 +165,6 @@ TEST_F(FocusModeDetailedViewTest, DndOffBeforeStart) {
   // state will be back to its state before the focus session.
   focus_mode_controller->ToggleFocusMode();
   EXPECT_FALSE(focus_mode_controller->in_focus_session());
-  EXPECT_EQ(1u, detailed_view_delegate_.close_bubble_call_count());
   EXPECT_FALSE(message_center->IsQuietMode());
   EXPECT_TRUE(toggle_button->GetIsOn());
 
@@ -161,12 +173,9 @@ TEST_F(FocusModeDetailedViewTest, DndOffBeforeStart) {
   LeftClickOn(toggle_button);
   EXPECT_FALSE(toggle_button->GetIsOn());
 
-  // Start a focus session and the bubble will be closed.
+  // Start a focus session and verify that quiet mode is off.
   focus_mode_controller->ToggleFocusMode();
   EXPECT_TRUE(focus_mode_controller->in_focus_session());
-  EXPECT_EQ(2u, detailed_view_delegate_.close_bubble_call_count());
-
-  // The quiet mode is off and the bubble will be closed.
   EXPECT_FALSE(message_center->IsQuietMode());
 
   // End the focus session. The system do not disturb will be back to its
@@ -174,7 +183,6 @@ TEST_F(FocusModeDetailedViewTest, DndOffBeforeStart) {
   // state will be back to its state before the focus session.
   focus_mode_controller->ToggleFocusMode();
   EXPECT_FALSE(focus_mode_controller->in_focus_session());
-  EXPECT_EQ(2u, detailed_view_delegate_.close_bubble_call_count());
   EXPECT_FALSE(message_center->IsQuietMode());
   EXPECT_FALSE(toggle_button->GetIsOn());
 }
@@ -192,15 +200,11 @@ TEST_F(FocusModeDetailedViewTest, DndOnBeforeStart) {
   message_center->SetQuietMode(true);
   EXPECT_TRUE(message_center->IsQuietMode());
 
-  EXPECT_EQ(0u, detailed_view_delegate_.close_bubble_call_count());
   EXPECT_TRUE(toggle_button->GetIsOn());
 
-  // Start a focus session and the bubble will be closed.
+  // Start a focus session and verify that quiet mode is on.
   focus_mode_controller->ToggleFocusMode();
   EXPECT_TRUE(focus_mode_controller->in_focus_session());
-  EXPECT_EQ(1u, detailed_view_delegate_.close_bubble_call_count());
-
-  // The quiet mode is on.
   EXPECT_TRUE(message_center->IsQuietMode());
 
   // During the focus session, the user turned off the DND.
@@ -212,7 +216,6 @@ TEST_F(FocusModeDetailedViewTest, DndOnBeforeStart) {
   // its state before the focus session.
   focus_mode_controller->ToggleFocusMode();
   EXPECT_FALSE(focus_mode_controller->in_focus_session());
-  EXPECT_EQ(1u, detailed_view_delegate_.close_bubble_call_count());
   EXPECT_FALSE(message_center->IsQuietMode());
   EXPECT_TRUE(toggle_button->GetIsOn());
 
@@ -224,12 +227,9 @@ TEST_F(FocusModeDetailedViewTest, DndOnBeforeStart) {
   LeftClickOn(toggle_button);
   EXPECT_FALSE(toggle_button->GetIsOn());
 
-  // Start a focus session and the bubble will be closed.
+  // Start a focus session and verify that quiet mode is on.
   focus_mode_controller->ToggleFocusMode();
   EXPECT_TRUE(focus_mode_controller->in_focus_session());
-  EXPECT_EQ(2u, detailed_view_delegate_.close_bubble_call_count());
-
-  // The quiet mode is on.
   EXPECT_TRUE(message_center->IsQuietMode());
 
   // End the focus session. The system do not disturb will be back to its
@@ -237,7 +237,6 @@ TEST_F(FocusModeDetailedViewTest, DndOnBeforeStart) {
   // state will be back to its state before the focus session.
   focus_mode_controller->ToggleFocusMode();
   EXPECT_FALSE(focus_mode_controller->in_focus_session());
-  EXPECT_EQ(2u, detailed_view_delegate_.close_bubble_call_count());
   EXPECT_TRUE(message_center->IsQuietMode());
   EXPECT_FALSE(toggle_button->GetIsOn());
 }
@@ -250,21 +249,21 @@ TEST_F(FocusModeDetailedViewTest, ToggleRow) {
     EXPECT_EQ(active, focus_mode_controller->in_focus_session());
     EXPECT_EQ(active ? u"Focusing" : u"Focus", GetToggleRowLabel()->GetText());
 
-    EXPECT_EQ(active,
-              GetToggleRowSubLabel() && GetToggleRowSubLabel()->GetVisible());
+    EXPECT_EQ(active, IsToggleRowSubLabelVisible());
 
     if (active) {
       EXPECT_EQ(focus_mode_util::GetFormattedEndTimeString(
                     focus_mode_controller->end_time()),
                 GetToggleRowSubLabel()->GetText());
     }
-    EXPECT_EQ(active ? u"End" : u"Start", GetToggleRowButton()->GetText());
+    EXPECT_EQ(active ? u"End Focus" : u"Start",
+              GetToggleRowButton()->GetText());
   };
 
   validate_labels(/*active=*/false);
 
-  // Starting the focus session closes the bubble, so we need to recreate the
-  // detailed view.
+  // Starting the focus session closes the bubble, so we need to simulate
+  // recreating the detailed view.
   LeftClickOn(GetToggleRowButton());
   CreateFakeFocusModeDetailedView();
 
@@ -278,8 +277,8 @@ TEST_F(FocusModeDetailedViewTest, ToggleRow) {
   // Verify that the time displays correctly in the 24-hour clock format.
   Shell::Get()->system_tray_model()->SetUse24HourClock(true);
 
-  // Starting the focus session closes the bubble, so we need to recreate the
-  // detailed view.
+  // Starting the focus session closes the bubble, so we need to simulate
+  // recreating the detailed view.
   LeftClickOn(GetToggleRowButton());
   CreateFakeFocusModeDetailedView();
 
@@ -499,8 +498,8 @@ TEST_F(FocusModeDetailedViewTest, TimerViewVisibility) {
   // hidden.
   focus_mode_controller->ToggleFocusMode();
   EXPECT_TRUE(focus_mode_controller->in_focus_session());
-  // Starting the focus session closes the bubble, so we need to recreate the
-  // detailed view.
+  // Starting the focus session closes the bubble, so we need to simulate
+  // recreating the detailed view.
   CreateFakeFocusModeDetailedView();
   timer_setting_view = GetTimerSettingView();
   countdown_view = GetTimerCountdownView();
@@ -515,6 +514,51 @@ TEST_F(FocusModeDetailedViewTest, TimerViewVisibility) {
   EXPECT_EQ(focus_mode_util::GetFormattedEndTimeString(base::Time::Now() +
                                                        session_duration),
             GetEndTimeLabel()->GetText());
+}
+
+// Verify that the toggle row sublabel is shown in the first time user flow.
+TEST_F(FocusModeDetailedViewTest, FirstTimeUserFlow) {
+  // Clear `kFocusModeDoNotDisturb` to trigger the first time user flow.
+  prefs()->ClearPref(prefs::kFocusModeDoNotDisturb);
+
+  // Recreate the detailed view so that the UI is updated after we set the user
+  // pref.
+  CreateFakeFocusModeDetailedView();
+
+  // Verify that the first time user flow text is displayed.
+  EXPECT_TRUE(IsToggleRowSubLabelVisible());
+  EXPECT_EQ(GetToggleRowSubLabel()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_FOCUS_MODE_FIRST_TIME_SUBLABEL));
+
+  // Start and stop a focus session. This puts us back into the focus panel
+  // outside of the first time user flow.
+  LeftClickOn(GetToggleRowButton());
+  CreateFakeFocusModeDetailedView();
+  LeftClickOn(GetToggleRowButton());
+
+  // Verify that the first time user flow text no longer is displayed.
+  EXPECT_FALSE(IsToggleRowSubLabelVisible());
+}
+
+// Tests that changing the duration in the detailed view while the session is
+// inactive changes the duration on the feature pod.
+TEST_F(FocusModeDetailedViewTest,
+       InactiveSessionDurationChangeSyncsWithFeaturePod) {
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
+  auto controller = std::make_unique<FocusModeFeaturePodController>(
+      GetPrimaryUnifiedSystemTray()
+          ->bubble()
+          ->unified_system_tray_controller());
+  auto pod = controller->CreateTile();
+
+  auto* timer_textfield = GetTimerSettingTextfield();
+  auto textfield_text_before_increment = timer_textfield->GetText();
+  LeftClickOn(GetTimerSettingIncrementButton());
+  auto textfield_text_after_increment = timer_textfield->GetText();
+  ASSERT_NE(textfield_text_before_increment, textfield_text_after_increment);
+  EXPECT_EQ(base::StrCat({textfield_text_after_increment, u" min"}),
+            pod->sub_label()->GetText());
 }
 
 }  // namespace ash

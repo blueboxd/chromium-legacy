@@ -42,8 +42,9 @@ constexpr static auto kBufferUsage = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
 class ZeroCopyGpuBacking : public ResourcePool::GpuBacking {
  public:
   ~ZeroCopyGpuBacking() override {
-    if (mailbox.IsZero())
+    if (mailbox.IsZero()) {
       return;
+    }
     if (returned_sync_token.HasData())
       shared_image_interface->DestroySharedImage(returned_sync_token, mailbox);
     else if (mailbox_sync_token.HasData())

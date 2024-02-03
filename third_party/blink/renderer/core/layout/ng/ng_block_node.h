@@ -24,7 +24,7 @@ class NGEarlyBreak;
 class NGLayoutResult;
 class NGPhysicalBoxFragment;
 class NGPhysicalFragment;
-struct NGLayoutAlgorithmParams;
+struct LayoutAlgorithmParams;
 
 enum class MathScriptType;
 
@@ -41,7 +41,7 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
                                const NGEarlyBreak* = nullptr,
                                const NGColumnSpannerPath* = nullptr) const;
 
-  // This method is just for use within the |NGSimplifiedLayoutAlgorithm|.
+  // This method is just for use within the |SimplifiedLayoutAlgorithm|.
   //
   // If layout is dirty, it will perform layout using the previous constraint
   // space used to generate the |NGLayoutResult|.
@@ -84,7 +84,7 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   // To be called when we're done repeating a node, when at the last fragment.
   void FinishRepeatableRoot() const;
 
-  // This method is just for use within the |NGOutOfFlowLayoutPart|.
+  // This method is just for use within the |OutOfFlowLayoutPart|.
   //
   // As OOF-positioned objects have their position, and size computed
   // pre-layout, we need a way to quickly determine if we need to perform this
@@ -238,12 +238,17 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   // legacy flow thread to encompass those extra columns.
   void MakeRoomForExtraColumns(LayoutUnit block_size) const;
 
+  bool operator==(const NGBlockNode& other) const { return box_ == other.box_; }
+  bool operator==(const NGLayoutInputNode& other) const {
+    return other.Type() == kBlock && GetLayoutBox() == other.GetLayoutBox();
+  }
+
   String ToString() const;
 
  private:
   void PrepareForLayout() const;
 
-  const NGLayoutResult* RunSimplifiedLayout(const NGLayoutAlgorithmParams&,
+  const NGLayoutResult* RunSimplifiedLayout(const LayoutAlgorithmParams&,
                                             const NGLayoutResult&) const;
 
   // If this node is a LayoutNGMixin, the caller must pass the layout object for

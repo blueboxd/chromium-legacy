@@ -675,6 +675,7 @@ void PermissionRequestManager::Ignore() {
 }
 
 void PermissionRequestManager::FinalizeCurrentRequests() {
+  CHECK(IsRequestInProgress());
   ResetViewStateForCurrentRequest();
   std::vector<PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin(); requests_iter != requests_.end();
@@ -881,7 +882,8 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
       break;
     }
 
-    if (permission_ui_selectors_[selector_index]->IsPermissionRequestSupported(
+    if (!requests_.front()->IsEmbeddedPermissionElementInitiated() &&
+        permission_ui_selectors_[selector_index]->IsPermissionRequestSupported(
             requests_.front()->request_type())) {
       permission_ui_selectors_[selector_index]->SelectUiToUse(
           requests_.front(),
@@ -1261,6 +1263,9 @@ void PermissionRequestManager::RemoveObserver(Observer* observer) {
 }
 
 bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() const {
+  if (IsCurrentRequestEmbeddedPermissionElementInitiated()) {
+    return false;
+  }
   // ContentSettingImageModel might call into this method if the user switches
   // between tabs while the |notification_permission_ui_selectors_| are
   // pending.

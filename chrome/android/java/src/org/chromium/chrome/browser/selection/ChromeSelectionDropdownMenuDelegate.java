@@ -15,10 +15,12 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
-import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
-import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.ListMenuItemType;
-import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
+import org.chromium.components.browser_ui.widget.BrowserUiListMenuUtils;
 import org.chromium.content_public.browser.selection.SelectionDropdownMenuDelegate;
+import org.chromium.ui.listmenu.BasicListMenu;
+import org.chromium.ui.listmenu.BasicListMenu.ListMenuItemType;
+import org.chromium.ui.listmenu.ListMenuItemProperties;
+import org.chromium.ui.listmenu.ListSectionDividerProperties;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -39,7 +41,8 @@ public class ChromeSelectionDropdownMenuDelegate implements SelectionDropdownMen
         assert mPopupWindow == null : "Dismiss previous popup window before calling show()";
 
         Rect dropdownRect = new Rect(x, y, x + 1, y + 1);
-        BasicListMenu menu = new BasicListMenu(context, items, clickListener::onItemClick);
+        BasicListMenu menu =
+                BrowserUiListMenuUtils.getBasicListMenu(context, items, clickListener::onItemClick);
 
         mPopupWindow =
                 new AnchoredPopupWindow(context, rootView, new ColorDrawable(Color.TRANSPARENT),
@@ -111,7 +114,15 @@ public class ChromeSelectionDropdownMenuDelegate implements SelectionDropdownMen
 
     @Override
     public ListItem getDivider() {
-        return BasicListMenu.buildMenuDivider();
+        PropertyModel.Builder builder =
+                new PropertyModel.Builder(ListSectionDividerProperties.ALL_KEYS)
+                        .with(
+                                ListSectionDividerProperties.LEFT_PADDING_DIMEN_ID,
+                                R.dimen.list_menu_item_horizontal_padding)
+                        .with(
+                                ListSectionDividerProperties.RIGHT_PADDING_DIMEN_ID,
+                                R.dimen.list_menu_item_horizontal_padding);
+        return new ListItem(ListMenuItemType.DIVIDER, builder.build());
     }
 
     @Override
@@ -129,11 +140,16 @@ public class ChromeSelectionDropdownMenuDelegate implements SelectionDropdownMen
                         .with(ListMenuItemProperties.ENABLED, enabled)
                         .with(ListMenuItemProperties.CLICK_LISTENER, clickListener)
                         .with(ListMenuItemProperties.INTENT, intent)
-                        .with(ListMenuItemProperties.KEEP_START_ICON_SPACING_WHEN_HIDDEN,
-                                groupContainsIcon);
+                        .with(
+                                ListMenuItemProperties.KEEP_START_ICON_SPACING_WHEN_HIDDEN,
+                                groupContainsIcon)
+                        .with(
+                                ListMenuItemProperties.TEXT_APPEARANCE_ID,
+                                BrowserUiListMenuUtils.getDefaultTextAppearanceStyle());
         if (isIconTintable) {
-            modelBuilder.with(ListMenuItemProperties.TINT_COLOR_ID,
-                    R.color.default_icon_color_secondary_tint_list);
+            modelBuilder.with(
+                    ListMenuItemProperties.ICON_TINT_COLOR_STATE_LIST_ID,
+                    BrowserUiListMenuUtils.getDefaultIconTintColorStateListId());
         }
         return new ListItem(ListMenuItemType.MENU_ITEM, modelBuilder.build());
     }

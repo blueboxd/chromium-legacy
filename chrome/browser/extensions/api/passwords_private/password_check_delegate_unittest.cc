@@ -32,17 +32,14 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
 #include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
-#include "components/password_manager/core/browser/mock_password_change_success_tracker.h"
-#include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/browser/password_store/test_password_store.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/password_manager/core/browser/well_known_change_password/well_known_change_password_util.h"
@@ -99,9 +96,6 @@ using password_manager::InsecurityMetadata;
 using password_manager::IsLeaked;
 using password_manager::IsMuted;
 using password_manager::LeakCheckCredential;
-using password_manager::MockPasswordChangeSuccessTracker;
-using password_manager::PasswordChangeSuccessTracker;
-using password_manager::PasswordChangeSuccessTrackerFactory;
 using password_manager::PasswordForm;
 using password_manager::SavedPasswordsPresenter;
 using password_manager::TestPasswordStore;
@@ -146,17 +140,6 @@ EventRouter* CreateAndUseEventRouter(Profile* profile) {
             return std::unique_ptr<KeyedService>(
                 std::make_unique<EventRouter>(context, nullptr));
           })));
-}
-
-MockPasswordChangeSuccessTracker* CreateAndUsePasswordChangeSuccessTracker(
-    Profile* profile) {
-  return static_cast<MockPasswordChangeSuccessTracker*>(
-      PasswordChangeSuccessTrackerFactory::GetInstance()
-          ->SetTestingSubclassFactoryAndUse(
-              profile, base::BindRepeating([](content::BrowserContext*) {
-                return std::make_unique<
-                    testing::StrictMock<MockPasswordChangeSuccessTracker>>();
-              })));
 }
 
 BulkLeakCheckService* CreateAndUseBulkLeakCheckService(
@@ -302,9 +285,6 @@ class PasswordCheckDelegateTest : public ::testing::Test {
   TestPasswordStore& store() { return *store_; }
   TestPasswordStore& account_store() { return *account_store_; }
   BulkLeakCheckService* service() { return bulk_leak_check_service_; }
-  MockPasswordChangeSuccessTracker& password_change_success_tracker() {
-    return *password_change_success_tracker_;
-  }
   syncer::TestSyncService& sync_service() { return *sync_service_; }
   SavedPasswordsPresenter& presenter() { return presenter_; }
   PasswordCheckDelegate& delegate() { return delegate_; }
@@ -330,8 +310,6 @@ class PasswordCheckDelegateTest : public ::testing::Test {
       CreateAndUseTestPasswordStore(&profile_);
   scoped_refptr<TestPasswordStore> account_store_ =
       CreateAndUseTestAccountPasswordStore(&profile_);
-  raw_ptr<MockPasswordChangeSuccessTracker> password_change_success_tracker_ =
-      CreateAndUsePasswordChangeSuccessTracker(&profile_);
   raw_ptr<syncer::TestSyncService> sync_service_ =
       CreateAndUseSyncService(&profile_);
   IdGenerator credential_id_generator_;
@@ -388,7 +366,7 @@ TEST_F(PasswordCheckDelegateTest, WeakCheckWhenUserSignedOut) {
       delegate().GetInsecureCredentials(),
       ElementsAre(ExpectCredential(
           "https://example.com/.well-known/change-password", kUsername1)));
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT,
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kSignedOut,
             delegate().GetPasswordCheckStatus().state);
 }
 
@@ -419,23 +397,23 @@ TEST_F(PasswordCheckDelegateTest, GetInsecureCredentialsHandlesTimes) {
       ElementsAre(ExpectCompromisedCredential(
                       "https://example.com/.well-known/change-password",
                       kUsername1, base::Seconds(59), "Just now",
-                      {api::passwords_private::COMPROMISE_TYPE_LEAKED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED}),
+                      {api::passwords_private::CompromiseType::kLeaked,
+                       api::passwords_private::CompromiseType::kReused}),
                   ExpectCompromisedCredential(
                       "https://example.com/.well-known/change-password",
                       kUsername2, base::Seconds(60), "1 minute ago",
-                      {api::passwords_private::COMPROMISE_TYPE_LEAKED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED}),
+                      {api::passwords_private::CompromiseType::kLeaked,
+                       api::passwords_private::CompromiseType::kReused}),
                   ExpectCompromisedCredential(
                       "http://www.example.org/.well-known/change-password",
                       kUsername1, base::Days(100), "3 months ago",
-                      {api::passwords_private::COMPROMISE_TYPE_LEAKED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED}),
+                      {api::passwords_private::CompromiseType::kLeaked,
+                       api::passwords_private::CompromiseType::kReused}),
                   ExpectCompromisedCredential(
                       "http://www.example.org/.well-known/change-password",
                       kUsername2, base::Days(800), "2 years ago",
-                      {api::passwords_private::COMPROMISE_TYPE_LEAKED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED})));
+                      {api::passwords_private::CompromiseType::kLeaked,
+                       api::passwords_private::CompromiseType::kReused})));
 }
 
 // Verifies that both leaked and phished credentials are ordered correctly
@@ -469,25 +447,25 @@ TEST_F(PasswordCheckDelegateTest,
                   ExpectCompromisedCredential(
                       "https://example.com/.well-known/change-password",
                       kUsername1, base::Minutes(1), "1 minute ago",
-                      {api::passwords_private::COMPROMISE_TYPE_LEAKED,
-                       api::passwords_private::COMPROMISE_TYPE_PHISHED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED}),
+                      {api::passwords_private::CompromiseType::kLeaked,
+                       api::passwords_private::CompromiseType::kPhished,
+                       api::passwords_private::CompromiseType::kReused}),
                   ExpectCompromisedCredential(
                       "http://www.example.org/.well-known/change-password",
                       kUsername1, base::Minutes(3), "3 minutes ago",
-                      {api::passwords_private::COMPROMISE_TYPE_PHISHED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED}),
+                      {api::passwords_private::CompromiseType::kPhished,
+                       api::passwords_private::CompromiseType::kReused}),
                   ExpectCompromisedCredential(
                       "http://www.example.org/.well-known/change-password",
                       kUsername2, base::Minutes(4), "4 minutes ago",
-                      {api::passwords_private::COMPROMISE_TYPE_LEAKED,
-                       api::passwords_private::COMPROMISE_TYPE_PHISHED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED}),
+                      {api::passwords_private::CompromiseType::kLeaked,
+                       api::passwords_private::CompromiseType::kPhished,
+                       api::passwords_private::CompromiseType::kReused}),
                   ExpectCompromisedCredential(
                       "https://example.com/.well-known/change-password",
                       kUsername2, base::Minutes(2), "2 minutes ago",
-                      {api::passwords_private::COMPROMISE_TYPE_LEAKED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED})));
+                      {api::passwords_private::CompromiseType::kLeaked,
+                       api::passwords_private::CompromiseType::kReused})));
 }
 
 TEST_F(PasswordCheckDelegateTest, GetInsecureCredentialsInjectsAndroid) {
@@ -514,17 +492,17 @@ TEST_F(PasswordCheckDelegateTest, GetInsecureCredentialsInjectsAndroid) {
                   ExpectCompromisedCredential(
                       "https://example.com/.well-known/change-password",
                       kUsername2, base::Days(3), "3 days ago",
-                      {api::passwords_private::COMPROMISE_TYPE_PHISHED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED}),
+                      {api::passwords_private::CompromiseType::kPhished,
+                       api::passwords_private::CompromiseType::kReused}),
                   ExpectCompromisedCredential(
                       absl::nullopt, kUsername1, base::Days(4), "4 days ago",
-                      {api::passwords_private::COMPROMISE_TYPE_PHISHED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED}),
+                      {api::passwords_private::CompromiseType::kPhished,
+                       api::passwords_private::CompromiseType::kReused}),
                   ExpectCompromisedCredential(
                       "https://example.com/.well-known/change-password",
                       kUsername1, base::Minutes(5), "5 minutes ago",
-                      {api::passwords_private::COMPROMISE_TYPE_LEAKED,
-                       api::passwords_private::COMPROMISE_TYPE_REUSED})));
+                      {api::passwords_private::CompromiseType::kLeaked,
+                       api::passwords_private::CompromiseType::kReused})));
 }
 
 // Test that a change to compromised credential notifies observers.
@@ -680,10 +658,12 @@ TEST_F(PasswordCheckDelegateTest, OnLeakFoundDoesNotCreateCredential) {
 // Test that we don't create an entry in the password store if IsLeaked is
 // false.
 TEST_F(PasswordCheckDelegateTest, NoLeakedFound) {
+  identity_test_env().MakeAccountAvailable(kTestEmail);
   PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
   store().AddLogin(form);
   RunUntilIdle();
 
+  delegate().StartPasswordCheck();
   static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
       LeakCheckCredential(kUsername1, kPassword1), IsLeaked(false));
   RunUntilIdle();
@@ -772,7 +752,7 @@ TEST_F(PasswordCheckDelegateTest, OnLeakFoundCreatesMultipleCredential) {
 // Verifies that the case where the user has no saved passwords is reported
 // correctly.
 TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusNoPasswords) {
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_NO_PASSWORDS,
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kNoPasswords,
             delegate().GetPasswordCheckStatus().state);
 }
 
@@ -781,7 +761,7 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusIdle) {
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
   RunUntilIdle();
 
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_IDLE,
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kIdle,
             delegate().GetPasswordCheckStatus().state);
 }
 
@@ -791,7 +771,7 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusSignedOut) {
   RunUntilIdle();
 
   delegate().StartPasswordCheck();
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT,
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kSignedOut,
             delegate().GetPasswordCheckStatus().state);
 }
 
@@ -804,7 +784,7 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusRunning) {
 
   delegate().StartPasswordCheck();
   PasswordCheckStatus status = delegate().GetPasswordCheckStatus();
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING, status.state);
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kRunning, status.state);
   EXPECT_EQ(0, *status.already_processed);
   EXPECT_EQ(1, *status.remaining_in_queue);
 
@@ -814,7 +794,7 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusRunning) {
   RunUntilIdle();
 
   status = delegate().GetPasswordCheckStatus();
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING, status.state);
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kRunning, status.state);
   EXPECT_EQ(0, *status.already_processed);
   EXPECT_EQ(1, *status.remaining_in_queue);
 }
@@ -843,7 +823,7 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusOffline) {
   identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError::FromConnectionError(net::ERR_TIMED_OUT));
 
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_OFFLINE,
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kOffline,
             delegate().GetPasswordCheckStatus().state);
 }
 
@@ -860,7 +840,7 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusOther) {
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
               CREDENTIALS_REJECTED_BY_SERVER));
 
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT,
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kSignedOut,
             delegate().GetPasswordCheckStatus().state);
 }
 
@@ -959,9 +939,9 @@ TEST_F(PasswordCheckDelegateTest, OnCredentialDoneUpdatesProgress) {
   delegate().StartPasswordCheck();
   EXPECT_EQ(events::PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED,
             event_iter->second->histogram_value);
-  auto status = PasswordCheckStatus::FromValueDeprecated(
-      event_iter->second->event_args.front());
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING,
+  auto status =
+      PasswordCheckStatus::FromValue(event_iter->second->event_args.front());
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kRunning,
             status->state);
   EXPECT_EQ(0, *status->already_processed);
   EXPECT_EQ(4, *status->remaining_in_queue);
@@ -969,9 +949,9 @@ TEST_F(PasswordCheckDelegateTest, OnCredentialDoneUpdatesProgress) {
   static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
       LeakCheckCredential(kUsername1, kPassword1), IsLeaked(false));
 
-  status = PasswordCheckStatus::FromValueDeprecated(
-      event_iter->second->event_args.front());
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING,
+  status =
+      PasswordCheckStatus::FromValue(event_iter->second->event_args.front());
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kRunning,
             status->state);
   EXPECT_EQ(2, *status->already_processed);
   EXPECT_EQ(2, *status->remaining_in_queue);
@@ -979,9 +959,9 @@ TEST_F(PasswordCheckDelegateTest, OnCredentialDoneUpdatesProgress) {
   static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
       LeakCheckCredential(kUsername2, kPassword2), IsLeaked(false));
 
-  status = PasswordCheckStatus::FromValueDeprecated(
-      event_iter->second->event_args.front());
-  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING,
+  status =
+      PasswordCheckStatus::FromValue(event_iter->second->event_args.front());
+  EXPECT_EQ(api::passwords_private::PasswordCheckState::kRunning,
             status->state);
   EXPECT_EQ(4, *status->already_processed);
   EXPECT_EQ(0, *status->remaining_in_queue);

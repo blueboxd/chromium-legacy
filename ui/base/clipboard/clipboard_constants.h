@@ -92,6 +92,10 @@ extern NSString* const kUTTypeChromiumRendererInitiatedDrag;
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kUTTypeConfidentialData;
 
+// A type used to track the source URL of data put in the clipboard.
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+extern NSString* const kUTTypeChromiumSourceURL;
+
 #endif  // BUILDFLAG(IS_APPLE)
 
 // ----- ANDROID MIME TYPES -----

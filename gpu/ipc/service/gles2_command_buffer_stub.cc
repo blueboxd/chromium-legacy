@@ -46,6 +46,7 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
@@ -126,8 +127,6 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   use_virtualized_gl_context_ |=
       context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
 
-  bool offscreen = (surface_handle_ == kNullSurfaceHandle);
-
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, context_group_->memory_tracker());
   gles2_decoder_ = gles2::GLES2Decoder::Create(
@@ -184,27 +183,17 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
 
   gl::GLSurface* default_surface = manager->default_offscreen_surface();
 
-  if (offscreen) {
-    if (default_surface->GetGLDisplay() == display) {
-      surface_ = default_surface;
-    } else {
-      // The default surface was created on a different display, create a
-      // new surface on the requested display.
-      surface_ = gl::init::CreateOffscreenGLSurface(display, gfx::Size());
-    }
-  } else {
-    gl::GLSurfaceFormat surface_format = gl::GLSurfaceFormat();
 #if BUILDFLAG(IS_ANDROID)
-    // On low-spec Android devices, the default offscreen surface is
-    // RGB565, but WebGL rendering contexts still ask for RGBA8888 mode.
-    // That combination works for offscreen rendering, we can still use
-    // a virtualized context with the RGB565 backing surface since we're
-    // not drawing to that. Explicitly set that as the desired surface
-    // format to ensure it's treated as compatible where applicable.
+  const bool offscreen = init_params.surface_handle == kNullSurfaceHandle;
+#else
+  constexpr bool offscreen = true;
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+  if (!offscreen) {
     // To use virtualized contexts we need on screen surface format match the
     // offscreen.
-    surface_format = default_surface->GetFormat();
-#endif
+    auto surface_format = default_surface->GetFormat();
 
     switch (init_params.attribs.color_space) {
       case COLOR_SPACE_UNSPECIFIED:
@@ -220,16 +209,30 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
         break;
     }
     surface_ = ImageTransportSurface::CreateNativeGLSurface(
-        display, weak_ptr_factory_.GetWeakPtr(), surface_handle_,
+        display, weak_ptr_factory_.GetWeakPtr(), init_params.surface_handle,
         surface_format);
     if (!surface_ || !surface_->Initialize(surface_format)) {
       surface_ = nullptr;
       LOG(ERROR) << "ContextResult::kSurfaceFailure: Failed to create surface.";
       return gpu::ContextResult::kSurfaceFailure;
     }
+    if (!features::UseGpuVsync()) {
+      surface_->SetVSyncEnabled(false);
+    }
+
     if (init_params.attribs.enable_swap_timestamps_if_supported &&
         surface_->SupportsSwapTimestamps())
       surface_->SetEnableSwapTimestamps();
+  } else
+#endif
+  {
+    if (default_surface->GetGLDisplay() == display) {
+      surface_ = default_surface;
+    } else {
+      // The default surface was created on a different display, create a
+      // new surface on the requested display.
+      surface_ = gl::init::CreateOffscreenGLSurface(display, gfx::Size());
+    }
   }
 
   if (context_group_->use_passthrough_cmd_decoder()) {
@@ -263,7 +266,8 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     if (!context) {
       context = gl::init::CreateGLContext(
           share_group_.get(), surface_.get(),
-          GenerateGLContextAttribs(init_params.attribs, context_group_.get()));
+          GenerateGLContextAttribsForDecoder(init_params.attribs,
+                                             context_group_.get()));
       if (!context) {
         // TODO(piman): This might not be fatal, we could recurse into
         // CreateGLContext to get more info, tho it should be exceedingly
@@ -290,8 +294,8 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     context = base::MakeRefCounted<GLContextVirtual>(
         share_group_.get(), context.get(), gles2_decoder_->AsWeakPtr());
     if (!context->Initialize(surface_.get(),
-                             GenerateGLContextAttribs(init_params.attribs,
-                                                      context_group_.get()))) {
+                             GenerateGLContextAttribsForDecoder(
+                                 init_params.attribs, context_group_.get()))) {
       // The real context created above for the default offscreen surface
       // might not be compatible with this surface.
       context = nullptr;
@@ -305,7 +309,8 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   } else {
     context = gl::init::CreateGLContext(
         share_group_.get(), surface_.get(),
-        GenerateGLContextAttribs(init_params.attribs, context_group_.get()));
+        GenerateGLContextAttribsForDecoder(init_params.attribs,
+                                           context_group_.get()));
     if (!context) {
       // TODO(piman): This might not be fatal, we could recurse into
       // CreateGLContext to get more info, tho it should be exceedingly
@@ -419,10 +424,6 @@ const GpuPreferences& GLES2CommandBufferStub::GetGpuPreferences() const {
 
 viz::GpuVSyncCallback GLES2CommandBufferStub::GetGpuVSyncCallback() {
   return viz::GpuVSyncCallback();
-}
-
-base::TimeDelta GLES2CommandBufferStub::GetGpuBlockedTimeSinceLastSwap() {
-  return channel_->scheduler()->TakeTotalBlockingTime();
 }
 
 MemoryTracker* GLES2CommandBufferStub::GetContextGroupMemoryTracker() const {

@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/compose/core/browser/compose_client.h"
 #include "components/compose/core/browser/compose_features.h"
+#include "components/compose/core/browser/compose_metrics.h"
 
 namespace {
 // Passes the autofill `text` back into the `field` the dialog was opened on.
@@ -19,6 +20,7 @@ namespace {
 void FillTextWithAutofill(base::WeakPtr<autofill::AutofillManager> manager,
                           autofill::FieldGlobalId field,
                           const std::u16string& text) {
+  // TODO(crbug.com/1331312): Replace this call by FillOrPreviewField.
   if (manager) {
     manager->driver().ApplyFieldAction(
         autofill::mojom::ActionPersistence::kFill,
@@ -64,8 +66,7 @@ ComposeManagerImpl::~ComposeManagerImpl() = default;
 
 bool ComposeManagerImpl::ShouldOfferComposePopup(
     const autofill::FormFieldData& trigger_field) {
-  return client_->ShouldTriggerPopup(trigger_field.autocomplete_attribute,
-                                     trigger_field.global_id());
+  return client_->ShouldTriggerPopup(trigger_field);
 }
 
 bool ComposeManagerImpl::HasSavedState(
@@ -98,6 +99,10 @@ void ComposeManagerImpl::OpenCompose(
     std::optional<PopupScreenLocation> popup_screen_location,
     ComposeCallback callback) {
   CHECK(IsEnabled());
+  if (ui_entry_point == UiEntryPoint::kContextMenu) {
+    compose::LogComposeContextMenuCtr(
+        compose::ComposeContextMenuCtrEvent::kComposeOpened);
+  }
   client_->ShowComposeDialog(ui_entry_point, trigger_field,
                              popup_screen_location, std::move(callback));
 }

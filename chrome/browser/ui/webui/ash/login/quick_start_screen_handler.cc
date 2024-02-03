@@ -36,16 +36,6 @@ void QuickStartScreenHandler::ShowConnectingToWifi() {
   CallExternalAPI("showConnectingToWifi");
 }
 
-void QuickStartScreenHandler::ShowConnectedToWifi(
-    std::string ssid,
-    absl::optional<std::string> password) {
-  if (password.has_value()) {
-    CallExternalAPI("showConnectedToWifi", ssid, password.value());
-  } else {
-    CallExternalAPI("showConnectedToWifi", ssid);
-  }
-}
-
 void QuickStartScreenHandler::ShowTransferringGaiaCredentials() {
   CallExternalAPI("showTransferringGaiaCredentials");
 }
@@ -56,11 +46,14 @@ void QuickStartScreenHandler::ShowFidoAssertionReceived(std::string email) {
 
 void QuickStartScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  builder->Add("quickStartSetupTitle", IDS_LOGIN_QUICK_START_SETUP_TITLE);
-  builder->Add("quickStartSetupSubtitleQrCode",
-               IDS_LOGIN_QUICK_START_SETUP_SUBTITLE_QR_CODE);
-  builder->Add("quickStartSetupSubtitlePinCode",
-               IDS_LOGIN_QUICK_START_SETUP_SUBTITLE_PIN_CODE);
+  builder->Add("quickStartSetupQrTitle", IDS_LOGIN_QUICK_START_SETUP_QR_TITLE);
+  builder->Add("quickStartSetupPinTitle",
+               IDS_LOGIN_QUICK_START_SETUP_PIN_TITLE);
+  builder->Add("quickStartSetupSubtitle", IDS_LOGIN_QUICK_START_SETUP_SUBTITLE);
+  builder->Add("quickStartSetupContentFooterTurnOnWifi",
+               IDS_LOGIN_QUICK_START_SETUP_CONTENT_FOOTER_TURN_ON_WIFI_AND_BLT);
+  builder->Add("quickStartSetupContentFooterFollowInstructions",
+               IDS_LOGIN_QUICK_START_SETUP_CONTENT_FOOTER_FOLLOW_INSTRUCTIONS);
   builder->Add("quickStartWifiTransferTitle",
                IDS_LOGIN_QUICK_START_WIFI_TRANSFER_TITLE);
   builder->Add("quickStartWifiTransferSubtitle",
@@ -77,6 +70,14 @@ void QuickStartScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_QUICK_START_SETUP_FROM_SIGNIN_SCREEN_TITLE);
   builder->Add("quickStartSetupFromSigninSubtitle",
                IDS_LOGIN_QUICK_START_SETUP_FROM_SIGNIN_SCREEN_SUBTITLE);
+  builder->Add("quickStartBluetoothTitle",
+               IDS_LOGIN_QUICK_START_BLUETOOTH_DIALOG_TITLE);
+  builder->Add("quickStartBluetoothContent",
+               IDS_LOGIN_QUICK_START_BLUETOOTH_DIALOG_CONTENT);
+  builder->Add("quickStartBluetoothCancelButton",
+               IDS_LOGIN_QUICK_START_BLUETOOTH_DIALOG_CANCEL);
+  builder->Add("quickStartBluetoothEnableButton",
+               IDS_LOGIN_QUICK_START_BLUETOOTH_DIALOG_ENABLE);
 }
 
 }  // namespace ash

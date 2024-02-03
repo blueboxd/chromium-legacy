@@ -32,6 +32,7 @@ class PrefService;
 
 namespace policy {
 class ConfigurationPolicyProvider;
+class LocalTestPolicyProvider;
 class ProxyPolicyProvider;
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -71,10 +72,7 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
 
   ConfigurationPolicyProvider* GetPlatformProvider();
 
-  ConfigurationPolicyProvider* local_test_policy_provider() {
-    return local_test_provider_;
-  }
-
+  ConfigurationPolicyProvider* local_test_policy_provider();
   void SetLocalTestPolicyProviderForTesting(
       ConfigurationPolicyProvider* provider);
 
@@ -93,6 +91,8 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
   machine_level_user_cloud_policy_manager() {
     return machine_level_user_cloud_policy_manager_;
   }
+  void SetMachineLevelUserCloudPolicyManagerForTesting(
+      MachineLevelUserCloudPolicyManager* manager);
 
   ProxyPolicyProvider* proxy_policy_provider() {
     return proxy_policy_provider_;
@@ -200,8 +200,9 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
   // Owned by base class.
   raw_ptr<ConfigurationPolicyProvider> command_line_provider_ = nullptr;
 
-  // Owned by base class.
-  raw_ptr<ConfigurationPolicyProvider> local_test_provider_ = nullptr;
+  raw_ptr<ConfigurationPolicyProvider> local_test_provider_for_testing_ =
+      nullptr;
+  std::unique_ptr<LocalTestPolicyProvider> local_test_provider_;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   std::unique_ptr<DeviceSettingsLacros> device_settings_ = nullptr;

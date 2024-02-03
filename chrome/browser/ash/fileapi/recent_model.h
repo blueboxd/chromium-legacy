@@ -6,15 +6,14 @@
 #define CHROME_BROWSER_ASH_FILEAPI_RECENT_MODEL_H_
 
 #include <memory>
-#include <queue>
+#include <string>
 #include <vector>
 
 #include "base/functional/callback_forward.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/fileapi/file_accumulator.h"
 #include "chrome/browser/ash/fileapi/recent_file.h"
 #include "chrome/browser/ash/fileapi/recent_source.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -32,28 +31,47 @@ class FileSystemContext;
 
 namespace ash {
 
-class RecentModelFactory;
-
 // Provides a list of recently modified files.
 //
 // All member functions must be called on the UI thread.
 class RecentModel : public KeyedService {
  public:
+  // The name of the histogram used to record user metrics about total time
+  // it took to fetch recent files.
+  static constexpr char kLoadHistogramName[] = "FileBrowser.Recent.LoadTotal";
+
+  using FileType = RecentSource::FileType;
+
+  // Stores all parameters that identify either the current or cached search
+  // performed by the recent model.
+  struct SearchCriteria {
+    // The query used to match against file names, e.g., "my-file".
+    std::string query;
+    // The maximum age of accepted files measured as a delta from now.
+    base::TimeDelta now_delta;
+    // The type of files accepted, e.g., images, documents, etc.
+    FileType file_type;
+
+    bool operator==(const SearchCriteria& other) const {
+      return query == other.query && now_delta == other.now_delta &&
+             file_type == other.file_type;
+    }
+  };
+
   using GetRecentFilesCallback =
       base::OnceCallback<void(const std::vector<RecentFile>& files)>;
-  using FileType = RecentSource::FileType;
+
+  explicit RecentModel(Profile* profile);
+  ~RecentModel() override;
 
   RecentModel(const RecentModel&) = delete;
   RecentModel& operator=(const RecentModel&) = delete;
 
-  ~RecentModel() override;
-
-  // Returns an instance for the given profile.
-  static RecentModel* GetForProfile(Profile* profile);
 
   // Creates an instance with given sources. Only for testing.
   static std::unique_ptr<RecentModel> CreateForTest(
-      std::vector<std::unique_ptr<RecentSource>> sources);
+      std::vector<std::unique_ptr<RecentSource>> sources,
+      size_t max_files);
 
   // Returns a list of recent files by querying sources.
   // Files are sorted by descending order of last modified time.
@@ -61,6 +79,7 @@ class RecentModel : public KeyedService {
   void GetRecentFiles(storage::FileSystemContext* file_system_context,
                       const GURL& origin,
                       const std::string& query,
+                      const base::TimeDelta& now_delta,
                       FileType file_type,
                       bool invalidate_cache,
                       GetRecentFilesCallback callback);
@@ -78,51 +97,38 @@ class RecentModel : public KeyedService {
   void ClearScanTimeout();
 
  private:
-  friend class RecentModelFactory;
-  friend class RecentModelTest;
-  friend class RecentModelCacheTest;
-  FRIEND_TEST_ALL_PREFIXES(RecentModelTest, GetRecentFiles_UmaStats);
-  FRIEND_TEST_ALL_PREFIXES(RecentModelCacheTest,
-                           GetRecentFiles_InvalidateCache);
+  explicit RecentModel(std::vector<std::unique_ptr<RecentSource>> sources,
+                       size_t max_files);
 
-  static const char kLoadHistogramName[];
-
-  explicit RecentModel(Profile* profile);
-  explicit RecentModel(std::vector<std::unique_ptr<RecentSource>> sources);
-
+  // The method called by each of the recent source workers, once they complete
+  // their task. This method monitors the number of calls and once it is equal
+  // to the number of started recent source workers, it calls
+  // OnGetRecentFilesCompleted method.
   void OnGetRecentFiles(uint32_t run_on_sequence_id,
-                        size_t max_files,
                         const base::Time& cutoff_time,
-                        const std::string& query,
-                        FileType file_type,
+                        const SearchCriteria& search_criteria,
                         std::vector<RecentFile> files);
-  void OnGetRecentFilesCompleted(const std::string& query, FileType file_type);
+
+  // This method is called by OnGetRecentFiles once all started recent source
+  // workers complete their tasks.
+  void OnGetRecentFilesCompleted(const SearchCriteria& search_criteria);
+
   void ClearCache();
 
   // The callback invoked by the deadline timer.
-  void OnScanTimeout(const std::string& query, FileType file_type);
-
-  void SetMaxFilesForTest(size_t max_files);
-  void SetForcedCutoffTimeForTest(const base::Time& forced_cutoff_time);
+  void OnScanTimeout(const SearchCriteria& search_criteria);
 
   std::vector<std::unique_ptr<RecentSource>> sources_;
 
-  // The maximum number of files in Recent. This value won't be changed from
-  // default except for unit tests.
-  size_t max_files_ = 1000;
-
-  // If this is set to non-null, it is used as a cut-off time. Should be used
-  // only in unit tests.
-  absl::optional<base::Time> forced_cutoff_time_;
+  // The accumulator of files found by various recent sources.
+  FileAccumulator accumulator_;
 
   // Cached GetRecentFiles() response.
   absl::optional<std::vector<RecentFile>> cached_files_ = absl::nullopt;
 
-  // The query used in the most recent call.
-  std::string cached_query_;
-
-  // File type of the cached GetRecentFiles() response.
-  FileType cached_files_type_ = FileType::kAll;
+  // The parameters of the last query. These are used to check if the
+  // cached content can be re-used.
+  SearchCriteria cached_search_criteria_;
 
   // Timer to clear the cache.
   base::OneShotTimer cache_clear_timer_;
@@ -136,10 +142,6 @@ class RecentModel : public KeyedService {
 
   // Number of in-flight sources building recent file lists.
   int num_inflight_sources_ = 0;
-
-  // Intermediate container of recent files while building a list.
-  std::priority_queue<RecentFile, std::vector<RecentFile>, RecentFileComparator>
-      intermediate_files_;
 
   // The deadline timer started when recent files are requested, if
   // scan_timeout_duration_ is set. This timer enforces the maximum time limit

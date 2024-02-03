@@ -13,8 +13,8 @@
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_coordinator.h"
 #import "ios/chrome/browser/ui/default_promo/tailored_promo_coordinator.h"
@@ -50,7 +50,7 @@ enum class DisplayedVideoPromo {
 
 // Tracks whether or not the Video promo Feature Engagement Tracker should be
 // dismissed.
-@property(nonatomic, assign) absl::optional<DisplayedVideoPromo>
+@property(nonatomic, assign) std::optional<DisplayedVideoPromo>
     displayedVideoPromoForFET;
 
 // Feature engagement tracker reference.
@@ -77,14 +77,6 @@ enum class DisplayedVideoPromo {
     // Showing the User Policy notification has priority over showing the
     // default browser promo. Both dialogs are competing for the same time slot
     // which is after the browser startup and the browser UI is initialized.
-    [self hidePromo];
-    return;
-  }
-
-  // Don't show the default browser promo if the user is in the default browser
-  // blue dot experiment.
-  // TODO(crbug.com/1410229) clean-up experiment code when fully launched.
-  if (!AreDefaultBrowserPromosEnabled()) {
     [self hidePromo];
     return;
   }

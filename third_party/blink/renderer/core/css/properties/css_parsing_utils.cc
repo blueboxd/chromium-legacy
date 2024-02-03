@@ -1586,6 +1586,16 @@ StringView ApplyFetchRestrictions(StringView url,
   return url;
 }
 
+CSSUrlData CollectUrlData(const StringView& url,
+                          const CSSParserContext& context) {
+  AtomicString url_string = url.ToAtomicString();
+  return CSSUrlData(
+      url_string, context.CompleteNonEmptyURL(url_string),
+      context.GetReferrer(),
+      context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
+      context.IsAdRelated());
+}
+
 }  // namespace
 
 StringView ConsumeUrlAsStringView(CSSParserTokenRange& range,
@@ -1616,9 +1626,8 @@ cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange& range,
   if (url.IsNull()) {
     return nullptr;
   }
-  AtomicString url_string = url.ToAtomicString();
   return MakeGarbageCollected<cssvalue::CSSURIValue>(
-      CSSUrlData(url_string, context.CompleteNonEmptyURL(url_string)));
+      CollectUrlData(url, context));
 }
 
 static bool ConsumeColorInterpolationSpace(
@@ -1828,15 +1837,13 @@ Color ResolveColor(CSSValue* value) {
 }  // namespace
 
 CSSValue* ConsumeColorContrast(CSSParserTokenRange& range,
-                               const CSSParserContext& context,
-                               bool accept_quirky_colors) {
+                               const CSSParserContext& context) {
   DCHECK_EQ(range.Peek().FunctionId(), CSSValueID::kColorContrast);
 
   CSSParserTokenRange range_copy = range;
   CSSParserTokenRange args = ConsumeFunction(range_copy);
 
-  CSSValue* background_color =
-      ConsumeColor(args, context, accept_quirky_colors);
+  CSSValue* background_color = ConsumeColor(args, context);
   if (!background_color) {
     return nullptr;
   }
@@ -1847,7 +1854,7 @@ CSSValue* ConsumeColorContrast(CSSParserTokenRange& range,
 
   VectorOf<CSSValue> colors_to_compare_against;
   do {
-    CSSValue* color = ConsumeColor(args, context, accept_quirky_colors);
+    CSSValue* color = ConsumeColor(args, context);
     if (!color) {
       return nullptr;
     }
@@ -1930,7 +1937,7 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
                        AllowedColorKeywords allowed_keywords) {
   if (RuntimeEnabledFeatures::CSSColorContrastEnabled() &&
       range.Peek().FunctionId() == CSSValueID::kColorContrast) {
-    return ConsumeColorContrast(range, context, accept_quirky_colors);
+    return ConsumeColorContrast(range, context);
   }
 
   if (range.Peek().FunctionId() == CSSValueID::kColorMix) {
@@ -2841,8 +2848,7 @@ CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenRange& range,
   if (css_parsing_utils::IdentMatches<CSSValueID::kAuto>(range.Peek().Id())) {
     list->Append(*css_parsing_utils::ConsumeIdent(range));
   }
-  if (RuntimeEnabledFeatures::CSSContainIntrinsicSizeAutoNoneEnabled() &&
-      css_parsing_utils::IdentMatches<CSSValueID::kNone>(range.Peek().Id())) {
+  if (css_parsing_utils::IdentMatches<CSSValueID::kNone>(range.Peek().Id())) {
     list->Append(*css_parsing_utils::ConsumeIdent(range));
   } else {
     CSSValue* length = css_parsing_utils::ConsumeLength(
@@ -3001,12 +3007,8 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
 static CSSImageValue* CreateCSSImageValueWithReferrer(
     const StringView& uri,
     const CSSParserContext& context) {
-  AtomicString raw_value = uri.ToAtomicString();
-  auto* image_value = MakeGarbageCollected<CSSImageValue>(
-      CSSUrlData(raw_value, context.CompleteNonEmptyURL(raw_value)),
-      context.GetReferrer(),
-      context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
-      context.IsAdRelated());
+  auto* image_value =
+      MakeGarbageCollected<CSSImageValue>(CollectUrlData(uri, context));
   if (context.Mode() == kUASheetMode) {
     image_value->SetInitiator(fetch_initiator_type_names::kUacss);
   }
@@ -4084,18 +4086,13 @@ CSSValue* ConsumeSingleTimelineInset(CSSParserTokenRange& range,
                                             CSSValuePair::kDropIdenticalValues);
 }
 
-void AddBackgroundValue(CSSValue*& list, CSSValue* value) {
-  if (list) {
-    if (!list->IsBaseValueList()) {
-      CSSValue* first_value = list;
-      list = CSSValueList::CreateCommaSeparated();
-      To<CSSValueList>(list)->Append(*first_value);
-    }
-    To<CSSValueList>(list)->Append(*value);
-  } else {
-    // To conserve memory we don't actually wrap a single value in a list.
-    list = value;
+const CSSValue* GetSingleValueOrMakeList(
+    CSSValue::ValueListSeparator list_separator,
+    HeapVector<Member<const CSSValue>, 4> values) {
+  if (values.size() == 1u) {
+    return values.front().Get();
   }
+  return MakeGarbageCollected<CSSValueList>(list_separator, std::move(values));
 }
 
 CSSValue* ConsumeBackgroundAttachment(CSSParserTokenRange& range) {
@@ -4197,8 +4194,11 @@ bool ConsumeBackgroundPosition(CSSParserTokenRange& range,
                                const CSSParserContext& context,
                                UnitlessQuirk unitless,
                                absl::optional<WebFeature> three_value_position,
-                               CSSValue*& result_x,
-                               CSSValue*& result_y) {
+                               const CSSValue*& result_x,
+                               const CSSValue*& result_y) {
+  HeapVector<Member<const CSSValue>, 4> values_x;
+  HeapVector<Member<const CSSValue>, 4> values_y;
+
   do {
     CSSValue* position_x = nullptr;
     CSSValue* position_y = nullptr;
@@ -4212,9 +4212,16 @@ bool ConsumeBackgroundPosition(CSSParserTokenRange& range,
     // argument to ask the parser to set this flag.
     SetAllowsNegativePercentageReference(position_x);
     SetAllowsNegativePercentageReference(position_y);
-    AddBackgroundValue(result_x, position_x);
-    AddBackgroundValue(result_y, position_y);
+    values_x.push_back(position_x);
+    values_y.push_back(position_y);
   } while (ConsumeCommaIncludingWhitespace(range));
+
+  // To conserve memory we don't wrap single values in lists.
+  result_x =
+      GetSingleValueOrMakeList(CSSValue::kCommaSeparator, std::move(values_x));
+  result_y =
+      GetSingleValueOrMakeList(CSSValue::kCommaSeparator, std::move(values_y));
+
   return true;
 }
 
@@ -4361,8 +4368,8 @@ bool ParseBackgroundOrMask(bool important,
           : WebkitMaskShorthand(shorthand_id);
 
   const unsigned longhand_count = shorthand.length();
-  CSSValue* longhands[10] = {nullptr};
-  DCHECK_LE(longhand_count, 10u);
+  HeapVector<Member<const CSSValue>, 4> longhands[10];
+  CHECK_LE(longhand_count, 10u);
 
   bool implicit = false;
   do {
@@ -4419,10 +4426,10 @@ bool ParseBackgroundOrMask(bool important,
           }
           parsed_longhand[i] = true;
           found_property = true;
-          AddBackgroundValue(longhands[i], value);
+          longhands[i].push_back(value);
           if (value_y) {
             parsed_longhand[i + 1] = true;
-            AddBackgroundValue(longhands[i + 1], value_y);
+            longhands[i + 1].push_back(value_y);
           }
         }
       }
@@ -4448,11 +4455,15 @@ bool ParseBackgroundOrMask(bool important,
              property.IDEquals(CSSPropertyID::kMaskClip) ||
              property.IDEquals(CSSPropertyID::kWebkitMaskClip)) &&
             origin_value) {
-          AddBackgroundValue(longhands[i], origin_value);
+          longhands[i].push_back(origin_value);
           continue;
         }
 
-        AddBackgroundValue(longhands[i], CSSInitialValue::Create());
+        if (shorthand_id == CSSPropertyID::kAlternativeMask) {
+          longhands[i].push_back(To<Longhand>(property).InitialValue());
+        } else {
+          longhands[i].push_back(CSSInitialValue::Create());
+        }
       }
     }
   } while (ConsumeCommaIncludingWhitespace(range));
@@ -4462,11 +4473,17 @@ bool ParseBackgroundOrMask(bool important,
 
   for (unsigned i = 0; i < longhand_count; ++i) {
     const CSSProperty& property = *shorthand.properties()[i];
-    if (property.IDEquals(CSSPropertyID::kBackgroundSize) && longhands[i] &&
+    if (property.IDEquals(CSSPropertyID::kBackgroundSize) &&
+        !longhands[i].empty() &&
         context.UseLegacyBackgroundSizeShorthandBehavior()) {
       continue;
     }
-    AddProperty(property.PropertyID(), shorthand.id(), *longhands[i], important,
+
+    // To conserve memory we don't wrap a single value in a list.
+    const CSSValue* longhand = GetSingleValueOrMakeList(
+        CSSValue::kCommaSeparator, std::move(longhands[i]));
+
+    AddProperty(property.PropertyID(), shorthand.id(), *longhand, important,
                 implicit ? IsImplicitProperty::kImplicit
                          : IsImplicitProperty::kNotImplicit,
                 properties);
@@ -5796,7 +5813,6 @@ CSSValue* ConsumeGridTrackList(CSSParserTokenRange& range,
   }
 
   bool is_subgrid_track_list =
-      RuntimeEnabledFeatures::LayoutNGSubgridEnabled() &&
       track_list_type == TrackListType::kGridTemplateSubgrid;
 
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();

@@ -229,12 +229,17 @@ class SearchEngineChoiceBrowserTest : public InProcessBrowserTest {
         search_engines::SearchEngineChoiceScreenEvents::kDefaultWasSet, 1);
   }
 
+  // We check that the histogram is recorded for at least `count` because
+  // navigations could happen multiple times in a browser and might record the
+  // histogram more than the number specified in `count`.
   void CheckNavigationConditionRecorded(
       search_engines::SearchEngineChoiceScreenConditions condition,
       int count) {
-    histogram_tester_.ExpectBucketCount(
-        search_engines::kSearchEngineChoiceScreenNavigationConditionsHistogram,
-        condition, count);
+    EXPECT_GE(histogram_tester_.GetBucketCount(
+                  search_engines::
+                      kSearchEngineChoiceScreenNavigationConditionsHistogram,
+                  condition),
+              count);
   }
 
   void CheckProfileInitConditionRecorded(
@@ -510,7 +515,6 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
 
   EXPECT_TRUE(service->IsShowingDialog(browser()));
-
   CheckNavigationConditionRecorded(
       search_engines::SearchEngineChoiceScreenConditions::kEligible, 1);
 
@@ -626,9 +630,8 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
   EXPECT_TRUE(service->IsShowingDialog(browser()));
 }
 
-// TODO(crbug.com/1505043): Enable and fix test flakiness.
 IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
-                       DISABLED_DialogNotShownOverSpecificBrowserTypes) {
+                       DialogNotShownOverSpecificBrowserTypes) {
   Profile* profile = browser()->profile();
   auto* search_engine_choice_service =
       static_cast<MockSearchEngineChoiceService*>(

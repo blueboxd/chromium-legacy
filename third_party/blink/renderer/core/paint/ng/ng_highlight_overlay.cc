@@ -90,7 +90,7 @@ bool HighlightLayer::operator!=(const HighlightLayer& other) const {
 
 int8_t HighlightLayer::ComparePaintOrder(
     const HighlightLayer& other,
-    const HighlightRegistry& registry) const {
+    const HighlightRegistry* registry) const {
   if (type < other.type) {
     return HighlightRegistry::OverlayStackingPosition::
         kOverlayStackingPositionBelow;
@@ -103,14 +103,15 @@ int8_t HighlightLayer::ComparePaintOrder(
     return HighlightRegistry::OverlayStackingPosition::
         kOverlayStackingPositionEquivalent;
   }
-  const HighlightRegistryMap& map = registry.GetHighlights();
+  DCHECK(registry);
+  const HighlightRegistryMap& map = registry->GetHighlights();
   auto* this_entry =
       map.Find<HighlightRegistryMapEntryNameTranslator>(PseudoArgument())
           ->Get();
   auto* other_entry =
       map.Find<HighlightRegistryMapEntryNameTranslator>(other.PseudoArgument())
           ->Get();
-  return registry.CompareOverlayStackingPosition(
+  return registry->CompareOverlayStackingPosition(
       PseudoArgument(), this_entry->highlight, other.PseudoArgument(),
       other_entry->highlight);
 }
@@ -156,7 +157,7 @@ unsigned HighlightEdge::Offset() const {
 }
 
 bool HighlightEdge::LessThan(const HighlightEdge& other,
-                             const HighlightRegistry& registry) const {
+                             const HighlightRegistry* registry) const {
   if (Offset() < other.Offset()) {
     return true;
   }
@@ -233,8 +234,6 @@ Vector<HighlightLayer> NGHighlightOverlay::ComputeLayers(
     const DocumentMarkerVector& grammar,
     const DocumentMarkerVector& spelling,
     const DocumentMarkerVector& target) {
-  DCHECK(RuntimeEnabledFeatures::HighlightOverlayPaintingEnabled());
-
   Vector<HighlightLayer> result{};
   result.emplace_back(HighlightLayerType::kOriginating);
 
@@ -256,7 +255,7 @@ Vector<HighlightLayer> NGHighlightOverlay::ComputeLayers(
 
   std::sort(result.begin(), result.end(),
             [registry](const HighlightLayer& p, const HighlightLayer& q) {
-              return p.ComparePaintOrder(q, *registry) < 0;
+              return p.ComparePaintOrder(q, registry) < 0;
             });
 
   return result;
@@ -272,8 +271,6 @@ Vector<HighlightEdge> NGHighlightOverlay::ComputeEdges(
     const DocumentMarkerVector& grammar,
     const DocumentMarkerVector& spelling,
     const DocumentMarkerVector& target) {
-  DCHECK(RuntimeEnabledFeatures::HighlightOverlayPaintingEnabled());
-
   Vector<HighlightEdge> result{};
 
   if (selection) {
@@ -388,7 +385,7 @@ Vector<HighlightEdge> NGHighlightOverlay::ComputeEdges(
 
   std::sort(result.begin(), result.end(),
             [registry](const HighlightEdge& p, const HighlightEdge& q) {
-              return p.LessThan(q, *registry);
+              return p.LessThan(q, registry);
             });
 
   return result;
@@ -398,7 +395,6 @@ Vector<HighlightPart> NGHighlightOverlay::ComputeParts(
     const NGTextFragmentPaintInfo& content_offsets,
     const Vector<HighlightLayer>& layers,
     const Vector<HighlightEdge>& edges) {
-  DCHECK(RuntimeEnabledFeatures::HighlightOverlayPaintingEnabled());
   const HighlightLayer originating_layer{HighlightLayerType::kOriginating};
   const HighlightDecoration originating_decoration{
       originating_layer, {content_offsets.from, content_offsets.to}};

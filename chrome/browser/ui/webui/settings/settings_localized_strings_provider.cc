@@ -214,9 +214,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #endif
     {"remove", IDS_REMOVE},
     {"restart", IDS_SETTINGS_RESTART},
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"restartToApplyChanges", IDS_SETTINGS_RESTART_TO_APPLY_CHANGES},
-#endif
     {"retry", IDS_SETTINGS_RETRY},
     {"save", IDS_SAVE},
     {"searchResultBubbleText", IDS_SEARCH_RESULT_BUBBLE_TEXT},
@@ -282,8 +280,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"accessibleImageLabelsTitle", IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_TITLE},
     {"accessibleImageLabelsSubtitle",
      IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE},
-    {"pdfOcrTitle", IDS_SETTINGS_PDF_OCR_TITLE},
-    {"pdfOcrSubtitle", IDS_SETTINGS_PDF_OCR_SUBTITLE},
     {"settingsSliderRoleDescription",
      IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
     {"caretBrowsingTitle", IDS_SETTINGS_ENABLE_CARET_BROWSING_TITLE},
@@ -300,7 +296,13 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_OVERSCROLL_HISTORY_NAVIGATION_TITLE},
     {"overscrollHistoryNavigationSubtitle",
      IDS_SETTINGS_OVERSCROLL_HISTORY_NAVIGATION_SUBTITLE},
-#endif
+    {"pdfOcrDownloadCompleteLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_COMPLETE},
+    {"pdfOcrDownloadErrorLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_ERROR},
+    {"pdfOcrDownloadProgressLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_PROGRESS},
+    {"pdfOcrDownloadingLabel", IDS_SETTINGS_PDF_OCR_DOWNLOADING},
+    {"pdfOcrTitle", IDS_SETTINGS_PDF_OCR_TITLE},
+    {"pdfOcrSubtitle", IDS_SETTINGS_PDF_OCR_SUBTITLE},
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -516,6 +518,7 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
     {"clearPeriod4Weeks", IDS_SETTINGS_CLEAR_PERIOD_FOUR_WEEKS},
     {"clearPeriodEverything", IDS_SETTINGS_CLEAR_PERIOD_EVERYTHING},
     {"clearPeriod15Minutes", IDS_SETTINGS_CLEAR_PERIOD_15_MINUTES},
+    {"clearPeriodNotSelected", IDS_SETTINGS_CLEAR_PERIOD_NOT_SELECTED},
     {"historyDeletionDialogTitle",
      IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
     {"historyDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
@@ -902,8 +905,11 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
   html_source->AddLocalizedStrings(kLocalizedStrings);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddString(
-      "chromeOSLanguagesSettingsPath",
-      chromeos::settings::mojom::kLanguagesAndInputSectionPath);
+      "osSettingsLanguagesPageUrl",
+      ash::features::IsOsSettingsRevampWayfindingEnabled()
+          ? BuildOSSettingsUrl(chromeos::settings::mojom::kLanguagesSubpagePath)
+          : BuildOSSettingsUrl(
+                chromeos::settings::mojom::kLanguagesAndInputSectionPath));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -1061,8 +1067,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"editIbanTitle", IDS_SETTINGS_EDIT_IBAN_TITLE},
     {"ibanNickname", IDS_IBAN_NICKNAME},
     {"moreActionsForIban", IDS_SETTINGS_AUTOFILL_MORE_ACTIONS_FOR_IBAN},
-    {"moreActionsForIbanDescription",
-     IDS_SETTINGS_AUTOFILL_MORE_ACTIONS_FOR_IBAN_DESCRIPTION},
+    {"a11yIbanDescription", IDS_SETTINGS_AUTOFILL_A11Y_IBAN_DESCRIPTION},
     {"editIban", IDS_SETTINGS_IBAN_EDIT},
     {"removeLocalIbanConfirmationTitle",
      IDS_SETTINGS_LOCAL_IBAN_REMOVE_CONFIRMATION_TITLE},
@@ -1136,6 +1141,26 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"plusAddressSettings", IDS_PLUS_ADDRESS_SETTINGS_LABEL},
     {"cvcTagForCreditCardListEntry",
      IDS_AUTOFILL_SETTINGS_PAGE_CVC_TAG_FOR_CREDIT_CARD_LIST_ENTRY},
+    {"experimentalAdvancedPageTitle",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_PAGE_TITLE},
+    {"experimentalAdvancedSectionTitle",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_PAGE_TITLE},
+    {"experimentalAdvancedFeatureMainLabel",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE_MAIN_LABEL},
+    {"experimentalAdvancedFeatureMainSublabel",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE_MAIN_SUBLABEL},
+    {"experimentalAdvancedFeature1Label",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE1_LABEL},
+    {"experimentalAdvancedFeature1Sublabel",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE1_SUBLABEL},
+    {"experimentalAdvancedFeature2Label",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE2_LABEL},
+    {"experimentalAdvancedFeature2Sublabel",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE2_SUBLABEL},
+    {"experimentalAdvancedFeature3Label",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE3_LABEL},
+    {"experimentalAdvancedFeature3Sublabel",
+     IDS_SETTINGS_EXPERIMENTAL_ADVANCED_FEATURE3_SUBLABEL},
   };
 
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
@@ -1147,10 +1172,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "manageCreditCardsLabel",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PAYMENTS_MANAGE_CREDIT_CARDS,
-          base::FeatureList::IsEnabled(
-              autofill::features::kAutofillUpdateChromeSettingsLinkToGPayWeb)
-              ? chrome::kPaymentMethodsURLForGPayWeb
-              : chrome::kPaymentMethodsURL));
+          base::UTF8ToUTF16(autofill::payments::GetManageInstrumentsUrl().spec())));
   html_source->AddString("managePaymentMethodsUrl",
                          autofill::payments::GetManageInstrumentsUrl().spec());
   html_source->AddString("addressesAndPaymentMethodsLearnMoreURL",
@@ -1221,11 +1243,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                   .spec())));
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
-
-  html_source->AddBoolean(
-      "autofillAccountProfileStorage",
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillAccountProfileStorage));
 
   html_source->AddBoolean(
       "syncEnableContactInfoDataTypeInTransportMode",
@@ -1545,6 +1562,12 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   // Toggles the Chrome OS Account Manager submenu in the People section.
   html_source->AddBoolean("isAccountManagerEnabled",
                           ash::IsAccountManagerAvailable(profile));
+  html_source->AddString(
+      "osSettingsAccountsPageUrl",
+      ash::features::IsOsSettingsRevampWayfindingEnabled()
+          ? BuildOSSettingsUrl(chromeos::settings::mojom::kPeopleSectionPath)
+          : BuildOSSettingsUrl(
+                chromeos::settings::mojom::kMyAccountsSubpagePath));
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   html_source->AddBoolean(
       "isAccountManagerEnabled",
@@ -2437,7 +2460,6 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
     {"searchExplanation", IDS_SETTINGS_SEARCH_EXPLANATION},
     {"searchExplanationLearnMoreA11yLabel",
      IDS_SETTINGS_SEARCH_EXPLANATION_ACCESSIBILITY_LABEL},
-#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
     {"searchEngineChoiceEntryPointSubtitle",
      IDS_SEARCH_ENGINE_CHOICE_SETTINGS_ENTRY_POINT_SUBTITLE},
     {"searchEnginesChange",
@@ -2446,7 +2468,6 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
      IDS_SEARCH_ENGINE_CHOICE_SETTINGS_SUBTITLE},
     {"searchEnginesSetAsDefaultButton", IDS_SEARCH_ENGINE_CHOICE_BUTTON_TITLE},
     {"searchEnginesCancelButton", IDS_CANCEL},
-#endif
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -2922,7 +2943,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsSiteResetAll", IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_ALL},
     {"siteSettingsSiteResetConfirmation",
      IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_CONFIRMATION},
-    {"siteSettingsRemoveSite", IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_SITE},
     {"siteSettingsRemoveSiteOriginDialogTitle",
      IDS_SETTINGS_SITE_SETTINGS_REMOVE_SITE_ORIGIN_DIALOG_TITLE},
     {"siteSettingsRemoveSiteOriginAppDialogTitle",
@@ -3378,7 +3398,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
 
   html_source->AddBoolean(
       "blockMidiByDefault",
-      base::FeatureList::IsEnabled(permissions::features::kBlockMidiByDefault));
+      base::FeatureList::IsEnabled(features::kBlockMidiByDefault));
 
   // The exception placeholder should not be translated. See
   // crbug.com/1095878.

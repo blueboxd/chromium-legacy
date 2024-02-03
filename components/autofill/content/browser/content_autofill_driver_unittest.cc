@@ -239,13 +239,17 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     CallDone();
   }
 
-  void SetSuggestionAvailability(FieldRendererId field,
-                                 const mojom::AutofillState state) override {
+  void SetSuggestionAvailability(
+      FieldRendererId field,
+      mojom::AutofillSuggestionAvailability suggestion_availability) override {
     value_renderer_id_ = field;
-    if (state == mojom::AutofillState::kAutofillAvailable)
+    if (suggestion_availability ==
+        mojom::AutofillSuggestionAvailability::kAutofillAvailable) {
       suggestions_available_ = true;
-    else if (state == mojom::AutofillState::kNoSuggestions)
+    } else if (suggestion_availability ==
+               mojom::AutofillSuggestionAvailability::kNoSuggestions) {
       suggestions_available_ = false;
+    }
     CallDone();
   }
 
@@ -504,10 +508,18 @@ class ContentAutofillDriverWithMultiFrameCreditCardForm
 
  private:
   content::RenderFrameHost* CreateChild(std::string_view name) {
-    return content::NavigationSimulator::NavigateAndCommitFromDocument(
-        GURL(base::StrCat({"https://foo.com/", name})),
-        content::RenderFrameHostTester::For(main_rfh())
-            ->AppendChild(std::string(name)));
+    content::RenderFrameHost* rfh =
+        content::NavigationSimulator::NavigateAndCommitFromDocument(
+            GURL(base::StrCat({"https://foo.com/", name})),
+            content::RenderFrameHostTester::For(main_rfh())
+                ->AppendChild(std::string(name)));
+    // Make sure the driver (and the manager) is created as there is an early
+    // return in `ContentAutofillDriverFactory::DidFinishNavigation` before
+    // `DriverForFrame()` call.
+    // In non-test setup this method is called during mojom bindings, see
+    // `ContentAutofillDriverFactory::BindAutofillDriver`.
+    factory().DriverForFrame(rfh);
+    return rfh;
   }
 
   FormData SeeFormWithField(content::RenderFrameHost* source_rfh,

@@ -16,6 +16,7 @@
 #include "base/thread_annotations.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/buildflag.h"
+#include "components/ml/webnn/graph_validation_utils.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_clamp_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_compute_result.h"
@@ -617,41 +618,14 @@ XnnPadding2D GetXnnConvTransposePadding2D(
     uint32_t dilation_width,
     uint32_t output_padding_height,
     uint32_t output_padding_width) {
-  XnnPadding2D xnn_padding;
-  switch (options->autoPad().AsEnum()) {
-    case V8MLAutoPad::Enum::kExplicit: {
-      // Set the XNNPACK convTranspose2d padding from WebNN explicit padding
-      // that is in [beginning_height, ending_height, beginning_width,
-      // ending_width], default to 0.
-      const Vector<uint32_t> default_pads({0, 0, 0, 0});
-      xnn_padding.top = options->getPaddingOr(default_pads)[0];
-      xnn_padding.bottom = options->getPaddingOr(default_pads)[1];
-      xnn_padding.left = options->getPaddingOr(default_pads)[2];
-      xnn_padding.right = options->getPaddingOr(default_pads)[3];
-      break;
-    }
-    case V8MLAutoPad::Enum::kSameUpper:
-    case V8MLAutoPad::Enum::kSameLower: {
-      // Calculate the XNNPACK convTranspose2d padding based on WebNN auto
-      // padding mode and sizes.
-      auto padding_sizes_height =
-          MLGraphBuilder::CalculateConvTransposed2dPadding(
-              options->autoPad().AsEnum(), input_height, filter_height,
-              stride_height, dilation_height, output_padding_height);
-      CHECK(padding_sizes_height);
-      xnn_padding.top = padding_sizes_height.value().begin;
-      xnn_padding.bottom = padding_sizes_height.value().end;
-      auto padding_sizes_width =
-          MLGraphBuilder::CalculateConvTransposed2dPadding(
-              options->autoPad().AsEnum(), input_width, filter_width,
-              stride_width, dilation_width, output_padding_width);
-      CHECK(padding_sizes_width);
-      xnn_padding.left = padding_sizes_width.value().begin;
-      xnn_padding.right = padding_sizes_width.value().end;
-      break;
-    }
-  }
-  return xnn_padding;
+  auto padding = blink::CalculateConvTransposePadding2D(
+      options, input_height, input_width, filter_height, filter_width,
+      stride_height, stride_width, dilation_height, dilation_width,
+      output_padding_height, output_padding_width);
+  return XnnPadding2D{.top = padding.beginning.height,
+                      .bottom = padding.ending.height,
+                      .left = padding.beginning.width,
+                      .right = padding.ending.width};
 }
 
 xnn_status DefineXnnNodeForConv2d(xnn_subgraph_t subgraph,
@@ -874,20 +848,15 @@ xnn_status DefineXnnNodeForConvTranspose2d(
   if (options->hasOutputSizes()) {
     // Calculate output padding of XNNPACK convTranspose2d using validated
     // calculated output sizes.
-    const auto calculated_output_sizes =
-        MLGraphBuilder::ValidateAndCalculateConvTranspose2dOutputSizes(
-            input_height, input_width, filter_height, filter_width,
-            // If padding is not present, the values are assumed to be
-            // [0,0,0,0].
-            options->getPaddingOr({0, 0, 0, 0}), {stride_height, stride_width},
-            {dilation_height, dilation_width},
-            // Calculate the output sizes without output padding.
-            {0u, 0u}, options->autoPad());
-    CHECK(calculated_output_sizes.has_value());
-    CHECK_GE(output_height, calculated_output_sizes->height);
-    output_padding_height = output_height - calculated_output_sizes->height;
-    CHECK_GE(output_width, calculated_output_sizes->width);
-    output_padding_width = output_width - calculated_output_sizes->width;
+    const auto calculated_output_sizes = CalculateConvTransposeOutputSize2D(
+        options, input_height, input_width, filter_height, filter_width,
+        stride_height, stride_width, dilation_height, dilation_width,
+        // Calculate output size without output padding.
+        0u, 0u);
+    CHECK_GE(output_height, calculated_output_sizes.height);
+    output_padding_height = output_height - calculated_output_sizes.height;
+    CHECK_GE(output_width, calculated_output_sizes.width);
+    output_padding_width = output_width - calculated_output_sizes.width;
   } else {
     // Set output padding of XNNPACK convTranspose2d.
     output_padding_height =
@@ -1002,11 +971,7 @@ xnn_status DefineXnnNodeForElementWiseBinary(
         error_message = "Operand b should be defined as a constant for pow.";
         return xnn_status_unsupported_parameter;
       }
-      // A scalar can be represented by empty dimensions which is still under WG
-      // discussion. An issue has been filed to track it -
-      // https://github.com/webmachinelearning/webnn/issues/390.
-      if (operand_b->Dimensions().size() != 1 ||
-          operand_b->Dimensions()[0] != 1) {
+      if (operand_b->Dimensions().size() != 0) {
         error_message = "Pow only supports scalar operand b.";
         return xnn_status_unsupported_parameter;
       }
@@ -1365,6 +1330,10 @@ xnn_status DefineXnnNodeForPRelu(xnn_subgraph_t subgraph,
     return xnn_status_invalid_parameter;
   }
   const auto slope_rank = slope->Dimensions().size();
+  if (slope_rank == 0) {
+    error_message = "Slope should not be a scalar.";
+    return xnn_status_unsupported_parameter;
+  }
   for (wtf_size_t i = 0; i < slope_rank - 1; i++) {
     if (slope->Dimensions()[i] != 1) {
       error_message =
@@ -1900,11 +1869,12 @@ void MLGraphXnnpack::ValidateAndBuildAsync(MLContext* context,
 
 // static
 MLGraph* MLGraphXnnpack::ValidateAndBuildSync(
+    ScriptState* script_state,
     MLContext* context,
     const MLNamedOperands& named_outputs,
     ExceptionState& exception_state) {
   return MakeGarbageCollected<MLGraphXnnpack>(context)->BuildSync(
-      named_outputs, exception_state);
+      script_state, named_outputs, exception_state);
 }
 
 MLGraphXnnpack::MLGraphXnnpack(MLContext* context)
@@ -2040,7 +2010,8 @@ void MLGraphXnnpack::OnDidCreateXnnRuntime(
   resolver->Resolve(this);
 }
 
-MLGraph* MLGraphXnnpack::BuildSyncImpl(const MLNamedOperands& named_outputs,
+MLGraph* MLGraphXnnpack::BuildSyncImpl(ScriptState* script_state,
+                                       const MLNamedOperands& named_outputs,
                                        ExceptionState& exception_state) {
   CHECK(!xnn_runtime_wrapper_);
   String error_message;

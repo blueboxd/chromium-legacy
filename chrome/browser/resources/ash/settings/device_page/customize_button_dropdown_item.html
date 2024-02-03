@@ -1,0 +1,16 @@
+<style include="md-select settings-shared input-device-settings-shared">
+  #container {
+    align-items: center;
+    display: flex;
+    height: 36px;
+    padding: 0 16px;
+  }
+
+  #container:hover {
+    background-color: var(--cros-highlight-color-hover);
+  }
+</style>
+<div id="container" hidden="[[option.hidden]]"
+    class="option-item" on-click="onDropdownItemSelected_">
+  [[option.name]]
+</div>

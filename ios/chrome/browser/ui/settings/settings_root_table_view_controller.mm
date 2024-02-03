@@ -9,14 +9,14 @@
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/shared/ui/table_view/legacy_chrome_table_view_styler.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/settings/bar_button_activity_indicator.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_constants.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/device_form_factor.h"
@@ -207,16 +207,8 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   // can leave the new top view controller with a toolbar when it doesn't
   // require one. Disabling editing mode to avoid this. See crbug.com/1404111 as
   // an example.
-  if (!parent) {
-    if (!base::FeatureList::IsEnabled(
-            kSettingsWillBeDismissedBugFixKillSwitch) &&
-        [self respondsToSelector:@selector(settingsWillBeDismissed)]) {
-      [self performSelector:@selector(settingsWillBeDismissed)];
-    }
-
-    if (self.isEditing) {
-      [self setEditing:NO animated:NO];
-    }
+  if (!parent && self.isEditing) {
+    [self setEditing:NO animated:NO];
   }
 
   [self.navigationController setToolbarHidden:YES animated:YES];
@@ -224,9 +216,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   [super didMoveToParentViewController:parent];
-  if (!parent &&
-      base::FeatureList::IsEnabled(kSettingsWillBeDismissedBugFixKillSwitch) &&
-      [self respondsToSelector:@selector(settingsWillBeDismissed)]) {
+  if (!parent && [self respondsToSelector:@selector(settingsWillBeDismissed)]) {
     [self performSelector:@selector(settingsWillBeDismissed)];
   }
 }
@@ -402,6 +392,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
                                activityIndicatorDimension)];
   UIBarButtonItem* waitButton =
       [[UIBarButtonItem alloc] initWithCustomView:indicator];
+  waitButton.accessibilityLabel = kSettingsWaitButtonId;
 
   if (displayActivityIndicatorOnTheRight) {
     // If there is a right bar button item, then it is the "Done" button.

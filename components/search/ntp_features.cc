@@ -57,6 +57,19 @@ BASE_FEATURE(kRealboxCr23All,
              "NtpRealboxCr23All",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, NTP "realbox" expanded state icon CR23 updates will appear.
+// Includes CR23 icons as well as backgrounds for AiS and pedal suggestions and
+// updated entity corner radii.
+BASE_FEATURE(kRealboxCr23ExpandedStateIcons,
+             "NtpRealboxCr23ExpandedStateIcons",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, NTP "realbox" expanded state layout CR23 updates will
+// appear.
+BASE_FEATURE(kRealboxCr23ExpandedStateLayout,
+             "NtpRealboxCr23ExpandedStateLayout",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, the NTP "realbox" will have same border/drop shadow in hover
 // state as searchbox.
 BASE_FEATURE(kRealboxMatchSearchboxTheme,
@@ -255,7 +268,7 @@ BASE_FEATURE(kNtpRealboxLensSearch,
 // endpoint instead of uploading to Scotty.
 BASE_FEATURE(kNtpLensDirectUpload,
              "NtpLensDirectUpload",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, recipe tasks module will be shown.
 BASE_FEATURE(kNtpRecipeTasksModule,
@@ -326,7 +339,7 @@ BASE_FEATURE(kNtpHistoryClustersModuleSuggestionChipHeader,
 // clusters module when available.
 BASE_FEATURE(kNtpHistoryClustersModuleDiscounts,
              "NtpHistoryClustersModuleDiscounts",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, ChromeCart tile will show in the History clusters module when
 // available.

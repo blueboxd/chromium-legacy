@@ -101,7 +101,7 @@ dbus::PropertySet* FlossDBusManager::CreateProperties(
 // Some interface is available.
 void FlossDBusManager::ObjectAdded(const dbus::ObjectPath& object_path,
                                    const std::string& interface_name) {
-  DVLOG(1) << __func__ << ":" << object_path.value() << ", " << interface_name;
+  DVLOG(1) << __func__ << ": " << object_path.value() << ", " << interface_name;
 
   if (interface_name == kAdapterInterface) {
     if (adapter_interface_present_) {
@@ -170,7 +170,7 @@ void FlossDBusManager::ObjectAdded(const dbus::ObjectPath& object_path,
 // Some interface is gone (no longer present).
 void FlossDBusManager::ObjectRemoved(const dbus::ObjectPath& object_path,
                                      const std::string& interface_name) {
-  DVLOG(1) << __func__ << ":" << object_path.value() << ", " << interface_name;
+  DVLOG(1) << __func__ << ": " << object_path.value() << ", " << interface_name;
 
   if (interface_name == kAdapterInterface) {
     adapter_interface_present_ = false;
@@ -455,15 +455,15 @@ FlossAdminClient* FlossDBusManager::GetAdminClient() {
 
 void FlossDBusManager::InitializeAdapterClients(int adapter,
                                                 base::OnceClosure on_ready) {
-  // Clean up active adapter clients
-  if (active_adapter_ != kInvalidAdapter) {
-    client_bundle_->ResetAdapterClients();
-  }
-
   // Initializing already current adapter.
   if (active_adapter_ == adapter) {
     std::move(on_ready).Run();
     return;
+  }
+
+  // Clean up active adapter clients
+  if (active_adapter_ != kInvalidAdapter) {
+    client_bundle_->ResetAdapterClients();
   }
 
   // Set current adapter. If it's kInvalidAdapter, this doesn't need to do any

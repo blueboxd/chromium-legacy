@@ -23,26 +23,21 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_origin_clean.h"
 #include "third_party/blink/renderer/core/css/css_url_data.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
 class Document;
-class ProxySVGResourceClient;
 class StyleImage;
+class SVGResource;
 
 class CORE_EXPORT CSSImageValue : public CSSValue {
  public:
   CSSImageValue(CSSUrlData url_data,
-                const Referrer&,
-                OriginClean origin_clean,
-                bool is_ad_related,
                 StyleImage* image = nullptr);
   ~CSSImageValue();
 
@@ -73,15 +68,13 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   bool Equals(const CSSImageValue&) const;
 
   CSSImageValue* ComputedCSSValue() const {
-    return MakeGarbageCollected<CSSImageValue>(
-        url_data_.MakeAbsolute(), Referrer(), origin_clean_, is_ad_related_,
-        cached_image_.Get());
+    return MakeGarbageCollected<CSSImageValue>(url_data_.MakeAbsolute(),
+                                               cached_image_.Get());
   }
   CSSImageValue* ComputedCSSValueMaybeLocal() const;
 
   CSSImageValue* Clone() const {
-    return MakeGarbageCollected<CSSImageValue>(url_data_, Referrer(),
-                                               origin_clean_, is_ad_related_,
+    return MakeGarbageCollected<CSSImageValue>(url_data_.MakeWithoutReferrer(),
                                                cached_image_.Get());
   }
 
@@ -89,24 +82,15 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
 
   void TraceAfterDispatch(blink::Visitor*) const;
   void RestoreCachedResourceIfNeeded(const Document&) const;
-
-  ProxySVGResourceClient* GetSVGResourceClient();
+  SVGResource* EnsureSVGResource() const;
 
  private:
   CSSUrlData url_data_;
-  Referrer referrer_;
   AtomicString initiator_name_;
 
   // Cached image data.
   mutable Member<StyleImage> cached_image_;
-  Member<ProxySVGResourceClient> proxy_svg_resource_client_;
-
-  // Whether the stylesheet that requested this image is origin-clean:
-  // https://drafts.csswg.org/cssom-1/#concept-css-style-sheet-origin-clean-flag
-  const OriginClean origin_clean_;
-
-  // Whether this was created by an ad-related CSSParserContext.
-  const bool is_ad_related_;
+  mutable Member<SVGResource> svg_resource_;
 };
 
 template <>

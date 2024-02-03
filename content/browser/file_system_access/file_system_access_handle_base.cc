@@ -127,7 +127,7 @@ void FileSystemAccessHandleBase::DoRequestPermission(
   // workers to get File System Access handles. While workers will never be able
   // to call chooseEntries(), they will be able to receive existing handles from
   // windows via postMessage() and IndexedDB.
-  if (current_status != PermissionStatus::ASK || context_.is_worker()) {
+  if (current_status != PermissionStatus::ASK || context_.is_worker) {
     std::move(callback).Run(file_system_access_error::Ok(), current_status);
     return;
   }
@@ -210,15 +210,6 @@ void FileSystemAccessHandleBase::DoMove(
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
-  if (!base::FeatureList::IsEnabled(
-          features::kFileSystemAccessMoveLocalFiles)) {
-    if (url().type() != storage::FileSystemType::kFileSystemTypeTemporary) {
-      std::move(callback).Run(file_system_access_error::FromStatus(
-          blink::mojom::FileSystemAccessStatus::kNotSupportedError));
-      return;
-    }
-  }
-
   manager()->ResolveTransferToken(
       std::move(destination_directory),
       base::BindOnce(&FileSystemAccessHandleBase::DidResolveTokenToMove,
@@ -235,15 +226,6 @@ void FileSystemAccessHandleBase::DoRename(
   // the parent directory is not required for renames.
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
-
-  if (!base::FeatureList::IsEnabled(
-          features::kFileSystemAccessMoveLocalFiles)) {
-    if (url().type() != storage::FileSystemType::kFileSystemTypeTemporary) {
-      std::move(callback).Run(file_system_access_error::FromStatus(
-          blink::mojom::FileSystemAccessStatus::kNotSupportedError));
-      return;
-    }
-  }
 
   if (!FileSystemAccessDirectoryHandleImpl::IsSafePathComponent(
           url().type(), new_entry_name)) {
@@ -325,15 +307,6 @@ void FileSystemAccessHandleBase::DidCreateDestinationDirectoryHandle(
     return;
   }
 
-  if (!base::FeatureList::IsEnabled(
-          features::kFileSystemAccessMoveLocalFiles)) {
-    if (dest_url.type() != storage::FileSystemType::kFileSystemTypeTemporary) {
-      std::move(callback).Run(file_system_access_error::FromStatus(
-          blink::mojom::FileSystemAccessStatus::kNotSupportedError));
-      return;
-    }
-  }
-
   // Disallow moves either to or from a sandboxed file system.
   if (url().type() != dest_url.type() &&
       (url().type() == storage::FileSystemType::kFileSystemTypeTemporary ||
@@ -378,10 +351,7 @@ void FileSystemAccessHandleBase::DidCreateDestinationDirectoryHandle(
           blink::mojom::PermissionStatus::GRANTED;
   // Require a user gesture if the write access to the destination is not
   // explicitly granted.
-  if (!has_write_access && !has_transient_user_activation &&
-      base::FeatureList::IsEnabled(
-          features::
-              kFileSystemAccessRenameWithoutParentAccessRequiresUserActivation)) {
+  if (!has_write_access && !has_transient_user_activation) {
     DCHECK_NE(dest_status, blink::mojom::PermissionStatus::DENIED);
     // Files in the OPFS always have write access and should never be gated on a
     // user gesture requirement.
@@ -398,9 +368,9 @@ void FileSystemAccessHandleBase::DidCreateDestinationDirectoryHandle(
       2, base::BindOnce(&FileSystemAccessHandleBase::DidTakeMoveLocks,
                         AsWeakPtr(), dest_url, has_transient_user_activation,
                         has_write_access, std::move(callback)));
-  manager()->TakeLock(url(), manager()->GetExclusiveLockType(),
+  manager()->TakeLock(context(), url(), manager()->GetExclusiveLockType(),
                       barrier_callback);
-  manager()->TakeLock(dest_url, manager()->GetExclusiveLockType(),
+  manager()->TakeLock(context(), dest_url, manager()->GetExclusiveLockType(),
                       barrier_callback);
 }
 
@@ -434,9 +404,7 @@ void FileSystemAccessHandleBase::DidTakeMoveLocks(
   }
   // Only allow overwriting moves if we have write access to the destination or
   // its parent.
-  if (has_write_access &&
-      !base::FeatureList::IsEnabled(
-          features::kFileSystemAccessDoNotOverwriteOnMove)) {
+  if (has_write_access) {
     DoPerformMoveOperation(dest_url, std::move(locks),
                            has_transient_user_activation, std::move(callback));
     return;
@@ -539,16 +507,10 @@ void FileSystemAccessHandleBase::DoRemove(
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
-  if (!base::FeatureList::IsEnabled(features::kFileSystemAccessRemove)) {
-    std::move(callback).Run(file_system_access_error::FromStatus(
-        blink::mojom::FileSystemAccessStatus::kNotSupportedError));
-    return;
-  }
-
   // A locked file cannot be removed. Acquire a lock and release it after the
   // remove operation completes.
   manager()->TakeLock(
-      url, manager()->GetExclusiveLockType(),
+      context(), url, manager()->GetExclusiveLockType(),
       base::BindOnce(&FileSystemAccessHandleBase::DidTakeRemoveLock,
                      AsWeakPtr(), url, recurse, std::move(callback)));
 }

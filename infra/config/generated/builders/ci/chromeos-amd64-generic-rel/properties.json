@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/ci/chromeos-amd64-generic-rel/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "chromeos-amd64-generic-rel",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -42,7 +45,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "chromeos-amd64-generic-rel-gtest",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -74,7 +77,47 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "chromeos-amd64-generic-rel",
-                "project": "chromium-m120"
+                "project": "chromium"
+              }
+            }
+          },
+          {
+            "builder_id": {
+              "bucket": "ci",
+              "builder": "chromeos-amd64-generic-rel-tast",
+              "project": "chromium"
+            },
+            "builder_spec": {
+              "build_gs_bucket": "chromium-chromiumos-archive",
+              "builder_group": "chromium.chromiumos",
+              "execution_mode": "TEST",
+              "legacy_chromium_config": {
+                "apply_configs": [
+                  "mb"
+                ],
+                "build_config": "Release",
+                "config": "chromium",
+                "cros_boards_with_qemu_images": [
+                  "amd64-generic-vm"
+                ],
+                "target_arch": "intel",
+                "target_bits": 64,
+                "target_cros_boards": [
+                  "amd64-generic"
+                ],
+                "target_platform": "chromeos"
+              },
+              "legacy_gclient_config": {
+                "apply_configs": [
+                  "chromeos",
+                  "checkout_lacros_sdk"
+                ],
+                "config": "chromium"
+              },
+              "parent": {
+                "bucket": "ci",
+                "builder": "chromeos-amd64-generic-rel",
+                "project": "chromium"
               }
             }
           }
@@ -84,14 +127,19 @@
         {
           "bucket": "ci",
           "builder": "chromeos-amd64-generic-rel",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "chromeos-amd64-generic-rel-gtest",
-          "project": "chromium-m120"
+          "project": "chromium"
+        },
+        {
+          "bucket": "ci",
+          "builder": "chromeos-amd64-generic-rel-tast",
+          "project": "chromium"
         }
       ],
       "mirroring_builder_group_and_names": [
@@ -101,6 +149,10 @@
         },
         {
           "builder": "chromeos-amd64-generic-rel-gtest",
+          "group": "tryserver.chromium.chromiumos"
+        },
+        {
+          "builder": "chromeos-amd64-generic-rel-gtest-and-tast",
           "group": "tryserver.chromium.chromiumos"
         }
       ]
@@ -122,6 +174,6 @@
   "builder_group": "chromium.chromiumos",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium"
   ]
 }

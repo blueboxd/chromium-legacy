@@ -14,8 +14,11 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.chromium.android_webview.common.SafeModeAction;
+import org.chromium.android_webview.common.SafeModeActionIds;
 import org.chromium.android_webview.common.SafeModeController;
 import org.chromium.android_webview.common.origin_trial.DisableOriginTrialsSafeModeAction;
 import org.chromium.android_webview.test.util.DisableOriginTrialsSafeModeTestUtilsJni;
@@ -25,11 +28,17 @@ import java.util.Set;
 
 /** Tests for WebView DisableOriginTrialsSafeMode. */
 @JNINamespace("android_webview")
-@RunWith(AwJUnit4ClassRunner.class)
-public class DisableOriginTrialsSafeModeTest {
+@RunWith(Parameterized.class)
+@UseParametersRunnerFactory(AwJUnit4ClassRunnerWithParameters.Factory.class)
+public class DisableOriginTrialsSafeModeTest extends AwParameterizedTest {
     public static final String TAG = "DisableOriginTrialsSafeModeTest";
 
-    @Rule public AwActivityTestRule mRule = new AwActivityTestRule();
+    @Rule
+    public AwActivityTestRule mRule;
+
+    public DisableOriginTrialsSafeModeTest(AwSettingsMutation param) {
+        this.mRule = new AwActivityTestRule(param.getMutation());
+    }
 
     @After
     public void tearDown() {
@@ -58,7 +67,7 @@ public class DisableOriginTrialsSafeModeTest {
         SafeModeController safeModeController = SafeModeController.getInstance();
         safeModeController.registerActions(
                 new SafeModeAction[] {new DisableOriginTrialsSafeModeAction()});
-        safeModeController.executeActions(Set.of(DisableOriginTrialsSafeModeAction.ID));
+        safeModeController.executeActions(Set.of(SafeModeActionIds.DISABLE_ORIGIN_TRIALS));
 
         // Then
         assertTrue(

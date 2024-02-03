@@ -71,14 +71,17 @@ using ::testing::_;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Field;
 using ::testing::Ge;
 using ::testing::IsEmpty;
 using ::testing::IsTrue;
 using ::testing::Le;
 using ::testing::Optional;
+using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
+using ::testing::VariantWith;
 
 using AttributionFilterData = ::attribution_reporting::FilterData;
 
@@ -232,7 +235,13 @@ TEST_F(AttributionStorageTest, UniqueReportWindowsStored_ValuesIdentical) {
       storage()->GetActiveSources(),
       ElementsAre(AllOf(
           Property(&StoredSource::expiry_time, source_time + base::Days(30)),
-          EventReportWindowsIs(event_report_windows),
+          Property(
+              &StoredSource::trigger_specs,
+              Property(
+                  &attribution_reporting::TriggerSpecs::SingleSharedSpec,
+                  Pointee(Property(
+                      &attribution_reporting::TriggerSpec::event_report_windows,
+                      event_report_windows)))),
           Property(&StoredSource::aggregatable_report_window_time,
                    source_time + base::Days(5)))));
 }
@@ -638,7 +647,7 @@ TEST_F(AttributionStorageTest, GetAttributionReportsMultipleTimes_SameResult) {
 TEST_F(AttributionStorageTest, ExceedsChannelCapacity) {
   delegate()->set_exceeds_channel_capacity_limit(true);
 
-  EXPECT_EQ(storage()->StoreSource(SourceBuilder().Build()).status,
+  EXPECT_EQ(storage()->StoreSource(SourceBuilder().Build()).status(),
             StorableSource::Result::kExceedsMaxChannelCapacity);
 }
 
@@ -653,7 +662,7 @@ TEST_F(AttributionStorageTest, MaxImpressionsPerOrigin_LimitsStorage) {
                                   .SetPriority(1)
                                   .SetMaxEventLevelReports(1)
                                   .Build())
-                .status,
+                .status(),
             StorableSource::Result::kSuccess);
 
   ASSERT_EQ(storage()
@@ -662,7 +671,7 @@ TEST_F(AttributionStorageTest, MaxImpressionsPerOrigin_LimitsStorage) {
                                   .SetPriority(2)
                                   .SetMaxEventLevelReports(1)
                                   .Build())
-                .status,
+                .status(),
             StorableSource::Result::kSuccess);
 
   // Force the lower-priority source to be deactivated.
@@ -678,7 +687,7 @@ TEST_F(AttributionStorageTest, MaxImpressionsPerOrigin_LimitsStorage) {
                                   .SetSourceEventId(6)
                                   .SetMaxEventLevelReports(1)
                                   .Build())
-                .status,
+                .status(),
             StorableSource::Result::kSuccess);
 
   ASSERT_EQ(storage()
@@ -686,7 +695,7 @@ TEST_F(AttributionStorageTest, MaxImpressionsPerOrigin_LimitsStorage) {
                                   .SetSourceEventId(7)
                                   .SetMaxEventLevelReports(1)
                                   .Build())
-                .status,
+                .status(),
             StorableSource::Result::kInsufficientSourceCapacity);
 
   int64_t file_size = histograms.GetTotalSum(
@@ -732,7 +741,7 @@ TEST_F(AttributionStorageTest, MaxImpressionsPerOrigin_PerOriginNotSite) {
                                       "https://foo.a.example"))
                                   .SetSourceEventId(9)
                                   .Build())
-                .status,
+                .status(),
             StorableSource::Result::kInsufficientSourceCapacity);
 
   // This impression should be stored, because its origin hasn't hit the limit
@@ -1209,7 +1218,7 @@ TEST_F(AttributionStorageTest,
   delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{});
   StoreSourceResult result = storage()->StoreSource(
       TestAggregatableSourceProvider().GetBuilder().Build());
-  EXPECT_EQ(result.status, StorableSource::Result::kSuccessNoised);
+  EXPECT_EQ(result.status(), StorableSource::Result::kSuccessNoised);
   delegate()->set_randomized_response(absl::nullopt);
 
   EXPECT_THAT(
@@ -1240,7 +1249,7 @@ TEST_F(AttributionStorageTest,
       {.trigger_data = 7, .window_index = 0}});
   StoreSourceResult result =
       storage()->StoreSource(SourceBuilder().SetSourceEventId(5).Build());
-  EXPECT_EQ(result.status, StorableSource::Result::kSuccessNoised);
+  EXPECT_EQ(result.status(), StorableSource::Result::kSuccessNoised);
   delegate()->set_randomized_response(absl::nullopt);
 
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(2u));
@@ -1259,7 +1268,7 @@ TEST_F(AttributionStorageTest,
   delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{
       {.trigger_data = 7, .window_index = 0}});
   StoreSourceResult result = storage()->StoreSource(SourceBuilder().Build());
-  EXPECT_EQ(result.status, StorableSource::Result::kSuccessNoised);
+  EXPECT_EQ(result.status(), StorableSource::Result::kSuccessNoised);
   delegate()->set_randomized_response(absl::nullopt);
 
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(2u));
@@ -1391,7 +1400,7 @@ TEST_F(AttributionStorageTest,
                     {net::SchemefulSite::Deserialize(destination_origin)})
                 .SetExpiry(base::Days(30))
                 .Build())
-        .status;
+        .status();
   };
 
   store_source("https://s1.test", "https://a.r.test", "https://d1.test");
@@ -1442,7 +1451,7 @@ TEST_F(AttributionStorageTest, DestinationLimit_ApplyLimit) {
                     {net::SchemefulSite::Deserialize(destination_origin)})
                 .SetExpiry(expiry)
                 .Build())
-        .status;
+        .status();
   };
 
   // Allowed by pending, allowed by unexpired.
@@ -1510,9 +1519,13 @@ TEST_F(AttributionStorageTest,
               {net::SchemefulSite::Deserialize("https://b.example")})
           .SetSourceType(SourceType::kEvent)
           .Build());
-  EXPECT_EQ(result.status,
-            StorableSource::Result::kInsufficientUniqueDestinationCapacity);
-  EXPECT_EQ(result.max_destinations_per_source_site_reporting_site, 1);
+
+  EXPECT_THAT(
+      result.result(),
+      VariantWith<StoreSourceResult::InsufficientUniqueDestinationCapacity>(
+          Field(
+              &StoreSourceResult::InsufficientUniqueDestinationCapacity::limit,
+              1)));
 
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
 }
@@ -1592,7 +1605,7 @@ TEST_F(AttributionStorageTest,
 
   // Should fail due to limit
   StoreSourceResult result = storage()->StoreSource(SourceBuilder().Build());
-  EXPECT_THAT(result.status,
+  EXPECT_THAT(result.status(),
               StorableSource::Result::kDestinationReportingLimitReached);
 }
 
@@ -1613,7 +1626,7 @@ TEST_F(AttributionStorageTest,
 
   // Should fail due to limit
   StoreSourceResult result = storage()->StoreSource(SourceBuilder().Build());
-  EXPECT_THAT(result.status,
+  EXPECT_THAT(result.status(),
               StorableSource::Result::kDestinationGlobalLimitReached);
 }
 
@@ -1653,7 +1666,7 @@ TEST_F(AttributionStorageTest,
       SourceBuilder()
           .SetReportingOrigin(*SuitableOrigin::Deserialize("https://r1.test"))
           .Build());
-  EXPECT_THAT(result.status,
+  EXPECT_THAT(result.status(),
               StorableSource::Result::kDestinationBothLimitsReached);
 }
 
@@ -1740,7 +1753,7 @@ TEST_F(AttributionStorageTest, FalselyAttributeImpression_ReportStored) {
   delegate()->set_randomized_response(std::vector<FakeEventLevelReport>{
       {.trigger_data = 1, .window_index = 0}});
   StoreSourceResult result = storage()->StoreSource(builder.Build());
-  EXPECT_EQ(result.status, StorableSource::Result::kSuccessNoised);
+  EXPECT_EQ(result.status(), StorableSource::Result::kSuccessNoised);
   delegate()->set_randomized_response(absl::nullopt);
 
   AttributionReport expected_event_level_report =
@@ -1828,15 +1841,27 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsMinFakeReportTime) {
 
   const struct {
     RandomizedResponse randomized_response;
-    absl::optional<base::Time> expected;
+    ::testing::Matcher<StoreSourceResult::Result> matches;
   } kTestCases[] = {
-      {absl::nullopt, absl::nullopt},
-      {std::vector<FakeEventLevelReport>(), absl::nullopt},
-      {std::vector<FakeEventLevelReport>{
-           {.trigger_data = 0, .window_index = 0},
-           {.trigger_data = 0, .window_index = 1},
-           {.trigger_data = 0, .window_index = 2}},
-       now + base::Days(1)},
+      {
+          absl::nullopt,
+          VariantWith<StoreSourceResult::Success>(_),
+      },
+      {
+          std::vector<FakeEventLevelReport>(),
+          VariantWith<StoreSourceResult::SuccessNoised>(
+              Field(&StoreSourceResult::SuccessNoised::min_fake_report_time,
+                    absl::nullopt)),
+      },
+      {
+          std::vector<FakeEventLevelReport>{
+              {.trigger_data = 0, .window_index = 0},
+              {.trigger_data = 0, .window_index = 1},
+              {.trigger_data = 0, .window_index = 2}},
+          VariantWith<StoreSourceResult::SuccessNoised>(
+              Field(&StoreSourceResult::SuccessNoised::min_fake_report_time,
+                    now + base::Days(1))),
+      },
   };
 
   for (const auto& test_case : kTestCases) {
@@ -1849,10 +1874,8 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsMinFakeReportTime) {
                     base::Days(0),
                     {base::Days(1), base::Days(2), base::Days(3)}))
             .Build());
-    EXPECT_EQ(result.status, test_case.randomized_response
-                                 ? StorableSource::Result::kSuccessNoised
-                                 : StorableSource::Result::kSuccess);
-    EXPECT_EQ(result.min_fake_report_time, test_case.expected);
+
+    EXPECT_THAT(result.result(), test_case.matches);
   }
 }
 
@@ -1913,6 +1936,63 @@ TEST_F(AttributionStorageTest, TriggerPriority) {
       ElementsAre(
           AllOf(ReportSourceIs(SourceEventIdIs(5u)), TriggerDebugKeyIs(21u)),
           AllOf(ReportSourceIs(SourceEventIdIs(7u)), TriggerDebugKeyIs(22u))));
+}
+
+// Regression test for erroneous use of report_time instead of
+// initial_report_time in event-level prioritization (http://crbug.com/1500598).
+TEST_F(AttributionStorageTest, TriggerPriority_UsesOriginalReportTime) {
+  delegate()->use_realistic_report_times();
+
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetMaxEventLevelReports(1)
+          .SetEventReportWindows(
+              *attribution_reporting::EventReportWindows::Create(
+                  /*start_time=*/base::Seconds(0),
+                  /*end_times=*/
+                  {
+                      base::Hours(1),
+                      base::Hours(1) + base::Minutes(5),
+                  }))
+          .Build());
+
+  ASSERT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
+            MaybeCreateAndStoreEventLevelReport(
+                TriggerBuilder().SetPriority(0).Build()));
+
+  // Force the second trigger to fall into the second report window.
+  task_environment_.FastForwardBy(base::Hours(1));
+
+  const base::Time expected_first_report_time =
+      base::Time::Now() + base::Minutes(5);
+
+  // Simulate the first report being sent but experiencing a transient failure,
+  // resulting in its report time being adjusted so that it happens to be equal
+  // to that of the second trigger.
+  {
+    std::vector<AttributionReport> reports =
+        storage()->GetAttributionReports(base::Time::Max());
+    ASSERT_EQ(reports.size(), 1u);
+
+    ASSERT_TRUE(storage()->UpdateReportForSendFailure(
+        reports.front().id(), expected_first_report_time));
+
+    reports = storage()->GetAttributionReports(base::Time::Max());
+    ASSERT_EQ(reports.size(), 1u);
+    ASSERT_EQ(reports.front().report_time(), expected_first_report_time);
+  }
+
+  // This one should not replace the previous one despite having a higher
+  // priority because its original report time does not match that of the
+  // previous one. Prior to the fix, this would have returned
+  // `AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority`.
+  ASSERT_THAT(
+      storage()->MaybeCreateAndStoreReport(
+          TriggerBuilder().SetPriority(1).Build()),
+      AllOf(CreateReportEventLevelStatusIs(
+                AttributionTrigger::EventLevelResult::kExcessiveReports),
+            DroppedEventLevelReportIs(
+                Optional(ReportTimeIs(expected_first_report_time)))));
 }
 
 TEST_F(AttributionStorageTest, TriggerPriority_Simple) {
@@ -2908,7 +2988,7 @@ TEST_F(AttributionStorageTest, MaxReportingOriginsPerSource) {
           .SetDebugKey(1)
           .Build(),
       /*debug_cookie_set=*/true);
-  ASSERT_EQ(result.status, StorableSource::Result::kSuccess);
+  ASSERT_EQ(result.status(), StorableSource::Result::kSuccess);
 
   result = storage()->StoreSource(
       SourceBuilder()
@@ -2916,7 +2996,7 @@ TEST_F(AttributionStorageTest, MaxReportingOriginsPerSource) {
           .SetDebugKey(2)
           .Build(),
       /*debug_cookie_set=*/true);
-  ASSERT_EQ(result.status, StorableSource::Result::kSuccess);
+  ASSERT_EQ(result.status(), StorableSource::Result::kSuccess);
 
   result = storage()->StoreSource(
       SourceBuilder()
@@ -2924,7 +3004,8 @@ TEST_F(AttributionStorageTest, MaxReportingOriginsPerSource) {
           .SetDebugKey(3)
           .Build(),
       /*debug_cookie_set=*/true);
-  ASSERT_EQ(result.status, StorableSource::Result::kExcessiveReportingOrigins);
+  ASSERT_EQ(result.status(),
+            StorableSource::Result::kExcessiveReportingOrigins);
 
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(SourceDebugKeyIs(1), SourceDebugKeyIs(2)));
@@ -3843,7 +3924,7 @@ TEST_F(AttributionStorageTest, MaxSourceReportingOriginsPerSite) {
                 .SetReportingOrigin(*SuitableOrigin::Deserialize(reporting))
                 .SetExpiry(base::Days(2))
                 .Build())
-        .status;
+        .status();
   };
   store_source("https://a.test", "https://reporter.test");
   EXPECT_THAT(storage()->GetActiveSources(), SizeIs(1));
@@ -3895,8 +3976,7 @@ TEST_F(AttributionStorageTest, TriggerDataMatching) {
         SourceBuilder()
             .SetSourceType(
                 SourceType::kNavigation)  // valid trigger data [0, 7]
-            .SetTriggerConfig(attribution_reporting::TriggerConfig(
-                test_case.trigger_data_matching))
+            .SetTriggerDataMatching(test_case.trigger_data_matching)
             .Build());
 
     EXPECT_EQ(
@@ -3918,6 +3998,27 @@ TEST_F(AttributionStorageTest, TriggerDataMatching) {
     storage()->ClearData(base::Time::Min(), base::Time::Max(),
                          base::NullCallback());
   }
+}
+
+TEST_F(AttributionStorageTest, EventLevelDedupBeforeWindowCheck) {
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetEventReportWindows(
+              *attribution_reporting::EventReportWindows::Create(
+                  base::Milliseconds(0), {base::Hours(1)}))
+          .Build());
+
+  ASSERT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
+            MaybeCreateAndStoreEventLevelReport(
+                TriggerBuilder().SetDedupKey(11).Build()));
+
+  task_environment_.FastForwardBy(base::Hours(1) + base::Microseconds(1));
+
+  // Prior to addressing crbug.com/1499913 this returned
+  // `AttributionTrigger::EventLevelResult::kReportWindowPassed`
+  ASSERT_EQ(AttributionTrigger::EventLevelResult::kDeduplicated,
+            MaybeCreateAndStoreEventLevelReport(
+                TriggerBuilder().SetDedupKey(11).Build()));
 }
 
 }  // namespace content

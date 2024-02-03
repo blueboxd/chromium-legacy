@@ -29,6 +29,7 @@
 #include "chrome/browser/ash/assistant/assistant_util.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/desk_profiles_ash.h"
 #include "chrome/browser/ash/crosapi/fullscreen_controller_ash.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_service_factory.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_restore.h"
+#include "chrome/browser/ui/ash/api/tasks/chrome_tasks_delegate.h"
 #include "chrome/browser/ui/ash/back_gesture_contextual_nudge_delegate.h"
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accelerator_prefs_delegate.h"
@@ -188,6 +190,11 @@ ChromeShellDelegate::CreateSavedDeskDelegate() const {
 std::unique_ptr<ash::SystemSoundsDelegate>
 ChromeShellDelegate::CreateSystemSoundsDelegate() const {
   return std::make_unique<SystemSoundsDelegateImpl>();
+}
+
+std::unique_ptr<ash::api::TasksDelegate>
+ChromeShellDelegate::CreateTasksDelegate() const {
+  return std::make_unique<ash::api::ChromeTasksDelegate>();
 }
 
 std::unique_ptr<ash::UserEducationDelegate>
@@ -388,6 +395,12 @@ void ChromeShellDelegate::OpenFeedbackDialog(
                              description_template);
 }
 
+void ChromeShellDelegate::OpenProfileManager() {
+  if (crosapi::BrowserManager::Get()->IsRunning()) {
+    crosapi::BrowserManager::Get()->OpenProfileManager();
+  }
+}
+
 // static
 void ChromeShellDelegate::SetDisableLoggingRedirectForTesting(bool value) {
   disable_logging_redirect_for_testing = value;
@@ -449,4 +462,8 @@ void ChromeShellDelegate::ShouldExitFullscreenBeforeLock(
       ->crosapi_ash()
       ->fullscreen_controller_ash()
       ->ShouldExitFullscreenBeforeLock(std::move(callback));
+}
+
+ash::DeskProfilesDelegate* ChromeShellDelegate::GetDeskProfilesDelegate() {
+  return crosapi::CrosapiManager::Get()->crosapi_ash()->desk_profiles_ash();
 }

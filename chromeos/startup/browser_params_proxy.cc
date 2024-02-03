@@ -111,20 +111,6 @@ const crosapi::mojom::AccountPtr& BrowserParamsProxy::DeviceAccount() const {
   return BrowserInitParams::Get()->device_account;
 }
 
-bool BrowserParamsProxy::WebAppsEnabled() const {
-  if (IsLaunchedWithPostLoginParams()) {
-    return BrowserPostLoginParams::Get()->web_apps_enabled;
-  }
-  return BrowserInitParams::Get()->web_apps_enabled;
-}
-
-bool BrowserParamsProxy::StandaloneBrowserIsPrimary() const {
-  if (IsLaunchedWithPostLoginParams()) {
-    return BrowserPostLoginParams::Get()->standalone_browser_is_primary;
-  }
-  return BrowserInitParams::Get()->standalone_browser_is_primary;
-}
-
 const crosapi::mojom::NativeThemeInfoPtr& BrowserParamsProxy::NativeThemeInfo()
     const {
   return BrowserInitParams::Get()->native_theme_info;
@@ -169,13 +155,6 @@ const crosapi::mojom::EntropySourcePtr& BrowserParamsProxy::EntropySource()
 
 uint64_t BrowserParamsProxy::UkmClientId() const {
   return BrowserInitParams::Get()->ukm_client_id;
-}
-
-bool BrowserParamsProxy::StandaloneBrowserIsOnlyBrowser() const {
-  if (IsLaunchedWithPostLoginParams()) {
-    return BrowserPostLoginParams::Get()->standalone_browser_is_only_browser;
-  }
-  return BrowserInitParams::Get()->standalone_browser_is_only_browser;
 }
 
 bool BrowserParamsProxy::PublishChromeApps() const {
@@ -279,10 +258,6 @@ BrowserParamsProxy::LacrosSelection() const {
   return BrowserInitParams::Get()->lacros_selection;
 }
 
-bool BrowserParamsProxy::IsWindowLayoutMenuEnabled() const {
-  return BrowserInitParams::Get()->enable_window_layout_menu;
-}
-
 bool BrowserParamsProxy::IsCloudGamingDevice() const {
   return BrowserInitParams::Get()->is_cloud_gaming_device;
 }
@@ -354,6 +329,10 @@ bool BrowserParamsProxy::IsDeskProfilesEnabled() const {
 
 bool BrowserParamsProxy::IsCrosWebAppShortcutUiUpdateEnabled() const {
   return BrowserInitParams::Get()->is_cros_web_app_shortcut_ui_update_enabled;
+}
+
+bool BrowserParamsProxy::IsCrosShortstandEnabled() const {
+  return BrowserInitParams::Get()->is_cros_shortstand_enabled;
 }
 
 }  // namespace chromeos

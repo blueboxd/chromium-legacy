@@ -50,7 +50,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/drivefs/drivefs_bootstrap.h"
 #include "chromeos/ash/components/drivefs/drivefs_pinning_manager.h"
-#include "chromeos/ash/components/drivefs/sync_status_tracker.h"
 #include "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
@@ -951,12 +950,9 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
       logger_.Log(logging::LOGGING_INFO, "Drive mount point is removed");
     }
   }
-  GetDriveFsHost()->Unmount();
 
-  if (pinning_manager_) {
-    pinning_manager_->Stop();
-    pinning_manager_.reset();
-  }
+  GetDriveFsHost()->Unmount();
+  pinning_manager_.reset();
 }
 
 void DriveIntegrationService::MaybeRemountFileSystem(
@@ -1042,15 +1038,13 @@ void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
 }
 
 void DriveIntegrationService::CreateOrDeleteBulkPinningManager() {
-  VLOG(1) << "CreateOrDeleteBulkPinningManager";
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!util::IsDriveFsBulkPinningAvailable(profile_)) {
     if (pinning_manager_) {
-      LOG(WARNING) << "Delete bulk-pinning manager because of policy change";
-      pinning_manager_->Stop();
-      pinning_manager_.reset();
+      LOG(WARNING) << "Deleting bulk-pinning manager because of policy change";
       GetPrefs()->SetBoolean(kDriveFsBulkPinningEnabled, false);
+      pinning_manager_.reset();
     }
 
     return;
@@ -1062,7 +1056,6 @@ void DriveIntegrationService::CreateOrDeleteBulkPinningManager() {
   }
 
   // Instantiate a PinningManager.
-  VLOG(1) << "Create bulk-pinning manager";
   DCHECK(!pinning_manager_);
   pinning_manager_ = std::make_unique<PinningManager>(
       profile_->GetPath(), GetMountPointPath(), GetDriveFsInterface(),
@@ -1220,12 +1213,11 @@ void DriveIntegrationService::PinFiles(
 }
 
 void DriveIntegrationService::StartOrStopBulkPinning() {
-  VLOG(1) << "StartOrStopBulkPinning";
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!pinning_manager_) {
-    LOG(ERROR) << "Cannot toggle the state of the bulk-pinning manager: "
-                  "There is no bulk-pinning manager";
+    VLOG(1) << "Cannot toggle the state of the bulk-pinning manager: "
+               "There is no bulk-pinning manager";
     return;
   }
 
@@ -1567,11 +1559,6 @@ void DriveIntegrationService::GetSyncingPaths(
   if (DriveFs* const drivefs = GetDriveFsInterface()) {
     drivefs->GetSyncingPaths(std::move(callback));
   }
-}
-
-drivefs::SyncState DriveIntegrationService::GetSyncStateForPath(
-    const base::FilePath& drive_path) {
-  return GetDriveFsHost()->GetSyncStateForPath(drive_path);
 }
 
 void DriveIntegrationService::PollHostedFilePinStates() {

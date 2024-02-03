@@ -13,6 +13,7 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
+#include "chrome/browser/ash/input_method/editor_helpers.h"
 #include "chrome/browser/ash/input_method/editor_metrics_enums.h"
 #include "chrome/browser/ash/input_method/editor_metrics_recorder.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -21,29 +22,6 @@
 #include "ui/base/ime/ash/ime_bridge.h"
 
 namespace ash::input_method {
-namespace {
-
-constexpr auto striped_symbols =
-    base::MakeFixedFlatSet<char>({' ', '\t', '\n', '.', ','});
-
-size_t NonWhitespaceAndSymbolsLength(const std::u16string& text,
-                                     gfx::Range selection_range) {
-  size_t start = selection_range.start();
-  while (start < selection_range.end() &&
-         striped_symbols.contains(text[start])) {
-    start++;
-  }
-
-  size_t end = selection_range.end();
-  while (end > selection_range.start() && end < text.length() &&
-         striped_symbols.contains(text[end])) {
-    end--;
-  }
-
-  return std::max(static_cast<int>(end) - static_cast<int>(start), 0);
-}
-
-}  // namespace
 
 EditorMediator::EditorMediator(Profile* profile, std::string_view country_code)
     : profile_(profile),
@@ -142,6 +120,9 @@ void EditorMediator::OnActivateIme(std::string_view engine_id) {
 
 void EditorMediator::OnTabletModeStarting() {
   editor_switch_->OnTabletModeUpdated(/*tablet_mode_enabled=*/true);
+  if (mako_bubble_coordinator_.IsShowingUI()) {
+    mako_bubble_coordinator_.CloseUI();
+  }
 }
 
 void EditorMediator::OnTabletModeEnded() {
@@ -203,9 +184,6 @@ void EditorMediator::HandleTrigger(
       break;
     case EditorMode::kConsentNeeded:
       mako_bubble_coordinator_.LoadConsentUI(profile_);
-      // TODO: b:301518440: remove the following line once ShowUI method for the consent
-      // screen is implemented.
-      mako_bubble_coordinator_.ShowUI();
       break;
     case EditorMode::kBlocked:
       mako_bubble_coordinator_.CloseUI();

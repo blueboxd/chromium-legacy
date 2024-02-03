@@ -18,9 +18,12 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/hub/HubLayoutAnimationType.java",
     "android/java/src/org/chromium/chrome/browser/hub/HubLayoutAnimator.java",
     "android/java/src/org/chromium/chrome/browser/hub/HubLayoutAnimatorProvider.java",
+    "android/java/src/org/chromium/chrome/browser/hub/HubLayoutConstants.java",
+    "android/java/src/org/chromium/chrome/browser/hub/HubLayoutController.java",
     "android/java/src/org/chromium/chrome/browser/hub/HubLayoutDependencyHolder.java",
     "android/java/src/org/chromium/chrome/browser/hub/HubLayoutScrimController.java",
     "android/java/src/org/chromium/chrome/browser/hub/HubManager.java",
+    "android/java/src/org/chromium/chrome/browser/hub/LoadHint.java",
     "android/java/src/org/chromium/chrome/browser/hub/Pane.java",
     "android/java/src/org/chromium/chrome/browser/hub/PaneId.java",
     "android/java/src/org/chromium/chrome/browser/hub/PaneListBuilder.java",
@@ -30,6 +33,7 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/hub/RunOnNextLayout.java",
     "android/java/src/org/chromium/chrome/browser/hub/RunOnNextLayoutDelegate.java",
     "android/java/src/org/chromium/chrome/browser/hub/ScrimController.java",
+    "android/java/src/org/chromium/chrome/browser/hub/ShrinkExpandAnimationData.java",
     "android/java/src/org/chromium/chrome/browser/hub/ShrinkExpandAnimator.java",
     "android/java/src/org/chromium/chrome/browser/hub/ShrinkExpandImageView.java",
   ]
@@ -38,6 +42,8 @@ android_library("java") {
     "//base:base_java",
     "//build/android:build_java",
     "//chrome/browser/flags:java",
+    "//chrome/browser/tab:java",
+    "//chrome/browser/ui/android/layouts:java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/widget/android:java",
     "//third_party/android_deps:guava_android_java",
@@ -50,13 +56,17 @@ android_library_factory("factory_java") {
   deps = [
     ":java",
     "//base:base_java",
+    "//chrome/browser/back_press/android:java",
+    "//chrome/browser/tab:java",
     "//components/browser_ui/widget/android:java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 
   sources = [
     "internal/android/java/src/org/chromium/chrome/browser/hub/FadeHubLayoutAnimationFactory.java",
     "internal/android/java/src/org/chromium/chrome/browser/hub/HubLayoutAnimationRunnerFactory.java",
     "internal/android/java/src/org/chromium/chrome/browser/hub/HubManagerFactory.java",
+    "internal/android/java/src/org/chromium/chrome/browser/hub/ShrinkExpandHubLayoutAnimationFactory.java",
     "internal/android/java/src/org/chromium/chrome/browser/hub/TranslateHubLayoutAnimationFactory.java",
   ]
 }

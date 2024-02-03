@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_ATTRIBUTION_REPORTING_SUITABLE_ORIGIN_H_
 #define COMPONENTS_ATTRIBUTION_REPORTING_SUITABLE_ORIGIN_H_
 
+#include <compare>
 #include <string>
 #include <utility>
 
 #include "base/check.h"
 #include "base/component_export.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/default_construct_tag.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
@@ -91,7 +92,8 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) SuitableOrigin {
   }
 
   // Allows this type to be used as a key in a set or map.
-  bool operator<(const SuitableOrigin&) const;
+  friend std::weak_ordering operator<=>(const SuitableOrigin&,
+                                        const SuitableOrigin&) = default;
 
   std::string Serialize() const;
 

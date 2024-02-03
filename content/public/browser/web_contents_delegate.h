@@ -30,6 +30,7 @@
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
@@ -453,18 +454,26 @@ class CONTENT_EXPORT WebContentsDelegate {
                                base::OnceCallback<void()> on_confirm,
                                base::OnceCallback<void()> on_cancel);
 
-  // Returns whether the RFH can use Additional Windowing Controls APIs.
+  // Returns whether the RFH can use Additional Windowing Controls (AWC) APIs.
   // https://github.com/ivansandrk/additional-windowing-controls/blob/main/awc-explainer.md
   virtual bool CanUseWindowingControls(RenderFrameHost* requesting_frame);
 
-  // Sends the resizable boolean set via `window.setResizable(bool)` API to
-  // `BrowserView`. Passing std::nullopt will reset the resizable state to the
-  // default.
-  virtual void SetCanResizeFromWebAPI(absl::optional<bool> can_resize) {}
+  // Notifies `BrowserView` about the resizable boolean having been set vith
+  // `window.setResizable(bool)` API.
+  virtual void OnCanResizeFromWebAPIChanged() {}
+  // Returns the overall resizability of the `BrowserView` when considering
+  // both the value set by the AWC API and browser's "native" resizability.
   virtual bool GetCanResize();
+
+  // Additional Windowing Controls (AWC) APIs to change the state of the window
+  // without the browser's min/max/restore buttons.
   virtual void MinimizeFromWebAPI() {}
   virtual void MaximizeFromWebAPI() {}
   virtual void RestoreFromWebAPI() {}
+
+  // This returns the current state of the window, mappable to display-state
+  // values: normal/minimized/maximized/fullscreen.
+  virtual ui::WindowShowState GetWindowShowState() const;
 
   // Returns whether entering fullscreen with |EnterFullscreenModeForTab()| is
   // allowed.
@@ -793,6 +802,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   // preview mode.
   virtual void CancelPreviewByMojoBinderPolicy(
       const std::string& interface_name) {}
+
+  // Notify the previewed page is activated.
+  virtual void DidActivatePreviewedPage() {}
 
 #if !BUILDFLAG(IS_ANDROID)
   // Whether the WebContents should use per PWA instanced

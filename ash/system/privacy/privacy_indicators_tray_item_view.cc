@@ -23,6 +23,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
@@ -512,7 +513,7 @@ void PrivacyIndicatorsTrayItemView::OnSessionStateChanged(
 void PrivacyIndicatorsTrayItemView::UpdateIcons() {
   const ui::ColorId icon_color_id =
       chromeos::features::IsJellyrollEnabled()
-          ? cros_tokens::kCrosSysSystemOnPrimaryContainer
+          ? cros_tokens::kCrosSysInverseOnSurface
           : static_cast<ui::ColorId>(kColorAshButtonIconColorPrimary);
 
   camera_icon_->SetImage(ui::ImageModel::FromVectorIcon(
@@ -623,5 +624,8 @@ void PrivacyIndicatorsTrayItemView::RecordRepeatedShows() {
                               count_repeated_shows_);
   count_repeated_shows_ = 0;
 }
+
+BEGIN_METADATA(PrivacyIndicatorsTrayItemView)
+END_METADATA
 
 }  // namespace ash

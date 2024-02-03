@@ -52,6 +52,7 @@ class Profile;
 
 namespace user_manager {
 class User;
+class KnownUser;
 }  // namespace user_manager
 
 namespace ash {
@@ -69,13 +70,14 @@ namespace test {
 class UserSessionManagerTestApi;
 }  // namespace test
 
-class UserSessionManagerDelegate
-    : public base::SupportsWeakPtr<UserSessionManagerDelegate> {
+class UserSessionManagerDelegate {
  public:
   // Called after profile is loaded and prepared for the session.
   // `browser_launched` will be true is browser has been launched, otherwise
   // it will return false and client is responsible on launching browser.
   virtual void OnProfilePrepared(Profile* profile, bool browser_launched) = 0;
+
+  virtual base::WeakPtr<UserSessionManagerDelegate> AsWeakPtr() = 0;
 
  protected:
   virtual ~UserSessionManagerDelegate();
@@ -382,6 +384,7 @@ class UserSessionManager
   // UserSessionManagerDelegate overrides:
   // Used when restoring user sessions after crash.
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
+  base::WeakPtr<UserSessionManagerDelegate> AsWeakPtr() override;
 
   // user_manager::UserManager::Observer overrides:
   void OnUsersSignInConstraintsChanged() override;
@@ -420,6 +423,12 @@ class UserSessionManager
   // ProfileManager::DoFinalInit() gets called is done here.
   void InitProfilePreferences(Profile* profile,
                               const UserContext& user_context);
+
+  // Initializes `user_context` and `known_user` with a device id. Does not
+  // overwrite the device id in `known_user` if it already exists.
+  void InitializeDeviceId(bool is_ephemeral_user,
+                          UserContext& user_context,
+                          user_manager::KnownUser& known_user);
 
   // Callback for Profile::CREATE_STATUS_INITIALIZED profile state.
   // Profile is created, extensions and promo resources are initialized.

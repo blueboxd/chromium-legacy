@@ -4,6 +4,7 @@
 
 #include "ash/system/notification_center/notification_center_tray.h"
 
+#include <memory>
 #include <string>
 
 #include "ash/constants/ash_features.h"
@@ -22,6 +23,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 
@@ -29,14 +31,17 @@ NotificationCenterTray::NotificationCenterTray(Shelf* shelf)
     : TrayBackgroundView(shelf,
                          TrayBackgroundViewCatalogName::kNotificationCenter,
                          RoundedCornerBehavior::kStartRounded),
+      notification_grouping_controller_(
+          std::make_unique<NotificationGroupingController>(this)),
+      popup_collection_(std::make_unique<AshMessagePopupCollection>(
+          display::Screen::GetScreen(),
+          shelf)),
       notification_metrics_recorder_(
           std::make_unique<NotificationMetricsRecorder>(this)),
       notification_icons_controller_(
           std::make_unique<NotificationIconsController>(
               shelf,
-              /*model=*/nullptr,
               /*notification_center_tray=*/this)) {
-  DCHECK(features::IsQsRevampEnabled());
   SetCallback(base::BindRepeating(&NotificationCenterTray::OnTrayButtonPressed,
                                   base::Unretained(this)));
   SetID(VIEW_ID_SA_NOTIFICATION_TRAY);
@@ -112,7 +117,9 @@ void NotificationCenterTray::Initialize() {
   // `NotificationCenterTray` from the controller. We should make sure views are
   // only added by host views.
   notification_icons_controller_->AddNotificationTrayItems(tray_container());
-  if (features::IsPrivacyIndicatorsEnabled()) {
+
+  // Privacy indicator is only enabled when Video Conference is disabled.
+  if (!features::IsVideoConferenceEnabled()) {
     privacy_indicators_view_ = tray_container()->AddChildView(
         std::make_unique<PrivacyIndicatorsTrayItemView>(shelf()));
   }
@@ -212,7 +219,7 @@ views::Widget* NotificationCenterTray::GetBubbleWidget() const {
 void NotificationCenterTray::UpdateLayout() {
   TrayBackgroundView::UpdateLayout();
 
-  if (features::IsPrivacyIndicatorsEnabled()) {
+  if (privacy_indicators_view_) {
     privacy_indicators_view_->UpdateAlignmentForShelf(shelf());
   }
 }

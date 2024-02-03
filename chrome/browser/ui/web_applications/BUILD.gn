@@ -37,7 +37,6 @@ source_set("browser_tests") {
 
   sources = [
     "app_browser_controller_browsertest.cc",
-    "commands/launch_web_app_command_browsertest.cc",
     "create_shortcut_browsertest.cc",
     "pwa_mixed_content_browsertest.cc",
     "status_bar_browsertest.cc",
@@ -82,6 +81,7 @@ source_set("browser_tests") {
     "//chrome/browser/apps/app_service:app_registry_cache_waiter",
     "//chrome/browser/apps/app_service:test_support",
     "//chrome/browser/apps/link_capturing",
+    "//chrome/browser/apps/link_capturing:test_support",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/devtools",
     "//chrome/browser/web_applications:web_applications_test_support",
@@ -116,8 +116,9 @@ source_set("browser_tests") {
   }
 }
 
-# On Lacros, these browser tests require Ash to be running, as they rely on
-# web apps being registered with the App Service. Runs in the "lacros_chrome_browsertests_run_in_series" target.
+# On Lacros, these browser tests require Ash to be running, as they rely on web
+# apps being registered with the App Service. So runs in the
+# "lacros_chrome_browsertests" target on Lacros.
 source_set("app_service_browser_tests") {
   testonly = true
 
@@ -153,6 +154,7 @@ source_set("app_service_browser_tests") {
     "//chrome/browser/apps/app_service",
     "//chrome/browser/apps/app_service:app_registry_cache_waiter",
     "//chrome/browser/apps/link_capturing",
+    "//chrome/browser/apps/link_capturing:test_support",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/ui/web_applications/diagnostics:app_service_browser_tests",
     "//chrome/browser/web_applications",

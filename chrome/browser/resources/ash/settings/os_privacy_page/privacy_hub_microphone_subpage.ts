@@ -8,6 +8,8 @@
  * the state of the system microphone access.
  */
 
+import './privacy_hub_app_permission_row.js';
+
 import {PermissionType} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {isPermissionEnabled} from 'chrome://resources/cr_components/app_management/permission_util.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
@@ -16,9 +18,10 @@ import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener
 import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {App, AppPermissionsHandler, AppPermissionsHandlerInterface, AppPermissionsObserverReceiver} from '../mojom-webui/app_permission_handler.mojom-webui.js';
+import {App, AppPermissionsHandlerInterface, AppPermissionsObserverReceiver} from '../mojom-webui/app_permission_handler.mojom-webui.js';
 
 import {MediaDevicesProxy} from './media_devices_proxy.js';
+import {getAppPermissionProvider} from './mojo_interface_provider.js';
 import {PrivacyHubBrowserProxy, PrivacyHubBrowserProxyImpl} from './privacy_hub_browser_proxy.js';
 import {getTemplate} from './privacy_hub_microphone_subpage.html.js';
 
@@ -101,7 +104,7 @@ export class SettingsPrivacyHubMicrophoneSubpage extends
 
     this.browserProxy_ = PrivacyHubBrowserProxyImpl.getInstance();
 
-    this.mojoInterfaceProvider_ = AppPermissionsHandler.getRemote();
+    this.mojoInterfaceProvider_ = getAppPermissionProvider();
 
     this.appPermissionsObserverReceiver_ = null;
   }
@@ -145,7 +148,7 @@ export class SettingsPrivacyHubMicrophoneSubpage extends
 
   private async updateAppList_(): Promise<void> {
     const apps = (await this.mojoInterfaceProvider_.getApps()).apps;
-    this.appList_ = apps.filter(app => hasMicrophonePermission(app));
+    this.appList_ = apps.filter(hasMicrophonePermission);
   }
 
   private async updateMicrophoneList_(): Promise<void> {
@@ -176,7 +179,7 @@ export class SettingsPrivacyHubMicrophoneSubpage extends
     const microphoneAllowed =
         this.getPref<string>('ash.user.microphone_allowed').value;
     return microphoneAllowed ? this.i18n('microphoneToggleSubtext') :
-                               'Blocked for all';
+                               this.i18n('blockedForAllText');
   }
 
   private computeShouldDisableMicrophoneToggle_(): boolean {

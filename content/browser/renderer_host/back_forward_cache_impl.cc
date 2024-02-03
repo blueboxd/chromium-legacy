@@ -15,11 +15,11 @@
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
 #include "base/types/expected.h"
 #include "build/build_config.h"
@@ -93,11 +93,6 @@ static constexpr size_t kDefaultForegroundBackForwardCacheSize = 0;
 // The default time to live in seconds for documents in BackForwardCache.
 // See also crbug.com/1305878.
 static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 600;
-// For page with "Cache-Control: no-store", it should have a shorter time to
-// live.
-static constexpr int
-    kDefaultTimeForCacheControlNoStorePageToLiveInBackForwardCacheInSeconds =
-        180;
 
 #if BUILDFLAG(IS_ANDROID)
 bool IsProcessBindingEnabled() {
@@ -412,6 +407,17 @@ CacheControlNoStoreExperimentLevel GetCacheControlNoStoreLevel() {
   return cache_control_level.Get();
 }
 
+const char kCacheControlNoStoreTimeToLiveName[] = "ttl";
+
+// This param controls the TTL for pages with "Cache-Control: no-store".
+const base::FeatureParam<base::TimeDelta> cache_control_no_store_ttl{
+    &features::kCacheControlNoStoreEnterBackForwardCache,
+    kCacheControlNoStoreTimeToLiveName, base::Minutes(3)};
+
+base::TimeDelta GetCacheControlNoStoreTTL() {
+  return cache_control_no_store_ttl.Get();
+}
+
 bool IsSameOriginForTreeResult(RenderFrameHostImpl* rfh,
                                const GURL& url,
                                const url::Origin& main_document_origin) {
@@ -619,8 +625,7 @@ base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache(
   }
 
   if (ccns_context == kInCCNSContext) {
-    return base::Seconds(
-        kDefaultTimeForCacheControlNoStorePageToLiveInBackForwardCacheInSeconds);
+    return GetCacheControlNoStoreTTL();
   } else {
     return base::Seconds(kDefaultTimeToLiveInBackForwardCacheInSeconds);
   }
@@ -1225,14 +1230,12 @@ size_t BackForwardCacheImpl::EnforceCacheSizeLimitInternal(
     size_t limit,
     bool foregrounded_only) {
   size_t count = 0;
-  size_t not_received_ack_count = 0;
   for (auto& stored_entry : entries_) {
     if (stored_entry->render_frame_host()->is_evicted_from_back_forward_cache())
       continue;
     if (foregrounded_only && !HasForegroundedProcess(*stored_entry))
       continue;
     if (!AllRenderViewHostsReceivedAckFromRenderer(*stored_entry)) {
-      not_received_ack_count++;
       continue;
     }
     if (++count > limit) {
@@ -1243,10 +1246,6 @@ size_t BackForwardCacheImpl::EnforceCacheSizeLimitInternal(
               : BackForwardCacheMetrics::NotRestoredReason::kCacheLimit);
     }
   }
-  UMA_HISTOGRAM_COUNTS_100(
-      "BackForwardCache.AllSites.HistoryNavigationOutcome."
-      "CountEntriesWithoutRendererAck",
-      not_received_ack_count);
   return count;
 }
 

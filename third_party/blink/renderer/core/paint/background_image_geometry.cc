@@ -294,7 +294,8 @@ PhysicalRect ComputeStitchedTableGridRect(
     if (&walker == &fragment)
       fragment_local_grid_rect = local_grid_rect;
 
-    stitched_block_size += NGFragment(writing_direction, walker).BlockSize();
+    stitched_block_size +=
+        LogicalFragment(writing_direction, walker).BlockSize();
   }
 
   // Make the rect relative to the fragment we are currently painting.
@@ -803,15 +804,6 @@ void BackgroundImageGeometry::CalculateFillTileSize(
   return;
 }
 
-void BackgroundImageGeometry::SetGeometryForSVGMask(
-    const gfx::RectF& mask_area,
-    const PhysicalOffset& box_offset) {
-  unsnapped_dest_rect_ = PhysicalRect::EnclosingRect(mask_area);
-  unsnapped_dest_rect_.Move(box_offset);
-  snapped_dest_rect_ = PhysicalRect(ToPixelSnappedRect(unsnapped_dest_rect_));
-  tile_size_ = unsnapped_dest_rect_.size;
-}
-
 void BackgroundImageGeometry::Calculate(const PaintInfo& paint_info,
                                         const FillLayer& fill_layer,
                                         const PhysicalRect& paint_rect) {
@@ -875,8 +867,7 @@ void BackgroundImageGeometry::Calculate(const PaintInfo& paint_info,
     // Maintain aspect ratio if background-size: auto is set
     if (fill_layer.SizeLength().Height().IsAuto() &&
         background_repeat_y != EFillRepeat::kRoundFill) {
-      tile_size_.height =
-          rounded_width.MulDiv(tile_size_.height, tile_size_.width);
+      tile_size_.height = ResolveHeightForRatio(rounded_width, tile_size_);
     }
     tile_size_.width = rounded_width;
 
@@ -894,8 +885,7 @@ void BackgroundImageGeometry::Calculate(const PaintInfo& paint_info,
     // Maintain aspect ratio if background-size: auto is set
     if (fill_layer.SizeLength().Width().IsAuto() &&
         background_repeat_x != EFillRepeat::kRoundFill) {
-      tile_size_.width =
-          rounded_height.MulDiv(tile_size_.width, tile_size_.height);
+      tile_size_.width = ResolveWidthForRatio(rounded_height, tile_size_);
     }
     tile_size_.height = rounded_height;
 

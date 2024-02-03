@@ -81,14 +81,14 @@ chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
 
   deps = [
     "//ios/chrome/browser/autofill:eg2_tests",
-    "//ios/chrome/browser/device_sharing:eg2_tests",
+    "//ios/chrome/browser/device_sharing/model:eg2_tests",
     "//ios/chrome/browser/feature_engagement/model:eg2_tests",
     "//ios/chrome/browser/find_in_page/model:eg2_tests",
     "//ios/chrome/browser/https_upgrades/model:eg2_tests",
     "//ios/chrome/browser/metrics:eg2_tests",
     "//ios/chrome/browser/net:eg2_tests",
     "//ios/chrome/browser/ntp_tiles/model:eg2_tests",
-    "//ios/chrome/browser/optimization_guide:eg2_tests",
+    "//ios/chrome/browser/optimization_guide/model:eg2_tests",
     "//ios/chrome/browser/passwords/model:eg2_tests",
     "//ios/chrome/browser/policy:eg2_tests",
     "//ios/chrome/browser/policy_url_blocking/model:eg2_tests",
@@ -161,7 +161,7 @@ chrome_ios_eg2_test("ios_chrome_signin_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [
-    "//ios/chrome/browser/signin:eg2_tests",
+    "//ios/chrome/browser/signin/model:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signed_in_accounts:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin:eg2_tests",
@@ -183,6 +183,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/bring_android_tabs:eg2_tests",
     "//ios/chrome/browser/ui/browser_view:eg2_tests",
     "//ios/chrome/browser/ui/bubble:eg2_tests",
+    "//ios/chrome/browser/ui/content_suggestions/safety_check:eg2_tests",
     "//ios/chrome/browser/ui/default_promo/post_restore:eg2_tests",
     "//ios/chrome/browser/ui/dialogs:eg2_tests",
     "//ios/chrome/browser/ui/download:eg2_tests",

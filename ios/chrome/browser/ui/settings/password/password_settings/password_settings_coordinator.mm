@@ -17,6 +17,8 @@
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/metrics/ios_password_manager_metrics.h"
+#import "ios/chrome/browser/passwords/model/metrics/ios_password_manager_visits_recorder.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -26,7 +28,7 @@
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
@@ -114,7 +116,36 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
     PasswordsInOtherAppsCoordinatorDelegate,
     PopoverLabelViewControllerDelegate,
     ReauthenticationCoordinatorDelegate,
-    SettingsNavigationControllerDelegate> {
+    SettingsNavigationControllerDelegate>
+
+@end
+
+@implementation PasswordSettingsCoordinator {
+  // Main view controller for this coordinator.
+  PasswordSettingsViewController* _passwordSettingsViewController;
+
+  // The presented SettingsNavigationController containing
+  // `passwordSettingsViewController`.
+  SettingsNavigationController* _settingsNavigationController;
+
+  // The coupled mediator.
+  PasswordSettingsMediator* _mediator;
+
+  // Command dispatcher.
+  __weak id<ApplicationCommands> _dispatcher;
+
+  // Module handling reauthentication before accessing sensitive data.
+  ReauthenticationModule* _reauthModule;
+
+  // Coordinator for the "Passwords in Other Apps" screen.
+  PasswordsInOtherAppsCoordinator* _passwordsInOtherAppsCoordinator;
+
+  // Coordinator for blocking Password Settings until Local Authentication is
+  // passed. Used for requiring authentication when opening Password Settings
+  // from outside the Password Manager and when the app is
+  // backgrounded/foregrounded with Password Settings opened.
+  ReauthenticationCoordinator* _reauthCoordinator;
+
   // Service which gives us a view on users' saved passwords.
   std::unique_ptr<password_manager::SavedPasswordsPresenter>
       _savedPasswordsPresenter;
@@ -122,46 +153,17 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   // Alert informing the user that passwords are being prepared for
   // export.
   UIAlertController* _preparingPasswordsAlert;
+
+  // For recording visits after successful authentication.
+  IOSPasswordManagerVisitsRecorder* _visitsRecorder;
 }
-
-// Main view controller for this coordinator.
-@property(nonatomic, strong)
-    PasswordSettingsViewController* passwordSettingsViewController;
-
-// The presented SettingsNavigationController containing
-// `passwordSettingsViewController`.
-@property(nonatomic, strong)
-    SettingsNavigationController* settingsNavigationController;
-
-// The coupled mediator.
-@property(nonatomic, strong) PasswordSettingsMediator* mediator;
-
-// Command dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
-
-// Module handling reauthentication before accessing sensitive data.
-@property(nonatomic, strong) ReauthenticationModule* reauthModule;
-
-// Coordinator for the "Passwords in Other Apps" screen.
-@property(nonatomic, strong)
-    PasswordsInOtherAppsCoordinator* passwordsInOtherAppsCoordinator;
-
-// Coordinator for blocking Password Settings until Local Authentication is
-// passed. Used for requiring authentication when opening Password Settings
-// from outside the Password Manager and when the app is
-// backgrounded/foregrounded with Password Settings opened.
-@property(nonatomic, strong) ReauthenticationCoordinator* reauthCoordinator;
-
-@end
-
-@implementation PasswordSettingsCoordinator
 
 #pragma mark - ChromeCoordinator
 
 - (void)start {
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
 
-  self.reauthModule = password_manager::BuildReauthenticationModule();
+  _reauthModule = password_manager::BuildReauthenticationModule();
 
   _savedPasswordsPresenter =
       std::make_unique<password_manager::SavedPasswordsPresenter>(
@@ -171,8 +173,8 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
           IOSChromeAccountPasswordStoreFactory::GetForBrowserState(
               browserState, ServiceAccessType::EXPLICIT_ACCESS));
 
-  self.mediator = [[PasswordSettingsMediator alloc]
-         initWithReauthenticationModule:self.reauthModule
+  _mediator = [[PasswordSettingsMediator alloc]
+         initWithReauthenticationModule:_reauthModule
                 savedPasswordsPresenter:_savedPasswordsPresenter.get()
       bulkMovePasswordsToAccountHandler:self
                           exportHandler:self
@@ -182,28 +184,37 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
                             syncService:SyncServiceFactory::GetForBrowserState(
                                             browserState)];
 
-  self.dispatcher = static_cast<id<ApplicationCommands>>(
+  _dispatcher = static_cast<id<ApplicationCommands>>(
       self.browser->GetCommandDispatcher());
 
-  self.passwordSettingsViewController =
+  _passwordSettingsViewController =
       [[PasswordSettingsViewController alloc] init];
 
-  self.passwordSettingsViewController.presentationDelegate = self;
+  _passwordSettingsViewController.presentationDelegate = self;
 
-  self.settingsNavigationController = [[SettingsNavigationController alloc]
-      initWithRootViewController:self.passwordSettingsViewController
+  _settingsNavigationController = [[SettingsNavigationController alloc]
+      initWithRootViewController:_passwordSettingsViewController
                          browser:self.browser
                         delegate:self];
 
-  self.mediator.consumer = self.passwordSettingsViewController;
-  self.passwordSettingsViewController.delegate = self.mediator;
+  _mediator.consumer = _passwordSettingsViewController;
+  _passwordSettingsViewController.delegate = _mediator;
+
+  _visitsRecorder = [[IOSPasswordManagerVisitsRecorder alloc]
+      initWithPasswordManagerSurface:password_manager::PasswordManagerSurface::
+                                         kPasswordSettings];
+
+  // Only record visit if no auth is required, otherwise wait for successful
+  // auth.
+  if (_skipAuthenticationOnStart) {
+    [_visitsRecorder maybeRecordVisitMetric];
+  }
 
   [self startReauthCoordinatorWithAuthOnStart:!_skipAuthenticationOnStart];
 
-  [self.baseViewController
-      presentViewController:self.settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [self.baseViewController presentViewController:_settingsNavigationController
+                                        animated:YES
+                                      completion:nil];
 }
 
 - (void)stop {
@@ -211,27 +222,27 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   // presented, dismiss without animation. Dismissals due to user actions (e.g,
   // swipe or tap on Done) are animated.
   if (self.baseViewController.presentedViewController ==
-      self.settingsNavigationController) {
+      _settingsNavigationController) {
     [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
   }
 
-  [self.passwordsInOtherAppsCoordinator stop];
-  self.passwordsInOtherAppsCoordinator.delegate = nil;
-  self.passwordsInOtherAppsCoordinator = nil;
+  [_passwordsInOtherAppsCoordinator stop];
+  _passwordsInOtherAppsCoordinator.delegate = nil;
+  _passwordsInOtherAppsCoordinator = nil;
 
-  self.passwordSettingsViewController.presentationDelegate = nil;
-  self.passwordSettingsViewController.delegate = nil;
-  self.passwordSettingsViewController = nil;
-  [self.settingsNavigationController cleanUpSettings];
-  self.settingsNavigationController = nil;
+  _passwordSettingsViewController.presentationDelegate = nil;
+  _passwordSettingsViewController.delegate = nil;
+  _passwordSettingsViewController = nil;
+  [_settingsNavigationController cleanUpSettings];
+  _settingsNavigationController = nil;
   _preparingPasswordsAlert = nil;
 
   _dispatcher = nil;
   _reauthModule = nil;
 
-  [self.mediator disconnect];
-  self.mediator.consumer = nil;
-  self.mediator = nil;
+  [_mediator disconnect];
+  _mediator.consumer = nil;
+  _mediator = nil;
   _savedPasswordsPresenter.reset();
 
   [self stopReauthenticationCoordinator];
@@ -256,28 +267,24 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
                              }];
   [exportConfirmation addAction:cancelAction];
 
-  __weak PasswordSettingsCoordinator* weakSelf = self;
+  __weak __typeof(self) weakSelf = self;
   UIAlertAction* exportAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS)
                 style:UIAlertActionStyleDefault
               handler:^(UIAlertAction* action) {
-                PasswordSettingsCoordinator* strongSelf = weakSelf;
-                if (!strongSelf) {
-                  return;
-                }
-                [strongSelf.mediator userDidStartExportFlow];
+                [weakSelf onStartExportFlowConfirmed];
               }];
 
   [exportConfirmation addAction:exportAction];
 
   exportConfirmation.popoverPresentationController.sourceView =
-      [self.passwordSettingsViewController sourceViewForAlerts];
+      [_passwordSettingsViewController sourceViewForAlerts];
   exportConfirmation.popoverPresentationController.sourceRect =
-      [self.passwordSettingsViewController sourceRectForPasswordExportAlerts];
+      [_passwordSettingsViewController sourceRectForPasswordExportAlerts];
 
-  [self.passwordSettingsViewController presentViewController:exportConfirmation
-                                                    animated:YES
-                                                  completion:nil];
+  [_passwordSettingsViewController presentViewController:exportConfirmation
+                                                animated:YES
+                                              completion:nil];
 }
 
 - (void)showManagedPrefInfoForSourceView:(UIButton*)sourceView {
@@ -295,21 +302,19 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   bubbleViewController.popoverPresentationController.permittedArrowDirections =
       UIPopoverArrowDirectionAny;
 
-  [self.passwordSettingsViewController
-      presentViewController:bubbleViewController
-                   animated:YES
-                 completion:nil];
+  [_passwordSettingsViewController presentViewController:bubbleViewController
+                                                animated:YES
+                                              completion:nil];
 }
 
 - (void)showPasswordsInOtherAppsScreen {
-  DCHECK(!self.passwordsInOtherAppsCoordinator);
+  DCHECK(!_passwordsInOtherAppsCoordinator);
   [self stopReauthCoordinatorBeforeStartingChildCoordinator];
-  self.passwordsInOtherAppsCoordinator =
-      [[PasswordsInOtherAppsCoordinator alloc]
-          initWithBaseNavigationController:self.settingsNavigationController
-                                   browser:self.browser];
-  self.passwordsInOtherAppsCoordinator.delegate = self;
-  [self.passwordsInOtherAppsCoordinator start];
+  _passwordsInOtherAppsCoordinator = [[PasswordsInOtherAppsCoordinator alloc]
+      initWithBaseNavigationController:_settingsNavigationController
+                               browser:self.browser];
+  _passwordsInOtherAppsCoordinator.delegate = self;
+  [_passwordsInOtherAppsCoordinator start];
 }
 
 - (void)showOnDeviceEncryptionSetUp {
@@ -317,19 +322,19 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
       GURL(kOnDeviceEncryptionOptInURL),
       GetApplicationContext()->GetApplicationLocale());
   OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
-  [self.dispatcher closeSettingsUIAndOpenURL:command];
+  [_dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 - (void)showOnDeviceEncryptionHelp {
   GURL URL = GURL(kOnDeviceEncryptionLearnMoreURL);
   OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
-  [self.dispatcher closeSettingsUIAndOpenURL:command];
+  [_dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 #pragma mark - PopoverLabelViewControllerDelegate
 
 - (void)didTapLinkURL:(NSURL*)URL {
-  [self.dispatcher
+  [_dispatcher
       openURLInNewTab:[OpenNewTabCommand
                           commandWithURLFromChrome:net::GURLWithNSURL(URL)
                                        inIncognito:NO]];
@@ -342,30 +347,22 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   // No need to auth if AuthOnEntryV2 is enabled, since user is presumed to have
   // just recently authed.
   if (IsAuthOnEntryV2Enabled()) {
-    [self.mediator userDidStartBulkMoveLocalPasswordsToAccountFlow];
+    [_mediator userDidStartBulkMoveLocalPasswordsToAccountFlow];
     return;
   }
 
-  if ([self.reauthModule canAttemptReauth]) {
-    __weak PasswordSettingsCoordinator* weakSelf = self;
-
+  if ([_reauthModule canAttemptReauth]) {
+    __weak __typeof(self) weakSelf = self;
     void (^onReauthenticationFinished)(ReauthenticationResult) = ^(
         ReauthenticationResult result) {
-      PasswordSettingsCoordinator* strongSelf = weakSelf;
-      if (!strongSelf) {
-        return;
-      }
-
-      // On auth success, move passwords. Otherwise, do nothing.
-      if (result == ReauthenticationResult::kSuccess) {
-        [strongSelf.mediator userDidStartBulkMoveLocalPasswordsToAccountFlow];
-      }
+      [weakSelf
+          onReauthenticationFinishedForMoveLocalPasswordsToAccountWithResult:
+              result];
     };
 
-    [self.reauthModule
-        attemptReauthWithLocalizedReason:message
-                    canReusePreviousAuth:NO
-                                 handler:onReauthenticationFinished];
+    [_reauthModule attemptReauthWithLocalizedReason:message
+                               canReusePreviousAuth:NO
+                                            handler:onReauthenticationFinished];
   } else {
     [self showSetPasscodeForMovePasswordsToAccountDialog];
   }
@@ -394,7 +391,7 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   [movePasswordsConfirmation addAction:cancelAction];
 
   // Create the accept action (i.e. move passwords to account).
-  __weak PasswordSettingsCoordinator* weakSelf = self;
+  __weak __typeof(self) weakSelf = self;
   UIAlertAction* movePasswordsAction = [UIAlertAction
       actionWithTitle:
           l10n_util::GetNSString(
@@ -403,11 +400,7 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
               handler:^(UIAlertAction* action) {
                 base::RecordAction(base::UserMetricsAction(
                     kBulkMovePasswordsToAccountConfirmationDialogAccepted));
-                PasswordSettingsCoordinator* strongSelf = weakSelf;
-                if (!strongSelf) {
-                  return;
-                }
-                [strongSelf
+                [weakSelf
                     showAuthenticationForMovePasswordsToAccountWithMessage:
                         alertTitle];
               }];
@@ -415,13 +408,12 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   [movePasswordsConfirmation addAction:movePasswordsAction];
 
   movePasswordsConfirmation.popoverPresentationController.sourceView =
-      [self.passwordSettingsViewController sourceViewForAlerts];
+      [_passwordSettingsViewController sourceViewForAlerts];
   movePasswordsConfirmation.popoverPresentationController.sourceRect =
-      [self.passwordSettingsViewController
-              sourceRectForBulkMovePasswordsToAccount];
+      [_passwordSettingsViewController sourceRectForBulkMovePasswordsToAccount];
 
   // Show the alert.
-  [self.passwordSettingsViewController
+  [_passwordSettingsViewController
       presentViewController:movePasswordsConfirmation
                    animated:YES
                  completion:nil];
@@ -472,10 +464,9 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
 
   [activityViewController setCompletionWithItemsHandler:completionHandler];
 
-  UIView* sourceView =
-      [self.passwordSettingsViewController sourceViewForAlerts];
+  UIView* sourceView = [_passwordSettingsViewController sourceViewForAlerts];
   CGRect sourceRect =
-      [self.passwordSettingsViewController sourceRectForPasswordExportAlerts];
+      [_passwordSettingsViewController sourceRectForPasswordExportAlerts];
 
   activityViewController.modalPresentationStyle = UIModalPresentationPopover;
   activityViewController.popoverPresentationController.sourceView = sourceView;
@@ -507,16 +498,16 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
           l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS_PREPARING_ALERT_TITLE)
                        message:nil
                 preferredStyle:UIAlertControllerStyleAlert];
-  __weak PasswordSettingsCoordinator* weakSelf = self;
+  __weak __typeof(self) weakSelf = self;
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(
                                          IDS_IOS_EXPORT_PASSWORDS_CANCEL_BUTTON)
                                style:UIAlertActionStyleCancel
                              handler:^(UIAlertAction*) {
-                               [weakSelf.mediator exportFlowCanceled];
+                               [weakSelf onExportFlowCancelled];
                              }];
   [_preparingPasswordsAlert addAction:cancelAction];
-  [self.passwordSettingsViewController
+  [_passwordSettingsViewController
       presentViewController:_preparingPasswordsAlert
                    animated:YES
                  completion:nil];
@@ -531,17 +522,17 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
 #pragma mark - ExportActivityViewControllerDelegate
 
 - (void)resetExport {
-  [self.mediator userDidCompleteExportFlow];
+  [_mediator userDidCompleteExportFlow];
 }
 
 #pragma mark - PasswordsInOtherAppsCoordinatorDelegate
 
 - (void)passwordsInOtherAppsCoordinatorDidRemove:
     (PasswordsInOtherAppsCoordinator*)coordinator {
-  DCHECK_EQ(self.passwordsInOtherAppsCoordinator, coordinator);
-  [self.passwordsInOtherAppsCoordinator stop];
-  self.passwordsInOtherAppsCoordinator.delegate = nil;
-  self.passwordsInOtherAppsCoordinator = nil;
+  DCHECK_EQ(_passwordsInOtherAppsCoordinator, coordinator);
+  [_passwordsInOtherAppsCoordinator stop];
+  _passwordsInOtherAppsCoordinator.delegate = nil;
+  _passwordsInOtherAppsCoordinator = nil;
   [self restartReauthCoordinator];
 }
 
@@ -549,7 +540,7 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
 
 - (void)closeSettings {
   // Dismiss UI and notify parent coordinator.
-  auto* __weak weakSelf = self;
+  __weak __typeof(self) weakSelf = self;
   [self.baseViewController dismissViewControllerAnimated:YES
                                               completion:^{
                                                 [weakSelf settingsWasDismissed];
@@ -564,14 +555,14 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
 
 - (void)successfulReauthenticationWithCoordinator:
     (ReauthenticationCoordinator*)coordinator {
-  // No-op.
+  [_visitsRecorder maybeRecordVisitMetric];
 }
 
 - (void)willPushReauthenticationViewController {
   // Cancel password export flow before authentication UI is presented.
   if (_preparingPasswordsAlert.beingPresented) {
     [_preparingPasswordsAlert dismissViewControllerAnimated:NO completion:nil];
-    [self.mediator exportFlowCanceled];
+    [_mediator exportFlowCanceled];
     _preparingPasswordsAlert = nil;
   }
 }
@@ -582,7 +573,7 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
 - (void)showPasscodeHelp {
   GURL URL = GURL(kPasscodeArticleURL);
   OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
-  [self.dispatcher closeSettingsUIAndOpenURL:command];
+  [_dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 // Helper to show the "set passcode" dialog with customizable content.
@@ -593,7 +584,7 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
                        message:content
                 preferredStyle:UIAlertControllerStyleAlert];
 
-  __weak PasswordSettingsCoordinator* weakSelf = self;
+  __weak __typeof(self) weakSelf = self;
   UIAlertAction* learnAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(
                           IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
@@ -608,9 +599,9 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
                              handler:nil];
   [alertController addAction:okAction];
   alertController.preferredAction = okAction;
-  [self.passwordSettingsViewController presentViewController:alertController
-                                                    animated:YES
-                                                  completion:nil];
+  [_passwordSettingsViewController presentViewController:alertController
+                                                animated:YES
+                                              completion:nil];
 }
 
 // Helper method for presenting several ViewControllers used in the export flow.
@@ -618,19 +609,17 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
 // ready to replace it.
 - (void)presentViewControllerForExportFlow:(UIViewController*)viewController {
   if (_preparingPasswordsAlert.beingPresented) {
-    __weak PasswordSettingsCoordinator* weakSelf = self;
+    __weak __typeof(self) weakSelf = self;
     [_preparingPasswordsAlert
         dismissViewControllerAnimated:YES
                            completion:^{
-                             [weakSelf.passwordSettingsViewController
-                                 presentViewController:viewController
-                                              animated:YES
-                                            completion:nil];
+                             [weakSelf presentViewControllerForExportFlow:
+                                           viewController];
                            }];
   } else {
-    [self.passwordSettingsViewController presentViewController:viewController
-                                                      animated:YES
-                                                    completion:nil];
+    [_passwordSettingsViewController presentViewController:viewController
+                                                  animated:YES
+                                                completion:nil];
   }
 }
 
@@ -694,6 +683,27 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   if (IsAuthOnEntryV2Enabled()) {
     [self startReauthCoordinatorWithAuthOnStart:NO];
   }
+}
+
+// Starts the export passwords flow after the user confirmed the corresponding
+// alert.
+- (void)onStartExportFlowConfirmed {
+  [_mediator userDidStartExportFlow];
+}
+
+// Starts the flow for moving local passwords to account if local authentication
+// was successful.
+- (void)onReauthenticationFinishedForMoveLocalPasswordsToAccountWithResult:
+    (ReauthenticationResult)result {
+  // On auth success, move passwords. Otherwise, do nothing.
+  if (result == ReauthenticationResult::kSuccess) {
+    [_mediator userDidStartBulkMoveLocalPasswordsToAccountFlow];
+  }
+}
+
+// Cancels the password export flow.
+- (void)onExportFlowCancelled {
+  [_mediator exportFlowCanceled];
 }
 
 @end

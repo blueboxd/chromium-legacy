@@ -94,7 +94,6 @@ if (include_js2gtest_tests) {
     sources = [
       "crostini_installer_browsertest.js",
       "crostini_upgrader_browsertest.js",
-      "firmware_update/firmware_update_browsertest.js",
       "os_feedback_ui/os_feedback_browsertest.js",
       "scanning/scanning_app_browsertest.js",
       "shimless_rma/shimless_rma_browsertest.js",
@@ -165,7 +164,6 @@ group("closure_compile") {
     "arc_account_picker:closure_compile",
     "ash_common:closure_compile",
     "gaia_action_buttons:closure_compile",
-    "os_feedback_ui:closure_compile",
     "shimless_rma:closure_compile",
   ]
 }
@@ -178,6 +176,7 @@ ts_library("build_ts") {
   in_files = [
     "bluetooth_pairing_test.js",
     "chai_assert.js",
+    "cr_focus_row_behavior_test.ts",
     "crostini_installer_app_test.js",
     "crostini_upgrader_app_test.js",
     "fake_network_config_mojom.js",
@@ -203,7 +202,6 @@ ts_library("build_ts") {
     "os_feedback_ui/file_attachment_test.js",
     "os_feedback_ui/help_content_test.js",
     "os_feedback_ui/mojo_interface_provider_test.js",
-    "os_feedback_ui/os_feedback_unified_test.js",
     "os_feedback_ui/search_page_test.js",
     "os_feedback_ui/share_data_page_test.js",
     "shimless_rma/all_inputs_disabled_test.js",

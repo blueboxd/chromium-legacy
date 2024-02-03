@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_INTEREST_GROUP_INTEREST_GROUP_CACHING_STORAGE_H_
 #define CONTENT_BROWSER_INTEREST_GROUP_INTEREST_GROUP_CACHING_STORAGE_H_
 
+#include <algorithm>
 #include <cstddef>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequence_bound.h"
+#include "base/time/time.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/storage_interest_group.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
@@ -68,11 +70,14 @@ class CONTENT_EXPORT StorageInterestGroups
     return storage_interest_groups;
   }
 
+  bool IsExpired() { return expiry_ < base::Time::Now(); }
+
  private:
   friend class RefCounted<StorageInterestGroups>;
   ~StorageInterestGroups();
 
   const std::vector<StorageInterestGroup> storage_interest_groups_;
+  base::Time expiry_;
   base::WeakPtrFactory<StorageInterestGroups> weak_ptr_factory_{this};
 };
 
@@ -223,20 +228,25 @@ class CONTENT_EXPORT InterestGroupCachingStorage {
       const url::Origin& owner,
       std::vector<StorageInterestGroup> interest_groups);
 
-  void OnLoadInterestGroupsForOwnerCacheDisabled(
+  void OnLoadInterestGroupsForOwnerOneCallback(
       const url::Origin& owner,
       base::OnceCallback<void(scoped_refptr<StorageInterestGroups>)> callback,
       std::vector<StorageInterestGroup> interest_groups);
+
+  void InvalidateCachedInterestGroupsForOwner(const url::Origin& owner);
+  void InvalidateAllCachedInterestGroups();
 
   base::SequenceBound<InterestGroupStorage> interest_group_storage_;
 
   std::map<url::Origin, base::WeakPtr<StorageInterestGroups>>
       cached_interest_groups_;
 
-  std::map<const url::Origin,
+  std::map<url::Origin,
            base::queue<
                base::OnceCallback<void(scoped_refptr<StorageInterestGroups>)>>>
       outstanding_interest_groups_for_owner_callbacks_;
+
+  std::set<url::Origin> outdated_outstanding_interest_group_loads_;
 
   base::WeakPtrFactory<InterestGroupCachingStorage> weak_factory_{this};
 };

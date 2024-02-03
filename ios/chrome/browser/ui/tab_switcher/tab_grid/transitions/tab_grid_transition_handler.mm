@@ -4,17 +4,20 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/tab_grid_transition_handler.h"
 
+#import "base/check.h"
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/animations/centered_zoom_transition_animation.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/animations/tab_grid_transition_animation.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/animations/tab_grid_transition_animation_group.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/tab_grid_transition_layout_providing.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
 
 @implementation TabGridTransitionHandler {
   TabGridTransitionType _transitionType;
   TabGridTransitionDirection _direction;
 
-  UIViewController* _tabGridViewController;
+  UIViewController<TabGridTransitionLayoutProviding>* _tabGridViewController;
   BVCContainerViewController* _bvcContainerViewController;
 
   id<TabGridTransitionAnimation> _animation;
@@ -24,11 +27,15 @@
 
 - (instancetype)initWithTransitionType:(TabGridTransitionType)transitionType
                              direction:(TabGridTransitionDirection)direction
-                 tabGridViewController:(UIViewController*)tabGridViewController
+                 tabGridViewController:
+                     (UIViewController<TabGridTransitionLayoutProviding>*)
+                         tabGridViewController
             bvcContainerViewController:
                 (BVCContainerViewController*)bvcContainerViewController {
   self = [super init];
   if (self) {
+    CHECK(tabGridViewController.transitionLayout);
+
     _transitionType = transitionType;
     _direction = direction;
     _tabGridViewController = tabGridViewController;
@@ -146,11 +153,6 @@
 // transition.
 - (id<TabGridTransitionAnimation>)
     determineAnimationForBrowserToTabGridTransition {
-  if (![self isTransitionLayoutValid]) {
-    // Fallback to reduced motion animation.
-    return [self browserToTabGridReducedMotionAnimation];
-  }
-
   switch (_transitionType) {
     case TabGridTransitionType::kNormal:
       return [self browserToTabGridNormalAnimation];
@@ -165,11 +167,6 @@
 // transition.
 - (id<TabGridTransitionAnimation>)
     determineAnimationForTabGridToBrowserTransition {
-  if (![self isTransitionLayoutValid]) {
-    // Fallback to reduced motion animation.
-    return [self tabGridToBrowserReducedMotionAnimation];
-  }
-
   switch (_transitionType) {
     case TabGridTransitionType::kNormal:
       return [self tabGridToBrowserNormalAnimation];
@@ -180,20 +177,32 @@
   }
 }
 
-// Checks if the validity of a transition layout.
-- (BOOL)isTransitionLayoutValid {
-  // TODO: Update this placeholder with an actual implementation.
-  return NO;
-}
-
 // Returns Browser to TabGrid normal motion animation.
 - (id<TabGridTransitionAnimation>)browserToTabGridNormalAnimation {
-  return nil;
+  // TODO(crbug.com/1499268): Update this animation.
+  id<TabGridTransitionAnimation> introAnimation =
+      [[CenteredZoomTransitionAnimation alloc]
+          initWithView:_bvcContainerViewController.view
+             direction:CenteredZoomTransitionAnimationDirection::kContracting];
+
+  id<TabGridTransitionAnimation> combinedIntroAndMainAnimations =
+      [[TabGridTransitionAnimationGroup alloc]
+          initWithAnimations:@[ introAnimation ]];
+  return combinedIntroAndMainAnimations;
 }
 
 // Returns TabGrid to Browser normal motion animation.
 - (id<TabGridTransitionAnimation>)tabGridToBrowserNormalAnimation {
-  return nil;
+  // TODO(crbug.com/1499268): Update this animation.
+  id<TabGridTransitionAnimation> outroAnimation =
+      [[CenteredZoomTransitionAnimation alloc]
+          initWithView:_bvcContainerViewController.view
+             direction:CenteredZoomTransitionAnimationDirection::kExpanding];
+
+  id<TabGridTransitionAnimation> combinedIntroAndMainAnimations =
+      [[TabGridTransitionAnimationGroup alloc]
+          initWithAnimations:@[ outroAnimation ]];
+  return combinedIntroAndMainAnimations;
 }
 
 // Returns Browser to TabGrid reduced motion animation.

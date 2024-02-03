@@ -31,7 +31,7 @@ config("fuzztest_internal_config") {
   include_dirs = [ "src" ]
   if (use_centipede) {
     defines = [ "FUZZTEST_USE_CENTIPEDE" ]
-  } else if (use_fuzzing_engine) {
+  } else if (use_fuzzing_engine && fuzzing_engine_supports_custom_main) {
     defines = [ "FUZZTEST_COMPATIBILITY_MODE" ]
   }
 }
@@ -83,7 +83,6 @@ if (use_centipede) {
       "src/centipede/runner_sancov.cc",
       "src/centipede/runner_sancov_object.cc",
       "src/centipede/runner_sancov_object.h",
-      "src/centipede/runner_sanitizer.cc",
       "src/centipede/runner_utils.cc",
       "src/centipede/runner_utils.h",
     ]
@@ -110,10 +109,6 @@ if (use_centipede) {
     ]
     configs += [ ":fuzztest_internal_config" ]
     sources = [ "src/centipede/runner_main.cc" ]
-  }
-
-  source_set("centipede_weak_sancov_stubs") {
-    sources = [ "src/centipede/weak_sancov_stubs.cc" ]
   }
 
   # The centipede out-of-process runner executable.
@@ -183,6 +178,12 @@ if (use_centipede) {
   }
 }
 
+if (use_centipede || enable_fuzztest_fuzz) {
+  source_set("centipede_weak_sancov_stubs") {
+    sources = [ "src/centipede/weak_sancov_stubs.cc" ]
+  }
+}
+
 source_set("fuzztest_internal") {
   sources = [
     "src/fuzztest/domain.h",
@@ -196,6 +197,8 @@ source_set("fuzztest_internal") {
     "src/fuzztest/internal/centipede_adaptor.h",
     "src/fuzztest/internal/compatibility_mode.cc",
     "src/fuzztest/internal/compatibility_mode.h",
+    "src/fuzztest/internal/configuration.cc",
+    "src/fuzztest/internal/configuration.h",
     "src/fuzztest/internal/coverage.cc",
     "src/fuzztest/internal/coverage.h",
     "src/fuzztest/internal/domains/absl_helpers.h",
@@ -294,7 +297,8 @@ source_set("fuzztest") {
     # which can be used as centipede fuzzers.
     sources = [ "src/fuzztest/internal/centipede_adaptor.cc" ]
     deps = [ ":centipede_runner_no_main" ]
-  } else if (use_fuzzing_engine) {
+  } else if (use_fuzzing_engine && fuzzing_engine_supports_custom_main) {
+    # Typically, libfuzzer.
     deps = [ "//testing/libfuzzer:fuzzing_engine_no_main" ]
   }
   public_deps = [ ":fuzztest_internal" ]

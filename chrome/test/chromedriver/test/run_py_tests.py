@@ -109,22 +109,13 @@ _OS_SPECIFIC_FILTER['win'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=299
     'ChromeLogPathCapabilityTest.testChromeLogPath',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1196363
-    'ChromeDownloadDirTest.testFileDownloadAfterTabHeadless',
-    'ChromeDownloadDirTest.testFileDownloadWithClickHeadless',
-    'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
-    'HeadlessChromeDriverTest.testNewTabDoesNotFocus',
-    'HeadlessChromeDriverTest.testNewWindowDoesNotFocus',
-    'HeadlessChromeDriverTest.testPrintHeadless',
-    'HeadlessChromeDriverTest.testPrintInvalidArgumentHeadless',
-    'HeadlessChromeDriverTest.testWindowFullScreen',
-    'HeadlessInvalidCertificateTest.testLoadsPage',
-    'HeadlessInvalidCertificateTest.testNavigateNewWindow',
+    'ChromeDownloadDirTest.testFileDownloadAfterTab',
+    'InvalidCertificateTest.testLoadsPage',
+    'InvalidCertificateTest.testNavigateNewWindow',
     'ChromeDriverTest.testHeadlessWithUserDataDirStarts',
     'ChromeDriverTest.testHeadlessWithExistingUserDataDirStarts',
-    'RemoteBrowserTest.testConnectToRemoteBrowserLiteralAddressHeadless',
     'JavaScriptTests.testAllJS',
     'LaunchDesktopTest.testExistingDevToolsPortFile',
-    'RemoteBrowserTest.testConnectToRemoteBrowser',
     'SessionHandlingTest.testQuitASessionMoreThanOnce',
     'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
     # Flaky on Win7 bots: crbug.com/1132559
@@ -157,6 +148,79 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testFindChildElementsStaleElement2',
     # Flaky: https://crbug.com/1486520
     'ChromeDriverTest.testClickStaleElement',
+]
+
+_BROWSER_SPECIFIC_FILTER = {}
+_BROWSER_SPECIFIC_FILTER['chrome'] = [
+    # The following two tests are intended solely for chrome-headless-shell
+    'ChromeDriverTest.testHeadlessWithExistingUserDataDirStarts',
+    'ChromeDriverTest.testHeadlessWithUserDataDirStarts',
+    # This test is a chrome-headless-shell version of testWindowFullScreen
+    'ChromeDriverTest.testWindowFullScreenHeadless',
+    # Chrome does not support --remote-debugging-address argument
+    'RemoteBrowserTest.testConnectToRemoteBrowserLiteralAddressHeadless',
+]
+_BROWSER_SPECIFIC_FILTER['chrome-headless-shell'] = [
+    # Maximize and FullScreeen operations make no sense in chrome-headless-mode.
+    # The implementation just changes the window state.
+    # S/A: BrowserHandler::setWindowsBounds at
+    # //headelss/lib/browser/protocol/browser_handler.cc.
+    'ChromeDriverTest.testWindowMaximize',
+    'ChromeDriverTest.testWindowFullScreen',
+    # chrome-headless-shell does not support scripted print
+    'ChromeDriverTest.testCanSwitchToPrintPreviewDialog',
+    # FedCM is not supported by chrome-headless-shell.
+    'FedCmSpecificTest.*',
+    # chrome-headless-shell stops handling some CDP commands until the page is
+    # fully loaded.
+    # See: https://crbug.com/chromedriver/4624
+    'ChromeDriverTest.testSlowIFrame',
+    # https://crbug.com/706008
+    # chrome-headless-shell does not support extensions
+    'ChromeExtensionsCapabilityTest.*',
+    # chrome-headless-shell does not support chrome:about page
+    'ChromeSwitchesCapabilityTest.testRemoteDebuggingPort',
+    # chrome-headless-shell does not support chrome:about page
+    'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
+    # chrome-headless-shell stops handling some CDP commands until the page is
+    # fully loaded.
+    # See: https://crbug.com/chromedriver/4624
+    'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+    # chrome-headless-shell does not support Page.setRPHRegistrationMode
+    'ChromeDriverTest.testSetRPHResgistrationMode',
+    # The test is only intended for the headless mode of Chrome.
+    'ChromeDriverTest.testBrowserNameHeadlessMode',
+]
+
+_BROWSER_AND_PLATFORM_SPECIFIC_FILTER = {
+    'chrome': {},
+    'chrome-headless-shell': {},
+}
+_BROWSER_AND_PLATFORM_SPECIFIC_FILTER['chrome-headless-shell']['mac'] = [
+    # Unable to run chrome-headless-shell with logging enabled on Mac. See
+    # crbug.com/1011000.
+    'ChromeLogPathCapabilityTest.testChromeLogPath',
+    # https://crbug.com/chromedriver/4631
+    # chrome-headless-shell does not set the window rect as requested.
+    'ChromeDriverTest.testWindowMinimize',
+    'ChromeDriverTest.testWindowPosition',
+    'ChromeDriverTest.testWindowRect',
+    'ChromeDriverTest.testWindowSize',
+    # https://crbug.com/chromedriver/4632
+    # chrome-headless-shell ignores the selected range while inserting the text
+    'ChromeDriverW3cTest.testSendKeysToElementDoesNotAppend',
+    # https://crbug.com/chromedriver/4629
+    # The following four tests fail on Mac Arm64
+    'ChromeDriverSecureContextTest.testCreateVirtualSensorWithMaximumFrequency',
+    'ChromeDriverSecureContextTest.testCreateVirtualSensorWithMinimumFrequency',
+    'ChromeDriverSecureContextTest.testGetVirtualSensorInformation',
+    'ChromeDriverSecureContextTest.testUpdateVirtualSensor',
+    # Flaky on Mac: https://crbug.com/1503101
+    'BidiTest.*'
+]
+_BROWSER_AND_PLATFORM_SPECIFIC_FILTER['chrome-headless-shell']['win'] = [
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1196363
+    'ChromeDriverTest.testWindowFullScreenHeadless',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -192,11 +256,16 @@ _INTEGRATION_NEGATIVE_FILTER = [
 ]
 
 
-def _GetDesktopNegativeFilter():
+def _GetDesktopNegativeFilter(browser_name = 'chrome'):
   filter = _NEGATIVE_FILTER + _DESKTOP_NEGATIVE_FILTER
   os = util.GetPlatformName()
   if os in _OS_SPECIFIC_FILTER:
     filter += _OS_SPECIFIC_FILTER[os]
+  if browser_name in _BROWSER_SPECIFIC_FILTER:
+    filter += _BROWSER_SPECIFIC_FILTER[browser_name]
+  if (browser_name in _BROWSER_AND_PLATFORM_SPECIFIC_FILTER and
+      os in _BROWSER_AND_PLATFORM_SPECIFIC_FILTER[browser_name]):
+    filter += _BROWSER_AND_PLATFORM_SPECIFIC_FILTER[browser_name][os]
   return filter
 
 _ANDROID_NEGATIVE_FILTER = {}
@@ -235,8 +304,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # Android doesn't support headless mode
         'ChromeDriverTest.testHeadlessWithUserDataDirStarts',
         'ChromeDriverTest.testHeadlessWithExistingUserDataDirStarts',
-        'HeadlessInvalidCertificateTest.*',
-        'HeadlessChromeDriverTest.*',
         # Tests of the desktop Chrome launch process.
         'LaunchDesktopTest.*',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2737
@@ -348,6 +415,104 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
     ]
 )
 
+def _GetChromePathList(driver_path, platform):
+  path_mapping = {
+    'linux': [os.path.join(driver_path, 'chrome')],
+    'mac': [
+      os.path.join(driver_path,
+                   'Google Chrome for Testing.app',
+                   'Contents', 'MacOS',
+                   'Google Chrome for Testing'),
+      os.path.join(driver_path, 'Google Chrome.app',
+                   'Contents', 'MacOS', 'Google Chrome'),
+      os.path.join(driver_path, 'Chromium.app',
+                   'Contents', 'MacOS', 'Chromium')],
+    'win': [os.path.join(driver_path, 'chrome.exe')]}
+  if platform in path_mapping:
+    return path_mapping[platform]
+  return []
+
+def _GetHeadlessShellPathList(driver_path, platform):
+  posix_path_list = [
+    os.path.join(driver_path, 'chrome-headless-shell'),
+    os.path.join(driver_path, 'headless_shell')]
+  path_mapping = {
+    'linux': posix_path_list,
+    'mac': posix_path_list,
+    'win': [
+      os.path.join(driver_path, 'chrome-headless-shell.exe'),
+      os.path.join(driver_path, 'headless_shell.exe')]}
+  if platform in path_mapping:
+    return path_mapping[platform]
+  return []
+
+def _InferBrowserName(chrome_binary):
+  components = os.path.split(chrome_binary)
+  if len(components) == 0:
+    return 'chrome' # default to chrome if path is not provided
+  program = os.path.splitext(os.path.basename(chrome_binary))[0]
+  if program in {'chrome-headless-shell', 'headless_shell'}:
+    return 'chrome-headless-shell'
+  else:
+    return 'chrome'
+
+def _InferBrowserPath(browser_name,
+                      driver_path,
+                      platform,
+                      path_exists = os.path.exists):
+  path_list = []
+  if browser_name == 'chrome':
+    path_list = _GetChromePathList(driver_path, platform)
+  elif browser_name == 'chrome-headless-shell':
+    path_list = _GetHeadlessShellPathList(driver_path, platform)
+  for path in path_list:
+    if path_exists(path):
+      return path
+  return None
+
+class RunnerSelfTest(unittest.TestCase):
+  def testPathListsForKnownPlatforms(self):
+    driver_path = os.path.dirname(_CHROMEDRIVER_BINARY)
+    self.assertGreater(len(_GetChromePathList(driver_path, 'linux')), 0)
+    self.assertGreater(len(_GetChromePathList(driver_path, 'mac')), 0)
+    self.assertGreater(len(_GetChromePathList(driver_path, 'win')), 0)
+    self.assertGreater(len(_GetHeadlessShellPathList(driver_path, 'linux')), 0)
+    self.assertGreater(len(_GetHeadlessShellPathList(driver_path, 'mac')), 0)
+    self.assertGreater(len(_GetHeadlessShellPathList(driver_path, 'win')), 0)
+
+  def testPathListsForUnknownPlatforms(self):
+    driver_path = os.path.dirname(_CHROMEDRIVER_BINARY)
+    self.assertIsNotNone(_GetChromePathList(driver_path, 'unknown'))
+    self.assertIsNotNone(_GetHeadlessShellPathList(driver_path, 'unknown'))
+    self.assertEqual(len(_GetChromePathList(driver_path, 'unknown')), 0)
+    self.assertEqual(len(_GetHeadlessShellPathList(driver_path, 'unknown')), 0)
+    self.assertIsNotNone(_GetChromePathList(driver_path, ''))
+    self.assertIsNotNone(_GetHeadlessShellPathList(driver_path, ''))
+    self.assertEqual(len(_GetChromePathList(driver_path, '')), 0)
+    self.assertEqual(len(_GetHeadlessShellPathList(driver_path, '')), 0)
+
+  def testBrowserNameInference(self):
+    driver_path = os.path.dirname(_CHROMEDRIVER_BINARY)
+    for platform in ['linux', 'mac', 'win']:
+      for path in _GetChromePathList(driver_path, platform):
+        self.assertEqual('chrome', _InferBrowserName(path))
+      for path in _GetHeadlessShellPathList(driver_path, platform):
+        self.assertEqual('chrome-headless-shell', _InferBrowserName(path))
+
+  def testBrowserPathInference(self):
+    is_headless_shell = lambda path: 'chrome-headless-shell' in path
+    is_not_headless_shell = lambda path: 'chrome-headless-shell' not in path
+    driver_path = os.path.dirname(_CHROMEDRIVER_BINARY)
+    for platform in ['linux', 'mac', 'win']:
+      self.assertGreater(len(_InferBrowserPath('chrome',
+                                driver_path,
+                                platform,
+                                is_not_headless_shell)), 0)
+      self.assertGreater(len(_InferBrowserPath('chrome-headless-shell',
+                                               driver_path,
+                                               platform,
+                                               is_headless_shell)), 0)
+
 
 class ChromeDriverBaseTest(unittest.TestCase):
   """Base class for testing chromedriver functionalities."""
@@ -381,7 +546,7 @@ class ChromeDriverBaseTest(unittest.TestCase):
     return temp_dir
 
   def CreateDriver(self, server_url=None, server_pid=None,
-                   download_dir=None, **kwargs):
+                   download_dir=None, browser_name=None, **kwargs):
     if server_url is None:
       server_url = _CHROMEDRIVER_SERVER_URL
     if server_pid is None:
@@ -406,8 +571,12 @@ class ChromeDriverBaseTest(unittest.TestCase):
         android_activity = constants.PACKAGE_INFO[_ANDROID_PACKAGE_KEY].activity
         android_process = '%s:main' % android_package
 
+    if browser_name is None:
+      browser_name = _BROWSER_NAME
+
     driver = chromedriver.ChromeDriver(server_url, server_pid,
                                        chrome_binary=_CHROME_BINARY,
+                                       browser_name=browser_name,
                                        android_package=android_package,
                                        android_activity=android_activity,
                                        android_process=android_process,
@@ -2418,11 +2587,20 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertNotEqual(old_rect_list, new_rect_list)
 
     self._driver.SetWindowRect(*old_rect_list)
-    for i in range(10):
+    for _ in range(10):
       if old_rect_list == self._driver.GetWindowRect():
         break
       time.sleep(0.1)
     self.assertEqual(old_rect_list, self._driver.GetWindowRect())
+
+  def testWindowFullScreenHeadless(self):
+    old_rect_list = self._driver.GetWindowRect()
+    # Testing the resulting screensize doesn't work in headless, because there
+    # is no screen to give a size.
+    # We just want to ensure this command doesn't timeout or error.
+    self._driver.FullScreenWindow()
+    # Restore a known size so next tests won't fail
+    self._driver.SetWindowRect(*old_rect_list)
 
   def testConsoleLogSources(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/console_log.html'))
@@ -3693,36 +3871,66 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     test_merge_browserName Web Platform Test.
     """
     browser_name = self._driver.capabilities['browserName']
-    driver = self.CreateDriver(browser_name=browser_name)
+    self.assertEqual(browser_name, _BROWSER_NAME)
+    # The 'browserName' capability must always present in accordance with the
+    # standard: https://w3c.github.io/webdriver/#capabilities
+    self.assertIsNotNone(browser_name)
+    # As product name is communicated differently under WebSockets and pipes
+    # there is need to test both of these communication modes.
+    # Test the detected browserName with remote-debugging-pipe.
+    driver = self.CreateDriver(browser_name=browser_name,
+                               chrome_switches=['--remote-debugging-pipe'])
     self.assertEqual(browser_name, driver.capabilities['browserName'])
+    driver.Quit()
+    # Test the detected browserName with remote-debugging-port.
+    driver = self.CreateDriver(browser_name=browser_name,
+                               chrome_switches=['--remote-debugging-port=0'])
+    self.assertEqual(_BROWSER_NAME, driver.capabilities['browserName'])
+    driver.Quit()
+
+  def testBrowserNameHeadlessMode(self):
+    """Verifies that the returned browserName capability for headless Chrome
+    (not chrome-headless-shell) is 'chrome'.
+    """
+    # As product name is communicated differently under WebSockets and pipes
+    # there is need to test both of these communication modes.
+    # Test the detected browserName with remote-debugging-pipe.
+    driver = self.CreateDriver(browser_name=browser_name,
+                               chrome_switches=['--headless=new',
+                                                '--remote-debugging-pipe'])
+    self.assertEqual(_BROWSER_NAME, driver.capabilities['browserName'])
+    driver.Quit()
+    # Test the detected browserName with remote-debugging-port.
+    driver = self.CreateDriver(browser_name=browser_name,
+                               chrome_switches=['--headless=new',
+                                                '--remote-debugging-port=0'])
+    self.assertEqual(_BROWSER_NAME, driver.capabilities['browserName'])
+    driver.Quit()
 
   def testHeadlessWithUserDataDirStarts(self):
-    """Tests that ChromeDriver can launch Chrome in headless mode
+    """Tests that ChromeDriver can launch chrome-headless-shell
        with user-data-dir provided as a command line argument.
        See https://bugs.chromium.org/p/chromedriver/issues/detail?id=4357
     """
     temp_dir = self.CreateTempDir()
     driver = self.CreateDriver(chrome_switches=[
-                                   '--headless',
                                    '--user-data-dir=%s' % temp_dir,
                                ])
     self.assertEqual(driver.GetTitle(), '')
 
   def testHeadlessWithExistingUserDataDirStarts(self):
-    """Tests that ChromeDriver can launch Chrome in headless mode
+    """Tests that ChromeDriver can launch chrome-headless-shell
        with user-data-dir, that already contains user data,
        provided as a command line argument
        See https://bugs.chromium.org/p/chromedriver/issues/detail?id=4357
     """
     temp_dir = self.CreateTempDir()
     driver = self.CreateDriver(chrome_switches=[
-                                   '--headless',
                                    '--user-data-dir=%s' % temp_dir,
                                ])
     self.assertEqual(driver.GetTitle(), '')
     driver.Quit()
     driver = self.CreateDriver(chrome_switches=[
-                                   '--headless',
                                    '--user-data-dir=%s' % temp_dir,
                                ])
 
@@ -4326,6 +4534,11 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(
         self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
 
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'accelerometer' },
+      'state': 'granted'
+    })
+
     self._driver.ExecuteScript('startSensor()')
     self.assertTrue(
         self.WaitForCondition(lambda: self._driver.ExecuteScript(
@@ -4335,11 +4548,17 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         'return sensorErrorEvent.error.name')
     self.assertEqual('NotReadableError', error_name)
 
+
   def testCreateVirtualSensorWithMinimumFrequency(self):
     self._driver.CreateVirtualSensor('accelerometer',
                                      {'minSamplingFrequency': 6})
     self._driver.Load(
         self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
+
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'accelerometer' },
+      'state': 'granted'
+    })
 
     self._driver.ExecuteScript('startSensor()')
     self.assertTrue(
@@ -4355,6 +4574,11 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(
         self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
 
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'accelerometer' },
+      'state': 'granted'
+    })
+
     self._driver.ExecuteScript('startSensor()')
     self.assertTrue(
         self.WaitForCondition(
@@ -4367,6 +4591,11 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     self._driver.CreateVirtualSensor('accelerometer')
     self._driver.Load(
         self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
+
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'accelerometer' },
+      'state': 'granted'
+    })
 
     info = self._driver.GetVirtualSensorInformation('accelerometer')
     self.assertEqual(0.0, info['requestedSamplingFrequency'])
@@ -4385,6 +4614,11 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     self._driver.CreateVirtualSensor(testedSensor)
     self._driver.Load(
         self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
+
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'accelerometer' },
+      'state': 'granted'
+    })
 
     self._driver.ExecuteScript('startSensor()')
 
@@ -5199,24 +5433,10 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
         ChromeDriverTest.GetHttpUrlForFile('/chromedriver/download.html'),
         driver.GetCurrentUrl())
 
-  def testFileDownloadWithClickHeadless(self):
+  def testFileDownloadAfterTab(self):
       download_dir = self.CreateTempDir()
       download_name = os.path.join(download_dir, 'a_red_dot.png')
-      driver = self.CreateDriver(download_dir=download_dir,
-                                 chrome_switches=['--headless'])
-      driver.Load(ChromeDriverTest.GetHttpUrlForFile(
-          '/chromedriver/download.html'))
-      driver.FindElement('css selector', '#red-dot').Click()
-      self.WaitForFileToDownload(download_name)
-      self.assertEqual(
-          ChromeDriverTest.GetHttpUrlForFile('/chromedriver/download.html'),
-          driver.GetCurrentUrl())
-
-  def testFileDownloadAfterTabHeadless(self):
-      download_dir = self.CreateTempDir()
-      download_name = os.path.join(download_dir, 'a_red_dot.png')
-      driver = self.CreateDriver(download_dir=download_dir,
-                                 chrome_switches=['--headless'])
+      driver = self.CreateDriver(download_dir=download_dir)
       driver.Load(ChromeDriverTest.GetHttpUrlForFile(
           '/chromedriver/empty.html'))
       new_window = driver.NewWindow(window_type='tab')
@@ -5234,17 +5454,6 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
         '/abc.csv', self.RespondWithCsvFile)
     download_dir = self.CreateTempDir()
     driver = self.CreateDriver(download_dir=download_dir)
-    original_url = driver.GetCurrentUrl()
-    driver.Load(ChromeDriverTest.GetHttpUrlForFile('/abc.csv'))
-    self.WaitForFileToDownload(os.path.join(download_dir, 'abc.csv'))
-    self.assertEqual(original_url, driver.GetCurrentUrl())
-
-  def testFileDownloadWithGetHeadless(self):
-    ChromeDriverTest._http_server.SetCallbackForPath(
-        '/abc.csv', self.RespondWithCsvFile)
-    download_dir = self.CreateTempDir()
-    driver = self.CreateDriver(download_dir=download_dir,
-                               chrome_switches=['--headless'])
     original_url = driver.GetCurrentUrl()
     driver.Load(ChromeDriverTest.GetHttpUrlForFile('/abc.csv'))
     self.WaitForFileToDownload(os.path.join(download_dir, 'abc.csv'))
@@ -6097,6 +6306,7 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
     ports_generator = util.FindProbableFreePorts()
     exception = None
     for _ in range(3):
+      exception = None
       port = next(ports_generator)
       temp_dir = util.MakeTempDir()
       print('temp dir is ' + temp_dir)
@@ -6104,7 +6314,8 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
              '--remote-debugging-port=%d' % port,
              '--user-data-dir=%s' % temp_dir,
              '--use-mock-keychain',
-             '--password-store=basic']
+             '--password-store=basic',
+             'data:,']
       process = subprocess.Popen(cmd)
       try:
         driver = self.CreateDriver(debugger_address='localhost:%d' % port)
@@ -6112,7 +6323,9 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
         driver.Quit()
       except Exception as e:
         exception = e
-        continue
+
+      # The process must be closed on each iteration otherwise a resource leak
+      # happens.
       if process.poll() is None:
         process.terminate()
         # Wait for Chrome to exit here to prevent a race with Chrome to
@@ -6139,11 +6352,11 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
       ports_generator = util.FindProbableFreePorts()
       exception = None
       for _ in range(3):
+        exception = None
         port = next(ports_generator)
         temp_dir = util.MakeTempDir()
         print('temp dir is ' + temp_dir)
         cmd = [_CHROME_BINARY,
-              '--headless',
               '--remote-debugging-address=%s' % debug_addr,
               '--remote-debugging-port=%d' % port,
               '--user-data-dir=%s' % temp_dir,
@@ -6159,7 +6372,9 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
           driver.Quit()
         except Exception as e:
           exception = e
-          continue
+
+        # The process must be closed on each iteration otherwise a resource leak
+        # happens.
         if process.poll() is None:
           process.terminate()
           # Wait for Chrome to exit here to prevent a race with Chrome to
@@ -6188,7 +6403,7 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
       dev_tools_port_file = os.path.join(user_data_dir, 'DevToolsActivePort')
       with open(dev_tools_port_file, 'w') as fd:
         fd.write('34\n/devtools/browser/2dab5fb1-5571-40d8-a6ad-98823bc5ff84')
-      driver = self.CreateDriver(
+      self.CreateDriver(
           chrome_switches=['user-data-dir=' + user_data_dir,
                            '--remote-debugging-port=0'])
       with open(dev_tools_port_file, 'r') as fd:
@@ -6339,17 +6554,16 @@ class PerfTest(ChromeDriverBaseTest):
     self._RunDriverPerfTest('cold exe js', Run)
 
 
-class HeadlessInvalidCertificateTest(ChromeDriverBaseTestWithWebServer):
+class InvalidCertificateTest(ChromeDriverBaseTestWithWebServer):
   """End to end tests for ChromeDriver."""
 
   @staticmethod
   def GetHttpsUrlForFile(file_path):
     return (
-      HeadlessInvalidCertificateTest._https_server.GetUrl() + file_path)
+      InvalidCertificateTest._https_server.GetUrl() + file_path)
 
   def setUp(self):
-    self._driver = self.CreateDriver(chrome_switches=["--headless"],
-                                     accept_insecure_certs=True)
+    self._driver = self.CreateDriver(accept_insecure_certs=True)
 
   def testLoadsPage(self):
     print("loading")
@@ -6373,66 +6587,6 @@ class HeadlessInvalidCertificateTest(ChromeDriverBaseTestWithWebServer):
     self._driver.FindElement('css selector', '#link')
 
 
-class HeadlessChromeDriverTest(ChromeDriverBaseTestWithWebServer):
-  """End to end tests for ChromeDriver."""
-
-  def setUp(self):
-    self._driver = self.CreateDriver(chrome_switches=['--headless'])
-
-  def _newWindowDoesNotFocus(self, window_type='window'):
-    current_handles = self._driver.GetWindowHandles()
-    self._driver.Load(self.GetHttpUrlForFile(
-        '/chromedriver/focus_blur_test.html'))
-    new_window = self._driver.NewWindow(window_type=window_type)
-    text = self._driver.FindElement('css selector', '#result').GetText()
-
-    self.assertTrue(new_window['handle'] not in current_handles)
-    self.assertTrue(new_window['handle'] in self._driver.GetWindowHandles())
-    self.assertEqual(text, 'PASS')
-
-  def testNewWindowDoesNotFocus(self):
-    self._newWindowDoesNotFocus(window_type='window')
-
-  def testNewTabDoesNotFocus(self):
-    self._newWindowDoesNotFocus(window_type='tab')
-
-  def testWindowFullScreen(self):
-    old_rect_list = self._driver.GetWindowRect()
-    # Testing the resulting screensize doesn't work in headless, because there
-    # is no screen to give a size.
-    # We just want to ensure this command doesn't timeout or error.
-    self._driver.FullScreenWindow()
-    # Restore a known size so next tests won't fail
-    self._driver.SetWindowRect(*old_rect_list)
-
-  def testPrintHeadless(self):
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
-    pdf = self._driver.PrintPDF({
-                                  'orientation': 'landscape',
-                                  'scale': 1.1,
-                                  'margin': {
-                                    'top': 1.1,
-                                    'bottom': 2.2,
-                                    'left': 3.3,
-                                    'right': 4.4
-                                  },
-                                  'background': True,
-                                  'shrinkToFit': False,
-                                  'pageRanges': [1],
-                                  'page': {
-                                    'width': 15.6,
-                                    'height': 20.6
-                                  }
-                                })
-    decoded_pdf = base64.b64decode(pdf)
-    self.assertTrue(decoded_pdf.startswith(b"%PDF"))
-    self.assertTrue(decoded_pdf.endswith(b"%%EOF\n"))
-
-  def testPrintInvalidArgumentHeadless(self):
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
-    self.assertRaises(chromedriver.InvalidArgument,
-                      self._driver.PrintPDF, {'pageRanges': ['x-y']})
-
 class PureBidiTest(ChromeDriverBaseTestWithWebServer):
 
   def setUp(self):
@@ -6450,6 +6604,51 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
       except chromedriver.WebSocketConnectionClosedException:
         pass
     super().tearDown()
+
+  def createSessionNewCommand(self, browser_name=None, chrome_binary=None):
+    if browser_name is None:
+      browser_name = _BROWSER_NAME
+    if chrome_binary is None:
+      chrome_binary = _CHROME_BINARY
+    options = {
+      'w3c': True
+    }
+    android_package = None
+    if _ANDROID_PACKAGE_KEY:
+      android_package = constants.PACKAGE_INFO[_ANDROID_PACKAGE_KEY].package
+    # The code concerning chrome switches was carried over from
+    # client/chromedriver.py
+    chrome_switches = []
+    if sys.platform.startswith('linux') and android_package is None:
+      # Workaround for crbug.com/611886.
+      chrome_switches.append('no-sandbox')
+      # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
+      chrome_switches.append('disable-gpu')
+    chrome_switches.append('force-color-profile=srgb')
+    # Resampling can change the distance of a synthetic scroll.
+    chrome_switches.append('disable-features=ResamplingScrollEvents')
+    options['args'] = chrome_switches
+    # TODO(crbug.com/1011000): Work around a bug with headless on Mac.
+    if (util.GetPlatformName() == 'mac' and
+        browser_name == 'chrome-headless-shell'):
+      options['excludeSwitches'] = ['--enable-logging']
+    if chrome_binary is not None:
+      options['binary'] = chrome_binary
+    if _MINIDUMP_PATH:
+      options['minidumpPath'] =  _MINIDUMP_PATH
+    return {
+        'method': 'session.new',
+        'params': {
+            'capabilities': {
+                'alwaysMatch': {
+                    'browserName': browser_name,
+                    'goog:chromeOptions': options,
+                    'goog:testName': self.id(),
+                }
+            }
+        }
+    }
+
 
   def createWebSocketConnection(self, session_id = None):
     server_url = _CHROMEDRIVER_SERVER_URL
@@ -6470,22 +6669,28 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
 
   def testSessionNew(self):
     conn = self.createWebSocketConnection()
-    response = conn.SendCommand({
-      'method': 'session.new',
-      'params': {
-          'capabilities': {}
-      }
-    })
+    response = conn.SendCommand(self.createSessionNewCommand())
     self.assertRegex(response['sessionId'], '\\w+')
+
+  def testSessionNewWithUnknownBrowserName(self):
+    """Tests that unknown browserName in the capabilities is treated as error
+    """
+    conn = self.createWebSocketConnection()
+    with self.assertRaises(chromedriver.SessionNotCreated):
+      conn.SendCommand({
+        'method': 'session.new',
+        'params': {
+            'capabilities': {
+                'alwaysMatch': {
+                    'browserName': 'quick-brown-dog',
+                }
+            }
+        }
+      })
 
   def testStatusInActiveSession(self):
     conn = self.createWebSocketConnection()
-    conn.SendCommand({
-      'method': 'session.new',
-      'params': {
-          'capabilities': {}
-      }
-    })
+    conn.SendCommand(self.createSessionNewCommand())
     status = conn.SendCommand({
       'method': 'session.status',
       'params': {}
@@ -6495,30 +6700,14 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
 
   def testSessionNewIfSessionAlreadyCreated(self):
     conn = self.createWebSocketConnection()
-    conn.SendCommand({
-      'method': 'session.new',
-      'params': {
-          'capabilities': {}
-      }
-    })
-
+    conn.SendCommand(self.createSessionNewCommand())
     with self.assertRaisesRegex(chromedriver.SessionNotCreated,
                   "session not created: session already exists"):
-      conn.SendCommand({
-        'method': 'session.new',
-        'params': {
-            'capabilities': {}
-        }
-      })
+      conn.SendCommand(self.createSessionNewCommand())
 
   def testAnySessionCommand(self):
     conn = self.createWebSocketConnection()
-    conn.SendCommand({
-      'method': 'session.new',
-      'params': {
-          'capabilities': {}
-      }
-    })
+    conn.SendCommand(self.createSessionNewCommand())
     response = conn.SendCommand({
       'method': 'browsingContext.getTree',
       'params': {
@@ -6554,12 +6743,7 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
 
   def testSessionCommandInEndedSession(self):
     conn = self.createWebSocketConnection()
-    conn.SendCommand({
-      'method': 'session.new',
-      'params': {
-          'capabilities': {}
-      }
-    })
+    conn.SendCommand(self.createSessionNewCommand())
     conn.SendCommand({
       'method': 'session.end',
       'params': {
@@ -6574,12 +6758,7 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
 
   def testSessionCommandInEndedSessionNoWait(self):
     conn = self.createWebSocketConnection()
-    conn.PostCommand({
-      'method': 'session.new',
-      'params': {
-          'capabilities': {}
-      }
-    })
+    conn.SendCommand(self.createSessionNewCommand())
     conn.PostCommand({
       'method': 'session.end',
       'params': {
@@ -6603,12 +6782,7 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
 
   def testMultipleConnectionsToSameSession(self):
     conn1 = self.createWebSocketConnection()
-    response = conn1.SendCommand({
-      'method': 'session.new',
-      'params': {
-          'capabilities': {}
-      }
-    })
+    response = conn1.SendCommand(self.createSessionNewCommand())
     session_id = response['sessionId']
     conn2 = self.createWebSocketConnection(session_id=session_id)
     response = conn1.SendCommand({
@@ -6641,12 +6815,7 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
 
   def testParallelConnectionIsClosedOnSessionEnd(self):
     conn1 = self.createWebSocketConnection()
-    response = conn1.SendCommand({
-      'method': 'session.new',
-      'params': {
-          'capabilities': {}
-      }
-    })
+    response = conn1.SendCommand(self.createSessionNewCommand())
     session_id = response['sessionId']
     conn2 = self.createWebSocketConnection(session_id=session_id)
     conn2.SendCommand({
@@ -7205,14 +7374,19 @@ class CustomBidiMapperTest(ChromeDriverBaseTest):
   """Base class for testing chromedriver with a custom bidi mapper path."""
 
   def CreateDriver(self, bidi_mapper_path=None, **kwargs):
+    log_path = os.path.join(_MINIDUMP_PATH, self.id() + '.chromedriver.log')
+
     chromedriver_server = server.Server(
-        _CHROMEDRIVER_BINARY, bidi_mapper_path=bidi_mapper_path)
+        _CHROMEDRIVER_BINARY,
+        log_path=log_path,
+        bidi_mapper_path=bidi_mapper_path)
 
     driver = chromedriver.ChromeDriver(server_url=chromedriver_server.GetUrl(),
                                      server_pid=chromedriver_server.GetPid(),
                                      chrome_binary=_CHROME_BINARY,
                                      test_name=self.id(),
                                      web_socket_url=True,
+                                     browser_name=_BROWSER_NAME,
                                      **kwargs)
     self._drivers += [driver]
     return driver
@@ -7468,7 +7642,8 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
 
     self._accounts = self._default_accounts
 
-    self._driver.ConfirmIdpLogin(self._vendor_id)
+    self._driver.ClickFedCmDialogButton(self._vendor_id,
+                                        "ConfirmIdpLoginContinue")
 
     self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
     accounts = self._driver.GetAccounts()
@@ -7522,6 +7697,21 @@ if __name__ == '__main__':
       action='store_true',
       default=False,
       help='Allow ChromeDriver to run with an incompatible Chrome version')
+  parser.add_argument(
+      '--browser-name',
+      default=None,
+      help='Browser specific test subset selector. Inferred from the path '
+           'to the binary if possible. Otherwise defaults to chrome')
+
+  ##############################################################################
+  # Note for other Chromium based browsers!!!
+  # Path inference works only for Chrome and chrome-headless-shell.
+  # Therefore you need to pass the path to your browser explicitly via the
+  # --chrome argument.
+  # The test set for your browser most likely coincides with the test set for
+  # 'chrome'. Therefore you need to pass --browser-name=chrome or just omit this
+  # argument altogether as 'chrome' is already the default value.
+  ##############################################################################
 
   options = parser.parse_args()
 
@@ -7568,39 +7758,34 @@ if __name__ == '__main__':
   global _CHROMEDRIVER_SERVER_URL
   _CHROMEDRIVER_SERVER_URL = chromedriver_server.GetUrl()
 
-
   global _CHROME_BINARY
+  browser_name = options.browser_name
+
   if options.chrome:
     _CHROME_BINARY = util.GetAbsolutePathOfUserPath(options.chrome)
+    if browser_name is None:
+      browser_name = _InferBrowserName(options.chrome)
   else:
     # In some test environments (such as commit queue), it's not convenient to
     # specify Chrome binary location on the command line. Try to use heuristics
     # to locate the Chrome binary next to the ChromeDriver binary.
     driver_path = os.path.dirname(_CHROMEDRIVER_BINARY)
-    chrome_path = None
-    platform = util.GetPlatformName()
-    if platform == 'linux':
-      chrome_path = os.path.join(driver_path, 'chrome')
-    elif platform == 'mac':
-      if os.path.exists(os.path.join(driver_path,
-                                     'Google Chrome for Testing.app')):
-          chrome_path = os.path.join(driver_path,
-                                     'Google Chrome for Testing.app',
-                                     'Contents', 'MacOS',
-                                     'Google Chrome for Testing')
-      elif os.path.exists(os.path.join(driver_path, 'Google Chrome.app')):
-        chrome_path = os.path.join(driver_path, 'Google Chrome.app',
-                                   'Contents', 'MacOS', 'Google Chrome')
-      else:
-        chrome_path = os.path.join(driver_path, 'Chromium.app',
-                                   'Contents', 'MacOS', 'Chromium')
-    elif platform == 'win':
-      chrome_path = os.path.join(driver_path, 'chrome.exe')
 
-    if chrome_path is not None and os.path.exists(chrome_path):
-      _CHROME_BINARY = chrome_path
-    else:
-      _CHROME_BINARY = None
+    if browser_name is None:
+      browser_name = 'chrome'
+    _CHROME_BINARY = _InferBrowserPath(browser_name,
+                                       driver_path,
+                                       util.GetPlatformName())
+    if _CHROME_BINARY is None:
+      print(('Failed to find the browser "%s". ' % browser_name) +
+            'Delegating this task to ChromeDriver')
+
+  # If the browser lookup mechanism of the tests fails then this task is
+  # delegated to ChromeDriver. The later needs to know which browser to search.
+  # Therefore the browser name is stored in a global variable and passed to
+  # ChromeDriver via the "browserName" capability.
+  global _BROWSER_NAME
+  _BROWSER_NAME = browser_name
 
   global _ANDROID_PACKAGE_KEY
   _ANDROID_PACKAGE_KEY = options.android_package
@@ -7618,7 +7803,7 @@ if __name__ == '__main__':
     if _ANDROID_PACKAGE_KEY:
       negative_filter = _ANDROID_NEGATIVE_FILTER[_ANDROID_PACKAGE_KEY]
     else:
-      negative_filter = _GetDesktopNegativeFilter()
+      negative_filter = _GetDesktopNegativeFilter(_BROWSER_NAME)
 
     if options.test_type is not None:
       if options.test_type == 'integration':

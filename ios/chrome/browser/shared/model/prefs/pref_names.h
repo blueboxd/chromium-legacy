@@ -84,6 +84,7 @@ extern const char kLinkPreviewEnabled[];
 extern const char kNTPContentSuggestionsEnabled[];
 extern const char kNTPContentSuggestionsForSupervisedUserEnabled[];
 extern const char kNTPFollowingFeedSortType[];
+extern const char kNTPLensEntryPointNewBadgeShownCount[];
 extern const char kDefaultFollowingFeedSortTypeChanged[];
 extern const char kOSLockdownModeEnabled[];
 extern const char kOverflowMenuDestinationUsageHistory[];
@@ -101,6 +102,7 @@ extern const char kTabPickupLastDisplayedURL[];
 extern const char kTrackPricesOnTabsEnabled[];
 extern const char kLensCameraAssistedSearchPolicyAllowed[];
 extern const char kWebInspectorEnabled[];
+extern const char kDetectUnitsEnabled[];
 
 extern const char kNetworkPredictionSetting[];
 

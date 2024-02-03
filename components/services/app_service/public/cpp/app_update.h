@@ -54,8 +54,18 @@ struct RunOnOsLogin;
 // See components/services/app_service/README.md for more details.
 class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
  public:
-  // Modifies |state| by copying over all of |delta|'s known fields: those
-  // fields whose values aren't "unknown". The |state| may not be nullptr.
+  // Modifies `new_delta` by copying over all of `delta`'s known fields: those
+  // fields whose values aren't "unknown". The `new_delta` may not be nullptr.
+  //
+  // For `icon_key`, if `new_delta`'s `update_version` is true, keep that as
+  // true. Otherwise, copying `delta`'s `icon_key` if it has a value.
+  static void MergeDelta(App* new_delta, App* delta);
+
+  // Modifies `state` by copying over all of `delta`'s known fields: those
+  // fields whose values aren't "unknown". The `state` may not be nullptr.
+  //
+  // For `icon_key`, if `delta`'s `update_version` is true, increase `state`'s
+  // `update_version`.
   static void Merge(App* state, const App* delta);
 
   // Returns true if there are some changed for `delta` compared with `state`.
@@ -178,6 +188,9 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   absl::optional<apps::RunOnOsLogin> RunOnOsLogin() const;
   bool RunOnOsLoginChanged() const;
 
+  absl::optional<bool> AllowClose() const;
+  bool AllowCloseChanged() const;
+
   const ::AccountId& AccountId() const;
 
   absl::optional<uint64_t> AppSizeInBytes() const;
@@ -185,6 +198,16 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
 
   absl::optional<uint64_t> DataSizeInBytes() const;
   bool DataSizeInBytesChanged() const;
+
+  // App-specified supported locales.
+  const std::vector<std::string>& SupportedLocales() const;
+  bool SupportedLocalesChanged() const;
+
+  // Currently selected locale, empty string means system language is used.
+  // ARC-specific note: Based on Android implementation, `selected_locale`
+  //  is not necessarily part of `supported_locales`.
+  absl::optional<std::string> SelectedLocale() const;
+  bool SelectedLocaleChanged() const;
 
   const App* State() const { return state_.get(); }
   const App* Delta() const { return delta_.get(); }

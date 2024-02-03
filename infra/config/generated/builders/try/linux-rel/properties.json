@@ -1,17 +1,20 @@
 {
   "$build/chromium_orchestrator": {
     "compilator": "linux-rel-compilator",
-    "compilator_watcher_git_revision": "e3cad57252d996ab02463019e7f49343d739b885"
+    "compilator_watcher_git_revision": "039b345114555dea8996630f1fc6e08319fa0422"
   },
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/linux-rel/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "GPU Linux Builder",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -37,7 +40,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux Builder",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -63,7 +66,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux Release (NVIDIA)",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -86,7 +89,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "GPU Linux Builder",
-                "project": "chromium-m120"
+                "project": "chromium"
               }
             }
           },
@@ -94,7 +97,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux Tests",
-              "project": "chromium-m120"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -117,7 +120,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Linux Builder",
-                "project": "chromium-m120"
+                "project": "chromium"
               }
             }
           }
@@ -127,24 +130,24 @@
         {
           "bucket": "ci",
           "builder": "GPU Linux Builder",
-          "project": "chromium-m120"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "Linux Builder",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Linux Release (NVIDIA)",
-          "project": "chromium-m120"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "Linux Tests",
-          "project": "chromium-m120"
+          "project": "chromium"
         }
       ]
     }

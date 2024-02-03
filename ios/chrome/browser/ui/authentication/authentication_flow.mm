@@ -21,14 +21,14 @@
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/capabilities_types.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/constants.h"
-#import "ios/chrome/browser/signin/system_identity.h"
-#import "ios/chrome/browser/signin/system_identity_manager.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/capabilities_types.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/constants.h"
+#import "ios/chrome/browser/signin/model/system_identity.h"
+#import "ios/chrome/browser/signin/model/system_identity_manager.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -130,6 +130,10 @@ bool HasMachineLevelPolicies() {
   NSString* _dmToken;
   // ID of the client that is registered for user policy.
   NSString* _clientID;
+  // List of IDs that represents the domain of the user. The list will be used
+  // to compare with a similiar list from device mangement to understand whether
+  // user and device are managed by the same domain.
+  NSArray<NSString*>* _userAffiliationIDs;
 
   // This AuthenticationFlow keeps a reference to `self` while a sign-in flow is
   // is in progress to ensure it outlives any attempt to destroy it in
@@ -400,6 +404,7 @@ bool HasMachineLevelPolicies() {
       [_performer fetchUserPolicy:browserState
                       withDmToken:_dmToken
                          clientID:_clientID
+               userAffiliationIDs:_userAffiliationIDs
                          identity:_identityToSignIn];
       return;
 
@@ -614,11 +619,14 @@ bool HasMachineLevelPolicies() {
 }
 
 - (void)didRegisterForUserPolicyWithDMToken:(NSString*)dmToken
-                                   clientID:(NSString*)clientID {
+                                   clientID:(NSString*)clientID
+                         userAffiliationIDs:
+                             (NSArray<NSString*>*)userAffiliationIDs {
   DCHECK_EQ(REGISTER_FOR_USER_POLICY, _state);
 
   _dmToken = dmToken;
   _clientID = clientID;
+  _userAffiliationIDs = userAffiliationIDs;
   [self continueSignin];
 }
 

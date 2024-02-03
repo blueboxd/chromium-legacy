@@ -386,14 +386,14 @@ void ExtensionMessagePort::RevalidatePort() {
 void ExtensionMessagePort::DispatchOnConnect(
     mojom::ChannelType channel_type,
     const std::string& channel_name,
-    absl::optional<base::Value::Dict> source_tab,
+    std::optional<base::Value::Dict> source_tab,
     const ExtensionApiFrameIdMap::FrameData& source_frame,
     int guest_process_id,
     int guest_render_frame_routing_id,
     const MessagingEndpoint& source_endpoint,
     const std::string& target_extension_id,
     const GURL& source_url,
-    absl::optional<url::Origin> source_origin) {
+    std::optional<url::Origin> source_origin) {
 #if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   for (auto* frame : pending_frames_) {
     frames_[frame] = {};
@@ -445,8 +445,8 @@ void ExtensionMessagePort::DispatchOnConnect(
 
     ExtensionWebContentsObserver::GetForWebContents(
         content::WebContents::FromRenderFrameHost(frame))
-        ->GetLocalFrame(frame)
-        ->DispatchOnConnect(
+        ->GetLocalFrameChecked(frame)
+        .DispatchOnConnect(
             port_id_, channel_type, channel_name, source.Clone(), info.Clone(),
             std::move(message_port), std::move(message_port_host),
             base::BindOnce(&ExtensionMessagePort::OnConnectResponse,
@@ -466,8 +466,11 @@ void ExtensionMessagePort::DispatchOnConnect(
                   worker.render_process_id,
                   PortContext::ForWorker(worker.thread_id, worker.version_id,
                                          worker.extension_id));
-
-      host->GetServiceWorker()->DispatchOnConnect(
+      auto* service_worker_remote = host->GetServiceWorker();
+      if (!service_worker_remote) {
+        continue;
+      }
+      service_worker_remote->DispatchOnConnect(
           port_id_, channel_type, channel_name, source.Clone(), info.Clone(),
           std::move(message_port), std::move(message_port_host),
           base::BindOnce(&ExtensionMessagePort::OnConnectResponse,
@@ -762,7 +765,7 @@ std::unique_ptr<IPC::Message> ExtensionMessagePort::BuildDispatchOnConnectIPC(
     const MessagingEndpoint& source_endpoint,
     const std::string& target_extension_id,
     const GURL& source_url,
-    absl::optional<url::Origin> source_origin,
+    std::optional<url::Origin> source_origin,
     const IPCTarget& target) {
   ExtensionMsg_TabConnectionInfo source;
 

@@ -20,13 +20,11 @@
 
 namespace blink {
 
-class NGHighlightPainterTest : public PaintControllerPaintTest,
-                               private ScopedHighlightOverlayPaintingForTest {
+class NGHighlightPainterTest : public PaintControllerPaintTest {
  public:
   explicit NGHighlightPainterTest(
       LocalFrameClient* local_frame_client = nullptr)
-      : PaintControllerPaintTest(local_frame_client),
-        ScopedHighlightOverlayPaintingForTest(true) {}
+      : PaintControllerPaintTest(local_frame_client) {}
 };
 
 INSTANTIATE_PAINT_TEST_SUITE_P(NGHighlightPainterTest);
@@ -75,7 +73,7 @@ TEST_P(NGHighlightPainterTest, FastSpellingGrammarPaintCase) {
         LineRelativeRect::CreateFromLineBox(physical_rect, true);
     NGTextPainter text_painter(
         graphics_context, text_item.ScaledFont(), rect,
-        LineRelativeOffset::CreateFromBoxOrigin(physical_offset), rotated_rect,
+        LineRelativeOffset::CreateFromBoxOrigin(physical_offset),
         &inline_context, true);
     NGTextDecorationPainter decoration_painter(text_painter, text_item,
                                                paint_info, style, text_style,

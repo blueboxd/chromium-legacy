@@ -213,6 +213,12 @@ bool AutofillClient::CloseWebauthnDialog() {
   // This is overridden by platform subclasses.
   return false;
 }
+
+void AutofillClient::OfferVirtualCardOptions(
+    const std::vector<CreditCard*>& candidates,
+    base::OnceCallback<void(const std::string&)> callback) {
+  // This is overridden by platform subclasses.
+}
 #else
 void AutofillClient::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const std::u16string&)> callback) {
@@ -261,6 +267,16 @@ void AutofillClient::ConfirmSaveCreditCardToCloud(
     UploadSaveCardPromptCallback callback) {
   // This is overridden by platform subclasses.
 }
+
+void AutofillClient::ConfirmSaveIbanLocally(const Iban& iban,
+                                            bool should_show_prompt,
+                                            SaveIbanPromptCallback callback) {}
+
+void AutofillClient::ConfirmUploadIbanToCloud(
+    const Iban& iban,
+    const LegalMessageLines& legal_message_lines,
+    bool should_show_prompt,
+    SaveIbanPromptCallback callback) {}
 
 void AutofillClient::CreditCardUploadCompleted(bool card_saved) {
   // This is overridden by platform subclasses.
@@ -323,6 +339,11 @@ const AutofillAblationStudy& AutofillClient::GetAblationStudy() const {
   // As finch configs are profile independent we can use a static instance here.
   static base::NoDestructor<AutofillAblationStudy> ablation_study;
   return *ablation_study;
+}
+
+void AutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {
+  // This is overridden by platform subclasses.
+  NOTIMPLEMENTED();
 }
 
 std::unique_ptr<device_reauth::DeviceAuthenticator>

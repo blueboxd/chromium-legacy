@@ -199,15 +199,15 @@ bool IsStorageKeySessionOnly(
   return false;
 }
 
-void RecordStoreSourceStatus(StoreSourceResult result) {
+void RecordStoreSourceStatus(const StoreSourceResult& result) {
   static_assert(StorableSource::Result::kMaxValue ==
                     StorableSource::Result::kExceedsMaxChannelCapacity,
                 "Bump version of Conversions.SourceStoredStatus8 histogram.");
   base::UmaHistogramEnumeration("Conversions.SourceStoredStatus8",
-                                result.status);
+                                result.status());
 }
 
-void RecordCreateReportStatus(CreateReportResult result) {
+void RecordCreateReportStatus(const CreateReportResult& result) {
   static_assert(
       AttributionTrigger::EventLevelResult::kMaxValue ==
           AttributionTrigger::EventLevelResult::kNoMatchingTriggerData,
@@ -639,10 +639,13 @@ void AttributionManagerImpl::OnSourceStored(
 
   base::Time now = base::Time::Now();
   for (auto& observer : observers_) {
-    observer.OnSourceHandled(source, now, cleared_debug_key, result.status);
+    observer.OnSourceHandled(source, now, cleared_debug_key, result.status());
   }
 
-  scheduler_timer_->MaybeSet(result.min_fake_report_time);
+  if (const auto* success_noised =
+          absl::get_if<StoreSourceResult::SuccessNoised>(&result.result())) {
+    scheduler_timer_->MaybeSet(success_noised->min_fake_report_time);
+  }
 
   NotifySourcesChanged();
 
@@ -828,12 +831,10 @@ void AttributionManagerImpl::ProcessNextEvent(bool registration_allowed,
             if (registration_allowed) {
               StoreSource(std::move(source), is_debug_cookie_set);
             } else {
-              OnSourceStored(
-                  source,
-                  /*cleared_debug_key=*/absl::nullopt,
-                  /*is_debug_cookie_set=*/false,
-                  StoreSourceResult(
-                      StorableSource::Result::kProhibitedByBrowserPolicy));
+              OnSourceStored(source,
+                             /*cleared_debug_key=*/absl::nullopt,
+                             /*is_debug_cookie_set=*/false,
+                             StoreSourceResult::ProhibitedByBrowserPolicy());
             }
           },
           [&](AttributionTrigger& trigger) {

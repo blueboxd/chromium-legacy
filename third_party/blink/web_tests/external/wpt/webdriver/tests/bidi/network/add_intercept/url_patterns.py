@@ -1,7 +1,6 @@
 import asyncio
 
 import pytest
-import pytest_asyncio
 
 from .. import assert_before_request_sent_event
 
@@ -59,18 +58,16 @@ def substitute_host(server_config):
 )
 async def test_pattern_patterns_matching(
     wait_for_event,
-    setup_network_test,
+    subscribe_events,
+    top_context,
     add_intercept,
     fetch,
     substitute_host,
+    wait_for_future_safe,
     patterns,
     url_template,
 ):
-    await setup_network_test(
-        events=[
-            "network.beforeRequestSent",
-        ]
-    )
+    await subscribe_events(events=["network.beforeRequestSent"],  contexts=[top_context["context"]])
 
     for pattern in patterns:
         for key in pattern:
@@ -82,7 +79,7 @@ async def test_pattern_patterns_matching(
 
     on_network_event = wait_for_event("network.beforeRequestSent")
     asyncio.ensure_future(fetch(substitute_host(url_template)))
-    event = await on_network_event
+    event = await wait_for_future_safe(on_network_event)
 
     assert_before_request_sent_event(event, is_blocked=True, intercepts=[intercept])
 
@@ -108,18 +105,16 @@ async def test_pattern_patterns_matching(
 )
 async def test_pattern_patterns_not_matching(
     wait_for_event,
-    setup_network_test,
+    subscribe_events,
+    top_context,
     add_intercept,
     fetch,
     substitute_host,
+    wait_for_future_safe,
     pattern,
     url_template,
 ):
-    await setup_network_test(
-        events=[
-            "network.beforeRequestSent",
-        ]
-    )
+    await subscribe_events(events=["network.beforeRequestSent"],  contexts=[top_context["context"]])
 
     for key in pattern:
         pattern[key] = substitute_host(pattern[key])
@@ -130,7 +125,7 @@ async def test_pattern_patterns_not_matching(
 
     on_network_event = wait_for_event("network.beforeRequestSent")
     asyncio.ensure_future(fetch(substitute_host(url_template)))
-    event = await on_network_event
+    event = await wait_for_future_safe(on_network_event)
 
     assert_before_request_sent_event(event, is_blocked=False)
 
@@ -160,18 +155,16 @@ async def test_pattern_patterns_not_matching(
 )
 async def test_string_patterns_matching(
     wait_for_event,
-    setup_network_test,
+    subscribe_events,
+    top_context,
     add_intercept,
     fetch,
     substitute_host,
+    wait_for_future_safe,
     pattern,
     url_template,
 ):
-    await setup_network_test(
-        events=[
-            "network.beforeRequestSent",
-        ]
-    )
+    await subscribe_events(events=["network.beforeRequestSent"],  contexts=[top_context["context"]])
 
     intercept = await add_intercept(
         phases=["beforeRequestSent"],
@@ -180,7 +173,7 @@ async def test_string_patterns_matching(
 
     on_network_event = wait_for_event("network.beforeRequestSent")
     asyncio.ensure_future(fetch(substitute_host(url_template)))
-    event = await on_network_event
+    event = await wait_for_future_safe(on_network_event)
 
     assert_before_request_sent_event(event, is_blocked=True, intercepts=[intercept])
 
@@ -204,18 +197,16 @@ async def test_string_patterns_matching(
 )
 async def test_string_patterns_not_matching(
     wait_for_event,
-    setup_network_test,
+    subscribe_events,
+    top_context,
     add_intercept,
     fetch,
     substitute_host,
+    wait_for_future_safe,
     pattern,
     url_template,
 ):
-    await setup_network_test(
-        events=[
-            "network.beforeRequestSent",
-        ]
-    )
+    await subscribe_events(events=["network.beforeRequestSent"],  contexts=[top_context["context"]])
 
     await add_intercept(
         phases=["beforeRequestSent"],
@@ -224,6 +215,6 @@ async def test_string_patterns_not_matching(
 
     on_network_event = wait_for_event("network.beforeRequestSent")
     asyncio.ensure_future(fetch(substitute_host(url_template)))
-    event = await on_network_event
+    event = await wait_for_future_safe(on_network_event)
 
     assert_before_request_sent_event(event, is_blocked=False)

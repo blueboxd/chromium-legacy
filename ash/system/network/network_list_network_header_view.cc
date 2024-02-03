@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/image_view.h"
@@ -65,10 +66,6 @@ void NetworkListNetworkHeaderView::SetToggleState(bool enabled,
                                                   bool is_on,
                                                   bool animate_toggle) {
   entry_row()->SetEnabled(enabled);
-  // Update the on/off label.
-  entry_row()->text_label()->SetText(l10n_util::GetStringUTF16(
-      is_on ? enabled_label_id_ : IDS_ASH_QUICK_SETTINGS_NETWORK_DISABLED));
-
   toggle_->SetEnabled(enabled);
   toggle_->SetAcceptsEvents(enabled);
   if (animate_toggle) {
@@ -100,5 +97,8 @@ void NetworkListNetworkHeaderView::UpdateToggleState(bool has_new_state) {
   toggle_->SetAcceptsEvents(false);
   OnToggleToggled(has_new_state ? toggle_->GetIsOn() : !toggle_->GetIsOn());
 }
+
+BEGIN_METADATA(NetworkListNetworkHeaderView)
+END_METADATA
 
 }  // namespace ash

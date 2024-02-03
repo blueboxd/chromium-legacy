@@ -84,12 +84,14 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorProfileMenuSyncPausedIcon] = {ui::kColorSysPrimary};
 
   // Tab Search colors.
+  mixer[kColorTabSearchCardBackground] = {ui::kColorSysSurface5};
   mixer[kColorTabSearchBackground] = {ui::kColorSysSurface};
   mixer[kColorTabSearchDivider] = {ui::kColorSysDivider};
   mixer[kColorTabSearchMediaIcon] = {ui::kColorSysOnSurfaceSubtle};
   mixer[kColorTabSearchMediaRecordingIcon] = {ui::kColorSysError};
   mixer[kColorTabSearchPrimaryForeground] = {ui::kColorSysOnSurface};
   mixer[kColorTabSearchSecondaryForeground] = {ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorTabSearchSelected] = {ui::kColorSysPrimary};
   mixer[kColorTabSearchScrollbarThumb] = {ui::kColorSysPrimary};
 
   // Side Panel colors.
@@ -106,6 +108,19 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   // Cast Dialog colors.
   mixer[kColorCastDialogHelpIcon] = {ui::kColorSysPrimary};
 
+  // Help bubble colors.
+  mixer[kColorFeaturePromoBubbleBackground] = {ui::kColorSysPrimary};
+  mixer[kColorFeaturePromoBubbleButtonBorder] = {
+      kColorFeaturePromoBubbleForeground};
+  mixer[kColorFeaturePromoBubbleCloseButtonInkDrop] =
+      AdjustHighlightColorForContrast(kColorFeaturePromoBubbleForeground,
+                                      kColorFeaturePromoBubbleBackground);
+  mixer[kColorFeaturePromoBubbleDefaultButtonBackground] = {
+      kColorFeaturePromoBubbleForeground};
+  mixer[kColorFeaturePromoBubbleDefaultButtonForeground] = {
+      kColorFeaturePromoBubbleBackground};
+  mixer[kColorFeaturePromoBubbleForeground] = {ui::kColorSysOnPrimary};
+
   if (base::FeatureList::IsEnabled(compose::features::kEnableCompose)) {
     // Compose colors.
     mixer[kColorComposeDialogBackground] = {ui::kColorSysSurface};
@@ -114,14 +129,14 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
     mixer[kColorComposeDialogForegroundSubtle] = {ui::kColorSysOnSurfaceSubtle};
     mixer[kColorComposeDialogLink] = {ui::kColorSysPrimary};
     mixer[kColorComposeDialogScrollbarThumb] = {ui::kColorSysPrimary};
-    mixer[kColorComposeDialogResultBackground] = {ui::kColorSysBaseContainer};
+    mixer[kColorComposeDialogResultBackground] = {ui::kColorSysSurface5};
     mixer[kColorComposeDialogResultForeground] = {ui::kColorSysOnSurface};
     mixer[kColorComposeDialogResultIcon] = {ui::kColorSysOnSurfaceSubtle};
     mixer[kColorComposeDialogTitle] = {ui::kColorSysOnSurface};
     mixer[kColorComposeDialogTextarea] = {ui::kColorSysOnSurface};
     mixer[kColorComposeDialogTextareaOutline] = {ui::kColorSysNeutralOutline};
     mixer[kColorComposeDialogTextareaPlaceholder] = {
-        ui::kColorSysOnSurfaceSecondary};
+        ui::kColorSysOnSurfaceSubtle};
     mixer[kColorComposeDialogTextareaReadonlyBackground] = {
         ui::kColorSysNeutralContainer};
     mixer[kColorComposeDialogTextareaReadonlyForeground] = {
@@ -201,17 +216,6 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorDownloadShelfForeground] = {ui::kColorSysOnSurfaceSubtle};
   mixer[kColorExtensionIconBadgeBackgroundDefault] = {
       ui::kColorSysNeutralContainer};
-  mixer[kColorFeaturePromoBubbleBackground] = {ui::kColorSysPrimary};
-  mixer[kColorFeaturePromoBubbleButtonBorder] = {
-      kColorFeaturePromoBubbleForeground};
-  mixer[kColorFeaturePromoBubbleCloseButtonInkDrop] =
-      AdjustHighlightColorForContrast(kColorFeaturePromoBubbleForeground,
-                                      kColorFeaturePromoBubbleBackground);
-  mixer[kColorFeaturePromoBubbleDefaultButtonBackground] = {
-      kColorFeaturePromoBubbleForeground};
-  mixer[kColorFeaturePromoBubbleDefaultButtonForeground] = {
-      kColorFeaturePromoBubbleBackground};
-  mixer[kColorFeaturePromoBubbleForeground] = {ui::kColorSysOnPrimary};
   mixer[kColorFindBarBackground] = {ui::kColorSysSurface};
   mixer[kColorFlyingIndicatorBackground] = {kColorToolbar};
   mixer[kColorFlyingIndicatorForeground] = {kColorToolbarButtonIcon};

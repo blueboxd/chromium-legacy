@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/highlight/highlight_registry.h"
@@ -343,6 +344,7 @@ void LocalFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(pending_opacity_updates_);
   visitor->Trace(pending_sticky_updates_);
   visitor->Trace(pending_snap_updates_);
+  visitor->Trace(pending_perform_snap_);
   visitor->Trace(disconnected_elements_with_remembered_size_);
 }
 
@@ -1215,13 +1217,16 @@ void LocalFrameView::ViewportSizeChanged() {
   auto* layout_view = GetLayoutView();
   if (layout_view) {
     // If this is the outermost main frame, we might have got here by
-    // hiding/showing the top controls. In that case, layout won't be
-    // triggered, so we need to clamp the scroll offset here.
+    // hiding/showing the top controls. In that case, layout might not be
+    // triggered, so some things that normally hook into layout need to be
+    // specially notified.
     // TODO(bokan): IsOutermostMainFrame may need to be reevaluated for
     // portals.
     if (GetFrame().IsOutermostMainFrame()) {
-      if (auto* scrollable_area = layout_view->GetScrollableArea())
+      if (auto* scrollable_area = layout_view->GetScrollableArea()) {
         scrollable_area->ClampScrollOffsetAfterOverflowChange();
+        scrollable_area->EnqueueForSnapUpdateIfNeeded();
+      }
     }
 
     layout_view->Layer()->SetNeedsCompositingInputsUpdate();
@@ -1248,8 +1253,7 @@ void LocalFrameView::InvalidateLayoutForViewportConstrainedObjects() {
   auto* layout_view = GetLayoutView();
   if (layout_view && !layout_view->NeedsLayout()) {
     for (const auto& fragment : layout_view->PhysicalFragments()) {
-      if (RuntimeEnabledFeatures::LayoutNewStickyLogicEnabled() &&
-          fragment.StickyDescendants()) {
+      if (fragment.StickyDescendants()) {
         layout_view->SetNeedsSimplifiedLayout();
         return;
       }
@@ -1701,12 +1705,8 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
   }
 
   UpdateDocumentAnnotatedRegions();
+  ExecutePendingStickyUpdates();
 
-  if (RuntimeEnabledFeatures::LayoutNewStickyLogicEnabled()) {
-    ExecutePendingStickyUpdates();
-  } else {
-    GetLayoutView()->Layer()->UpdateLayerPositionsAfterLayout();
-  }
   frame_->Selection().DidLayout();
 
   FontFaceSetDocument::DidLayout(*document);
@@ -2453,6 +2453,18 @@ void LocalFrameView::ClearResizeObserverLimit() {
   });
 }
 
+bool LocalFrameView::ShouldDeferLayoutSnap() const {
+  // Scrollers that are snap containers normally need to re-snap after layout
+  // changes, but we defer the snap until the user is done scrolling to avoid
+  // fighting with snap animations on the compositor thread.
+  if (auto* web_frame = WebLocalFrameImpl::FromFrame(frame_)) {
+    if (auto* widget = web_frame->LocalRootFrameWidget()) {
+      return widget->IsScrollGestureActive();
+    }
+  }
+  return false;
+}
+
 bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     DocumentLifecycle::LifecycleState target_state) {
   TRACE_EVENT0("blink,benchmark",
@@ -2480,11 +2492,7 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     frame_view.PerformScrollAnchoringAdjustments();
   });
 
-  if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
-    ExecutePendingSnapUpdates();
-  } else {
-    frame_->GetDocument()->PerformScrollSnappingTasks();
-  }
+  ExecutePendingSnapUpdates();
 
   EnqueueScrollEvents();
 
@@ -2695,11 +2703,6 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
     if (root_layer && root_layer->layer_tree_host()) {
       root_layer->layer_tree_host()->mutator_host()->InitClientAnimationState();
     }
-  }
-
-  if (!RuntimeEnabledFeatures::SimplifiedClearPropertyTreeChangeEnabled() &&
-      paint_artifact_compositor_) {
-    paint_artifact_compositor_->ClearPropertyTreeChangedState();
   }
 
   if (GetPage())
@@ -3264,7 +3267,8 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
   // FIXME: We are assuming a shrink-to-fit printing implementation. A cropping
   // implementation should not do this!
   float overall_scale_factor = 1.0;
-  for (const NGLink& link : layout_view->GetPhysicalFragment(0)->Children()) {
+  for (const PhysicalFragmentLink& link :
+       layout_view->GetPhysicalFragment(0)->Children()) {
     const auto& page = To<NGPhysicalBoxFragment>(*link);
     // Check the inline axis overflow on each individual page, to find the
     // largest relative overflow.
@@ -4261,13 +4265,6 @@ IntersectionUpdateResult LocalFrameView::UpdateViewportIntersectionsForSubtree(
     }
   }
 
-  UMA_HISTOGRAM_COUNTS_1000(
-      "Blink.IntersectionObservation.FrameMinScrollDeltaToUpdateX",
-      base::saturated_cast<int>(min_scroll_delta_to_update_intersection_.x()));
-  UMA_HISTOGRAM_COUNTS_1000(
-      "Blink.IntersectionObservation.FrameMinScrollDeltaToUpdateY",
-      base::saturated_cast<int>(min_scroll_delta_to_update_intersection_.y()));
-
   if (DocumentFencedFrames* fenced_frames =
           DocumentFencedFrames::Get(*frame_->GetDocument())) {
     for (HTMLFencedFrameElement* fenced_frame :
@@ -4316,6 +4313,26 @@ void LocalFrameView::CrossOriginToParentFrameChanged() {
   if (LayoutView* layout_view = GetLayoutView()) {
     if (PaintLayer* root_layer = layout_view->Layer())
       root_layer->SetNeedsCompositingInputsUpdate();
+  }
+}
+
+void LocalFrameView::SetViewportIntersection(
+    const mojom::blink::ViewportIntersectionState& intersection_state) {
+  if (!last_intersection_state_.Equals(intersection_state)) {
+    last_intersection_state_ = intersection_state;
+    int viewport_intersect_area =
+        intersection_state.viewport_intersection.size()
+            .GetCheckedArea()
+            .ValueOrDefault(INT_MAX);
+    int outermost_main_frame_area =
+        intersection_state.outermost_main_frame_size.GetCheckedArea()
+            .ValueOrDefault(INT_MAX);
+    float ratio = 1.0f * viewport_intersect_area / outermost_main_frame_area;
+    const float ratio_threshold =
+        1.0f * features::kLargeFrameSizePercentThreshold.Get() / 100;
+    if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler()) {
+      frame_scheduler->SetVisibleAreaLarge(ratio > ratio_threshold);
+    }
   }
 }
 
@@ -4391,38 +4408,11 @@ void LocalFrameView::SetIntersectionObservationState(
   }
 }
 
-namespace {
-
-enum class IntersectionObservationStateOnScroll {
-  kViewportOnly = 0,
-  kNewlyDesired = 1,
-  kAlreadyDesired = 2,
-  kAlreadyRequired = 3,
-  kMaxValue = 3,
-};
-
-void ReportIntersectionObservationStateOnScroll(
-    IntersectionObservationStateOnScroll state) {
-  UMA_HISTOGRAM_ENUMERATION("Blink.IntersectionObservation.StateOnScroll",
-                            state);
-}
-
-}  // anonymous namespace
-
 void LocalFrameView::UpdateIntersectionObservationStateOnScroll(
     gfx::Vector2dF scroll_delta) {
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
   accumulated_scroll_delta_since_last_intersection_update_ +=
       gfx::Vector2dF(std::abs(scroll_delta.x()), std::abs(scroll_delta.y()));
-  if (intersection_observation_state_ == kDesired) {
-    ReportIntersectionObservationStateOnScroll(
-        IntersectionObservationStateOnScroll::kAlreadyDesired);
-    return;
-  }
-  if (intersection_observation_state_ == kRequired) {
-    ReportIntersectionObservationStateOnScroll(
-        IntersectionObservationStateOnScroll::kAlreadyRequired);
+  if (intersection_observation_state_ >= kDesired) {
     return;
   }
   if (min_scroll_delta_to_update_intersection_.x() <=
@@ -4433,8 +4423,6 @@ void LocalFrameView::UpdateIntersectionObservationStateOnScroll(
     // exceeded min_scroll_delta_to_update_intersection_ since the last
     // intersection observer update, which may change intersection status.
     SetIntersectionObservationState(kDesired);
-    ReportIntersectionObservationStateOnScroll(
-        IntersectionObservationStateOnScroll::kNewlyDesired);
   } else {
     DCHECK(RuntimeEnabledFeatures::IntersectionOptimizationEnabled());
     // Frame viewport intersection is always updated on scroll, regardless of
@@ -4444,9 +4432,21 @@ void LocalFrameView::UpdateIntersectionObservationStateOnScroll(
     // viewport intersection updates are much faster than intersection
     // observer updates, based on UMA data.
     SetIntersectionObservationState(kFrameViewportIntersectionOnly);
-    ReportIntersectionObservationStateOnScroll(
-        IntersectionObservationStateOnScroll::kViewportOnly);
   }
+}
+
+void LocalFrameView::InvalidateIntersectionObservations() {
+  DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kInPrePaint);
+  DCHECK(GetFrame().IsLocalRoot() || !IsAttached());
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    if (auto* controller = frame_view.GetFrame()
+                               .GetDocument()
+                               ->GetIntersectionObserverController()) {
+      if (controller->InvalidateCachedRectsIfNeeded()) {
+        frame_view.SetIntersectionObservationState(LocalFrameView::kDesired);
+      }
+    }
+  });
 }
 
 void LocalFrameView::SetVisualViewportOrOverlayNeedsRepaint() {
@@ -5056,8 +5056,18 @@ void LocalFrameView::AddPendingStickyUpdate(PaintLayerScrollableArea* object) {
   pending_sticky_updates_->insert(object);
 }
 
+bool LocalFrameView::HasPendingStickyUpdate(
+    PaintLayerScrollableArea* object) const {
+  if (pending_sticky_updates_) {
+    return pending_sticky_updates_->Contains(object);
+  }
+  return false;
+}
+
 void LocalFrameView::ExecutePendingStickyUpdates() {
   if (pending_sticky_updates_) {
+    UseCounter::Count(frame_->GetDocument(), WebFeature::kPositionSticky);
+
     // Iteration order of the scrollable-areas doesn't matter as
     // sticky-positioned objects are contained within each scrollable-area.
     for (PaintLayerScrollableArea* scrollable_area : *pending_sticky_updates_) {
@@ -5088,9 +5098,22 @@ void LocalFrameView::ExecutePendingSnapUpdates() {
     for (PaintLayerScrollableArea* scrollable_area : *pending_snap_updates_) {
       auto* snap_container = scrollable_area->GetLayoutBox();
       DCHECK(snap_container->IsScrollContainer());
-      SnapCoordinator::UpdateSnapContainerData(*snap_container);
+      if (SnapCoordinator::UpdateSnapContainerData(*snap_container)) {
+        if (!pending_perform_snap_) {
+          pending_perform_snap_ = MakeGarbageCollected<
+              HeapHashSet<Member<PaintLayerScrollableArea>>>();
+        }
+        pending_perform_snap_->insert(scrollable_area);
+      }
     }
     pending_snap_updates_->clear();
+  }
+
+  if (pending_perform_snap_ && !ShouldDeferLayoutSnap()) {
+    for (PaintLayerScrollableArea* scrollable_area : *pending_perform_snap_) {
+      scrollable_area->SnapAfterLayout();
+    }
+    pending_perform_snap_->clear();
   }
 }
 

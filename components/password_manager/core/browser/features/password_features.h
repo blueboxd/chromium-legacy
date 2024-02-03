@@ -41,12 +41,22 @@ BASE_DECLARE_FEATURE(kNewConfirmationBubbleForGeneratedPasswords);
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+// Have GPM passkeys trigger prefetching affiliation like passwords do.
+BASE_DECLARE_FEATURE(kPasskeysPrefetchAffiliations);
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 BASE_DECLARE_FEATURE(kPasswordGenerationExperiment);
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 BASE_DECLARE_FEATURE(kPasswordManagerEnableReceiverService);
 BASE_DECLARE_FEATURE(kPasswordManagerEnableSenderService);
 BASE_DECLARE_FEATURE(kPasswordManagerLogToTerminal);
+
+#if BUILDFLAG(IS_MAC)
+BASE_DECLARE_FEATURE(kRestartToGainAccessToKeychain);
+#endif  // BUILDFLAG(IS_MAC)
+
 BASE_DECLARE_FEATURE(kSharedPasswordNotificationUI);
 BASE_DECLARE_FEATURE(kSkipUndecryptablePasswords);
 
@@ -68,6 +78,10 @@ extern const base::FeatureParam<int> kMaxSingleUsernameFieldsToStore;
 BASE_DECLARE_FEATURE(kUsernameFirstFlowWithIntermediateValues);
 BASE_DECLARE_FEATURE(kUsernameFirstFlowWithIntermediateValuesPredictions);
 BASE_DECLARE_FEATURE(kUsernameFirstFlowWithIntermediateValuesVoting);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_DECLARE_FEATURE(kUseGMSCoreForBrandingInfo);
+#endif
 
 // All features parameters in alphabetical order.
 

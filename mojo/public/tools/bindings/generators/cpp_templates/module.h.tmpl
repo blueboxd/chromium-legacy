@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include <optional>
 
 {%- if contains_only_enums %}
 #include "mojo/public/cpp/bindings/type_converter.h"
@@ -87,16 +87,6 @@
 {%- for forward_declaration in typemap_forward_declarations %}
 {{forward_declaration}}
 {%- endfor %}
-
-{#--- WTF enum hashing #}
-{%- from "enum_macros.tmpl" import enum_hash_blink%}
-{%- if for_blink %}
-{%-   for enum in all_enums %}
-{%-     if not enum|is_native_only_kind %}
-{{enum_hash_blink(enum)}}
-{%-     endif %}
-{%-   endfor %}
-{%- endif %}
 
 {#--- Constants that need headers (enum types) (basic types go in forward.h) #}
 {%- for constant in module.constants %}

@@ -156,20 +156,20 @@ gfx::GpuMemoryBufferHandle CreateGMBHandle(SharedImageFormat format,
 TestSharedImageInterface::TestSharedImageInterface() = default;
 TestSharedImageInterface::~TestSharedImageInterface() = default;
 
-gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
-    SharedImageFormat format,
-    const gfx::Size& size,
-    const gfx::ColorSpace& color_space,
-    GrSurfaceOrigin surface_origin,
-    SkAlphaType alpha_type,
-    uint32_t usage,
-    base::StringPiece debug_label,
-    gpu::SurfaceHandle surface_handle) {
+scoped_refptr<gpu::ClientSharedImage>
+TestSharedImageInterface::CreateSharedImage(SharedImageFormat format,
+                                            const gfx::Size& size,
+                                            const gfx::ColorSpace& color_space,
+                                            GrSurfaceOrigin surface_origin,
+                                            SkAlphaType alpha_type,
+                                            uint32_t usage,
+                                            base::StringPiece debug_label,
+                                            gpu::SurfaceHandle surface_handle) {
   base::AutoLock locked(lock_);
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   shared_images_.insert(mailbox);
   most_recent_size_ = size;
-  return mailbox;
+  return base::MakeRefCounted<gpu::ClientSharedImage>(mailbox);
 }
 
 scoped_refptr<gpu::ClientSharedImage>
@@ -200,9 +200,11 @@ TestSharedImageInterface::CreateSharedImage(SharedImageFormat format,
                                             gfx::BufferUsage buffer_usage) {
   // Create a GMBHandle and a mailbox and associate the two for usage in
   // MapSharedImage().
-  auto mailbox =
+  auto client_shared_image =
       CreateSharedImage(format, size, color_space, surface_origin, alpha_type,
                         usage, std::move(debug_label), surface_handle);
+  CHECK(client_shared_image);
+  auto mailbox = client_shared_image->mailbox();
 
   auto gmb_handle = CreateGMBHandle(format, size, buffer_usage);
 
@@ -211,7 +213,7 @@ TestSharedImageInterface::CreateSharedImage(SharedImageFormat format,
           gpu::GpuMemoryBufferHandleInfo(std::move(gmb_handle), format, size,
                                          buffer_usage));
 
-  return base::MakeRefCounted<gpu::ClientSharedImage>(mailbox);
+  return client_shared_image;
 }
 
 scoped_refptr<gpu::ClientSharedImage>
@@ -231,7 +233,8 @@ TestSharedImageInterface::CreateSharedImage(
   return base::MakeRefCounted<gpu::ClientSharedImage>(mailbox);
 }
 
-gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
+scoped_refptr<gpu::ClientSharedImage>
+TestSharedImageInterface::CreateSharedImage(
     gfx::GpuMemoryBuffer* gpu_memory_buffer,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gfx::BufferPlane plane,
@@ -244,7 +247,7 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   shared_images_.insert(mailbox);
   most_recent_size_ = gpu_memory_buffer->GetSize();
-  return mailbox;
+  return base::MakeRefCounted<gpu::ClientSharedImage>(mailbox);
 }
 
 void TestSharedImageInterface::UpdateSharedImage(
@@ -276,6 +279,13 @@ void TestSharedImageInterface::DestroySharedImage(
   shared_images_.erase(mailbox);
   mailbox_to_gmb_map_.erase(mailbox);
   most_recent_destroy_token_ = sync_token;
+}
+
+void TestSharedImageInterface::DestroySharedImage(
+    const gpu::SyncToken& sync_token,
+    scoped_refptr<gpu::ClientSharedImage> client_shared_image) {
+  CHECK(client_shared_image->HasOneRef());
+  DestroySharedImage(sync_token, client_shared_image->mailbox());
 }
 
 gpu::SharedImageInterface::SwapChainMailboxes
@@ -345,6 +355,12 @@ TestSharedImageInterface::MapSharedImage(const gpu::Mailbox& mailbox) {
 
   auto* gmb = it->second.get();
   return SharedImageInterface::ScopedMapping::Create(gmb);
+}
+
+std::unique_ptr<gpu::SharedImageInterface::ScopedMapping>
+TestSharedImageInterface::MapSharedImage(
+    const scoped_refptr<gpu::ClientSharedImage>& client_shared_image) {
+  return MapSharedImage(client_shared_image->mailbox());
 }
 
 bool TestSharedImageInterface::CheckSharedImageExists(

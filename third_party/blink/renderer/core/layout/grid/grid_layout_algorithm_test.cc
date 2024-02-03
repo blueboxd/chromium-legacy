@@ -27,12 +27,9 @@ namespace {
 
 }  // namespace
 
-class GridLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest,
-                                private ScopedLayoutNGSubgridForTest {
+class GridLayoutAlgorithmTest : public BaseLayoutAlgorithmTest {
  protected:
-  GridLayoutAlgorithmTest() : ScopedLayoutNGSubgridForTest(true) {}
-
-  void SetUp() override { NGBaseLayoutAlgorithmTest::SetUp(); }
+  void SetUp() override { BaseLayoutAlgorithmTest::SetUp(); }
 
   void BuildGridItemsAndTrackCollections(GridLayoutAlgorithm& algorithm) {
     LayoutUnit unused_intrinsic_block_size;
@@ -132,7 +129,7 @@ class GridLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest,
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         {WritingMode::kHorizontalTb, TextDirection::kLtr},
         LogicalSize(LayoutUnit(1000), kIndefiniteSize));
-    return NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
+    return BaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   }
 
   String DumpFragmentTree(Element* element) {

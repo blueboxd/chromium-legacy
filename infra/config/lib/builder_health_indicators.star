@@ -33,6 +33,11 @@ _default_thresholds = struct(
     ),
 )
 
+_default_spec = struct(
+    thresholds = _default_thresholds,
+    contact_team_email = "",
+)
+
 _blank_thresholds = struct(
     infra_fail_rate = struct(
         average = None,
@@ -50,7 +55,7 @@ _blank_thresholds = struct(
 
 DEFAULT = struct(_default = "_default")
 
-def spec(**kwargs):
+def thresholds(**kwargs):
     return structs.evolve(_blank_thresholds, **kwargs)
 
 def modified_default(**kwargs):
@@ -59,11 +64,15 @@ def modified_default(**kwargs):
 def _exempted_from_contact(bucket, builder):
     return builder in _exempted_from_contact_builders.get(bucket, [])
 
-def register_health_spec(bucket, name, spec, contact_team_email):
+def register_health_spec(bucket, name, thresholds, contact_team_email):
     if not contact_team_email and not _exempted_from_contact(bucket, name):
         fail("Builder " + name + " must have a contact_team_email. All new builders must specify a team email for contact in case the builder stops being healthy or providing value.")
 
-    if spec:
+    if thresholds:
+        spec = struct(
+            thresholds = thresholds,
+            contact_team_email = contact_team_email,
+        )
         health_spec_key = _HEALTH_SPEC.add(
             bucket,
             name,
@@ -82,8 +91,8 @@ def _generate_health_specs(ctx):
         specs.setdefault(bucket, {})[builder] = node.props
 
     result = {
-        "_default": _default_thresholds,
-        "thresholds": specs,
+        "_default": _default_spec,
+        "specs": specs,
     }
 
     ctx.output["health-specs/health-specs.json"] = json.indent(json.encode(result), indent = "  ")
@@ -111,8 +120,6 @@ _exempted_from_contact_builders = {
         "Comparison Android (reclient) (reproxy cache)",
         "Comparison Android (reclient)",
         "Comparison Android (reclient)(CQ)",
-        "Comparison Linux (reclient)",
-        "Comparison Linux (reclient)(CQ)",
         "Comparison Mac (reclient)",
         "Comparison Mac (reclient)(CQ)",
         "Comparison Mac arm64 (reclient)",
@@ -288,19 +295,17 @@ _exempted_from_contact_builders = {
         "ios-device",
         "ios-fieldtrial-rel",
         "ios-m1-simulator",
-        "ios-m1-simulator-cronet",
         "ios-simulator",
         "ios-simulator-code-coverage",
-        "ios-simulator-cronet",
         "ios-simulator-full-configs",
         "ios-simulator-multi-window",
         "ios-simulator-noncq",
         "ios-webkit-tot",
         "ios-wpt-fyi-rel",
         "ios16-beta-simulator",
-        "ios16-sdk-device",
         "ios16-sdk-simulator",
         "ios17-beta-simulator",
+        "ios17-sdk-device",
         "ios17-sdk-simulator",
         "lacros-amd64-generic-binary-size-rel",
         "lacros-amd64-generic-rel (reclient)",
@@ -377,14 +382,10 @@ _exempted_from_contact_builders = {
         "linux-wpt-content-shell-fyi-rel",
         "linux-wpt-content-shell-leak-detection",
         "linux-wpt-fyi-rel",
-        "linux-wpt-identity-fyi-rel",
-        "linux-wpt-input-fyi-rel",
         "mac-angle-chromium-builder",
         "mac-angle-chromium-intel",
-        "mac-archive-dbg",
         "mac-archive-rel",
         "mac-arm-rel-dev",
-        "mac-arm64-archive-dbg",
         "mac-arm64-archive-rel",
         "mac-build-perf",
         "mac-build-perf-developer",
@@ -470,7 +471,6 @@ _exempted_from_contact_builders = {
         "android-10-arm64-rel",
         "android-11-x86-rel",
         "android-12-x64-dbg",
-        "android-12-x64-dual-coverage-exp-rel",
         "android-12-x64-rel",
         "android-12-x64-rel-compilator",
         "android-12-x64-siso-rel",
@@ -498,7 +498,6 @@ _exempted_from_contact_builders = {
         "android-deterministic-dbg",
         "android-deterministic-rel",
         "android-fieldtrial-rel",
-        "android-inverse-fieldtrials-pie-x86-fyi-rel",
         "android-official",
         "android-oreo-arm64-dbg",
         "android-oreo-x86-rel",
@@ -623,13 +622,10 @@ _exempted_from_contact_builders = {
         "ios-device",
         "ios-fieldtrial-rel",
         "ios-m1-simulator",
-        "ios-m1-simulator-cronet",
         "ios-simulator",
         "ios-simulator-code-coverage",
         "ios-simulator-compilator",
-        "ios-simulator-cronet",
         "ios-simulator-full-configs",
-        "ios-simulator-inverse-fieldtrials-fyi",
         "ios-simulator-multi-window",
         "ios-simulator-noncq",
         "ios-wpt-fyi-rel",
@@ -667,7 +663,6 @@ _exempted_from_contact_builders = {
         "linux-chromeos-code-coverage",
         "linux-chromeos-compile-dbg",
         "linux-chromeos-dbg",
-        "linux-chromeos-inverse-fieldtrials-fyi-rel",
         "linux-chromeos-rel",
         "linux-chromeos-rel-compilator",
         "linux-clang-tidy-rel",
@@ -681,7 +676,6 @@ _exempted_from_contact_builders = {
         "linux-fieldtrial-rel",
         "linux-gcc-rel",
         "linux-headless-shell-rel",
-        "linux-inverse-fieldtrials-fyi-rel",
         "linux-js-code-coverage",
         "linux-js-coverage-rel",
         "linux-lacros-asan-lsan-rel",
@@ -695,7 +689,6 @@ _exempted_from_contact_builders = {
         "linux-layout-tests-edit-ng",
         "linux-libfuzzer-asan-rel",
         "linux-mbi-mode-per-render-process-host-rel",
-        "linux-mbi-mode-per-site-instance-rel",
         "linux-msan-chained-origins-rel",
         "linux-msan-no-origins-rel",
         "linux-official",
@@ -724,15 +717,10 @@ _exempted_from_contact_builders = {
         "linux-viz-rel",
         "linux-wayland-rel",
         "linux-wayland-rel-compilator",
-        "linux-wayland-siso-rel",
-        "linux-wayland-siso-rel-compilator",
         "linux-webkit-asan-rel",
         "linux-webkit-msan-rel",
         "linux-wpt-content-shell-fyi-rel",
         "linux-wpt-content-shell-leak-detection",
-        "linux-wpt-fyi-rel",
-        "linux-wpt-identity-fyi-rel",
-        "linux-wpt-input-fyi-rel",
         "linux-x64-castos",
         "linux-x64-castos-audio",
         "linux-x64-castos-dbg",
@@ -769,7 +757,6 @@ _exempted_from_contact_builders = {
         "mac-dawn-rel",
         "mac-fieldtrial-tester",
         "mac-intel-on-arm64-rel",
-        "mac-inverse-fieldtrials-fyi-rel",
         "mac-official",
         "mac-osxbeta-rel",
         "mac-perfetto-rel",
@@ -849,10 +836,9 @@ _exempted_from_contact_builders = {
         "win-updater-try-builder-rel",
         "win10-clang-tidy-rel",
         "win10-code-coverage",
+        "win10-dbg",
         "win10-wpt-content-shell-fyi-rel",
         "win10.20h2-blink-rel",
-        "win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng",
-        "win10_chromium_x64_dbg_ng",
         "win11-arm64-blink-rel",
         "win11-blink-rel",
         "win11-wpt-content-shell-fyi-rel",
@@ -907,6 +893,8 @@ _exempted_from_contact_builders = {
     ],
     "reclient": [
         "Comparison Linux (reclient vs reclient remote links)",
+        "Comparison Linux (reclient)",
+        "Comparison Linux (reclient)(CQ)",
         "Linux Builder (canonical wd) (reclient compare)",
         "Linux Builder reclient staging untrusted",
         "Linux Builder reclient staging",
@@ -984,7 +972,7 @@ _exempted_from_contact_builders = {
 
 health_spec = struct(
     DEFAULT = DEFAULT,
-    spec = spec,
+    spec = thresholds,
     modified_default = modified_default,
 )
 

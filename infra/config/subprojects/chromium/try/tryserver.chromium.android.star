@@ -8,6 +8,7 @@ load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "os", "reclient", "siso")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
+load("//lib/gn_args.star", "gn_args")
 load("//project.star", "settings")
 
 try_.defaults.set(
@@ -38,6 +39,12 @@ try_.builder(
     mirrors = [
         "ci/android-10-arm64-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-10-arm64-rel",
+            "release_try_builder",
+        ],
+    ),
 )
 
 try_.builder(
@@ -45,6 +52,12 @@ try_.builder(
     mirrors = [
         "ci/android-11-x86-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-11-x86-rel",
+            "release_try_builder",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -54,37 +67,14 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-12-x64-dbg-tests",
     ],
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-# TODO(crbug.com/1416662): Remove the builder after the experiment.
-try_.orchestrator_builder(
-    name = "android-12-x64-dual-coverage-exp-rel",
-    description_html = """\
-This builder shadows android-12-x64-rel builder to experiment both jacoco and clang coverage enabled builds.
-""",
-    mirrors = [
-        "ci/android-12-x64-rel",
-    ],
-    compilator = "android-12-x64-dual-coverage-exp-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 10,
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Android x64 Builder (dbg)",
+            "debug_builder",
+            "use_dummy_lastchange",
+        ],
     ),
-    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
-    # are addressed
-    # use_orchestrator_pool = True,
-    use_clang_coverage = True,
-    use_java_coverage = True,
-)
-
-# TODO(crbug.com/1416662): Remove the builder after the experiment.
-try_.compilator_builder(
-    name = "android-12-x64-dual-coverage-exp-rel-compilator",
-    contact_team_email = "clank-engprod@google.com",
-    main_list_view = "try",
-    siso_enabled = True,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.orchestrator_builder(
@@ -99,11 +89,21 @@ try_.orchestrator_builder(
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
     },
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-12-x64-rel",
+            "release_try_builder",
+            "use_clang_coverage",
+            "use_java_coverage",
+            "partial_code_coverage_instrumentation",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
+    use_clang_coverage = True,
     use_java_coverage = True,
 )
 
@@ -120,6 +120,13 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-12l-x64-dbg-tests",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Android x64 Builder (dbg)",
+            "debug_builder",
+            "use_dummy_lastchange",
+        ],
+    ),
 )
 
 try_.builder(
@@ -127,6 +134,12 @@ try_.builder(
     mirrors = [
         "ci/android-13-x64-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-13-x64-rel",
+            "release_try_builder",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -134,6 +147,7 @@ try_.builder(
     name = "android-arm-compile-dbg",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = ["ci/Android arm Builder (dbg)"],
+    gn_args = "ci/Android arm Builder (dbg)",
 )
 
 try_.orchestrator_builder(
@@ -149,7 +163,20 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        "chromium.compilator_can_outlive_parent": 100,
     },
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-pie-arm64-rel",
+            "release_try_builder",
+            "android_fastbuild",
+            "fail_on_android_expectations",
+            "no_secondary_abi",
+            "use_clang_coverage",
+            "partial_code_coverage_instrumentation",
+            "enable_dangling_raw_ptr_feature_flag",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
@@ -164,6 +191,7 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
 try_.orchestrator_builder(
     name = "android-arm64-siso-rel",
     description_html = """\
@@ -171,16 +199,12 @@ This builder shadows android-arm64-rel builder to compare between Siso builds an
 This builder should be removed after migrating android-arm64-rel from Ninja to Siso. b/277863839
 """,
     mirrors = builder_config.copy_from("try/android-arm64-rel"),
-    try_settings = builder_config.try_settings(
-        # TODO: b/294287964 - waiting test devices to be allocated to handle
-        # extra traffic.
-        is_compile_only = True,
-    ),
     compilator = "android-arm64-siso-rel-compilator",
     coverage_test_types = ["unit", "overall"],
+    gn_args = "try/android-arm64-rel",
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 10,
+        experiment_percentage = 5,
     ),
     use_clang_coverage = True,
 )
@@ -201,6 +225,7 @@ try_.compilator_builder(
 try_.builder(
     name = "android-asan-compile-dbg",
     mirrors = ["ci/Android ASAN (dbg)"],
+    gn_args = "ci/Android ASAN (dbg)",
 )
 
 try_.builder(
@@ -208,6 +233,12 @@ try_.builder(
     mirrors = [
         "ci/android-bfcache-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-bfcache-rel",
+            "release_try_builder",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -218,6 +249,18 @@ try_.builder(
     builderless = not settings.is_main,
     cores = 16,
     ssd = True,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "chrome_with_codecs",
+            "reclient",
+            "minimal_symbols",
+            "official_optimize",
+            "stable_channel",
+            "v8_release_branch",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     properties = {
         "$build/binary_size": {
@@ -238,6 +281,41 @@ try_.builder(
     tryjob = try_.job(),
 )
 
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
+try_.builder(
+    name = "android-binary-size-siso",
+    description_html = """\
+This builder shadows android-binary-size builder to compare between Siso builds and Ninja builds.<br/>
+This builder should be removed after migrating android-binary-size from Ninja to Siso. b/277863839
+""",
+    executable = "recipe:binary_size_trybot",
+    cores = 16,
+    ssd = True,
+    contact_team_email = "chrome-build-team@google.com",
+    gn_args = "try/android-binary-size",
+    main_list_view = "try",
+    properties = {
+        "$build/binary_size": {
+            "analyze_targets": [
+                "//chrome/android:monochrome_public_minimal_apks",
+                "//chrome/android:trichrome_32_minimal_apks",
+                "//chrome/android:validate_expectations",
+                "//tools/binary_size:binary_size_trybot_py",
+            ],
+            "compile_targets": [
+                "monochrome_public_minimal_apks",
+                "monochrome_static_initializers",
+                "trichrome_32_minimal_apks",
+                "validate_expectations",
+            ],
+        },
+    },
+    siso_enabled = True,
+    tryjob = try_.job(
+        experiment_percentage = 10,
+    ),
+)
+
 try_.builder(
     name = "android-clobber-rel",
     mirrors = [
@@ -253,6 +331,16 @@ try_.builder(
         "ci/android-cronet-arm-dbg",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "arm_no_neon",
+            "release_java",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -261,7 +349,6 @@ try_.builder(
             "components/grpc_support/.+",
             "build/android/.+",
             "build/config/android/.+",
-            cq.location_filter(exclude = True, path_regexp = "components/cronet/ios/.+"),
         ],
     ),
 )
@@ -270,6 +357,7 @@ try_.builder(
     name = "android-cronet-arm64-dbg",
     mirrors = ["ci/android-cronet-arm64-dbg"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-arm64-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -277,6 +365,9 @@ try_.builder(
     name = "android-cronet-arm64-rel",
     mirrors = ["ci/android-cronet-arm64-rel"],
     contact_team_email = "cronet-team@google.com",
+    # TODO(crbug/597596): Switch this back to debug try builder when cronet's
+    # shared library loading is fixed.
+    gn_args = "ci/android-cronet-arm64-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -284,6 +375,7 @@ try_.builder(
     name = "android-cronet-asan-arm-rel",
     mirrors = ["ci/android-cronet-asan-arm-rel"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-asan-arm-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -291,6 +383,7 @@ try_.builder(
     name = "android-cronet-mainline-clang-arm64-dbg",
     mirrors = ["ci/android-cronet-mainline-clang-arm64-dbg"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-mainline-clang-arm64-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -298,6 +391,7 @@ try_.builder(
     name = "android-cronet-mainline-clang-arm64-rel",
     mirrors = ["ci/android-cronet-mainline-clang-arm64-rel"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-mainline-clang-arm64-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -306,6 +400,7 @@ try_.builder(
     branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = ["ci/android-cronet-mainline-clang-x86-dbg"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-mainline-clang-x86-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -313,6 +408,25 @@ try_.builder(
     name = "android-cronet-mainline-clang-x86-rel",
     mirrors = ["ci/android-cronet-mainline-clang-x86-rel"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-mainline-clang-x86-rel",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "android-cronet-riscv64-dbg",
+    description_html = "Verifies building Cronet against RISC-V64",
+    mirrors = ["ci/android-cronet-riscv64-dbg"],
+    contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-riscv64-dbg",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "android-cronet-riscv64-rel",
+    description_html = "Verifies building Cronet against RISC-V64",
+    mirrors = ["ci/android-cronet-riscv64-rel"],
+    contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-riscv64-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -320,6 +434,7 @@ try_.builder(
     name = "android-cronet-x64-rel",
     mirrors = ["ci/android-cronet-x64-rel"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x64-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -328,6 +443,7 @@ try_.builder(
     branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = ["ci/android-cronet-x64-dbg"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x64-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -338,6 +454,7 @@ try_.builder(
         "ci/android-cronet-x64-dbg-12-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x64-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -348,6 +465,7 @@ try_.builder(
         "ci/android-cronet-x64-dbg-13-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x64-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
@@ -355,7 +473,6 @@ try_.builder(
             "components/grpc_support/.+",
             "build/android/.+",
             "build/config/android/.+",
-            cq.location_filter(exclude = True, path_regexp = "components/cronet/ios/.+"),
         ],
     ),
 )
@@ -368,6 +485,7 @@ try_.builder(
         "ci/android-cronet-x64-dbg-14-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x64-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -375,6 +493,7 @@ try_.builder(
     name = "android-cronet-x86-dbg",
     mirrors = ["ci/android-cronet-x86-dbg"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x86-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -382,6 +501,7 @@ try_.builder(
     name = "android-cronet-x86-rel",
     mirrors = ["ci/android-cronet-x86-rel"],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x86-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -393,6 +513,9 @@ try_.builder(
         "ci/android-cronet-x86-dbg-10-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = ["ci/android-cronet-x86-dbg", "use_dummy_lastchange"],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
@@ -404,6 +527,7 @@ try_.builder(
         "ci/android-cronet-x86-dbg-11-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x86-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -414,6 +538,7 @@ try_.builder(
         "ci/android-cronet-x86-dbg-oreo-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x86-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -424,6 +549,7 @@ try_.builder(
         "ci/android-cronet-x86-dbg-pie-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x86-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -434,6 +560,7 @@ try_.builder(
         "ci/android-cronet-x86-dbg-nougat-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x86-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -444,6 +571,9 @@ try_.builder(
         "ci/android-cronet-x86-dbg-lollipop-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = ["ci/android-cronet-x86-dbg", "use_dummy_lastchange"],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -452,7 +582,6 @@ try_.builder(
             "components/grpc_support/.+",
             "build/android/.+",
             "build/config/android/.+",
-            cq.location_filter(exclude = True, path_regexp = "components/cronet/ios/.+"),
         ],
     ),
 )
@@ -464,6 +593,7 @@ try_.builder(
         "ci/android-cronet-x86-dbg-marshmallow-tests",
     ],
     contact_team_email = "cronet-team@google.com",
+    gn_args = "ci/android-cronet-x86-dbg",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -485,52 +615,21 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-inverse-fieldtrials-pie-x86-fyi-rel",
-    mirrors = builder_config.copy_from("try/android-pie-x86-rel"),
-)
-
-# TODO(crbug.com/1416662): Remove the builder after the experiment.
-try_.orchestrator_builder(
-    name = "android-x86-dual-coverage-exp-rel",
-    description_html = """\
-This builder is similar to "try/android-x86-rel", but experiment both jacoco and clang coverage enabled builds.
-""",
-    mirrors = [
-        "ci/android-oreo-x86-rel",
-    ],
-    compilator = "android-x86-dual-coverage-exp-rel-compilator",
-    contact_team_email = "clank-engprod@google.com",
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        "chromium.add_one_test_shard": 10,
-    },
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
-    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
-    # are addressed
-    # use_orchestrator_pool = True,
-    use_clang_coverage = True,
-    use_java_coverage = True,
-)
-
-# TODO(crbug.com/1416662): Remove the builder after the experiment.
-try_.compilator_builder(
-    name = "android-x86-dual-coverage-exp-rel-compilator",
-    cores = 64,
-    contact_team_email = "clank-engprod@google.com",
-    main_list_view = "try",
-    siso_enabled = True,
-)
-
-try_.builder(
     name = "android-oreo-arm64-dbg",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     mirrors = [
         "ci/Android arm64 Builder (dbg)",
         "ci/Oreo Phone Tester",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_builder",
+            "reclient",
+            "arm64",
+            "use_dummy_lastchange",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -540,6 +639,14 @@ try_.builder(
         "ci/android-oreo-x86-rel",
     ],
     coverage_test_types = ["unit", "overall"],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-oreo-x86-rel",
+            "release_try_builder",
+            "use_java_coverage",
+            "partial_code_coverage_instrumentation",
+        ],
+    ),
     use_java_coverage = True,
 )
 
@@ -559,6 +666,15 @@ try_.builder(
     ],
     builderless = False,
     cores = 16,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_builder",
+            "reclient",
+            "arm64",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -597,6 +713,12 @@ try_.builder(
     mirrors = [
         "ci/android-pie-x86-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-pie-x86-rel",
+            "release_try_builder",
+        ],
+    ),
 )
 
 try_.builder(
@@ -605,6 +727,12 @@ try_.builder(
         "ci/android-x86-rel",
         "ci/android-webview-10-x86-rel-tests",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-x86-rel",
+            "release_try_builder",
+        ],
+    ),
 )
 
 try_.builder(
@@ -623,6 +751,13 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-webview-12-x64-dbg-tests",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Android x64 Builder (dbg)",
+            "debug_builder",
+            "use_dummy_lastchange",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -632,6 +767,13 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-webview-13-x64-dbg-tests",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Android x64 Builder (dbg)",
+            "debug_builder",
+            "use_dummy_lastchange",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -648,6 +790,14 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView O (dbg)",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Android arm64 Builder (dbg)",
+            "release_try_builder",
+            "strip_debug_info",
+            "webview_monochrome",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -658,6 +808,14 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView P (dbg)",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Android arm64 Builder (dbg)",
+            "release_try_builder",
+            "strip_debug_info",
+            "webview_monochrome",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -673,11 +831,21 @@ try_.orchestrator_builder(
     experiments = {
         "chromium.add_one_test_shard": 10,
     },
+    gn_args = gn_args.config(
+        configs = [
+            "ci/android-oreo-x86-rel",
+            "release_try_builder",
+            "use_clang_coverage",
+            "use_java_coverage",
+            "partial_code_coverage_instrumentation",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
+    use_clang_coverage = True,
     use_java_coverage = True,
 )
 
@@ -699,6 +867,17 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_builder",
+            "reclient",
+            "compile_only",
+            "arm64",
+            "android_fastbuild",
+            "use_dummy_lastchange",
+        ],
+    ),
 )
 
 try_.builder(
@@ -706,6 +885,17 @@ try_.builder(
     mirrors = [
         "ci/Android arm64 Builder All Targets (dbg)",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_builder",
+            "reclient",
+            "compile_only",
+            "arm64",
+            "android_fastbuild",
+            "use_dummy_lastchange",
+        ],
+    ),
 )
 
 try_.builder(
@@ -739,6 +929,13 @@ try_.builder(
         "ci/Cast Android (dbg)",
     ],
     builderless = not settings.is_main,
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Cast Android (dbg)",
+            "compile_only",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -756,9 +953,43 @@ try_.builder(
     builderless = not settings.is_main,
     cores = 32 if settings.is_main else 16,
     ssd = True,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_builder",
+            "reclient",
+            "compile_only",
+            "arm64",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
+)
+
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
+try_.builder(
+    name = "android_compile_siso_dbg",
+    description_html = """\
+This builder shadows android_compile_dbg builder to compare between Siso builds and Ninja builds.<br/>
+This builder should be removed after migrating android_compile_dbg from Ninja to Siso. b/277863839
+""",
+    mirrors = builder_config.copy_from("try/android_compile_dbg"),
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
+    cores = 32,
+    ssd = True,
+    contact_team_email = "chrome-build-team@google.com",
+    gn_args = "try/android_compile_dbg",
+    main_list_view = "try",
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    siso_enabled = True,
+    tryjob = try_.job(
+        experiment_percentage = 10,
+    ),
 )
 
 try_.builder(
@@ -776,6 +1007,16 @@ try_.builder(
     ),
     cores = 16,
     ssd = True,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_builder",
+            "reclient",
+            "compile_only",
+            "x64",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -816,6 +1057,16 @@ try_.builder(
     ),
     cores = 16,
     ssd = True,
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "debug_builder",
+            "reclient",
+            "compile_only",
+            "x86",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -842,7 +1093,17 @@ try_.builder(
     ),
     builderless = not settings.is_main,
     contact_team_email = "cronet-team@google.com",
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "cronet_android",
+            "release_try_builder",
+            "reclient",
+            "arm_no_neon",
+        ],
+    ),
     main_list_view = "try",
+    siso_enabled = True,
     tryjob = try_.job(),
 )
 

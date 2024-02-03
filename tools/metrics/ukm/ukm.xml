@@ -3672,6 +3672,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="FormControlType" enum="AutofillFormControlType">
+    <obsolete>
+      Deprecated as of 11/2023. Replaced by FormControlType2.
+    </obsolete>
     <summary>
       A form control type of a web form-associated element. We only list the
       very common ones that are seen in autofill, such as text, textarea,
@@ -4485,6 +4488,12 @@ be describing additional metrics about the same event.
     <summary>
       Records the status of a revoke call to the FedCM API. Recorded once per
       IdentityCredential.revoke() call, once the browser knows the result.
+    </summary>
+  </metric>
+  <metric name="Status.SignInStateMatch" enum="FedCmSignInStateMatchStatus">
+    <summary>
+      Records whether user sign-in states between IDP and browser match after
+      browser receives an account list from IDP prior to showing UI.
     </summary>
   </metric>
   <metric name="Timing.AccountsDialogShownDuration">
@@ -7693,6 +7702,46 @@ be describing additional metrics about the same event.
     <summary>
       The number of images that qualify for visual suggestions. Uses exponential
       bucket of 1.3 for privacy.
+    </summary>
+  </metric>
+</event>
+
+<event name="Compose.TextElementUsage">
+  <owner>harringtond@google.com</owner>
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Reported once per page load per each multiline text element that received
+    input. Excludes potentially sensitive fields including input type=password
+    or when autofill determines the field is sensitive.
+  </summary>
+  <metric name="AutofillFormControlType">
+    <summary>
+      The control type, such as text or textarea. See
+      |autofill::FormControlType|.
+    </summary>
+  </metric>
+  <metric name="IsAutofillFieldType">
+    <summary>
+      Whether the field is detected and supported by Autofill.
+    </summary>
+  </metric>
+  <metric name="TypedCharacterCount">
+    <summary>
+      Total number of characters typed into the text element. Bucketed with an
+      exponential factor of 2. This is reported as -1 for sensitive field types,
+      like passwords or credit cards numbers. Note that this number attempts to
+      count only typed changes, but is not always accurate. Additionally, there
+      is a limit to the total possible length observed.
+    </summary>
+  </metric>
+  <metric name="TypedWordCount">
+    <summary>
+      Total number of space-delimited words typed into the text element.
+      Bucketed with an exponential factor of 2. This is reported as -1 for
+      sensitive field types like passwords or credit cards numbers. Note that
+      this number attempts to count only typed changes, but is not always
+      accurate. Additionally, there is a limit to the total possible length
+      observed.
     </summary>
   </metric>
 </event>
@@ -19260,6 +19309,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PasswordManager.PasswordChangeFlowDuration">
+  <obsolete>
+    Deprecated as of November 2023 (M121).
+  </obsolete>
   <owner>kolos@chromium.org</owner>
   <owner>jkeitel@google.com</owner>
   <summary>
@@ -23536,6 +23588,23 @@ be describing additional metrics about the same event.
     <summary>
       A boolean signaling that store info row is displayed. Only records true
       values.
+    </summary>
+  </metric>
+</event>
+
+<event name="Shopping.PDPStateWithLocalInfo">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <summary>
+    Records if and how a page has been determined to be a product details page.
+    It is recorded per eligible navigation (e.g. limited to main frame
+    navigation, http/https check, etc), and is recorded after the page has
+    finished loading.
+  </summary>
+  <metric name="PDPState" enum="ShoppingPDPDetectionMethod">
+    <summary>
+      The state of if and how the page has been determined to be a product
+      details page.
     </summary>
   </metric>
 </event>

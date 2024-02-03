@@ -14,7 +14,7 @@
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_refresher.h"
 #import "ios/chrome/browser/metrics/constants.h"
-#import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_session_recorder.h"
@@ -222,6 +222,19 @@ using feed::FeedUserActionType;
         self.prefService->GetDouble(kLongDiscoverFeedVisitTimeAggregateKey);
     self.followingPreviousTimeInFeedGV =
         self.prefService->GetDouble(kLongFollowingFeedVisitTimeAggregateKey);
+
+    // TODO(crbug.com/1497419) This scenario can happen (this is very rare)
+    // because key kLongFeedVisitTimeAggregateKey was moved out of
+    // NSUserDefaults later than kLongDiscoverFeedVisitTimeAggregateKey and
+    // kLongFollowingFeedVisitTimeAggregateKey. Clean this code in the future.
+    if (self.previousTimeInFeedForGoodVisitSession <
+            self.discoverPreviousTimeInFeedGV ||
+        self.previousTimeInFeedForGoodVisitSession <
+            self.followingPreviousTimeInFeedGV) {
+      self.previousTimeInFeedForGoodVisitSession =
+          std::max(self.discoverPreviousTimeInFeedGV,
+                   self.followingPreviousTimeInFeedGV);
+    }
 
     // Checks if there is a timestamp in PrefService for when a user clicked
     // on an article in order to be able to trigger a non-short click
@@ -956,7 +969,7 @@ using feed::FeedUserActionType;
 
   // Do not save in newLastReportedArray dates > 28 days.
   for (NSUInteger i = 0; i < lastReportedArray.size(); ++i) {
-    absl::optional<base::Time> date = ValueToTime(lastReportedArray[i]);
+    std::optional<base::Time> date = ValueToTime(lastReportedArray[i]);
     if (!date.has_value()) {
       continue;
     }
@@ -1265,10 +1278,10 @@ using feed::FeedUserActionType;
       break;
   }
 
-  DCHECK(self.followingPreviousTimeInFeedGV <=
-         self.previousTimeInFeedForGoodVisitSession);
-  DCHECK(self.discoverPreviousTimeInFeedGV <=
-         self.previousTimeInFeedForGoodVisitSession);
+  DCHECK_LE(self.followingPreviousTimeInFeedGV,
+            self.previousTimeInFeedForGoodVisitSession);
+  DCHECK_LE(self.discoverPreviousTimeInFeedGV,
+            self.previousTimeInFeedForGoodVisitSession);
 
   return self.previousTimeInFeedForGoodVisitSession;
 }

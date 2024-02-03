@@ -11,19 +11,51 @@
 #include "url/gurl.h"
 
 PreviewManager::PreviewManager(content::WebContents* web_contents)
-    : content::WebContentsUserData<PreviewManager>(*web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<PreviewManager>(*web_contents) {}
 
 PreviewManager::~PreviewManager() = default;
 
+void PreviewManager::PrimaryPageChanged(content::Page& page) {
+  // When initiator page has gone, cancel preview.
+  tab_.reset();
+}
+
 void PreviewManager::InitiatePreview(const GURL& url) {
   // TODO(b:292184832): Pass more load params.
-  tab_ = std::make_unique<PreviewTab>(GetWebContents(), url);
+  tab_ = std::make_unique<PreviewTab>(this, GetWebContents(), url);
+}
+
+void PreviewManager::Cancel() {
+  if (!tab_) {
+    return;
+  }
+
+  // Delete `tab_` asynchronously so that we can call this inside PreviewTab.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::DoNothingWithBoundArgs(std::move(tab_)));
+}
+
+void PreviewManager::PromoteToNewTab() {
+  if (!tab_) {
+    return;
+  }
+
+  tab_->PromoteToNewTab(GetWebContents());
+  // Delete `tab_` asynchronously so that we can call this inside PreviewTab.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::DoNothingWithBoundArgs(std::move(tab_)));
 }
 
 base::WeakPtr<content::WebContents>
 PreviewManager::GetWebContentsForPreviewTab() {
   CHECK(tab_);
   return tab_->GetWebContents();
+}
+
+void PreviewManager::CloseForTesting() {
+  CHECK(tab_);
+  tab_.reset();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PreviewManager);

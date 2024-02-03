@@ -4,18 +4,22 @@
 
 #include "chrome/browser/ui/views/frame/browser_actions.h"
 
+#include "base/check_op.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/actions/chrome_action_id.h"
 #include "chrome/browser/ui/actions/chrome_actions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/side_panel/side_panel_entry_id.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "chrome/browser/ui/views/side_panel/history_clusters/history_clusters_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/search_companion/search_companion_side_panel_coordinator.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/history_clusters/core/features.h"
@@ -47,7 +51,13 @@ actions::ActionItem::ActionItemBuilder SidePanelAction(
                  [](SidePanelEntryId id, Browser* browser,
                     actions::ActionItem* item,
                     actions::ActionInvocationContext context) {
-                   SidePanelUI::GetSidePanelUIForBrowser(browser)->Show(id);
+                   const SidePanelOpenTrigger open_trigger =
+                       static_cast<SidePanelOpenTrigger>(
+                           context.GetProperty(kSidePanelOpenTriggerKey));
+                   CHECK_GE(open_trigger, SidePanelOpenTrigger::kMinValue);
+                   CHECK_LE(open_trigger, SidePanelOpenTrigger::kMaxValue);
+                   SidePanelUI::GetSidePanelUIForBrowser(browser)->Toggle(
+                       SidePanelEntry::Key(id), open_trigger);
                  },
                  id, browser))
       .SetActionId(action_id)
@@ -86,10 +96,10 @@ void BrowserActions::InitializeBrowserActions() {
       actions::ActionItem::Builder()
           .CopyAddressTo(&root_action_item_)
           .AddChildren(
-              SidePanelAction(SidePanelEntryId::kBookmarks,
-                              IDS_BOOKMARK_MANAGER_TITLE, omnibox::kStarIcon,
-                              kActionSidePanelShowBookmarks, &(browser_.get()),
-                              true),
+              SidePanelAction(
+                  SidePanelEntryId::kBookmarks, IDS_BOOKMARK_MANAGER_TITLE,
+                  kBookmarksSidePanelIcon, kActionSidePanelShowBookmarks,
+                  &(browser_.get()), true),
               SidePanelAction(SidePanelEntryId::kReadingList,
                               IDS_READ_LATER_TITLE, kReadLaterIcon,
                               kActionSidePanelShowReadingList,

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.readaloud.player.mini;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.reset;
@@ -17,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.ViewStub;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -24,6 +26,11 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
+import org.chromium.chrome.browser.layouts.LayoutManager;
+import org.chromium.chrome.browser.readaloud.ReadAloudMiniPlayerSceneLayer;
+import org.chromium.chrome.browser.readaloud.ReadAloudMiniPlayerSceneLayerJni;
 import org.chromium.chrome.browser.readaloud.player.PlayerProperties;
 import org.chromium.chrome.browser.readaloud.player.R;
 import org.chromium.chrome.browser.readaloud.player.VisibilityState;
@@ -37,12 +44,19 @@ public class MiniPlayerCoordinatorUnitTest {
     private static final String TITLE = "Title";
     private static final String PUBLISHER = "Publisher";
 
+    @Rule public JniMocker mJniMocker = new JniMocker();
+    @Mock ReadAloudMiniPlayerSceneLayer.Natives mSceneLayerNativeMock;
+
     @Mock private Activity mActivity;
     @Mock private Context mContextForInflation;
     @Mock private LayoutInflater mLayoutInflater;
     @Mock private ViewStub mViewStub;
+    @Mock private BrowserControlsSizer mBrowserControlsSizer;
+    @Mock private LayoutManager mLayoutManager;
     @Mock private MiniPlayerLayout mLayout;
     @Mock private MiniPlayerMediator mMediator;
+    @Mock private ReadAloudMiniPlayerSceneLayer mSceneLayer;
+    private PropertyModel mSharedModel;
     private PropertyModel mModel;
 
     private MiniPlayerCoordinator mCoordinator;
@@ -55,8 +69,14 @@ public class MiniPlayerCoordinatorUnitTest {
         doReturn(mLayoutInflater)
                 .when(mContextForInflation)
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mModel = new PropertyModel.Builder(PlayerProperties.ALL_KEYS).build();
-        mCoordinator = new MiniPlayerCoordinator(mModel, mMediator, mLayout);
+        mSharedModel = new PropertyModel.Builder(PlayerProperties.ALL_KEYS).build();
+        mModel = new PropertyModel.Builder(Properties.ALL_KEYS).build();
+        mJniMocker.mock(ReadAloudMiniPlayerSceneLayerJni.TEST_HOOKS, mSceneLayerNativeMock);
+        doReturn(123456789L).when(mSceneLayerNativeMock).init(any());
+        doReturn(mModel).when(mMediator).getModel();
+        mCoordinator =
+                new MiniPlayerCoordinator(
+                        mSharedModel, mMediator, mLayout, mSceneLayer, mLayoutManager);
     }
 
     @Test
@@ -64,8 +84,15 @@ public class MiniPlayerCoordinatorUnitTest {
         // Test the real constructor
         reset(mViewStub);
         doReturn(mLayout).when(mViewStub).inflate();
-        mCoordinator = new MiniPlayerCoordinator(mActivity, mContextForInflation, mModel);
+        mCoordinator =
+                new MiniPlayerCoordinator(
+                        mActivity,
+                        mContextForInflation,
+                        mSharedModel,
+                        mBrowserControlsSizer,
+                        mLayoutManager);
         verify(mViewStub).inflate();
+        verify(mLayoutManager).addSceneOverlay(eq(mSceneLayer));
     }
 
     @Test
@@ -95,37 +122,28 @@ public class MiniPlayerCoordinatorUnitTest {
     @Test
     public void testBindPlaybackState() {
         mCoordinator.show(/* animate= */ true);
-        mModel.set(PlayerProperties.PLAYBACK_STATE, PlaybackListener.State.PLAYING);
+        mSharedModel.set(PlayerProperties.PLAYBACK_STATE, PlaybackListener.State.PLAYING);
         verify(mLayout).onPlaybackStateChanged(eq(PlaybackListener.State.PLAYING));
     }
 
     @Test
     public void testBindTitle() {
         mCoordinator.show(/* animate= */ true);
-        mModel.set(PlayerProperties.TITLE, TITLE);
+        mSharedModel.set(PlayerProperties.TITLE, TITLE);
         verify(mLayout).setTitle(eq(TITLE));
     }
 
     @Test
     public void testBindPublisher() {
         mCoordinator.show(/* animate= */ true);
-        mModel.set(PlayerProperties.PUBLISHER, PUBLISHER);
+        mSharedModel.set(PlayerProperties.PUBLISHER, PUBLISHER);
         verify(mLayout).setPublisher(eq(PUBLISHER));
     }
 
     @Test
     public void testBindProgress() {
         mCoordinator.show(/* animate= */ true);
-        mModel.set(PlayerProperties.PROGRESS, 0.5f);
+        mSharedModel.set(PlayerProperties.PROGRESS, 0.5f);
         verify(mLayout).setProgress(eq(0.5f));
-    }
-
-    @Test
-    public void testBindVisibility() {
-        mModel.set(PlayerProperties.MINI_PLAYER_VISIBILITY, VisibilityState.SHOWING);
-        verify(mLayout).updateVisibility(eq(VisibilityState.SHOWING));
-
-        mModel.set(PlayerProperties.MINI_PLAYER_ANIMATE_VISIBILITY_CHANGES, true);
-        verify(mLayout).enableAnimations(eq(true));
     }
 }

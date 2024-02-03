@@ -11,18 +11,20 @@
 #import "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/identity_test_utils.h"
+#import "components/supervised_user/core/browser/supervised_user_preferences.h"
 #import "components/supervised_user/core/browser/supervised_user_service.h"
 #import "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #import "components/supervised_user/core/common/features.h"
 #import "components/supervised_user/core/common/supervised_user_constants.h"
+#import "components/supervised_user/core/common/supervised_user_utils.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/prefs/browser_prefs.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/signin/identity_test_environment_browser_state_adaptor.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/identity_test_environment_browser_state_adaptor.h"
 #import "ios/chrome/browser/supervised_user/model/child_account_service_factory.h"
 #import "ios/chrome/browser/supervised_user/model/supervised_user_error_container.h"
 #import "ios/chrome/browser/supervised_user/model/supervised_user_service_factory.h"
@@ -94,8 +96,9 @@ class SupervisedUserURLFilterTabHelperTest : public PlatformTest {
             chrome_browser_state_.get());
     supervised_user_service->Init();
 
-    EXPECT_EQ(supervised_user_service->IsSubjectToParentalControls(),
-              is_subject_to_parental_controls);
+    EXPECT_EQ(
+        supervised_user::IsChildAccount(*chrome_browser_state_->GetPrefs()),
+        is_subject_to_parental_controls);
   }
 
   // Calls `ShouldAllowRequest` for a request with the given `url_string`.
@@ -135,7 +138,7 @@ class SupervisedUserURLFilterTabHelperTest : public PlatformTest {
     hosts["example.com"] = true;
     supervised_user_service->GetURLFilter()->SetManualHosts(hosts);
     supervised_user_service->GetURLFilter()->SetDefaultFilteringBehavior(
-        supervised_user::SupervisedUserURLFilter::ALLOW);
+        supervised_user::FilteringBehavior::kAllow);
   }
 
   void RestrictAllSitesForSupervisedUser() {
@@ -143,7 +146,7 @@ class SupervisedUserURLFilterTabHelperTest : public PlatformTest {
         SupervisedUserServiceFactory::GetForBrowserState(
             chrome_browser_state_.get());
     supervised_user_service->GetURLFilter()->SetDefaultFilteringBehavior(
-        supervised_user::SupervisedUserURLFilter::BLOCK);
+        supervised_user::FilteringBehavior::kBlock);
   }
 
  private:

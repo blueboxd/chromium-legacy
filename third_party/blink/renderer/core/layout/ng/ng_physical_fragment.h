@@ -36,9 +36,9 @@ class FragmentItem;
 class Node;
 class NGFragmentBuilder;
 class PaintLayer;
+struct FragmentedOofData;
 struct LogicalRect;
-struct NGFragmentedOutOfFlowData;
-struct NGPhysicalOutOfFlowPositionedNode;
+struct PhysicalOofPositionedNode;
 
 enum class NGOutlineType;
 
@@ -51,7 +51,7 @@ enum class NGOutlineType;
 // such that paint/hit-testing/etc don't modify it.
 //
 // Layout code should only access geometry information through the
-// NGFragment wrapper classes which transforms information into the logical
+// LogicalFragment wrapper classes which transforms information into the logical
 // coordinate system.
 class CORE_EXPORT NGPhysicalFragment
     : public GarbageCollected<NGPhysicalFragment> {
@@ -296,11 +296,11 @@ class CORE_EXPORT NGPhysicalFragment
   // (0, 0).
   PhysicalRect LocalRect() const { return {{}, size_}; }
 
-  NGStyleVariant StyleVariant() const {
-    return static_cast<NGStyleVariant>(style_variant_);
+  StyleVariant GetStyleVariant() const {
+    return static_cast<StyleVariant>(style_variant_);
   }
   bool UsesFirstLineStyle() const {
-    return StyleVariant() == NGStyleVariant::kFirstLine;
+    return GetStyleVariant() == StyleVariant::kFirstLine;
   }
 
   // Returns the style for this fragment.
@@ -310,7 +310,7 @@ class CORE_EXPORT NGPhysicalFragment
   // incorrect, use |BaseDirection()| instead, and 2) margin/border/padding,
   // background etc. do not apply to the line box.
   const ComputedStyle& Style() const {
-    return layout_object_->EffectiveStyle(StyleVariant());
+    return layout_object_->EffectiveStyle(GetStyleVariant());
   }
 
   const Document& GetDocument() const {
@@ -547,15 +547,16 @@ class CORE_EXPORT NGPhysicalFragment
   void Trace(Visitor*) const;
   void TraceAfterDispatch(Visitor*) const;
 
-  // Same as |base::span<const NGLink>|, except that:
-  // * Each |NGLink| has the latest generation of post-layout. See
+  // Same as |base::span<const PhysicalFragmentLink>|, except that:
+  // * Each |PhysicalFragmentLink| has the latest generation of post-layout. See
   //   |NGPhysicalFragment::PostLayout()| for more details.
   // * The iterator skips fragments for destroyed or moved |LayoutObject|.
   class PostLayoutChildLinkList {
     STACK_ALLOCATED();
 
    public:
-    PostLayoutChildLinkList(wtf_size_t count, const NGLink* buffer)
+    PostLayoutChildLinkList(wtf_size_t count,
+                            const PhysicalFragmentLink* buffer)
         : count_(count), buffer_(buffer) {}
 
     class ConstIterator {
@@ -563,18 +564,18 @@ class CORE_EXPORT NGPhysicalFragment
 
      public:
       using iterator_category = std::bidirectional_iterator_tag;
-      using value_type = NGLink;
+      using value_type = PhysicalFragmentLink;
       using difference_type = ptrdiff_t;
       using pointer = value_type*;
       using reference = value_type&;
 
-      ConstIterator(const NGLink* current, wtf_size_t size)
+      ConstIterator(const PhysicalFragmentLink* current, wtf_size_t size)
           : current_(current), end_(current + size) {
         SkipInvalidAndSetPostLayout();
       }
 
-      const NGLink& operator*() const { return post_layout_; }
-      const NGLink* operator->() const { return &post_layout_; }
+      const PhysicalFragmentLink& operator*() const { return post_layout_; }
+      const PhysicalFragmentLink* operator->() const { return &post_layout_; }
 
       ConstIterator& operator++() {
         ++current_;
@@ -607,9 +608,9 @@ class CORE_EXPORT NGPhysicalFragment
         }
       }
 
-      const NGLink* current_;
-      const NGLink* end_;
-      NGLink post_layout_;
+      const PhysicalFragmentLink* current_;
+      const PhysicalFragmentLink* end_;
+      PhysicalFragmentLink post_layout_;
     };
     using const_iterator = ConstIterator;
 
@@ -621,12 +622,12 @@ class CORE_EXPORT NGPhysicalFragment
 
    private:
     wtf_size_t count_;
-    const NGLink* buffer_;
+    const PhysicalFragmentLink* buffer_;
   };
 
   const NGBreakToken* BreakToken() const { return break_token_.Get(); }
 
-  base::span<const NGLink> Children() const;
+  base::span<const PhysicalFragmentLink> Children() const;
 
   PostLayoutChildLinkList PostLayoutChildren() const;
 
@@ -680,11 +681,11 @@ class CORE_EXPORT NGPhysicalFragment
            PropagatedSnapAreas();
   }
 
-  struct OutOfFlowData : public GarbageCollected<OutOfFlowData> {
+  struct OofData : public GarbageCollected<OofData> {
    public:
-    virtual ~OutOfFlowData() = default;
+    virtual ~OofData() = default;
     virtual void Trace(Visitor* visitor) const;
-    HeapVector<NGPhysicalOutOfFlowPositionedNode> oof_positioned_descendants;
+    HeapVector<PhysicalOofPositionedNode> oof_positioned_descendants;
     NGPhysicalAnchorQuery anchor_query;
   };
 
@@ -706,8 +707,7 @@ class CORE_EXPORT NGPhysicalFragment
     return oof_data_ && !oof_data_->oof_positioned_descendants.empty();
   }
 
-  base::span<NGPhysicalOutOfFlowPositionedNode> OutOfFlowPositionedDescendants()
-      const;
+  base::span<PhysicalOofPositionedNode> OutOfFlowPositionedDescendants() const;
 
   bool HasAnchorQuery() const {
     return oof_data_ && !oof_data_->anchor_query.IsEmpty();
@@ -721,7 +721,7 @@ class CORE_EXPORT NGPhysicalFragment
     return &oof_data_->anchor_query;
   }
 
-  NGFragmentedOutOfFlowData* FragmentedOutOfFlowData() const;
+  FragmentedOofData* GetFragmentedOofData() const;
 
   // Return true if there are nested multicol container descendants with OOFs
   // inside.
@@ -759,7 +759,7 @@ class CORE_EXPORT NGPhysicalFragment
                                 const LayoutBoxModelObject* containing_block,
                                 InlineCursor* cursor) const;
   void AddOutlineRectsForDescendant(
-      const NGLink& descendant,
+      const PhysicalFragmentLink& descendant,
       OutlineRectCollector& collector,
       const PhysicalOffset& additional_offset,
       NGOutlineType outline_type,
@@ -767,17 +767,17 @@ class CORE_EXPORT NGPhysicalFragment
 
   static bool DependsOnPercentageBlockSize(const NGFragmentBuilder&);
 
-  OutOfFlowData* OutOfFlowDataFromBuilder(NGFragmentBuilder*);
-  OutOfFlowData* FragmentedOutOfFlowDataFromBuilder(NGFragmentBuilder*);
-  void ClearOutOfFlowData();
-  OutOfFlowData* CloneOutOfFlowData() const;
+  OofData* OofDataFromBuilder(NGFragmentBuilder*);
+  OofData* FragmentedOofDataFromBuilder(NGFragmentBuilder*);
+  void ClearOofData();
+  OofData* CloneOofData() const;
 
   Member<LayoutObject> layout_object_;
   PhysicalSize size_;
 
   const uint8_t type_ : 1;           // NGFragmentType
   const uint8_t sub_type_ : 4;       // NGBoxType, NGTextType, or NGLineBoxType
-  const uint8_t style_variant_ : 2;  // NGStyleVariant
+  const uint8_t style_variant_ : 2;  // StyleVariant
   const uint8_t is_hidden_for_paint_ : 1;
   uint8_t : 0;  // NOLINT, zero-length bitfield used to allow the compiler to
                 // split memory locations. If the above bitfields are part of
@@ -818,7 +818,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   Member<const PropagatedData> propagated_data_;
   Member<const NGBreakToken> break_token_;
-  Member<OutOfFlowData> oof_data_;
+  Member<OofData> oof_data_;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGPhysicalFragment*);

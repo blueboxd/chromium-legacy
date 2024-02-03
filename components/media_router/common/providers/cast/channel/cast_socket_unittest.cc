@@ -36,7 +36,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
-#include "net/cert/pem.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
@@ -54,6 +53,7 @@
 #include "services/network/network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/pki/pem.h"
 #include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 const int64_t kDistantTimeoutMillis = 100000;  // 100 seconds (never hit).
@@ -545,7 +545,7 @@ class SslCastSocketTest : public CastSocketTestBase {
     }
 
     const std::vector<std::string> headers({"PRIVATE KEY"});
-    net::PEMTokenizer pem_tokenizer(pem_data, headers);
+    bssl::PEMTokenizer pem_tokenizer(pem_data, headers);
     if (!pem_tokenizer.GetNext()) {
       return nullptr;
     }
@@ -1082,8 +1082,8 @@ TEST_F(SslCastSocketTest, MAYBE_TestConnectEndToEndWithRealSSL) {
   EXPECT_TRUE(MessageFramer::Serialize(challenge, &challenge_str));
 
   int challenge_buffer_length = challenge_str.size();
-  scoped_refptr<net::IOBuffer> challenge_buffer =
-      base::MakeRefCounted<net::IOBuffer>(challenge_buffer_length);
+  auto challenge_buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(challenge_buffer_length);
   int read = ReadExactLength(challenge_buffer.get(), challenge_buffer_length,
                              server_socket_.get());
 
@@ -1121,8 +1121,8 @@ TEST_F(SslCastSocketTest, DISABLED_TestMessageEndToEndWithRealSSL) {
   EXPECT_TRUE(MessageFramer::Serialize(challenge, &challenge_str));
 
   int challenge_buffer_length = challenge_str.size();
-  scoped_refptr<net::IOBuffer> challenge_buffer =
-      base::MakeRefCounted<net::IOBuffer>(challenge_buffer_length);
+  auto challenge_buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(challenge_buffer_length);
 
   int read = ReadExactLength(challenge_buffer.get(), challenge_buffer_length,
                              server_socket_.get());
@@ -1154,8 +1154,8 @@ TEST_F(SslCastSocketTest, DISABLED_TestMessageEndToEndWithRealSSL) {
   EXPECT_TRUE(MessageFramer::Serialize(test_message, &test_message_str));
 
   int test_message_length = test_message_str.size();
-  scoped_refptr<net::IOBuffer> test_message_buffer =
-      base::MakeRefCounted<net::IOBuffer>(test_message_length);
+  auto test_message_buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(test_message_length);
 
   EXPECT_CALL(handler_, OnWriteComplete(net::OK));
   socket_->transport()->SendMessage(

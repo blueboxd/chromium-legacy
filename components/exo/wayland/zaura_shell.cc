@@ -16,7 +16,6 @@
 #include "ash/display/display_util.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/focus_cycler.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -1205,19 +1204,18 @@ const uint32_t kFixedBugIds[] = {
 // Implements aura shell interface and monitors workspace state needed
 // for the aura shell interface.
 class WaylandAuraShell : public ash::DesksController::Observer,
-                         public ash::TabletModeObserver,
                          public ash::OverviewObserver,
+                         public display::DisplayObserver,
                          public SeatObserver {
  public:
   WaylandAuraShell(wl_resource* aura_shell_resource, Display* display)
       : aura_shell_resource_(aura_shell_resource), seat_(display->seat()) {
-    WMHelper* helper = WMHelper::GetInstance();
-    helper->AddTabletModeObserver(this);
     ash::DesksController::Get()->AddObserver(this);
     ash::Shell::Get()->overview_controller()->AddObserver(this);
+    display::Screen::GetScreen()->AddObserver(this);
     if (wl_resource_get_version(aura_shell_resource_) >=
         ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION) {
-      auto layout_mode = helper->InTabletMode()
+      auto layout_mode = display::Screen::GetScreen()->InTabletMode()
                              ? ZAURA_SHELL_LAYOUT_MODE_TABLET
                              : ZAURA_SHELL_LAYOUT_MODE_WINDOWED;
       zaura_shell_send_layout_mode(aura_shell_resource_, layout_mode);
@@ -1240,14 +1238,17 @@ class WaylandAuraShell : public ash::DesksController::Observer,
       wl_client_flush(wl_resource_get_client(aura_shell_resource_));
     }
 
-    if (chromeos::features::IsRoundedWindowsEnabled() &&
-        wl_resource_get_version(aura_shell_resource_) >=
-            ZAURA_SHELL_WINDOW_CORNERS_RADII_SINCE_VERSION) {
+    if (wl_resource_get_version(aura_shell_resource_) >=
+        ZAURA_SHELL_WINDOW_CORNERS_RADII_SINCE_VERSION) {
       const int window_corner_radius =
           chromeos::features::RoundedWindowsRadius();
+
       zaura_shell_send_window_corners_radii(
           aura_shell_resource_, window_corner_radius, window_corner_radius,
-          window_corner_radius, window_corner_radius);
+          chromeos::features::IsRoundedWindowsEnabled() ? window_corner_radius
+                                                        : 0,
+          chromeos::features::IsRoundedWindowsEnabled() ? window_corner_radius
+                                                        : 0);
     }
 
     display->seat()->AddObserver(this, kAuraShellSeatObserverPriority);
@@ -1259,32 +1260,28 @@ class WaylandAuraShell : public ash::DesksController::Observer,
   WaylandAuraShell(const WaylandAuraShell&) = delete;
   WaylandAuraShell& operator=(const WaylandAuraShell&) = delete;
   ~WaylandAuraShell() override {
-    WMHelper* helper = WMHelper::GetInstance();
-    helper->RemoveTabletModeObserver(this);
+    display::Screen::GetScreen()->RemoveObserver(this);
     ash::Shell::Get()->overview_controller()->RemoveObserver(this);
     ash::DesksController::Get()->RemoveObserver(this);
     if (seat_)
       seat_->RemoveObserver(this);
   }
 
-  // Overridden from ash::TabletModeObserver:
-  void OnTabletModeStarted() override {
+  // display::DisplayObserver:
+  void OnDisplayTabletStateChanged(display::TabletState state) override {
     if (wl_resource_get_version(aura_shell_resource_) >=
         ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION) {
-      zaura_shell_send_layout_mode(aura_shell_resource_,
-                                   ZAURA_SHELL_LAYOUT_MODE_TABLET);
-      wl_client_flush(wl_resource_get_client(aura_shell_resource_));
+      if (state == display::TabletState::kInTabletMode) {
+        zaura_shell_send_layout_mode(aura_shell_resource_,
+                                     ZAURA_SHELL_LAYOUT_MODE_TABLET);
+        wl_client_flush(wl_resource_get_client(aura_shell_resource_));
+      } else if (state == display::TabletState::kExitingTabletMode) {
+        zaura_shell_send_layout_mode(aura_shell_resource_,
+                                     ZAURA_SHELL_LAYOUT_MODE_WINDOWED);
+        wl_client_flush(wl_resource_get_client(aura_shell_resource_));
+      }
     }
   }
-  void OnTabletModeEnding() override {
-    if (wl_resource_get_version(aura_shell_resource_) >=
-        ZAURA_SHELL_LAYOUT_MODE_SINCE_VERSION) {
-      zaura_shell_send_layout_mode(aura_shell_resource_,
-                                   ZAURA_SHELL_LAYOUT_MODE_WINDOWED);
-      wl_client_flush(wl_resource_get_client(aura_shell_resource_));
-    }
-  }
-  void OnTabletModeEnded() override {}
 
   // ash::DesksController::Observer:
   void OnDeskAdded(const ash::Desk* desk, bool from_undo) override {

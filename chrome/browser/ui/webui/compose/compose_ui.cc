@@ -36,6 +36,12 @@ ComposeUI::ComposeUI(content::WebUI* web_ui)
 
   // Localized strings.
   static constexpr webui::LocalizedString kStrings[] = {
+      {"consentTitle", IDS_COMPOSE_CONSENT_TITLE},
+      {"consentMainTop", IDS_COMPOSE_CONSENT_MAIN_TOP},
+      {"consentMainBottom", IDS_COMPOSE_CONSENT_MAIN_BOTTOM},
+      {"consentNoButton", IDS_COMPOSE_CONSENT_NO_BUTTON},
+      {"consentYesButton", IDS_COMPOSE_CONSENT_YES_BUTTON},
+      {"consentLearnMore", IDS_COMPOSE_CONSENT_LEARN_LINK},
       {"dialogTitle", IDS_COMPOSE_TITLE},
       {"inputPlaceholder", IDS_COMPOSE_INPUT_PLACEHOLDER},
       {"inputFooter", IDS_COMPOSE_FOOTER_FISHFOOD},
@@ -58,6 +64,8 @@ ComposeUI::ComposeUI(content::WebUI* web_ui)
       {"editCancelButton", IDS_CANCEL},
       {"editUpdateButton", IDS_COMPOSE_EDIT_UPDATE_BUTTON},
       {"fileBugText", IDS_COMPOSE_FILE_BUG},
+      {"thumbsDown", IDS_THUMBS_DOWN},
+      {"thumbsUp", IDS_THUMBS_UP},
   };
   source->AddLocalizedStrings(kStrings);
 }
@@ -72,27 +80,30 @@ void ComposeUI::BindInterface(
 }
 
 void ComposeUI::BindInterface(
-    mojo::PendingReceiver<compose::mojom::ComposeDialogPageHandlerFactory>
+    mojo::PendingReceiver<compose::mojom::ComposeSessionPageHandlerFactory>
         factory) {
-  if (dialog_handler_factory_.is_bound()) {
-    dialog_handler_factory_.reset();
+  if (session_handler_factory_.is_bound()) {
+    session_handler_factory_.reset();
   }
-  dialog_handler_factory_.Bind(std::move(factory));
+  session_handler_factory_.Bind(std::move(factory));
 }
 
-void ComposeUI::CreateComposeDialogPageHandler(
-    mojo::PendingReceiver<compose::mojom::ComposeDialogClosePageHandler>
+void ComposeUI::CreateComposeSessionPageHandler(
+    mojo::PendingReceiver<compose::mojom::ComposeClientPageHandler>
         close_handler,
-    mojo::PendingReceiver<compose::mojom::ComposeDialogPageHandler> handler,
+    mojo::PendingReceiver<compose::mojom::ComposeSessionPageHandler> handler,
     mojo::PendingRemote<compose::mojom::ComposeDialog> dialog) {
   DCHECK(dialog.is_valid());
 
   content::WebContents* web_contents = triggering_web_contents_
                                            ? triggering_web_contents_.get()
                                            : web_ui()->GetWebContents();
-  ChromeComposeClient::FromWebContents(web_contents)
-      ->BindComposeDialog(std::move(close_handler), std::move(handler),
-                          std::move(dialog));
+  ChromeComposeClient* client =
+      ChromeComposeClient::FromWebContents(web_contents);
+  if (client) {
+    client->BindComposeDialog(std::move(close_handler), std::move(handler),
+                              std::move(dialog));
+  }
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(ComposeUI)

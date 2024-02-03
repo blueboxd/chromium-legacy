@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/ash/components/quick_start/logging.h"
 #include "chromeos/ash/components/quick_start/quick_start_metrics.h"
 
@@ -47,6 +49,11 @@ QuickStartMetrics::ScreenName ScreenNameFromOobeScreenId(
     return QuickStartMetrics::ScreenName::kChooseChromebookSetup;
   }
   return QuickStartMetrics::ScreenName::kOther;
+}
+
+bool IsConnectedToWiFi() {
+  NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
+  return nsh->ConnectedNetworkByType(NetworkTypePattern::WiFi()) != nullptr;
 }
 
 }  // namespace
@@ -117,6 +124,21 @@ void QuickStartController::AbortFlow() {
   ResetState();
 }
 
+bool QuickStartController::ShouldShowBluetoothDialog() {
+  // TODO(ayag)(b/309382466): check bluetooth enabled
+  return !this->is_bluetooth_enabled_;
+}
+
+void QuickStartController::TurnOnBluetooth() {
+  // TODO(ayag)(b/309382466): enable bluetooth
+  this->is_bluetooth_enabled_ = true;
+}
+
+void QuickStartController::set_fake_bluetooth_state_for_testing(
+    bool bluetooth_enabled) {
+  this->is_bluetooth_enabled_ = bluetooth_enabled;
+}
+
 QuickStartController::EntryPoint QuickStartController::GetExitPoint() {
   return exit_point_.value();
 }
@@ -150,11 +172,12 @@ void QuickStartController::OnStatusChanged(
     const TargetDeviceBootstrapController::Status& status) {
   using Step = TargetDeviceBootstrapController::Step;
   using ErrorCode = TargetDeviceBootstrapController::ErrorCode;
+  using Pin = TargetDeviceBootstrapController::Pin;
 
   // TODO(b/298042953): Emit ScreenOpened metrics when automatically resuming
   // after an update.
   switch (status.step) {
-    case Step::ADVERTISING_WITH_QR_CODE: {
+    case Step::ADVERTISING_WITH_QR_CODE:
       controller_state_ = ControllerState::ADVERTISING;
       CHECK(absl::holds_alternative<QRCode::PixelData>(status.payload));
       qr_code_data_ = absl::get<QRCode::PixelData>(status.payload);
@@ -162,23 +185,21 @@ void QuickStartController::OnStatusChanged(
       QuickStartMetrics::RecordScreenOpened(
           QuickStartMetrics::ScreenName::kSetUpAndroidPhone);
       return;
-    }
-    case Step::PIN_VERIFICATION: {
-      CHECK(status.pin.length() == 4);
-      pin_ = status.pin;
+    case Step::ADVERTISING_WITHOUT_QR_CODE:
+      // TODO(b/282934168): Implement these screens fully
+      QS_LOG(INFO) << "Hit screen which is not implemented. Continuing";
+      return;
+    case Step::PIN_VERIFICATION:
+      CHECK(absl::holds_alternative<Pin>(status.payload));
+      pin_ = absl::get<Pin>(status.payload);
+      CHECK(pin_.value().length() == 4);
       UpdateUiState(UiState::SHOWING_PIN);
       QuickStartMetrics::RecordScreenOpened(
           QuickStartMetrics::ScreenName::kSetUpAndroidPhone);
       return;
-    }
-    case Step::ERROR:
-      AbortFlow();
-      // Triggers a screen exit if there is a UiDelegate driving the UI.
-      if (!ui_delegates_.empty()) {
-        CHECK(current_screen_ == QuickStartScreenHandler::kScreenId ||
-              current_screen_ == NetworkScreenHandler::kScreenId);
-        ui_delegates_.begin()->OnUiUpdateRequested(UiState::EXIT_SCREEN);
-      }
+    case Step::CONNECTED:
+      controller_state_ = ControllerState::CONNECTED;
+      OnPhoneConnectionEstablished();
       return;
     case Step::REQUESTING_WIFI_CREDENTIALS:
       UpdateUiState(UiState::CONNECTING_TO_WIFI);
@@ -186,9 +207,12 @@ void QuickStartController::OnStatusChanged(
           QuickStartMetrics::ScreenName::kConnectingToWifi);
       return;
     case Step::WIFI_CREDENTIALS_RECEIVED:
+      CHECK(absl::holds_alternative<mojom::WifiCredentials>(status.payload));
+
       LoginDisplayHost::default_host()
           ->GetWizardContext()
-          ->quick_start_wifi_credentials = status.wifi_credentials;
+          ->quick_start_wifi_credentials =
+          absl::get<mojom::WifiCredentials>(status.payload);
       ABSL_FALLTHROUGH_INTENDED;
     case Step::EMPTY_WIFI_CREDENTIALS_RECEIVED:
       UpdateUiState(UiState::WIFI_CREDENTIALS_RECEIVED);
@@ -200,14 +224,12 @@ void QuickStartController::OnStatusChanged(
       return;
     case Step::TRANSFERRING_GOOGLE_ACCOUNT_DETAILS:
       // Intermediate state. Nothing to do.
-      CHECK(controller_state_ ==
-            ControllerState::CONTINUING_AFTER_ENROLLMENT_CHECKS);
+      CHECK(controller_state_ == ControllerState::CONNECTED);
       // TODO(b/298042953): Record Gaia Transfer screen shown once UI is
       // implemented.
       return;
     case Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS:
-      CHECK(controller_state_ ==
-            ControllerState::CONTINUING_AFTER_ENROLLMENT_CHECKS);
+      CHECK(controller_state_ == ControllerState::CONNECTED);
       if (absl::holds_alternative<FidoAssertionInfo>(status.payload)) {
         QS_LOG(INFO) << "Successfully received FIDO assertion.";
         fido_ = absl::get<FidoAssertionInfo>(status.payload);
@@ -225,12 +247,14 @@ void QuickStartController::OnStatusChanged(
     case Step::NONE:
       // Indicates we've stopped advertising. No action required.
       return;
-    case Step::CONNECTED:
-      controller_state_ = ControllerState::CONNECTED;
-      return;
-    case Step::ADVERTISING_WITHOUT_QR_CODE:
-      // TODO(b/282934168): Implement these screens fully
-      QS_LOG(INFO) << "Hit screen which is not implemented. Continuing";
+    case Step::ERROR:
+      AbortFlow();
+      // Triggers a screen exit if there is a UiDelegate driving the UI.
+      if (!ui_delegates_.empty()) {
+        CHECK(current_screen_ == QuickStartScreenHandler::kScreenId ||
+              current_screen_ == NetworkScreenHandler::kScreenId);
+        ui_delegates_.begin()->OnUiUpdateRequested(UiState::EXIT_SCREEN);
+      }
       return;
   }
 }
@@ -291,12 +315,35 @@ void QuickStartController::HandleTransitionToQuickStartScreen() {
     CHECK(LoginDisplayHost::default_host()
               ->GetWizardContext()
               ->quick_start_setup_ongoing);
-    controller_state_ = ControllerState::CONTINUING_AFTER_ENROLLMENT_CHECKS;
+
     // OOBE flow cannot go back after enrollment checks, update exit point.
     exit_point_ = QuickStartController::EntryPoint::GAIA_SCREEN;
 
-    bootstrap_controller_->RequestGoogleAccountInfo();
-    UpdateUiState(UiState::TRANSFERRING_GAIA_CREDENTIALS);
+    StartAccountTransfer();
+  }
+}
+
+void QuickStartController::StartAccountTransfer() {
+  UpdateUiState(UiState::TRANSFERRING_GAIA_CREDENTIALS);
+  bootstrap_controller_->RequestGoogleAccountInfo();
+}
+
+void QuickStartController::OnPhoneConnectionEstablished() {
+  // If cancelling the flow would end on the welcome or network screen,
+  // we are still early in the OOBE flow. Transfer WiFi creds if not already
+  // connected.
+  if (exit_point_ == EntryPoint::WELCOME_SCREEN ||
+      exit_point_ == EntryPoint::NETWORK_SCREEN) {
+    if (IsConnectedToWiFi()) {
+      // This will cause the QuickStartScreen to exit and the NetworkScreen
+      // will be shown next.
+      UpdateUiState(UiState::WIFI_CREDENTIALS_RECEIVED);
+    } else {
+      bootstrap_controller_->AttemptWifiCredentialTransfer();
+    }
+  } else {
+    // We are after the 'User Creation' screen. Transfer credentials.
+    StartAccountTransfer();
   }
 }
 

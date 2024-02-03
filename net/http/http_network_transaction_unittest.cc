@@ -431,20 +431,21 @@ class HttpNetworkTransactionTestBase : public PlatformTest,
   HttpNetworkTransactionTestBase()
       : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         dummy_connect_job_params_(
-            nullptr /* client_socket_factory */,
-            nullptr /* host_resolver */,
-            nullptr /* http_auth_cache */,
-            nullptr /* http_auth_handler_factory */,
-            nullptr /* spdy_session_pool */,
-            nullptr /* quic_supported_versions */,
-            nullptr /* quic_stream_factory */,
-            nullptr /* proxy_delegate */,
-            nullptr /* http_user_agent_settings */,
-            nullptr /* ssl_client_context */,
-            nullptr /* socket_performance_watcher_factory */,
-            nullptr /* network_quality_estimator */,
-            nullptr /* net_log */,
-            nullptr /* websocket_endpoint_lock_manager */),
+            /*client_socket_factory=*/nullptr,
+            /*host_resolver=*/nullptr,
+            /*http_auth_cache=*/nullptr,
+            /*http_auth_handler_factory=*/nullptr,
+            /*spdy_session_pool=*/nullptr,
+            /*quic_supported_versions=*/nullptr,
+            /*quic_stream_factory=*/nullptr,
+            /*proxy_delegate=*/nullptr,
+            /*http_user_agent_settings=*/nullptr,
+            /*ssl_client_context=*/nullptr,
+            /*socket_performance_watcher_factory=*/nullptr,
+            /*network_quality_estimator=*/nullptr,
+            /*net_log=*/nullptr,
+            /*websocket_endpoint_lock_manager=*/nullptr,
+            /*http_server_properties=*/nullptr),
         spdy_util_(/*use_priority_header=*/true),
         ssl_(ASYNC, OK),
         old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
@@ -7394,7 +7395,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(256);
+  auto buf = base::MakeRefCounted<IOBufferWithSize>(256);
   rv = trans.Read(buf.get(), 256, callback.callback());
   EXPECT_EQ(1, callback.GetResult(rv));
 
@@ -7522,7 +7523,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(256);
+  auto buf = base::MakeRefCounted<IOBufferWithSize>(256);
   EXPECT_EQ(1, trans->Read(buf.get(), 256, callback.callback()));
   trans.reset();
 
@@ -7627,7 +7628,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
 
   std::string response_data;
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(256);
+  auto buf = base::MakeRefCounted<IOBufferWithSize>(256);
   rv = trans->Read(buf.get(), 256, callback.callback());
   EXPECT_EQ(1, callback.GetResult(rv));
   // Delete the first request, so the second one can reuse the socket.
@@ -10026,7 +10027,7 @@ TEST_P(HttpNetworkTransactionTest, CloseConnectionOnDestruction) {
         }
 
         case TestCase::kReadPartOfBodyRead: {
-          scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(5);
+          auto buf = base::MakeRefCounted<IOBufferWithSize>(5);
           rv = trans->Read(buf.get(), 5, callback.callback());
           ASSERT_EQ(5, callback.GetResult(rv));
           response_data.assign(buf->data(), 5);
@@ -11221,7 +11222,7 @@ TEST_P(HttpNetworkTransactionTest, ResetStateForRestart) {
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
   // Setup some state (which we expect ResetStateForRestart() will clear).
-  trans.read_buf_ = base::MakeRefCounted<IOBuffer>(15);
+  trans.read_buf_ = base::MakeRefCounted<IOBufferWithSize>(15);
   trans.read_buf_len_ = 15;
   trans.request_headers_.SetHeader("Authorization", "NTLM");
 

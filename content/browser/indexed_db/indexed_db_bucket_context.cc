@@ -20,7 +20,6 @@
 #include "base/trace_event/base_tracing.h"
 #include "base/uuid.h"
 #include "build/build_config.h"
-#include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
@@ -168,9 +167,9 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
             ReadCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    auto reader = storage::FileStreamReader::CreateForIndexedDBDataItemReader(
-        file_task_runner_.get(), file_path_, storage::CreateFilesystemProxy(),
-        offset, expected_modification_time_);
+    auto reader = storage::FileStreamReader::CreateForLocalFile(
+        file_task_runner_.get(), file_path_, offset,
+        expected_modification_time_);
     auto adapter = std::make_unique<FileStreamReaderToDataPipe>(
         std::move(reader), std::move(pipe));
     auto* raw_adapter = adapter.get();
@@ -258,8 +257,8 @@ constexpr const base::TimeDelta
     IndexedDBBucketContext::kMaxEarliestBucketCompactionFromNow;
 
 IndexedDBBucketContext::Delegate::Delegate()
-    : on_tasks_available(base::DoNothing()),
-      on_fatal_error(base::DoNothing()),
+    : on_fatal_error(base::DoNothing()),
+      on_ready_for_destruction(base::DoNothing()),
       on_content_changed(base::DoNothing()),
       on_writing_transaction_complete(base::DoNothing()),
       for_each_bucket_context(base::DoNothing()) {}
@@ -269,8 +268,6 @@ IndexedDBBucketContext::Delegate::~Delegate() = default;
 
 IndexedDBBucketContext::IndexedDBBucketContext(
     storage::BucketInfo bucket_info,
-    bool persist_for_incognito,
-    base::Clock* clock,
     std::unique_ptr<PartitionedLockManager> lock_manager,
     Delegate&& delegate,
     std::unique_ptr<IndexedDBBackingStore> backing_store,
@@ -282,8 +279,6 @@ IndexedDBBucketContext::IndexedDBBucketContext(
         file_system_access_context,
     InstanceClosure initialize_closure)
     : bucket_info_(std::move(bucket_info)),
-      persist_for_incognito_(persist_for_incognito),
-      clock_(clock),
       lock_manager_(std::move(lock_manager)),
       backing_store_(std::move(backing_store)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
@@ -293,12 +288,11 @@ IndexedDBBucketContext::IndexedDBBucketContext(
       blob_storage_context_(std::move(blob_storage_context)),
       file_system_access_context_(std::move(file_system_access_context)),
       delegate_(std::move(delegate)) {
-  DCHECK(clock_);
 
   backing_store_->set_bucket_context(this);
 
   if (!initialize_closure) {
-    base::Time now = clock_->Now();
+    base::Time now = base::Time::Now();
     initialize_closure =
         base::BindRepeating(&IndexedDBBucketContext::SetInternalState,
                             GenerateNextGlobalSweepTime(now),
@@ -323,41 +317,43 @@ IndexedDBBucketContext::~IndexedDBBucketContext() {
   leveldb_destruct_event.Wait();
 }
 
-void IndexedDBBucketContext::ForceClose() {
+void IndexedDBBucketContext::ForceClose(bool doom) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  IndexedDBBucketContextHandle handle(*this);
-  for (const auto& pair : databases_) {
-    // Note: We purposefully ignore the result here as force close needs to
-    // continue tearing things down anyways.
-    pair.second->ForceCloseAndRunTasks();
-  }
-  databases_.clear();
-  if (has_blobs_outstanding_) {
-    backing_store_->active_blob_registry()->ForceShutdown();
-    has_blobs_outstanding_ = false;
+  is_doomed_ = doom;
+
+  {
+    // This handle keeps `this` from closing until it goes out of scope.
+    IndexedDBBucketContextHandle handle(*this);
+    for (const auto& pair : databases_) {
+      // Note: We purposefully ignore the result here as force close needs to
+      // continue tearing things down anyways.
+      pair.second->ForceCloseAndRunTasks();
+    }
+    databases_.clear();
+    if (has_blobs_outstanding_) {
+      backing_store_->active_blob_registry()->ForceShutdown();
+      has_blobs_outstanding_ = false;
+    }
+
+    // Don't run the preclosing tasks after a ForceClose, whether or not we've
+    // started them.  Compaction in particular can run long and cannot be
+    // interrupted, so it can cause shutdown hangs.
+    close_timer_.AbandonAndStop();
+    if (pre_close_task_queue_) {
+      pre_close_task_queue_->Stop(
+          IndexedDBPreCloseTaskQueue::StopReason::FORCE_CLOSE);
+      pre_close_task_queue_.reset();
+    }
+    skip_closing_sequence_ = true;
   }
 
-  // Don't run the preclosing tasks after a ForceClose, whether or not we've
-  // started them.  Compaction in particular can run long and cannot be
-  // interrupted, so it can cause shutdown hangs.
-  close_timer_.AbandonAndStop();
-  if (pre_close_task_queue_) {
-    pre_close_task_queue_->Stop(
-        IndexedDBPreCloseTaskQueue::StopReason::FORCE_CLOSE);
-    pre_close_task_queue_.reset();
-  }
-  skip_closing_sequence_ = true;
+  // Initiate deletion if appropriate.
+  RunTasks();
 }
 
 void IndexedDBBucketContext::ReportOutstandingBlobs(bool blobs_outstanding) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   has_blobs_outstanding_ = blobs_outstanding;
-  MaybeStartClosing();
-}
-
-void IndexedDBBucketContext::StopPersistingForIncognito() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  persist_for_incognito_ = false;
   MaybeStartClosing();
 }
 
@@ -496,10 +492,20 @@ void IndexedDBBucketContext::CreateAllExternalObjects(
   }
 }
 
-std::tuple<IndexedDBBucketContext::RunTasksResult, leveldb::Status>
-IndexedDBBucketContext::RunTasks() {
-  task_run_scheduled_ = false;
-  running_tasks_ = true;
+void IndexedDBBucketContext::QueueRunTasks() {
+  if (task_run_queued_) {
+    return;
+  }
+
+  task_run_queued_ = true;
+  backing_store_->idb_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&IndexedDBBucketContext::RunTasks,
+                                weak_factory_.GetWeakPtr()));
+}
+
+void IndexedDBBucketContext::RunTasks() {
+  task_run_queued_ = false;
+
   leveldb::Status status;
   for (auto db_it = databases_.begin(); db_it != databases_.end();) {
     IndexedDBDatabase& db = *db_it->second;
@@ -510,19 +516,19 @@ IndexedDBBucketContext::RunTasks() {
       case IndexedDBDatabase::RunTasksResult::kDone:
         ++db_it;
         continue;
+
       case IndexedDBDatabase::RunTasksResult::kError:
-        running_tasks_ = false;
-        return {RunTasksResult::kError, status};
+        delegate().on_fatal_error.Run(status);
+        return;
+
       case IndexedDBDatabase::RunTasksResult::kCanBeDestroyed:
         databases_.erase(db_it);
         break;
     }
   }
-  running_tasks_ = false;
   if (CanClose() && closing_stage_ == ClosingState::kClosed) {
-    return {RunTasksResult::kCanBeDestroyed, leveldb::Status::OK()};
+    return delegate().on_ready_for_destruction.Run();
   }
-  return {RunTasksResult::kDone, leveldb::Status::OK()};
 }
 
 // static
@@ -571,7 +577,7 @@ bool IndexedDBBucketContext::CanClose() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(open_handles_, 0);
   return !has_blobs_outstanding_ && open_handles_ <= 0 &&
-         !persist_for_incognito_;
+         (is_doomed_ || !backing_store_->in_memory());
 }
 
 void IndexedDBBucketContext::MaybeStartClosing() {
@@ -654,12 +660,12 @@ void IndexedDBBucketContext::CloseNow() {
   closing_stage_ = ClosingState::kClosed;
   close_timer_.AbandonAndStop();
   pre_close_task_queue_.reset();
-  delegate_.on_tasks_available.Run();
+  QueueRunTasks();
 }
 
 bool IndexedDBBucketContext::ShouldRunTombstoneSweeper() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::Time now = clock_->Now();
+  base::Time now = base::Time::Now();
   // Check that the last sweep hasn't run too recently.
   if (earliest_global_sweep_time_ > now) {
     return false;
@@ -704,7 +710,7 @@ bool IndexedDBBucketContext::ShouldRunTombstoneSweeper() {
 bool IndexedDBBucketContext::ShouldRunCompaction() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  base::Time now = clock_->Now();
+  base::Time now = base::Time::Now();
   // Check that the last compaction hasn't run too recently.
   if (earliest_global_compaction_time_ > now) {
     return false;

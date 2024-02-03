@@ -32,9 +32,9 @@ class SuggestionLayout extends ViewGroup {
     @VisibleForTesting public final @Px int mDecorationIconWidthPx;
     @VisibleForTesting public final @Px int mContentHeightPx;
     @VisibleForTesting public final @Px int mCompactContentHeightPx;
+    @VisibleForTesting public final @NonNull RoundedCornerOutlineProvider mOutlineProvider;
     private final @Px int mActionButtonWidthPx;
     private final @Px int mContentPaddingPx;
-    private final @NonNull RoundedCornerOutlineProvider mOutlineProvider;
 
     /**
      * SuggestionLayout's LayoutParams.
@@ -136,43 +136,50 @@ class SuggestionLayout extends ViewGroup {
     public SuggestionLayout(Context context) {
         super(context);
 
-        boolean useModernUI = OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext());
+        boolean useModernUI = OmniboxFeatures.shouldShowModernizeVisualUpdate(context);
+        var res = context.getResources();
 
         if (!useModernUI) {
             // Align the Action Buttons with the Omnibox icons (clear, mic etc).
-            int startSpace =
-                    getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_start_padding);
-            int endSpace =
-                    getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_end_padding);
+            int startSpace = res.getDimensionPixelSize(R.dimen.omnibox_suggestion_start_padding);
+            int endSpace = res.getDimensionPixelSize(R.dimen.omnibox_suggestion_end_padding);
             setPaddingRelative(startSpace, 0, endSpace, 0);
+        } else {
+            int endSpace = res.getDimensionPixelSize(R.dimen.omnibox_suggestion_end_padding_modern);
+            setPaddingRelative(0, 0, endSpace, 0);
         }
 
         mDecorationIconWidthPx =
                 OmniboxResourceProvider.getSuggestionDecorationIconSizeWidth(context);
 
         mActionButtonWidthPx =
-                getResources()
-                        .getDimensionPixelSize(R.dimen.omnibox_suggestion_action_button_width);
+                res.getDimensionPixelSize(R.dimen.omnibox_suggestion_action_button_width);
         mCompactContentHeightPx =
-                getResources()
-                        .getDimensionPixelSize(R.dimen.omnibox_suggestion_compact_content_height);
-        mContentHeightPx =
-                getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_content_height);
+                res.getDimensionPixelSize(R.dimen.omnibox_suggestion_compact_content_height);
+        mContentHeightPx = res.getDimensionPixelSize(R.dimen.omnibox_suggestion_content_height);
 
-        mContentPaddingPx =
-                getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_content_padding);
+        mContentPaddingPx = res.getDimensionPixelSize(R.dimen.omnibox_suggestion_content_padding);
 
         mOutlineProvider =
                 new RoundedCornerOutlineProvider(
-                        getResources()
-                                .getDimensionPixelSize(
-                                        R.dimen.omnibox_suggestion_bg_round_corner_radius));
+                        res.getDimensionPixelSize(
+                                R.dimen.omnibox_suggestion_bg_round_corner_radius));
         setOutlineProvider(mOutlineProvider);
+        setRoundingEdges(false, false);
     }
 
     public void setRoundingEdges(boolean roundTopEdge, boolean roundBottomEdge) {
+        boolean needUpdate =
+                mOutlineProvider.isTopEdgeRounded() != roundTopEdge
+                        || mOutlineProvider.isBottomEdgeRounded() != roundBottomEdge;
+
+        if (!needUpdate) return;
+
         mOutlineProvider.setRoundingEdges(true, roundTopEdge, true, roundBottomEdge);
         setClipToOutline(roundTopEdge || roundBottomEdge);
+        // Make sure the view redraws. Otherwise, the on-screen visuals may not reflect our desired
+        // rounding effect.
+        invalidateOutline();
     }
 
     @Override

@@ -2105,8 +2105,7 @@ class FencedFrameParameterizedBrowserTest : public FencedFrameBrowserTestBase {
          {blink::features::kFencedFramesAPIChanges, {}},
          {blink::features::kFencedFramesM120FeaturesPart1, {}},
          {blink::features::kFencedFramesAutomaticBeaconCredentials, {}},
-         {blink::features::kFencedFramesM120FeaturesPart2, {}},
-         {blink::features::kFencedFramesReportingAttestationsChanges, {}}},
+         {blink::features::kFencedFramesM120FeaturesPart2, {}}},
         {/* disabled_features */});
   }
 
@@ -4207,10 +4206,9 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
               ui::PAGE_TRANSITION_RELOAD, false, std::string(),
               controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
-  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
-      std::make_unique<NavigationEntryRestoreContextImpl>();
+  NavigationEntryRestoreContextImpl context;
   restored_entry->SetPageState(blink::PageState::CreateFromURL(main_url),
-                               context.get());
+                               &context);
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
 
   // Restore the new entry in a new tab and verify the fenced frame loads.
@@ -5109,24 +5107,19 @@ class FencedFrameReportEventBrowserTest
         CreateFencedFrameReporter();
     GURL reporting_url(
         https_server()->GetURL("c.test", "/_report_event_server.html"));
-    url::Origin reporting_worklet_origin =
-        url::Origin::Create(GURL(https_server()->GetURL("d.test", "/")));
     // Set valid reporting metadata for buyer.
     fenced_frame_reporter->OnUrlMappingReady(
         blink::FencedFrame::ReportingDestination::kBuyer,
-        reporting_worklet_origin,
         {
             {"click", reporting_url},
         },
         /*reporting_ad_macros=*/FencedFrameReporter::ReportingMacros());
     // Set empty reporting url for seller.
     fenced_frame_reporter->OnUrlMappingReady(
-        blink::FencedFrame::ReportingDestination::kSeller,
-        reporting_worklet_origin, {{"click", GURL()}});
+        blink::FencedFrame::ReportingDestination::kSeller, {{"click", GURL()}});
     // Set no reporting urls for component seller.
     fenced_frame_reporter->OnUrlMappingReady(
-        blink::FencedFrame::ReportingDestination::kComponentSeller,
-        reporting_worklet_origin, {});
+        blink::FencedFrame::ReportingDestination::kComponentSeller, {});
 
     // Get the urn mapping object.
     FencedFrameURLMapping& url_mapping =
@@ -5280,22 +5273,12 @@ class FencedFrameReportEventBrowserTest
         if (step.use_custom_destination_url) {
           EXPECT_EQ(response.http_request()->method,
                     net::test_server::METHOD_GET);
-          // For custom destination URL reports, the request initiator should
-          // not be the worklet origin.
-          EXPECT_NE(response.http_request()->headers.at("Origin"),
-                    reporting_worklet_origin.Serialize());
+        } else if (!step.event.data) {
+          EXPECT_TRUE(response.http_request()->content.empty());
         } else {
-          if (!step.event.data) {
-            EXPECT_TRUE(response.http_request()->content.empty());
-          } else {
-            EXPECT_EQ(response.http_request()->content,
-                      step.event.data.value() + " " +
-                          base::NumberToString(navigation_index));
-          }
-          // For preregistered URL reports, the request initiator should be the
-          // worklet origin.
-          EXPECT_EQ(response.http_request()->headers.at("Origin"),
-                    reporting_worklet_origin.Serialize());
+          EXPECT_EQ(response.http_request()->content,
+                    step.event.data.value() + " " +
+                        base::NumberToString(navigation_index));
         }
         // Verify the request contains the eligibility header.
         if (step.expect_attribution_reporting_allowed) {
@@ -5899,16 +5882,13 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL()),
       {{"mouse interaction", reporting_url},
        {"click", https_server()->GetURL("c.test", "/title1.html")}});
   // Set empty reporting url for seller and component seller.
   fenced_frame_reporter->OnUrlMappingReady(
-      blink::FencedFrame::ReportingDestination::kSeller,
-      url::Origin::Create(GURL()), {});
+      blink::FencedFrame::ReportingDestination::kSeller, {});
   fenced_frame_reporter->OnUrlMappingReady(
-      blink::FencedFrame::ReportingDestination::kComponentSeller,
-      url::Origin::Create(GURL()), {});
+      blink::FencedFrame::ReportingDestination::kComponentSeller, {});
 
   GURL https_url(
       https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
@@ -5952,7 +5932,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
 
 // The reportEvent beacon is a POST request. Upon receiving a 302 redirect
 // response, the request is changed to a GET request. In this test case, the
-// reporting url is same-origin. There are no preflight requests.
+// reporting url is same-origin. There is no preflight requests.
 // 1. A POST request is sent to the reporting destination.
 // 2. A response with 302 redirect is sent back to the requester.
 // 3. A GET request is sent to the redirected destination.
@@ -5990,7 +5970,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(https_url), {{"click", reporting_url}});
+      {{"click", reporting_url}});
 
   // Get the urn mapping object.
   FencedFrameURLMapping& url_mapping =
@@ -6077,10 +6057,12 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
 
 // The reportEvent beacon is a POST request. Upon receiving a 302 redirect
 // response, the request is changed to a GET request. In this test case, the
-// reporting url is cross-origin. There are no preflight requests.
-// 1. A POST request is sent to the reporting destination.
-// 2. A response with 302 redirect is sent back to the requester.
-// 3. A GET request is sent to the redirected destination.
+// reporting url is cross-origin.
+// 1. A response with 200 OK is sent back to the requester.
+// 2. A POST request is sent to the reporting destination.
+// 3. A response with 302 redirect is sent back to the requester.
+// 4. A response with 200 OK is sent back to the requester.
+// 5. A GET request is sent to the redirected destination.
 IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
                        CrossOriginReportEventPost302RedirectGet) {
   net::test_server::ControllableHttpResponse reporting_response(https_server(),
@@ -6115,7 +6097,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL(https_url)), {{"click", reporting_url}});
+      {{"click", reporting_url}});
 
   // Get the urn mapping object.
   FencedFrameURLMapping& url_mapping =
@@ -6244,7 +6226,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL()), {{"click", reporting_url}});
+      {{"click", reporting_url}});
 
   // Get the urn mapping object.
   FencedFrameURLMapping& url_mapping =
@@ -6364,7 +6346,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
       CreateFencedFrameReporter();
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL()), {{"click", reporting_url}});
+      {{"click", reporting_url}});
   GURL fenced_frame_url(
       https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
 
@@ -6401,7 +6383,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventBrowserTest,
       CreateFencedFrameReporter();
   nested_iframe_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL()), {{"click", nested_iframe_reporting_url}});
+      {{"click", nested_iframe_reporting_url}});
   FencedFrameURLMapping& nested_iframe_url_mapping =
       fenced_frame_root_node->current_frame_host()
           ->GetPage()
@@ -6529,7 +6511,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameReportEventAttributionDisabledBrowserTest,
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL()), {{"click", reporting_url}});
+      {{"click", reporting_url}});
 
   // Get the urn mapping object.
   FencedFrameURLMapping& url_mapping =
@@ -6620,7 +6602,7 @@ IN_PROC_BROWSER_TEST_F(
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL()), {{"click", reporting_url}});
+      {{"click", reporting_url}});
 
   // Get the urn mapping object.
   FencedFrameURLMapping& url_mapping =
@@ -6699,7 +6681,7 @@ IN_PROC_BROWSER_TEST_F(
   // Set valid reporting metadata for buyer.
   fenced_frame_reporter->OnUrlMappingReady(
       blink::FencedFrame::ReportingDestination::kBuyer,
-      url::Origin::Create(GURL()), {{"click", reporting_url}});
+      {{"click", reporting_url}});
 
   // Get the urn mapping object.
   FencedFrameURLMapping& url_mapping =
@@ -6924,6 +6906,14 @@ class FencedFrameAutomaticBeaconBrowserTest
       std::string path;
     };
 
+    struct BeaconType {
+      // The name of the event type as passed into
+      // setReportEventDataForAutomaticBeacons().
+      std::string name;
+      // The mojo value that will be checked for histograms.
+      blink::mojom::AutomaticBeaconType type;
+    };
+
     Destination starting_url;
     Destination secondary_initiator_url;
     Destination navigation_url;
@@ -6957,6 +6947,10 @@ class FencedFrameAutomaticBeaconBrowserTest
     // Whether we expect cookie data to be attached to the beacon.
     // TODO(crbug.com/1496395): Remove this after 3PCD.
     bool expected_cookie = true;
+
+    BeaconType beacon_type = {
+        blink::kFencedFrameTopNavigationCommitBeaconType,
+        blink::mojom::AutomaticBeaconType::kTopNavigationCommit};
   };
 
   static std::string DescribeParams(
@@ -7032,18 +7026,15 @@ class FencedFrameAutomaticBeaconBrowserTest
     // Set valid reporting metadata for buyer.
     fenced_frame_reporter->OnUrlMappingReady(
         blink::FencedFrame::ReportingDestination::kBuyer,
-        url::Origin::Create(GURL()),
         {
-            {blink::kFencedFrameTopNavigationCommitBeaconType, reporting_url},
+            {config.beacon_type.name, reporting_url},
         });
     // Set empty reporting url for seller.
     fenced_frame_reporter->OnUrlMappingReady(
-        blink::FencedFrame::ReportingDestination::kSeller,
-        url::Origin::Create(GURL()), {{"click", GURL()}});
+        blink::FencedFrame::ReportingDestination::kSeller, {{"click", GURL()}});
     // Set no reporting urls for component seller.
     fenced_frame_reporter->OnUrlMappingReady(
-        blink::FencedFrame::ReportingDestination::kComponentSeller,
-        url::Origin::Create(GURL()), {});
+        blink::FencedFrame::ReportingDestination::kComponentSeller, {});
 
     // Get the urn mapping object.
     FencedFrameURLMapping& url_mapping =
@@ -7110,9 +7101,12 @@ class FencedFrameAutomaticBeaconBrowserTest
                 destination: $2
               });
             )",
-                             blink::kFencedFrameTopNavigationCommitBeaconType,
-                             destination_list.Clone()),
+                             config.beacon_type.name, destination_list.Clone()),
                    ad_frame_execjs_options));
+
+        histogram_tester_.ExpectUniqueSample(
+            blink::kAutomaticBeaconEventTypeHistogram, config.beacon_type.type,
+            1);
       } else {
         // Call `setReportEventDataForAutomaticBeacons()` with `eventData`.
         EvalJsResult result =
@@ -7124,8 +7118,8 @@ class FencedFrameAutomaticBeaconBrowserTest
                 destination: $3
               });
             )",
-                             blink::kFencedFrameTopNavigationCommitBeaconType,
-                             config.message.value(), destination_list.Clone()),
+                             config.beacon_type.name, config.message.value(),
+                             destination_list.Clone()),
                    ad_frame_execjs_options);
 
         if (config.message->length() > blink::kFencedFrameMaxBeaconLength) {
@@ -7137,8 +7131,15 @@ class FencedFrameAutomaticBeaconBrowserTest
               testing::HasSubstr("The data provided to "
                                  "setReportEventDataForAutomaticBeacons() "
                                  "exceeds the maximum length, which is 64KB."));
+
+          histogram_tester_.ExpectUniqueSample(
+              blink::kAutomaticBeaconEventTypeHistogram,
+              config.beacon_type.type, 0);
         } else {
           EXPECT_TRUE(result.error.empty());
+          histogram_tester_.ExpectUniqueSample(
+              blink::kAutomaticBeaconEventTypeHistogram,
+              config.beacon_type.type, 1);
         }
       }
     }
@@ -7416,6 +7417,27 @@ IN_PROC_BROWSER_TEST_P(FencedFrameAutomaticBeaconBrowserTest,
       .navigation_url = {"a.test", "/fenced_frames/title1.html"},
       .expected_cookie = false,
   };
+  RunTest(config);
+}
+
+IN_PROC_BROWSER_TEST_P(FencedFrameAutomaticBeaconBrowserTest,
+                       DeprecatedTopNavigation) {
+  Config config = {
+      .starting_url = {"a.test", "/fenced_frames/title1.html"},
+      .navigation_url = {"a.test", "/fenced_frames/title1.html"},
+      .beacon_type = {
+          blink::kDeprecatedFencedFrameTopNavigationBeaconType,
+          blink::mojom::AutomaticBeaconType::kDeprecatedTopNavigation}};
+  RunTest(config);
+}
+
+IN_PROC_BROWSER_TEST_P(FencedFrameAutomaticBeaconBrowserTest,
+                       TopNavigationStart) {
+  Config config = {
+      .starting_url = {"a.test", "/fenced_frames/title1.html"},
+      .navigation_url = {"a.test", "/fenced_frames/title1.html"},
+      .beacon_type = {blink::kFencedFrameTopNavigationStartBeaconType,
+                      blink::mojom::AutomaticBeaconType::kTopNavigationStart}};
   RunTest(config);
 }
 

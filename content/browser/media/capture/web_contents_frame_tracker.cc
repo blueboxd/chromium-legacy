@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_util.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size.h"
@@ -110,14 +111,6 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
   // The backing WebContents.
   raw_ptr<WebContents, DanglingUntriaged> contents_;
 };
-
-viz::VideoCaptureSubTarget DeriveSubTarget(base::Token crop_id) {
-  if (base::FeatureList::IsEnabled(media::kUseElementInsteadOfRegionCapture)) {
-    return viz::SubtreeCaptureId(crop_id);
-  } else {
-    return crop_id;
-  }
-}
 
 }  // namespace
 
@@ -431,8 +424,9 @@ void WebContentsFrameTracker::SetWebContentsAndContextFromRoutingId(
   OnPossibleTargetChange();
 }
 
-void WebContentsFrameTracker::Crop(
-    const base::Token& crop_id,
+void WebContentsFrameTracker::ApplySubCaptureTarget(
+    media::mojom::SubCaptureTargetType type,
+    const base::Token& target_token,
     uint32_t sub_capture_target_version,
     base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>
         callback) {
@@ -448,17 +442,21 @@ void WebContentsFrameTracker::Crop(
     return;
   }
 
-  crop_id_ = crop_id;
+  sub_capture_target_ =
+      target_token.is_zero()
+          ? absl::nullopt
+          : absl::make_optional<SubCaptureTargetInfo>(type, target_token);
+
   sub_capture_target_version_ = sub_capture_target_version;
 
-  // If we don't have a target yet, we can store the crop ID but cannot actually
-  // crop yet.
+  // If we don't have a target yet, we can store the sub-capture target,
+  // but cannot actually apply it yet.
   if (!target_frame_sink_id_.is_valid()) {
     return;
   }
 
   const viz::VideoCaptureTarget target(target_frame_sink_id_,
-                                       DeriveSubTarget(crop_id_));
+                                       DeriveSubTarget());
   device_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -504,14 +502,14 @@ void WebContentsFrameTracker::OnPossibleTargetChange() {
       context_ ? context_->GetCaptureTarget()
                : WebContentsImpl::CaptureTarget{};
 
-  // TODO(crbug.com/1264849): Clear |crop_id_| when share-this-tab-instead
-  // is clicked.
+  // TODO(crbug.com/1264849): Clear |sub_capture_target_| when
+  // share-this-tab-instead is clicked.
   if (capture_target.sink_id != target_frame_sink_id_) {
     target_frame_sink_id_ = capture_target.sink_id;
     absl::optional<viz::VideoCaptureTarget> target;
     if (capture_target.sink_id.is_valid()) {
-      target = viz::VideoCaptureTarget(capture_target.sink_id,
-                                       DeriveSubTarget(crop_id_));
+      target =
+          viz::VideoCaptureTarget(capture_target.sink_id, DeriveSubTarget());
     }
 
     // The target may change to an invalid one, but we don't consider it
@@ -614,6 +612,22 @@ float WebContentsFrameTracker::DetermineMaxScaleOverride() {
            ", utilization=",
            base::NumberToString(capture_feedback_->resource_utilization)}));
   return max_capture_scale_override_;
+}
+
+viz::VideoCaptureSubTarget WebContentsFrameTracker::DeriveSubTarget() const {
+  if (!sub_capture_target_.has_value()) {
+    return base::Token();
+  }
+
+  const SubCaptureTargetInfo& sub_capture_target = sub_capture_target_.value();
+  switch (sub_capture_target.type) {
+    case media::mojom::SubCaptureTargetType::kCropTarget:
+      return sub_capture_target.token;
+    case media::mojom::SubCaptureTargetType::kRestrictionTarget:
+      return viz::SubtreeCaptureId(sub_capture_target.token);
+  }
+
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace content

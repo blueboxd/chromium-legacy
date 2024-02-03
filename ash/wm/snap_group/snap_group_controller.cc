@@ -9,7 +9,6 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
-#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -18,7 +17,6 @@
 #include "ash/wm/window_util.h"
 #include "base/check.h"
 #include "base/check_op.h"
-#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/unique_ptr_adapters.h"
 
@@ -55,7 +53,7 @@ void SnapGroupController::OnWindowSnapped(
     aura::Window* window,
     WindowSnapActionSource snap_action_source) {
   // If `window` already belongs to a snap group, do nothing.
-  if (!IsArm1AutomaticallyLockEnabled() || GetSnapGroupForGivenWindow(window)) {
+  if (GetSnapGroupForGivenWindow(window)) {
     return;
   }
 
@@ -148,7 +146,7 @@ bool SnapGroupController::CanEnterOverview() const {
     return true;
   }
 
-  return IsArm1AutomaticallyLockEnabled() && can_enter_overview_;
+  return can_enter_overview_;
 }
 
 void SnapGroupController::AddObserver(Observer* observer) {
@@ -157,16 +155,6 @@ void SnapGroupController::AddObserver(Observer* observer) {
 
 void SnapGroupController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool SnapGroupController::IsArm1AutomaticallyLockEnabled() const {
-  return features::IsSnapGroupEnabled() &&
-         features::kAutomaticallyLockGroup.Get();
-}
-
-bool SnapGroupController::IsArm2ManuallyLockEnabled() const {
-  return features::IsSnapGroupEnabled() &&
-         !features::kAutomaticallyLockGroup.Get();
 }
 
 void SnapGroupController::MinimizeTopMostSnapGroup() {

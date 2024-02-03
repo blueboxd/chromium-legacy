@@ -52,6 +52,7 @@ class CrdAdminSessionController : private StartCrdSessionJobDelegate {
     // Starts a new remote support session, which will resume the reconnectable
     // session with the given `session_id`.
     virtual void ReconnectToSession(remoting::SessionId session_id,
+                                    const std::string& oauth_access_token,
                                     StartSessionCallback callback) = 0;
   };
 
@@ -67,10 +68,9 @@ class CrdAdminSessionController : private StartCrdSessionJobDelegate {
 
   void Init(PrefService* local_state,
             base::OnceClosure done_callback = base::DoNothing());
+  void Shutdown();
 
   StartCrdSessionJobDelegate& GetDelegate();
-
-  void ClickNotificationButtonForTesting();
 
  private:
   class CrdHostSession;

@@ -364,7 +364,7 @@ class RasterCommandsCompletedQuery : public QueryManager::Query {
   }
 
   const scoped_refptr<SharedContextState> shared_context_state_;
-  absl::optional<base::TimeTicks> begin_time_;
+  std::optional<base::TimeTicks> begin_time_;
   bool finished_ = false;
   base::WeakPtrFactory<RasterCommandsCompletedQuery> weak_ptr_factory_{this};
 };
@@ -1233,7 +1233,6 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   // TODO(enne): reconcile this with gles2_cmd_decoder's capability settings.
   Capabilities caps;
   caps.gpu_rasterization = use_gpu_raster_;
-  caps.supports_oop_raster = use_gpu_raster_;
   caps.gpu_memory_buffer_formats =
       feature_info()->feature_flags().gpu_memory_buffer_formats;
   caps.texture_target_exception_list =
@@ -3018,7 +3017,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLfloat r,
 
   SkColor4f sk_color_4f = {r, g, b, a};
   if (shared_image_raster_) {
-    absl::optional<SkColor4f> clear_color;
+    std::optional<SkColor4f> clear_color;
     if (needs_clear)
       clear_color.emplace(sk_color_4f);
     scoped_shared_image_raster_write_ =

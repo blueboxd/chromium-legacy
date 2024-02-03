@@ -155,7 +155,7 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
 }
 
 std::ostream& operator<<(std::ostream& output,
-                         const absl::optional<RequestAction>& action) {
+                         const std::optional<RequestAction>& action) {
   if (!action)
     return output << "empty Optional<RequestAction>";
   return output << *action;
@@ -321,6 +321,27 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
     case ParseResult::ERROR_TAB_ID_DUPLICATED:
       output << "ERROR_TAB_ID_DUPLICATED";
       break;
+    case ParseResult::ERROR_EMPTY_RESPONSE_HEADER_MATCHING_LIST:
+      output << "ERROR_EMPTY_RESPONSE_HEADER_MATCHING_LIST";
+      break;
+    case ParseResult::ERROR_EMPTY_EXCLUDED_RESPONSE_HEADER_MATCHING_LIST:
+      output << "ERROR_EMPTY_EXCLUDED_RESPONSE_HEADER_MATCHING_LIST";
+      break;
+    case ParseResult::ERROR_INVALID_MATCHING_RESPONSE_HEADER_NAME:
+      output << "ERROR_INVALID_MATCHING_RESPONSE_HEADER_NAME";
+      break;
+    case ParseResult::ERROR_INVALID_MATCHING_EXCLUDED_RESPONSE_HEADER_NAME:
+      output << "ERROR_INVALID_MATCHING_EXCLUDED_RESPONSE_HEADER_NAME";
+      break;
+    case ParseResult::ERROR_INVALID_MATCHING_RESPONSE_HEADER_VALUE:
+      output << "ERROR_INVALID_MATCHING_RESPONSE_HEADER_VALUE";
+      break;
+    case ParseResult::ERROR_MATCHING_RESPONSE_HEADER_DUPLICATED:
+      output << "ERROR_MATCHING_RESPONSE_HEADER_DUPLICATED";
+      break;
+    case ParseResult::ERROR_RESPONSE_HEADER_RULE_CANNOT_MODIFY_REQUEST_HEADERS:
+      output << "ERROR_RESPONSE_HEADER_RULE_CANNOT_MODIFY_REQUEST_HEADERS";
+      break;
   }
   return output;
 }
@@ -434,7 +455,7 @@ FileBackedRulesetSource CreateTemporarySource(RulesetID id,
 dnr_api::ModifyHeaderInfo CreateModifyHeaderInfo(
     dnr_api::HeaderOperation operation,
     std::string header,
-    absl::optional<std::string> value) {
+    std::optional<std::string> value) {
   dnr_api::ModifyHeaderInfo header_info;
 
   header_info.operation = operation;

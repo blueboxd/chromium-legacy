@@ -50,8 +50,9 @@
         "table-caption", "-webkit-box", "-webkit-inline-box", "flex",
         "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none",
         "layout-custom", "inline-layout-custom", "math", "block math",
-        // Available only if CSSDisplayMultipleValues is enabled:
-        "inline list-item", "flow-root list-item", "inline flow-root list-item"
+        "inline list-item", "flow-root list-item", "inline flow-root list-item",
+        // Available only if CssDisplayRuby is enabled:
+        "ruby", "block ruby", "ruby-text"
       ],
       default_value: "inline",
     },
@@ -891,6 +892,14 @@
       inherited: true,
     },
     {
+      name: "ColorSchemeFlagsIsNormal",
+      field_template: "primitive",
+      type_name: "bool",
+      default_value: "false",
+      custom_compare: true,
+      inherited: true,
+    },
+    {
       name: "ColorSchemeForced",
       field_template: "primitive",
       type_name: "bool",
@@ -900,6 +909,12 @@
     },
     {
       name: "IsInBlockifyingDisplay",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
+    {
+      name: "IsInInlinifyingDisplay",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,

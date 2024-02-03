@@ -6,7 +6,7 @@
 
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ntp/home/features.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -67,7 +67,6 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
   UILabel* _title;
   UILabel* _subtitle;
   BOOL _isPlaceholder;
-  UIButton* _seeMoreButton;
 }
 
 - (instancetype)initWithType:(ContentSuggestionsModuleType)type {
@@ -165,8 +164,6 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
           setContentHuggingPriority:UILayoutPriorityDefaultHigh
                             forAxis:UILayoutConstraintAxisHorizontal];
       [titleStackView addArrangedSubview:showMoreButton];
-      showMoreButton.accessibilityIdentifier = showMoreButton.titleLabel.text;
-      _seeMoreButton = showMoreButton;
     } else if ([self shouldShowSubtitle]) {
       // TODO(crbug.com/1474992): Update MagicStackModuleContainer to take an id
       // config in its initializer so the container can build itself from a
@@ -232,16 +229,9 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     }
     [stackView addArrangedSubview:contentView];
 
-    NSMutableArray* accessibilityElements =
-        [[NSMutableArray alloc] initWithObjects:_title, nil];
-    if ([self shouldShowSeeMore]) {
-      [accessibilityElements addObject:_seeMoreButton];
-    }
-    [accessibilityElements addObject:contentView];
-    if ([self shouldShowSubtitle]) {
-      [accessibilityElements addObject:_subtitle];
-    }
-    self.accessibilityElements = accessibilityElements;
+    self.accessibilityElements = [self shouldShowSubtitle]
+                                     ? @[ _title, _subtitle, contentView ]
+                                     : @[ _title, contentView ];
 
     _contentViewWidthAnchor = [contentView.widthAnchor
         constraintEqualToConstant:[self contentViewWidth]];

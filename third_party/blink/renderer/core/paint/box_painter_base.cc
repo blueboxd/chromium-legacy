@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
-#include "third_party/blink/renderer/core/style/style_svg_mask_reference_image.h"
+#include "third_party/blink/renderer/core/style/style_mask_source_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -1080,22 +1080,23 @@ bool ShouldApplyBlendOperation(const BoxPainterBase::FillLayerInfo& info,
   return !info.is_bottom_layer || layer.GetType() != EFillLayerType::kMask;
 }
 
-bool NeedsMaskLuminanceLayer(const FillLayer& layer, StyleImage* image) {
+bool NeedsMaskLuminanceLayer(const FillLayer& layer) {
   if (layer.GetType() != EFillLayerType::kMask) {
     return false;
   }
-  if (layer.MaskMode() == EFillMaskMode::kLuminance) {
-    return true;
+  // We only need a luminance layer if the mask-mode is explicitly
+  // 'luminance'. A mask-mode of 'match-source' only applies to SVG <mask>
+  // references, and that code-path will create a layer if needed in that case.
+  return layer.MaskMode() == EFillMaskMode::kLuminance;
+}
+
+const StyleMaskSourceImage* ToMaskSourceIfSVGMask(
+    const StyleImage& style_image) {
+  const auto* mask_source = DynamicTo<StyleMaskSourceImage>(style_image);
+  if (!mask_source || !mask_source->HasSVGMask()) {
+    return nullptr;
   }
-  if (layer.MaskMode() == EFillMaskMode::kMatchSource) {
-    if (image->IsSVGMaskReference()) {
-      const auto& svg_reference = To<StyleSVGMaskReferenceImage>(*image);
-      EMaskType type = SVGMaskPainter::MaskType(
-          svg_reference.GetSVGResource(), svg_reference.GetSVGResourceClient());
-      return type == EMaskType::kLuminance;
-    }
-  }
-  return false;
+  return mask_source;
 }
 
 class ScopedMaskLuminanceLayer {
@@ -1111,41 +1112,6 @@ class ScopedMaskLuminanceLayer {
  private:
   GraphicsContext& context_;
 };
-
-scoped_refptr<Image> UpdateGeometryAndGetImageForLayer(
-    const PaintInfo& paint_info,
-    const ComputedStyle& style,
-    const FillLayer& layer,
-    StyleImage* image,
-    const PhysicalRect& paint_rect,
-    BackgroundImageGeometry& geometry) {
-  const ComputedStyle& image_style = geometry.ImageStyle(style);
-
-  // If the "image" referenced by the FillLayer is an SVG <mask> reference (and
-  // this is a layer for a mask), then repeat, position, clip, origin and size
-  // should have no effect.
-  if (layer.GetType() == EFillLayerType::kMask && image->IsSVGMaskReference()) {
-    const auto& svg_reference = To<StyleSVGMaskReferenceImage>(*image);
-
-    const PhysicalRect positioning_area =
-        geometry.ComputePositioningArea(paint_info, layer, paint_rect);
-    const gfx::RectF reference_box(gfx::SizeF(positioning_area.size));
-    const float zoom = image_style.EffectiveZoom();
-
-    const gfx::RectF mask_area = SVGMaskPainter::ResourceBounds(
-        svg_reference.GetSVGResource(), svg_reference.GetSVGResourceClient(),
-        reference_box, zoom);
-    geometry.SetGeometryForSVGMask(mask_area, positioning_area.offset);
-
-    PaintRecord record = SVGMaskPainter::PaintResource(
-        svg_reference.GetSVGResource(), svg_reference.GetSVGResourceClient(),
-        reference_box, zoom);
-    return PaintGeneratedImage::Create(std::move(record), mask_area.size());
-  }
-  geometry.Calculate(paint_info, layer, paint_rect);
-  return image->GetImage(geometry.ImageClient(), geometry.ImageDocument(),
-                         image_style, gfx::SizeF(geometry.TileSize()));
-}
 
 }  // anonymous namespace
 
@@ -1192,24 +1158,52 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   absl::optional<ScopedImageRenderingSettings> image_rendering_settings_context;
   absl::optional<ScopedMaskLuminanceLayer> mask_luminance_scope;
   if (fill_layer_info.should_paint_image) {
-    image = UpdateGeometryAndGetImageForLayer(paint_info, style_, bg_layer,
-                                              fill_layer_info.image,
-                                              scrolled_paint_rect, geometry);
-    image_rendering_settings_context.emplace(
-        context, geometry.ImageInterpolationQuality(),
-        geometry.DynamicRangeLimit());
-
+    // Prepare compositing state first so that it's ready in case the layer
+    // references an SVG <mask> element.
     if (ShouldApplyBlendOperation(fill_layer_info, bg_layer)) {
       composite_op = WebCoreCompositeToSkiaComposite(bg_layer.Composite(),
                                                      bg_layer.GetBlendMode());
     }
 
-    if (NeedsMaskLuminanceLayer(bg_layer, fill_layer_info.image)) {
+    if (NeedsMaskLuminanceLayer(bg_layer)) {
       mask_luminance_scope.emplace(context, composite_op);
       // The mask luminance layer will apply `composite_op`, so reset it to
       // avoid applying it twice.
       composite_op = SkBlendMode::kSrcOver;
     }
+
+    const ComputedStyle& image_style = geometry.ImageStyle(style_);
+
+    // If the "image" referenced by the FillLayer is an SVG <mask> reference
+    // (and this is a layer for a mask), then repeat, position, clip, origin and
+    // size should have no effect.
+    if (bg_layer.GetType() == EFillLayerType::kMask) {
+      if (const auto* mask_source =
+              ToMaskSourceIfSVGMask(*fill_layer_info.image)) {
+        const PhysicalRect positioning_area = geometry.ComputePositioningArea(
+            paint_info, bg_layer, scrolled_paint_rect);
+        const gfx::RectF reference_box(gfx::SizeF(positioning_area.size));
+        const float zoom = image_style.EffectiveZoom();
+
+        clip_with_scrolling_state_saver.SaveIfNeeded();
+        // Move the origin to the upper-left corner of the positioning area.
+        context.Translate(positioning_area.X().ToFloat(),
+                          positioning_area.Y().ToFloat());
+        SVGMaskPainter::PaintSVGMaskLayer(
+            context, *mask_source, geometry.ImageClient(), reference_box, zoom,
+            composite_op, bg_layer.MaskMode() == EFillMaskMode::kMatchSource);
+        return;
+      }
+    }
+    geometry.Calculate(paint_info, bg_layer, scrolled_paint_rect);
+
+    image = fill_layer_info.image->GetImage(
+        geometry.ImageClient(), geometry.ImageDocument(), image_style,
+        gfx::SizeF(geometry.TileSize()));
+
+    image_rendering_settings_context.emplace(
+        context, geometry.ImageInterpolationQuality(),
+        geometry.DynamicRangeLimit());
   }
 
   PhysicalBoxStrut border = ComputeSnappedBorders();

@@ -10,7 +10,6 @@
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -43,8 +42,8 @@ CreateWebGPUGraphicsContext3DProvider(const KURL& url);
 PLATFORM_EXPORT void CreateWebGPUGraphicsContext3DProviderAsync(
     const KURL& url,
     scoped_refptr<base::SingleThreadTaskRunner> current_thread_task_runner,
-    WTF::CrossThreadOnceFunction<
-        void(std::unique_ptr<WebGraphicsContext3DProvider>)> callback);
+    base::OnceCallback<void(std::unique_ptr<WebGraphicsContext3DProvider>)>
+        callback);
 
 }  // namespace blink
 

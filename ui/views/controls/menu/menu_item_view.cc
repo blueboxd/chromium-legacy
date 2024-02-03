@@ -549,8 +549,7 @@ void MenuItemView::SetIconView(std::unique_ptr<ImageView> icon_view) {
     base::AutoReset setter(
         &update_selection_based_state_in_view_herarchy_changed_, false);
     if (icon_view_) {
-      RemoveChildViewT(icon_view_.get());
-      icon_view_ = nullptr;
+      RemoveChildViewT(icon_view_.ExtractAsDangling());
     }
 
     if (icon_view)
@@ -766,10 +765,10 @@ void MenuItemView::Layout() {
                     (type_ == Type::kActionableSubMenu
                          ? config.actionable_submenu_arrow_to_edge_padding
                          : config.arrow_to_edge_padding) -
-                    kSubmenuArrowSize;
-      const int y = (height() - kSubmenuArrowSize) / 2;
-      submenu_arrow_image_view_->SetBounds(x, y, kSubmenuArrowSize,
-                                           kSubmenuArrowSize);
+                    config.arrow_size;
+      const int y = (height() - config.arrow_size) / 2;
+      submenu_arrow_image_view_->SetBounds(x, y, config.arrow_size,
+                                           config.arrow_size);
     }
 
     if (vertical_separator_) {
@@ -1294,7 +1293,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
       dimensions.minor_text_width += config.item_horizontal_padding;
     }
     dimensions.minor_text_width +=
-        kSubmenuArrowSize +
+        config.arrow_size +
         ((type_ == Type::kActionableSubMenu)
              ? config.actionable_submenu_arrow_to_edge_padding
              : config.arrow_to_edge_padding);
@@ -1420,8 +1419,11 @@ void MenuItemView::UpdateSelectionBasedState(bool paint_as_selected) {
   last_paint_as_selected_ = paint_as_selected;
   const Colors colors = CalculateColors(paint_as_selected);
   if (submenu_arrow_image_view_) {
-    submenu_arrow_image_view_->SetImage(gfx::CreateVectorIcon(
-        vector_icons::kSubmenuArrowIcon, colors.icon_color));
+    submenu_arrow_image_view_->SetImage(
+        gfx::CreateVectorIcon(features::IsChromeRefresh2023()
+                                  ? vector_icons::kSubmenuArrowChromeRefreshIcon
+                                  : vector_icons::kSubmenuArrowIcon,
+                              colors.icon_color));
   }
   MenuDelegate* delegate = GetDelegate();
   if (type_ == Type::kCheckbox && delegate &&

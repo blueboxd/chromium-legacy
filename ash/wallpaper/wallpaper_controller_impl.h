@@ -29,8 +29,10 @@
 #include "ash/wallpaper/google_photos_wallpaper_manager.h"
 #include "ash/wallpaper/online_wallpaper_manager.h"
 #include "ash/wallpaper/online_wallpaper_variant_info_fetcher.h"
+#include "ash/wallpaper/sea_pen_wallpaper_manager.h"
 #include "ash/wallpaper/wallpaper_blur_manager.h"
 #include "ash/wallpaper/wallpaper_file_manager.h"
+#include "ash/wallpaper/wallpaper_time_of_day_scheduler.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -54,10 +56,6 @@ namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace color_utils {
-struct ColorProfile;
-}  // namespace color_utils
-
 namespace ash {
 
 class OnlineWallpaperManager;
@@ -79,7 +77,7 @@ using CustomWallpaperMap = std::map<AccountId, CustomWallpaperElement>;
 // Controls the desktop background wallpaper:
 //   - Sets a wallpaper image and layout;
 //   - Handles display change (add/remove display, configuration change etc);
-//   - Calculates prominent colors.
+//   - Calculates colors from wallpaper;
 //   - Move wallpaper to locked container(s) when session state is not ACTIVE to
 //     hide the user desktop and move it to unlocked container when session
 //     state is ACTIVE;
@@ -125,9 +123,6 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Returns custom wallpaper directory by appending corresponding |sub_dir|.
   static base::FilePath GetCustomWallpaperDir(const std::string& sub_dir);
-
-  // Returns the prominent color based on |color_profile|.
-  SkColor GetProminentColor(color_utils::ColorProfile color_profile) const;
 
   // Returns the k mean color of the current wallpaper.
   SkColor GetKMeanColor() const;
@@ -297,6 +292,9 @@ class ASH_EXPORT WallpaperControllerImpl
                               const std::string& file_name,
                               WallpaperLayout layout,
                               const gfx::ImageSkia& image) override;
+  void SetSeaPenWallpaper(const AccountId& account_id,
+                          const SeaPenImage& sea_pen_image,
+                          SetWallpaperCallback callback) override;
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
   void UpdateCurrentWallpaperLayout(const AccountId& account_id,
@@ -407,6 +405,10 @@ class ASH_EXPORT WallpaperControllerImpl
     return daily_refresh_scheduler_.get();
   }
 
+  raw_ptr<WallpaperTimeOfDayScheduler> time_of_day_scheduler_for_testing() {
+    return time_of_day_scheduler_.get();
+  }
+
  private:
   friend class WallpaperControllerTestBase;
   friend class WallpaperControllerTestApi;
@@ -488,9 +490,11 @@ class ASH_EXPORT WallpaperControllerImpl
   void RepaintOnlineWallpaper(absl::optional<OnlineWallpaperParams> params);
 
   // Used as the callback of decoding wallpapers of type
-  // `WallpaperType::kOnline`. Shows the wallpaper immediately if
-  // `params.account_id` is the active user.
-  void OnOnlineWallpaperDecoded(const OnlineWallpaperParams& params,
+  // `WallpaperType::kOnline`. Shows the wallpaper immediately if `account_id`
+  // is the active user.
+  void OnOnlineWallpaperDecoded(const AccountId& account_id,
+                                bool preview_mode,
+                                WallpaperInfo wallpaper_info,
                                 SetWallpaperCallback callback,
                                 const gfx::ImageSkia& image);
 
@@ -548,6 +552,13 @@ class ASH_EXPORT WallpaperControllerImpl
                                  bool show_wallpaper,
                                  SetWallpaperCallback callback,
                                  const gfx::ImageSkia& image);
+
+  // Used as the callback of SeaPen wallpaper decoding. Shows the wallpaper
+  // immediately if `account_id` is for the active user.
+  void OnSeaPenWallpaperDecoded(const AccountId& account_id,
+                                SetWallpaperCallback callback,
+                                uint32_t sea_pen_image_id,
+                                const gfx::ImageSkia& image_skia);
 
   // Saves |image| to disk if the user's data is not ephemeral, or if it is a
   // policy wallpaper for public accounts. Shows the wallpaper immediately if
@@ -729,6 +740,9 @@ class ASH_EXPORT WallpaperControllerImpl
   // Returns whether session state is oobe or the oobe ui dialog is visible.
   bool IsOobeState() const;
 
+  const ScheduledFeature& GetScheduleForOnlineWallpaper(
+      const std::string& collection_id) const;
+
   bool is_session_active_ = false;
 
   OobeDialogState oobe_state_ = OobeDialogState::HIDDEN;
@@ -822,8 +836,16 @@ class ASH_EXPORT WallpaperControllerImpl
   // wallpapers from disk.
   GooglePhotosWallpaperManager google_photos_wallpaper_manager_;
 
+  // A utility class that handles file operations and decoding for SeaPen
+  // wallpapers.
+  SeaPenWallpaperManager sea_pen_wallpaper_manager_;
+
   // Provides signals to trigger wallpaper daily refresh.
   std::unique_ptr<WallpaperDailyRefreshScheduler> daily_refresh_scheduler_;
+
+  // Provides signal for when time-of-day wallpapers should change. Ignored if
+  // any other wallpaper collection is active.
+  std::unique_ptr<WallpaperTimeOfDayScheduler> time_of_day_scheduler_;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
@@ -835,6 +857,10 @@ class ASH_EXPORT WallpaperControllerImpl
   base::ScopedObservation<ScheduledFeature,
                           ScheduledFeature::CheckpointObserver>
       daily_refresh_observation_{this};
+
+  base::ScopedObservation<ScheduledFeature,
+                          ScheduledFeature::CheckpointObserver>
+      time_of_day_scheduler_observation_{this};
 
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
 

@@ -32,49 +32,52 @@
 
 #include <algorithm>
 #include <atomic>
+#include <bit>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/address_pool_manager_types.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/allocation_guard.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/chromecast_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/freeslot_bitmap.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/page_allocator.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_address_space.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc-inl.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_allocation_data.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/bits.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/compiler_specific.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/export_template.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/notreached.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/thread_annotations.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/time/time.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_check.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_forward.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_hooks.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_bucket.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_bucket_lookup.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_cookie.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_direct_map_extent.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_freelist_entry.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_lock.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_oom.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_page.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_ref_count.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/reservation_offset_table.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/tagging.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/thread_cache.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/thread_isolation/thread_isolation.h"
 #include "build/build_config.h"
+#include "partition_alloc/address_pool_manager_types.h"
+#include "partition_alloc/allocation_guard.h"
+#include "partition_alloc/chromecast_buildflags.h"
+#include "partition_alloc/freeslot_bitmap.h"
+#include "partition_alloc/lightweight_quarantine.h"
+#include "partition_alloc/page_allocator.h"
+#include "partition_alloc/partition_address_space.h"
+#include "partition_alloc/partition_alloc-inl.h"
+#include "partition_alloc/partition_alloc_allocation_data.h"
+#include "partition_alloc/partition_alloc_base/bits.h"
+#include "partition_alloc/partition_alloc_base/compiler_specific.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
+#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
+#include "partition_alloc/partition_alloc_base/export_template.h"
+#include "partition_alloc/partition_alloc_base/no_destructor.h"
+#include "partition_alloc/partition_alloc_base/notreached.h"
+#include "partition_alloc/partition_alloc_base/thread_annotations.h"
+#include "partition_alloc/partition_alloc_base/time/time.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_check.h"
+#include "partition_alloc/partition_alloc_config.h"
+#include "partition_alloc/partition_alloc_constants.h"
+#include "partition_alloc/partition_alloc_forward.h"
+#include "partition_alloc/partition_alloc_hooks.h"
+#include "partition_alloc/partition_bucket.h"
+#include "partition_alloc/partition_bucket_lookup.h"
+#include "partition_alloc/partition_cookie.h"
+#include "partition_alloc/partition_direct_map_extent.h"
+#include "partition_alloc/partition_freelist_entry.h"
+#include "partition_alloc/partition_lock.h"
+#include "partition_alloc/partition_oom.h"
+#include "partition_alloc/partition_page.h"
+#include "partition_alloc/partition_ref_count.h"
+#include "partition_alloc/reservation_offset_table.h"
+#include "partition_alloc/tagging.h"
+#include "partition_alloc/thread_cache.h"
+#include "partition_alloc/thread_isolation/thread_isolation.h"
 
 #if BUILDFLAG(USE_STARSCAN)
-#include "base/allocator/partition_allocator/src/partition_alloc/starscan/pcscan.h"
+#include "partition_alloc/starscan/pcscan.h"
 #endif
 
 namespace partition_alloc::internal {
@@ -169,6 +172,8 @@ struct PartitionOptions {
 
   size_t ref_count_size = 0;
 
+  size_t scheduler_loop_quarantine_capacity_in_bytes = 0;
+
   struct {
     EnableToggle enabled = kDisabled;
     TagViolationReportingMode reporting_mode =
@@ -176,6 +181,10 @@ struct PartitionOptions {
   } memory_tagging;
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
   ThreadIsolationOption thread_isolation;
+#endif
+
+#if BUILDFLAG(USE_FREELIST_POOL_OFFSETS)
+  EnableToggle use_pool_offset_freelists = kDisabled;
 #endif
 };
 
@@ -260,6 +269,10 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 #endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
     ThreadIsolationOption thread_isolation;
+#endif
+
+#if BUILDFLAG(USE_FREELIST_POOL_OFFSETS)
+    bool use_pool_offset_freelists = false;
 #endif
 
 #if PA_CONFIG(EXTRAS_REQUIRED)
@@ -356,6 +369,11 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   std::atomic<int> thread_caches_being_constructed_{0};
 
   bool quarantine_always_for_testing = false;
+
+  // NoDestructor because we don't need to dequarantine objects as the root
+  // associated with it is dying anyway.
+  internal::base::NoDestructor<internal::SchedulerLoopQuarantine>
+      scheduler_loop_quarantine;
 
   PartitionRoot();
   explicit PartitionRoot(PartitionOptions opts);
@@ -824,6 +842,18 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
     return straighten_larger_slot_span_free_lists_;
   }
 
+  internal::SchedulerLoopQuarantine& GetSchedulerLoopQuarantineForTesting() {
+    // TODO(crbug.com/1462223): Implement thread-local version and return it
+    // here.
+    return *scheduler_loop_quarantine;
+  }
+
+#if BUILDFLAG(USE_FREELIST_POOL_OFFSETS)
+  PA_ALWAYS_INLINE bool uses_pool_offset_freelists() const {
+    return settings.use_pool_offset_freelists;
+  }
+#endif  // BUILDFLAG(USE_FREELIST_POOL_OFFSETS)
+
  private:
   static inline StraightenLargerSlotSpanFreeListsMode
       straighten_larger_slot_span_free_lists_ =
@@ -940,6 +970,9 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   // May return an invalid thread cache.
   PA_ALWAYS_INLINE ThreadCache* GetOrCreateThreadCache();
   PA_ALWAYS_INLINE ThreadCache* GetThreadCache();
+
+  PA_ALWAYS_INLINE internal::SchedulerLoopQuarantine&
+  GetSchedulerLoopQuarantine();
 
   PA_ALWAYS_INLINE AllocationNotificationData
   CreateAllocationNotificationData(void* object,
@@ -1340,6 +1373,22 @@ PA_ALWAYS_INLINE void PartitionRoot::FreeInline(void* object) {
   }
 
   if (PA_UNLIKELY(!object)) {
+    return;
+  }
+
+  if constexpr (ContainsFlags(flags, FreeFlags::kZap)) {
+    SlotSpan* slot_span = SlotSpan::FromObject(object);
+    uintptr_t slot_start = ObjectToSlotStart(object);
+    internal::SecureMemset(internal::SlotStartAddr2Ptr(slot_start),
+                           internal::kFreedByte, GetSlotUsableSize(slot_span));
+  }
+  // TODO(https://crbug.com/1497380): Collecting objects for
+  // `kSchedulerLoopQuarantine` here means it "delays" other checks (BRP
+  // refcount, cookie, etc.)
+  // For better debuggability, we should do these checks before quarantining.
+  if constexpr (ContainsFlags(flags, FreeFlags::kSchedulerLoopQuarantine)) {
+    GetSchedulerLoopQuarantine().Quarantine(
+        internal::LightweightQuarantineEntry(object));
     return;
   }
 
@@ -2217,11 +2266,8 @@ PA_ALWAYS_INLINE void* PartitionRoot::AlignedAllocInline(
       // PartitionAlloc only guarantees alignment for power-of-two sized
       // allocations. To make sure this applies here, round up the allocation
       // size.
-      raw_size =
-          static_cast<size_t>(1)
-          << (int{sizeof(size_t) * 8} -
-              partition_alloc::internal::base::bits::CountLeadingZeroBits(
-                  raw_size - 1));
+      raw_size = static_cast<size_t>(1)
+                 << (int{sizeof(size_t) * 8} - std::countl_zero(raw_size - 1));
     }
     PA_DCHECK(partition_alloc::internal::base::bits::IsPowerOfTwo(raw_size));
     // Adjust back, because AllocInternalNoHooks/Alloc will adjust it again.
@@ -2394,6 +2440,12 @@ ThreadCache* PartitionRoot::GetOrCreateThreadCache() {
 
 ThreadCache* PartitionRoot::GetThreadCache() {
   return PA_LIKELY(settings.with_thread_cache) ? ThreadCache::Get() : nullptr;
+}
+
+// private.
+internal::SchedulerLoopQuarantine& PartitionRoot::GetSchedulerLoopQuarantine() {
+  // TODO(crbug.com/1462223): Implement thread-local version and return it here.
+  return *scheduler_loop_quarantine;
 }
 
 // Explicitly declare common template instantiations to reduce compile time.

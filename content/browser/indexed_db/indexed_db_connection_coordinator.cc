@@ -63,7 +63,8 @@ class IndexedDBConnectionCoordinator::ConnectionRequest {
         db_(db),
         connection_coordinator_(connection_coordinator),
         tasks_available_callback_(
-            bucket_context.delegate().on_tasks_available) {}
+            base::BindRepeating(&IndexedDBBucketContext::QueueRunTasks,
+                                bucket_context.AsWeakPtr())) {}
 
   ConnectionRequest(const ConnectionRequest&) = delete;
   ConnectionRequest& operator=(const ConnectionRequest&) = delete;
@@ -217,7 +218,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
       // DEFAULT_VERSION throws exception.)
       DCHECK(is_new_database);
       pending_->factory_client->OnOpenSuccess(
-          db_->CreateConnection(pending_->database_callbacks,
+          db_->CreateConnection(std::move(pending_->database_callbacks),
                                 std::move(client_state_checker_)),
           db_->metadata_);
       bucket_context_handle_.Release();
@@ -229,7 +230,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
         (new_version == old_version ||
          new_version == IndexedDBDatabaseMetadata::NO_VERSION)) {
       pending_->factory_client->OnOpenSuccess(
-          db_->CreateConnection(pending_->database_callbacks,
+          db_->CreateConnection(std::move(pending_->database_callbacks),
                                 std::move(client_state_checker_)),
           db_->metadata_);
       state_ = RequestState::kDone;
@@ -308,7 +309,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
     DCHECK(state_ == RequestState::kPendingLocks);
 
     DCHECK(!lock_receiver_.locks.empty());
-    connection_ = db_->CreateConnection(pending_->database_callbacks,
+    connection_ = db_->CreateConnection(std::move(pending_->database_callbacks),
                                         std::move(client_state_checker_));
     bucket_context_handle_.Release();
     DCHECK(!connection_ptr_for_close_comparision_);
@@ -388,9 +389,12 @@ class IndexedDBConnectionCoordinator::OpenRequest
       // so we don't need to.
       connection_->CloseAndReportForceClose();
       connection_.reset();
-    } else {
+    } else if (pending_->database_callbacks) {
       pending_->database_callbacks->OnForcedClose();
     }
+    // else: `database_callbacks` has been passed to `connection_`, in which
+    // case the IndexedDBDatabase will have called `CloseAndReportForceClose()`.
+
     pending_.reset();
     // The tasks_available_callback_ is NOT run here, because we are assuming
     // the caller is doing their own cleanup & execution for ForceClose.
@@ -568,7 +572,7 @@ void IndexedDBConnectionCoordinator::ScheduleOpenConnection(
   request_queue_.push(std::make_unique<OpenRequest>(
       *bucket_context_, db_, std::move(connection), this,
       std::move(client_state_checker)));
-  bucket_context_->delegate().on_tasks_available.Run();
+  bucket_context_->QueueRunTasks();
 }
 
 void IndexedDBConnectionCoordinator::ScheduleDeleteDatabase(
@@ -577,7 +581,7 @@ void IndexedDBConnectionCoordinator::ScheduleDeleteDatabase(
   request_queue_.push(std::make_unique<DeleteRequest>(
       *bucket_context_, db_, std::move(factory_client),
       std::move(on_deletion_complete), this));
-  bucket_context_->delegate().on_tasks_available.Run();
+  bucket_context_->QueueRunTasks();
 }
 
 leveldb::Status IndexedDBConnectionCoordinator::PruneTasksForForceClose() {

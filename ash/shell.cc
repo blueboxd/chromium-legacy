@@ -30,6 +30,8 @@
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
 #include "ash/accessibility/ui/accessibility_focus_ring_controller_impl.h"
 #include "ash/ambient/ambient_controller.h"
+#include "ash/api/tasks/tasks_controller.h"
+#include "ash/api/tasks/tasks_delegate.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_feature_usage_metrics.h"
 #include "ash/assistant/assistant_controller_impl.h"
@@ -94,6 +96,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_capture/multi_capture_service_client.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
+#include "ash/picker/picker_controller.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/public/cpp/accelerator_keycode_lookup_cache.h"
@@ -190,6 +193,7 @@
 #include "ash/utility/occlusion_tracker_pauser.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/ash_focus_rules.h"
+#include "ash/wm/bounds_tracker/window_bounds_tracker.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/coral/coral_controller.h"
 #include "ash/wm/cursor_manager_chromeos.h"
@@ -203,7 +207,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/multi_display/multi_display_metrics_controller.h"
 #include "ash/wm/multi_display/persistent_window_controller.h"
-#include "ash/wm/multitask_menu_nudge_delegate_ash.h"
+#include "ash/frame/multitask_menu_nudge_delegate_ash.h"
 #include "ash/wm/native_cursor_manager_ash.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/pip/pip_controller.h"
@@ -649,6 +653,10 @@ void Shell::RemoveAccessibilityEventHandler(ui::EventHandler* handler) {
       handler);
 }
 
+DeskProfilesDelegate* Shell::GetDeskProfilesDelegate() {
+  return shell_delegate_->GetDeskProfilesDelegate();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
@@ -848,6 +856,8 @@ Shell::~Shell() {
   // before |window_tree_host_manager_| is deleted.
   persistent_window_controller_.reset();
 
+  window_bounds_tracker_.reset();
+
   display_highlight_controller_.reset();
 
   // VideoActivityNotifier must be deleted before |video_detector_| is
@@ -903,6 +913,8 @@ Shell::~Shell() {
   CloseAllRootWindowChildWindows();
 
   glanceables_controller_.reset();
+
+  tasks_controller_.reset();
 
   multitask_menu_nudge_delegate_.reset();
   tablet_mode_controller_.reset();
@@ -1273,6 +1285,10 @@ void Shell::Init(
 
   InitializeDisplayManager();
 
+  if (features::IsWindowBoundsTrackerEnabled()) {
+    window_bounds_tracker_ = std::make_unique<WindowBoundsTracker>();
+  }
+
   // RefreshFontParams depends on display prefs.
   display_manager_->RefreshFontParams();
 
@@ -1294,7 +1310,7 @@ void Shell::Init(
   // `ScheduledFeature` ctor will access `geolocation_controller_` from
   // `Shell`.
   geolocation_controller_ = std::make_unique<GeolocationController>(
-      shell_delegate_->GetGeolocationUrlLoaderFactory());
+      SimpleGeolocationProvider::GetInstance());
 
   // Night Light depends on the display manager, the display color manager,
   // aura::Env, and geolocation controller, so initialize it after all have
@@ -1637,7 +1653,7 @@ void Shell::Init(
 
   window_tree_host_manager_->InitHosts();
 
-  if (ash::features::IsOobeSimonEnabled()) {
+  if (ash::features::IsBootAnimationEnabled()) {
     booting_animation_controller_ =
         std::make_unique<BootingAnimationController>();
   }
@@ -1699,6 +1715,11 @@ void Shell::Init(
   post_login_glanceables_metrics_reporter_ =
       std::make_unique<PostLoginGlanceablesMetricsRecorder>();
 
+  if (features::IsFocusModeEnabled()) {
+    tasks_controller_ = std::make_unique<api::TasksController>(
+        shell_delegate_->CreateTasksDelegate());
+  }
+
   projector_controller_ = std::make_unique<ProjectorControllerImpl>();
 
   float_controller_ = std::make_unique<FloatController>();
@@ -1720,6 +1741,11 @@ void Shell::Init(
   if (features::IsCoralFeatureEnabled() &&
       CoralController::IsSecretKeyMatched()) {
     coral_controller_ = std::make_unique<CoralController>();
+  }
+
+  if (features::IsPickerUpdateEnabled() &&
+      PickerController::IsFeatureKeyMatched()) {
+    picker_controller_ = std::make_unique<PickerController>();
   }
 
   // Injects the factory which fulfills the implementation of the text context
@@ -1781,8 +1807,13 @@ void Shell::InitializeDisplayManager() {
   display_configuration_observer_ =
       std::make_unique<DisplayConfigurationObserver>();
 
-  persistent_window_controller_ =
-      std::make_unique<PersistentWindowController>();
+  // `window_bounds_tracker_` will be used to remap or restore windows on
+  // display removal, reconnection and rotation if the corresponding flag is
+  // enabled.
+  if (!features::IsWindowBoundsTrackerEnabled()) {
+    persistent_window_controller_ =
+        std::make_unique<PersistentWindowController>();
+  }
 
   projecting_observer_ =
       std::make_unique<ProjectingObserver>(display_manager_->configurator());

@@ -37,6 +37,7 @@ luci.bucket(
                 # or fix yet.
                 "mdb/chrome-active-sheriffs",
                 "mdb/chrome-gpu",
+                "mdb/bling-engprod",
             ],
             users = [
                 # Allow chrome-release/branch builders on luci.chrome.official.infra
@@ -58,6 +59,7 @@ luci.bucket(
                 # Allow currently-oncall gardeners to pause schedulers.
                 "mdb/chrome-active-sheriffs",
                 "mdb/chrome-gpu",
+                "mdb/bling-engprod",
             ],
         ),
     ],
@@ -71,12 +73,21 @@ luci.bucket(
         luci.binding(
             roles = "role/buildbucket.creator",
             groups = [
+                "mdb/chrome-build-access-sphinx",
                 "mdb/chrome-troopers",
                 "chromium-led-users",
             ],
             users = [
                 ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
                 ci.gpu.SHADOW_SERVICE_ACCOUNT,
+            ],
+        ),
+        # TODO(crbug.com/1501383): Remove this binding after shadow bucket
+        # could inherit the view permission from the actual bucket.
+        luci.binding(
+            roles = "role/buildbucket.reader",
+            groups = [
+                "all",
             ],
         ),
         # Allow ci builders to create invocations in their own builds.
@@ -190,7 +201,6 @@ exec("./ci/chromium.accessibility.star")
 exec("./ci/chromium.android.star")
 exec("./ci/chromium.android.fyi.star")
 exec("./ci/chromium.angle.star")
-exec("./ci/chromium.build.star")
 exec("./ci/chromium.cft.star")
 exec("./ci/chromium.chromiumos.star")
 exec("./ci/chromium.clang.star")

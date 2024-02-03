@@ -8,6 +8,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace arc::input_overlay {
@@ -34,7 +35,7 @@ ActionTypeButtonGroup::~ActionTypeButtonGroup() = default;
 void ActionTypeButtonGroup::Init() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
                        views::BoxLayout::Orientation::kHorizontal,
-                       /*inside_border_insets=*/gfx::Insets::VH(8, 8),
+                       /*inside_border_insets=*/gfx::Insets(),
                        /*between_child_spacing=*/8))
       ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
 
@@ -112,5 +113,8 @@ void ActionTypeButtonGroup::OnActionMoveButtonPressed() {
   selected_action_type_ = ActionType::MOVE;
   controller_->ChangeActionType(action_, ActionType::MOVE);
 }
+
+BEGIN_METADATA(ActionTypeButtonGroup)
+END_METADATA
 
 }  // namespace arc::input_overlay

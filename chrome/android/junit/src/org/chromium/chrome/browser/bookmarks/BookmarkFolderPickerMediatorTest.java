@@ -16,7 +16,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.util.Pair;
 import android.view.Menu;
@@ -214,7 +213,6 @@ public class BookmarkFolderPickerMediatorTest {
     @Mock private BookmarkModel mBookmarkModel;
     @Mock private Runnable mFinishRunnable;
     @Mock private BookmarkUiPrefs mBookmarkUiPrefs;
-    @Mock private Bitmap mBitmap;
     @Mock private Profile mProfile;
     @Mock private Tracker mTracker;
     @Mock private Menu mMenu;
@@ -308,7 +306,6 @@ public class BookmarkFolderPickerMediatorTest {
                 new BookmarkFolderPickerMediator(
                         mActivity,
                         mBookmarkModel,
-                        mBookmarkImageFetcher,
                         Arrays.asList(mUserBookmarkId),
                         mFinishRunnable,
                         mBookmarkUiPrefs,
@@ -330,7 +327,6 @@ public class BookmarkFolderPickerMediatorTest {
                 new BookmarkFolderPickerMediator(
                         mActivity,
                         mBookmarkModel,
-                        mBookmarkImageFetcher,
                         Arrays.asList(mUserFolderId),
                         mFinishRunnable,
                         mBookmarkUiPrefs,
@@ -365,14 +361,14 @@ public class BookmarkFolderPickerMediatorTest {
         assertEquals(
                 mMobileFolderItem.getTitle(),
                 mModel.get(BookmarkFolderPickerProperties.TOOLBAR_TITLE));
-        // First simlulate a long click to verify it does nothing.
-        model.get(ImprovedBookmarkRowProperties.ROW_LONG_CLICK_LISTENER).onLongClick(null);
+        // First simulate a long click to verify it does nothing.
+        model.get(ImprovedBookmarkRowProperties.ROW_LONG_CLICK_LISTENER).getAsBoolean();
         assertEquals(
                 mMobileFolderItem.getTitle(),
                 mModel.get(BookmarkFolderPickerProperties.TOOLBAR_TITLE));
 
-        model.get(ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER).onClick(null);
-        mModel.get(BookmarkFolderPickerProperties.MOVE_CLICK_LISTENER).onClick(null);
+        model.get(ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER).run();
+        mModel.get(BookmarkFolderPickerProperties.MOVE_CLICK_LISTENER).run();
         verify(mFinishRunnable).run();
         verify(mBookmarkModel).moveBookmarks(Arrays.asList(mUserBookmarkId), mUserFolderId);
         assertEquals(mUserFolderId, BookmarkUtils.getLastUsedParent(mActivity, mBookmarkModel));
@@ -380,7 +376,7 @@ public class BookmarkFolderPickerMediatorTest {
 
     @Test
     public void testCancel() {
-        mModel.get(BookmarkFolderPickerProperties.CANCEL_CLICK_LISTENER).onClick(null);
+        mModel.get(BookmarkFolderPickerProperties.CANCEL_CLICK_LISTENER).run();
         verify(mFinishRunnable).run();
     }
 
@@ -450,7 +446,6 @@ public class BookmarkFolderPickerMediatorTest {
                 new BookmarkFolderPickerMediator(
                         mActivity,
                         mBookmarkModel,
-                        mBookmarkImageFetcher,
                         Arrays.asList(mUserBookmarkId, mUserBookmarkId1),
                         mFinishRunnable,
                         mBookmarkUiPrefs,
@@ -475,7 +470,6 @@ public class BookmarkFolderPickerMediatorTest {
                 new BookmarkFolderPickerMediator(
                         mActivity,
                         mBookmarkModel,
-                        mBookmarkImageFetcher,
                         Arrays.asList(mUserFolderId, mUserBookmarkId1),
                         mFinishRunnable,
                         mBookmarkUiPrefs,
@@ -500,7 +494,6 @@ public class BookmarkFolderPickerMediatorTest {
                 new BookmarkFolderPickerMediator(
                         mActivity,
                         mBookmarkModel,
-                        mBookmarkImageFetcher,
                         Arrays.asList(mReadingListItemId1, mReadingListItemId2),
                         mFinishRunnable,
                         mBookmarkUiPrefs,

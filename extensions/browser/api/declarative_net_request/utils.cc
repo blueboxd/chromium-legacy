@@ -490,7 +490,7 @@ size_t GetEnabledStaticRuleCount(const CompositeMatcher* composite_matcher) {
 }
 
 bool HasDNRFeedbackPermission(const Extension* extension,
-                              const absl::optional<int>& tab_id) {
+                              const std::optional<int>& tab_id) {
   const PermissionsData* permissions_data = extension->permissions_data();
   return tab_id.has_value()
              ? permissions_data->HasAPIPermissionForTab(
@@ -681,6 +681,33 @@ std::string GetParseError(ParseResult error_reason, int rule_id) {
     case ParseResult::ERROR_TAB_ID_DUPLICATED:
       return ErrorUtils::FormatErrorMessage(kErrorTabIdDuplicated,
                                             base::NumberToString(rule_id));
+    case ParseResult::ERROR_EMPTY_RESPONSE_HEADER_MATCHING_LIST:
+      return ErrorUtils::FormatErrorMessage(kErrorEmptyList,
+                                            base::NumberToString(rule_id),
+                                            kMatchResponseHeadersPath);
+    case ParseResult::ERROR_EMPTY_EXCLUDED_RESPONSE_HEADER_MATCHING_LIST:
+      return ErrorUtils::FormatErrorMessage(kErrorEmptyList,
+                                            base::NumberToString(rule_id),
+                                            kMatchExcludedResponseHeadersPath);
+    case ParseResult::ERROR_INVALID_MATCHING_RESPONSE_HEADER_NAME:
+      return ErrorUtils::FormatErrorMessage(kErrorInvalidMatchingHeaderName,
+                                            base::NumberToString(rule_id),
+                                            kMatchResponseHeadersPath);
+    case ParseResult::ERROR_INVALID_MATCHING_EXCLUDED_RESPONSE_HEADER_NAME:
+      return ErrorUtils::FormatErrorMessage(kErrorInvalidMatchingHeaderName,
+                                            base::NumberToString(rule_id),
+                                            kMatchExcludedResponseHeadersPath);
+    case ParseResult::ERROR_INVALID_MATCHING_RESPONSE_HEADER_VALUE:
+      return ErrorUtils::FormatErrorMessage(kErrorInvalidMatchingHeaderValue,
+                                            base::NumberToString(rule_id),
+                                            kMatchResponseHeadersPath);
+    case ParseResult::ERROR_MATCHING_RESPONSE_HEADER_DUPLICATED:
+      return ErrorUtils::FormatErrorMessage(kErrorResponseHeaderDuplicated,
+                                            base::NumberToString(rule_id));
+    case ParseResult::ERROR_RESPONSE_HEADER_RULE_CANNOT_MODIFY_REQUEST_HEADERS:
+      return ErrorUtils::FormatErrorMessage(
+          kErrorResponseHeaderRuleCannotModifyRequestHeaders,
+          base::NumberToString(rule_id));
   }
   NOTREACHED();
   return std::string();

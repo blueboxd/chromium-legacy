@@ -42,18 +42,16 @@ const tests = [
   ['AcceleratorLookupManagerTest', 'accelerator_lookup_manager_test.js'],
   ['AcceleratorViewTest', 'accelerator_view_test.js'],
   ['AcceleratorRowTest', 'accelerator_row_test.js'],
-  // TODO(https://crbug.com/1497331): Re-enable this test.
-  // ['AcceleratorEditDialogTest', 'accelerator_edit_dialog_test.js'],
+  ['AcceleratorEditDialogTest', 'accelerator_edit_dialog_test.js'],
   ['AcceleratorSubsectionTest', 'accelerator_subsection_test.js'],
   ['BottomNavContentTest', 'bottom_nav_content_test.js'],
   ['FakeShortcutProviderTest', 'fake_shortcut_provider_test.js'],
   ['FakeShortcutSearchHandlerTest', 'fake_shortcut_search_handler_test.js'],
-  ['InputKeyTest', 'input_key_test.js'],
   ['RouterTest', 'router_test.js'],
   ['SearchBoxTest', 'search_box_test.js'],
   ['SearchResultRowTest', 'search_result_row_test.js'],
   ['SearchResultBoldingTest', 'search_result_bolding_test.js'],
-  // TODO(crbug/1498419): Re-enable after fix.
+  // TODO(https://crbug.com/1498419): Tests are flaky.
   // ['ShortcutCustomizationApp', 'shortcut_customization_test.js'],
   ['ShortcutSearchHandlerTest', 'shortcut_search_handler_test.js'],
   ['ShortcutsPageTest', 'shortcuts_page_test.js'],

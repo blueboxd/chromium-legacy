@@ -935,7 +935,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBA(
       std::vector<GrBackendSemaphore> end_semaphores;
 
       auto scoped_write = representation->BeginScopedWriteAccess(
-          /*final_msaa_count=*/1, surface_props, gfx::Rect(), &begin_semaphores,
+          /*final_msaa_count=*/1, surface_props, &begin_semaphores,
           &end_semaphores,
           gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
 
@@ -1670,7 +1670,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
       // TODO(https://crbug.com/1226672): Use BeginScopedReadAccess instead
       scoped_access = backing_representation->BeginScopedWriteAccess(
-          /*final_msaa_count=*/1, surface_props, gfx::Rect(), &begin_semaphores,
+          /*final_msaa_count=*/1, surface_props, &begin_semaphores,
           &end_semaphores,
           gpu::SharedImageRepresentation::AllowUnclearedAccess::kNo);
       surface = scoped_access->surface();
@@ -1964,27 +1964,22 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
 }
 
 bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
-  gl::GLSurfaceFormat format;
-  if (PreferRGB565ResourcesForDisplay() &&
-      !renderer_settings_.requires_alpha_channel) {
-    format.SetRGB565();
-  }
-
   if (dependency_->IsOffscreen()) {
-    gl_surface_ = dependency_->CreateGLSurface(nullptr, format);
-    if (!gl_surface_) {
-      return false;
-    }
-
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         context_state_, gfx::SurfaceOrigin::kTopLeft,
         renderer_settings_.requires_alpha_channel,
         shared_gpu_deps_->memory_tracker(),
         GetDidSwapBuffersCompleteCallback());
   } else {
-    presenter_ =
-        dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr(), format);
+    presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
     if (!presenter_) {
+      gl::GLSurfaceFormat format;
+#if BUILDFLAG(IS_ANDROID)
+      if (PreferRGB565ResourcesForDisplay() &&
+          !renderer_settings_.requires_alpha_channel) {
+        format.SetRGB565();
+      }
+#endif
       gl_surface_ =
           dependency_->CreateGLSurface(weak_ptr_factory_.GetWeakPtr(), format);
       if (!gl_surface_) {
@@ -2051,8 +2046,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
   }
 
   if (dependency_->IsOffscreen()) {
-    DCHECK(gl_surface_);
-    DCHECK_EQ(gl_surface_->IsOffscreen(), true);
+    DCHECK(!gl_surface_);
   } else if (gl_surface_) {
     // OnScreen GLSurfaces are never Surfaceless except on windows where a bit
     // of work needed to make it use Presenter.
@@ -2093,8 +2087,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
   output_presenter =
       OutputPresenterFuchsia::Create(window_surface_.get(), dependency_);
 #else
-  presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr(),
-                                            gl::GLSurfaceFormat());
+  presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
   if (presenter_) {
     output_presenter = std::make_unique<OutputPresenterGL>(
         presenter_, dependency_, shared_image_factory_.get(),
@@ -2171,8 +2164,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
           GetDidSwapBuffersCompleteCallback());
     }
 #elif BUILDFLAG(IS_WIN)
-    presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr(),
-                                              gl::GLSurfaceFormat());
+    presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
     if (presenter_) {
       output_device_ = std::make_unique<SkiaOutputDeviceDCompPresenter>(
           shared_image_representation_factory_.get(), context_state_.get(),
@@ -2189,8 +2181,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
       output_device_ = std::move(output_device);
     }
 #elif BUILDFLAG(IS_APPLE)
-    presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr(),
-                                              gl::GLSurfaceFormat());
+    presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
 #if BUILDFLAG(IS_MAC)
     if (features::UseGpuVsync()) {
       presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
@@ -2222,9 +2213,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForMetal() {
         shared_gpu_deps_->memory_tracker(),
         GetDidSwapBuffersCompleteCallback());
   } else {
-    gl::GLSurfaceFormat format;
-    presenter_ =
-        dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr(), format);
+    presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr());
     CHECK(presenter_);
 
 #if BUILDFLAG(IS_MAC)
@@ -2448,6 +2437,9 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
 
   destroy_after_swap_.clear();
   context_state_->UpdateSkiaOwnedMemorySize();
+  UMA_HISTOGRAM_EXACT_LINEAR("Gpu.FenceHandle.CloneCountsPerSubmit",
+                             gfx::GpuFenceHandle::GetAndClearNumberOfClones(),
+                             200);
 }
 
 bool SkiaOutputSurfaceImplOnGpu::IsDisplayedAsOverlay() {
@@ -2474,10 +2466,6 @@ const gpu::GpuPreferences& SkiaOutputSurfaceImplOnGpu::GetGpuPreferences()
 
 GpuVSyncCallback SkiaOutputSurfaceImplOnGpu::GetGpuVSyncCallback() {
   return gpu_vsync_callback_;
-}
-
-base::TimeDelta SkiaOutputSurfaceImplOnGpu::GetGpuBlockedTimeSinceLastSwap() {
-  return dependency_->GetGpuBlockedTimeSinceLastSwap();
 }
 
 void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersCompleteInternal(

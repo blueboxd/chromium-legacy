@@ -293,7 +293,8 @@ Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
     return list_marker->ListItem(*layout_object_)->GetNode();
   }
 
-  if (layout_object_->IsAnonymous()) {
+  if (!RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled() &&
+      layout_object_->IsAnonymous()) {
     if (LayoutBlock* layout_block =
             LayoutObject::FindNonAnonymousContainingBlock(layout_object_)) {
       return layout_block->GetNode();
@@ -1031,9 +1032,11 @@ Document* AXLayoutObject::GetDocument() const {
   return &GetLayoutObject()->GetDocument();
 }
 
-void AXLayoutObject::HandleAutofillStateChanged(WebAXAutofillState state) {
-  // Autofill state is stored in AXObjectCache.
-  AXObjectCache().SetAutofillState(AXObjectID(), state);
+void AXLayoutObject::HandleAutofillSuggestionAvailabilityChanged(
+    WebAXAutofillSuggestionAvailability suggestion_availability) {
+  // Autofill suggestion availability is stored in AXObjectCache.
+  AXObjectCache().SetAutofillSuggestionAvailability(AXObjectID(),
+                                                    suggestion_availability);
 }
 
 unsigned AXLayoutObject::ColumnCount() const {

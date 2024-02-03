@@ -13,6 +13,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -70,6 +71,9 @@ void IconizedLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kStaticText;
   node_data->SetNameChecked(custom_accessible_name_);
 }
+
+BEGIN_METADATA(IconizedLabel)
+END_METADATA
 
 TrayItemView::TrayItemView(Shelf* shelf)
     : views::AnimationDelegateViews(this), shelf_(shelf) {
@@ -185,12 +189,10 @@ void TrayItemView::PerformVisibilityAnimation(bool visible) {
     // animation is going to run, so don't hide the tray item here.
     // `StatusAreaAnimationController` will call `ImmediatelyUpdateVisibility()`
     // once the hide animation is over to ensure that all tray items are given a
-    // chance to properly update their visibilities. Only applicable when the
-    // QS revamp is enabled.
-    if (features::IsQsRevampEnabled() && !target_visible_ &&
-        shelf_->status_area_widget()
-            ->animation_controller()
-            ->is_hide_animation_scheduled()) {
+    // chance to properly update their visibilities.
+    if (!target_visible_ && shelf_->status_area_widget()
+                                ->animation_controller()
+                                ->is_hide_animation_scheduled()) {
       return;
     }
     animation_->SetSlideDuration(base::TimeDelta());
@@ -356,5 +358,8 @@ double TrayItemView::GetItemScaleProgressFromAnimationProgress(
   return (animation_value - kAnimatingOutEndValue) *
          (1 / (1 - kAnimatingOutEndValue));
 }
+
+BEGIN_METADATA(TrayItemView)
+END_METADATA
 
 }  // namespace ash

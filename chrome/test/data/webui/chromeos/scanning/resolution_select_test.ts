@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './scanning_mojom_imports.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://scanning/resolution_select.js';
 
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
@@ -11,7 +11,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {ResolutionSelectElement} from 'chrome://scanning/resolution_select.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
-import {changeSelect} from './scanning_app_test_utils.js';
+import {changeSelectedIndex, changeSelectedValue} from './scanning_app_test_utils.js';
 
 suite('resolutionSelectTest', function() {
   let resolutionSelect: ResolutionSelectElement|null = null;
@@ -65,8 +65,7 @@ suite('resolutionSelectTest', function() {
     assertEquals(secondResolution.toString(), select.value);
 
     // Selecting a different option should update the selected value.
-    await changeSelect(
-        select, secondResolution.toString(), /* selectedIndex */ null);
+    await changeSelectedValue(select, secondResolution.toString());
     assertEquals(secondResolution.toString(), resolutionSelect.selectedOption);
   });
 
@@ -102,7 +101,7 @@ suite('resolutionSelectTest', function() {
     const select = getSelect();
     resolutionSelect.options = [600, 300, 150];
     flush();
-    await changeSelect(select, /* value */ null, /* selectedIndex */ 0);
+    await changeSelectedIndex(select, /*index=*/ 0);
     assertEquals('600', resolutionSelect.selectedOption);
     assertEquals('600', getOption(select.selectedIndex).value);
 

@@ -610,6 +610,8 @@ void GpuServiceImpl::InitializeWithHost(
 #if BUILDFLAG(IS_OZONE)
     thread_safe_manager |= features::ShouldUseRealBuffersForPageFlipTest();
 #endif
+    thread_safe_manager |=
+        base::FeatureList::IsEnabled(features::kSharedBitmapToSharedImage);
     owned_shared_image_manager_ = std::make_unique<gpu::SharedImageManager>(
         thread_safe_manager, display_context_on_another_thread);
     shared_image_manager = owned_shared_image_manager_.get();
@@ -1051,10 +1053,9 @@ void GpuServiceImpl::DidDestroyOffscreenContext(const GURL& active_url) {
   gpu_host_->DidDestroyOffscreenContext(active_url);
 }
 
-void GpuServiceImpl::DidLoseContext(bool offscreen,
-                                    gpu::error::ContextLostReason reason,
+void GpuServiceImpl::DidLoseContext(gpu::error::ContextLostReason reason,
                                     const GURL& active_url) {
-  gpu_host_->DidLoseContext(offscreen, reason, active_url);
+  gpu_host_->DidLoseContext(reason, active_url);
 }
 
 void GpuServiceImpl::StoreBlobToDisk(const gpu::GpuDiskCacheHandle& handle,

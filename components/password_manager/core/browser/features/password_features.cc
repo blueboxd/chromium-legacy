@@ -89,6 +89,13 @@ BASE_FEATURE(kNewConfirmationBubbleForGeneratedPasswords,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+// Enabled in M121. Remove at or after M123.
+BASE_FEATURE(kPasskeysPrefetchAffiliations,
+             "PasskeysPrefetchAffiliations",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
 // Enables different experiments that modify content and behavior of the
 // existing generated password suggestion dropdown.
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
@@ -115,6 +122,13 @@ BASE_FEATURE(kPasswordManagerLogToTerminal,
              "PasswordManagerLogToTerminal",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables "Needs access to keychain, restart chrome" bubble and banner.
+#if BUILDFLAG(IS_MAC)
+BASE_FEATURE(kRestartToGainAccessToKeychain,
+             "RestartToGainAccessToKeychain",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 // Enables the notification UI that is displayed to the user when visiting a
 // website for which a stored password has been shared by another user.
 BASE_FEATURE(kSharedPasswordNotificationUI,
@@ -139,13 +153,13 @@ BASE_FEATURE(kSkipUndecryptablePasswords,
 // feature once UPM starts to be rolled out to users who have saved local
 // passwords.
 BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
-             "kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration",
+             "UnifiedPasswordManagerLocalPasswordsAndroidNoMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables use of Google Mobile services for non-synced password storage add for
 // users who have local passwords saved.
 BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration,
-             "kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration",
+             "UnifiedPasswordManagerLocalPasswordsAndroidWithMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -180,7 +194,7 @@ BASE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing,
 // autocomplete="username".
 BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
              "UsernameFirstFlowHonorAutocomplete",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables storing more possible username values in the LRU cache. Part of the
 // `kUsernameFirstFlowWithIntermediateValues` feature.
@@ -208,5 +222,14 @@ BASE_FEATURE(kUsernameFirstFlowWithIntermediateValuesPredictions,
 BASE_FEATURE(kUsernameFirstFlowWithIntermediateValuesVoting,
              "UsernameFirstFlowWithIntermediateValuesVoting",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+// Feature enables usage of a new API to obtain all passwords with branding info
+// directly from GMS Core. This feature also completely disables fetching of
+// Affiliations by Chrome.
+BASE_FEATURE(kUseGMSCoreForBrandingInfo,
+             "UseGMSCoreForBrandingInfo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 }  // namespace password_manager::features

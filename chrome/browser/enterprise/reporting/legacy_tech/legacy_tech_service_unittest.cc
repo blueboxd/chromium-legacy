@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/enterprise/reporting/legacy_tech/legacy_tech_service.h"
+
+#include <functional>
+#include <optional>
 #include "base/functional/callback_forward.h"
 #include "chrome/browser/enterprise/reporting/legacy_tech/legacy_tech_report_generator.h"
 
@@ -18,6 +21,7 @@
 #include "url/gurl.h"
 
 using ::testing::_;
+using ::testing::Eq;
 
 namespace enterprise_reporting {
 
@@ -67,11 +71,16 @@ TEST_F(LegacyTechServiceTest, NoMatched) {
 
 TEST_F(LegacyTechServiceTest, MatchedAndUpload) {
   LegacyTechReportGenerator::LegacyTechData expected_data = {
-      "type",        base::Time::Now(), GURL("https://example.com"),
-      "example.com", "filename",        /*line=*/10,
-      /*column=*/42};
+      /*type=*/"type",
+      /*timestamp=*/base::Time::Now(),
+      /*url=*/GURL("https://example.com"),
+      /*matched_url=*/"example.com",
+      /*filename=*/"filename",
+      /*line=*/10,
+      /*column=*/42,
+      /*cookie_issue_details=*/std::nullopt};
 
-  EXPECT_CALL(mock_trigger_, Run(_)).Times(1);
+  EXPECT_CALL(mock_trigger_, Run(Eq(std::ref(expected_data)))).Times(1);
   SetPolicy({"example.com"});
   LegacyTechServiceFactory::GetForProfile(&profile_)->ReportEvent(
       "type", GURL("https://example.com"), "filename",
@@ -81,7 +90,7 @@ TEST_F(LegacyTechServiceTest, MatchedAndUpload) {
 TEST_F(LegacyTechServiceTest, DelayedInitialization) {
   LegacyTechServiceFactory::GetInstance()->SetReportTrigger(
       base::RepeatingCallback<void(
-          const LegacyTechReportGenerator::LegacyTechData&)>());
+          LegacyTechReportGenerator::LegacyTechData)>());
   EXPECT_CALL(mock_trigger_, Run(_)).Times(0);
   SetPolicy({"example.com"});
   LegacyTechServiceFactory::GetForProfile(&profile_)->ReportEvent(

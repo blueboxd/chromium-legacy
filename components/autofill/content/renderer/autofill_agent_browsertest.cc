@@ -211,7 +211,7 @@ class AutofillAgentTestWithFeatures : public AutofillAgentTest {
     scoped_features_.InitWithFeatures(
         /*enabled_features=*/
         {blink::features::kAutofillUseDomNodeIdForRendererId,
-         blink::features::kAutofillDetectRemovedFormControls,
+         features::kAutofillDetectRemovedFormControls,
          features::kAutofillContentEditables},
         /*disabled_features=*/{});
   }
@@ -234,7 +234,7 @@ TEST_F(AutofillAgentTestWithFeatures, FormsSeen_NoEmpty) {
 
 TEST_F(AutofillAgentTestWithFeatures, FormsSeen_NewFormUnowned) {
   EXPECT_CALL(autofill_driver_,
-              FormsSeen(HasSingleElementWhich(HasFormId(0), HasNumFields(1),
+              FormsSeen(HasSingleElementWhich(HasFormId(0u), HasNumFields(1),
                                               HasNumChildFrames(0)),
                         SizeIs(0)));
   LoadHTML(R"(<body> <input> </body>)");
@@ -467,7 +467,8 @@ TEST_F(AutofillAgentTest, UndoAutofillSetsLastQueriedElement) {
   EXPECT_EQ(1U, forms.size());
   FormData form;
   EXPECT_TRUE(form_util::WebFormElementToFormData(
-      forms[0], blink::WebFormControlElement(), nullptr,
+      forms[0], blink::WebFormControlElement(),
+      *base::MakeRefCounted<FieldDataManager>(),
       {form_util::ExtractOption::kValue}, &form, nullptr));
 
   ASSERT_TRUE(autofill_agent_->focused_element().IsNull());

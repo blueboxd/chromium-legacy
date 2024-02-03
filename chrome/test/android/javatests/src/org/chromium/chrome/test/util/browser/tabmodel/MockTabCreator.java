@@ -59,7 +59,7 @@ public class MockTabCreator extends TabCreator {
     }
 
     @Override
-    public Tab createFrozenTab(TabState state, int id, boolean isIncognito, int index) {
+    public Tab createFrozenTab(TabState state, int id, int index) {
         Tab tab =
                 new MockTab(
                         id,
@@ -72,11 +72,6 @@ public class MockTabCreator extends TabCreator {
                 .addTab(tab, index, TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE);
         storeTabInfo(state, id);
         return tab;
-    }
-
-    @Override
-    public Tab buildDetachedSpareTab(@TabLaunchType int type, boolean initializeRenderer) {
-        return null;
     }
 
     @Override

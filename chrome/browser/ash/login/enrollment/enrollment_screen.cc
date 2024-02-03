@@ -300,7 +300,11 @@ void EnrollmentScreen::UpdateFlowType() {
     view_->SetFlowType(EnrollmentScreenView::FlowType::kCFM);
     view_->SetGaiaButtonsType(EnrollmentScreenView::GaiaButtonsType::kDefault);
   } else {
-    view_->SetFlowType(EnrollmentScreenView::FlowType::kEnterprise);
+    if (features::IsOobeSoftwareUpdateEnabled()) {
+      view_->SetFlowType(EnrollmentScreenView::FlowType::kDeviceEnrollment);
+    } else {
+      view_->SetFlowType(EnrollmentScreenView::FlowType::kEnterprise);
+    }
     if (!features::IsKioskEnrollmentInOobeEnabled()) {
       view_->SetGaiaButtonsType(
           EnrollmentScreenView::GaiaButtonsType::kDefault);
@@ -898,7 +902,9 @@ void EnrollmentScreen::SetupAndShowOfflineMessage(
     error_screen_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
                                  network_name);
   } else if (is_frame_error) {
-    error_screen_->SetErrorState(NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT,
+    // TODO(b/249996052): Clean up dead code, this method is never called with
+    // `NetworkError::ERROR_REASON_FRAME_ERROR`.
+    error_screen_->SetErrorState(NetworkError::ERROR_STATE_LOADING_TIMEOUT,
                                  std::string());
   } else {
     error_screen_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,

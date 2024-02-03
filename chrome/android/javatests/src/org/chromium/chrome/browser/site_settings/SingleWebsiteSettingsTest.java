@@ -43,6 +43,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.site_settings.ChosenObjectInfo;
 import org.chromium.components.browser_ui.site_settings.ContentSettingException;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsUtil;
@@ -99,6 +100,7 @@ public class SingleWebsiteSettingsTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT)
     @UseMethodParameter(SingleWebsiteSettingsParams.class)
     public void testExceptionToggleShowing(
             @ContentSettingsType int contentSettingsType,
@@ -110,11 +112,16 @@ public class SingleWebsiteSettingsTest {
                 contentSettingsType == ContentSettingsType.NOTIFICATIONS
                         && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O);
 
-        new SingleExceptionTestCase(contentSettingsType, contentSettingValue).run();
+        // TODO(http://crbug.com/1450349) Remove this conditional once MIDI permissions project is
+        // fully launched
+        if (contentSettingsType != ContentSettingsType.MIDI_SYSEX) {
+            new SingleExceptionTestCase(contentSettingsType, contentSettingValue).run();
+        }
     }
 
     @Test
     @SmallTest
+    @EnableFeatures(PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT)
     @DisableIf.Build(
             sdk_is_less_than = Build.VERSION_CODES.O,
             message = "Notification does not have a toggle when disabled.")
@@ -140,6 +147,7 @@ public class SingleWebsiteSettingsTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT)
     public void testDesktopSiteException() {
         SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSingleWebsitePreferences(
@@ -161,7 +169,49 @@ public class SingleWebsiteSettingsTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS)
+    public void testChoosenObjectPermission() {
+        String origin = "https://example.com";
+        Website website = new Website(WebsiteAddress.create(origin), WebsiteAddress.create(origin));
+        String object =
+                """
+                 {"name": "Some device",
+                  "ephemeral-guid": "1",
+                  "product-id": "2",
+                  "serial-number": "3"}""";
+        website.addChosenObjectInfo(
+                new ChosenObjectInfo(
+                        ContentSettingsType.USB_CHOOSER_DATA,
+                        origin,
+                        "Some device",
+                        object,
+                        /* isManaged= */ false));
+        website.addChosenObjectInfo(
+                new ChosenObjectInfo(
+                        ContentSettingsType.USB_CHOOSER_DATA,
+                        origin,
+                        "A managed device",
+                        "not needed",
+                        /* isManaged= */ true));
+
+        // Open site settings and check that permissions are displayed.
+        SettingsActivity activity = SiteSettingsTestUtils.startSingleWebsitePreferences(website);
+        onView(withText("Some device")).check(matches(isDisplayed()));
+        onView(withText("A managed device")).check(matches(isDisplayed()));
+
+        // Reset permission and check that only the non-managed permission is removed.
+        onView(withText(containsString("reset"))).perform(click());
+        onView(withText("Delete & reset")).perform(click());
+        onView(withText("Some device")).check(doesNotExist());
+        onView(withText("A managed device")).check(matches(isDisplayed()));
+        activity.finish();
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({
+        PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS,
+        PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT
+    })
     public void testStorageAccessPermission() {
         int type = ContentSettingsType.STORAGE_ACCESS;
         GURL example = new GURL("https://example.com");

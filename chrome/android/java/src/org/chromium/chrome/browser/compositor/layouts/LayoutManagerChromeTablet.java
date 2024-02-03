@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager.TabModelStartupInfo;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.hub.HubLayoutDependencyHolder;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
@@ -29,6 +30,7 @@ import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.dragdrop.DragAndDropDelegate;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -68,6 +70,7 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
      * @param lifecycleDispatcher @{@link ActivityLifecycleDispatcher} to be passed to TabStrip
      *     helper.
      * @param delayedTabSwitcherOrStartSurfaceCallable Callable to create StartSurface/GTS views.
+     * @param hubLayoutDependencyHolder The dependency holder for creating {@link HubLayout}.
      * @param multiInstanceManager @{link MultiInstanceManager} passed to @{link StripLayoutHelper}
      *     to support tab drag and drop.
      * @param dragAndDropDelegate @{@link DragAndDropDelegate} passed to {@link
@@ -89,13 +92,24 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
             ScrimCoordinator scrimCoordinator,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             Callable<ViewGroup> delayedTabSwitcherOrStartSurfaceCallable,
+            HubLayoutDependencyHolder hubLayoutDependencyHolder,
             MultiInstanceManager multiInstanceManager,
             DragAndDropDelegate dragAndDropDelegate,
             View toolbarContainerView,
-            @NonNull ViewStub tabHoverCardViewStub) {
-        super(host, contentContainer, startSurfaceSupplier, tabSwitcherSupplier,
-                browserControlsStateProvider, tabContentManagerSupplier, topUiThemeColorProvider,
-                tabSwitcherViewHolder, scrimCoordinator, delayedTabSwitcherOrStartSurfaceCallable);
+            @NonNull ViewStub tabHoverCardViewStub,
+            @NonNull WindowAndroid windowAndroid) {
+        super(
+                host,
+                contentContainer,
+                startSurfaceSupplier,
+                tabSwitcherSupplier,
+                browserControlsStateProvider,
+                tabContentManagerSupplier,
+                topUiThemeColorProvider,
+                tabSwitcherViewHolder,
+                scrimCoordinator,
+                delayedTabSwitcherOrStartSurfaceCallable,
+                hubLayoutDependencyHolder);
         mTabStripLayoutHelperManager =
                 new StripLayoutHelperManager(
                         host.getContext(),
@@ -109,7 +123,9 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
                         dragAndDropDelegate,
                         toolbarContainerView,
                         tabHoverCardViewStub,
-                        tabContentManagerSupplier);
+                        tabContentManagerSupplier,
+                        browserControlsStateProvider,
+                        windowAndroid);
         addSceneOverlay(mTabStripLayoutHelperManager);
         addObserver(mTabStripLayoutHelperManager.getTabSwitcherObserver());
 

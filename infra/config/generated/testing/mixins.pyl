@@ -531,6 +531,16 @@
       ],
     },
   },
+  'ios_runtime_cache_17_2': {
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'runtime_ios_17_2',
+          'path': 'Runtime-ios-17.2',
+        },
+      ],
+    },
+  },
   'ioswpt-chromium-swarming-pool': {
     'swarming': {
       'dimensions': {
@@ -541,7 +551,7 @@
   'isolate_profile_data': {
     'isolate_profile_data': True,
   },
-  'junit-swarming': {
+  'junit-swarming-emulator': {
     'swarming': {
       'dimensions': {
         'cores': '8',
@@ -638,6 +648,11 @@
         'pool': 'chromium.tests.gpu',
       },
     },
+  },
+  'linux_vulkan': {
+    'linux_args': [
+      '--extra-browser-args=--enable-features=Vulkan',
+    ],
   },
   'lollipop-x86-emulator': {
     'args': [
@@ -1160,9 +1175,6 @@
       '--use-webgpu-power-preference=default-high-performance',
       '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
     ],
-    'linux_args': [
-      '--extra-browser-args=--enable-features=Vulkan',
-    ],
   },
   'webview_cts_archive': {
     'swarming': {
@@ -1277,12 +1289,12 @@
   'xcode_15_beta': {
     'args': [
       '--xcode-build-version',
-      '15c5028h',
+      '15c5042i',
     ],
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_15c5028h',
+          'name': 'xcode_ios_15c5042i',
           'path': 'Xcode.app',
         },
       ],

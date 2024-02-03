@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/safety_hub/menu_notification_service_factory.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_constants.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
@@ -120,8 +121,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
-#include "chromeos/ui/base/tablet_state.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "ui/display/screen.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -857,17 +858,9 @@ void AppMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
 void AppMenuModel::LogSafetyHubInteractionMetrics(
     absl::optional<safety_hub::SafetyHubModuleType> expected_module) {
-  // TODO(crbug.com/1443466): Remove when the service is only created when the
-  // feature is enabled.
-  if (!base::FeatureList::IsEnabled(features::kSafetyHub)) {
-    return;
-  }
-  auto* const safety_hub_menu_notification_service =
+  auto const* safety_hub_menu_notification_service =
       SafetyHubMenuNotificationServiceFactory::GetForProfile(
           browser_->profile());
-  if (!safety_hub_menu_notification_service) {
-    return;
-  }
   absl::optional<safety_hub::SafetyHubModuleType> sh_module =
       safety_hub_menu_notification_service->GetModuleOfActiveNotification();
   if (sh_module.has_value() && (!expected_module.has_value() ||
@@ -1194,6 +1187,20 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       }
       LogMenuAction(MENU_ACTION_SHOW_CHROME_LABS);
       break;
+    case IDC_SHOW_HISTORY_CLUSTERS_SIDE_PANEL:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WrenchMenu.TimeToAction.ShowHistoryClustersSidePanel", delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_HISTORY_CLUSTER_SIDE_PANEL);
+      break;
+    case IDC_SHOW_READING_MODE_SIDE_PANEL:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WrenchMenu.TimeToAction.ShowReadingModeSidePanel", delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_READING_MODE_SIDE_PANEL);
+      break;
 
     // Zoom menu
     case IDC_ZOOM_MINUS:
@@ -1419,6 +1426,13 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       }
       LogMenuAction(MENU_ACTION_SHOW_ADDRESSES);
       break;
+    case IDC_PERFORMANCE:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WrenchMenu.TimeToAction.ShowPerformanceSettings", delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_PERFORMANCE_SETTINGS);
+      break;
     default: {
       if (IsOtherProfileCommand(command_id)) {
         if (!uma_action_recorded_) {
@@ -1525,9 +1539,37 @@ void AppMenuModel::Build() {
 #endif
   }
 
-  if (AddSafetyHubMenuItem() || AddGlobalErrorMenuItems() || need_separator) {
-    AddSeparator(ui::NORMAL_SEPARATOR);
+  if (base::FeatureList::IsEnabled(features::kSafetyHub) &&
+      !browser_->profile()->IsGuestSession() &&
+      !browser_->profile()->IsIncognitoProfile()) {
+    auto* safety_hub_menu_notification_service =
+        SafetyHubMenuNotificationServiceFactory::GetForProfile(
+            browser_->profile());
+    absl::optional<MenuNotificationEntry> notification =
+        safety_hub_menu_notification_service->GetNotificationToShow();
+    if (notification.has_value()) {
+      base::UmaHistogramEnumeration(
+          "Settings.SafetyHub.Impression",
+          safety_hub::SafetyHubSurfaces::kThreeDotMenu);
+      base::UmaHistogramEnumeration(
+          "Settings.SafetyHub.EntryPointImpression",
+          safety_hub::SafetyHubEntryPoint::kMenuNotifications);
+      absl::optional<safety_hub::SafetyHubModuleType> sh_module =
+          safety_hub_menu_notification_service->GetModuleOfActiveNotification();
+      if (sh_module.has_value()) {
+        base::UmaHistogramEnumeration(
+            "Settings.SafetyHub.MenuNotificationImpression", sh_module.value());
+      }
+      const auto safety_hub_icon = ui::ImageModel::FromVectorIcon(
+          kSecurityIcon, ui::kColorMenuIcon, kDefaultIconSize);
+      AddItemWithIcon(notification->command, notification->label,
+                      safety_hub_icon);
+      need_separator = true;
+    }
   }
+
+  if (AddGlobalErrorMenuItems() || need_separator)
+    AddSeparator(ui::NORMAL_SEPARATOR);
 
   AddItemWithStringId(IDC_NEW_TAB, browser_->profile()->IsIncognitoProfile()
                                        ? IDS_NEW_INCOGNITO_TAB
@@ -1648,8 +1690,12 @@ void AppMenuModel::Build() {
     }
 #endif
     if (features::IsTabOrganization()) {
-      AddItemWithStringId(IDC_ORGANIZE_TABS, IDS_TAB_ORGANIZE_MENU);
-      SetIsNewFeatureAt(GetIndexOfCommandId(IDC_ORGANIZE_TABS).value(), true);
+      auto* const tab_organization_service =
+          TabOrganizationServiceFactory::GetForProfile(browser_->profile());
+      if (tab_organization_service) {
+        AddItemWithStringId(IDC_ORGANIZE_TABS, IDS_TAB_ORGANIZE_MENU);
+        SetIsNewFeatureAt(GetIndexOfCommandId(IDC_ORGANIZE_TABS).value(), true);
+      }
     }
 
     AddItemWithStringId(IDC_SHOW_TRANSLATE, IDS_SHOW_TRANSLATE);
@@ -1699,8 +1745,8 @@ void AppMenuModel::Build() {
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Always show this option if we're in tablet mode on Chrome OS.
-  if (chromeos::TabletState::Get() &&
-      chromeos::TabletState::Get()->InTabletMode()) {
+  if (display::Screen::GetScreen()->HasScreen() &&
+      display::Screen::GetScreen()->InTabletMode()) {
     if (features::IsChromeRefresh2023()) {
       AddItemWithStringIdAndIcon(
           IDC_TOGGLE_REQUEST_TABLET_SITE, IDS_TOGGLE_REQUEST_TABLET_SITE,
@@ -1859,40 +1905,6 @@ bool AppMenuModel::AddGlobalErrorMenuItems() {
     }
   }
   return menu_items_added;
-}
-
-bool AppMenuModel::AddSafetyHubMenuItem() {
-  // TODO(crbug.com/1443466): Remove when the service is only created when the
-  // feature is enabled.
-  if (!base::FeatureList::IsEnabled(features::kSafetyHub)) {
-    return false;
-  }
-  auto* const safety_hub_menu_notification_service =
-      SafetyHubMenuNotificationServiceFactory::GetForProfile(
-          browser_->profile());
-  if (!safety_hub_menu_notification_service) {
-    return false;
-  }
-  absl::optional<MenuNotificationEntry> notification =
-      safety_hub_menu_notification_service->GetNotificationToShow();
-  if (!notification.has_value()) {
-    return false;
-  }
-  base::UmaHistogramEnumeration("Settings.SafetyHub.Impression",
-                                safety_hub::SafetyHubSurfaces::kThreeDotMenu);
-  base::UmaHistogramEnumeration(
-      "Settings.SafetyHub.EntryPointImpression",
-      safety_hub::SafetyHubEntryPoint::kMenuNotifications);
-  absl::optional<safety_hub::SafetyHubModuleType> sh_module =
-      safety_hub_menu_notification_service->GetModuleOfActiveNotification();
-  if (sh_module.has_value()) {
-    base::UmaHistogramEnumeration(
-        "Settings.SafetyHub.MenuNotificationImpression", sh_module.value());
-  }
-  const auto safety_hub_icon = ui::ImageModel::FromVectorIcon(
-      kSecurityIcon, ui::kColorMenuIcon, kDefaultIconSize);
-  AddItemWithIcon(notification->command, notification->label, safety_hub_icon);
-  return true;
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

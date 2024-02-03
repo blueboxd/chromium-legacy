@@ -99,7 +99,7 @@ class ServiceWorkerHost :
   void OpenChannelToTab(
       int32_t tab_id,
       int32_t frame_id,
-      const absl::optional<std::string>& document_id,
+      const std::optional<std::string>& document_id,
       extensions::mojom::ChannelType channel_type,
       const std::string& channel_name,
       const PortId& port_id,
@@ -114,6 +114,9 @@ class ServiceWorkerHost :
       const PermissionSet& permissions,
       PermissionsManager::UpdateReason reason) override;
 
+  // Returns the mojo channel to the service worker. It may be null
+  // if the service worker doesn't have a live service worker matching
+  // the version id.
   mojom::ServiceWorker* GetServiceWorker();
 
   mojo::AssociatedReceiver<mojom::ServiceWorkerHost>& receiver_for_testing() {

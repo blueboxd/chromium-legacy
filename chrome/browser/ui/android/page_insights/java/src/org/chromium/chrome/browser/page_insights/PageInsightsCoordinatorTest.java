@@ -59,7 +59,6 @@ import org.chromium.chrome.browser.page_insights.proto.PageInsights.PageInsights
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.pageinsights.PageInsightsSurfaceRenderer;
@@ -80,7 +79,6 @@ import org.chromium.components.optimization_guide.proto.CommonTypesProto;
 import org.chromium.components.optimization_guide.proto.CommonTypesProto.Any;
 import org.chromium.components.optimization_guide.proto.HintsProto;
 import org.chromium.components.signin.identitymanager.IdentityManager;
-import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.test.util.BlankUiTestActivity;
@@ -108,7 +106,7 @@ public class PageInsightsCoordinatorTest {
 
     @Mock private OptimizationGuideBridge.Natives mOptimizationGuideBridgeJniMock;
     @Mock private ObservableSupplierImpl<Tab> mTabProvider;
-    @Captor private ArgumentCaptor<EmptyTabObserver> mTabObserverCaptor;
+    @Captor private ArgumentCaptor<Callback<Tab>> mTabCallbackCaptor;
     @Captor private ArgumentCaptor<BottomSheetObserver> mBottomUiObserverCaptor;
 
     @Captor
@@ -130,8 +128,6 @@ public class PageInsightsCoordinatorTest {
     @Mock private PageInsightsSurfaceRenderer mSurfaceRenderer;
     @Mock private Supplier<ShareDelegate> mShareDelegateSupplier;
     @Mock private BackPressManager mBackPressManager;
-    @Mock private ObservableSupplierImpl<Boolean> mInMotionSupplier;
-    @Mock private NavigationHandle mNavigationHandle;
 
     private PageInsightsCoordinator mPageInsightsCoordinator;
     private ManagedBottomSheetController mPageInsightsController;
@@ -166,7 +162,6 @@ public class PageInsightsCoordinatorTest {
         doReturn(mProfile).when(mProfileSupplier).get();
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
         doReturn(mIdentityManager).when(mIdentityServicesProvider).getIdentityManager(mProfile);
-        doReturn(false).when(mInMotionSupplier).get();
         mFeatureListValues = new FeatureList.TestValues();
         FeatureList.setTestValues(mFeatureListValues);
         mFeatureListValues.addFieldTrialParamOverride(
@@ -222,8 +217,6 @@ public class PageInsightsCoordinatorTest {
                                             () -> rootView());
                         });
         doReturn(true).when(mIsPageInsightsHubEnabled).getAsBoolean();
-        doReturn(mTab).when(mTabProvider).get();
-        doReturn(JUnitTestGURLs.EXAMPLE_URL).when(mTab).getUrl();
         mPageInsightsCoordinator =
                 TestThreadUtils.runOnUiThreadBlocking(
                         () ->
@@ -239,7 +232,6 @@ public class PageInsightsCoordinatorTest {
                                         mBrowserControlsStateProvider,
                                         mBrowserControlsSizer,
                                         mBackPressManager,
-                                        mInMotionSupplier,
                                         mIsPageInsightsHubEnabled,
                                         (navigationHandle) ->
                                                 PageInsightsConfig.newBuilder()
@@ -247,10 +239,10 @@ public class PageInsightsCoordinatorTest {
                                                         .setShouldXsurfaceLog(true)
                                                         .setShouldAttachGaiaToRequest(true)
                                                         .build()));
-        verify(mTab).addObserver(mTabObserverCaptor.capture());
-        mTabObserverCaptor
-                .getValue()
-                .onDidFinishNavigationInPrimaryMainFrame(mTab, mNavigationHandle);
+        doReturn(mTab).when(mTabProvider).get();
+        doReturn(JUnitTestGURLs.EXAMPLE_URL).when(mTab).getUrl();
+        verify(mTabProvider).addObserver(mTabCallbackCaptor.capture());
+        mTabCallbackCaptor.getValue().onResult(mTab);
         mockOptimizationGuideResponse(pageInsights());
         mTestSupport = new BottomSheetTestSupport(mPageInsightsController);
         waitForAnimationToFinish();
@@ -307,9 +299,8 @@ public class PageInsightsCoordinatorTest {
         mockOptimizationGuideResponse(pageInsights(0.4f));
     }
 
-    private void setAutoTriggerTimerFinished() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPageInsightsCoordinator.onAutoTriggerTimerFinishedForTesting());
+    private void setAutoTriggerReady() {
+        mPageInsightsCoordinator.setAutoTriggerReadyForTesting();
     }
 
     @Test
@@ -317,7 +308,7 @@ public class PageInsightsCoordinatorTest {
     public void testRoundTopCornerAtExpandedStateAfterPeekState() throws Exception {
         createPageInsightsCoordinator();
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
-        setAutoTriggerTimerFinished();
+        setAutoTriggerReady();
 
         hideTopBar(); // Signal for auto triggering the PIH in Peek state
         assertEquals(0.f, mPageInsightsCoordinator.getCornerRadiusForTesting(), ASSERTION_DELTA);
@@ -355,7 +346,7 @@ public class PageInsightsCoordinatorTest {
     public void testBackgroundColorAtExpandedStateAfterPeekState() throws Exception {
         createPageInsightsCoordinator();
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
-        setAutoTriggerTimerFinished();
+        setAutoTriggerReady();
 
         hideTopBar(); // Signal for auto triggering the PIH in Peek state
         View view = mBottomSheetContainer.findViewById(R.id.background);
@@ -388,7 +379,7 @@ public class PageInsightsCoordinatorTest {
     public void testResizeContent() throws Exception {
         createPageInsightsCoordinator();
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
-        setAutoTriggerTimerFinished();
+        setAutoTriggerReady();
 
         hideTopBar(); // Signal for auto triggering the PIH
         int peekHeight = mPageInsightsController.getCurrentOffset();
@@ -466,7 +457,7 @@ public class PageInsightsCoordinatorTest {
     public void testAutoTrigger() throws Exception {
         createPageInsightsCoordinator();
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
-        setAutoTriggerTimerFinished();
+        setAutoTriggerReady();
 
         hideTopBar(); // Signal for auto triggering the PIH
 
@@ -488,11 +479,10 @@ public class PageInsightsCoordinatorTest {
     @MediumTest
     public void testAutoTrigger_notEnoughConfidence() throws Exception {
         createPageInsightsCoordinator();
+        assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
+        setAutoTriggerReady();
         setConfidenceTooLowForAutoTrigger(); // By default, the confidence is over the threshold
 
-        assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
-
-        setAutoTriggerTimerFinished();
         hideTopBar(); // Signal for auto triggering the PIH
 
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
@@ -502,11 +492,10 @@ public class PageInsightsCoordinatorTest {
     @MediumTest
     public void testAutoTrigger_notEnabled() throws Exception {
         createPageInsightsCoordinator();
+        assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
+        setAutoTriggerReady();
         doReturn(false).when(mIsPageInsightsHubEnabled).getAsBoolean();
 
-        assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());
-
-        setAutoTriggerTimerFinished();
         hideTopBar(); // Signal for auto triggering the PIH
 
         assertEquals(SheetState.HIDDEN, mPageInsightsController.getSheetState());

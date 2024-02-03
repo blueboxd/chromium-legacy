@@ -91,7 +91,7 @@ constexpr auto kHistogramValue = base::MakeFixedFlatMap<ContentSettingsType,
     {ContentSettingsType::JAVASCRIPT_JIT, 79},
     {ContentSettingsType::HTTP_ALLOWED, 80},
     {ContentSettingsType::FORMFILL_METADATA, 81},
-    {ContentSettingsType::FEDERATED_IDENTITY_ACTIVE_SESSION, 82},
+    {ContentSettingsType::DEPRECATED_FEDERATED_IDENTITY_ACTIVE_SESSION, 82},
     {ContentSettingsType::AUTO_DARK_WEB_CONTENT, 83},
     {ContentSettingsType::REQUEST_DESKTOP_SITE, 84},
     {ContentSettingsType::FEDERATED_IDENTITY_API, 85},
@@ -121,6 +121,7 @@ constexpr auto kHistogramValue = base::MakeFixedFlatMap<ContentSettingsType,
     {ContentSettingsType::TPCD_METADATA_GRANTS, 107},
     {ContentSettingsType::FILE_SYSTEM_ACCESS_EXTENDED_PERMISSION, 108},
     {ContentSettingsType::TPCD_HEURISTICS_GRANTS, 109},
+    {ContentSettingsType::FILE_SYSTEM_ACCESS_RESTORE_PERMISSION, 110},
 
     // As mentioned at the top, please don't forget to update ContentType in
     // enums.xml when you add entries here!

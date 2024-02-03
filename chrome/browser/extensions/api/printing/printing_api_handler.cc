@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/check_is_test.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "chrome/browser/extensions/api/printing/print_job_submitter.h"
 #include "chrome/browser/extensions/api/printing/printing_api_utils.h"
+#include "chrome/browser/printing/local_printer_utils_chromeos.h"
 #include "chrome/browser/printing/pdf_blob_data_flattener.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_controller.h"
@@ -41,15 +41,6 @@
 #include "printing/print_settings.h"
 #include "printing/printed_document.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/crosapi/crosapi_ash.h"
-#include "chrome/browser/ash/crosapi/crosapi_manager.h"
-#include "chrome/browser/ash/crosapi/local_printer_ash.h"
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/printing/print_job_utils_lacros.h"
-#include "chromeos/lacros/lacros_service.h"
-#endif
-
 namespace extensions {
 
 namespace {
@@ -57,21 +48,6 @@ namespace {
 constexpr char kInvalidPrinterIdError[] = "Invalid printer ID";
 constexpr char kNoActivePrintJobWithIdError[] =
     "No active print job with given ID";
-
-crosapi::mojom::LocalPrinter* GetLocalPrinterInterface() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!crosapi::CrosapiManager::IsInitialized()) {
-    // Only happens in tests.
-    CHECK_IS_TEST();
-    return nullptr;
-  }
-  return crosapi::CrosapiManager::Get()->crosapi_ash()->local_printer_ash();
-#else
-  auto* service = chromeos::LacrosService::Get();
-  CHECK(service->IsAvailable<crosapi::mojom::LocalPrinter>());
-  return service->GetRemote<crosapi::mojom::LocalPrinter>().get();
-#endif
-}
 
 }  // namespace
 
@@ -94,7 +70,7 @@ PrintingAPIHandler::PrintingAPIHandler(content::BrowserContext* browser_context)
                          ExtensionRegistry::Get(browser_context),
                          std::make_unique<printing::PrintJobController>(),
                          chromeos::CupsWrapper::Create(),
-                         GetLocalPrinterInterface()) {
+                         printing::GetLocalPrinterInterface()) {
   CHECK(local_printer_);
   local_printer_->AddPrintJobObserver(
       receiver_.BindNewPipeAndPassRemoteWithVersion(),
@@ -177,7 +153,7 @@ void PrintingAPIHandler::OnPrintJobSubmitted(
     absl::optional<std::string> error = std::move(result).error();
     absl::optional<api::printing::SubmitJobStatus> status;
     if (!error)
-      status = api::printing::SUBMIT_JOB_STATUS_USER_REJECTED;
+      status = api::printing::SubmitJobStatus::kUserRejected;
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), status, absl::nullopt,
                                   std::move(error)));
@@ -193,7 +169,7 @@ void PrintingAPIHandler::OnPrintJobSubmitted(
 
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), api::printing::SUBMIT_JOB_STATUS_OK,
+      base::BindOnce(std::move(callback), api::printing::SubmitJobStatus::kOk,
                      cups_id, absl::nullopt));
 
   DCHECK(!base::Contains(print_jobs_, cups_id));
@@ -213,7 +189,7 @@ void PrintingAPIHandler::OnPrintJobSubmitted(
       std::make_unique<Event>(events::PRINTING_ON_JOB_STATUS_CHANGED,
                               api::printing::OnJobStatusChanged::kEventName,
                               api::printing::OnJobStatusChanged::Create(
-                                  cups_id, api::printing::JOB_STATUS_PENDING));
+                                  cups_id, api::printing::JobStatus::kPending));
   event_router_->DispatchEventToExtension(extension_id, std::move(event));
 }
 
@@ -298,7 +274,7 @@ void PrintingAPIHandler::OnPrinterCapabilitiesRetrieved(
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), /*capabilities=*/absl::nullopt,
-                       /*status=*/api::printing::PRINTER_STATUS_UNREACHABLE,
+                       /*status=*/api::printing::PrinterStatus::kUnreachable,
                        /*error=*/absl::nullopt));
     return;
   }
@@ -319,7 +295,7 @@ void PrintingAPIHandler::OnPrinterStatusRetrieved(
   if (!printer_status) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(capabilities),
-                                  api::printing::PRINTER_STATUS_UNREACHABLE,
+                                  api::printing::PrinterStatus::kUnreachable,
                                   /*error=*/absl::nullopt));
     return;
   }
@@ -347,17 +323,17 @@ void PrintingAPIHandler::OnPrintJobUpdate(
   api::printing::JobStatus job_status;
   switch (status) {
     case crosapi::mojom::PrintJobStatus::kStarted:
-      job_status = api::printing::JOB_STATUS_IN_PROGRESS;
+      job_status = api::printing::JobStatus::kInProgress;
       done = false;
       break;
     case crosapi::mojom::PrintJobStatus::kDone:
-      job_status = api::printing::JOB_STATUS_PRINTED;
+      job_status = api::printing::JobStatus::kPrinted;
       break;
     case crosapi::mojom::PrintJobStatus::kError:
-      job_status = api::printing::JOB_STATUS_FAILED;
+      job_status = api::printing::JobStatus::kFailed;
       break;
     case crosapi::mojom::PrintJobStatus::kCancelled:
-      job_status = api::printing::JOB_STATUS_CANCELED;
+      job_status = api::printing::JobStatus::kCanceled;
       break;
     default:  // crosapi::mojom::PrintJobStatus::kCreated
       return;
@@ -386,11 +362,6 @@ KeyedService*
 BrowserContextKeyedAPIFactory<PrintingAPIHandler>::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!GetLocalPrinterInterface()) {
-    CHECK_IS_TEST();
-    return nullptr;
-  }
 
   Profile* profile = Profile::FromBrowserContext(context);
   // We do not want an instance of PrintingAPIHandler on the lock screen.

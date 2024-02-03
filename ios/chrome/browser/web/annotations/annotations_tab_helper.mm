@@ -15,8 +15,8 @@
 #import "base/uuid.h"
 #import "base/values.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
-#import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
-#import "ios/chrome/browser/mailto_handler/mailto_handler_service_factory.h"
+#import "ios/chrome/browser/mailto_handler/model/mailto_handler_service.h"
+#import "ios/chrome/browser/mailto_handler/model/mailto_handler_service_factory.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -101,7 +101,7 @@ void AnnotationsTabHelper::OnTextExtracted(web::WebState* web_state,
   DCHECK_EQ(web_state_, web_state);
 
   // Check if this page requested "nointentdetection".
-  absl::optional<bool> has_no_intent_detection =
+  std::optional<bool> has_no_intent_detection =
       metadata.FindBool("hasNoIntentDetection");
   if (!has_no_intent_detection || has_no_intent_detection.value()) {
     return;
@@ -164,7 +164,7 @@ void AnnotationsTabHelper::OnClick(web::WebState* web_state,
 
 void AnnotationsTabHelper::ApplyDeferredProcessing(
     int seq_id,
-    absl::optional<std::vector<web::TextAnnotation>> deferred) {
+    std::optional<std::vector<web::TextAnnotation>> deferred) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   web::ContentWorld content_world =

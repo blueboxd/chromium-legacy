@@ -31,6 +31,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
+#include "third_party/blink/renderer/core/css/css_uri_value.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -89,7 +90,8 @@ bool CSSFontFaceSrcValue::IsSupportedFormat() const {
   // with the old WinIE style of font-face, we will also check to see if the URL
   // ends with .eot.  If so, we'll go ahead and assume that we shouldn't load
   // it.
-  const String& resolved_url_string = url_data_.ResolvedUrl().GetString();
+  const String& resolved_url_string =
+      src_value_->UrlData().ResolvedUrl().GetString();
   return ProtocolIs(resolved_url_string, "data") ||
          !resolved_url_string.EndsWithIgnoringASCIICase(".eot");
 }
@@ -107,7 +109,7 @@ String CSSFontFaceSrcValue::CustomCSSText() const {
     result.Append(SerializeString(LocalResource()));
     result.Append(')');
   } else {
-    result.Append(SerializeURI(url_data_.UnresolvedUrl()));
+    result.Append(src_value_->CssText());
   }
 
   if (!format_.empty()) {
@@ -139,25 +141,28 @@ bool CSSFontFaceSrcValue::HasFailedOrCanceledSubresources() const {
 FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
                                          FontResourceClient* client) const {
   if (!fetched_ || fetched_->Options().world_for_csp != world_) {
-    ResourceRequest resource_request(url_data_.ResolvedUrl());
+    const CSSUrlData& url_data = src_value_->UrlData();
+    const Referrer& referrer = url_data.GetReferrer();
+    ResourceRequest resource_request(url_data.ResolvedUrl());
     resource_request.SetReferrerPolicy(
         ReferrerUtils::MojoReferrerPolicyResolveDefault(
-            referrer_.referrer_policy));
-    resource_request.SetReferrerString(referrer_.referrer);
-    if (is_ad_related_) {
+            referrer.referrer_policy));
+    resource_request.SetReferrerString(referrer.referrer);
+    if (url_data.IsAdRelated()) {
       resource_request.SetIsAdResource();
     }
     ResourceLoaderOptions options(world_);
     options.initiator_info.name = fetch_initiator_type_names::kCSS;
-    if (referrer_.referrer != Referrer::ClientReferrerString()) {
-      options.initiator_info.referrer = referrer_.referrer;
+    if (referrer.referrer != Referrer::ClientReferrerString()) {
+      options.initiator_info.referrer = referrer.referrer;
     }
     FetchParameters params(std::move(resource_request), options);
     if (base::FeatureList::IsEnabled(
             features::kWebFontsCacheAwareTimeoutAdaption)) {
       params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
     }
-    params.SetFromOriginDirtyStyleSheet(origin_clean_ != OriginClean::kTrue);
+    params.SetFromOriginDirtyStyleSheet(
+        !url_data.IsFromOriginCleanStyleSheet());
     const SecurityOrigin* security_origin = context->GetSecurityOrigin();
 
     // Local fonts are accessible from file: URLs even when
@@ -186,15 +191,22 @@ void CSSFontFaceSrcValue::RestoreCachedResourceIfNeeded(
   DCHECK(context);
   DCHECK(context->Fetcher());
   context->Fetcher()->EmulateLoadStartedForInspector(
-      fetched_, KURL(url_data_.ResolvedUrl()),
+      fetched_, KURL(src_value_->UrlData().ResolvedUrl()),
       mojom::blink::RequestContextType::FONT,
       network::mojom::RequestDestination::kFont,
       fetch_initiator_type_names::kCSS);
 }
 
 bool CSSFontFaceSrcValue::Equals(const CSSFontFaceSrcValue& other) const {
-  return is_local_ == other.is_local_ && format_ == other.format_ &&
-         url_data_ == other.url_data_;
+  return format_ == other.format_ &&
+         base::ValuesEquivalent(src_value_, other.src_value_) &&
+         local_resource_ == other.local_resource_;
+}
+
+void CSSFontFaceSrcValue::TraceAfterDispatch(Visitor* visitor) const {
+  visitor->Trace(src_value_);
+  visitor->Trace(fetched_);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

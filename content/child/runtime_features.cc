@@ -219,7 +219,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableDevicePosture, raw_ref(features::kDevicePosture)},
     {wf::EnableDigitalGoods, raw_ref(features::kDigitalGoodsApi),
      kSetOnlyIfOverridden},
-    {wf::EnableDocumentPolicy, raw_ref(features::kDocumentPolicy)},
     {wf::EnableDocumentPolicyNegotiation,
      raw_ref(features::kDocumentPolicyNegotiation)},
     {wf::EnableFedCm, raw_ref(features::kFedCm), kSetOnlyIfOverridden},
@@ -234,8 +233,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      kDefault},
     {wf::EnableFedCmIdpSigninStatus,
      raw_ref(features::kFedCmIdpSigninStatusEnabled), kSetOnlyIfOverridden},
-    {wf::EnableFedCmIdpSignout, raw_ref(features::kFedCmLogoutRps),
-     kSetOnlyIfOverridden},
     {wf::EnableGamepadMultitouch, raw_ref(features::kEnableGamepadMultitouch)},
     {wf::EnableSharedStorageAPI,
      raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
@@ -261,12 +258,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #if BUILDFLAG(IS_ANDROID)
     {wf::EnableGetDisplayMedia, raw_ref(features::kUserMediaScreenCapturing)},
 #endif
-    {wf::EnableIdleDetection, raw_ref(features::kIdleDetection),
-     kSetOnlyIfOverridden},
     {wf::EnableInstalledApp, raw_ref(features::kInstalledApp)},
     {wf::EnableLazyInitializeMediaControls,
      raw_ref(features::kLazyInitializeMediaControls)},
-    {wf::EnableLazyFrameLoading, raw_ref(features::kLazyFrameLoading)},
     {wf::EnableMachineLearningModelLoader,
      raw_ref(features::kEnableMachineLearningModelLoaderWebPlatformApi),
      kSetOnlyIfOverridden},
@@ -393,8 +387,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      kSetOnlyIfOverridden},
     {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
      kSetOnlyIfOverridden},
-    {"TopicsXHR", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-     kSetOnlyIfOverridden},
     {"TopicsDocumentAPI", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
      kSetOnlyIfOverridden},
     {"TopicsDocumentAPI", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
@@ -497,38 +489,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
     int port;
     if (base::StringToInt(port_str, &port) && port == 0) {
       WebRuntimeFeatures::EnableAutomationControlled(true);
-    }
-  }
-
-  // Enable or disable OffsetParentNewSpecBehavior for Enterprise Policy. This
-  // overrides any existing settings via base::Feature.
-  if (command_line.HasSwitch(
-          blink::switches::kOffsetParentNewSpecBehaviorPolicy)) {
-    const std::string value = command_line.GetSwitchValueASCII(
-        blink::switches::kOffsetParentNewSpecBehaviorPolicy);
-    if (value ==
-        blink::switches::kOffsetParentNewSpecBehaviorPolicy_ForceEnable) {
-      WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(true);
-    }
-    if (value ==
-        blink::switches::kOffsetParentNewSpecBehaviorPolicy_ForceDisable) {
-      WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(false);
-    }
-  }
-
-  // Enable or disable SendMouseEventsDisabledFormControls for Enterprise
-  // Policy. This overrides any existing settings via base::Feature.
-  if (command_line.HasSwitch(
-          blink::switches::kSendMouseEventsDisabledFormControlsPolicy)) {
-    const std::string value = command_line.GetSwitchValueASCII(
-        blink::switches::kSendMouseEventsDisabledFormControlsPolicy);
-    if (value == blink::switches::
-                     kSendMouseEventsDisabledFormControlsPolicy_ForceEnable) {
-      WebRuntimeFeatures::EnableSendMouseEventsDisabledFormControls(true);
-    }
-    if (value == blink::switches::
-                     kSendMouseEventsDisabledFormControlsPolicy_ForceDisable) {
-      WebRuntimeFeatures::EnableSendMouseEventsDisabledFormControls(false);
     }
   }
 
@@ -652,24 +612,16 @@ void ResolveInvalidConfigurations() {
   }
 
   // Topics API cannot be enabled without the support of the browser process.
-  // The XHR attribute should be additionally gated by the `kBrowsingTopicsXHR`
-  // feature and the Document API by the `kBrowsingTopicsDocumentAPI` feature.
+  // The Document API should be additionally gated by the
+  // `kBrowsingTopicsDocumentAPI` feature.
   if (!base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
     LOG_IF(WARNING, WebRuntimeFeatures::IsTopicsAPIEnabled())
         << "Topics cannot be enabled in this configuration. Use --"
         << switches::kEnableFeatures << "="
         << blink::features::kBrowsingTopics.name << " in addition.";
     WebRuntimeFeatures::EnableTopicsAPI(false);
-    WebRuntimeFeatures::EnableTopicsXHR(false);
     WebRuntimeFeatures::EnableTopicsDocumentAPI(false);
   } else {
-    if (!base::FeatureList::IsEnabled(blink::features::kBrowsingTopicsXHR)) {
-      LOG_IF(WARNING, WebRuntimeFeatures::IsTopicsXHREnabled())
-          << "Topics XHR cannot be enabled in this configuration. Use --"
-          << switches::kEnableFeatures << "="
-          << blink::features::kBrowsingTopicsXHR.name << " in addition.";
-      WebRuntimeFeatures::EnableTopicsXHR(false);
-    }
     if (!base::FeatureList::IsEnabled(
             blink::features::kBrowsingTopicsDocumentAPI)) {
       LOG_IF(WARNING, WebRuntimeFeatures::IsTopicsDocumentAPIEnabled())

@@ -553,6 +553,8 @@ static_library("extensions") {
     "extension_management_constants.h",
     "extension_management_internal.cc",
     "extension_management_internal.h",
+    "extension_menu_icon_loader.cc",
+    "extension_menu_icon_loader.h",
     "extension_message_bubble_controller.cc",
     "extension_message_bubble_controller.h",
     "extension_migrator.cc",
@@ -641,12 +643,13 @@ static_library("extensions") {
     "launch_util.h",
     "load_error_reporter.cc",
     "load_error_reporter.h",
+    "menu_icon_loader.h",
     "menu_manager.cc",
     "menu_manager.h",
     "menu_manager_factory.cc",
     "menu_manager_factory.h",
-    "navigation_observer.cc",
-    "navigation_observer.h",
+    "navigation_extension_enabler.cc",
+    "navigation_extension_enabler.h",
     "omaha_attributes_handler.cc",
     "omaha_attributes_handler.h",
     "pack_extension_job.cc",
@@ -822,6 +825,7 @@ static_library("extensions") {
     "//components/cbor:cbor",
     "//components/commerce/core:pref_names",
     "//components/device_reauth",
+    "//components/optimization_guide/core:features",
     "//components/safe_browsing/content/browser",
     "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
     "//components/security_interstitials/content:security_interstitial_page",
@@ -955,7 +959,6 @@ static_library("extensions") {
     "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/device/public/mojom",
-    "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
@@ -993,7 +996,10 @@ static_library("extensions") {
   ]
 
   if (enable_supervised_users) {
-    deps += [ "//components/supervised_user/core/browser" ]
+    deps += [
+      "//components/supervised_user/core/browser",
+      "//components/supervised_user/core/browser:supervised_user_preferences",
+    ]
   }
 
   if (is_linux || is_mac || is_win) {
@@ -1127,6 +1133,8 @@ static_library("extensions") {
     sources += [
       "api/crash_report_private/crash_report_private_api.cc",
       "api/crash_report_private/crash_report_private_api.h",
+      "api/enterprise_kiosk_input/enterprise_kiosk_input_api.cc",
+      "api/enterprise_kiosk_input/enterprise_kiosk_input_api.h",
       "api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.cc",
       "api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h",
       "api/file_handlers/non_native_file_system_delegate_chromeos.cc",
@@ -1390,6 +1398,7 @@ static_library("extensions") {
       "//chrome/browser/pdf",
       "//components/pdf/browser",
       "//pdf:buildflags",
+      "//pdf:features",
     ]
   }
 

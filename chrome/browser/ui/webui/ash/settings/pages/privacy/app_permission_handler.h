@@ -39,6 +39,9 @@ class AppPermissionHandler
   void GetApps(
       base::OnceCallback<void(std::vector<app_permission::mojom::AppPtr>)>
           callback) override;
+  void OpenNativeSettings(const std::string& app_id) override;
+  void SetPermission(const std::string& app_id,
+                     apps::PermissionPtr permission) override;
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;

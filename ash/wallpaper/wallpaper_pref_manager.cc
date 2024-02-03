@@ -52,6 +52,7 @@ constexpr bool IsAllowedInPrefs(WallpaperType type) {
     case WallpaperType::kPolicy:
     case WallpaperType::kDailyGooglePhotos:
     case WallpaperType::kOnceGooglePhotos:
+    case WallpaperType::kSeaPen:
       return true;
   }
 }
@@ -70,6 +71,7 @@ constexpr bool IsWallpaperTypeSyncable(WallpaperType type) {
     case WallpaperType::kDevice:
     case WallpaperType::kOneShot:
     case WallpaperType::kOobe:
+    case WallpaperType::kSeaPen:
     case WallpaperType::kCount:
       return false;
   }
@@ -389,41 +391,14 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
 
   absl::optional<WallpaperCalculatedColors> GetCachedWallpaperColors(
       base::StringPiece location) const override {
-    absl::optional<std::vector<SkColor>> cached_colors =
-        GetCachedProminentColors(location);
     absl::optional<SkColor> cached_k_mean_color = GetCachedKMeanColor(location);
-    if (!chromeos::features::IsJellyEnabled()) {
-      if (cached_colors.has_value() && cached_k_mean_color.has_value()) {
-        return WallpaperCalculatedColors(cached_colors.value(),
-                                         cached_k_mean_color.value(),
-                                         SK_ColorTRANSPARENT);
-      }
-
-      return absl::nullopt;
-    }
-
     absl::optional<SkColor> cached_celebi_color = GetCelebiColor(location);
     if (cached_k_mean_color.has_value() && cached_celebi_color.has_value()) {
-      return WallpaperCalculatedColors({}, cached_k_mean_color.value(),
+      return WallpaperCalculatedColors(cached_k_mean_color.value(),
                                        cached_celebi_color.value());
     }
 
     return absl::nullopt;
-  }
-
-  void CacheProminentColors(base::StringPiece location,
-                            const std::vector<SkColor>& colors) override {
-    if (location.empty()) {
-      return;
-    }
-
-    ScopedDictPrefUpdate wallpaper_colors_update(local_state_,
-                                                 prefs::kWallpaperColors);
-    base::Value::List wallpaper_colors;
-    for (SkColor color : colors)
-      wallpaper_colors.Append(static_cast<double>(color));
-    base::Value wallpaper_colors_value(std::move(wallpaper_colors));
-    wallpaper_colors_update->Set(location, std::move(wallpaper_colors_value));
   }
 
   void RemoveProminentColors(const AccountId& account_id) override {
@@ -436,26 +411,6 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
     ScopedDictPrefUpdate wallpaper_colors_update(local_state_,
                                                  prefs::kWallpaperColors);
     wallpaper_colors_update->Remove(old_info.location);
-  }
-
-  absl::optional<std::vector<SkColor>> GetCachedProminentColors(
-      const base::StringPiece location) const override {
-    if (location.empty())
-      return absl::nullopt;
-
-    const base::Value::List* prominent_colors =
-        local_state_->GetDict(prefs::kWallpaperColors).FindList(location);
-    if (!prominent_colors)
-      return absl::nullopt;
-
-    absl::optional<std::vector<SkColor>> cached_colors_out;
-    cached_colors_out = std::vector<SkColor>();
-    cached_colors_out.value().reserve(prominent_colors->size());
-    for (const auto& value : *prominent_colors) {
-      cached_colors_out.value().push_back(
-          static_cast<SkColor>(value.GetDouble()));
-    }
-    return cached_colors_out;
   }
 
   void CacheKMeanColor(base::StringPiece location,
@@ -651,7 +606,7 @@ const char WallpaperPrefManager::kOnlineWallpaperUrlNodeName[] = "url";
 
 // static
 bool WallpaperPrefManager::ShouldSyncOut(const WallpaperInfo& local_info) {
-  if (IsTimeOfDayWallpaper(local_info)) {
+  if (IsTimeOfDayWallpaper(local_info.collection_id)) {
     // Time Of Day wallpapers are not syncable.
     return false;
   }
@@ -679,7 +634,7 @@ bool WallpaperPrefManager::ShouldSyncIn(const WallpaperInfo& synced_info,
   if (synced_info.date < local_info.date) {
     return false;
   }
-  if (IsTimeOfDayWallpaper(local_info)) {
+  if (IsTimeOfDayWallpaper(local_info.collection_id)) {
     // Time Of Day wallpapers cannot be overwritten by other wallpapers.
     return false;
   }

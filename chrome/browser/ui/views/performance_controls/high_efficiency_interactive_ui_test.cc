@@ -199,7 +199,10 @@ class HighEfficiencyDiscardPolicyInteractiveTest
 
   auto PressKeyboard() {
     return Do(base::BindLambdaForTesting([=]() {
+      // Send multiple key presses to reduce flakiness.
       ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_A, false,
+                                                  false, false, false));
+      ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_B, false,
                                                   false, false, false));
     }));
   }
@@ -262,11 +265,10 @@ IN_PROC_BROWSER_TEST_F(HighEfficiencyDiscardPolicyInteractiveTest,
       TryDiscardTab(0), CheckTabIsNotDiscarded(0));
 }
 
-// Check that a form in the background but was interacted by the user
+// Check that a form in the background but was interacted with by the user
 // won't be discarded
-// TODO(crbug.com/1415833): Re-enable this test
 IN_PROC_BROWSER_TEST_F(HighEfficiencyDiscardPolicyInteractiveTest,
-                       DISABLED_TabWithFormNotDiscarded) {
+                       TabWithFormNotDiscarded) {
   DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kInputIsFocused);
   DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kInputValueIsUpated);
   const DeepQuery input_text_box = {"#value"};
@@ -274,19 +276,20 @@ IN_PROC_BROWSER_TEST_F(HighEfficiencyDiscardPolicyInteractiveTest,
   StateChange input_is_focused;
   input_is_focused.event = kInputIsFocused;
   input_is_focused.where = input_text_box;
-  input_is_focused.type = StateChange::Type::kConditionTrue;
+  input_is_focused.type = StateChange::Type::kExistsAndConditionTrue;
   input_is_focused.test_function =
       "(el) => { return el === document.activeElement; }";
 
   StateChange input_value_updated;
   input_value_updated.event = kInputValueIsUpated;
   input_value_updated.where = input_text_box;
-  input_value_updated.type = StateChange::Type::kConditionTrue;
-  input_value_updated.test_function = "(el) => { return el.value === 'a'; }";
+  input_value_updated.type = StateChange::Type::kExistsAndConditionTrue;
+  input_value_updated.test_function = "(el) => { return !!el.value; }";
 
   RunTestSequence(
       InstrumentTab(kFirstTabContents, 0),
       NavigateWebContents(kFirstTabContents, GetURL("/form_search.html")),
+      WaitForWebContentsReady(kFirstTabContents, GetURL("/form_search.html")),
 
       // Move focus off of the omnibox
       MoveMouseTo(kFirstTabContents, input_text_box), ClickMouse(),
@@ -447,34 +450,6 @@ IN_PROC_BROWSER_TEST_F(HighEfficiencyChipInteractiveTest,
       EnsureNotPresent(kHighEfficiencyChipElementId));
 }
 
-// Clicking on the settings link in high efficiency dialog bubble should open
-// a new tab and navigate to the performance settings page
-IN_PROC_BROWSER_TEST_F(HighEfficiencyChipInteractiveTest,
-                       BubbleSettingsLinkNavigates) {
-  constexpr char kPerformanceSettingsLinkViewName[] = "performance_link";
-
-  RunTestSequence(
-      InstrumentTab(kFirstTabContents, 0),
-      NavigateWebContents(kFirstTabContents, GetURL("/title1.html")),
-      AddInstrumentedTab(kSecondTabContents, GURL(chrome::kChromeUINewTabURL)),
-      DiscardAndSelectTab(0, kFirstTabContents),
-      SelectTab(kTabStripElementId, 1), SelectTab(kTabStripElementId, 0),
-      CheckChipIsCollapsedState(), PressButton(kHighEfficiencyChipElementId),
-      WaitForShow(HighEfficiencyBubbleView::kHighEfficiencyDialogBodyElementId),
-      InAnyContext(NameViewRelative(
-          HighEfficiencyBubbleView::kHighEfficiencyDialogBodyElementId,
-          kPerformanceSettingsLinkViewName,
-          base::BindOnce([](views::StyledLabel* label) -> views::View* {
-            return label->GetFirstLinkForTesting();
-          }))),
-      MoveMouseTo(kPerformanceSettingsLinkViewName), ClickMouse(),
-      Check(base::BindLambdaForTesting(
-          [&]() { return browser()->tab_strip_model()->GetTabCount() == 3; })),
-      InstrumentTab(kPerformanceSettingsTab, 2),
-      WaitForWebContentsReady(kPerformanceSettingsTab,
-                              GURL(chrome::kChromeUIPerformanceSettingsURL)));
-}
-
 // High Efficiency Dialog bubble should close after clicking the "OK" button
 IN_PROC_BROWSER_TEST_F(HighEfficiencyChipInteractiveTest,
                        CloseBubbleOnOkButtonClick) {
@@ -565,11 +540,13 @@ IN_PROC_BROWSER_TEST_F(HighEfficiencyChipInteractiveTest,
       ForceRefreshMemoryMetrics(), DiscardAndSelectTab(0, kFirstTabContents),
       WaitForShow(kHighEfficiencyChipElementId),
       PressButton(kHighEfficiencyChipElementId),
-      WaitForShow(HighEfficiencyBubbleView::kHighEfficiencyDialogBodyElementId),
+      WaitForShow(HighEfficiencyResourceView::
+                      kHighEfficiencyResourceViewMemorySavingsElementId),
       CheckView(
-          HighEfficiencyBubbleView::kHighEfficiencyDialogBodyElementId,
+          HighEfficiencyResourceView::
+              kHighEfficiencyResourceViewMemorySavingsElementId,
           base::BindOnce(
-              [](Browser* browser, views::StyledLabel* label) {
+              [](Browser* browser, views::Label* label) {
                 content::WebContents* web_contents =
                     browser->tab_strip_model()->GetWebContentsAt(0);
                 auto* pre_discard_resource_usage = performance_manager::

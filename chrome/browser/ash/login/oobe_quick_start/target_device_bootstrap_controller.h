@@ -57,17 +57,20 @@ class TargetDeviceBootstrapController
     FETCHING_CHALLENGE_BYTES_FAILED,
   };
 
-  using Payload = absl::
-      variant<absl::monostate, ErrorCode, QRCode::PixelData, FidoAssertionInfo>;
+  using Pin = std::string;
 
-  // TODO(b/288054370) - Consolidate fields.
+  using Payload = absl::variant<absl::monostate,
+                                ErrorCode,
+                                QRCode::PixelData,
+                                Pin,
+                                mojom::WifiCredentials,
+                                FidoAssertionInfo>;
+
   struct Status {
     Status();
     ~Status();
     Step step = Step::NONE;
     Payload payload;
-    mojom::WifiCredentials wifi_credentials;
-    std::string pin;
   };
 
   class AccessibilityManagerWrapper {
@@ -158,13 +161,13 @@ class TargetDeviceBootstrapController
  private:
   friend class TargetDeviceBootstrapControllerTest;
 
+  void UpdateStatus(Step step, Payload payload);
   void NotifyObservers();
   void OnStartAdvertisingResult(bool success);
   void OnStopAdvertising();
 
-  void WaitForUserVerification(base::OnceClosure on_verification);
-  void OnUserVerificationResult(base::OnceClosure on_verification,
-                                absl::optional<mojom::UserVerificationResponse>
+  void WaitForUserVerification();
+  void OnUserVerificationResult(absl::optional<mojom::UserVerificationResponse>
                                     user_verification_response);
 
   // If the target device successfully receives an ack message, it prepares to
@@ -191,7 +194,6 @@ class TargetDeviceBootstrapController
 
   std::unique_ptr<TargetDeviceConnectionBroker> connection_broker_;
 
-  std::string pin_;
   // TODO: Should we enforce one observer at a time here too?
   base::ObserverList<Observer> observers_;
 

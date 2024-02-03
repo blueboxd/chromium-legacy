@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/functional/callback.h"
+#include "base/types/optional_ref.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 
@@ -34,11 +35,16 @@ class COMPONENT_EXPORT(UI_BASE_DATA_TRANSFER_POLICY)
   // Indicates that restricting data transfer is no longer required.
   static void DeleteInstance();
 
-  // nullptr can be passed instead of `data_src` or `data_dst`. If clipboard
-  // read is not allowed, this function will show a notification to the user.
-  virtual bool IsClipboardReadAllowed(const DataTransferEndpoint* data_src,
-                                      const DataTransferEndpoint* data_dst,
-                                      absl::optional<size_t> size) = 0;
+  // Returns true if `data_dst` is allowed to read clipboard data originally
+  // written by `data_src`. `data_src` may be null if the clipboard data
+  // originates from source can't be represented by DataTransferEndpoint;
+  // similarly, `data_dst`  may be null if the data is pasted into a destination
+  // can't be represented by DataTransferEndpoint e.g. Omnibox. `size` may be
+  // null in some cases such as pasting files.
+  virtual bool IsClipboardReadAllowed(
+      base::optional_ref<const DataTransferEndpoint> data_src,
+      base::optional_ref<const DataTransferEndpoint> data_dst,
+      absl::optional<size_t> size) = 0;
 
   // nullptr can be passed instead of `data_src` or `data_dst`. If clipboard
   // data is set to be in warning mode, this function will show a notification
@@ -46,20 +52,22 @@ class COMPONENT_EXPORT(UI_BASE_DATA_TRANSFER_POLICY)
   // true. Otherwise `callback` will be invoked with false.
   // If the WebContents of `rfh` got destroyed before `callback` is invoked, the
   // notification will get closed.
-  virtual void PasteIfAllowed(const DataTransferEndpoint* data_src,
-                              const DataTransferEndpoint* data_dst,
-                              absl::optional<size_t> size,
-                              content::RenderFrameHost* rfh,
-                              base::OnceCallback<void(bool)> callback) = 0;
+  virtual void PasteIfAllowed(
+      base::optional_ref<const DataTransferEndpoint> data_src,
+      base::optional_ref<const DataTransferEndpoint> data_dst,
+      absl::optional<size_t> size,
+      content::RenderFrameHost* rfh,
+      base::OnceCallback<void(bool)> callback) = 0;
 
   // `drag_data` can't be nullptr. nullptr can be passed instead of `data_dst`.
   // If dropping the data is not allowed, this function will show a notification
   // to the user. If the drop is allowed, `drop_cb` will be run. Otherwise
   // `drop_cb` will be reset. `drop_cb` may be run asynchronously after the user
   // comfirms they want to drop the data.
-  virtual void DropIfAllowed(const ui::OSExchangeData* drag_data,
-                             const DataTransferEndpoint* data_dst,
-                             base::OnceClosure drop_cb) = 0;
+  virtual void DropIfAllowed(
+      const ui::OSExchangeData* drag_data,
+      base::optional_ref<const DataTransferEndpoint> data_dst,
+      base::OnceClosure drop_cb) = 0;
 
  protected:
   DataTransferPolicyController();

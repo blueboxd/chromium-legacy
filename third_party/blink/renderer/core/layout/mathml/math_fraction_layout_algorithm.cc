@@ -119,8 +119,8 @@ FractionStackParameters GetFractionStackParameters(const ComputedStyle& style) {
 }  // namespace
 
 MathFractionLayoutAlgorithm::MathFractionLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params) {
+    const LayoutAlgorithmParams& params)
+    : LayoutAlgorithm(params) {
   DCHECK(params.space.IsNewFormattingContext());
   container_builder_.SetIsMathMLFraction();
 }
@@ -171,10 +171,10 @@ const NGLayoutResult* MathFractionLayoutAlgorithm::Layout() {
   const auto denominator_margins = ComputeMarginsFor(
       denominator_space, denominator.Style(), ConstraintSpace());
 
-  const NGBoxFragment numerator_fragment(
+  const LogicalBoxFragment numerator_fragment(
       ConstraintSpace().GetWritingDirection(),
       To<NGPhysicalBoxFragment>(numerator_layout_result->PhysicalFragment()));
-  const NGBoxFragment denominator_fragment(
+  const LogicalBoxFragment denominator_fragment(
       ConstraintSpace().GetWritingDirection(),
       To<NGPhysicalBoxFragment>(denominator_layout_result->PhysicalFragment()));
   const auto baseline_type = Style().GetFontBaseline();
@@ -265,7 +265,7 @@ const NGLayoutResult* MathFractionLayoutAlgorithm::Layout() {
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   return container_builder_.ToBoxFragment();
 }

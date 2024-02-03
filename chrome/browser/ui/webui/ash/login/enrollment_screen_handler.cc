@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
@@ -99,6 +100,8 @@ std::string GetFlowString(EnrollmentScreenView::FlowType type) {
       return "enterpriseLicense";
     case EnrollmentScreenView::FlowType::kEducationLicense:
       return "educationLicense";
+    case EnrollmentScreenView::FlowType::kDeviceEnrollment:
+      return "deviceEnrollment";
   }
 }
 
@@ -291,6 +294,10 @@ void EnrollmentScreenHandler::ShowOtherError(
 
 void EnrollmentScreenHandler::Shutdown() {
   shutdown_ = true;
+}
+
+base::WeakPtr<EnrollmentScreenView> EnrollmentScreenHandler::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void EnrollmentScreenHandler::ShowEnrollmentStatus(
@@ -601,8 +608,9 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
 }
 
 void EnrollmentScreenHandler::DeclareJSCallbacks() {
-  AddCallback("toggleFakeEnrollment",
-              &EnrollmentScreenHandler::HandleToggleFakeEnrollment);
+  AddCallback(
+      "toggleFakeEnrollmentAndCompleteLogin",
+      &EnrollmentScreenHandler::HandleToggleFakeEnrollmentAndCompleteLogin);
   AddCallback("oauthEnrollClose", &EnrollmentScreenHandler::HandleClose);
   AddCallback("oauthEnrollCompleteLogin",
               &EnrollmentScreenHandler::HandleCompleteLogin);
@@ -641,13 +649,20 @@ void EnrollmentScreenHandler::ShowSkipConfirmationDialog() {
 }
 
 // EnrollmentScreenHandler, private -----------------------------
-void EnrollmentScreenHandler::HandleToggleFakeEnrollment() {
+void EnrollmentScreenHandler::HandleToggleFakeEnrollmentAndCompleteLogin(
+    const std::string& user,
+    int license_type) {
+  // This method should only be used on test images.
+  base::SysInfo::CrashIfChromeOSNonTestImage();
+
   // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
   // in the logs.
-  LOG(WARNING) << "HandleToggleFakeEnrollment";
+  LOG(WARNING) << "HandleToggleFakeEnrollmentAndCompleteLogin";
   policy::PolicyOAuth2TokenFetcher::UseFakeTokensForTesting();
   WizardController::SkipEnrollmentPromptsForTesting();
   use_fake_login_for_testing_ = true;
+
+  HandleCompleteLogin(user, license_type);
 }
 
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {

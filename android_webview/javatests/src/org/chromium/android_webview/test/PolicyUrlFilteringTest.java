@@ -18,6 +18,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.WebviewErrorCode;
@@ -37,9 +39,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /** Tests for the policy based URL filtering. */
-@RunWith(AwJUnit4ClassRunner.class)
-public class PolicyUrlFilteringTest {
-    @Rule public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
+@RunWith(Parameterized.class)
+@UseParametersRunnerFactory(AwJUnit4ClassRunnerWithParameters.Factory.class)
+public class PolicyUrlFilteringTest extends AwParameterizedTest {
+    @Rule
+    public AwActivityTestRule mActivityTestRule;
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
@@ -51,6 +55,10 @@ public class PolicyUrlFilteringTest {
 
     private static final String sBlocklistPolicyName = "com.android.browser:URLBlocklist";
     private static final String sAllowlistPolicyName = "com.android.browser:URLAllowlist";
+
+    public PolicyUrlFilteringTest(AwSettingsMutation param) {
+        this.mActivityTestRule = new AwActivityTestRule(param.getMutation());
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -93,11 +101,13 @@ public class PolicyUrlFilteringTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> CombinedPolicyProvider.get().registerProvider(testProvider));
 
-        navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after*/);
+        navigateAndCheckOutcome(
+                mFooTestUrl, /* startingErrorCount= */ 0, /* expectedErrorCount= */ 0);
 
         setFilteringPolicy(testProvider, new String[] {"localhost"}, new String[] {});
 
-        navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 1 /* error count after */);
+        navigateAndCheckOutcome(
+                mFooTestUrl, /* startingErrorCount= */ 0, /* expectedErrorCount= */ 1);
         Assert.assertEquals(
                 WebviewErrorCode.ERROR_CONNECT,
                 mContentsClient.getOnReceivedErrorHelper().getError().errorCode);
@@ -117,10 +127,12 @@ public class PolicyUrlFilteringTest {
     })
     @OnlyRunIn(SINGLE_PROCESS) // http://crbug.com/660517
     public void testAllowlistedUrl() throws Throwable {
-        navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after */);
+        navigateAndCheckOutcome(
+                mFooTestUrl, /* startingErrorCount= */ 0, /* expectedErrorCount= */ 0);
 
         // Make sure it goes through the blocklist
-        navigateAndCheckOutcome(mBarTestUrl, 0 /* error count before */, 1 /* error count after */);
+        navigateAndCheckOutcome(
+                mBarTestUrl, /* startingErrorCount= */ 0, /* expectedErrorCount= */ 1);
         Assert.assertEquals(
                 WebviewErrorCode.ERROR_CONNECT,
                 mContentsClient.getOnReceivedErrorHelper().getError().errorCode);
@@ -134,7 +146,8 @@ public class PolicyUrlFilteringTest {
         @Policies.Item(key = sBlocklistPolicyName, string = "shouldBeAJsonArrayNotAString")
     })
     public void testBadPolicyValue() throws Exception {
-        navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after */);
+        navigateAndCheckOutcome(
+                mFooTestUrl, /* startingErrorCount= */ 0, /* expectedErrorCount= */ 0);
         // At the moment this test is written, a failure is a crash, a success is no crash.
     }
 

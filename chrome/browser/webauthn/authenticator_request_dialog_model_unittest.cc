@@ -2058,13 +2058,13 @@ TEST_F(AuthenticatorRequestDialogModelTest, ConditionalUIPhonePasskeyUpdated) {
   // it.
   EXPECT_CALL(mock_observer, OnStartOver());
   static_cast<webauthn::PasskeyModel::Observer*>(model.get())
-      ->OnPasskeysChanged();
+      ->OnPasskeysChanged({});
   testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
   // Notifying that passkeys changed during any other step should be ignored.
   model->SetCurrentStepForTesting(Step::kUsbInsertAndActivate);
   static_cast<webauthn::PasskeyModel::Observer*>(model.get())
-      ->OnPasskeysChanged();
+      ->OnPasskeysChanged({});
   EXPECT_CALL(mock_observer, OnStartOver()).Times(0);
   model->RemoveObserver(&mock_observer);
 }
@@ -2960,7 +2960,7 @@ TEST_F(ListPasskeysFromSyncTest, WindowsHelloButtonLabel_GetAssertion) {
           EXPECT_EQ(win_button_it->icon, kLaptopIcon);
           break;
         case kSk:
-          EXPECT_EQ(win_button_it->icon, vector_icons::kUsbIcon);
+          EXPECT_EQ(win_button_it->icon, kUsbSecurityKeyIcon);
           break;
         case kPhoneOrSk:
         case kPhone:
@@ -3017,7 +3017,7 @@ TEST_F(ListPasskeysFromSyncTest, WindowsHelloButtonLabel_MakeCredential) {
         EXPECT_EQ(win_button_it->icon, kLaptopIcon);
         break;
       case kSk:
-        EXPECT_EQ(win_button_it->icon, vector_icons::kUsbIcon);
+        EXPECT_EQ(win_button_it->icon, kUsbSecurityKeyIcon);
         break;
       default:
         NOTREACHED();

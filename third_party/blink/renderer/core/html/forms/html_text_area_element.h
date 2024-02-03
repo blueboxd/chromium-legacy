@@ -119,7 +119,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   void RestoreFormControlState(const FormControlState&) override;
 
   bool IsTextControl() const override { return true; }
-  bool ShouldAutoDirUseValue() const final { return true; }
+  bool IsAutoDirectionalityFormAssociated() const final { return true; }
   int scrollWidth() override;
   int scrollHeight() override;
   void ChildrenChanged(const ChildrenChange&) override;
@@ -134,7 +134,8 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   void ResetImpl() override;
   bool HasCustomFocusLogic() const override;
   bool MayTriggerVirtualKeyboard() const override;
-  bool IsKeyboardFocusable() const override;
+  bool IsKeyboardFocusable(UpdateBehavior update_behavior =
+                               UpdateBehavior::kStyleAndLayout) const override;
   void UpdateSelectionOnFocus(SelectionBehaviorOnFocus,
                               const FocusOptions*) override;
 

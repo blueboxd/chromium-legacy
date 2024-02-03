@@ -38,10 +38,21 @@ public class Menu extends LinearLayout {
     }
 
     MenuItem addItem(int itemId, int iconId, String label, @MenuItem.Action int action) {
+        return addItem(itemId, iconId, label, action, "");
+    }
+
+    public MenuItem addItem(
+            int itemId,
+            int iconId,
+            String label,
+            @MenuItem.Action int action,
+            String contentDescription) {
         if (mItemsContainer == null) {
             mItemsContainer = (LinearLayout) findViewById(R.id.items_container);
         }
-        MenuItem item = new MenuItem(mContext, mAttrs, this, itemId, iconId, label, action);
+        MenuItem item =
+                new MenuItem(
+                        mContext, mAttrs, this, itemId, iconId, label, action, contentDescription);
         mItemsContainer.addView(
                 item,
                 /* width= */ LayoutParams.MATCH_PARENT,
@@ -53,20 +64,10 @@ public class Menu extends LinearLayout {
         mLastItemIndex = index;
 
         mItemIdToIndex.put(itemId, index);
-
-        // TODO toggle too
-        if (action == MenuItem.Action.RADIO) {
-            item.setChangeListener(
-                    (view, value) -> {
-                        if (value) {
-                            onRadioButtonSelected(itemId);
-                        }
-                    });
-        }
         return item;
     }
 
-    MenuItem getItem(int itemId) {
+    public MenuItem getItem(int itemId) {
         if (!mItemIdToIndex.containsKey(itemId)) {
             return null;
         }
@@ -107,6 +108,12 @@ public class Menu extends LinearLayout {
     }
 
     void onRadioButtonSelected(int itemId) {
+        for (Map.Entry<Integer, Integer> itemIndex : mItemIdToIndex.entrySet()) {
+            if (itemIndex.getKey() != itemId) {
+                MenuItem item = (MenuItem) mItemsContainer.getChildAt(itemIndex.getValue());
+                item.setValue(false);
+            }
+        }
         if (mRadioTrueHandler != null) {
             mRadioTrueHandler.onResult(itemId);
         }

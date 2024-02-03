@@ -25,8 +25,8 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/fake_authentication_service_delegate.h"
 #import "ios/chrome/browser/tabs/model/features.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -158,7 +158,8 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
     // constructor.
     browser_ = std::make_unique<TestBrowser>(
         chrome_browser_state_.get(),
-        std::make_unique<BrowserWebStateListDelegate>());
+        std::make_unique<BrowserWebStateListDelegate>(
+            /* force_realization_on_activation */ true));
   }
 
   void TearDown() override {

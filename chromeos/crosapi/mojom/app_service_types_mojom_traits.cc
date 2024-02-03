@@ -4,6 +4,7 @@
 
 #include "chromeos/crosapi/mojom/app_service_types_mojom_traits.h"
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -47,7 +48,14 @@ namespace mojo {
 
 apps::IconKeyPtr StructTraits<crosapi::mojom::AppDataView,
                               apps::AppPtr>::icon_key(const apps::AppPtr& r) {
-  return ConvertOptionalIconKeyToIconKeyPtr(r->icon_key);
+  if (!r->icon_key.has_value()) {
+    return nullptr;
+  }
+
+  auto icon_key = std::make_unique<apps::IconKey>(r->icon_key->resource_id,
+                                                  r->icon_key->icon_effects);
+  icon_key->update_version = r->icon_key->update_version;
+  return icon_key;
 }
 
 // static
@@ -135,6 +143,20 @@ crosapi::mojom::OptionalBool
 StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::is_platform_app(
     const apps::AppPtr& r) {
   return ConvertOptionalBoolToMojomOptionalBool(r->is_platform_app);
+}
+
+// static
+absl::optional<uint64_t>
+StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::app_size_in_bytes(
+    const apps::AppPtr& r) {
+  return r->app_size_in_bytes;
+}
+
+// static
+absl::optional<uint64_t>
+StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::data_size_in_bytes(
+    const apps::AppPtr& r) {
+  return r->data_size_in_bytes;
 }
 
 bool StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::Read(
@@ -256,6 +278,10 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::Read(
   if (!data.ReadIsPlatformApp(&is_platform_app))
     return false;
 
+  absl::optional<uint64_t> app_size_in_bytes = data.app_size_in_bytes();
+
+  absl::optional<uint64_t> data_size_in_bytes = data.data_size_in_bytes();
+
   auto app = std::make_unique<apps::App>(app_type, app_id);
   app->readiness = readiness;
   app->name = name;
@@ -295,6 +321,8 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::AppPtr>::Read(
       ConvertMojomOptionalBoolToOptionalBool(handles_intents);
   app->is_platform_app =
       ConvertMojomOptionalBoolToOptionalBool(is_platform_app);
+  app->app_size_in_bytes = app_size_in_bytes;
+  app->data_size_in_bytes = data_size_in_bytes;
   *out = std::move(app);
   return true;
 }
@@ -422,12 +450,50 @@ bool EnumTraits<crosapi::mojom::Readiness, apps::Readiness>::FromMojom(
   return false;
 }
 
+crosapi::mojom::IconUpdateVersionDataView::Tag UnionTraits<
+    crosapi::mojom::IconUpdateVersionDataView,
+    apps::IconKey::UpdateVersion>::GetTag(const apps::IconKey::UpdateVersion&
+                                              r) {
+  if (absl::holds_alternative<bool>(r)) {
+    return crosapi::mojom::IconUpdateVersionDataView::Tag::kRawIconUpdated;
+  }
+  if (absl::holds_alternative<int32_t>(r)) {
+    return crosapi::mojom::IconUpdateVersionDataView::Tag::kTimeline;
+  }
+  NOTREACHED();
+  return crosapi::mojom::IconUpdateVersionDataView::Tag::kRawIconUpdated;
+}
+
+bool UnionTraits<crosapi::mojom::IconUpdateVersionDataView,
+                 apps::IconKey::UpdateVersion>::
+    Read(crosapi::mojom::IconUpdateVersionDataView data,
+         apps::IconKey::UpdateVersion* out) {
+  switch (data.tag()) {
+    case crosapi::mojom::IconUpdateVersionDataView::Tag::kRawIconUpdated: {
+      *out = data.raw_icon_updated();
+      return true;
+    }
+    case crosapi::mojom::IconUpdateVersionDataView::Tag::kTimeline: {
+      *out = data.timeline();
+      return true;
+    }
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool StructTraits<crosapi::mojom::IconKeyDataView, apps::IconKeyPtr>::Read(
     crosapi::mojom::IconKeyDataView data,
     apps::IconKeyPtr* out) {
-  *out = std::make_unique<apps::IconKey>(
-      data.timeline(), apps::IconKey::kInvalidResourceId, data.icon_effects());
-  (*out)->raw_icon_updated = data.raw_icon_updated();
+  apps::IconKey::UpdateVersion update_version;
+  if (!data.ReadUpdateVersion(&update_version)) {
+    return false;
+  }
+
+  *out = std::make_unique<apps::IconKey>(apps::IconKey::kInvalidResourceId,
+                                         data.icon_effects());
+  (*out)->update_version = std::move(update_version);
+
   return true;
 }
 
@@ -908,6 +974,8 @@ EnumTraits<crosapi::mojom::LaunchSource, apps::LaunchSource>::ToMojom(
       return crosapi::mojom::LaunchSource::kFromUrlHandler;
     case apps::LaunchSource::kFromSysTrayCalendar:
       return crosapi::mojom::LaunchSource::kFromSysTrayCalendar;
+    case apps::LaunchSource::kFromInstaller:
+      return crosapi::mojom::LaunchSource::kFromInstaller;
     // TODO(crbug.com/1343692): Make lock screen apps use lacros browser.
     case apps::LaunchSource::kFromLockScreen:
     case apps::LaunchSource::kFromCommandLine:
@@ -1017,6 +1085,9 @@ bool EnumTraits<crosapi::mojom::LaunchSource, apps::LaunchSource>::FromMojom(
       return true;
     case crosapi::mojom::LaunchSource::kFromSysTrayCalendar:
       *output = apps::LaunchSource::kFromSysTrayCalendar;
+      return true;
+    case crosapi::mojom::LaunchSource::kFromInstaller:
+      *output = apps::LaunchSource::kFromInstaller;
       return true;
   }
 

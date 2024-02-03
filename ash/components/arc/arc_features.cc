@@ -47,6 +47,9 @@ BASE_FEATURE(kEnableArcIdleManager,
 const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT{
     &kEnableArcIdleManager, "ignore_battery_for_test", false};
 
+const base::FeatureParam<int> kEnableArcIdleManagerDelayMs{
+    &kEnableArcIdleManager, "delay_ms", 0};
+
 // Controls whether files shared to ARC Nearby Share are shared through the
 // FuseBox filesystem, instead of the default method (through a temporary path
 // managed by file manager).
@@ -207,6 +210,12 @@ BASE_FEATURE(kNativeBridgeToggleFeature,
 // acceleration on behalf of ARC++/ARCVM instead of using the GPU process.
 BASE_FEATURE(kOutOfProcessVideoDecoding,
              "OutOfProcessVideoDecoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, Android per-app-language settings will be surfaced in ChromeOS
+// Settings page.
+BASE_FEATURE(kPerAppLanguage,
+             "PerAppLanguage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls ARC picture-in-picture feature. If this is enabled, then Android
@@ -400,5 +409,5 @@ const base::FeatureParam<std::string> kPriorityAppLmkDelayList{
 // top Android apps from being killed that result in bad user experience.
 BASE_FEATURE(kLmkPerceptibleMinStateUpdate,
              "ArcLmkPerceptibleMinStateUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace arc

@@ -2256,7 +2256,7 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
   rv = callback.WaitForResult();
 
   const int kSize = 3000;
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(kSize);
+  auto buf = base::MakeRefCounted<IOBufferWithSize>(kSize);
   rv = trans->Read(
       buf.get(), kSize,
       base::BindOnce(&SpdyNetworkTransactionTest::StartTransactionCallback,
@@ -2305,7 +2305,7 @@ TEST_P(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   // Setup a user callback which will delete the session, and clear out the
   // memory holding the stream object. Note that the callback deletes trans.
   const int kSize = 3000;
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(kSize);
+  auto buf = base::MakeRefCounted<IOBufferWithSize>(kSize);
   rv = trans->Read(
       buf.get(), kSize,
       base::BindOnce(&SpdyNetworkTransactionTest::DeleteSessionCallback,
@@ -3511,17 +3511,17 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
   ASSERT_TRUE((*header_list)[4].is_string());
   EXPECT_EQ("user-agent: Chrome", (*header_list)[4].GetString());
 
+  // Incoming HEADERS frame is logged as HTTP2_SESSION_RECV_HEADERS.
   pos = ExpectLogContainsSomewhere(entries, 0,
                                    NetLogEventType::HTTP2_SESSION_RECV_HEADERS,
                                    NetLogEventPhase::NONE);
   ASSERT_TRUE(entries[pos].HasParams());
+  // END_STREAM is not set on the HEADERS frame, so `fin` is false.
   absl::optional<bool> fin = entries[pos].params.FindBool("fin");
   ASSERT_TRUE(fin.has_value());
   EXPECT_FALSE(*fin);
 
-  // DATA frame with END_STREAM is logged as two HTTP2_SESSION_RECV_DATA events:
-  //     the first with `fin == false`,
-  //     the second with `length = 0` and `fin = true`.
+  // Incoming DATA frame is logged as HTTP2_SESSION_RECV_DATA.
   pos = ExpectLogContainsSomewhere(entries, 0,
                                    NetLogEventType::HTTP2_SESSION_RECV_DATA,
                                    NetLogEventPhase::NONE);
@@ -3529,17 +3529,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
   absl::optional<int> size = entries[pos].params.FindInt("size");
   ASSERT_TRUE(size.has_value());
   EXPECT_EQ(static_cast<int>(strlen("hello!")), *size);
-  fin = entries[pos].params.FindBool("fin");
-  ASSERT_TRUE(fin.has_value());
-  EXPECT_FALSE(*fin);
-
-  pos = ExpectLogContainsSomewhereAfter(
-      entries, pos + 1, NetLogEventType::HTTP2_SESSION_RECV_DATA,
-      NetLogEventPhase::NONE);
-  ASSERT_TRUE(entries[pos].HasParams());
-  size = entries[pos].params.FindInt("size");
-  ASSERT_TRUE(size.has_value());
-  EXPECT_EQ(0, *size);
+  // END_STREAM is set on the DATA frame, so `fin` is true.
   fin = entries[pos].params.FindBool("fin");
   ASSERT_TRUE(fin.has_value());
   EXPECT_TRUE(*fin);
@@ -3569,18 +3559,19 @@ TEST_P(SpdyNetworkTransactionTest, NetLogForResponseWithNoBody) {
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("", out.response_data);
 
-  // Incoming HEADERS frame has END_STREAM (fin) flag set,
-  // and there is no incoming DATA frame.
+  // Incoming HEADERS frame is logged as HTTP2_SESSION_RECV_HEADERS.
   auto entries = net_log_observer.GetEntries();
   int pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP2_SESSION_RECV_HEADERS,
       NetLogEventPhase::NONE);
   ASSERT_TRUE(entries[pos].HasParams());
+  // END_STREAM is set on the HEADERS frame, so `fin` is true.
   absl::optional<bool> fin = entries[pos].params.FindBool("fin");
   ASSERT_TRUE(fin.has_value());
   EXPECT_TRUE(*fin);
 
-  EXPECT_FALSE(LogContainsEntryWithType(
+  // No DATA frame is received.
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
       entries, 0, NetLogEventType::HTTP2_SESSION_RECV_DATA));
 }
 
@@ -3643,8 +3634,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferFull) {
   do {
     // Read small chunks at a time.
     const int kSmallReadSize = 3;
-    scoped_refptr<IOBuffer> buf =
-        base::MakeRefCounted<IOBuffer>(kSmallReadSize);
+    auto buf = base::MakeRefCounted<IOBufferWithSize>(kSmallReadSize);
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
     if (rv == ERR_IO_PENDING) {
       data.Resume();
@@ -3724,8 +3714,7 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
   do {
     // Read small chunks at a time.
     const int kSmallReadSize = 14;
-    scoped_refptr<IOBuffer> buf =
-        base::MakeRefCounted<IOBuffer>(kSmallReadSize);
+    auto buf = base::MakeRefCounted<IOBufferWithSize>(kSmallReadSize);
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
     if (rv == ERR_IO_PENDING) {
       data.Resume();
@@ -3805,8 +3794,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
   do {
     // Read small chunks at a time.
     const int kSmallReadSize = 14;
-    scoped_refptr<IOBuffer> buf =
-        base::MakeRefCounted<IOBuffer>(kSmallReadSize);
+    auto buf = base::MakeRefCounted<IOBufferWithSize>(kSmallReadSize);
     rv = trans->Read(buf.get(), kSmallReadSize, read_callback.callback());
     if (rv > 0) {
       EXPECT_EQ(kSmallReadSize, rv);
@@ -3882,8 +3870,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
     // Allocate a large buffer to allow buffering. If a single read fills the
     // buffer, no buffering happens.
     const int kLargeReadSize = 1000;
-    scoped_refptr<IOBuffer> buf =
-        base::MakeRefCounted<IOBuffer>(kLargeReadSize);
+    auto buf = base::MakeRefCounted<IOBufferWithSize>(kLargeReadSize);
     rv = trans->Read(buf.get(), kLargeReadSize, read_callback.callback());
     if (rv == ERR_IO_PENDING) {
       data.Resume();
@@ -3953,7 +3940,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
   TestCompletionCallback read_callback;
 
   const int kReadSize = 256;
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(kReadSize);
+  auto buf = base::MakeRefCounted<IOBufferWithSize>(kReadSize);
   rv = trans->Read(buf.get(), kReadSize, read_callback.callback());
   ASSERT_EQ(ERR_IO_PENDING, rv) << "Unexpected read: " << rv;
 
@@ -5446,7 +5433,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
 
   // Issue a read which will cause a WINDOW_UPDATE to be sent and window
   // size increased to default.
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(kTargetSize);
+  auto buf = base::MakeRefCounted<IOBufferWithSize>(kTargetSize);
   EXPECT_EQ(static_cast<int>(kTargetSize),
             trans->Read(buf.get(), kTargetSize, CompletionOnceCallback()));
   EXPECT_EQ(static_cast<int>(stream_max_recv_window_size),

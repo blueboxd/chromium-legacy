@@ -34,8 +34,10 @@ class TasksComboboxModel;
 // Temporary interface to allow smooth migration from `TasksBubbleView` to
 // `GlanceablesTasksView`.
 class ASH_EXPORT GlanceablesTasksViewBase : public GlanceableTrayChildBubble {
+  METADATA_HEADER(GlanceablesTasksViewBase, GlanceableTrayChildBubble)
+
  public:
-  explicit GlanceablesTasksViewBase(DetailedViewDelegate* delegate);
+  GlanceablesTasksViewBase();
   GlanceablesTasksViewBase(const GlanceablesTasksViewBase&) = delete;
   GlanceablesTasksViewBase& operator=(const GlanceablesTasksViewBase&) = delete;
   ~GlanceablesTasksViewBase() override = default;
@@ -51,8 +53,7 @@ class ASH_EXPORT GlanceablesTasksView : public GlanceablesTasksViewBase,
  public:
   METADATA_HEADER(GlanceablesTasksView);
 
-  GlanceablesTasksView(DetailedViewDelegate* delegate,
-                       ui::ListModel<api::TaskList>* task_list);
+  explicit GlanceablesTasksView(const ui::ListModel<api::TaskList>* task_lists);
   GlanceablesTasksView(const GlanceablesTasksView&) = delete;
   GlanceablesTasksView& operator=(const GlanceablesTasksView&) = delete;
   ~GlanceablesTasksView() override;
@@ -82,7 +83,7 @@ class ASH_EXPORT GlanceablesTasksView : public GlanceablesTasksViewBase,
   void UpdateTasksList(const std::string& task_list_id,
                        const std::string& task_list_title,
                        bool initial_update,
-                       ui::ListModel<api::Task>* tasks);
+                       const ui::ListModel<api::Task>* tasks);
 
   // Announces text describing the task list state through a screen
   // reader, using `task_list_combo_box_view_` view accessibility helper.

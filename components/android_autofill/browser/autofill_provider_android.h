@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/android_autofill/browser/autofill_provider.h"
 #include "components/android_autofill/browser/autofill_provider_android_bridge.h"
+#include "components/android_autofill/browser/form_data_android.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -16,8 +17,6 @@ class WebContents;
 }
 
 namespace autofill {
-
-class FormDataAndroid;
 
 // Android implementation of AutofillProvider, it has one instance per
 // WebContents, this class is native peer of AutofillProvider.java.
@@ -74,10 +73,8 @@ class AutofillProviderAndroid : public AutofillProvider,
                                  const FormData& form,
                                  base::TimeTicks timestamp) override;
   void OnHidePopup(AndroidAutofillManager* manager) override;
-  // TODO(crbug.com/1479006): Remove the `manager_for_debugging` parameter.
-  void OnServerPredictionsAvailable(
-      AndroidAutofillManager* manager_for_debugging,
-      FormGlobalId form) override;
+  void OnServerPredictionsAvailable(AndroidAutofillManager& manager,
+                                    FormGlobalId form_id) override;
   void OnServerQueryRequestError(AndroidAutofillManager* manager,
                                  FormSignature form_signature) override;
 
@@ -129,6 +126,30 @@ class AutofillProviderAndroid : public AutofillProvider,
 
   void Reset();
 
+  // Returns a new session id. Session ids are required when creating a
+  // `FormDataAndroid` object and used to generate virtual ids that identify
+  // form fields uniquely to the Android Autofill framework.
+  SessionId GetSessionId();
+
+  // Returns whether prefill requests are supported. This depends on the
+  // Android version.
+  bool ArePrefillRequestsSupported() const;
+
+  // Sends a prefill request to the Autofill framework if all the below
+  // conditions are met:
+  // 1. Prefill requests are supported (correct SDK version & feature flag).
+  // 2. No prefill request has been sent so far, since the framework only
+  // supports caching a single form at a time.
+  // 3. There is no ongoing Autofill session. This is to ensure that the
+  // `onProvideAutofillStructure` callback from the framework does not confuse
+  // information requests for caching and for the current Autofill session.
+  // 4. The form is predicted to be a login form.
+  void MaybeSendPrefillRequest(const AndroidAutofillManager& manager,
+                               FormGlobalId form_id);
+
+  // The form for which a prefill request has been sent.
+  std::unique_ptr<FormDataAndroid> cached_form_;
+
   // The form of the current session (queried input or changed select box).
   std::unique_ptr<FormDataAndroid> form_;
 
@@ -155,6 +176,11 @@ class AutofillProviderAndroid : public AutofillProvider,
   bool check_submission_ = false;
   // Valid only if check_submission_ is true.
   mojom::SubmissionSource pending_submission_source_;
+
+  static constexpr SessionId kMinimumSessionId = SessionId(1);
+  static constexpr SessionId kMaximumSessionId = SessionId(0xffff);
+  // The last assigned session id.
+  SessionId last_session_id_ = kMaximumSessionId;
 
   // The bridge for C++ <-> Java communication.
   std::unique_ptr<AutofillProviderAndroidBridge> bridge_;

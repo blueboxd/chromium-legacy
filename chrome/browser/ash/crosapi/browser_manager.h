@@ -248,6 +248,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
       const std::string& app_name,
       int32_t restore_window_id);
 
+  // Opens the profile manager window in lacros-chrome.
+  void OpenProfileManager();
+
   // Ensures Lacros launches.
   // Returns true if Lacros could be launched, resumed, or is already in the
   // process of launching. Returns false if Lacros could not be launched.
@@ -418,8 +421,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     // Lacros-chrome is loaded and ready for launching.
     STOPPED,
 
-    // Lacros-chrome is creating a new log file to log to.
-    CREATING_LOG_FILE,
+    // Params for the lacros-chrome are parepared on a background thread, and
+    // the device owner set up is being waited.
+    PREPARING_FOR_LAUNCH,
 
     // Lacros-chrome has been pre-launched at login screen, and it's waiting to
     // be unblocked post-login.

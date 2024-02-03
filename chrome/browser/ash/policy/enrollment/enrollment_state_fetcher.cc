@@ -14,21 +14,18 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
 #include "base/uuid.h"
 #include "base/values.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
-#include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_state.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
-#include "chrome/browser/ash/policy/enrollment/psm/rlwe_dmserver_client.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_sync_observation.h"
@@ -528,7 +525,7 @@ class EnrollmentState {
  public:
   struct Response {
     base::Value::Dict dict;
-    AutoEnrollmentState state = AutoEnrollmentState::kPending;
+    AutoEnrollmentState state;
   };
   using Result = base::expected<Response, AutoEnrollmentState>;
   using CompletionCallback = base::OnceCallback<void(Result)>;
@@ -978,10 +975,6 @@ class EnrollmentStateFetcherImpl::Sequence {
                            AutoEnrollmentState state) {
     std::string uma_suffix;
     switch (state) {
-      case AutoEnrollmentState::kIdle:
-      case AutoEnrollmentState::kPending:
-        NOTREACHED();
-        break;
       case AutoEnrollmentState::kConnectionError:
         uma_suffix = kUMASuffixConnectionError;
         break;
@@ -1014,8 +1007,6 @@ class EnrollmentStateFetcherImpl::Sequence {
   }
 
   void ReportResult(AutoEnrollmentState state) {
-    DCHECK(state != AutoEnrollmentState::kIdle);
-    DCHECK(state != AutoEnrollmentState::kPending);
     ReportTotalDuration(base::TimeTicks::Now() - fetch_started_, state);
     std::move(report_result_).Run(state);
   }

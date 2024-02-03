@@ -593,7 +593,47 @@ int Element::DefaultTabIndex() const {
   return -1;
 }
 
-bool Element::IsFocusableStyle() const {
+bool Element::IsFocusableStyle(UpdateBehavior update_behavior) const {
+  // TODO(vmpstr): Note that this may be called by accessibility during layout
+  // tree attachment, at which point we might not have cleared all of the dirty
+  // bits to ensure that the layout tree doesn't need an update. This should be
+  // fixable by deferring AX tree updates as a separate phase after layout tree
+  // attachment has happened. At that point `InStyleRecalc()` portion of the
+  // following DCHECK can be removed.
+
+  // In order to check focusable style, we use the existence of LayoutObjects
+  // as a proxy for determining whether the element would have a display mode
+  // that restricts visibility (such as display: none). However, with
+  // display-locking, it is possible that we deferred such LayoutObject
+  // creation. We need to ensure to update style and layout tree to have
+  // up-to-date information.
+  //
+  // Note also that there may be situations where focus / keyboard navigation
+  // causes us to have dirty style, so we update StyleAndLayoutTreeForNode here.
+  // If the style and layout tree are clean, then this should be a quick
+  // operation. See crbug.com/1079385 for details.
+  //
+  // Also note that if this node is ignored due to a display lock for focus
+  // activation reason, we simply return false to avoid updating style & layout
+  // tree for this node.
+  absl::optional<DocumentLifecycle::DisallowTransitionScope> disallow_scope;
+  if (UNLIKELY(update_behavior == UpdateBehavior::kNoneForAccessibility)) {
+    DCHECK(!NeedsStyleRecalc()) << this;
+    disallow_scope.emplace(GetDocument().Lifecycle());
+  } else {
+    if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
+            *this, DisplayLockActivationReason::kUserFocus)) {
+      return false;
+    }
+    GetDocument().UpdateStyleAndLayoutTreeForNode(this,
+                                                  DocumentUpdateReason::kFocus);
+  }
+
+  DCHECK(
+      !GetDocument().IsActive() || GetDocument().InStyleRecalc() ||
+      !GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*this))
+      << *this;
+
   if (LayoutObject* layout_object = GetLayoutObject()) {
     return layout_object->StyleRef().IsFocusable();
   }
@@ -2167,6 +2207,7 @@ const AtomicString& Element::computedRole() {
   AXContext ax_context(document, ui::kAXModeBasic);
   document.View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kJavaScript);
+  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedRoleForNode(this);
 }
 
@@ -2185,6 +2226,7 @@ const AtomicString& Element::ComputedRoleNoLifecycleUpdate() {
   // Allocating the AXContext needs to not change lifecycle states.
   DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean)
       << " State was: " << document.Lifecycle().GetState();
+  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedRoleForNode(this);
 }
 
@@ -2196,6 +2238,7 @@ String Element::computedName() {
   AXContext ax_context(document, ui::kAXModeBasic);
   document.View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kJavaScript);
+  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedNameForNode(this);
 }
 
@@ -2214,6 +2257,7 @@ String Element::ComputedNameNoLifecycleUpdate() {
   // Allocating the AXContext needs to not change lifecycle states.
   DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean)
       << " State was: " << document.Lifecycle().GetState();
+  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedNameForNode(this);
 }
 
@@ -3102,6 +3146,7 @@ const ComputedStyle* Element::StyleForLayoutObject(
     // necessary if the animated property flipped back to the old style with no
     // change as the result.
     DCHECK(GetDocument().GetStyleEngine().InContainerQueryStyleRecalc() ||
+           GetDocument().GetStyleEngine().InPositionFallbackStyleRecalc() ||
            element_animations->CssAnimations().PendingUpdate().IsEmpty());
     element_animations->CssAnimations().ClearPendingUpdate();
   }
@@ -3166,7 +3211,8 @@ void Element::RecalcStyleForTraversalRootAncestor() {
 
 bool Element::SkipStyleRecalcForContainer(
     const ComputedStyle& style,
-    const StyleRecalcChange& child_change) {
+    const StyleRecalcChange& child_change,
+    const StyleRecalcContext& style_recalc_context) {
   if (!GetDocument().GetStyleEngine().SkipStyleRecalcAllowed()) {
     return false;
   }
@@ -3200,6 +3246,12 @@ bool Element::SkipStyleRecalcForContainer(
   // reach the box for ::backdrop during layout. Don't skip style recalc for
   // children of containers in the top layer for this reason.
   if (style.IsRenderedInTopLayer(*this)) {
+    return false;
+  }
+
+  // We are both a size container and trying to compute position-fallback styles
+  // from layout. Our children should be the first opportunity to skip recalc.
+  if (style_recalc_context.position_fallback) {
     return false;
   }
 
@@ -3314,6 +3366,7 @@ void Element::RecalcStyle(const StyleRecalcChange change,
   }
 
   StyleRecalcContext child_recalc_context = local_style_recalc_context;
+  child_recalc_context.position_fallback = nullptr;
 
   if (const ComputedStyle* style = GetComputedStyle()) {
     if (style->CanMatchSizeContainerQueries(*this)) {
@@ -3332,7 +3385,8 @@ void Element::RecalcStyle(const StyleRecalcChange change,
               cq_data->ClearAndReturnRecalcChangeForChildren().Combine(
                   child_change);
         }
-      } else if (SkipStyleRecalcForContainer(*style, child_change)) {
+      } else if (SkipStyleRecalcForContainer(*style, child_change,
+                                             style_recalc_context)) {
         return;
       }
     }
@@ -3531,10 +3585,8 @@ StyleRecalcChange Element::RecalcOwnStyle(
   DCHECK(GetDocument().InStyleRecalc());
 
   StyleRecalcContext new_style_recalc_context = style_recalc_context;
-  if ((change.RecalcChildren() ||
-       change.RecalcContainerQueryDependent(*this)) &&
-      NeedsStyleRecalc()) {
-    if (HasRareData()) {
+  if (change.RecalcChildren() || change.RecalcContainerQueryDependent(*this)) {
+    if (NeedsStyleRecalc() && HasRareData()) {
       // This element needs recalc because its parent changed inherited
       // properties or there was some style change in the ancestry which needed
       // a full subtree recalc. In that case we cannot use the BaseComputedStyle
@@ -3543,8 +3595,17 @@ StyleRecalcChange Element::RecalcOwnStyle(
               GetElementRareData()->GetElementAnimations()) {
         element_animations->SetAnimationStyleChange(false);
       }
+      // We can not apply the style incrementally if we're propagating
+      // inherited changes from the parent, as incremental styling would
+      // not include those changes. (Incremental styling is disabled by
+      // default.)
     }
-    new_style_recalc_context.parent_forces_recalc = true;
+  } else {
+    // We are not propagating inherited changes from the parent,
+    // and (if other circumstances allow it;
+    // see CanApplyInlineStyleIncrementally()), incremental style
+    // may be used.
+    new_style_recalc_context.can_use_incremental_style = true;
   }
 
   const ComputedStyle* new_style = nullptr;
@@ -3710,23 +3771,21 @@ StyleRecalcChange Element::RecalcOwnStyle(
               break;
           }
         }
-        if (RuntimeEnabledFeatures::CSSStyleQueriesEnabled()) {
-          if (diff != ComputedStyle::Difference::kEqual &&
-              (!base::ValuesEquivalent(old_style->InheritedVariables(),
-                                       new_style->InheritedVariables()) ||
-               !base::ValuesEquivalent(old_style->NonInheritedVariables(),
-                                       new_style->NonInheritedVariables()))) {
-            switch (evaluator->StyleContainerChanged()) {
-              case ContainerQueryEvaluator::Change::kNone:
-                break;
-              case ContainerQueryEvaluator::Change::kNearestContainer:
-                child_change = child_change.ForceRecalcStyleContainerChildren();
-                break;
-              case ContainerQueryEvaluator::Change::kDescendantContainers:
-                child_change =
-                    child_change.ForceRecalcStyleContainerDescendants();
-                break;
-            }
+        if (diff != ComputedStyle::Difference::kEqual &&
+            (!base::ValuesEquivalent(old_style->InheritedVariables(),
+                                     new_style->InheritedVariables()) ||
+             !base::ValuesEquivalent(old_style->NonInheritedVariables(),
+                                     new_style->NonInheritedVariables()))) {
+          switch (evaluator->StyleContainerChanged()) {
+            case ContainerQueryEvaluator::Change::kNone:
+              break;
+            case ContainerQueryEvaluator::Change::kNearestContainer:
+              child_change = child_change.ForceRecalcStyleContainerChildren();
+              break;
+            case ContainerQueryEvaluator::Change::kDescendantContainers:
+              child_change =
+                  child_change.ForceRecalcStyleContainerDescendants();
+              break;
           }
         }
       }
@@ -4097,7 +4156,7 @@ bool Element::RecalcSelfOrAncestorHasDirAuto() {
   }
   if (ShadowRoot* shadow_root = DynamicTo<ShadowRoot>(parent)) {
     if (TextControlElement* text_element =
-            HTMLElement::ElementIfAutoDirShouldUseValueOrNull(
+            HTMLElement::ElementIfAutoDirectionalityFormAssociatedOrNull(
                 &shadow_root->host())) {
       if (text_element->HasDirectionAuto()) {
         return true;
@@ -4110,7 +4169,7 @@ bool Element::RecalcSelfOrAncestorHasDirAuto() {
 void Element::UpdateDescendantHasDirAutoAttribute(bool has_dir_auto) {
   if (RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
     if (ToHTMLSlotElementIfSupportsAssignmentOrNull(this) ||
-        HTMLElement::ElementIfAutoDirShouldUseValueOrNull(this)) {
+        HTMLElement::ElementIfAutoDirectionalityFormAssociatedOrNull(this)) {
       for (Node& node : FlatTreeTraversal::ChildrenOf(*this)) {
         if (Element* element = DynamicTo<Element>(node)) {
           if (!element->IsHTMLElement() ||
@@ -4216,7 +4275,7 @@ absl::optional<TextDirection> Element::ResolveAutoDirectionality(
 
   is_deferred = false;
   if (const TextControlElement* text_element =
-          HTMLElement::ElementIfAutoDirShouldUseValueOrNull(this)) {
+          HTMLElement::ElementIfAutoDirectionalityFormAssociatedOrNull(this)) {
     return BidiParagraph::BaseDirectionForStringOrLtr(text_element->Value());
   }
 
@@ -4349,15 +4408,8 @@ void Element::AdjustDirectionalityIfNeededAfterChildrenChanged(
     }
     stay_within = change.sibling_changed;
   } else if (change.IsChildInsertion()) {
-    if (change.sibling_changed->IsTextNode()) {
-      const absl::optional<TextDirection> new_text_direction =
-          BidiParagraph::BaseDirectionForString(
-              change.sibling_changed->textContent(true));
-      if (!new_text_direction ||
-          (*new_text_direction == CachedDirectionality() &&
-           !DirAutoInheritsFromParent())) {
-        return;
-      }
+    if (!ShouldAdjustDirectionalityForInsert(change)) {
+      return;
     }
     stay_within = change.sibling_changed;
   }
@@ -4385,6 +4437,32 @@ void Element::AdjustDirectionalityIfNeededAfterChildrenChanged(
       }
     }
   }
+}
+
+bool Element::ShouldAdjustDirectionalityForInsert(
+    const ChildrenChange& change) const {
+  if (change.type ==
+      ChildrenChangeType::kFinishedBuildingDocumentFragmentTree) {
+    for (Node& child : NodeTraversal::ChildrenOf(*this)) {
+      if (!DoesChildTextNodesDirectionMatchThis(child)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  return !DoesChildTextNodesDirectionMatchThis(*change.sibling_changed);
+}
+
+bool Element::DoesChildTextNodesDirectionMatchThis(const Node& node) const {
+  if (node.IsTextNode()) {
+    const absl::optional<TextDirection> new_text_direction =
+        BidiParagraph::BaseDirectionForString(node.textContent(true));
+    if (!new_text_direction || (*new_text_direction == CachedDirectionality() &&
+                                !DirAutoInheritsFromParent())) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void Element::UpdateAncestorWithDirAuto(UpdateAncestorTraversal traversal) {
@@ -4430,7 +4508,7 @@ void Element::UpdateAncestorWithDirAuto(UpdateAncestorTraversal traversal) {
     if (ShadowRoot* shadow_root =
             DynamicTo<ShadowRoot>(element_to_adjust->parentNode())) {
       if (TextControlElement* text_control =
-              HTMLElement::ElementIfAutoDirShouldUseValueOrNull(
+              HTMLElement::ElementIfAutoDirectionalityFormAssociatedOrNull(
                   &shadow_root->host())) {
         if (text_control->HasDirectionAuto() &&
             text_control->CalculateAndAdjustAutoDirectionality(text_control)) {
@@ -4574,6 +4652,12 @@ struct Element::AffectedByPseudoStateChange {
         children_or_siblings = element.ChildrenOrSiblingsAffectedByActive();
         ancestors_or_siblings =
             element.AncestorsOrSiblingsAffectedByActiveInHas();
+        break;
+      case CSSSelector::kPseudoActiveViewTransition:
+        children_or_siblings =
+            element.ChildrenOrSiblingsAffectedByActiveViewTransition();
+        ancestors_or_siblings =
+            element.AncestorsOrSiblingsAffectedByActiveViewTransitionInHas();
         break;
       default:
         // Activate :has() invalidation for all allowed pseudo classes.
@@ -5809,15 +5893,13 @@ void Element::SetFocused(bool received, mojom::blink::FocusType focus_type) {
   }
   PseudoStateChanged(CSSSelector::kPseudoFocus);
 
-  if (RuntimeEnabledFeatures::CSSFocusVisibleEnabled()) {
-    if (!ChildrenOrSiblingsAffectedByFocusVisible()) {
-      SetNeedsStyleRecalc(kLocalStyleChange,
-                          StyleChangeReasonForTracing::CreateWithExtraData(
-                              style_change_reason::kPseudoClass,
-                              style_change_extra_data::g_focus_visible));
-    }
-    PseudoStateChanged(CSSSelector::kPseudoFocusVisible);
+  if (!ChildrenOrSiblingsAffectedByFocusVisible()) {
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::CreateWithExtraData(
+                            style_change_reason::kPseudoClass,
+                            style_change_extra_data::g_focus_visible));
   }
+  PseudoStateChanged(CSSSelector::kPseudoFocusVisible);
 
   if (!ChildrenOrSiblingsAffectedByFocusWithin()) {
     SetNeedsStyleRecalc(kLocalStyleChange,
@@ -5992,33 +6074,24 @@ bool Element::SupportsSpatialNavigationFocus() const {
           HasEventListeners(event_type_names::kFocusout));
 }
 
-bool Element::IsFocusableStyleAfterUpdate() const {
-  // In order to check focusable style, we use the existence of LayoutObjects
-  // as a proxy for determining whether the element would have a display mode
-  // that restricts visibility (such as display: none). However, with
-  // display-locking, it is possible that we deferred such LayoutObject
-  // creation. We need to ensure to update style and layout tree to have
-  // up-to-date information.
-  //
-  // Note also that there may be situations where focus / keyboard navigation
-  // causes us to have dirty style, so we update StyleAndLayoutTreeForNode here.
-  // If the style and layout tree are clean, then this should be a quick
-  // operation. See crbug.com/1079385 for details.
-  //
-  // Note that this isn't a part of `IsFocusableStyle()` because there are
-  // callers of that function which cannot do a layout tree update (e.g.
-  // accessibility).
-  //
-  // Also note that if this node is ignored due to a display lock for focus
-  // activation reason, we simply return false to avoid updating style & layout
-  // tree for this node.
-  if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
-          *this, DisplayLockActivationReason::kUserFocus)) {
+bool Element::CanBeKeyboardFocusableScroller(
+    UpdateBehavior update_behavior) const {
+  if (!RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled()) {
     return false;
   }
-  GetDocument().UpdateStyleAndLayoutTreeForNode(this,
-                                                DocumentUpdateReason::kFocus);
-  return IsFocusableStyle();
+  // A node is scrollable depending on its layout size. As such, it is important
+  // to have up to date style and layout before calling IsScrollableNode.
+  // However, for a11y code, layout updates should not be performed here.
+  absl::optional<DocumentLifecycle::DisallowTransitionScope> disallow_scope;
+  if (UNLIKELY(update_behavior == UpdateBehavior::kNoneForAccessibility)) {
+    disallow_scope.emplace(GetDocument().Lifecycle());
+  } else {
+    auto* box = GetLayoutObject();
+    if (box && box->NeedsLayout()) {
+      GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kFocus);
+    }
+  }
+  return IsScrollableNode(this);
 }
 
 // This can be slow, because it can require a tree walk. It might be
@@ -6026,9 +6099,9 @@ bool Element::IsFocusableStyleAfterUpdate() const {
 // recompute it. That would require marking that bit dirty whenever
 // a node in the subtree was mutated, or when styles for the subtree
 // were recomputed.
-bool Element::IsScrollableContainerThatShouldBeKeyboardFocusable() const {
-  if (!RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() ||
-      !IsScrollableNode(this)) {
+bool Element::IsKeyboardFocusableScroller(
+    UpdateBehavior update_behavior) const {
+  if (!CanBeKeyboardFocusableScroller(update_behavior)) {
     return false;
   }
   // This condition is to avoid clearing the focus in the middle of a
@@ -6041,7 +6114,7 @@ bool Element::IsScrollableContainerThatShouldBeKeyboardFocusable() const {
   for (Node* node = FlatTreeTraversal::FirstChild(*this); node;
        node = FlatTreeTraversal::Next(*node, this)) {
     if (Element* element = DynamicTo<Element>(node)) {
-      if (element->IsKeyboardFocusable()) {
+      if (element->IsKeyboardFocusable(update_behavior)) {
         return false;
       }
     }
@@ -6049,33 +6122,23 @@ bool Element::IsScrollableContainerThatShouldBeKeyboardFocusable() const {
   return true;
 }
 
-bool Element::IsKeyboardFocusable() const {
-  if (!Element::IsFocusable()) {
+bool Element::IsKeyboardFocusable(UpdateBehavior update_behavior) const {
+  if (!Element::IsFocusable(update_behavior)) {
     return false;
   }
-  // Note that IsScrollableContainerThatShouldBeKeyboardFocusable() will get
+  // Note that IsKeyboardFocusableScroller() will get
   // called twice, once in IsFocusable (via SupportsFocus) and the other
-  // here. Note that IsScrollableContainerThatShouldBeKeyboardFocusable is slow.
+  // here. Note that IsKeyboardFocusableScroller is slow.
   return GetIntegralAttribute(html_names::kTabindexAttr, 0) >= 0 ||
-         IsScrollableContainerThatShouldBeKeyboardFocusable();
+         IsKeyboardFocusableScroller(update_behavior);
 }
 
-bool Element::IsFocusableStyleNeverLayoutForAccessibilityOnly() const {
-  DCHECK(!NeedsStyleRecalc()) << this;
-  DocumentLifecycle::DisallowTransitionScope scope(GetDocument().Lifecycle());
-  return IsFocusableStyle();
+bool Element::IsFocusable(UpdateBehavior update_behavior) const {
+  return isConnected() && IsFocusableStyle(update_behavior) &&
+         SupportsFocus(update_behavior);
 }
 
-bool Element::IsFocusable(
-    bool disallow_layout_updates_for_accessibility_only) const {
-  if (UNLIKELY(disallow_layout_updates_for_accessibility_only)) {
-    return isConnected() && IsFocusableStyleNeverLayoutForAccessibilityOnly() &&
-           SupportsFocus();
-  }
-  return isConnected() && IsFocusableStyleAfterUpdate() && SupportsFocus();
-}
-
-bool Element::SupportsFocus() const {
+bool Element::SupportsFocus(UpdateBehavior update_behavior) const {
   // SupportsFocus must return true when the element is editable, or else
   // it won't be focusable. Furthermore, supportsFocus cannot just return true
   // always or else tabIndex() will change for all HTML elements.
@@ -6085,7 +6148,7 @@ bool Element::SupportsFocus() const {
 
   return HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly) ||
          IsRootEditableElementWithCounting(*this) ||
-         IsScrollableContainerThatShouldBeKeyboardFocusable() ||
+         IsKeyboardFocusableScroller(update_behavior) ||
          SupportsSpatialNavigationFocus();
 }
 
@@ -6122,9 +6185,6 @@ void Element::FocusStateChanged() {
 }
 
 void Element::FocusVisibleStateChanged() {
-  if (!RuntimeEnabledFeatures::CSSFocusVisibleEnabled()) {
-    return;
-  }
   StyleChangeType change_type =
       GetComputedStyle()->HasPseudoElementStyle(kPseudoIdFirstLetter)
           ? kSubtreeStyleChange
@@ -6135,6 +6195,17 @@ void Element::FocusVisibleStateChanged() {
                           style_change_extra_data::g_focus_visible));
 
   PseudoStateChanged(CSSSelector::kPseudoFocusVisible);
+}
+
+void Element::ActiveViewTransitionStateChanged() {
+  if (!RuntimeEnabledFeatures::ViewTransitionTypesEnabled()) {
+    return;
+  }
+  SetNeedsStyleRecalc(kLocalStyleChange,
+                      StyleChangeReasonForTracing::CreateWithExtraData(
+                          style_change_reason::kPseudoClass,
+                          style_change_extra_data::g_active_view_transition));
+  PseudoStateChanged(CSSSelector::kPseudoActiveViewTransition);
 }
 
 void Element::FocusWithinStateChanged() {
@@ -6301,6 +6372,17 @@ bool Element::AncestorsOrSiblingsAffectedByHoverInHas() const {
 
 void Element::SetAncestorsOrSiblingsAffectedByHoverInHas() {
   EnsureElementRareData().SetAncestorsOrSiblingsAffectedByHoverInHas();
+}
+
+bool Element::AncestorsOrSiblingsAffectedByActiveViewTransitionInHas() const {
+  return HasRareData() &&
+         GetElementRareData()
+             ->AncestorsOrSiblingsAffectedByActiveViewTransitionInHas();
+}
+
+void Element::SetAncestorsOrSiblingsAffectedByActiveViewTransitionInHas() {
+  EnsureElementRareData()
+      .SetAncestorsOrSiblingsAffectedByActiveViewTransitionInHas();
 }
 
 bool Element::AncestorsOrSiblingsAffectedByActiveInHas() const {
@@ -7862,14 +7944,6 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
       // would not change, but the layout object order may have.
       SetForceReattachLayoutTree();
     }
-
-    if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
-      // Needs a style recalc to update the overlay property in
-      // StyleAdjuster.
-      SetNeedsStyleRecalc(
-          kLocalStyleChange,
-          StyleChangeReasonForTracing::Create(style_change_reason::kTopLayer));
-    }
   }
 }
 
@@ -8677,19 +8751,17 @@ void Element::UpdatePresentationAttributeStyle() {
   element_data.presentation_attribute_style_ =
       ComputePresentationAttributeStyle(*this);
 
-  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(GetExecutionContext())) {
-    // We could do this in CreatePresentationAttributeStyle or
-    // HTMLElement::CollectStyleForPresentationAttribute when we actually
-    // iterate over attributes, but the presentational style gets cached so
-    // those functions aren't necessarily called every time. This function
-    // actually gets called every time, so we must do this check here.
-    AttributeCollection attributes = AttributesWithoutUpdate();
-    auto* hidden_attr = attributes.Find(html_names::kHiddenAttr);
-    if (hidden_attr && hidden_attr->Value() == "until-found") {
-      EnsureDisplayLockContext().SetIsHiddenUntilFoundElement(true);
-    } else if (DisplayLockContext* context = GetDisplayLockContext()) {
-      context->SetIsHiddenUntilFoundElement(false);
-    }
+  // We could do this in CreatePresentationAttributeStyle or
+  // HTMLElement::CollectStyleForPresentationAttribute when we actually iterate
+  // over attributes, but the presentational style gets cached so those
+  // functions aren't necessarily called every time. This function actually gets
+  // called every time, so we must do this check here.
+  AttributeCollection attributes = AttributesWithoutUpdate();
+  auto* hidden_attr = attributes.Find(html_names::kHiddenAttr);
+  if (hidden_attr && hidden_attr->Value() == "until-found") {
+    EnsureDisplayLockContext().SetIsHiddenUntilFoundElement(true);
+  } else if (DisplayLockContext* context = GetDisplayLockContext()) {
+    context->SetIsHiddenUntilFoundElement(false);
   }
 }
 
@@ -9105,10 +9177,34 @@ bool Element::checkVisibility(CheckVisibilityOptions* options) const {
     UseCounter::Count(GetDocument(),
                       WebFeature::kElementCheckVisibilityOptionCheckOpacity);
   }
+  if (options->contentVisibilityAuto()) {
+    UseCounter::Count(
+        GetDocument(),
+        WebFeature::kElementCheckVisibilityOptionContentVisibilityAuto);
+  }
+  if (options->opacityProperty()) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kElementCheckVisibilityOptionOpacityProperty);
+  }
+  if (options->visibilityProperty()) {
+    UseCounter::Count(
+        GetDocument(),
+        WebFeature::kElementCheckVisibilityOptionVisibilityProperty);
+  }
 
-  // Unlock ancestor content-visibility:auto elements. If this element is
+  // If we're checking content-visibility: auto, then we can just check if we're
+  // display locked at all. This is because, content-visibility: hidden is
+  // always checked, so regardless of _why_ we're locked, the answer will be
+  // false if we're locked.
+  if (RuntimeEnabledFeatures::CheckVisibilityExtraPropertiesEnabled() &&
+      options->contentVisibilityAuto() &&
+      DisplayLockUtilities::IsDisplayLockedPreventingPaint(this)) {
+    return false;
+  }
+
+  // Now, unlock ancestor content-visibility:auto elements. If this element is
   // offscreen and locked due to content-visibility:auto, this method should not
-  // count that as invisible.
+  // count that as invisible. That's checked above.
   DisplayLockUtilities::ScopedForcedUpdate force_locks(
       this, DisplayLockContext::ForcedPhase::kStyleAndLayoutTree,
       /*include_self=*/false, /*only_cv_auto=*/true,
@@ -9125,7 +9221,9 @@ bool Element::checkVisibility(CheckVisibilityOptions* options) const {
   }
 
   DCHECK(options);
-  if (options->checkVisibilityCSS() &&
+  if ((options->checkVisibilityCSS() ||
+       (RuntimeEnabledFeatures::CheckVisibilityExtraPropertiesEnabled() &&
+        options->visibilityProperty())) &&
       style->Visibility() != EVisibility::kVisible) {
     return false;
   }
@@ -9143,7 +9241,9 @@ bool Element::checkVisibility(CheckVisibilityOptions* options) const {
       }
 
       // Check for opacity:0
-      if (options->checkOpacity()) {
+      if (options->checkOpacity() ||
+          (RuntimeEnabledFeatures::CheckVisibilityExtraPropertiesEnabled() &&
+           options->opacityProperty())) {
         if (style = ancestor_element->GetComputedStyle(); style) {
           if (style->Opacity() == 0.f) {
             return false;

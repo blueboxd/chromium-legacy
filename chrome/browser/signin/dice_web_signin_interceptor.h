@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/browser/signin/profile_separation_policies.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -79,16 +80,17 @@ class DiceWebSigninInterceptor : public KeyedService,
 
   // Called when an account has been added in Chrome from the web (using the
   // DICE protocol).
-  // |web_contents| is the tab where the signin event happened. It must belong
+  // `web_contents` is the tab where the signin event happened. It must belong
   // to the profile associated with this service. It may be nullptr if the tab
   // was closed.
-  // |is_new_account| is true if the account was not already in Chrome (i.e.
+  // `is_new_account` is true if the account was not already in Chrome (i.e.
   // this is not a reauth).
-  // |is_sync_signin| is true if the user is signing in with the intent of
+  // `is_sync_signin` is true if the user is signing in with the intent of
   // enabling sync for that account.
   // Virtual for testing.
   virtual void MaybeInterceptWebSignin(content::WebContents* web_contents,
                                        CoreAccountId account_id,
+                                       signin_metrics::AccessPoint access_point,
                                        bool is_new_account,
                                        bool is_sync_signin);
 
@@ -132,6 +134,8 @@ class DiceWebSigninInterceptor : public KeyedService,
   void Shutdown() override;
 
  private:
+  friend class DiceWebSigninInterceptorWithUnoEnabledBrowserTest;
+
   FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
                            ShouldShowProfileSwitchBubble);
   FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
@@ -192,6 +196,7 @@ class DiceWebSigninInterceptor : public KeyedService,
 
   // signin::IdentityManager::Observer:
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
+  void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
   // Called when one or more of the async info fetches times out.
   void OnInterceptionInfoFetchTimeout();
@@ -230,12 +235,21 @@ class DiceWebSigninInterceptor : public KeyedService,
   // Returns a 8-bit hash of the email that can be persisted.
   static std::string GetPersistentEmailHash(const std::string& email);
 
-  // Should be called when the user declines profile creation, in order to
-  // remember their decision. This information is stored in prefs. Only a hash
-  // of the email is saved, as Chrome does not need to store the actual email,
-  // but only need to compare emails. The hash has low entropy to ensure it
-  // cannot be reversed.
-  void RecordProfileCreationDeclined(const std::string& email);
+  // Should be called when the user declines the intercept bubble for the
+  // interested interception types, in order to remember their decision. This
+  // information is stored in prefs. Only a hash of the email is saved, as
+  // Chrome does not need to store the actual email, but only need to compare
+  // emails. The hash has low entropy to ensure it cannot be reversed.
+  // There should be a pref for each group of Interception types that are of
+  // interest:
+  // - `kMultiUser`, `kEnterprise`: for profile creation bubble.
+  // - `kChromeSignin`: for Chrome Signin bubble.
+  void UpdateDiceWebSigninInterceptDeclinedPref(const std::string& email);
+
+  // Records the number of times the user previously declined the Chrome Signin
+  // bubble when accepting it. Also resets the value in the prefs.
+  void RecordAndResetChromeSigninNumberOfAttemptsBeforeAccept(
+      const std::string& email);
 
   // Checks if the user previously declined 2 times creating a new profile for
   // this account.
@@ -286,6 +300,8 @@ class DiceWebSigninInterceptor : public KeyedService,
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>
       account_info_update_observation_{this};
+  signin_metrics::AccessPoint access_point_ =
+      signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
 
   // Timeout for waiting for full information to be available (see
   // `ProcessInterceptionOrWait()`).

@@ -18,6 +18,10 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 
+#if BUILDFLAG(IS_WIN)
+#include "ui/gfx/win/d3d_shared_fence.h"
+#endif
+
 namespace gpu {
 namespace {
 
@@ -75,7 +79,7 @@ SharedImageBacking::SharedImageBacking(
     uint32_t usage,
     size_t estimated_size,
     bool is_thread_safe,
-    absl::optional<gfx::BufferUsage> buffer_usage)
+    std::optional<gfx::BufferUsage> buffer_usage)
     : mailbox_(mailbox),
       format_(format),
       size_(size),
@@ -244,6 +248,13 @@ SharedImageBacking::ProduceLegacyOverlay(SharedImageManager* manager,
 }
 #endif
 
+#if BUILDFLAG(IS_WIN)
+void SharedImageBacking::UpdateExternalFence(
+    scoped_refptr<gfx::D3DSharedFence> external_fence) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+#endif
+
 void SharedImageBacking::UpdateEstimatedSize(size_t estimated_size_bytes) {
   if (estimated_size_bytes == estimated_size_)
     return;
@@ -384,7 +395,7 @@ ClearTrackingSharedImageBacking::ClearTrackingSharedImageBacking(
     uint32_t usage,
     size_t estimated_size,
     bool is_thread_safe,
-    absl::optional<gfx::BufferUsage> buffer_usage)
+    std::optional<gfx::BufferUsage> buffer_usage)
     : SharedImageBacking(mailbox,
                          format,
                          size,

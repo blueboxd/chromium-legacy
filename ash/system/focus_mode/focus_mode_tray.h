@@ -8,6 +8,7 @@
 #include "ash/system/focus_mode/focus_mode_controller.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/memory/raw_ptr.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 
 namespace ash {
 
@@ -20,6 +21,8 @@ class TrayBubbleWrapper;
 // button is clicked.
 class FocusModeTray : public TrayBackgroundView,
                       public FocusModeController::Observer {
+  METADATA_HEADER(FocusModeTray, TrayBackgroundView)
+
  public:
   explicit FocusModeTray(Shelf* shelf);
   FocusModeTray(const FocusModeTray&) = delete;
@@ -45,6 +48,7 @@ class FocusModeTray : public TrayBackgroundView,
   // FocusModeController::Observer:
   void OnFocusModeChanged(bool in_focus_session) override;
   void OnTimerTick() override;
+  void OnSessionDurationChanged() override;
 
  private:
   // Updates the image and color of the icon.
@@ -52,6 +56,9 @@ class FocusModeTray : public TrayBackgroundView,
 
   // Button click handler for shelf icon.
   void FocusModeIconActivated(const ui::Event& event);
+
+  // Calls `UpdateUI` on `countdown_view_` if it exists.
+  void MaybeUpdateCountdownViewUI();
 
   // Image view of the focus mode lamp.
   const raw_ptr<views::ImageView> image_view_;

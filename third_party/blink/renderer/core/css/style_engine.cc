@@ -141,7 +141,7 @@ enum RuleSetFlags {
   kFontPaletteValuesRules = 1 << 6,
   kPositionFallbackRules = 1 << 7,
   kFontFeatureValuesRules = 1 << 8,
-  kViewTransitionsRules = 1 << 9
+  kViewTransitionRules = 1 << 9
 };
 
 const unsigned kRuleSetFlagsAll = ~0u;
@@ -173,8 +173,8 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
     if (!rule_set->PositionFallbackRules().empty()) {
       flags |= kPositionFallbackRules;
     }
-    if (!rule_set->ViewTransitionsRules().empty()) {
-      flags |= kViewTransitionsRules;
+    if (!rule_set->ViewTransitionRules().empty()) {
+      flags |= kViewTransitionRules;
     }
   }
   return flags;
@@ -1869,7 +1869,8 @@ static bool FlagsCauseInvalidation(const MatchResult& result) {
   return result.HasFlag(MatchFlag::kAffectedByDrag) ||
          result.HasFlag(MatchFlag::kAffectedByFocusWithin) ||
          result.HasFlag(MatchFlag::kAffectedByHover) ||
-         result.HasFlag(MatchFlag::kAffectedByActive);
+         result.HasFlag(MatchFlag::kAffectedByActive) ||
+         result.HasFlag(MatchFlag::kAffectedByActiveViewTransition);
 }
 
 static bool AnyRuleCausesInvalidation(const MatchRequest& match_request,
@@ -2178,9 +2179,14 @@ void StyleEngine::ApplyRuleSetInvalidationForTreeScope(
   bool invalidate_part = false;
   if (auto* shadow_root = DynamicTo<ShadowRoot>(&node)) {
     Element& host = shadow_root->host();
+    // The SelectorFilter stack is set up for invalidating the tree
+    // under the host, which includes the host. When invalidating the
+    // host itself, we need to take it out so that the stack is consistent.
+    selector_filter.PopParent(host);
     ApplyRuleSetInvalidationForElement(tree_scope, host, selector_filter,
                                        style_scope_frame, rule_sets,
                                        /*is_shadow_host=*/true);
+    selector_filter.PushParent(host);
     if (host.GetStyleChangeType() == kSubtreeStyleChange) {
       return;
     }
@@ -2253,9 +2259,11 @@ void StyleEngine::ApplyRuleSetInvalidationForSubtree(
 
   if (invalidation_scope == kInvalidateAllScopes) {
     if (ShadowRoot* shadow_root = element.GetShadowRoot()) {
+      selector_filter.PushParent(element);
       ApplyRuleSetInvalidationForTreeScope(tree_scope, shadow_root->RootNode(),
                                            selector_filter, style_scope_frame,
                                            rule_sets, kInvalidateAllScopes);
+      selector_filter.PopParent(element);
     }
   }
 
@@ -2363,16 +2371,15 @@ RuleSet* StyleEngine::DefaultViewTransitionStyle() const {
       CSSDefaultStyleSheets::ScreenEval());
 }
 
-void StyleEngine::UpdateViewTransitionsOptIn() {
+void StyleEngine::UpdateViewTransitionOptIn() {
   bool cross_document_enabled = false;
 
   // TODO(https://crbug.com/1463966): This will likely need to change to a
   // CSSValueList if we want to support multiple tokens as a trigger.
-  if (view_transitions_rule_) {
-    if (const CSSValue* value =
-            view_transitions_rule_->GetNavigationTrigger()) {
-      cross_document_enabled = To<CSSIdentifierValue>(value)->GetValueID() ==
-                               CSSValueID::kCrossDocumentSameOrigin;
+  if (view_transition_rule_) {
+    if (const CSSValue* value = view_transition_rule_->GetNavigation()) {
+      cross_document_enabled =
+          To<CSSIdentifierValue>(value)->GetValueID() == CSSValueID::kAuto;
     }
   }
 
@@ -2788,11 +2795,11 @@ void StyleEngine::ApplyRuleSetChanges(
     MarkPositionFallbackStylesDirty();
   }
 
-  if (changed_rule_flags & kViewTransitionsRules) {
+  if (changed_rule_flags & kViewTransitionRules) {
     // Since a shadow-tree isn't an independent navigable, @view-transition
     // doesn't apply within one.
     if (tree_scope.RootNode().IsDocumentNode()) {
-      AddViewTransitionsRules(new_style_sheets);
+      AddViewTransitionRules(new_style_sheets);
     }
   }
 
@@ -3043,16 +3050,15 @@ bool StyleEngine::UserKeyframeStyleShouldOverride(
                                          new_rule->GetCascadeLayer()) <= 0;
 }
 
-void StyleEngine::AddViewTransitionsRules(
-    const ActiveStyleSheetVector& sheets) {
+void StyleEngine::AddViewTransitionRules(const ActiveStyleSheetVector& sheets) {
   if (!RuntimeEnabledFeatures::ViewTransitionOnNavigationEnabled()) {
     return;
   }
-  view_transitions_rule_.Clear();
+  view_transition_rule_.Clear();
 
   for (const ActiveStyleSheet& active_sheet : sheets) {
     RuleSet* rule_set = active_sheet.second;
-    if (!rule_set || rule_set->ViewTransitionsRules().empty()) {
+    if (!rule_set || rule_set->ViewTransitionRules().empty()) {
       continue;
     }
 
@@ -3060,17 +3066,16 @@ void StyleEngine::AddViewTransitionsRules(
         document_->GetScopedStyleResolver()
             ? document_->GetScopedStyleResolver()->GetCascadeLayerMap()
             : nullptr;
-    for (auto& rule : rule_set->ViewTransitionsRules()) {
-      if (!view_transitions_rule_ || !layer_map ||
-          layer_map->CompareLayerOrder(
-              view_transitions_rule_->GetCascadeLayer(),
-              rule->GetCascadeLayer()) <= 0) {
-        view_transitions_rule_ = rule;
+    for (auto& rule : rule_set->ViewTransitionRules()) {
+      if (!view_transition_rule_ || !layer_map ||
+          layer_map->CompareLayerOrder(view_transition_rule_->GetCascadeLayer(),
+                                       rule->GetCascadeLayer()) <= 0) {
+        view_transition_rule_ = rule;
       }
     }
   }
 
-  UpdateViewTransitionsOptIn();
+  UpdateViewTransitionOptIn();
 }
 
 void StyleEngine::AddFontPaletteValuesRules(const RuleSet& rule_set) {
@@ -3427,6 +3432,43 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
       container.GetLayoutObject());
 }
 
+void StyleEngine::UpdateStyleForPositionFallback(
+    Element& element,
+    const ScopedCSSName* position_fallback,
+    unsigned position_fallback_index) {
+  base::AutoReset<bool> pf_recalc(&in_position_fallback_style_recalc_, true);
+
+  UpdateViewportSize();
+
+  StyleRecalcContext style_recalc_context =
+      StyleRecalcContext::FromAncestors(element);
+  style_recalc_context.position_fallback = position_fallback;
+  style_recalc_context.position_fallback_index = position_fallback_index;
+
+  StyleRecalcChange change = StyleRecalcChange().ForceRecalcChildren();
+
+  if (auto* pseudo_element = DynamicTo<PseudoElement>(element)) {
+    RecalcPositionFallbackStyleForPseudoElement(*pseudo_element, change,
+                                                style_recalc_context);
+  } else {
+    element.SetChildNeedsStyleRecalc();
+    style_recalc_root_.Update(nullptr, &element);
+    RecalcStyle(change, style_recalc_context);
+  }
+}
+
+bool StyleEngine::HasTryRule(Element& element,
+                             const ScopedCSSName* position_fallback,
+                             unsigned position_fallback_index) {
+  DCHECK(position_fallback);
+  StyleRulePositionFallback* position_fallback_rule =
+      GetStyleResolver().ResolvePositionFallbackRule(
+          position_fallback->GetTreeScope(), position_fallback->GetName());
+  return position_fallback_rule &&
+         (position_fallback_index <
+          position_fallback_rule->ChildRules().size());
+}
+
 void StyleEngine::RecalcStyle(StyleRecalcChange change,
                               const StyleRecalcContext& style_recalc_context) {
   DCHECK(GetDocument().documentElement());
@@ -3450,6 +3492,18 @@ void StyleEngine::RecalcStyle(StyleRecalcChange change,
   if (!parent || IsA<HTMLBodyElement>(root_element)) {
     PropagateWritingModeAndDirectionToHTMLRoot();
   }
+}
+
+void StyleEngine::RecalcPositionFallbackStyleForPseudoElement(
+    PseudoElement& pseudo_element,
+    const StyleRecalcChange style_recalc_change,
+    const StyleRecalcContext& style_recalc_context) {
+  ScriptForbiddenScope forbid_script;
+  SkipStyleRecalcScope skip_scope(*this);
+  CheckPseudoHasCacheScope check_pseudo_has_cache_scope(&GetDocument());
+  SelectorFilterRootScope filter_scope(
+      FlatTreeTraversal::ParentElement(*pseudo_element.OriginatingElement()));
+  pseudo_element.RecalcStyle(style_recalc_change, style_recalc_context);
 }
 
 void StyleEngine::RecalcTransitionPseudoStyle() {
@@ -4131,7 +4185,7 @@ void StyleEngine::Trace(Visitor* visitor) const {
   visitor->Trace(text_tracks_);
   visitor->Trace(vtt_originating_element_);
   visitor->Trace(parent_for_detached_subtree_);
-  visitor->Trace(view_transitions_rule_);
+  visitor->Trace(view_transition_rule_);
   visitor->Trace(style_image_cache_);
   visitor->Trace(fill_or_clip_path_uri_value_cache_);
   visitor->Trace(style_containment_scope_tree_);

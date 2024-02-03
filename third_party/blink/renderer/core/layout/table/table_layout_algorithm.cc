@@ -102,8 +102,8 @@ TableLayoutAlgorithm::CaptionResult LayoutCaption(
       caption.Layout(caption_constraint_space, break_token, early_break);
   DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
 
-  NGFragment fragment(table_constraint_space.GetWritingDirection(),
-                      layout_result->PhysicalFragment());
+  LogicalFragment fragment(table_constraint_space.GetWritingDirection(),
+                           layout_result->PhysicalFragment());
   ResolveInlineAutoMargins(caption.Style(), table_style, table_inline_size,
                            fragment.InlineSize(), &margins);
 
@@ -160,8 +160,8 @@ void ComputeCaptionFragments(
     TableLayoutAlgorithm::CaptionResult caption_result =
         LayoutCaption(table_constraint_space, table_style, table_inline_size,
                       caption_constraint_space, caption, margins);
-    NGFragment fragment(table_constraint_space.GetWritingDirection(),
-                        caption_result.layout_result->PhysicalFragment());
+    LogicalFragment fragment(table_constraint_space.GetWritingDirection(),
+                             caption_result.layout_result->PhysicalFragment());
     captions_block_size +=
         fragment.BlockSize() + caption_result.margins.BlockSum();
     if (captions)
@@ -371,15 +371,6 @@ class ColumnGeometriesBuilder {
                                     column_locations[end_column_index].size -
                                     column_locations[start_column_index].offset;
 
-    if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
-      col.GetLayoutBox()->SetLogicalWidth(column_inline_size);
-      // Table column block-size is only set when at the last table box
-      // fragment.
-      if (table_column_block_size != kIndefiniteSize) {
-        col.GetLayoutBox()->SetLogicalHeight(table_column_block_size);
-      }
-    }
-
     column_geometries.emplace_back(start_column_index, span,
                                    column_locations[start_column_index].offset -
                                        column_locations[0].offset,
@@ -399,15 +390,6 @@ class ColumnGeometriesBuilder {
     LayoutUnit colgroup_size = column_locations[last_column_index].offset +
                                column_locations[last_column_index].size -
                                column_locations[start_column_index].offset;
-
-    if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
-      colgroup.GetLayoutBox()->SetLogicalWidth(colgroup_size);
-      // Table column block-size is only set when at the last table box
-      // fragment.
-      if (table_column_block_size != kIndefiniteSize) {
-        colgroup.GetLayoutBox()->SetLogicalHeight(table_column_block_size);
-      }
-    }
 
     column_geometries.emplace_back(start_column_index, span,
                                    column_locations[start_column_index].offset -
@@ -443,13 +425,11 @@ class ColumnGeometriesBuilder {
                 }
               });
 
-    if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
-      wtf_size_t column_idx = 0;
-      for (const auto& col : column_geometries) {
-        To<LayoutTableColumn>(col.node.GetLayoutBox())
-            ->SetColumnIndex(column_idx);
-        column_idx++;
-      }
+    wtf_size_t column_idx = 0;
+    for (const auto& col : column_geometries) {
+      To<LayoutTableColumn>(col.node.GetLayoutBox())
+          ->SetColumnIndex(column_idx);
+      column_idx++;
     }
   }
 
@@ -735,7 +715,7 @@ MinMaxSizesResult TableLayoutAlgorithm::ComputeMinMaxSizes(
 
 const NGLayoutResult* TableLayoutAlgorithm::RelayoutAsLastTableBox() {
   DCHECK(!is_known_to_be_last_table_box_);
-  NGLayoutAlgorithmParams params(
+  LayoutAlgorithmParams params(
       Node(), container_builder_.InitialFragmentGeometry(), ConstraintSpace(),
       BreakToken(), /* early_break */ nullptr);
   TableLayoutAlgorithm algorithm(params);
@@ -976,8 +956,8 @@ const NGLayoutResult* TableLayoutAlgorithm::GenerateFragment(
         LogicalOffset(caption.margins.inline_start, *block_offset),
         caption.margins);
 
-    *block_offset += NGFragment(table_writing_direction,
-                                caption.layout_result->PhysicalFragment())
+    *block_offset += LogicalFragment(table_writing_direction,
+                                     caption.layout_result->PhysicalFragment())
                          .BlockSize() +
                      caption.margins.block_end;
   };
@@ -1385,7 +1365,7 @@ const NGLayoutResult* TableLayoutAlgorithm::GenerateFragment(
 
     const auto& physical_fragment =
         To<NGPhysicalBoxFragment>(child_result->PhysicalFragment());
-    NGBoxFragment fragment(table_writing_direction, physical_fragment);
+    LogicalBoxFragment fragment(table_writing_direction, physical_fragment);
     if (child.IsTableSection()) {
       if (!is_repeated_section) {
         has_entered_non_repeated_section = true;
@@ -1690,7 +1670,7 @@ const NGLayoutResult* TableLayoutAlgorithm::GenerateFragment(
                                    table_borders, table_grid_rect,
                                    column_block_size);
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   if (has_repeated_header && has_entered_table_box &&
       !table_box_will_continue && !is_known_to_be_last_table_box_) {

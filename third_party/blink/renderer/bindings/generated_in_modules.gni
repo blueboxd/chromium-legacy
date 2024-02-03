@@ -1936,8 +1936,6 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_entry.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_entry_sync.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_entry_sync.h",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_environment_integrity.cc",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_environment_integrity.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_event_source.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_event_source.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ext_blend_func_extended.cc",
@@ -3074,6 +3072,49 @@ if (target_os != "android") {
   ]
 }
 
+# Printing
+# This uses target_os rather than current_os (which is what is_android is set
+# from) for the case of generating the v8 context snapshot for Android. When
+# generating the snapshot for Android, Blink is compiled with
+# current_os = "linux" and target_os = "android". Using target_os is necessary as
+# we need to compile in the same way as would happen when current_os = "android".
+if (target_os != "android") {
+  generated_dictionary_sources_in_modules += [
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_range.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_range.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_resolution.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_resolution.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printer_attributes.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printer_attributes.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_print_document_description.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_print_document_description.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_print_job_template_attributes.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_print_job_template_attributes.h",
+  ]
+  generated_enumeration_sources_in_modules += [
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_mime_media_type.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_mime_media_type.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_multiple_document_handling.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_multiple_document_handling.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_orientation_requested.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_orientation_requested.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_resolution_units.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_resolution_units.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_sides.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_sides.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_print_quality.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_print_quality.h",
+  ]
+  generated_interface_sources_in_modules += [
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_manager.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printing_manager.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printer.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_printer.h",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_print_job.cc",
+    "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_web_print_job.h",
+  ]
+}
+
 # Serial
 # This uses target_os rather than current_os (which is what is_android is set
 # from) for the case of generating the v8 context snapshot for android. When
@@ -3231,6 +3272,8 @@ generated_dictionary_sources_for_testing_in_modules = [
 generated_enumeration_sources_for_testing_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_virtual_sensor_type.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_virtual_sensor_type.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_dialog_button.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_dialog_button.h",
 ]
 
 generated_interface_sources_for_testing_in_modules = [

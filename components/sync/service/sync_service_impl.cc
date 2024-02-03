@@ -205,19 +205,10 @@ SyncServiceImpl::SyncServiceImpl(InitParams init_params)
       crypto_(this, sync_client_->GetTrustedVaultClient()),
       url_loader_factory_(std::move(init_params.url_loader_factory)),
       network_connection_tracker_(init_params.network_connection_tracker),
-      is_first_time_sync_configure_(false),
-      sync_disabled_by_admin_(false),
-      expect_sync_configuration_aborted_(false),
       create_http_post_provider_factory_cb_(
           base::BindRepeating(&CreateHttpBridgeFactory)),
-      should_record_trusted_vault_error_shown_on_startup_(true),
       sync_poll_immediately_on_every_startup_(
-          init_params.sync_poll_immediately_on_every_startup),
-#if BUILDFLAG(IS_ANDROID)
-      sessions_invalidations_enabled_(false) {
-#else
-      sessions_invalidations_enabled_(true) {
-#endif
+          init_params.sync_poll_immediately_on_every_startup) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_client_);
   DCHECK(IsLocalSyncEnabled() || identity_manager_ != nullptr);
@@ -255,12 +246,7 @@ void SyncServiceImpl::Initialize() {
   // It's safe to pass a raw ptr, since SyncServiceImpl outlives
   // SyncUserSettingsImpl.
   user_settings_ = std::make_unique<SyncUserSettingsImpl>(
-      &crypto_, &sync_prefs_, sync_client_->GetPreferenceProvider(),
-      GetRegisteredDataTypes(),
-      base::BindRepeating(&SyncServiceImpl::GetSyncAccountStateForPrefs,
-                          base::Unretained(this)),
-      base::BindRepeating(&SyncServiceImpl::GetAccountInfo,
-                          base::Unretained(this)));
+      /*delegate=*/this, &crypto_, &sync_prefs_, GetRegisteredDataTypes());
 
   sync_prefs_observation_.Observe(&sync_prefs_);
 
@@ -1290,6 +1276,32 @@ std::string SyncServiceImpl::GetEncryptionBootstrapToken() const {
   return sync_prefs_.GetEncryptionBootstrapToken();
 }
 
+bool SyncServiceImpl::IsCustomPassphraseAllowed() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return sync_client_->IsCustomPassphraseAllowed();
+}
+
+SyncPrefs::SyncAccountState SyncServiceImpl::GetSyncAccountStateForPrefs()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Local sync does not require an actual signed in account to be running.
+  if (!IsSignedIn() && !IsLocalSyncEnabled()) {
+    return SyncPrefs::SyncAccountState::kNotSignedIn;
+  }
+  if (!IsSetupInProgress() && UseTransportOnlyMode()) {
+    // While the setup for Sync-the-feature is in progress, the account state
+    // should be syncing so that the user can properly select the types they
+    // want to sync.
+    return SyncPrefs::SyncAccountState::kSignedInNotSyncing;
+  }
+  return SyncPrefs::SyncAccountState::kSyncing;
+}
+
+CoreAccountInfo SyncServiceImpl::GetSyncAccountInfoForPrefs() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetAccountInfo();
+}
+
 bool SyncServiceImpl::IsSetupInProgress() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return outstanding_setup_in_progress_handles_ > 0;
@@ -1485,12 +1497,12 @@ void SyncServiceImpl::ConfigureDataTypeManager(ConfigureReason reason) {
   DVLOG(1) << "Started DataTypeManager configuration, reason: "
            << static_cast<int>(reason);
 
-  ConfigureContext configure_context;
-  configure_context.authenticated_account_id = GetAccountInfo().account_id;
-  configure_context.cache_guid = engine_->GetCacheGuid();
-  configure_context.sync_mode = SyncMode::kFull;
-  configure_context.reason = reason;
-  configure_context.configuration_start_time = base::Time::Now();
+  ConfigureContext configure_context = {
+      .authenticated_account_id = GetAccountInfo().account_id,
+      .cache_guid = engine_->GetCacheGuid(),
+      .sync_mode = SyncMode::kFull,
+      .reason = reason,
+      .configuration_start_time = base::Time::Now()};
 
   DCHECK(!configure_context.cache_guid.empty());
 
@@ -1574,21 +1586,6 @@ bool SyncServiceImpl::UseTransportOnlyMode() const {
   // Note: When local Sync is enabled, then we want full-sync mode (not just
   // transport), even though Sync-the-feature is not considered enabled.
   return !IsSyncFeatureEnabled() && !IsLocalSyncEnabled();
-}
-
-SyncPrefs::SyncAccountState SyncServiceImpl::GetSyncAccountStateForPrefs()
-    const {
-  // Local sync does not require an actual signed in account to be running.
-  if (!IsSignedIn() && !IsLocalSyncEnabled()) {
-    return SyncPrefs::SyncAccountState::kNotSignedIn;
-  }
-  if (!IsSetupInProgress() && UseTransportOnlyMode()) {
-    // While the setup for Sync-the-feature is in progress, the account state
-    // should be syncing so that the user can properly select the types they
-    // want to sync.
-    return SyncPrefs::SyncAccountState::kSignedInNotSyncing;
-  }
-  return SyncPrefs::SyncAccountState::kSyncing;
 }
 
 ModelTypeSet SyncServiceImpl::GetRegisteredDataTypes() const {

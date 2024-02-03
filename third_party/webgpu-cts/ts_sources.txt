@@ -44,12 +44,13 @@ src/common/runtime/helper/test_worker-worker.ts
 src/common/tools/checklist.ts
 src/common/tools/crawl.ts
 src/common/tools/dev_server.ts
+src/common/util/crc32.ts
+src/common/util/parse_imports.ts
 src/common/tools/gen_cache.ts
 src/common/tools/gen_listings.ts
 src/common/tools/gen_wpt_cts_html.ts
 src/common/tools/image_utils.ts
 src/common/tools/merge_listing_times.ts
-src/common/tools/presubmit.ts
 src/common/tools/run_wpt_ref_tests.ts
 src/common/tools/validate.ts
 src/common/tools/version.ts
@@ -84,8 +85,8 @@ src/webgpu/util/conversion.ts
 src/webgpu/util/device_pool.ts
 src/webgpu/util/texture/texel_data.ts
 src/webgpu/util/texture/texel_view.ts
-src/webgpu/util/texture.ts
 src/webgpu/util/texture/texture_ok.ts
+src/webgpu/util/texture.ts
 src/webgpu/gpu_test.ts
 src/stress/compute/compute_pass.spec.ts
 src/stress/device/bind_group_allocation.spec.ts
@@ -118,6 +119,7 @@ src/unittests/async_expectations.spec.ts
 src/unittests/basic.spec.ts
 src/unittests/check_contents.spec.ts
 src/unittests/conversion.spec.ts
+src/unittests/crc32.spec.ts
 src/webgpu/shader/execution/expression/case_cache.ts
 src/webgpu/util/compare.ts
 src/webgpu/shader/execution/expression/expression.ts
@@ -130,6 +132,7 @@ src/unittests/logger.spec.ts
 src/unittests/maths.spec.ts
 src/unittests/params_builder_and_utils.spec.ts
 src/unittests/params_builder_toplevel.spec.ts
+src/unittests/parse_imports.spec.ts
 src/unittests/preprocessor.spec.ts
 src/webgpu/util/prng.ts
 src/unittests/prng.spec.ts
@@ -333,7 +336,9 @@ src/webgpu/api/validation/texture/destroy.spec.ts
 src/webgpu/api/validation/texture/float32_filterable.spec.ts
 src/webgpu/api/validation/texture/rg11b10ufloat_renderable.spec.ts
 src/webgpu/compat/compatibility_test.ts
+src/webgpu/compat/api/validation/createBindGroup.spec.ts
 src/webgpu/compat/api/validation/encoding/cmds/copyTextureToBuffer.spec.ts
+src/webgpu/compat/api/validation/encoding/cmds/copyTextureToTexture.spec.ts
 src/webgpu/compat/api/validation/encoding/programmable/pipeline_bind_group_compat.spec.ts
 src/webgpu/compat/api/validation/render_pipeline/fragment_state.spec.ts
 src/webgpu/compat/api/validation/render_pipeline/shader_module.spec.ts

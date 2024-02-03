@@ -25,8 +25,17 @@ BASE_DECLARE_FEATURE(kDestroySystemProfiles);
 
 BASE_DECLARE_FEATURE(kDevToolsTabTarget);
 BASE_DECLARE_FEATURE(kDevToolsVeLogging);
+BASE_DECLARE_FEATURE(kDevToolsConsoleInsights);
+extern const base::FeatureParam<std::string> kDevToolsConsoleInsightsAidaScope;
+extern const base::FeatureParam<std::string>
+    kDevToolsConsoleInsightsAidaEndpoint;
+extern const base::FeatureParam<std::string> kDevToolsConsoleInsightsApiKey;
 
 BASE_DECLARE_FEATURE(kNukeProfileBeforeCreateMultiAsync);
+
+#if BUILDFLAG(IS_CHROMEOS)
+BASE_DECLARE_FEATURE(kPlatformKeysAesEncryption);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 BASE_DECLARE_FEATURE(kPromoBrowserCommands);
 extern const char kBrowserCommandIdParam[];
@@ -40,7 +49,6 @@ BASE_DECLARE_FEATURE(kDoubleTapToZoomInTabletMode);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-BASE_DECLARE_FEATURE(kCopyLinkToText);
 BASE_DECLARE_FEATURE(kMuteNotificationSnoozeAction);
 #endif
 
@@ -66,6 +74,7 @@ BASE_DECLARE_FEATURE(kKeyPinningComponentUpdater);
 #if BUILDFLAG(IS_WIN)
 BASE_DECLARE_FEATURE(kAppBoundEncryptionMetrics);
 BASE_DECLARE_FEATURE(kLockProfileCookieDatabase);
+BASE_DECLARE_FEATURE(kNoAppCompatClearInChildren);
 BASE_DECLARE_FEATURE(kNoPreReadMainDll);
 #endif
 
@@ -121,9 +130,7 @@ BASE_DECLARE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff);
 
 BASE_DECLARE_FEATURE(kOmniboxTriggerForNoStatePrefetch);
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 BASE_DECLARE_FEATURE(kPayloadTestComponent);
-#endif
 
 }  // namespace features
 

@@ -15,8 +15,8 @@
 namespace blink {
 
 TableSectionLayoutAlgorithm::TableSectionLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params) {}
+    const LayoutAlgorithmParams& params)
+    : LayoutAlgorithm(params) {}
 
 // Generated fragment structure:
 // +-----section--------------+
@@ -105,8 +105,8 @@ const NGLayoutResult* TableSectionLayoutAlgorithm::Layout() {
 
     const auto& physical_fragment =
         To<NGPhysicalBoxFragment>(row_result->PhysicalFragment());
-    const NGBoxFragment fragment(table_data.table_writing_direction,
-                                 physical_fragment);
+    const LogicalBoxFragment fragment(table_data.table_writing_direction,
+                                      physical_fragment);
 
     // TODO(crbug.com/736093): Due to inconsistent writing-direction of
     // table-parts these DCHECKs may fail. When the above bug is fixed use the
@@ -166,7 +166,7 @@ const NGLayoutResult* TableSectionLayoutAlgorithm::Layout() {
     DCHECK_EQ(status, NGBreakStatus::kContinue);
   }
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
   return container_builder_.ToBoxFragment();
 }
 

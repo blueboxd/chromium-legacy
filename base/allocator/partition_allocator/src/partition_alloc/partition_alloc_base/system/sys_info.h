@@ -7,11 +7,11 @@
 
 #include <cstdint>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
 
 namespace partition_alloc::internal::base {
 
-class PA_COMPONENT_EXPORT(PARTITION_ALLOC) SysInfo {
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) SysInfo {
  public:
   // Retrieves detailed numeric values for the OS version.
   // DON'T USE THIS ON THE MAC OR WINDOWS to determine the current OS release

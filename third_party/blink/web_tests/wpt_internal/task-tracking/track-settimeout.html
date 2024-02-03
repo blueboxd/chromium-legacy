@@ -73,7 +73,6 @@ promise_test(() => {
 }, "A long setTimeout microtask is a descendant of the dispatching task");
 
 promise_test(async () => {
-  let siblingId;
   const initialId = scheduler.taskId;
   await new Promise((resolve, reject) => setTimeout(() => {
     try {

@@ -97,6 +97,33 @@ try_.builder(
     tryjob = try_.job(),
 )
 
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
+try_.builder(
+    name = "fuchsia-binary-size-siso",
+    description_html = """\
+This builder shadows fuchsia-binary-size builder to compare between Siso builds and Ninja builds.<br/>
+This builder should be removed after migrating size from Ninja to Siso. b/277863839
+""",
+    executable = "recipe:binary_size_fuchsia_trybot",
+    builderless = False,
+    cores = 16,
+    contact_team_email = "chrome-build-team@google.com",
+    properties = {
+        "$build/binary_size": {
+            "analyze_targets": [
+                "//tools/fuchsia/size_tests:fuchsia_sizes",
+            ],
+            "compile_targets": [
+                "fuchsia_sizes",
+            ],
+        },
+    },
+    siso_enabled = True,
+    tryjob = try_.job(
+        experiment_percentage = 10,
+    ),
+)
+
 try_.builder(
     name = "fuchsia-compile-x64-dbg",
     mirrors = [
@@ -155,6 +182,7 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        "chromium.compilator_can_outlive_parent": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),

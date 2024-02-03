@@ -73,6 +73,37 @@ class PageNodeImpl
 
   ~PageNodeImpl() override;
 
+  // Partial PageNode implementation:
+  const std::string& GetBrowserContextID() const override;
+  resource_attribution::PageContext GetResourceContext() const override;
+  EmbeddingType GetEmbeddingType() const override;
+  PageType GetType() const override;
+  bool IsFocused() const override;
+  bool IsVisible() const override;
+  base::TimeDelta GetTimeSinceLastVisibilityChange() const override;
+  bool IsAudible() const override;
+  absl::optional<base::TimeDelta> GetTimeSinceLastAudibleChange()
+      const override;
+  bool HasPictureInPicture() const override;
+  LoadingState GetLoadingState() const override;
+  ukm::SourceId GetUkmSourceID() const override;
+  LifecycleState GetLifecycleState() const override;
+  bool IsHoldingWebLock() const override;
+  bool IsHoldingIndexedDBLock() const override;
+  int64_t GetNavigationID() const override;
+  const std::string& GetContentsMimeType() const override;
+  base::TimeDelta GetTimeSinceLastNavigation() const override;
+  const GURL& GetMainFrameUrl() const override;
+  uint64_t EstimateMainFramePrivateFootprintSize() const override;
+  bool HadFormInteraction() const override;
+  bool HadUserEdits() const override;
+  const WebContentsProxy& GetContentsProxy() const override;
+  const absl::optional<freezing::FreezingVote>& GetFreezingVote()
+      const override;
+  PageState GetPageState() const override;
+  uint64_t EstimateResidentSetSize() const override;
+  uint64_t EstimatePrivateFootprintSize() const override;
+
   // Returns the web contents associated with this page node. It is valid to
   // call this function on any thread but the weak pointer must only be
   // dereferenced on the UI thread.
@@ -98,36 +129,14 @@ class PageNodeImpl
                                       const GURL& url,
                                       const std::string& contents_mime_type);
 
-  // Returns 0 if no navigation has happened, otherwise returns the time since
-  // the last navigation commit.
-  base::TimeDelta TimeSinceLastNavigation() const;
-
-  // Returns the time since the last visibility change, it should always have a
-  // value since we set the visibility property when we create a
-  // page node.
-  base::TimeDelta TimeSinceLastVisibilityChange() const;
-
-  // Returns the time since the last audible change, or nullopt if the node has
-  // never been audible. If the node was audible on creation, returns the
-  // creation time.
-  absl::optional<base::TimeDelta> TimeSinceLastAudibleChange() const;
-
   // Returns the current main frame node (if there is one), otherwise returns
   // any of the potentially multiple main frames that currently exist. If there
   // are no main frames at the moment, returns nullptr.
   FrameNodeImpl* GetMainFrameNodeImpl() const;
 
   // Accessors.
-  const std::string& browser_context_id() const;
   FrameNodeImpl* opener_frame_node() const;
   FrameNodeImpl* embedder_frame_node() const;
-  resource_attribution::PageContext resource_context() const;
-  EmbeddingType embedding_type() const;
-  PageType type() const;
-  bool is_focused() const;
-  bool is_visible() const;
-  bool is_audible() const;
-  bool has_picture_in_picture() const;
   LoadingState loading_state() const;
   ukm::SourceId ukm_source_id() const;
   LifecycleState lifecycle_state() const;
@@ -139,7 +148,6 @@ class PageNodeImpl
   const std::string& contents_mime_type() const;
   bool had_form_interaction() const;
   bool had_user_edits() const;
-  const absl::optional<freezing::FreezingVote>& freezing_vote() const;
   PageState page_state() const;
 
   // Invoked to set/clear the opener of this page.
@@ -232,41 +240,12 @@ class PageNodeImpl
  private:
   friend class PageNodeImplDescriber;
 
-  // PageNode implementation.
-  PageState GetPageState() const override;
-  const std::string& GetBrowserContextID() const override;
+  // Partial PageNode implementation:
   const FrameNode* GetOpenerFrameNode() const override;
   const FrameNode* GetEmbedderFrameNode() const override;
-  resource_attribution::PageContext GetResourceContext() const override;
-  EmbeddingType GetEmbeddingType() const override;
-  PageType GetType() const override;
-  bool IsFocused() const override;
-  bool IsVisible() const override;
-  base::TimeDelta GetTimeSinceLastVisibilityChange() const override;
-  bool HasPictureInPicture() const override;
-  bool IsAudible() const override;
-  absl::optional<base::TimeDelta> GetTimeSinceLastAudibleChange()
-      const override;
-  LoadingState GetLoadingState() const override;
-  ukm::SourceId GetUkmSourceID() const override;
-  LifecycleState GetLifecycleState() const override;
-  bool IsHoldingWebLock() const override;
-  bool IsHoldingIndexedDBLock() const override;
-  int64_t GetNavigationID() const override;
-  const std::string& GetContentsMimeType() const override;
-  base::TimeDelta GetTimeSinceLastNavigation() const override;
   const FrameNode* GetMainFrameNode() const override;
   bool VisitMainFrameNodes(const FrameNodeVisitor& visitor) const override;
   const base::flat_set<const FrameNode*> GetMainFrameNodes() const override;
-  const GURL& GetMainFrameUrl() const override;
-  uint64_t EstimateMainFramePrivateFootprintSize() const override;
-  bool HadFormInteraction() const override;
-  bool HadUserEdits() const override;
-  const WebContentsProxy& GetContentsProxy() const override;
-  const absl::optional<freezing::FreezingVote>& GetFreezingVote()
-      const override;
-  uint64_t EstimateResidentSetSize() const override;
-  uint64_t EstimatePrivateFootprintSize() const override;
 
   // NodeBase:
   void OnJoiningGraph() override;

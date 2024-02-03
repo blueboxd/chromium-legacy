@@ -306,37 +306,6 @@ public final class ChromePreferenceKeys {
     public static final KeyPrefix FLAGS_FIELD_TRIAL_PARAM_CACHED =
             new KeyPrefix("Chrome.Flags.FieldTrialParamCached.*");
 
-    /**
-     * Whether or not the adaptive toolbar is enabled.
-     * Default value is true.
-     */
-    public static final String FLAGS_CACHED_ADAPTIVE_TOOLBAR_ENABLED = "adaptive_toolbar_enabled";
-
-    /**
-     * Whether or not command line on non-rooted devices is enabled.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_COMMAND_LINE_ON_NON_ROOTED_ENABLED =
-            "command_line_on_non_rooted_enabled";
-
-    /**
-     * Whether or not the grid tab switcher is enabled.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_GRID_TAB_SWITCHER_ENABLED = "grid_tab_switcher_enabled";
-    /**
-     * Whether or not the start surface is enabled.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_START_SURFACE_ENABLED = "start_surface_enabled";
-
-    /**
-     * Whether or not the tab group is enabled.
-     * Default value is false.
-     */
-    public static final String FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED =
-            "tab_group_android_enabled";
-
     /** See CachedFeatureFlags.getLastCachedMinimalBrowserFlagsTimeMillis(). */
     public static final String FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS =
             "Chrome.Flags.LastCachedMinimalBrowserFlagsTimeMillis";
@@ -693,6 +662,13 @@ public final class ChromePreferenceKeys {
      * Default value is false.
      */
     public static final String PROMOS_SKIPPED_ON_FIRST_START = "promos_skipped_on_first_start";
+
+    /**
+     * Key for the PWA Restore feature. Used in {@link
+     * org.chromium.chrome.browser.webapps.PwaRestorePromoUtils} to figure out when to show the
+     * promo.
+     */
+    public static final String PWA_RESTORE_PROMO_STAGE = "Chrome.PwaRestore.PromoStage";
 
     /**
      * The next timestamp to decide whether to show query tiles.
@@ -1091,6 +1067,7 @@ public final class ChromePreferenceKeys {
                 PRIVACY_METRICS_REPORTING_PERMITTED_BY_POLICY,
                 PROMO_IS_DISMISSED.pattern(),
                 PROMO_TIMES_SEEN.pattern(),
+                PWA_RESTORE_PROMO_STAGE,
                 QUERY_TILES_NEXT_DISPLAY_DECISION_TIME_MS,
                 QUERY_TILES_SHOW_ON_NTP,
                 QUERY_TILES_SHOW_SEGMENTATION_RESULT,

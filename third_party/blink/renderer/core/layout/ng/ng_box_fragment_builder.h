@@ -214,7 +214,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
       const LogicalOffset,
       absl::optional<const BoxStrut> margins,
       absl::optional<LogicalOffset> relative_offset = absl::nullopt,
-      const NGInlineContainer<LogicalOffset>* inline_container = nullptr);
+      const OofInlineContainer<LogicalOffset>* inline_container = nullptr);
   // AddResult() with the default margin computation.
   void AddResult(const NGLayoutResult& child_layout_result,
                  const LogicalOffset offset);
@@ -228,7 +228,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
       const MarginStrut* margin_strut = nullptr,
       bool is_self_collapsing = false,
       absl::optional<LogicalOffset> relative_offset = absl::nullopt,
-      const NGInlineContainer<LogicalOffset>* inline_container = nullptr);
+      const OofInlineContainer<LogicalOffset>* inline_container = nullptr);
 
   // Manually add a break token to the builder. Note that we're assuming that
   // this break token is for content in the same flow as this parent.
@@ -245,17 +245,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   }
   bool IsKnownToFitInFragmentainer() const {
     return is_known_to_fit_in_fragmentainer_;
-  }
-
-  // True if we need to keep some child content in the current fragmentainer
-  // before breaking (even that overflows the fragmentainer). We'll do this by
-  // refusing last-resort breaks when there's no container separation, and we'll
-  // instead overflow the fragmentainer. See MustStayInCurrentFragmentainer().
-  void SetRequiresContentBeforeBreaking(bool b) {
-    requires_content_before_breaking_ = b;
-  }
-  bool RequiresContentBeforeBreaking() const {
-    return requires_content_before_breaking_;
   }
 
   void SetIsBlockSizeForFragmentationClamped() {
@@ -360,6 +349,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
     // next fragmentianer.
     if (last_inline_break_token_)
       return true;
+
+    // If overflowed by monolithic overflow, we need more pages.
+    if (break_token_data_ && break_token_data_->monolithic_overflow) {
+      return true;
+    }
+
     // Grid layout doesn't insert break before tokens, and instead set this bit
     // to indicate there is content after the current break.
     return has_subsequent_children_;
@@ -611,7 +606,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   }
 
   void AdjustFragmentainerDescendant(
-      NGLogicalOOFNodeForFragmentation& descendant,
+      LogicalOofNodeForFragmentation& descendant,
       bool only_fixedpos_containing_block = false);
   void AdjustFixedposContainingBlockForFragmentainerDescendants();
   void AdjustFixedposContainingBlockForInnerMulticols();
@@ -655,7 +650,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   bool is_initial_block_size_indefinite_ = false;
   bool is_inline_formatting_context_;
   bool is_known_to_fit_in_fragmentainer_ = false;
-  bool requires_content_before_breaking_ = false;
   bool is_block_size_for_fragmentation_clamped_ = false;
   bool is_monolithic_ = true;
   bool is_first_for_node_ = true;

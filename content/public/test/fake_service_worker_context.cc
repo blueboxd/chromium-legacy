@@ -42,12 +42,6 @@ void FakeServiceWorkerContext::UnregisterServiceWorker(
     ResultCallback callback) {
   NOTREACHED();
 }
-void FakeServiceWorkerContext::UnregisterServiceWorkerImmediately(
-    const GURL& scope,
-    const blink::StorageKey& key,
-    ResultCallback callback) {
-  NOTREACHED();
-}
 ServiceWorkerExternalRequestResult
 FakeServiceWorkerContext::StartingExternalRequest(
     int64_t service_worker_version_id,

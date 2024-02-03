@@ -22,6 +22,7 @@
 #include "ash/system/input_device_settings/input_device_key_alias_manager.h"
 #include "ash/system/input_device_settings/input_device_notifier.h"
 #include "ash/system/input_device_settings/input_device_settings_defaults.h"
+#include "ash/system/input_device_settings/input_device_settings_notification_controller.h"
 #include "ash/system/input_device_settings/input_device_settings_policy_handler.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
@@ -53,12 +54,16 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/touchpad_device.h"
+#include "ui/message_center/message_center.h"
 
 namespace ash {
 
 namespace {
 
 const int kMaxButtonNameLength = 32;
+constexpr char kGraphicsTabletDeviceType[] = "GraphicsTablet";
+constexpr char kGraphicsTabletPenDeviceType[] = "GraphicsTabletPen";
+constexpr char kMouseDeviceType[] = "Mouse";
 
 mojom::MetaKey GetMetaKeyForKeyboard(const ui::KeyboardDevice& keyboard) {
   const auto device_type =
@@ -530,6 +535,13 @@ void InputDeviceSettingsControllerImpl::Init() {
   if (features::IsPeripheralCustomizationEnabled()) {
     duplicate_id_finder_ = std::make_unique<InputDeviceDuplicateIdFinder>();
   }
+
+  if (features::IsPeripheralNotificationEnabled()) {
+    notification_controller_ =
+        std::make_unique<InputDeviceSettingsNotificationController>(
+            message_center::MessageCenter::Get());
+  }
+
   keyboard_notifier_ = std::make_unique<
       InputDeviceNotifier<mojom::KeyboardPtr, ui::KeyboardDevice>>(
       &keyboards_,
@@ -640,6 +652,11 @@ void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
     pref_service->ClearPref(prefs::kMouseButtonRemappingsDictPref);
     DeleteLoginScreenButtonRemappingListPrefWhenPeripheralCustomizationDisabled(
         local_state_);
+  }
+
+  if (!features::IsPeripheralNotificationEnabled()) {
+    pref_service->ClearPref(prefs::kPeripheralNotificationMiceSeen);
+    pref_service->ClearPref(prefs::kPeripheralNotificationGraphicsTabletsSeen);
   }
 
   // If the flag is disabled, clear all the settings dictionaries.
@@ -1526,6 +1543,10 @@ void InputDeviceSettingsControllerImpl::OnMouseListUpdated(
   for (const auto& mouse : mice_to_add) {
     auto mojom_mouse =
         BuildMojomMouse(mouse, GetMouseCustomizationRestriction(mouse));
+    if (features::IsPeripheralNotificationEnabled()) {
+      notification_controller_->NotifyMouseFirstTimeConnected(*mojom_mouse);
+    }
+
     InitializeMouseSettings(mojom_mouse.get());
     mice_.insert_or_assign(mouse.id, std::move(mojom_mouse));
     DispatchMouseConnected(mouse.id);
@@ -1562,6 +1583,11 @@ void InputDeviceSettingsControllerImpl::OnGraphicsTabletListUpdated(
   for (const auto& graphics_tablet : graphics_tablets_to_add) {
     auto mojom_graphics_tablet = BuildMojomGraphicsTablet(graphics_tablet);
     InitializeGraphicsTabletSettings(mojom_graphics_tablet.get());
+    if (features::IsPeripheralNotificationEnabled()) {
+      notification_controller_->NotifyGraphicsTabletFirstTimeConnected(
+          mojom_graphics_tablet.get());
+    }
+
     graphics_tablets_.insert_or_assign(graphics_tablet.id,
                                        std::move(mojom_graphics_tablet));
     DispatchGraphicsTabletConnected(graphics_tablet.id);
@@ -1801,6 +1827,7 @@ void InputDeviceSettingsControllerImpl::OnMouseButtonPressed(
   mouse_pref_handler_->UpdateMouseSettings(
       active_pref_service_, policy_handler_->mouse_policies(), mouse);
   DispatchCustomizableMouseButtonPressed(mouse, button);
+  metrics_manager_->RecordNewButtonRegisteredMetrics(button, kMouseDeviceType);
   DispatchMouseSettingsChanged(mouse_ptr->id);
 
   UpdateDuplicateDeviceSettings(
@@ -1846,9 +1873,13 @@ void InputDeviceSettingsControllerImpl::OnGraphicsTabletButtonPressed(
   if (IsGraphicsTabletPenButton(button)) {
     AddButtonToButtonRemappingList(button, pen_button_remappings);
     DispatchCustomizablePenButtonPressed(graphics_tablet, button);
+    metrics_manager_->RecordNewButtonRegisteredMetrics(
+        button, kGraphicsTabletPenDeviceType);
   } else {
     AddButtonToButtonRemappingList(button, tablet_button_remappings);
     DispatchCustomizableTabletButtonPressed(graphics_tablet, button);
+    metrics_manager_->RecordNewButtonRegisteredMetrics(
+        button, kGraphicsTabletDeviceType);
   }
   // TODO(dpad): Update graphics tablet prefs.
   DispatchGraphicsTabletSettingsChanged(graphics_tablet_ptr->id);

@@ -477,6 +477,24 @@ int ShelfView::GetButtonIconSize() const {
       shelf_->hotseat_widget()->target_hotseat_density());
 }
 
+int ShelfView::GetShortcutIconSize() const {
+  return ShelfConfig::Get()->GetShelfShortcutIconSize();
+}
+
+int ShelfView::GetShelfShortcutIconContainerSize() const {
+  return GetShortcutIconSize() +
+         ShelfConfig::Get()->GetShelfShortcutIconBorderSize() * 2;
+}
+
+int ShelfView::GetShelfShortcutHostBadgeIconSize() const {
+  return ShelfConfig::Get()->GetShelfShortcutHostBadgeIconSize();
+}
+
+int ShelfView::GetShelfShortcutHostBadgeContainerSize() const {
+  return GetShelfShortcutHostBadgeIconSize() +
+         ShelfConfig::Get()->GetShelfShortcutHostBadgeBorderSize() * 2;
+}
+
 int ShelfView::GetShelfItemRippleSize() const {
   return GetButtonSize() +
          2 * ShelfConfig::Get()->scrollable_shelf_ripple_padding();
@@ -948,6 +966,9 @@ bool ShelfView::ShouldShowTooltipForChildView(
 // static
 void ShelfView::ConfigureChildView(views::View* view,
                                    ui::LayerType layer_type) {
+  if (view->layer()) {
+    return;
+  }
   view->SetPaintToLayer(layer_type);
   view->layer()->SetFillsBoundsOpaquely(false);
 }
@@ -1024,10 +1045,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     case TYPE_DIALOG: {
       ShelfAppButton* button = new ShelfAppButton(
           this, shelf_button_delegate_ ? shelf_button_delegate_.get() : this);
-      button->SetImage(item.image);
-      button->SetNotificationBadgeColor(item.notification_badge_color);
-      button->ReflectItemStatus(item);
-      button->SetAccessibleName(item.accessible_name);
+      UpdateButton(button, item);
       view = button;
       break;
     }
@@ -1040,6 +1058,15 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
 
   ConfigureChildView(view, ui::LAYER_NOT_DRAWN);
   return view;
+}
+
+void ShelfView::UpdateButton(ShelfAppButton* button, const ShelfItem& item) {
+  button->ReflectItemStatus(item);
+  button->SetMainAndMaybeHostBadgeImage(item.image, item.has_placeholder_icon,
+                                        item.badge_image);
+  button->SetNotificationBadgeColor(item.notification_badge_color);
+  button->SetAccessibleName(item.accessible_name);
+  button->SchedulePaint();
 }
 
 int ShelfView::GetAvailableSpaceForAppIcons() const {
@@ -2179,6 +2206,40 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
     event->StopPropagation();
 }
 
+void ShelfView::MaybeDuplicatePromiseAppForRemoval(
+    ShelfAppButton* promise_app_view,
+    const ShelfItem& item) {
+  if (!ash::features::ArePromiseIconsEnabled()) {
+    return;
+  }
+
+  if (!promise_app_view || !promise_app_view->is_promise_app()) {
+    return;
+  }
+
+  if (promise_app_view->app_status() != AppStatus::kInstallSuccess ||
+      !promise_app_view->IsDrawn()) {
+    return;
+  }
+
+  // Search along the `view_model_` for an existing app with the same
+  // package id as the promise app to be removed.
+  for (const auto& entry : view_model_->entries()) {
+    if (entry.view == promise_app_view) {
+      continue;
+    }
+    if (static_cast<ShelfAppButton*>(entry.view)->package_id() ==
+        item.id.app_id) {
+      // PromiseApps don't get animation for removal if an app already existst
+      // in the grid.
+      return;
+    }
+  }
+
+  AddPendingPromiseAppRemoval(item.id.app_id,
+                              promise_app_view->icon_image_model());
+}
+
 void ShelfView::ShelfItemAdded(int model_index) {
   // ShelfView must keep view_model_ in sync with ShelfModel::items_ as its very
   // first response to ShelfModel changes. Failure to do so can result in UaF in
@@ -2234,13 +2295,43 @@ void ShelfView::ShelfItemAdded(int model_index) {
   // is hidden, so it visually appears as though we are providing space for
   // it. When done we'll fade the view in.
   AnimateToIdealBounds();
-  DCHECK_LE(static_cast<size_t>(model_index), visible_views_indices_.back());
-  // TODO(crbug/1442378): Remove the check below once the bounds animator works
-  // better with zero animation duration.
-  if (!bounds_animator_->GetAnimationDuration().is_zero()) {
-    bounds_animator_->SetAnimationDelegate(
-        view, std::unique_ptr<gfx::AnimationDelegate>(
-                  new StartFadeAnimationDelegate(this, view)));
+
+  // Attempt to animate the transition from a promise app into an actual app
+  const std::string package_id = item.package_id;
+  auto found = pending_promise_apps_removals_.find(package_id);
+
+  if (item.app_status == AppStatus::kReady &&
+      found != pending_promise_apps_removals_.end()) {
+    LayoutToIdealBounds();
+    static_cast<ShelfAppButton*>(view)->AnimateInFromPromiseApp(
+        found->second,
+        base::BindRepeating(&ShelfView::FinishAnimationForPromiseApps,
+                            weak_factory_.GetWeakPtr(), package_id));
+  } else {
+    DCHECK_LE(static_cast<size_t>(model_index), visible_views_indices_.back());
+    // TODO(crbug/1442378): Remove the check below once the bounds animator
+    // works better with zero animation duration.
+    if (!bounds_animator_->GetAnimationDuration().is_zero()) {
+      bounds_animator_->SetAnimationDelegate(
+          view, std::unique_ptr<gfx::AnimationDelegate>(
+                    new StartFadeAnimationDelegate(this, view)));
+    }
+  }
+}
+
+void ShelfView::AddPendingPromiseAppRemoval(
+    const std::string& id,
+    const ui::ImageModel& promise_icon) {
+  pending_promise_apps_removals_.emplace(id, promise_icon);
+}
+
+void ShelfView::FinishAnimationForPromiseApps(
+    const std::string& pending_app_id) {
+  auto pending_app_found = pending_promise_apps_removals_.find(pending_app_id);
+
+  // Discard the pending promise app layer.
+  if (pending_app_found != pending_promise_apps_removals_.end()) {
+    pending_promise_apps_removals_.erase(pending_app_found);
   }
 }
 
@@ -2255,6 +2346,11 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
   std::unique_ptr<views::View> view(view_model_->view_at(model_index));
 
   shelf_button_delegate_->OnButtonWillBeRemoved();
+
+  if (old_item.is_promise_app) {
+    MaybeDuplicatePromiseAppForRemoval(static_cast<ShelfAppButton*>(view.get()),
+                                       old_item);
+  }
   view_model_->Remove(model_index);
 
   if (old_item.id == context_menu_id_ && shelf_menu_model_adapter_)
@@ -2384,11 +2480,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     case TYPE_DIALOG: {
       CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
       ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
-      button->ReflectItemStatus(item);
-      button->SetImage(item.image);
-      button->SetNotificationBadgeColor(item.notification_badge_color);
-      button->SetAccessibleName(item.accessible_name);
-      button->SchedulePaint();
+      UpdateButton(button, item);
       break;
     }
     case TYPE_UNDEFINED:

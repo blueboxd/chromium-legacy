@@ -42,6 +42,7 @@ class WizardContext {
     kChildSignup,
     kChildSignin,
     kReauth,
+    kSamlRedirect,
   };
 
   struct GaiaConfig {
@@ -84,6 +85,8 @@ class WizardContext {
     bool local_password_forced = false;
 
     AuthChangeFlow auth_setup_flow = AuthChangeFlow::kInitialSetup;
+
+    AuthFactorsSet modified_factors;
   };
 
   // Configuration for automating OOBE screen actions, e.g. during device
@@ -160,11 +163,6 @@ class WizardContext {
   RecoverySetup recovery_setup;
 
   KnowledgeFactorSetup knowledge_factor_setup;
-
-  // Authorization data that is required by PinSetup screen to add PIN as
-  // another possible auth factor. Can be empty (if PIN is not supported).
-  // In future will be replaced by AuthSession.
-  std::unique_ptr<UserContext> extra_factors_auth_session;
 
   // Same as above, but the actual context is stored in AuthSessionStorage,
   // and the token can be used to retrieve it.

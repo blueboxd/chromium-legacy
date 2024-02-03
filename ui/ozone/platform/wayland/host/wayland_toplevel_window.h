@@ -27,6 +27,10 @@ namespace views::corewm {
 enum class TooltipTrigger;
 }  // namespace views::corewm
 
+namespace gfx {
+class RoundedCornersF;
+}  // namespace gfx
+
 namespace ui {
 
 class GtkSurface1;
@@ -96,10 +100,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   void HideTooltip() override;
   void PropagateBufferScale(float new_scale) override;
   void OnRotateFocus(uint32_t serial, uint32_t direction, bool restart);
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  void OnOverviewModeChanged(bool in_overview);
-#endif
+  void OnOverviewChange(uint32_t in_overview_as_int);
 
   // WmDragHandler:
   bool ShouldReleaseCaptureForDrag(ui::OSExchangeData* data) const override;
@@ -155,6 +156,7 @@ class WaylandToplevelWindow : public WaylandWindow,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void SetImmersiveFullscreenStatus(bool status) override;
   void SetTopInset(int height) override;
+  gfx::RoundedCornersF GetWindowCornersRadii() override;
 #endif
   void ShowSnapPreview(WaylandWindowSnapDirection snap,
                        bool allow_haptic_feedback) override;

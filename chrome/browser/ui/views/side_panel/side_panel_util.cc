@@ -34,11 +34,22 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_notes/user_notes_features.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/actions/actions.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/ui/views/side_panel/extensions/extension_side_panel_manager.h"
 #include "extensions/common/extension_features.h"
 #endif
+
+namespace {
+constexpr std::underlying_type_t<SidePanelOpenTrigger>
+    kInvalidSidePanelOpenTrigger = -1;
+}
+
+DEFINE_UI_CLASS_PROPERTY_TYPE(SidePanelOpenTrigger)
+DEFINE_UI_CLASS_PROPERTY_KEY(std::underlying_type_t<SidePanelOpenTrigger>,
+                             kSidePanelOpenTriggerKey,
+                             kInvalidSidePanelOpenTrigger)
 
 // static
 void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
@@ -66,8 +77,7 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
 
   // Add read anything.
   if (features::IsReadAnythingEnabled()) {
-    ReadAnythingCoordinator::GetOrCreateForBrowser(browser)
-        ->CreateAndRegisterEntry(global_registry);
+    ReadAnythingCoordinator::GetOrCreateForBrowser(browser);
   }
 
   // Create Search Companion coordinator.
@@ -104,10 +114,11 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
 
 SidePanelContentProxy* SidePanelUtil::GetSidePanelContentProxy(
     views::View* content_view) {
-  if (!content_view->GetProperty(kSidePanelContentProxyKey))
+  if (!content_view->GetProperty(kSidePanelContentProxyKey)) {
     content_view->SetProperty(
         kSidePanelContentProxyKey,
         std::make_unique<SidePanelContentProxy>(true).release());
+  }
   return content_view->GetProperty(kSidePanelContentProxyKey);
 }
 
@@ -129,8 +140,9 @@ void SidePanelUtil::RecordSidePanelOpen(
     absl::optional<SidePanelUtil::SidePanelOpenTrigger> trigger) {
   base::RecordAction(base::UserMetricsAction("SidePanel.Show"));
 
-  if (trigger.has_value())
+  if (trigger.has_value()) {
     base::UmaHistogramEnumeration("SidePanel.OpenTrigger", trigger.value());
+  }
 }
 
 void SidePanelUtil::RecordSidePanelShowOrChangeEntryTrigger(
@@ -218,4 +230,11 @@ void SidePanelUtil::RecordEntryShowTriggeredMetrics(
 
 void SidePanelUtil::RecordComboboxShown() {
   base::UmaHistogramBoolean("SidePanel.ComboboxMenuShown", true);
+}
+
+void SidePanelUtil::RecordPinnedButtonClicked(SidePanelEntry::Id id,
+                                              bool is_pinned) {
+  base::RecordComputedAction(base::StrCat(
+      {"SidePanel.", SidePanelEntryIdToHistogramName(id), ".",
+       is_pinned ? "Pinned" : "Unpinned", ".BySidePanelHeaderButton"}));
 }

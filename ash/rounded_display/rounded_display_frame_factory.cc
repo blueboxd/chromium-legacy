@@ -176,14 +176,14 @@ RoundedDisplayFrameFactory::CreateUiResource(const gfx::Size& size,
       LOG(ERROR) << "Failed to create MappableSharedImage";
       return nullptr;
     }
-    resource->mailbox = client_shared_image->mailbox();
+    resource->SetClientSharedImage(std::move(client_shared_image));
   } else {
     auto client_shared_image = sii->CreateSharedImage(
         format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
         kPremul_SkAlphaType, usage, "RoundedDisplayFrameUi",
         resource->gpu_memory_buffer->CloneHandle());
     CHECK(client_shared_image);
-    resource->mailbox = client_shared_image->mailbox();
+    resource->SetClientSharedImage(std::move(client_shared_image));
   }
 
   resource->sync_token = sii->GenVerifiedSyncToken();
@@ -294,7 +294,7 @@ std::unique_ptr<RoundedDisplayUiResource> RoundedDisplayFrameFactory::Draw(
     gpu::SharedImageInterface* sii =
         resource->context_provider->SharedImageInterface();
 
-    sii->UpdateSharedImage(resource->sync_token, resource->mailbox);
+    sii->UpdateSharedImage(resource->sync_token, resource->mailbox());
 
     resource->sync_token = sii->GenVerifiedSyncToken();
     resource->damaged = false;
@@ -317,7 +317,8 @@ void RoundedDisplayFrameFactory::Paint(
     DCHECK(!buffer);
     gpu::SharedImageInterface* sii =
         resource->context_provider->SharedImageInterface();
-    mapping = sii->MapSharedImage(resource->mailbox);
+    CHECK(resource->client_shared_image());
+    mapping = sii->MapSharedImage(resource->client_shared_image());
     if (!mapping) {
       return;
     }

@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/service_process_host_passkeys.h"
+#include "mojo/public/mojom/base/file_path.mojom.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "base/strings/utf_string_conversions.h"
@@ -29,6 +30,8 @@ namespace {
 // the component and are required to initialize the library.
 const base::FilePath::CharType kMainContentExtractionFilesList[] =
     FILE_PATH_LITERAL("files_list_main_content_extraction.txt");
+const base::FilePath::CharType kOcrFilesList[] =
+    FILE_PATH_LITERAL("files_list_ocr.txt");
 
 class ComponentFiles {
  public:
@@ -41,7 +44,7 @@ class ComponentFiles {
   static std::unique_ptr<ComponentFiles> Load(
       const base::FilePath::CharType* files_list_file_name);
 
-  base::flat_map<std::string, base::File> model_files_;
+  base::flat_map<base::FilePath, base::File> model_files_;
   base::FilePath library_binary_path_;
 };
 
@@ -65,22 +68,26 @@ ComponentFiles::ComponentFiles(
     return;
   }
 
-  // TODO(b/297824387): Consider fixing file path separators for Windows when
-  // files with sub-directories are added.
   for (auto& relative_file_path : files_list) {
     // Ignore comment lines.
     if (relative_file_path.empty() || relative_file_path[0] == '#') {
       continue;
     }
 
-    const base::FilePath full_path =
 #if BUILDFLAG(IS_WIN)
-        component_folder.Append(base::UTF8ToWide(relative_file_path));
+    base::FilePath relative_path(base::UTF8ToWide(relative_file_path));
 #else
-        component_folder.Append(relative_file_path);
+    base::FilePath relative_path(relative_file_path);
 #endif
-    model_files_[relative_file_path] =
+    const base::FilePath full_path = component_folder.Append(relative_path);
+
+    model_files_[relative_path] =
         base::File(full_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    if (!model_files_[relative_path].IsValid()) {
+      VLOG(0) << "Could not open " << full_path;
+      model_files_.clear();
+      return;
+    }
   }
 }
 
@@ -174,10 +181,26 @@ void ScreenAIServiceRouter::InitializeOCRIfNeeded() {
     return;
   }
 
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&ComponentFiles::Load, kOcrFilesList),
+      base::BindOnce(&ScreenAIServiceRouter::InitializeOCR,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ocr_service_.BindNewPipeAndPassReceiver()));
+}
+
+void ScreenAIServiceRouter::InitializeOCR(
+    mojo::PendingReceiver<mojom::OCRService> receiver,
+    std::unique_ptr<ComponentFiles> component_files) {
+  if (component_files->model_files_.empty()) {
+    ScreenAIServiceRouter::SetLibraryLoadState(false);
+    return;
+  }
+
   screen_ai_service_factory_->InitializeOCR(
-      screen_ai::ScreenAIInstallState::GetInstance()
-          ->get_component_binary_path(),
-      ocr_service_.BindNewPipeAndPassReceiver(),
+      component_files->library_binary_path_,
+      std::move(component_files->model_files_), std::move(receiver),
       base::BindOnce(&ScreenAIServiceRouter::SetLibraryLoadState,
                      weak_ptr_factory_.GetWeakPtr()));
 }

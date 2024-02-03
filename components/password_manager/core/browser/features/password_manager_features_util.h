@@ -169,12 +169,6 @@ void OptOutOfAccountStorageAndClearSettings(
     PrefService* pref_service,
     const syncer::SyncService* sync_service);
 
-// Like OptOutOfAccountStorageAndClearSettings(), but applies to a specific
-// given |gaia_id| rather than to the current signed-in user.
-void OptOutOfAccountStorageAndClearSettingsForAccount(
-    PrefService* pref_service,
-    const std::string& gaia_id);
-
 // Sets the default storage location for signed-in but non-syncing users. This
 // store is used for saving new credentials and adding blacking listing entries.
 // |pref_service| and |sync_service| must not be null.
@@ -190,12 +184,6 @@ void SetDefaultPasswordStore(PrefService* pref_service,
 void KeepAccountStorageSettingsOnlyForUsers(
     PrefService* pref_service,
     const std::vector<std::string>& gaia_ids);
-
-// Clears all account-storage-related settings for all users. Most notably, this
-// includes the opt-in, but also all other related settings like the default
-// password store. Meant to be called when account cookies were cleared.
-// |pref_service| must not be null.
-void ClearAccountStorageSettingsForAllUsers(PrefService* pref_service);
 
 // Increases the count of how many times Chrome automatically offered a user
 // not opted-in to the account-scoped passwords storage to move a password to

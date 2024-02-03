@@ -13,6 +13,7 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/commerce/core/shopping_service.h"
+#include "components/commerce/core/web_extractor.h"
 #include "components/commerce/core/web_wrapper.h"
 #include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
@@ -125,6 +126,10 @@ class MockOptGuideDecider
   OptimizationMetadata BuildDiscountsResponse(
       const std::vector<DiscountInfo>& infos);
 
+  // Update the class private member `default_shopping_page_` which decides
+  // whether the MockOptGuideDecider will decide all pages as shopping pages.
+  void SetDefaultShoppingPage(bool default_shopping_page);
+
  private:
   absl::optional<GURL> response_url_;
   absl::optional<OptimizationType> optimization_type_;
@@ -135,6 +140,7 @@ class MockOptGuideDecider
   std::unordered_map<std::string,
                      optimization_guide::OptimizationGuideDecisionWithMetadata>
       on_demand_shopping_responses_;
+  bool default_shopping_page_ = true;
 };
 
 // A mock WebWrapper where returned values can be manually set.
@@ -164,11 +170,28 @@ class MockWebWrapper : public WebWrapper {
       const std::u16string& script,
       base::OnceCallback<void(const base::Value)> callback) override;
 
+  ukm::SourceId GetPageUkmSourceId() override;
+
+  base::Value* GetMockExtractionResult();
+
  private:
   const GURL last_committed_url_;
   const bool is_off_the_record_;
   bool is_first_load_finished_{true};
   const raw_ptr<base::Value> mock_js_result_;
+};
+
+class TestWebExtractor : public WebExtractor {
+ public:
+  TestWebExtractor();
+  TestWebExtractor(const TestWebExtractor&) = delete;
+  TestWebExtractor operator=(const TestWebExtractor&) = delete;
+
+  ~TestWebExtractor() override;
+
+  void ExtractMetaInfo(
+      WebWrapper* web_wrapper,
+      base::OnceCallback<void(const base::Value)> callback) override;
 };
 
 class ShoppingServiceTestBase : public testing::Test {

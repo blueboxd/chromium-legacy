@@ -686,6 +686,13 @@ class CORE_EXPORT WebFrameWidgetImpl
   // coordinate space.
   Vector<gfx::Rect> CalculateVisibleLineBoundsOnScreen();
 
+  // Returns true if this widget corresponds to a frame which is being replaced.
+  // The compositor for the widget has been detached and passed to the new
+  // widget.
+  bool WillBeDestroyed() const;
+
+  bool IsScrollGestureActive() const;
+
  protected:
   // WidgetBaseClient overrides:
   void WillBeginMainFrame() override;
@@ -885,9 +892,8 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   void SendOverscrollEventFromImplSide(const gfx::Vector2dF& overscroll_delta,
                                        cc::ElementId scroll_latched_element_id);
-  void SendScrollEndEventFromImplSide(bool affects_outer_viewport,
-                                      cc::ElementId scroll_latched_element_id);
-
+  void SendEndOfScrollEvents(bool affects_outer_viewport,
+                             cc::ElementId scroll_latched_element_id);
   void RecordManipulationTypeCounts(cc::ManipulationInfo info);
 
   enum DragAction { kDragEnter, kDragOver };
@@ -1014,6 +1020,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   // passed to any new child RenderWidget.
   float page_scale_factor_in_mainframe_ = 1.f;
   bool is_pinch_gesture_active_in_mainframe_ = false;
+
+  bool is_scroll_gesture_active_ = false;
 
   // If set, the (plugin) element which has mouse capture.
   Member<HTMLPlugInElement> mouse_capture_element_;

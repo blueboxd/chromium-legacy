@@ -309,7 +309,8 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
       font_data_to_substitute->PlatformData();
 
   std::unique_ptr<FontPlatformData> alternate_font;
-  if (RuntimeEnabledFeatures::FontMatchingCTMigrationEnabled()) {
+  if (RuntimeEnabledFeatures::FontMatchingCTMigrationEnabled() &&
+      @available(macOS 10.14, *)) {
     alternate_font = GetAlternateFontPlatformData(font_description, character,
                                                   platform_data);
   } else {
@@ -465,7 +466,8 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     matched_font =
         MatchSystemUIFont(font_description.Weight(), font_description.Style(),
                           font_description.Stretch(), size);
-  } else if (RuntimeEnabledFeatures::FontMatchingCTMigrationEnabled()) {
+  } else if (RuntimeEnabledFeatures::FontMatchingCTMigrationEnabled() &&
+             @available(macOS 10.14, *)) {
     matched_font = MatchFontFamily(
         creation_params.Family(), font_description.Weight(),
         font_description.Style(), font_description.Stretch(), size);
@@ -478,7 +480,8 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     return nullptr;
 
   bool synthetic_bold, synthetic_italic;
-  if (RuntimeEnabledFeatures::FontMatchingCTMigrationEnabled()) {
+  if (RuntimeEnabledFeatures::FontMatchingCTMigrationEnabled() &&
+      @available(macOS 10.14, *)) {
     CTFontSymbolicTraits matched_font_traits =
         CTFontGetSymbolicTraits(matched_font.get());
 
